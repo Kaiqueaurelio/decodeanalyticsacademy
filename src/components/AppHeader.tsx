@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useTheme } from '@/hooks/useTheme';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { LogOut, LayoutDashboard, Shield, Menu, ArrowRight } from 'lucide-react';
+import { LogOut, LayoutDashboard, Shield, Menu, ArrowRight, Sun, Moon } from 'lucide-react';
 import logoDark from '@/assets/logo-dark.jpeg';
 
 export function AppHeader() {
   const { user, isAdmin, signOut } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
@@ -22,6 +24,9 @@ export function AppHeader() {
         </Link>
 
         <nav className="hidden sm:flex items-center gap-1">
+          <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-8 w-8">
+            {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </Button>
           {user ? (
             <>
               <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')} className="text-xs h-8 px-3">
@@ -43,7 +48,10 @@ export function AppHeader() {
           )}
         </nav>
 
-        <div className="sm:hidden">
+        <div className="sm:hidden flex items-center gap-1">
+          <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-8 w-8">
+            {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </Button>
           {user ? (
             <Sheet open={open} onOpenChange={setOpen}>
               <SheetTrigger asChild>

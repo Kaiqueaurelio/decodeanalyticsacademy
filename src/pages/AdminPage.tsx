@@ -15,13 +15,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import {
   Plus, Trash2, Eye, EyeOff, BookOpen, FileText, PenLine, ArrowLeft,
   LayoutDashboard, CheckCircle, TrendingUp, Upload, BarChart3, Clock,
-  Link as LinkIcon, Loader2, AlertCircle, Edit
+  Link as LinkIcon, Loader2, AlertCircle, Edit, Download, File, Image, Video, Music, FileSpreadsheet, Presentation
 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { Tables } from '@/integrations/supabase/types';
 
 type Apostila = Tables<'apostilas'>;
 type Exercise = Tables<'exercises'>;
+type Material = Tables<'materials'>;
 
 const CATEGORIES = ['Redes', 'IA', 'Segurança', 'Cloud', 'Programação', 'Banco de Dados', 'Sistemas Operacionais', 'Outros'];
 
@@ -34,8 +35,17 @@ export default function AdminPage() {
   const [apostilas, setApostilas] = useState<Apostila[]>([]);
   const [exercises, setExercises] = useState<Record<string, Exercise[]>>({});
   const [allAnswers, setAllAnswers] = useState<any[]>([]);
+  const [materials, setMaterials] = useState<Material[]>([]);
   const [showExerciseDialog, setShowExerciseDialog] = useState<string | null>(null);
   const [selectedApostila, setSelectedApostila] = useState('');
+
+  // Materials state
+  const [matTitle, setMatTitle] = useState('');
+  const [matDesc, setMatDesc] = useState('');
+  const [matType, setMatType] = useState<string>('link');
+  const [matUrl, setMatUrl] = useState('');
+  const [matFile, setMatFile] = useState<File | null>(null);
+  const [matUploading, setMatUploading] = useState(false);
 
   const [importUrl, setImportUrl] = useState('');
   const [importTitle, setImportTitle] = useState('');
@@ -74,6 +84,8 @@ export default function AdminPage() {
     setExercises(map);
     const { data: ans } = await supabase.from('answers').select('*');
     setAllAnswers(ans || []);
+    const { data: mats } = await supabase.from('materials').select('*').order('created_at', { ascending: false });
+    setMaterials(mats || []);
   };
 
   const handleExtract = async () => {
@@ -686,12 +698,167 @@ export default function AdminPage() {
 
         {/* Materials Tab */}
         {tab === 'materials' && (
-          <div className="space-y-4">
-            <Card className="p-5 bg-card border border-border/50 text-center">
-              <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground opacity-30" />
-              <h3 className="font-semibold text-sm mb-1">Materiais de Apoio</h3>
-              <p className="text-xs text-muted-foreground">Em breve...</p>
+          <div className="space-y-5">
+            {/* Add Material Card */}
+            <Card className="p-5 bg-card border border-border/50 border-t-4 border-t-primary">
+              <h3 className="font-semibold flex items-center gap-2 mb-3 text-sm">
+                <Upload className="h-4 w-4 text-primary" /> Adicionar Material
+              </h3>
+              <div className="space-y-3">
+                <div>
+                  <Label className="text-xs text-muted-foreground">Título</Label>
+                  <Input value={matTitle} onChange={e => setMatTitle(e.target.value)} placeholder="Nome do material" className="mt-1" />
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground">Descrição (opcional)</Label>
+                  <Textarea value={matDesc} onChange={e => setMatDesc(e.target.value)} placeholder="Breve descrição..." rows={2} className="mt-1" />
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground">Tipo</Label>
+                  <Select value={matType} onValueChange={setMatType}>
+                    <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {[
+                        { value: 'link', label: 'Link externo' },
+                        { value: 'pdf', label: 'PDF' },
+                        { value: 'image', label: 'Imagem' },
+                        { value: 'video', label: 'Vídeo' },
+                        { value: 'audio', label: 'Áudio' },
+                        { value: 'powerpoint', label: 'PowerPoint' },
+                        { value: 'word', label: 'Word' },
+                        { value: 'excel', label: 'Excel' },
+                        { value: 'other', label: 'Outro' },
+                      ].map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {matType === 'link' ? (
+                  <div>
+                    <Label className="text-xs text-muted-foreground">URL</Label>
+                    <Input value={matUrl} onChange={e => setMatUrl(e.target.value)} placeholder="https://..." className="mt-1" />
+                  </div>
+                ) : (
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Arquivo</Label>
+                    <Input
+                      type="file"
+                      className="mt-1"
+                      onChange={e => setMatFile(e.target.files?.[0] || null)}
+                      accept={matType === 'pdf' ? '.pdf' : matType === 'image' ? 'image/*' : matType === 'video' ? 'video/*' : matType === 'audio' ? 'audio/*' : '*'}
+                    />
+                  </div>
+                )}
+
+                <Button
+                  className="w-full gradient-primary text-primary-foreground"
+                  disabled={matUploading || !matTitle.trim() || (matType === 'link' ? !matUrl.trim() : !matFile)}
+                  onClick={async () => {
+                    if (!user) return;
+                    setMatUploading(true);
+                    try {
+                      let fileUrl = '';
+                      let filePath = '';
+
+                      if (matType === 'link') {
+                        fileUrl = matUrl.trim();
+                      } else if (matFile) {
+                        const ext = matFile.name.split('.').pop();
+                        const path = `${user.id}/${Date.now()}.${ext}`;
+                        const { error: uploadErr } = await supabase.storage.from('materials').upload(path, matFile);
+                        if (uploadErr) throw uploadErr;
+                        const { data: urlData } = supabase.storage.from('materials').getPublicUrl(path);
+                        fileUrl = urlData.publicUrl;
+                        filePath = path;
+                      }
+
+                      const { error } = await supabase.from('materials').insert({
+                        title: matTitle.trim(),
+                        description: matDesc || null,
+                        type: matType as any,
+                        file_url: fileUrl || null,
+                        file_path: filePath || null,
+                        created_by: user.id,
+                      });
+                      if (error) throw error;
+                      toast.success('Material adicionado!');
+                      setMatTitle(''); setMatDesc(''); setMatUrl(''); setMatFile(null);
+                      loadAll();
+                    } catch (err: any) {
+                      toast.error('Erro: ' + (err.message || 'Tente novamente'));
+                    }
+                    setMatUploading(false);
+                  }}
+                >
+                  {matUploading ? <Loader2 className="h-4 w-4 animate-spin mr-1.5" /> : <Plus className="h-4 w-4 mr-1.5" />}
+                  {matUploading ? 'Enviando...' : 'Adicionar Material'}
+                </Button>
+              </div>
             </Card>
+
+            {/* Materials List */}
+            <div>
+              <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
+                <FileText className="h-4 w-4 text-primary" /> Materiais ({materials.length})
+              </h3>
+              <div className="space-y-2">
+                {materials.map(m => {
+                  const typeIcon = {
+                    pdf: FileText, image: Image, video: Video, audio: Music,
+                    powerpoint: Presentation, word: FileText, excel: FileSpreadsheet,
+                    link: LinkIcon, other: File, exam: FileText, gif: Image,
+                  }[m.type] || File;
+                  const Icon = typeIcon;
+                  return (
+                    <Card key={m.id} className="p-3 bg-card border border-border/50">
+                      <div className="flex items-center gap-3">
+                        <div className="rounded-lg bg-accent p-2 shrink-0">
+                          <Icon className="h-4 w-4 text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-medium text-sm truncate">{m.title}</h4>
+                          <p className="text-[10px] text-muted-foreground">
+                            {m.type.toUpperCase()} · {new Date(m.created_at).toLocaleDateString('pt-BR')}
+                            {m.description && ` · ${m.description}`}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1 shrink-0">
+                          {m.file_url && (
+                            <Button size="icon" variant="outline" className="h-8 w-8" asChild>
+                              <a href={m.file_url} target="_blank" rel="noopener noreferrer">
+                                <Download className="h-3.5 w-3.5" />
+                              </a>
+                            </Button>
+                          )}
+                          <Button
+                            size="icon"
+                            variant="outline"
+                            className="h-8 w-8 text-destructive border-destructive/30 hover:bg-destructive/10"
+                            onClick={async () => {
+                              if (!confirm('Excluir este material?')) return;
+                              if (m.file_path) {
+                                await supabase.storage.from('materials').remove([m.file_path]);
+                              }
+                              await supabase.from('materials').delete().eq('id', m.id);
+                              toast.success('Material excluído');
+                              loadAll();
+                            }}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </div>
+                    </Card>
+                  );
+                })}
+                {materials.length === 0 && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Upload className="h-8 w-8 mx-auto mb-2 opacity-30" />
+                    <p className="text-sm">Nenhum material adicionado.</p>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
       </main>
