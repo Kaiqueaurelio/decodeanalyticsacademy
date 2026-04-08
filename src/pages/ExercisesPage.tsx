@@ -61,13 +61,17 @@ export default function ExercisesPage() {
     setShowResults(false);
   };
 
-  const handleAnswer = async (exerciseId: string, selected: string, correctAnswer: string) => {
+  const handleAnswer = async (exerciseId: string, selected: string, _correctAnswer?: string) => {
     if (!user || answers[exerciseId]) return;
-    const isCorrect = selected === correctAnswer;
-    const { error } = await supabase.from('answers').insert({
-      user_id: user.id, exercise_id: exerciseId, selected_answer: selected, is_correct: isCorrect,
+
+    // Use server-side answer validation
+    const { data, error } = await supabase.rpc('check_exercise_answer', {
+      _exercise_id: exerciseId, _selected_answer: selected
     });
     if (error) { toast.error('Erro ao salvar resposta'); return; }
+
+    const result = data as { is_correct: boolean; correct_answer: string; explanation: string | null };
+    const isCorrect = result.is_correct;
     setAnswers(prev => ({ ...prev, [exerciseId]: { selected, correct: isCorrect } }));
 
     // Gamification
