@@ -166,7 +166,21 @@ export default function DashboardPage() {
             <div className="text-center py-12 text-muted-foreground">
               <BookOpen className="h-8 w-8 mx-auto mb-2 opacity-30" />
               <p className="text-sm">Nenhuma apostila disponível.</p>
+        </div>
+
+        {/* Quick Access to Materials */}
+        <Card className="p-4 bg-card border border-border/50 mb-6 animate-content-show delay-2">
+          <button onClick={() => navigate('/materials')} className="w-full flex items-center gap-3 text-left hover:opacity-80 smooth-all">
+            <div className="rounded-lg bg-primary/10 p-2.5">
+              <FileText className="h-5 w-5 text-primary" />
             </div>
+            <div className="flex-1">
+              <p className="font-medium text-sm">Materiais de Apoio</p>
+              <p className="text-[10px] text-muted-foreground">PDFs, vídeos, áudios e mais</p>
+            </div>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          </button>
+        </Card>
           )}
         </div>
 
