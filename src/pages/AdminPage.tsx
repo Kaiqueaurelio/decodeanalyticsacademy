@@ -161,6 +161,12 @@ export default function AdminPage() {
   const [cloning, setCloning] = useState(false);
   const [importStep, setImportStep] = useState<'url' | 'review'>('url');
 
+  // Batch import state
+  const [batchMode, setBatchMode] = useState(false);
+  const [batchUrls, setBatchUrls] = useState('');
+  const [batchProgress, setBatchProgress] = useState<{ current: number; total: number; results: { url: string; title: string; status: 'ok' | 'error'; error?: string }[] }>({ current: 0, total: 0, results: [] });
+  const [batchRunning, setBatchRunning] = useState(false);
+
   const [showManualForm, setShowManualForm] = useState(false);
   const [manualTitle, setManualTitle] = useState('');
   const [manualCategory, setManualCategory] = useState('');
