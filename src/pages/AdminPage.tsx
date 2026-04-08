@@ -67,6 +67,8 @@ export default function AdminPage() {
   const [matFile, setMatFile] = useState<File | null>(null);
   const [matUploading, setMatUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
+  const [uploadQueue, setUploadQueue] = useState<File[]>([]);
+  const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileDrop = useCallback((file: File) => {
@@ -79,14 +81,43 @@ export default function AdminPage() {
     }
   }, [matTitle]);
 
+  const handleMultiUpload = useCallback(async (files: File[]) => {
+    if (!user) return;
+    setMatUploading(true);
+    setUploadQueue(files);
+    setUploadProgress({ current: 0, total: files.length });
+    let success = 0;
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      setUploadProgress({ current: i + 1, total: files.length });
+      setMatFile(file);
+      try {
+        const ext = file.name.split('.').pop()?.toLowerCase() || '';
+        const detectedType = TYPE_FROM_EXT[ext] || 'other';
+        const title = file.name.replace(/\.[^/.]+$/, '').replace(/[_-]/g, ' ');
+        const path = `${user.id}/${Date.now()}-${i}.${ext}`;
+        const { error: uploadErr } = await supabase.storage.from('materials').upload(path, file);
+        if (uploadErr) throw uploadErr;
+        const { data: urlData } = supabase.storage.from('materials').getPublicUrl(path);
+        await supabase.from('materials').insert({
+          title, type: detectedType as any,
+          file_url: urlData.publicUrl, file_path: path,
+          created_by: user.id,
+        });
+        success++;
+      } catch (err: any) {
+        toast.error(`Erro em "${file.name}": ${err.message}`);
+      }
+    }
+    toast.success(`${success} de ${files.length} materiais enviados!`);
+    setMatFile(null); setMatTitle(''); setMatDesc('');
+    setUploadQueue([]); setUploadProgress({ current: 0, total: 0 });
+    setMatUploading(false);
+    loadAll();
+  }, [user]);
+
   const onDragOver = useCallback((e: React.DragEvent) => { e.preventDefault(); setDragActive(true); }, []);
   const onDragLeave = useCallback((e: React.DragEvent) => { e.preventDefault(); setDragActive(false); }, []);
-  const onDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setDragActive(false);
-    const file = e.dataTransfer.files?.[0];
-    if (file) handleFileDrop(file);
-  }, [handleFileDrop]);
 
   const [importUrl, setImportUrl] = useState('');
   const [importTitle, setImportTitle] = useState('');
