@@ -166,6 +166,8 @@ export default function DashboardPage() {
             <div className="text-center py-12 text-muted-foreground">
               <BookOpen className="h-8 w-8 mx-auto mb-2 opacity-30" />
               <p className="text-sm">Nenhuma apostila disponível.</p>
+            </div>
+          )}
         </div>
 
         {/* Quick Access to Materials */}
@@ -181,8 +183,6 @@ export default function DashboardPage() {
             <ChevronRight className="h-4 w-4 text-muted-foreground" />
           </button>
         </Card>
-          )}
-        </div>
 
         {/* Performance */}
         {stats.total > 0 && Object.keys(stats.byApostila).length > 0 && (
