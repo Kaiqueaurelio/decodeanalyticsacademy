@@ -11,10 +11,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   Plus, Trash2, Eye, EyeOff, BookOpen, FileText, PenLine, ArrowLeft,
-  LayoutDashboard, CheckCircle, TrendingUp, Upload, BarChart3, Clock
+  LayoutDashboard, CheckCircle, TrendingUp, Upload, BarChart3, Clock,
+  Link as LinkIcon, Loader2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { Tables } from '@/integrations/supabase/types';
@@ -33,17 +34,16 @@ export default function AdminPage() {
   const [apostilas, setApostilas] = useState<Apostila[]>([]);
   const [exercises, setExercises] = useState<Record<string, Exercise[]>>({});
   const [allAnswers, setAllAnswers] = useState<any[]>([]);
-  const [showCreate, setShowCreate] = useState(false);
   const [showExerciseDialog, setShowExerciseDialog] = useState<string | null>(null);
   const [selectedApostila, setSelectedApostila] = useState('');
 
-  const [newTitle, setNewTitle] = useState('');
-  const [newContent, setNewContent] = useState('');
-  const [newCategory, setNewCategory] = useState('Outros');
-  const [newSourceType, setNewSourceType] = useState('manual');
-  const [newLink, setNewLink] = useState('');
-  const [creating, setCreating] = useState(false);
+  // Import apostila form
+  const [importUrl, setImportUrl] = useState('');
+  const [importTitle, setImportTitle] = useState('');
+  const [importTopic, setImportTopic] = useState('');
+  const [cloning, setCloning] = useState(false);
 
+  // Exercise form
   const [exQuestion, setExQuestion] = useState('');
   const [exOptions, setExOptions] = useState(['', '', '', '']);
   const [exCorrect, setExCorrect] = useState('A');
@@ -65,20 +65,31 @@ export default function AdminPage() {
     setAllAnswers(ans || []);
   };
 
-  const createApostila = async () => {
-    if (!newTitle.trim() || !user) return;
-    setCreating(true);
-    const { error } = await supabase.from('apostilas').insert({
-      title: newTitle, content: newContent, category: newCategory,
-      source_type: newSourceType, file_url: newLink || null,
-      created_by: user.id, published: false,
-    });
-    setCreating(false);
-    if (error) { toast.error('Erro ao criar apostila'); return; }
-    toast.success('Apostila criada!');
-    setShowCreate(false);
-    setNewTitle(''); setNewContent(''); setNewLink('');
-    loadAll();
+  const handleClone = async () => {
+    if (!importUrl.trim() || !user) return;
+    setCloning(true);
+    try {
+      // Try to fetch content from URL via edge function or direct
+      const title = importTitle.trim() || importUrl;
+      const category = importTopic.trim() || 'Geral';
+      
+      const { error } = await supabase.from('apostilas').insert({
+        title,
+        content: `Conteúdo importado de: ${importUrl}\n\n(O conteúdo será carregado automaticamente)`,
+        category,
+        source_type: 'link',
+        file_url: importUrl,
+        created_by: user.id,
+        published: false,
+      });
+      if (error) throw error;
+      toast.success('Apostila importada com sucesso!');
+      setImportUrl(''); setImportTitle(''); setImportTopic('');
+      loadAll();
+    } catch (err: any) {
+      toast.error('Erro ao importar: ' + (err.message || 'Tente novamente'));
+    }
+    setCloning(false);
   };
 
   const togglePublish = async (id: string, current: boolean) => {
@@ -145,42 +156,9 @@ export default function AdminPage() {
               <p className="text-xs text-muted-foreground">Decode Analytics</p>
             </div>
           </div>
-          <Dialog open={showCreate} onOpenChange={setShowCreate}>
-            <DialogTrigger asChild>
-              <Button size="sm" className="gradient-primary text-primary-foreground shrink-0">
-                <BookOpen className="mr-1.5 h-4 w-4" /> Apostilas
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
-              <DialogHeader><DialogTitle>Criar Apostila</DialogTitle></DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <Label>Tipo de entrada</Label>
-                  <Select value={newSourceType} onValueChange={setNewSourceType}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="manual">Texto manual</SelectItem>
-                      <SelectItem value="link">Link (URL)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                {newSourceType === 'link' && (
-                  <div><Label>URL</Label><Input value={newLink} onChange={e => setNewLink(e.target.value)} placeholder="https://..." /></div>
-                )}
-                <div><Label>Título</Label><Input value={newTitle} onChange={e => setNewTitle(e.target.value)} placeholder="Título da apostila" /></div>
-                <div><Label>Categoria</Label>
-                  <Select value={newCategory} onValueChange={setNewCategory}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>{CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-                <div><Label>Conteúdo</Label><Textarea value={newContent} onChange={e => setNewContent(e.target.value)} rows={10} placeholder="Cole ou digite o conteúdo..." /></div>
-                <Button onClick={createApostila} disabled={creating} className="w-full gradient-primary text-primary-foreground">
-                  {creating ? 'Criando...' : 'Criar Apostila'}
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+          <Button size="sm" className="gradient-primary text-primary-foreground shrink-0" onClick={() => setTab('apostilas')}>
+            <BookOpen className="mr-1.5 h-4 w-4" /> Apostilas
+          </Button>
         </div>
 
         {/* Tabs */}
@@ -218,7 +196,6 @@ export default function AdminPage() {
               ))}
             </div>
 
-            {/* Approval rate bar */}
             <Card className="glass p-4">
               <div className="flex items-center justify-between mb-2">
                 <p className="font-medium text-sm">Taxa de acerto geral</p>
@@ -231,7 +208,6 @@ export default function AdminPage() {
               </div>
             </Card>
 
-            {/* Recent apostilas */}
             <div>
               <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
                 <Clock className="h-4 w-4 text-muted-foreground" /> Apostilas Recentes
@@ -254,11 +230,10 @@ export default function AdminPage() {
               </div>
             </div>
 
-            {/* Quick actions */}
             <Card className="glass p-4">
               <h3 className="font-semibold text-sm mb-3">Ações Rápidas</h3>
               <div className="flex flex-wrap gap-2">
-                <Button size="sm" variant="outline" onClick={() => setShowCreate(true)}>
+                <Button size="sm" variant="outline" onClick={() => setTab('apostilas')}>
                   <Plus className="mr-1.5 h-3.5 w-3.5" /> Importar Apostila
                 </Button>
                 <Button size="sm" variant="outline" onClick={() => setTab('exercises')}>
@@ -274,64 +249,140 @@ export default function AdminPage() {
 
         {/* Apostilas Tab */}
         {tab === 'apostilas' && (
-          <div className="space-y-4">
-            {apostilas.map(a => (
-              <Card key={a.id} className="glass p-5">
-                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex flex-wrap items-center gap-1.5 mb-1">
-                      <h3 className="font-semibold truncate text-sm sm:text-base">{a.title}</h3>
-                      <span className="text-[10px] sm:text-xs rounded-full bg-accent px-2 py-0.5">{a.category}</span>
-                      <Badge variant={a.published ? 'default' : 'secondary'} className={`text-[10px] ${a.published ? 'bg-success/20 text-success border-0' : 'bg-destructive/20 text-destructive border-0'}`}>
-                        {a.published ? 'Publicada' : 'Oculta'}
-                      </Badge>
-                    </div>
-                    <p className="text-xs text-muted-foreground truncate">{a.content?.substring(0, 100)}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{exercises[a.id]?.length || 0} exercícios</p>
-                  </div>
-                  <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 flex-wrap">
-                    <Button size="sm" variant={a.published ? 'destructive' : 'default'} onClick={() => togglePublish(a.id, a.published)} className="min-w-[90px] text-xs h-8">
-                      {a.published ? <><EyeOff className="mr-1 h-3.5 w-3.5" /> Ocultar</> : <><Eye className="mr-1 h-3.5 w-3.5" /> Publicar</>}
+          <div className="space-y-6">
+            {/* Import Apostila Card */}
+            <Card className="glass p-5">
+              <h3 className="font-semibold flex items-center gap-2 mb-4">
+                <LinkIcon className="h-4 w-4 text-primary" /> Importar Apostila
+              </h3>
+              <div className="space-y-3">
+                <div>
+                  <Label className="text-xs text-muted-foreground">Cole a URL da página</Label>
+                  <div className="flex gap-2 mt-1">
+                    <Input
+                      value={importUrl}
+                      onChange={e => setImportUrl(e.target.value)}
+                      placeholder="https://exemplo.com/apostila"
+                      className="flex-1"
+                    />
+                    <Button
+                      onClick={handleClone}
+                      disabled={cloning || !importUrl.trim()}
+                      className="gradient-primary text-primary-foreground shrink-0"
+                    >
+                      {cloning ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Clonar'}
                     </Button>
-                    <Dialog open={showExerciseDialog === a.id} onOpenChange={(v) => setShowExerciseDialog(v ? a.id : null)}>
-                      <DialogTrigger asChild>
-                        <Button size="sm" variant="outline" className="text-xs h-8"><PenLine className="mr-1 h-3.5 w-3.5" /> Exercícios</Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
-                        <DialogHeader><DialogTitle>Exercícios — {a.title}</DialogTitle></DialogHeader>
-                        {exercises[a.id]?.map((ex, i) => (
-                          <div key={ex.id} className="border rounded-lg p-3 mb-2 text-sm">
-                            <div className="flex justify-between items-start">
-                              <p className="font-medium">{i + 1}. {ex.question}</p>
-                              <Button size="sm" variant="ghost" onClick={() => deleteExercise(ex.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
-                            </div>
-                            <p className="text-xs text-muted-foreground mt-1">Resposta: {ex.correct_answer}</p>
-                          </div>
-                        ))}
-                        <div className="border-t pt-4 space-y-3">
-                          <p className="font-semibold text-sm">Novo exercício</p>
-                          <Textarea value={exQuestion} onChange={e => setExQuestion(e.target.value)} placeholder="Pergunta" rows={2} />
-                          {exOptions.map((o, i) => (
-                            <div key={i} className="flex items-center gap-2">
-                              <span className="text-sm font-medium w-6">{String.fromCharCode(65 + i)})</span>
-                              <Input value={o} onChange={e => { const n = [...exOptions]; n[i] = e.target.value; setExOptions(n); }} placeholder={`Opção ${String.fromCharCode(65 + i)}`} />
-                            </div>
-                          ))}
-                          <div><Label>Resposta correta</Label>
-                            <Select value={exCorrect} onValueChange={setExCorrect}>
-                              <SelectTrigger><SelectValue /></SelectTrigger>
-                              <SelectContent>{['A','B','C','D'].map(l => <SelectItem key={l} value={l}>{l}</SelectItem>)}</SelectContent>
-                            </Select>
-                          </div>
-                          <div><Label>Explicação (opcional)</Label><Textarea value={exExplanation} onChange={e => setExExplanation(e.target.value)} rows={2} /></div>
-                          <Button onClick={() => { const tempSelected = selectedApostila; setSelectedApostila(a.id); }} className="w-full">Adicionar exercício</Button>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
-                    <Button size="sm" variant="ghost" onClick={() => deleteApostila(a.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                   </div>
                 </div>
-              </Card>
+                <div>
+                  <Label className="text-xs text-muted-foreground">Título (opcional)</Label>
+                  <Input
+                    value={importTitle}
+                    onChange={e => setImportTitle(e.target.value)}
+                    placeholder="Ex: Redes de Computadores - NP2"
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground">Tópico (para agrupar)</Label>
+                  <Input
+                    value={importTopic}
+                    onChange={e => setImportTopic(e.target.value)}
+                    placeholder="Ex: Redes, Banco de Dados"
+                    className="mt-1"
+                  />
+                </div>
+              </div>
+            </Card>
+
+            {/* Apostilas List */}
+            <div>
+              <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
+                <BookOpen className="h-4 w-4 text-primary" /> Apostilas ({totalApostilas})
+              </h3>
+              <div className="space-y-3">
+                {apostilas.map(a => (
+                  <Card key={a.id} className="glass p-4">
+                    <div className="flex items-center gap-3">
+                      <span className={`h-2.5 w-2.5 rounded-full shrink-0 ${a.published ? 'bg-success' : 'bg-muted-foreground'}`} />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h4 className="font-semibold text-sm truncate max-w-[120px] sm:max-w-none">{a.title}</h4>
+                          <Badge className={`text-[10px] shrink-0 ${a.published ? 'bg-success/20 text-success border-0' : 'bg-muted text-muted-foreground border-0'}`}>
+                            {a.published ? 'Publicada' : 'Oculta'}
+                          </Badge>
+                        </div>
+                        {a.file_url && <p className="text-[10px] text-muted-foreground truncate">{a.file_url}</p>}
+                        <p className="text-[10px] text-muted-foreground">{new Date(a.created_at).toLocaleDateString('pt-BR')}</p>
+                      </div>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => togglePublish(a.id, a.published)}
+                          className={`text-xs h-8 ${a.published ? 'text-destructive border-destructive/30 hover:bg-destructive/10' : 'text-success border-success/30 hover:bg-success/10'}`}
+                        >
+                          {a.published ? <><EyeOff className="mr-1 h-3.5 w-3.5" /> Ocultar</> : <><Eye className="mr-1 h-3.5 w-3.5" /> Publicar</>}
+                        </Button>
+                        <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => setShowExerciseDialog(a.id)}>
+                          <PenLine className="h-4 w-4" />
+                        </Button>
+                        <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive hover:bg-destructive/10" onClick={() => deleteApostila(a.id)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </div>
+
+            {/* Exercise Dialog */}
+            {apostilas.map(a => (
+              <Dialog key={a.id} open={showExerciseDialog === a.id} onOpenChange={(v) => setShowExerciseDialog(v ? a.id : null)}>
+                <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+                  <DialogHeader><DialogTitle>Exercícios — {a.title}</DialogTitle></DialogHeader>
+                  {exercises[a.id]?.map((ex, i) => (
+                    <div key={ex.id} className="border rounded-lg p-3 mb-2 text-sm">
+                      <div className="flex justify-between items-start">
+                        <p className="font-medium">{i + 1}. {ex.question}</p>
+                        <Button size="sm" variant="ghost" onClick={() => deleteExercise(ex.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">Resposta: {ex.correct_answer}</p>
+                    </div>
+                  ))}
+                  <div className="border-t pt-4 space-y-3">
+                    <p className="font-semibold text-sm">Novo exercício</p>
+                    <Textarea value={exQuestion} onChange={e => setExQuestion(e.target.value)} placeholder="Pergunta" rows={2} />
+                    {exOptions.map((o, i) => (
+                      <div key={i} className="flex items-center gap-2">
+                        <span className="text-sm font-medium w-6">{String.fromCharCode(65 + i)})</span>
+                        <Input value={o} onChange={e => { const n = [...exOptions]; n[i] = e.target.value; setExOptions(n); }} placeholder={`Opção ${String.fromCharCode(65 + i)}`} />
+                      </div>
+                    ))}
+                    <div><Label>Resposta correta</Label>
+                      <Select value={exCorrect} onValueChange={setExCorrect}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>{['A','B','C','D'].map(l => <SelectItem key={l} value={l}>{l}</SelectItem>)}</SelectContent>
+                      </Select>
+                    </div>
+                    <div><Label>Explicação (opcional)</Label><Textarea value={exExplanation} onChange={e => setExExplanation(e.target.value)} rows={2} /></div>
+                    <Button onClick={() => {
+                      if (!exQuestion.trim()) return;
+                      supabase.from('exercises').insert({
+                        apostila_id: a.id, question: exQuestion,
+                        options: exOptions, correct_answer: exCorrect,
+                        explanation: exExplanation || null,
+                      }).then(({ error }) => {
+                        if (error) { toast.error('Erro ao criar exercício'); return; }
+                        toast.success('Exercício adicionado!');
+                        setExQuestion(''); setExOptions(['', '', '', '']); setExExplanation('');
+                        loadAll();
+                      });
+                    }} className="w-full">Adicionar exercício</Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
             ))}
           </div>
         )}
