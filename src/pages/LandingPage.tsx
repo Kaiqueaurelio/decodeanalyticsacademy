@@ -112,14 +112,15 @@ export default function LandingPage() {
               </div>
             </ScrollReveal>
 
-            <ScrollReveal delay={400}>
+            <div style={{ opacity: 1 }}>
               <button
+                type="button"
                 onClick={handleInstallPWA}
-                className="inline-flex items-center gap-2 text-sm text-primary font-medium hover:underline underline-offset-4 transition-colors"
+                className="inline-flex items-center gap-2 text-sm text-primary font-medium hover:underline underline-offset-4 transition-colors cursor-pointer"
               >
                 <Download className="h-4 w-4" /> Instalar no celular
               </button>
-            </ScrollReveal>
+            </div>
           </div>
         </div>
       </section>
