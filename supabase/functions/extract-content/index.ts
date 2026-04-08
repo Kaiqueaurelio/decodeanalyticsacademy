@@ -13,7 +13,7 @@ function isNotionUrl(url: string): boolean {
 async function fetchNotionContent(url: string): Promise<{ text: string; title: string }> {
   // Try fetching with headers that work better for Notion public pages
   const headers: Record<string, string> = {
-    "User-Agent": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
     "Accept-Language": "pt-BR,pt;q=0.9,en;q=0.8",
   };
