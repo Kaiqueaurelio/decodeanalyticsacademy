@@ -24,7 +24,7 @@ type Apostila = Tables<'apostilas'>;
 type Exercise = Tables<'exercises'>;
 type Material = Tables<'materials'>;
 
-const CATEGORIES = ['Redes', 'IA', 'Segurança', 'Cloud', 'Programação', 'Banco de Dados', 'Sistemas Operacionais', 'Outros'];
+// Categories loaded from database
 
 type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials';
 
