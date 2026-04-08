@@ -2,13 +2,14 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useGamification } from '@/hooks/useGamification';
 import { AppHeader } from '@/components/AppHeader';
 import { Watermark } from '@/components/Watermark';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, CheckCircle, XCircle, Trophy, RotateCcw } from 'lucide-react';
+import { ArrowLeft, CheckCircle, XCircle, Trophy, RotateCcw, Timer } from 'lucide-react';
 import { toast } from 'sonner';
 import type { Tables } from '@/integrations/supabase/types';
 
@@ -18,11 +19,16 @@ export default function ExercisesPage() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const gamification = useGamification();
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [answers, setAnswers] = useState<Record<string, { selected: string; correct: boolean } | null>>({});
   const [title, setTitle] = useState('');
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showResults, setShowResults] = useState(false);
+  // Timed mode
+  const [timedMode, setTimedMode] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(0);
+  const [timerActive, setTimerActive] = useState(false);
 
   useEffect(() => {
     if (!id || !user) return;
@@ -35,6 +41,26 @@ export default function ExercisesPage() {
     });
   }, [id, user]);
 
+  // Timer
+  useEffect(() => {
+    if (!timerActive || timeLeft <= 0) return;
+    const t = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1) { setTimerActive(false); setShowResults(true); return 0; }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(t);
+  }, [timerActive, timeLeft]);
+
+  const startTimedMode = () => {
+    setTimedMode(true);
+    setTimeLeft(exercises.length * 60); // 1 min per question
+    setTimerActive(true);
+    setCurrentIndex(0);
+    setShowResults(false);
+  };
+
   const handleAnswer = async (exerciseId: string, selected: string, correctAnswer: string) => {
     if (!user || answers[exerciseId]) return;
     const isCorrect = selected === correctAnswer;
@@ -43,7 +69,22 @@ export default function ExercisesPage() {
     });
     if (error) { toast.error('Erro ao salvar resposta'); return; }
     setAnswers(prev => ({ ...prev, [exerciseId]: { selected, correct: isCorrect } }));
-    toast[isCorrect ? 'success' : 'error'](isCorrect ? 'Correto!' : 'Incorreto');
+
+    // Gamification
+    gamification.addXP(isCorrect ? 10 : 3);
+    gamification.updateStreak();
+
+    // Check badges
+    const totalAnswers = Object.keys(answers).length + 1;
+    if (totalAnswers === 1) gamification.checkAndAwardBadge('first_answer');
+    if (totalAnswers >= 100) gamification.checkAndAwardBadge('answers_100');
+
+    toast[isCorrect ? 'success' : 'error'](isCorrect ? 'Correto! +10 XP' : 'Incorreto +3 XP');
+
+    // Auto-advance in timed mode
+    if (timedMode && currentIndex < exercises.length - 1) {
+      setTimeout(() => setCurrentIndex(prev => prev + 1), 800);
+    }
   };
 
   const answeredCount = exercises.filter(ex => answers[ex.id]).length;
@@ -53,8 +94,16 @@ export default function ExercisesPage() {
   const currentExercise = exercises[currentIndex];
 
   useEffect(() => {
-    if (allAnswered && !showResults) setShowResults(true);
+    if (allAnswered && !showResults) {
+      setShowResults(true);
+      setTimerActive(false);
+      // Check perfect score badge
+      if (pct === 100) gamification.checkAndAwardBadge('perfect_apostila');
+    }
   }, [allAnswered]);
+
+  const timerMins = Math.floor(timeLeft / 60);
+  const timerSecs = timeLeft % 60;
 
   return (
     <div className="min-h-screen bg-background relative">
@@ -66,8 +115,25 @@ export default function ExercisesPage() {
         </Button>
 
         <div className="mb-5 animate-content-show">
-          <h1 className="text-lg font-bold sm:text-xl">Exercícios</h1>
-          <p className="text-muted-foreground text-sm">{title}</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-lg font-bold sm:text-xl">Exercícios</h1>
+              <p className="text-muted-foreground text-sm">{title}</p>
+            </div>
+            {!timedMode && exercises.length > 0 && !showResults && (
+              <Button size="sm" variant="outline" onClick={startTimedMode} className="text-xs gap-1.5">
+                <Timer className="h-3.5 w-3.5" /> Simulado
+              </Button>
+            )}
+          </div>
+          {timedMode && timerActive && (
+            <div className="mt-2 flex items-center gap-2">
+              <Timer className="h-4 w-4 text-primary" />
+              <span className="text-sm font-mono font-bold text-primary">
+                {String(timerMins).padStart(2, '0')}:{String(timerSecs).padStart(2, '0')}
+              </span>
+            </div>
+          )}
           {exercises.length > 0 && (
             <div className="mt-3">
               <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
@@ -91,8 +157,13 @@ export default function ExercisesPage() {
               <span className="flex items-center gap-1 text-success"><CheckCircle className="h-4 w-4" /> {correctCount}</span>
               <span className="flex items-center gap-1 text-destructive"><XCircle className="h-4 w-4" /> {answeredCount - correctCount}</span>
             </div>
+            {timedMode && (
+              <p className="text-xs text-muted-foreground mb-3">
+                ⏱️ Tempo restante: {String(timerMins).padStart(2, '0')}:{String(timerSecs).padStart(2, '0')}
+              </p>
+            )}
             <div className="flex gap-2 justify-center">
-              <Button size="sm" variant="outline" onClick={() => { setShowResults(false); setCurrentIndex(0); }}>
+              <Button size="sm" variant="outline" onClick={() => { setShowResults(false); setCurrentIndex(0); setTimedMode(false); }}>
                 <RotateCcw className="mr-1.5 h-3.5 w-3.5" /> Revisar
               </Button>
               <Button size="sm" onClick={() => navigate('/dashboard')} className="gradient-primary text-primary-foreground">
@@ -108,31 +179,22 @@ export default function ExercisesPage() {
           </Card>
         ) : !showResults && (
           <>
-            {/* Navigation pills */}
             <div className="flex gap-1.5 mb-4 overflow-x-auto pb-1 hide-scrollbar animate-content-show delay-1">
               {exercises.map((ex, i) => {
                 const answered = answers[ex.id];
                 return (
-                  <button
-                    key={ex.id}
-                    onClick={() => setCurrentIndex(i)}
+                  <button key={ex.id} onClick={() => setCurrentIndex(i)}
                     className={`h-7 w-7 rounded-full text-[11px] font-medium shrink-0 smooth-all ${
-                      i === currentIndex
-                        ? 'bg-primary text-primary-foreground shadow-sm'
-                        : answered
-                          ? answered.correct
-                            ? 'bg-success/15 text-success'
-                            : 'bg-destructive/15 text-destructive'
-                          : 'bg-accent text-muted-foreground'
-                    }`}
-                  >
+                      i === currentIndex ? 'bg-primary text-primary-foreground shadow-sm'
+                        : answered ? answered.correct ? 'bg-success/15 text-success' : 'bg-destructive/15 text-destructive'
+                        : 'bg-accent text-muted-foreground'
+                    }`}>
                     {i + 1}
                   </button>
                 );
               })}
             </div>
 
-            {/* Current Exercise */}
             {currentExercise && (() => {
               const answered = answers[currentExercise.id];
               const options = Array.isArray(currentExercise.options) ? currentExercise.options as string[] : [];
@@ -152,12 +214,9 @@ export default function ExercisesPage() {
                         else cls = 'border-border/30 opacity-50';
                       }
                       return (
-                        <button
-                          key={letter}
-                          disabled={!!answered}
+                        <button key={letter} disabled={!!answered}
                           onClick={() => handleAnswer(currentExercise.id, letter, currentExercise.correct_answer)}
-                          className={`w-full text-left p-3 rounded-lg border smooth-all text-sm flex items-center gap-3 ${cls} ${!answered ? 'cursor-pointer active:scale-[0.99]' : 'cursor-default'}`}
-                        >
+                          className={`w-full text-left p-3 rounded-lg border smooth-all text-sm flex items-center gap-3 ${cls} ${!answered ? 'cursor-pointer active:scale-[0.99]' : 'cursor-default'}`}>
                           <span className={`h-7 w-7 rounded-full flex items-center justify-center text-xs font-medium shrink-0 ${
                             answered && isCorrectAnswer ? 'bg-success/20 text-success' : answered && isSelected && !answered.correct ? 'bg-destructive/20 text-destructive' : 'bg-accent text-muted-foreground'
                           }`}>
@@ -175,12 +234,8 @@ export default function ExercisesPage() {
                     </div>
                   )}
                   <div className="flex justify-between mt-4">
-                    <Button size="sm" variant="ghost" disabled={currentIndex === 0} onClick={() => setCurrentIndex(prev => prev - 1)}>
-                      ← Anterior
-                    </Button>
-                    <Button size="sm" variant="ghost" disabled={currentIndex === exercises.length - 1} onClick={() => setCurrentIndex(prev => prev + 1)}>
-                      Próxima →
-                    </Button>
+                    <Button size="sm" variant="ghost" disabled={currentIndex === 0} onClick={() => setCurrentIndex(prev => prev - 1)}>← Anterior</Button>
+                    <Button size="sm" variant="ghost" disabled={currentIndex === exercises.length - 1} onClick={() => setCurrentIndex(prev => prev + 1)}>Próxima →</Button>
                   </div>
                 </Card>
               );
