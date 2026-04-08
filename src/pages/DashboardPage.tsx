@@ -55,8 +55,8 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-background relative">
       <Watermark />
       <AppHeader />
-      <main className="container py-8 relative z-10">
-        <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
+      <main className="container py-6 sm:py-8 px-4 relative z-10">
+        <h1 className="text-xl sm:text-2xl font-bold mb-6">Dashboard</h1>
 
         {/* Stats Cards */}
         <div className="grid gap-4 grid-cols-2 md:grid-cols-4 mb-8">
@@ -66,12 +66,12 @@ export default function DashboardPage() {
             { icon: XCircle, label: 'Erros', value: stats.errors, color: 'text-destructive' },
             { icon: Target, label: 'Aproveitamento', value: `${pct}%`, color: 'text-primary' },
           ].map(s => (
-            <Card key={s.label} className="glass p-4 animate-fade-up">
-              <div className="flex items-center gap-3">
-                <div className="rounded-lg bg-accent p-2.5"><s.icon className={`h-5 w-5 ${s.color}`} /></div>
+            <Card key={s.label} className="glass p-3 sm:p-4 animate-fade-up">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="rounded-lg bg-accent p-2 sm:p-2.5"><s.icon className={`h-4 w-4 sm:h-5 sm:w-5 ${s.color}`} /></div>
                 <div>
-                  <p className="text-2xl font-bold">{s.value}</p>
-                  <p className="text-xs text-muted-foreground">{s.label}</p>
+                  <p className="text-xl sm:text-2xl font-bold">{s.value}</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground">{s.label}</p>
                 </div>
               </div>
             </Card>
@@ -127,9 +127,9 @@ export default function DashboardPage() {
                 </div>
                 <h3 className="font-semibold mb-2 line-clamp-2">{a.title}</h3>
                 <p className="text-xs text-muted-foreground line-clamp-2">{a.content?.substring(0, 120)}...</p>
-                <div className="mt-4 flex gap-2">
-                  <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); navigate(`/apostila/${a.id}`); }}>Estudar</Button>
-                  <Button size="sm" variant="outline" onClick={(e) => { e.stopPropagation(); navigate(`/exercises/${a.id}`); }}>Exercícios</Button>
+                <div className="mt-3 sm:mt-4 flex gap-2">
+                  <Button size="sm" variant="outline" className="text-xs h-8" onClick={(e) => { e.stopPropagation(); navigate(`/apostila/${a.id}`); }}>Estudar</Button>
+                  <Button size="sm" variant="outline" className="text-xs h-8" onClick={(e) => { e.stopPropagation(); navigate(`/exercises/${a.id}`); }}>Exercícios</Button>
                 </div>
               </Card>
             ))}
