@@ -455,12 +455,19 @@ export default function AdminPage() {
                   <div>
                     <Label className="text-xs text-muted-foreground">Cole a URL da página</Label>
                     <div className="flex gap-2 mt-1">
-                      <Input
-                        value={importUrl}
-                        onChange={e => setImportUrl(e.target.value)}
-                        placeholder="https://exemplo.com/apostila"
-                        className="flex-1"
-                      />
+                      <div className="relative flex-1">
+                        <Input
+                          value={importUrl}
+                          onChange={e => setImportUrl(e.target.value)}
+                          placeholder="https://exemplo.com/apostila"
+                          className={`flex-1 ${importUrl.includes('notion') ? 'pr-20' : ''}`}
+                        />
+                        {importUrl.includes('notion') && (
+                          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-semibold bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                            📝 Notion
+                          </span>
+                        )}
+                      </div>
                       <Button
                         onClick={handleExtract}
                         disabled={cloning || !importUrl.trim()}
@@ -469,6 +476,12 @@ export default function AdminPage() {
                         {cloning ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Clonar'}
                       </Button>
                     </div>
+                    {importUrl.includes('notion') && (
+                      <p className="text-[10px] text-primary mt-1 flex items-center gap-1">
+                        <CheckCircle className="h-3 w-3" />
+                        Página do Notion detectada — o conteúdo será importado e exercícios gerados automaticamente pela IA.
+                      </p>
+                    )}
                   </div>
                   <div>
                     <Label className="text-xs text-muted-foreground">Título (opcional)</Label>
