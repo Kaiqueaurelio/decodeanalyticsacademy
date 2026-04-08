@@ -81,6 +81,9 @@
   .gradient-hero {
     background: linear-gradient(160deg, hsl(245, 58%, 97%), hsl(260, 40%, 95%), hsl(220, 30%, 97%));
   }
+  :is(.dark) .gradient-hero {
+    background: linear-gradient(160deg, hsl(245, 20%, 10%), hsl(260, 25%, 12%), hsl(220, 20%, 8%));
+  }
   .text-gradient {
     @apply bg-clip-text text-transparent;
     background-image: linear-gradient(135deg, hsl(var(--primary)), hsl(260, 60%, 52%));
