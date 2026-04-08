@@ -740,142 +740,193 @@ export default function AdminPage() {
         {/* Materials Tab */}
         {tab === 'materials' && (
           <div className="space-y-5">
-            {/* Add Material Card */}
+            {/* Quick Upload Zone - simplified */}
             <Card className="p-5 bg-card border border-border/50 border-t-4 border-t-primary">
-              <h3 className="font-semibold flex items-center gap-2 mb-3 text-sm">
-                <Upload className="h-4 w-4 text-primary" /> Adicionar Material
+              <h3 className="font-semibold flex items-center gap-2 mb-1 text-sm">
+                <Upload className="h-4 w-4 text-primary" /> Upload Rápido
               </h3>
-              <div className="space-y-3">
-                <div>
-                  <Label className="text-xs text-muted-foreground">Título</Label>
-                  <Input value={matTitle} onChange={e => setMatTitle(e.target.value)} placeholder="Nome do material" className="mt-1" />
-                </div>
-                <div>
-                  <Label className="text-xs text-muted-foreground">Descrição (opcional)</Label>
-                  <Textarea value={matDesc} onChange={e => setMatDesc(e.target.value)} placeholder="Breve descrição..." rows={2} className="mt-1" />
-                </div>
-                <div>
-                  <Label className="text-xs text-muted-foreground">Tipo</Label>
-                  <Select value={matType} onValueChange={setMatType}>
-                    <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                       {[
-                        { value: 'link', label: '🔗 Link externo' },
-                        { value: 'pdf', label: '📄 PDF' },
-                        { value: 'image', label: '🖼️ Imagem / Infográfico' },
-                        { value: 'gif', label: '🎞️ GIF' },
-                        { value: 'video', label: '🎬 Vídeo (MP4)' },
-                        { value: 'audio', label: '🎧 Áudio (MP3)' },
-                        { value: 'powerpoint', label: '📊 PowerPoint' },
-                        { value: 'word', label: '📝 Word' },
-                        { value: 'excel', label: '📋 Excel / Tabela' },
-                        { value: 'exam', label: '📝 Prova / Simulado' },
-                        { value: 'other', label: '📎 Outro' },
-                      ].map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
+              <p className="text-xs text-muted-foreground mb-4">Arraste arquivos ou clique para enviar. O tipo é detectado automaticamente.</p>
 
-                {matType === 'link' ? (
-                  <div>
-                    <Label className="text-xs text-muted-foreground">URL</Label>
-                    <Input value={matUrl} onChange={e => setMatUrl(e.target.value)} placeholder="https://..." className="mt-1" />
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                className="hidden"
+                onChange={e => {
+                  const files = Array.from(e.target.files || []);
+                  if (files.length === 1) {
+                    handleFileDrop(files[0]);
+                  } else if (files.length > 1) {
+                    handleMultiUpload(files);
+                  }
+                }}
+                accept="*"
+              />
+
+              {/* Drop zone */}
+              <div
+                onDragOver={onDragOver}
+                onDragLeave={onDragLeave}
+                onDrop={e => {
+                  e.preventDefault();
+                  setDragActive(false);
+                  const files = Array.from(e.dataTransfer.files);
+                  if (files.length === 1) {
+                    handleFileDrop(files[0]);
+                  } else if (files.length > 1) {
+                    handleMultiUpload(files);
+                  }
+                }}
+                onClick={() => !matFile && fileInputRef.current?.click()}
+                className={`relative flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed p-8 cursor-pointer transition-all duration-300 ${
+                  dragActive
+                    ? 'border-primary bg-primary/10 scale-[1.01] shadow-lg shadow-primary/10'
+                    : matFile
+                      ? 'border-primary/40 bg-primary/5 cursor-default'
+                      : 'border-border/60 hover:border-primary/50 hover:bg-muted/30'
+                }`}
+              >
+                {matUploading ? (
+                  <div className="w-full space-y-3">
+                    <div className="flex items-center gap-3">
+                      <Loader2 className="h-5 w-5 text-primary animate-spin shrink-0" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">Enviando{uploadQueue.length > 1 ? ` (${uploadProgress.current}/${uploadProgress.total})` : ''}...</p>
+                        <p className="text-xs text-muted-foreground truncate">{matFile?.name || 'Processando'}</p>
+                      </div>
+                    </div>
+                    <Progress value={uploadQueue.length > 1 ? (uploadProgress.current / uploadProgress.total) * 100 : 50} className="h-2" />
                   </div>
-                ) : (
-                  <div>
-                    <Label className="text-xs text-muted-foreground">Arquivo</Label>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      className="hidden"
-                      onChange={e => { const f = e.target.files?.[0]; if (f) handleFileDrop(f); }}
-                      accept={ACCEPT_MAP[matType] || '*'}
-                    />
-                    <div
-                      onDragOver={onDragOver}
-                      onDragLeave={onDragLeave}
-                      onDrop={onDrop}
-                      onClick={() => fileInputRef.current?.click()}
-                      className={`mt-1 flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 cursor-pointer transition-all duration-200 ${
-                        dragActive
-                          ? 'border-primary bg-primary/10 scale-[1.02]'
-                          : matFile
-                            ? 'border-primary/50 bg-primary/5'
-                            : 'border-border hover:border-primary/40 hover:bg-muted/50'
-                      }`}
-                    >
-                      {matFile ? (
-                        <>
-                          <CheckCircle className="h-8 w-8 text-primary" />
-                          <span className="text-sm font-medium text-foreground truncate max-w-full">{matFile.name}</span>
-                          <span className="text-xs text-muted-foreground">{(matFile.size / 1024 / 1024).toFixed(2)} MB</span>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="text-xs text-destructive"
-                            onClick={e => { e.stopPropagation(); setMatFile(null); }}
-                          >
-                            Remover
-                          </Button>
-                        </>
-                      ) : (
-                        <>
-                          <Upload className={`h-8 w-8 ${dragActive ? 'text-primary' : 'text-muted-foreground'}`} />
-                          <span className="text-sm font-medium text-foreground">
-                            {dragActive ? 'Solte o arquivo aqui' : 'Arraste e solte ou clique para selecionar'}
-                          </span>
-                          <span className="text-xs text-muted-foreground">PDF, Imagem, Vídeo, Áudio, PowerPoint, Word, Excel...</span>
-                        </>
-                      )}
+                ) : matFile ? (
+                  <div className="w-full">
+                    <div className="flex items-center gap-3">
+                      <div className="rounded-lg bg-primary/10 p-2.5 shrink-0">
+                        {(() => {
+                          const icons: Record<string, any> = { pdf: FileText, image: Image, video: Video, audio: Music, powerpoint: Presentation, word: FileText, excel: FileSpreadsheet, gif: Image };
+                          const Icon = icons[matType] || File;
+                          return <Icon className="h-5 w-5 text-primary" />;
+                        })()}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{matFile.name}</p>
+                        <p className="text-xs text-muted-foreground">{(matFile.size / 1024 / 1024).toFixed(2)} MB · {matType.toUpperCase()}</p>
+                      </div>
+                      <Button size="icon" variant="ghost" className="h-8 w-8 shrink-0 text-destructive" onClick={e => { e.stopPropagation(); setMatFile(null); setMatTitle(''); }}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <div className="mt-3 space-y-2">
+                      <Input
+                        value={matTitle}
+                        onChange={e => setMatTitle(e.target.value)}
+                        placeholder="Título do material"
+                        className="text-sm"
+                        onClick={e => e.stopPropagation()}
+                      />
+                      <Input
+                        value={matDesc}
+                        onChange={e => setMatDesc(e.target.value)}
+                        placeholder="Descrição (opcional)"
+                        className="text-sm"
+                        onClick={e => e.stopPropagation()}
+                      />
+                      <Button
+                        className="w-full gradient-primary text-primary-foreground"
+                        disabled={!matTitle.trim()}
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          if (!user || !matFile) return;
+                          setMatUploading(true);
+                          try {
+                            const ext = matFile.name.split('.').pop();
+                            const path = `${user.id}/${Date.now()}.${ext}`;
+                            const { error: uploadErr } = await supabase.storage.from('materials').upload(path, matFile);
+                            if (uploadErr) throw uploadErr;
+                            const { data: urlData } = supabase.storage.from('materials').getPublicUrl(path);
+                            const { error } = await supabase.from('materials').insert({
+                              title: matTitle.trim(),
+                              description: matDesc || null,
+                              type: matType as any,
+                              file_url: urlData.publicUrl,
+                              file_path: path,
+                              created_by: user.id,
+                            });
+                            if (error) throw error;
+                            toast.success('Material adicionado!');
+                            setMatTitle(''); setMatDesc(''); setMatFile(null);
+                            loadAll();
+                          } catch (err: any) {
+                            toast.error('Erro: ' + (err.message || 'Tente novamente'));
+                          }
+                          setMatUploading(false);
+                        }}
+                      >
+                        <Upload className="h-4 w-4 mr-1.5" /> Enviar Material
+                      </Button>
                     </div>
                   </div>
+                ) : (
+                  <>
+                    <div className={`rounded-full p-4 transition-colors duration-200 ${dragActive ? 'bg-primary/20' : 'bg-muted/50'}`}>
+                      <Upload className={`h-7 w-7 transition-colors ${dragActive ? 'text-primary' : 'text-muted-foreground'}`} />
+                    </div>
+                    <div className="text-center">
+                      <p className="text-sm font-medium">
+                        {dragActive ? 'Solte para enviar' : 'Arraste arquivos aqui'}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5">ou <span className="text-primary underline underline-offset-2">clique para selecionar</span></p>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5 justify-center mt-1">
+                      {['PDF', 'IMG', 'MP4', 'MP3', 'PPTX', 'DOC', 'XLS'].map(t => (
+                        <span key={t} className="text-[9px] font-medium px-2 py-0.5 rounded-full bg-muted text-muted-foreground">{t}</span>
+                      ))}
+                    </div>
+                  </>
                 )}
-
-                <Button
-                  className="w-full gradient-primary text-primary-foreground"
-                  disabled={matUploading || !matTitle.trim() || (matType === 'link' ? !matUrl.trim() : !matFile)}
-                  onClick={async () => {
-                    if (!user) return;
-                    setMatUploading(true);
-                    try {
-                      let fileUrl = '';
-                      let filePath = '';
-
-                      if (matType === 'link') {
-                        fileUrl = matUrl.trim();
-                      } else if (matFile) {
-                        const ext = matFile.name.split('.').pop();
-                        const path = `${user.id}/${Date.now()}.${ext}`;
-                        const { error: uploadErr } = await supabase.storage.from('materials').upload(path, matFile);
-                        if (uploadErr) throw uploadErr;
-                        const { data: urlData } = supabase.storage.from('materials').getPublicUrl(path);
-                        fileUrl = urlData.publicUrl;
-                        filePath = path;
-                      }
-
-                      const { error } = await supabase.from('materials').insert({
-                        title: matTitle.trim(),
-                        description: matDesc || null,
-                        type: matType as any,
-                        file_url: fileUrl || null,
-                        file_path: filePath || null,
-                        created_by: user.id,
-                      });
-                      if (error) throw error;
-                      toast.success('Material adicionado!');
-                      setMatTitle(''); setMatDesc(''); setMatUrl(''); setMatFile(null);
-                      loadAll();
-                    } catch (err: any) {
-                      toast.error('Erro: ' + (err.message || 'Tente novamente'));
-                    }
-                    setMatUploading(false);
-                  }}
-                >
-                  {matUploading ? <Loader2 className="h-4 w-4 animate-spin mr-1.5" /> : <Plus className="h-4 w-4 mr-1.5" />}
-                  {matUploading ? 'Enviando...' : 'Adicionar Material'}
-                </Button>
               </div>
+
+              {/* Link mode toggle */}
+              <div className="mt-3 flex items-center gap-2">
+                <button
+                  onClick={() => { setMatType('link'); setMatFile(null); }}
+                  className={`text-xs flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-colors ${matType === 'link' && !matFile ? 'bg-primary/10 text-primary font-medium' : 'text-muted-foreground hover:text-foreground'}`}
+                >
+                  <LinkIcon className="h-3 w-3" /> Adicionar por link
+                </button>
+              </div>
+
+              {matType === 'link' && !matFile && (
+                <div className="mt-3 space-y-2 animate-content-show">
+                  <Input value={matUrl} onChange={e => setMatUrl(e.target.value)} placeholder="https://..." />
+                  <Input value={matTitle} onChange={e => setMatTitle(e.target.value)} placeholder="Título do material" />
+                  <Button
+                    className="w-full gradient-primary text-primary-foreground"
+                    disabled={matUploading || !matTitle.trim() || !matUrl.trim()}
+                    onClick={async () => {
+                      if (!user) return;
+                      setMatUploading(true);
+                      try {
+                        const { error } = await supabase.from('materials').insert({
+                          title: matTitle.trim(),
+                          description: matDesc || null,
+                          type: 'link' as any,
+                          file_url: matUrl.trim(),
+                          created_by: user.id,
+                        });
+                        if (error) throw error;
+                        toast.success('Link adicionado!');
+                        setMatTitle(''); setMatDesc(''); setMatUrl('');
+                        loadAll();
+                      } catch (err: any) {
+                        toast.error('Erro: ' + (err.message || 'Tente novamente'));
+                      }
+                      setMatUploading(false);
+                    }}
+                  >
+                    <Plus className="h-4 w-4 mr-1.5" /> Adicionar Link
+                  </Button>
+                </div>
+              )}
             </Card>
 
             {/* Materials List */}
