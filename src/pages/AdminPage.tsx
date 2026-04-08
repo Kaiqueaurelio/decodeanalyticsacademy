@@ -84,6 +84,8 @@ export default function AdminPage() {
     setExercises(map);
     const { data: ans } = await supabase.from('answers').select('*');
     setAllAnswers(ans || []);
+    const { data: mats } = await supabase.from('materials').select('*').order('created_at', { ascending: false });
+    setMaterials(mats || []);
   };
 
   const handleExtract = async () => {
