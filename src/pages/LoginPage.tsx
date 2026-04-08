@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,6 +15,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
+  const [isReset, setIsReset] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -27,6 +29,22 @@ export default function LoginPage() {
     } else {
       toast.success(isSignUp ? 'Conta criada com sucesso!' : 'Login realizado!');
       navigate('/dashboard');
+    }
+  };
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) { toast.error('Digite seu email'); return; }
+    setLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setLoading(false);
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success('Email de recuperação enviado! Verifique sua caixa de entrada.');
+      setIsReset(false);
     }
   };
 
@@ -49,71 +67,115 @@ export default function LoginPage() {
             <div className="text-center space-y-3">
               <img src={logoDark} alt="Decode Analytics" className="mx-auto h-14 w-14 rounded-xl object-cover" />
               <div>
-                <h1 className="text-2xl font-bold">{isSignUp ? 'Criar Conta' : 'Bem-vindo'}</h1>
+                <h1 className="text-2xl font-bold">
+                  {isReset ? 'Recuperar Senha' : isSignUp ? 'Criar Conta' : 'Bem-vindo'}
+                </h1>
                 <p className="text-sm text-muted-foreground mt-1">
-                  {isSignUp ? 'Crie sua conta Decode Analytics' : 'Entre na sua conta Decode Analytics'}
+                  {isReset
+                    ? 'Digite seu email para receber o link de recuperação'
+                    : isSignUp
+                    ? 'Crie sua conta Decode Analytics'
+                    : 'Entre na sua conta Decode Analytics'}
                 </p>
               </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  required
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  placeholder="seu@email.com"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Senha</Label>
-                <div className="relative">
+            {isReset ? (
+              <form onSubmit={handleResetPassword} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="resetEmail">Email</Label>
                   <Input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
+                    id="resetEmail"
+                    type="email"
                     required
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="pr-10"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    placeholder="seu@email.com"
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
                 </div>
-              </div>
-              <Button type="submit" className="w-full gradient-primary text-primary-foreground" disabled={loading}>
-                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isSignUp ? 'Criar conta' : 'Entrar'}
-              </Button>
-            </form>
+                <Button type="submit" className="w-full gradient-primary text-primary-foreground" disabled={loading}>
+                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Enviar Link
+                </Button>
+                <button
+                  type="button"
+                  onClick={() => setIsReset(false)}
+                  className="w-full text-center text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Voltar ao login
+                </button>
+              </form>
+            ) : (
+              <>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      required
+                      value={email}
+                      onChange={e => setEmail(e.target.value)}
+                      placeholder="seu@email.com"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Senha</Label>
+                    <div className="relative">
+                      <Input
+                        id="password"
+                        type={showPassword ? 'text' : 'password'}
+                        required
+                        value={password}
+                        onChange={e => setPassword(e.target.value)}
+                        placeholder="••••••••"
+                        className="pr-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                  </div>
+                  <Button type="submit" className="w-full gradient-primary text-primary-foreground" disabled={loading}>
+                    {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {isSignUp ? 'Criar conta' : 'Entrar'}
+                  </Button>
+                  {!isSignUp && (
+                    <button
+                      type="button"
+                      onClick={() => setIsReset(true)}
+                      className="w-full text-center text-xs text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      Esqueceu a senha?
+                    </button>
+                  )}
+                </form>
 
-            {/* Divider */}
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-border" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">OU</span>
-              </div>
-            </div>
+                {/* Divider */}
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t border-border" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-card px-2 text-muted-foreground">OU</span>
+                  </div>
+                </div>
 
-            {/* Toggle button */}
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full"
-              onClick={() => setIsSignUp(!isSignUp)}
-            >
-              {isSignUp ? 'Entrar' : 'Criar conta'}
-            </Button>
+                {/* Toggle button */}
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setIsSignUp(!isSignUp)}
+                >
+                  {isSignUp ? 'Entrar' : 'Criar conta'}
+                </Button>
+              </>
+            )}
           </div>
 
           <p className="text-center text-xs text-muted-foreground">
