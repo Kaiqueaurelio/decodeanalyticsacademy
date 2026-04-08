@@ -14,6 +14,41 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_logs: {
+        Row: {
+          action: Database["public"]["Enums"]["activity_action"]
+          created_at: string
+          id: string
+          ip_address: string | null
+          material_id: string | null
+          user_id: string
+        }
+        Insert: {
+          action: Database["public"]["Enums"]["activity_action"]
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          material_id?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: Database["public"]["Enums"]["activity_action"]
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          material_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_logs_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "materials"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       answers: {
         Row: {
           created_at: string
@@ -88,6 +123,62 @@ export type Database = {
         }
         Relationships: []
       }
+      categories: {
+        Row: {
+          created_at: string
+          icon: string | null
+          id: string
+          name: string
+          slug: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          icon?: string | null
+          id?: string
+          name: string
+          slug: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          icon?: string | null
+          id?: string
+          name?: string
+          slug?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      downloads: {
+        Row: {
+          downloaded_at: string
+          id: string
+          material_id: string
+          user_id: string
+        }
+        Insert: {
+          downloaded_at?: string
+          id?: string
+          material_id: string
+          user_id: string
+        }
+        Update: {
+          downloaded_at?: string
+          id?: string
+          material_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "downloads_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "materials"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       exercises: {
         Row: {
           apostila_id: string
@@ -126,29 +217,100 @@ export type Database = {
           },
         ]
       }
+      materials: {
+        Row: {
+          category_id: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          file_path: string | null
+          file_url: string | null
+          id: string
+          title: string
+          type: Database["public"]["Enums"]["material_type"]
+        }
+        Insert: {
+          category_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          file_path?: string | null
+          file_url?: string | null
+          id?: string
+          title: string
+          type?: Database["public"]["Enums"]["material_type"]
+        }
+        Update: {
+          category_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          file_path?: string | null
+          file_url?: string | null
+          id?: string
+          title?: string
+          type?: Database["public"]["Enums"]["material_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "materials_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
           created_at: string
-          display_name: string | null
+          email: string
+          full_name: string
           id: string
-          updated_at: string
           user_id: string
         }
         Insert: {
           avatar_url?: string | null
           created_at?: string
-          display_name?: string | null
+          email?: string
+          full_name?: string
           id?: string
-          updated_at?: string
           user_id: string
         }
         Update: {
           avatar_url?: string | null
           created_at?: string
-          display_name?: string | null
+          email?: string
+          full_name?: string
           id?: string
-          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      security_alerts: {
+        Row: {
+          alert_type: string
+          created_at: string
+          description: string | null
+          id: string
+          resolved: boolean
+          user_id: string
+        }
+        Insert: {
+          alert_type: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          resolved?: boolean
+          user_id: string
+        }
+        Update: {
+          alert_type?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          resolved?: boolean
           user_id?: string
         }
         Relationships: []
@@ -185,7 +347,26 @@ export type Database = {
       }
     }
     Enums: {
+      activity_action:
+        | "view"
+        | "download"
+        | "screenshot"
+        | "login"
+        | "logout"
+        | "unauthorized_access"
       app_role: "admin" | "user"
+      material_type:
+        | "pdf"
+        | "image"
+        | "video"
+        | "audio"
+        | "powerpoint"
+        | "link"
+        | "exam"
+        | "word"
+        | "excel"
+        | "gif"
+        | "other"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -313,7 +494,28 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      activity_action: [
+        "view",
+        "download",
+        "screenshot",
+        "login",
+        "logout",
+        "unauthorized_access",
+      ],
       app_role: ["admin", "user"],
+      material_type: [
+        "pdf",
+        "image",
+        "video",
+        "audio",
+        "powerpoint",
+        "link",
+        "exam",
+        "word",
+        "excel",
+        "gif",
+        "other",
+      ],
     },
   },
 } as const
