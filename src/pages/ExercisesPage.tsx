@@ -39,103 +39,90 @@ export default function ExercisesPage() {
     if (!user || answers[exerciseId]) return;
     const isCorrect = selected === correctAnswer;
     const { error } = await supabase.from('answers').insert({
-      user_id: user.id,
-      exercise_id: exerciseId,
-      selected_answer: selected,
-      is_correct: isCorrect,
+      user_id: user.id, exercise_id: exerciseId, selected_answer: selected, is_correct: isCorrect,
     });
     if (error) { toast.error('Erro ao salvar resposta'); return; }
     setAnswers(prev => ({ ...prev, [exerciseId]: { selected, correct: isCorrect } }));
-    
-    if (isCorrect) {
-      toast.success('✅ Correto!');
-    } else {
-      toast.error('❌ Incorreto');
-    }
+    toast[isCorrect ? 'success' : 'error'](isCorrect ? 'Correto!' : 'Incorreto');
   };
 
   const answeredCount = exercises.filter(ex => answers[ex.id]).length;
   const correctCount = exercises.filter(ex => answers[ex.id]?.correct).length;
   const allAnswered = exercises.length > 0 && answeredCount === exercises.length;
   const pct = answeredCount > 0 ? Math.round((correctCount / answeredCount) * 100) : 0;
-
   const currentExercise = exercises[currentIndex];
 
-  // Check if all exercises have been answered and show results
   useEffect(() => {
-    if (allAnswered && !showResults) {
-      setShowResults(true);
-    }
+    if (allAnswered && !showResults) setShowResults(true);
   }, [allAnswered]);
 
   return (
     <div className="min-h-screen bg-background relative">
       <Watermark />
       <AppHeader />
-      <main className="container py-6 sm:py-8 px-4 relative z-10 max-w-2xl">
+      <main className="container py-6 px-4 relative z-10 max-w-2xl">
         <Button variant="ghost" size="sm" className="mb-3" onClick={() => navigate('/dashboard')}>
           <ArrowLeft className="mr-1.5 h-4 w-4" /> Voltar
         </Button>
 
-        {/* Header */}
-        <div className="mb-5">
-          <h1 className="text-xl sm:text-2xl font-bold">Exercícios de Fixação</h1>
-          <p className="text-muted-foreground text-sm mt-0.5">{title}</p>
+        <div className="mb-5 animate-content-show">
+          <h1 className="text-lg font-bold sm:text-xl">Exercícios</h1>
+          <p className="text-muted-foreground text-sm">{title}</p>
           {exercises.length > 0 && (
             <div className="mt-3">
               <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
-                <span>{answeredCount} de {exercises.length} respondidas</span>
-                {answeredCount > 0 && <span className="font-medium text-primary">{pct}% acerto</span>}
+                <span>{answeredCount}/{exercises.length} respondidas</span>
+                {answeredCount > 0 && <span className="font-medium text-primary">{pct}%</span>}
               </div>
-              <Progress value={(answeredCount / exercises.length) * 100} className="h-2" />
+              <Progress value={(answeredCount / exercises.length) * 100} className="h-1.5" />
             </div>
           )}
         </div>
 
-        {/* Results Summary */}
+        {/* Results */}
         {showResults && (
-          <Card className="glass p-5 mb-6 animate-fade-up text-center">
-            <Trophy className={`h-10 w-10 mx-auto mb-3 ${pct >= 70 ? 'text-success' : pct >= 50 ? 'text-warning' : 'text-destructive'}`} />
-            <h2 className="text-xl font-bold mb-1">
-              {pct >= 70 ? 'Excelente! 🎉' : pct >= 50 ? 'Bom trabalho! 👍' : 'Continue estudando! 📚'}
+          <Card className="p-6 mb-6 animate-card-enter text-center bg-card border border-border/50">
+            <Trophy className={`h-8 w-8 mx-auto mb-2 ${pct >= 70 ? 'text-success' : pct >= 50 ? 'text-warning' : 'text-destructive'}`} />
+            <h2 className="text-lg font-bold mb-1">
+              {pct >= 70 ? 'Excelente!' : pct >= 50 ? 'Bom trabalho!' : 'Continue estudando'}
             </h2>
-            <p className="text-3xl font-bold text-primary mb-2">{pct}%</p>
+            <p className="text-2xl font-bold text-primary mb-2">{pct}%</p>
             <div className="flex justify-center gap-4 text-sm mb-4">
-              <span className="flex items-center gap-1 text-success"><CheckCircle className="h-4 w-4" /> {correctCount} acertos</span>
-              <span className="flex items-center gap-1 text-destructive"><XCircle className="h-4 w-4" /> {answeredCount - correctCount} erros</span>
+              <span className="flex items-center gap-1 text-success"><CheckCircle className="h-4 w-4" /> {correctCount}</span>
+              <span className="flex items-center gap-1 text-destructive"><XCircle className="h-4 w-4" /> {answeredCount - correctCount}</span>
             </div>
             <div className="flex gap-2 justify-center">
               <Button size="sm" variant="outline" onClick={() => { setShowResults(false); setCurrentIndex(0); }}>
-                <RotateCcw className="mr-1.5 h-4 w-4" /> Revisar
+                <RotateCcw className="mr-1.5 h-3.5 w-3.5" /> Revisar
               </Button>
               <Button size="sm" onClick={() => navigate('/dashboard')} className="gradient-primary text-primary-foreground">
-                Voltar ao Dashboard
+                Dashboard
               </Button>
             </div>
           </Card>
         )}
 
         {exercises.length === 0 ? (
-          <Card className="glass p-12 text-center text-muted-foreground">
-            <p>Nenhum exercício disponível para esta apostila.</p>
+          <Card className="p-12 text-center text-muted-foreground bg-card border border-border/50">
+            <p className="text-sm">Nenhum exercício disponível.</p>
           </Card>
         ) : !showResults && (
           <>
             {/* Navigation pills */}
-            <div className="flex gap-1.5 mb-4 overflow-x-auto pb-1 hide-scrollbar">
+            <div className="flex gap-1.5 mb-4 overflow-x-auto pb-1 hide-scrollbar animate-content-show delay-1">
               {exercises.map((ex, i) => {
                 const answered = answers[ex.id];
                 return (
                   <button
                     key={ex.id}
                     onClick={() => setCurrentIndex(i)}
-                    className={`h-8 w-8 rounded-full text-xs font-medium shrink-0 transition-all ${
+                    className={`h-7 w-7 rounded-full text-[11px] font-medium shrink-0 smooth-all ${
                       i === currentIndex
-                        ? 'bg-primary text-primary-foreground'
+                        ? 'bg-primary text-primary-foreground shadow-sm'
                         : answered
                           ? answered.correct
-                            ? 'bg-success/20 text-success'
-                            : 'bg-destructive/20 text-destructive'
+                            ? 'bg-success/15 text-success'
+                            : 'bg-destructive/15 text-destructive'
                           : 'bg-accent text-muted-foreground'
                     }`}
                   >
@@ -150,33 +137,31 @@ export default function ExercisesPage() {
               const answered = answers[currentExercise.id];
               const options = Array.isArray(currentExercise.options) ? currentExercise.options as string[] : [];
               return (
-                <Card className="glass p-5 sm:p-6 animate-fade-up">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Badge variant="secondary" className="text-[10px]">Questão {currentIndex + 1} de {exercises.length}</Badge>
-                  </div>
-                  <p className="font-semibold mb-4 text-sm sm:text-base leading-relaxed">{currentExercise.question}</p>
-                  <div className="space-y-2.5">
+                <Card key={currentExercise.id} className="p-5 animate-card-enter bg-card border border-border/50">
+                  <Badge variant="secondary" className="text-[10px] mb-3">{currentIndex + 1}/{exercises.length}</Badge>
+                  <p className="font-medium mb-4 text-sm leading-relaxed">{currentExercise.question}</p>
+                  <div className="space-y-2">
                     {options.map((opt, oi) => {
                       const letter = String.fromCharCode(65 + oi);
                       const isSelected = answered?.selected === letter;
                       const isCorrectAnswer = letter === currentExercise.correct_answer;
-                      let classes = 'border-border hover:border-primary hover:bg-accent';
+                      let cls = 'border-border/60 hover:border-primary/40 hover:bg-accent/50';
                       if (answered) {
-                        if (isCorrectAnswer) classes = 'border-success bg-success/10';
-                        else if (isSelected && !answered.correct) classes = 'border-destructive bg-destructive/10';
-                        else classes = 'border-border opacity-60';
+                        if (isCorrectAnswer) cls = 'border-success/40 bg-success/5';
+                        else if (isSelected && !answered.correct) cls = 'border-destructive/40 bg-destructive/5';
+                        else cls = 'border-border/30 opacity-50';
                       }
                       return (
                         <button
                           key={letter}
                           disabled={!!answered}
                           onClick={() => handleAnswer(currentExercise.id, letter, currentExercise.correct_answer)}
-                          className={`w-full text-left p-3 sm:p-3.5 rounded-xl border-2 transition-all text-sm flex items-center gap-3 ${classes} ${!answered ? 'cursor-pointer active:scale-[0.98]' : 'cursor-default'}`}
+                          className={`w-full text-left p-3 rounded-lg border smooth-all text-sm flex items-center gap-3 ${cls} ${!answered ? 'cursor-pointer active:scale-[0.99]' : 'cursor-default'}`}
                         >
-                          <span className={`h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
-                            answered && isCorrectAnswer ? 'bg-success text-white' : answered && isSelected && !answered.correct ? 'bg-destructive text-white' : 'bg-accent'
+                          <span className={`h-7 w-7 rounded-full flex items-center justify-center text-xs font-medium shrink-0 ${
+                            answered && isCorrectAnswer ? 'bg-success/20 text-success' : answered && isSelected && !answered.correct ? 'bg-destructive/20 text-destructive' : 'bg-accent text-muted-foreground'
                           }`}>
-                            {answered && isCorrectAnswer ? <CheckCircle className="h-4 w-4" /> : answered && isSelected && !answered.correct ? <XCircle className="h-4 w-4" /> : letter}
+                            {answered && isCorrectAnswer ? <CheckCircle className="h-3.5 w-3.5" /> : answered && isSelected && !answered.correct ? <XCircle className="h-3.5 w-3.5" /> : letter}
                           </span>
                           <span className="flex-1">{opt}</span>
                         </button>
@@ -184,28 +169,16 @@ export default function ExercisesPage() {
                     })}
                   </div>
                   {answered && currentExercise.explanation && (
-                    <div className="mt-4 p-3 rounded-xl bg-accent/50 text-sm">
-                      <p className="font-medium text-xs text-primary mb-1">💡 Explicação:</p>
-                      <p className="text-muted-foreground">{currentExercise.explanation}</p>
+                    <div className="mt-4 p-3 rounded-lg bg-accent/40 text-sm">
+                      <p className="font-medium text-xs text-primary mb-1">Explicação:</p>
+                      <p className="text-muted-foreground text-xs leading-relaxed">{currentExercise.explanation}</p>
                     </div>
                   )}
-
-                  {/* Navigation */}
-                  <div className="flex justify-between mt-5">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      disabled={currentIndex === 0}
-                      onClick={() => setCurrentIndex(prev => prev - 1)}
-                    >
+                  <div className="flex justify-between mt-4">
+                    <Button size="sm" variant="ghost" disabled={currentIndex === 0} onClick={() => setCurrentIndex(prev => prev - 1)}>
                       ← Anterior
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      disabled={currentIndex === exercises.length - 1}
-                      onClick={() => setCurrentIndex(prev => prev + 1)}
-                    >
+                    <Button size="sm" variant="ghost" disabled={currentIndex === exercises.length - 1} onClick={() => setCurrentIndex(prev => prev + 1)}>
                       Próxima →
                     </Button>
                   </div>
