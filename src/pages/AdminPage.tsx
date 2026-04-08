@@ -272,6 +272,43 @@ export default function AdminPage() {
     setImportContent(''); setImportExercises([]); setImportStep('url');
   };
 
+  const handleBatchImport = async () => {
+    if (!user || batchRunning) return;
+    const urls = batchUrls.split('\n').map(u => u.trim()).filter(u => u.startsWith('http'));
+    if (urls.length === 0) { toast.error('Cole pelo menos uma URL válida'); return; }
+    setBatchRunning(true);
+    setBatchProgress({ current: 0, total: urls.length, results: [] });
+    for (let i = 0; i < urls.length; i++) {
+      const url = urls[i];
+      setBatchProgress(prev => ({ ...prev, current: i + 1 }));
+      try {
+        const { data, error } = await supabase.functions.invoke('extract-content', { body: { url } });
+        if (error) throw error;
+        const isNotion = url.includes('notion.site') || url.includes('notion.so');
+        const { data: newApostila, error: insertErr } = await supabase.from('apostilas').insert({
+          title: data.title || 'Sem título', content: data.content || '',
+          category: data.category || 'Geral', source_type: isNotion ? 'notion' : 'link',
+          file_url: isNotion ? null : url, created_by: user.id, published: false,
+        }).select().single();
+        if (insertErr) throw insertErr;
+        if (data.exercises?.length > 0 && newApostila) {
+          await supabase.from('exercises').insert(data.exercises.map((ex: any) => ({
+            apostila_id: newApostila.id, question: ex.question,
+            options: ex.options, correct_answer: ex.correct_answer,
+            explanation: ex.explanation || null,
+          })));
+        }
+        setBatchProgress(prev => ({ ...prev, results: [...prev.results, { url, title: data.title || url, status: 'ok' }] }));
+      } catch (err: any) {
+        setBatchProgress(prev => ({ ...prev, results: [...prev.results, { url, title: url, status: 'error', error: err.message }] }));
+      }
+    }
+    const finalResults = batchProgress.results;
+    setBatchRunning(false);
+    toast.success(`Importação em lote concluída!`);
+    loadAll();
+  };
+
   const togglePublish = async (id: string, current: boolean) => {
     await supabase.from('apostilas').update({ published: !current }).eq('id', id);
     toast.success(!current ? 'Apostila publicada!' : 'Apostila ocultada!');
