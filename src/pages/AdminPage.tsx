@@ -28,6 +28,26 @@ const CATEGORIES = ['Redes', 'IA', 'Segurança', 'Cloud', 'Programação', 'Banc
 
 type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials';
 
+const ACCEPT_MAP: Record<string, string> = {
+  pdf: '.pdf',
+  image: 'image/*',
+  gif: '.gif,image/gif',
+  video: 'video/*,.mp4,.mov,.avi,.mkv',
+  audio: 'audio/*,.mp3,.wav,.m4a,.ogg',
+  powerpoint: '.ppt,.pptx',
+  word: '.doc,.docx',
+  excel: '.xls,.xlsx',
+  other: '*',
+};
+
+const TYPE_FROM_EXT: Record<string, string> = {
+  pdf: 'pdf', png: 'image', jpg: 'image', jpeg: 'image', webp: 'image', svg: 'image',
+  gif: 'gif', mp4: 'video', mov: 'video', avi: 'video', mkv: 'video',
+  mp3: 'audio', wav: 'audio', m4a: 'audio', ogg: 'audio',
+  ppt: 'powerpoint', pptx: 'powerpoint', doc: 'word', docx: 'word',
+  xls: 'excel', xlsx: 'excel',
+};
+
 export default function AdminPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
