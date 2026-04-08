@@ -6,6 +6,7 @@ type AuthCtx = {
   user: User | null;
   session: Session | null;
   isAdmin: boolean;
+  isBlocked: boolean;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string) => Promise<{ error: Error | null }>;
@@ -18,6 +19,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isBlocked, setIsBlocked] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const checkAdmin = async (userId: string) => {
@@ -34,18 +36,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const checkBlocked = async (userId: string) => {
+    try {
+      const { data } = await supabase
+        .from('profiles')
+        .select('is_blocked')
+        .eq('user_id', userId)
+        .maybeSingle();
+      setIsBlocked(!!(data as any)?.is_blocked);
+    } catch {
+      setIsBlocked(false);
+    }
+  };
+
   useEffect(() => {
     // Set up auth state listener FIRST (per Supabase docs)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        // Use setTimeout to avoid blocking the auth callback
         setTimeout(() => {
           checkAdmin(session.user.id);
+          checkBlocked(session.user.id);
         }, 0);
       } else {
         setIsAdmin(false);
+        setIsBlocked(false);
       }
       setLoading(false);
     });
@@ -56,6 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(session?.user ?? null);
       if (session?.user) {
         checkAdmin(session.user.id);
+        checkBlocked(session.user.id);
       }
       setLoading(false);
     }).catch(() => {
@@ -80,7 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, isAdmin, loading, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ user, session, isAdmin, isBlocked, loading, signIn, signUp, signOut }}>
       {children}
     </AuthContext.Provider>
   );

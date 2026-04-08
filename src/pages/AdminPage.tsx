@@ -15,7 +15,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import {
   Plus, Trash2, Eye, EyeOff, BookOpen, FileText, PenLine, ArrowLeft,
   LayoutDashboard, CheckCircle, TrendingUp, Upload, BarChart3, Clock,
-  Link as LinkIcon, Loader2, AlertCircle, Edit, Download, File, Image, Video, Music, FileSpreadsheet, Presentation
+  Link as LinkIcon, Loader2, AlertCircle, Edit, Download, File, Image, Video, Music, FileSpreadsheet, Presentation,
+  Users, ShieldBan, ShieldCheck
 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { Tables } from '@/integrations/supabase/types';
@@ -59,7 +60,7 @@ function CategorySelect({ value, onValueChange, placeholder }: { value: string; 
 
 const CategoriesCtx = createContext<{ categories: { name: string; sort_order: number }[] }>({ categories: [] });
 
-type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials';
+type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users';
 
 const ACCEPT_MAP: Record<string, string> = {
   pdf: '.pdf',
@@ -90,6 +91,7 @@ export default function AdminPage() {
   const [dbCategories, setDbCategories] = useState<{ name: string; sort_order: number }[]>([]);
   const [allAnswers, setAllAnswers] = useState<any[]>([]);
   const [materials, setMaterials] = useState<Material[]>([]);
+  const [users, setUsers] = useState<{ id: string; user_id: string; full_name: string; email: string; is_blocked: boolean; created_at: string }[]>([]);
   const [showExerciseDialog, setShowExerciseDialog] = useState<string | null>(null);
   const [selectedApostila, setSelectedApostila] = useState('');
 
@@ -185,12 +187,13 @@ export default function AdminPage() {
   useEffect(() => { loadAll(); }, []);
 
   const loadAll = async () => {
-    const [{ data: ap }, { data: ex }, { data: ans }, { data: mats }, { data: cats }] = await Promise.all([
+    const [{ data: ap }, { data: ex }, { data: ans }, { data: mats }, { data: cats }, { data: profs }] = await Promise.all([
       supabase.from('apostilas').select('*').order('created_at', { ascending: false }),
       supabase.from('exercises').select('*'),
       supabase.from('answers').select('*'),
       supabase.from('materials').select('*').order('created_at', { ascending: false }),
       supabase.from('categories').select('*').order('sort_order', { ascending: true }),
+      supabase.from('profiles').select('*').order('created_at', { ascending: false }),
     ]);
     setApostilas(ap || []);
     const map: Record<string, Exercise[]> = {};
@@ -201,6 +204,7 @@ export default function AdminPage() {
     setExercises(map);
     setAllAnswers(ans || []);
     setMaterials(mats || []);
+    setUsers((profs || []).map(p => ({ id: p.id, user_id: p.user_id, full_name: p.full_name, email: p.email, is_blocked: (p as any).is_blocked ?? false, created_at: p.created_at })));
     setDbCategories((cats || []).map(c => ({ name: c.name, sort_order: c.sort_order })));
   };
 
@@ -364,6 +368,7 @@ export default function AdminPage() {
     { id: 'apostilas' as Tab, label: 'Apostilas', icon: BookOpen },
     { id: 'exercises' as Tab, label: 'Exercícios', icon: PenLine },
     { id: 'materials' as Tab, label: 'Materiais', icon: FileText },
+    { id: 'users' as Tab, label: 'Usuários', icon: Users },
   ];
 
   return (
@@ -1161,6 +1166,63 @@ export default function AdminPage() {
                 )}
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Users Tab */}
+        {tab === 'users' && (
+          <div className="space-y-5">
+            <Card className="p-5 bg-card border border-border/50 border-t-4 border-t-primary">
+              <h3 className="font-semibold flex items-center gap-2 text-sm mb-1">
+                <Users className="h-4 w-4 text-primary" /> Gerenciar Usuários
+              </h3>
+              <p className="text-[10px] text-muted-foreground mb-4">Bloqueie ou desbloqueie usuários da plataforma.</p>
+
+              <div className="space-y-2">
+                {users.map(u => (
+                  <Card key={u.id} className={`p-3 border ${u.is_blocked ? 'border-destructive/40 bg-destructive/5' : 'border-border/50 bg-card'}`}>
+                    <div className="flex items-center gap-3">
+                      <div className={`rounded-full p-2 shrink-0 ${u.is_blocked ? 'bg-destructive/15' : 'bg-accent'}`}>
+                        {u.is_blocked ? <ShieldBan className="h-4 w-4 text-destructive" /> : <ShieldCheck className="h-4 w-4 text-primary" />}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{u.full_name || 'Sem nome'}</p>
+                        <p className="text-[10px] text-muted-foreground truncate">{u.email} · {new Date(u.created_at).toLocaleDateString('pt-BR')}</p>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        {u.is_blocked && (
+                          <Badge variant="destructive" className="text-[10px]">Bloqueado</Badge>
+                        )}
+                        <Button
+                          size="sm"
+                          variant={u.is_blocked ? 'outline' : 'destructive'}
+                          className="text-xs h-8"
+                          onClick={async () => {
+                            const newBlocked = !u.is_blocked;
+                            const { error } = await supabase.from('profiles').update({ is_blocked: newBlocked } as any).eq('user_id', u.user_id);
+                            if (error) { toast.error('Erro ao atualizar'); return; }
+                            toast.success(newBlocked ? `${u.full_name} foi bloqueado` : `${u.full_name} foi desbloqueado`);
+                            loadAll();
+                          }}
+                        >
+                          {u.is_blocked ? (
+                            <><ShieldCheck className="h-3.5 w-3.5 mr-1" /> Desbloquear</>
+                          ) : (
+                            <><ShieldBan className="h-3.5 w-3.5 mr-1" /> Bloquear</>
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+                {users.length === 0 && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Users className="h-8 w-8 mx-auto mb-2 opacity-30" />
+                    <p className="text-sm">Nenhum usuário encontrado.</p>
+                  </div>
+                )}
+              </div>
+            </Card>
           </div>
         )}
       </main>
