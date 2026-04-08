@@ -8,6 +8,7 @@ type AuthCtx = {
   isAdmin: boolean;
   isBlocked: boolean;
   loading: boolean;
+  roleChecked: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
@@ -21,60 +22,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isBlocked, setIsBlocked] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [roleChecked, setRoleChecked] = useState(false);
 
-  const checkAdmin = async (userId: string) => {
+  const checkRoles = async (userId: string) => {
+    setRoleChecked(false);
     try {
-      const { data } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', userId)
-        .eq('role', 'admin')
-        .maybeSingle();
-      setIsAdmin(!!data);
+      const [adminRes, profileRes] = await Promise.all([
+        supabase.from('user_roles').select('role').eq('user_id', userId).eq('role', 'admin').maybeSingle(),
+        supabase.from('profiles').select('is_blocked').eq('user_id', userId).maybeSingle(),
+      ]);
+      setIsAdmin(!!adminRes.data);
+      setIsBlocked(!!(profileRes.data as any)?.is_blocked);
     } catch {
       setIsAdmin(false);
-    }
-  };
-
-  const checkBlocked = async (userId: string) => {
-    try {
-      const { data } = await supabase
-        .from('profiles')
-        .select('is_blocked')
-        .eq('user_id', userId)
-        .maybeSingle();
-      setIsBlocked(!!(data as any)?.is_blocked);
-    } catch {
       setIsBlocked(false);
     }
+    setRoleChecked(true);
   };
 
   useEffect(() => {
-    // Set up auth state listener FIRST (per Supabase docs)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        setTimeout(() => {
-          checkAdmin(session.user.id);
-          checkBlocked(session.user.id);
-        }, 0);
+        setTimeout(() => checkRoles(session.user.id), 0);
       } else {
         setIsAdmin(false);
         setIsBlocked(false);
+        setRoleChecked(true);
       }
       setLoading(false);
     });
 
-    // Then get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        checkAdmin(session.user.id);
-        checkBlocked(session.user.id);
+        checkRoles(session.user.id).then(() => setLoading(false));
+      } else {
+        setRoleChecked(true);
+        setLoading(false);
       }
-      setLoading(false);
     }).catch(() => {
       setLoading(false);
     });
@@ -97,7 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, isAdmin, isBlocked, loading, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ user, session, isAdmin, isBlocked, loading, roleChecked, signIn, signUp, signOut }}>
       {children}
     </AuthContext.Provider>
   );
