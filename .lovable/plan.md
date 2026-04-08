@@ -1,33 +1,33 @@
-## Plano de Implementação Completo
 
-### Etapa 1 — Banco de Dados (Migration)
-Criar tabelas para suportar todas as features:
-- `study_streaks` — rastrear dias consecutivos de estudo
-- `user_xp` — sistema de pontos e níveis
-- `badges` — conquistas disponíveis
-- `user_badges` — conquistas desbloqueadas por usuário
-- `flashcards` — cartões de estudo criados por usuários
-- `annotations` — anotações pessoais em apostilas
-- `pomodoro_sessions` — sessões de estudo cronometradas
 
-### Etapa 2 — Gamificação
-- Sistema de XP: ganhar pontos ao completar exercícios, ler apostilas, manter streaks
-- Streaks: contador de dias consecutivos de estudo
-- Badges: conquistas como "Primeira Questão", "Streak de 7 dias", "100% numa apostila"
-- Ranking: leaderboard dos alunos com mais XP
+## Plano: Importar conteúdo do Notion como apostila para alunos
 
-### Etapa 3 — Experiência de Estudo
-- Timer Pomodoro integrado (25min estudo / 5min pausa)
-- Flashcards: criar e revisar cartões de estudo
-- Anotações pessoais dentro das apostilas
-- Indicador de progresso de leitura
+### O que vai acontecer
+O conteúdo da página do Notion sera importado como uma **apostila** normal no app. Os alunos vao ler o conteudo diretamente na plataforma, sem ver nenhum link do Notion. Exercicios serao gerados automaticamente pela IA.
 
-### Etapa 4 — Exercícios Inteligentes
-- Gráficos de evolução (Recharts) no perfil
-- Revisão inteligente: priorizar questões que o aluno errou
-- Simulado cronometrado por semestre
+### Como funciona
+O sistema ja tem tudo pronto para isso:
 
-### Etapa 5 — UX & Visual
-- Onboarding guiado para novos usuários
-- Busca global com filtros
-- Indicadores "continuar de onde parou"
+1. **No Admin > Apostilas**, colar o link do Notion no campo de importacao por URL
+2. A Edge Function `extract-content` ja faz o fetch da pagina, extrai o conteudo e gera exercicios via IA
+3. A apostila e salva no banco como qualquer outra - os alunos veem apenas o conteudo, sem referencia ao Notion
+
+### O que precisa ser feito
+
+1. **Melhorar a Edge Function `extract-content`** para lidar melhor com paginas do Notion:
+   - Notion publica paginas como SPAs, entao o conteudo extraido pode ser esparso
+   - Adicionar deteccao de URLs do Notion e usar headers especificos para melhor extracao
+   - Quando o conteudo for esparso (caso atual), a IA ja gera o material baseado no titulo - mas podemos melhorar passando o conteudo real do Notion
+
+2. **Remover o `file_url` (link do Notion) da visualizacao do aluno** na `ApostilaPage.tsx`:
+   - Garantir que nenhum link de origem aparece para o aluno
+   - O aluno ve apenas titulo, categoria, conteudo e exercicios
+
+3. **Testar com o link fornecido** (`estudoscaderno.notion.site/Resumo-para-a-NP1-...`)
+
+### Detalhes tecnicos
+
+- **Edge Function**: Adicionar tratamento especial para `notion.site` URLs, tentando extrair via fetch com headers adequados. Se falhar, usar o fluxo existente de geracao por IA baseada no titulo
+- **ApostilaPage.tsx**: Verificar que `file_url` nao e exibido em nenhum lugar da interface do aluno
+- **Sem mudancas no banco**: A estrutura atual ja suporta isso (campo `source_type: 'link'`)
+
