@@ -37,6 +37,7 @@ const getMimeType = (url: string): string | undefined => {
 // Robust Audio Player (Spotify-style)
 function AudioPlayer({ url, title }: { url: string; title: string }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const retriedRef = useRef(false);
   const [playing, setPlaying] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
@@ -56,7 +57,18 @@ function AudioPlayer({ url, title }: { url: string; title: string }) {
     const onEnd = () => setPlaying(false);
     const onWaiting = () => setLoading(true);
     const onCanPlay = () => setLoading(false);
-    const onError = () => { setLoading(false); setError(true); setPlaying(false); };
+    const onError = () => {
+      if (!retriedRef.current) {
+        retriedRef.current = true;
+        audio.src = '';
+        const mime = getMimeType(url);
+        if (mime) audio.type = mime;
+        audio.src = url;
+        audio.load();
+        return;
+      }
+      setLoading(false); setError(true); setPlaying(false);
+    };
 
     audio.addEventListener('timeupdate', onTime);
     audio.addEventListener('loadedmetadata', onMeta);
