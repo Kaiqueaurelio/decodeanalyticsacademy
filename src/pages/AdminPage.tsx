@@ -745,7 +745,17 @@ export default function AdminPage() {
                       type="file"
                       className="mt-1"
                       onChange={e => setMatFile(e.target.files?.[0] || null)}
-                      accept={matType === 'pdf' ? '.pdf' : matType === 'image' ? 'image/*' : matType === 'video' ? 'video/*' : matType === 'audio' ? 'audio/*' : '*'}
+                      accept={
+                        matType === 'pdf' ? '.pdf' :
+                        matType === 'image' ? 'image/*' :
+                        matType === 'gif' ? '.gif,image/gif' :
+                        matType === 'video' ? 'video/*,.mp4,.mov,.avi,.mkv' :
+                        matType === 'audio' ? 'audio/*,.mp3,.wav,.m4a,.ogg' :
+                        matType === 'powerpoint' ? '.ppt,.pptx,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation' :
+                        matType === 'word' ? '.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document' :
+                        matType === 'excel' ? '.xls,.xlsx,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' :
+                        '*'
+                      }
                     />
                   </div>
                 )}
