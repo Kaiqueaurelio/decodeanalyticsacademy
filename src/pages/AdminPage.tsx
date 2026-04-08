@@ -161,6 +161,12 @@ export default function AdminPage() {
   const [cloning, setCloning] = useState(false);
   const [importStep, setImportStep] = useState<'url' | 'review'>('url');
 
+  // Batch import state
+  const [batchMode, setBatchMode] = useState(false);
+  const [batchUrls, setBatchUrls] = useState('');
+  const [batchProgress, setBatchProgress] = useState<{ current: number; total: number; results: { url: string; title: string; status: 'ok' | 'error'; error?: string }[] }>({ current: 0, total: 0, results: [] });
+  const [batchRunning, setBatchRunning] = useState(false);
+
   const [showManualForm, setShowManualForm] = useState(false);
   const [manualTitle, setManualTitle] = useState('');
   const [manualCategory, setManualCategory] = useState('');
@@ -264,6 +270,43 @@ export default function AdminPage() {
   const resetImportForm = () => {
     setImportUrl(''); setImportTitle(''); setImportTopic('');
     setImportContent(''); setImportExercises([]); setImportStep('url');
+  };
+
+  const handleBatchImport = async () => {
+    if (!user || batchRunning) return;
+    const urls = batchUrls.split('\n').map(u => u.trim()).filter(u => u.startsWith('http'));
+    if (urls.length === 0) { toast.error('Cole pelo menos uma URL válida'); return; }
+    setBatchRunning(true);
+    setBatchProgress({ current: 0, total: urls.length, results: [] });
+    for (let i = 0; i < urls.length; i++) {
+      const url = urls[i];
+      setBatchProgress(prev => ({ ...prev, current: i + 1 }));
+      try {
+        const { data, error } = await supabase.functions.invoke('extract-content', { body: { url } });
+        if (error) throw error;
+        const isNotion = url.includes('notion.site') || url.includes('notion.so');
+        const { data: newApostila, error: insertErr } = await supabase.from('apostilas').insert({
+          title: data.title || 'Sem título', content: data.content || '',
+          category: data.category || 'Geral', source_type: isNotion ? 'notion' : 'link',
+          file_url: isNotion ? null : url, created_by: user.id, published: false,
+        }).select().single();
+        if (insertErr) throw insertErr;
+        if (data.exercises?.length > 0 && newApostila) {
+          await supabase.from('exercises').insert(data.exercises.map((ex: any) => ({
+            apostila_id: newApostila.id, question: ex.question,
+            options: ex.options, correct_answer: ex.correct_answer,
+            explanation: ex.explanation || null,
+          })));
+        }
+        setBatchProgress(prev => ({ ...prev, results: [...prev.results, { url, title: data.title || url, status: 'ok' }] }));
+      } catch (err: any) {
+        setBatchProgress(prev => ({ ...prev, results: [...prev.results, { url, title: url, status: 'error', error: err.message }] }));
+      }
+    }
+    const finalResults = batchProgress.results;
+    setBatchRunning(false);
+    toast.success(`Importação em lote concluída!`);
+    loadAll();
   };
 
   const togglePublish = async (id: string, current: boolean) => {
@@ -447,11 +490,66 @@ export default function AdminPage() {
           <div className="space-y-5">
             {/* Import Card */}
             <Card className="p-5 bg-card border border-border/50 border-t-4 border-t-primary">
-              <h3 className="font-semibold flex items-center gap-2 mb-1 text-sm">
-                <LinkIcon className="h-4 w-4 text-primary" /> Importar Apostila
-              </h3>
+              <div className="flex items-center justify-between mb-1">
+                <h3 className="font-semibold flex items-center gap-2 text-sm">
+                  <LinkIcon className="h-4 w-4 text-primary" /> Importar Apostila
+                </h3>
+                <button
+                  onClick={() => { setBatchMode(!batchMode); resetImportForm(); }}
+                  className={`text-[10px] font-medium px-2 py-1 rounded-full transition-colors ${batchMode ? 'bg-primary text-primary-foreground' : 'bg-accent text-muted-foreground hover:text-foreground'}`}
+                >
+                  {batchMode ? '📦 Lote' : 'Modo Lote'}
+                </button>
+              </div>
 
-              {importStep === 'url' ? (
+              {batchMode ? (
+                <div className="space-y-3 mt-3">
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Cole várias URLs (uma por linha)</Label>
+                    <Textarea
+                      value={batchUrls}
+                      onChange={e => setBatchUrls(e.target.value)}
+                      placeholder={"https://notion.site/pagina-1\nhttps://notion.site/pagina-2\nhttps://exemplo.com/artigo"}
+                      rows={5}
+                      className="mt-1 text-xs font-mono"
+                      disabled={batchRunning}
+                    />
+                    <p className="text-[10px] text-muted-foreground mt-1">
+                      {batchUrls.split('\n').filter(u => u.trim().startsWith('http')).length} URL(s) detectada(s)
+                      {batchUrls.includes('notion') && ' · 📝 Notion detectado'}
+                    </p>
+                  </div>
+
+                  {batchRunning && (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-muted-foreground">Importando...</span>
+                        <span className="font-medium">{batchProgress.current}/{batchProgress.total}</span>
+                      </div>
+                      <Progress value={(batchProgress.current / batchProgress.total) * 100} className="h-2" />
+                    </div>
+                  )}
+
+                  {batchProgress.results.length > 0 && (
+                    <div className="space-y-1 max-h-40 overflow-y-auto">
+                      {batchProgress.results.map((r, i) => (
+                        <div key={i} className={`flex items-center gap-2 text-xs p-2 rounded-lg ${r.status === 'ok' ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive'}`}>
+                          {r.status === 'ok' ? <CheckCircle className="h-3.5 w-3.5 shrink-0" /> : <AlertCircle className="h-3.5 w-3.5 shrink-0" />}
+                          <span className="truncate">{r.title}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <Button
+                    onClick={handleBatchImport}
+                    disabled={batchRunning || !batchUrls.trim()}
+                    className="w-full gradient-primary text-primary-foreground"
+                  >
+                    {batchRunning ? <><Loader2 className="h-4 w-4 animate-spin mr-1.5" /> Importando {batchProgress.current}/{batchProgress.total}</> : `Importar Tudo`}
+                  </Button>
+                </div>
+              ) : importStep === 'url' ? (
                 <div className="space-y-3 mt-3">
                   <div>
                     <Label className="text-xs text-muted-foreground">Cole a URL da página</Label>
