@@ -95,7 +95,7 @@ Responda SOMENTE com JSON válido, sem markdown. Formato:
     }
   ]
 }`;
-      userPrompt = `URL: ${url}\nTítulo da página: ${pageTitle}\n\nA página não retornou conteúdo suficiente. Analise a URL e o título para identificar o assunto e crie uma apostila educacional completa sobre o tema, com pelo menos 8 exercícios.`;
+      userPrompt = `URL: ${url}\nTítulo da página: ${pageTitle}\n\nA página não retornou conteúdo suficiente. Analise a URL e o título para identificar o assunto e crie uma apostila educacional completa sobre o tema. IMPORTANTE: inclua OBRIGATORIAMENTE de 8 a 10 exercícios de múltipla escolha no campo "exercises". Cada exercício com question, options (4 opções), correct_answer (A/B/C/D) e explanation.`;
     } else {
       systemPrompt = `Você é um assistente educacional. A partir do conteúdo de uma página web, extraia:
 1. O título principal do assunto (campo "title")
