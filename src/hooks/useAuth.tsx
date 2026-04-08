@@ -35,40 +35,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    let initialSessionHandled = false;
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    // Set up auth state listener FIRST (per Supabase docs)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        await checkAdmin(session.user.id);
+        // Use setTimeout to avoid blocking the auth callback
+        setTimeout(() => {
+          checkAdmin(session.user.id);
+        }, 0);
       } else {
         setIsAdmin(false);
       }
       setLoading(false);
-      initialSessionHandled = true;
     });
 
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (!initialSessionHandled) {
-        setSession(session);
-        setUser(session?.user ?? null);
-        if (session?.user) {
-          await checkAdmin(session.user.id);
-        }
-        setLoading(false);
+    // Then get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        checkAdmin(session.user.id);
       }
+      setLoading(false);
     }).catch(() => {
       setLoading(false);
     });
 
-    // Safety timeout to prevent infinite loading
-    const timeout = setTimeout(() => setLoading(false), 5000);
-
-    return () => {
-      subscription.unsubscribe();
-      clearTimeout(timeout);
-    };
+    return () => subscription.unsubscribe();
   }, []);
 
   const signIn = async (email: string, password: string) => {
