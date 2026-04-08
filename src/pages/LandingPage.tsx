@@ -5,9 +5,11 @@ import { ScrollReveal } from '@/hooks/useScrollAnimation';
 import {
   BookOpen, CheckCircle, BarChart3, ArrowRight, Download, Shield,
   Headphones, Video, FileText, Users, Zap, Clock, Award, Star,
-  GraduationCap, TrendingUp, Lock
+  GraduationCap, TrendingUp, Lock, Code2, Database, Cloud, Cpu,
+  Palette, Globe, Smartphone, BrainCircuit
 } from 'lucide-react';
 import logoDark from '@/assets/logo-dark.jpeg';
+import appPreview from '@/assets/app-preview.jpg';
 
 const features = [
   { icon: BookOpen, title: 'Apostilas Completas', desc: 'Conteúdo estruturado por disciplina e semestre, com importação inteligente via IA.' },
