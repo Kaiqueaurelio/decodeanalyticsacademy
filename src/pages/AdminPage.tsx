@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useCallback, useRef, useMemo, useContext, createContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -24,7 +24,40 @@ type Apostila = Tables<'apostilas'>;
 type Exercise = Tables<'exercises'>;
 type Material = Tables<'materials'>;
 
-const CATEGORIES = ['Redes', 'IA', 'Segurança', 'Cloud', 'Programação', 'Banco de Dados', 'Sistemas Operacionais', 'Outros'];
+// Categories loaded from database
+const SEMESTER_LABELS: Record<number, string> = {
+  1: '1º Semestre', 2: '2º Semestre', 3: '3º Semestre', 4: '4º Semestre',
+  5: '5º Semestre', 6: '6º Semestre', 7: '7º Semestre', 8: '8º Semestre',
+};
+
+function CategorySelect({ value, onValueChange, placeholder }: { value: string; onValueChange: (v: string) => void; placeholder?: string }) {
+  const { categories } = useContext(CategoriesCtx);
+  const grouped = useMemo(() => {
+    const map: Record<number, string[]> = {};
+    categories.forEach(c => {
+      const sem = Math.floor(c.sort_order / 100);
+      if (!map[sem]) map[sem] = [];
+      map[sem].push(c.name);
+    });
+    return map;
+  }, [categories]);
+
+  return (
+    <Select value={value} onValueChange={onValueChange}>
+      <SelectTrigger className="mt-1"><SelectValue placeholder={placeholder} /></SelectTrigger>
+      <SelectContent className="max-h-[300px]">
+        {Object.entries(grouped).sort(([a], [b]) => +a - +b).map(([sem, names]) => (
+          <div key={sem}>
+            <div className="px-2 py-1.5 text-xs font-semibold text-primary sticky top-0 bg-popover">{SEMESTER_LABELS[+sem] || `Semestre ${sem}`}</div>
+            {names.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}
+          </div>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
+
+const CategoriesCtx = createContext<{ categories: { name: string; sort_order: number }[] }>({ categories: [] });
 
 type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials';
 
@@ -54,6 +87,7 @@ export default function AdminPage() {
   const [tab, setTab] = useState<Tab>('overview');
   const [apostilas, setApostilas] = useState<Apostila[]>([]);
   const [exercises, setExercises] = useState<Record<string, Exercise[]>>({});
+  const [dbCategories, setDbCategories] = useState<{ name: string; sort_order: number }[]>([]);
   const [allAnswers, setAllAnswers] = useState<any[]>([]);
   const [materials, setMaterials] = useState<Material[]>([]);
   const [showExerciseDialog, setShowExerciseDialog] = useState<string | null>(null);
@@ -145,19 +179,23 @@ export default function AdminPage() {
   useEffect(() => { loadAll(); }, []);
 
   const loadAll = async () => {
-    const { data: ap } = await supabase.from('apostilas').select('*').order('created_at', { ascending: false });
+    const [{ data: ap }, { data: ex }, { data: ans }, { data: mats }, { data: cats }] = await Promise.all([
+      supabase.from('apostilas').select('*').order('created_at', { ascending: false }),
+      supabase.from('exercises').select('*'),
+      supabase.from('answers').select('*'),
+      supabase.from('materials').select('*').order('created_at', { ascending: false }),
+      supabase.from('categories').select('*').order('sort_order', { ascending: true }),
+    ]);
     setApostilas(ap || []);
-    const { data: ex } = await supabase.from('exercises').select('*');
     const map: Record<string, Exercise[]> = {};
     ex?.forEach(e => {
       if (!map[e.apostila_id]) map[e.apostila_id] = [];
       map[e.apostila_id].push(e);
     });
     setExercises(map);
-    const { data: ans } = await supabase.from('answers').select('*');
     setAllAnswers(ans || []);
-    const { data: mats } = await supabase.from('materials').select('*').order('created_at', { ascending: false });
     setMaterials(mats || []);
+    setDbCategories((cats || []).map(c => ({ name: c.name, sort_order: c.sort_order })));
   };
 
   const handleExtract = async () => {
@@ -285,6 +323,7 @@ export default function AdminPage() {
   ];
 
   return (
+    <CategoriesCtx.Provider value={{ categories: dbCategories }}>
     <div className="min-h-screen bg-background">
       <div className="sticky top-0 z-40 bg-card/95 backdrop-blur-xl border-b border-border/40">
         <div className="container px-4">
@@ -462,12 +501,7 @@ export default function AdminPage() {
                   </div>
                   <div>
                     <Label className="text-xs text-muted-foreground">Categoria</Label>
-                    <Select value={importTopic} onValueChange={setImportTopic}>
-                      <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        {CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
+                    <CategorySelect value={importTopic} onValueChange={setImportTopic} />
                   </div>
                   <div>
                     <Label className="text-xs text-muted-foreground">Conteúdo</Label>
@@ -530,12 +564,7 @@ export default function AdminPage() {
                   </div>
                   <div>
                     <Label className="text-xs text-muted-foreground">Categoria</Label>
-                    <Select value={manualCategory} onValueChange={setManualCategory}>
-                      <SelectTrigger className="mt-1"><SelectValue placeholder="Selecione" /></SelectTrigger>
-                      <SelectContent>
-                        {CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
+                    <CategorySelect value={manualCategory} onValueChange={setManualCategory} placeholder="Selecione" />
                   </div>
                   <div>
                     <Label className="text-xs text-muted-foreground">Conteúdo</Label>
@@ -691,10 +720,7 @@ export default function AdminPage() {
                 <div className="space-y-3">
                   <div><Label className="text-xs">Título</Label><Input value={editTitle} onChange={e => setEditTitle(e.target.value)} /></div>
                   <div><Label className="text-xs">Categoria</Label>
-                    <Select value={editCategory} onValueChange={setEditCategory}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>{CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
-                    </Select>
+                    <CategorySelect value={editCategory} onValueChange={setEditCategory} />
                   </div>
                   <div><Label className="text-xs">Conteúdo</Label><Textarea value={editContent} onChange={e => setEditContent(e.target.value)} rows={8} /></div>
                   <Button className="w-full gradient-primary text-primary-foreground" onClick={handleEditSave}>Salvar</Button>
@@ -1027,5 +1053,6 @@ export default function AdminPage() {
         )}
       </main>
     </div>
+    </CategoriesCtx.Provider>
   );
 }
