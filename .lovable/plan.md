@@ -1,25 +1,37 @@
 
 
-## Plano: Corrigir erro de reprodução de vídeo
+## Plano: Corrigir instalação do app no celular (PWA)
 
-### Problema
-O `<video>` falha porque:
-1. O `<source>` não tem atributo `type` — o navegador não sabe o formato
-2. Falta `crossOrigin="anonymous"` — necessário para carregar de domínio externo (Supabase Storage)
-3. Não há fallback `src` direto no `<video>`
+### Problemas encontrados
 
-### Correções em `src/pages/MaterialsPage.tsx`
+1. **Manifest não linkado** — `index.html` não tem `<link rel="manifest">`, então o navegador nunca detecta o app como instalável
+2. **Ícones não existem** — `icon-192.png` e `icon-512.png` referenciados no manifest não existem em `/public`
+3. **Evento `beforeinstallprompt` nunca é capturado** — nenhum código em `main.tsx` escuta o evento e salva em `window.__pwaInstallPrompt`
+4. **Fallback ruim** — quando o prompt não existe, abre `window.open()` que não faz nada útil
 
-1. **Criar helper `getMimeType(url)`** que detecta extensão → MIME type (`.mp4` → `video/mp4`, `.mov` → `video/quicktime`, `.webm` → `video/webm`, `.m4a` → `audio/mp4`, etc.)
+### Correções
 
-2. **No `VideoPlayer`**:
-   - Adicionar `crossOrigin="anonymous"` no `<video>`
-   - Adicionar `src={url}` direto no `<video>` como fallback
-   - Adicionar `type={getMimeType(url)}` no `<source>`
-   - Adicionar lógica de retry: no `onError`, tentar recarregar uma vez antes de mostrar erro
+1. **Gerar ícones PWA** — Criar `icon-192.png` e `icon-512.png` a partir do logo existente (`src/assets/logo-dark.jpeg`) usando canvas/script
 
-3. **No `AudioPlayer`**: Aplicar as mesmas correções (`crossOrigin`, `type` no source)
+2. **Adicionar `<link rel="manifest">` no `index.html`**
+   ```html
+   <link rel="manifest" href="/manifest.json" />
+   <link rel="apple-touch-icon" href="/icon-192.png" />
+   ```
+
+3. **Capturar evento `beforeinstallprompt` em `main.tsx`**
+   ```typescript
+   window.addEventListener('beforeinstallprompt', (e) => {
+     e.preventDefault();
+     (window as any).__pwaInstallPrompt = e;
+   });
+   ```
+   Com guard para não rodar em iframe/preview (seguindo as regras PWA do Lovable)
+
+4. **Melhorar `handleInstallPWA` no LandingPage** — Mostrar instruções manuais (iOS: "Compartilhar → Adicionar à Tela de Início", Android: "Menu → Instalar app") quando o prompt nativo não está disponível, em vez de abrir uma aba vazia
+
+5. **Manifest** — Adicionar campos recomendados (`description`, `orientation`, `scope`) para melhorar compatibilidade
 
 ### Resultado
-Vídeos e áudios do Supabase Storage vão carregar corretamente em todos os navegadores, incluindo Safari/iOS.
+O botão "Instalar no celular" vai funcionar: no Android mostra o prompt nativo de instalação; no iOS mostra instruções visuais de como adicionar à tela de início.
 
