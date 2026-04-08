@@ -355,17 +355,58 @@ function PdfViewer({ url, title }: { url: string; title: string }) {
 
 // Office Document Viewer (Word, PowerPoint, Excel) via Google Docs Viewer
 function OfficeViewer({ url, title, typeLabel }: { url: string; title: string; typeLabel: string }) {
+  const [expanded, setExpanded] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
   const [error, setError] = useState(false);
+  const [thumbLoaded, setThumbLoaded] = useState(false);
   const viewerUrl = `https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true`;
 
-  const iconMap: Record<string, typeof FileText> = {
-    PowerPoint: FileText,
-    Word: FileText,
-    Excel: FileText,
+  const colorMap: Record<string, string> = {
+    PowerPoint: 'bg-orange-500/15 text-orange-600',
+    Word: 'bg-blue-500/15 text-blue-600',
+    Excel: 'bg-green-500/15 text-green-600',
   };
-  const Icon = iconMap[typeLabel] || FileText;
+  const badgeColor = colorMap[typeLabel] || 'bg-primary/15 text-primary';
 
+  // Compact card with thumbnail preview
+  if (!expanded) {
+    return (
+      <div
+        className="rounded-2xl overflow-hidden border border-border/30 cursor-pointer group hover:border-primary/30 transition-colors"
+        onClick={() => setExpanded(true)}
+      >
+        <div className="relative h-[200px] bg-muted/30 overflow-hidden">
+          {/* Mini iframe as thumbnail */}
+          <div className="absolute inset-0 pointer-events-none origin-top-left scale-[0.4] w-[250%] h-[250%]">
+            <iframe
+              src={viewerUrl}
+              className="w-full h-full border-0"
+              title={`Preview ${title}`}
+              onLoad={() => setThumbLoaded(true)}
+              tabIndex={-1}
+            />
+          </div>
+          {!thumbLoaded && (
+            <div className="absolute inset-0 flex items-center justify-center bg-muted/50">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          )}
+          {/* Hover overlay */}
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center z-10">
+            <div className="bg-primary text-primary-foreground px-3 py-1.5 rounded-full text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1.5">
+              <Maximize className="h-3 w-3" /> Abrir documento
+            </div>
+          </div>
+        </div>
+        <div className="p-3 bg-card flex items-center gap-3">
+          <Badge className={`text-[10px] shrink-0 ${badgeColor}`}>{typeLabel}</Badge>
+          <p className="font-medium text-sm truncate flex-1">{title}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Expanded full viewer
   return (
     <>
       <div className="rounded-2xl overflow-hidden border border-border/30">
@@ -393,17 +434,20 @@ function OfficeViewer({ url, title, typeLabel }: { url: string; title: string; t
           />
         )}
         <div className="p-3 bg-card flex items-center justify-between">
-          <div>
-            <p className="font-medium text-sm">{title}</p>
-            <p className="text-[10px] text-muted-foreground">{typeLabel} · Material de apoio</p>
+          <div className="flex items-center gap-2 min-w-0">
+            <Badge className={`text-[10px] shrink-0 ${badgeColor}`}>{typeLabel}</Badge>
+            <p className="font-medium text-sm truncate">{title}</p>
           </div>
           <div className="flex gap-2">
+            <Button size="sm" variant="ghost" onClick={() => setExpanded(false)}>
+              Minimizar
+            </Button>
             <Button size="sm" variant="outline" onClick={() => setFullscreen(true)}>
               <Maximize className="h-3.5 w-3.5 mr-1.5" /> Tela cheia
             </Button>
             <Button size="sm" variant="outline" asChild>
               <a href={url} target="_blank" rel="noopener noreferrer">
-                <Download className="h-3.5 w-3.5 mr-1.5" /> Baixar
+                <Download className="h-3.5 w-3.5" />
               </a>
             </Button>
           </div>
@@ -414,9 +458,8 @@ function OfficeViewer({ url, title, typeLabel }: { url: string; title: string; t
         <div className="fixed inset-0 z-50 bg-background flex flex-col">
           <div className="flex items-center justify-between p-3 border-b border-border bg-card">
             <div className="flex items-center gap-2 min-w-0">
-              <Icon className="h-4 w-4 text-primary shrink-0" />
+              <Badge className={`text-[10px] shrink-0 ${badgeColor}`}>{typeLabel}</Badge>
               <p className="font-medium text-sm truncate">{title}</p>
-              <Badge className="text-[10px]">{typeLabel}</Badge>
             </div>
             <button onClick={() => setFullscreen(false)} className="p-2 rounded-full hover:bg-muted transition-colors">
               <X className="h-5 w-5" />
