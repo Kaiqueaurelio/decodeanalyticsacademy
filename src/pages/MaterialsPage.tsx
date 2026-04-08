@@ -299,23 +299,123 @@ function ImageViewer({ url, title }: { url: string; title: string }) {
   );
 }
 
-// PDF Viewer
+// PDF Viewer with fullscreen
 function PdfViewer({ url, title }: { url: string; title: string }) {
+  const [fullscreen, setFullscreen] = useState(false);
+
   return (
-    <div className="rounded-2xl overflow-hidden border border-border/30">
-      <iframe src={url} className="w-full h-[500px] sm:h-[600px]" title={title} />
-      <div className="p-3 bg-card flex items-center justify-between">
-        <div>
-          <p className="font-medium text-sm">{title}</p>
-          <p className="text-[10px] text-muted-foreground">PDF · Material de apoio</p>
+    <>
+      <div className="rounded-2xl overflow-hidden border border-border/30">
+        <iframe src={url} className="w-full h-[500px] sm:h-[600px]" title={title} />
+        <div className="p-3 bg-card flex items-center justify-between">
+          <div>
+            <p className="font-medium text-sm">{title}</p>
+            <p className="text-[10px] text-muted-foreground">PDF · Material de apoio</p>
+          </div>
+          <div className="flex gap-2">
+            <Button size="sm" variant="outline" onClick={() => setFullscreen(true)}>
+              <Maximize className="h-3.5 w-3.5 mr-1.5" /> Tela cheia
+            </Button>
+            <Button size="sm" variant="outline" asChild>
+              <a href={url} target="_blank" rel="noopener noreferrer">
+                <Download className="h-3.5 w-3.5 mr-1.5" /> Baixar
+              </a>
+            </Button>
+          </div>
         </div>
-        <Button size="sm" variant="outline" asChild>
-          <a href={url} target="_blank" rel="noopener noreferrer">
-            <Download className="h-3.5 w-3.5 mr-1.5" /> Baixar
-          </a>
-        </Button>
       </div>
-    </div>
+
+      {fullscreen && (
+        <div className="fixed inset-0 z-50 bg-background flex flex-col">
+          <div className="flex items-center justify-between p-3 border-b border-border bg-card">
+            <div className="flex items-center gap-2 min-w-0">
+              <FileText className="h-4 w-4 text-primary shrink-0" />
+              <p className="font-medium text-sm truncate">{title}</p>
+            </div>
+            <button onClick={() => setFullscreen(false)} className="p-2 rounded-full hover:bg-muted transition-colors">
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+          <iframe src={url} className="flex-1 w-full" title={title} />
+        </div>
+      )}
+    </>
+  );
+}
+
+// Office Document Viewer (Word, PowerPoint, Excel) via Google Docs Viewer
+function OfficeViewer({ url, title, typeLabel }: { url: string; title: string; typeLabel: string }) {
+  const [fullscreen, setFullscreen] = useState(false);
+  const [error, setError] = useState(false);
+  const viewerUrl = `https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true`;
+
+  const iconMap: Record<string, typeof FileText> = {
+    PowerPoint: FileText,
+    Word: FileText,
+    Excel: FileText,
+  };
+  const Icon = iconMap[typeLabel] || FileText;
+
+  return (
+    <>
+      <div className="rounded-2xl overflow-hidden border border-border/30">
+        {error ? (
+          <div className="w-full h-[400px] flex flex-col items-center justify-center bg-muted/20 text-muted-foreground gap-3">
+            <AlertCircle className="h-8 w-8 opacity-50" />
+            <p className="text-sm">Não foi possível visualizar o documento</p>
+            <div className="flex gap-2">
+              <Button size="sm" variant="outline" onClick={() => setError(false)}>
+                Tentar novamente
+              </Button>
+              <Button size="sm" variant="outline" asChild>
+                <a href={url} target="_blank" rel="noopener noreferrer">
+                  <Download className="h-3.5 w-3.5 mr-1.5" /> Baixar
+                </a>
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <iframe
+            src={viewerUrl}
+            className="w-full h-[500px] sm:h-[600px]"
+            title={title}
+            onError={() => setError(true)}
+          />
+        )}
+        <div className="p-3 bg-card flex items-center justify-between">
+          <div>
+            <p className="font-medium text-sm">{title}</p>
+            <p className="text-[10px] text-muted-foreground">{typeLabel} · Material de apoio</p>
+          </div>
+          <div className="flex gap-2">
+            <Button size="sm" variant="outline" onClick={() => setFullscreen(true)}>
+              <Maximize className="h-3.5 w-3.5 mr-1.5" /> Tela cheia
+            </Button>
+            <Button size="sm" variant="outline" asChild>
+              <a href={url} target="_blank" rel="noopener noreferrer">
+                <Download className="h-3.5 w-3.5 mr-1.5" /> Baixar
+              </a>
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {fullscreen && (
+        <div className="fixed inset-0 z-50 bg-background flex flex-col">
+          <div className="flex items-center justify-between p-3 border-b border-border bg-card">
+            <div className="flex items-center gap-2 min-w-0">
+              <Icon className="h-4 w-4 text-primary shrink-0" />
+              <p className="font-medium text-sm truncate">{title}</p>
+              <Badge className="text-[10px]">{typeLabel}</Badge>
+            </div>
+            <button onClick={() => setFullscreen(false)} className="p-2 rounded-full hover:bg-muted transition-colors">
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+          <iframe src={viewerUrl} className="flex-1 w-full" title={title} />
+        </div>
+      )}
+    </>
   );
 }
 
@@ -341,11 +441,14 @@ export default function MaterialsPage() {
     { value: 'image', label: 'Imagens', icon: Image },
     { value: 'video', label: 'Vídeos', icon: Video },
     { value: 'audio', label: 'Áudios', icon: Music },
+    { value: 'docs', label: 'Documentos', icon: FileText },
     { value: 'other', label: 'Outros', icon: File },
   ];
 
+  const docTypes = ['powerpoint', 'word', 'excel'];
   const filtered = filter === 'all' ? materials : materials.filter(m => {
-    if (filter === 'other') return !['pdf', 'image', 'video', 'audio'].includes(m.type);
+    if (filter === 'docs') return docTypes.includes(m.type);
+    if (filter === 'other') return !['pdf', 'image', 'video', 'audio', ...docTypes].includes(m.type);
     return m.type === filter;
   });
 
@@ -370,6 +473,12 @@ export default function MaterialsPage() {
         return <ImageViewer key={m.id} url={m.file_url} title={m.title} />;
       case 'pdf':
         return <PdfViewer key={m.id} url={m.file_url} title={m.title} />;
+      case 'powerpoint':
+        return <OfficeViewer key={m.id} url={m.file_url} title={m.title} typeLabel="PowerPoint" />;
+      case 'word':
+        return <OfficeViewer key={m.id} url={m.file_url} title={m.title} typeLabel="Word" />;
+      case 'excel':
+        return <OfficeViewer key={m.id} url={m.file_url} title={m.title} typeLabel="Excel" />;
       case 'link':
         return (
           <Card key={m.id} className="p-4 bg-card border border-border/50 hover:border-primary/30 transition-colors">
