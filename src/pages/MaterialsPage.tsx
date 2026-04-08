@@ -60,10 +60,8 @@ function AudioPlayer({ url, title }: { url: string; title: string }) {
     const onError = () => {
       if (!retriedRef.current) {
         retriedRef.current = true;
-        audio.src = '';
-        const mime = getMimeType(url);
-        if (mime) audio.type = mime;
         audio.src = url;
+        audio.load();
         audio.load();
         return;
       }
