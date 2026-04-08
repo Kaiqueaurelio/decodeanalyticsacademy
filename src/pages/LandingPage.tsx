@@ -1,12 +1,12 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { AppHeader } from '@/components/AppHeader';
-import { BookOpen, CheckCircle, BarChart3, ArrowRight, Sparkles } from 'lucide-react';
+import { BookOpen, CheckCircle, BarChart3, ArrowRight, Sparkles, Download, Workflow } from 'lucide-react';
 import logoDark from '@/assets/logo-dark.jpeg';
 
 const features = [
   { icon: BookOpen, title: 'Apostilas por Tópicos', desc: 'Conteúdo organizado por assunto, liberado pelo administrador. Localize rapidamente o que precisa revisar.' },
-  { icon: CheckCircle, title: 'Exercícios Estilo Prova', desc: 'Múltipla escolha com correção instantânea. Gabarito e explicação apenas após responder.' },
+  { icon: CheckCircle, title: 'Exercícios Estilo Prova', desc: 'Múltipla escolha com correção instantânea. Veja o gabarito e explicação somente depois de responder.' },
   { icon: BarChart3, title: 'Dashboard de Desempenho', desc: 'Acompanhe acertos, erros e progresso por apostila. Entenda onde precisa melhorar.' },
 ];
 
@@ -19,6 +19,15 @@ const steps = [
 export default function LandingPage() {
   const navigate = useNavigate();
 
+  const handleInstallPWA = () => {
+    const deferredPrompt = (window as any).__pwaInstallPrompt;
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+    } else {
+      window.open(window.location.href, '_blank');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <AppHeader />
@@ -26,7 +35,7 @@ export default function LandingPage() {
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 gradient-hero" />
-        <div className="container relative py-24 md:py-32 lg:py-40">
+        <div className="container relative py-24 md:py-32 lg:py-40 px-4">
           <div className="max-w-2xl space-y-6">
             <div className="animate-fade-up inline-flex items-center gap-2 rounded-full border border-primary/20 bg-accent px-4 py-1.5 text-sm font-medium text-accent-foreground">
               <Sparkles className="h-3.5 w-3.5" /> Plataforma Acadêmica
@@ -37,14 +46,20 @@ export default function LandingPage() {
             <p className="animate-fade-up stagger-2 text-lg text-muted-foreground leading-relaxed max-w-lg">
               Apostilas por tópicos, exercícios corrigidos em tempo real e dashboard de desempenho — tudo em um só lugar.
             </p>
-            <div className="animate-fade-up stagger-3 flex flex-wrap gap-3">
-              <Button size="lg" className="gradient-primary text-primary-foreground" onClick={() => navigate('/login')}>
+            <div className="animate-fade-up stagger-3 flex flex-col sm:flex-row flex-wrap gap-3">
+              <Button size="lg" className="gradient-primary text-primary-foreground w-full sm:w-auto" onClick={() => navigate('/login')}>
                 Começar agora <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
-              <Button size="lg" variant="outline" onClick={() => document.getElementById('recursos')?.scrollIntoView({ behavior: 'smooth' })}>
+              <Button size="lg" variant="outline" className="w-full sm:w-auto" onClick={() => document.getElementById('recursos')?.scrollIntoView({ behavior: 'smooth' })}>
                 Ver recursos
               </Button>
             </div>
+            <button
+              onClick={handleInstallPWA}
+              className="animate-fade-up stagger-4 inline-flex items-center gap-2 text-sm text-primary font-medium hover:underline"
+            >
+              <Download className="h-4 w-4" /> Instalar no celular
+            </button>
             <div className="animate-fade-up stagger-4 flex flex-wrap gap-4 pt-2 text-sm text-muted-foreground">
               {['Apostilas organizadas', 'Exercícios corrigidos', 'Dashboard pessoal'].map(t => (
                 <span key={t} className="flex items-center gap-1.5">
@@ -58,7 +73,7 @@ export default function LandingPage() {
 
       {/* Features */}
       <section id="recursos" className="py-20 md:py-28">
-        <div className="container">
+        <div className="container px-4">
           <div className="text-center mb-14">
             <p className="text-sm font-semibold uppercase tracking-widest text-primary mb-3">Recursos</p>
             <h2 className="text-3xl font-bold md:text-4xl">Tudo que você precisa para <span className="text-gradient">revisar com eficiência</span></h2>
@@ -79,7 +94,7 @@ export default function LandingPage() {
 
       {/* Steps */}
       <section className="py-20 md:py-28 bg-accent/30">
-        <div className="container">
+        <div className="container px-4">
           <div className="text-center mb-14">
             <p className="text-sm font-semibold uppercase tracking-widest text-primary mb-3">Como funciona</p>
             <h2 className="text-3xl font-bold md:text-4xl">Três passos simples</h2>
@@ -98,7 +113,10 @@ export default function LandingPage() {
 
       {/* CTA */}
       <section className="py-20 md:py-28">
-        <div className="container text-center">
+        <div className="container text-center px-4">
+          <div className="inline-flex rounded-xl bg-accent p-4 mb-6">
+            <Workflow className="h-8 w-8 text-primary" />
+          </div>
           <h2 className="text-3xl font-bold mb-4">Pronto para revisar?</h2>
           <p className="text-muted-foreground mb-8 max-w-md mx-auto">Entre para acessar suas apostilas, estudar com foco e chegar preparado para a prova.</p>
           <Button size="lg" className="gradient-primary text-primary-foreground" onClick={() => navigate('/login')}>
@@ -109,12 +127,13 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer className="border-t py-8">
-        <div className="container flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
+        <div className="container flex flex-col items-center gap-3 text-sm text-muted-foreground px-4">
           <div className="flex items-center gap-2">
             <img src={logoDark} alt="Decode Analytics" className="h-6 w-6 rounded object-cover" />
             <span className="font-semibold text-foreground">Decode Analytics</span>
           </div>
-          <p>Criado por Kaique Aurelio</p>
+          <p>Desenvolvido por <span className="font-semibold text-foreground">Kaique Aurelio</span></p>
+          <p className="text-xs">© {new Date().getFullYear()} Decode Analytics</p>
         </div>
       </footer>
     </div>
