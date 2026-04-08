@@ -1,16 +1,20 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { useGamification } from '@/hooks/useGamification';
 import { AppHeader } from '@/components/AppHeader';
 import { Watermark } from '@/components/Watermark';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { FlashcardsWidget } from '@/components/FlashcardsWidget';
+import { AnnotationsPanel } from '@/components/AnnotationsPanel';
 import { ArrowLeft, BookOpen, PenLine } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 
 export default function ApostilaPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const gamification = useGamification();
   const [apostila, setApostila] = useState<Tables<'apostilas'> | null>(null);
   const [exerciseCount, setExerciseCount] = useState(0);
 
@@ -18,6 +22,9 @@ export default function ApostilaPage() {
     if (!id) return;
     supabase.from('apostilas').select('*').eq('id', id).single().then(({ data }) => setApostila(data));
     supabase.from('exercises').select('id').eq('apostila_id', id).then(({ data }) => setExerciseCount(data?.length || 0));
+    // Award XP for reading
+    gamification.addXP(5);
+    gamification.updateStreak();
   }, [id]);
 
   if (!apostila) return null;
@@ -44,8 +51,19 @@ export default function ApostilaPage() {
             {apostila.content}
           </div>
         </Card>
+
+        {/* Annotations */}
+        <div className="mt-4 animate-content-show delay-1">
+          <AnnotationsPanel apostilaId={id!} />
+        </div>
+
+        {/* Flashcards */}
+        <div className="mt-4 animate-content-show delay-2">
+          <FlashcardsWidget apostilaId={id} />
+        </div>
+
         {exerciseCount > 0 && (
-          <div className="mt-5 text-center animate-content-show delay-1">
+          <div className="mt-5 text-center animate-content-show delay-3">
             <Button className="gradient-primary text-primary-foreground" onClick={() => navigate(`/exercises/${id}`)}>
               <PenLine className="mr-1.5 h-4 w-4" /> Fazer exercícios ({exerciseCount})
             </Button>

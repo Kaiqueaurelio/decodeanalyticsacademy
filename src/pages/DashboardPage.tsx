@@ -2,13 +2,24 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useGamification } from '@/hooks/useGamification';
 import { AppHeader } from '@/components/AppHeader';
 import { Watermark } from '@/components/Watermark';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { BookOpen, CheckCircle, XCircle, TrendingUp, FolderOpen, PenLine, ChevronRight, BarChart3, Clock, User, FileText } from 'lucide-react';
+import { GamificationWidget } from '@/components/GamificationWidget';
+import { PomodoroTimer } from '@/components/PomodoroTimer';
+import { FlashcardsWidget } from '@/components/FlashcardsWidget';
+import { Leaderboard } from '@/components/Leaderboard';
+import { EvolutionChart } from '@/components/EvolutionChart';
+import { GlobalSearch } from '@/components/GlobalSearch';
+import { OnboardingTour } from '@/components/OnboardingTour';
+import {
+  BookOpen, CheckCircle, XCircle, TrendingUp, FolderOpen, PenLine,
+  ChevronRight, BarChart3, User, FileText
+} from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 
 type Apostila = Tables<'apostilas'>;
@@ -16,14 +27,22 @@ type Apostila = Tables<'apostilas'>;
 export default function DashboardPage() {
   const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
+  const gamification = useGamification();
   const [apostilas, setApostilas] = useState<Apostila[]>([]);
   const [exerciseCounts, setExerciseCounts] = useState<Record<string, number>>({});
   const [stats, setStats] = useState({ total: 0, hits: 0, errors: 0, byApostila: {} as Record<string, { hits: number; errors: number; title: string }> });
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
     if (!user) return;
     loadData();
+    // Check if first visit
+    const seen = localStorage.getItem('decode_onboarding_done');
+    if (!seen) setShowOnboarding(true);
+    // Update streak
+    gamification.updateStreak();
+    gamification.checkAndAwardBadge('first_login');
   }, [user]);
 
   const loadData = async () => {
@@ -52,8 +71,18 @@ export default function DashboardPage() {
     }
   };
 
-  const pct = stats.total > 0 ? Math.round((stats.hits / stats.total) * 100) : 0;
+  const handleOnboardingComplete = () => {
+    localStorage.setItem('decode_onboarding_done', 'true');
+    setShowOnboarding(false);
+  };
 
+  const handlePomodoroComplete = async () => {
+    if (!user) return;
+    await supabase.from('pomodoro_sessions').insert({ user_id: user.id, duration: 25, completed: true });
+    gamification.addXP(15);
+  };
+
+  const pct = stats.total > 0 ? Math.round((stats.hits / stats.total) * 100) : 0;
   const grouped = apostilas.reduce((acc, a) => {
     const cat = a.category || 'Geral';
     if (!acc[cat]) acc[cat] = [];
@@ -61,14 +90,19 @@ export default function DashboardPage() {
     return acc;
   }, {} as Record<string, Apostila[]>);
 
+  const earnedBadges = gamification.badges
+    .filter(b => gamification.earnedBadgeIds.includes(b.id))
+    .map(b => ({ icon: b.icon, name: b.name }));
+
   return (
     <div className="min-h-screen bg-background relative">
       <Watermark />
       <AppHeader />
-      <main className="container py-6 px-4 relative z-10 max-w-3xl">
+      {showOnboarding && <OnboardingTour onComplete={handleOnboardingComplete} />}
 
-        {/* Welcome + Quick Actions */}
-        <div className="flex items-center justify-between mb-6 animate-content-show">
+      <main className="container py-6 px-4 relative z-10 max-w-3xl">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-4 animate-content-show">
           <div>
             <h1 className="text-xl font-bold sm:text-2xl">Dashboard</h1>
             <p className="text-sm text-muted-foreground">Seu painel de estudos</p>
@@ -85,9 +119,30 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        {/* Search */}
+        <div className="mb-4 animate-content-show">
+          <GlobalSearch />
+        </div>
+
+        {/* Gamification + Pomodoro Row */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4 animate-content-show delay-1">
+          <GamificationWidget
+            xpPoints={gamification.xp.xp_points}
+            level={gamification.xp.level}
+            currentStreak={gamification.streak.current_streak}
+            longestStreak={gamification.streak.longest_streak}
+            xpForNext={gamification.xpForNextLevel(gamification.xp.level)}
+            earnedBadges={earnedBadges}
+          />
+          <div className="space-y-3">
+            <PomodoroTimer onComplete={handlePomodoroComplete} />
+            <FlashcardsWidget />
+          </div>
+        </div>
+
         {/* Stats */}
         {stats.total > 0 && (
-          <div className="grid grid-cols-3 gap-3 mb-6 animate-content-show delay-1">
+          <div className="grid grid-cols-3 gap-3 mb-4 animate-content-show delay-1">
             <Card className="p-3 text-center bg-card border border-border/50">
               <p className="text-lg font-bold text-primary">{apostilas.length}</p>
               <p className="text-[10px] text-muted-foreground">Apostilas</p>
@@ -104,7 +159,7 @@ export default function DashboardPage() {
         )}
 
         {/* Apostilas by Category */}
-        <div className="space-y-4 mb-6 animate-content-show delay-2">
+        <div className="space-y-4 mb-4 animate-content-show delay-2">
           {Object.entries(grouped).map(([category, items]) => (
             <div key={category}>
               <div className="flex items-center gap-2 mb-2">
@@ -142,8 +197,6 @@ export default function DashboardPage() {
                           <ChevronRight className={`h-4 w-4 text-muted-foreground smooth-all ${isExpanded ? 'rotate-90' : ''}`} />
                         </div>
                       </button>
-
-                      {/* Expanded panel */}
                       <div className={`overflow-hidden smooth-all ${isExpanded ? 'max-h-40 opacity-100 mt-1' : 'max-h-0 opacity-0'}`}>
                         <div className="bg-accent/30 rounded-xl p-4 flex flex-col sm:flex-row gap-2">
                           <Button size="sm" onClick={() => navigate(`/apostila/${a.id}`)} className="gradient-primary text-primary-foreground text-xs">
@@ -170,8 +223,8 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {/* Quick Access to Materials */}
-        <Card className="p-4 bg-card border border-border/50 mb-6 animate-content-show delay-2">
+        {/* Materials Link */}
+        <Card className="p-4 bg-card border border-border/50 mb-4 animate-content-show delay-2">
           <button onClick={() => navigate('/materials')} className="w-full flex items-center gap-3 text-left hover:opacity-80 smooth-all">
             <div className="rounded-lg bg-primary/10 p-2.5">
               <FileText className="h-5 w-5 text-primary" />
@@ -183,6 +236,12 @@ export default function DashboardPage() {
             <ChevronRight className="h-4 w-4 text-muted-foreground" />
           </button>
         </Card>
+
+        {/* Evolution Chart + Leaderboard */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4 animate-content-show delay-3">
+          <EvolutionChart />
+          <Leaderboard />
+        </div>
 
         {/* Performance */}
         {stats.total > 0 && Object.keys(stats.byApostila).length > 0 && (
