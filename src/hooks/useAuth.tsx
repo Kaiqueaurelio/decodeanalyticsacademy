@@ -8,6 +8,7 @@ type AuthCtx = {
   isAdmin: boolean;
   isBlocked: boolean;
   loading: boolean;
+  roleChecked: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
