@@ -31,8 +31,8 @@ const SEMESTER_LABELS: Record<number, string> = {
 };
 
 function CategorySelect({ value, onValueChange, placeholder }: { value: string; onValueChange: (v: string) => void; placeholder?: string }) {
-  const { categories } = React.useContext(CategoriesCtx);
-  const grouped = React.useMemo(() => {
+  const { categories } = useContext(CategoriesCtx);
+  const grouped = useMemo(() => {
     const map: Record<number, string[]> = {};
     categories.forEach(c => {
       const sem = Math.floor(c.sort_order / 100);
