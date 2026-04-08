@@ -563,12 +563,7 @@ export default function AdminPage() {
                   </div>
                   <div>
                     <Label className="text-xs text-muted-foreground">Categoria</Label>
-                    <Select value={manualCategory} onValueChange={setManualCategory}>
-                      <SelectTrigger className="mt-1"><SelectValue placeholder="Selecione" /></SelectTrigger>
-                      <SelectContent>
-                        {CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
+                    <CategorySelect value={manualCategory} onValueChange={setManualCategory} placeholder="Selecione" />
                   </div>
                   <div>
                     <Label className="text-xs text-muted-foreground">Conteúdo</Label>
