@@ -35,8 +35,17 @@ export default function AdminPage() {
   const [apostilas, setApostilas] = useState<Apostila[]>([]);
   const [exercises, setExercises] = useState<Record<string, Exercise[]>>({});
   const [allAnswers, setAllAnswers] = useState<any[]>([]);
+  const [materials, setMaterials] = useState<Material[]>([]);
   const [showExerciseDialog, setShowExerciseDialog] = useState<string | null>(null);
   const [selectedApostila, setSelectedApostila] = useState('');
+
+  // Materials state
+  const [matTitle, setMatTitle] = useState('');
+  const [matDesc, setMatDesc] = useState('');
+  const [matType, setMatType] = useState<string>('link');
+  const [matUrl, setMatUrl] = useState('');
+  const [matFile, setMatFile] = useState<File | null>(null);
+  const [matUploading, setMatUploading] = useState(false);
 
   const [importUrl, setImportUrl] = useState('');
   const [importTitle, setImportTitle] = useState('');
