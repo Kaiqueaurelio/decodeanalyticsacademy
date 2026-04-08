@@ -14,64 +14,62 @@ export function AppHeader() {
   const nav = (path: string) => { navigate(path); setOpen(false); };
 
   return (
-    <header className="sticky top-0 z-50 glass-strong">
-      <div className="container flex h-14 sm:h-16 items-center justify-between px-4">
-        <Link to={user ? '/dashboard' : '/'} className="flex items-center gap-2.5">
-          <img src={logoDark} alt="Decode Analytics" className="h-8 w-8 rounded-lg object-cover" />
-          <span className="text-base sm:text-lg font-bold tracking-tight text-foreground">Decode Analytics</span>
+    <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-xl border-b border-border/40">
+      <div className="container flex h-14 items-center justify-between px-4">
+        <Link to={user ? '/dashboard' : '/'} className="flex items-center gap-2">
+          <img src={logoDark} alt="Decode Analytics" className="h-7 w-7 rounded-lg object-cover" />
+          <span className="text-sm font-bold tracking-tight text-foreground">Decode Analytics</span>
         </Link>
 
-        {/* Desktop nav */}
-        <nav className="hidden sm:flex items-center gap-1.5">
+        <nav className="hidden sm:flex items-center gap-1">
           {user ? (
             <>
-              <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')}>
-                <LayoutDashboard className="mr-1.5 h-4 w-4" /> Dashboard
+              <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')} className="text-xs h-8 px-3">
+                <LayoutDashboard className="mr-1.5 h-3.5 w-3.5" /> Dashboard
               </Button>
               {isAdmin && (
-                <Button variant="ghost" size="sm" onClick={() => navigate('/admin')}>
-                  <Shield className="mr-1.5 h-4 w-4" /> Admin
+                <Button variant="ghost" size="sm" onClick={() => navigate('/admin')} className="text-xs h-8 px-3">
+                  <Shield className="mr-1.5 h-3.5 w-3.5" /> Admin
                 </Button>
               )}
-              <Button variant="ghost" size="sm" onClick={signOut}>
-                <LogOut className="mr-1.5 h-4 w-4" /> Sair
+              <Button variant="ghost" size="sm" onClick={signOut} className="text-xs h-8 px-3 text-muted-foreground">
+                <LogOut className="mr-1.5 h-3.5 w-3.5" /> Sair
               </Button>
             </>
           ) : (
-            <Button size="sm" onClick={() => navigate('/login')} className="gradient-primary text-primary-foreground">
-              Entrar <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+            <Button size="sm" onClick={() => navigate('/login')} className="gradient-primary text-primary-foreground text-xs h-8 px-4">
+              Entrar <ArrowRight className="ml-1.5 h-3 w-3" />
             </Button>
           )}
         </nav>
 
-        {/* Mobile nav */}
         <div className="sm:hidden">
           {user ? (
             <Sheet open={open} onOpenChange={setOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-9 w-9">
-                  <Menu className="h-5 w-5" />
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <Menu className="h-4 w-4" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-64 pt-12">
-                <nav className="flex flex-col gap-2">
-                  <Button variant="ghost" className="justify-start" onClick={() => nav('/dashboard')}>
+              <SheetContent side="right" className="w-56 pt-10">
+                <nav className="flex flex-col gap-1">
+                  <Button variant="ghost" size="sm" className="justify-start text-sm" onClick={() => nav('/dashboard')}>
                     <LayoutDashboard className="mr-2 h-4 w-4" /> Dashboard
                   </Button>
                   {isAdmin && (
-                    <Button variant="ghost" className="justify-start" onClick={() => nav('/admin')}>
+                    <Button variant="ghost" size="sm" className="justify-start text-sm" onClick={() => nav('/admin')}>
                       <Shield className="mr-2 h-4 w-4" /> Admin
                     </Button>
                   )}
-                  <Button variant="ghost" className="justify-start text-destructive" onClick={() => { signOut(); setOpen(false); }}>
+                  <Button variant="ghost" size="sm" className="justify-start text-sm text-destructive" onClick={() => { signOut(); setOpen(false); }}>
                     <LogOut className="mr-2 h-4 w-4" /> Sair
                   </Button>
                 </nav>
               </SheetContent>
             </Sheet>
           ) : (
-            <Button size="sm" onClick={() => navigate('/login')} className="gradient-primary text-primary-foreground text-xs px-3 h-8">
-              Entrar <ArrowRight className="ml-1 h-3 w-3" />
+            <Button size="sm" onClick={() => navigate('/login')} className="gradient-primary text-primary-foreground text-xs h-7 px-3">
+              Entrar
             </Button>
           )}
         </div>

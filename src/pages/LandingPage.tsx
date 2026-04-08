@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { AppHeader } from '@/components/AppHeader';
-import { BookOpen, CheckCircle, BarChart3, ArrowRight, Sparkles, Download, Workflow } from 'lucide-react';
+import { BookOpen, CheckCircle, BarChart3, ArrowRight, Download } from 'lucide-react';
 import logoDark from '@/assets/logo-dark.jpeg';
 
 const features = [
@@ -35,56 +35,49 @@ export default function LandingPage() {
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 gradient-hero" />
-        <div className="container relative py-24 md:py-32 lg:py-40 px-4">
-          <div className="max-w-2xl space-y-6">
-            <div className="animate-fade-up inline-flex items-center gap-2 rounded-full border border-primary/20 bg-accent px-4 py-1.5 text-sm font-medium text-accent-foreground">
-              <Sparkles className="h-3.5 w-3.5" /> Plataforma Acadêmica
-            </div>
-            <h1 className="animate-fade-up stagger-1 text-4xl font-extrabold leading-tight tracking-tight md:text-5xl lg:text-6xl">
+        <div className="container relative py-20 md:py-28 lg:py-36 px-4">
+          <div className="max-w-xl space-y-5 animate-content-show">
+            <h1 className="text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl md:text-5xl">
               Suas revisões, <span className="text-gradient">organizadas</span> e prontas para a prova.
             </h1>
-            <p className="animate-fade-up stagger-2 text-lg text-muted-foreground leading-relaxed max-w-lg">
+            <p className="text-base text-muted-foreground leading-relaxed max-w-md">
               Apostilas por tópicos, exercícios corrigidos em tempo real e dashboard de desempenho — tudo em um só lugar.
             </p>
-            <div className="animate-fade-up stagger-3 flex flex-col sm:flex-row flex-wrap gap-3">
-              <Button size="lg" className="gradient-primary text-primary-foreground w-full sm:w-auto" onClick={() => navigate('/login')}>
+            <div className="flex flex-col sm:flex-row gap-3 pt-1">
+              <Button size="lg" className="gradient-primary text-primary-foreground" onClick={() => navigate('/login')}>
                 Começar agora <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
-              <Button size="lg" variant="outline" className="w-full sm:w-auto" onClick={() => document.getElementById('recursos')?.scrollIntoView({ behavior: 'smooth' })}>
+              <Button size="lg" variant="outline" onClick={() => document.getElementById('recursos')?.scrollIntoView({ behavior: 'smooth' })}>
                 Ver recursos
               </Button>
             </div>
             <button
               onClick={handleInstallPWA}
-              className="animate-fade-up stagger-4 inline-flex items-center gap-2 text-sm text-primary font-medium hover:underline"
+              className="inline-flex items-center gap-2 text-sm text-primary font-medium hover:underline underline-offset-4"
             >
               <Download className="h-4 w-4" /> Instalar no celular
             </button>
-            <div className="animate-fade-up stagger-4 flex flex-wrap gap-4 pt-2 text-sm text-muted-foreground">
-              {['Apostilas organizadas', 'Exercícios corrigidos', 'Dashboard pessoal'].map(t => (
-                <span key={t} className="flex items-center gap-1.5">
-                  <CheckCircle className="h-3.5 w-3.5 text-primary" /> {t}
-                </span>
-              ))}
-            </div>
           </div>
         </div>
       </section>
 
       {/* Features */}
-      <section id="recursos" className="py-20 md:py-28">
+      <section id="recursos" className="py-16 md:py-24">
         <div className="container px-4">
-          <div className="text-center mb-14">
-            <p className="text-sm font-semibold uppercase tracking-widest text-primary mb-3">Recursos</p>
-            <h2 className="text-3xl font-bold md:text-4xl">Tudo que você precisa para <span className="text-gradient">revisar com eficiência</span></h2>
+          <div className="text-center mb-12">
+            <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-2">Recursos</p>
+            <h2 className="text-2xl font-bold sm:text-3xl">Tudo que você precisa para revisar</h2>
           </div>
-          <div className="grid gap-6 md:grid-cols-3">
+          <div className="grid gap-5 sm:grid-cols-3">
             {features.map((f, i) => (
-              <div key={f.title} className={`glass rounded-2xl p-8 hover-lift animate-fade-up stagger-${i + 1}`}>
-                <div className="mb-5 inline-flex rounded-xl bg-accent p-3">
-                  <f.icon className="h-6 w-6 text-primary" />
+              <div
+                key={f.title}
+                className={`glass rounded-2xl p-6 hover-lift animate-content-show delay-${i + 1}`}
+              >
+                <div className="mb-4 inline-flex rounded-xl bg-accent p-2.5">
+                  <f.icon className="h-5 w-5 text-primary" />
                 </div>
-                <h3 className="text-lg font-semibold mb-2">{f.title}</h3>
+                <h3 className="text-base font-semibold mb-1.5">{f.title}</h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">{f.desc}</p>
               </div>
             ))}
@@ -93,17 +86,17 @@ export default function LandingPage() {
       </section>
 
       {/* Steps */}
-      <section className="py-20 md:py-28 bg-accent/30">
+      <section className="py-16 md:py-24 bg-accent/30">
         <div className="container px-4">
-          <div className="text-center mb-14">
-            <p className="text-sm font-semibold uppercase tracking-widest text-primary mb-3">Como funciona</p>
-            <h2 className="text-3xl font-bold md:text-4xl">Três passos simples</h2>
+          <div className="text-center mb-12">
+            <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-2">Como funciona</p>
+            <h2 className="text-2xl font-bold sm:text-3xl">Três passos simples</h2>
           </div>
-          <div className="grid gap-8 md:grid-cols-3">
+          <div className="grid gap-8 sm:grid-cols-3">
             {steps.map((s, i) => (
-              <div key={s.n} className={`animate-fade-up stagger-${i + 1} text-center`}>
-                <span className="text-5xl font-extrabold text-gradient">{s.n}</span>
-                <h3 className="text-xl font-semibold mt-4 mb-2">{s.title}</h3>
+              <div key={s.n} className={`text-center animate-content-show delay-${i + 1}`}>
+                <span className="text-4xl font-extrabold text-gradient">{s.n}</span>
+                <h3 className="text-lg font-semibold mt-3 mb-1.5">{s.title}</h3>
                 <p className="text-muted-foreground text-sm">{s.desc}</p>
               </div>
             ))}
@@ -112,13 +105,12 @@ export default function LandingPage() {
       </section>
 
       {/* CTA */}
-      <section className="py-20 md:py-28">
+      <section className="py-16 md:py-24">
         <div className="container text-center px-4">
-          <div className="inline-flex rounded-xl bg-accent p-4 mb-6">
-            <Workflow className="h-8 w-8 text-primary" />
-          </div>
-          <h2 className="text-3xl font-bold mb-4">Pronto para revisar?</h2>
-          <p className="text-muted-foreground mb-8 max-w-md mx-auto">Entre para acessar suas apostilas, estudar com foco e chegar preparado para a prova.</p>
+          <h2 className="text-2xl font-bold mb-3 sm:text-3xl">Pronto para revisar?</h2>
+          <p className="text-muted-foreground mb-6 max-w-md mx-auto text-sm">
+            Entre para acessar suas apostilas, estudar com foco e chegar preparado para a prova.
+          </p>
           <Button size="lg" className="gradient-primary text-primary-foreground" onClick={() => navigate('/login')}>
             Começar agora <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
@@ -126,14 +118,13 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t py-8">
-        <div className="container flex flex-col items-center gap-3 text-sm text-muted-foreground px-4">
+      <footer className="border-t py-6">
+        <div className="container flex flex-col items-center gap-2 text-sm text-muted-foreground px-4">
           <div className="flex items-center gap-2">
-            <img src={logoDark} alt="Decode Analytics" className="h-6 w-6 rounded object-cover" />
-            <span className="font-semibold text-foreground">Decode Analytics</span>
+            <img src={logoDark} alt="Decode Analytics" className="h-5 w-5 rounded object-cover" />
+            <span className="font-semibold text-foreground text-xs">Decode Analytics</span>
           </div>
-          <p>Desenvolvido por <span className="font-semibold text-foreground">Kaique Aurelio</span></p>
-          <p className="text-xs">© {new Date().getFullYear()} Decode Analytics</p>
+          <p className="text-xs">Desenvolvido por Kaique Aurelio · © {new Date().getFullYear()}</p>
         </div>
       </footer>
     </div>
