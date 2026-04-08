@@ -25,6 +25,39 @@ type Exercise = Tables<'exercises'>;
 type Material = Tables<'materials'>;
 
 // Categories loaded from database
+const SEMESTER_LABELS: Record<number, string> = {
+  1: '1º Semestre', 2: '2º Semestre', 3: '3º Semestre', 4: '4º Semestre',
+  5: '5º Semestre', 6: '6º Semestre', 7: '7º Semestre', 8: '8º Semestre',
+};
+
+function CategorySelect({ value, onValueChange, placeholder }: { value: string; onValueChange: (v: string) => void; placeholder?: string }) {
+  const { categories } = React.useContext(CategoriesCtx);
+  const grouped = React.useMemo(() => {
+    const map: Record<number, string[]> = {};
+    categories.forEach(c => {
+      const sem = Math.floor(c.sort_order / 100);
+      if (!map[sem]) map[sem] = [];
+      map[sem].push(c.name);
+    });
+    return map;
+  }, [categories]);
+
+  return (
+    <Select value={value} onValueChange={onValueChange}>
+      <SelectTrigger className="mt-1"><SelectValue placeholder={placeholder} /></SelectTrigger>
+      <SelectContent className="max-h-[300px]">
+        {Object.entries(grouped).sort(([a], [b]) => +a - +b).map(([sem, names]) => (
+          <div key={sem}>
+            <div className="px-2 py-1.5 text-xs font-semibold text-primary sticky top-0 bg-popover">{SEMESTER_LABELS[+sem] || `Semestre ${sem}`}</div>
+            {names.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}
+          </div>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
+
+const CategoriesCtx = React.createContext<{ categories: { name: string; sort_order: number }[] }>({ categories: [] });
 
 type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials';
 
