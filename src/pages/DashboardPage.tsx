@@ -8,7 +8,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { BookOpen, CheckCircle, XCircle, TrendingUp, FolderOpen, PenLine, ChevronRight, BarChart3, Clock } from 'lucide-react';
+import { BookOpen, CheckCircle, XCircle, TrendingUp, FolderOpen, PenLine, ChevronRight, BarChart3, Clock, User, FileText } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 
 type Apostila = Tables<'apostilas'>;
@@ -67,17 +67,22 @@ export default function DashboardPage() {
       <AppHeader />
       <main className="container py-6 px-4 relative z-10 max-w-3xl">
 
-        {/* Welcome + Admin Link */}
+        {/* Welcome + Quick Actions */}
         <div className="flex items-center justify-between mb-6 animate-content-show">
           <div>
             <h1 className="text-xl font-bold sm:text-2xl">Dashboard</h1>
             <p className="text-sm text-muted-foreground">Seu painel de estudos</p>
           </div>
-          {isAdmin && (
-            <Button size="sm" variant="outline" onClick={() => navigate('/admin')} className="text-xs gap-1.5">
-              <BarChart3 className="h-3.5 w-3.5" /> Admin
+          <div className="flex gap-2">
+            <Button size="sm" variant="outline" onClick={() => navigate('/profile')} className="text-xs gap-1.5">
+              <User className="h-3.5 w-3.5" /> Perfil
             </Button>
-          )}
+            {isAdmin && (
+              <Button size="sm" variant="outline" onClick={() => navigate('/admin')} className="text-xs gap-1.5">
+                <BarChart3 className="h-3.5 w-3.5" /> Admin
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* Stats */}
