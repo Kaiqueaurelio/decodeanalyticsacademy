@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { LogOut, LayoutDashboard, Shield, Menu } from 'lucide-react';
+import { LogOut, LayoutDashboard, Shield, Menu, ArrowRight } from 'lucide-react';
 import logoDark from '@/assets/logo-dark.jpeg';
 
 export function AppHeader() {
@@ -39,7 +39,7 @@ export function AppHeader() {
             </>
           ) : (
             <Button size="sm" onClick={() => navigate('/login')} className="gradient-primary text-primary-foreground">
-              Entrar
+              Entrar <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
             </Button>
           )}
         </nav>
@@ -71,7 +71,7 @@ export function AppHeader() {
             </Sheet>
           ) : (
             <Button size="sm" onClick={() => navigate('/login')} className="gradient-primary text-primary-foreground text-xs px-3 h-8">
-              Entrar
+              Entrar <ArrowRight className="ml-1 h-3 w-3" />
             </Button>
           )}
         </div>
