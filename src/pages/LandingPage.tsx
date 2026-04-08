@@ -52,16 +52,21 @@ export default function LandingPage() {
 
   const [showInstallGuide, setShowInstallGuide] = useState(false);
 
-  const handleInstallPWA = () => {
-    const deferredPrompt = (window as any).__pwaInstallPrompt;
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      deferredPrompt.userChoice.then(() => {
-        (window as any).__pwaInstallPrompt = null;
-      });
-    } else {
-      setShowInstallGuide(true);
+  const handleInstallPWA = async () => {
+    try {
+      const deferredPrompt = (window as any).__pwaInstallPrompt;
+      if (deferredPrompt && typeof deferredPrompt.prompt === 'function') {
+        await deferredPrompt.prompt();
+        const choice = await deferredPrompt.userChoice;
+        if (choice.outcome === 'accepted') {
+          (window as any).__pwaInstallPrompt = null;
+        }
+        return;
+      }
+    } catch (e) {
+      console.warn('PWA prompt failed:', e);
     }
+    setShowInstallGuide(true);
   };
 
   return (
