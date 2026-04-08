@@ -21,7 +21,7 @@ export default function ExercisesPage() {
   const navigate = useNavigate();
   const gamification = useGamification();
   const [exercises, setExercises] = useState<Exercise[]>([]);
-  const [answers, setAnswers] = useState<Record<string, { selected: string; correct: boolean } | null>>({});
+  const [answers, setAnswers] = useState<Record<string, { selected: string; correct: boolean; correctAnswer?: string } | null>>({});
   const [title, setTitle] = useState('');
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showResults, setShowResults] = useState(false);
@@ -33,7 +33,7 @@ export default function ExercisesPage() {
   useEffect(() => {
     if (!id || !user) return;
     supabase.from('apostilas').select('title').eq('id', id).single().then(({ data }) => data && setTitle(data.title));
-    supabase.from('exercises').select('*').eq('apostila_id', id).then(({ data }) => setExercises(data || []));
+    supabase.from('exercises').select('id, question, options, explanation, apostila_id, created_at').eq('apostila_id', id).then(({ data }) => setExercises((data as any) || []));
     supabase.from('answers').select('exercise_id, selected_answer, is_correct').eq('user_id', user.id).then(({ data }) => {
       const map: Record<string, { selected: string; correct: boolean }> = {};
       data?.forEach(a => { map[a.exercise_id] = { selected: a.selected_answer, correct: a.is_correct }; });
@@ -61,14 +61,18 @@ export default function ExercisesPage() {
     setShowResults(false);
   };
 
-  const handleAnswer = async (exerciseId: string, selected: string, correctAnswer: string) => {
+  const handleAnswer = async (exerciseId: string, selected: string, _correctAnswer?: string) => {
     if (!user || answers[exerciseId]) return;
-    const isCorrect = selected === correctAnswer;
-    const { error } = await supabase.from('answers').insert({
-      user_id: user.id, exercise_id: exerciseId, selected_answer: selected, is_correct: isCorrect,
+
+    // Use server-side answer validation
+    const { data, error } = await supabase.rpc('check_exercise_answer', {
+      _exercise_id: exerciseId, _selected_answer: selected
     });
     if (error) { toast.error('Erro ao salvar resposta'); return; }
-    setAnswers(prev => ({ ...prev, [exerciseId]: { selected, correct: isCorrect } }));
+
+    const result = data as { is_correct: boolean; correct_answer: string; explanation: string | null };
+    const isCorrect = result.is_correct;
+    setAnswers(prev => ({ ...prev, [exerciseId]: { selected, correct: isCorrect, correctAnswer: result.correct_answer } }));
 
     // Gamification
     gamification.addXP(isCorrect ? 10 : 3);
@@ -206,7 +210,7 @@ export default function ExercisesPage() {
                     {options.map((opt, oi) => {
                       const letter = String.fromCharCode(65 + oi);
                       const isSelected = answered?.selected === letter;
-                      const isCorrectAnswer = letter === currentExercise.correct_answer;
+                      const isCorrectAnswer = answered ? letter === answered.correctAnswer : false;
                       let cls = 'border-border/60 hover:border-primary/40 hover:bg-accent/50';
                       if (answered) {
                         if (isCorrectAnswer) cls = 'border-success/40 bg-success/5';
@@ -215,7 +219,7 @@ export default function ExercisesPage() {
                       }
                       return (
                         <button key={letter} disabled={!!answered}
-                          onClick={() => handleAnswer(currentExercise.id, letter, currentExercise.correct_answer)}
+                          onClick={() => handleAnswer(currentExercise.id, letter)}
                           className={`w-full text-left p-3 rounded-lg border smooth-all text-sm flex items-center gap-3 ${cls} ${!answered ? 'cursor-pointer active:scale-[0.99]' : 'cursor-default'}`}>
                           <span className={`h-7 w-7 rounded-full flex items-center justify-center text-xs font-medium shrink-0 ${
                             answered && isCorrectAnswer ? 'bg-success/20 text-success' : answered && isSelected && !answered.correct ? 'bg-destructive/20 text-destructive' : 'bg-accent text-muted-foreground'

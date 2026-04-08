@@ -39,18 +39,19 @@ export function useGamification() {
 
   const addXP = useCallback(async (points: number) => {
     if (!user) return;
-    const newPoints = xp.xp_points + points;
+    const clampedPoints = Math.min(Math.max(1, points), 100);
+    const newPoints = xp.xp_points + clampedPoints;
     const newLevel = calcLevel(newPoints);
     const leveledUp = newLevel > xp.level;
 
-    const { error } = await supabase.from('user_xp').upsert({
-      user_id: user.id, xp_points: newPoints, level: newLevel
-    }, { onConflict: 'user_id' });
+    const { error } = await supabase.rpc('increment_xp', {
+      _user_id: user.id, _amount: clampedPoints
+    });
 
     if (!error) {
       setXp({ xp_points: newPoints, level: newLevel });
-      if (leveledUp) toast.success(`🎉 Nível ${newLevel}! +${points} XP`);
-      else toast.success(`+${points} XP`);
+      if (leveledUp) toast.success(`🎉 Nível ${newLevel}! +${clampedPoints} XP`);
+      else toast.success(`+${clampedPoints} XP`);
     }
   }, [user, xp]);
 
