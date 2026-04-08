@@ -22,6 +22,7 @@ import type { Tables } from '@/integrations/supabase/types';
 
 type Apostila = Tables<'apostilas'>;
 type Exercise = Tables<'exercises'>;
+type Material = Tables<'materials'>;
 
 const CATEGORIES = ['Redes', 'IA', 'Segurança', 'Cloud', 'Programação', 'Banco de Dados', 'Sistemas Operacionais', 'Outros'];
 
