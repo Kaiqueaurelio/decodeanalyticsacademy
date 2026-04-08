@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { AppHeader } from '@/components/AppHeader';
@@ -385,6 +386,26 @@ export default function LandingPage() {
           <p className="text-xs text-center">Desenvolvido por Kaique Aurelio · © {new Date().getFullYear()} · Todos os direitos reservados</p>
         </div>
       </footer>
+
+      {/* Install Guide Modal */}
+      {showInstallGuide && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setShowInstallGuide(false)}>
+          <div className="bg-card rounded-2xl shadow-xl max-w-sm w-full p-6 space-y-4" onClick={e => e.stopPropagation()}>
+            <h3 className="text-lg font-bold text-foreground">Instalar o App</h3>
+            <div className="space-y-3 text-sm text-muted-foreground">
+              <div className="p-3 rounded-lg bg-muted/50">
+                <p className="font-semibold text-foreground mb-1">📱 iPhone / iPad (Safari)</p>
+                <p>Toque em <strong>Compartilhar</strong> (ícone ↑) → <strong>Adicionar à Tela de Início</strong></p>
+              </div>
+              <div className="p-3 rounded-lg bg-muted/50">
+                <p className="font-semibold text-foreground mb-1">🤖 Android (Chrome)</p>
+                <p>Toque no <strong>menu ⋮</strong> → <strong>Instalar app</strong> ou <strong>Adicionar à tela inicial</strong></p>
+              </div>
+            </div>
+            <Button onClick={() => setShowInstallGuide(false)} className="w-full">Entendi</Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
