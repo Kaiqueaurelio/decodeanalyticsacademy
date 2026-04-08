@@ -91,6 +91,7 @@ export default function AdminPage() {
   const [dbCategories, setDbCategories] = useState<{ name: string; sort_order: number }[]>([]);
   const [allAnswers, setAllAnswers] = useState<any[]>([]);
   const [materials, setMaterials] = useState<Material[]>([]);
+  const [users, setUsers] = useState<{ id: string; user_id: string; full_name: string; email: string; is_blocked: boolean; created_at: string }[]>([]);
   const [showExerciseDialog, setShowExerciseDialog] = useState<string | null>(null);
   const [selectedApostila, setSelectedApostila] = useState('');
 
