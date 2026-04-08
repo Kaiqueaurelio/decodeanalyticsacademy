@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useGamification } from '@/hooks/useGamification';
 import { AppHeader } from '@/components/AppHeader';
+import { EvolutionChart } from '@/components/EvolutionChart';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,21 +12,19 @@ import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
-  User, BookOpen, CheckCircle, XCircle, TrendingUp, Camera, Save, ArrowLeft,
-  PenLine, Trophy, Target, Flame
+  BookOpen, CheckCircle, XCircle, Camera, Save, ArrowLeft,
+  PenLine, Trophy, Target, Flame, Zap
 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function ProfilePage() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [profile, setProfile] = useState<any>(null);
+  const gamification = useGamification();
   const [fullName, setFullName] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
-
-  // Stats
   const [totalApostilas, setTotalApostilas] = useState(0);
   const [totalExercises, setTotalExercises] = useState(0);
   const [stats, setStats] = useState({ total: 0, hits: 0, errors: 0, byApostila: {} as Record<string, { hits: number; errors: number; title: string }> });
@@ -37,17 +37,12 @@ export default function ProfilePage() {
 
   const loadProfile = async () => {
     const { data } = await supabase.from('profiles').select('*').eq('user_id', user!.id).maybeSingle();
-    if (data) {
-      setProfile(data);
-      setFullName(data.full_name || '');
-      setAvatarUrl(data.avatar_url || '');
-    }
+    if (data) { setFullName(data.full_name || ''); setAvatarUrl(data.avatar_url || ''); }
   };
 
   const loadStats = async () => {
-    const { count: apCount } = await supabase.from('apostilas').select('*', { count: 'exact', head: true }).eq('published', true);
-    setTotalApostilas(apCount || 0);
-
+    const { count } = await supabase.from('apostilas').select('*', { count: 'exact', head: true }).eq('published', true);
+    setTotalApostilas(count || 0);
     const { data: answers } = await supabase.from('answers').select('*, exercises(apostila_id, apostilas:apostila_id(title))');
     if (answers) {
       const hits = answers.filter(a => a.is_correct).length;
@@ -58,8 +53,7 @@ export default function ProfilePage() {
         const apTitle = a.exercises?.apostilas?.title || 'Sem título';
         if (!apId) return;
         if (!byApostila[apId]) byApostila[apId] = { hits: 0, errors: 0, title: apTitle };
-        if (a.is_correct) byApostila[apId].hits++;
-        else byApostila[apId].errors++;
+        if (a.is_correct) byApostila[apId].hits++; else byApostila[apId].errors++;
       });
       setStats({ total: answers.length, hits, errors, byApostila });
       setTotalExercises(answers.length);
@@ -79,9 +73,7 @@ export default function ProfilePage() {
       setAvatarUrl(urlData.publicUrl);
       await supabase.from('profiles').update({ avatar_url: urlData.publicUrl }).eq('user_id', user.id);
       toast.success('Foto atualizada!');
-    } catch (err: any) {
-      toast.error('Erro ao enviar foto: ' + err.message);
-    }
+    } catch (err: any) { toast.error('Erro ao enviar foto: ' + err.message); }
     setUploading(false);
   };
 
@@ -89,17 +81,16 @@ export default function ProfilePage() {
     if (!user) return;
     setSaving(true);
     const { error } = await supabase.from('profiles').update({ full_name: fullName }).eq('user_id', user.id);
-    if (error) toast.error('Erro ao salvar');
-    else toast.success('Perfil atualizado!');
+    if (error) toast.error('Erro ao salvar'); else toast.success('Perfil atualizado!');
     setSaving(false);
   };
 
   const pct = stats.total > 0 ? Math.round((stats.hits / stats.total) * 100) : 0;
   const initials = (fullName || user?.email || '?').slice(0, 2).toUpperCase();
-
-  // Performance level
   const level = pct >= 90 ? 'Excelente' : pct >= 70 ? 'Bom' : pct >= 50 ? 'Regular' : stats.total > 0 ? 'Iniciante' : 'Sem dados';
   const levelColor = pct >= 90 ? 'text-success' : pct >= 70 ? 'text-primary' : pct >= 50 ? 'text-warning' : 'text-muted-foreground';
+
+  const earnedBadges = gamification.badges.filter(b => gamification.earnedBadgeIds.includes(b.id));
 
   return (
     <div className="min-h-screen bg-background">
@@ -138,6 +129,20 @@ export default function ProfilePage() {
           </div>
         </Card>
 
+        {/* XP & Streak */}
+        <div className="grid grid-cols-2 gap-3 mb-6 animate-content-show delay-1">
+          <Card className="p-4 bg-card border border-border/50 text-center">
+            <Zap className="h-5 w-5 mx-auto mb-1 text-primary" />
+            <p className="text-xl font-bold">{gamification.xp.xp_points}</p>
+            <p className="text-[10px] text-muted-foreground">XP • Nível {gamification.xp.level}</p>
+          </Card>
+          <Card className="p-4 bg-card border border-border/50 text-center">
+            <Flame className={`h-5 w-5 mx-auto mb-1 ${gamification.streak.current_streak > 0 ? 'text-orange-500' : 'text-muted-foreground'}`} />
+            <p className="text-xl font-bold">{gamification.streak.current_streak}</p>
+            <p className="text-[10px] text-muted-foreground">Streak • Recorde: {gamification.streak.longest_streak}</p>
+          </Card>
+        </div>
+
         {/* Stats Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6 animate-content-show delay-1">
           {[
@@ -154,12 +159,31 @@ export default function ProfilePage() {
           ))}
         </div>
 
+        {/* Badges */}
+        {earnedBadges.length > 0 && (
+          <Card className="p-5 bg-card border border-border/50 mb-6 animate-content-show delay-2">
+            <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+              <Trophy className="h-4 w-4 text-primary" /> Conquistas ({earnedBadges.length}/{gamification.badges.length})
+            </h3>
+            <div className="grid grid-cols-2 gap-2">
+              {gamification.badges.map(b => {
+                const earned = gamification.earnedBadgeIds.includes(b.id);
+                return (
+                  <div key={b.id} className={`p-2.5 rounded-lg border text-center ${earned ? 'border-primary/30 bg-primary/5' : 'border-border/30 opacity-40'}`}>
+                    <span className="text-lg">{b.icon}</span>
+                    <p className="text-[10px] font-medium mt-0.5">{b.name}</p>
+                    <p className="text-[9px] text-muted-foreground">{b.description}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </Card>
+        )}
+
         {/* Performance Level */}
         <Card className="p-5 bg-card border border-border/50 mb-6 animate-content-show delay-2">
           <div className="flex items-center gap-3 mb-3">
-            <div className="rounded-full bg-primary/10 p-2.5">
-              <Trophy className={`h-5 w-5 ${levelColor}`} />
-            </div>
+            <div className="rounded-full bg-primary/10 p-2.5"><Trophy className={`h-5 w-5 ${levelColor}`} /></div>
             <div>
               <p className="text-sm font-semibold">Nível de Desempenho</p>
               <p className={`text-lg font-bold ${levelColor}`}>{level}</p>
@@ -167,12 +191,14 @@ export default function ProfilePage() {
           </div>
           <Progress value={pct} className="h-2.5 mb-2" />
           <div className="flex justify-between text-[10px] text-muted-foreground">
-            <span>Iniciante</span>
-            <span>Regular</span>
-            <span>Bom</span>
-            <span>Excelente</span>
+            <span>Iniciante</span><span>Regular</span><span>Bom</span><span>Excelente</span>
           </div>
         </Card>
+
+        {/* Evolution Chart */}
+        <div className="mb-6 animate-content-show delay-3">
+          <EvolutionChart />
+        </div>
 
         {/* Per-apostila performance */}
         {Object.keys(stats.byApostila).length > 0 && (
