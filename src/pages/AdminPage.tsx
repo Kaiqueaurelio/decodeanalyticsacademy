@@ -15,7 +15,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import {
   Plus, Trash2, Eye, EyeOff, BookOpen, FileText, PenLine, ArrowLeft,
   LayoutDashboard, CheckCircle, TrendingUp, Upload, BarChart3, Clock,
-  Link as LinkIcon, Loader2, AlertCircle, Edit, Download, File, Image, Video, Music, FileSpreadsheet, Presentation
+  Link as LinkIcon, Loader2, AlertCircle, Edit, Download, File, Image, Video, Music, FileSpreadsheet, Presentation,
+  Users, ShieldBan, ShieldCheck
 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { Tables } from '@/integrations/supabase/types';
@@ -59,7 +60,7 @@ function CategorySelect({ value, onValueChange, placeholder }: { value: string; 
 
 const CategoriesCtx = createContext<{ categories: { name: string; sort_order: number }[] }>({ categories: [] });
 
-type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials';
+type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users';
 
 const ACCEPT_MAP: Record<string, string> = {
   pdf: '.pdf',
@@ -364,6 +365,7 @@ export default function AdminPage() {
     { id: 'apostilas' as Tab, label: 'Apostilas', icon: BookOpen },
     { id: 'exercises' as Tab, label: 'Exercícios', icon: PenLine },
     { id: 'materials' as Tab, label: 'Materiais', icon: FileText },
+    { id: 'users' as Tab, label: 'Usuários', icon: Users },
   ];
 
   return (
