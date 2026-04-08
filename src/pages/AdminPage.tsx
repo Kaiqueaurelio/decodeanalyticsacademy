@@ -1053,5 +1053,6 @@ export default function AdminPage() {
         )}
       </main>
     </div>
+    </CategoriesCtx.Provider>
   );
 }
