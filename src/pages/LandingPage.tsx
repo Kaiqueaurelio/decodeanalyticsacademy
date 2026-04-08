@@ -395,13 +395,15 @@ export default function LandingPage() {
       </footer>
 
       {/* Install Guide Modal */}
-      {showInstallGuide && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setShowInstallGuide(false)}>
-          <div className="bg-card rounded-2xl shadow-xl max-w-sm w-full p-6 space-y-4" onClick={e => e.stopPropagation()}>
-            <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
+      <Dialog open={showInstallGuide} onOpenChange={setShowInstallGuide}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
               <Smartphone className="w-5 h-5 text-primary" />
               Instalar o App
-            </h3>
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
               Para instalar, abra o site publicado no navegador do seu celular e siga as instruções:
             </p>
@@ -432,8 +434,8 @@ export default function LandingPage() {
             </div>
             <Button onClick={() => setShowInstallGuide(false)} className="w-full">Entendi</Button>
           </div>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
