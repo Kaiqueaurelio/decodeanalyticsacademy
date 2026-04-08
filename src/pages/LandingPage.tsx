@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AppHeader } from '@/components/AppHeader';
 import { ScrollReveal } from '@/hooks/useScrollAnimation';
 import {
@@ -52,16 +53,21 @@ export default function LandingPage() {
 
   const [showInstallGuide, setShowInstallGuide] = useState(false);
 
-  const handleInstallPWA = () => {
-    const deferredPrompt = (window as any).__pwaInstallPrompt;
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      deferredPrompt.userChoice.then(() => {
-        (window as any).__pwaInstallPrompt = null;
-      });
-    } else {
-      setShowInstallGuide(true);
+  const handleInstallPWA = async () => {
+    try {
+      const deferredPrompt = (window as any).__pwaInstallPrompt;
+      if (deferredPrompt && typeof deferredPrompt.prompt === 'function') {
+        await deferredPrompt.prompt();
+        const choice = await deferredPrompt.userChoice;
+        if (choice.outcome === 'accepted') {
+          (window as any).__pwaInstallPrompt = null;
+        }
+        return;
+      }
+    } catch (e) {
+      console.warn('PWA prompt failed:', e);
     }
+    setShowInstallGuide(true);
   };
 
   return (
@@ -107,14 +113,15 @@ export default function LandingPage() {
               </div>
             </ScrollReveal>
 
-            <ScrollReveal delay={400}>
+            <div style={{ opacity: 1 }}>
               <button
+                type="button"
                 onClick={handleInstallPWA}
-                className="inline-flex items-center gap-2 text-sm text-primary font-medium hover:underline underline-offset-4 transition-colors"
+                className="inline-flex items-center gap-2 text-sm text-primary font-medium hover:underline underline-offset-4 transition-colors cursor-pointer"
               >
                 <Download className="h-4 w-4" /> Instalar no celular
               </button>
-            </ScrollReveal>
+            </div>
           </div>
         </div>
       </section>
@@ -388,13 +395,15 @@ export default function LandingPage() {
       </footer>
 
       {/* Install Guide Modal */}
-      {showInstallGuide && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setShowInstallGuide(false)}>
-          <div className="bg-card rounded-2xl shadow-xl max-w-sm w-full p-6 space-y-4" onClick={e => e.stopPropagation()}>
-            <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
+      <Dialog open={showInstallGuide} onOpenChange={setShowInstallGuide}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
               <Smartphone className="w-5 h-5 text-primary" />
               Instalar o App
-            </h3>
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
               Para instalar, abra o site publicado no navegador do seu celular e siga as instruções:
             </p>
@@ -425,8 +434,8 @@ export default function LandingPage() {
             </div>
             <Button onClick={() => setShowInstallGuide(false)} className="w-full">Entendi</Button>
           </div>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
