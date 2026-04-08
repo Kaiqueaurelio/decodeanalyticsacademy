@@ -49,12 +49,17 @@ const testimonials = [
 export default function LandingPage() {
   const navigate = useNavigate();
 
+  const [showInstallGuide, setShowInstallGuide] = useState(false);
+
   const handleInstallPWA = () => {
     const deferredPrompt = (window as any).__pwaInstallPrompt;
     if (deferredPrompt) {
       deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(() => {
+        (window as any).__pwaInstallPrompt = null;
+      });
     } else {
-      window.open(window.location.href, '_blank');
+      setShowInstallGuide(true);
     }
   };
 
