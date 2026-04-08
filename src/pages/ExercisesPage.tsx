@@ -21,7 +21,7 @@ export default function ExercisesPage() {
   const navigate = useNavigate();
   const gamification = useGamification();
   const [exercises, setExercises] = useState<Exercise[]>([]);
-  const [answers, setAnswers] = useState<Record<string, { selected: string; correct: boolean } | null>>({});
+  const [answers, setAnswers] = useState<Record<string, { selected: string; correct: boolean; correctAnswer?: string } | null>>({});
   const [title, setTitle] = useState('');
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showResults, setShowResults] = useState(false);
@@ -33,7 +33,7 @@ export default function ExercisesPage() {
   useEffect(() => {
     if (!id || !user) return;
     supabase.from('apostilas').select('title').eq('id', id).single().then(({ data }) => data && setTitle(data.title));
-    supabase.from('exercises').select('*').eq('apostila_id', id).then(({ data }) => setExercises(data || []));
+    supabase.from('exercises').select('id, question, options, explanation, apostila_id, created_at').eq('apostila_id', id).then(({ data }) => setExercises((data as any) || []));
     supabase.from('answers').select('exercise_id, selected_answer, is_correct').eq('user_id', user.id).then(({ data }) => {
       const map: Record<string, { selected: string; correct: boolean }> = {};
       data?.forEach(a => { map[a.exercise_id] = { selected: a.selected_answer, correct: a.is_correct }; });
