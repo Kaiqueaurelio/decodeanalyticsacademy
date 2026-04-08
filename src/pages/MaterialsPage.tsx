@@ -23,6 +23,17 @@ const fmt = (s: number) => {
   return `${m}:${sec.toString().padStart(2, '0')}`;
 };
 
+const getMimeType = (url: string): string | undefined => {
+  const ext = url.split('?')[0].split('.').pop()?.toLowerCase();
+  const map: Record<string, string> = {
+    mp4: 'video/mp4', mov: 'video/quicktime', webm: 'video/webm',
+    avi: 'video/x-msvideo', mkv: 'video/x-matroska', ogv: 'video/ogg',
+    mp3: 'audio/mpeg', wav: 'audio/wav', m4a: 'audio/mp4',
+    ogg: 'audio/ogg', flac: 'audio/flac', aac: 'audio/aac',
+  };
+  return ext ? map[ext] : undefined;
+};
+
 // Robust Audio Player (Spotify-style)
 function AudioPlayer({ url, title }: { url: string; title: string }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -180,6 +191,17 @@ function VideoPlayer({ url, title }: { url: string; title: string }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);
+  const retriedRef = useRef(false);
+
+  const handleError = useCallback(() => {
+    if (!retriedRef.current && videoRef.current) {
+      retriedRef.current = true;
+      videoRef.current.load();
+      return;
+    }
+    setLoading(false);
+    setError(true);
+  }, []);
 
   return (
     <div className="rounded-2xl overflow-hidden bg-black border border-border/30">
@@ -203,14 +225,16 @@ function VideoPlayer({ url, title }: { url: string; title: string }) {
           <video
             ref={videoRef}
             controls
+            crossOrigin="anonymous"
             className="w-full aspect-video"
             preload="metadata"
             playsInline
+            src={url}
             onLoadedData={() => setLoading(false)}
-            onError={() => { setLoading(false); setError(true); }}
+            onError={handleError}
             onCanPlay={() => setLoading(false)}
           >
-            <source src={url} />
+            <source src={url} type={getMimeType(url)} />
             Seu navegador não suporta vídeos.
           </video>
         </div>
