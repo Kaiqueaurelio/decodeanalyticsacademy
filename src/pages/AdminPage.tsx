@@ -146,19 +146,23 @@ export default function AdminPage() {
   useEffect(() => { loadAll(); }, []);
 
   const loadAll = async () => {
-    const { data: ap } = await supabase.from('apostilas').select('*').order('created_at', { ascending: false });
+    const [{ data: ap }, { data: ex }, { data: ans }, { data: mats }, { data: cats }] = await Promise.all([
+      supabase.from('apostilas').select('*').order('created_at', { ascending: false }),
+      supabase.from('exercises').select('*'),
+      supabase.from('answers').select('*'),
+      supabase.from('materials').select('*').order('created_at', { ascending: false }),
+      supabase.from('categories').select('*').order('sort_order', { ascending: true }),
+    ]);
     setApostilas(ap || []);
-    const { data: ex } = await supabase.from('exercises').select('*');
     const map: Record<string, Exercise[]> = {};
     ex?.forEach(e => {
       if (!map[e.apostila_id]) map[e.apostila_id] = [];
       map[e.apostila_id].push(e);
     });
     setExercises(map);
-    const { data: ans } = await supabase.from('answers').select('*');
     setAllAnswers(ans || []);
-    const { data: mats } = await supabase.from('materials').select('*').order('created_at', { ascending: false });
     setMaterials(mats || []);
+    setDbCategories((cats || []).map(c => ({ name: c.name, sort_order: c.sort_order })));
   };
 
   const handleExtract = async () => {
