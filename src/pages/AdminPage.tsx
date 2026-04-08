@@ -112,9 +112,9 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-background">
       <AppHeader />
-      <main className="container py-8">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-bold">Painel Admin</h1>
+      <main className="container py-6 sm:py-8 px-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+          <h1 className="text-xl sm:text-2xl font-bold">Painel Admin</h1>
           <Dialog open={showCreate} onOpenChange={setShowCreate}>
             <DialogTrigger asChild>
               <Button className="gradient-primary text-primary-foreground"><Plus className="mr-1.5 h-4 w-4" /> Nova Apostila</Button>
@@ -154,7 +154,7 @@ export default function AdminPage() {
           </Dialog>
         </div>
 
-        <div className="grid gap-4 grid-cols-3 mb-8">
+        <div className="grid gap-3 grid-cols-1 sm:grid-cols-3 mb-8">
           {[
             { icon: BookOpen, label: 'Apostilas', value: totalApostilas },
             { icon: Eye, label: 'Publicadas', value: published },
@@ -175,32 +175,32 @@ export default function AdminPage() {
         <div className="space-y-4">
           {apostilas.map(a => (
             <Card key={a.id} className="glass p-5">
-              <div className="flex items-start justify-between gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="font-semibold truncate">{a.title}</h3>
-                    <span className="text-xs rounded-full bg-accent px-2 py-0.5">{a.category}</span>
+                  <div className="flex flex-wrap items-center gap-1.5 mb-1">
+                    <h3 className="font-semibold truncate text-sm sm:text-base">{a.title}</h3>
+                    <span className="text-[10px] sm:text-xs rounded-full bg-accent px-2 py-0.5">{a.category}</span>
                     {a.published ? (
-                      <span className="text-xs rounded-full bg-success/20 text-success px-2 py-0.5 font-medium">Publicada</span>
+                      <span className="text-[10px] sm:text-xs rounded-full bg-success/20 text-success px-2 py-0.5 font-medium">Publicada</span>
                     ) : (
-                      <span className="text-xs rounded-full bg-destructive/20 text-destructive px-2 py-0.5 font-medium">Oculta</span>
+                      <span className="text-[10px] sm:text-xs rounded-full bg-destructive/20 text-destructive px-2 py-0.5 font-medium">Oculta</span>
                     )}
                   </div>
                   <p className="text-xs text-muted-foreground truncate">{a.content?.substring(0, 100)}</p>
                   <p className="text-xs text-muted-foreground mt-1">{exercises[a.id]?.length || 0} exercícios</p>
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 flex-wrap">
                   <Button
                     size="sm"
                     variant={a.published ? 'destructive' : 'default'}
                     onClick={() => togglePublish(a.id, a.published)}
-                    className="min-w-[100px]"
+                    className="min-w-[90px] text-xs sm:text-sm h-8"
                   >
-                    {a.published ? <><EyeOff className="mr-1.5 h-3.5 w-3.5" /> Ocultar</> : <><Eye className="mr-1.5 h-3.5 w-3.5" /> Publicar</>}
+                    {a.published ? <><EyeOff className="mr-1 h-3.5 w-3.5" /> Ocultar</> : <><Eye className="mr-1 h-3.5 w-3.5" /> Publicar</>}
                   </Button>
                   <Dialog open={showExerciseDialog === a.id} onOpenChange={(v) => setShowExerciseDialog(v ? a.id : null)}>
                     <DialogTrigger asChild>
-                      <Button size="sm" variant="outline"><PenLine className="mr-1.5 h-3.5 w-3.5" /> Exercícios</Button>
+                      <Button size="sm" variant="outline" className="text-xs sm:text-sm h-8"><PenLine className="mr-1 h-3.5 w-3.5" /> Exercícios</Button>
                     </DialogTrigger>
                     <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
                       <DialogHeader><DialogTitle>Exercícios — {a.title}</DialogTitle></DialogHeader>

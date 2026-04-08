@@ -49,12 +49,12 @@ export default function ExercisesPage() {
     <div className="min-h-screen bg-background relative">
       <Watermark />
       <AppHeader />
-      <main className="container py-8 relative z-10 max-w-3xl">
-        <Button variant="ghost" size="sm" className="mb-4" onClick={() => navigate('/dashboard')}>
+      <main className="container py-6 sm:py-8 px-4 relative z-10 max-w-3xl">
+        <Button variant="ghost" size="sm" className="mb-3" onClick={() => navigate('/dashboard')}>
           <ArrowLeft className="mr-1.5 h-4 w-4" /> Voltar
         </Button>
-        <h1 className="text-2xl font-bold mb-2">Exercícios</h1>
-        <p className="text-muted-foreground mb-6 text-sm">{title}</p>
+        <h1 className="text-xl sm:text-2xl font-bold mb-1.5">Exercícios</h1>
+        <p className="text-muted-foreground mb-5 text-sm">{title}</p>
 
         {exercises.length === 0 ? (
           <Card className="glass p-12 text-center text-muted-foreground">
@@ -66,8 +66,8 @@ export default function ExercisesPage() {
               const answered = answers[ex.id];
               const options = Array.isArray(ex.options) ? ex.options as string[] : [];
               return (
-                <Card key={ex.id} className="glass p-6 animate-fade-up">
-                  <p className="font-semibold mb-4">{i + 1}. {ex.question}</p>
+                <Card key={ex.id} className="glass p-4 sm:p-6 animate-fade-up">
+                  <p className="font-semibold mb-3 sm:mb-4 text-sm sm:text-base">{i + 1}. {ex.question}</p>
                   <div className="space-y-2">
                     {options.map((opt, oi) => {
                       const letter = String.fromCharCode(65 + oi);
@@ -83,7 +83,7 @@ export default function ExercisesPage() {
                           key={letter}
                           disabled={!!answered}
                           onClick={() => handleAnswer(ex.id, letter, ex.correct_answer)}
-                          className={`w-full text-left p-3 rounded-lg border transition-all text-sm ${borderClass} ${!answered ? 'hover:border-primary hover:bg-accent cursor-pointer' : 'cursor-default'}`}
+                          className={`w-full text-left p-2.5 sm:p-3 rounded-lg border transition-all text-xs sm:text-sm ${borderClass} ${!answered ? 'hover:border-primary hover:bg-accent cursor-pointer' : 'cursor-default'}`}
                         >
                           <span className="font-semibold mr-2">{letter})</span> {opt}
                           {answered && isCorrectAnswer && <CheckCircle className="inline ml-2 h-4 w-4 text-success" />}
