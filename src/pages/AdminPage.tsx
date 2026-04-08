@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -28,6 +28,26 @@ const CATEGORIES = ['Redes', 'IA', 'Segurança', 'Cloud', 'Programação', 'Banc
 
 type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials';
 
+const ACCEPT_MAP: Record<string, string> = {
+  pdf: '.pdf',
+  image: 'image/*',
+  gif: '.gif,image/gif',
+  video: 'video/*,.mp4,.mov,.avi,.mkv',
+  audio: 'audio/*,.mp3,.wav,.m4a,.ogg',
+  powerpoint: '.ppt,.pptx',
+  word: '.doc,.docx',
+  excel: '.xls,.xlsx',
+  other: '*',
+};
+
+const TYPE_FROM_EXT: Record<string, string> = {
+  pdf: 'pdf', png: 'image', jpg: 'image', jpeg: 'image', webp: 'image', svg: 'image',
+  gif: 'gif', mp4: 'video', mov: 'video', avi: 'video', mkv: 'video',
+  mp3: 'audio', wav: 'audio', m4a: 'audio', ogg: 'audio',
+  ppt: 'powerpoint', pptx: 'powerpoint', doc: 'word', docx: 'word',
+  xls: 'excel', xlsx: 'excel',
+};
+
 export default function AdminPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -46,6 +66,27 @@ export default function AdminPage() {
   const [matUrl, setMatUrl] = useState('');
   const [matFile, setMatFile] = useState<File | null>(null);
   const [matUploading, setMatUploading] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileDrop = useCallback((file: File) => {
+    const ext = file.name.split('.').pop()?.toLowerCase() || '';
+    const detectedType = TYPE_FROM_EXT[ext] || 'other';
+    setMatType(detectedType);
+    setMatFile(file);
+    if (!matTitle.trim()) {
+      setMatTitle(file.name.replace(/\.[^/.]+$/, '').replace(/[_-]/g, ' '));
+    }
+  }, [matTitle]);
+
+  const onDragOver = useCallback((e: React.DragEvent) => { e.preventDefault(); setDragActive(true); }, []);
+  const onDragLeave = useCallback((e: React.DragEvent) => { e.preventDefault(); setDragActive(false); }, []);
+  const onDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragActive(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) handleFileDrop(file);
+  }, [handleFileDrop]);
 
   const [importUrl, setImportUrl] = useState('');
   const [importTitle, setImportTitle] = useState('');
@@ -743,22 +784,51 @@ export default function AdminPage() {
                 ) : (
                   <div>
                     <Label className="text-xs text-muted-foreground">Arquivo</Label>
-                    <Input
+                    <input
+                      ref={fileInputRef}
                       type="file"
-                      className="mt-1"
-                      onChange={e => setMatFile(e.target.files?.[0] || null)}
-                      accept={
-                        matType === 'pdf' ? '.pdf' :
-                        matType === 'image' ? 'image/*' :
-                        matType === 'gif' ? '.gif,image/gif' :
-                        matType === 'video' ? 'video/*,.mp4,.mov,.avi,.mkv' :
-                        matType === 'audio' ? 'audio/*,.mp3,.wav,.m4a,.ogg' :
-                        matType === 'powerpoint' ? '.ppt,.pptx,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation' :
-                        matType === 'word' ? '.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document' :
-                        matType === 'excel' ? '.xls,.xlsx,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' :
-                        '*'
-                      }
+                      className="hidden"
+                      onChange={e => { const f = e.target.files?.[0]; if (f) handleFileDrop(f); }}
+                      accept={ACCEPT_MAP[matType] || '*'}
                     />
+                    <div
+                      onDragOver={onDragOver}
+                      onDragLeave={onDragLeave}
+                      onDrop={onDrop}
+                      onClick={() => fileInputRef.current?.click()}
+                      className={`mt-1 flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 cursor-pointer transition-all duration-200 ${
+                        dragActive
+                          ? 'border-primary bg-primary/10 scale-[1.02]'
+                          : matFile
+                            ? 'border-primary/50 bg-primary/5'
+                            : 'border-border hover:border-primary/40 hover:bg-muted/50'
+                      }`}
+                    >
+                      {matFile ? (
+                        <>
+                          <CheckCircle className="h-8 w-8 text-primary" />
+                          <span className="text-sm font-medium text-foreground truncate max-w-full">{matFile.name}</span>
+                          <span className="text-xs text-muted-foreground">{(matFile.size / 1024 / 1024).toFixed(2)} MB</span>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="text-xs text-destructive"
+                            onClick={e => { e.stopPropagation(); setMatFile(null); }}
+                          >
+                            Remover
+                          </Button>
+                        </>
+                      ) : (
+                        <>
+                          <Upload className={`h-8 w-8 ${dragActive ? 'text-primary' : 'text-muted-foreground'}`} />
+                          <span className="text-sm font-medium text-foreground">
+                            {dragActive ? 'Solte o arquivo aqui' : 'Arraste e solte ou clique para selecionar'}
+                          </span>
+                          <span className="text-xs text-muted-foreground">PDF, Imagem, Vídeo, Áudio, PowerPoint, Word, Excel...</span>
+                        </>
+                      )}
+                    </div>
                   </div>
                 )}
 
