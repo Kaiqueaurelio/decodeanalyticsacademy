@@ -485,7 +485,23 @@ export default function MaterialsPage() {
 
   const loadMaterials = async () => {
     const { data } = await supabase.from('materials').select('*').order('created_at', { ascending: false });
-    setMaterials(data || []);
+    if (!data) { setMaterials([]); return; }
+
+    // Generate signed URLs for files stored in the private bucket
+    const materialsWithSignedUrls = await Promise.all(
+      data.map(async (m) => {
+        if (m.file_path && m.type !== 'link') {
+          const { data: signedData } = await supabase.storage
+            .from('materials')
+            .createSignedUrl(m.file_path, 3600); // 1 hour
+          if (signedData?.signedUrl) {
+            return { ...m, file_url: signedData.signedUrl };
+          }
+        }
+        return m;
+      })
+    );
+    setMaterials(materialsWithSignedUrls);
   };
 
   const types = [
