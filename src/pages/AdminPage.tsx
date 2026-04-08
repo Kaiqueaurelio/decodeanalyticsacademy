@@ -323,6 +323,7 @@ export default function AdminPage() {
   ];
 
   return (
+    <CategoriesCtx.Provider value={{ categories: dbCategories }}>
     <div className="min-h-screen bg-background">
       <div className="sticky top-0 z-40 bg-card/95 backdrop-blur-xl border-b border-border/40">
         <div className="container px-4">
