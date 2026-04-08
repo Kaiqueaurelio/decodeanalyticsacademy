@@ -718,16 +718,18 @@ export default function AdminPage() {
                   <Select value={matType} onValueChange={setMatType}>
                     <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      {[
-                        { value: 'link', label: 'Link externo' },
-                        { value: 'pdf', label: 'PDF' },
-                        { value: 'image', label: 'Imagem' },
-                        { value: 'video', label: 'Vídeo' },
-                        { value: 'audio', label: 'Áudio' },
-                        { value: 'powerpoint', label: 'PowerPoint' },
-                        { value: 'word', label: 'Word' },
-                        { value: 'excel', label: 'Excel' },
-                        { value: 'other', label: 'Outro' },
+                       {[
+                        { value: 'link', label: '🔗 Link externo' },
+                        { value: 'pdf', label: '📄 PDF' },
+                        { value: 'image', label: '🖼️ Imagem / Infográfico' },
+                        { value: 'gif', label: '🎞️ GIF' },
+                        { value: 'video', label: '🎬 Vídeo (MP4)' },
+                        { value: 'audio', label: '🎧 Áudio (MP3)' },
+                        { value: 'powerpoint', label: '📊 PowerPoint' },
+                        { value: 'word', label: '📝 Word' },
+                        { value: 'excel', label: '📋 Excel / Tabela' },
+                        { value: 'exam', label: '📝 Prova / Simulado' },
+                        { value: 'other', label: '📎 Outro' },
                       ].map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
                     </SelectContent>
                   </Select>
