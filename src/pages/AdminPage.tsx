@@ -549,7 +549,7 @@ export default function AdminPage() {
                     {batchRunning ? <><Loader2 className="h-4 w-4 animate-spin mr-1.5" /> Importando {batchProgress.current}/{batchProgress.total}</> : `Importar Tudo`}
                   </Button>
                 </div>
-              ) : (
+              ) : importStep === 'url' ? (
                 <div className="space-y-3 mt-3">
                   <div>
                     <Label className="text-xs text-muted-foreground">Cole a URL da página</Label>
