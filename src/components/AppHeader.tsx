@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { LogOut, LayoutDashboard, Shield, Menu } from 'lucide-react';
+import { LogOut, LayoutDashboard, Shield, Menu, ArrowRight } from 'lucide-react';
 import logoDark from '@/assets/logo-dark.jpeg';
 
 export function AppHeader() {
