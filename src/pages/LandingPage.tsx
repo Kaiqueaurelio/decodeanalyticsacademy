@@ -391,15 +391,36 @@ export default function LandingPage() {
       {showInstallGuide && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setShowInstallGuide(false)}>
           <div className="bg-card rounded-2xl shadow-xl max-w-sm w-full p-6 space-y-4" onClick={e => e.stopPropagation()}>
-            <h3 className="text-lg font-bold text-foreground">Instalar o App</h3>
+            <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
+              <Smartphone className="w-5 h-5 text-primary" />
+              Instalar o App
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              Para instalar, abra o site publicado no navegador do seu celular e siga as instruções:
+            </p>
+            <div className="p-3 rounded-lg bg-primary/10 border border-primary/20">
+              <p className="text-xs font-medium text-primary mb-1">Abra este link no celular:</p>
+              <a
+                href="https://decodeanalyticsacademy.lovable.app"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm font-semibold text-primary underline break-all"
+              >
+                decodeanalyticsacademy.lovable.app
+              </a>
+            </div>
             <div className="space-y-3 text-sm text-muted-foreground">
               <div className="p-3 rounded-lg bg-muted/50">
                 <p className="font-semibold text-foreground mb-1">📱 iPhone / iPad (Safari)</p>
-                <p>Toque em <strong>Compartilhar</strong> (ícone ↑) → <strong>Adicionar à Tela de Início</strong></p>
+                <p>1. Abra o link acima no <strong>Safari</strong></p>
+                <p>2. Toque em <strong>Compartilhar</strong> (ícone ↑)</p>
+                <p>3. Toque em <strong>Adicionar à Tela de Início</strong></p>
               </div>
               <div className="p-3 rounded-lg bg-muted/50">
                 <p className="font-semibold text-foreground mb-1">🤖 Android (Chrome)</p>
-                <p>Toque no <strong>menu ⋮</strong> → <strong>Instalar app</strong> ou <strong>Adicionar à tela inicial</strong></p>
+                <p>1. Abra o link acima no <strong>Chrome</strong></p>
+                <p>2. Toque no <strong>menu ⋮</strong> (canto superior)</p>
+                <p>3. Toque em <strong>Instalar app</strong></p>
               </div>
             </div>
             <Button onClick={() => setShowInstallGuide(false)} className="w-full">Entendi</Button>
