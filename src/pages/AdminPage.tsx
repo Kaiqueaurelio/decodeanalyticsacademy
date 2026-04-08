@@ -721,7 +721,6 @@ export default function AdminPage() {
                   <div><Label className="text-xs">Categoria</Label>
                     <CategorySelect value={editCategory} onValueChange={setEditCategory} />
                   </div>
-                  </div>
                   <div><Label className="text-xs">Conteúdo</Label><Textarea value={editContent} onChange={e => setEditContent(e.target.value)} rows={8} /></div>
                   <Button className="w-full gradient-primary text-primary-foreground" onClick={handleEditSave}>Salvar</Button>
                 </div>
