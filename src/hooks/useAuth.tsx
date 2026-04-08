@@ -23,31 +23,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [roleChecked, setRoleChecked] = useState(false);
 
-  const checkAdmin = async (userId: string) => {
+  const checkRoles = async (userId: string) => {
+    setRoleChecked(false);
     try {
-      const { data } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', userId)
-        .eq('role', 'admin')
-        .maybeSingle();
-      setIsAdmin(!!data);
+      const [adminRes, profileRes] = await Promise.all([
+        supabase.from('user_roles').select('role').eq('user_id', userId).eq('role', 'admin').maybeSingle(),
+        supabase.from('profiles').select('is_blocked').eq('user_id', userId).maybeSingle(),
+      ]);
+      setIsAdmin(!!adminRes.data);
+      setIsBlocked(!!(profileRes.data as any)?.is_blocked);
     } catch {
       setIsAdmin(false);
-    }
-  };
-
-  const checkBlocked = async (userId: string) => {
-    try {
-      const { data } = await supabase
-        .from('profiles')
-        .select('is_blocked')
-        .eq('user_id', userId)
-        .maybeSingle();
-      setIsBlocked(!!(data as any)?.is_blocked);
-    } catch {
       setIsBlocked(false);
     }
+    setRoleChecked(true);
   };
 
   useEffect(() => {
