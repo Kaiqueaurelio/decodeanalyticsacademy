@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -8,47 +8,108 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
   ArrowLeft, FileText, Image, Video, Music, File, Download, ExternalLink,
-  Play, Pause, SkipBack, SkipForward, Volume2, Maximize, X
+  Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Maximize, X,
+  Loader2, AlertCircle
 } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
 import type { Tables } from '@/integrations/supabase/types';
 
 type Material = Tables<'materials'>;
 
-// Audio Player Component (Spotify-style)
+const fmt = (s: number) => {
+  if (!s || !isFinite(s)) return '0:00';
+  const m = Math.floor(s / 60);
+  const sec = Math.floor(s % 60);
+  return `${m}:${sec.toString().padStart(2, '0')}`;
+};
+
+// Robust Audio Player (Spotify-style)
 function AudioPlayer({ url, title }: { url: string; title: string }) {
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const [playing, setPlaying] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
   const [currentTime, setCurrTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [audio] = useState(() => new Audio(url));
+  const [volume, setVolume] = useState(1);
+  const [muted, setMuted] = useState(false);
 
   useEffect(() => {
-    audio.addEventListener('timeupdate', () => setCurrTime(audio.currentTime));
-    audio.addEventListener('loadedmetadata', () => setDuration(audio.duration));
-    audio.addEventListener('ended', () => setPlaying(false));
-    return () => { audio.pause(); audio.src = ''; };
-  }, [audio]);
+    const audio = new Audio();
+    audio.crossOrigin = 'anonymous';
+    audio.preload = 'metadata';
+    audioRef.current = audio;
 
-  const toggle = () => {
-    if (playing) audio.pause();
-    else audio.play();
-    setPlaying(!playing);
-  };
+    const onTime = () => setCurrTime(audio.currentTime);
+    const onMeta = () => { setDuration(audio.duration); setLoading(false); };
+    const onEnd = () => setPlaying(false);
+    const onWaiting = () => setLoading(true);
+    const onCanPlay = () => setLoading(false);
+    const onError = () => { setLoading(false); setError(true); setPlaying(false); };
 
-  const seek = (val: number[]) => {
-    audio.currentTime = val[0];
-    setCurrTime(val[0]);
-  };
+    audio.addEventListener('timeupdate', onTime);
+    audio.addEventListener('loadedmetadata', onMeta);
+    audio.addEventListener('ended', onEnd);
+    audio.addEventListener('waiting', onWaiting);
+    audio.addEventListener('canplaythrough', onCanPlay);
+    audio.addEventListener('error', onError);
 
-  const skip = (s: number) => {
-    audio.currentTime = Math.max(0, Math.min(duration, audio.currentTime + s));
-  };
+    audio.src = url;
 
-  const fmt = (s: number) => {
-    const m = Math.floor(s / 60);
-    const sec = Math.floor(s % 60);
-    return `${m}:${sec.toString().padStart(2, '0')}`;
-  };
+    return () => {
+      audio.pause();
+      audio.removeEventListener('timeupdate', onTime);
+      audio.removeEventListener('loadedmetadata', onMeta);
+      audio.removeEventListener('ended', onEnd);
+      audio.removeEventListener('waiting', onWaiting);
+      audio.removeEventListener('canplaythrough', onCanPlay);
+      audio.removeEventListener('error', onError);
+      audio.src = '';
+    };
+  }, [url]);
+
+  const toggle = useCallback(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (playing) {
+      audio.pause();
+      setPlaying(false);
+    } else {
+      setLoading(true);
+      setError(false);
+      audio.play()
+        .then(() => { setPlaying(true); setLoading(false); })
+        .catch(() => { setLoading(false); setError(true); });
+    }
+  }, [playing]);
+
+  const seek = useCallback((val: number[]) => {
+    if (audioRef.current) {
+      audioRef.current.currentTime = val[0];
+      setCurrTime(val[0]);
+    }
+  }, []);
+
+  const skip = useCallback((s: number) => {
+    if (audioRef.current) {
+      audioRef.current.currentTime = Math.max(0, Math.min(duration, audioRef.current.currentTime + s));
+    }
+  }, [duration]);
+
+  const handleVolume = useCallback((val: number[]) => {
+    const v = val[0];
+    setVolume(v);
+    if (audioRef.current) audioRef.current.volume = v;
+    if (v === 0) setMuted(true);
+    else setMuted(false);
+  }, []);
+
+  const toggleMute = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.muted = !muted;
+      setMuted(!muted);
+    }
+  }, [muted]);
 
   return (
     <div className="rounded-2xl bg-gradient-to-br from-[hsl(var(--primary)/0.15)] to-[hsl(var(--accent))] p-5 border border-border/30">
@@ -60,11 +121,16 @@ function AudioPlayer({ url, title }: { url: string; title: string }) {
           <p className="font-semibold text-sm truncate">{title}</p>
           <p className="text-[10px] text-muted-foreground">Áudio · Material de apoio</p>
         </div>
+        {error && (
+          <span className="flex items-center gap-1 text-[10px] text-destructive">
+            <AlertCircle className="h-3 w-3" /> Erro ao carregar
+          </span>
+        )}
       </div>
 
       <Slider
         value={[currentTime]}
-        max={duration || 100}
+        max={duration || 1}
         step={0.1}
         onValueChange={seek}
         className="mb-2"
@@ -75,56 +141,122 @@ function AudioPlayer({ url, title }: { url: string; title: string }) {
       </div>
 
       <div className="flex items-center justify-center gap-4">
-        <button onClick={() => skip(-15)} className="p-2 rounded-full hover:bg-primary/10 smooth-all">
+        <button onClick={() => skip(-15)} className="p-2 rounded-full hover:bg-primary/10 transition-colors">
           <SkipBack className="h-4 w-4 text-muted-foreground" />
         </button>
-        <button onClick={toggle} className="p-3 rounded-full bg-primary text-primary-foreground hover:opacity-90 smooth-all shadow-lg">
-          {playing ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5 ml-0.5" />}
+        <button
+          onClick={toggle}
+          disabled={error}
+          className="p-3 rounded-full bg-primary text-primary-foreground hover:opacity-90 transition-colors shadow-lg disabled:opacity-50"
+        >
+          {loading ? (
+            <Loader2 className="h-5 w-5 animate-spin" />
+          ) : playing ? (
+            <Pause className="h-5 w-5" />
+          ) : (
+            <Play className="h-5 w-5 ml-0.5" />
+          )}
         </button>
-        <button onClick={() => skip(15)} className="p-2 rounded-full hover:bg-primary/10 smooth-all">
+        <button onClick={() => skip(15)} className="p-2 rounded-full hover:bg-primary/10 transition-colors">
           <SkipForward className="h-4 w-4 text-muted-foreground" />
         </button>
-        <button className="p-2 rounded-full hover:bg-primary/10 smooth-all ml-2">
-          <Volume2 className="h-4 w-4 text-muted-foreground" />
+        <button onClick={toggleMute} className="p-2 rounded-full hover:bg-primary/10 transition-colors ml-1">
+          {muted ? <VolumeX className="h-4 w-4 text-muted-foreground" /> : <Volume2 className="h-4 w-4 text-muted-foreground" />}
         </button>
+        <Slider
+          value={[muted ? 0 : volume]}
+          max={1}
+          step={0.01}
+          onValueChange={handleVolume}
+          className="w-20"
+        />
       </div>
     </div>
   );
 }
 
-// Video Player Component (YouTube-style)
+// Robust Video Player (YouTube-style)
 function VideoPlayer({ url, title }: { url: string; title: string }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(true);
+
   return (
     <div className="rounded-2xl overflow-hidden bg-black border border-border/30">
-      <video
-        controls
-        className="w-full aspect-video"
-        poster=""
-        preload="metadata"
-      >
-        <source src={url} />
-        Seu navegador não suporta vídeos.
-      </video>
-      <div className="p-3 bg-card">
-        <p className="font-medium text-sm">{title}</p>
-        <p className="text-[10px] text-muted-foreground mt-0.5">Vídeo · Material de apoio</p>
+      {error ? (
+        <div className="w-full aspect-video flex flex-col items-center justify-center bg-muted/20 text-muted-foreground gap-2">
+          <AlertCircle className="h-8 w-8 opacity-50" />
+          <p className="text-sm">Não foi possível carregar o vídeo</p>
+          <Button size="sm" variant="outline" asChild>
+            <a href={url} target="_blank" rel="noopener noreferrer">
+              <ExternalLink className="h-3.5 w-3.5 mr-1.5" /> Abrir externamente
+            </a>
+          </Button>
+        </div>
+      ) : (
+        <div className="relative">
+          {loading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-10">
+              <Loader2 className="h-8 w-8 animate-spin text-white" />
+            </div>
+          )}
+          <video
+            ref={videoRef}
+            controls
+            className="w-full aspect-video"
+            preload="metadata"
+            playsInline
+            onLoadedData={() => setLoading(false)}
+            onError={() => { setLoading(false); setError(true); }}
+            onCanPlay={() => setLoading(false)}
+          >
+            <source src={url} />
+            Seu navegador não suporta vídeos.
+          </video>
+        </div>
+      )}
+      <div className="p-3 bg-card flex items-center justify-between">
+        <div>
+          <p className="font-medium text-sm">{title}</p>
+          <p className="text-[10px] text-muted-foreground mt-0.5">Vídeo · Material de apoio</p>
+        </div>
+        <Button size="sm" variant="outline" asChild>
+          <a href={url} target="_blank" rel="noopener noreferrer" download>
+            <Download className="h-3.5 w-3.5" />
+          </a>
+        </Button>
       </div>
     </div>
   );
 }
 
-// Image Viewer
+// Image Viewer (supports all formats)
 function ImageViewer({ url, title }: { url: string; title: string }) {
   const [fullscreen, setFullscreen] = useState(false);
+  const [error, setError] = useState(false);
 
   return (
     <>
-      <div className="rounded-2xl overflow-hidden border border-border/30 cursor-pointer group" onClick={() => setFullscreen(true)}>
+      <div className="rounded-2xl overflow-hidden border border-border/30 cursor-pointer group" onClick={() => !error && setFullscreen(true)}>
         <div className="relative">
-          <img src={url} alt={title} className="w-full max-h-[400px] object-contain bg-muted/30" />
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 smooth-all flex items-center justify-center">
-            <Maximize className="h-6 w-6 text-white opacity-0 group-hover:opacity-100 smooth-all" />
-          </div>
+          {error ? (
+            <div className="w-full h-48 flex items-center justify-center bg-muted/20 text-muted-foreground">
+              <AlertCircle className="h-6 w-6 opacity-50 mr-2" />
+              <span className="text-sm">Imagem indisponível</span>
+            </div>
+          ) : (
+            <>
+              <img
+                src={url}
+                alt={title}
+                className="w-full max-h-[400px] object-contain bg-muted/30"
+                onError={() => setError(true)}
+              />
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                <Maximize className="h-6 w-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
+            </>
+          )}
         </div>
         <div className="p-3 bg-card">
           <p className="font-medium text-sm">{title}</p>
@@ -216,7 +348,7 @@ export default function MaterialsPage() {
         return <PdfViewer key={m.id} url={m.file_url} title={m.title} />;
       case 'link':
         return (
-          <Card key={m.id} className="p-4 bg-card border border-border/50 hover:border-primary/30 smooth-all">
+          <Card key={m.id} className="p-4 bg-card border border-border/50 hover:border-primary/30 transition-colors">
             <div className="flex items-center gap-3">
               <div className="rounded-lg bg-primary/10 p-2.5">
                 <ExternalLink className="h-5 w-5 text-primary" />
@@ -261,7 +393,7 @@ export default function MaterialsPage() {
     <div className="min-h-screen bg-background">
       <AppHeader />
       <main className="container py-6 px-4 max-w-3xl">
-        <button onClick={() => navigate('/dashboard')} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground smooth-all mb-4">
+        <button onClick={() => navigate('/dashboard')} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-4">
           <ArrowLeft className="h-4 w-4" /> Voltar
         </button>
 
@@ -276,7 +408,7 @@ export default function MaterialsPage() {
             <button
               key={t.value}
               onClick={() => setFilter(t.value)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap smooth-all border ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors border ${
                 filter === t.value
                   ? 'bg-primary text-primary-foreground border-primary'
                   : 'bg-card text-muted-foreground border-border/50 hover:border-primary/30'
