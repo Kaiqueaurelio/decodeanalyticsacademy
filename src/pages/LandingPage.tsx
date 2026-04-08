@@ -5,9 +5,11 @@ import { ScrollReveal } from '@/hooks/useScrollAnimation';
 import {
   BookOpen, CheckCircle, BarChart3, ArrowRight, Download, Shield,
   Headphones, Video, FileText, Users, Zap, Clock, Award, Star,
-  GraduationCap, TrendingUp, Lock
+  GraduationCap, TrendingUp, Lock, Code2, Database, Cloud, Cpu,
+  Palette, Globe, Smartphone, BrainCircuit
 } from 'lucide-react';
 import logoDark from '@/assets/logo-dark.jpeg';
+import appPreview from '@/assets/app-preview.jpg';
 
 const features = [
   { icon: BookOpen, title: 'Apostilas Completas', desc: 'Conteúdo estruturado por disciplina e semestre, com importação inteligente via IA.' },
@@ -221,7 +223,88 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Testimonials */}
+      {/* App Preview */}
+      <section className="py-16 md:py-24 bg-accent/30">
+        <div className="container px-4">
+          <ScrollReveal>
+            <div className="text-center mb-10">
+              <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-2">Veja na prática</p>
+              <h2 className="text-2xl font-bold sm:text-3xl md:text-4xl">Como funciona a área do aluno</h2>
+              <p className="text-muted-foreground mt-3 max-w-lg mx-auto text-sm md:text-base">
+                Dashboard intuitivo com apostilas, exercícios, materiais multimídia e acompanhamento de desempenho.
+              </p>
+            </div>
+          </ScrollReveal>
+
+          <ScrollReveal delay={200} direction="scale">
+            <div className="max-w-4xl mx-auto rounded-2xl overflow-hidden shadow-2xl shadow-primary/10 border border-border/40">
+              <img
+                src={appPreview}
+                alt="Preview da área do aluno - Dashboard com apostilas, exercícios e progresso"
+                className="w-full h-auto"
+                loading="lazy"
+                width={1280}
+                height={720}
+              />
+            </div>
+          </ScrollReveal>
+
+          <ScrollReveal delay={400}>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-3xl mx-auto mt-10">
+              {[
+                { icon: BookOpen, label: 'Apostilas por semestre' },
+                { icon: CheckCircle, label: 'Exercícios corrigidos' },
+                { icon: Headphones, label: 'Player estilo Spotify' },
+                { icon: BarChart3, label: 'Gráficos de progresso' },
+              ].map((item, i) => (
+                <div key={i} className="flex flex-col items-center gap-2 text-center p-3 rounded-xl bg-card border border-border/30">
+                  <item.icon className="h-5 w-5 text-primary" />
+                  <span className="text-xs font-medium">{item.label}</span>
+                </div>
+              ))}
+            </div>
+          </ScrollReveal>
+        </div>
+      </section>
+
+      {/* Tech Stack */}
+      <section className="py-16 md:py-24">
+        <div className="container px-4">
+          <ScrollReveal>
+            <div className="text-center mb-12">
+              <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-2">Tecnologia</p>
+              <h2 className="text-2xl font-bold sm:text-3xl md:text-4xl">Construído com tecnologia de ponta</h2>
+              <p className="text-muted-foreground mt-3 max-w-lg mx-auto text-sm md:text-base">
+                Utilizamos as melhores ferramentas do mercado para entregar performance, segurança e uma experiência incrível.
+              </p>
+            </div>
+          </ScrollReveal>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 max-w-4xl mx-auto">
+            {[
+              { icon: Code2, name: 'React + TypeScript', desc: 'Interface moderna e tipada' },
+              { icon: Palette, name: 'Tailwind CSS', desc: 'Design responsivo e elegante' },
+              { icon: Database, name: 'Supabase', desc: 'Banco de dados em tempo real' },
+              { icon: Cloud, name: 'Cloud Storage', desc: 'Arquivos seguros na nuvem' },
+              { icon: BrainCircuit, name: 'IA Generativa', desc: 'Importação inteligente de conteúdo' },
+              { icon: Shield, name: 'RLS & Auth', desc: 'Segurança por linha de dado' },
+              { icon: Smartphone, name: 'PWA', desc: 'Instale como app no celular' },
+              { icon: Globe, name: 'Edge Functions', desc: 'Backend serverless global' },
+            ].map((tech, i) => (
+              <ScrollReveal key={tech.name} delay={i * 80} direction="scale">
+                <div className="glass rounded-xl p-5 text-center hover-lift h-full flex flex-col items-center gap-2">
+                  <div className="rounded-lg bg-primary/10 p-2.5">
+                    <tech.icon className="h-5 w-5 text-primary" />
+                  </div>
+                  <h3 className="text-sm font-semibold">{tech.name}</h3>
+                  <p className="text-xs text-muted-foreground">{tech.desc}</p>
+                </div>
+              </ScrollReveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className="py-16 md:py-24 bg-accent/30">
         <div className="container px-4">
           <ScrollReveal>
