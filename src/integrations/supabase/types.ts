@@ -415,6 +415,7 @@ export type Database = {
           email: string
           full_name: string
           id: string
+          is_blocked: boolean
           user_id: string
         }
         Insert: {
@@ -423,6 +424,7 @@ export type Database = {
           email?: string
           full_name?: string
           id?: string
+          is_blocked?: boolean
           user_id: string
         }
         Update: {
@@ -431,6 +433,7 @@ export type Database = {
           email?: string
           full_name?: string
           id?: string
+          is_blocked?: boolean
           user_id?: string
         }
         Relationships: []
