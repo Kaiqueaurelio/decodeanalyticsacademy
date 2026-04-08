@@ -187,12 +187,13 @@ export default function AdminPage() {
   useEffect(() => { loadAll(); }, []);
 
   const loadAll = async () => {
-    const [{ data: ap }, { data: ex }, { data: ans }, { data: mats }, { data: cats }] = await Promise.all([
+    const [{ data: ap }, { data: ex }, { data: ans }, { data: mats }, { data: cats }, { data: profs }] = await Promise.all([
       supabase.from('apostilas').select('*').order('created_at', { ascending: false }),
       supabase.from('exercises').select('*'),
       supabase.from('answers').select('*'),
       supabase.from('materials').select('*').order('created_at', { ascending: false }),
       supabase.from('categories').select('*').order('sort_order', { ascending: true }),
+      supabase.from('profiles').select('*').order('created_at', { ascending: false }),
     ]);
     setApostilas(ap || []);
     const map: Record<string, Exercise[]> = {};
@@ -203,6 +204,7 @@ export default function AdminPage() {
     setExercises(map);
     setAllAnswers(ans || []);
     setMaterials(mats || []);
+    setUsers((profs || []).map(p => ({ id: p.id, user_id: p.user_id, full_name: p.full_name, email: p.email, is_blocked: (p as any).is_blocked ?? false, created_at: p.created_at })));
     setDbCategories((cats || []).map(c => ({ name: c.name, sort_order: c.sort_order })));
   };
 
