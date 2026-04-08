@@ -72,7 +72,7 @@ export default function ExercisesPage() {
 
     const result = data as { is_correct: boolean; correct_answer: string; explanation: string | null };
     const isCorrect = result.is_correct;
-    setAnswers(prev => ({ ...prev, [exerciseId]: { selected, correct: isCorrect } }));
+    setAnswers(prev => ({ ...prev, [exerciseId]: { selected, correct: isCorrect, correctAnswer: result.correct_answer } }));
 
     // Gamification
     gamification.addXP(isCorrect ? 10 : 3);
