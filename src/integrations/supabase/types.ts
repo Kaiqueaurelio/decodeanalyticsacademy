@@ -49,6 +49,47 @@ export type Database = {
           },
         ]
       }
+      annotations: {
+        Row: {
+          apostila_id: string
+          color: string | null
+          content: string
+          created_at: string
+          id: string
+          position: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          apostila_id: string
+          color?: string | null
+          content: string
+          created_at?: string
+          id?: string
+          position?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          apostila_id?: string
+          color?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          position?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "annotations_apostila_id_fkey"
+            columns: ["apostila_id"]
+            isOneToOne: false
+            referencedRelation: "apostilas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       answers: {
         Row: {
           created_at: string
@@ -120,6 +161,36 @@ export type Database = {
           source_type?: string | null
           title?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      badges: {
+        Row: {
+          created_at: string
+          criteria: string | null
+          description: string | null
+          icon: string
+          id: string
+          name: string
+          xp_reward: number
+        }
+        Insert: {
+          created_at?: string
+          criteria?: string | null
+          description?: string | null
+          icon?: string
+          id?: string
+          name: string
+          xp_reward?: number
+        }
+        Update: {
+          created_at?: string
+          criteria?: string | null
+          description?: string | null
+          icon?: string
+          id?: string
+          name?: string
+          xp_reward?: number
         }
         Relationships: []
       }
@@ -217,6 +288,47 @@ export type Database = {
           },
         ]
       }
+      flashcards: {
+        Row: {
+          apostila_id: string | null
+          back: string
+          created_at: string
+          difficulty: number
+          front: string
+          id: string
+          next_review: string | null
+          user_id: string
+        }
+        Insert: {
+          apostila_id?: string | null
+          back: string
+          created_at?: string
+          difficulty?: number
+          front: string
+          id?: string
+          next_review?: string | null
+          user_id: string
+        }
+        Update: {
+          apostila_id?: string | null
+          back?: string
+          created_at?: string
+          difficulty?: number
+          front?: string
+          id?: string
+          next_review?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flashcards_apostila_id_fkey"
+            columns: ["apostila_id"]
+            isOneToOne: false
+            referencedRelation: "apostilas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       materials: {
         Row: {
           category_id: string | null
@@ -257,6 +369,41 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pomodoro_sessions: {
+        Row: {
+          apostila_id: string | null
+          completed: boolean
+          created_at: string
+          duration: number
+          id: string
+          user_id: string
+        }
+        Insert: {
+          apostila_id?: string | null
+          completed?: boolean
+          created_at?: string
+          duration?: number
+          id?: string
+          user_id: string
+        }
+        Update: {
+          apostila_id?: string | null
+          completed?: boolean
+          created_at?: string
+          duration?: number
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pomodoro_sessions_apostila_id_fkey"
+            columns: ["apostila_id"]
+            isOneToOne: false
+            referencedRelation: "apostilas"
             referencedColumns: ["id"]
           },
         ]
@@ -315,6 +462,65 @@ export type Database = {
         }
         Relationships: []
       }
+      study_streaks: {
+        Row: {
+          created_at: string
+          current_streak: number
+          id: string
+          last_study_date: string | null
+          longest_streak: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_streak?: number
+          id?: string
+          last_study_date?: string | null
+          longest_streak?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_streak?: number
+          id?: string
+          last_study_date?: string | null
+          longest_streak?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_badges: {
+        Row: {
+          badge_id: string
+          earned_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          badge_id: string
+          earned_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          badge_id?: string
+          earned_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_badges_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "badges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           id: string
@@ -330,6 +536,33 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      user_xp: {
+        Row: {
+          created_at: string
+          id: string
+          level: number
+          updated_at: string
+          user_id: string
+          xp_points: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          level?: number
+          updated_at?: string
+          user_id: string
+          xp_points?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          level?: number
+          updated_at?: string
+          user_id?: string
+          xp_points?: number
         }
         Relationships: []
       }
