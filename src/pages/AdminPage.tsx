@@ -66,6 +66,27 @@ export default function AdminPage() {
   const [matUrl, setMatUrl] = useState('');
   const [matFile, setMatFile] = useState<File | null>(null);
   const [matUploading, setMatUploading] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileDrop = useCallback((file: File) => {
+    const ext = file.name.split('.').pop()?.toLowerCase() || '';
+    const detectedType = TYPE_FROM_EXT[ext] || 'other';
+    setMatType(detectedType);
+    setMatFile(file);
+    if (!matTitle.trim()) {
+      setMatTitle(file.name.replace(/\.[^/.]+$/, '').replace(/[_-]/g, ' '));
+    }
+  }, [matTitle]);
+
+  const onDragOver = useCallback((e: React.DragEvent) => { e.preventDefault(); setDragActive(true); }, []);
+  const onDragLeave = useCallback((e: React.DragEvent) => { e.preventDefault(); setDragActive(false); }, []);
+  const onDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragActive(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) handleFileDrop(file);
+  }, [handleFileDrop]);
 
   const [importUrl, setImportUrl] = useState('');
   const [importTitle, setImportTitle] = useState('');
