@@ -1168,6 +1168,63 @@ export default function AdminPage() {
             </div>
           </div>
         )}
+
+        {/* Users Tab */}
+        {tab === 'users' && (
+          <div className="space-y-5">
+            <Card className="p-5 bg-card border border-border/50 border-t-4 border-t-primary">
+              <h3 className="font-semibold flex items-center gap-2 text-sm mb-1">
+                <Users className="h-4 w-4 text-primary" /> Gerenciar Usuários
+              </h3>
+              <p className="text-[10px] text-muted-foreground mb-4">Bloqueie ou desbloqueie usuários da plataforma.</p>
+
+              <div className="space-y-2">
+                {users.map(u => (
+                  <Card key={u.id} className={`p-3 border ${u.is_blocked ? 'border-destructive/40 bg-destructive/5' : 'border-border/50 bg-card'}`}>
+                    <div className="flex items-center gap-3">
+                      <div className={`rounded-full p-2 shrink-0 ${u.is_blocked ? 'bg-destructive/15' : 'bg-accent'}`}>
+                        {u.is_blocked ? <ShieldBan className="h-4 w-4 text-destructive" /> : <ShieldCheck className="h-4 w-4 text-primary" />}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{u.full_name || 'Sem nome'}</p>
+                        <p className="text-[10px] text-muted-foreground truncate">{u.email} · {new Date(u.created_at).toLocaleDateString('pt-BR')}</p>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        {u.is_blocked && (
+                          <Badge variant="destructive" className="text-[10px]">Bloqueado</Badge>
+                        )}
+                        <Button
+                          size="sm"
+                          variant={u.is_blocked ? 'outline' : 'destructive'}
+                          className="text-xs h-8"
+                          onClick={async () => {
+                            const newBlocked = !u.is_blocked;
+                            const { error } = await supabase.from('profiles').update({ is_blocked: newBlocked } as any).eq('user_id', u.user_id);
+                            if (error) { toast.error('Erro ao atualizar'); return; }
+                            toast.success(newBlocked ? `${u.full_name} foi bloqueado` : `${u.full_name} foi desbloqueado`);
+                            loadAll();
+                          }}
+                        >
+                          {u.is_blocked ? (
+                            <><ShieldCheck className="h-3.5 w-3.5 mr-1" /> Desbloquear</>
+                          ) : (
+                            <><ShieldBan className="h-3.5 w-3.5 mr-1" /> Bloquear</>
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+                {users.length === 0 && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Users className="h-8 w-8 mx-auto mb-2 opacity-30" />
+                    <p className="text-sm">Nenhum usuário encontrado.</p>
+                  </div>
+                )}
+              </div>
+            </Card>
+          </div>
+        )}
       </main>
     </div>
     </CategoriesCtx.Provider>
