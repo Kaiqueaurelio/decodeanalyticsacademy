@@ -242,9 +242,10 @@ function VideoPlayer({ url, title }: { url: string; title: string }) {
   return (
     <div className="rounded-2xl overflow-hidden bg-black border border-border/30">
       {error ? (
-        <div className="w-full aspect-video flex flex-col items-center justify-center bg-muted/20 text-muted-foreground gap-2">
+        <div className="w-full aspect-video flex flex-col items-center justify-center bg-muted/20 text-muted-foreground gap-3 p-4">
           <AlertCircle className="h-8 w-8 opacity-50" />
-          <p className="text-sm">Não foi possível carregar o vídeo</p>
+          <p className="text-sm font-medium">Não foi possível carregar o vídeo</p>
+          <p className="text-xs text-center opacity-70">O arquivo pode estar vazio ou corrompido. Peça ao admin para reenviar o vídeo.</p>
           <Button size="sm" variant="outline" asChild>
             <a href={url} target="_blank" rel="noopener noreferrer">
               <ExternalLink className="h-3.5 w-3.5 mr-1.5" /> Abrir externamente

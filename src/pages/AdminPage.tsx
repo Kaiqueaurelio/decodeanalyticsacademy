@@ -108,6 +108,10 @@ export default function AdminPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileDrop = useCallback((file: File) => {
+    if (file.size === 0) {
+      toast.error('Arquivo vazio (0 bytes). Selecione um arquivo válido.');
+      return;
+    }
     const ext = file.name.split('.').pop()?.toLowerCase() || '';
     const detectedType = TYPE_FROM_EXT[ext] || 'other';
     setMatType(detectedType);
@@ -127,12 +131,20 @@ export default function AdminPage() {
       const file = files[i];
       setUploadProgress({ current: i + 1, total: files.length });
       setMatFile(file);
+      if (file.size === 0) {
+        toast.error(`"${file.name}" está vazio (0 bytes). Pulando.`);
+        continue;
+      }
       try {
         const ext = file.name.split('.').pop()?.toLowerCase() || '';
         const detectedType = TYPE_FROM_EXT[ext] || 'other';
         const title = file.name.replace(/\.[^/.]+$/, '').replace(/[_-]/g, ' ');
         const path = `${user.id}/${Date.now()}-${i}.${ext}`;
-        const { error: uploadErr } = await supabase.storage.from('materials').upload(path, file);
+        const mimeType = file.type || undefined;
+        const { error: uploadErr } = await supabase.storage.from('materials').upload(path, file, {
+          contentType: mimeType,
+          upsert: false,
+        });
         if (uploadErr) throw uploadErr;
         const { data: urlData } = supabase.storage.from('materials').getPublicUrl(path);
         await supabase.from('materials').insert({
@@ -1010,11 +1022,19 @@ export default function AdminPage() {
                         onClick={async (e) => {
                           e.stopPropagation();
                           if (!user || !matFile) return;
+                          if (matFile.size === 0) {
+                            toast.error('Arquivo vazio (0 bytes). Selecione um arquivo válido.');
+                            return;
+                          }
                           setMatUploading(true);
                           try {
                             const ext = matFile.name.split('.').pop();
                             const path = `${user.id}/${Date.now()}.${ext}`;
-                            const { error: uploadErr } = await supabase.storage.from('materials').upload(path, matFile);
+                            const mimeType = matFile.type || undefined;
+                            const { error: uploadErr } = await supabase.storage.from('materials').upload(path, matFile, {
+                              contentType: mimeType,
+                              upsert: false,
+                            });
                             if (uploadErr) throw uploadErr;
                             const { data: urlData } = supabase.storage.from('materials').getPublicUrl(path);
                             const { error } = await supabase.from('materials').insert({
