@@ -235,11 +235,10 @@ function VideoPlayer({ url, title }: { url: string; title: string }) {
           <video
             ref={videoRef}
             controls
-            crossOrigin="anonymous"
+            controlsList="nodownload"
             className="w-full aspect-video"
             preload="metadata"
             playsInline
-            src={url}
             onLoadedData={() => setLoading(false)}
             onError={handleError}
             onCanPlay={() => setLoading(false)}
