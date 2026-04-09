@@ -58,7 +58,7 @@ function CategorySelect({ value, onValueChange, placeholder }: { value: string; 
   );
 }
 
-const CategoriesCtx = createContext<{ categories: { name: string; sort_order: number }[] }>({ categories: [] });
+const CategoriesCtx = createContext<{ categories: { id: string; name: string; sort_order: number }[] }>({ categories: [] });
 
 type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users';
 
