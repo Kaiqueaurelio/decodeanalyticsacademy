@@ -88,7 +88,7 @@ export default function AdminPage() {
   const [tab, setTab] = useState<Tab>('overview');
   const [apostilas, setApostilas] = useState<Apostila[]>([]);
   const [exercises, setExercises] = useState<Record<string, Exercise[]>>({});
-  const [dbCategories, setDbCategories] = useState<{ name: string; sort_order: number }[]>([]);
+  const [dbCategories, setDbCategories] = useState<{ id: string; name: string; sort_order: number }[]>([]);
   const [allAnswers, setAllAnswers] = useState<any[]>([]);
   const [materials, setMaterials] = useState<Material[]>([]);
   const [users, setUsers] = useState<{ id: string; user_id: string; full_name: string; email: string; is_blocked: boolean; created_at: string }[]>([]);
