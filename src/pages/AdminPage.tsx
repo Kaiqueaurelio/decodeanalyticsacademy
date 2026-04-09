@@ -374,6 +374,18 @@ export default function AdminPage() {
     loadAll();
   };
 
+  const handleEditMaterial = async () => {
+    if (!editingMaterial) return;
+    const { error } = await supabase.from('materials').update({
+      title: editMatTitle.trim(),
+      description: editMatDesc || null,
+    }).eq('id', editingMaterial.id);
+    if (error) { toast.error('Erro ao atualizar'); return; }
+    toast.success('Material atualizado!');
+    setEditingMaterial(null);
+    loadAll();
+  };
+
   const totalApostilas = apostilas.length;
   const published = apostilas.filter(a => a.published).length;
   const totalExercises = Object.values(exercises).flat().length;
