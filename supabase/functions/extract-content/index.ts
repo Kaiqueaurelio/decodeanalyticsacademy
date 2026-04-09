@@ -149,55 +149,51 @@ serve(async (req) => {
     if (!lovableApiKey) throw new Error("LOVABLE_API_KEY não configurada");
 
     let userPrompt: string;
-    let systemPrompt: string;
 
-    if (isSparse || isNotion) {
-      // For Notion or sparse pages, ask AI to generate complete content based on URL + title + whatever we got
-      systemPrompt = `Você é um professor universitário especialista. O usuário forneceu uma URL de uma página (possivelmente do Notion) com conteúdo sobre um assunto acadêmico.
-Com base na URL, título da página e qualquer conteúdo extraído, você deve:
-1. Identificar o assunto principal
-2. Criar um conteúdo educacional COMPLETO e DETALHADO sobre esse assunto (mínimo 2000 palavras)
-3. Gerar exercícios de múltipla escolha
+    // Unified system prompt for ALL sources (Notion, Perplexity, generic URLs)
+    const systemPrompt = `Você é um professor universitário especialista em Ciência da Computação. Sua tarefa é produzir uma apostila educacional BEM ESTRUTURADA e PADRONIZADA.
 
-O conteúdo deve ser uma apostila educacional completa, com introdução, conceitos, exemplos práticos e conclusão.
+REGRAS DE FORMATAÇÃO DO CONTEÚDO (campo "content"):
+- Use EXATAMENTE este padrão de estrutura com seções numeradas:
+  1. INTRODUÇÃO — contextualização do tema
+  2. CONCEITOS FUNDAMENTAIS — definições e teoria base
+  3. DESENVOLVIMENTO — explicação detalhada com subtópicos numerados (2.1, 2.2, etc.)
+  4. EXEMPLOS PRÁTICOS — casos de uso reais, código ou cenários aplicados
+  5. RESUMO — síntese dos pontos principais
+  6. REFERÊNCIAS — fontes mencionadas ou relevantes
+
+- Cada seção deve começar com o título em MAIÚSCULAS seguido de linha em branco
+- Use parágrafos bem separados (linha em branco entre eles)
+- Listas devem usar "•" como marcador
+- Subtópicos devem usar numeração (1.1, 1.2, 2.1, etc.)
+- O conteúdo deve ter no MÍNIMO 1500 palavras
+- NÃO use markdown (sem #, **, ```, etc.) — apenas texto puro formatado
+
+REGRAS PARA EXERCÍCIOS:
+- Inclua de 8 a 10 exercícios de múltipla escolha
+- Cubra diferentes níveis de dificuldade (fácil, médio, difícil)
+- As opções devem começar com "A) ", "B) ", "C) ", "D) "
 
 Responda SOMENTE com JSON válido, sem markdown. Formato:
 {
-  "title": "Título do assunto identificado",
-  "category": "Categoria (Redes, IA, Segurança, Cloud, Programação, Banco de Dados, Sistemas Operacionais, etc)",
-  "content": "Conteúdo completo da apostila com formatação em texto",
+  "title": "Título claro e descritivo do assunto",
+  "category": "Categoria (Redes, IA, Segurança, Cloud, Programação, Banco de Dados, Sistemas Operacionais, Engenharia de Software, etc)",
+  "content": "Conteúdo completo seguindo a estrutura padronizada acima",
   "exercises": [
     {
       "question": "pergunta",
       "options": ["A) opção", "B) opção", "C) opção", "D) opção"],
       "correct_answer": "A",
-      "explanation": "explicação"
+      "explanation": "explicação da resposta correta"
     }
   ]
 }`;
+
+    if (isSparse || isNotion) {
       const extraContent = cleanContent.length > 50 ? `\n\nConteúdo parcial extraído da página:\n${cleanContent.substring(0, 15000)}` : "";
-      userPrompt = `URL: ${url}\nTítulo da página: ${pageTitle}${extraContent}\n\nCrie uma apostila educacional completa sobre o tema identificado. IMPORTANTE: inclua OBRIGATORIAMENTE de 8 a 10 exercícios de múltipla escolha no campo "exercises". Cada exercício com question, options (4 opções), correct_answer (A/B/C/D) e explanation.`;
+      userPrompt = `URL: ${url}\nTítulo da página: ${pageTitle}${extraContent}\n\nCom base nas informações acima, crie uma apostila educacional COMPLETA e DETALHADA sobre o tema identificado, seguindo rigorosamente a estrutura padronizada. Se o conteúdo extraído for insuficiente, complemente com seu conhecimento. IMPORTANTE: inclua OBRIGATORIAMENTE de 8 a 10 exercícios.`;
     } else {
-      systemPrompt = `Você é um assistente educacional. A partir do conteúdo de uma página web, extraia:
-1. O título principal do assunto (campo "title")
-2. A categoria/matéria (campo "category") - exemplos: Redes, IA, Segurança, Cloud, Programação, Banco de Dados, Sistemas Operacionais
-3. O conteúdo principal formatado em texto limpo com títulos e parágrafos (campo "content") - PRESERVE TODO o conteúdo original, NÃO resuma
-4. De 5 a 10 exercícios de múltipla escolha sobre o conteúdo (campo "exercises")
-
-Cada exercício deve ter:
-- "question": a pergunta
-- "options": array com 4 opções (strings)
-- "correct_answer": letra A, B, C ou D
-- "explanation": explicação curta da resposta
-
-Responda SOMENTE com JSON válido, sem markdown. Formato:
-{
-  "title": "...",
-  "category": "...",
-  "content": "...",
-  "exercises": [...]
-}`;
-      userPrompt = `URL: ${url}\nTítulo da página: ${pageTitle}\n\nConteúdo extraído:\n${cleanContent.substring(0, 30000)}`;
+      userPrompt = `URL: ${url}\nTítulo da página: ${pageTitle}\n\nConteúdo extraído:\n${cleanContent.substring(0, 30000)}\n\nReorganize e estruture o conteúdo acima seguindo rigorosamente o padrão de formatação. PRESERVE todo o conteúdo original mas reorganize-o nas seções padronizadas. Complemente se necessário para atingir o mínimo de 1500 palavras. IMPORTANTE: inclua de 8 a 10 exercícios.`;
     }
 
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
