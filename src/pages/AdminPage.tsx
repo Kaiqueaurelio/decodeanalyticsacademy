@@ -1168,6 +1168,18 @@ export default function AdminPage() {
                           </p>
                         </div>
                         <div className="flex items-center gap-1 shrink-0">
+                          <Button
+                            size="icon"
+                            variant="outline"
+                            className="h-8 w-8"
+                            onClick={() => {
+                              setEditingMaterial(m);
+                              setEditMatTitle(m.title);
+                              setEditMatDesc(m.description || '');
+                            }}
+                          >
+                            <Edit className="h-3.5 w-3.5" />
+                          </Button>
                           {m.file_url && (
                             <Button size="icon" variant="outline" className="h-8 w-8" asChild>
                               <a href={m.file_url} target="_blank" rel="noopener noreferrer">
@@ -1204,6 +1216,26 @@ export default function AdminPage() {
                 )}
               </div>
             </div>
+
+            {/* Edit Material Dialog */}
+            <Dialog open={!!editingMaterial} onOpenChange={(v) => !v && setEditingMaterial(null)}>
+              <DialogContent className="max-w-lg">
+                <DialogHeader><DialogTitle className="text-base">Editar Material</DialogTitle></DialogHeader>
+                <div className="space-y-3">
+                  <div>
+                    <Label className="text-xs">Título</Label>
+                    <Input value={editMatTitle} onChange={e => setEditMatTitle(e.target.value)} className="mt-1" />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Descrição</Label>
+                    <Input value={editMatDesc} onChange={e => setEditMatDesc(e.target.value)} placeholder="Descrição (opcional)" className="mt-1" />
+                  </div>
+                  <Button className="w-full gradient-primary text-primary-foreground" onClick={handleEditMaterial} disabled={!editMatTitle.trim()}>
+                    Salvar Alterações
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         )}
 
