@@ -54,7 +54,7 @@ async function fetchNotionContent(url: string): Promise<{ text: string; title: s
     if (descMatch?.[1]) textContent = `Descrição: ${descMatch[1]}\n\n${textContent}`;
     if (metaDescMatch?.[1] && !descMatch) textContent = `Descrição: ${metaDescMatch[1]}\n\n${textContent}`;
 
-    // Notion pages also embed content as JSON in script tags — try to extract
+    // Notion pages also embed content as JSON in script tags - try to extract
     const notionDataMatch = html.match(/"block":\s*(\{[\s\S]*?\})\s*,\s*"collection"/);
     if (notionDataMatch) {
       try {
@@ -155,19 +155,19 @@ serve(async (req) => {
 
 REGRAS DE FORMATAÇÃO DO CONTEÚDO (campo "content"):
 - Use EXATAMENTE este padrão de estrutura com seções numeradas:
-  1. INTRODUÇÃO — contextualização do tema
-  2. CONCEITOS FUNDAMENTAIS — definições e teoria base
-  3. DESENVOLVIMENTO — explicação detalhada com subtópicos numerados (2.1, 2.2, etc.)
-  4. EXEMPLOS PRÁTICOS — casos de uso reais, código ou cenários aplicados
-  5. RESUMO — síntese dos pontos principais
-  6. REFERÊNCIAS — fontes mencionadas ou relevantes
+  1. INTRODUCAO - contextualizacao do tema
+  2. CONCEITOS FUNDAMENTAIS - definicoes e teoria base
+  3. DESENVOLVIMENTO - explicacao detalhada com subtopicos numerados (2.1, 2.2, etc.)
+  4. EXEMPLOS PRATICOS - casos de uso reais, codigo ou cenarios aplicados
+  5. RESUMO - sintese dos pontos principais
+  6. REFERENCIAS - fontes mencionadas ou relevantes
 
 - Cada seção deve começar com o título em MAIÚSCULAS seguido de linha em branco
 - Use parágrafos bem separados (linha em branco entre eles)
 - Listas devem usar "•" como marcador
 - Subtópicos devem usar numeração (1.1, 1.2, 2.1, etc.)
 - O conteúdo deve ter no MÍNIMO 1500 palavras
-- NÃO use markdown (sem #, **, ```, etc.) — apenas texto puro formatado
+- NÃO use markdown (sem #, **, etc.) - apenas texto puro formatado
 
 REGRAS PARA EXERCÍCIOS:
 - Inclua de 8 a 10 exercícios de múltipla escolha
