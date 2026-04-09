@@ -58,7 +58,7 @@ function CategorySelect({ value, onValueChange, placeholder }: { value: string; 
   );
 }
 
-const CategoriesCtx = createContext<{ categories: { name: string; sort_order: number }[] }>({ categories: [] });
+const CategoriesCtx = createContext<{ categories: { id: string; name: string; sort_order: number }[] }>({ categories: [] });
 
 type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users';
 
@@ -88,7 +88,7 @@ export default function AdminPage() {
   const [tab, setTab] = useState<Tab>('overview');
   const [apostilas, setApostilas] = useState<Apostila[]>([]);
   const [exercises, setExercises] = useState<Record<string, Exercise[]>>({});
-  const [dbCategories, setDbCategories] = useState<{ name: string; sort_order: number }[]>([]);
+  const [dbCategories, setDbCategories] = useState<{ id: string; name: string; sort_order: number }[]>([]);
   const [allAnswers, setAllAnswers] = useState<any[]>([]);
   const [materials, setMaterials] = useState<Material[]>([]);
   const [users, setUsers] = useState<{ id: string; user_id: string; full_name: string; email: string; is_blocked: boolean; created_at: string }[]>([]);
@@ -105,6 +105,12 @@ export default function AdminPage() {
   const [dragActive, setDragActive] = useState(false);
   const [uploadQueue, setUploadQueue] = useState<File[]>([]);
   const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 });
+  const [matCategoryId, setMatCategoryId] = useState<string>('');
+
+  // Edit material state
+  const [editingMaterial, setEditingMaterial] = useState<Material | null>(null);
+  const [editMatTitle, setEditMatTitle] = useState('');
+  const [editMatDesc, setEditMatDesc] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileDrop = useCallback((file: File) => {
@@ -217,7 +223,7 @@ export default function AdminPage() {
     setAllAnswers(ans || []);
     setMaterials(mats || []);
     setUsers((profs || []).map(p => ({ id: p.id, user_id: p.user_id, full_name: p.full_name, email: p.email, is_blocked: (p as any).is_blocked ?? false, created_at: p.created_at })));
-    setDbCategories((cats || []).map(c => ({ name: c.name, sort_order: c.sort_order })));
+    setDbCategories((cats || []).map(c => ({ id: c.id, name: c.name, sort_order: c.sort_order })));
   };
 
   const handleExtract = async () => {
@@ -365,6 +371,18 @@ export default function AdminPage() {
   const deleteExercise = async (id: string) => {
     await supabase.from('exercises').delete().eq('id', id);
     toast.success('Exercício excluído');
+    loadAll();
+  };
+
+  const handleEditMaterial = async () => {
+    if (!editingMaterial) return;
+    const { error } = await supabase.from('materials').update({
+      title: editMatTitle.trim(),
+      description: editMatDesc || null,
+    }).eq('id', editingMaterial.id);
+    if (error) { toast.error('Erro ao atualizar'); return; }
+    toast.success('Material atualizado!');
+    setEditingMaterial(null);
     loadAll();
   };
 
@@ -1016,6 +1034,9 @@ export default function AdminPage() {
                         className="text-sm"
                         onClick={e => e.stopPropagation()}
                       />
+                      <div onClick={e => e.stopPropagation()}>
+                        <CategorySelect value={matCategoryId} onValueChange={setMatCategoryId} placeholder="Categoria (opcional)" />
+                      </div>
                       <Button
                         className="w-full gradient-primary text-primary-foreground"
                         disabled={!matTitle.trim()}
@@ -1037,6 +1058,7 @@ export default function AdminPage() {
                             });
                             if (uploadErr) throw uploadErr;
                             const { data: urlData } = supabase.storage.from('materials').getPublicUrl(path);
+                            const catMatch = dbCategories.find(c => c.name === matCategoryId);
                             const { error } = await supabase.from('materials').insert({
                               title: matTitle.trim(),
                               description: matDesc || null,
@@ -1044,10 +1066,11 @@ export default function AdminPage() {
                               file_url: urlData.publicUrl,
                               file_path: path,
                               created_by: user.id,
+                              category_id: catMatch?.id || null,
                             });
                             if (error) throw error;
                             toast.success('Material adicionado!');
-                            setMatTitle(''); setMatDesc(''); setMatFile(null);
+                            setMatTitle(''); setMatDesc(''); setMatFile(null); setMatCategoryId('');
                             loadAll();
                           } catch (err: any) {
                             toast.error('Erro: ' + (err.message || 'Tente novamente'));
@@ -1150,6 +1173,18 @@ export default function AdminPage() {
                           </p>
                         </div>
                         <div className="flex items-center gap-1 shrink-0">
+                          <Button
+                            size="icon"
+                            variant="outline"
+                            className="h-8 w-8"
+                            onClick={() => {
+                              setEditingMaterial(m);
+                              setEditMatTitle(m.title);
+                              setEditMatDesc(m.description || '');
+                            }}
+                          >
+                            <Edit className="h-3.5 w-3.5" />
+                          </Button>
                           {m.file_url && (
                             <Button size="icon" variant="outline" className="h-8 w-8" asChild>
                               <a href={m.file_url} target="_blank" rel="noopener noreferrer">
@@ -1186,6 +1221,26 @@ export default function AdminPage() {
                 )}
               </div>
             </div>
+
+            {/* Edit Material Dialog */}
+            <Dialog open={!!editingMaterial} onOpenChange={(v) => !v && setEditingMaterial(null)}>
+              <DialogContent className="max-w-lg">
+                <DialogHeader><DialogTitle className="text-base">Editar Material</DialogTitle></DialogHeader>
+                <div className="space-y-3">
+                  <div>
+                    <Label className="text-xs">Título</Label>
+                    <Input value={editMatTitle} onChange={e => setEditMatTitle(e.target.value)} className="mt-1" />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Descrição</Label>
+                    <Input value={editMatDesc} onChange={e => setEditMatDesc(e.target.value)} placeholder="Descrição (opcional)" className="mt-1" />
+                  </div>
+                  <Button className="w-full gradient-primary text-primary-foreground" onClick={handleEditMaterial} disabled={!editMatTitle.trim()}>
+                    Salvar Alterações
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         )}
 
