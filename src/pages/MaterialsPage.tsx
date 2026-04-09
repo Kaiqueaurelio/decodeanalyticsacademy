@@ -201,17 +201,43 @@ function VideoPlayer({ url, title }: { url: string; title: string }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [videoSrc, setVideoSrc] = useState(url);
   const retriedRef = useRef(false);
 
-  const handleError = useCallback(() => {
-    if (!retriedRef.current && videoRef.current) {
+  // If the URL looks like a public URL to a private bucket, try to get a fresh signed URL
+  const refreshSignedUrl = useCallback(async () => {
+    try {
+      // Extract file path from the URL (after /materials/)
+      const match = url.match(/\/materials\/(.+?)(\?|$)/);
+      if (match) {
+        const filePath = decodeURIComponent(match[1]);
+        const { data } = await supabase.storage
+          .from('materials')
+          .createSignedUrl(filePath, 3600);
+        if (data?.signedUrl) {
+          setVideoSrc(data.signedUrl);
+          return true;
+        }
+      }
+    } catch (e) {
+      console.error('Failed to refresh signed URL:', e);
+    }
+    return false;
+  }, [url]);
+
+  const handleError = useCallback(async () => {
+    if (!retriedRef.current) {
       retriedRef.current = true;
-      videoRef.current.load();
-      return;
+      // Try getting a fresh signed URL
+      const refreshed = await refreshSignedUrl();
+      if (refreshed && videoRef.current) {
+        videoRef.current.load();
+        return;
+      }
     }
     setLoading(false);
     setError(true);
-  }, []);
+  }, [refreshSignedUrl]);
 
   return (
     <div className="rounded-2xl overflow-hidden bg-black border border-border/30">
@@ -239,11 +265,11 @@ function VideoPlayer({ url, title }: { url: string; title: string }) {
             className="w-full aspect-video"
             preload="metadata"
             playsInline
+            src={videoSrc}
             onLoadedData={() => setLoading(false)}
             onError={handleError}
             onCanPlay={() => setLoading(false)}
           >
-            <source src={url} type={getMimeType(url)} />
             Seu navegador não suporta vídeos.
           </video>
         </div>
