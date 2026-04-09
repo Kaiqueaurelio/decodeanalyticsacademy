@@ -1034,6 +1034,9 @@ export default function AdminPage() {
                         className="text-sm"
                         onClick={e => e.stopPropagation()}
                       />
+                      <div onClick={e => e.stopPropagation()}>
+                        <CategorySelect value={matCategoryId} onValueChange={setMatCategoryId} placeholder="Categoria (opcional)" />
+                      </div>
                       <Button
                         className="w-full gradient-primary text-primary-foreground"
                         disabled={!matTitle.trim()}
