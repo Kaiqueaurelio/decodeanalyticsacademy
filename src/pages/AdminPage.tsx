@@ -105,6 +105,12 @@ export default function AdminPage() {
   const [dragActive, setDragActive] = useState(false);
   const [uploadQueue, setUploadQueue] = useState<File[]>([]);
   const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 });
+  const [matCategoryId, setMatCategoryId] = useState<string>('');
+
+  // Edit material state
+  const [editingMaterial, setEditingMaterial] = useState<Material | null>(null);
+  const [editMatTitle, setEditMatTitle] = useState('');
+  const [editMatDesc, setEditMatDesc] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileDrop = useCallback((file: File) => {
