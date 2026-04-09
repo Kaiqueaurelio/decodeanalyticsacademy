@@ -223,7 +223,7 @@ export default function AdminPage() {
     setAllAnswers(ans || []);
     setMaterials(mats || []);
     setUsers((profs || []).map(p => ({ id: p.id, user_id: p.user_id, full_name: p.full_name, email: p.email, is_blocked: (p as any).is_blocked ?? false, created_at: p.created_at })));
-    setDbCategories((cats || []).map(c => ({ name: c.name, sort_order: c.sort_order })));
+    setDbCategories((cats || []).map(c => ({ id: c.id, name: c.name, sort_order: c.sort_order })));
   };
 
   const handleExtract = async () => {
