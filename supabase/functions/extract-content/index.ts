@@ -167,7 +167,7 @@ REGRAS DE FORMATAÇÃO DO CONTEÚDO (campo "content"):
 - Listas devem usar "•" como marcador
 - Subtópicos devem usar numeração (1.1, 1.2, 2.1, etc.)
 - O conteúdo deve ter no MÍNIMO 1500 palavras
-- NÃO use markdown (sem #, **, ```, etc.) — apenas texto puro formatado
+- NÃO use markdown (sem #, **, etc.) - apenas texto puro formatado
 
 REGRAS PARA EXERCÍCIOS:
 - Inclua de 8 a 10 exercícios de múltipla escolha
