@@ -163,3 +163,70 @@
 .smooth-all {
   @apply transition-all duration-200 ease-out;
 }
+
+/* Floating particles */
+@keyframes float-particle {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25% { transform: translate(10px, -20px) scale(1.1); }
+  50% { transform: translate(-5px, -40px) scale(0.9); }
+  75% { transform: translate(15px, -20px) scale(1.05); }
+}
+.animate-float-particle {
+  animation: float-particle linear infinite;
+}
+
+/* Gradient shimmer for hero text */
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.text-gradient-animated {
+  @apply bg-clip-text text-transparent;
+  background-image: linear-gradient(135deg, hsl(var(--primary)), hsl(260, 60%, 52%), hsl(280, 65%, 55%), hsl(var(--primary)));
+  background-size: 300% 300%;
+  animation: gradient-shift 6s ease infinite;
+}
+
+/* Pulse glow for CTA */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px -5px hsl(var(--primary) / 0.3); }
+  50% { box-shadow: 0 0 30px -5px hsl(var(--primary) / 0.5); }
+}
+.animate-pulse-glow {
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+/* Slide in from bottom with bounce */
+@keyframes slide-up-bounce {
+  0% { opacity: 0; transform: translateY(40px); }
+  60% { opacity: 1; transform: translateY(-4px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.animate-slide-up-bounce {
+  animation: slide-up-bounce 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Rotating border gradient */
+@keyframes rotate-border {
+  0% { --angle: 0deg; }
+  100% { --angle: 360deg; }
+}
+
+/* Marquee for tech logos */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.animate-marquee {
+  animation: marquee 30s linear infinite;
+}
+
+/* Glow text */
+@keyframes text-glow {
+  0%, 100% { text-shadow: 0 0 10px hsl(var(--primary) / 0.2); }
+  50% { text-shadow: 0 0 20px hsl(var(--primary) / 0.4), 0 0 40px hsl(var(--primary) / 0.1); }
+}
+.animate-text-glow {
+  animation: text-glow 3s ease-in-out infinite;
+}
