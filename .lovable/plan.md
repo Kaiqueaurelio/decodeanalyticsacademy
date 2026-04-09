@@ -1,37 +1,21 @@
 
 
-## Plano: Corrigir instalação do app no celular (PWA)
+## Plano: Corrigir reprodução de vídeo no app
 
-### Problemas encontrados
+### Problema
+O `<video>` element tem `crossOrigin="anonymous"`, que exige que o servidor envie headers CORS específicos. O Supabase Storage com bucket privado e signed URLs pode não enviar esses headers corretamente, fazendo o navegador bloquear o carregamento do vídeo.
 
-1. **Manifest não linkado** — `index.html` não tem `<link rel="manifest">`, então o navegador nunca detecta o app como instalável
-2. **Ícones não existem** — `icon-192.png` e `icon-512.png` referenciados no manifest não existem em `/public`
-3. **Evento `beforeinstallprompt` nunca é capturado** — nenhum código em `main.tsx` escuta o evento e salva em `window.__pwaInstallPrompt`
-4. **Fallback ruim** — quando o prompt não existe, abre `window.open()` que não faz nada útil
+Além disso, o `src` está definido duas vezes (como atributo do `<video>` e dentro do `<source>`), o que pode causar conflitos.
 
 ### Correções
 
-1. **Gerar ícones PWA** — Criar `icon-192.png` e `icon-512.png` a partir do logo existente (`src/assets/logo-dark.jpeg`) usando canvas/script
+**Arquivo: `src/pages/MaterialsPage.tsx` — componente `VideoPlayer`**
 
-2. **Adicionar `<link rel="manifest">` no `index.html`**
-   ```html
-   <link rel="manifest" href="/manifest.json" />
-   <link rel="apple-touch-icon" href="/icon-192.png" />
-   ```
-
-3. **Capturar evento `beforeinstallprompt` em `main.tsx`**
-   ```typescript
-   window.addEventListener('beforeinstallprompt', (e) => {
-     e.preventDefault();
-     (window as any).__pwaInstallPrompt = e;
-   });
-   ```
-   Com guard para não rodar em iframe/preview (seguindo as regras PWA do Lovable)
-
-4. **Melhorar `handleInstallPWA` no LandingPage** — Mostrar instruções manuais (iOS: "Compartilhar → Adicionar à Tela de Início", Android: "Menu → Instalar app") quando o prompt nativo não está disponível, em vez de abrir uma aba vazia
-
-5. **Manifest** — Adicionar campos recomendados (`description`, `orientation`, `scope`) para melhorar compatibilidade
+1. **Remover `crossOrigin="anonymous"`** — não é necessário para reprodução de vídeo e causa bloqueio CORS com signed URLs de bucket privado
+2. **Remover o atributo `src` do `<video>`** — manter apenas o `<source>` com o tipo MIME correto para evitar conflito de dupla fonte
+3. **Adicionar `controlsList`** para melhor UX mobile
+4. **Adicionar fallback mais robusto** — tentar recarregar com URL sem query params (cache bust) antes de mostrar erro
 
 ### Resultado
-O botão "Instalar no celular" vai funcionar: no Android mostra o prompt nativo de instalação; no iOS mostra instruções visuais de como adicionar à tela de início.
+Os vídeos vão carregar e reproduzir diretamente dentro do app sem erros de CORS ou conflito de fonte.
 
