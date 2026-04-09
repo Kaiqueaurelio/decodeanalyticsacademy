@@ -1058,6 +1058,7 @@ export default function AdminPage() {
                             });
                             if (uploadErr) throw uploadErr;
                             const { data: urlData } = supabase.storage.from('materials').getPublicUrl(path);
+                            const catMatch = dbCategories.find(c => c.name === matCategoryId);
                             const { error } = await supabase.from('materials').insert({
                               title: matTitle.trim(),
                               description: matDesc || null,
@@ -1065,10 +1066,11 @@ export default function AdminPage() {
                               file_url: urlData.publicUrl,
                               file_path: path,
                               created_by: user.id,
+                              category_id: catMatch?.id || null,
                             });
                             if (error) throw error;
                             toast.success('Material adicionado!');
-                            setMatTitle(''); setMatDesc(''); setMatFile(null);
+                            setMatTitle(''); setMatDesc(''); setMatFile(null); setMatCategoryId('');
                             loadAll();
                           } catch (err: any) {
                             toast.error('Erro: ' + (err.message || 'Tente novamente'));
