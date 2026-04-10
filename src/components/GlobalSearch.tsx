@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Input } from '@/components/ui/input';
 import { Search, BookOpen, FileText, X } from 'lucide-react';
 
 type Result = { id: string; title: string; type: 'apostila' | 'material'; category?: string };
@@ -45,23 +44,27 @@ export function GlobalSearch() {
 
   return (
     <div ref={ref} className="relative w-full max-w-sm">
-      <div className="relative">
-        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-        <Input
+      <div className="neo-input-container">
+        <Search className="h-3.5 w-3.5 text-muted-foreground ml-2 shrink-0" />
+        <input
           placeholder="Buscar apostilas, materiais..."
           value={query}
           onChange={e => { setQuery(e.target.value); setOpen(true); }}
           onFocus={() => query.length >= 2 && setOpen(true)}
-          className="pl-8 pr-8 h-8 text-xs"
+          className="neo-input py-1.5 px-1"
         />
-        {query && (
-          <button onClick={() => { setQuery(''); setResults([]); }} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-            <X className="h-3.5 w-3.5" />
+        {query ? (
+          <button onClick={() => { setQuery(''); setResults([]); }} className="neo-btn !p-1.5 !bg-destructive">
+            <X className="h-3 w-3" />
           </button>
+        ) : (
+          <div className="neo-btn !p-1.5 pointer-events-none">
+            <Search className="h-3 w-3" />
+          </div>
         )}
       </div>
       {open && results.length > 0 && (
-        <div className="absolute top-full mt-1 w-full bg-card border border-border rounded-lg shadow-lg z-50 overflow-hidden animate-fade-in">
+        <div className="absolute top-full mt-2 w-full bg-card border-2 border-border rounded-lg shadow-[4px_4px_0_hsl(var(--border))] z-50 overflow-hidden animate-fade-in">
           {results.map(r => (
             <button key={r.id + r.type} onClick={() => go(r)}
               className="w-full text-left px-3 py-2 text-xs flex items-center gap-2 hover:bg-accent smooth-all">
