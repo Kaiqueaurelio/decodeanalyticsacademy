@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import logoDark from '@/assets/logo-dark.jpeg';
 import appPreview from '@/assets/app-preview.jpg';
+import demoShowcase from '@/assets/demo-showcase.jpg';
 
 const features = [
   { icon: BookOpen, title: 'Apostilas Completas', desc: 'Conteúdo estruturado por disciplina e semestre, com importação inteligente via IA que organiza automaticamente o material.', highlight: true },
@@ -357,6 +358,102 @@ export default function LandingPage() {
                   </div>
                   <span className="text-xs font-semibold">{item.label}</span>
                   <span className="text-[10px] text-muted-foreground">{item.desc}</span>
+                </div>
+              ))}
+            </div>
+          </ScrollReveal>
+        </div>
+      </section>
+
+      {/* Demo Video / Showcase Section */}
+      <section className="py-20 md:py-28 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-primary/[0.02] to-background" />
+        <div className="container relative px-4">
+          <ScrollReveal>
+            <div className="text-center mb-12">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-xs font-medium text-primary mb-3">
+                <Play className="h-3.5 w-3.5" /> Demonstracao
+              </div>
+              <h2 className="text-2xl font-bold sm:text-3xl md:text-4xl">Veja a plataforma <span className="text-gradient-animated">em acao</span></h2>
+              <p className="text-muted-foreground mt-3 max-w-xl mx-auto text-sm md:text-base leading-relaxed">
+                Explore as funcionalidades da Decode Analytics em detalhes. Dashboard interativo, materiais organizados e muito mais.
+              </p>
+            </div>
+          </ScrollReveal>
+
+          <ScrollReveal delay={200} direction="scale">
+            <div className="max-w-4xl mx-auto relative group">
+              {/* Browser chrome mockup */}
+              <div className="rounded-t-2xl bg-card border border-border/40 border-b-0 px-4 py-3 flex items-center gap-2">
+                <div className="flex gap-1.5">
+                  <div className="w-3 h-3 rounded-full bg-destructive/60" />
+                  <div className="w-3 h-3 rounded-full bg-warning/60" />
+                  <div className="w-3 h-3 rounded-full bg-success/60" />
+                </div>
+                <div className="flex-1 flex justify-center">
+                  <div className="px-4 py-1 rounded-md bg-muted/50 text-xs text-muted-foreground flex items-center gap-2">
+                    <Lock className="h-3 w-3" />
+                    decodeanalyticsacademy.lovable.app
+                  </div>
+                </div>
+              </div>
+              <div className="rounded-b-2xl overflow-hidden border border-border/40 border-t-0 shadow-2xl shadow-primary/10 relative">
+                <img
+                  src={demoShowcase}
+                  alt="Demonstracao da plataforma Decode Analytics em uso"
+                  className="w-full h-auto group-hover:scale-[1.02] transition-transform duration-700"
+                  loading="lazy"
+                  width={1280}
+                  height={720}
+                />
+                {/* Play overlay */}
+                <div className="absolute inset-0 bg-background/40 flex items-center justify-center opacity-100 group-hover:opacity-0 transition-opacity duration-500">
+                  <div className="w-20 h-20 rounded-full bg-primary/90 flex items-center justify-center shadow-xl shadow-primary/30 animate-pulse-glow">
+                    <Play className="h-8 w-8 text-primary-foreground ml-1" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Floating feature badges */}
+              <div className="absolute -left-2 sm:-left-4 top-1/3 animate-float-particle" style={{ animationDuration: '8s' }}>
+                <div className="glass rounded-xl px-3 py-2 flex items-center gap-2 shadow-lg">
+                  <div className="rounded-md bg-success/20 p-1.5">
+                    <CheckCircle className="h-3.5 w-3.5 text-success" />
+                  </div>
+                  <span className="text-xs font-medium whitespace-nowrap">Exercicio correto!</span>
+                </div>
+              </div>
+              <div className="absolute -right-2 sm:-right-4 top-1/2 animate-float-particle" style={{ animationDuration: '10s', animationDelay: '2s' }}>
+                <div className="glass rounded-xl px-3 py-2 flex items-center gap-2 shadow-lg">
+                  <div className="rounded-md bg-warning/20 p-1.5">
+                    <Award className="h-3.5 w-3.5 text-warning" />
+                  </div>
+                  <span className="text-xs font-medium whitespace-nowrap">+50 XP</span>
+                </div>
+              </div>
+              <div className="absolute -right-1 sm:-right-3 bottom-1/4 animate-float-particle" style={{ animationDuration: '12s', animationDelay: '4s' }}>
+                <div className="glass rounded-xl px-3 py-2 flex items-center gap-2 shadow-lg">
+                  <div className="rounded-md bg-primary/20 p-1.5">
+                    <TrendingUp className="h-3.5 w-3.5 text-primary" />
+                  </div>
+                  <span className="text-xs font-medium whitespace-nowrap">Streak: 7 dias</span>
+                </div>
+              </div>
+            </div>
+          </ScrollReveal>
+
+          {/* Feature highlights below demo */}
+          <ScrollReveal delay={400}>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-3xl mx-auto mt-10">
+              {[
+                { icon: BarChart3, label: 'Analytics em tempo real', color: 'text-primary' },
+                { icon: BrainCircuit, label: 'IA para importacao', color: 'text-primary' },
+                { icon: Award, label: 'Sistema de gamificacao', color: 'text-warning' },
+                { icon: Shield, label: 'Conteudo protegido', color: 'text-success' },
+              ].map((item, i) => (
+                <div key={i} className="flex items-center gap-2 p-3 rounded-xl bg-card/60 border border-border/30">
+                  <item.icon className={`h-4 w-4 ${item.color} shrink-0`} />
+                  <span className="text-xs font-medium">{item.label}</span>
                 </div>
               ))}
             </div>
