@@ -180,7 +180,7 @@ export default function LandingPage() {
       </section>
 
       {/* Stats Bar with animated counters */}
-      <section className="border-y border-border/40 bg-card/50 backdrop-blur-sm relative overflow-hidden">
+      <section className="border-y border-border/40 bg-card/50 backdrop-blur-sm relative overflow-hidden grid-lines-bg">
         <div className="absolute inset-0 bg-gradient-to-r from-primary/[0.02] via-transparent to-primary/[0.02]" />
         <div className="container relative px-4 py-10 md:py-12">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
@@ -276,7 +276,7 @@ export default function LandingPage() {
       </section>
 
       {/* How It Works */}
-      <section className="py-20 md:py-28 relative">
+      <section className="py-20 md:py-28 relative grid-lines-bg">
         <div className="container px-4">
           <ScrollReveal>
             <div className="text-center mb-14 md:mb-18">
