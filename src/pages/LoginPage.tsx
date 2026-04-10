@@ -58,7 +58,7 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen bg-background relative overflow-hidden">
       {/* Left side - Branding (hidden on mobile) */}
-      <div className="hidden lg:flex lg:w-1/2 relative items-center justify-center gradient-hero">
+      <div className="hidden lg:flex lg:w-1/2 relative items-center justify-center gradient-hero grid-lines-bg">
         <FloatingParticles count={15} />
         <div className="absolute top-20 left-10 w-96 h-96 rounded-full bg-primary/5 blur-3xl animate-float-particle" style={{ animationDuration: '20s' }} />
         <div className="absolute bottom-10 right-10 w-72 h-72 rounded-full bg-primary/8 blur-3xl animate-float-particle" style={{ animationDuration: '15s', animationDelay: '3s' }} />
