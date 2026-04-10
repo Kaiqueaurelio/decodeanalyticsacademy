@@ -100,7 +100,7 @@ export default function LandingPage() {
       <AppHeader />
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden min-h-[85vh] flex items-center">
+      <section className="relative overflow-hidden min-h-[85vh] flex items-center grid-lines-bg">
         <div className="absolute inset-0 gradient-hero" />
         <FloatingParticles count={25} />
         {/* Decorative gradient orbs */}

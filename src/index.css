@@ -101,6 +101,188 @@
   }
 }
 
+/* ─── Grid Lines Background Effect ─── */
+.grid-lines-bg {
+  position: relative;
+  overflow: hidden;
+}
+.grid-lines-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(90deg, hsl(var(--border) / 0.3) 1px, transparent 1px);
+  background-size: 60px 100%;
+  pointer-events: none;
+  mask-image: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0) 70%);
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0) 70%);
+  z-index: 0;
+}
+.grid-lines-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(0deg, hsl(var(--border) / 0.15) 1px, transparent 1px);
+  background-size: 100% 60px;
+  pointer-events: none;
+  mask-image: linear-gradient(to bottom, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0) 50%);
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0) 50%);
+  z-index: 0;
+}
+
+/* ─── Neo-brutalist 3D Input ─── */
+.neo-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 2px solid hsl(var(--border));
+  background: hsl(var(--card));
+  padding: 4px;
+  border-radius: calc(var(--radius) + 2px);
+  transition: all 400ms cubic-bezier(0.23, 1, 0.32, 1);
+  transform-style: preserve-3d;
+  transform: rotateX(2deg) rotateY(-1deg);
+  perspective: 1000px;
+  box-shadow: 4px 4px 0 hsl(var(--border));
+}
+.neo-input-container:hover,
+.neo-input-container:focus-within {
+  transform: rotateX(0deg) rotateY(0deg) scale(1.02);
+  box-shadow: 6px 6px 0 -1px hsl(var(--primary) / 0.2), 6px 6px 0 0 hsl(var(--border));
+  border-color: hsl(var(--primary) / 0.5);
+}
+.neo-input-container .neo-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 0.8rem;
+  color: hsl(var(--foreground));
+  transform: translateZ(5px);
+  transition: all 300ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.neo-input-container .neo-input::placeholder {
+  color: hsl(var(--muted-foreground));
+  font-weight: 500;
+}
+.neo-input-container .neo-btn {
+  cursor: pointer;
+  border: 2px solid hsl(var(--border));
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 6px;
+  border-radius: var(--radius);
+  transform: translateZ(10px);
+  transition: all 300ms cubic-bezier(0.23, 1, 0.32, 1);
+  font-weight: bold;
+}
+.neo-input-container .neo-btn:hover {
+  transform: translateZ(5px) translateX(-2px) translateY(-2px);
+  box-shadow: 3px 3px 0 0 hsl(var(--foreground) / 0.2);
+}
+
+/* ─── Kawaii Range Slider ─── */
+input[type="range"].kawaii-slider {
+  --base: hsl(var(--primary));
+  --light: hsl(var(--primary) / 0.6);
+  --lighter: hsl(var(--primary) / 0.3);
+  --dark: hsl(var(--primary) / 0.95);
+  appearance: none;
+  width: 100%;
+  height: 1.8em;
+  border: 0.35em solid hsl(var(--card));
+  border-radius: 2em;
+  box-shadow: 0 0 0.8em hsl(var(--border) / 0.3), 0 0.2em 0.4em hsl(var(--border) / 0.2);
+  overflow: hidden;
+  background: hsl(var(--muted));
+}
+input[type="range"].kawaii-slider::-webkit-slider-runnable-track {
+  background: linear-gradient(hsl(var(--primary) / 0.3) 0 0) 0.8em 0.3em / 3em 0.3em no-repeat,
+    linear-gradient(90deg, var(--base), var(--lighter) 1em),
+    linear-gradient(transparent 70%, var(--dark) 80%),
+    var(--base);
+  border-radius: 2em;
+  height: 100%;
+  overflow: hidden;
+}
+input[type="range"].kawaii-slider::-webkit-slider-thumb {
+  appearance: none;
+  height: 1.6em;
+  width: 1.6em;
+  background: hsl(var(--primary-foreground));
+  border: 3px solid hsl(var(--primary));
+  border-radius: 50%;
+  box-shadow: 0 0 6px hsl(var(--primary) / 0.4);
+  cursor: pointer;
+  transition: box-shadow 200ms;
+}
+input[type="range"].kawaii-slider::-webkit-slider-thumb:hover {
+  box-shadow: 0 0 12px hsl(var(--primary) / 0.6);
+}
+
+/* ─── Animated Glider Tabs ─── */
+.glider-tabs {
+  display: inline-flex;
+  position: relative;
+  background-color: hsl(var(--muted));
+  box-shadow: 0 0 1px 0 hsl(var(--primary) / 0.15), 0 4px 10px 0 hsl(var(--primary) / 0.08);
+  padding: 0.35rem;
+  border-radius: 99px;
+}
+.glider-tabs .glider-tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 16px;
+  font-size: 0.8rem;
+  color: hsl(var(--muted-foreground));
+  font-weight: 500;
+  border-radius: 99px;
+  cursor: pointer;
+  transition: color 0.2s ease-in;
+  position: relative;
+  z-index: 2;
+  white-space: nowrap;
+  border: none;
+  background: transparent;
+}
+.glider-tabs .glider-tab.active {
+  color: hsl(var(--primary));
+}
+.glider-tabs .glider-tab .tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.2rem;
+  height: 1.2rem;
+  font-size: 10px;
+  border-radius: 50%;
+  background-color: hsl(var(--accent));
+  color: hsl(var(--muted-foreground));
+  transition: 0.2s ease-in;
+  padding: 0 4px;
+}
+.glider-tabs .glider-tab.active .tab-badge {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+.glider-tabs .glider {
+  position: absolute;
+  display: flex;
+  height: 32px;
+  background-color: hsl(var(--card));
+  z-index: 1;
+  border-radius: 99px;
+  transition: 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+  box-shadow: 0 1px 3px hsl(var(--border) / 0.3);
+  top: 0.35rem;
+}
+
 /* Smooth page transitions */
 @keyframes page-enter {
   from { opacity: 0; transform: translateY(6px); }
