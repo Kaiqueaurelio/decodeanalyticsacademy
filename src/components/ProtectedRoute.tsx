@@ -1,7 +1,8 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { Loader2, ShieldBan } from 'lucide-react';
+import { ShieldBan } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { GlitchLoader } from '@/components/GlitchLoader';
 
 export function ProtectedRoute({ children, adminOnly = false }: { children: React.ReactNode; adminOnly?: boolean }) {
   const { user, isAdmin, isBlocked, loading, roleChecked, signOut } = useAuth();
@@ -9,7 +10,7 @@ export function ProtectedRoute({ children, adminOnly = false }: { children: Reac
   if (loading || (user && !roleChecked)) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <GlitchLoader text="Carregando..." />
       </div>
     );
   }
