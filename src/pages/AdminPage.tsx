@@ -640,6 +640,7 @@ export default function AdminPage() {
               </div>
             )}
 
+            <div key={tab} className="animate-fade-in">
             {/* OVERVIEW */}
             {tab === 'overview' && (
               <OverviewTab apostilas={apostilas} exercises={exercises} allAnswers={allAnswers} materials={materials} users={users} setTab={setTab} />
@@ -1268,6 +1269,7 @@ export default function AdminPage() {
                 </div>
               </div>
             )}
+            </div>
           </main>
         </div>
       </div>
