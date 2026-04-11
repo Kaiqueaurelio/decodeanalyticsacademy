@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useGamification } from '@/hooks/useGamification';
 import { AppHeader } from '@/components/AppHeader';
 import { EvolutionChart } from '@/components/EvolutionChart';
+import { KawaiiSlider } from '@/components/KawaiiSlider';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,7 +14,7 @@ import { Progress } from '@/components/ui/progress';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   BookOpen, CheckCircle, XCircle, Camera, Save, ArrowLeft,
-  PenLine, Trophy, Target, Flame, Zap
+  PenLine, Trophy, Target, Flame, Zap, Settings
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -27,6 +28,10 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [totalApostilas, setTotalApostilas] = useState(0);
   const [totalExercises, setTotalExercises] = useState(0);
+  const [weeklyGoal, setWeeklyGoal] = useState(() => {
+    const saved = localStorage.getItem('weeklyExerciseGoal');
+    return saved ? Number(saved) : 30;
+  });
   const [stats, setStats] = useState({ total: 0, hits: 0, errors: 0, byApostila: {} as Record<string, { hits: number; errors: number; title: string }> });
 
   useEffect(() => {
@@ -77,9 +82,15 @@ export default function ProfilePage() {
     setUploading(false);
   };
 
+  const handleWeeklyGoalChange = (val: number) => {
+    setWeeklyGoal(val);
+    localStorage.setItem('weeklyExerciseGoal', String(val));
+  };
+
   const handleSave = async () => {
     if (!user) return;
     setSaving(true);
+    localStorage.setItem('weeklyExerciseGoal', String(weeklyGoal));
     const { error } = await supabase.from('profiles').update({ full_name: fullName }).eq('user_id', user.id);
     if (error) toast.error('Erro ao salvar'); else toast.success('Perfil atualizado!');
     setSaving(false);
@@ -127,6 +138,21 @@ export default function ProfilePage() {
               </Button>
             </div>
           </div>
+        </Card>
+
+        {/* Weekly Goal Setting */}
+        <Card className="p-5 bg-card border border-border/50 mb-6 animate-content-show delay-1">
+          <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
+            <Settings className="h-4 w-4 text-primary" /> Configurações de Estudo
+          </h3>
+          <KawaiiSlider
+            value={weeklyGoal}
+            onChange={handleWeeklyGoalChange}
+            min={5}
+            max={100}
+            step={5}
+            label="Meta semanal de exercícios"
+          />
         </Card>
 
         {/* XP & Streak */}

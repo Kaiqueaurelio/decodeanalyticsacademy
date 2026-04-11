@@ -4,11 +4,23 @@ import { useAuth } from '@/hooks/useAuth';
 import { Card } from '@/components/ui/card';
 import { Target, CheckCircle } from 'lucide-react';
 
-const WEEKLY_GOAL = 30; // exercises per week
+const DEFAULT_GOAL = 30;
+
+function getWeeklyGoal() {
+  const saved = localStorage.getItem('weeklyExerciseGoal');
+  return saved ? Number(saved) : DEFAULT_GOAL;
+}
 
 export function WeeklyGoalWidget() {
   const { user } = useAuth();
   const [count, setCount] = useState(0);
+  const [weeklyGoal, setWeeklyGoal] = useState(getWeeklyGoal);
+
+  useEffect(() => {
+    const handleStorage = () => setWeeklyGoal(getWeeklyGoal());
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -23,6 +35,7 @@ export function WeeklyGoalWidget() {
       .then(({ count: c }) => setCount(c || 0));
   }, [user]);
 
+  const WEEKLY_GOAL = weeklyGoal;
   const pct = Math.min(100, Math.round((count / WEEKLY_GOAL) * 100));
   const isComplete = count >= WEEKLY_GOAL;
   const circumference = 2 * Math.PI * 40;
