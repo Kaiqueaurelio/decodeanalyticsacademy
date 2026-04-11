@@ -110,24 +110,24 @@ export default function LandingPage() {
 
         <div className="container relative py-20 md:py-28 lg:py-36 px-4">
           <div className="max-w-3xl space-y-6">
-            <ScrollReveal>
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-xs font-medium text-primary mb-3 animate-pulse-glow">
-                <Sparkles className="h-3.5 w-3.5" />
-                Plataforma de Estudos · Ciência da Computação
+             <ScrollReveal>
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-muted border border-border/60 text-xs font-medium text-foreground mb-3">
+                <GraduationCap className="h-3.5 w-3.5 text-primary" />
+                Decode Analytics · Ciência da Computação
               </div>
             </ScrollReveal>
 
             <ScrollReveal delay={100}>
               <h1 className="text-3xl font-extrabold leading-[1.1] tracking-tight sm:text-4xl md:text-5xl lg:text-6xl">
                 Suas revisões,{' '}
-                <span className="text-gradient-animated">organizadas</span>
+                <span className="text-primary">organizadas</span>
                 {' '}e prontas para a prova.
               </h1>
             </ScrollReveal>
 
             <ScrollReveal delay={200}>
               <p className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-xl">
-                Apostilas estruturadas por IA, exercícios com correção instantânea, videoaulas, podcasts e dashboard de desempenho — tudo em um PWA que funciona como app nativo no seu celular.
+                Apostilas completas, exercícios com correção instantânea, videoaulas, podcasts e dashboard de desempenho — tudo em um app que funciona direto no seu celular.
               </p>
             </ScrollReveal>
 
@@ -135,7 +135,7 @@ export default function LandingPage() {
               <div className="flex flex-col sm:flex-row gap-3 pt-3">
                 <Button
                   size="lg"
-                  className="gradient-primary text-primary-foreground shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  className="bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-all hover:scale-[1.02] active:scale-[0.98]"
                   onClick={() => navigate('/login')}
                 >
                   <Play className="mr-2 h-4 w-4" /> Começar agora
@@ -635,7 +635,7 @@ export default function LandingPage() {
             <button onClick={() => document.getElementById('recursos')?.scrollIntoView({ behavior: 'smooth' })} className="hover:text-primary transition-colors">Recursos</button>
             <button onClick={() => navigate('/login')} className="hover:text-primary transition-colors">Entrar</button>
           </div>
-          <p className="text-xs text-center">&copy; {new Date().getFullYear()} Decode Analytics &middot; Todos os direitos reservados</p>
+          <p className="text-xs text-center">Desenvolvido por Kaique Aurelio &middot; &copy; {new Date().getFullYear()} Decode Analytics &middot; Todos os direitos reservados</p>
         </div>
       </footer>
 
