@@ -99,6 +99,21 @@ export default function ProfilePage() {
     localStorage.setItem('weeklyExerciseGoal', String(val));
   };
 
+  const handlePomodoroFocusChange = (val: number) => {
+    setPomodoroFocus(val);
+    localStorage.setItem('pomodoroFocusMinutes', String(val));
+  };
+
+  const handlePomodoroBreakChange = (val: number) => {
+    setPomodoroBreak(val);
+    localStorage.setItem('pomodoroBreakMinutes', String(val));
+  };
+
+  const handleFlashcardsPerDayChange = (val: number) => {
+    setFlashcardsPerDay(val);
+    localStorage.setItem('flashcardsPerDay', String(val));
+  };
+
   const handleSave = async () => {
     if (!user) return;
     setSaving(true);
