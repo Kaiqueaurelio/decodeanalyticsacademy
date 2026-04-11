@@ -9,7 +9,7 @@ import { FloatingParticles } from '@/components/FloatingParticles';
 import {
   BookOpen, CheckCircle, BarChart3, ArrowRight, Download, Shield,
   Headphones, Video, FileText, Users, Zap, Clock, Award, Star,
-  GraduationCap, TrendingUp, Lock, Code2, Database, Cloud, Cpu,
+  GraduationCap, TrendingUp, Lock, Database, Cloud, Cpu,
   Palette, Globe, Smartphone, BrainCircuit, ChevronDown, Play,
   Layers, Target, Sparkles, MessageCircle, HelpCircle
 } from 'lucide-react';
@@ -55,14 +55,14 @@ const testimonials = [
 ];
 
 const techStack = [
-  { icon: Code2, name: 'React + TypeScript', desc: 'Interface moderna, tipada e de alta performance' },
-  { icon: Palette, name: 'Tailwind CSS', desc: 'Design responsivo, elegante e com dark mode' },
-  { icon: Database, name: 'Banco em Tempo Real', desc: 'Dados sincronizados instantaneamente' },
-  { icon: Cloud, name: 'Cloud Storage', desc: 'Arquivos seguros e CDN global' },
-  { icon: BrainCircuit, name: 'IA Generativa', desc: 'Importação e organização inteligente de conteúdo' },
-  { icon: Shield, name: 'Segurança Avançada', desc: 'RLS, autenticação e proteção por linha' },
-  { icon: Smartphone, name: 'PWA Nativo', desc: 'Instale como app no celular com 1 toque' },
-  { icon: Globe, name: 'Edge Functions', desc: 'Backend serverless com latência mínima' },
+  { icon: Shield, name: 'Segurança Avançada', desc: 'Autenticação robusta e proteção por linha de dados' },
+  { icon: Smartphone, name: 'App Nativo', desc: 'Instale como app no celular com 1 toque' },
+  { icon: Cloud, name: 'Cloud Storage', desc: 'Arquivos seguros e entrega global rápida' },
+  { icon: BrainCircuit, name: 'Inteligência Artificial', desc: 'Importação e organização inteligente de conteúdo' },
+  { icon: Globe, name: 'Alta Performance', desc: 'Carregamento instantâneo e design responsivo' },
+  { icon: Database, name: 'Sincronização', desc: 'Dados atualizados em tempo real' },
+  { icon: Palette, name: 'Design Moderno', desc: 'Interface elegante com tema claro e escuro' },
+  { icon: Cpu, name: 'Infraestrutura', desc: 'Backend serverless com latência mínima' },
 ];
 
 const faqs = [
@@ -393,7 +393,7 @@ export default function LandingPage() {
                 <div className="flex-1 flex justify-center">
                   <div className="px-4 py-1 rounded-md bg-muted/50 text-xs text-muted-foreground flex items-center gap-2">
                     <Lock className="h-3 w-3" />
-                    decodeanalyticsacademy.lovable.app
+                    decodeanalytics.app
                   </div>
                 </div>
               </div>
@@ -461,17 +461,17 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Tech Stack with marquee */}
+      {/* Tech Stack */}
       <section className="py-20 md:py-28">
         <div className="container px-4">
           <ScrollReveal>
             <div className="text-center mb-14">
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-xs font-medium text-primary mb-3">
-                <Cpu className="h-3.5 w-3.5" /> Tecnologia
+                <Cpu className="h-3.5 w-3.5" /> Infraestrutura
               </div>
-              <h2 className="text-2xl font-bold sm:text-3xl md:text-4xl">Construído com <span className="text-gradient">tecnologia de ponta</span></h2>
+              <h2 className="text-2xl font-bold sm:text-3xl md:text-4xl">Construído para <span className="text-gradient">performance</span></h2>
               <p className="text-muted-foreground mt-3 max-w-lg mx-auto text-sm md:text-base leading-relaxed">
-                As melhores ferramentas do mercado para performance, segurança e experiência excepcional.
+                Infraestrutura robusta para garantir segurança, velocidade e uma experiência excepcional.
               </p>
             </div>
           </ScrollReveal>
@@ -635,7 +635,7 @@ export default function LandingPage() {
             <button onClick={() => document.getElementById('recursos')?.scrollIntoView({ behavior: 'smooth' })} className="hover:text-primary transition-colors">Recursos</button>
             <button onClick={() => navigate('/login')} className="hover:text-primary transition-colors">Entrar</button>
           </div>
-          <p className="text-xs text-center">Desenvolvido por Kaique Aurelio &middot; &copy; {new Date().getFullYear()} &middot; Todos os direitos reservados</p>
+          <p className="text-xs text-center">&copy; {new Date().getFullYear()} Decode Analytics &middot; Todos os direitos reservados</p>
         </div>
       </footer>
 
@@ -660,7 +660,7 @@ export default function LandingPage() {
                 rel="noopener noreferrer"
                 className="text-sm font-semibold text-primary underline break-all"
               >
-                decodeanalyticsacademy.lovable.app
+                decodeanalytics.app
               </a>
             </div>
             <div className="space-y-3 text-sm text-muted-foreground">
