@@ -32,6 +32,18 @@ export default function ProfilePage() {
     const saved = localStorage.getItem('weeklyExerciseGoal');
     return saved ? Number(saved) : 30;
   });
+  const [pomodoroFocus, setPomodoroFocus] = useState(() => {
+    const saved = localStorage.getItem('pomodoroFocusMinutes');
+    return saved ? Number(saved) : 25;
+  });
+  const [pomodoroBreak, setPomodoroBreak] = useState(() => {
+    const saved = localStorage.getItem('pomodoroBreakMinutes');
+    return saved ? Number(saved) : 5;
+  });
+  const [flashcardsPerDay, setFlashcardsPerDay] = useState(() => {
+    const saved = localStorage.getItem('flashcardsPerDay');
+    return saved ? Number(saved) : 10;
+  });
   const [stats, setStats] = useState({ total: 0, hits: 0, errors: 0, byApostila: {} as Record<string, { hits: number; errors: number; title: string }> });
 
   useEffect(() => {
@@ -87,6 +99,21 @@ export default function ProfilePage() {
     localStorage.setItem('weeklyExerciseGoal', String(val));
   };
 
+  const handlePomodoroFocusChange = (val: number) => {
+    setPomodoroFocus(val);
+    localStorage.setItem('pomodoroFocusMinutes', String(val));
+  };
+
+  const handlePomodoroBreakChange = (val: number) => {
+    setPomodoroBreak(val);
+    localStorage.setItem('pomodoroBreakMinutes', String(val));
+  };
+
+  const handleFlashcardsPerDayChange = (val: number) => {
+    setFlashcardsPerDay(val);
+    localStorage.setItem('flashcardsPerDay', String(val));
+  };
+
   const handleSave = async () => {
     if (!user) return;
     setSaving(true);
@@ -140,19 +167,53 @@ export default function ProfilePage() {
           </div>
         </Card>
 
-        {/* Weekly Goal Setting */}
+        {/* Study Settings */}
         <Card className="p-5 bg-card border border-border/50 mb-6 animate-content-show delay-1">
-          <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
+          <h3 className="text-sm font-semibold mb-5 flex items-center gap-2">
             <Settings className="h-4 w-4 text-primary" /> Configurações de Estudo
           </h3>
-          <KawaiiSlider
-            value={weeklyGoal}
-            onChange={handleWeeklyGoalChange}
-            min={5}
-            max={100}
-            step={5}
-            label="Meta semanal de exercícios"
-          />
+          <div className="space-y-6">
+            <KawaiiSlider
+              value={weeklyGoal}
+              onChange={handleWeeklyGoalChange}
+              min={5}
+              max={100}
+              step={5}
+              label="Meta semanal de exercícios"
+            />
+            <div className="border-t border-border/30 pt-4">
+              <KawaiiSlider
+                value={pomodoroFocus}
+                onChange={handlePomodoroFocusChange}
+                min={10}
+                max={60}
+                step={5}
+                label="Pomodoro — foco (min)"
+                unit=" min"
+              />
+            </div>
+            <div className="border-t border-border/30 pt-4">
+              <KawaiiSlider
+                value={pomodoroBreak}
+                onChange={handlePomodoroBreakChange}
+                min={1}
+                max={15}
+                step={1}
+                label="Pomodoro — pausa (min)"
+                unit=" min"
+              />
+            </div>
+            <div className="border-t border-border/30 pt-4">
+              <KawaiiSlider
+                value={flashcardsPerDay}
+                onChange={handleFlashcardsPerDayChange}
+                min={3}
+                max={50}
+                step={1}
+                label="Flashcards por dia"
+              />
+            </div>
+          </div>
         </Card>
 
         {/* XP & Streak */}

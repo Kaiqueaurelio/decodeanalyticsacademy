@@ -8,13 +8,16 @@ interface Props {
 }
 
 export function PomodoroTimer({ onComplete }: Props) {
+  const getFocusMinutes = () => Number(localStorage.getItem('pomodoroFocusMinutes') || '25');
+  const getBreakMinutes = () => Number(localStorage.getItem('pomodoroBreakMinutes') || '5');
+
   const [mode, setMode] = useState<'focus' | 'break'>('focus');
-  const [timeLeft, setTimeLeft] = useState(25 * 60);
+  const [timeLeft, setTimeLeft] = useState(getFocusMinutes() * 60);
   const [isRunning, setIsRunning] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const focusTime = 25 * 60;
-  const breakTime = 5 * 60;
+  const focusTime = getFocusMinutes() * 60;
+  const breakTime = getBreakMinutes() * 60;
 
   useEffect(() => {
     if (isRunning && timeLeft > 0) {
