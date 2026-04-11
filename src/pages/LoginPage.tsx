@@ -94,7 +94,7 @@ export default function LoginPage() {
           </div>
 
           <p className="text-xs text-muted-foreground">
-            &copy; {new Date().getFullYear()} Decode Analytics
+            Desenvolvido por Kaique Aurelio
           </p>
         </div>
       </div>
@@ -188,7 +188,7 @@ export default function LoginPage() {
               )}
             </div>
             <p className="text-center text-xs text-muted-foreground mt-4 animate-fade-in" style={{ animationDelay: '600ms', animationFillMode: 'both' }}>
-              &copy; {new Date().getFullYear()} Decode Analytics &middot; Todos os direitos reservados
+              Decode Analytics &mdash; Desenvolvido por Kaique Aurelio
             </p>
           </div>
         </div>
