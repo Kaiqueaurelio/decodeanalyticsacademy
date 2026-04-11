@@ -1,49 +1,59 @@
+Objetivo: corrigir o ícone do app instalado no celular para usar o logo da coruja que você enviou, tanto no Android quanto no iPhone.
 
-Plano para corrigir o erro do vídeo na página de materiais
+O que identifiquei
 
-1. Resultado do teste
-- Testei a página `/materials` no app e o erro continua.
-- O card do vídeo mostra: “Não foi possível carregar o vídeo”.
-- Na rede, a requisição do arquivo `1775673939169.mp4` retorna `416 Range Not Satisfiable`.
-- Os headers confirmam o problema:
-  - `content-range: bytes */0`
-  - `content-length: 0`
-  - `etag: d41d8cd98f00b204e9800998ecf8427e` (arquivo vazio)
+- O app já tem `manifest.json`, mas os arquivos `public/icon-192.png` e `public/icon-512.png` ainda não foram substituídos pelo logo correto.
+- O `manifest.json` usa `purpose: "any maskable"` combinado, o que pode causar incompatibilidade em alguns launchers.
+- O `index.html` aponta `apple-touch-icon` para `/icon-192.png`, mas o ideal é gerar um ícone específico para iOS.
+- Existe `public/favicon.ico`, que também pode continuar mostrando um ícone antigo em alguns contextos.
 
-2. Causa real
-- O player atual não é o problema principal.
-- O arquivo salvo no armazenamento ainda está vazio/corrompido no caminho:
-  `1ea75282-cc92-49a2-92a2-4c54344a6d43/1775673939169.mp4`
-- Por isso, mesmo com URL assinada válida, o navegador não consegue reproduzir.
+Plano de implementação
 
-3. O que vou corrigir
-- Corrigir o material de vídeo na origem, não só no player:
-  - substituir o arquivo quebrado por um MP4 válido no bucket privado
-  - se sobrescrever o mesmo caminho continuar falhando, gerar um novo caminho e atualizar o registro do material para apontar para esse novo arquivo
-- Fortalecer o fluxo de upload no admin:
-  - bloquear upload de arquivo com tamanho `0`
-  - enviar com `contentType` correto
-  - validar o upload após concluir, confirmando que o arquivo salvo tem bytes reais antes de salvar/atualizar o material
-- Melhorar a mensagem de erro no app:
-  - quando o vídeo falhar por arquivo inválido, mostrar uma mensagem mais clara, como “Arquivo de vídeo inválido ou vazio. Reenvie no admin.”
+1. Usar a imagem enviada como base oficial do app.
+2. Gerar os assets corretos para instalação mobile:
+  - `public/icon-192.png`
+  - `public/icon-512.png`
+  - `public/apple-touch-icon.png`
+  - opcionalmente um novo `public/favicon.png` ou `favicon.ico`
+3. Atualizar `public/manifest.json`:
+  - separar entradas `any` e `maskable`
+  - manter nome, short_name e cores atuais
+  - garantir melhor compatibilidade com Android
+4. Atualizar `index.html`:
+  - apontar `apple-touch-icon` para o novo arquivo iOS
+  - revisar `theme-color` e favicon para evitar conflito visual
+5. Remover/substituir o favicon antigo para o navegador não continuar puxando o ícone errado.
+6. Validar no preview publicado e orientar que, no celular, pode ser necessário:
+  - remover o atalho antigo da tela inicial
+  - reinstalar o app para o novo ícone aparecer
 
-4. Arquivos/áreas a ajustar
-- `src/pages/AdminPage.tsx`
-  - endurecer o upload de materiais de vídeo
-  - validar tamanho do arquivo antes e depois do envio
-  - usar novo caminho de arquivo quando necessário
-- `src/pages/MaterialsPage.tsx`
-  - manter o player atual
-  - melhorar apenas o tratamento visual do erro para casos de arquivo vazio
+Resultado esperado
 
-5. Detalhes técnicos
-- O código da página de materiais já gera signed URLs corretamente para bucket privado.
-- O `VideoPlayer` já tenta renovar a URL assinada quando falha.
-- Como a resposta do storage vem com `0 bytes`, qualquer ajuste só no frontend continuará falhando.
-- Não precisa mudar autenticação, banco, permissões nem políticas de acesso para esse conserto.
+- Ao instalar o app no celular, o ícone exibido será o logo da coruja enviado.
+- Melhor compatibilidade entre Android, iPhone e navegadores diferentes.
 
-6. Validação final
-- Reabrir `/materials`
-- Confirmar que a requisição do MP4 passa a responder `200` ou `206`, nunca `416`
-- Confirmar que o vídeo aparece com controles e inicia a reprodução
-- Testar também no layout mobile para garantir que toca dentro do app
+Detalhe técnico
+
+- Como estou em modo somente leitura, não posso gerar os arquivos nem substituir os assets agora.
+- Na implementação, o trabalho principal será criar versões redimensionadas do logo enviado e trocar os arquivos públicos que o manifest já referencia.
+- Se o logo original tiver muito espaço em branco, também posso centralizar e ajustar a arte para ficar melhor em formatos quadrados e maskable.
+
+Verificar que funcionaCorrigir ícone do appAtualizar favicon
+
+Os ícones PWA atuais (`icon-192.png` e `icon-512.png`) não são o logo da coruja que você enviou. Quando o app é instalado no celular, ele mostra ícones genéricos em vez da marca Decode Analytics.
+
+## Plano
+
+1. **Copiar a imagem enviada** para o projeto (`src/assets/` temporariamente)
+2. **Gerar os ícones PWA** a partir da imagem da coruja:
+  - `public/icon-192.png` (192x192px)
+  - `public/icon-512.png` (512x512px)
+  - `public/apple-touch-icon.png` (180x180px) para iOS
+  - Usar ImageMagick (`nix run nixpkgs#imagemagick`) para redimensionar
+3. **Atualizar** `public/manifest.json` para separar `"purpose": "any"` e `"purpose": "maskable"` em entradas distintas (melhor compatibilidade)
+4. **Atualizar** `index.html` para incluir `<link rel="apple-touch-icon">` apontando para o ícone 180px (iOS não usa manifest para ícones)
+
+### Detalhe Técnico
+
+- O `purpose: "any maskable"` combinado pode causar problemas em alguns dispositivos; separar em dois entries é a prática recomendada
+- iOS Safari ignora o manifest para ícones e usa apenas `<link rel="apple-touch-icon">`
