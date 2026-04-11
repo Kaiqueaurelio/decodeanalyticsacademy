@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback, useRef, useMemo, useContext, c
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { GliderTabs } from '@/components/GliderTabs';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -579,20 +580,19 @@ export default function AdminPage() {
   return (
     <CategoriesCtx.Provider value={{ categories: dbCategories }}>
       <div className="min-h-screen bg-background flex">
-        <AdminSidebar
-          tab={tab} setTab={setTab}
-          stats={{ apostilas: apostilas.length, exercises: totalExercises, materials: materials.length, users: users.length }}
-          sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen}
-        />
+        {/* Desktop sidebar only */}
+        <div className="hidden lg:block">
+          <AdminSidebar
+            tab={tab} setTab={setTab}
+            stats={{ apostilas: apostilas.length, exercises: totalExercises, materials: materials.length, users: users.length }}
+            sidebarOpen={false} setSidebarOpen={() => {}}
+          />
+        </div>
 
         {/* Main Content */}
         <div className="flex-1 flex flex-col min-w-0">
           {/* Top Bar */}
-          <header className="sticky top-0 z-30 bg-card/95 backdrop-blur-xl border-b border-border h-16 flex items-center px-4 lg:px-6 gap-3">
-            <Button size="icon" variant="ghost" className="lg:hidden h-9 w-9 shrink-0" onClick={() => setSidebarOpen(true)}>
-              <Menu className="h-5 w-5" />
-            </Button>
-
+          <header className="sticky top-0 z-30 bg-card/95 backdrop-blur-xl border-b border-border h-14 flex items-center px-4 lg:px-6 gap-3">
             <div className="flex-1 min-w-0">
               <h2 className="text-base font-bold text-foreground truncate">{tabTitles[tab].title}</h2>
               <p className="text-[10px] text-muted-foreground hidden sm:block">{tabTitles[tab].desc}</p>
@@ -614,6 +614,21 @@ export default function AdminPage() {
               <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
             </Button>
           </header>
+
+          {/* Mobile GliderTabs */}
+          <div className="lg:hidden sticky top-14 z-20 bg-card/95 backdrop-blur-xl border-b border-border/40 px-2 py-2 overflow-x-auto">
+            <GliderTabs
+              tabs={[
+                { id: 'overview', label: 'Geral', icon: <BarChart3 className="h-3.5 w-3.5" /> },
+                { id: 'apostilas', label: 'Apostilas', icon: <BookOpen className="h-3.5 w-3.5" />, count: apostilas.length },
+                { id: 'exercises', label: 'Exercícios', icon: <PenLine className="h-3.5 w-3.5" />, count: totalExercises },
+                { id: 'materials', label: 'Materiais', icon: <FolderOpen className="h-3.5 w-3.5" />, count: materials.length },
+                { id: 'users', label: 'Usuários', icon: <Users className="h-3.5 w-3.5" />, count: users.length },
+              ]}
+              activeTab={tab}
+              onTabChange={(id) => setTab(id as Tab)}
+            />
+          </div>
 
           {/* Content */}
           <main className="flex-1 p-4 lg:p-6 overflow-auto">
