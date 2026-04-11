@@ -32,6 +32,18 @@ export default function ProfilePage() {
     const saved = localStorage.getItem('weeklyExerciseGoal');
     return saved ? Number(saved) : 30;
   });
+  const [pomodoroFocus, setPomodoroFocus] = useState(() => {
+    const saved = localStorage.getItem('pomodoroFocusMinutes');
+    return saved ? Number(saved) : 25;
+  });
+  const [pomodoroBreak, setPomodoroBreak] = useState(() => {
+    const saved = localStorage.getItem('pomodoroBreakMinutes');
+    return saved ? Number(saved) : 5;
+  });
+  const [flashcardsPerDay, setFlashcardsPerDay] = useState(() => {
+    const saved = localStorage.getItem('flashcardsPerDay');
+    return saved ? Number(saved) : 10;
+  });
   const [stats, setStats] = useState({ total: 0, hits: 0, errors: 0, byApostila: {} as Record<string, { hits: number; errors: number; title: string }> });
 
   useEffect(() => {
