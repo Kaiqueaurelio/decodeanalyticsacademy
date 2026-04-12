@@ -54,14 +54,14 @@ export function StudyHeatmap() {
   const weekDays = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
 
   return (
-    <Card className="p-4 bg-card border border-border/50">
-      <h3 className="text-xs font-semibold mb-3 flex items-center gap-2">
-        <Calendar className="h-4 w-4 text-primary" /> Atividade (28 dias)
+    <Card className="p-5 hover-lift">
+      <h3 className="text-xs font-semibold mb-4 flex items-center gap-2">
+        <Calendar className="h-4 w-4 text-primary" /> Atividade de Estudo (28 dias)
       </h3>
       <TooltipProvider>
-        <div className="grid grid-cols-7 gap-1">
+        <div className="grid grid-cols-7 gap-1.5">
           {weekDays.map((d, i) => (
-            <div key={i} className="text-[9px] text-muted-foreground text-center font-medium">{d}</div>
+            <div key={i} className="text-[9px] text-muted-foreground text-center font-semibold">{d}</div>
           ))}
           {days.map(day => {
             const count = activityMap[day] || 0;
@@ -69,7 +69,7 @@ export function StudyHeatmap() {
               <Tooltip key={day}>
                 <TooltipTrigger asChild>
                   <div
-                    className={`aspect-square rounded-sm ${getIntensity(count)} smooth-all hover:ring-1 hover:ring-primary/50 cursor-default`}
+                    className={`aspect-square rounded ${getIntensity(count)} transition-all duration-200 hover:ring-2 hover:ring-primary/40 cursor-default`}
                   />
                 </TooltipTrigger>
                 <TooltipContent side="top" className="text-xs">
@@ -80,10 +80,10 @@ export function StudyHeatmap() {
           })}
         </div>
       </TooltipProvider>
-      <div className="flex items-center justify-end gap-1 mt-2">
+      <div className="flex items-center justify-end gap-1.5 mt-3">
         <span className="text-[9px] text-muted-foreground">Menos</span>
         {['bg-muted/50', 'bg-primary/20', 'bg-primary/40', 'bg-primary/60', 'bg-primary'].map((c, i) => (
-          <div key={i} className={`w-2.5 h-2.5 rounded-sm ${c}`} />
+          <div key={i} className={`w-3 h-3 rounded ${c}`} />
         ))}
         <span className="text-[9px] text-muted-foreground">Mais</span>
       </div>

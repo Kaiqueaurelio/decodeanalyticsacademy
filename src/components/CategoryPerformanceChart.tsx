@@ -33,9 +33,9 @@ export function CategoryPerformanceChart({ data }: { data: CategoryData[] }) {
   const totalPct = totalHits + totalErrors > 0 ? Math.round((totalHits / (totalHits + totalErrors)) * 100) : 0;
 
   return (
-    <Card className="p-4 bg-card border border-border/50">
-      <h3 className="text-xs font-semibold mb-3 flex items-center gap-2">
-        <Target className="h-4 w-4 text-primary" /> Por Apostila
+    <Card className="p-5 hover-lift">
+      <h3 className="text-xs font-semibold mb-4 flex items-center gap-2">
+        <Target className="h-4 w-4 text-primary" /> Desempenho por Apostila
       </h3>
       <div className="flex items-center gap-4">
         <div className="relative">
@@ -60,11 +60,11 @@ export function CategoryPerformanceChart({ data }: { data: CategoryData[] }) {
                   if (!active || !payload?.[0]) return null;
                   const d = payload[0].payload;
                   return (
-                    <div className="bg-card border border-border rounded-lg p-2 shadow-lg text-xs">
-                      <p className="font-medium">{d.name}</p>
+                    <div className="bg-card border border-border rounded-xl p-3 shadow-lg text-xs">
+                      <p className="font-semibold mb-1">{d.name}</p>
                       <p className="text-success">{d.hits} acertos</p>
                       <p className="text-destructive">{d.errors} erros</p>
-                      <p className="font-bold">{d.pct}%</p>
+                      <p className="font-bold mt-1">{d.pct}% precisão</p>
                     </div>
                   );
                 }}
@@ -73,17 +73,17 @@ export function CategoryPerformanceChart({ data }: { data: CategoryData[] }) {
           </ResponsiveContainer>
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-center">
-              <p className="text-lg font-bold">{totalPct}%</p>
+              <p className="text-xl font-bold">{totalPct}%</p>
               <p className="text-[9px] text-muted-foreground">geral</p>
             </div>
           </div>
         </div>
-        <div className="flex-1 space-y-1.5 min-w-0">
+        <div className="flex-1 space-y-2 min-w-0">
           {chartData.slice(0, 5).map((d, i) => (
             <div key={i} className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
-              <span className="text-[10px] truncate flex-1">{d.name}</span>
-              <span className="text-[10px] font-bold">{d.pct}%</span>
+              <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
+              <span className="text-[11px] truncate flex-1">{d.name}</span>
+              <span className="text-[11px] font-bold">{d.pct}%</span>
             </div>
           ))}
         </div>

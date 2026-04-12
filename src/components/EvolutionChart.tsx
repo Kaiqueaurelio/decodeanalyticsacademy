@@ -28,17 +28,25 @@ export function EvolutionChart() {
   if (data.length < 2) return null;
 
   return (
-    <Card className="p-4 bg-card border border-border/50">
-      <h3 className="text-xs font-semibold mb-3 flex items-center gap-2">
-        <TrendingUp className="h-4 w-4 text-primary" /> Evolução
+    <Card className="p-5 hover-lift">
+      <h3 className="text-xs font-semibold mb-4 flex items-center gap-2">
+        <TrendingUp className="h-4 w-4 text-primary" /> Evolução de Desempenho
       </h3>
-      <ResponsiveContainer width="100%" height={160}>
+      <ResponsiveContainer width="100%" height={170}>
         <BarChart data={data} barGap={2}>
           <XAxis dataKey="date" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
           <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" width={24} />
-          <Tooltip contentStyle={{ fontSize: 11, backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }} />
-          <Bar dataKey="acertos" fill="hsl(var(--primary))" radius={[2, 2, 0, 0]} />
-          <Bar dataKey="erros" fill="hsl(var(--destructive))" radius={[2, 2, 0, 0]} />
+          <Tooltip
+            contentStyle={{
+              fontSize: 11,
+              backgroundColor: 'hsl(var(--card))',
+              border: '1px solid hsl(var(--border))',
+              borderRadius: '8px',
+              padding: '8px 12px',
+            }}
+          />
+          <Bar dataKey="acertos" fill="hsl(var(--primary))" radius={[3, 3, 0, 0]} name="Acertos" />
+          <Bar dataKey="erros" fill="hsl(var(--destructive))" radius={[3, 3, 0, 0]} name="Erros" />
         </BarChart>
       </ResponsiveContainer>
     </Card>

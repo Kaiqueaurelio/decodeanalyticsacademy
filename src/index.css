@@ -25,7 +25,7 @@
     --border: 240 6% 90%;
     --input: 240 6% 90%;
     --ring: 68 80% 45%;
-    --radius: 0.5rem;
+    --radius: 0.625rem;
     --success: 160 60% 38%;
     --success-foreground: 0 0% 100%;
     --warning: 38 92% 50%;
@@ -79,6 +79,11 @@
     background-repeat: repeat;
     background-size: 256px 256px;
   }
+
+  /* ─── Typography Hierarchy ─── */
+  h1 { @apply text-2xl sm:text-3xl font-bold tracking-tight; }
+  h2 { @apply text-xl sm:text-2xl font-semibold tracking-tight; }
+  h3 { @apply text-base sm:text-lg font-semibold; }
 }
 
 @layer utilities {
@@ -142,6 +147,9 @@
 button, [role="button"], a[class*="btn"] {
   transition: transform 0.15s ease, box-shadow 0.2s ease, opacity 0.2s ease;
 }
+button:hover:not(:disabled), [role="button"]:hover:not(:disabled) {
+  transform: scale(1.015);
+}
 button:active:not(:disabled), [role="button"]:active:not(:disabled) {
   transform: scale(0.97);
 }
@@ -151,14 +159,24 @@ button:active:not(:disabled), [role="button"]:active:not(:disabled) {
   transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s ease, border-color 0.25s ease;
 }
 .hover-lift:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 24px -8px hsl(var(--primary) / 0.1);
-  border-color: hsl(var(--primary) / 0.2);
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 8px 24px -8px hsl(var(--primary) / 0.12);
+  border-color: hsl(var(--primary) / 0.25);
 }
 
 /* Alternate card depth for lists */
 .card-alternate:nth-child(even) {
   box-shadow: 0 1px 3px hsl(var(--foreground) / 0.04);
+}
+
+/* ─── Widget card — consistent styling ─── */
+.widget-card {
+  @apply p-5 bg-card border border-border/50 rounded-xl;
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s ease, border-color 0.25s ease;
+}
+.widget-card:hover {
+  border-color: hsl(var(--primary) / 0.15);
+  box-shadow: 0 4px 16px -4px hsl(var(--foreground) / 0.06);
 }
 
 /* ─── Grid Lines Background Effect (dark mode only) ─── */
@@ -242,7 +260,7 @@ button:active:not(:disabled), [role="button"]:active:not(:disabled) {
 
 /* ─── Smooth Page Transitions ─── */
 @keyframes page-enter {
-  from { opacity: 0; transform: translateY(6px); }
+  from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
 @keyframes content-show {
@@ -250,40 +268,49 @@ button:active:not(:disabled), [role="button"]:active:not(:disabled) {
   to { opacity: 1; transform: translateY(0); }
 }
 @keyframes card-enter {
-  from { opacity: 0; transform: scale(0.98) translateY(8px); }
+  from { opacity: 0; transform: scale(0.97) translateY(10px); }
   to { opacity: 1; transform: scale(1) translateY(0); }
 }
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(16px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+@keyframes slide-in-left {
+  from { opacity: 0; transform: translateX(-16px); }
+  to { opacity: 1; transform: translateX(0); }
+}
 
 .animate-page-in {
-  animation: page-enter 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: page-enter 0.25s ease-in-out both;
 }
 .animate-content-show {
-  animation: content-show 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: content-show 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 .animate-card-enter {
   animation: card-enter 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 .animate-fade-up {
-  animation: fadeUp 0.5s ease forwards;
+  animation: fadeUp 0.45s ease forwards;
 }
 .animate-fade-in {
-  animation: page-enter 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: page-enter 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 .animate-scale-in {
   animation: card-enter 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
+.animate-slide-in-left {
+  animation: slide-in-left 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
 
-/* Staggered delays */
-.delay-1 { animation-delay: 60ms; }
-.delay-2 { animation-delay: 120ms; }
-.delay-3 { animation-delay: 180ms; }
-.delay-4 { animation-delay: 240ms; }
-.delay-5 { animation-delay: 300ms; }
-.delay-6 { animation-delay: 360ms; }
+/* Staggered delays — cascading entry */
+.delay-1 { animation-delay: 80ms; }
+.delay-2 { animation-delay: 160ms; }
+.delay-3 { animation-delay: 240ms; }
+.delay-4 { animation-delay: 320ms; }
+.delay-5 { animation-delay: 400ms; }
+.delay-6 { animation-delay: 480ms; }
+.delay-7 { animation-delay: 560ms; }
+.delay-8 { animation-delay: 640ms; }
 
 .smooth-all {
   @apply transition-all duration-200 ease-out;
@@ -497,4 +524,36 @@ input[type="range"].kawaii-slider::-webkit-slider-thumb {
   background-size: 200% 100%;
   animation: shimmer 1.5s ease-in-out infinite;
   border-radius: 6px;
+}
+
+/* ─── Smooth scroll ─── */
+html {
+  scroll-behavior: smooth;
+}
+
+/* ─── Checked animation ─── */
+@keyframes check-pop {
+  0% { transform: scale(0); opacity: 0; }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.animate-check-pop {
+  animation: check-pop 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ─── Progress bar fill animation ─── */
+@keyframes progress-fill {
+  from { width: 0; }
+}
+.animate-progress-fill {
+  animation: progress-fill 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ─── Section heading accent ─── */
+.section-heading {
+  @apply flex items-center gap-2 mb-4;
+}
+.section-heading::after {
+  content: '';
+  @apply flex-1 h-px bg-border/50;
 }
