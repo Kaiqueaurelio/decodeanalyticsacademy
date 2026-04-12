@@ -79,6 +79,16 @@ const TYPE_FROM_EXT: Record<string, string> = {
   xls: 'excel', xlsx: 'excel',
 };
 
+function ThemeToggleButton() {
+  const { theme, toggleTheme } = useTheme();
+  return (
+    <Button variant="outline" size="sm" className="w-full text-xs gap-2" onClick={toggleTheme}>
+      {theme === 'dark' ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
+      {theme === 'dark' ? 'Modo Claro' : 'Modo Noturno'}
+    </Button>
+  );
+}
+
 // ─── Sidebar Navigation ────────────────────────────────────────
 function AdminSidebar({ tab, setTab, stats, sidebarOpen, setSidebarOpen }: {
   tab: Tab; setTab: (t: Tab) => void;
