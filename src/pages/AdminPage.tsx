@@ -492,7 +492,7 @@ export default function AdminPage() {
   const resetImportForm = () => {
     setImportUrl(''); setImportTitle(''); setImportTopic('');
     setImportContent(''); setImportExercises([]); setImportStep('input');
-    setImportRawText('');
+    setImportRawText(''); setExtractionMethod('');
   };
 
   const handleBatchImport = async () => {
