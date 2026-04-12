@@ -85,11 +85,11 @@ export default function LandingPage() {
         {/* Subtle glow */}
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] rounded-full bg-primary/5 blur-[120px]" />
 
-        <div className="container relative py-20 md:py-28 lg:py-36 px-4">
-          <div className="max-w-3xl space-y-6">
+        <div className="container relative py-24 md:py-32 lg:py-40 px-6">
+          <div className="max-w-3xl space-y-8">
             <div className="animate-fade-up" style={{ animationDelay: '0s' }}>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-secondary text-[11px] font-mono-label uppercase tracking-widest text-muted-foreground mb-4" style={{ border: '1px solid hsl(0 0% 100% / 0.08)' }}>
-                <GraduationCap className="h-3 w-3 text-primary" />
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-secondary text-[11px] font-mono-label uppercase tracking-widest text-muted-foreground mb-5 editorial-border">
+                <GraduationCap className="h-3.5 w-3.5 text-primary" />
                 Decode Analytics Academy
               </div>
             </div>
@@ -105,16 +105,16 @@ export default function LandingPage() {
               Apostilas estruturadas, exercícios inteligentes, gamificação e tudo que você precisa para dominar suas provas — para CC, SI, EC e cursos de tecnologia.
             </p>
 
-            <div className="animate-fade-up flex flex-col sm:flex-row gap-3 pt-2" style={{ animationDelay: '0.3s', opacity: 0 }}>
-              <Button size="lg" onClick={() => navigate('/login')}>
-                Entrar como estudante <ArrowRight className="ml-2 h-4 w-4" />
+            <div className="animate-fade-up flex flex-col sm:flex-row gap-4 pt-3" style={{ animationDelay: '0.3s', opacity: 0 }}>
+              <Button size="lg" onClick={() => navigate('/login')} className="animate-pulse-glow">
+                Acessar minha conta <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
-              <Button size="lg" variant="outline" onClick={() => navigate('/login')}>
-                Acessar como Admin
+              <Button size="lg" variant="outline" onClick={() => navigate('/login')} className="opacity-80 hover:opacity-100">
+                Entrar como Admin
               </Button>
             </div>
 
-            <div className="animate-fade-up flex items-center gap-6 pt-2" style={{ animationDelay: '0.4s', opacity: 0 }}>
+            <div className="animate-fade-up flex items-center gap-6 pt-3" style={{ animationDelay: '0.4s', opacity: 0 }}>
               <button type="button" onClick={handleInstallPWA}
                 className="inline-flex items-center gap-2 text-sm text-primary font-mono-label text-[11px] uppercase tracking-wider hover:brightness-110 transition-all cursor-pointer">
                 <Download className="h-3.5 w-3.5" /> Instalar App
@@ -129,13 +129,13 @@ export default function LandingPage() {
       </section>
 
       {/* ═══ STATS BAR ═══ */}
-      <section style={{ borderTop: '1px solid hsl(0 0% 100% / 0.06)', borderBottom: '1px solid hsl(0 0% 100% / 0.06)' }}>
-        <div className="container px-4 py-10 md:py-12">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
+      <section className="editorial-border" style={{ borderLeft: 'none', borderRight: 'none' }}>
+        <div className="container px-6 py-12 md:py-14">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-10">
             {stats.map((s) => (
               <div key={s.label} className="text-center">
                 <p className="text-3xl md:text-4xl font-display text-primary">{s.value}</p>
-                <p className="text-xs font-mono-label uppercase tracking-widest text-muted-foreground mt-1">{s.label}</p>
+                <p className="text-xs font-mono-label uppercase tracking-widest text-muted-foreground mt-1.5">{s.label}</p>
               </div>
             ))}
           </div>
@@ -143,9 +143,9 @@ export default function LandingPage() {
       </section>
 
       {/* ═══ FEATURES ═══ */}
-      <section id="recursos" className="py-20 md:py-28">
-        <div className="container px-4">
-          <div className="text-center mb-14">
+      <section id="recursos" className="py-24 md:py-32">
+        <div className="container px-6">
+          <div className="text-center mb-16">
             <span className="font-mono-label text-[11px] uppercase tracking-widest text-primary">
               <Layers className="h-3 w-3 inline mr-1.5" />Recursos
             </span>
@@ -157,13 +157,13 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {features.map((f, i) => (
-              <div key={f.title} className="rounded-lg p-6 editorial-border-hover group" style={{ animationDelay: `${i * 80}ms` }}>
-                <div className="mb-4 inline-flex rounded bg-primary/10 p-3 group-hover:bg-primary/15 transition-colors">
+              <div key={f.title} className="rounded-xl p-7 editorial-border-hover group" style={{ animationDelay: `${i * 80}ms` }}>
+                <div className="mb-5 inline-flex rounded-lg bg-primary/10 p-3.5 group-hover:bg-primary/15 transition-colors">
                   <f.icon className="h-5 w-5 text-primary" />
                 </div>
-                <h3 className="text-sm font-semibold mb-2 group-hover:text-primary transition-colors">{f.title}</h3>
+                <h3 className="text-sm font-semibold mb-2.5 group-hover:text-primary transition-colors">{f.title}</h3>
                 <p className="text-muted-foreground text-xs leading-relaxed">{f.desc}</p>
               </div>
             ))}
