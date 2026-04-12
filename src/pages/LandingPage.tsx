@@ -44,9 +44,11 @@ const steps = [
 ];
 
 const testimonials = [
-  { name: 'Ana Silva', course: '3º Sem · CC', text: 'A plataforma me ajudou muito nas revisões. Os exercícios são muito parecidos com os da prova!', rating: 5 },
-  { name: 'Carlos Santos', course: '5º Sem · CC', text: 'Ter tudo organizado num só lugar faz toda a diferença. Recomendo para todos da turma.', rating: 5 },
-  { name: 'Juliana Costa', course: '2º Sem · CC', text: 'Os áudios são excelentes para revisar no ônibus. A gamificação me motiva todo dia.', rating: 5 },
+  { name: 'Ana Silva', course: '3º Sem · SI', text: 'A plataforma me ajudou muito nas revisões. Os exercícios são muito parecidos com os da prova! Uso todos os dias.', rating: 5, initials: 'AS', color: 'hsl(142 71% 45%)' },
+  { name: 'Carlos Santos', course: '5º Sem · EC', text: 'Ter tudo organizado num só lugar faz toda a diferença. Recomendo para todos da turma. O dashboard é incrível.', rating: 5, initials: 'CS', color: 'hsl(217 91% 60%)' },
+  { name: 'Juliana Costa', course: '2º Sem · CC', text: 'Os áudios são excelentes para revisar no ônibus. A gamificação me motiva todo dia a estudar mais.', rating: 5, initials: 'JC', color: 'hsl(68 100% 64%)' },
+  { name: 'Rafael Oliveira', course: '4º Sem · CC', text: 'Passei em todas as provas de Estrutura de Dados graças aos exercícios da plataforma. Nota máxima!', rating: 5, initials: 'RO', color: 'hsl(280 67% 60%)' },
+  { name: 'Mariana Ferreira', course: '6º Sem · SI', text: 'Estudo pelo celular no trabalho e é perfeito. O app funciona como nativo e o conteúdo é muito bem organizado.', rating: 5, initials: 'MF', color: 'hsl(24 94% 60%)' },
 ];
 
 const faqs = [

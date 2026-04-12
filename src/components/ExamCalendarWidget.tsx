@@ -22,6 +22,32 @@ export function ExamCalendarWidget() {
   const [newTitle, setNewTitle] = useState('');
   const [newDate, setNewDate] = useState('');
 
+  // Notificações de provas próximas
+  useEffect(() => {
+    if (exams.length === 0) return;
+    const notifiedRaw = sessionStorage.getItem('decode_exam_notified_ids');
+    const notified = new Set<string>(notifiedRaw ? JSON.parse(notifiedRaw) : []);
+    const newNotified = new Set(notified);
+
+    exams.forEach((exam) => {
+      const examDate = new Date(exam.date + 'T23:59:59');
+      if (isPast(examDate) || notified.has(exam.id)) return;
+      const days = differenceInDays(examDate, new Date());
+      if (days <= 3) {
+        newNotified.add(exam.id);
+        if (days === 0) {
+          toast.error(`Hoje é dia de prova: "${exam.title}"!`, { duration: 8000 });
+        } else {
+          toast.warning(`Prova "${exam.title}" em ${days} dia${days > 1 ? 's' : ''}!`, { duration: 6000 });
+        }
+      }
+    });
+
+    if (newNotified.size > notified.size) {
+      sessionStorage.setItem('decode_exam_notified_ids', JSON.stringify([...newNotified]));
+    }
+  }, [exams]);
+
   const save = (list: Exam[]) => {
     setExams(list);
     localStorage.setItem('decode_exams', JSON.stringify(list));
