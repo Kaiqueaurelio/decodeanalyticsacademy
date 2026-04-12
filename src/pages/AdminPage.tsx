@@ -443,10 +443,11 @@ export default function AdminPage() {
     setCloning(true);
     try {
       const isNotion = importUrl.includes('notion.site') || importUrl.includes('notion.so');
+      const sourceType = importMode === 'text' ? 'text' : isNotion ? 'notion' : 'link';
       const { data: newApostila, error } = await supabase.from('apostilas').insert({
         title: importTitle.trim(), content: importContent,
-        category: importTopic || 'Geral', source_type: isNotion ? 'notion' : 'link',
-        file_url: isNotion ? null : importUrl, created_by: user.id, published: false,
+        category: importTopic || 'Geral', source_type: sourceType,
+        file_url: importMode === 'text' ? null : isNotion ? null : importUrl, created_by: user.id, published: false,
       }).select().single();
       if (error) throw error;
       if (importExercises.length > 0 && newApostila) {
