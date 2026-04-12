@@ -102,7 +102,7 @@ export default function LandingPage() {
             </h1>
 
             <p className="animate-fade-up text-base md:text-lg text-muted-foreground leading-relaxed max-w-xl" style={{ animationDelay: '0.2s', opacity: 0 }}>
-              Apostilas estruturadas, exercícios inteligentes, gamificação e tudo que você precisa para dominar suas provas — tudo organizado em um só lugar.
+              Apostilas estruturadas, exercícios inteligentes, gamificação e tudo que você precisa para dominar suas provas — para CC, SI, EC e cursos de tecnologia.
             </p>
 
             <div className="animate-fade-up flex flex-col sm:flex-row gap-3 pt-2" style={{ animationDelay: '0.3s', opacity: 0 }}>
@@ -183,9 +183,14 @@ export default function LandingPage() {
               <h2 className="font-display text-3xl sm:text-4xl mt-3 mb-4">
                 Por que estudar com a <span className="text-gradient-animated">Decode Analytics</span>
               </h2>
-              <p className="text-muted-foreground text-sm leading-relaxed mb-6">
-                Criada por alunos de Ciência da Computação que sabem exatamente o que você precisa.
+              <p className="text-muted-foreground text-sm leading-relaxed mb-2">
+                Criada para estudantes de Ciência da Computação, Sistemas de Informação, Engenharia da Computação e cursos de tecnologia com grade curricular compartilhada.
               </p>
+              <div className="flex flex-wrap gap-1.5 mb-6">
+                {['CC', 'SI', 'EC'].map((c) => (
+                  <span key={c} className="px-2 py-0.5 rounded text-[10px] font-mono-label uppercase tracking-wider bg-primary/10 text-primary" style={{ border: '1px solid hsl(68 100% 64% / 0.2)' }}>{c}</span>
+                ))}
+              </div>
               <div className="hidden md:flex gap-3">
                 <Button onClick={() => navigate('/login')}>
                   Começar agora <ArrowRight className="ml-2 h-4 w-4" />
