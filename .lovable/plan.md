@@ -1,71 +1,51 @@
 
 
-# Redesign Completo — Decode Analytics Academy
+# Plano: Notificações de Prova + Landing Page Multicurso + Depoimentos Redesenhados
 
 ## Resumo
 
-Redesign visual completo do app adotando estética "Editorial Técnico-Premium" (inspirado em Linear/Vercel), com nova paleta escura (`#0A0A0B` base, `#E8FF47` acento), novas fontes (Instrument Serif + DM Mono + Plus Jakarta Sans), e textura grain no background. **Todas as funcionalidades existentes serão preservadas** (gamificação, pomodoro, flashcards, heatmap, leaderboard, admin com import/batch/materiais, watermark, etc).
+Três melhorias: (1) sistema de notificações toast quando provas estão a menos de 3 dias, (2) atualizar toda a landing page para refletir que o app atende múltiplos cursos de tecnologia (CC, SI, EC), e (3) redesenhar a seção de depoimentos com visual mais impactante e editorial.
 
 ---
 
-## Escopo das Mudanças
+## 1. Notificações de Lembrete de Provas
 
-### Fase 1 — Fundação Visual (CSS + Config)
+**Arquivo:** `src/components/ExamCalendarWidget.tsx`
 
-1. **`src/index.css`**: Substituir toda a paleta CSS variables por nova paleta escura. Adicionar SVG grain filter inline e classes utilitárias para o novo design (bordas finas `rgba(255,255,255,0.08)`, cards sem sombra). Importar Instrument Serif e DM Mono do Google Fonts.
+- Adicionar um `useEffect` que roda ao montar o componente e verifica todas as provas com `differenceInDays <= 3` e `!isPast`
+- Para cada prova urgente, disparar um `toast.warning()` do sonner com mensagem tipo: `"⚠️ Prova 'Cálculo II' em 2 dias!"`
+- Usar `localStorage` para guardar quais notificações já foram mostradas na sessão atual (`decode_exam_notified_ids`), evitando spam
+- Provas com `days === 0` mostram toast especial: `"🔴 Hoje é dia de prova: 'Cálculo II'!"`
 
-2. **`tailwind.config.ts`**: Adicionar as novas fontes (`font-display`, `font-mono-label`), cores de acento (`lime: #E8FF47`, `mint: #6EE7B7`), e cores por matéria. Remover animações não usadas; manter as necessárias (fade-in, accordion, etc).
+## 2. Landing Page — Multicurso de Tecnologia
 
-3. **Componentes UI base** (`button.tsx`, `card.tsx`, `input.tsx`, `badge.tsx`, `progress.tsx`): Ajustar estilos para seguir a nova estética — bordas finas, sem sombras genéricas, border-radius menor (`4px-8px`), botão primário com fundo `#E8FF47` e texto preto em mono uppercase.
+**Arquivo:** `src/pages/LandingPage.tsx`
 
-### Fase 2 — Páginas Principais
+Mudanças pontuais em textos:
 
-4. **`LandingPage.tsx`**: Redesenhar hero com headline "Sua apostila. Organizada. Automaticamente.", tipografia Instrument Serif, CTAs duplos (Entrar como Estudante / Acessar como Admin), animação fadeUp escalonada, textura grain, rodapé com créditos. Remover FloatingParticles, substituir por visual clean editorial.
+- **Linha 185** (seção Benefits): Trocar `"Criada por alunos de Ciência da Computação que sabem exatamente o que você precisa."` por algo como `"Criada para estudantes de Ciência da Computação, Sistemas de Informação, Engenharia da Computação e cursos de tecnologia com grade curricular compartilhada."`
+- **Seção Stats**: Adicionar ou ajustar um stat para `"3+ Cursos"` com label `"Compatíveis"` (CC, SI, EC)
+- **Testimonials**: Diversificar os cursos nos depoimentos — mudar `"CC"` para incluir `"SI"` e `"EC"` nos cursos dos alunos
+- **Hero ou subtítulo**: Pode-se adicionar uma menção sutil tipo `"Para CC, SI, EC e cursos de tecnologia"`
 
-5. **`LoginPage.tsx`**: Layout duas colunas — esquerda com branding/visual editorial, direita com form minimalista. Sem card centralizado com sombra. Manter toda a lógica de auth (signIn, signUp, reset password).
+## 3. Depoimentos — Redesign Visual
 
-6. **`DashboardPage.tsx`**: Restyling dos cards de stats, widgets e lista de apostilas com a nova paleta. Manter todos os widgets existentes (Gamification, Pomodoro, Flashcards, Heatmap, Leaderboard, WeeklyGoal, ExamCalendar, FlashcardSummary, ApostilaProgress, RecentActivity). Aplicar visual editorial nos cards de apostila por categoria.
+**Arquivo:** `src/pages/LandingPage.tsx` (seção Testimonials, linhas 238-265)
 
-7. **`ApostilaPage.tsx`**: Transformar na tela principal editorial. Layout 3 colunas em desktop (sidebar índice 20% + conteúdo 60% + anotações 20%). Adicionar sidebar de índice com âncoras, progresso de leitura, modo foco. Estilizar conteúdo com separadores tipográficos, blocos de destaque com borda colorida por matéria, numeração mono nas seções.
+Redesenhar a seção para ficar mais destacada e impactante:
 
-8. **`AdminPage.tsx`**: Restyling da sidebar (fundo escuro), cards e formulários. Adicionar modo "Por Texto" no formulário de criação de apostila — um textarea grande onde o admin cola texto bruto, com toggle estilizado (pill switcher) para alternar entre Link e Texto. Manter toda a lógica existente de import, batch, exercícios, materiais e usuários.
-
-9. **`ProfilePage.tsx`, `ExercisesPage.tsx`, `MaterialsPage.tsx`**: Aplicar nova paleta e tipografia. Preservar toda a funcionalidade.
-
-### Fase 3 — Componentes Compartilhados
-
-10. **`AppHeader.tsx`**: Restyling com fundo escuro, bordas finas, logo e nav minimalista.
-
-11. **Sistema de cores por matéria**: Adicionar mapeamento de cores no código (constante ou via campo `color` na tabela `categories`) para colorir badges, bordas de destaque e progress bars por disciplina.
-
-### Fase 4 — DB (se necessário)
-
-12. **Verificação de schema**: A tabela `apostilas` já tem `source_type` e `content`. O campo `source_type` aceita valores como `'manual'`, `'link'`, `'notion'`. Precisamos garantir que `'text'` seja aceito como valor para o novo modo "Por Texto". Como o campo é `text` sem CHECK constraint, já funciona — **nenhuma migração necessária**.
-
----
-
-## O que NÃO muda
-
-- Toda lógica de auth, RLS, roles, gamificação, XP, streaks, badges
-- Edge function `extract-content`
-- Widgets: Pomodoro, Flashcards, Heatmap, Leaderboard, WeeklyGoal, ExamCalendar, etc.
-- Funcionalidades admin: import URL, batch import, gerenciamento de materiais/usuários
-- Anotações, watermark, proteção de conteúdo
-- Tema dark/light toggle (adaptado para nova paleta)
+- **Layout**: Um depoimento principal grande (featured) no topo com foto/avatar placeholder, aspas decorativas grandes em Instrument Serif (`""`), e os outros dois menores abaixo
+- **Visual**: Card do depoimento featured com borda `primary/20`, fundo levemente diferenciado (`bg-primary/[0.03]`), aspas decorativas em `text-primary/20` com tamanho `text-6xl`
+- **Avatares**: Adicionar iniciais coloridas em círculos como avatar placeholder (sem usar emojis)
+- **Badges de curso**: Cada depoimento mostra um badge colorido com o curso (CC em amarelo, SI em verde, EC em azul)
+- **Diversificar cursos**: Ana Silva → SI, Carlos Santos → EC, Juliana Costa → CC (mostrando que serve para todos)
+- **Adicionar mais 1-2 depoimentos** para ter conteúdo suficiente para o layout assimétrico
 
 ---
 
 ## Detalhes Técnicos
 
-- **Fontes**: Google Fonts import no `index.css` — `Instrument Serif` (display), `DM Mono` (labels/código), `Plus Jakarta Sans` (corpo, já existente)
-- **Grain texture**: SVG filter inline no `index.css` aplicado via pseudo-elemento `::after` no body
-- **Cores por matéria**: Constante TypeScript com mapeamento `categoria → cor hex`, usada em badges e bordas
-- **Toggle Link/Texto no Admin**: Componente pill switcher inline no form de criação, controlando qual campo aparece (URL input vs textarea grande)
-- **Apostila editorial**: Parsing do campo `content` para detectar seções numeradas e renderizar com tipografia hierárquica
-
----
-
-## Estimativa
-
-~15 arquivos modificados, ~3 novos componentes auxiliares. Implementação em múltiplos passos sequenciais.
+- Toast de provas usa `import { toast } from "sonner"` — já disponível no projeto
+- Nenhuma alteração de banco de dados necessária
+- Nenhum componente novo — apenas edições no `ExamCalendarWidget` e `LandingPage`
 
