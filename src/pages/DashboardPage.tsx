@@ -36,6 +36,7 @@ type Apostila = Tables<'apostilas'>;
 
 export default function DashboardPage() {
   const { user, isAdmin } = useAuth();
+  const isMobile = useIsMobile();
   const navigate = useNavigate();
   const gamification = useGamification();
   const [apostilas, setApostilas] = useState<Apostila[]>([]);
@@ -141,50 +142,54 @@ export default function DashboardPage() {
         </div>
 
         {/* Stats Cards Row */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6 animate-content-show delay-1">
-          <Card className="p-4 bg-card border border-border/50 hover-lift">
-            <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-primary/10 p-2.5">
-                <BookOpen className="h-4 w-4 text-primary" />
+        <div className="animate-content-show delay-1 mb-6">
+          <MobileCarousel desktopClassName="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <Card className="p-4 bg-card border border-border/50 hover-lift">
+              <div className="flex items-center gap-3">
+                <div className="rounded-lg bg-primary/10 p-2.5">
+                  <BookOpen className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <p className="text-xl font-bold"><AnimatedCounter end={apostilas.length} /></p>
+                  <p className="text-[10px] text-muted-foreground">Apostilas</p>
+                </div>
               </div>
-              <div>
-                <p className="text-xl font-bold"><AnimatedCounter end={apostilas.length} /></p>
-                <p className="text-[10px] text-muted-foreground">Apostilas</p>
+            </Card>
+            <Card className="p-4 bg-card border border-border/50 hover-lift">
+              <div className="flex items-center gap-3">
+                <div className="rounded-lg bg-accent p-2.5">
+                  <PenLine className="h-4 w-4 text-accent-foreground" />
+                </div>
+                <div>
+                  <p className="text-xl font-bold"><AnimatedCounter end={totalExercises} /></p>
+                  <p className="text-[10px] text-muted-foreground">Exercícios</p>
+                </div>
               </div>
-            </div>
-          </Card>
-          <Card className="p-4 bg-card border border-border/50 hover-lift">
-            <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-accent p-2.5">
-                <PenLine className="h-4 w-4 text-accent-foreground" />
+            </Card>
+            <Card className="p-4 bg-card border border-border/50 hover-lift">
+              <div className="flex items-center gap-3">
+                <div className="rounded-lg bg-success/10 p-2.5">
+                  <CheckCircle className="h-4 w-4 text-success" />
+                </div>
+                <div>
+                  <p className="text-xl font-bold"><AnimatedCounter end={stats.hits} /></p>
+                  <p className="text-[10px] text-muted-foreground">Acertos</p>
+                </div>
               </div>
-              <div>
-                <p className="text-xl font-bold"><AnimatedCounter end={totalExercises} /></p>
-                <p className="text-[10px] text-muted-foreground">Exercícios</p>
+            </Card>
+            <Card className="p-4 bg-card border border-border/50 hover-lift">
+              <div className="flex items-center gap-3">
+                <div className="rounded-lg bg-warning/10 p-2.5">
+                  <Percent className="h-4 w-4 text-warning" />
+                </div>
+                <div>
+                  <p className="text-xl font-bold"><AnimatedCounter end={pct} suffix="%" /></p>
+                  <p className="text-[10px] text-muted-foreground">Aproveit.</p>
+                </div>
               </div>
-            </div>
-          </Card>
-          <Card className="p-4 bg-card border border-border/50 hover-lift">
-            <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-success/10 p-2.5">
-                <CheckCircle className="h-4 w-4 text-success" />
-              </div>
-              <div>
-                <p className="text-xl font-bold"><AnimatedCounter end={stats.hits} /></p>
-                <p className="text-[10px] text-muted-foreground">Acertos</p>
-              </div>
-            </div>
-          </Card>
-          <Card className="p-4 bg-card border border-border/50 hover-lift">
-            <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-warning/10 p-2.5">
-                <Percent className="h-4 w-4 text-warning" />
-              </div>
-              <div>
-                <p className="text-xl font-bold"><AnimatedCounter end={pct} suffix="%" /></p>
-                <p className="text-[10px] text-muted-foreground">Aproveit.</p>
-              </div>
-            </div>
+            </Card>
+          </MobileCarousel>
+        </div>
           </Card>
         </div>
 
