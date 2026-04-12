@@ -839,9 +839,22 @@ export default function AdminPage() {
                       </div>
                     ) : (
                       <div className="space-y-3">
-                        <div className="flex items-center gap-2 p-3 rounded-lg bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] text-xs">
-                          <CheckCircle className="h-4 w-4 shrink-0" />
-                          <span>Conteúdo extraído! Revise antes de salvar.</span>
+                        <div className="flex items-center justify-between gap-2 p-3 rounded-lg bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] text-xs">
+                          <div className="flex items-center gap-2">
+                            <CheckCircle className="h-4 w-4 shrink-0" />
+                            <span>Conteúdo extraído! Revise antes de salvar.</span>
+                          </div>
+                          {extractionMethod && (
+                            <span className={`shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                              extractionMethod.includes('firecrawl')
+                                ? 'bg-orange-500/20 text-orange-400'
+                                : extractionMethod === 'text'
+                                  ? 'bg-blue-500/20 text-blue-400'
+                                  : 'bg-emerald-500/20 text-emerald-400'
+                            }`}>
+                              {extractionMethod.includes('firecrawl') ? '🔥 Firecrawl' : extractionMethod === 'text' ? '📝 Texto' : '🌐 Fetch'}
+                            </span>
+                          )}
                         </div>
                         <div><Label className="text-xs text-muted-foreground">Título</Label><Input value={importTitle} onChange={e => setImportTitle(e.target.value)} className="mt-1" /></div>
                         <div><Label className="text-xs text-muted-foreground">Categoria</Label><CategorySelect value={importTopic} onValueChange={setImportTopic} /></div>
