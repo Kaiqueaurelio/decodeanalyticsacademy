@@ -816,22 +816,31 @@ export default function AdminPage() {
                 {/* Manual Create */}
                 {showManualForm ? (
                   <Card className="animate-in fade-in slide-in-from-top-2 duration-300">
-                    <CardContent className="p-5 space-y-4">
+                    <CardContent className="p-6 space-y-5">
                       <h3 className="font-semibold flex items-center gap-2 text-sm">
-                        <FileText className="h-4 w-4 text-primary" /> Criar Manualmente
+                        <FileText className="h-4 w-4 text-primary" /> Criar Apostila Manualmente
                       </h3>
-                      <div><Label className="text-xs text-muted-foreground">Título</Label><Input value={manualTitle} onChange={e => setManualTitle(e.target.value)} placeholder="Ex: Redes de Computadores" className="mt-1" /></div>
-                      <div><Label className="text-xs text-muted-foreground">Categoria</Label><CategorySelect value={manualCategory} onValueChange={setManualCategory} placeholder="Selecione" /></div>
-                      <div><Label className="text-xs text-muted-foreground">Conteúdo</Label><Textarea value={manualContent} onChange={e => setManualContent(e.target.value)} rows={5} className="mt-1" placeholder="Cole ou digite o conteúdo..." /></div>
-                      <div className="flex gap-2">
-                        <Button variant="outline" className="flex-1" onClick={() => setShowManualForm(false)}>Cancelar</Button>
-                        <Button className="flex-1 gradient-primary text-primary-foreground" onClick={handleManualSave} disabled={!manualTitle.trim()}>Criar</Button>
+                      <div>
+                        <Label htmlFor="manual-title" className="text-xs font-medium text-foreground">Título da Apostila</Label>
+                        <Input id="manual-title" value={manualTitle} onChange={e => setManualTitle(e.target.value)} placeholder="Ex: Estrutura de Dados — Árvores Binárias" className="mt-1.5" />
+                      </div>
+                      <div>
+                        <Label htmlFor="manual-category" className="text-xs font-medium text-foreground">Disciplina / Categoria</Label>
+                        <CategorySelect value={manualCategory} onValueChange={setManualCategory} placeholder="Selecione a disciplina" />
+                      </div>
+                      <div>
+                        <Label htmlFor="manual-content" className="text-xs font-medium text-foreground">Conteúdo da Apostila</Label>
+                        <Textarea id="manual-content" value={manualContent} onChange={e => setManualContent(e.target.value)} rows={6} className="mt-1.5" placeholder="Digite ou cole o conteúdo completo da aula..." />
+                      </div>
+                      <div className="flex gap-3 pt-1">
+                        <Button variant="outline" className="flex-1 opacity-80" onClick={() => setShowManualForm(false)}>Cancelar</Button>
+                        <Button className="flex-1 gradient-primary text-primary-foreground animate-pulse-glow" onClick={handleManualSave} disabled={!manualTitle.trim()}>Salvar Apostila</Button>
                       </div>
                     </CardContent>
                   </Card>
                 ) : (
-                  <Button variant="outline" className="w-full" onClick={() => setShowManualForm(true)}>
-                    <Plus className="mr-1.5 h-4 w-4" /> Criar Manualmente
+                  <Button variant="outline" className="w-full py-5" onClick={() => setShowManualForm(true)}>
+                    <Plus className="mr-1.5 h-4 w-4" /> Criar Apostila Manualmente
                   </Button>
                 )}
 
