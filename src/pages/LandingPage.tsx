@@ -13,7 +13,7 @@ import {
 import logoDark from '@/assets/logo-dark.jpeg';
 
 const features = [
-  { icon: BookOpen, title: 'Apostilas Estruturadas', desc: 'Cole texto bruto ou link — o Academy organiza automaticamente como apostila editorial profissional.' },
+  { icon: BookOpen, title: 'Apostilas Estruturadas', desc: 'Conteúdo organizado automaticamente como apostila editorial profissional, pronto para estudo.' },
   { icon: CheckCircle, title: 'Exercícios com Correção', desc: 'Questões de múltipla escolha com correção instantânea, explicações detalhadas e acompanhamento.' },
   { icon: BarChart3, title: 'Dashboard Analítico', desc: 'Gráficos interativos de evolução, acertos por matéria, streaks de estudo e ranking.' },
   { icon: Headphones, title: 'Áudios e Podcasts', desc: 'Player integrado para ouvir materiais de apoio em qualquer lugar.' },
@@ -31,7 +31,7 @@ const benefits = [
 ];
 
 const stats = [
-  { value: '8', label: 'Semestres' },
+  { value: '3+', label: 'Cursos Compatíveis' },
   { value: '48+', label: 'Disciplinas' },
   { value: '100%', label: 'Online' },
   { value: '24/7', label: 'Disponível' },
@@ -44,9 +44,11 @@ const steps = [
 ];
 
 const testimonials = [
-  { name: 'Ana Silva', course: '3º Sem · CC', text: 'A plataforma me ajudou muito nas revisões. Os exercícios são muito parecidos com os da prova!', rating: 5 },
-  { name: 'Carlos Santos', course: '5º Sem · CC', text: 'Ter tudo organizado num só lugar faz toda a diferença. Recomendo para todos da turma.', rating: 5 },
-  { name: 'Juliana Costa', course: '2º Sem · CC', text: 'Os áudios são excelentes para revisar no ônibus. A gamificação me motiva todo dia.', rating: 5 },
+  { name: 'Ana Silva', course: '3º Sem · SI', text: 'A plataforma me ajudou muito nas revisões. Os exercícios são muito parecidos com os da prova! Uso todos os dias.', rating: 5, initials: 'AS', color: 'hsl(142 71% 45%)' },
+  { name: 'Carlos Santos', course: '5º Sem · EC', text: 'Ter tudo organizado num só lugar faz toda a diferença. Recomendo para todos da turma. O dashboard é incrível.', rating: 5, initials: 'CS', color: 'hsl(217 91% 60%)' },
+  { name: 'Juliana Costa', course: '2º Sem · CC', text: 'Os áudios são excelentes para revisar no ônibus. A gamificação me motiva todo dia a estudar mais.', rating: 5, initials: 'JC', color: 'hsl(68 100% 64%)' },
+  { name: 'Rafael Oliveira', course: '4º Sem · CC', text: 'Passei em todas as provas de Estrutura de Dados graças aos exercícios da plataforma. Nota máxima!', rating: 5, initials: 'RO', color: 'hsl(280 67% 60%)' },
+  { name: 'Mariana Ferreira', course: '6º Sem · SI', text: 'Estudo pelo celular no trabalho e é perfeito. O app funciona como nativo e o conteúdo é muito bem organizado.', rating: 5, initials: 'MF', color: 'hsl(24 94% 60%)' },
 ];
 
 const faqs = [
@@ -100,7 +102,7 @@ export default function LandingPage() {
             </h1>
 
             <p className="animate-fade-up text-base md:text-lg text-muted-foreground leading-relaxed max-w-xl" style={{ animationDelay: '0.2s', opacity: 0 }}>
-              Apostilas estruturadas, exercícios inteligentes, gamificação e tudo que você precisa para dominar suas provas — tudo organizado em um só lugar.
+              Apostilas estruturadas, exercícios inteligentes, gamificação e tudo que você precisa para dominar suas provas — para CC, SI, EC e cursos de tecnologia.
             </p>
 
             <div className="animate-fade-up flex flex-col sm:flex-row gap-3 pt-2" style={{ animationDelay: '0.3s', opacity: 0 }}>
@@ -181,9 +183,14 @@ export default function LandingPage() {
               <h2 className="font-display text-3xl sm:text-4xl mt-3 mb-4">
                 Por que estudar com a <span className="text-gradient-animated">Decode Analytics</span>
               </h2>
-              <p className="text-muted-foreground text-sm leading-relaxed mb-6">
-                Criada por alunos de Ciência da Computação que sabem exatamente o que você precisa.
+              <p className="text-muted-foreground text-sm leading-relaxed mb-2">
+                Criada para estudantes de Ciência da Computação, Sistemas de Informação, Engenharia da Computação e cursos de tecnologia com grade curricular compartilhada.
               </p>
+              <div className="flex flex-wrap gap-1.5 mb-6">
+                {['CC', 'SI', 'EC'].map((c) => (
+                  <span key={c} className="px-2 py-0.5 rounded text-[10px] font-mono-label uppercase tracking-wider bg-primary/10 text-primary" style={{ border: '1px solid hsl(68 100% 64% / 0.2)' }}>{c}</span>
+                ))}
+              </div>
               <div className="hidden md:flex gap-3">
                 <Button onClick={() => navigate('/login')}>
                   Começar agora <ArrowRight className="ml-2 h-4 w-4" />
@@ -243,20 +250,63 @@ export default function LandingPage() {
               <MessageCircle className="h-3 w-3 inline mr-1.5" />Depoimentos
             </span>
             <h2 className="font-display text-3xl sm:text-4xl mt-3">O que nossos alunos <span className="text-gradient">dizem</span></h2>
+            <p className="text-muted-foreground mt-3 text-sm max-w-md mx-auto">Estudantes de CC, SI e EC que já transformaram sua rotina de estudos.</p>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-3 max-w-4xl mx-auto">
-            {testimonials.map((t) => (
-              <div key={t.name} className="rounded-lg p-6 editorial-border-hover flex flex-col">
+          {/* Featured testimonial */}
+          <div className="max-w-4xl mx-auto mb-6">
+            <div className="rounded-lg p-8 md:p-10 relative overflow-hidden bg-primary/[0.03]" style={{ border: '1px solid hsl(68 100% 64% / 0.15)' }}>
+              <span className="absolute top-4 left-6 font-display text-7xl md:text-8xl text-primary/10 leading-none select-none">"</span>
+              <div className="relative pt-8 md:pt-6">
+                <p className="text-base md:text-lg text-foreground/90 leading-relaxed italic max-w-2xl">
+                  "{testimonials[0].text}"
+                </p>
+                <div className="flex items-center gap-3 mt-6 pt-5" style={{ borderTop: '1px solid hsl(0 0% 100% / 0.06)' }}>
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold text-background" style={{ backgroundColor: testimonials[0].color }}>
+                    {testimonials[0].initials}
+                  </div>
+                  <div>
+                    <p className="font-semibold text-sm">{testimonials[0].name}</p>
+                    <div className="flex items-center gap-2">
+                      <span className="px-1.5 py-0.5 rounded text-[9px] font-mono-label uppercase tracking-wider bg-accent/15 text-accent" style={{ border: '1px solid hsl(142 71% 45% / 0.2)' }}>
+                        {testimonials[0].course.split(' · ')[1]}
+                      </span>
+                      <span className="text-[11px] font-mono-label text-muted-foreground">{testimonials[0].course.split(' · ')[0]}</span>
+                    </div>
+                  </div>
+                  <div className="ml-auto flex gap-0.5">
+                    {Array.from({ length: testimonials[0].rating }).map((_, j) => (
+                      <Star key={j} className="h-3.5 w-3.5 fill-primary text-primary" />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Secondary testimonials */}
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 max-w-4xl mx-auto">
+            {testimonials.slice(1).map((t) => (
+              <div key={t.name} className="rounded-lg p-5 editorial-border-hover flex flex-col">
                 <div className="flex gap-0.5 mb-3">
                   {Array.from({ length: t.rating }).map((_, j) => (
-                    <Star key={j} className="h-3.5 w-3.5 fill-primary text-primary" />
+                    <Star key={j} className="h-3 w-3 fill-primary text-primary" />
                   ))}
                 </div>
-                <p className="text-sm text-muted-foreground leading-relaxed flex-1 italic">"{t.text}"</p>
-                <div className="mt-4 pt-4" style={{ borderTop: '1px solid hsl(0 0% 100% / 0.06)' }}>
-                  <p className="font-semibold text-sm">{t.name}</p>
-                  <p className="text-[11px] font-mono-label text-muted-foreground">{t.course}</p>
+                <p className="text-xs text-muted-foreground leading-relaxed flex-1 italic">"{t.text}"</p>
+                <div className="flex items-center gap-2.5 mt-4 pt-3" style={{ borderTop: '1px solid hsl(0 0% 100% / 0.06)' }}>
+                  <div className="w-7 h-7 rounded-full flex items-center justify-center text-[9px] font-bold text-background shrink-0" style={{ backgroundColor: t.color }}>
+                    {t.initials}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-semibold text-xs truncate">{t.name}</p>
+                    <div className="flex items-center gap-1.5">
+                      <span className="px-1 py-px rounded text-[8px] font-mono-label uppercase tracking-wider bg-primary/10 text-primary">
+                        {t.course.split(' · ')[1]}
+                      </span>
+                      <span className="text-[9px] font-mono-label text-muted-foreground">{t.course.split(' · ')[0]}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}
