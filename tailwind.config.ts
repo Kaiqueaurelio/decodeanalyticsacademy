@@ -13,6 +13,8 @@ export default {
     extend: {
       fontFamily: {
         sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+        display: ['"Instrument Serif"', 'Georgia', 'serif'],
+        'mono-label': ['"DM Mono"', 'monospace'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -56,6 +58,9 @@ export default {
           DEFAULT: "hsl(var(--warning))",
           foreground: "hsl(var(--warning-foreground))",
         },
+        // Subject colors
+        lime: "#E8FF47",
+        mint: "#6EE7B7",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background, var(--card)))",
           foreground: "hsl(var(--sidebar-foreground, var(--foreground)))",
