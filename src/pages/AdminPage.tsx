@@ -766,12 +766,12 @@ export default function AdminPage() {
                           </>
                         )}
                         <div>
-                          <Label className="text-xs text-muted-foreground">Título (opcional)</Label>
-                          <Input value={importTitle} onChange={e => setImportTitle(e.target.value)} placeholder="Ex: Redes de Computadores - NP2" className="mt-1" />
+                          <Label htmlFor="import-title" className="text-xs font-medium text-foreground">Título da Aula (opcional)</Label>
+                          <Input id="import-title" value={importTitle} onChange={e => setImportTitle(e.target.value)} placeholder="Ex: Estrutura de Dados — Árvores AVL (NP2)" className="mt-1.5" />
                         </div>
                         <div>
-                          <Label className="text-xs text-muted-foreground">Tópico (para agrupar)</Label>
-                          <Input value={importTopic} onChange={e => setImportTopic(e.target.value)} placeholder="Ex: Redes, Banco de Dados" className="mt-1" />
+                          <Label htmlFor="import-topic" className="text-xs font-medium text-foreground">Disciplina / Tópico</Label>
+                          <Input id="import-topic" value={importTopic} onChange={e => setImportTopic(e.target.value)} placeholder="Ex: Redes de Computadores, Banco de Dados" className="mt-1.5" />
                         </div>
                       </div>
                     ) : (
