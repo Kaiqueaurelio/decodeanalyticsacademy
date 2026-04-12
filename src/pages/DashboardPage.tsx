@@ -21,6 +21,9 @@ import { CategoryPerformanceChart } from '@/components/CategoryPerformanceChart'
 import { RecentActivity } from '@/components/RecentActivity';
 import { WeeklyGoalWidget } from '@/components/WeeklyGoalWidget';
 import { AnimatedCounter } from '@/components/AnimatedCounter';
+import { ExamCalendarWidget } from '@/components/ExamCalendarWidget';
+import { FlashcardSummaryWidget } from '@/components/FlashcardSummaryWidget';
+import { ApostilaProgressWidget } from '@/components/ApostilaProgressWidget';
 import {
   BookOpen, CheckCircle, XCircle, TrendingUp, FolderOpen, PenLine,
   ChevronRight, BarChart3, User, FileText, Zap, Target, Percent
@@ -278,6 +281,9 @@ export default function DashboardPage() {
           {/* Right Sidebar */}
           <div className="space-y-4 animate-content-show delay-2">
             <WeeklyGoalWidget />
+            <ExamCalendarWidget />
+            <FlashcardSummaryWidget />
+            <ApostilaProgressWidget data={stats.byApostila} exerciseCounts={exerciseCounts} />
             <StudyHeatmap />
             <RecentActivity />
             <Leaderboard />
