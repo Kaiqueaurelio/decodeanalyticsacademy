@@ -190,8 +190,6 @@ export default function DashboardPage() {
             </Card>
           </MobileCarousel>
         </div>
-          </Card>
-        </div>
 
         {/* Main Grid: Left (2/3) + Right Sidebar (1/3) */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
