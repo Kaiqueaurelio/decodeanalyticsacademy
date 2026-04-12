@@ -100,7 +100,7 @@ export default function LandingPage() {
             </h1>
 
             <p className="animate-fade-up text-base md:text-lg text-muted-foreground leading-relaxed max-w-xl" style={{ animationDelay: '0.2s', opacity: 0 }}>
-              Cole um link ou texto bruto — o Academy estrutura por você. Apostilas, exercícios, gamificação e tudo que você precisa para suas provas.
+              Apostilas estruturadas, exercícios inteligentes, gamificação e tudo que você precisa para dominar suas provas — tudo organizado em um só lugar.
             </p>
 
             <div className="animate-fade-up flex flex-col sm:flex-row gap-3 pt-2" style={{ animationDelay: '0.3s', opacity: 0 }}>
