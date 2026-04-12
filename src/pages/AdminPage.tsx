@@ -319,7 +319,9 @@ export default function AdminPage() {
   const [importContent, setImportContent] = useState('');
   const [importExercises, setImportExercises] = useState<any[]>([]);
   const [cloning, setCloning] = useState(false);
-  const [importStep, setImportStep] = useState<'url' | 'review'>('url');
+  const [importStep, setImportStep] = useState<'input' | 'review'>('input');
+  const [importMode, setImportMode] = useState<'url' | 'text'>('url');
+  const [importRawText, setImportRawText] = useState('');
   const [batchMode, setBatchMode] = useState(false);
   const [batchUrls, setBatchUrls] = useState('');
   const [batchProgress, setBatchProgress] = useState<{ current: number; total: number; results: { url: string; title: string; status: 'ok' | 'error'; error?: string }[] }>({ current: 0, total: 0, results: [] });
@@ -418,18 +420,21 @@ export default function AdminPage() {
   const onDragLeave = useCallback((e: React.DragEvent) => { e.preventDefault(); setDragActive(false); }, []);
 
   const handleExtract = async () => {
-    if (!importUrl.trim()) return;
+    const isTextMode = importMode === 'text';
+    if (isTextMode && !importRawText.trim()) return;
+    if (!isTextMode && !importUrl.trim()) return;
     setCloning(true);
     try {
-      const { data, error } = await supabase.functions.invoke('extract-content', { body: { url: importUrl.trim() } });
+      const body = isTextMode ? { rawText: importRawText.trim() } : { url: importUrl.trim() };
+      const { data, error } = await supabase.functions.invoke('extract-content', { body });
       if (error) throw error;
       setImportTitle(data.title || '');
       setImportTopic(data.category || 'Geral');
       setImportContent(data.content || '');
       setImportExercises(data.exercises || []);
       setImportStep('review');
-      toast.success(data.exercises?.length > 0 ? `Conteúdo extraído com ${data.exercises.length} exercícios!` : 'Conteúdo extraído!');
-    } catch (err: any) { toast.error('Erro ao extrair: ' + (err.message || 'Tente novamente')); }
+      toast.success(data.exercises?.length > 0 ? `Conteúdo estruturado com ${data.exercises.length} exercícios!` : 'Conteúdo estruturado!');
+    } catch (err: any) { toast.error('Erro ao processar: ' + (err.message || 'Tente novamente')); }
     setCloning(false);
   };
 
@@ -438,10 +443,11 @@ export default function AdminPage() {
     setCloning(true);
     try {
       const isNotion = importUrl.includes('notion.site') || importUrl.includes('notion.so');
+      const sourceType = importMode === 'text' ? 'text' : isNotion ? 'notion' : 'link';
       const { data: newApostila, error } = await supabase.from('apostilas').insert({
         title: importTitle.trim(), content: importContent,
-        category: importTopic || 'Geral', source_type: isNotion ? 'notion' : 'link',
-        file_url: isNotion ? null : importUrl, created_by: user.id, published: false,
+        category: importTopic || 'Geral', source_type: sourceType,
+        file_url: importMode === 'text' ? null : isNotion ? null : importUrl, created_by: user.id, published: false,
       }).select().single();
       if (error) throw error;
       if (importExercises.length > 0 && newApostila) {
@@ -469,7 +475,8 @@ export default function AdminPage() {
 
   const resetImportForm = () => {
     setImportUrl(''); setImportTitle(''); setImportTopic('');
-    setImportContent(''); setImportExercises([]); setImportStep('url');
+    setImportContent(''); setImportExercises([]); setImportStep('input');
+    setImportRawText('');
   };
 
   const handleBatchImport = async () => {
@@ -653,17 +660,35 @@ export default function AdminPage() {
                 <Card className="overflow-hidden">
                   <div className="h-1 bg-primary" />
                   <CardContent className="p-5 space-y-4">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between flex-wrap gap-2">
                       <div className="flex items-center gap-2">
                         <LinkIcon className="h-4 w-4 text-primary" />
                         <h3 className="font-semibold text-sm">Importar Apostila</h3>
                       </div>
-                      <button
-                        onClick={() => { setBatchMode(!batchMode); resetImportForm(); }}
-                        className={`text-[10px] font-medium px-3 py-1 rounded-full transition-colors ${batchMode ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:text-foreground'}`}
-                      >
-                        {batchMode ? '📦 Lote' : 'Modo Lote'}
-                      </button>
+                      <div className="flex items-center gap-2">
+                        {!batchMode && importStep === 'input' && (
+                          <div className="inline-flex bg-muted rounded-full p-0.5">
+                            <button
+                              onClick={() => setImportMode('url')}
+                              className={`text-[10px] font-medium px-3 py-1 rounded-full transition-colors ${importMode === 'url' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                            >
+                              🔗 URL
+                            </button>
+                            <button
+                              onClick={() => setImportMode('text')}
+                              className={`text-[10px] font-medium px-3 py-1 rounded-full transition-colors ${importMode === 'text' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                            >
+                              📝 Texto
+                            </button>
+                          </div>
+                        )}
+                        <button
+                          onClick={() => { setBatchMode(!batchMode); resetImportForm(); }}
+                          className={`text-[10px] font-medium px-3 py-1 rounded-full transition-colors ${batchMode ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:text-foreground'}`}
+                        >
+                          {batchMode ? '📦 Lote' : 'Modo Lote'}
+                        </button>
+                      </div>
                     </div>
 
                     {batchMode ? (
@@ -700,23 +725,46 @@ export default function AdminPage() {
                           {batchRunning ? <><Loader2 className="h-4 w-4 animate-spin mr-1.5" /> Importando {batchProgress.current}/{batchProgress.total}</> : 'Importar Tudo'}
                         </Button>
                       </div>
-                    ) : importStep === 'url' ? (
+                    ) : importStep === 'input' ? (
                       <div className="space-y-3">
-                        <div>
-                          <Label className="text-xs text-muted-foreground">Cole a URL da página</Label>
-                          <div className="flex gap-2 mt-1">
-                            <div className="relative flex-1">
-                              <Input value={importUrl} onChange={e => setImportUrl(e.target.value)} placeholder="https://exemplo.com/apostila"
-                                className={importUrl.includes('notion') ? 'pr-20' : ''} />
-                              {importUrl.includes('notion') && (
-                                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-semibold bg-primary/10 text-primary px-2 py-0.5 rounded-full">📝 Notion</span>
-                              )}
+                        {importMode === 'url' ? (
+                          <>
+                            <div>
+                              <Label className="text-xs text-muted-foreground">Cole a URL da página</Label>
+                              <div className="flex gap-2 mt-1">
+                                <div className="relative flex-1">
+                                  <Input value={importUrl} onChange={e => setImportUrl(e.target.value)} placeholder="https://exemplo.com/apostila"
+                                    className={importUrl.includes('notion') ? 'pr-20' : ''} />
+                                  {importUrl.includes('notion') && (
+                                    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-semibold bg-primary/10 text-primary px-2 py-0.5 rounded-full">📝 Notion</span>
+                                  )}
+                                </div>
+                                <Button onClick={handleExtract} disabled={cloning || !importUrl.trim()} className="gradient-primary text-primary-foreground shrink-0">
+                                  {cloning ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Clonar'}
+                                </Button>
+                              </div>
                             </div>
-                            <Button onClick={handleExtract} disabled={cloning || !importUrl.trim()} className="gradient-primary text-primary-foreground shrink-0">
-                              {cloning ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Clonar'}
+                          </>
+                        ) : (
+                          <>
+                            <div>
+                              <Label className="text-xs text-muted-foreground">Cole o texto bruto (anotações, slides, PDF copiado, etc.)</Label>
+                              <Textarea
+                                value={importRawText}
+                                onChange={e => setImportRawText(e.target.value)}
+                                placeholder={"Cole aqui qualquer texto — mesmo bagunçado, copiado de slides ou anotações.\n\nA IA vai organizar tudo em formato de apostila com exercícios."}
+                                rows={8}
+                                className="mt-1 text-xs"
+                              />
+                              <p className="text-[10px] text-muted-foreground mt-1">
+                                {importRawText.trim().length > 0 ? `${importRawText.trim().split(/\s+/).length} palavras` : 'Cole qualquer texto — a IA estrutura automaticamente'}
+                              </p>
+                            </div>
+                            <Button onClick={handleExtract} disabled={cloning || !importRawText.trim()} className="w-full gradient-primary text-primary-foreground">
+                              {cloning ? <><Loader2 className="h-4 w-4 animate-spin mr-1.5" /> Estruturando...</> : '✨ Estruturar como Apostila'}
                             </Button>
-                          </div>
-                        </div>
+                          </>
+                        )}
                         <div>
                           <Label className="text-xs text-muted-foreground">Título (opcional)</Label>
                           <Input value={importTitle} onChange={e => setImportTitle(e.target.value)} placeholder="Ex: Redes de Computadores - NP2" className="mt-1" />
