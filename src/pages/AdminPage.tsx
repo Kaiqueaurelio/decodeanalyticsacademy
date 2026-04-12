@@ -659,17 +659,35 @@ export default function AdminPage() {
                 <Card className="overflow-hidden">
                   <div className="h-1 bg-primary" />
                   <CardContent className="p-5 space-y-4">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between flex-wrap gap-2">
                       <div className="flex items-center gap-2">
                         <LinkIcon className="h-4 w-4 text-primary" />
                         <h3 className="font-semibold text-sm">Importar Apostila</h3>
                       </div>
-                      <button
-                        onClick={() => { setBatchMode(!batchMode); resetImportForm(); }}
-                        className={`text-[10px] font-medium px-3 py-1 rounded-full transition-colors ${batchMode ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:text-foreground'}`}
-                      >
-                        {batchMode ? '📦 Lote' : 'Modo Lote'}
-                      </button>
+                      <div className="flex items-center gap-2">
+                        {!batchMode && importStep === 'input' && (
+                          <div className="inline-flex bg-muted rounded-full p-0.5">
+                            <button
+                              onClick={() => setImportMode('url')}
+                              className={`text-[10px] font-medium px-3 py-1 rounded-full transition-colors ${importMode === 'url' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                            >
+                              🔗 URL
+                            </button>
+                            <button
+                              onClick={() => setImportMode('text')}
+                              className={`text-[10px] font-medium px-3 py-1 rounded-full transition-colors ${importMode === 'text' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                            >
+                              📝 Texto
+                            </button>
+                          </div>
+                        )}
+                        <button
+                          onClick={() => { setBatchMode(!batchMode); resetImportForm(); }}
+                          className={`text-[10px] font-medium px-3 py-1 rounded-full transition-colors ${batchMode ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:text-foreground'}`}
+                        >
+                          {batchMode ? '📦 Lote' : 'Modo Lote'}
+                        </button>
+                      </div>
                     </div>
 
                     {batchMode ? (
