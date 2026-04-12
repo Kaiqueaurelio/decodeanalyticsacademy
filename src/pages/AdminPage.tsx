@@ -851,12 +851,12 @@ export default function AdminPage() {
                       <BookOpen className="h-4 w-4 text-primary" /> Apostilas ({filteredApostilas.length})
                     </h3>
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     {filteredApostilas.map(a => {
                       const exCount = exercises[a.id]?.length || 0;
                       return (
-                        <Card key={a.id} className="hover:shadow-md transition-shadow">
-                          <CardContent className="p-4">
+                        <Card key={a.id} className="hover-lift card-alternate">
+                          <CardContent className="p-5">
                             <div className="flex items-center gap-3">
                               <span className={`h-3 w-3 rounded-full shrink-0 ${a.published ? 'bg-[hsl(var(--success))]' : 'bg-muted-foreground'}`} />
                               <div className="flex-1 min-w-0">
