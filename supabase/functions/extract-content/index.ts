@@ -261,25 +261,31 @@ Sua tarefa:
 
 IMPORTANTE: Mesmo que o texto pareca caotico, extraia TODO o conhecimento util e organize-o profissionalmente.`;
     } else if (url) {
-      // For JS-rendered URLs, use Firecrawl directly
       const isJsRendered = isJsRenderedUrl(url);
       const isNotion = isNotionUrl(url);
 
       let textContent: string;
       let pageTitle: string;
+      let extractionMethod = "fetch";
 
       if (isJsRendered) {
         const result = await fetchViaFirecrawl(url);
         textContent = result.text;
         pageTitle = result.title;
+        extractionMethod = "firecrawl";
       } else if (isNotion) {
         const result = await fetchNotionContent(url);
         textContent = result.text;
         pageTitle = result.title;
+        extractionMethod = textContent.length > 200 ? "fetch" : "firecrawl";
       } else {
         const result = await fetchGenericContent(url);
         textContent = result.text;
         pageTitle = result.title;
+        // Check if Firecrawl fallback was used (content was sparse and Firecrawl provided more)
+        if (textContent.replace(/\s+/g, " ").trim().length < 200) {
+          extractionMethod = "firecrawl-fallback";
+        }
       }
 
       const cleanContent = textContent.replace(/\s+/g, " ").trim();
