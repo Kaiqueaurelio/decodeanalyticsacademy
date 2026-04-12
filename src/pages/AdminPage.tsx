@@ -319,7 +319,10 @@ export default function AdminPage() {
   const [importContent, setImportContent] = useState('');
   const [importExercises, setImportExercises] = useState<any[]>([]);
   const [cloning, setCloning] = useState(false);
-  const [importStep, setImportStep] = useState<'url' | 'review'>('url');
+  const [importStep, setImportStep] = useState<'input' | 'review'>('input');
+  const [importMode, setImportMode] = useState<'url' | 'text'>('url');
+  const [importRawText, setImportRawText] = useState('');
+  const [batchMode, setBatchMode] = useState(false);
   const [batchMode, setBatchMode] = useState(false);
   const [batchUrls, setBatchUrls] = useState('');
   const [batchProgress, setBatchProgress] = useState<{ current: number; total: number; results: { url: string; title: string; status: 'ok' | 'error'; error?: string }[] }>({ current: 0, total: 0, results: [] });
