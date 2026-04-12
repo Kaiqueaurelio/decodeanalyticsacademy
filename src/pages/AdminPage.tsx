@@ -724,23 +724,46 @@ export default function AdminPage() {
                           {batchRunning ? <><Loader2 className="h-4 w-4 animate-spin mr-1.5" /> Importando {batchProgress.current}/{batchProgress.total}</> : 'Importar Tudo'}
                         </Button>
                       </div>
-                    ) : importStep === 'url' ? (
+                    ) : importStep === 'input' ? (
                       <div className="space-y-3">
-                        <div>
-                          <Label className="text-xs text-muted-foreground">Cole a URL da página</Label>
-                          <div className="flex gap-2 mt-1">
-                            <div className="relative flex-1">
-                              <Input value={importUrl} onChange={e => setImportUrl(e.target.value)} placeholder="https://exemplo.com/apostila"
-                                className={importUrl.includes('notion') ? 'pr-20' : ''} />
-                              {importUrl.includes('notion') && (
-                                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-semibold bg-primary/10 text-primary px-2 py-0.5 rounded-full">📝 Notion</span>
-                              )}
+                        {importMode === 'url' ? (
+                          <>
+                            <div>
+                              <Label className="text-xs text-muted-foreground">Cole a URL da página</Label>
+                              <div className="flex gap-2 mt-1">
+                                <div className="relative flex-1">
+                                  <Input value={importUrl} onChange={e => setImportUrl(e.target.value)} placeholder="https://exemplo.com/apostila"
+                                    className={importUrl.includes('notion') ? 'pr-20' : ''} />
+                                  {importUrl.includes('notion') && (
+                                    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-semibold bg-primary/10 text-primary px-2 py-0.5 rounded-full">📝 Notion</span>
+                                  )}
+                                </div>
+                                <Button onClick={handleExtract} disabled={cloning || !importUrl.trim()} className="gradient-primary text-primary-foreground shrink-0">
+                                  {cloning ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Clonar'}
+                                </Button>
+                              </div>
                             </div>
-                            <Button onClick={handleExtract} disabled={cloning || !importUrl.trim()} className="gradient-primary text-primary-foreground shrink-0">
-                              {cloning ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Clonar'}
+                          </>
+                        ) : (
+                          <>
+                            <div>
+                              <Label className="text-xs text-muted-foreground">Cole o texto bruto (anotações, slides, PDF copiado, etc.)</Label>
+                              <Textarea
+                                value={importRawText}
+                                onChange={e => setImportRawText(e.target.value)}
+                                placeholder={"Cole aqui qualquer texto — mesmo bagunçado, copiado de slides ou anotações.\n\nA IA vai organizar tudo em formato de apostila com exercícios."}
+                                rows={8}
+                                className="mt-1 text-xs"
+                              />
+                              <p className="text-[10px] text-muted-foreground mt-1">
+                                {importRawText.trim().length > 0 ? `${importRawText.trim().split(/\s+/).length} palavras` : 'Cole qualquer texto — a IA estrutura automaticamente'}
+                              </p>
+                            </div>
+                            <Button onClick={handleExtract} disabled={cloning || !importRawText.trim()} className="w-full gradient-primary text-primary-foreground">
+                              {cloning ? <><Loader2 className="h-4 w-4 animate-spin mr-1.5" /> Estruturando...</> : '✨ Estruturar como Apostila'}
                             </Button>
-                          </div>
-                        </div>
+                          </>
+                        )}
                         <div>
                           <Label className="text-xs text-muted-foreground">Título (opcional)</Label>
                           <Input value={importTitle} onChange={e => setImportTitle(e.target.value)} placeholder="Ex: Redes de Computadores - NP2" className="mt-1" />
