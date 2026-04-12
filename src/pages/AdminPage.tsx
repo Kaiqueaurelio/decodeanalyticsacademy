@@ -760,6 +760,53 @@ export default function AdminPage() {
                           </>
                         ) : (
                           <>
+                            {/* PDF Drop Zone */}
+                            <div
+                              onDragOver={e => { e.preventDefault(); e.stopPropagation(); }}
+                              onDrop={async (e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                const files = Array.from(e.dataTransfer.files);
+                                const pdfFile = files.find(f => f.type === 'application/pdf' || f.name.endsWith('.pdf'));
+                                const txtFile = files.find(f => f.type === 'text/plain' || f.name.endsWith('.txt'));
+                                const docFile = files.find(f => f.name.endsWith('.docx') || f.name.endsWith('.doc'));
+                                const file = pdfFile || txtFile || docFile;
+                                if (!file) { toast.error('Arraste um arquivo PDF, TXT ou DOCX'); return; }
+                                toast.info(`Lendo ${file.name}...`);
+                                try {
+                                  const text = await file.text();
+                                  setImportRawText(prev => prev ? prev + '\n\n' + text : text);
+                                  toast.success(`Conteúdo de "${file.name}" adicionado!`);
+                                } catch { toast.error('Erro ao ler o arquivo'); }
+                              }}
+                              className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-4 text-center cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors"
+                              onClick={() => {
+                                const input = document.createElement('input');
+                                input.type = 'file';
+                                input.accept = '.pdf,.txt,.doc,.docx';
+                                input.onchange = async (ev) => {
+                                  const file = (ev.target as HTMLInputElement).files?.[0];
+                                  if (!file) return;
+                                  toast.info(`Lendo ${file.name}...`);
+                                  try {
+                                    const text = await file.text();
+                                    setImportRawText(prev => prev ? prev + '\n\n' + text : text);
+                                    toast.success(`Conteúdo de "${file.name}" adicionado!`);
+                                  } catch { toast.error('Erro ao ler o arquivo'); }
+                                };
+                                input.click();
+                              }}
+                            >
+                              <FileUp className="h-6 w-6 mx-auto text-muted-foreground mb-1.5" />
+                              <p className="text-xs font-medium text-foreground">Arraste um PDF, TXT ou DOCX aqui</p>
+                              <p className="text-[10px] text-muted-foreground mt-0.5">ou clique para selecionar</p>
+                            </div>
+
+                            <div className="relative">
+                              <div className="absolute inset-x-0 top-1/2 border-t border-border" />
+                              <p className="relative bg-card text-[10px] text-muted-foreground text-center w-fit mx-auto px-2">ou cole o texto diretamente</p>
+                            </div>
+
                             <div>
                               <Label htmlFor="import-rawtext" className="text-xs font-medium text-foreground">Texto Bruto da Aula</Label>
                               <Textarea id="import-rawtext"
