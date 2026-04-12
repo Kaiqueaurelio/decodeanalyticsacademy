@@ -36,43 +36,43 @@ export function FlashcardSummaryWidget() {
   const progressPct = dailyGoal > 0 ? Math.min(100, Math.round((reviewed / dailyGoal) * 100)) : 0;
 
   return (
-    <Card className="p-4 bg-card border border-border/50">
-      <h3 className="text-sm font-semibold flex items-center gap-2 mb-3">
+    <Card className="p-5 hover-lift">
+      <h3 className="text-sm font-semibold flex items-center gap-2 mb-4">
         <Brain className="h-4 w-4 text-primary" /> Flashcards
       </h3>
 
-      <div className="grid grid-cols-2 gap-3 mb-3">
-        <div className="text-center p-2.5 rounded-lg bg-muted/50">
-          <p className="text-lg font-bold">{total}</p>
-          <p className="text-[10px] text-muted-foreground">Total</p>
+      <div className="grid grid-cols-2 gap-3 mb-4">
+        <div className="text-center p-3 rounded-xl bg-muted/50 border border-border/20">
+          <p className="text-xl font-bold">{total}</p>
+          <p className="text-[11px] text-muted-foreground">Total criados</p>
         </div>
-        <div className={`text-center p-2.5 rounded-lg ${dueToday > 0 ? 'bg-warning/10' : 'bg-success/10'}`}>
-          <p className="text-lg font-bold">{dueToday}</p>
-          <p className="text-[10px] text-muted-foreground">Para revisar</p>
+        <div className={`text-center p-3 rounded-xl border ${dueToday > 0 ? 'bg-warning/5 border-warning/20' : 'bg-success/5 border-success/20'}`}>
+          <p className="text-xl font-bold">{dueToday}</p>
+          <p className="text-[11px] text-muted-foreground">Para revisar</p>
         </div>
       </div>
 
       {/* Daily goal progress */}
-      <div className="mb-3">
-        <div className="flex justify-between text-[10px] text-muted-foreground mb-1">
-          <span>Meta diária</span>
-          <span>{reviewed}/{dailyGoal}</span>
+      <div className="mb-4">
+        <div className="flex justify-between text-[11px] text-muted-foreground mb-1.5">
+          <span>Meta diária de revisões</span>
+          <span className="font-medium">{reviewed}/{dailyGoal}</span>
         </div>
-        <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+        <div className="h-2 rounded-full bg-muted overflow-hidden">
           <div
-            className="h-full rounded-full bg-primary transition-all duration-500"
+            className="h-full rounded-full bg-primary animate-progress-fill"
             style={{ width: `${progressPct}%` }}
           />
         </div>
       </div>
 
       {dueToday > 0 ? (
-        <Button size="sm" className="w-full text-xs gap-1.5" onClick={() => navigate('/dashboard')}>
-          <Play className="h-3 w-3" /> Revisar {dueToday} cards
+        <Button size="sm" className="w-full text-xs gap-1.5 gradient-primary text-primary-foreground" onClick={() => navigate('/dashboard')}>
+          <Play className="h-3 w-3" /> Revisar {dueToday} cards pendentes
         </Button>
       ) : (
-        <div className="flex items-center justify-center gap-1.5 text-xs text-success py-1">
-          <CheckCircle2 className="h-3.5 w-3.5" /> Revisões em dia!
+        <div className="flex items-center justify-center gap-1.5 text-xs text-success py-2 font-medium">
+          <CheckCircle2 className="h-4 w-4 animate-check-pop" /> Todas as revisões em dia!
         </div>
       )}
     </Card>

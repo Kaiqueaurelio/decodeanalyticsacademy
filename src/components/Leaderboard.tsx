@@ -36,18 +36,26 @@ export function Leaderboard() {
   if (ranking.length === 0) return null;
 
   return (
-    <Card className="p-4 bg-card border border-border/50">
-      <h3 className="text-xs font-semibold mb-3 flex items-center gap-2">
-        <Crown className="h-4 w-4 text-yellow-500" /> Ranking
+    <Card className="p-5 hover-lift">
+      <h3 className="text-xs font-semibold mb-4 flex items-center gap-2">
+        <Crown className="h-4 w-4 text-yellow-500" /> Ranking de XP
       </h3>
       <div className="space-y-2">
         {ranking.map((r, i) => (
-          <div key={r.user_id} className={`flex items-center gap-2.5 p-2 rounded-lg ${i < 3 ? 'bg-accent/40' : ''}`}>
-            <span className="w-5 text-center">
-              {i < 3 ? icons[i] : <span className="text-[10px] text-muted-foreground font-medium">{i + 1}</span>}
+          <div
+            key={r.user_id}
+            className={`flex items-center gap-3 p-2.5 rounded-xl transition-all duration-200 animate-card-enter ${
+              i < 3 ? 'bg-primary/5 border border-primary/10' : 'hover:bg-muted/30'
+            }`}
+            style={{ animationDelay: `${i * 60}ms` }}
+          >
+            <span className="w-6 text-center">
+              {i < 3 ? icons[i] : <span className="text-[11px] text-muted-foreground font-semibold">{i + 1}º</span>}
             </span>
-            <Avatar className="h-6 w-6">
-              <AvatarFallback className="text-[10px] bg-primary/10 text-primary">{r.full_name.slice(0, 2).toUpperCase()}</AvatarFallback>
+            <Avatar className="h-7 w-7">
+              <AvatarFallback className="text-[10px] bg-primary/10 text-primary font-semibold">
+                {r.full_name.slice(0, 2).toUpperCase()}
+              </AvatarFallback>
             </Avatar>
             <span className="text-xs font-medium flex-1 truncate">{r.full_name}</span>
             <span className="text-[10px] text-muted-foreground">Nv.{r.level}</span>

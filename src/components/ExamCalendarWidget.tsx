@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Calendar, Plus, Trash2, Clock } from 'lucide-react';
+import { Calendar, Plus, Trash2, Clock, X } from 'lucide-react';
 import { format, differenceInDays, isPast } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -22,7 +22,6 @@ export function ExamCalendarWidget() {
   const [newTitle, setNewTitle] = useState('');
   const [newDate, setNewDate] = useState('');
 
-  // Notificações de provas próximas
   useEffect(() => {
     if (exams.length === 0) return;
     const notifiedRaw = sessionStorage.getItem('decode_exam_notified_ids');
@@ -66,61 +65,72 @@ export function ExamCalendarWidget() {
   const sorted = [...exams].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
   return (
-    <Card className="p-4 bg-card border border-border/50">
-      <div className="flex items-center justify-between mb-3">
+    <Card className="p-5 hover-lift">
+      <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-semibold flex items-center gap-2">
           <Calendar className="h-4 w-4 text-primary" /> Próximas Provas
         </h3>
-        <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => setAdding(!adding)}>
-          <Plus className="h-3.5 w-3.5" />
+        <Button
+          size="sm"
+          variant="ghost"
+          className="h-7 w-7 p-0"
+          onClick={() => setAdding(!adding)}
+          aria-label={adding ? 'Cancelar' : 'Adicionar prova'}
+        >
+          {adding ? <X className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
         </Button>
       </div>
 
       {adding && (
-        <div className="space-y-2 mb-3 p-3 rounded-lg bg-muted/50 border border-border/30">
+        <div className="space-y-2 mb-4 p-3 rounded-xl bg-muted/50 border border-border/30 animate-card-enter">
+          <label className="text-[11px] font-medium text-muted-foreground">Nome da prova</label>
           <Input
-            placeholder="Nome da prova"
+            placeholder="Ex: Prova de Cálculo"
             value={newTitle}
             onChange={e => setNewTitle(e.target.value)}
-            className="h-8 text-xs"
+            className="h-9 text-xs"
           />
+          <label className="text-[11px] font-medium text-muted-foreground">Data</label>
           <Input
             type="date"
             value={newDate}
             onChange={e => setNewDate(e.target.value)}
-            className="h-8 text-xs"
+            className="h-9 text-xs"
           />
-          <Button size="sm" className="w-full h-7 text-xs" onClick={addExam}>Adicionar</Button>
+          <Button size="sm" className="w-full h-8 text-xs gradient-primary text-primary-foreground" onClick={addExam}>
+            Adicionar Prova
+          </Button>
         </div>
       )}
 
       {sorted.length === 0 ? (
-        <p className="text-xs text-muted-foreground text-center py-4">Nenhuma prova agendada</p>
+        <p className="text-xs text-muted-foreground text-center py-6">Nenhuma prova agendada</p>
       ) : (
         <div className="space-y-2">
-          {sorted.map(exam => {
+          {sorted.map((exam, idx) => {
             const examDate = new Date(exam.date + 'T23:59:59');
             const days = differenceInDays(examDate, new Date());
             const past = isPast(examDate);
             return (
               <div
                 key={exam.id}
-                className={`flex items-center gap-3 p-2.5 rounded-lg border transition-colors ${
-                  past ? 'border-border/20 bg-muted/30 opacity-60' :
+                className={`flex items-center gap-3 p-3 rounded-xl border transition-all duration-200 animate-card-enter ${
+                  past ? 'border-border/20 bg-muted/30 opacity-50' :
                   days <= 3 ? 'border-destructive/30 bg-destructive/5' :
                   days <= 7 ? 'border-warning/30 bg-warning/5' :
-                  'border-border/30 bg-background'
+                  'border-border/30 bg-card hover:bg-muted/20'
                 }`}
+                style={{ animationDelay: `${idx * 60}ms` }}
               >
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-medium truncate">{exam.title}</p>
-                  <p className="text-[10px] text-muted-foreground">
-                    {format(new Date(exam.date + 'T12:00:00'), "d 'de' MMM", { locale: ptBR })}
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    {format(new Date(exam.date + 'T12:00:00'), "d 'de' MMM, yyyy", { locale: ptBR })}
                   </p>
                 </div>
-                <div className="flex items-center gap-1.5 shrink-0">
+                <div className="flex items-center gap-2 shrink-0">
                   {!past && (
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 ${
+                    <span className={`text-[10px] font-bold px-2.5 py-1 rounded-lg flex items-center gap-1 ${
                       days <= 3 ? 'bg-destructive/10 text-destructive' :
                       days <= 7 ? 'bg-warning/10 text-warning' :
                       'bg-primary/10 text-primary'
@@ -129,9 +139,13 @@ export function ExamCalendarWidget() {
                       {days === 0 ? 'Hoje!' : `${days}d`}
                     </span>
                   )}
-                  {past && <span className="text-[10px] text-muted-foreground">Passou</span>}
-                  <button onClick={() => removeExam(exam.id)} className="p-1 rounded hover:bg-muted transition-colors">
-                    <Trash2 className="h-3 w-3 text-muted-foreground" />
+                  {past && <span className="text-[11px] text-muted-foreground italic">Concluída</span>}
+                  <button
+                    onClick={() => removeExam(exam.id)}
+                    className="p-1.5 rounded-lg hover:bg-destructive/10 transition-colors"
+                    aria-label={`Remover prova ${exam.title}`}
+                  >
+                    <Trash2 className="h-3 w-3 text-muted-foreground hover:text-destructive" />
                   </button>
                 </div>
               </div>
