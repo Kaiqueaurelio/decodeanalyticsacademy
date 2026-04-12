@@ -11,7 +11,6 @@ function isNotionUrl(url: string): boolean {
 }
 
 async function fetchNotionContent(url: string): Promise<{ text: string; title: string }> {
-  // Try fetching with headers that work better for Notion public pages
   const headers: Record<string, string> = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
@@ -26,7 +25,6 @@ async function fetchNotionContent(url: string): Promise<{ text: string; title: s
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const html = await response.text();
 
-    // Extract title from various sources
     const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
     const ogTitleMatch = html.match(/<meta[^>]*property="og:title"[^>]*content="([^"]+)"/i);
     const descMatch = html.match(/<meta[^>]*property="og:description"[^>]*content="([^"]+)"/i);
@@ -34,7 +32,6 @@ async function fetchNotionContent(url: string): Promise<{ text: string; title: s
 
     pageTitle = ogTitleMatch?.[1] || titleMatch?.[1] || "Sem título";
 
-    // For Notion pages, extract content from data attributes and text nodes
     textContent = html
       .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
       .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
@@ -50,11 +47,9 @@ async function fetchNotionContent(url: string): Promise<{ text: string; title: s
       .replace(/\n{3,}/g, "\n\n")
       .trim();
 
-    // Add descriptions as extra context
     if (descMatch?.[1]) textContent = `Descrição: ${descMatch[1]}\n\n${textContent}`;
     if (metaDescMatch?.[1] && !descMatch) textContent = `Descrição: ${metaDescMatch[1]}\n\n${textContent}`;
 
-    // Notion pages also embed content as JSON in script tags - try to extract
     const notionDataMatch = html.match(/"block":\s*(\{[\s\S]*?\})\s*,\s*"collection"/);
     if (notionDataMatch) {
       try {
@@ -129,29 +124,7 @@ async function fetchGenericContent(url: string): Promise<{ text: string; title: 
   return { text: textContent, title: pageTitle };
 }
 
-serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
-
-  try {
-    const { url } = await req.json();
-    if (!url) throw new Error("URL é obrigatória");
-
-    // Use specialized fetcher for Notion URLs
-    const { text: textContent, title: pageTitle } = isNotionUrl(url)
-      ? await fetchNotionContent(url)
-      : await fetchGenericContent(url);
-
-    const cleanContent = textContent.replace(/\s+/g, " ").trim();
-    const isSparse = cleanContent.length < 200;
-    const isNotion = isNotionUrl(url);
-
-    const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
-    if (!lovableApiKey) throw new Error("LOVABLE_API_KEY não configurada");
-
-    let userPrompt: string;
-
-    // Unified system prompt for ALL sources (Notion, Perplexity, generic URLs)
-    const systemPrompt = `Você é um professor universitário especialista em Ciência da Computação. Sua tarefa é produzir uma apostila educacional BEM ESTRUTURADA e PADRONIZADA.
+const systemPrompt = `Você é um professor universitário especialista em Ciência da Computação. Sua tarefa é produzir uma apostila educacional BEM ESTRUTURADA e PADRONIZADA.
 
 REGRAS DE FORMATAÇÃO DO CONTEÚDO (campo "content"):
 - Use EXATAMENTE este padrão de estrutura com seções numeradas:
@@ -189,11 +162,56 @@ Responda SOMENTE com JSON válido, sem markdown. Formato:
   ]
 }`;
 
-    if (isSparse || isNotion) {
-      const extraContent = cleanContent.length > 50 ? `\n\nConteúdo parcial extraído da página:\n${cleanContent.substring(0, 15000)}` : "";
-      userPrompt = `URL: ${url}\nTítulo da página: ${pageTitle}${extraContent}\n\nCom base nas informações acima, crie uma apostila educacional COMPLETA e DETALHADA sobre o tema identificado, seguindo rigorosamente a estrutura padronizada. Se o conteúdo extraído for insuficiente, complemente com seu conhecimento. IMPORTANTE: inclua OBRIGATORIAMENTE de 8 a 10 exercícios.`;
+serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  try {
+    const body = await req.json();
+    const { url, rawText } = body;
+
+    if (!url && !rawText) throw new Error("URL ou texto bruto é obrigatório");
+
+    const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
+    if (!lovableApiKey) throw new Error("LOVABLE_API_KEY não configurada");
+
+    let userPrompt: string;
+
+    if (rawText && rawText.trim().length > 0) {
+      // ─── Raw text mode: organize messy text into structured apostila ───
+      const cleanText = rawText.trim().substring(0, 40000);
+      userPrompt = `O usuário colou o seguinte texto bruto (pode estar bagunçado, desorganizado, com formatação inconsistente, copiado de slides, PDFs, ou anotações):
+
+---
+${cleanText}
+---
+
+Sua tarefa:
+1. Identifique o tema/assunto principal do texto
+2. REORGANIZE e ESTRUTURE todo o conteúdo seguindo rigorosamente o padrão de formatação da apostila
+3. PRESERVE todo o conteúdo original — não remova informações
+4. Corrija erros de formatação, organize em parágrafos coerentes
+5. Complemente com explicações adicionais se o conteúdo for insuficiente para atingir 1500 palavras
+6. Crie de 8 a 10 exercícios de múltipla escolha baseados no conteúdo
+
+IMPORTANTE: Mesmo que o texto pareça caótico, extraia TODO o conhecimento útil e organize-o profissionalmente.`;
+    } else if (url) {
+      // ─── URL mode: fetch and process ───
+      const isNotion = isNotionUrl(url);
+      const { text: textContent, title: pageTitle } = isNotion
+        ? await fetchNotionContent(url)
+        : await fetchGenericContent(url);
+
+      const cleanContent = textContent.replace(/\s+/g, " ").trim();
+      const isSparse = cleanContent.length < 200;
+
+      if (isSparse || isNotion) {
+        const extraContent = cleanContent.length > 50 ? `\n\nConteúdo parcial extraído da página:\n${cleanContent.substring(0, 15000)}` : "";
+        userPrompt = `URL: ${url}\nTítulo da página: ${pageTitle}${extraContent}\n\nCom base nas informações acima, crie uma apostila educacional COMPLETA e DETALHADA sobre o tema identificado, seguindo rigorosamente a estrutura padronizada. Se o conteúdo extraído for insuficiente, complemente com seu conhecimento. IMPORTANTE: inclua OBRIGATORIAMENTE de 8 a 10 exercícios.`;
+      } else {
+        userPrompt = `URL: ${url}\nTítulo da página: ${pageTitle}\n\nConteúdo extraído:\n${cleanContent.substring(0, 30000)}\n\nReorganize e estruture o conteúdo acima seguindo rigorosamente o padrão de formatação. PRESERVE todo o conteúdo original mas reorganize-o nas seções padronizadas. Complemente se necessário para atingir o mínimo de 1500 palavras. IMPORTANTE: inclua de 8 a 10 exercícios.`;
+      }
     } else {
-      userPrompt = `URL: ${url}\nTítulo da página: ${pageTitle}\n\nConteúdo extraído:\n${cleanContent.substring(0, 30000)}\n\nReorganize e estruture o conteúdo acima seguindo rigorosamente o padrão de formatação. PRESERVE todo o conteúdo original mas reorganize-o nas seções padronizadas. Complemente se necessário para atingir o mínimo de 1500 palavras. IMPORTANTE: inclua de 8 a 10 exercícios.`;
+      throw new Error("Entrada inválida");
     }
 
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -216,10 +234,24 @@ Responda SOMENTE com JSON válido, sem markdown. Formato:
     if (!aiResponse.ok) {
       const errText = await aiResponse.text();
       console.error("AI Error:", errText);
+
+      if (aiResponse.status === 429) {
+        return new Response(JSON.stringify({ error: "Limite de requisições excedido. Tente novamente em alguns instantes." }), {
+          status: 429,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      if (aiResponse.status === 402) {
+        return new Response(JSON.stringify({ error: "Créditos insuficientes. Adicione fundos na sua conta." }), {
+          status: 402,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
       return new Response(JSON.stringify({
-        title: pageTitle.trim(),
+        title: "Sem título",
         category: "Geral",
-        content: isSparse ? "Não foi possível extrair o conteúdo desta página." : cleanContent.substring(0, 10000),
+        content: rawText ? rawText.substring(0, 10000) : "Não foi possível processar o conteúdo.",
         exercises: [],
       }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
@@ -233,17 +265,17 @@ Responda SOMENTE com JSON válido, sem markdown. Formato:
       parsed = JSON.parse(jsonStr);
     } catch {
       parsed = {
-        title: pageTitle.trim(),
+        title: "Sem título",
         category: "Geral",
-        content: isSparse ? "Não foi possível extrair o conteúdo desta página." : cleanContent.substring(0, 10000),
+        content: rawText ? rawText.substring(0, 10000) : "Não foi possível processar o conteúdo.",
         exercises: [],
       };
     }
 
     return new Response(JSON.stringify({
-      title: parsed.title || pageTitle.trim(),
+      title: parsed.title || "Sem título",
       category: parsed.category || "Geral",
-      content: parsed.content || cleanContent.substring(0, 10000),
+      content: parsed.content || (rawText ? rawText.substring(0, 10000) : ""),
       exercises: Array.isArray(parsed.exercises) ? parsed.exercises : [],
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
