@@ -446,8 +446,10 @@ export default function AdminPage() {
       setImportTopic(data.category || 'Geral');
       setImportContent(data.content || '');
       setImportExercises(data.exercises || []);
+      setExtractionMethod(data.extraction_method || '');
       setImportStep('review');
-      toast.success(data.exercises?.length > 0 ? `Conteúdo estruturado com ${data.exercises.length} exercícios!` : 'Conteúdo estruturado!');
+      const methodLabel = data.extraction_method === 'firecrawl' ? ' (via Firecrawl 🔥)' : data.extraction_method === 'firecrawl-fallback' ? ' (Firecrawl fallback 🔥)' : '';
+      toast.success(data.exercises?.length > 0 ? `Conteúdo estruturado com ${data.exercises.length} exercícios!${methodLabel}` : `Conteúdo estruturado!${methodLabel}`);
     } catch (err: any) { toast.error('Erro ao processar: ' + (err.message || 'Tente novamente')); }
     setCloning(false);
   };
