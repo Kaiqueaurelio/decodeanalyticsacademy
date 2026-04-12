@@ -420,18 +420,21 @@ export default function AdminPage() {
   const onDragLeave = useCallback((e: React.DragEvent) => { e.preventDefault(); setDragActive(false); }, []);
 
   const handleExtract = async () => {
-    if (!importUrl.trim()) return;
+    const isTextMode = importMode === 'text';
+    if (isTextMode && !importRawText.trim()) return;
+    if (!isTextMode && !importUrl.trim()) return;
     setCloning(true);
     try {
-      const { data, error } = await supabase.functions.invoke('extract-content', { body: { url: importUrl.trim() } });
+      const body = isTextMode ? { rawText: importRawText.trim() } : { url: importUrl.trim() };
+      const { data, error } = await supabase.functions.invoke('extract-content', { body });
       if (error) throw error;
       setImportTitle(data.title || '');
       setImportTopic(data.category || 'Geral');
       setImportContent(data.content || '');
       setImportExercises(data.exercises || []);
       setImportStep('review');
-      toast.success(data.exercises?.length > 0 ? `Conteúdo extraído com ${data.exercises.length} exercícios!` : 'Conteúdo extraído!');
-    } catch (err: any) { toast.error('Erro ao extrair: ' + (err.message || 'Tente novamente')); }
+      toast.success(data.exercises?.length > 0 ? `Conteúdo estruturado com ${data.exercises.length} exercícios!` : 'Conteúdo estruturado!');
+    } catch (err: any) { toast.error('Erro ao processar: ' + (err.message || 'Tente novamente')); }
     setCloning(false);
   };
 
