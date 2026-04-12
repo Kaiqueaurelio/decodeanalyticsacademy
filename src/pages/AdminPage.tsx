@@ -331,6 +331,7 @@ export default function AdminPage() {
   const [importTopic, setImportTopic] = useState('');
   const [importContent, setImportContent] = useState('');
   const [importExercises, setImportExercises] = useState<any[]>([]);
+  const [extractionMethod, setExtractionMethod] = useState<string>('');
   const [cloning, setCloning] = useState(false);
   const [importStep, setImportStep] = useState<'input' | 'review'>('input');
   const [importMode, setImportMode] = useState<'url' | 'text'>('url');
