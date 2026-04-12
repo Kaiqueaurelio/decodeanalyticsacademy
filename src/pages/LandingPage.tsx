@@ -250,20 +250,63 @@ export default function LandingPage() {
               <MessageCircle className="h-3 w-3 inline mr-1.5" />Depoimentos
             </span>
             <h2 className="font-display text-3xl sm:text-4xl mt-3">O que nossos alunos <span className="text-gradient">dizem</span></h2>
+            <p className="text-muted-foreground mt-3 text-sm max-w-md mx-auto">Estudantes de CC, SI e EC que já transformaram sua rotina de estudos.</p>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-3 max-w-4xl mx-auto">
-            {testimonials.map((t) => (
-              <div key={t.name} className="rounded-lg p-6 editorial-border-hover flex flex-col">
+          {/* Featured testimonial */}
+          <div className="max-w-4xl mx-auto mb-6">
+            <div className="rounded-lg p-8 md:p-10 relative overflow-hidden bg-primary/[0.03]" style={{ border: '1px solid hsl(68 100% 64% / 0.15)' }}>
+              <span className="absolute top-4 left-6 font-display text-7xl md:text-8xl text-primary/10 leading-none select-none">"</span>
+              <div className="relative pt-8 md:pt-6">
+                <p className="text-base md:text-lg text-foreground/90 leading-relaxed italic max-w-2xl">
+                  "{testimonials[0].text}"
+                </p>
+                <div className="flex items-center gap-3 mt-6 pt-5" style={{ borderTop: '1px solid hsl(0 0% 100% / 0.06)' }}>
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold text-background" style={{ backgroundColor: testimonials[0].color }}>
+                    {testimonials[0].initials}
+                  </div>
+                  <div>
+                    <p className="font-semibold text-sm">{testimonials[0].name}</p>
+                    <div className="flex items-center gap-2">
+                      <span className="px-1.5 py-0.5 rounded text-[9px] font-mono-label uppercase tracking-wider bg-accent/15 text-accent" style={{ border: '1px solid hsl(142 71% 45% / 0.2)' }}>
+                        {testimonials[0].course.split(' · ')[1]}
+                      </span>
+                      <span className="text-[11px] font-mono-label text-muted-foreground">{testimonials[0].course.split(' · ')[0]}</span>
+                    </div>
+                  </div>
+                  <div className="ml-auto flex gap-0.5">
+                    {Array.from({ length: testimonials[0].rating }).map((_, j) => (
+                      <Star key={j} className="h-3.5 w-3.5 fill-primary text-primary" />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Secondary testimonials */}
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 max-w-4xl mx-auto">
+            {testimonials.slice(1).map((t) => (
+              <div key={t.name} className="rounded-lg p-5 editorial-border-hover flex flex-col">
                 <div className="flex gap-0.5 mb-3">
                   {Array.from({ length: t.rating }).map((_, j) => (
-                    <Star key={j} className="h-3.5 w-3.5 fill-primary text-primary" />
+                    <Star key={j} className="h-3 w-3 fill-primary text-primary" />
                   ))}
                 </div>
-                <p className="text-sm text-muted-foreground leading-relaxed flex-1 italic">"{t.text}"</p>
-                <div className="mt-4 pt-4" style={{ borderTop: '1px solid hsl(0 0% 100% / 0.06)' }}>
-                  <p className="font-semibold text-sm">{t.name}</p>
-                  <p className="text-[11px] font-mono-label text-muted-foreground">{t.course}</p>
+                <p className="text-xs text-muted-foreground leading-relaxed flex-1 italic">"{t.text}"</p>
+                <div className="flex items-center gap-2.5 mt-4 pt-3" style={{ borderTop: '1px solid hsl(0 0% 100% / 0.06)' }}>
+                  <div className="w-7 h-7 rounded-full flex items-center justify-center text-[9px] font-bold text-background shrink-0" style={{ backgroundColor: t.color }}>
+                    {t.initials}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-semibold text-xs truncate">{t.name}</p>
+                    <div className="flex items-center gap-1.5">
+                      <span className="px-1 py-px rounded text-[8px] font-mono-label uppercase tracking-wider bg-primary/10 text-primary">
+                        {t.course.split(' · ')[1]}
+                      </span>
+                      <span className="text-[9px] font-mono-label text-muted-foreground">{t.course.split(' · ')[0]}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}
