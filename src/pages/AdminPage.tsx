@@ -730,10 +730,10 @@ export default function AdminPage() {
                         {importMode === 'url' ? (
                           <>
                             <div>
-                              <Label className="text-xs text-muted-foreground">Cole a URL da página</Label>
-                              <div className="flex gap-2 mt-1">
+                              <Label htmlFor="import-url" className="text-xs font-medium text-foreground">URL da Página</Label>
+                              <div className="flex gap-3 mt-1.5">
                                 <div className="relative flex-1">
-                                  <Input value={importUrl} onChange={e => setImportUrl(e.target.value)} placeholder="https://exemplo.com/apostila"
+                                  <Input id="import-url" value={importUrl} onChange={e => setImportUrl(e.target.value)} placeholder="Ex: https://youtu.be/… ou https://notion.site/…"
                                     className={importUrl.includes('notion') ? 'pr-20' : ''} />
                                   {importUrl.includes('notion') && (
                                     <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-semibold bg-primary/10 text-primary px-2 py-0.5 rounded-full">📝 Notion</span>
@@ -748,13 +748,13 @@ export default function AdminPage() {
                         ) : (
                           <>
                             <div>
-                              <Label className="text-xs text-muted-foreground">Cole o texto bruto (anotações, slides, PDF copiado, etc.)</Label>
-                              <Textarea
+                              <Label htmlFor="import-rawtext" className="text-xs font-medium text-foreground">Texto Bruto da Aula</Label>
+                              <Textarea id="import-rawtext"
                                 value={importRawText}
                                 onChange={e => setImportRawText(e.target.value)}
                                 placeholder={"Cole aqui qualquer texto — mesmo bagunçado, copiado de slides ou anotações.\n\nA IA vai organizar tudo em formato de apostila com exercícios."}
                                 rows={8}
-                                className="mt-1 text-xs"
+                                className="mt-1.5 text-xs"
                               />
                               <p className="text-[10px] text-muted-foreground mt-1">
                                 {importRawText.trim().length > 0 ? `${importRawText.trim().split(/\s+/).length} palavras` : 'Cole qualquer texto — a IA estrutura automaticamente'}
@@ -766,12 +766,12 @@ export default function AdminPage() {
                           </>
                         )}
                         <div>
-                          <Label className="text-xs text-muted-foreground">Título (opcional)</Label>
-                          <Input value={importTitle} onChange={e => setImportTitle(e.target.value)} placeholder="Ex: Redes de Computadores - NP2" className="mt-1" />
+                          <Label htmlFor="import-title" className="text-xs font-medium text-foreground">Título da Aula (opcional)</Label>
+                          <Input id="import-title" value={importTitle} onChange={e => setImportTitle(e.target.value)} placeholder="Ex: Estrutura de Dados — Árvores AVL (NP2)" className="mt-1.5" />
                         </div>
                         <div>
-                          <Label className="text-xs text-muted-foreground">Tópico (para agrupar)</Label>
-                          <Input value={importTopic} onChange={e => setImportTopic(e.target.value)} placeholder="Ex: Redes, Banco de Dados" className="mt-1" />
+                          <Label htmlFor="import-topic" className="text-xs font-medium text-foreground">Disciplina / Tópico</Label>
+                          <Input id="import-topic" value={importTopic} onChange={e => setImportTopic(e.target.value)} placeholder="Ex: Redes de Computadores, Banco de Dados" className="mt-1.5" />
                         </div>
                       </div>
                     ) : (
@@ -816,22 +816,31 @@ export default function AdminPage() {
                 {/* Manual Create */}
                 {showManualForm ? (
                   <Card className="animate-in fade-in slide-in-from-top-2 duration-300">
-                    <CardContent className="p-5 space-y-4">
+                    <CardContent className="p-6 space-y-5">
                       <h3 className="font-semibold flex items-center gap-2 text-sm">
-                        <FileText className="h-4 w-4 text-primary" /> Criar Manualmente
+                        <FileText className="h-4 w-4 text-primary" /> Criar Apostila Manualmente
                       </h3>
-                      <div><Label className="text-xs text-muted-foreground">Título</Label><Input value={manualTitle} onChange={e => setManualTitle(e.target.value)} placeholder="Ex: Redes de Computadores" className="mt-1" /></div>
-                      <div><Label className="text-xs text-muted-foreground">Categoria</Label><CategorySelect value={manualCategory} onValueChange={setManualCategory} placeholder="Selecione" /></div>
-                      <div><Label className="text-xs text-muted-foreground">Conteúdo</Label><Textarea value={manualContent} onChange={e => setManualContent(e.target.value)} rows={5} className="mt-1" placeholder="Cole ou digite o conteúdo..." /></div>
-                      <div className="flex gap-2">
-                        <Button variant="outline" className="flex-1" onClick={() => setShowManualForm(false)}>Cancelar</Button>
-                        <Button className="flex-1 gradient-primary text-primary-foreground" onClick={handleManualSave} disabled={!manualTitle.trim()}>Criar</Button>
+                      <div>
+                        <Label htmlFor="manual-title" className="text-xs font-medium text-foreground">Título da Apostila</Label>
+                        <Input id="manual-title" value={manualTitle} onChange={e => setManualTitle(e.target.value)} placeholder="Ex: Estrutura de Dados — Árvores Binárias" className="mt-1.5" />
+                      </div>
+                      <div>
+                        <Label htmlFor="manual-category" className="text-xs font-medium text-foreground">Disciplina / Categoria</Label>
+                        <CategorySelect value={manualCategory} onValueChange={setManualCategory} placeholder="Selecione a disciplina" />
+                      </div>
+                      <div>
+                        <Label htmlFor="manual-content" className="text-xs font-medium text-foreground">Conteúdo da Apostila</Label>
+                        <Textarea id="manual-content" value={manualContent} onChange={e => setManualContent(e.target.value)} rows={6} className="mt-1.5" placeholder="Digite ou cole o conteúdo completo da aula..." />
+                      </div>
+                      <div className="flex gap-3 pt-1">
+                        <Button variant="outline" className="flex-1 opacity-80" onClick={() => setShowManualForm(false)}>Cancelar</Button>
+                        <Button className="flex-1 gradient-primary text-primary-foreground animate-pulse-glow" onClick={handleManualSave} disabled={!manualTitle.trim()}>Salvar Apostila</Button>
                       </div>
                     </CardContent>
                   </Card>
                 ) : (
-                  <Button variant="outline" className="w-full" onClick={() => setShowManualForm(true)}>
-                    <Plus className="mr-1.5 h-4 w-4" /> Criar Manualmente
+                  <Button variant="outline" className="w-full py-5" onClick={() => setShowManualForm(true)}>
+                    <Plus className="mr-1.5 h-4 w-4" /> Criar Apostila Manualmente
                   </Button>
                 )}
 
@@ -842,12 +851,12 @@ export default function AdminPage() {
                       <BookOpen className="h-4 w-4 text-primary" /> Apostilas ({filteredApostilas.length})
                     </h3>
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     {filteredApostilas.map(a => {
                       const exCount = exercises[a.id]?.length || 0;
                       return (
-                        <Card key={a.id} className="hover:shadow-md transition-shadow">
-                          <CardContent className="p-4">
+                        <Card key={a.id} className="hover-lift card-alternate">
+                          <CardContent className="p-5">
                             <div className="flex items-center gap-3">
                               <span className={`h-3 w-3 rounded-full shrink-0 ${a.published ? 'bg-[hsl(var(--success))]' : 'bg-muted-foreground'}`} />
                               <div className="flex-1 min-w-0">

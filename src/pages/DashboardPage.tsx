@@ -117,32 +117,32 @@ export default function DashboardPage() {
       <AppHeader />
       {showOnboarding && <OnboardingTour onComplete={handleOnboardingComplete} />}
 
-      <main className="container py-6 px-4 relative z-10 max-w-6xl">
+      <main className="container py-8 px-6 relative z-10 max-w-6xl">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6 animate-content-show">
+        <div className="flex items-center justify-between mb-8 animate-content-show">
           <div>
             <h1 className="text-xl font-bold sm:text-2xl">Dashboard</h1>
             <p className="text-sm text-muted-foreground">Seu painel de estudos</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-3">
             <Button size="sm" variant="outline" onClick={() => navigate('/profile')} className="text-xs gap-1.5">
-              <User className="h-3.5 w-3.5" /> Perfil
+              <User className="h-3.5 w-3.5" /> Meu Perfil
             </Button>
             {isAdmin && (
               <Button size="sm" variant="outline" onClick={() => navigate('/admin')} className="text-xs gap-1.5">
-                <BarChart3 className="h-3.5 w-3.5" /> Admin
+                <BarChart3 className="h-3.5 w-3.5" /> Painel Admin
               </Button>
             )}
           </div>
         </div>
 
         {/* Search */}
-        <div className="mb-6 animate-content-show">
+        <div className="mb-8 animate-content-show">
           <GlobalSearch />
         </div>
 
         {/* Stats Cards Row */}
-        <div className="animate-content-show delay-1 mb-6">
+        <div className="animate-content-show delay-1 mb-8">
           <MobileCarousel desktopClassName="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <Card className="p-4 bg-card border border-border/50 hover-lift">
               <div className="flex items-center gap-3">
@@ -192,7 +192,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Main Grid: Left (2/3) + Right Sidebar (1/3) */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
           {/* Left Column */}
           <div className="lg:col-span-2 space-y-4">
             {/* Gamification + Pomodoro */}
