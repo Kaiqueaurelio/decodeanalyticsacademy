@@ -471,7 +471,8 @@ export default function AdminPage() {
 
   const resetImportForm = () => {
     setImportUrl(''); setImportTitle(''); setImportTopic('');
-    setImportContent(''); setImportExercises([]); setImportStep('url');
+    setImportContent(''); setImportExercises([]); setImportStep('input');
+    setImportRawText('');
   };
 
   const handleBatchImport = async () => {
