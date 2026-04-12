@@ -730,10 +730,10 @@ export default function AdminPage() {
                         {importMode === 'url' ? (
                           <>
                             <div>
-                              <Label className="text-xs text-muted-foreground">Cole a URL da página</Label>
-                              <div className="flex gap-2 mt-1">
+                              <Label htmlFor="import-url" className="text-xs font-medium text-foreground">URL da Página</Label>
+                              <div className="flex gap-3 mt-1.5">
                                 <div className="relative flex-1">
-                                  <Input value={importUrl} onChange={e => setImportUrl(e.target.value)} placeholder="https://exemplo.com/apostila"
+                                  <Input id="import-url" value={importUrl} onChange={e => setImportUrl(e.target.value)} placeholder="Ex: https://youtu.be/… ou https://notion.site/…"
                                     className={importUrl.includes('notion') ? 'pr-20' : ''} />
                                   {importUrl.includes('notion') && (
                                     <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-semibold bg-primary/10 text-primary px-2 py-0.5 rounded-full">📝 Notion</span>
@@ -748,13 +748,13 @@ export default function AdminPage() {
                         ) : (
                           <>
                             <div>
-                              <Label className="text-xs text-muted-foreground">Cole o texto bruto (anotações, slides, PDF copiado, etc.)</Label>
-                              <Textarea
+                              <Label htmlFor="import-rawtext" className="text-xs font-medium text-foreground">Texto Bruto da Aula</Label>
+                              <Textarea id="import-rawtext"
                                 value={importRawText}
                                 onChange={e => setImportRawText(e.target.value)}
                                 placeholder={"Cole aqui qualquer texto — mesmo bagunçado, copiado de slides ou anotações.\n\nA IA vai organizar tudo em formato de apostila com exercícios."}
                                 rows={8}
-                                className="mt-1 text-xs"
+                                className="mt-1.5 text-xs"
                               />
                               <p className="text-[10px] text-muted-foreground mt-1">
                                 {importRawText.trim().length > 0 ? `${importRawText.trim().split(/\s+/).length} palavras` : 'Cole qualquer texto — a IA estrutura automaticamente'}
