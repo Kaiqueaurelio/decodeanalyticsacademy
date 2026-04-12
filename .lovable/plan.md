@@ -1,59 +1,71 @@
-Objetivo: corrigir o ícone do app instalado no celular para usar o logo da coruja que você enviou, tanto no Android quanto no iPhone.
 
-O que identifiquei
 
-- O app já tem `manifest.json`, mas os arquivos `public/icon-192.png` e `public/icon-512.png` ainda não foram substituídos pelo logo correto.
-- O `manifest.json` usa `purpose: "any maskable"` combinado, o que pode causar incompatibilidade em alguns launchers.
-- O `index.html` aponta `apple-touch-icon` para `/icon-192.png`, mas o ideal é gerar um ícone específico para iOS.
-- Existe `public/favicon.ico`, que também pode continuar mostrando um ícone antigo em alguns contextos.
+# Redesign Completo — Decode Analytics Academy
 
-Plano de implementação
+## Resumo
 
-1. Usar a imagem enviada como base oficial do app.
-2. Gerar os assets corretos para instalação mobile:
-  - `public/icon-192.png`
-  - `public/icon-512.png`
-  - `public/apple-touch-icon.png`
-  - opcionalmente um novo `public/favicon.png` ou `favicon.ico`
-3. Atualizar `public/manifest.json`:
-  - separar entradas `any` e `maskable`
-  - manter nome, short_name e cores atuais
-  - garantir melhor compatibilidade com Android
-4. Atualizar `index.html`:
-  - apontar `apple-touch-icon` para o novo arquivo iOS
-  - revisar `theme-color` e favicon para evitar conflito visual
-5. Remover/substituir o favicon antigo para o navegador não continuar puxando o ícone errado.
-6. Validar no preview publicado e orientar que, no celular, pode ser necessário:
-  - remover o atalho antigo da tela inicial
-  - reinstalar o app para o novo ícone aparecer
+Redesign visual completo do app adotando estética "Editorial Técnico-Premium" (inspirado em Linear/Vercel), com nova paleta escura (`#0A0A0B` base, `#E8FF47` acento), novas fontes (Instrument Serif + DM Mono + Plus Jakarta Sans), e textura grain no background. **Todas as funcionalidades existentes serão preservadas** (gamificação, pomodoro, flashcards, heatmap, leaderboard, admin com import/batch/materiais, watermark, etc).
 
-Resultado esperado
+---
 
-- Ao instalar o app no celular, o ícone exibido será o logo da coruja enviado.
-- Melhor compatibilidade entre Android, iPhone e navegadores diferentes.
+## Escopo das Mudanças
 
-Detalhe técnico
+### Fase 1 — Fundação Visual (CSS + Config)
 
-- Como estou em modo somente leitura, não posso gerar os arquivos nem substituir os assets agora.
-- Na implementação, o trabalho principal será criar versões redimensionadas do logo enviado e trocar os arquivos públicos que o manifest já referencia.
-- Se o logo original tiver muito espaço em branco, também posso centralizar e ajustar a arte para ficar melhor em formatos quadrados e maskable.
+1. **`src/index.css`**: Substituir toda a paleta CSS variables por nova paleta escura. Adicionar SVG grain filter inline e classes utilitárias para o novo design (bordas finas `rgba(255,255,255,0.08)`, cards sem sombra). Importar Instrument Serif e DM Mono do Google Fonts.
 
-Verificar que funcionaCorrigir ícone do appAtualizar favicon
+2. **`tailwind.config.ts`**: Adicionar as novas fontes (`font-display`, `font-mono-label`), cores de acento (`lime: #E8FF47`, `mint: #6EE7B7`), e cores por matéria. Remover animações não usadas; manter as necessárias (fade-in, accordion, etc).
 
-Os ícones PWA atuais (`icon-192.png` e `icon-512.png`) não são o logo da coruja que você enviou. Quando o app é instalado no celular, ele mostra ícones genéricos em vez da marca Decode Analytics.
+3. **Componentes UI base** (`button.tsx`, `card.tsx`, `input.tsx`, `badge.tsx`, `progress.tsx`): Ajustar estilos para seguir a nova estética — bordas finas, sem sombras genéricas, border-radius menor (`4px-8px`), botão primário com fundo `#E8FF47` e texto preto em mono uppercase.
 
-## Plano
+### Fase 2 — Páginas Principais
 
-1. **Copiar a imagem enviada** para o projeto (`src/assets/` temporariamente)
-2. **Gerar os ícones PWA** a partir da imagem da coruja:
-  - `public/icon-192.png` (192x192px)
-  - `public/icon-512.png` (512x512px)
-  - `public/apple-touch-icon.png` (180x180px) para iOS
-  - Usar ImageMagick (`nix run nixpkgs#imagemagick`) para redimensionar
-3. **Atualizar** `public/manifest.json` para separar `"purpose": "any"` e `"purpose": "maskable"` em entradas distintas (melhor compatibilidade)
-4. **Atualizar** `index.html` para incluir `<link rel="apple-touch-icon">` apontando para o ícone 180px (iOS não usa manifest para ícones)
+4. **`LandingPage.tsx`**: Redesenhar hero com headline "Sua apostila. Organizada. Automaticamente.", tipografia Instrument Serif, CTAs duplos (Entrar como Estudante / Acessar como Admin), animação fadeUp escalonada, textura grain, rodapé com créditos. Remover FloatingParticles, substituir por visual clean editorial.
 
-### Detalhe Técnico
+5. **`LoginPage.tsx`**: Layout duas colunas — esquerda com branding/visual editorial, direita com form minimalista. Sem card centralizado com sombra. Manter toda a lógica de auth (signIn, signUp, reset password).
 
-- O `purpose: "any maskable"` combinado pode causar problemas em alguns dispositivos; separar em dois entries é a prática recomendada
-- iOS Safari ignora o manifest para ícones e usa apenas `<link rel="apple-touch-icon">`
+6. **`DashboardPage.tsx`**: Restyling dos cards de stats, widgets e lista de apostilas com a nova paleta. Manter todos os widgets existentes (Gamification, Pomodoro, Flashcards, Heatmap, Leaderboard, WeeklyGoal, ExamCalendar, FlashcardSummary, ApostilaProgress, RecentActivity). Aplicar visual editorial nos cards de apostila por categoria.
+
+7. **`ApostilaPage.tsx`**: Transformar na tela principal editorial. Layout 3 colunas em desktop (sidebar índice 20% + conteúdo 60% + anotações 20%). Adicionar sidebar de índice com âncoras, progresso de leitura, modo foco. Estilizar conteúdo com separadores tipográficos, blocos de destaque com borda colorida por matéria, numeração mono nas seções.
+
+8. **`AdminPage.tsx`**: Restyling da sidebar (fundo escuro), cards e formulários. Adicionar modo "Por Texto" no formulário de criação de apostila — um textarea grande onde o admin cola texto bruto, com toggle estilizado (pill switcher) para alternar entre Link e Texto. Manter toda a lógica existente de import, batch, exercícios, materiais e usuários.
+
+9. **`ProfilePage.tsx`, `ExercisesPage.tsx`, `MaterialsPage.tsx`**: Aplicar nova paleta e tipografia. Preservar toda a funcionalidade.
+
+### Fase 3 — Componentes Compartilhados
+
+10. **`AppHeader.tsx`**: Restyling com fundo escuro, bordas finas, logo e nav minimalista.
+
+11. **Sistema de cores por matéria**: Adicionar mapeamento de cores no código (constante ou via campo `color` na tabela `categories`) para colorir badges, bordas de destaque e progress bars por disciplina.
+
+### Fase 4 — DB (se necessário)
+
+12. **Verificação de schema**: A tabela `apostilas` já tem `source_type` e `content`. O campo `source_type` aceita valores como `'manual'`, `'link'`, `'notion'`. Precisamos garantir que `'text'` seja aceito como valor para o novo modo "Por Texto". Como o campo é `text` sem CHECK constraint, já funciona — **nenhuma migração necessária**.
+
+---
+
+## O que NÃO muda
+
+- Toda lógica de auth, RLS, roles, gamificação, XP, streaks, badges
+- Edge function `extract-content`
+- Widgets: Pomodoro, Flashcards, Heatmap, Leaderboard, WeeklyGoal, ExamCalendar, etc.
+- Funcionalidades admin: import URL, batch import, gerenciamento de materiais/usuários
+- Anotações, watermark, proteção de conteúdo
+- Tema dark/light toggle (adaptado para nova paleta)
+
+---
+
+## Detalhes Técnicos
+
+- **Fontes**: Google Fonts import no `index.css` — `Instrument Serif` (display), `DM Mono` (labels/código), `Plus Jakarta Sans` (corpo, já existente)
+- **Grain texture**: SVG filter inline no `index.css` aplicado via pseudo-elemento `::after` no body
+- **Cores por matéria**: Constante TypeScript com mapeamento `categoria → cor hex`, usada em badges e bordas
+- **Toggle Link/Texto no Admin**: Componente pill switcher inline no form de criação, controlando qual campo aparece (URL input vs textarea grande)
+- **Apostila editorial**: Parsing do campo `content` para detectar seções numeradas e renderizar com tipografia hierárquica
+
+---
+
+## Estimativa
+
+~15 arquivos modificados, ~3 novos componentes auxiliares. Implementação em múltiplos passos sequenciais.
+
