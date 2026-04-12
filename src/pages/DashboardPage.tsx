@@ -196,19 +196,21 @@ export default function DashboardPage() {
           {/* Left Column */}
           <div className="lg:col-span-2 space-y-4">
             {/* Gamification + Pomodoro */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 animate-content-show delay-1">
-              <GamificationWidget
-                xpPoints={gamification.xp.xp_points}
-                level={gamification.xp.level}
-                currentStreak={gamification.streak.current_streak}
-                longestStreak={gamification.streak.longest_streak}
-                xpForNext={gamification.xpForNextLevel(gamification.xp.level)}
-                earnedBadges={earnedBadges}
-              />
-              <div className="space-y-3">
-                <PomodoroTimer onComplete={handlePomodoroComplete} />
-                <FlashcardsWidget />
-              </div>
+            <div className="animate-content-show delay-1">
+              <MobileCarousel desktopClassName="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <GamificationWidget
+                  xpPoints={gamification.xp.xp_points}
+                  level={gamification.xp.level}
+                  currentStreak={gamification.streak.current_streak}
+                  longestStreak={gamification.streak.longest_streak}
+                  xpForNext={gamification.xpForNextLevel(gamification.xp.level)}
+                  earnedBadges={earnedBadges}
+                />
+                <div className="space-y-3">
+                  <PomodoroTimer onComplete={handlePomodoroComplete} />
+                  <FlashcardsWidget />
+                </div>
+              </MobileCarousel>
             </div>
 
             {/* Charts Row */}
@@ -284,28 +286,28 @@ export default function DashboardPage() {
           </div>
 
           {/* Right Sidebar */}
-          <div className="space-y-4 animate-content-show delay-2">
-            <WeeklyGoalWidget />
-            <ExamCalendarWidget />
-            <FlashcardSummaryWidget />
-            <ApostilaProgressWidget data={stats.byApostila} exerciseCounts={exerciseCounts} />
-            <StudyHeatmap />
-            <RecentActivity />
-            <Leaderboard />
-
-            {/* Materials Link */}
-            <Card className="p-4 bg-card border border-border/50">
-              <button onClick={() => navigate('/materials')} className="w-full flex items-center gap-3 text-left hover:opacity-80 smooth-all">
-                <div className="rounded-lg bg-primary/10 p-2.5">
-                  <FileText className="h-5 w-5 text-primary" />
-                </div>
-                <div className="flex-1">
-                  <p className="font-medium text-sm">Materiais de Apoio</p>
-                  <p className="text-[10px] text-muted-foreground">PDFs, vídeos, áudios e mais</p>
-                </div>
-                <ChevronRight className="h-4 w-4 text-muted-foreground" />
-              </button>
-            </Card>
+          <div className="animate-content-show delay-2">
+            <MobileCarousel desktopClassName="space-y-4">
+              <WeeklyGoalWidget />
+              <ExamCalendarWidget />
+              <FlashcardSummaryWidget />
+              <ApostilaProgressWidget data={stats.byApostila} exerciseCounts={exerciseCounts} />
+              <StudyHeatmap />
+              <RecentActivity />
+              <Leaderboard />
+              <Card className="p-4 bg-card border border-border/50">
+                <button onClick={() => navigate('/materials')} className="w-full flex items-center gap-3 text-left hover:opacity-80 smooth-all">
+                  <div className="rounded-lg bg-primary/10 p-2.5">
+                    <FileText className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-sm">Materiais de Apoio</p>
+                    <p className="text-[10px] text-muted-foreground">PDFs, vídeos, áudios e mais</p>
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                </button>
+              </Card>
+            </MobileCarousel>
           </div>
         </div>
 
