@@ -1,51 +1,37 @@
 
 
-# Plano: Notificações de Prova + Landing Page Multicurso + Depoimentos Redesenhados
+# Plano: Dashboard Mobile com Carrossel Horizontal
 
 ## Resumo
 
-Três melhorias: (1) sistema de notificações toast quando provas estão a menos de 3 dias, (2) atualizar toda a landing page para refletir que o app atende múltiplos cursos de tecnologia (CC, SI, EC), e (3) redesenhar a seção de depoimentos com visual mais impactante e editorial.
+No mobile, os stats cards e os widgets da sidebar direita ficam empilhados verticalmente, ocupando muito espaço. A melhoria transforma essas seções em carrosséis horizontais deslizáveis (swipeable) no mobile, mantendo o layout grid no desktop.
 
----
+## Mudanças
 
-## 1. Notificações de Lembrete de Provas
+### 1. `src/pages/DashboardPage.tsx`
 
-**Arquivo:** `src/components/ExamCalendarWidget.tsx`
+- **Stats Cards (linha 142)**: No mobile (`< sm`), renderizar os 4 cards dentro de um container com `overflow-x-auto` e `flex` horizontal com snap scrolling (`scroll-snap-type: x mandatory`), cada card com `min-w-[70vw]` e `scroll-snap-align: start`. No `sm+` manter o grid atual.
 
-- Adicionar um `useEffect` que roda ao montar o componente e verifica todas as provas com `differenceInDays <= 3` e `!isPast`
-- Para cada prova urgente, disparar um `toast.warning()` do sonner com mensagem tipo: `"⚠️ Prova 'Cálculo II' em 2 dias!"`
-- Usar `localStorage` para guardar quais notificações já foram mostradas na sessão atual (`decode_exam_notified_ids`), evitando spam
-- Provas com `days === 0` mostram toast especial: `"🔴 Hoje é dia de prova: 'Cálculo II'!"`
+- **Sidebar Widgets (linha 282)**: No mobile, agrupar os widgets (WeeklyGoal, ExamCalendar, FlashcardSummary, ApostilaProgress, Heatmap, RecentActivity, Leaderboard) em um container horizontal scrollável com snap, cada widget com `min-w-[80vw]`. Adicionar indicadores de paginação (dots) abaixo. No `lg+` manter o layout sidebar vertical atual.
 
-## 2. Landing Page — Multicurso de Tecnologia
+- **Gamification + Pomodoro row (linha 194)**: No mobile, também usar scroll horizontal para GamificationWidget e Pomodoro+Flashcards lado a lado como slides.
 
-**Arquivo:** `src/pages/LandingPage.tsx`
+### 2. `src/index.css`
 
-Mudanças pontuais em textos:
+- Adicionar classes utilitárias para o carrossel: `scroll-snap-x`, `snap-start`, `scrollbar-hide` (esconder scrollbar nativo) e estilos para dots de paginação.
 
-- **Linha 185** (seção Benefits): Trocar `"Criada por alunos de Ciência da Computação que sabem exatamente o que você precisa."` por algo como `"Criada para estudantes de Ciência da Computação, Sistemas de Informação, Engenharia da Computação e cursos de tecnologia com grade curricular compartilhada."`
-- **Seção Stats**: Adicionar ou ajustar um stat para `"3+ Cursos"` com label `"Compatíveis"` (CC, SI, EC)
-- **Testimonials**: Diversificar os cursos nos depoimentos — mudar `"CC"` para incluir `"SI"` e `"EC"` nos cursos dos alunos
-- **Hero ou subtítulo**: Pode-se adicionar uma menção sutil tipo `"Para CC, SI, EC e cursos de tecnologia"`
+### 3. Novo componente `src/components/MobileCarousel.tsx`
 
-## 3. Depoimentos — Redesign Visual
-
-**Arquivo:** `src/pages/LandingPage.tsx` (seção Testimonials, linhas 238-265)
-
-Redesenhar a seção para ficar mais destacada e impactante:
-
-- **Layout**: Um depoimento principal grande (featured) no topo com foto/avatar placeholder, aspas decorativas grandes em Instrument Serif (`""`), e os outros dois menores abaixo
-- **Visual**: Card do depoimento featured com borda `primary/20`, fundo levemente diferenciado (`bg-primary/[0.03]`), aspas decorativas em `text-primary/20` com tamanho `text-6xl`
-- **Avatares**: Adicionar iniciais coloridas em círculos como avatar placeholder (sem usar emojis)
-- **Badges de curso**: Cada depoimento mostra um badge colorido com o curso (CC em amarelo, SI em verde, EC em azul)
-- **Diversificar cursos**: Ana Silva → SI, Carlos Santos → EC, Juliana Costa → CC (mostrando que serve para todos)
-- **Adicionar mais 1-2 depoimentos** para ter conteúdo suficiente para o layout assimétrico
-
----
+Componente wrapper leve (sem dependência do embla-carousel) que:
+- Usa CSS scroll-snap nativo para performance
+- Aceita `children` e renderiza em container horizontal scrollável
+- Mostra dots de paginação baseados no scroll position (via `IntersectionObserver` ou `scrollLeft`)
+- No desktop (via `useIsMobile`) renderiza children normalmente em layout vertical/grid
 
 ## Detalhes Técnicos
 
-- Toast de provas usa `import { toast } from "sonner"` — já disponível no projeto
-- Nenhuma alteração de banco de dados necessária
-- Nenhum componente novo — apenas edições no `ExamCalendarWidget` e `LandingPage`
+- Sem bibliotecas extras — apenas CSS scroll-snap nativo
+- `useIsMobile()` hook já existe no projeto
+- Scrollbar escondido via `-webkit-scrollbar: none` + `scrollbar-width: none`
+- Dots com cor `primary` para o ativo e `muted` para inativos
 
