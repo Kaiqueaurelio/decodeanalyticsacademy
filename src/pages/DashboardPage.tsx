@@ -24,6 +24,8 @@ import { AnimatedCounter } from '@/components/AnimatedCounter';
 import { ExamCalendarWidget } from '@/components/ExamCalendarWidget';
 import { FlashcardSummaryWidget } from '@/components/FlashcardSummaryWidget';
 import { ApostilaProgressWidget } from '@/components/ApostilaProgressWidget';
+import { MobileCarousel } from '@/components/MobileCarousel';
+import { useIsMobile } from '@/hooks/use-mobile';
 import {
   BookOpen, CheckCircle, XCircle, TrendingUp, FolderOpen, PenLine,
   ChevronRight, BarChart3, User, FileText, Zap, Target, Percent
