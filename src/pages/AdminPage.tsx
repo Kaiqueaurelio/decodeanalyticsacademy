@@ -148,7 +148,8 @@ function AdminSidebar({ tab, setTab, stats, sidebarOpen, setSidebarOpen }: {
         </ScrollArea>
 
         {/* Footer */}
-        <div className="p-4 border-t border-border">
+        <div className="p-4 border-t border-border space-y-2">
+          <ThemeToggleButton />
           <Button variant="outline" size="sm" className="w-full text-xs gap-2" onClick={() => navigate('/dashboard')}>
             <ArrowLeft className="h-3.5 w-3.5" /> Voltar ao Dashboard
           </Button>
