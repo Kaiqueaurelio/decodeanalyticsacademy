@@ -358,11 +358,14 @@ IMPORTANTE: Mesmo que o texto pareca caotico, extraia TODO o conhecimento util e
       };
     }
 
+    const extractMethod = rawText ? "text" : (typeof extractionMethod !== "undefined" ? extractionMethod : "fetch");
+
     return new Response(JSON.stringify({
       title: parsed.title || "Sem titulo",
       category: parsed.category || "Geral",
       content: parsed.content || (rawText ? rawText.substring(0, 10000) : ""),
       exercises: Array.isArray(parsed.exercises) ? parsed.exercises : [],
+      extraction_method: extractMethod,
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
   } catch (error) {
