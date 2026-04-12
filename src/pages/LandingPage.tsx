@@ -13,7 +13,7 @@ import {
 import logoDark from '@/assets/logo-dark.jpeg';
 
 const features = [
-  { icon: BookOpen, title: 'Apostilas Estruturadas', desc: 'Cole texto bruto ou link — o Academy organiza automaticamente como apostila editorial profissional.' },
+  { icon: BookOpen, title: 'Apostilas Estruturadas', desc: 'Conteúdo organizado automaticamente como apostila editorial profissional, pronto para estudo.' },
   { icon: CheckCircle, title: 'Exercícios com Correção', desc: 'Questões de múltipla escolha com correção instantânea, explicações detalhadas e acompanhamento.' },
   { icon: BarChart3, title: 'Dashboard Analítico', desc: 'Gráficos interativos de evolução, acertos por matéria, streaks de estudo e ranking.' },
   { icon: Headphones, title: 'Áudios e Podcasts', desc: 'Player integrado para ouvir materiais de apoio em qualquer lugar.' },
