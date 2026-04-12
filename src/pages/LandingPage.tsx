@@ -31,7 +31,7 @@ const benefits = [
 ];
 
 const stats = [
-  { value: '8', label: 'Semestres' },
+  { value: '3+', label: 'Cursos Compatíveis' },
   { value: '48+', label: 'Disciplinas' },
   { value: '100%', label: 'Online' },
   { value: '24/7', label: 'Disponível' },
