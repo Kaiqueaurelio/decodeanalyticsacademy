@@ -97,7 +97,12 @@ export default function DashboardPage() {
   };
 
   const pct = stats.total > 0 ? Math.round((stats.hits / stats.total) * 100) : 0;
-  const grouped = apostilas.reduce((acc, a) => {
+  const allCategories = [...new Set(apostilas.map(a => a.category || 'Geral'))];
+  const filteredApostilas = selectedCategory === 'all'
+    ? apostilas
+    : apostilas.filter(a => (a.category || 'Geral') === selectedCategory);
+
+  const grouped = filteredApostilas.reduce((acc, a) => {
     const cat = a.category || 'Geral';
     if (!acc[cat]) acc[cat] = [];
     acc[cat].push(a);
