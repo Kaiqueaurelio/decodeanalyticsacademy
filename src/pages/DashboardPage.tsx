@@ -190,6 +190,47 @@ export default function DashboardPage() {
                 <h2 className="text-base font-semibold">Minhas Disciplinas</h2>
               </div>
 
+              {/* Category filter pills */}
+              {allCategories.length > 1 && (
+                <div className="flex gap-2 overflow-x-auto pb-2 mb-4 hide-scrollbar">
+                  <button
+                    onClick={() => setSelectedCategory('all')}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all border ${
+                      selectedCategory === 'all'
+                        ? 'bg-primary text-primary-foreground border-primary'
+                        : 'bg-card text-muted-foreground border-border/50 hover:border-primary/30'
+                    }`}
+                  >
+                    Todas
+                    <span className={`ml-0.5 px-1.5 rounded-full text-[10px] ${
+                      selectedCategory === 'all' ? 'bg-primary-foreground/20' : 'bg-muted'
+                    }`}>{apostilas.length}</span>
+                  </button>
+                  {allCategories.map(cat => {
+                    const color = getSubjectColor(cat);
+                    const count = apostilas.filter(a => (a.category || 'Geral') === cat).length;
+                    return (
+                      <button
+                        key={cat}
+                        onClick={() => setSelectedCategory(cat)}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all border ${
+                          selectedCategory === cat
+                            ? 'border-current text-foreground'
+                            : 'bg-card text-muted-foreground border-border/50 hover:border-primary/30'
+                        }`}
+                        style={selectedCategory === cat ? { backgroundColor: `${color}20`, borderColor: color, color } : {}}
+                      >
+                        <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
+                        {cat}
+                        <span className={`ml-0.5 px-1.5 rounded-full text-[10px] ${
+                          selectedCategory === cat ? 'bg-current/10' : 'bg-muted'
+                        }`}>{count}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
               {loading ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {[1, 2, 3, 4].map(i => (
