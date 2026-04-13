@@ -29,7 +29,6 @@ function parseContent(raw: string | null): Section[] {
   let current: Section | null = null;
 
   for (const line of lines) {
-    // Match patterns like "1.", "1.1", "1.1.1", "## Title", "### Title"
     const numberedMatch = line.match(/^(\d+(?:\.\d+)*)[.\s\-–]+\s*(.+)/);
     const hashMatch = line.match(/^(#{1,3})\s+(.+)/);
 
@@ -67,20 +66,37 @@ export default function ApostilaPage() {
   const [focusMode, setFocusMode] = useState(false);
   const [activeSection, setActiveSection] = useState<string>('');
   const [showTocMobile, setShowTocMobile] = useState(false);
-  const [showSidebar, setShowSidebar] = useState(true);
+  const [loading, setLoading] = useState(true);
   const contentRef = useRef<HTMLDivElement>(null);
+  const [scrollProgress, setScrollProgress] = useState(0);
 
   useEffect(() => {
     if (!id) return;
-    supabase.from('apostilas').select('*').eq('id', id).single().then(({ data }) => setApostila(data));
-    supabase.from('exercises').select('id').eq('apostila_id', id).then(({ data }) => setExerciseCount(data?.length || 0));
+    setLoading(true);
+    Promise.all([
+      supabase.from('apostilas').select('*').eq('id', id).single(),
+      supabase.from('exercises').select('id').eq('apostila_id', id),
+    ]).then(([{ data: ap }, { data: exs }]) => {
+      setApostila(ap);
+      setExerciseCount(exs?.length || 0);
+      setLoading(false);
+    });
     gamification.addXP(5);
     gamification.updateStreak();
   }, [id]);
 
+  // Scroll progress
+  useEffect(() => {
+    const handleScroll = () => {
+      const h = document.documentElement.scrollHeight - window.innerHeight;
+      setScrollProgress(h > 0 ? Math.min((window.scrollY / h) * 100, 100) : 0);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   const sections = useMemo(() => parseContent(apostila?.content || null), [apostila?.content]);
 
-  // Intersection observer for active section tracking
   useEffect(() => {
     if (!contentRef.current) return;
     const observer = new IntersectionObserver(
@@ -93,7 +109,6 @@ export default function ApostilaPage() {
       },
       { rootMargin: '-80px 0px -60% 0px', threshold: 0.1 }
     );
-
     const headings = contentRef.current.querySelectorAll('[data-section-id]');
     headings.forEach((h) => observer.observe(h));
     return () => observer.disconnect();
@@ -109,21 +124,40 @@ export default function ApostilaPage() {
 
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <AppHeader />
+        <div className="container max-w-7xl px-4 py-12">
+          <div className="skeleton-shimmer h-8 w-48 rounded-lg mb-4" />
+          <div className="skeleton-shimmer h-12 w-3/4 rounded-lg mb-3" />
+          <div className="skeleton-shimmer h-5 w-1/3 rounded-lg mb-10" />
+          <div className="space-y-4">
+            {[1, 2, 3, 4, 5].map(i => (
+              <div key={i} className="skeleton-shimmer h-4 rounded" style={{ width: `${90 - i * 8}%` }} />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!apostila) return null;
 
   const tocContent = (
     <nav className="space-y-0.5">
-      {sections.map((s) => (
+      {sections.map((s, i) => (
         <button
           key={s.id}
           onClick={() => scrollToSection(s.id)}
-          className={`block w-full text-left py-1.5 px-2 rounded text-xs transition-all duration-200 ${
-            s.level === 1 ? 'font-semibold' : s.level === 2 ? 'pl-4' : 'pl-6 text-[11px]'
+          className={`block w-full text-left py-2 px-3 rounded-lg text-xs transition-all duration-200 animate-fade-in ${
+            s.level === 1 ? 'font-semibold' : s.level === 2 ? 'pl-5' : 'pl-7 text-[11px]'
           } ${
             activeSection === s.id
               ? 'text-primary bg-primary/10 border-l-2 border-primary'
               : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
           }`}
+          style={{ animationDelay: `${i * 40}ms` }}
         >
           {s.title}
         </button>
@@ -136,13 +170,21 @@ export default function ApostilaPage() {
       {!focusMode && <Watermark />}
       {!focusMode && <AppHeader />}
 
+      {/* Reading progress bar */}
+      <div className="fixed top-0 left-0 right-0 z-[60] h-0.5 bg-border/20">
+        <div
+          className="h-full bg-primary transition-all duration-150 ease-out"
+          style={{ width: `${scrollProgress}%` }}
+        />
+      </div>
+
       {/* Focus mode top bar */}
       {focusMode && (
-        <div className="fixed top-0 left-0 right-0 z-50 h-12 bg-card/95 backdrop-blur-md border-b border-border/50 flex items-center justify-between px-4">
+        <div className="fixed top-0.5 left-0 right-0 z-50 h-12 bg-card/95 backdrop-blur-md flex items-center justify-between px-4 animate-fade-in" style={{ borderBottom: '1px solid hsl(0 0% 100% / 0.06)' }}>
           <span className="font-mono-label text-xs text-muted-foreground uppercase tracking-wider truncate max-w-[50%]">
             {apostila.title}
           </span>
-          <Button variant="ghost" size="sm" onClick={() => setFocusMode(false)} className="text-xs gap-1.5">
+          <Button variant="ghost" size="sm" onClick={() => setFocusMode(false)} className="text-xs gap-1.5 hover-lift">
             <X className="h-3.5 w-3.5" /> Sair do foco
           </Button>
         </div>
@@ -150,10 +192,10 @@ export default function ApostilaPage() {
 
       <main className={`relative z-10 ${focusMode ? 'pt-16' : ''}`}>
         {/* Navigation bar */}
-        <div className={`container max-w-7xl px-4 ${focusMode ? 'py-2' : 'py-4'}`}>
+        <div className={`container max-w-7xl px-4 ${focusMode ? 'py-2' : 'py-4'} animate-content-show`}>
           <div className="flex items-center justify-between">
-            <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')} className="text-xs gap-1.5">
-              <ArrowLeft className="h-3.5 w-3.5" /> Voltar
+            <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')} className="text-xs gap-1.5 hover-lift">
+              <ArrowLeft className="h-3.5 w-3.5" /> Voltar ao Dashboard
             </Button>
             <div className="flex items-center gap-2">
               {isMobile && sections.length > 1 && (
@@ -161,7 +203,7 @@ export default function ApostilaPage() {
                   variant="outline"
                   size="sm"
                   onClick={() => setShowTocMobile(!showTocMobile)}
-                  className="text-xs gap-1.5"
+                  className="text-xs gap-1.5 hover-lift"
                 >
                   <List className="h-3.5 w-3.5" /> Índice
                 </Button>
@@ -170,7 +212,7 @@ export default function ApostilaPage() {
                 variant={focusMode ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setFocusMode(!focusMode)}
-                className="text-xs gap-1.5"
+                className="text-xs gap-1.5 hover-lift"
               >
                 <Eye className="h-3.5 w-3.5" /> {focusMode ? 'Foco ativo' : 'Modo foco'}
               </Button>
@@ -181,9 +223,11 @@ export default function ApostilaPage() {
         {/* Mobile TOC overlay */}
         {isMobile && showTocMobile && (
           <div className="fixed inset-0 z-40 bg-background/95 backdrop-blur-md pt-20 px-6 overflow-y-auto animate-fade-in">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-display text-lg">Índice</h3>
-              <Button variant="ghost" size="sm" onClick={() => setShowTocMobile(false)}>
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="font-display text-lg flex items-center gap-2">
+                <List className="h-4 w-4 text-primary" /> Índice da Apostila
+              </h3>
+              <Button variant="ghost" size="sm" onClick={() => setShowTocMobile(false)} className="hover-lift">
                 <X className="h-4 w-4" />
               </Button>
             </div>
@@ -192,8 +236,8 @@ export default function ApostilaPage() {
         )}
 
         {/* 3-column layout */}
-        <div className="container max-w-7xl px-4 pb-12">
-          <div className={`grid gap-6 ${
+        <div className="container max-w-7xl px-4 pb-16">
+          <div className={`grid gap-8 ${
             focusMode
               ? 'grid-cols-1 max-w-3xl mx-auto'
               : isMobile
@@ -203,9 +247,9 @@ export default function ApostilaPage() {
 
             {/* Left: TOC sidebar */}
             {!isMobile && !focusMode && sections.length > 1 && (
-              <aside className="animate-fade-in">
+              <aside className="animate-content-show delay-1">
                 <div className="sticky top-20">
-                  <div className="flex items-center gap-2 mb-3">
+                  <div className="flex items-center gap-2 mb-4">
                     <List className="h-3.5 w-3.5 text-primary" />
                     <span className="font-mono-label text-[10px] uppercase tracking-wider text-muted-foreground">Índice</span>
                   </div>
@@ -217,55 +261,60 @@ export default function ApostilaPage() {
             )}
 
             {/* Center: Main content */}
-            <article ref={contentRef} className="min-w-0 animate-content-show">
+            <article ref={contentRef} className="min-w-0 animate-content-show delay-2">
               {/* Header */}
-              <div className="mb-8 pb-6 border-b border-border/30">
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="font-mono-label text-[10px] uppercase tracking-wider text-primary">
-                    {apostila.category}
+              <div className="mb-10 pb-8" style={{ borderBottom: '1px solid hsl(0 0% 100% / 0.06)' }}>
+                <div className="flex items-center gap-2 mb-4 animate-fade-in">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-primary/10 font-mono-label text-[10px] uppercase tracking-wider text-primary" style={{ border: '1px solid hsl(68 100% 64% / 0.2)' }}>
+                    <BookOpen className="h-3 w-3" /> {apostila.category}
                   </span>
                 </div>
-                <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl leading-tight mb-3 text-foreground">
+                <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl leading-tight mb-4 text-foreground animate-fade-in" style={{ animationDelay: '100ms' }}>
                   {apostila.title}
                 </h1>
-                <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                  <span className="flex items-center gap-1">
-                    <Layers className="h-3 w-3" /> {sections.length} seções
+                <div className="flex items-center gap-5 text-xs text-muted-foreground animate-fade-in" style={{ animationDelay: '200ms' }}>
+                  <span className="flex items-center gap-1.5">
+                    <Layers className="h-3.5 w-3.5" /> {sections.length} seções
                   </span>
                   {exerciseCount > 0 && (
-                    <span className="flex items-center gap-1">
-                      <PenLine className="h-3 w-3" /> {exerciseCount} exercícios
+                    <span className="flex items-center gap-1.5">
+                      <PenLine className="h-3.5 w-3.5" /> {exerciseCount} exercícios
                     </span>
                   )}
+                  <span className="flex items-center gap-1.5 text-primary/70">
+                    ~{Math.max(1, Math.round((apostila.content?.length || 0) / 1200))} min de leitura
+                  </span>
                 </div>
               </div>
 
               {/* Rendered sections */}
-              <div className="space-y-8">
-                {sections.map((section) => (
+              <div className="space-y-10">
+                {sections.map((section, idx) => (
                   <section
                     key={section.id}
                     id={section.id}
                     data-section-id={section.id}
-                    className="scroll-mt-24"
+                    className="scroll-mt-24 animate-content-show"
+                    style={{ animationDelay: `${300 + idx * 80}ms` }}
                   >
                     {section.level === 1 && (
-                      <h2 className="font-display text-2xl sm:text-3xl mb-4 text-foreground">
+                      <h2 className="font-display text-2xl sm:text-3xl mb-5 text-foreground relative">
+                        <span className="absolute -left-4 top-0 bottom-0 w-1 bg-primary/40 rounded-full hidden sm:block" />
                         {section.title}
                       </h2>
                     )}
                     {section.level === 2 && (
-                      <h3 className="text-lg sm:text-xl font-semibold mb-3 text-foreground/90">
+                      <h3 className="text-lg sm:text-xl font-semibold mb-4 text-foreground/90">
                         {section.title}
                       </h3>
                     )}
                     {section.level === 3 && (
-                      <h4 className="text-base font-medium mb-2 text-foreground/80 font-mono-label">
+                      <h4 className="text-base font-medium mb-3 text-foreground/80 font-mono-label">
                         {section.title}
                       </h4>
                     )}
                     {section.content.trim() && (
-                      <div className="text-sm leading-relaxed text-muted-foreground whitespace-pre-wrap">
+                      <div className="text-sm leading-[1.85] text-muted-foreground whitespace-pre-wrap">
                         {section.content.trim()}
                       </div>
                     )}
@@ -275,12 +324,14 @@ export default function ApostilaPage() {
 
               {/* Exercise CTA */}
               {exerciseCount > 0 && (
-                <div className="mt-10 pt-6 border-t border-border/30 text-center animate-content-show delay-2">
+                <div className="mt-12 pt-8 text-center animate-content-show" style={{ borderTop: '1px solid hsl(0 0% 100% / 0.06)' }}>
+                  <p className="text-sm text-muted-foreground mb-4">Pronto para testar seus conhecimentos?</p>
                   <Button
-                    className="gradient-primary text-primary-foreground"
+                    size="lg"
+                    className="gradient-primary text-primary-foreground hover-lift"
                     onClick={() => navigate(`/exercises/${id}`)}
                   >
-                    <PenLine className="mr-1.5 h-4 w-4" /> Fazer exercícios ({exerciseCount})
+                    <PenLine className="mr-2 h-4 w-4" /> Fazer {exerciseCount} exercícios
                   </Button>
                 </div>
               )}
@@ -288,17 +339,14 @@ export default function ApostilaPage() {
 
             {/* Right: Tools sidebar */}
             {!focusMode && (
-              <aside className={`${isMobile ? '' : 'animate-fade-in'}`}>
-                <div className={isMobile ? 'space-y-4 mt-6' : 'sticky top-20 space-y-4'}>
-                  <div className="flex items-center gap-2 mb-1">
+              <aside className={`${isMobile ? '' : 'animate-content-show delay-3'}`}>
+                <div className={isMobile ? 'space-y-4 mt-8' : 'sticky top-20 space-y-4'}>
+                  <div className="flex items-center gap-2 mb-2">
                     <StickyNote className="h-3.5 w-3.5 text-primary" />
-                    <span className="font-mono-label text-[10px] uppercase tracking-wider text-muted-foreground">Ferramentas</span>
+                    <span className="font-mono-label text-[10px] uppercase tracking-wider text-muted-foreground">Ferramentas de Estudo</span>
                   </div>
 
-                  {/* Annotations */}
                   <AnnotationsPanel apostilaId={id!} />
-
-                  {/* Flashcards */}
                   <FlashcardsWidget apostilaId={id} />
                 </div>
               </aside>
@@ -309,7 +357,9 @@ export default function ApostilaPage() {
         {/* Scroll to top FAB */}
         <button
           onClick={scrollToTop}
-          className="fixed bottom-6 right-6 z-30 h-10 w-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg hover:opacity-90 transition-opacity"
+          className={`fixed bottom-6 right-6 z-30 h-10 w-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg hover-lift transition-all duration-300 ${
+            scrollProgress > 10 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
+          }`}
           aria-label="Voltar ao topo"
         >
           <ChevronUp className="h-5 w-5" />
