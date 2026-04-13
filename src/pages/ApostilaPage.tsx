@@ -180,7 +180,7 @@ export default function ApostilaPage() {
 
       {/* Focus mode top bar */}
       {focusMode && (
-        <div className="fixed top-0.5 left-0 right-0 z-50 h-12 bg-card/95 backdrop-blur-md flex items-center justify-between px-4 animate-fade-in" style={{ borderBottom: '1px solid hsl(0 0% 100% / 0.06)' }}>
+        <div className="fixed top-0.5 left-0 right-0 z-50 h-12 bg-card/95 backdrop-blur-md flex items-center justify-between px-4 animate-fade-in border-b border-border/50">
           <span className="font-mono-label text-xs text-muted-foreground uppercase tracking-wider truncate max-w-[50%]">
             {apostila.title}
           </span>
@@ -263,9 +263,9 @@ export default function ApostilaPage() {
             {/* Center: Main content */}
             <article ref={contentRef} className="min-w-0 animate-content-show delay-2">
               {/* Header */}
-              <div className="mb-10 pb-8" style={{ borderBottom: '1px solid hsl(0 0% 100% / 0.06)' }}>
+              <div className="mb-10 pb-8 border-b border-border/50">
                 <div className="flex items-center gap-2 mb-4 animate-fade-in">
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-primary/10 font-mono-label text-[10px] uppercase tracking-wider text-primary" style={{ border: '1px solid hsl(68 100% 64% / 0.2)' }}>
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-primary/10 font-mono-label text-[10px] uppercase tracking-wider text-primary border border-primary/20">
                     <BookOpen className="h-3 w-3" /> {apostila.category}
                   </span>
                 </div>
@@ -314,7 +314,7 @@ export default function ApostilaPage() {
                       </h4>
                     )}
                     {section.content.trim() && (
-                      <div className="text-sm leading-[1.85] text-muted-foreground whitespace-pre-wrap">
+                      <div className="text-sm leading-[1.85] text-foreground/75 whitespace-pre-wrap">
                         {section.content.trim()}
                       </div>
                     )}
@@ -324,7 +324,7 @@ export default function ApostilaPage() {
 
               {/* Exercise CTA */}
               {exerciseCount > 0 && (
-                <div className="mt-12 pt-8 text-center animate-content-show" style={{ borderTop: '1px solid hsl(0 0% 100% / 0.06)' }}>
+                <div className="mt-12 pt-8 text-center animate-content-show border-t border-border/50">
                   <p className="text-sm text-muted-foreground mb-4">Pronto para testar seus conhecimentos?</p>
                   <Button
                     size="lg"
