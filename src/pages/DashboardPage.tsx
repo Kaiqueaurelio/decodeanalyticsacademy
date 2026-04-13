@@ -98,6 +98,25 @@ export default function DashboardPage() {
 
   const pct = stats.total > 0 ? Math.round((stats.hits / stats.total) * 100) : 0;
   const allCategories = [...new Set(apostilas.map(a => a.category || 'Geral'))];
+
+  // Progress per category: answered exercises / total exercises
+  const categoryProgress = allCategories.reduce((acc, cat) => {
+    const catApostilaIds = apostilas.filter(a => (a.category || 'Geral') === cat).map(a => a.id);
+    const totalEx = catApostilaIds.reduce((s, id) => s + (exerciseCounts[id] || 0), 0);
+    const answeredEx = catApostilaIds.reduce((s, id) => {
+      const st = stats.byApostila[id];
+      return s + (st ? st.hits + st.errors : 0);
+    }, 0);
+    acc[cat] = totalEx > 0 ? Math.round((answeredEx / totalEx) * 100) : 0;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const overallProgress = (() => {
+    const totalEx = Object.values(exerciseCounts).reduce((s, c) => s + c, 0);
+    const answeredEx = Object.values(stats.byApostila).reduce((s, st) => s + st.hits + st.errors, 0);
+    return totalEx > 0 ? Math.round((answeredEx / totalEx) * 100) : 0;
+  })();
+
   const filteredApostilas = selectedCategory === 'all'
     ? apostilas
     : apostilas.filter(a => (a.category || 'Geral') === selectedCategory);
@@ -195,7 +214,7 @@ export default function DashboardPage() {
                 <div className="flex gap-2 overflow-x-auto pb-2 mb-4 hide-scrollbar">
                   <button
                     onClick={() => setSelectedCategory('all')}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all border ${
+                    className={`relative flex items-center gap-1.5 px-3 py-1.5 pb-2.5 rounded-full text-xs font-medium whitespace-nowrap transition-all border overflow-hidden ${
                       selectedCategory === 'all'
                         ? 'bg-primary text-primary-foreground border-primary'
                         : 'bg-card text-muted-foreground border-border/50 hover:border-primary/30'
@@ -205,15 +224,19 @@ export default function DashboardPage() {
                     <span className={`ml-0.5 px-1.5 rounded-full text-[10px] ${
                       selectedCategory === 'all' ? 'bg-primary-foreground/20' : 'bg-muted'
                     }`}>{apostilas.length}</span>
+                    <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-border/30 rounded-b-full overflow-hidden">
+                      <div className="h-full transition-all duration-500 rounded-b-full" style={{ width: `${overallProgress}%`, backgroundColor: selectedCategory === 'all' ? 'hsl(var(--primary-foreground) / 0.5)' : 'hsl(var(--primary) / 0.5)' }} />
+                    </div>
                   </button>
                   {allCategories.map(cat => {
                     const color = getSubjectColor(cat);
                     const count = apostilas.filter(a => (a.category || 'Geral') === cat).length;
+                    const prog = categoryProgress[cat] || 0;
                     return (
                       <button
                         key={cat}
                         onClick={() => setSelectedCategory(cat)}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all border ${
+                        className={`relative flex items-center gap-1.5 px-3 py-1.5 pb-2.5 rounded-full text-xs font-medium whitespace-nowrap transition-all border overflow-hidden ${
                           selectedCategory === cat
                             ? 'border-current text-foreground'
                             : 'bg-card text-muted-foreground border-border/50 hover:border-primary/30'
@@ -225,6 +248,9 @@ export default function DashboardPage() {
                         <span className={`ml-0.5 px-1.5 rounded-full text-[10px] ${
                           selectedCategory === cat ? 'bg-current/10' : 'bg-muted'
                         }`}>{count}</span>
+                        <div className="absolute bottom-0 left-0 right-0 h-[3px] rounded-b-full overflow-hidden" style={{ backgroundColor: `${color}30` }}>
+                          <div className="h-full transition-all duration-500 rounded-b-full" style={{ width: `${prog}%`, backgroundColor: color }} />
+                        </div>
                       </button>
                     );
                   })}
