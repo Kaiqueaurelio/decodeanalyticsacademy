@@ -98,6 +98,25 @@ export default function DashboardPage() {
 
   const pct = stats.total > 0 ? Math.round((stats.hits / stats.total) * 100) : 0;
   const allCategories = [...new Set(apostilas.map(a => a.category || 'Geral'))];
+
+  // Progress per category: answered exercises / total exercises
+  const categoryProgress = allCategories.reduce((acc, cat) => {
+    const catApostilaIds = apostilas.filter(a => (a.category || 'Geral') === cat).map(a => a.id);
+    const totalEx = catApostilaIds.reduce((s, id) => s + (exerciseCounts[id] || 0), 0);
+    const answeredEx = catApostilaIds.reduce((s, id) => {
+      const st = stats.byApostila[id];
+      return s + (st ? st.hits + st.errors : 0);
+    }, 0);
+    acc[cat] = totalEx > 0 ? Math.round((answeredEx / totalEx) * 100) : 0;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const overallProgress = (() => {
+    const totalEx = Object.values(exerciseCounts).reduce((s, c) => s + c, 0);
+    const answeredEx = Object.values(stats.byApostila).reduce((s, st) => s + st.hits + st.errors, 0);
+    return totalEx > 0 ? Math.round((answeredEx / totalEx) * 100) : 0;
+  })();
+
   const filteredApostilas = selectedCategory === 'all'
     ? apostilas
     : apostilas.filter(a => (a.category || 'Geral') === selectedCategory);
