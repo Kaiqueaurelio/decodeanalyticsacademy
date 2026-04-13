@@ -1,37 +1,51 @@
 
 
-# Plano: Dashboard Mobile com Carrossel Horizontal
+## Plan: Reorganizar Dashboard do Aluno — Estilo AVA Moderno
 
-## Resumo
+### Problema Identificado
+O dashboard atual está visualmente denso e confuso para o aluno. Muitos widgets competem por atenção (heatmap, leaderboard, pomodoro, flashcards, gráficos) sem hierarquia clara. A referência que você enviou mostra um estilo AVA limpo e organizado — cards de disciplinas com conteúdo agrupado por unidades.
 
-No mobile, os stats cards e os widgets da sidebar direita ficam empilhados verticalmente, ocupando muito espaço. A melhoria transforma essas seções em carrosséis horizontais deslizáveis (swipeable) no mobile, mantendo o layout grid no desktop.
+### Proposta: Dashboard "Minhas Disciplinas" Inspirado no AVA
 
-## Mudanças
+Manter todas as funcionalidades existentes, mas reorganizar a hierarquia visual para que o aluno encontre rapidamente o que precisa.
 
-### 1. `src/pages/DashboardPage.tsx`
+#### Mudanças no Dashboard (`DashboardPage.tsx`)
 
-- **Stats Cards (linha 142)**: No mobile (`< sm`), renderizar os 4 cards dentro de um container com `overflow-x-auto` e `flex` horizontal com snap scrolling (`scroll-snap-type: x mandatory`), cada card com `min-w-[70vw]` e `scroll-snap-align: start`. No `sm+` manter o grid atual.
+1. **Seção principal "Minhas Disciplinas"** — Apostilas agrupadas por categoria em cards grandes e limpos, com cabeçalho colorido (usando as cores por matéria já existentes em `subject-colors.ts`). Cada card mostra:
+   - Título da disciplina/apostila
+   - Contagem de exercícios e progresso (% acerto)
+   - Botões "Ler Apostila" e "Exercícios" sempre visíveis (sem precisar expandir)
+   - Ícone de status (completo/em progresso)
 
-- **Sidebar Widgets (linha 282)**: No mobile, agrupar os widgets (WeeklyGoal, ExamCalendar, FlashcardSummary, ApostilaProgress, Heatmap, RecentActivity, Leaderboard) em um container horizontal scrollável com snap, cada widget com `min-w-[80vw]`. Adicionar indicadores de paginação (dots) abaixo. No `lg+` manter o layout sidebar vertical atual.
+2. **Barra de estatísticas compacta no topo** — Manter os 4 stat cards mas torná-los mais sutis e integrados.
 
-- **Gamification + Pomodoro row (linha 194)**: No mobile, também usar scroll horizontal para GamificationWidget e Pomodoro+Flashcards lado a lado como slides.
+3. **Sidebar reorganizada por prioridade**:
+   - Meta Semanal (topo)
+   - Calendário de Provas
+   - Gamificação (XP/Level/Streak)
+   - Pomodoro
+   - Os demais widgets (heatmap, leaderboard, activity) ficam em seção colapsável "Ver mais"
 
-### 2. `src/index.css`
+4. **Mobile: Layout vertical limpo** — Cards de disciplina em lista vertical sem carrossel, com acesso direto.
 
-- Adicionar classes utilitárias para o carrossel: `scroll-snap-x`, `snap-start`, `scrollbar-hide` (esconder scrollbar nativo) e estilos para dots de paginação.
+#### Melhorias Visuais Globais
 
-### 3. Novo componente `src/components/MobileCarousel.tsx`
+5. **Cards de disciplina com estilo AVA** — Cabeçalho colorido por categoria, cantos arredondados (12px), sombra suave, hover com elevação.
 
-Componente wrapper leve (sem dependência do embla-carousel) que:
-- Usa CSS scroll-snap nativo para performance
-- Aceita `children` e renderiza em container horizontal scrollável
-- Mostra dots de paginação baseados no scroll position (via `IntersectionObserver` ou `scrollLeft`)
-- No desktop (via `useIsMobile`) renderiza children normalmente em layout vertical/grid
+6. **Melhor contraste no modo escuro** — O `--card` está muito escuro (`240 5% 7%`), será ajustado para `240 5% 10%` para melhor legibilidade.
 
-## Detalhes Técnicos
+7. **Tipografia mais legível** — Títulos de seção maiores (16px→18px), texto de corpo com line-height 1.6.
 
-- Sem bibliotecas extras — apenas CSS scroll-snap nativo
-- `useIsMobile()` hook já existe no projeto
-- Scrollbar escondido via `-webkit-scrollbar: none` + `scrollbar-width: none`
-- Dots com cor `primary` para o ativo e `muted` para inativos
+#### Apostila Page Polish
+
+8. **Consistência com Dashboard** — Mesmo sistema de cards, cores e animações. Melhorar visibilidade do texto no modo escuro.
+
+### Arquivos a Modificar
+- `src/pages/DashboardPage.tsx` — Reorganizar layout e hierarquia
+- `src/index.css` — Ajustar variáveis de cor dark mode e adicionar `.discipline-card`
+- `src/components/AppHeader.tsx` — Nenhuma mudança necessária (já está ok)
+- `src/pages/ApostilaPage.tsx` — Polish de contraste e consistência
+
+### Resultado Esperado
+Dashboard limpo estilo plataforma educacional, onde o aluno vê "Minhas Disciplinas" organizadas por matéria com acesso direto ao conteúdo — sem ruído visual. Widgets de gamificação e ferramentas ficam na sidebar sem competir com o conteúdo principal.
 
