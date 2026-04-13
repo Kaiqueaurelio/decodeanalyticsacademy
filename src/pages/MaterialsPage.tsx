@@ -562,7 +562,21 @@ export default function MaterialsPage() {
       case 'audio':
         return <AudioPlayer key={m.id} url={m.file_url} title={m.title} />;
       case 'video':
-        return <VideoPlayer key={m.id} url={m.file_url} title={m.title} />;
+        return (
+          <Card key={m.id} className="p-4 bg-card border border-border/50 hover:border-primary/30 transition-colors cursor-pointer group" onClick={() => navigate(`/video/${m.id}`)}>
+            <div className="flex items-center gap-3">
+              <div className="rounded-lg bg-primary/10 p-2.5">
+                <Video className="h-5 w-5 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-sm group-hover:text-primary transition-colors">{m.title}</p>
+                {m.description && <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{m.description}</p>}
+                <Badge variant="secondary" className="text-[10px] mt-1">Vídeo Aula</Badge>
+              </div>
+              <Play className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+            </div>
+          </Card>
+        );
       case 'image':
       case 'gif':
         return <ImageViewer key={m.id} url={m.file_url} title={m.title} />;

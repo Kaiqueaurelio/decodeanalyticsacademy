@@ -17,6 +17,7 @@ import ExercisesPage from "./pages/ExercisesPage";
 import AdminPage from "./pages/AdminPage";
 import ProfilePage from "./pages/ProfilePage";
 import MaterialsPage from "./pages/MaterialsPage";
+import VideoPlayerPage from "./pages/VideoPlayerPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -43,6 +44,7 @@ function AnimatedRoutes() {
           <Route path="/exercises/:id" element={<ProtectedRoute><ExercisesPage /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
           <Route path="/materials" element={<ProtectedRoute><MaterialsPage /></ProtectedRoute>} />
+          <Route path="/video/:id" element={<ProtectedRoute><VideoPlayerPage /></ProtectedRoute>} />
           <Route path="/admin" element={<ProtectedRoute adminOnly><AdminPage /></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
