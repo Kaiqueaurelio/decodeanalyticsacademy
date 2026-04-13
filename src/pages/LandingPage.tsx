@@ -109,9 +109,6 @@ export default function LandingPage() {
               <Button size="lg" onClick={() => navigate('/login')} className="animate-pulse-glow">
                 Acessar minha conta <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
-              <Button size="lg" variant="outline" onClick={() => navigate('/login')} className="opacity-80 hover:opacity-100">
-                Entrar como Admin
-              </Button>
             </div>
 
             <div className="animate-fade-up flex items-center gap-6 pt-3" style={{ animationDelay: '0.4s', opacity: 0 }}>
