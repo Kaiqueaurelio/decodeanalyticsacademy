@@ -214,7 +214,7 @@ export default function DashboardPage() {
                 <div className="flex gap-2 overflow-x-auto pb-2 mb-4 hide-scrollbar">
                   <button
                     onClick={() => setSelectedCategory('all')}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all border ${
+                    className={`relative flex items-center gap-1.5 px-3 py-1.5 pb-2.5 rounded-full text-xs font-medium whitespace-nowrap transition-all border overflow-hidden ${
                       selectedCategory === 'all'
                         ? 'bg-primary text-primary-foreground border-primary'
                         : 'bg-card text-muted-foreground border-border/50 hover:border-primary/30'
@@ -224,9 +224,8 @@ export default function DashboardPage() {
                     <span className={`ml-0.5 px-1.5 rounded-full text-[10px] ${
                       selectedCategory === 'all' ? 'bg-primary-foreground/20' : 'bg-muted'
                     }`}>{apostilas.length}</span>
-                    {/* Mini progress bar */}
                     <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-border/30 rounded-b-full overflow-hidden">
-                      <div className="h-full bg-primary/60 transition-all duration-500 rounded-b-full" style={{ width: `${overallProgress}%` }} />
+                      <div className="h-full transition-all duration-500 rounded-b-full" style={{ width: `${overallProgress}%`, backgroundColor: selectedCategory === 'all' ? 'hsl(var(--primary-foreground) / 0.5)' : 'hsl(var(--primary) / 0.5)' }} />
                     </div>
                   </button>
                   {allCategories.map(cat => {
@@ -249,6 +248,9 @@ export default function DashboardPage() {
                         <span className={`ml-0.5 px-1.5 rounded-full text-[10px] ${
                           selectedCategory === cat ? 'bg-current/10' : 'bg-muted'
                         }`}>{count}</span>
+                        <div className="absolute bottom-0 left-0 right-0 h-[3px] rounded-b-full overflow-hidden" style={{ backgroundColor: `${color}30` }}>
+                          <div className="h-full transition-all duration-500 rounded-b-full" style={{ width: `${prog}%`, backgroundColor: color }} />
+                        </div>
                       </button>
                     );
                   })}
