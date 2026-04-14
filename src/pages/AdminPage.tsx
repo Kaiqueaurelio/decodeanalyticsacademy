@@ -275,6 +275,9 @@ function OverviewTab({ apostilas, exercises, allAnswers, materials, users, setTa
         </Card>
       </motion.div>
 
+      {/* Activity Chart */}
+      <ActivityChart delay={0.55} />
+
       {/* Blocked Users Alert */}
       {blocked > 0 && (
         <motion.div
