@@ -4,10 +4,10 @@ import { motion, useScroll, useTransform, useInView } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
-  ArrowRight, Terminal, Shield, ShieldCheck, Cpu, Wifi, Lock,
-  Bug, Eye, Code2, Server, Database, Globe, Crosshair, Award,
+  ArrowRight, BookOpen, GraduationCap, Cpu, Brain, Award,
   ChevronRight, Download, Smartphone, Star, MessageCircle,
-  Layers, Zap, Target, BarChart3, FileCode2, Users,
+  Layers, Zap, Target, BarChart3, FileText, Users, PenLine,
+  Flame, TrendingUp, Clock, CheckCircle,
 } from 'lucide-react';
 import logoDark from '@/assets/logo-dark.jpeg';
 
@@ -40,29 +40,6 @@ function ParallaxBlock({ children, speed = 0.3, className = '' }: { children: Re
   );
 }
 
-/* ─── COUNTER ─── */
-function CountUp({ value, suffix = '' }: { value: number; suffix?: string }) {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true });
-  return (
-    <motion.span
-      ref={ref}
-      initial={{ opacity: 0 }}
-      animate={isInView ? { opacity: 1 } : {}}
-    >
-      {isInView && (
-        <motion.span
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
-        >
-          <motion.span>{value}</motion.span>{suffix}
-        </motion.span>
-      )}
-    </motion.span>
-  );
-}
-
 /* ─── GLOW ORB ─── */
 function GlowOrb({ className, style }: { className: string; style?: React.CSSProperties }) {
   return <div className={`absolute rounded-full blur-[120px] pointer-events-none ${className}`} style={style} />;
@@ -81,39 +58,31 @@ function CyberGrid() {
 }
 
 /* ─── DATA ─── */
-const labs = [
-  { icon: Bug, name: 'SQL Injection Lab', difficulty: 'Fácil', color: '#00f0ff' },
-  { icon: Shield, name: 'XSS Attack Vectors', difficulty: 'Médio', color: '#a855f7' },
-  { icon: Lock, name: 'Buffer Overflow', difficulty: 'Difícil', color: '#f43f5e' },
-  { icon: Wifi, name: 'Network Sniffing', difficulty: 'Médio', color: '#a855f7' },
-  { icon: Server, name: 'Privilege Escalation', difficulty: 'Difícil', color: '#f43f5e' },
-  { icon: Eye, name: 'OSINT Recon', difficulty: 'Fácil', color: '#00f0ff' },
+const features = [
+  { icon: BookOpen, name: 'Apostilas Interativas', desc: 'Conteúdo estruturado por disciplina com anotações', color: '#00f0ff' },
+  { icon: PenLine, name: 'Exercícios de Fixação', desc: 'Questões com gabarito e explicação detalhada', color: '#a855f7' },
+  { icon: Brain, name: 'Flashcards Inteligentes', desc: 'Revisão espaçada para memorização eficiente', color: '#22c55e' },
+  { icon: Flame, name: 'Gamificação & XP', desc: 'Pontos, badges, streaks e ranking entre alunos', color: '#f59e0b' },
 ];
 
 const roadmap = [
-  { phase: '01', title: 'Fundamentos', desc: 'Linux, Redes, Protocolos TCP/IP e arquitetura de sistemas.', icon: Terminal },
-  { phase: '02', title: 'Reconhecimento', desc: 'OSINT, Nmap, enumeração de serviços e mapeamento de superfície.', icon: Crosshair },
-  { phase: '03', title: 'Exploração', desc: 'Exploits, injeções, escalação de privilégio e evasão.', icon: Bug },
-  { phase: '04', title: 'Pós-Exploração', desc: 'Persistência, movimentação lateral, exfiltração e relatórios.', icon: Database },
+  { phase: '01', title: 'Fundamentos', desc: 'Lógica de programação, matemática discreta e introdução à computação.', icon: Cpu },
+  { phase: '02', title: 'Desenvolvimento', desc: 'Estrutura de dados, algoritmos, banco de dados e engenharia de software.', icon: Layers },
+  { phase: '03', title: 'Especialização', desc: 'Redes, segurança, inteligência artificial e computação em nuvem.', icon: Brain },
+  { phase: '04', title: 'Prática & Projetos', desc: 'Projetos integradores, estágio supervisionado e TCC.', icon: Target },
 ];
 
 const testimonials = [
-  { name: 'Ana Silva', role: 'Pentester Jr.', text: 'Os labs práticos me prepararam para o mercado real. Consegui minha primeira vaga em 4 meses.', initials: 'AS', color: '#00f0ff' },
-  { name: 'Carlos Santos', role: 'Red Team', text: 'Conteúdo técnico de alto nível. Melhor plataforma de cybersecurity que já usei no Brasil.', initials: 'CS', color: '#a855f7' },
-  { name: 'Juliana Costa', role: 'SOC Analyst', text: 'A trilha Blue Team me deu base sólida para atuar em SOC. Recomendo para quem quer entrar na área.', initials: 'JC', color: '#22c55e' },
-];
-
-const certifications = [
-  { name: 'Decode Certified Pentester', abbr: 'DCP', desc: 'Prove suas habilidades em pentest prático.' },
-  { name: 'Decode Red Team Operator', abbr: 'DRTO', desc: 'Certificação avançada em operações Red Team.' },
-  { name: 'Decode Blue Team Defender', abbr: 'DBTD', desc: 'Defesa, detecção e resposta a incidentes.' },
+  { name: 'Ana Silva', role: 'Aluna de CC - 4º Sem.', text: 'As apostilas e exercícios me ajudaram muito nas provas. Consegui aumentar minha média de 6 para 9!', initials: 'AS', color: '#00f0ff' },
+  { name: 'Carlos Santos', role: 'Aluno de SI - 6º Sem.', text: 'O sistema de flashcards é incrível para revisar antes das provas. Melhor plataforma de estudos.', initials: 'CS', color: '#a855f7' },
+  { name: 'Juliana Costa', role: 'Aluna de EC - 3º Sem.', text: 'A gamificação me motiva a estudar todos os dias. Já tenho um streak de 30 dias!', initials: 'JC', color: '#22c55e' },
 ];
 
 const faqs = [
-  { q: 'Preciso de experiência prévia?', a: 'Não. A trilha começa do zero com fundamentos de Linux e redes.' },
-  { q: 'Os labs são ambientes reais?', a: 'Sim. Máquinas vulneráveis isoladas para exploração segura.' },
-  { q: 'Como funciona a certificação?', a: 'Exame prático de 24h com relatório técnico. Sem múltipla escolha.' },
-  { q: 'Posso acessar pelo celular?', a: 'A plataforma é PWA. Labs exigem desktop para melhor experiência.' },
+  { q: 'Para quais cursos a plataforma é voltada?', a: 'Ciência da Computação, Sistemas de Informação e Engenharia da Computação — do 1º ao 8º semestre.' },
+  { q: 'Como funcionam os exercícios?', a: 'Questões de múltipla escolha com gabarito comentado e explicação detalhada para cada alternativa.' },
+  { q: 'Posso acessar pelo celular?', a: 'Sim! A plataforma é um PWA — funciona no navegador e pode ser instalada como app no celular.' },
+  { q: 'O conteúdo é gratuito?', a: 'Todo o conteúdo disponível na plataforma é acessível para alunos cadastrados.' },
 ];
 
 export default function LandingPage() {
@@ -159,9 +128,9 @@ export default function LandingPage() {
             </span>
           </div>
           <nav className="hidden sm:flex items-center gap-6">
-            <a href="#labs" className="text-xs uppercase tracking-wider text-gray-400 hover:text-white transition-colors no-underline">Labs</a>
+            <a href="#recursos" className="text-xs uppercase tracking-wider text-gray-400 hover:text-white transition-colors no-underline">Recursos</a>
             <a href="#roadmap" className="text-xs uppercase tracking-wider text-gray-400 hover:text-white transition-colors no-underline">Trilha</a>
-            <a href="#cert" className="text-xs uppercase tracking-wider text-gray-400 hover:text-white transition-colors no-underline">Certificação</a>
+            <a href="#depoimentos" className="text-xs uppercase tracking-wider text-gray-400 hover:text-white transition-colors no-underline">Depoimentos</a>
           </nav>
           <Button
             size="sm"
@@ -174,7 +143,7 @@ export default function LandingPage() {
         </div>
       </motion.header>
 
-      {/* ═══ HERO — Apple-style parallax fade ═══ */}
+      {/* ═══ HERO ═══ */}
       <section ref={heroRef} className="relative min-h-screen flex items-center pt-14">
         <CyberGrid />
         <GlowOrb className="w-[500px] h-[400px] top-1/4 left-0" style={{ background: 'rgba(0,240,255,0.06)' } as any} />
@@ -194,7 +163,7 @@ export default function LandingPage() {
                 className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-semibold uppercase tracking-[0.15em]"
                 style={{ background: 'rgba(0,240,255,0.08)', border: '1px solid rgba(0,240,255,0.15)', color: '#00f0ff' }}
               >
-                <Terminal className="h-3 w-3" /> Plataforma de Cybersecurity
+                <GraduationCap className="h-3 w-3" /> Plataforma de Estudos
               </motion.div>
 
               <motion.h1
@@ -244,7 +213,7 @@ export default function LandingPage() {
                 className="flex items-center gap-8 pt-4"
               >
                 {[
-                  { val: '+30', label: 'Labs Práticos' },
+                  { val: '48', label: 'Disciplinas' },
                   { val: '+100', label: 'Alunos Ativos' },
                   { val: '24/7', label: 'Acesso Total' },
                 ].map((s) => (
@@ -256,7 +225,7 @@ export default function LandingPage() {
               </motion.div>
             </div>
 
-            {/* Right — Terminal mockup */}
+            {/* Right — Dashboard preview mockup */}
             <motion.div
               initial={{ opacity: 0, x: 40, rotateY: -5 }}
               animate={{ opacity: 1, x: 0, rotateY: 0 }}
@@ -271,26 +240,48 @@ export default function LandingPage() {
                     <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/80" />
                     <div className="w-2.5 h-2.5 rounded-full bg-green-500/80" />
                   </div>
-                  <span className="text-[10px] ml-2 uppercase tracking-wider" style={{ color: '#475569' }}>decode@kali:~</span>
+                  <span className="text-[10px] ml-2 uppercase tracking-wider" style={{ color: '#475569' }}>Decode Analytics Dashboard</span>
                 </div>
-                {/* Terminal content */}
-                <div className="p-5 font-mono text-xs leading-relaxed space-y-1" style={{ color: '#94a3b8' }}>
-                  <p><span style={{ color: '#00f0ff' }}>$</span> nmap -sV -sC 10.10.10.40</p>
-                  <p style={{ color: '#475569' }}>Starting Nmap 7.94 ( https://nmap.org )</p>
-                  <p><span style={{ color: '#22c55e' }}>PORT</span>    STATE SERVICE  VERSION</p>
-                  <p>22/tcp  open  ssh      OpenSSH 7.2p2</p>
-                  <p>80/tcp  open  http     Apache 2.4.18</p>
-                  <p>443/tcp open  https    Apache 2.4.18</p>
-                  <p style={{ color: '#475569', marginTop: '8px' }}>Nmap done: 1 IP address scanned</p>
-                  <p className="mt-2"><span style={{ color: '#00f0ff' }}>$</span> python3 exploit.py --target 10.10.10.40</p>
-                  <p style={{ color: '#a855f7' }}>[*] Sending payload...</p>
-                  <p style={{ color: '#22c55e' }}>[+] Shell obtained! root@target:~#</p>
-                  <motion.span
-                    animate={{ opacity: [1, 0] }}
-                    transition={{ duration: 0.8, repeat: Infinity }}
-                    className="inline-block w-2 h-4 ml-0.5"
-                    style={{ background: '#00f0ff' }}
-                  />
+                {/* Dashboard content */}
+                <div className="p-5 space-y-4">
+                  <div className="grid grid-cols-3 gap-3">
+                    {[
+                      { label: 'Apostilas', value: '12', icon: '📚' },
+                      { label: 'XP Total', value: '2,450', icon: '⚡' },
+                      { label: 'Streak', value: '7 dias', icon: '🔥' },
+                    ].map((m) => (
+                      <div key={m.label} className="rounded-lg p-3" style={{ background: 'rgba(0,240,255,0.03)', border: '1px solid rgba(0,240,255,0.06)' }}>
+                        <p className="text-[10px] uppercase tracking-wider mb-1" style={{ color: '#64748b' }}>{m.icon} {m.label}</p>
+                        <p className="text-lg font-bold" style={{ color: '#00f0ff' }}>{m.value}</p>
+                      </div>
+                    ))}
+                  </div>
+                  {/* Progress bars */}
+                  <div className="rounded-lg p-4 space-y-3" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}>
+                    <p className="text-[10px] uppercase tracking-wider font-semibold" style={{ color: '#64748b' }}>Progresso por Disciplina</p>
+                    {[
+                      { name: 'Estrutura de Dados', pct: 85 },
+                      { name: 'Banco de Dados', pct: 60 },
+                      { name: 'Redes de Computadores', pct: 40 },
+                    ].map(d => (
+                      <div key={d.name} className="space-y-1">
+                        <div className="flex justify-between text-[10px]">
+                          <span style={{ color: '#94a3b8' }}>{d.name}</span>
+                          <span style={{ color: '#00f0ff' }}>{d.pct}%</span>
+                        </div>
+                        <div className="h-1.5 rounded-full" style={{ background: 'rgba(0,240,255,0.1)' }}>
+                          <motion.div
+                            initial={{ width: 0 }}
+                            whileInView={{ width: `${d.pct}%` }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 1, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                            className="h-full rounded-full"
+                            style={{ background: 'linear-gradient(to right, rgba(0,240,255,0.5), rgba(0,240,255,0.9))' }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </motion.div>
@@ -314,20 +305,20 @@ export default function LandingPage() {
         </motion.div>
       </section>
 
-      {/* ═══ LABS SECTION ═══ */}
-      <section id="labs" className="relative py-28 md:py-36">
+      {/* ═══ RECURSOS ═══ */}
+      <section id="recursos" className="relative py-28 md:py-36">
         <CyberGrid />
         <GlowOrb className="w-[400px] h-[300px] top-20 right-0" style={{ background: 'rgba(168,85,247,0.06)' } as any} />
 
         <div className="max-w-7xl mx-auto px-5 relative">
           <ScrollReveal>
             <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: '#00f0ff' }}>
-              <Code2 className="h-3 w-3 inline mr-2" />Labs Disponíveis
+              <Zap className="h-3 w-3 inline mr-2" />Recursos da Plataforma
             </span>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mt-3 leading-tight">
-              Ambientes reais.
+              Tudo para você
               <br />
-              <span style={{ color: '#64748b' }}>Exploração prática.</span>
+              <span style={{ color: '#64748b' }}>estudar melhor.</span>
             </h2>
           </ScrollReveal>
 
@@ -343,19 +334,19 @@ export default function LandingPage() {
                 <div className="relative">
                   <div className="flex items-center gap-3 mb-6">
                     <div className="p-3 rounded-lg" style={{ background: 'rgba(0,240,255,0.1)', border: '1px solid rgba(0,240,255,0.15)' }}>
-                      <Target className="h-6 w-6" style={{ color: '#00f0ff' }} />
+                      <BookOpen className="h-6 w-6" style={{ color: '#00f0ff' }} />
                     </div>
                     <span className="text-[10px] uppercase tracking-[0.15em] px-2.5 py-1 rounded-full font-semibold" style={{ background: 'rgba(0,240,255,0.1)', color: '#00f0ff' }}>
                       Em Destaque
                     </span>
                   </div>
-                  <h3 className="text-2xl md:text-3xl font-bold mb-3">Pentest Labs</h3>
+                  <h3 className="text-2xl md:text-3xl font-bold mb-3">Apostilas Completas</h3>
                   <p className="text-sm md:text-base leading-relaxed max-w-md" style={{ color: '#94a3b8' }}>
-                    Máquinas vulneráveis isoladas para exploração segura.
-                    SQL Injection, XSS, RCE, privilege escalation — tudo em ambientes controlados.
+                    Conteúdo estruturado e organizado por semestre e disciplina.
+                    48 disciplinas do 1º ao 8º semestre — com exercícios, resumos e material de apoio.
                   </p>
                   <div className="flex flex-wrap gap-2 mt-6">
-                    {['SQLi', 'XSS', 'RCE', 'PrivEsc', 'OSINT'].map(tag => (
+                    {['CC', 'SI', 'EC', '1º-8º Sem.', '48 Disciplinas'].map(tag => (
                       <span key={tag} className="px-2.5 py-1 rounded text-[10px] font-semibold uppercase tracking-wider" style={{ background: 'rgba(0,240,255,0.06)', color: '#00f0ff', border: '1px solid rgba(0,240,255,0.12)' }}>
                         {tag}
                       </span>
@@ -363,33 +354,27 @@ export default function LandingPage() {
                   </div>
                   <div className="mt-8">
                     <button onClick={() => navigate('/login')} className="inline-flex items-center gap-2 text-sm font-semibold group-hover:gap-3 transition-all" style={{ color: '#00f0ff' }}>
-                      Explorar labs <ArrowRight className="h-4 w-4" />
+                      Acessar apostilas <ArrowRight className="h-4 w-4" />
                     </button>
                   </div>
                 </div>
               </div>
             </ScrollReveal>
 
-            {/* Small lab cards */}
-            {labs.slice(0, 4).map((lab, i) => (
-              <ScrollReveal key={lab.name} delay={0.15 + i * 0.08}>
+            {/* Feature cards */}
+            {features.map((feat, i) => (
+              <ScrollReveal key={feat.name} delay={0.15 + i * 0.08}>
                 <div
                   className="rounded-xl p-5 h-full group transition-all duration-500 hover:translate-y-[-4px]"
                   style={{ background: '#0a0a12', border: '1px solid rgba(255,255,255,0.06)' }}
                 >
                   <div className="flex items-center justify-between mb-4">
-                    <div className="p-2 rounded-lg" style={{ background: `${lab.color}10`, border: `1px solid ${lab.color}20` }}>
-                      <lab.icon className="h-4 w-4" style={{ color: lab.color }} />
+                    <div className="p-2 rounded-lg" style={{ background: `${feat.color}10`, border: `1px solid ${feat.color}20` }}>
+                      <feat.icon className="h-4 w-4" style={{ color: feat.color }} />
                     </div>
-                    <span className="text-[9px] uppercase tracking-[0.15em] font-semibold px-2 py-0.5 rounded-full" style={{
-                      color: lab.color,
-                      background: `${lab.color}10`,
-                    }}>
-                      {lab.difficulty}
-                    </span>
                   </div>
-                  <h4 className="text-sm font-semibold mb-1 group-hover:text-white transition-colors" style={{ color: '#cbd5e1' }}>{lab.name}</h4>
-                  <p className="text-xs" style={{ color: '#475569' }}>Ambiente isolado pronto para exploração.</p>
+                  <h4 className="text-sm font-semibold mb-1 group-hover:text-white transition-colors" style={{ color: '#cbd5e1' }}>{feat.name}</h4>
+                  <p className="text-xs" style={{ color: '#475569' }}>{feat.desc}</p>
                 </div>
               </ScrollReveal>
             ))}
@@ -397,7 +382,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ═══ ROADMAP / TRILHA HACKER ═══ */}
+      {/* ═══ ROADMAP / TRILHA ACADÊMICA ═══ */}
       <section id="roadmap" className="relative py-28 md:py-36" style={{ background: 'linear-gradient(180deg, #050508 0%, #0a0a14 50%, #050508 100%)' }}>
         <div className="max-w-7xl mx-auto px-5">
           <div className="grid lg:grid-cols-2 gap-16 items-start">
@@ -405,16 +390,16 @@ export default function LandingPage() {
             <ScrollReveal>
               <div className="lg:sticky lg:top-28">
                 <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: '#a855f7' }}>
-                  <Layers className="h-3 w-3 inline mr-2" />Trilha Hacker
+                  <Layers className="h-3 w-3 inline mr-2" />Trilha Acadêmica
                 </span>
                 <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mt-3 mb-5 leading-tight">
-                  Do zero ao
+                  Do básico ao
                   <br />
-                  <span style={{ color: '#a855f7' }}>root.</span>
+                  <span style={{ color: '#a855f7' }}>avançado.</span>
                 </h2>
                 <p className="text-sm leading-relaxed max-w-md" style={{ color: '#94a3b8' }}>
-                  Um roadmap estruturado que leva você de iniciante a pentester.
-                  Cada fase constrói sobre a anterior com labs práticos.
+                  Um roadmap estruturado que acompanha sua jornada acadêmica.
+                  Cada fase constrói sobre a anterior com apostilas e exercícios práticos.
                 </p>
                 <button
                   onClick={() => navigate('/login')}
@@ -477,7 +462,6 @@ export default function LandingPage() {
                 className="rounded-2xl overflow-hidden mx-auto max-w-4xl"
                 style={{ background: '#0a0a12', border: '1px solid rgba(0,240,255,0.1)', boxShadow: '0 20px 80px rgba(0,240,255,0.08)' }}
               >
-                {/* Mock dashboard */}
                 <div className="p-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                   <div className="flex items-center gap-2">
                     <div className="flex gap-1.5">
@@ -491,7 +475,7 @@ export default function LandingPage() {
                 <div className="p-6 md:p-8">
                   <div className="grid grid-cols-3 gap-4 mb-6">
                     {[
-                      { label: 'Labs Concluídos', value: '12', change: '+3 esta semana' },
+                      { label: 'Apostilas Lidas', value: '12', change: '+3 esta semana' },
                       { label: 'XP Total', value: '2,450', change: 'Nível 8' },
                       { label: 'Streak', value: '7 dias', change: 'Recorde: 14' },
                     ].map((m) => (
@@ -523,72 +507,36 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ═══ CERTIFICATION ═══ */}
-      <section id="cert" className="relative py-28 md:py-36" style={{ background: 'linear-gradient(180deg, #050508 0%, #0d0d16 50%, #050508 100%)' }}>
-        <div className="max-w-7xl mx-auto px-5">
-          <ScrollReveal className="text-center mb-16">
-            <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: '#22c55e' }}>
-              <Award className="h-3 w-3 inline mr-2" />Certificação
-            </span>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mt-3">
-              Prove suas
-              <br />
-              <span style={{ color: '#22c55e' }}>habilidades.</span>
-            </h2>
-            <p className="text-sm mt-4 max-w-md mx-auto" style={{ color: '#94a3b8' }}>
-              Certificações práticas sem múltipla escolha. 24 horas para comprometer o alvo e escrever o relatório.
-            </p>
-          </ScrollReveal>
-
-          <div className="grid md:grid-cols-3 gap-4 max-w-4xl mx-auto">
-            {certifications.map((cert, i) => (
-              <ScrollReveal key={cert.abbr} delay={i * 0.1}>
-                <div
-                  className="rounded-xl p-6 text-center h-full group transition-all duration-500 hover:translate-y-[-4px] hover:shadow-[0_0_30px_rgba(34,197,94,0.1)]"
-                  style={{ background: '#0a0a12', border: '1px solid rgba(34,197,94,0.08)' }}
-                >
-                  <div className="mx-auto w-16 h-16 rounded-xl flex items-center justify-center mb-5 font-bold text-lg" style={{ background: 'rgba(34,197,94,0.1)', color: '#22c55e', border: '1px solid rgba(34,197,94,0.15)' }}>
-                    {cert.abbr}
-                  </div>
-                  <h4 className="text-sm font-bold mb-2">{cert.name}</h4>
-                  <p className="text-xs leading-relaxed" style={{ color: '#64748b' }}>{cert.desc}</p>
-                </div>
-              </ScrollReveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ═══ RED TEAM / BLUE TEAM ═══ */}
-      <section className="relative py-28 md:py-36">
+      {/* ═══ POR QUE DECODE ═══ */}
+      <section className="relative py-28 md:py-36" style={{ background: 'linear-gradient(180deg, #050508 0%, #0d0d16 50%, #050508 100%)' }}>
         <div className="max-w-7xl mx-auto px-5">
           <ScrollReveal className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold">
-              Ataque. Defenda.
+              Estude com
               <br />
-              <span style={{ color: '#64748b' }}>Domine os dois lados.</span>
+              <span style={{ color: '#64748b' }}>inteligência.</span>
             </h2>
           </ScrollReveal>
 
           <div className="grid md:grid-cols-2 gap-4 max-w-4xl mx-auto">
             <ScrollReveal delay={0.1}>
               <div
-                className="rounded-xl p-8 relative overflow-hidden group transition-all duration-500 hover:shadow-[0_0_40px_rgba(239,68,68,0.1)]"
-                style={{ background: 'linear-gradient(135deg, #0a0a12, #120a0a)', border: '1px solid rgba(239,68,68,0.1)' }}
+                className="rounded-xl p-8 relative overflow-hidden group transition-all duration-500 hover:shadow-[0_0_40px_rgba(0,240,255,0.1)]"
+                style={{ background: 'linear-gradient(135deg, #0a0a12, #0a0f14)', border: '1px solid rgba(0,240,255,0.1)' }}
               >
-                <div className="absolute top-0 right-0 w-40 h-40 rounded-full blur-[80px] opacity-10" style={{ background: '#ef4444' }} />
+                <div className="absolute top-0 right-0 w-40 h-40 rounded-full blur-[80px] opacity-10" style={{ background: '#00f0ff' }} />
                 <div className="relative">
-                  <div className="p-3 rounded-lg inline-flex mb-5" style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.15)' }}>
-                    <Crosshair className="h-5 w-5" style={{ color: '#ef4444' }} />
+                  <div className="p-3 rounded-lg inline-flex mb-5" style={{ background: 'rgba(0,240,255,0.1)', border: '1px solid rgba(0,240,255,0.15)' }}>
+                    <TrendingUp className="h-5 w-5" style={{ color: '#00f0ff' }} />
                   </div>
-                  <h3 className="text-xl font-bold mb-2" style={{ color: '#ef4444' }}>Red Team</h3>
+                  <h3 className="text-xl font-bold mb-2" style={{ color: '#00f0ff' }}>Progresso Visível</h3>
                   <p className="text-sm leading-relaxed" style={{ color: '#94a3b8' }}>
-                    Simulações ofensivas, exploração de vulnerabilidades, engenharia social e evasão de detecção.
+                    Dashboard completo com gráficos de evolução, heatmap de estudos, ranking e acompanhamento por disciplina.
                   </p>
                   <ul className="mt-4 space-y-2">
-                    {['Pentest Web & Network', 'Engenharia Social', 'Evasão de AV/EDR', 'Active Directory'].map(item => (
+                    {['Gráficos de Evolução', 'Heatmap de Estudos', 'XP & Níveis', 'Ranking entre Alunos'].map(item => (
                       <li key={item} className="flex items-center gap-2 text-xs" style={{ color: '#64748b' }}>
-                        <div className="w-1 h-1 rounded-full" style={{ background: '#ef4444' }} />
+                        <div className="w-1 h-1 rounded-full" style={{ background: '#00f0ff' }} />
                         {item}
                       </li>
                     ))}
@@ -599,22 +547,22 @@ export default function LandingPage() {
 
             <ScrollReveal delay={0.2}>
               <div
-                className="rounded-xl p-8 relative overflow-hidden group transition-all duration-500 hover:shadow-[0_0_40px_rgba(59,130,246,0.1)]"
-                style={{ background: 'linear-gradient(135deg, #0a0a12, #0a0a18)', border: '1px solid rgba(59,130,246,0.1)' }}
+                className="rounded-xl p-8 relative overflow-hidden group transition-all duration-500 hover:shadow-[0_0_40px_rgba(168,85,247,0.1)]"
+                style={{ background: 'linear-gradient(135deg, #0a0a12, #0f0a14)', border: '1px solid rgba(168,85,247,0.1)' }}
               >
-                <div className="absolute top-0 right-0 w-40 h-40 rounded-full blur-[80px] opacity-10" style={{ background: '#3b82f6' }} />
+                <div className="absolute top-0 right-0 w-40 h-40 rounded-full blur-[80px] opacity-10" style={{ background: '#a855f7' }} />
                 <div className="relative">
-                  <div className="p-3 rounded-lg inline-flex mb-5" style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.15)' }}>
-                    <ShieldCheck className="h-5 w-5" style={{ color: '#3b82f6' }} />
+                  <div className="p-3 rounded-lg inline-flex mb-5" style={{ background: 'rgba(168,85,247,0.1)', border: '1px solid rgba(168,85,247,0.15)' }}>
+                    <CheckCircle className="h-5 w-5" style={{ color: '#a855f7' }} />
                   </div>
-                  <h3 className="text-xl font-bold mb-2" style={{ color: '#3b82f6' }}>Blue Team</h3>
+                  <h3 className="text-xl font-bold mb-2" style={{ color: '#a855f7' }}>Exercícios Práticos</h3>
                   <p className="text-sm leading-relaxed" style={{ color: '#94a3b8' }}>
-                    Detecção de ameaças, análise forense, resposta a incidentes e hardening de infraestrutura.
+                    Exercícios de fixação com gabarito comentado e explicações detalhadas para cada alternativa.
                   </p>
                   <ul className="mt-4 space-y-2">
-                    {['SIEM & Log Analysis', 'Incident Response', 'Threat Hunting', 'Hardening'].map(item => (
+                    {['Múltipla Escolha', 'Gabarito Comentado', 'Modo Simulado', 'Cronômetro Integrado'].map(item => (
                       <li key={item} className="flex items-center gap-2 text-xs" style={{ color: '#64748b' }}>
-                        <div className="w-1 h-1 rounded-full" style={{ background: '#3b82f6' }} />
+                        <div className="w-1 h-1 rounded-full" style={{ background: '#a855f7' }} />
                         {item}
                       </li>
                     ))}
@@ -627,16 +575,16 @@ export default function LandingPage() {
       </section>
 
       {/* ═══ TESTIMONIALS ═══ */}
-      <section className="relative py-28 md:py-36" style={{ background: 'linear-gradient(180deg, #050508, #0a0a14, #050508)' }}>
+      <section id="depoimentos" className="relative py-28 md:py-36" style={{ background: 'linear-gradient(180deg, #050508, #0a0a14, #050508)' }}>
         <div className="max-w-7xl mx-auto px-5">
           <ScrollReveal className="text-center mb-16">
             <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: '#00f0ff' }}>
               <MessageCircle className="h-3 w-3 inline mr-2" />Depoimentos
             </span>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mt-3">
-              Quem passou pelo
+              Quem usa a
               <br />
-              <span style={{ color: '#00f0ff' }}>terminal.</span>
+              <span style={{ color: '#00f0ff' }}>plataforma.</span>
             </h2>
           </ScrollReveal>
 
@@ -710,14 +658,14 @@ export default function LandingPage() {
 
         <ScrollReveal className="max-w-3xl mx-auto px-5 text-center relative">
           <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold leading-tight">
-            Pare de assistir.
+            Pare de improvisar.
             <br />
             Comece a
             <br />
-            <span style={{ color: '#00f0ff' }}>explorar.</span>
+            <span style={{ color: '#00f0ff' }}>estudar de verdade.</span>
           </h2>
           <p className="text-sm mt-6 max-w-md mx-auto" style={{ color: '#94a3b8' }}>
-            Acesse labs práticos, trilhas estruturadas e certificações reais.
+            Apostilas, exercícios, flashcards e gamificação. Tudo em um só lugar.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-10">
             <button
@@ -725,7 +673,7 @@ export default function LandingPage() {
               className="inline-flex items-center gap-3 px-8 py-4 rounded-lg text-sm font-bold uppercase tracking-wider transition-all duration-300 hover:shadow-[0_0_40px_rgba(0,240,255,0.3)]"
               style={{ background: '#00f0ff', color: '#050508' }}
             >
-              <Terminal className="h-4 w-4" /> Acessar plataforma
+              <GraduationCap className="h-4 w-4" /> Acessar plataforma
             </button>
             <button
               onClick={handleInstallPWA}
