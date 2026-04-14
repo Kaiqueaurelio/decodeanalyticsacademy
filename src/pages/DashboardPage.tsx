@@ -25,6 +25,7 @@ import { ExamCalendarWidget } from '@/components/ExamCalendarWidget';
 import { FlashcardSummaryWidget } from '@/components/FlashcardSummaryWidget';
 import { ApostilaProgressWidget } from '@/components/ApostilaProgressWidget';
 import { MobileCarousel } from '@/components/MobileCarousel';
+import { MaterialWidget } from '@/components/MaterialWidget';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { getSubjectColor } from '@/lib/subject-colors';
 import {
@@ -428,6 +429,9 @@ export default function DashboardPage() {
             />
             <FlashcardSummaryWidget />
 
+            {/* Material de Apoio Widget */}
+            <MaterialWidget />
+
             {/* Materials shortcut */}
             <Card className="p-4 hover-lift">
               <button onClick={() => navigate('/materials')} className="w-full flex items-center gap-3 text-left group">
@@ -435,7 +439,7 @@ export default function DashboardPage() {
                   <FileText className="h-4 w-4 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm">Materiais de Apoio</p>
+                  <p className="font-medium text-sm">Ver Todos os Materiais</p>
                   <p className="text-[10px] text-muted-foreground">PDFs, vídeos e mais</p>
                 </div>
                 <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
