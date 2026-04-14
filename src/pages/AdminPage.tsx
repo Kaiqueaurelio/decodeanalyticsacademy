@@ -26,6 +26,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { toast } from 'sonner';
 import type { Tables } from '@/integrations/supabase/types';
 import { AnimatedCounter } from '@/components/AnimatedCounter';
+import { ActivityChart } from '@/components/ActivityChart';
 
 type Apostila = Tables<'apostilas'>;
 type Exercise = Tables<'exercises'>;
@@ -273,6 +274,9 @@ function OverviewTab({ apostilas, exercises, allAnswers, materials, users, setTa
           </CardContent>
         </Card>
       </motion.div>
+
+      {/* Activity Chart */}
+      <ActivityChart delay={0.55} />
 
       {/* Blocked Users Alert */}
       {blocked > 0 && (
@@ -690,7 +694,7 @@ export default function AdminPage() {
 
   return (
     <CategoriesCtx.Provider value={{ categories: dbCategories }}>
-      <div className="min-h-screen bg-background flex">
+      <div className="h-screen bg-background flex overflow-hidden">
         {/* Desktop sidebar only */}
         <div className="hidden lg:block">
           <AdminSidebar
