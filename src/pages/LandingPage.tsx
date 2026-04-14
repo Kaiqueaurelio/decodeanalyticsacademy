@@ -150,10 +150,10 @@ export default function LandingPage() {
               Decode Analytics
             </span>
           </div>
-          <nav className="hidden sm:flex items-center gap-6">
-            <a href="#labs" className="text-xs uppercase tracking-wider text-gray-400 hover:text-white transition-colors no-underline">Labs</a>
+           <nav className="hidden sm:flex items-center gap-6">
+            <a href="#recursos" className="text-xs uppercase tracking-wider text-gray-400 hover:text-white transition-colors no-underline">Recursos</a>
             <a href="#roadmap" className="text-xs uppercase tracking-wider text-gray-400 hover:text-white transition-colors no-underline">Trilha</a>
-            <a href="#cert" className="text-xs uppercase tracking-wider text-gray-400 hover:text-white transition-colors no-underline">Certificação</a>
+            <a href="#depoimentos" className="text-xs uppercase tracking-wider text-gray-400 hover:text-white transition-colors no-underline">Depoimentos</a>
           </nav>
           <Button
             size="sm"
