@@ -654,6 +654,57 @@ export default function AdminPage() {
     setExQuestion(''); setExOptions(['', '', '', '']); setExExplanation(''); loadAll();
   };
 
+  const parseBulkExercises = (text: string) => {
+    const blocks = text.split(/\n\s*\n/).filter(b => b.trim());
+    const parsed: { question: string; options: string[]; correct: string; explanation: string }[] = [];
+    for (const block of blocks) {
+      const lines = block.split('\n').map(l => l.trim()).filter(Boolean);
+      if (lines.length < 3) continue;
+      let question = '';
+      const options: string[] = [];
+      let correct = '';
+      let explanation = '';
+      for (const line of lines) {
+        const optMatch = line.match(/^([A-Da-d])\)\s*(.+)/);
+        const gabMatch = line.match(/^[Gg]abarito\s*:\s*([A-Da-d])/i);
+        const expMatch = line.match(/^[Ee]xplica[çc][ãa]o\s*:\s*(.+)/i);
+        if (gabMatch) {
+          correct = gabMatch[1].toUpperCase();
+        } else if (expMatch) {
+          explanation = expMatch[1];
+        } else if (optMatch) {
+          options.push(optMatch[2]);
+        } else if (!correct && options.length === 0) {
+          question = question ? question + ' ' + line : line;
+        } else if (correct && !explanation) {
+          explanation = explanation ? explanation + ' ' + line : line;
+        }
+      }
+      if (question && options.length >= 2 && correct) {
+        parsed.push({ question, options, correct, explanation });
+      }
+    }
+    return parsed;
+  };
+
+  const handleBulkExerciseImport = async () => {
+    if (!selectedApostila || !bulkExerciseText.trim()) return;
+    const parsed = parseBulkExercises(bulkExerciseText);
+    if (parsed.length === 0) { toast.error('Nenhum exercício detectado. Verifique o formato.'); return; }
+    setBulkExerciseImporting(true);
+    let ok = 0;
+    for (const ex of parsed) {
+      const { error } = await supabase.from('exercises').insert({
+        apostila_id: selectedApostila, question: ex.question,
+        options: ex.options, correct_answer: ex.correct, explanation: ex.explanation || null,
+      });
+      if (!error) ok++;
+    }
+    setBulkExerciseImporting(false);
+    toast.success(`${ok}/${parsed.length} exercícios importados!`);
+    if (ok > 0) { setBulkExerciseText(''); loadAll(); }
+  };
+
   const deleteExercise = async (id: string) => {
     await supabase.from('exercises').delete().eq('id', id);
     toast.success('Exercício excluído'); loadAll();
