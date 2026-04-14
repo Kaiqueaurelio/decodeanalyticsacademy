@@ -1,13 +1,16 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, ArrowLeft, Eye, EyeOff, BookOpen, BarChart3, Shield } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { EvasiveButton } from '@/components/EvasiveButton';
+import { Loader2, ArrowLeft, Eye, EyeOff, BookOpen, BarChart3, Shield, AlertTriangle, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 import logoDark from '@/assets/logo-dark.jpeg';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function LoginPage() {
   const { signIn, signUp } = useAuth();
@@ -18,14 +21,89 @@ export default function LoginPage() {
   const [isReset, setIsReset] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [loginAttempts, setLoginAttempts] = useState(0);
+  const [isLocked, setIsLocked] = useState(false);
+  const [shaking, setShaking] = useState(false);
+  const [showLockModal, setShowLockModal] = useState(false);
+  const [unverifiedEmail, setUnverifiedEmail] = useState(false);
+  const passwordRef = useRef<HTMLInputElement>(null);
+
+  const triggerShake = () => {
+    setShaking(true);
+    setTimeout(() => setShaking(false), 500);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isLocked) {
+      setShowLockModal(true);
+      return;
+    }
     setLoading(true);
-    const { error } = isSignUp ? await signUp(email, password) : await signIn(email, password);
+
+    if (isSignUp) {
+      const { error } = await signUp(email, password);
+      setLoading(false);
+      if (error) {
+        toast.error(error.message);
+      } else {
+        toast.success('Conta criada! Verifique seu e-mail para ativar.');
+        setUnverifiedEmail(true);
+        setIsSignUp(false);
+      }
+      return;
+    }
+
+    // Login flow
+    const { error } = await signIn(email, password);
     setLoading(false);
-    if (error) { toast.error(error.message); }
-    else { toast.success(isSignUp ? 'Conta criada com sucesso!' : 'Login realizado!'); navigate('/dashboard'); }
+
+    if (error) {
+      // Check if it's an unverified email error
+      if (error.message?.includes('Email not confirmed')) {
+        setUnverifiedEmail(true);
+        toast.error('Verifique seu e-mail antes de acessar.');
+        return;
+      }
+
+      const newAttempts = loginAttempts + 1;
+      setLoginAttempts(newAttempts);
+      triggerShake();
+
+      if (newAttempts >= 3) {
+        // Lock the account
+        setIsLocked(true);
+        setShowLockModal(true);
+        // Update profile in DB
+        try {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('user_id')
+            .eq('email', email)
+            .maybeSingle();
+          if (profileData) {
+            await supabase.from('profiles').update({
+              is_blocked: true,
+              login_attempts: newAttempts,
+              locked_at: new Date().toISOString(),
+            } as any).eq('user_id', profileData.user_id);
+          }
+        } catch {}
+        toast.error('Conta bloqueada após 3 tentativas incorretas.');
+      } else {
+        toast.error(
+          `Senha incorreta. Tentativa ${newAttempts} de 3. Após 3 erros, sua conta será bloqueada.`,
+          {
+            icon: <AlertTriangle className="h-4 w-4 text-warning" />,
+            duration: 5000,
+          }
+        );
+      }
+    } else {
+      setLoginAttempts(0);
+      toast.success('Login realizado!');
+      navigate('/dashboard');
+    }
   };
 
   const handleResetPassword = async (e: React.FormEvent) => {
@@ -37,7 +115,13 @@ export default function LoginPage() {
     });
     setLoading(false);
     if (error) { toast.error(error.message); }
-    else { toast.success('Email de recuperação enviado!'); setIsReset(false); }
+    else {
+      toast.success('Email de recuperação enviado!');
+      setIsReset(false);
+      setIsLocked(false);
+      setLoginAttempts(0);
+      setShowLockModal(false);
+    }
   };
 
   const highlights = [
@@ -68,12 +152,19 @@ export default function LoginPage() {
 
           <div className="space-y-3">
             {highlights.map((h, i) => (
-              <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-card animate-fade-up" style={{ border: '1px solid hsl(0 0% 100% / 0.06)', animationDelay: `${300 + i * 150}ms`, animationFillMode: 'both' }}>
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ type: 'spring', stiffness: 260, damping: 20, delay: 0.3 + i * 0.15 }}
+                className="flex items-center gap-3 p-3 rounded-lg bg-card"
+                style={{ border: '1px solid hsl(0 0% 100% / 0.06)' }}
+              >
                 <div className="rounded bg-primary/10 p-2.5">
                   <h.icon className="h-4 w-4 text-primary" />
                 </div>
                 <span className="text-sm font-medium">{h.text}</span>
-              </div>
+              </motion.div>
             ))}
           </div>
 
@@ -92,23 +183,41 @@ export default function LoginPage() {
         </div>
 
         <div className="flex flex-1 items-center justify-center px-4 sm:px-6 pb-8">
-          <div className="w-full max-w-sm animate-card-enter">
+          <motion.div
+            className="w-full max-w-sm"
+            initial={{ opacity: 0, scale: 0.96, y: 16 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+          >
             <div className="bg-card rounded-lg p-6 sm:p-8 space-y-5 relative overflow-hidden" style={{ border: '1px solid hsl(0 0% 100% / 0.08)' }}>
               {/* Top accent line */}
               <div className="absolute top-0 left-0 right-0 h-px bg-primary" />
 
               <div className="text-center space-y-2">
-                <img src={logoDark} alt="Decode Analytics" className="mx-auto h-12 w-12 rounded object-cover animate-scale-in" />
-                <h1 className="text-xl font-bold animate-fade-in" style={{ animationDelay: '100ms', animationFillMode: 'both' }}>
-                  {isReset ? 'Recuperar Senha' : isSignUp ? 'Criar Conta' : 'Entrar'}
+                <motion.img
+                  src={logoDark}
+                  alt="Decode Analytics"
+                  className="mx-auto h-12 w-12 rounded object-cover"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+                />
+                <h1 className="text-xl font-bold">
+                  {isReset ? 'Recuperar Senha' : isSignUp ? 'Criar Conta' : isLocked ? 'Conta Bloqueada' : 'Entrar'}
                 </h1>
-                <p className="text-xs text-muted-foreground animate-fade-in" style={{ animationDelay: '200ms', animationFillMode: 'both' }}>
-                  {isReset ? 'Digite seu email para recuperação' : isSignUp ? 'Crie sua conta para começar' : 'Acesse sua conta Decode Analytics'}
+                <p className="text-xs text-muted-foreground">
+                  {isReset
+                    ? 'Digite seu email para recuperação'
+                    : isSignUp
+                    ? 'Crie sua conta para começar'
+                    : isLocked
+                    ? 'Redefina sua senha para desbloquear'
+                    : 'Acesse sua conta Decode Analytics'}
                 </p>
               </div>
 
               {isReset ? (
-                <form onSubmit={handleResetPassword} className="space-y-4 animate-fade-in" style={{ animationDelay: '150ms', animationFillMode: 'both' }}>
+                <form onSubmit={handleResetPassword} className="space-y-4">
                   <div className="space-y-1.5">
                     <Label htmlFor="resetEmail" className="text-xs text-muted-foreground">Email</Label>
                     <Input id="resetEmail" type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="seu@email.com" />
@@ -130,20 +239,55 @@ export default function LoginPage() {
                     </div>
                     <div className="space-y-1.5">
                       <Label htmlFor="password" className="text-xs text-muted-foreground">Senha</Label>
-                      <div className="relative">
-                        <Input id="password" type={showPassword ? 'text' : 'password'} required value={password} onChange={e => setPassword(e.target.value)} placeholder="--------" className="pr-10" />
+                      <div className={`relative ${shaking ? 'animate-shake' : ''}`}>
+                        <Input
+                          ref={passwordRef}
+                          id="password"
+                          type={showPassword ? 'text' : 'password'}
+                          required
+                          value={password}
+                          onChange={e => setPassword(e.target.value)}
+                          placeholder="--------"
+                          className={`pr-10 ${loginAttempts > 0 ? 'border-destructive focus-visible:ring-destructive' : ''}`}
+                        />
                         <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground smooth-all">
                           {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                         </button>
                       </div>
+                      {/* Attempt counter */}
+                      <AnimatePresence>
+                        {loginAttempts > 0 && !isLocked && (
+                          <motion.p
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="text-[11px] text-destructive flex items-center gap-1 mt-1"
+                          >
+                            <AlertTriangle className="h-3 w-3" />
+                            Tentativa {loginAttempts} de 3
+                          </motion.p>
+                        )}
+                      </AnimatePresence>
                     </div>
-                    <Button type="submit" className="w-full" disabled={loading}>
-                      {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                      {isSignUp ? 'Criar conta' : 'Entrar'}
-                    </Button>
+
+                    {/* Evasive button for unverified emails, normal otherwise */}
+                    {unverifiedEmail && !isSignUp ? (
+                      <EvasiveButton email={email} disabled={loading} className="w-full">
+                        {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Entrar
+                      </EvasiveButton>
+                    ) : (
+                      <Button type="submit" className="w-full" disabled={loading || isLocked}>
+                        {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        {isLocked ? (
+                          <><Lock className="mr-2 h-4 w-4" /> Conta Bloqueada</>
+                        ) : isSignUp ? 'Criar conta' : 'Entrar'}
+                      </Button>
+                    )}
+
                     {!isSignUp && (
                       <button type="button" onClick={() => setIsReset(true)} className="w-full text-center text-xs text-muted-foreground hover:text-foreground smooth-all">
-                        Esqueceu a senha?
+                        {isLocked ? '🔓 Redefinir senha para desbloquear' : 'Esqueceu a senha?'}
                       </button>
                     )}
                   </form>
@@ -151,7 +295,7 @@ export default function LoginPage() {
                     <div className="absolute inset-0 flex items-center"><span className="w-full" style={{ borderTop: '1px solid hsl(0 0% 100% / 0.06)' }} /></div>
                     <div className="relative flex justify-center text-xs uppercase"><span className="bg-card px-2 text-muted-foreground font-mono-label text-[10px] tracking-widest">ou</span></div>
                   </div>
-                  <Button type="button" variant="outline" className="w-full font-sans normal-case tracking-normal text-sm" onClick={() => setIsSignUp(!isSignUp)}>
+                  <Button type="button" variant="outline" className="w-full font-sans normal-case tracking-normal text-sm" onClick={() => { setIsSignUp(!isSignUp); setUnverifiedEmail(false); setLoginAttempts(0); }}>
                     {isSignUp ? 'Já tenho conta' : 'Criar conta'}
                   </Button>
                 </>
@@ -160,9 +304,37 @@ export default function LoginPage() {
             <p className="text-center text-[11px] font-mono-label text-muted-foreground mt-4 uppercase tracking-wider">
               Decode Analytics · Kaique Aurélio
             </p>
-          </div>
+          </motion.div>
         </div>
       </div>
+
+      {/* Lock Modal */}
+      <Dialog open={showLockModal} onOpenChange={setShowLockModal}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-base text-destructive">
+              <Lock className="h-5 w-5" />
+              Conta Bloqueada
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Sua conta foi bloqueada após 3 tentativas de login incorretas.
+              Para desbloquear, redefina sua senha por e-mail.
+            </p>
+            <Button onClick={() => { setShowLockModal(false); setIsReset(true); }} className="w-full">
+              Redefinir Senha por Email
+            </Button>
+            <button
+              type="button"
+              onClick={() => setShowLockModal(false)}
+              className="w-full text-center text-sm text-muted-foreground hover:text-foreground smooth-all"
+            >
+              Fechar
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
