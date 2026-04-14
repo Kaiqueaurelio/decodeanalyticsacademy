@@ -416,6 +416,8 @@ export type Database = {
           full_name: string
           id: string
           is_blocked: boolean
+          locked_at: string | null
+          login_attempts: number
           user_id: string
         }
         Insert: {
@@ -425,6 +427,8 @@ export type Database = {
           full_name?: string
           id?: string
           is_blocked?: boolean
+          locked_at?: string | null
+          login_attempts?: number
           user_id: string
         }
         Update: {
@@ -434,6 +438,8 @@ export type Database = {
           full_name?: string
           id?: string
           is_blocked?: boolean
+          locked_at?: string | null
+          login_attempts?: number
           user_id?: string
         }
         Relationships: []
