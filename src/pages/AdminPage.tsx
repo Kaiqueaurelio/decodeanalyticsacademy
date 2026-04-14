@@ -443,6 +443,9 @@ export default function AdminPage() {
   const [exOptions, setExOptions] = useState(['', '', '', '']);
   const [exCorrect, setExCorrect] = useState('A');
   const [exExplanation, setExExplanation] = useState('');
+  const [bulkExerciseMode, setBulkExerciseMode] = useState(false);
+  const [bulkExerciseText, setBulkExerciseText] = useState('');
+  const [bulkExerciseImporting, setBulkExerciseImporting] = useState(false);
 
   // Materials state
   const [matTitle, setMatTitle] = useState('');
