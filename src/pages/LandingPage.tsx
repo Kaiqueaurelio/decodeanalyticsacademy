@@ -1,67 +1,131 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion, useScroll, useTransform, useInView } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { AppHeader } from '@/components/AppHeader';
 import {
-  BookOpen, CheckCircle, BarChart3, ArrowRight, Download, Shield,
-  Headphones, Video, FileText, Users, Zap, Clock, Award, Star,
-  GraduationCap, TrendingUp, Lock,
-  Smartphone, BrainCircuit, ChevronDown, Play,
-  Layers, Target, MessageCircle, HelpCircle
+  ArrowRight, Terminal, Shield, ShieldCheck, Cpu, Wifi, Lock,
+  Bug, Eye, Code2, Server, Database, Globe, Crosshair, Award,
+  ChevronRight, Download, Smartphone, Star, MessageCircle,
+  Layers, Zap, Target, BarChart3, FileCode2, Users,
 } from 'lucide-react';
 import logoDark from '@/assets/logo-dark.jpeg';
 
-const features = [
-  { icon: BookOpen, title: 'Apostilas Estruturadas', desc: 'Conteúdo organizado automaticamente como apostila editorial profissional, pronto para estudo.' },
-  { icon: CheckCircle, title: 'Exercícios com Correção', desc: 'Questões de múltipla escolha com correção instantânea, explicações detalhadas e acompanhamento.' },
-  { icon: BarChart3, title: 'Dashboard Analítico', desc: 'Gráficos interativos de evolução, acertos por matéria, streaks de estudo e ranking.' },
-  { icon: Headphones, title: 'Áudios e Podcasts', desc: 'Player integrado para ouvir materiais de apoio em qualquer lugar.' },
-  { icon: Video, title: 'Videoaulas HD', desc: 'Assista vídeos com player integrado e reprodução otimizada para mobile.' },
-  { icon: FileText, title: 'Materiais Multimídia', desc: 'PDFs, PowerPoints, imagens, GIFs — tudo acessível diretamente na plataforma.' },
+/* ─── SECTION WRAPPER: Fade + slide on scroll ─── */
+function ScrollReveal({ children, className = '', delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: '-80px' });
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 60 }}
+      animate={isInView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.8, delay, ease: [0.22, 1, 0.36, 1] }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+/* ─── PARALLAX IMAGE ─── */
+function ParallaxBlock({ children, speed = 0.3, className = '' }: { children: React.ReactNode; speed?: number; className?: string }) {
+  const ref = useRef(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
+  const y = useTransform(scrollYProgress, [0, 1], [speed * -100, speed * 100]);
+  return (
+    <motion.div ref={ref} style={{ y }} className={className}>
+      {children}
+    </motion.div>
+  );
+}
+
+/* ─── COUNTER ─── */
+function CountUp({ value, suffix = '' }: { value: number; suffix?: string }) {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true });
+  return (
+    <motion.span
+      ref={ref}
+      initial={{ opacity: 0 }}
+      animate={isInView ? { opacity: 1 } : {}}
+    >
+      {isInView && (
+        <motion.span
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+        >
+          <motion.span>{value}</motion.span>{suffix}
+        </motion.span>
+      )}
+    </motion.span>
+  );
+}
+
+/* ─── GLOW ORB ─── */
+function GlowOrb({ className, style }: { className: string; style?: React.CSSProperties }) {
+  return <div className={`absolute rounded-full blur-[120px] pointer-events-none ${className}`} style={style} />;
+}
+
+/* ─── GRID BG ─── */
+function CyberGrid() {
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      <div className="absolute inset-0" style={{
+        backgroundImage: `linear-gradient(rgba(0,240,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,240,255,0.03) 1px, transparent 1px)`,
+        backgroundSize: '60px 60px',
+      }} />
+    </div>
+  );
+}
+
+/* ─── DATA ─── */
+const labs = [
+  { icon: Bug, name: 'SQL Injection Lab', difficulty: 'Fácil', color: '#00f0ff' },
+  { icon: Shield, name: 'XSS Attack Vectors', difficulty: 'Médio', color: '#a855f7' },
+  { icon: Lock, name: 'Buffer Overflow', difficulty: 'Difícil', color: '#f43f5e' },
+  { icon: Wifi, name: 'Network Sniffing', difficulty: 'Médio', color: '#a855f7' },
+  { icon: Server, name: 'Privilege Escalation', difficulty: 'Difícil', color: '#f43f5e' },
+  { icon: Eye, name: 'OSINT Recon', difficulty: 'Fácil', color: '#00f0ff' },
 ];
 
-const benefits = [
-  { icon: Zap, title: 'Estude com Foco', desc: 'Todo conteúdo organizado por matéria e semestre. Zero distrações.' },
-  { icon: Clock, title: 'Economize Tempo', desc: 'Encontre exatamente o que precisa em segundos com busca global.' },
-  { icon: Shield, title: 'Conteúdo Protegido', desc: 'Marca d\'água personalizada com nome, IP e horário.' },
-  { icon: Award, title: 'Preparação para Provas', desc: 'Exercícios no formato das provas reais. Simule condições de prova.' },
-  { icon: Target, title: 'Gamificação', desc: 'Ganhe XP, suba de nível, conquiste badges e mantenha seu streak.' },
-  { icon: BrainCircuit, title: 'IA Integrada', desc: 'Importação automática de conteúdo com formatação inteligente.' },
-];
-
-const stats = [
-  { value: '3+', label: 'Cursos Compatíveis' },
-  { value: '48+', label: 'Disciplinas' },
-  { value: '100%', label: 'Online' },
-  { value: '24/7', label: 'Disponível' },
-];
-
-const steps = [
-  { n: '01', title: 'Crie sua conta', desc: 'Cadastre-se com email e senha em menos de 30 segundos.' },
-  { n: '02', title: 'Explore o conteúdo', desc: 'Navegue por apostilas, vídeos, áudios e materiais organizados.' },
-  { n: '03', title: 'Pratique e evolua', desc: 'Faça exercícios e acompanhe seu progresso no dashboard.' },
+const roadmap = [
+  { phase: '01', title: 'Fundamentos', desc: 'Linux, Redes, Protocolos TCP/IP e arquitetura de sistemas.', icon: Terminal },
+  { phase: '02', title: 'Reconhecimento', desc: 'OSINT, Nmap, enumeração de serviços e mapeamento de superfície.', icon: Crosshair },
+  { phase: '03', title: 'Exploração', desc: 'Exploits, injeções, escalação de privilégio e evasão.', icon: Bug },
+  { phase: '04', title: 'Pós-Exploração', desc: 'Persistência, movimentação lateral, exfiltração e relatórios.', icon: Database },
 ];
 
 const testimonials = [
-  { name: 'Ana Silva', course: '3º Sem · SI', text: 'A plataforma me ajudou muito nas revisões. Os exercícios são muito parecidos com os da prova! Uso todos os dias.', rating: 5, initials: 'AS', color: 'hsl(142 71% 45%)' },
-  { name: 'Carlos Santos', course: '5º Sem · EC', text: 'Ter tudo organizado num só lugar faz toda a diferença. Recomendo para todos da turma. O dashboard é incrível.', rating: 5, initials: 'CS', color: 'hsl(217 91% 60%)' },
-  { name: 'Juliana Costa', course: '2º Sem · CC', text: 'Os áudios são excelentes para revisar no ônibus. A gamificação me motiva todo dia a estudar mais.', rating: 5, initials: 'JC', color: 'hsl(68 100% 64%)' },
-  { name: 'Rafael Oliveira', course: '4º Sem · CC', text: 'Passei em todas as provas de Estrutura de Dados graças aos exercícios da plataforma. Nota máxima!', rating: 5, initials: 'RO', color: 'hsl(280 67% 60%)' },
-  { name: 'Mariana Ferreira', course: '6º Sem · SI', text: 'Estudo pelo celular no trabalho e é perfeito. O app funciona como nativo e o conteúdo é muito bem organizado.', rating: 5, initials: 'MF', color: 'hsl(24 94% 60%)' },
+  { name: 'Ana Silva', role: 'Pentester Jr.', text: 'Os labs práticos me prepararam para o mercado real. Consegui minha primeira vaga em 4 meses.', initials: 'AS', color: '#00f0ff' },
+  { name: 'Carlos Santos', role: 'Red Team', text: 'Conteúdo técnico de alto nível. Melhor plataforma de cybersecurity que já usei no Brasil.', initials: 'CS', color: '#a855f7' },
+  { name: 'Juliana Costa', role: 'SOC Analyst', text: 'A trilha Blue Team me deu base sólida para atuar em SOC. Recomendo para quem quer entrar na área.', initials: 'JC', color: '#22c55e' },
+];
+
+const certifications = [
+  { name: 'Decode Certified Pentester', abbr: 'DCP', desc: 'Prove suas habilidades em pentest prático.' },
+  { name: 'Decode Red Team Operator', abbr: 'DRTO', desc: 'Certificação avançada em operações Red Team.' },
+  { name: 'Decode Blue Team Defender', abbr: 'DBTD', desc: 'Defesa, detecção e resposta a incidentes.' },
 ];
 
 const faqs = [
-  { q: 'A plataforma é gratuita?', a: 'O acesso é exclusivo para alunos cadastrados. Entre em contato para saber como participar.' },
-  { q: 'Posso acessar pelo celular?', a: 'Sim! A plataforma é um PWA que funciona como app nativo. Instale no seu celular.' },
-  { q: 'O conteúdo é atualizado?', a: 'Sim, o conteúdo é atualizado regularmente com novos materiais e exercícios.' },
-  { q: 'Como funciona a proteção?', a: 'Marca d\'água personalizada + bloqueio de PrintScreen e clique direito.' },
+  { q: 'Preciso de experiência prévia?', a: 'Não. A trilha começa do zero com fundamentos de Linux e redes.' },
+  { q: 'Os labs são ambientes reais?', a: 'Sim. Máquinas vulneráveis isoladas para exploração segura.' },
+  { q: 'Como funciona a certificação?', a: 'Exame prático de 24h com relatório técnico. Sem múltipla escolha.' },
+  { q: 'Posso acessar pelo celular?', a: 'A plataforma é PWA. Labs exigem desktop para melhor experiência.' },
 ];
 
 export default function LandingPage() {
   const navigate = useNavigate();
   const [showInstallGuide, setShowInstallGuide] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+
+  const heroRef = useRef(null);
+  const { scrollYProgress: heroScroll } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
+  const heroOpacity = useTransform(heroScroll, [0, 0.5], [1, 0]);
+  const heroY = useTransform(heroScroll, [0, 0.5], [0, -80]);
+  const heroScale = useTransform(heroScroll, [0, 0.5], [1, 0.95]);
 
   const handleInstallPWA = async () => {
     try {
@@ -77,314 +141,612 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden">
-      <AppHeader />
+    <div className="min-h-screen font-cyber overflow-x-hidden" style={{ background: '#050508', color: '#e2e8f0' }}>
 
-      {/* ═══ HERO ═══ */}
-      <section className="relative min-h-[85vh] flex items-center grid-lines-bg">
-        {/* Subtle glow */}
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] rounded-full bg-primary/5 blur-[120px]" />
-
-        <div className="container relative py-24 md:py-32 lg:py-40 px-6">
-          <div className="max-w-3xl space-y-8">
-            <div className="animate-fade-up" style={{ animationDelay: '0s' }}>
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-secondary text-[11px] font-mono-label uppercase tracking-widest text-muted-foreground mb-5 editorial-border">
-                <GraduationCap className="h-3.5 w-3.5 text-primary" />
-                Decode Analytics Academy
-              </div>
-            </div>
-
-            <h1 className="animate-fade-up font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-[1.05] tracking-tight" style={{ animationDelay: '0.1s', opacity: 0 }}>
-              Sua apostila.{' '}
-              <span className="text-gradient">Organizada.</span>
-              <br />
-              Automaticamente.
-            </h1>
-
-            <p className="animate-fade-up text-base md:text-lg text-muted-foreground leading-relaxed max-w-xl" style={{ animationDelay: '0.2s', opacity: 0 }}>
-              Apostilas estruturadas, exercícios inteligentes, gamificação e tudo que você precisa para dominar suas provas — para CC, SI, EC e cursos de tecnologia.
-            </p>
-
-            <div className="animate-fade-up flex flex-col sm:flex-row gap-4 pt-3" style={{ animationDelay: '0.3s', opacity: 0 }}>
-              <Button size="lg" onClick={() => navigate('/login')} className="animate-pulse-glow">
-                Acessar minha conta <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </div>
-
-            <div className="animate-fade-up flex items-center gap-6 pt-3" style={{ animationDelay: '0.4s', opacity: 0 }}>
-              <button type="button" onClick={handleInstallPWA}
-                className="inline-flex items-center gap-2 text-sm text-primary font-mono-label text-[11px] uppercase tracking-wider hover:brightness-110 transition-all cursor-pointer">
-                <Download className="h-3.5 w-3.5" /> Instalar App
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-          <ChevronDown className="h-5 w-5 text-muted-foreground/40" />
-        </div>
-      </section>
-
-      {/* ═══ STATS BAR ═══ */}
-      <section className="editorial-border" style={{ borderLeft: 'none', borderRight: 'none' }}>
-        <div className="container px-6 py-12 md:py-14">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-10">
-            {stats.map((s) => (
-              <div key={s.label} className="text-center">
-                <p className="text-3xl md:text-4xl font-display text-primary">{s.value}</p>
-                <p className="text-xs font-mono-label uppercase tracking-widest text-muted-foreground mt-1.5">{s.label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ═══ FEATURES ═══ */}
-      <section id="recursos" className="py-24 md:py-32">
-        <div className="container px-6">
-          <div className="text-center mb-16">
-            <span className="font-mono-label text-[11px] uppercase tracking-widest text-primary">
-              <Layers className="h-3 w-3 inline mr-1.5" />Recursos
+      {/* ═══ NAV ═══ */}
+      <motion.header
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl"
+        style={{ background: 'rgba(5,5,8,0.85)', borderBottom: '1px solid rgba(0,240,255,0.08)' }}
+      >
+        <div className="max-w-7xl mx-auto flex h-14 items-center justify-between px-5">
+          <div className="flex items-center gap-2.5">
+            <img src={logoDark} alt="Decode Analytics" className="h-7 w-7 rounded object-cover" />
+            <span className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: '#00f0ff' }}>
+              Decode Analytics
             </span>
-            <h2 className="font-display text-3xl sm:text-4xl md:text-5xl mt-3">
-              Tudo que você precisa para <span className="text-gradient">revisar</span>
-            </h2>
-            <p className="text-muted-foreground mt-4 max-w-xl mx-auto text-sm leading-relaxed">
-              Uma plataforma completa com ferramentas pensadas para maximizar seu desempenho acadêmico.
-            </p>
           </div>
+          <nav className="hidden sm:flex items-center gap-6">
+            <a href="#labs" className="text-xs uppercase tracking-wider text-gray-400 hover:text-white transition-colors no-underline">Labs</a>
+            <a href="#roadmap" className="text-xs uppercase tracking-wider text-gray-400 hover:text-white transition-colors no-underline">Trilha</a>
+            <a href="#cert" className="text-xs uppercase tracking-wider text-gray-400 hover:text-white transition-colors no-underline">Certificação</a>
+          </nav>
+          <Button
+            size="sm"
+            onClick={() => navigate('/login')}
+            className="h-8 px-4 text-[11px] font-semibold uppercase tracking-wider border-0 rounded-md"
+            style={{ background: '#00f0ff', color: '#050508' }}
+          >
+            Acessar <ArrowRight className="ml-1.5 h-3 w-3" />
+          </Button>
+        </div>
+      </motion.header>
 
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {features.map((f, i) => (
-              <div key={f.title} className="rounded-xl p-7 editorial-border-hover group" style={{ animationDelay: `${i * 80}ms` }}>
-                <div className="mb-5 inline-flex rounded-lg bg-primary/10 p-3.5 group-hover:bg-primary/15 transition-colors">
-                  <f.icon className="h-5 w-5 text-primary" />
+      {/* ═══ HERO — Apple-style parallax fade ═══ */}
+      <section ref={heroRef} className="relative min-h-screen flex items-center pt-14">
+        <CyberGrid />
+        <GlowOrb className="w-[500px] h-[400px] top-1/4 left-0" style={{ background: 'rgba(0,240,255,0.06)' } as any} />
+        <GlowOrb className="w-[400px] h-[300px] bottom-0 right-0" style={{ background: 'rgba(168,85,247,0.05)' } as any} />
+
+        <motion.div
+          style={{ opacity: heroOpacity, y: heroY, scale: heroScale }}
+          className="max-w-7xl mx-auto px-5 py-24 md:py-0 w-full"
+        >
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            {/* Left — Text */}
+            <div className="space-y-6">
+              <motion.div
+                initial={{ opacity: 0, x: -30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.7, delay: 0.2 }}
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-semibold uppercase tracking-[0.15em]"
+                style={{ background: 'rgba(0,240,255,0.08)', border: '1px solid rgba(0,240,255,0.15)', color: '#00f0ff' }}
+              >
+                <Terminal className="h-3 w-3" /> Plataforma de Cybersecurity
+              </motion.div>
+
+              <motion.h1
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                className="text-4xl sm:text-5xl md:text-6xl lg:text-[3.8rem] font-bold leading-[1.05] tracking-tight"
+              >
+                Aprenda{' '}
+                <span style={{ color: '#00f0ff' }}>pentest</span>
+                <br />
+                quebrando sistemas
+                <br />
+                <span className="text-gray-500">de verdade.</span>
+              </motion.h1>
+
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.5 }}
+                className="text-base md:text-lg leading-relaxed max-w-lg"
+                style={{ color: '#94a3b8' }}
+              >
+                Labs práticos, exploração real e certificação reconhecida.
+                Saia do tutorial — entre no terminal.
+              </motion.p>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.6 }}
+              >
+                <button
+                  onClick={() => navigate('/login')}
+                  className="group inline-flex items-center gap-3 px-7 py-3.5 rounded-lg text-sm font-bold uppercase tracking-wider transition-all duration-300 hover:shadow-[0_0_30px_rgba(0,240,255,0.25)]"
+                  style={{ background: '#00f0ff', color: '#050508' }}
+                >
+                  Começar agora
+                  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                </button>
+              </motion.div>
+
+              {/* Stats */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.7, delay: 0.8 }}
+                className="flex items-center gap-8 pt-4"
+              >
+                {[
+                  { val: '+30', label: 'Labs Práticos' },
+                  { val: '+100', label: 'Alunos Ativos' },
+                  { val: '24/7', label: 'Acesso Total' },
+                ].map((s) => (
+                  <div key={s.label}>
+                    <p className="text-2xl font-bold" style={{ color: '#00f0ff' }}>{s.val}</p>
+                    <p className="text-[10px] uppercase tracking-[0.15em] mt-0.5" style={{ color: '#64748b' }}>{s.label}</p>
+                  </div>
+                ))}
+              </motion.div>
+            </div>
+
+            {/* Right — Terminal mockup */}
+            <motion.div
+              initial={{ opacity: 0, x: 40, rotateY: -5 }}
+              animate={{ opacity: 1, x: 0, rotateY: 0 }}
+              transition={{ duration: 1, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              className="hidden lg:block"
+            >
+              <div className="rounded-xl overflow-hidden" style={{ background: '#0a0a0f', border: '1px solid rgba(0,240,255,0.12)', boxShadow: '0 0 60px rgba(0,240,255,0.08)' }}>
+                {/* Title bar */}
+                <div className="flex items-center gap-2 px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div className="flex gap-1.5">
+                    <div className="w-2.5 h-2.5 rounded-full bg-red-500/80" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/80" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-green-500/80" />
+                  </div>
+                  <span className="text-[10px] ml-2 uppercase tracking-wider" style={{ color: '#475569' }}>decode@kali:~</span>
                 </div>
-                <h3 className="text-sm font-semibold mb-2.5 group-hover:text-primary transition-colors">{f.title}</h3>
-                <p className="text-muted-foreground text-xs leading-relaxed">{f.desc}</p>
+                {/* Terminal content */}
+                <div className="p-5 font-mono text-xs leading-relaxed space-y-1" style={{ color: '#94a3b8' }}>
+                  <p><span style={{ color: '#00f0ff' }}>$</span> nmap -sV -sC 10.10.10.40</p>
+                  <p style={{ color: '#475569' }}>Starting Nmap 7.94 ( https://nmap.org )</p>
+                  <p><span style={{ color: '#22c55e' }}>PORT</span>    STATE SERVICE  VERSION</p>
+                  <p>22/tcp  open  ssh      OpenSSH 7.2p2</p>
+                  <p>80/tcp  open  http     Apache 2.4.18</p>
+                  <p>443/tcp open  https    Apache 2.4.18</p>
+                  <p style={{ color: '#475569', marginTop: '8px' }}>Nmap done: 1 IP address scanned</p>
+                  <p className="mt-2"><span style={{ color: '#00f0ff' }}>$</span> python3 exploit.py --target 10.10.10.40</p>
+                  <p style={{ color: '#a855f7' }}>[*] Sending payload...</p>
+                  <p style={{ color: '#22c55e' }}>[+] Shell obtained! root@target:~#</p>
+                  <motion.span
+                    animate={{ opacity: [1, 0] }}
+                    transition={{ duration: 0.8, repeat: Infinity }}
+                    className="inline-block w-2 h-4 ml-0.5"
+                    style={{ background: '#00f0ff' }}
+                  />
+                </div>
               </div>
+            </motion.div>
+          </div>
+        </motion.div>
+
+        {/* Scroll indicator */}
+        <motion.div
+          animate={{ y: [0, 8, 0] }}
+          transition={{ duration: 2, repeat: Infinity }}
+          className="absolute bottom-8 left-1/2 -translate-x-1/2"
+        >
+          <div className="w-5 h-8 rounded-full flex items-start justify-center pt-1.5" style={{ border: '1px solid rgba(0,240,255,0.3)' }}>
+            <motion.div
+              animate={{ y: [0, 10, 0], opacity: [1, 0.3, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="w-1 h-1.5 rounded-full"
+              style={{ background: '#00f0ff' }}
+            />
+          </div>
+        </motion.div>
+      </section>
+
+      {/* ═══ LABS SECTION ═══ */}
+      <section id="labs" className="relative py-28 md:py-36">
+        <CyberGrid />
+        <GlowOrb className="w-[400px] h-[300px] top-20 right-0" style={{ background: 'rgba(168,85,247,0.06)' } as any} />
+
+        <div className="max-w-7xl mx-auto px-5 relative">
+          <ScrollReveal>
+            <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: '#00f0ff' }}>
+              <Code2 className="h-3 w-3 inline mr-2" />Labs Disponíveis
+            </span>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mt-3 leading-tight">
+              Ambientes reais.
+              <br />
+              <span style={{ color: '#64748b' }}>Exploração prática.</span>
+            </h2>
+          </ScrollReveal>
+
+          {/* Irregular grid: 1 large + rest small */}
+          <div className="grid lg:grid-cols-3 gap-4 mt-14">
+            {/* Featured card */}
+            <ScrollReveal className="lg:col-span-2 lg:row-span-2" delay={0.1}>
+              <div
+                className="h-full rounded-xl p-8 md:p-10 relative overflow-hidden group transition-all duration-500 hover:shadow-[0_0_40px_rgba(0,240,255,0.1)]"
+                style={{ background: 'linear-gradient(135deg, #0a0a14, #0f0f1a)', border: '1px solid rgba(0,240,255,0.1)' }}
+              >
+                <div className="absolute top-0 right-0 w-60 h-60 rounded-full blur-[100px] opacity-20" style={{ background: '#00f0ff' }} />
+                <div className="relative">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="p-3 rounded-lg" style={{ background: 'rgba(0,240,255,0.1)', border: '1px solid rgba(0,240,255,0.15)' }}>
+                      <Target className="h-6 w-6" style={{ color: '#00f0ff' }} />
+                    </div>
+                    <span className="text-[10px] uppercase tracking-[0.15em] px-2.5 py-1 rounded-full font-semibold" style={{ background: 'rgba(0,240,255,0.1)', color: '#00f0ff' }}>
+                      Em Destaque
+                    </span>
+                  </div>
+                  <h3 className="text-2xl md:text-3xl font-bold mb-3">Pentest Labs</h3>
+                  <p className="text-sm md:text-base leading-relaxed max-w-md" style={{ color: '#94a3b8' }}>
+                    Máquinas vulneráveis isoladas para exploração segura.
+                    SQL Injection, XSS, RCE, privilege escalation — tudo em ambientes controlados.
+                  </p>
+                  <div className="flex flex-wrap gap-2 mt-6">
+                    {['SQLi', 'XSS', 'RCE', 'PrivEsc', 'OSINT'].map(tag => (
+                      <span key={tag} className="px-2.5 py-1 rounded text-[10px] font-semibold uppercase tracking-wider" style={{ background: 'rgba(0,240,255,0.06)', color: '#00f0ff', border: '1px solid rgba(0,240,255,0.12)' }}>
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="mt-8">
+                    <button onClick={() => navigate('/login')} className="inline-flex items-center gap-2 text-sm font-semibold group-hover:gap-3 transition-all" style={{ color: '#00f0ff' }}>
+                      Explorar labs <ArrowRight className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </ScrollReveal>
+
+            {/* Small lab cards */}
+            {labs.slice(0, 4).map((lab, i) => (
+              <ScrollReveal key={lab.name} delay={0.15 + i * 0.08}>
+                <div
+                  className="rounded-xl p-5 h-full group transition-all duration-500 hover:translate-y-[-4px]"
+                  style={{ background: '#0a0a12', border: '1px solid rgba(255,255,255,0.06)' }}
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="p-2 rounded-lg" style={{ background: `${lab.color}10`, border: `1px solid ${lab.color}20` }}>
+                      <lab.icon className="h-4 w-4" style={{ color: lab.color }} />
+                    </div>
+                    <span className="text-[9px] uppercase tracking-[0.15em] font-semibold px-2 py-0.5 rounded-full" style={{
+                      color: lab.color,
+                      background: `${lab.color}10`,
+                    }}>
+                      {lab.difficulty}
+                    </span>
+                  </div>
+                  <h4 className="text-sm font-semibold mb-1 group-hover:text-white transition-colors" style={{ color: '#cbd5e1' }}>{lab.name}</h4>
+                  <p className="text-xs" style={{ color: '#475569' }}>Ambiente isolado pronto para exploração.</p>
+                </div>
+              </ScrollReveal>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ═══ BENEFITS ═══ */}
-      <section className="py-20 md:py-28 relative">
-        <div className="absolute top-0 right-0 w-80 h-80 bg-primary/3 rounded-full blur-[100px]" />
-        <div className="container relative px-4">
-          <div className="grid md:grid-cols-2 gap-10 md:gap-16 items-start">
-            <div className="md:sticky md:top-24">
-              <span className="font-mono-label text-[11px] uppercase tracking-widest text-primary">
-                <Target className="h-3 w-3 inline mr-1.5" />Vantagens
-              </span>
-              <h2 className="font-display text-3xl sm:text-4xl mt-3 mb-4">
-                Por que estudar com a <span className="text-gradient-animated">Decode Analytics</span>
-              </h2>
-              <p className="text-muted-foreground text-sm leading-relaxed mb-2">
-                Criada para estudantes de Ciência da Computação, Sistemas de Informação, Engenharia da Computação e cursos de tecnologia com grade curricular compartilhada.
-              </p>
-              <div className="flex flex-wrap gap-1.5 mb-6">
-                {['CC', 'SI', 'EC'].map((c) => (
-                  <span key={c} className="px-2 py-0.5 rounded text-[10px] font-mono-label uppercase tracking-wider bg-primary/10 text-primary" style={{ border: '1px solid hsl(68 100% 64% / 0.2)' }}>{c}</span>
-                ))}
+      {/* ═══ ROADMAP / TRILHA HACKER ═══ */}
+      <section id="roadmap" className="relative py-28 md:py-36" style={{ background: 'linear-gradient(180deg, #050508 0%, #0a0a14 50%, #050508 100%)' }}>
+        <div className="max-w-7xl mx-auto px-5">
+          <div className="grid lg:grid-cols-2 gap-16 items-start">
+            {/* Left — sticky text */}
+            <ScrollReveal>
+              <div className="lg:sticky lg:top-28">
+                <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: '#a855f7' }}>
+                  <Layers className="h-3 w-3 inline mr-2" />Trilha Hacker
+                </span>
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mt-3 mb-5 leading-tight">
+                  Do zero ao
+                  <br />
+                  <span style={{ color: '#a855f7' }}>root.</span>
+                </h2>
+                <p className="text-sm leading-relaxed max-w-md" style={{ color: '#94a3b8' }}>
+                  Um roadmap estruturado que leva você de iniciante a pentester.
+                  Cada fase constrói sobre a anterior com labs práticos.
+                </p>
+                <button
+                  onClick={() => navigate('/login')}
+                  className="mt-8 inline-flex items-center gap-3 px-6 py-3 rounded-lg text-sm font-bold uppercase tracking-wider transition-all duration-300 hover:shadow-[0_0_30px_rgba(168,85,247,0.25)]"
+                  style={{ background: '#a855f7', color: '#fff' }}
+                >
+                  Iniciar trilha <ArrowRight className="h-4 w-4" />
+                </button>
               </div>
-              <div className="hidden md:flex gap-3">
-                <Button onClick={() => navigate('/login')}>
-                  Começar agora <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </div>
-            </div>
+            </ScrollReveal>
 
-            <div className="space-y-3">
-              {benefits.map((b, i) => (
-                <div key={b.title} className="flex gap-4 p-4 rounded-lg editorial-border-hover group" style={{ animationDelay: `${i * 80}ms` }}>
-                  <div className="shrink-0 mt-0.5">
-                    <div className="rounded bg-primary/10 p-2.5 group-hover:bg-primary/15 transition-colors">
-                      <b.icon className="h-4 w-4 text-primary" />
+            {/* Right — roadmap cards */}
+            <div className="space-y-4">
+              {roadmap.map((step, i) => (
+                <ScrollReveal key={step.phase} delay={i * 0.1}>
+                  <div
+                    className="rounded-xl p-6 relative group transition-all duration-500 hover:translate-x-2"
+                    style={{ background: '#0a0a12', border: '1px solid rgba(168,85,247,0.08)' }}
+                  >
+                    <div className="flex items-start gap-5">
+                      <div className="shrink-0 w-12 h-12 rounded-lg flex items-center justify-center" style={{ background: 'rgba(168,85,247,0.1)', border: '1px solid rgba(168,85,247,0.15)' }}>
+                        <step.icon className="h-5 w-5" style={{ color: '#a855f7' }} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-3 mb-1">
+                          <span className="text-[10px] font-bold tracking-[0.15em]" style={{ color: '#a855f7' }}>{step.phase}</span>
+                          <h4 className="text-sm font-bold">{step.title}</h4>
+                        </div>
+                        <p className="text-xs leading-relaxed" style={{ color: '#64748b' }}>{step.desc}</p>
+                      </div>
+                      <ChevronRight className="h-4 w-4 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: '#a855f7' }} />
                     </div>
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-sm group-hover:text-primary transition-colors">{b.title}</h3>
-                    <p className="text-muted-foreground text-xs mt-1 leading-relaxed">{b.desc}</p>
-                  </div>
-                </div>
+                </ScrollReveal>
               ))}
             </div>
           </div>
         </div>
       </section>
 
-      {/* ═══ HOW IT WORKS ═══ */}
-      <section className="py-20 md:py-28 grid-lines-bg">
-        <div className="container px-4">
-          <div className="text-center mb-14">
-            <span className="font-mono-label text-[11px] uppercase tracking-widest text-primary">
-              <Play className="h-3 w-3 inline mr-1.5" />Como funciona
-            </span>
-            <h2 className="font-display text-3xl sm:text-4xl mt-3">Três passos <span className="text-gradient">simples</span></h2>
-          </div>
+      {/* ═══ DASHBOARD PREVIEW — Sticky Apple-style ═══ */}
+      <section className="relative py-28 md:py-36">
+        <GlowOrb className="w-[500px] h-[400px] top-1/3 left-1/2 -translate-x-1/2" style={{ background: 'rgba(0,240,255,0.04)' } as any} />
 
-          <div className="grid gap-8 sm:grid-cols-3 max-w-3xl mx-auto relative">
-            <div className="hidden sm:block absolute top-[4.5rem] left-[15%] right-[15%] h-px" style={{ background: 'linear-gradient(to right, hsl(0 0% 100% / 0.04), hsl(0 0% 100% / 0.12), hsl(0 0% 100% / 0.04))' }} />
-            {steps.map((s) => (
-              <div key={s.n} className="text-center group relative">
-                <div className="mx-auto mb-4 w-20 h-20 rounded-lg editorial-border flex items-center justify-center relative z-10 bg-card group-hover:border-primary/30 transition-colors">
-                  <span className="font-display text-3xl text-primary">{s.n}</span>
+        <div className="max-w-7xl mx-auto px-5">
+          <ScrollReveal className="text-center mb-16">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: '#00f0ff' }}>
+              <BarChart3 className="h-3 w-3 inline mr-2" />Dashboard
+            </span>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mt-3">
+              Acompanhe sua
+              <br />
+              <span style={{ color: '#00f0ff' }}>evolução.</span>
+            </h2>
+          </ScrollReveal>
+
+          <ScrollReveal delay={0.2}>
+            <ParallaxBlock speed={0.15}>
+              <div
+                className="rounded-2xl overflow-hidden mx-auto max-w-4xl"
+                style={{ background: '#0a0a12', border: '1px solid rgba(0,240,255,0.1)', boxShadow: '0 20px 80px rgba(0,240,255,0.08)' }}
+              >
+                {/* Mock dashboard */}
+                <div className="p-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div className="flex items-center gap-2">
+                    <div className="flex gap-1.5">
+                      <div className="w-2.5 h-2.5 rounded-full bg-red-500/80" />
+                      <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/80" />
+                      <div className="w-2.5 h-2.5 rounded-full bg-green-500/80" />
+                    </div>
+                    <span className="text-[10px] ml-2 uppercase tracking-wider" style={{ color: '#475569' }}>Decode Analytics Dashboard</span>
+                  </div>
                 </div>
-                <h3 className="text-sm font-semibold mt-2 mb-2 group-hover:text-primary transition-colors">{s.title}</h3>
-                <p className="text-muted-foreground text-xs leading-relaxed">{s.desc}</p>
+                <div className="p-6 md:p-8">
+                  <div className="grid grid-cols-3 gap-4 mb-6">
+                    {[
+                      { label: 'Labs Concluídos', value: '12', change: '+3 esta semana' },
+                      { label: 'XP Total', value: '2,450', change: 'Nível 8' },
+                      { label: 'Streak', value: '7 dias', change: 'Recorde: 14' },
+                    ].map((m) => (
+                      <div key={m.label} className="rounded-lg p-4" style={{ background: 'rgba(0,240,255,0.03)', border: '1px solid rgba(0,240,255,0.06)' }}>
+                        <p className="text-[10px] uppercase tracking-wider mb-1" style={{ color: '#64748b' }}>{m.label}</p>
+                        <p className="text-xl font-bold" style={{ color: '#00f0ff' }}>{m.value}</p>
+                        <p className="text-[10px] mt-1" style={{ color: '#475569' }}>{m.change}</p>
+                      </div>
+                    ))}
+                  </div>
+                  {/* Fake chart */}
+                  <div className="rounded-lg p-4 h-32 flex items-end gap-1.5" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}>
+                    {[40, 65, 45, 80, 55, 90, 70, 95, 60, 85, 75, 100].map((h, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ height: 0 }}
+                        whileInView={{ height: `${h}%` }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.6, delay: i * 0.05, ease: [0.22, 1, 0.36, 1] }}
+                        className="flex-1 rounded-sm"
+                        style={{ background: `linear-gradient(to top, rgba(0,240,255,0.3), rgba(0,240,255,0.8))` }}
+                      />
+                    ))}
+                  </div>
+                </div>
               </div>
+            </ParallaxBlock>
+          </ScrollReveal>
+        </div>
+      </section>
+
+      {/* ═══ CERTIFICATION ═══ */}
+      <section id="cert" className="relative py-28 md:py-36" style={{ background: 'linear-gradient(180deg, #050508 0%, #0d0d16 50%, #050508 100%)' }}>
+        <div className="max-w-7xl mx-auto px-5">
+          <ScrollReveal className="text-center mb-16">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: '#22c55e' }}>
+              <Award className="h-3 w-3 inline mr-2" />Certificação
+            </span>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mt-3">
+              Prove suas
+              <br />
+              <span style={{ color: '#22c55e' }}>habilidades.</span>
+            </h2>
+            <p className="text-sm mt-4 max-w-md mx-auto" style={{ color: '#94a3b8' }}>
+              Certificações práticas sem múltipla escolha. 24 horas para comprometer o alvo e escrever o relatório.
+            </p>
+          </ScrollReveal>
+
+          <div className="grid md:grid-cols-3 gap-4 max-w-4xl mx-auto">
+            {certifications.map((cert, i) => (
+              <ScrollReveal key={cert.abbr} delay={i * 0.1}>
+                <div
+                  className="rounded-xl p-6 text-center h-full group transition-all duration-500 hover:translate-y-[-4px] hover:shadow-[0_0_30px_rgba(34,197,94,0.1)]"
+                  style={{ background: '#0a0a12', border: '1px solid rgba(34,197,94,0.08)' }}
+                >
+                  <div className="mx-auto w-16 h-16 rounded-xl flex items-center justify-center mb-5 font-bold text-lg" style={{ background: 'rgba(34,197,94,0.1)', color: '#22c55e', border: '1px solid rgba(34,197,94,0.15)' }}>
+                    {cert.abbr}
+                  </div>
+                  <h4 className="text-sm font-bold mb-2">{cert.name}</h4>
+                  <p className="text-xs leading-relaxed" style={{ color: '#64748b' }}>{cert.desc}</p>
+                </div>
+              </ScrollReveal>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ═══ TESTIMONIALS ═══ */}
-      <section className="py-20 md:py-28">
-        <div className="container px-4">
-          <div className="text-center mb-14">
-            <span className="font-mono-label text-[11px] uppercase tracking-widest text-primary">
-              <MessageCircle className="h-3 w-3 inline mr-1.5" />Depoimentos
-            </span>
-            <h2 className="font-display text-3xl sm:text-4xl mt-3">O que nossos alunos <span className="text-gradient">dizem</span></h2>
-            <p className="text-muted-foreground mt-3 text-sm max-w-md mx-auto">Estudantes de CC, SI e EC que já transformaram sua rotina de estudos.</p>
-          </div>
+      {/* ═══ RED TEAM / BLUE TEAM ═══ */}
+      <section className="relative py-28 md:py-36">
+        <div className="max-w-7xl mx-auto px-5">
+          <ScrollReveal className="text-center mb-16">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold">
+              Ataque. Defenda.
+              <br />
+              <span style={{ color: '#64748b' }}>Domine os dois lados.</span>
+            </h2>
+          </ScrollReveal>
 
-          {/* Featured testimonial */}
-          <div className="max-w-4xl mx-auto mb-6">
-            <div className="rounded-lg p-8 md:p-10 relative overflow-hidden bg-primary/[0.03]" style={{ border: '1px solid hsl(68 100% 64% / 0.15)' }}>
-              <span className="absolute top-4 left-6 font-display text-7xl md:text-8xl text-primary/10 leading-none select-none">"</span>
-              <div className="relative pt-8 md:pt-6">
-                <p className="text-base md:text-lg text-foreground/90 leading-relaxed italic max-w-2xl">
-                  "{testimonials[0].text}"
-                </p>
-                <div className="flex items-center gap-3 mt-6 pt-5" style={{ borderTop: '1px solid hsl(0 0% 100% / 0.06)' }}>
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold text-background" style={{ backgroundColor: testimonials[0].color }}>
-                    {testimonials[0].initials}
+          <div className="grid md:grid-cols-2 gap-4 max-w-4xl mx-auto">
+            <ScrollReveal delay={0.1}>
+              <div
+                className="rounded-xl p-8 relative overflow-hidden group transition-all duration-500 hover:shadow-[0_0_40px_rgba(239,68,68,0.1)]"
+                style={{ background: 'linear-gradient(135deg, #0a0a12, #120a0a)', border: '1px solid rgba(239,68,68,0.1)' }}
+              >
+                <div className="absolute top-0 right-0 w-40 h-40 rounded-full blur-[80px] opacity-10" style={{ background: '#ef4444' }} />
+                <div className="relative">
+                  <div className="p-3 rounded-lg inline-flex mb-5" style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.15)' }}>
+                    <Crosshair className="h-5 w-5" style={{ color: '#ef4444' }} />
                   </div>
-                  <div>
-                    <p className="font-semibold text-sm">{testimonials[0].name}</p>
-                    <div className="flex items-center gap-2">
-                      <span className="px-1.5 py-0.5 rounded text-[9px] font-mono-label uppercase tracking-wider bg-accent/15 text-accent" style={{ border: '1px solid hsl(142 71% 45% / 0.2)' }}>
-                        {testimonials[0].course.split(' · ')[1]}
-                      </span>
-                      <span className="text-[11px] font-mono-label text-muted-foreground">{testimonials[0].course.split(' · ')[0]}</span>
+                  <h3 className="text-xl font-bold mb-2" style={{ color: '#ef4444' }}>Red Team</h3>
+                  <p className="text-sm leading-relaxed" style={{ color: '#94a3b8' }}>
+                    Simulações ofensivas, exploração de vulnerabilidades, engenharia social e evasão de detecção.
+                  </p>
+                  <ul className="mt-4 space-y-2">
+                    {['Pentest Web & Network', 'Engenharia Social', 'Evasão de AV/EDR', 'Active Directory'].map(item => (
+                      <li key={item} className="flex items-center gap-2 text-xs" style={{ color: '#64748b' }}>
+                        <div className="w-1 h-1 rounded-full" style={{ background: '#ef4444' }} />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </ScrollReveal>
+
+            <ScrollReveal delay={0.2}>
+              <div
+                className="rounded-xl p-8 relative overflow-hidden group transition-all duration-500 hover:shadow-[0_0_40px_rgba(59,130,246,0.1)]"
+                style={{ background: 'linear-gradient(135deg, #0a0a12, #0a0a18)', border: '1px solid rgba(59,130,246,0.1)' }}
+              >
+                <div className="absolute top-0 right-0 w-40 h-40 rounded-full blur-[80px] opacity-10" style={{ background: '#3b82f6' }} />
+                <div className="relative">
+                  <div className="p-3 rounded-lg inline-flex mb-5" style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.15)' }}>
+                    <ShieldCheck className="h-5 w-5" style={{ color: '#3b82f6' }} />
+                  </div>
+                  <h3 className="text-xl font-bold mb-2" style={{ color: '#3b82f6' }}>Blue Team</h3>
+                  <p className="text-sm leading-relaxed" style={{ color: '#94a3b8' }}>
+                    Detecção de ameaças, análise forense, resposta a incidentes e hardening de infraestrutura.
+                  </p>
+                  <ul className="mt-4 space-y-2">
+                    {['SIEM & Log Analysis', 'Incident Response', 'Threat Hunting', 'Hardening'].map(item => (
+                      <li key={item} className="flex items-center gap-2 text-xs" style={{ color: '#64748b' }}>
+                        <div className="w-1 h-1 rounded-full" style={{ background: '#3b82f6' }} />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </ScrollReveal>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ TESTIMONIALS ═══ */}
+      <section className="relative py-28 md:py-36" style={{ background: 'linear-gradient(180deg, #050508, #0a0a14, #050508)' }}>
+        <div className="max-w-7xl mx-auto px-5">
+          <ScrollReveal className="text-center mb-16">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: '#00f0ff' }}>
+              <MessageCircle className="h-3 w-3 inline mr-2" />Depoimentos
+            </span>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mt-3">
+              Quem passou pelo
+              <br />
+              <span style={{ color: '#00f0ff' }}>terminal.</span>
+            </h2>
+          </ScrollReveal>
+
+          <div className="grid md:grid-cols-3 gap-4 max-w-5xl mx-auto">
+            {testimonials.map((t, i) => (
+              <ScrollReveal key={t.name} delay={i * 0.1}>
+                <div
+                  className="rounded-xl p-6 h-full transition-all duration-500 hover:translate-y-[-4px]"
+                  style={{ background: '#0a0a12', border: '1px solid rgba(255,255,255,0.06)' }}
+                >
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: t.color, color: '#050508' }}>
+                      {t.initials}
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold">{t.name}</p>
+                      <p className="text-[10px] uppercase tracking-wider" style={{ color: '#64748b' }}>{t.role}</p>
                     </div>
                   </div>
-                  <div className="ml-auto flex gap-0.5">
-                    {Array.from({ length: testimonials[0].rating }).map((_, j) => (
-                      <Star key={j} className="h-3.5 w-3.5 fill-primary text-primary" />
+                  <p className="text-xs leading-relaxed italic" style={{ color: '#94a3b8' }}>"{t.text}"</p>
+                  <div className="flex gap-0.5 mt-4">
+                    {Array.from({ length: 5 }).map((_, j) => (
+                      <Star key={j} className="h-3 w-3" style={{ color: '#00f0ff', fill: '#00f0ff' }} />
                     ))}
                   </div>
                 </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Secondary testimonials */}
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 max-w-4xl mx-auto">
-            {testimonials.slice(1).map((t) => (
-              <div key={t.name} className="rounded-lg p-5 editorial-border-hover flex flex-col">
-                <div className="flex gap-0.5 mb-3">
-                  {Array.from({ length: t.rating }).map((_, j) => (
-                    <Star key={j} className="h-3 w-3 fill-primary text-primary" />
-                  ))}
-                </div>
-                <p className="text-xs text-muted-foreground leading-relaxed flex-1 italic">"{t.text}"</p>
-                <div className="flex items-center gap-2.5 mt-4 pt-3" style={{ borderTop: '1px solid hsl(0 0% 100% / 0.06)' }}>
-                  <div className="w-7 h-7 rounded-full flex items-center justify-center text-[9px] font-bold text-background shrink-0" style={{ backgroundColor: t.color }}>
-                    {t.initials}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="font-semibold text-xs truncate">{t.name}</p>
-                    <div className="flex items-center gap-1.5">
-                      <span className="px-1 py-px rounded text-[8px] font-mono-label uppercase tracking-wider bg-primary/10 text-primary">
-                        {t.course.split(' · ')[1]}
-                      </span>
-                      <span className="text-[9px] font-mono-label text-muted-foreground">{t.course.split(' · ')[0]}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              </ScrollReveal>
             ))}
           </div>
         </div>
       </section>
 
       {/* ═══ FAQ ═══ */}
-      <section className="py-20 md:py-28">
-        <div className="container px-4">
-          <div className="text-center mb-14">
-            <span className="font-mono-label text-[11px] uppercase tracking-widest text-primary">
-              <HelpCircle className="h-3 w-3 inline mr-1.5" />FAQ
-            </span>
-            <h2 className="font-display text-3xl sm:text-4xl mt-3">Perguntas <span className="text-gradient">frequentes</span></h2>
-          </div>
+      <section className="relative py-28 md:py-36">
+        <div className="max-w-2xl mx-auto px-5">
+          <ScrollReveal className="text-center mb-14">
+            <h2 className="text-3xl sm:text-4xl font-bold">Perguntas frequentes</h2>
+          </ScrollReveal>
 
-          <div className="max-w-2xl mx-auto space-y-2">
+          <div className="space-y-2">
             {faqs.map((faq, i) => (
-              <div key={i} className="rounded-lg editorial-border overflow-hidden">
-                <button onClick={() => setOpenFaq(openFaq === i ? null : i)} className="w-full flex items-center justify-between p-4 text-left hover:bg-secondary/50 transition-colors">
-                  <span className="text-sm font-medium pr-4">{faq.q}</span>
-                  <ChevronDown className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-300 ${openFaq === i ? 'rotate-180' : ''}`} />
-                </button>
-                <div className="overflow-hidden transition-all duration-300" style={{ maxHeight: openFaq === i ? '200px' : '0', opacity: openFaq === i ? 1 : 0 }}>
-                  <p className="px-4 pb-4 text-sm text-muted-foreground leading-relaxed">{faq.a}</p>
+              <ScrollReveal key={i} delay={i * 0.05}>
+                <div className="rounded-xl overflow-hidden" style={{ background: '#0a0a12', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <button
+                    onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                    className="w-full flex items-center justify-between p-5 text-left transition-colors hover:bg-white/[0.02]"
+                  >
+                    <span className="text-sm font-medium pr-4">{faq.q}</span>
+                    <motion.div animate={{ rotate: openFaq === i ? 180 : 0 }} transition={{ duration: 0.3 }}>
+                      <ChevronRight className="h-4 w-4 rotate-90" style={{ color: '#64748b' }} />
+                    </motion.div>
+                  </button>
+                  <motion.div
+                    initial={false}
+                    animate={{ height: openFaq === i ? 'auto' : 0, opacity: openFaq === i ? 1 : 0 }}
+                    transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                    className="overflow-hidden"
+                  >
+                    <p className="px-5 pb-5 text-sm leading-relaxed" style={{ color: '#94a3b8' }}>{faq.a}</p>
+                  </motion.div>
                 </div>
-              </div>
+              </ScrollReveal>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ═══ SECURITY ═══ */}
-      <section className="py-20 md:py-28" style={{ borderTop: '1px solid hsl(0 0% 100% / 0.06)' }}>
-        <div className="container px-4">
-          <div className="max-w-2xl mx-auto text-center">
-            <div className="mx-auto mb-5 w-16 h-16 rounded-lg editorial-border flex items-center justify-center bg-card">
-              <Lock className="h-8 w-8 text-primary" />
-            </div>
-            <h2 className="font-display text-3xl mb-4">Conteúdo <span className="text-gradient">Protegido</span></h2>
-            <p className="text-muted-foreground text-sm leading-relaxed mb-6">
-              Marca d'água personalizada, bloqueio de PrintScreen e clique direito.
-            </p>
-            <div className="flex flex-wrap justify-center gap-2">
-              {['Marca d\'água dinâmica', 'Anti-PrintScreen', 'Anti-clique direito', 'Log de acessos'].map((item) => (
-                <span key={item} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-primary/10 text-[11px] font-mono-label uppercase tracking-wider text-primary" style={{ border: '1px solid hsl(68 100% 64% / 0.2)' }}>
-                  <Shield className="h-3 w-3" /> {item}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* ═══ FINAL CTA ═══ */}
+      <section className="relative py-28 md:py-36">
+        <GlowOrb className="w-[600px] h-[400px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" style={{ background: 'rgba(0,240,255,0.05)' } as any} />
 
-      {/* ═══ CTA ═══ */}
-      <section className="py-20 md:py-28">
-        <div className="container px-4">
-          <div className="max-w-xl mx-auto text-center rounded-lg p-8 md:p-12 editorial-border bg-card relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.02] to-accent/[0.02]" />
-            <div className="relative">
-              <h2 className="font-display text-3xl mb-3">Pronto para <span className="text-gradient-animated">revisar</span>?</h2>
-              <p className="text-muted-foreground mb-6 text-sm leading-relaxed">
-                Acesse suas apostilas, estude com foco e chegue preparado para a prova.
-              </p>
-              <Button size="lg" onClick={() => navigate('/login')}>
-                Começar agora <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </div>
+        <ScrollReveal className="max-w-3xl mx-auto px-5 text-center relative">
+          <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold leading-tight">
+            Pare de assistir.
+            <br />
+            Comece a
+            <br />
+            <span style={{ color: '#00f0ff' }}>explorar.</span>
+          </h2>
+          <p className="text-sm mt-6 max-w-md mx-auto" style={{ color: '#94a3b8' }}>
+            Acesse labs práticos, trilhas estruturadas e certificações reais.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-10">
+            <button
+              onClick={() => navigate('/login')}
+              className="inline-flex items-center gap-3 px-8 py-4 rounded-lg text-sm font-bold uppercase tracking-wider transition-all duration-300 hover:shadow-[0_0_40px_rgba(0,240,255,0.3)]"
+              style={{ background: '#00f0ff', color: '#050508' }}
+            >
+              <Terminal className="h-4 w-4" /> Acessar plataforma
+            </button>
+            <button
+              onClick={handleInstallPWA}
+              className="inline-flex items-center gap-2 text-sm font-semibold transition-colors"
+              style={{ color: '#64748b' }}
+            >
+              <Download className="h-4 w-4" /> Instalar app
+            </button>
           </div>
-        </div>
+        </ScrollReveal>
       </section>
 
       {/* ═══ FOOTER ═══ */}
-      <footer style={{ borderTop: '1px solid hsl(0 0% 100% / 0.06)' }} className="py-10">
-        <div className="container flex flex-col items-center gap-4 text-sm text-muted-foreground px-4">
+      <footer className="py-10 px-5" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+        <div className="max-w-7xl mx-auto flex flex-col items-center gap-4">
           <div className="flex items-center gap-2.5">
             <img src={logoDark} alt="Decode Analytics" className="h-6 w-6 rounded object-cover" />
-            <span className="font-mono-label text-[11px] uppercase tracking-widest text-foreground">Decode Analytics</span>
+            <span className="text-[11px] font-semibold uppercase tracking-[0.2em]" style={{ color: '#00f0ff' }}>Decode Analytics</span>
           </div>
-          <p className="text-[11px] font-mono-label text-center uppercase tracking-wider">
+          <p className="text-[10px] uppercase tracking-[0.15em] text-center" style={{ color: '#475569' }}>
             © {new Date().getFullYear()} Decode Analytics Academy · Desenvolvido por Kaique Aurélio
           </p>
         </div>
@@ -392,35 +754,41 @@ export default function LandingPage() {
 
       {/* Install Guide Modal */}
       <Dialog open={showInstallGuide} onOpenChange={setShowInstallGuide}>
-        <DialogContent className="max-w-sm bg-card">
+        <DialogContent className="max-w-sm" style={{ background: '#0a0a12', border: '1px solid rgba(0,240,255,0.1)', color: '#e2e8f0' }}>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-base">
-              <Smartphone className="w-5 h-5 text-primary" />
+              <Smartphone className="w-5 h-5" style={{ color: '#00f0ff' }} />
               Instalar o App
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm" style={{ color: '#94a3b8' }}>
               Para instalar, abra o site publicado no navegador do seu celular:
             </p>
-            <div className="p-3 rounded-lg bg-primary/10" style={{ border: '1px solid hsl(68 100% 64% / 0.2)' }}>
-              <p className="text-[11px] font-mono-label text-primary mb-1 uppercase tracking-wider">Link:</p>
+            <div className="p-3 rounded-lg" style={{ background: 'rgba(0,240,255,0.06)', border: '1px solid rgba(0,240,255,0.12)' }}>
+              <p className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: '#00f0ff' }}>Link:</p>
               <a href="https://decodeanalyticsacademy.lovable.app" target="_blank" rel="noopener noreferrer"
-                className="text-sm font-semibold text-primary underline break-all">
+                className="text-sm font-semibold underline break-all" style={{ color: '#00f0ff' }}>
                 decodeanalyticsacademy.lovable.app
               </a>
             </div>
-            <div className="space-y-3 text-sm text-muted-foreground">
-              <div className="p-3 rounded-lg bg-secondary">
-                <p className="font-semibold text-foreground mb-1">iPhone / iPad (Safari)</p>
+            <div className="space-y-3 text-sm" style={{ color: '#94a3b8' }}>
+              <div className="p-3 rounded-lg" style={{ background: 'rgba(255,255,255,0.03)' }}>
+                <p className="font-semibold mb-1" style={{ color: '#e2e8f0' }}>iPhone / iPad (Safari)</p>
                 <p>1. Abra no <strong>Safari</strong> → 2. <strong>Compartilhar ↑</strong> → 3. <strong>Adicionar à Tela</strong></p>
               </div>
-              <div className="p-3 rounded-lg bg-secondary">
-                <p className="font-semibold text-foreground mb-1">Android (Chrome)</p>
+              <div className="p-3 rounded-lg" style={{ background: 'rgba(255,255,255,0.03)' }}>
+                <p className="font-semibold mb-1" style={{ color: '#e2e8f0' }}>Android (Chrome)</p>
                 <p>1. Abra no <strong>Chrome</strong> → 2. <strong>Menu ⋮</strong> → 3. <strong>Instalar app</strong></p>
               </div>
             </div>
-            <Button onClick={() => setShowInstallGuide(false)} className="w-full">Entendi</Button>
+            <button
+              onClick={() => setShowInstallGuide(false)}
+              className="w-full py-2.5 rounded-lg text-sm font-semibold"
+              style={{ background: '#00f0ff', color: '#050508' }}
+            >
+              Entendi
+            </button>
           </div>
         </DialogContent>
       </Dialog>
