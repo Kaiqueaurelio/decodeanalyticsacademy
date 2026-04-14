@@ -64,8 +64,8 @@ function CountUp({ value, suffix = '' }: { value: number; suffix?: string }) {
 }
 
 /* ─── GLOW ORB ─── */
-function GlowOrb({ className }: { className: string }) {
-  return <div className={`absolute rounded-full blur-[120px] pointer-events-none ${className}`} />;
+function GlowOrb({ className, style }: { className: string; style?: React.CSSProperties }) {
+  return <div className={`absolute rounded-full blur-[120px] pointer-events-none ${className}`} style={style} />;
 }
 
 /* ─── GRID BG ─── */
