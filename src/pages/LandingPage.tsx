@@ -4,10 +4,10 @@ import { motion, useScroll, useTransform, useInView } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
-  ArrowRight, Terminal, Shield, ShieldCheck, Cpu, Wifi, Lock,
-  Bug, Eye, Code2, Server, Database, Globe, Crosshair, Award,
+  ArrowRight, BookOpen, GraduationCap, Cpu, Brain, Award,
   ChevronRight, Download, Smartphone, Star, MessageCircle,
-  Layers, Zap, Target, BarChart3, FileCode2, Users,
+  Layers, Zap, Target, BarChart3, FileText, Users, PenLine,
+  Flame, TrendingUp, Clock, CheckCircle,
 } from 'lucide-react';
 import logoDark from '@/assets/logo-dark.jpeg';
 
