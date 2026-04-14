@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef, useMemo, useContext, createContext } from 'react';
+import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
