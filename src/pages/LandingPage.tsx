@@ -81,39 +81,31 @@ function CyberGrid() {
 }
 
 /* ─── DATA ─── */
-const labs = [
-  { icon: Bug, name: 'SQL Injection Lab', difficulty: 'Fácil', color: '#00f0ff' },
-  { icon: Shield, name: 'XSS Attack Vectors', difficulty: 'Médio', color: '#a855f7' },
-  { icon: Lock, name: 'Buffer Overflow', difficulty: 'Difícil', color: '#f43f5e' },
-  { icon: Wifi, name: 'Network Sniffing', difficulty: 'Médio', color: '#a855f7' },
-  { icon: Server, name: 'Privilege Escalation', difficulty: 'Difícil', color: '#f43f5e' },
-  { icon: Eye, name: 'OSINT Recon', difficulty: 'Fácil', color: '#00f0ff' },
+const features = [
+  { icon: BookOpen, name: 'Apostilas Interativas', desc: 'Conteúdo estruturado por disciplina', color: '#00f0ff' },
+  { icon: PenLine, name: 'Exercícios de Fixação', desc: 'Questões com gabarito e explicação', color: '#a855f7' },
+  { icon: Brain, name: 'Flashcards Inteligentes', desc: 'Revisão espaçada para memorização', color: '#22c55e' },
+  { icon: Flame, name: 'Gamificação & XP', desc: 'Pontos, badges e ranking', color: '#f59e0b' },
 ];
 
 const roadmap = [
-  { phase: '01', title: 'Fundamentos', desc: 'Linux, Redes, Protocolos TCP/IP e arquitetura de sistemas.', icon: Terminal },
-  { phase: '02', title: 'Reconhecimento', desc: 'OSINT, Nmap, enumeração de serviços e mapeamento de superfície.', icon: Crosshair },
-  { phase: '03', title: 'Exploração', desc: 'Exploits, injeções, escalação de privilégio e evasão.', icon: Bug },
-  { phase: '04', title: 'Pós-Exploração', desc: 'Persistência, movimentação lateral, exfiltração e relatórios.', icon: Database },
+  { phase: '01', title: 'Fundamentos', desc: 'Lógica de programação, matemática discreta e introdução à computação.', icon: Cpu },
+  { phase: '02', title: 'Desenvolvimento', desc: 'Estrutura de dados, algoritmos, banco de dados e engenharia de software.', icon: Layers },
+  { phase: '03', title: 'Especialização', desc: 'Redes, segurança, inteligência artificial e computação em nuvem.', icon: Brain },
+  { phase: '04', title: 'Prática & Projetos', desc: 'Projetos integradores, estágio supervisionado e TCC.', icon: Target },
 ];
 
 const testimonials = [
-  { name: 'Ana Silva', role: 'Pentester Jr.', text: 'Os labs práticos me prepararam para o mercado real. Consegui minha primeira vaga em 4 meses.', initials: 'AS', color: '#00f0ff' },
-  { name: 'Carlos Santos', role: 'Red Team', text: 'Conteúdo técnico de alto nível. Melhor plataforma de cybersecurity que já usei no Brasil.', initials: 'CS', color: '#a855f7' },
-  { name: 'Juliana Costa', role: 'SOC Analyst', text: 'A trilha Blue Team me deu base sólida para atuar em SOC. Recomendo para quem quer entrar na área.', initials: 'JC', color: '#22c55e' },
-];
-
-const certifications = [
-  { name: 'Decode Certified Pentester', abbr: 'DCP', desc: 'Prove suas habilidades em pentest prático.' },
-  { name: 'Decode Red Team Operator', abbr: 'DRTO', desc: 'Certificação avançada em operações Red Team.' },
-  { name: 'Decode Blue Team Defender', abbr: 'DBTD', desc: 'Defesa, detecção e resposta a incidentes.' },
+  { name: 'Ana Silva', role: 'Aluna de CC - 4º Sem.', text: 'As apostilas e exercícios me ajudaram muito nas provas. Consegui aumentar minha média de 6 para 9!', initials: 'AS', color: '#00f0ff' },
+  { name: 'Carlos Santos', role: 'Aluno de SI - 6º Sem.', text: 'O sistema de flashcards é incrível para revisar antes das provas. Melhor plataforma de estudos.', initials: 'CS', color: '#a855f7' },
+  { name: 'Juliana Costa', role: 'Aluna de EC - 3º Sem.', text: 'A gamificação me motiva a estudar todos os dias. Já tenho um streak de 30 dias!', initials: 'JC', color: '#22c55e' },
 ];
 
 const faqs = [
-  { q: 'Preciso de experiência prévia?', a: 'Não. A trilha começa do zero com fundamentos de Linux e redes.' },
-  { q: 'Os labs são ambientes reais?', a: 'Sim. Máquinas vulneráveis isoladas para exploração segura.' },
-  { q: 'Como funciona a certificação?', a: 'Exame prático de 24h com relatório técnico. Sem múltipla escolha.' },
-  { q: 'Posso acessar pelo celular?', a: 'A plataforma é PWA. Labs exigem desktop para melhor experiência.' },
+  { q: 'Para quais cursos a plataforma é voltada?', a: 'Ciência da Computação, Sistemas de Informação e Engenharia da Computação — do 1º ao 8º semestre.' },
+  { q: 'Como funcionam os exercícios?', a: 'Questões de múltipla escolha com gabarito comentado e explicação detalhada para cada alternativa.' },
+  { q: 'Posso acessar pelo celular?', a: 'Sim! A plataforma é um PWA — funciona no navegador e pode ser instalada como app.' },
+  { q: 'O conteúdo é gratuito?', a: 'Todo o conteúdo disponível na plataforma é acessível para alunos cadastrados.' },
 ];
 
 export default function LandingPage() {
