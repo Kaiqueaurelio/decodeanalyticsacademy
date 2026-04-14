@@ -26,6 +26,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { toast } from 'sonner';
 import type { Tables } from '@/integrations/supabase/types';
 import { AnimatedCounter } from '@/components/AnimatedCounter';
+import { ActivityChart } from '@/components/ActivityChart';
 
 type Apostila = Tables<'apostilas'>;
 type Exercise = Tables<'exercises'>;
