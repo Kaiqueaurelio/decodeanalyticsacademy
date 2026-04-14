@@ -203,12 +203,11 @@ export default function LandingPage() {
                 transition={{ duration: 0.8, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
                 className="text-4xl sm:text-5xl md:text-6xl lg:text-[3.8rem] font-bold leading-[1.05] tracking-tight"
               >
-                Aprenda{' '}
-                <span style={{ color: '#00f0ff' }}>pentest</span>
+                Sua plataforma
                 <br />
-                quebrando sistemas
+                <span style={{ color: '#00f0ff' }}>de estudos</span>
                 <br />
-                <span className="text-gray-500">de verdade.</span>
+                <span className="text-gray-500">completa.</span>
               </motion.h1>
 
               <motion.p
@@ -218,8 +217,8 @@ export default function LandingPage() {
                 className="text-base md:text-lg leading-relaxed max-w-lg"
                 style={{ color: '#94a3b8' }}
               >
-                Labs práticos, exploração real e certificação reconhecida.
-                Saia do tutorial — entre no terminal.
+                Apostilas, exercícios, flashcards e acompanhamento de progresso.
+                Tudo que você precisa para dominar suas disciplinas.
               </motion.p>
 
               <motion.div
