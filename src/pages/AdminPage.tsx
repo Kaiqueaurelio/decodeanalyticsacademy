@@ -1163,7 +1163,7 @@ export default function AdminPage() {
 
                 {selectedApostila && (
                   <>
-                    {(exercises[selectedApostila]?.length || 0) === 0 && (
+                    {(exercises[selectedApostila]?.length || 0) === 0 && !bulkExerciseMode && (
                       <div className="text-center py-10 text-muted-foreground">
                         <AlertCircle className="h-10 w-10 mx-auto mb-3 opacity-20" />
                         <p className="text-sm">Nenhum exercício para esta apostila.</p>
@@ -1189,26 +1189,92 @@ export default function AdminPage() {
                       ))}
                     </div>
 
-                    <Card>
-                      <CardContent className="p-5 space-y-3">
-                        <h3 className="font-semibold text-sm">Novo Exercício</h3>
-                        <Textarea value={exQuestion} onChange={e => setExQuestion(e.target.value)} placeholder="Pergunta" rows={2} />
-                        {exOptions.map((o, i) => (
-                          <div key={i} className="flex items-center gap-2">
-                            <span className="text-sm font-medium w-6">{String.fromCharCode(65 + i)})</span>
-                            <Input value={o} onChange={e => { const n = [...exOptions]; n[i] = e.target.value; setExOptions(n); }} placeholder={`Opção ${String.fromCharCode(65 + i)}`} />
+                    {/* Toggle between single and bulk mode */}
+                    <div className="flex items-center gap-2">
+                      <div className="inline-flex bg-muted rounded-full p-0.5">
+                        <button
+                          onClick={() => setBulkExerciseMode(false)}
+                          className={`text-[10px] font-medium px-3 py-1 rounded-full transition-colors ${!bulkExerciseMode ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                        >
+                          ✏️ Individual
+                        </button>
+                        <button
+                          onClick={() => setBulkExerciseMode(true)}
+                          className={`text-[10px] font-medium px-3 py-1 rounded-full transition-colors ${bulkExerciseMode ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                        >
+                          📋 Importar em Lote
+                        </button>
+                      </div>
+                    </div>
+
+                    {bulkExerciseMode ? (
+                      <Card>
+                        <CardContent className="p-5 space-y-3">
+                          <h3 className="font-semibold text-sm flex items-center gap-2">
+                            <FileText className="h-4 w-4 text-primary" />
+                            Importar Exercícios em Lote
+                          </h3>
+                          <p className="text-[10px] text-muted-foreground leading-relaxed">
+                            Cole as perguntas no formato abaixo. Separe cada exercício com uma linha em branco:
+                          </p>
+                          <div className="bg-muted/50 rounded-lg p-3 text-[10px] font-mono text-muted-foreground leading-relaxed">
+                            <p>Qual é a capital do Brasil?</p>
+                            <p>A) São Paulo</p>
+                            <p>B) Rio de Janeiro</p>
+                            <p>C) Brasília</p>
+                            <p>D) Salvador</p>
+                            <p>Gabarito: C</p>
+                            <p>Explicação: Brasília é a capital federal desde 1960.</p>
+                            <p className="mt-2 text-primary">(linha em branco para separar)</p>
+                            <p>Próxima pergunta aqui...</p>
                           </div>
-                        ))}
-                        <div><Label className="text-xs">Resposta correta</Label>
-                          <Select value={exCorrect} onValueChange={setExCorrect}>
-                            <SelectTrigger><SelectValue /></SelectTrigger>
-                            <SelectContent>{['A','B','C','D'].map(l => <SelectItem key={l} value={l}>{l}</SelectItem>)}</SelectContent>
-                          </Select>
-                        </div>
-                        <div><Label className="text-xs">Explicação (opcional)</Label><Textarea value={exExplanation} onChange={e => setExExplanation(e.target.value)} rows={2} /></div>
-                        <Button onClick={addExercise} className="w-full gradient-primary text-primary-foreground">Adicionar</Button>
-                      </CardContent>
-                    </Card>
+                          <Textarea
+                            value={bulkExerciseText}
+                            onChange={e => setBulkExerciseText(e.target.value)}
+                            placeholder="Cole aqui suas perguntas, alternativas, gabarito e explicação..."
+                            rows={12}
+                            className="font-mono text-xs"
+                          />
+                          {bulkExerciseText.trim() && (
+                            <p className="text-[10px] text-muted-foreground">
+                              {parseBulkExercises(bulkExerciseText).length} exercício(s) detectado(s)
+                            </p>
+                          )}
+                          <Button
+                            onClick={handleBulkExerciseImport}
+                            disabled={!bulkExerciseText.trim() || bulkExerciseImporting}
+                            className="w-full gradient-primary text-primary-foreground"
+                          >
+                            {bulkExerciseImporting ? (
+                              <><Loader2 className="h-4 w-4 animate-spin mr-1.5" /> Importando...</>
+                            ) : (
+                              'Importar Exercícios'
+                            )}
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    ) : (
+                      <Card>
+                        <CardContent className="p-5 space-y-3">
+                          <h3 className="font-semibold text-sm">Novo Exercício</h3>
+                          <Textarea value={exQuestion} onChange={e => setExQuestion(e.target.value)} placeholder="Pergunta" rows={2} />
+                          {exOptions.map((o, i) => (
+                            <div key={i} className="flex items-center gap-2">
+                              <span className="text-sm font-medium w-6">{String.fromCharCode(65 + i)})</span>
+                              <Input value={o} onChange={e => { const n = [...exOptions]; n[i] = e.target.value; setExOptions(n); }} placeholder={`Opção ${String.fromCharCode(65 + i)}`} />
+                            </div>
+                          ))}
+                          <div><Label className="text-xs">Resposta correta</Label>
+                            <Select value={exCorrect} onValueChange={setExCorrect}>
+                              <SelectTrigger><SelectValue /></SelectTrigger>
+                              <SelectContent>{['A','B','C','D'].map(l => <SelectItem key={l} value={l}>{l}</SelectItem>)}</SelectContent>
+                            </Select>
+                          </div>
+                          <div><Label className="text-xs">Explicação (opcional)</Label><Textarea value={exExplanation} onChange={e => setExExplanation(e.target.value)} rows={2} /></div>
+                          <Button onClick={addExercise} className="w-full gradient-primary text-primary-foreground">Adicionar</Button>
+                        </CardContent>
+                      </Card>
+                    )}
                   </>
                 )}
               </div>
