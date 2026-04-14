@@ -171,9 +171,9 @@ function AdminSidebar({ tab, setTab, stats, sidebarOpen, setSidebarOpen }: {
 }
 
 // ─── Overview Tab ───────────────────────────────────────────────
-function OverviewTab({ apostilas, exercises, allAnswers, materials, users, setTab }: {
+function OverviewTab({ apostilas, exercises, allAnswers, materials, users, setTab, loading }: {
   apostilas: Apostila[]; exercises: Record<string, Exercise[]>; allAnswers: any[];
-  materials: Material[]; users: any[]; setTab: (t: Tab) => void;
+  materials: Material[]; users: any[]; setTab: (t: Tab) => void; loading?: boolean;
 }) {
   const totalExercises = Object.values(exercises).flat().length;
   const totalAnswers = allAnswers.length;
@@ -188,8 +188,26 @@ function OverviewTab({ apostilas, exercises, allAnswers, materials, users, setTa
     { icon: CheckCircle, label: 'Respostas', value: totalAnswers, sub: `${correctAnswers} corretas`, color: 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]' },
     { icon: Users, label: 'Usuários', value: users.length, sub: `${blocked} bloqueados`, color: 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))]' },
     { icon: FolderOpen, label: 'Materiais', value: materials.length, sub: 'arquivos', color: 'bg-primary/10 text-primary' },
-    { icon: TrendingUp, label: 'Aproveitamento', value: `${approvalRate}%`, sub: 'geral', color: 'bg-accent text-accent-foreground' },
+    { icon: TrendingUp, label: 'Aproveitamento', value: approvalRate, sub: 'geral', color: 'bg-accent text-accent-foreground', suffix: '%' },
   ];
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="skeleton-shimmer h-8 w-40 rounded" />
+        <div className="grid gap-4 grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3, 4, 5, 6].map(i => (
+            <div key={i} className="skeleton-shimmer h-28 rounded-xl" />
+          ))}
+        </div>
+        <div className="skeleton-shimmer h-40 rounded-xl" />
+        <div className="grid gap-6 lg:grid-cols-2">
+          <div className="skeleton-shimmer h-64 rounded-xl" />
+          <div className="skeleton-shimmer h-64 rounded-xl" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -200,103 +218,171 @@ function OverviewTab({ apostilas, exercises, allAnswers, materials, users, setTa
 
       {/* Stats Grid */}
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-3">
-        {statCards.map(s => (
-          <Card key={s.label} className="overflow-hidden hover:shadow-md transition-shadow">
-            <CardContent className="p-5">
-              <div className="flex items-center gap-3 mb-3">
-                <div className={`rounded-xl p-2.5 ${s.color}`}>
-                  <s.icon className="h-5 w-5" />
+        {statCards.map((s, i) => (
+          <motion.div
+            key={s.label}
+            initial={{ opacity: 0, y: 20, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ type: 'spring', stiffness: 260, damping: 20, delay: i * 0.08 }}
+          >
+            <Card className="overflow-hidden hover-lift">
+              <CardContent className="p-5">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className={`rounded-xl p-2.5 ${s.color}`}>
+                    <s.icon className="h-5 w-5" />
+                  </div>
                 </div>
-              </div>
-              <p className="text-3xl font-bold text-foreground">{s.value}</p>
-              <p className="text-xs text-muted-foreground mt-1">{s.label} · {s.sub}</p>
-            </CardContent>
-          </Card>
+                <p className="text-3xl font-bold text-foreground">
+                  <AnimatedCounter end={typeof s.value === 'number' ? s.value : 0} suffix={(s as any).suffix} />
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">{s.label} · {s.sub}</p>
+              </CardContent>
+            </Card>
+          </motion.div>
         ))}
       </div>
 
       {/* Performance Card */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
-            <Activity className="h-4 w-4 text-primary" />
-            Desempenho dos Alunos
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">Taxa de acerto geral</span>
-            <span className="text-lg font-bold text-primary">{approvalRate}%</span>
-          </div>
-          <Progress value={approvalRate} className="h-3" />
-          <div className="flex gap-6 text-sm text-muted-foreground">
-            <span className="flex items-center gap-1.5">
-              <span className="h-3 w-3 rounded-full bg-[hsl(var(--success))]" /> {correctAnswers} acertos
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="h-3 w-3 rounded-full bg-destructive" /> {totalAnswers - correctAnswers} erros
-            </span>
-          </div>
-        </CardContent>
-      </Card>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ type: 'spring', stiffness: 260, damping: 20, delay: 0.5 }}
+      >
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Activity className="h-4 w-4 text-primary" />
+              Desempenho dos Alunos
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Taxa de acerto geral</span>
+              <span className="text-lg font-bold text-primary"><AnimatedCounter end={approvalRate} suffix="%" /></span>
+            </div>
+            <Progress value={approvalRate} className="h-3" />
+            <div className="flex gap-6 text-sm text-muted-foreground">
+              <span className="flex items-center gap-1.5">
+                <span className="h-3 w-3 rounded-full bg-[hsl(var(--success))]" /> {correctAnswers} acertos
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="h-3 w-3 rounded-full bg-destructive" /> {totalAnswers - correctAnswers} erros
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Blocked Users Alert */}
+      {blocked > 0 && (
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ type: 'spring', stiffness: 260, damping: 20, delay: 0.6 }}
+        >
+          <Card className="border-destructive/30 bg-destructive/5">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="rounded-lg bg-destructive/10 p-2.5">
+                    <ShieldBan className="h-5 w-5 text-destructive" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold">{blocked} usuário(s) bloqueado(s)</p>
+                    <p className="text-xs text-muted-foreground">Contas aguardando revisão ou desbloqueio</p>
+                  </div>
+                </div>
+                <Button size="sm" variant="outline" className="text-xs" onClick={() => setTab('users')}>
+                  Gerenciar
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
 
       {/* Two-column layout */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Recent Apostilas */}
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Clock className="h-4 w-4 text-muted-foreground" /> Apostilas Recentes
-              </CardTitle>
-              <Button size="sm" variant="ghost" className="text-xs h-7" onClick={() => setTab('apostilas')}>
-                Ver todas
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {apostilas.slice(0, 5).map(a => (
-              <div key={a.id} className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-muted/50 transition-colors">
-                <span className={`h-2.5 w-2.5 rounded-full shrink-0 ${a.published ? 'bg-[hsl(var(--success))]' : 'bg-muted-foreground'}`} />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{a.title}</p>
-                  <p className="text-[10px] text-muted-foreground">{a.category} · {exercises[a.id]?.length || 0} exercícios</p>
-                </div>
-                <Badge variant={a.published ? 'default' : 'secondary'} className="text-[10px] shrink-0">
-                  {a.published ? 'Publicada' : 'Oculta'}
-                </Badge>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: 'spring', stiffness: 260, damping: 20, delay: 0.7 }}
+        >
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-muted-foreground" /> Apostilas Recentes
+                </CardTitle>
+                <Button size="sm" variant="ghost" className="text-xs h-7" onClick={() => setTab('apostilas')}>
+                  Ver todas
+                </Button>
               </div>
-            ))}
-            {apostilas.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">Nenhuma apostila criada.</p>}
-          </CardContent>
-        </Card>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {apostilas.slice(0, 5).map((a, i) => (
+                <motion.div
+                  key={a.id}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.8 + i * 0.06 }}
+                  className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-muted/50 transition-colors"
+                >
+                  <span className={`h-2.5 w-2.5 rounded-full shrink-0 ${a.published ? 'bg-[hsl(var(--success))]' : 'bg-muted-foreground'}`} />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{a.title}</p>
+                    <p className="text-[10px] text-muted-foreground">{a.category} · {exercises[a.id]?.length || 0} exercícios</p>
+                  </div>
+                  <Badge variant={a.published ? 'default' : 'secondary'} className="text-[10px] shrink-0">
+                    {a.published ? 'Publicada' : 'Oculta'}
+                  </Badge>
+                </motion.div>
+              ))}
+              {apostilas.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">Nenhuma apostila criada.</p>}
+            </CardContent>
+          </Card>
+        </motion.div>
 
         {/* Quick Actions */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Settings className="h-4 w-4 text-muted-foreground" /> Ações Rápidas
-            </CardTitle>
-            <CardDescription>Acesse as principais funcionalidades</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                { label: 'Importar URL', icon: LinkIcon, action: () => setTab('apostilas') },
-                { label: 'Criar Apostila', icon: Plus, action: () => setTab('apostilas') },
-                { label: 'Exercícios', icon: PenLine, action: () => setTab('exercises') },
-                { label: 'Upload Material', icon: Upload, action: () => setTab('materials') },
-                { label: 'Gerenciar Usuários', icon: Users, action: () => setTab('users') },
-                { label: 'Ver Materiais', icon: FolderOpen, action: () => setTab('materials') },
-              ].map(a => (
-                <Button key={a.label} variant="outline" className="h-auto py-4 flex-col gap-2 text-xs" onClick={a.action}>
-                  <a.icon className="h-5 w-5 text-primary" />
-                  {a.label}
-                </Button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: 'spring', stiffness: 260, damping: 20, delay: 0.8 }}
+        >
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Settings className="h-4 w-4 text-muted-foreground" /> Ações Rápidas
+              </CardTitle>
+              <CardDescription>Acesse as principais funcionalidades</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { label: 'Importar URL', icon: LinkIcon, action: () => setTab('apostilas') },
+                  { label: 'Criar Apostila', icon: Plus, action: () => setTab('apostilas') },
+                  { label: 'Exercícios', icon: PenLine, action: () => setTab('exercises') },
+                  { label: 'Upload Material', icon: Upload, action: () => setTab('materials') },
+                  { label: 'Gerenciar Usuários', icon: Users, action: () => setTab('users') },
+                  { label: 'Ver Materiais', icon: FolderOpen, action: () => setTab('materials') },
+                ].map((a, i) => (
+                  <motion.div
+                    key={a.label}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.9 + i * 0.05 }}
+                  >
+                    <Button variant="outline" className="h-auto py-4 flex-col gap-2 text-xs w-full" onClick={a.action}>
+                      <a.icon className="h-5 w-5 text-primary" />
+                      {a.label}
+                    </Button>
+                  </motion.div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
     </div>
   );
