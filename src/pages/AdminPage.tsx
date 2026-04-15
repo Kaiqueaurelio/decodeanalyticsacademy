@@ -1295,12 +1295,29 @@ export default function AdminPage() {
                             </div>
                           ) : aiExercises.length === 0 ? (
                             <>
-                              <p className="text-xs text-muted-foreground">A IA vai gerar 10 exercícios: 8 de múltipla escolha + 2 dissertativas.</p>
+                              <div className="grid grid-cols-2 gap-2">
+                                <div>
+                                  <Label className="text-[10px]">Múltipla escolha</Label>
+                                  <Select value={String(aiMcCount)} onValueChange={v => setAiMcCount(+v)}>
+                                    <SelectTrigger className="h-8 text-xs mt-0.5"><SelectValue /></SelectTrigger>
+                                    <SelectContent>{[0,2,4,5,6,8,10,12,15,18,20].map(n => <SelectItem key={n} value={String(n)}>{n}</SelectItem>)}</SelectContent>
+                                  </Select>
+                                </div>
+                                <div>
+                                  <Label className="text-[10px]">Dissertativas</Label>
+                                  <Select value={String(aiEssayCount)} onValueChange={v => setAiEssayCount(+v)}>
+                                    <SelectTrigger className="h-8 text-xs mt-0.5"><SelectValue /></SelectTrigger>
+                                    <SelectContent>{[0,1,2,3,4,5].map(n => <SelectItem key={n} value={String(n)}>{n}</SelectItem>)}</SelectContent>
+                                  </Select>
+                                </div>
+                              </div>
+                              <p className="text-[10px] text-muted-foreground">Total: {aiMcCount + aiEssayCount} exercícios ({aiMcCount} alternativa + {aiEssayCount} dissertativa)</p>
                               <Button onClick={async () => {
+                                if (aiMcCount + aiEssayCount < 1) { toast.error('Selecione pelo menos 1 exercício.'); return; }
                                 setAiGenerating(true);
                                 try {
                                   const { data, error } = await supabase.functions.invoke('generate-exercises', {
-                                    body: { content: a.content, title: a.title, count: 10 },
+                                    body: { content: a.content, title: a.title, mcCount: aiMcCount, essayCount: aiEssayCount },
                                   });
                                   if (error) throw error;
                                   if (data.error) throw new Error(data.error);
