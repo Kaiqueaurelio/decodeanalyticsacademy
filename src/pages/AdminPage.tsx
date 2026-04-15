@@ -448,10 +448,10 @@ export default function AdminPage() {
   const [bulkExerciseImporting, setBulkExerciseImporting] = useState(false);
   const [exerciseDialogMode, setExerciseDialogMode] = useState<'individual' | 'bulk' | 'ai'>('individual');
   const [aiGenerating, setAiGenerating] = useState(false);
-  const [aiExercises, setAiExercises] = useState<{ question: string; options: string[]; correct_answer: string; explanation: string }[]>([]);
+  const [aiExercises, setAiExercises] = useState<{ type?: string; question: string; options: string[]; correct_answer: string; explanation: string }[]>([]);
   const [editExerciseMode, setEditExerciseMode] = useState<'individual' | 'bulk' | 'ai'>('individual');
   const [editBulkText, setEditBulkText] = useState('');
-  const [editAiExercises, setEditAiExercises] = useState<{ question: string; options: string[]; correct_answer: string; explanation: string }[]>([]);
+  const [editAiExercises, setEditAiExercises] = useState<{ type?: string; question: string; options: string[]; correct_answer: string; explanation: string }[]>([]);
 
   // Materials state
   const [matTitle, setMatTitle] = useState('');
@@ -1248,12 +1248,12 @@ export default function AdminPage() {
                             </div>
                           ) : aiExercises.length === 0 ? (
                             <>
-                              <p className="text-xs text-muted-foreground">A IA vai analisar o conteúdo da apostila e gerar exercícios de múltipla escolha automaticamente.</p>
+                              <p className="text-xs text-muted-foreground">A IA vai gerar 10 exercícios: 8 de múltipla escolha + 2 dissertativas.</p>
                               <Button onClick={async () => {
                                 setAiGenerating(true);
                                 try {
                                   const { data, error } = await supabase.functions.invoke('generate-exercises', {
-                                    body: { content: a.content, title: a.title, count: 8 },
+                                    body: { content: a.content, title: a.title, count: 10 },
                                   });
                                   if (error) throw error;
                                   if (data.error) throw new Error(data.error);
@@ -1273,17 +1273,22 @@ export default function AdminPage() {
                                 {aiExercises.map((ex, i) => (
                                   <div key={i} className="border border-border/50 rounded-lg p-3 text-xs">
                                     <div className="flex justify-between items-start">
-                                      <p className="font-medium">{i + 1}. {ex.question}</p>
+                                      <p className="font-medium">
+                                        {i + 1}. {ex.question}
+                                        {ex.type === 'essay' && <Badge variant="outline" className="ml-2 text-[9px] py-0">Dissertativa</Badge>}
+                                      </p>
                                       <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => setAiExercises(prev => prev.filter((_, idx) => idx !== i))}>
                                         <Trash2 className="h-3 w-3 text-destructive" />
                                       </Button>
                                     </div>
-                                    <div className="mt-1 space-y-0.5 text-muted-foreground">
-                                      {ex.options.map((opt, oi) => (
-                                        <p key={oi} className={String.fromCharCode(65 + oi) === ex.correct_answer ? 'text-[hsl(var(--success))] font-medium' : ''}>{String.fromCharCode(65 + oi)}) {opt}</p>
-                                      ))}
-                                    </div>
-                                    {ex.explanation && <p className="mt-1 text-[10px] text-muted-foreground italic">💡 {ex.explanation}</p>}
+                                    {ex.type !== 'essay' && ex.options.length > 0 && (
+                                      <div className="mt-1 space-y-0.5 text-muted-foreground">
+                                        {ex.options.map((opt, oi) => (
+                                          <p key={oi} className={String.fromCharCode(65 + oi) === ex.correct_answer ? 'text-[hsl(var(--success))] font-medium' : ''}>{String.fromCharCode(65 + oi)}) {opt}</p>
+                                        ))}
+                                      </div>
+                                    )}
+                                    {ex.explanation && <p className="mt-1 text-[10px] text-muted-foreground italic">💡 {ex.type === 'essay' ? 'Resposta modelo: ' : ''}{ex.explanation}</p>}
                                   </div>
                                 ))}
                               </div>
@@ -1415,12 +1420,12 @@ export default function AdminPage() {
                                 </div>
                               ) : editAiExercises.length === 0 ? (
                                 <>
-                                  <p className="text-xs text-muted-foreground">Gere exercícios automaticamente a partir do conteúdo da apostila.</p>
+                                  <p className="text-xs text-muted-foreground">Gere 10 exercícios automaticamente (8 múltipla escolha + 2 dissertativas).</p>
                                   <Button onClick={async () => {
                                     setAiGenerating(true);
                                     try {
                                       const { data, error } = await supabase.functions.invoke('generate-exercises', {
-                                        body: { content: editContent, title: editTitle, count: 8 },
+                                        body: { content: editContent, title: editTitle, count: 10 },
                                       });
                                       if (error) throw error;
                                       if (data.error) throw new Error(data.error);
@@ -1439,15 +1444,18 @@ export default function AdminPage() {
                                     {editAiExercises.map((ex, i) => (
                                       <div key={i} className="border border-border/50 rounded-lg p-3 text-xs">
                                         <div className="flex justify-between items-start">
-                                          <p className="font-medium">{i + 1}. {ex.question}</p>
+                                          <p className="font-medium">
+                                            {i + 1}. {ex.question}
+                                            {ex.type === 'essay' && <Badge variant="outline" className="ml-2 text-[9px] py-0">Dissertativa</Badge>}
+                                          </p>
                                           <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => setEditAiExercises(prev => prev.filter((_, idx) => idx !== i))}>
                                             <Trash2 className="h-3 w-3 text-destructive" />
                                           </Button>
                                         </div>
-                                        {ex.options.map((opt, oi) => (
+                                        {ex.type !== 'essay' && ex.options.length > 0 && ex.options.map((opt, oi) => (
                                           <p key={oi} className={`text-[11px] mt-0.5 ${String.fromCharCode(65 + oi) === ex.correct_answer ? 'text-[hsl(var(--success))] font-medium' : 'text-muted-foreground'}`}>{String.fromCharCode(65 + oi)}) {opt}</p>
                                         ))}
-                                        {ex.explanation && <p className="mt-1 text-[10px] text-muted-foreground italic">💡 {ex.explanation}</p>}
+                                        {ex.explanation && <p className="mt-1 text-[10px] text-muted-foreground italic">💡 {ex.type === 'essay' ? 'Resposta modelo: ' : ''}{ex.explanation}</p>}
                                       </div>
                                     ))}
                                   </div>

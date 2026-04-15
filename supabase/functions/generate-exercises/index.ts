@@ -29,7 +29,6 @@ serve(async (req) => {
       );
     }
 
-    const exerciseCount = Math.min(Math.max(count || 8, 3), 15);
     const truncatedContent = content.slice(0, 12000);
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -43,11 +42,15 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `Voce e um professor universitario especialista em criar questoes de multipla escolha. Gere exatamente ${exerciseCount} exercicios de multipla escolha baseados no conteudo fornecido. Cada exercicio deve ter 4 alternativas (A, B, C, D), sendo apenas uma correta. Inclua uma explicacao clara para cada resposta correta.`,
+            content: `Voce e um professor universitario especialista em criar questoes para avaliacao. Gere exatamente 10 exercicios baseados no conteudo fornecido:
+- Os primeiros 8 exercicios devem ser de MULTIPLA ESCOLHA com 4 alternativas (A, B, C, D), sendo apenas uma correta. Inclua explicacao para cada.
+- Os ultimos 2 exercicios devem ser DISSERTATIVOS (perguntas abertas que exigem resposta escrita). Para dissertativas, nao inclua options, defina type como "essay", e inclua uma resposta modelo no campo explanation.
+
+IMPORTANTE: Sempre gere exatamente 8 questoes de multipla escolha seguidas de 2 questoes dissertativas.`,
           },
           {
             role: "user",
-            content: `Titulo: ${title || "Sem titulo"}\n\nConteudo:\n${truncatedContent}\n\nGere ${exerciseCount} exercicios de multipla escolha sobre este conteudo.`,
+            content: `Titulo: ${title || "Sem titulo"}\n\nConteudo:\n${truncatedContent}\n\nGere 10 exercicios (8 multipla escolha + 2 dissertativas) sobre este conteudo.`,
           },
         ],
         tools: [
@@ -55,7 +58,7 @@ serve(async (req) => {
             type: "function",
             function: {
               name: "return_exercises",
-              description: "Return the generated multiple choice exercises",
+              description: "Return the generated exercises (8 multiple choice + 2 essay)",
               parameters: {
                 type: "object",
                 properties: {
@@ -64,23 +67,27 @@ serve(async (req) => {
                     items: {
                       type: "object",
                       properties: {
+                        type: {
+                          type: "string",
+                          enum: ["multiple_choice", "essay"],
+                          description: "Type of exercise: multiple_choice or essay",
+                        },
                         question: { type: "string", description: "The question text" },
                         options: {
                           type: "array",
                           items: { type: "string" },
-                          description: "Array of 4 options (A, B, C, D text only)",
+                          description: "Array of 4 options for multiple choice (empty for essay)",
                         },
                         correct_answer: {
                           type: "string",
-                          enum: ["A", "B", "C", "D"],
-                          description: "The correct answer letter",
+                          description: "The correct answer letter (A-D) for multiple choice, or empty string for essay",
                         },
                         explanation: {
                           type: "string",
-                          description: "Explanation of the correct answer",
+                          description: "Explanation of the correct answer, or model answer for essay questions",
                         },
                       },
-                      required: ["question", "options", "correct_answer", "explanation"],
+                      required: ["type", "question", "explanation"],
                       additionalProperties: false,
                     },
                   },
@@ -128,8 +135,14 @@ serve(async (req) => {
 
     const parsed = JSON.parse(toolCall.function.arguments);
     const exercises = (parsed.exercises || []).filter(
-      (ex: any) => ex.question && Array.isArray(ex.options) && ex.options.length >= 2 && ex.correct_answer
-    );
+      (ex: any) => ex.question && ex.type
+    ).map((ex: any) => ({
+      type: ex.type || "multiple_choice",
+      question: ex.question,
+      options: ex.type === "essay" ? [] : (ex.options || []),
+      correct_answer: ex.type === "essay" ? "dissertativa" : (ex.correct_answer || "A"),
+      explanation: ex.explanation || "",
+    }));
 
     return new Response(JSON.stringify({ exercises }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
