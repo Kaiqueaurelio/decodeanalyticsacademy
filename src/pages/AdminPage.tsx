@@ -1248,12 +1248,12 @@ export default function AdminPage() {
                             </div>
                           ) : aiExercises.length === 0 ? (
                             <>
-                              <p className="text-xs text-muted-foreground">A IA vai analisar o conteúdo da apostila e gerar exercícios de múltipla escolha automaticamente.</p>
+                              <p className="text-xs text-muted-foreground">A IA vai gerar 10 exercícios: 8 de múltipla escolha + 2 dissertativas.</p>
                               <Button onClick={async () => {
                                 setAiGenerating(true);
                                 try {
                                   const { data, error } = await supabase.functions.invoke('generate-exercises', {
-                                    body: { content: a.content, title: a.title, count: 8 },
+                                    body: { content: a.content, title: a.title, count: 10 },
                                   });
                                   if (error) throw error;
                                   if (data.error) throw new Error(data.error);
@@ -1273,17 +1273,22 @@ export default function AdminPage() {
                                 {aiExercises.map((ex, i) => (
                                   <div key={i} className="border border-border/50 rounded-lg p-3 text-xs">
                                     <div className="flex justify-between items-start">
-                                      <p className="font-medium">{i + 1}. {ex.question}</p>
+                                      <p className="font-medium">
+                                        {i + 1}. {ex.question}
+                                        {ex.type === 'essay' && <Badge variant="outline" className="ml-2 text-[9px] py-0">Dissertativa</Badge>}
+                                      </p>
                                       <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => setAiExercises(prev => prev.filter((_, idx) => idx !== i))}>
                                         <Trash2 className="h-3 w-3 text-destructive" />
                                       </Button>
                                     </div>
-                                    <div className="mt-1 space-y-0.5 text-muted-foreground">
-                                      {ex.options.map((opt, oi) => (
-                                        <p key={oi} className={String.fromCharCode(65 + oi) === ex.correct_answer ? 'text-[hsl(var(--success))] font-medium' : ''}>{String.fromCharCode(65 + oi)}) {opt}</p>
-                                      ))}
-                                    </div>
-                                    {ex.explanation && <p className="mt-1 text-[10px] text-muted-foreground italic">💡 {ex.explanation}</p>}
+                                    {ex.type !== 'essay' && ex.options.length > 0 && (
+                                      <div className="mt-1 space-y-0.5 text-muted-foreground">
+                                        {ex.options.map((opt, oi) => (
+                                          <p key={oi} className={String.fromCharCode(65 + oi) === ex.correct_answer ? 'text-[hsl(var(--success))] font-medium' : ''}>{String.fromCharCode(65 + oi)}) {opt}</p>
+                                        ))}
+                                      </div>
+                                    )}
+                                    {ex.explanation && <p className="mt-1 text-[10px] text-muted-foreground italic">💡 {ex.type === 'essay' ? 'Resposta modelo: ' : ''}{ex.explanation}</p>}
                                   </div>
                                 ))}
                               </div>
