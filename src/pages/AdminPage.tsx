@@ -661,7 +661,14 @@ export default function AdminPage() {
   };
 
   const parseBulkExercises = (text: string) => {
-    const blocks = text.split(/\n\s*\n/).filter(b => b.trim());
+    // Split by double newline OR numbered question start (e.g. "1.", "2)", "1 -")
+    const blocks: string[] = [];
+    const rawBlocks = text.split(/\n(?=\s*\d+[\.\)\-]\s)/);
+    for (const rb of rawBlocks) {
+      const sub = rb.split(/\n\s*\n/).filter(b => b.trim());
+      blocks.push(...sub);
+    }
+
     const parsed: { question: string; options: string[]; correct: string; explanation: string }[] = [];
     for (const block of blocks) {
       const lines = block.split('\n').map(l => l.trim()).filter(Boolean);
@@ -669,23 +676,37 @@ export default function AdminPage() {
       let question = '';
       const options: string[] = [];
       let correct = '';
-      let explanation = '';
+      let explanationLines: string[] = [];
+      let inExplanation = false;
+
       for (const line of lines) {
-        const optMatch = line.match(/^([A-Da-d])\)\s*(.+)/);
-        const gabMatch = line.match(/^[Gg]abarito\s*:\s*([A-Da-d])/i);
-        const expMatch = line.match(/^[Ee]xplica[çc][ãa]o\s*:\s*(.+)/i);
+        // Match options: A), a), A., A -, A:, etc.
+        const optMatch = line.match(/^([A-Da-d])[\)\.\-:]\s*(.+)/);
+        // Match gabarito/resposta: various formats
+        const gabMatch = line.match(/^(?:gabarito|resposta|resposta correta|answer|correct)\s*[:=]\s*([A-Da-d])/i);
+        // Match explanation start
+        const expMatch = line.match(/^(?:explica[çc][ãa]o|justificativa|coment[áa]rio|explanation|resposta modelo)\s*[:=]\s*(.*)/i);
+        // Match question number prefix (remove it)
+        const questionNumMatch = line.match(/^\d+[\.\)\-]\s*(.+)/);
+
         if (gabMatch) {
           correct = gabMatch[1].toUpperCase();
+          inExplanation = false;
         } else if (expMatch) {
-          explanation = expMatch[1];
-        } else if (optMatch) {
+          if (expMatch[1]?.trim()) explanationLines.push(expMatch[1].trim());
+          inExplanation = true;
+        } else if (optMatch && !inExplanation) {
           options.push(optMatch[2]);
-        } else if (!correct && options.length === 0) {
-          question = question ? question + ' ' + line : line;
-        } else if (correct && !explanation) {
-          explanation = explanation ? explanation + ' ' + line : line;
+        } else if (!correct && options.length === 0 && !inExplanation) {
+          // It's part of the question
+          const cleaned = questionNumMatch ? questionNumMatch[1] : line;
+          question = question ? question + ' ' + cleaned : cleaned;
+        } else if (inExplanation) {
+          explanationLines.push(line);
         }
       }
+
+      const explanation = explanationLines.join(' ').trim();
       if (question && options.length >= 2 && correct) {
         parsed.push({ question, options, correct, explanation });
       }
