@@ -449,9 +449,13 @@ export default function AdminPage() {
   const [exerciseDialogMode, setExerciseDialogMode] = useState<'individual' | 'bulk' | 'ai'>('individual');
   const [aiGenerating, setAiGenerating] = useState(false);
   const [aiExercises, setAiExercises] = useState<{ type?: string; question: string; options: string[]; correct_answer: string; explanation: string }[]>([]);
+  const [aiMcCount, setAiMcCount] = useState(8);
+  const [aiEssayCount, setAiEssayCount] = useState(2);
   const [editExerciseMode, setEditExerciseMode] = useState<'individual' | 'bulk' | 'ai'>('individual');
   const [editBulkText, setEditBulkText] = useState('');
   const [editAiExercises, setEditAiExercises] = useState<{ type?: string; question: string; options: string[]; correct_answer: string; explanation: string }[]>([]);
+  const [editAiMcCount, setEditAiMcCount] = useState(8);
+  const [editAiEssayCount, setEditAiEssayCount] = useState(2);
 
   // Materials state
   const [matTitle, setMatTitle] = useState('');
@@ -669,23 +673,28 @@ export default function AdminPage() {
       blocks.push(...sub);
     }
 
-    const parsed: { question: string; options: string[]; correct: string; explanation: string }[] = [];
+    const parsed: { question: string; options: string[]; correct: string; explanation: string; type: 'multiple_choice' | 'essay' }[] = [];
     for (const block of blocks) {
       const lines = block.split('\n').map(l => l.trim()).filter(Boolean);
-      if (lines.length < 3) continue;
+      if (lines.length < 2) continue;
       let question = '';
       const options: string[] = [];
       let correct = '';
       let explanationLines: string[] = [];
       let inExplanation = false;
+      let isEssay = false;
 
       for (const line of lines) {
+        // Detect essay marker
+        const essayMatch = line.match(/^(?:tipo|type)\s*[:=]\s*(?:dissertativa|essay|aberta)/i);
+        if (essayMatch) { isEssay = true; continue; }
+
         // Match options: A), a), A., A -, A:, etc.
         const optMatch = line.match(/^([A-Da-d])[\)\.\-:]\s*(.+)/);
         // Match gabarito/resposta: various formats
         const gabMatch = line.match(/^(?:gabarito|resposta|resposta correta|answer|correct)\s*[:=]\s*([A-Da-d])/i);
         // Match explanation start
-        const expMatch = line.match(/^(?:explica[çc][ãa]o|justificativa|coment[áa]rio|explanation|resposta modelo)\s*[:=]\s*(.*)/i);
+        const expMatch = line.match(/^(?:explica[çc][ãa]o|justificativa|coment[áa]rio|explanation|resposta modelo|resposta esperada)\s*[:=]\s*(.*)/i);
         // Match question number prefix (remove it)
         const questionNumMatch = line.match(/^\d+[\.\)\-]\s*(.+)/);
 
@@ -698,7 +707,6 @@ export default function AdminPage() {
         } else if (optMatch && !inExplanation) {
           options.push(optMatch[2]);
         } else if (!correct && options.length === 0 && !inExplanation) {
-          // It's part of the question
           const cleaned = questionNumMatch ? questionNumMatch[1] : line;
           question = question ? question + ' ' + cleaned : cleaned;
         } else if (inExplanation) {
@@ -707,8 +715,14 @@ export default function AdminPage() {
       }
 
       const explanation = explanationLines.join(' ').trim();
-      if (question && options.length >= 2 && correct) {
-        parsed.push({ question, options, correct, explanation });
+
+      // Essay: question with explanation/model answer but no options
+      if (isEssay || (question && options.length === 0 && explanation)) {
+        if (question) {
+          parsed.push({ question, options: [], correct: 'dissertativa', explanation, type: 'essay' });
+        }
+      } else if (question && options.length >= 2 && correct) {
+        parsed.push({ question, options, correct, explanation, type: 'multiple_choice' });
       }
     }
     return parsed;
