@@ -1244,16 +1244,28 @@ export default function AdminPage() {
                       {exerciseDialogMode === 'bulk' && (
                         <div className="space-y-3 pt-2">
                           <p className="font-semibold text-sm flex items-center gap-2"><FileText className="h-4 w-4 text-primary" /> Importar em Lote</p>
-                          <div className="bg-muted/50 rounded-lg p-3 text-[10px] font-mono text-muted-foreground leading-relaxed">
-                            <p>Qual é a capital do Brasil?</p>
-                            <p>A) São Paulo</p><p>B) Rio de Janeiro</p><p>C) Brasília</p><p>D) Salvador</p>
-                            <p>Gabarito: C</p><p>Explicação: Brasília é a capital federal desde 1960.</p>
+                          <div className="bg-muted/50 rounded-lg p-3 text-[10px] font-mono text-muted-foreground leading-relaxed space-y-2">
+                            <div>
+                              <p className="text-foreground font-semibold mb-1">Múltipla escolha:</p>
+                              <p>1. Qual é a capital do Brasil?</p>
+                              <p>A) São Paulo</p><p>B) Rio de Janeiro</p><p>C) Brasília</p><p>D) Salvador</p>
+                              <p>Gabarito: C</p><p>Explicação: Brasília é a capital federal.</p>
+                            </div>
+                            <div>
+                              <p className="text-foreground font-semibold mb-1">Dissertativa:</p>
+                              <p>2. Explique o processo de urbanização no Brasil.</p>
+                              <p>Tipo: dissertativa</p>
+                              <p>Resposta esperada: O processo de urbanização...</p>
+                            </div>
                           </div>
                           <Textarea value={bulkExerciseText} onChange={e => setBulkExerciseText(e.target.value)}
-                            placeholder="Cole aqui suas perguntas, alternativas, gabarito e explicação..." rows={10} className="font-mono text-xs" />
-                          {bulkExerciseText.trim() && (
-                            <p className="text-[10px] text-muted-foreground">{parseBulkExercises(bulkExerciseText).length} exercício(s) detectado(s)</p>
-                          )}
+                            placeholder="Cole aqui suas perguntas (alternativas ou dissertativas)..." rows={10} className="font-mono text-xs" />
+                          {bulkExerciseText.trim() && (() => {
+                            const p = parseBulkExercises(bulkExerciseText);
+                            const mc = p.filter(e => e.type === 'multiple_choice').length;
+                            const essay = p.filter(e => e.type === 'essay').length;
+                            return <p className="text-[10px] text-muted-foreground">{p.length} exercício(s) detectado(s) — {mc} alternativa(s), {essay} dissertativa(s)</p>;
+                          })()}
                           <Button onClick={() => {
                             const parsed = parseBulkExercises(bulkExerciseText);
                             if (parsed.length === 0) { toast.error('Nenhum exercício detectado.'); return; }
