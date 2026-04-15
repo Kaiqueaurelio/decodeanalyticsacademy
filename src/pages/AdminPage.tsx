@@ -446,6 +446,12 @@ export default function AdminPage() {
   const [bulkExerciseMode, setBulkExerciseMode] = useState(false);
   const [bulkExerciseText, setBulkExerciseText] = useState('');
   const [bulkExerciseImporting, setBulkExerciseImporting] = useState(false);
+  const [exerciseDialogMode, setExerciseDialogMode] = useState<'individual' | 'bulk' | 'ai'>('individual');
+  const [aiGenerating, setAiGenerating] = useState(false);
+  const [aiExercises, setAiExercises] = useState<{ question: string; options: string[]; correct_answer: string; explanation: string }[]>([]);
+  const [editExerciseMode, setEditExerciseMode] = useState<'individual' | 'bulk' | 'ai'>('individual');
+  const [editBulkText, setEditBulkText] = useState('');
+  const [editAiExercises, setEditAiExercises] = useState<{ question: string; options: string[]; correct_answer: string; explanation: string }[]>([]);
 
   // Materials state
   const [matTitle, setMatTitle] = useState('');
