@@ -803,6 +803,9 @@ export default function AdminPage() {
         <div className="flex-1 flex flex-col min-w-0">
           {/* Top Bar */}
           <header className="sticky top-0 z-30 bg-card/95 backdrop-blur-xl border-b border-border h-14 flex items-center px-4 lg:px-6 gap-3">
+            <Button size="icon" variant="ghost" className="h-9 w-9 shrink-0" onClick={() => navigate('/dashboard')}>
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
             <div className="flex-1 min-w-0">
               <h2 className="text-base font-bold text-foreground truncate">{tabTitles[tab].title}</h2>
               <p className="text-[10px] text-muted-foreground hidden sm:block">{tabTitles[tab].desc}</p>
