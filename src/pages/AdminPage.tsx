@@ -1132,9 +1132,11 @@ export default function AdminPage() {
 
                 {/* Exercise Dialog */}
                 {apostilas.map(a => (
-                  <Dialog key={a.id} open={showExerciseDialog === a.id} onOpenChange={(v) => setShowExerciseDialog(v ? a.id : null)}>
+                  <Dialog key={a.id} open={showExerciseDialog === a.id} onOpenChange={(v) => { setShowExerciseDialog(v ? a.id : null); if (v) { setExerciseDialogMode('individual'); setAiExercises([]); } }}>
                     <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
                       <DialogHeader><DialogTitle className="text-base">Exercícios — {a.title}</DialogTitle></DialogHeader>
+                      
+                      {/* Existing exercises */}
                       {exercises[a.id]?.length === 0 && (
                         <div className="text-center py-4 text-muted-foreground text-sm">
                           <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-30" /> Nenhum exercício.
@@ -1155,50 +1157,323 @@ export default function AdminPage() {
                           ))}
                         </div>
                       ))}
+                      
                       <Separator />
-                      <div className="space-y-3 pt-2">
-                        <p className="font-semibold text-sm">Novo exercício</p>
-                        <Textarea value={exQuestion} onChange={e => setExQuestion(e.target.value)} placeholder="Pergunta" rows={2} />
-                        {exOptions.map((o, i) => (
-                          <div key={i} className="flex items-center gap-2">
-                            <span className="text-sm font-medium w-6">{String.fromCharCode(65 + i)})</span>
-                            <Input value={o} onChange={e => { const n = [...exOptions]; n[i] = e.target.value; setExOptions(n); }} placeholder={`Opção ${String.fromCharCode(65 + i)}`} />
-                          </div>
-                        ))}
-                        <div><Label className="text-xs">Resposta correta</Label>
-                          <Select value={exCorrect} onValueChange={setExCorrect}>
-                            <SelectTrigger><SelectValue /></SelectTrigger>
-                            <SelectContent>{['A','B','C','D'].map(l => <SelectItem key={l} value={l}>{l}</SelectItem>)}</SelectContent>
-                          </Select>
+                      
+                      {/* Mode Toggle */}
+                      <div className="flex items-center gap-2">
+                        <div className="inline-flex bg-muted rounded-full p-0.5 w-full">
+                          {([['individual', '✏️ Individual'], ['bulk', '📋 Lote'], ['ai', '✨ IA']] as const).map(([mode, label]) => (
+                            <button key={mode} onClick={() => setExerciseDialogMode(mode)}
+                              className={`flex-1 text-[10px] font-medium px-3 py-1.5 rounded-full transition-colors ${exerciseDialogMode === mode ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
+                              {label}
+                            </button>
+                          ))}
                         </div>
-                        <div><Label className="text-xs">Explicação (opcional)</Label><Textarea value={exExplanation} onChange={e => setExExplanation(e.target.value)} rows={2} /></div>
-                        <Button onClick={() => {
-                          if (!exQuestion.trim()) return;
-                          supabase.from('exercises').insert({
-                            apostila_id: a.id, question: exQuestion, options: exOptions,
-                            correct_answer: exCorrect, explanation: exExplanation || null,
-                          }).then(({ error }) => {
-                            if (error) { toast.error('Erro'); return; }
-                            toast.success('Exercício adicionado!');
-                            setExQuestion(''); setExOptions(['', '', '', '']); setExExplanation('');
-                            loadAll();
-                          });
-                        }} className="w-full gradient-primary text-primary-foreground">Adicionar</Button>
                       </div>
+
+                      {/* Individual Mode */}
+                      {exerciseDialogMode === 'individual' && (
+                        <div className="space-y-3 pt-2">
+                          <p className="font-semibold text-sm">Novo exercício</p>
+                          <Textarea value={exQuestion} onChange={e => setExQuestion(e.target.value)} placeholder="Pergunta" rows={2} />
+                          {exOptions.map((o, i) => (
+                            <div key={i} className="flex items-center gap-2">
+                              <span className="text-sm font-medium w-6">{String.fromCharCode(65 + i)})</span>
+                              <Input value={o} onChange={e => { const n = [...exOptions]; n[i] = e.target.value; setExOptions(n); }} placeholder={`Opção ${String.fromCharCode(65 + i)}`} />
+                            </div>
+                          ))}
+                          <div><Label className="text-xs">Resposta correta</Label>
+                            <Select value={exCorrect} onValueChange={setExCorrect}>
+                              <SelectTrigger><SelectValue /></SelectTrigger>
+                              <SelectContent>{['A','B','C','D'].map(l => <SelectItem key={l} value={l}>{l}</SelectItem>)}</SelectContent>
+                            </Select>
+                          </div>
+                          <div><Label className="text-xs">Explicação (opcional)</Label><Textarea value={exExplanation} onChange={e => setExExplanation(e.target.value)} rows={2} /></div>
+                          <Button onClick={() => {
+                            if (!exQuestion.trim()) return;
+                            supabase.from('exercises').insert({
+                              apostila_id: a.id, question: exQuestion, options: exOptions,
+                              correct_answer: exCorrect, explanation: exExplanation || null,
+                            }).then(({ error }) => {
+                              if (error) { toast.error('Erro'); return; }
+                              toast.success('Exercício adicionado!');
+                              setExQuestion(''); setExOptions(['', '', '', '']); setExExplanation('');
+                              loadAll();
+                            });
+                          }} className="w-full gradient-primary text-primary-foreground">Adicionar</Button>
+                        </div>
+                      )}
+
+                      {/* Bulk Mode */}
+                      {exerciseDialogMode === 'bulk' && (
+                        <div className="space-y-3 pt-2">
+                          <p className="font-semibold text-sm flex items-center gap-2"><FileText className="h-4 w-4 text-primary" /> Importar em Lote</p>
+                          <div className="bg-muted/50 rounded-lg p-3 text-[10px] font-mono text-muted-foreground leading-relaxed">
+                            <p>Qual é a capital do Brasil?</p>
+                            <p>A) São Paulo</p><p>B) Rio de Janeiro</p><p>C) Brasília</p><p>D) Salvador</p>
+                            <p>Gabarito: C</p><p>Explicação: Brasília é a capital federal desde 1960.</p>
+                          </div>
+                          <Textarea value={bulkExerciseText} onChange={e => setBulkExerciseText(e.target.value)}
+                            placeholder="Cole aqui suas perguntas, alternativas, gabarito e explicação..." rows={10} className="font-mono text-xs" />
+                          {bulkExerciseText.trim() && (
+                            <p className="text-[10px] text-muted-foreground">{parseBulkExercises(bulkExerciseText).length} exercício(s) detectado(s)</p>
+                          )}
+                          <Button onClick={() => {
+                            const parsed = parseBulkExercises(bulkExerciseText);
+                            if (parsed.length === 0) { toast.error('Nenhum exercício detectado.'); return; }
+                            setBulkExerciseImporting(true);
+                            Promise.all(parsed.map(ex => supabase.from('exercises').insert({
+                              apostila_id: a.id, question: ex.question, options: ex.options,
+                              correct_answer: ex.correct, explanation: ex.explanation || null,
+                            }))).then(results => {
+                              const ok = results.filter(r => !r.error).length;
+                              toast.success(`${ok}/${parsed.length} exercícios importados!`);
+                              setBulkExerciseText(''); setBulkExerciseImporting(false); loadAll();
+                            });
+                          }} disabled={!bulkExerciseText.trim() || bulkExerciseImporting} className="w-full gradient-primary text-primary-foreground">
+                            {bulkExerciseImporting ? <><Loader2 className="h-4 w-4 animate-spin mr-1.5" /> Importando...</> : 'Importar Exercícios'}
+                          </Button>
+                        </div>
+                      )}
+
+                      {/* AI Mode */}
+                      {exerciseDialogMode === 'ai' && (
+                        <div className="space-y-3 pt-2">
+                          <p className="font-semibold text-sm flex items-center gap-2"><Sparkles className="h-4 w-4 text-primary" /> Gerar com IA</p>
+                          {!a.content?.trim() ? (
+                            <div className="text-center py-6 text-muted-foreground">
+                              <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-30" />
+                              <p className="text-xs">Esta apostila não tem conteúdo. Adicione conteúdo primeiro para gerar exercícios com IA.</p>
+                            </div>
+                          ) : aiExercises.length === 0 ? (
+                            <>
+                              <p className="text-xs text-muted-foreground">A IA vai analisar o conteúdo da apostila e gerar exercícios de múltipla escolha automaticamente.</p>
+                              <Button onClick={async () => {
+                                setAiGenerating(true);
+                                try {
+                                  const { data, error } = await supabase.functions.invoke('generate-exercises', {
+                                    body: { content: a.content, title: a.title, count: 8 },
+                                  });
+                                  if (error) throw error;
+                                  if (data.error) throw new Error(data.error);
+                                  setAiExercises(data.exercises || []);
+                                  if (data.exercises?.length > 0) toast.success(`${data.exercises.length} exercícios gerados!`);
+                                  else toast.error('Nenhum exercício foi gerado.');
+                                } catch (err: any) { toast.error('Erro: ' + (err.message || 'Tente novamente')); }
+                                setAiGenerating(false);
+                              }} disabled={aiGenerating} className="w-full gradient-primary text-primary-foreground">
+                                {aiGenerating ? <><Loader2 className="h-4 w-4 animate-spin mr-1.5" /> Gerando exercícios...</> : <><Wand2 className="h-4 w-4 mr-1.5" /> Gerar Exercícios com IA</>}
+                              </Button>
+                            </>
+                          ) : (
+                            <>
+                              <p className="text-xs text-muted-foreground">{aiExercises.length} exercícios gerados. Revise e salve:</p>
+                              <div className="space-y-2 max-h-60 overflow-y-auto">
+                                {aiExercises.map((ex, i) => (
+                                  <div key={i} className="border border-border/50 rounded-lg p-3 text-xs">
+                                    <div className="flex justify-between items-start">
+                                      <p className="font-medium">{i + 1}. {ex.question}</p>
+                                      <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => setAiExercises(prev => prev.filter((_, idx) => idx !== i))}>
+                                        <Trash2 className="h-3 w-3 text-destructive" />
+                                      </Button>
+                                    </div>
+                                    <div className="mt-1 space-y-0.5 text-muted-foreground">
+                                      {ex.options.map((opt, oi) => (
+                                        <p key={oi} className={String.fromCharCode(65 + oi) === ex.correct_answer ? 'text-[hsl(var(--success))] font-medium' : ''}>{String.fromCharCode(65 + oi)}) {opt}</p>
+                                      ))}
+                                    </div>
+                                    {ex.explanation && <p className="mt-1 text-[10px] text-muted-foreground italic">💡 {ex.explanation}</p>}
+                                  </div>
+                                ))}
+                              </div>
+                              <div className="flex gap-2">
+                                <Button variant="outline" className="flex-1" onClick={() => setAiExercises([])}>Descartar</Button>
+                                <Button className="flex-1 gradient-primary text-primary-foreground" onClick={async () => {
+                                  let ok = 0;
+                                  for (const ex of aiExercises) {
+                                    const { error } = await supabase.from('exercises').insert({
+                                      apostila_id: a.id, question: ex.question, options: ex.options,
+                                      correct_answer: ex.correct_answer, explanation: ex.explanation || null,
+                                    });
+                                    if (!error) ok++;
+                                  }
+                                  toast.success(`${ok}/${aiExercises.length} exercícios salvos!`);
+                                  setAiExercises([]); loadAll();
+                                }}>Salvar Todos ({aiExercises.length})</Button>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      )}
                     </DialogContent>
                   </Dialog>
                 ))}
 
                 {/* Edit Apostila Dialog */}
-                <Dialog open={!!editingApostila} onOpenChange={(v) => !v && setEditingApostila(null)}>
+                <Dialog open={!!editingApostila} onOpenChange={(v) => { if (!v) { setEditingApostila(null); setEditExerciseMode('individual'); setEditAiExercises([]); setEditBulkText(''); } }}>
                   <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
                     <DialogHeader><DialogTitle className="text-base">Editar Apostila</DialogTitle></DialogHeader>
                     <div className="space-y-3">
                       <div><Label className="text-xs">Título</Label><Input value={editTitle} onChange={e => setEditTitle(e.target.value)} /></div>
                       <div><Label className="text-xs">Categoria</Label><CategorySelect value={editCategory} onValueChange={setEditCategory} /></div>
-                      <div><Label className="text-xs">Conteúdo</Label><Textarea value={editContent} onChange={e => setEditContent(e.target.value)} rows={8} /></div>
-                      <Button className="w-full gradient-primary text-primary-foreground" onClick={handleEditSave}>Salvar</Button>
+                      <div><Label className="text-xs">Conteúdo</Label><Textarea value={editContent} onChange={e => setEditContent(e.target.value)} rows={6} /></div>
+                      <Button className="w-full gradient-primary text-primary-foreground" onClick={handleEditSave}>Salvar Apostila</Button>
                     </div>
+
+                    {editingApostila && (
+                      <>
+                        <Separator className="my-2" />
+                        <div className="space-y-3">
+                          <h4 className="font-semibold text-sm flex items-center gap-2"><PenLine className="h-4 w-4 text-primary" /> Exercícios ({exercises[editingApostila.id]?.length || 0})</h4>
+
+                          {/* Existing exercises */}
+                          {exercises[editingApostila.id]?.map((ex, i) => (
+                            <div key={ex.id} className="border border-border/50 rounded-lg p-3 text-xs">
+                              <div className="flex justify-between items-start">
+                                <p className="font-medium">{i + 1}. {ex.question}</p>
+                                <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => deleteExercise(ex.id)}>
+                                  <Trash2 className="h-3 w-3 text-destructive" />
+                                </Button>
+                              </div>
+                              {Array.isArray(ex.options) && (ex.options as string[]).map((opt, oi) => (
+                                <p key={oi} className={`text-[11px] mt-0.5 ${String.fromCharCode(65 + oi) === ex.correct_answer ? 'text-[hsl(var(--success))] font-medium' : 'text-muted-foreground'}`}>
+                                  {String.fromCharCode(65 + oi)}) {opt}
+                                </p>
+                              ))}
+                            </div>
+                          ))}
+
+                          {/* Mode Toggle */}
+                          <div className="inline-flex bg-muted rounded-full p-0.5 w-full">
+                            {([['individual', '✏️ Individual'], ['bulk', '📋 Lote'], ['ai', '✨ IA']] as const).map(([mode, label]) => (
+                              <button key={mode} onClick={() => setEditExerciseMode(mode)}
+                                className={`flex-1 text-[10px] font-medium px-3 py-1.5 rounded-full transition-colors ${editExerciseMode === mode ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
+                                {label}
+                              </button>
+                            ))}
+                          </div>
+
+                          {/* Individual */}
+                          {editExerciseMode === 'individual' && (
+                            <div className="space-y-2">
+                              <Textarea value={exQuestion} onChange={e => setExQuestion(e.target.value)} placeholder="Pergunta" rows={2} />
+                              {exOptions.map((o, i) => (
+                                <div key={i} className="flex items-center gap-2">
+                                  <span className="text-xs font-medium w-5">{String.fromCharCode(65 + i)})</span>
+                                  <Input value={o} onChange={e => { const n = [...exOptions]; n[i] = e.target.value; setExOptions(n); }} placeholder={`Opção ${String.fromCharCode(65 + i)}`} />
+                                </div>
+                              ))}
+                              <Select value={exCorrect} onValueChange={setExCorrect}>
+                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectContent>{['A','B','C','D'].map(l => <SelectItem key={l} value={l}>{l}</SelectItem>)}</SelectContent>
+                              </Select>
+                              <Textarea value={exExplanation} onChange={e => setExExplanation(e.target.value)} placeholder="Explicação (opcional)" rows={2} />
+                              <Button onClick={() => {
+                                if (!exQuestion.trim() || !editingApostila) return;
+                                supabase.from('exercises').insert({
+                                  apostila_id: editingApostila.id, question: exQuestion, options: exOptions,
+                                  correct_answer: exCorrect, explanation: exExplanation || null,
+                                }).then(({ error }) => {
+                                  if (error) { toast.error('Erro'); return; }
+                                  toast.success('Exercício adicionado!');
+                                  setExQuestion(''); setExOptions(['', '', '', '']); setExExplanation(''); loadAll();
+                                });
+                              }} className="w-full gradient-primary text-primary-foreground">Adicionar</Button>
+                            </div>
+                          )}
+
+                          {/* Bulk */}
+                          {editExerciseMode === 'bulk' && (
+                            <div className="space-y-2">
+                              <Textarea value={editBulkText} onChange={e => setEditBulkText(e.target.value)}
+                                placeholder="Cole exercícios no formato: pergunta, A-D, Gabarito: X, Explicação: ..." rows={8} className="font-mono text-xs" />
+                              {editBulkText.trim() && <p className="text-[10px] text-muted-foreground">{parseBulkExercises(editBulkText).length} exercício(s) detectado(s)</p>}
+                              <Button onClick={() => {
+                                if (!editingApostila) return;
+                                const parsed = parseBulkExercises(editBulkText);
+                                if (parsed.length === 0) { toast.error('Nenhum exercício detectado.'); return; }
+                                Promise.all(parsed.map(ex => supabase.from('exercises').insert({
+                                  apostila_id: editingApostila.id, question: ex.question, options: ex.options,
+                                  correct_answer: ex.correct, explanation: ex.explanation || null,
+                                }))).then(results => {
+                                  const ok = results.filter(r => !r.error).length;
+                                  toast.success(`${ok}/${parsed.length} exercícios importados!`);
+                                  setEditBulkText(''); loadAll();
+                                });
+                              }} disabled={!editBulkText.trim()} className="w-full gradient-primary text-primary-foreground">Importar Exercícios</Button>
+                            </div>
+                          )}
+
+                          {/* AI */}
+                          {editExerciseMode === 'ai' && (
+                            <div className="space-y-2">
+                              {!editContent?.trim() ? (
+                                <div className="text-center py-4 text-muted-foreground">
+                                  <AlertCircle className="h-6 w-6 mx-auto mb-2 opacity-30" />
+                                  <p className="text-xs">Adicione conteúdo à apostila para gerar exercícios com IA.</p>
+                                </div>
+                              ) : editAiExercises.length === 0 ? (
+                                <>
+                                  <p className="text-xs text-muted-foreground">Gere exercícios automaticamente a partir do conteúdo da apostila.</p>
+                                  <Button onClick={async () => {
+                                    setAiGenerating(true);
+                                    try {
+                                      const { data, error } = await supabase.functions.invoke('generate-exercises', {
+                                        body: { content: editContent, title: editTitle, count: 8 },
+                                      });
+                                      if (error) throw error;
+                                      if (data.error) throw new Error(data.error);
+                                      setEditAiExercises(data.exercises || []);
+                                      if (data.exercises?.length > 0) toast.success(`${data.exercises.length} exercícios gerados!`);
+                                      else toast.error('Nenhum exercício gerado.');
+                                    } catch (err: any) { toast.error('Erro: ' + (err.message || 'Tente novamente')); }
+                                    setAiGenerating(false);
+                                  }} disabled={aiGenerating} className="w-full gradient-primary text-primary-foreground">
+                                    {aiGenerating ? <><Loader2 className="h-4 w-4 animate-spin mr-1.5" /> Gerando...</> : <><Wand2 className="h-4 w-4 mr-1.5" /> Gerar com IA</>}
+                                  </Button>
+                                </>
+                              ) : (
+                                <>
+                                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                                    {editAiExercises.map((ex, i) => (
+                                      <div key={i} className="border border-border/50 rounded-lg p-3 text-xs">
+                                        <div className="flex justify-between items-start">
+                                          <p className="font-medium">{i + 1}. {ex.question}</p>
+                                          <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => setEditAiExercises(prev => prev.filter((_, idx) => idx !== i))}>
+                                            <Trash2 className="h-3 w-3 text-destructive" />
+                                          </Button>
+                                        </div>
+                                        {ex.options.map((opt, oi) => (
+                                          <p key={oi} className={`text-[11px] mt-0.5 ${String.fromCharCode(65 + oi) === ex.correct_answer ? 'text-[hsl(var(--success))] font-medium' : 'text-muted-foreground'}`}>{String.fromCharCode(65 + oi)}) {opt}</p>
+                                        ))}
+                                        {ex.explanation && <p className="mt-1 text-[10px] text-muted-foreground italic">💡 {ex.explanation}</p>}
+                                      </div>
+                                    ))}
+                                  </div>
+                                  <div className="flex gap-2">
+                                    <Button variant="outline" className="flex-1" onClick={() => setEditAiExercises([])}>Descartar</Button>
+                                    <Button className="flex-1 gradient-primary text-primary-foreground" onClick={async () => {
+                                      if (!editingApostila) return;
+                                      let ok = 0;
+                                      for (const ex of editAiExercises) {
+                                        const { error } = await supabase.from('exercises').insert({
+                                          apostila_id: editingApostila.id, question: ex.question, options: ex.options,
+                                          correct_answer: ex.correct_answer, explanation: ex.explanation || null,
+                                        });
+                                        if (!error) ok++;
+                                      }
+                                      toast.success(`${ok}/${editAiExercises.length} exercícios salvos!`);
+                                      setEditAiExercises([]); loadAll();
+                                    }}>Salvar Todos ({editAiExercises.length})</Button>
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </>
+                    )}
                   </DialogContent>
                 </Dialog>
               </div>
