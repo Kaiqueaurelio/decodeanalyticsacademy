@@ -1456,8 +1456,13 @@ export default function AdminPage() {
                           {editExerciseMode === 'bulk' && (
                             <div className="space-y-2">
                               <Textarea value={editBulkText} onChange={e => setEditBulkText(e.target.value)}
-                                placeholder="Cole exercícios no formato: pergunta, A-D, Gabarito: X, Explicação: ..." rows={8} className="font-mono text-xs" />
-                              {editBulkText.trim() && <p className="text-[10px] text-muted-foreground">{parseBulkExercises(editBulkText).length} exercício(s) detectado(s)</p>}
+                                placeholder="Cole exercícios: alternativas (A-D + Gabarito) ou dissertativas (Tipo: dissertativa + Resposta esperada)..." rows={8} className="font-mono text-xs" />
+                              {editBulkText.trim() && (() => {
+                                const p = parseBulkExercises(editBulkText);
+                                const mc = p.filter(e => e.type === 'multiple_choice').length;
+                                const essay = p.filter(e => e.type === 'essay').length;
+                                return <p className="text-[10px] text-muted-foreground">{p.length} exercício(s) — {mc} alternativa(s), {essay} dissertativa(s)</p>;
+                              })()}
                               <Button onClick={() => {
                                 if (!editingApostila) return;
                                 const parsed = parseBulkExercises(editBulkText);
