@@ -1484,12 +1484,29 @@ export default function AdminPage() {
                                 </div>
                               ) : editAiExercises.length === 0 ? (
                                 <>
-                                  <p className="text-xs text-muted-foreground">Gere 10 exercícios automaticamente (8 múltipla escolha + 2 dissertativas).</p>
+                                  <div className="grid grid-cols-2 gap-2">
+                                    <div>
+                                      <Label className="text-[10px]">Múltipla escolha</Label>
+                                      <Select value={String(editAiMcCount)} onValueChange={v => setEditAiMcCount(+v)}>
+                                        <SelectTrigger className="h-8 text-xs mt-0.5"><SelectValue /></SelectTrigger>
+                                        <SelectContent>{[0,2,4,5,6,8,10,12,15,18,20].map(n => <SelectItem key={n} value={String(n)}>{n}</SelectItem>)}</SelectContent>
+                                      </Select>
+                                    </div>
+                                    <div>
+                                      <Label className="text-[10px]">Dissertativas</Label>
+                                      <Select value={String(editAiEssayCount)} onValueChange={v => setEditAiEssayCount(+v)}>
+                                        <SelectTrigger className="h-8 text-xs mt-0.5"><SelectValue /></SelectTrigger>
+                                        <SelectContent>{[0,1,2,3,4,5].map(n => <SelectItem key={n} value={String(n)}>{n}</SelectItem>)}</SelectContent>
+                                      </Select>
+                                    </div>
+                                  </div>
+                                  <p className="text-[10px] text-muted-foreground">Total: {editAiMcCount + editAiEssayCount} exercícios</p>
                                   <Button onClick={async () => {
+                                    if (editAiMcCount + editAiEssayCount < 1) { toast.error('Selecione pelo menos 1 exercício.'); return; }
                                     setAiGenerating(true);
                                     try {
                                       const { data, error } = await supabase.functions.invoke('generate-exercises', {
-                                        body: { content: editContent, title: editTitle, count: 10 },
+                                        body: { content: editContent, title: editTitle, mcCount: editAiMcCount, essayCount: editAiEssayCount },
                                       });
                                       if (error) throw error;
                                       if (data.error) throw new Error(data.error);
