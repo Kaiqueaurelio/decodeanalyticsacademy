@@ -449,9 +449,13 @@ export default function AdminPage() {
   const [exerciseDialogMode, setExerciseDialogMode] = useState<'individual' | 'bulk' | 'ai'>('individual');
   const [aiGenerating, setAiGenerating] = useState(false);
   const [aiExercises, setAiExercises] = useState<{ type?: string; question: string; options: string[]; correct_answer: string; explanation: string }[]>([]);
+  const [aiMcCount, setAiMcCount] = useState(8);
+  const [aiEssayCount, setAiEssayCount] = useState(2);
   const [editExerciseMode, setEditExerciseMode] = useState<'individual' | 'bulk' | 'ai'>('individual');
   const [editBulkText, setEditBulkText] = useState('');
   const [editAiExercises, setEditAiExercises] = useState<{ type?: string; question: string; options: string[]; correct_answer: string; explanation: string }[]>([]);
+  const [editAiMcCount, setEditAiMcCount] = useState(8);
+  const [editAiEssayCount, setEditAiEssayCount] = useState(2);
 
   // Materials state
   const [matTitle, setMatTitle] = useState('');
@@ -669,23 +673,28 @@ export default function AdminPage() {
       blocks.push(...sub);
     }
 
-    const parsed: { question: string; options: string[]; correct: string; explanation: string }[] = [];
+    const parsed: { question: string; options: string[]; correct: string; explanation: string; type: 'multiple_choice' | 'essay' }[] = [];
     for (const block of blocks) {
       const lines = block.split('\n').map(l => l.trim()).filter(Boolean);
-      if (lines.length < 3) continue;
+      if (lines.length < 2) continue;
       let question = '';
       const options: string[] = [];
       let correct = '';
       let explanationLines: string[] = [];
       let inExplanation = false;
+      let isEssay = false;
 
       for (const line of lines) {
+        // Detect essay marker
+        const essayMatch = line.match(/^(?:tipo|type)\s*[:=]\s*(?:dissertativa|essay|aberta)/i);
+        if (essayMatch) { isEssay = true; continue; }
+
         // Match options: A), a), A., A -, A:, etc.
         const optMatch = line.match(/^([A-Da-d])[\)\.\-:]\s*(.+)/);
         // Match gabarito/resposta: various formats
         const gabMatch = line.match(/^(?:gabarito|resposta|resposta correta|answer|correct)\s*[:=]\s*([A-Da-d])/i);
         // Match explanation start
-        const expMatch = line.match(/^(?:explica[çc][ãa]o|justificativa|coment[áa]rio|explanation|resposta modelo)\s*[:=]\s*(.*)/i);
+        const expMatch = line.match(/^(?:explica[çc][ãa]o|justificativa|coment[áa]rio|explanation|resposta modelo|resposta esperada)\s*[:=]\s*(.*)/i);
         // Match question number prefix (remove it)
         const questionNumMatch = line.match(/^\d+[\.\)\-]\s*(.+)/);
 
@@ -698,7 +707,6 @@ export default function AdminPage() {
         } else if (optMatch && !inExplanation) {
           options.push(optMatch[2]);
         } else if (!correct && options.length === 0 && !inExplanation) {
-          // It's part of the question
           const cleaned = questionNumMatch ? questionNumMatch[1] : line;
           question = question ? question + ' ' + cleaned : cleaned;
         } else if (inExplanation) {
@@ -707,8 +715,14 @@ export default function AdminPage() {
       }
 
       const explanation = explanationLines.join(' ').trim();
-      if (question && options.length >= 2 && correct) {
-        parsed.push({ question, options, correct, explanation });
+
+      // Essay: question with explanation/model answer but no options
+      if (isEssay || (question && options.length === 0 && explanation)) {
+        if (question) {
+          parsed.push({ question, options: [], correct: 'dissertativa', explanation, type: 'essay' });
+        }
+      } else if (question && options.length >= 2 && correct) {
+        parsed.push({ question, options, correct, explanation, type: 'multiple_choice' });
       }
     }
     return parsed;
@@ -1230,16 +1244,28 @@ export default function AdminPage() {
                       {exerciseDialogMode === 'bulk' && (
                         <div className="space-y-3 pt-2">
                           <p className="font-semibold text-sm flex items-center gap-2"><FileText className="h-4 w-4 text-primary" /> Importar em Lote</p>
-                          <div className="bg-muted/50 rounded-lg p-3 text-[10px] font-mono text-muted-foreground leading-relaxed">
-                            <p>Qual é a capital do Brasil?</p>
-                            <p>A) São Paulo</p><p>B) Rio de Janeiro</p><p>C) Brasília</p><p>D) Salvador</p>
-                            <p>Gabarito: C</p><p>Explicação: Brasília é a capital federal desde 1960.</p>
+                          <div className="bg-muted/50 rounded-lg p-3 text-[10px] font-mono text-muted-foreground leading-relaxed space-y-2">
+                            <div>
+                              <p className="text-foreground font-semibold mb-1">Múltipla escolha:</p>
+                              <p>1. Qual é a capital do Brasil?</p>
+                              <p>A) São Paulo</p><p>B) Rio de Janeiro</p><p>C) Brasília</p><p>D) Salvador</p>
+                              <p>Gabarito: C</p><p>Explicação: Brasília é a capital federal.</p>
+                            </div>
+                            <div>
+                              <p className="text-foreground font-semibold mb-1">Dissertativa:</p>
+                              <p>2. Explique o processo de urbanização no Brasil.</p>
+                              <p>Tipo: dissertativa</p>
+                              <p>Resposta esperada: O processo de urbanização...</p>
+                            </div>
                           </div>
                           <Textarea value={bulkExerciseText} onChange={e => setBulkExerciseText(e.target.value)}
-                            placeholder="Cole aqui suas perguntas, alternativas, gabarito e explicação..." rows={10} className="font-mono text-xs" />
-                          {bulkExerciseText.trim() && (
-                            <p className="text-[10px] text-muted-foreground">{parseBulkExercises(bulkExerciseText).length} exercício(s) detectado(s)</p>
-                          )}
+                            placeholder="Cole aqui suas perguntas (alternativas ou dissertativas)..." rows={10} className="font-mono text-xs" />
+                          {bulkExerciseText.trim() && (() => {
+                            const p = parseBulkExercises(bulkExerciseText);
+                            const mc = p.filter(e => e.type === 'multiple_choice').length;
+                            const essay = p.filter(e => e.type === 'essay').length;
+                            return <p className="text-[10px] text-muted-foreground">{p.length} exercício(s) detectado(s) — {mc} alternativa(s), {essay} dissertativa(s)</p>;
+                          })()}
                           <Button onClick={() => {
                             const parsed = parseBulkExercises(bulkExerciseText);
                             if (parsed.length === 0) { toast.error('Nenhum exercício detectado.'); return; }
@@ -1269,12 +1295,29 @@ export default function AdminPage() {
                             </div>
                           ) : aiExercises.length === 0 ? (
                             <>
-                              <p className="text-xs text-muted-foreground">A IA vai gerar 10 exercícios: 8 de múltipla escolha + 2 dissertativas.</p>
+                              <div className="grid grid-cols-2 gap-2">
+                                <div>
+                                  <Label className="text-[10px]">Múltipla escolha</Label>
+                                  <Select value={String(aiMcCount)} onValueChange={v => setAiMcCount(+v)}>
+                                    <SelectTrigger className="h-8 text-xs mt-0.5"><SelectValue /></SelectTrigger>
+                                    <SelectContent>{[0,2,4,5,6,8,10,12,15,18,20].map(n => <SelectItem key={n} value={String(n)}>{n}</SelectItem>)}</SelectContent>
+                                  </Select>
+                                </div>
+                                <div>
+                                  <Label className="text-[10px]">Dissertativas</Label>
+                                  <Select value={String(aiEssayCount)} onValueChange={v => setAiEssayCount(+v)}>
+                                    <SelectTrigger className="h-8 text-xs mt-0.5"><SelectValue /></SelectTrigger>
+                                    <SelectContent>{[0,1,2,3,4,5].map(n => <SelectItem key={n} value={String(n)}>{n}</SelectItem>)}</SelectContent>
+                                  </Select>
+                                </div>
+                              </div>
+                              <p className="text-[10px] text-muted-foreground">Total: {aiMcCount + aiEssayCount} exercícios ({aiMcCount} alternativa + {aiEssayCount} dissertativa)</p>
                               <Button onClick={async () => {
+                                if (aiMcCount + aiEssayCount < 1) { toast.error('Selecione pelo menos 1 exercício.'); return; }
                                 setAiGenerating(true);
                                 try {
                                   const { data, error } = await supabase.functions.invoke('generate-exercises', {
-                                    body: { content: a.content, title: a.title, count: 10 },
+                                    body: { content: a.content, title: a.title, mcCount: aiMcCount, essayCount: aiEssayCount },
                                   });
                                   if (error) throw error;
                                   if (data.error) throw new Error(data.error);
@@ -1413,8 +1456,13 @@ export default function AdminPage() {
                           {editExerciseMode === 'bulk' && (
                             <div className="space-y-2">
                               <Textarea value={editBulkText} onChange={e => setEditBulkText(e.target.value)}
-                                placeholder="Cole exercícios no formato: pergunta, A-D, Gabarito: X, Explicação: ..." rows={8} className="font-mono text-xs" />
-                              {editBulkText.trim() && <p className="text-[10px] text-muted-foreground">{parseBulkExercises(editBulkText).length} exercício(s) detectado(s)</p>}
+                                placeholder="Cole exercícios: alternativas (A-D + Gabarito) ou dissertativas (Tipo: dissertativa + Resposta esperada)..." rows={8} className="font-mono text-xs" />
+                              {editBulkText.trim() && (() => {
+                                const p = parseBulkExercises(editBulkText);
+                                const mc = p.filter(e => e.type === 'multiple_choice').length;
+                                const essay = p.filter(e => e.type === 'essay').length;
+                                return <p className="text-[10px] text-muted-foreground">{p.length} exercício(s) — {mc} alternativa(s), {essay} dissertativa(s)</p>;
+                              })()}
                               <Button onClick={() => {
                                 if (!editingApostila) return;
                                 const parsed = parseBulkExercises(editBulkText);
@@ -1441,12 +1489,29 @@ export default function AdminPage() {
                                 </div>
                               ) : editAiExercises.length === 0 ? (
                                 <>
-                                  <p className="text-xs text-muted-foreground">Gere 10 exercícios automaticamente (8 múltipla escolha + 2 dissertativas).</p>
+                                  <div className="grid grid-cols-2 gap-2">
+                                    <div>
+                                      <Label className="text-[10px]">Múltipla escolha</Label>
+                                      <Select value={String(editAiMcCount)} onValueChange={v => setEditAiMcCount(+v)}>
+                                        <SelectTrigger className="h-8 text-xs mt-0.5"><SelectValue /></SelectTrigger>
+                                        <SelectContent>{[0,2,4,5,6,8,10,12,15,18,20].map(n => <SelectItem key={n} value={String(n)}>{n}</SelectItem>)}</SelectContent>
+                                      </Select>
+                                    </div>
+                                    <div>
+                                      <Label className="text-[10px]">Dissertativas</Label>
+                                      <Select value={String(editAiEssayCount)} onValueChange={v => setEditAiEssayCount(+v)}>
+                                        <SelectTrigger className="h-8 text-xs mt-0.5"><SelectValue /></SelectTrigger>
+                                        <SelectContent>{[0,1,2,3,4,5].map(n => <SelectItem key={n} value={String(n)}>{n}</SelectItem>)}</SelectContent>
+                                      </Select>
+                                    </div>
+                                  </div>
+                                  <p className="text-[10px] text-muted-foreground">Total: {editAiMcCount + editAiEssayCount} exercícios</p>
                                   <Button onClick={async () => {
+                                    if (editAiMcCount + editAiEssayCount < 1) { toast.error('Selecione pelo menos 1 exercício.'); return; }
                                     setAiGenerating(true);
                                     try {
                                       const { data, error } = await supabase.functions.invoke('generate-exercises', {
-                                        body: { content: editContent, title: editTitle, count: 10 },
+                                        body: { content: editContent, title: editTitle, mcCount: editAiMcCount, essayCount: editAiEssayCount },
                                       });
                                       if (error) throw error;
                                       if (data.error) throw new Error(data.error);

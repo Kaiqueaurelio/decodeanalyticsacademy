@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { content, title, count } = await req.json();
+    const { content, title, mcCount, essayCount } = await req.json();
 
     if (!content || typeof content !== "string" || content.trim().length < 20) {
       return new Response(
@@ -29,7 +29,32 @@ serve(async (req) => {
       );
     }
 
+    const mc = Math.min(Math.max(mcCount ?? 8, 0), 30);
+    const essay = Math.min(Math.max(essayCount ?? 2, 0), 10);
+    const total = mc + essay;
+
+    if (total < 1) {
+      return new Response(
+        JSON.stringify({ error: "Selecione pelo menos 1 exercicio." }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const truncatedContent = content.slice(0, 12000);
+
+    let systemPrompt = `Voce e um professor universitario especialista em criar questoes para avaliacao. Gere exatamente ${total} exercicios baseados no conteudo fornecido:`;
+    
+    if (mc > 0) {
+      systemPrompt += `\n- ${mc} exercicio(s) de MULTIPLA ESCOLHA com 4 alternativas (A, B, C, D), sendo apenas uma correta. Defina type como "multiple_choice". Inclua explicacao para cada.`;
+    }
+    if (essay > 0) {
+      systemPrompt += `\n- ${essay} exercicio(s) DISSERTATIVO(S) (perguntas abertas que exigem resposta escrita). Defina type como "essay", nao inclua options, e inclua uma resposta modelo no campo explanation.`;
+    }
+    if (mc > 0 && essay > 0) {
+      systemPrompt += `\n\nIMPORTANTE: Gere primeiro as ${mc} questoes de multipla escolha, depois as ${essay} dissertativas.`;
+    }
+
+    const userPrompt = `Titulo: ${title || "Sem titulo"}\n\nConteudo:\n${truncatedContent}\n\nGere ${total} exercicios (${mc} multipla escolha + ${essay} dissertativas) sobre este conteudo.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -40,25 +65,15 @@ serve(async (req) => {
       body: JSON.stringify({
         model: "google/gemini-3-flash-preview",
         messages: [
-          {
-            role: "system",
-            content: `Voce e um professor universitario especialista em criar questoes para avaliacao. Gere exatamente 10 exercicios baseados no conteudo fornecido:
-- Os primeiros 8 exercicios devem ser de MULTIPLA ESCOLHA com 4 alternativas (A, B, C, D), sendo apenas uma correta. Inclua explicacao para cada.
-- Os ultimos 2 exercicios devem ser DISSERTATIVOS (perguntas abertas que exigem resposta escrita). Para dissertativas, nao inclua options, defina type como "essay", e inclua uma resposta modelo no campo explanation.
-
-IMPORTANTE: Sempre gere exatamente 8 questoes de multipla escolha seguidas de 2 questoes dissertativas.`,
-          },
-          {
-            role: "user",
-            content: `Titulo: ${title || "Sem titulo"}\n\nConteudo:\n${truncatedContent}\n\nGere 10 exercicios (8 multipla escolha + 2 dissertativas) sobre este conteudo.`,
-          },
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
         ],
         tools: [
           {
             type: "function",
             function: {
               name: "return_exercises",
-              description: "Return the generated exercises (8 multiple choice + 2 essay)",
+              description: `Return the generated exercises (${mc} multiple choice + ${essay} essay)`,
               parameters: {
                 type: "object",
                 properties: {
@@ -70,21 +85,21 @@ IMPORTANTE: Sempre gere exatamente 8 questoes de multipla escolha seguidas de 2 
                         type: {
                           type: "string",
                           enum: ["multiple_choice", "essay"],
-                          description: "Type of exercise: multiple_choice or essay",
+                          description: "Type of exercise",
                         },
                         question: { type: "string", description: "The question text" },
                         options: {
                           type: "array",
                           items: { type: "string" },
-                          description: "Array of 4 options for multiple choice (empty for essay)",
+                          description: "Array of 4 options for multiple choice (empty array for essay)",
                         },
                         correct_answer: {
                           type: "string",
-                          description: "The correct answer letter (A-D) for multiple choice, or empty string for essay",
+                          description: "Correct answer letter (A-D) for MC, or empty for essay",
                         },
                         explanation: {
                           type: "string",
-                          description: "Explanation of the correct answer, or model answer for essay questions",
+                          description: "Explanation or model answer for essay questions",
                         },
                       },
                       required: ["type", "question", "explanation"],
