@@ -1524,21 +1524,20 @@ export default function AdminPage() {
                       ))}
                     </div>
 
-                    {/* Toggle between single and bulk mode */}
+                    {/* Toggle between modes */}
                     <div className="flex items-center gap-2">
                       <div className="inline-flex bg-muted rounded-full p-0.5">
-                        <button
-                          onClick={() => setBulkExerciseMode(false)}
-                          className={`text-[10px] font-medium px-3 py-1 rounded-full transition-colors ${!bulkExerciseMode ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}
-                        >
-                          ✏️ Individual
-                        </button>
-                        <button
-                          onClick={() => setBulkExerciseMode(true)}
-                          className={`text-[10px] font-medium px-3 py-1 rounded-full transition-colors ${bulkExerciseMode ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}
-                        >
-                          📋 Importar em Lote
-                        </button>
+                        {([['individual', '✏️ Individual'], ['bulk', '📋 Lote'], ['ai', '✨ IA']] as [string, string][]).map(([mode, label]) => (
+                          <button key={mode} onClick={() => { setBulkExerciseMode(mode === 'bulk'); if (mode === 'ai') setBulkExerciseMode(false); setExerciseDialogMode(mode as any); }}
+                            className={`text-[10px] font-medium px-3 py-1 rounded-full transition-colors ${
+                              (mode === 'individual' && !bulkExerciseMode && exerciseDialogMode !== 'ai') ||
+                              (mode === 'bulk' && bulkExerciseMode) ||
+                              (mode === 'ai' && exerciseDialogMode === 'ai' && !bulkExerciseMode)
+                                ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
+                            }`}>
+                            {label}
+                          </button>
+                        ))}
                       </div>
                     </div>
 
@@ -1554,38 +1553,94 @@ export default function AdminPage() {
                           </p>
                           <div className="bg-muted/50 rounded-lg p-3 text-[10px] font-mono text-muted-foreground leading-relaxed">
                             <p>Qual é a capital do Brasil?</p>
-                            <p>A) São Paulo</p>
-                            <p>B) Rio de Janeiro</p>
-                            <p>C) Brasília</p>
-                            <p>D) Salvador</p>
+                            <p>A) São Paulo</p><p>B) Rio de Janeiro</p><p>C) Brasília</p><p>D) Salvador</p>
                             <p>Gabarito: C</p>
                             <p>Explicação: Brasília é a capital federal desde 1960.</p>
-                            <p className="mt-2 text-primary">(linha em branco para separar)</p>
-                            <p>Próxima pergunta aqui...</p>
                           </div>
-                          <Textarea
-                            value={bulkExerciseText}
-                            onChange={e => setBulkExerciseText(e.target.value)}
-                            placeholder="Cole aqui suas perguntas, alternativas, gabarito e explicação..."
-                            rows={12}
-                            className="font-mono text-xs"
-                          />
+                          <Textarea value={bulkExerciseText} onChange={e => setBulkExerciseText(e.target.value)}
+                            placeholder="Cole aqui suas perguntas, alternativas, gabarito e explicação..." rows={12} className="font-mono text-xs" />
                           {bulkExerciseText.trim() && (
-                            <p className="text-[10px] text-muted-foreground">
-                              {parseBulkExercises(bulkExerciseText).length} exercício(s) detectado(s)
-                            </p>
+                            <p className="text-[10px] text-muted-foreground">{parseBulkExercises(bulkExerciseText).length} exercício(s) detectado(s)</p>
                           )}
-                          <Button
-                            onClick={handleBulkExerciseImport}
-                            disabled={!bulkExerciseText.trim() || bulkExerciseImporting}
-                            className="w-full gradient-primary text-primary-foreground"
-                          >
-                            {bulkExerciseImporting ? (
-                              <><Loader2 className="h-4 w-4 animate-spin mr-1.5" /> Importando...</>
-                            ) : (
-                              'Importar Exercícios'
-                            )}
+                          <Button onClick={handleBulkExerciseImport} disabled={!bulkExerciseText.trim() || bulkExerciseImporting} className="w-full gradient-primary text-primary-foreground">
+                            {bulkExerciseImporting ? <><Loader2 className="h-4 w-4 animate-spin mr-1.5" /> Importando...</> : 'Importar Exercícios'}
                           </Button>
+                        </CardContent>
+                      </Card>
+                    ) : exerciseDialogMode === 'ai' ? (
+                      <Card>
+                        <CardContent className="p-5 space-y-3">
+                          <h3 className="font-semibold text-sm flex items-center gap-2">
+                            <Sparkles className="h-4 w-4 text-primary" /> Gerar com IA
+                          </h3>
+                          {(() => {
+                            const apt = apostilas.find(a => a.id === selectedApostila);
+                            if (!apt?.content?.trim()) return (
+                              <div className="text-center py-6 text-muted-foreground">
+                                <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-30" />
+                                <p className="text-xs">Esta apostila não tem conteúdo. Adicione conteúdo primeiro.</p>
+                              </div>
+                            );
+                            if (aiExercises.length === 0) return (
+                              <>
+                                <p className="text-xs text-muted-foreground">A IA vai analisar o conteúdo e gerar exercícios automaticamente.</p>
+                                <Button onClick={async () => {
+                                  setAiGenerating(true);
+                                  try {
+                                    const { data, error } = await supabase.functions.invoke('generate-exercises', {
+                                      body: { content: apt.content, title: apt.title, count: 8 },
+                                    });
+                                    if (error) throw error;
+                                    if (data.error) throw new Error(data.error);
+                                    setAiExercises(data.exercises || []);
+                                    if (data.exercises?.length > 0) toast.success(`${data.exercises.length} exercícios gerados!`);
+                                    else toast.error('Nenhum exercício gerado.');
+                                  } catch (err: any) { toast.error('Erro: ' + (err.message || 'Tente novamente')); }
+                                  setAiGenerating(false);
+                                }} disabled={aiGenerating} className="w-full gradient-primary text-primary-foreground">
+                                  {aiGenerating ? <><Loader2 className="h-4 w-4 animate-spin mr-1.5" /> Gerando exercícios...</> : <><Wand2 className="h-4 w-4 mr-1.5" /> Gerar Exercícios com IA</>}
+                                </Button>
+                              </>
+                            );
+                            return (
+                              <>
+                                <p className="text-xs text-muted-foreground">{aiExercises.length} exercícios gerados. Revise e salve:</p>
+                                <div className="space-y-2 max-h-80 overflow-y-auto">
+                                  {aiExercises.map((ex, i) => (
+                                    <div key={i} className="border border-border/50 rounded-lg p-3 text-xs">
+                                      <div className="flex justify-between items-start">
+                                        <p className="font-medium">{i + 1}. {ex.question}</p>
+                                        <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => setAiExercises(prev => prev.filter((_, idx) => idx !== i))}>
+                                          <Trash2 className="h-3 w-3 text-destructive" />
+                                        </Button>
+                                      </div>
+                                      <div className="mt-1 space-y-0.5 text-muted-foreground">
+                                        {ex.options.map((opt, oi) => (
+                                          <p key={oi} className={String.fromCharCode(65 + oi) === ex.correct_answer ? 'text-[hsl(var(--success))] font-medium' : ''}>{String.fromCharCode(65 + oi)}) {opt}</p>
+                                        ))}
+                                      </div>
+                                      {ex.explanation && <p className="mt-1 text-[10px] text-muted-foreground italic">💡 {ex.explanation}</p>}
+                                    </div>
+                                  ))}
+                                </div>
+                                <div className="flex gap-2">
+                                  <Button variant="outline" className="flex-1" onClick={() => setAiExercises([])}>Descartar</Button>
+                                  <Button className="flex-1 gradient-primary text-primary-foreground" onClick={async () => {
+                                    let ok = 0;
+                                    for (const ex of aiExercises) {
+                                      const { error } = await supabase.from('exercises').insert({
+                                        apostila_id: selectedApostila, question: ex.question, options: ex.options,
+                                        correct_answer: ex.correct_answer, explanation: ex.explanation || null,
+                                      });
+                                      if (!error) ok++;
+                                    }
+                                    toast.success(`${ok}/${aiExercises.length} exercícios salvos!`);
+                                    setAiExercises([]); loadAll();
+                                  }}>Salvar Todos ({aiExercises.length})</Button>
+                                </div>
+                              </>
+                            );
+                          })()}
                         </CardContent>
                       </Card>
                     ) : (
