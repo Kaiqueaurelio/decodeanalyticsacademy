@@ -475,6 +475,32 @@ export default function AdminPage() {
 
   useEffect(() => { loadAll(); }, []);
 
+  // Realtime: notificação de novos cadastros
+  useEffect(() => {
+    const channel = supabase
+      .channel('admin-new-users')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'profiles' },
+        (payload) => {
+          const newUser = payload.new as any;
+          const name = newUser.full_name || newUser.email || 'Novo usuário';
+          toast.info(`🎉 Novo cadastro: ${name}`, {
+            description: newUser.email || undefined,
+            duration: 8000,
+          });
+          // Atualiza a lista de usuários automaticamente
+          setUsers(prev => [
+            { id: newUser.id, user_id: newUser.user_id, full_name: newUser.full_name || '', email: newUser.email || '', is_blocked: newUser.is_blocked ?? false, created_at: newUser.created_at },
+            ...prev,
+          ]);
+        }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, []);
+
   const loadAll = async () => {
     setRefreshing(true);
     const [{ data: ap }, { data: ex }, { data: ans }, { data: mats }, { data: cats }, { data: profs }] = await Promise.all([
