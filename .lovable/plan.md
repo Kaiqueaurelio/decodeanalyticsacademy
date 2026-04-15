@@ -1,51 +1,38 @@
 
 
-## Plan: Reorganizar Dashboard do Aluno — Estilo AVA Moderno
+## Plano: Exercícios completos nos 2 dialogs (Exercícios da apostila + Editar apostila)
 
-### Problema Identificado
-O dashboard atual está visualmente denso e confuso para o aluno. Muitos widgets competem por atenção (heatmap, leaderboard, pomodoro, flashcards, gráficos) sem hierarquia clara. A referência que você enviou mostra um estilo AVA limpo e organizado — cards de disciplinas com conteúdo agrupado por unidades.
+### O que muda
 
-### Proposta: Dashboard "Minhas Disciplinas" Inspirado no AVA
+Os dois dialogs que você mostrou nas screenshots ganham funcionalidades completas de gestão de exercícios:
 
-Manter todas as funcionalidades existentes, mas reorganizar a hierarquia visual para que o aluno encontre rapidamente o que precisa.
+**1. Dialog "Exercícios — [Apostila]"** (abre ao clicar no ícone de caneta na lista de apostilas)
+- Mantém a lista de exercícios existentes + formulário manual individual
+- Adiciona toggle de 3 modos: **Individual** | **Importar em Lote** | **Gerar com IA**
+- **Importar em Lote**: campo de texto para colar exercícios no formato (pergunta, A-D, gabarito, explicação)
+- **Gerar com IA**: botão que envia o conteúdo da apostila para uma edge function, gera 8-10 exercícios, mostra preview editável antes de salvar
 
-#### Mudanças no Dashboard (`DashboardPage.tsx`)
+**2. Dialog "Editar Apostila"** (abre ao clicar no ícone de edição)
+- Mantém campos de título, categoria e conteúdo
+- Adiciona seção abaixo com os mesmos 3 modos de exercícios (Individual, Lote, IA)
+- Lista os exercícios existentes da apostila com opção de excluir
 
-1. **Seção principal "Minhas Disciplinas"** — Apostilas agrupadas por categoria em cards grandes e limpos, com cabeçalho colorido (usando as cores por matéria já existentes em `subject-colors.ts`). Cada card mostra:
-   - Título da disciplina/apostila
-   - Contagem de exercícios e progresso (% acerto)
-   - Botões "Ler Apostila" e "Exercícios" sempre visíveis (sem precisar expandir)
-   - Ícone de status (completo/em progresso)
+### Detalhes técnicos
 
-2. **Barra de estatísticas compacta no topo** — Manter os 4 stat cards mas torná-los mais sutis e integrados.
+**Nova Edge Function: `generate-exercises/index.ts`**
+- Recebe `{ content, title, count? }` 
+- Usa Lovable AI (gemini-3-flash-preview) via tool calling para retornar exercícios estruturados
+- Retorna array de `{ question, options, correct_answer, explanation }`
 
-3. **Sidebar reorganizada por prioridade**:
-   - Meta Semanal (topo)
-   - Calendário de Provas
-   - Gamificação (XP/Level/Streak)
-   - Pomodoro
-   - Os demais widgets (heatmap, leaderboard, activity) ficam em seção colapsável "Ver mais"
+**Mudanças em `AdminPage.tsx`**
+- Refatorar o dialog de exercícios (linhas 1127-1184) para incluir 3 abas: Individual, Lote, IA
+- Adicionar seção de exercícios no dialog de edição (linhas 1186-1197)
+- Novo estado `aiGenerating` e `aiExercises` para preview dos exercícios gerados
+- Reutilizar `parseBulkExercises` e `handleBulkExerciseImport` já existentes
 
-4. **Mobile: Layout vertical limpo** — Cards de disciplina em lista vertical sem carrossel, com acesso direto.
-
-#### Melhorias Visuais Globais
-
-5. **Cards de disciplina com estilo AVA** — Cabeçalho colorido por categoria, cantos arredondados (12px), sombra suave, hover com elevação.
-
-6. **Melhor contraste no modo escuro** — O `--card` está muito escuro (`240 5% 7%`), será ajustado para `240 5% 10%` para melhor legibilidade.
-
-7. **Tipografia mais legível** — Títulos de seção maiores (16px→18px), texto de corpo com line-height 1.6.
-
-#### Apostila Page Polish
-
-8. **Consistência com Dashboard** — Mesmo sistema de cards, cores e animações. Melhorar visibilidade do texto no modo escuro.
-
-### Arquivos a Modificar
-- `src/pages/DashboardPage.tsx` — Reorganizar layout e hierarquia
-- `src/index.css` — Ajustar variáveis de cor dark mode e adicionar `.discipline-card`
-- `src/components/AppHeader.tsx` — Nenhuma mudança necessária (já está ok)
-- `src/pages/ApostilaPage.tsx` — Polish de contraste e consistência
-
-### Resultado Esperado
-Dashboard limpo estilo plataforma educacional, onde o aluno vê "Minhas Disciplinas" organizadas por matéria com acesso direto ao conteúdo — sem ruído visual. Widgets de gamificação e ferramentas ficam na sidebar sem competir com o conteúdo principal.
+**Fluxo "Gerar com IA":**
+1. Clica "Gerar Exercícios" → loading spinner
+2. Edge function retorna exercícios → preview na tela
+3. Pode remover exercícios individuais do preview
+4. Clica "Salvar Todos" → insere no banco
 
