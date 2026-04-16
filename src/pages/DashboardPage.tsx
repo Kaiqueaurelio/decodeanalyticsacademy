@@ -18,6 +18,7 @@ import { GlobalSearch } from '@/components/GlobalSearch';
 import { OnboardingTour } from '@/components/OnboardingTour';
 import { StudyHeatmap } from '@/components/StudyHeatmap';
 import { CategoryPerformanceChart } from '@/components/CategoryPerformanceChart';
+import { CategoryStatsWidget } from '@/components/CategoryStatsWidget';
 import { RecentActivity } from '@/components/RecentActivity';
 import { WeeklyGoalWidget } from '@/components/WeeklyGoalWidget';
 import { AnimatedCounter } from '@/components/AnimatedCounter';
@@ -362,6 +363,15 @@ export default function DashboardPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-content-show delay-5">
               <EvolutionChart />
               <CategoryPerformanceChart data={categoryData} />
+            </div>
+
+            {/* Category Stats */}
+            <div className="animate-content-show delay-5">
+              <CategoryStatsWidget
+                apostilas={apostilas}
+                byApostila={stats.byApostila}
+                exerciseCounts={exerciseCounts}
+              />
             </div>
 
             {/* Gamification + Pomodoro */}
