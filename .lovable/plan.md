@@ -1,51 +1,59 @@
 
-O usuário quer adicionar uma opção de cadastro via **RA da UNIP** (além do email tradicional). O aluno escolheria entre duas formas:
-1. **RA + senha** (acesso rápido, sem precisar de email)
-2. **Email + senha** (fluxo atual)
+O usuário insiste em usar a chave Gemini própria do Google AI Studio. Já alertei 2x sobre exposição. Agora vou ceder e criar o fluxo correto: usar `add_secret` (popup seguro) ao invés da chave colada no chat. Vou criar uma edge function paralela que usa Google AI Studio direto, e dar opção de qual usar.
 
-## Análise técnica
+## Plano: Integrar Google AI Studio (Gemini) com chave própria
 
-O Supabase Auth exige um email válido para criar conta — não aceita "RA" como identificador nativo. Solução padrão: gerar um pseudo-email interno a partir do RA (ex: `2312345678@ra.unip.local`) e armazenar o RA no perfil. O aluno só vê e digita o RA; o email é montado automaticamente nos bastidores.
+### Como vai funcionar (seguro)
+1. Você **NÃO cola a chave no chat** — vou abrir um popup seguro `add_secret` onde você gera nova chave em [aistudio.google.com/apikey](https://aistudio.google.com/apikey) e cola lá. Fica criptografada como secret do backend.
+2. Crio edge function `gemini-direct` que usa `GOOGLE_AI_API_KEY` para chamar a API oficial do Google (`generativelanguage.googleapis.com`).
+3. Mantenho o Lovable AI como fallback automático: se sua chave falhar (cota, 401, 429), cai pro Lovable AI sem você perceber.
 
-**Validação do RA UNIP**: RAs UNIP têm tipicamente 10-13 dígitos numéricos. Validamos formato (apenas números, comprimento mínimo) antes de permitir cadastro.
+### O que vou construir
 
-**Sem verificação de email** para cadastros via RA (não há email real). Para email tradicional, mantém o fluxo atual com confirmação.
+**1. Nova edge function `gemini-direct`** (`supabase/functions/gemini-direct/index.ts`)
+- Recebe `{ messages, model?, systemPrompt? }`
+- Usa `GOOGLE_AI_API_KEY` (secret) para chamar Google AI Studio
+- Suporta streaming SSE compatível com o formato OpenAI (pra reusar parser do front)
+- Auto-fallback pro Lovable AI em caso de erro
 
-## Plano
+**2. Wrapper compartilhado `_shared/ai-client.ts`** dentro de cada função que precisar
+- Helper `callAI({ messages, preferOwn, stream })` que tenta sua chave primeiro, fallback Lovable
 
-### 1. Banco de dados (migração)
-- Adicionar coluna `ra` (text, nullable, unique) na tabela `profiles`
-- Adicionar coluna `account_type` (text, default `'email'`, valores: `'email'` ou `'ra'`)
-- Atualizar a função `handle_new_user` para extrair `ra` do `raw_user_meta_data` quando presente
+**3. Toggle no Admin** (`AdminPage.tsx` → nova aba "IA")
+- Switch: "Usar minha chave Google AI Studio" (default OFF)
+- Status: ✅ chave configurada / ❌ não configurada
+- Botão "Testar chave" que faz uma chamada de teste e mostra resposta
+- Salva preferência em `app_settings` (nova tabela simples key/value)
 
-### 2. UI da página de Login (`src/pages/LoginPage.tsx`)
-Na aba **Cadastro**, adicionar um seletor (tabs ou toggle) no topo:
-- **"Sou aluno UNIP (RA)"** → mostra campo RA + senha + confirmar senha
-- **"Usar email"** → mostra fluxo atual (email + senha)
+**4. Atualizo `apostila-chat`** para respeitar o toggle
+- Se admin ativou + chave existe → usa `gemini-direct`
+- Senão → usa Lovable AI (comportamento atual)
 
-Na aba **Login**, adicionar o mesmo seletor:
-- **"Entrar com RA"** → campo RA + senha
-- **"Entrar com email"** → fluxo atual
+### Migração SQL
+```sql
+create table public.app_settings (
+  key text primary key,
+  value jsonb not null,
+  updated_at timestamptz default now()
+);
+alter table public.app_settings enable row level security;
+create policy "anyone reads settings" on public.app_settings for select using (true);
+create policy "only admin writes" on public.app_settings for all using (has_role(auth.uid(),'admin'));
+```
 
-### 3. Lógica de auth
-- **Cadastro RA**: validar RA (apenas dígitos, 8-13 chars) → montar email pseudo `${ra}@ra.unip.local` → `supabase.auth.signUp` com metadata `{ ra, account_type: 'ra' }` → login automático (sem confirmação de email)
-- **Login RA**: montar mesmo pseudo-email → `signInWithPassword`
-- **Recuperação de senha via RA**: bloquear (mostrar aviso "Cadastro por RA não permite recuperação por email — contate o admin"), pois não há email real
+### Secret necessária
+- `GOOGLE_AI_API_KEY` — solicitarei via popup seguro `add_secret` (você gera nova chave no Google AI Studio e cola lá, **não no chat**)
 
-### 4. Texto/UX
-- Adicionar dica visual: "Cadastro por RA é mais rápido, mas você não poderá recuperar sua senha por email"
-- Manter a estética cyber atual (ciano/roxo, Space Grotesk)
-- Footer obrigatório "Desenvolvido por: Kaique Aurelio & Decode Analytics" mantido
+### Arquivos afetados
+- `supabase/functions/gemini-direct/index.ts` (novo)
+- `supabase/functions/apostila-chat/index.ts` (atualizar para checar toggle)
+- `src/pages/AdminPage.tsx` (nova aba "IA")
+- `src/components/AIProviderSettings.tsx` (novo — toggle + teste)
+- Nova migração SQL
 
-### 5. Memória
-Salvar regra em `mem://auth/credentials-and-recovery` sobre o fluxo dual RA/Email.
+### Importante
+⚠️ A chave que você colou nesta conversa (`AQ.Ab8RN6Jn...`) **continua exposta no histórico**. Antes de aprovar, **gere uma chave NOVA** em https://aistudio.google.com/apikey e revogue a antiga. A nova você cola no popup seguro, não aqui.
 
-## Arquivos afetados
-- `supabase/migrations/` (nova migração: colunas `ra`, `account_type` + atualizar `handle_new_user`)
-- `src/pages/LoginPage.tsx` (UI e lógica do toggle)
-- `mem://auth/credentials-and-recovery` (atualizar memória)
-
-## Pontos a confirmar
-- Formato do RA UNIP: aceito **8 a 13 dígitos numéricos** (cobre formatos antigos e novos). OK?
-- Domínio interno: `@ra.unip.local` (nunca enviado, apenas interno). OK?
-- Recuperação de senha para contas RA: **bloqueada** com aviso para contatar admin. OK?
+### O que NÃO mudo
+- Lovable AI continua como fallback (zero risco de quebrar o app)
+- Outras edge functions (`extract-content`, `generate-exercises`, etc.) ficam no Lovable AI por padrão — você pode estender depois se quiser
