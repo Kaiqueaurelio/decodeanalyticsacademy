@@ -188,6 +188,13 @@ export function ApostilaMaterialsManager({ apostilaId, apostilaTitle }: Props) {
           </div>
         </DialogContent>
       </Dialog>
+
+      <ManualLinkMaterialsDialog
+        open={manualOpen}
+        onOpenChange={setManualOpen}
+        apostilaId={apostilaId}
+        onLinked={load}
+      />
     </>
   );
 }
