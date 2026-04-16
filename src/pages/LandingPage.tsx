@@ -13,6 +13,7 @@ import logoDark from '@/assets/logo-dark.jpeg';
 import { TestimonialsSection } from '@/components/TestimonialsSection';
 import { CreatorSection } from '@/components/CreatorSection';
 import { TechStackSection } from '@/components/TechStackSection';
+import { LiveAppSection } from '@/components/LiveAppSection';
 
 /* ─── SECTION WRAPPER: Fade + slide on scroll ─── */
 function ScrollReveal({ children, className = '', delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
@@ -698,6 +699,9 @@ export default function LandingPage() {
       {/* ═══ HOW IT WAS BUILT ═══ */}
       <TechStackSection />
 
+      {/* ═══ LIVE APP / SHARE LINK ═══ */}
+      <LiveAppSection />
+
       {/* ═══ FOOTER ═══ */}
       <footer className="py-10 px-5" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
         <div className="max-w-7xl mx-auto flex flex-col items-center gap-4">
@@ -740,9 +744,9 @@ export default function LandingPage() {
             </p>
             <div className="p-3 rounded-lg" style={{ background: 'rgba(0,240,255,0.06)', border: '1px solid rgba(0,240,255,0.12)' }}>
               <p className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: '#00f0ff' }}>Link:</p>
-              <a href="https://decodeanalyticsacademy.lovable.app" target="_blank" rel="noopener noreferrer"
+              <a href="https://decodeanalyticsacademy.vercel.app" target="_blank" rel="noopener noreferrer"
                 className="text-sm font-semibold underline break-all" style={{ color: '#00f0ff' }}>
-                decodeanalyticsacademy.lovable.app
+                decodeanalyticsacademy.vercel.app
               </a>
             </div>
             <div className="space-y-3 text-sm" style={{ color: '#94a3b8' }}>
