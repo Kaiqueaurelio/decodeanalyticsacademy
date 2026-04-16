@@ -136,7 +136,7 @@ export function MergeApostilasDialog({ open, onOpenChange, onMerged }: Props) {
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
               <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar..." className="pl-8 h-8 text-xs" />
             </div>
-            <ScrollArea className="flex-1 -mx-2 px-2 max-h-[45vh]">
+            <ScrollArea className="flex-1 -mx-2 px-2 h-[45vh] min-h-[200px]">
               <RadioGroup value={targetId} onValueChange={setTargetId}>
                 <div className="space-y-1">
                   {filtered.map(a => {
