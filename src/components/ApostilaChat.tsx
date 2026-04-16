@@ -32,7 +32,44 @@ export function ApostilaChat({ apostilaId, apostilaTitle, variant = 'panel' }: P
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [streaming, setStreaming] = useState(false);
+  const [speakingIdx, setSpeakingIdx] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Para a fala ao desmontar
+  useEffect(() => () => { try { window.speechSynthesis?.cancel(); } catch {} }, []);
+
+  const speak = (idx: number, text: string) => {
+    if (!('speechSynthesis' in window)) {
+      toast.error('Seu navegador não suporta leitura em voz');
+      return;
+    }
+    const synth = window.speechSynthesis;
+    if (speakingIdx === idx) {
+      synth.cancel();
+      setSpeakingIdx(null);
+      return;
+    }
+    synth.cancel();
+    // Remove markdown básico para leitura mais natural
+    const clean = text
+      .replace(/```[\s\S]*?```/g, '')
+      .replace(/`([^`]+)`/g, '$1')
+      .replace(/[*_#>~]+/g, '')
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+      .trim();
+    if (!clean) return;
+    const utter = new SpeechSynthesisUtterance(clean);
+    utter.lang = 'pt-BR';
+    utter.rate = 1;
+    utter.pitch = 1;
+    const voices = synth.getVoices();
+    const ptVoice = voices.find(v => v.lang?.toLowerCase().startsWith('pt'));
+    if (ptVoice) utter.voice = ptVoice;
+    utter.onend = () => setSpeakingIdx(null);
+    utter.onerror = () => setSpeakingIdx(null);
+    setSpeakingIdx(idx);
+    synth.speak(utter);
+  };
 
   // Carrega histórico
   useEffect(() => {
