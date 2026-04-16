@@ -213,11 +213,11 @@ export async function mergeApostilas(
 
   const sources = apostilas.filter(a => a.id !== targetId);
 
-  // 1. Concatenate content
-  const mergedContent = [
-    target.content || '',
-    ...sources.map(s => `\n\n---\n\n## ${s.title}\n\n${s.content || ''}`),
-  ].join('');
+  // 1. Concatenate content — preserve original formatting, no extra headers/separators
+  const parts = [target.content || '', ...sources.map(s => s.content || '')]
+    .map(c => c.trim())
+    .filter(Boolean);
+  const mergedContent = parts.join('\n\n');
 
   // 2. Move exercises
   const sourceIdList = sources.map(s => s.id);
