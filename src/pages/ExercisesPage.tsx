@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useGamification } from '@/hooks/useGamification';
 import { AppHeader } from '@/components/AppHeader';
 import { Watermark } from '@/components/Watermark';
+import { CommentsWidget } from '@/components/CommentsWidget';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -571,6 +572,13 @@ export default function ExercisesPage() {
             <p className="text-center text-[10px] text-muted-foreground/50 mt-4 hidden sm:block">
               Use ← → para navegar entre questões
             </p>
+
+            {/* Comments per exercise */}
+            {currentExercise && (
+              <div className="mt-4">
+                <CommentsWidget contextType="exercise" contextId={currentExercise.id} compact />
+              </div>
+            )}
           </>
         )}
       </main>
