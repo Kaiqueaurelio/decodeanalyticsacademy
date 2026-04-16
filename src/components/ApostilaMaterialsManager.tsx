@@ -89,7 +89,7 @@ export function ApostilaMaterialsManager({ apostilaId, apostilaTitle }: Props) {
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-lg max-h-[80vh] flex flex-col">
+        <DialogContent className="max-w-lg max-h-[80vh] flex flex-col overflow-hidden">
           <DialogHeader>
             <DialogTitle className="text-base truncate">
               <Paperclip className="inline h-4 w-4 mr-1.5 text-primary" />
@@ -128,7 +128,7 @@ export function ApostilaMaterialsManager({ apostilaId, apostilaTitle }: Props) {
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
               <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar materiais..." className="pl-8 h-8 text-xs" />
             </div>
-            <ScrollArea className="max-h-48">
+            <ScrollArea className="flex-1 max-h-[40vh]">
               <div className="space-y-1">
                 {available.map(m => {
                   const Icon = TYPE_ICONS[m.type] || File;
