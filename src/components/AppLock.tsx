@@ -19,10 +19,29 @@ export function AppLock({ onUnlock }: AppLockProps) {
     try {
       const refreshToken = await verifyBiometric();
       const { error } = await supabase.auth.refreshSession({ refresh_token: refreshToken });
-      if (error) throw error;
+      if (error) {
+        const msg = (error.message || '').toLowerCase();
+        // Token expirou ou foi invalidado — limpa biometria e manda para login
+        if (msg.includes('refresh token') || msg.includes('invalid') || msg.includes('expired')) {
+          disableBiometric();
+          await supabase.auth.signOut().catch(() => {});
+          toast.error('Sua sessão expirou. Faça login novamente para reativar a biometria.');
+          window.location.href = '/login';
+          return;
+        }
+        throw error;
+      }
       toast.success('Desbloqueado!');
       onUnlock();
     } catch (err: any) {
+      const msg = (err?.message || '').toLowerCase();
+      if (msg.includes('refresh token') || msg.includes('not found')) {
+        disableBiometric();
+        await supabase.auth.signOut().catch(() => {});
+        toast.error('Sua sessão expirou. Faça login novamente.');
+        window.location.href = '/login';
+        return;
+      }
       toast.error(err?.message || 'Falha na verificação biométrica');
     } finally {
       setVerifying(false);
