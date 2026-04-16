@@ -270,9 +270,14 @@ export default function ExercisesPage() {
                 {essayExercises.length > 0 && `${essayExercises.length} diss`}
               </Badge>
             )}
-            {!timedMode && mcExercises.length > 0 && !showResults && (
+            {!timedMode && mcExercises.length > 0 && !showResults && !reviewMode && (
               <Button size="sm" variant="outline" onClick={startTimedMode} className="text-xs gap-1.5 h-8">
                 <Timer className="h-3.5 w-3.5" /> Simulado
+              </Button>
+            )}
+            {answeredCount > 0 && !showResults && (
+              <Button size="sm" variant={reviewMode ? 'default' : 'outline'} onClick={() => { setReviewMode(!reviewMode); setTimedMode(false); setTimerActive(false); }} className="text-xs gap-1.5 h-8">
+                <ListChecks className="h-3.5 w-3.5" /> Revisão
               </Button>
             )}
           </div>
