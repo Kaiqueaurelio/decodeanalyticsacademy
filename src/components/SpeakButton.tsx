@@ -1,14 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import { Volume2, Square, Pause, Play, Loader2 } from 'lucide-react';
+import { Volume2, Square, Pause, Play } from 'lucide-react';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
 
 interface Props {
   getText: () => string;
   label?: string;
   className?: string;
   size?: 'sm' | 'md' | 'lg';
-  voiceId?: string;
 }
 
 const cleanText = (raw: string) =>
@@ -21,8 +19,7 @@ const cleanText = (raw: string) =>
     .replace(/\n{3,}/g, '\n\n')
     .trim();
 
-/** Divide texto em chunks ~maxLen respeitando frases. */
-const chunkText = (text: string, maxLen = 3800): string[] => {
+const chunkText = (text: string, maxLen = 200): string[] => {
   const sentences = text.match(/[^.!?\n]+[.!?\n]+|[^.!?\n]+$/g) || [text];
   const chunks: string[] = [];
   let current = '';
@@ -40,22 +37,47 @@ const chunkText = (text: string, maxLen = 3800): string[] => {
   return chunks;
 };
 
-export function SpeakButton({ getText, label = 'Ouvir em voz', className = '', size = 'md', voiceId }: Props) {
-  const [state, setState] = useState<'idle' | 'loading' | 'speaking' | 'paused'>('idle');
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+/** Escolhe a voz PT-BR mais natural disponível no dispositivo. */
+const pickBestPtVoice = (voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | undefined => {
+  const pt = voices.filter(v => v.lang?.toLowerCase().startsWith('pt'));
+  if (!pt.length) return undefined;
+
+  // Prioridades por qualidade de voz (neurais/premium primeiro)
+  const priorities = [
+    /google.*portugu/i,            // Google PT-BR (Chrome/Android) — mais natural
+    /microsoft.*(francisca|antonio|thalita|brenda|elza|fabiola|giovanna|leticia|manuela|yara).*natural/i,
+    /microsoft.*natural/i,         // Microsoft Neural voices (Edge)
+    /microsoft.*(francisca|antonio|maria|daniel|helena)/i,
+    /luciana|joana|catarina/i,     // Apple premium PT (iOS/macOS)
+    /pt.?br/i,
+    /pt/i,
+  ];
+
+  for (const re of priorities) {
+    const match = pt.find(v => re.test(v.name) || re.test(v.lang));
+    if (match) return match;
+  }
+  return pt[0];
+};
+
+export function SpeakButton({ getText, label = 'Ouvir em voz', className = '', size = 'md' }: Props) {
+  const [state, setState] = useState<'idle' | 'speaking' | 'paused'>('idle');
   const queueRef = useRef<string[]>([]);
   const indexRef = useRef(0);
   const cancelledRef = useRef(false);
-  const useFallbackRef = useRef(false);
+  const voiceRef = useRef<SpeechSynthesisVoice | undefined>(undefined);
 
-  useEffect(() => () => {
-    cancelledRef.current = true;
-    try { audioRef.current?.pause(); } catch {}
-    try { window.speechSynthesis?.cancel(); } catch {}
+  useEffect(() => {
+    // Pré-carrega lista de vozes (algumas plataformas só populam após onvoiceschanged)
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+    const synth = window.speechSynthesis;
+    const load = () => { voiceRef.current = pickBestPtVoice(synth.getVoices()); };
+    load();
+    synth.onvoiceschanged = load;
+    return () => { try { synth.cancel(); } catch {} };
   }, []);
 
-  // ===== Fallback Web Speech API =====
-  const speakNextNative = () => {
+  const speakNext = () => {
     if (cancelledRef.current) return;
     const synth = window.speechSynthesis;
     if (indexRef.current >= queueRef.current.length) {
@@ -65,102 +87,57 @@ export function SpeakButton({ getText, label = 'Ouvir em voz', className = '', s
     const chunk = queueRef.current[indexRef.current];
     const utter = new SpeechSynthesisUtterance(chunk);
     utter.lang = 'pt-BR';
-    const voices = synth.getVoices();
-    const ptVoice = voices.find(v => v.lang?.toLowerCase().startsWith('pt'));
-    if (ptVoice) utter.voice = ptVoice;
-    utter.onend = () => { indexRef.current += 1; speakNextNative(); };
+    utter.rate = 1;
+    utter.pitch = 1;
+    utter.volume = 1;
+    const voice = voiceRef.current || pickBestPtVoice(synth.getVoices());
+    if (voice) utter.voice = voice;
+    utter.onend = () => { indexRef.current += 1; speakNext(); };
     utter.onerror = (e: any) => {
       if (e?.error === 'canceled' || e?.error === 'interrupted') return;
       indexRef.current += 1;
-      speakNextNative();
+      speakNext();
     };
     synth.speak(utter);
   };
 
-  const startNativeFallback = (text: string) => {
+  const start = () => {
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
       toast.error('Seu navegador não suporta leitura em voz');
-      setState('idle');
       return;
     }
-    useFallbackRef.current = true;
     const synth = window.speechSynthesis;
+
+    // iOS Safari: precisa de speak() síncrono no gesto do usuário
     const primer = new SpeechSynthesisUtterance(' ');
     primer.volume = 0; primer.lang = 'pt-BR';
-    synth.cancel(); synth.speak(primer);
-    queueRef.current = chunkText(text, 200);
-    indexRef.current = 0;
-    setState('speaking');
-    setTimeout(() => speakNextNative(), 50);
-  };
+    synth.cancel();
+    synth.speak(primer);
 
-  // ===== ElevenLabs =====
-  const playNextElevenLabs = async () => {
-    if (cancelledRef.current) return;
-    if (indexRef.current >= queueRef.current.length) {
-      setState('idle');
-      return;
-    }
-    const chunk = queueRef.current[indexRef.current];
-    try {
-      const { data, error } = await supabase.functions.invoke('elevenlabs-tts', {
-        body: { text: chunk, voiceId },
-      });
-      if (error || !data?.audioContent) throw new Error(error?.message || 'no audio');
-
-      const audio = new Audio(`data:audio/mpeg;base64,${data.audioContent}`);
-      audioRef.current = audio;
-      audio.onended = () => { indexRef.current += 1; playNextElevenLabs(); };
-      audio.onerror = () => { indexRef.current += 1; playNextElevenLabs(); };
-      setState('speaking');
-      await audio.play();
-    } catch (e) {
-      console.warn('[SpeakButton] ElevenLabs falhou, fallback nativo:', e);
-      // Fallback: junta restante e usa Web Speech
-      const remaining = queueRef.current.slice(indexRef.current).join(' ');
-      startNativeFallback(remaining);
-    }
-  };
-
-  const start = async () => {
     const text = cleanText(getText() || '');
     if (!text) { toast.message('Nada para ler'); return; }
 
-    cancelledRef.current = false;
-    useFallbackRef.current = false;
+    // Garante que pegamos a melhor voz disponível neste momento
+    voiceRef.current = pickBestPtVoice(synth.getVoices());
+
+    queueRef.current = chunkText(text, 200);
     indexRef.current = 0;
-    queueRef.current = chunkText(text, 3800);
-    setState('loading');
-
-    // iOS: destrava audio context com play silencioso síncrono
-    try {
-      const silent = new Audio('data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQxAADB8AhSmxhIIEVCSiJrDCQBTcu3UrAIwUdkRgQbFAZC1CQEwTJ9mjRvBA4UOLD8nKVOWfh+UlK3z/177OXrfOdKl7pyn3Xf//FJAhN89UrU7T1pTPNVT3X8JP/9vpfwj/r/0/9/3P//');
-      silent.volume = 0;
-      await silent.play().catch(() => {});
-    } catch {}
-
-    await playNextElevenLabs();
+    cancelledRef.current = false;
+    setState('speaking');
+    setTimeout(() => speakNext(), 50);
   };
 
   const togglePause = () => {
-    if (useFallbackRef.current) {
-      const synth = window.speechSynthesis;
-      if (state === 'speaking') { synth.pause(); setState('paused'); }
-      else if (state === 'paused') { synth.resume(); setState('speaking'); }
-      return;
-    }
-    const a = audioRef.current;
-    if (!a) return;
-    if (state === 'speaking') { a.pause(); setState('paused'); }
-    else if (state === 'paused') { a.play(); setState('speaking'); }
+    const synth = window.speechSynthesis;
+    if (state === 'speaking') { synth.pause(); setState('paused'); }
+    else if (state === 'paused') { synth.resume(); setState('speaking'); }
   };
 
   const stop = () => {
     cancelledRef.current = true;
     queueRef.current = [];
     indexRef.current = 0;
-    try { audioRef.current?.pause(); audioRef.current = null; } catch {}
-    try { window.speechSynthesis?.cancel(); } catch {}
+    window.speechSynthesis?.cancel();
     setState('idle');
   };
 
@@ -178,18 +155,6 @@ export function SpeakButton({ getText, label = 'Ouvir em voz', className = '', s
       >
         <Volume2 className={iconCls} />
         {label}
-      </button>
-    );
-  }
-
-  if (state === 'loading') {
-    return (
-      <button
-        disabled
-        className={`inline-flex items-center font-bold rounded-full bg-primary/80 text-primary-foreground shadow-md ${sizeCls} ${className}`}
-      >
-        <Loader2 className={`${iconCls} animate-spin`} />
-        Carregando voz...
       </button>
     );
   }
