@@ -16,7 +16,7 @@ const SOCIALS = [
   },
   {
     name: '@decode.analytics',
-    label: 'Projeto',
+    label: 'Decode Analytics',
     icon: Instagram,
     url: 'https://instagram.com/decode.analytics',
     bg: 'linear-gradient(135deg, #00f0ff, #a855f7)',
