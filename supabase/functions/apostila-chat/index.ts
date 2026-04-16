@@ -168,21 +168,34 @@ ${apostilaContent}
       });
     };
 
-    // Tenta Google primeiro se preferido
+    // Se admin ativou Google, usa SOMENTE Google (sem fallback silencioso pro Lovable sem créditos)
     let aiResp: Response | null = null;
     let provider = "lovable";
     if (preferGoogle) {
       try {
         const g = await callGoogle();
         if (g.ok && g.body) {
-          provider = "google-direct";
           return new Response(transformGoogle(g.body), {
-            headers: { ...corsHeaders, "Content-Type": "text/event-stream", "X-AI-Provider": provider },
+            headers: { ...corsHeaders, "Content-Type": "text/event-stream", "X-AI-Provider": "google-direct" },
           });
         }
-        console.warn("Google falhou, fallback Lovable:", g.status, (await g.text()).slice(0, 300));
+        const errText = (await g.text()).slice(0, 500);
+        console.error("Google AI Studio falhou:", g.status, errText);
+        let msg = "Sua chave Google AI Studio falhou.";
+        if (g.status === 400) msg = "Chave Google AI Studio inválida ou requisição malformada. Gere uma nova em aistudio.google.com/apikey.";
+        else if (g.status === 401 || g.status === 403) msg = "Chave Google AI Studio inválida ou sem permissão. Gere uma nova em aistudio.google.com/apikey.";
+        else if (g.status === 429) msg = "Cota da sua chave Google AI Studio esgotada. Aguarde ou use outra chave.";
+        else if (g.status >= 500) msg = "Google AI Studio está com instabilidade. Tente novamente em instantes.";
+        return new Response(
+          JSON.stringify({ error: msg, fallback: true, provider: "google-direct", upstream_status: g.status }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json", "X-AI-Provider": "google-direct-error" } },
+        );
       } catch (e) {
-        console.warn("Google exception, fallback Lovable:", e);
+        console.error("Google exception:", e);
+        return new Response(
+          JSON.stringify({ error: "Falha de rede ao chamar Google AI Studio.", fallback: true, provider: "google-direct" }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json", "X-AI-Provider": "google-direct-error" } },
+        );
       }
     }
 

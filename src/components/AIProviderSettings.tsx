@@ -152,18 +152,29 @@ export function AIProviderSettings() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="flex items-center justify-between gap-4 p-4 rounded-lg border bg-muted/30">
+          <div className={`flex items-center justify-between gap-4 p-4 rounded-lg border-2 transition ${preferGoogle ? 'border-emerald-500/60 bg-emerald-500/5' : 'border-amber-500/60 bg-amber-500/5'}`}>
             <div className="space-y-1">
               <Label className="text-base font-medium flex items-center gap-2">
                 <KeyRound className="h-4 w-4" />
                 Usar minha chave Google AI Studio
               </Label>
               <p className="text-xs text-muted-foreground">
-                Quando ativo, o app usa sua chave <code>GOOGLE_AI_API_KEY</code>. Se falhar, cai automaticamente no Lovable AI.
+                {preferGoogle
+                  ? '✅ ATIVO: todas as respostas do chat vêm da sua chave Google. Não consome créditos do Lovable AI.'
+                  : '⚠️ INATIVO: o app está usando Lovable AI. Se os créditos acabarem, o chat falhará. Ative para usar sua chave própria.'}
               </p>
             </div>
             <Switch checked={preferGoogle} onCheckedChange={save} disabled={saving} />
           </div>
+
+          {!preferGoogle && (
+            <div className="flex items-start gap-2 p-3 rounded-lg border border-amber-500/40 bg-amber-500/10">
+              <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+              <p className="text-xs">
+                <strong>Toggle desligado.</strong> Mesmo com sua chave configurada, o app continua usando Lovable AI até você ligar o switch acima.
+              </p>
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-3">
             <div className="p-3 rounded-lg border bg-card">

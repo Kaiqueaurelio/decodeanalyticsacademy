@@ -103,10 +103,23 @@ export function ApostilaChat({ apostilaId, apostilaTitle, variant = 'panel' }: P
       if (ctype.includes('application/json')) {
         const j = await resp.json().catch(() => null);
         if (j?.fallback || j?.error) {
-          toast.error(j?.error || 'IA temporariamente indisponível');
+          toast.error(j?.error || 'IA temporariamente indisponível', {
+            duration: 8000,
+            description: j?.provider === 'google-direct'
+              ? 'Verifique sua chave em Admin → IA ou em aistudio.google.com/apikey'
+              : 'Ative sua chave Google em Admin → IA para evitar limites de créditos.',
+          });
           setLoading(false);
           return;
         }
+      }
+
+      // Aviso quando o admin esperava Google mas caiu no Lovable
+      const usedProvider = resp.headers.get('X-AI-Provider') || '';
+      if (usedProvider && usedProvider !== 'google-direct' && localStorage.getItem('ai_prefer_google_hint') === '1') {
+        toast.message('Resposta veio do Lovable AI', {
+          description: 'O toggle no Admin → IA pode estar desligado.',
+        });
       }
 
       if (!resp.body) {
