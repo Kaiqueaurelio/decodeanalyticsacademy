@@ -296,10 +296,34 @@ export function AnnouncementsAdmin() {
             <DialogTitle className="text-base">{editing ? 'Editar Aviso' : 'Novo Aviso'}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div>
-              <Label className="text-xs">Título</Label>
-              <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="Título do aviso" className="mt-1" />
+            {/* Auto-fill from URL */}
+            <div className="p-3 rounded-lg border border-dashed border-primary/30 bg-primary/5">
+              <Label className="text-xs font-medium flex items-center gap-1.5 mb-2">
+                <Wand2 className="h-3.5 w-3.5 text-primary" />
+                Preencher automaticamente via link
+              </Label>
+              <div className="flex gap-2">
+                <Input
+                  value={autoFillUrl}
+                  onChange={e => setAutoFillUrl(e.target.value)}
+                  placeholder="Cole o link do curso, vaga, evento..."
+                  className="flex-1 text-xs"
+                  disabled={autoFilling}
+                />
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={handleAutoFill}
+                  disabled={autoFilling || !autoFillUrl.trim()}
+                  className="gap-1.5 shrink-0"
+                >
+                  {autoFilling ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Link2 className="h-3.5 w-3.5" />}
+                  {autoFilling ? 'Extraindo...' : 'Extrair'}
+                </Button>
+              </div>
+              <p className="text-[10px] text-muted-foreground mt-1.5">Cole a URL e clique em Extrair para preencher título, conteúdo e categoria automaticamente.</p>
             </div>
+
             <div>
               <Label className="text-xs">Conteúdo</Label>
               <Textarea value={content} onChange={e => setContent(e.target.value)} placeholder="Descreva o aviso..." rows={4} className="mt-1" />
