@@ -13,7 +13,7 @@ import { Switch } from '@/components/ui/switch';
 import {
   Plus, Trash2, Edit, Megaphone, GraduationCap, Calendar, Briefcase, Sparkles, Eye, EyeOff
 } from 'lucide-react';
-import { Upload, Loader2, ImageIcon, Link2, Wand2 } from 'lucide-react';
+import { Upload, Loader2, Link2, Wand2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Announcement {
@@ -36,6 +36,15 @@ const CATEGORIES = [
   { value: 'eventos', label: 'Eventos', icon: Sparkles },
 ];
 
+function isValidUrl(str: string): boolean {
+  try {
+    const url = new URL(str.startsWith('http') ? str : `https://${str}`);
+    return url.hostname.includes('.');
+  } catch {
+    return false;
+  }
+}
+
 export function AnnouncementsAdmin() {
   const { user } = useAuth();
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
@@ -55,12 +64,18 @@ export function AnnouncementsAdmin() {
   const [autoFilling, setAutoFilling] = useState(false);
 
   const handleAutoFill = async () => {
-    if (!autoFillUrl.trim()) return;
+    const url = autoFillUrl.trim();
+    if (!url) return;
+
+    if (!isValidUrl(url)) {
+      toast.error('Por favor, insira uma URL válida (ex: https://exemplo.com)');
+      return;
+    }
+
     setAutoFilling(true);
     try {
-      // Step 1: Scrape the URL
       const { data: scrapeData, error: scrapeError } = await supabase.functions.invoke('firecrawl-scrape', {
-        body: { url: autoFillUrl.trim(), options: { formats: ['markdown'] } },
+        body: { url, options: { formats: ['markdown'] } },
       });
 
       if (scrapeError || !scrapeData?.success) {
@@ -72,19 +87,17 @@ export function AnnouncementsAdmin() {
       const markdown = scrapeData.data?.markdown || '';
       const metadata = scrapeData.data?.metadata || {};
 
-      // Step 2: Use AI to extract structured info
       const { data: aiData, error: aiError } = await supabase.functions.invoke('extract-announcement', {
-        body: { markdown, metadata, url: autoFillUrl.trim() },
+        body: { markdown, metadata, url },
       });
 
-      if (aiError || !aiData) {
+      if (aiError || !aiData || aiData.error) {
         // Fallback: use metadata directly
         setTitle(metadata.title || '');
-        setContent(markdown.slice(0, 1000) || metadata.description || '');
-        setLinkUrl(autoFillUrl.trim());
+        setContent(metadata.description || markdown.slice(0, 500));
+        setLinkUrl(url);
         if (metadata.ogImage) setImageUrl(metadata.ogImage);
-        // Try to guess category
-        const urlLower = autoFillUrl.toLowerCase();
+        const urlLower = url.toLowerCase();
         if (urlLower.includes('curso') || urlLower.includes('course') || urlLower.includes('udemy') || urlLower.includes('coursera')) {
           setCategory('cursos');
         } else if (urlLower.includes('emprego') || urlLower.includes('vaga') || urlLower.includes('job') || urlLower.includes('linkedin.com/jobs')) {
@@ -94,12 +107,11 @@ export function AnnouncementsAdmin() {
         }
         toast.success('Campos preenchidos com dados básicos!');
       } else {
-        // Use AI extracted data
         if (aiData.title) setTitle(aiData.title);
         if (aiData.content) setContent(aiData.content);
-        if (aiData.category) setCategory(aiData.category);
+        if (aiData.category && CATEGORIES.some(c => c.value === aiData.category)) setCategory(aiData.category);
         if (aiData.image_url) setImageUrl(aiData.image_url);
-        setLinkUrl(autoFillUrl.trim());
+        setLinkUrl(url);
         toast.success('Campos preenchidos automaticamente!');
       }
     } catch (err) {
@@ -114,12 +126,10 @@ export function AnnouncementsAdmin() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const maxSize = 5 * 1024 * 1024; // 5MB
-    if (file.size > maxSize) {
+    if (file.size > 5 * 1024 * 1024) {
       toast.error('Imagem muito grande. Máximo: 5MB');
       return;
     }
-
     if (!file.type.startsWith('image/')) {
       toast.error('Apenas imagens são permitidas');
       return;
@@ -139,10 +149,7 @@ export function AnnouncementsAdmin() {
       return;
     }
 
-    const { data: urlData } = supabase.storage
-      .from('announcements')
-      .getPublicUrl(fileName);
-
+    const { data: urlData } = supabase.storage.from('announcements').getPublicUrl(fileName);
     setImageUrl(urlData.publicUrl);
     setUploading(false);
     toast.success('Imagem enviada!');
