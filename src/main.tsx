@@ -1,6 +1,7 @@
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
+import { bootstrapSavedRoute } from "@/lib/app-persistence";
 
 // PWA install prompt capture — only in production (not in iframe/preview)
 const isInIframe = (() => {
@@ -16,5 +17,7 @@ if (!isPreviewHost && !isInIframe) {
     (window as any).__pwaInstallPrompt = e;
   });
 }
+
+bootstrapSavedRoute();
 
 createRoot(document.getElementById("root")!).render(<App />);

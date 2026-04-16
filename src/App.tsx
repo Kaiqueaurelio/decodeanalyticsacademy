@@ -11,6 +11,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { DynamicWatermark } from "@/components/DynamicWatermark";
 import { useRouteTracker, getLastRoute } from "@/hooks/useRouteTracker";
 import { useInactivityLogout } from "@/hooks/useInactivityLogout";
+import { getLocationRoute, getScrollPosition, saveScrollPosition } from "@/lib/app-persistence";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
@@ -38,17 +39,68 @@ function RouteRestorer() {
   const hasRestored = React.useRef(false);
 
   React.useEffect(() => {
-    if (loading || hasRestored.current) return;
+    if (loading || hasRestored.current || !user) return;
+    if (location.pathname !== '/' && location.pathname !== '/login') {
+      hasRestored.current = true;
+      return;
+    }
+
     hasRestored.current = true;
-    if (user && (location.pathname === '/' || location.pathname === '/login')) {
+    if (user) {
       const last = getLastRoute();
-      if (last && last !== '/' && last !== '/login') {
+      if (last && last !== '/' && last !== '/login' && last !== location.pathname) {
         navigate(last, { replace: true });
       } else {
         navigate('/dashboard', { replace: true });
       }
     }
-  }, [user, loading]);
+  }, [user, loading, location.pathname, navigate]);
+
+  return null;
+}
+
+function ScrollRestoration() {
+  const location = useLocation();
+
+  React.useEffect(() => {
+    const route = getLocationRoute(location);
+    const savedPosition = getScrollPosition(route);
+
+    if (savedPosition) {
+      window.requestAnimationFrame(() => {
+        window.scrollTo(savedPosition.x, savedPosition.y);
+      });
+      return;
+    }
+
+    window.scrollTo({ top: 0, left: 0 });
+  }, [location]);
+
+  React.useEffect(() => {
+    const route = getLocationRoute(location);
+
+    const persistScroll = () => {
+      saveScrollPosition(route, {
+        x: window.scrollX,
+        y: window.scrollY,
+      });
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') persistScroll();
+    };
+
+    window.addEventListener('scroll', persistScroll, { passive: true });
+    window.addEventListener('pagehide', persistScroll);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      persistScroll();
+      window.removeEventListener('scroll', persistScroll);
+      window.removeEventListener('pagehide', persistScroll);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [location]);
 
   return null;
 }
@@ -61,6 +113,7 @@ function AnimatedRoutes() {
   return (
     <>
       <RouteRestorer />
+      <ScrollRestoration />
       <WatermarkWrapper />
       <div key={location.pathname} className="animate-page-in">
         <Routes location={location}>
