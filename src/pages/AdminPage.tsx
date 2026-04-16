@@ -35,6 +35,7 @@ import { ApostilaMaterialsManager } from '@/components/ApostilaMaterialsManager'
 import { autoLinkAll, autoLinkApostila } from '@/lib/auto-link-materials';
 import { MergeApostilasDialog } from '@/components/MergeApostilasDialog';
 import { TestimonialsAdmin } from '@/components/TestimonialsAdmin';
+import { AIProviderSettings } from '@/components/AIProviderSettings';
 
 type Apostila = Tables<'apostilas'>;
 type Exercise = Tables<'exercises'>;
@@ -74,7 +75,7 @@ function CategorySelect({ value, onValueChange, placeholder }: { value: string; 
   );
 }
 
-type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements' | 'calendar' | 'testimonials';
+type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements' | 'calendar' | 'testimonials' | 'ai';
 
 const ACCEPT_MAP: Record<string, string> = {
   pdf: '.pdf', image: 'image/*', gif: '.gif,image/gif',
