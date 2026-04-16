@@ -11,7 +11,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { DynamicWatermark } from "@/components/DynamicWatermark";
 import { useRouteTracker, getLastRoute } from "@/hooks/useRouteTracker";
 import { useInactivityLogout } from "@/hooks/useInactivityLogout";
-import { getLocationRoute, getScrollPosition, saveScrollPosition } from "@/lib/app-persistence";
+import { getLocationRoute, getPageState, getScrollPosition, savePageState, saveScrollPosition } from "@/lib/app-persistence";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
@@ -105,6 +105,88 @@ function ScrollRestoration() {
   return null;
 }
 
+function PageStatePersistence() {
+  const location = useLocation();
+
+  React.useEffect(() => {
+    const route = getLocationRoute(location);
+    const persistedFields = getPageState(route);
+
+    if (!persistedFields.length) return;
+
+    window.requestAnimationFrame(() => {
+      persistedFields.forEach(({ key, value }) => {
+        const element = document.querySelector<HTMLElement>(`[data-persist-key="${CSS.escape(key)}"]`) ??
+          document.querySelector<HTMLElement>(`[name="${CSS.escape(key)}"]`) ??
+          document.getElementById(key);
+
+        if (!element) return;
+
+        if (element instanceof HTMLInputElement) {
+          if (element.type === 'checkbox' || element.type === 'radio') {
+            element.checked = Boolean(value);
+          } else {
+            element.value = String(value);
+          }
+          element.dispatchEvent(new Event('input', { bubbles: true }));
+          element.dispatchEvent(new Event('change', { bubbles: true }));
+          return;
+        }
+
+        if (element instanceof HTMLTextAreaElement || element instanceof HTMLSelectElement) {
+          element.value = String(value);
+          element.dispatchEvent(new Event('input', { bubbles: true }));
+          element.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      });
+    });
+  }, [location]);
+
+  React.useEffect(() => {
+    const route = getLocationRoute(location);
+
+    const collectFields = () => {
+      const fields = Array.from(document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>('input, textarea, select'))
+        .filter((field) => {
+          if (field instanceof HTMLInputElement) {
+            return !['password', 'file', 'hidden', 'submit'].includes(field.type);
+          }
+
+          return true;
+        })
+        .map((field, index) => {
+          const key = field.getAttribute('data-persist-key') || field.getAttribute('name') || field.id || `field-${index}`;
+          const value = field instanceof HTMLInputElement && (field.type === 'checkbox' || field.type === 'radio')
+            ? field.checked
+            : field.value;
+
+          return { key, value };
+        });
+
+      savePageState(route, fields);
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') collectFields();
+    };
+
+    document.addEventListener('input', collectFields, true);
+    document.addEventListener('change', collectFields, true);
+    window.addEventListener('pagehide', collectFields);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      collectFields();
+      document.removeEventListener('input', collectFields, true);
+      document.removeEventListener('change', collectFields, true);
+      window.removeEventListener('pagehide', collectFields);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [location]);
+
+  return null;
+}
+
 function AnimatedRoutes() {
   const location = useLocation();
   useRouteTracker();
@@ -113,6 +195,7 @@ function AnimatedRoutes() {
   return (
     <>
       <RouteRestorer />
+      <PageStatePersistence />
       <ScrollRestoration />
       <WatermarkWrapper />
       <div key={location.pathname} className="animate-page-in">

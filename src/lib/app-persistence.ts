@@ -2,6 +2,7 @@ import type { Location } from 'react-router-dom';
 
 export const ROUTE_KEY = 'decode_last_route';
 const SCROLL_KEY = 'decode_scroll_positions';
+const PAGE_STATE_PREFIX = 'decode_page_state:';
 const EXCLUDED_PATHS = new Set(['/', '/login', '/reset-password']);
 
 type ScrollPosition = {
@@ -95,5 +96,20 @@ export function getScrollPosition(route: string): ScrollPosition | null {
 }
 
 export function getPageStateStorageKey(route: string) {
-  return `decode_page_state:${getNormalizedRoute(route)}`;
+  return `${PAGE_STATE_PREFIX}${getNormalizedRoute(route)}`;
+}
+
+type PersistedField = {
+  key: string;
+  value: string | boolean;
+};
+
+export function savePageState(route: string, state: PersistedField[]) {
+  if (!canUseStorage()) return;
+  sessionStorage.setItem(getPageStateStorageKey(route), JSON.stringify(state));
+}
+
+export function getPageState(route: string): PersistedField[] {
+  if (!canUseStorage()) return [];
+  return readJson<PersistedField[]>(sessionStorage, getPageStateStorageKey(route), []);
 }
