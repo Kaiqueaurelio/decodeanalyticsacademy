@@ -294,8 +294,20 @@ export function ApostilaChat({ apostilaId, apostilaTitle, variant = 'panel' }: P
               }`}
             >
               {m.role === 'assistant' ? (
-                <div className="prose prose-xs max-w-none prose-p:my-1.5 prose-ul:my-1.5 prose-ol:my-1.5 prose-headings:my-2 prose-code:text-[10px] prose-pre:text-[10px] dark:prose-invert">
-                  <ReactMarkdown>{m.content || '...'}</ReactMarkdown>
+                <div className="space-y-1.5">
+                  <div className="prose prose-xs max-w-none prose-p:my-1.5 prose-ul:my-1.5 prose-ol:my-1.5 prose-headings:my-2 prose-code:text-[10px] prose-pre:text-[10px] dark:prose-invert">
+                    <ReactMarkdown>{m.content || '...'}</ReactMarkdown>
+                  </div>
+                  {m.content && (
+                    <button
+                      onClick={() => speak(i, m.content)}
+                      className="inline-flex items-center gap-1 text-[10px] text-muted-foreground hover:text-primary transition-colors"
+                      title={speakingIdx === i ? 'Parar leitura' : 'Ouvir resposta'}
+                    >
+                      {speakingIdx === i ? <Square className="h-2.5 w-2.5" /> : <Volume2 className="h-2.5 w-2.5" />}
+                      {speakingIdx === i ? 'Parar' : 'Ouvir'}
+                    </button>
+                  )}
                 </div>
               ) : (
                 <p className="whitespace-pre-wrap">{m.content}</p>
