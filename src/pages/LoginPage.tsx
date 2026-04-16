@@ -54,10 +54,47 @@ export default function LoginPage() {
       setShowLockModal(true);
       return;
     }
+
+    // Validate RA format if RA method
+    if (authMethod === 'ra') {
+      if (!isValidRa(ra)) {
+        toast.error('RA inválido. Digite apenas números (8 a 13 dígitos).');
+        return;
+      }
+    }
+
     setLoading(true);
+    const effectiveEmail = authMethod === 'ra' ? buildRaEmail(ra) : email;
 
     if (isSignUp) {
-      const { error } = await signUp(email, password);
+      if (authMethod === 'ra') {
+        // RA signup: bypass email confirmation by passing metadata
+        const { error } = await supabase.auth.signUp({
+          email: effectiveEmail,
+          password,
+          options: {
+            data: { ra: ra.trim(), account_type: 'ra', full_name: `Aluno UNIP ${ra.trim()}` },
+            emailRedirectTo: `${window.location.origin}/dashboard`,
+          },
+        });
+        setLoading(false);
+        if (error) {
+          toast.error(error.message.includes('already') ? 'Este RA já está cadastrado.' : error.message);
+          return;
+        }
+        // Try immediate login (RA accounts don't need email verification in our flow)
+        const { error: signInError } = await signIn(effectiveEmail, password);
+        if (signInError) {
+          toast.success('Conta criada! Faça login com seu RA.');
+          setIsSignUp(false);
+        } else {
+          toast.success('Conta criada e login realizado!');
+          localStorage.setItem('decode_auth_method', 'ra');
+          navigate('/dashboard');
+        }
+        return;
+      }
+      const { error } = await signUp(effectiveEmail, password);
       setLoading(false);
       if (error) {
         toast.error(error.message);
@@ -70,7 +107,7 @@ export default function LoginPage() {
     }
 
     // Login flow
-    const { error } = await signIn(email, password);
+    const { error } = await signIn(effectiveEmail, password);
     setLoading(false);
 
     if (error) {
@@ -94,7 +131,7 @@ export default function LoginPage() {
           const { data: profileData } = await supabase
             .from('profiles')
             .select('user_id')
-            .eq('email', email)
+            .eq('email', effectiveEmail)
             .maybeSingle();
           if (profileData) {
             await supabase.from('profiles').update({
@@ -116,11 +153,19 @@ export default function LoginPage() {
       }
     } else {
       setLoginAttempts(0);
+      localStorage.setItem('decode_auth_method', authMethod);
       if (rememberMe) {
-        localStorage.setItem('decode_remember_email', email);
+        if (authMethod === 'ra') {
+          localStorage.setItem('decode_remember_ra', ra.trim());
+          localStorage.removeItem('decode_remember_email');
+        } else {
+          localStorage.setItem('decode_remember_email', email);
+          localStorage.removeItem('decode_remember_ra');
+        }
         localStorage.setItem('decode_remember_password', btoa(password));
       } else {
         localStorage.removeItem('decode_remember_email');
+        localStorage.removeItem('decode_remember_ra');
         localStorage.removeItem('decode_remember_password');
       }
       toast.success('Login realizado!');
