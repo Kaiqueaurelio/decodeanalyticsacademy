@@ -214,11 +214,20 @@ function unifyContent(apostilas: { title: string; content: string | null }[]): s
     }
     content = lines.join('\n').trim();
 
+    // Remove markdown horizontal rules (---, ***, ___) anywhere in the content
+    content = content
+      .split('\n')
+      .filter(line => !/^\s*(?:-{3,}|\*{3,}|_{3,})\s*$/.test(line))
+      .join('\n');
+
     // Split into paragraphs (double newline)
     const paragraphs = content.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
 
     for (const p of paragraphs) {
       const normalized = p.toLowerCase().replace(/\s+/g, ' ').trim();
+
+      // Skip any leftover horizontal rule paragraphs
+      if (/^\s*(?:-{3,}|\*{3,}|_{3,})\s*$/.test(p.trim())) continue;
 
       // Skip duplicated section headers
       if (REPEATABLE_SECTIONS.test(p.trim())) {
