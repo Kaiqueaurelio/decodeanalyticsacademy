@@ -22,6 +22,7 @@ import AdminPage from "./pages/AdminPage";
 import ProfilePage from "./pages/ProfilePage";
 import MaterialsPage from "./pages/MaterialsPage";
 import VideoPlayerPage from "./pages/VideoPlayerPage";
+import AnnouncementDetailPage from "./pages/AnnouncementDetailPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
