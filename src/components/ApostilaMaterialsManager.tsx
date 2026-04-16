@@ -6,8 +6,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
-  Plus, Trash2, FileText, Image, Video, Music, Presentation, File, Link as LinkIcon, FileSpreadsheet, Search, Paperclip
+  Plus, Trash2, FileText, Image, Video, Music, Presentation, File, Link as LinkIcon, FileSpreadsheet, Search, Paperclip, Wand2, Loader2
 } from 'lucide-react';
+import { autoLinkApostila } from '@/lib/auto-link-materials';
 import { toast } from 'sonner';
 
 interface Props {
@@ -39,6 +40,7 @@ export function ApostilaMaterialsManager({ apostilaId, apostilaTitle }: Props) {
   const [allMaterials, setAllMaterials] = useState<{ id: string; title: string; type: string; file_url: string | null; description: string | null }[]>([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(false);
+  const [autoLinking, setAutoLinking] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -76,6 +78,23 @@ export function ApostilaMaterialsManager({ apostilaId, apostilaTitle }: Props) {
     load();
   };
 
+  const handleAutoLink = async () => {
+    setAutoLinking(true);
+    try {
+      const result = await autoLinkApostila(apostilaId);
+      if (result.linked > 0) {
+        toast.success(`${result.linked} material(is) vinculado(s) automaticamente!`);
+        load();
+      } else {
+        toast.info('Nenhum material novo encontrado para vincular.');
+      }
+    } catch {
+      toast.error('Erro ao auto-vincular.');
+    } finally {
+      setAutoLinking(false);
+    }
+  };
+
   const removeMaterial = async (linkId: string) => {
     await supabase.from('apostila_materials').delete().eq('id', linkId);
     toast.success('Material removido');
@@ -96,6 +115,12 @@ export function ApostilaMaterialsManager({ apostilaId, apostilaTitle }: Props) {
               Materiais: {apostilaTitle}
             </DialogTitle>
           </DialogHeader>
+
+          {/* Auto-link button */}
+          <Button size="sm" variant="outline" className="w-full text-xs gap-1.5 mb-2" onClick={handleAutoLink} disabled={autoLinking}>
+            {autoLinking ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wand2 className="h-3 w-3" />}
+            {autoLinking ? 'Vinculando...' : 'Auto-vincular por disciplina'}
+          </Button>
 
           {/* Linked materials */}
           <div className="space-y-2 mb-4">

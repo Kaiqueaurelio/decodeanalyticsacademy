@@ -31,6 +31,7 @@ import { ActivityChart } from '@/components/ActivityChart';
 import { ImageUploadButton } from '@/components/ImageUploadButton';
 import { AnnouncementsAdmin } from '@/components/AnnouncementsAdmin';
 import { ApostilaMaterialsManager } from '@/components/ApostilaMaterialsManager';
+import { autoLinkAll } from '@/lib/auto-link-materials';
 
 type Apostila = Tables<'apostilas'>;
 type Exercise = Tables<'exercises'>;
@@ -92,6 +93,33 @@ function ThemeToggleButton() {
     <Button variant="outline" size="sm" className="w-full text-xs gap-2" onClick={toggleTheme}>
       {theme === 'dark' ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
       {theme === 'dark' ? 'Modo Claro' : 'Modo Noturno'}
+    </Button>
+  );
+}
+function AutoLinkAllButton() {
+  const [running, setRunning] = useState(false);
+  const [progress, setProgress] = useState('');
+
+  const handleAutoLinkAll = async () => {
+    setRunning(true);
+    setProgress('Iniciando...');
+    try {
+      const result = await autoLinkAll((current, total, r) => {
+        setProgress(`${current}/${total} — ${r.apostilaTitle.slice(0, 30)}: +${r.linked}`);
+      });
+      toast.success(`Concluído! ${result.totalLinked} vínculo(s) criado(s) em ${result.apostilasProcessed} apostilas.`);
+    } catch {
+      toast.error('Erro ao auto-vincular em lote.');
+    } finally {
+      setRunning(false);
+      setProgress('');
+    }
+  };
+
+  return (
+    <Button size="sm" variant="outline" className="text-xs gap-1.5" onClick={handleAutoLinkAll} disabled={running}>
+      {running ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wand2 className="h-3 w-3" />}
+      {running ? progress : 'Auto-vincular Todos'}
     </Button>
   );
 }
@@ -1152,6 +1180,7 @@ export default function AdminPage() {
                     <h3 className="font-semibold text-sm flex items-center gap-2">
                       <BookOpen className="h-4 w-4 text-primary" /> Apostilas ({filteredApostilas.length})
                     </h3>
+                    <AutoLinkAllButton />
                   </div>
                   <div className="space-y-3">
                     {filteredApostilas.map(a => {
