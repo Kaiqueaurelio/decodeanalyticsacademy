@@ -44,7 +44,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [roleChecked, setRoleChecked] = useState(!!cached);
 
   const checkRoles = async (userId: string) => {
-    setRoleChecked(false);
     try {
       const [adminRes, profileRes] = await Promise.all([
         supabase.from('user_roles').select('role').eq('user_id', userId).eq('role', 'admin').maybeSingle(),
@@ -54,7 +53,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsAdmin(adminVal);
       setIsBlocked(!!(profileRes.data as any)?.is_blocked);
       setRoleChecked(true);
-      // Cache after role check completes
       return adminVal;
     } catch {
       setIsAdmin(false);
@@ -67,14 +65,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, sess) => {
       setSession(sess);
-      setUser(sess?.user ?? null);
       if (sess?.user) {
-        setTimeout(() => {
-          checkRoles(sess.user.id).then((adminVal) => {
-            setCachedSession(sess.user, adminVal);
-          });
-        }, 0);
+        setUser(sess.user);
+        // Only re-check roles if user changed or on initial sign-in
+        if (!user || user.id !== sess.user.id || _event === 'SIGNED_IN') {
+          setTimeout(() => {
+            checkRoles(sess.user.id).then((adminVal) => {
+              setCachedSession(sess.user, adminVal);
+            });
+          }, 0);
+        } else {
+          // Same user, just token refresh — update cache silently
+          setCachedSession(sess.user, isAdmin);
+        }
       } else {
+        setUser(null);
         setIsAdmin(false);
         setIsBlocked(false);
         setRoleChecked(true);
