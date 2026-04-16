@@ -1,44 +1,48 @@
 
 
-## Plano: Auto-vincular materiais às apostilas por disciplina
+## Plano: Experiência estilo AVA UNIP (com cara Decode)
 
-### Situação atual
-- Apostilas têm um campo `category` (texto, ex: "Arquitetura de Computadores")
-- Materiais têm um campo `category_id` (UUID, referência à tabela `categories`)
-- A maioria dos materiais **não tem** `category_id` preenchido (null)
-- A vinculação manual é feita pela tabela `apostila_materials`
+As 5 imagens mostram o fluxo do AVA: **Hub de atalhos** → **Lista de Disciplinas** → **Conteúdo da Disciplina (UNIDADES com tiles coloridos)** → **Atividades intercaladas**. Vou trazer essa estrutura, mas em dark high-tech com neon ciano/roxo (sem cores chapadas tipo UNIP).
 
-### Estratégia de auto-vinculação
+### O que muda
 
-Duas abordagens combinadas:
+**1. DashboardPage – novo bloco "Hub de Acesso Rápido" no topo**
+Logo abaixo do header, uma grade 2x3 de tiles grandes (estilo AVA), cada um com ícone + label, em cards com gradiente neon e borda glow:
+- Conteúdos Acadêmicos → `/dashboard` (scroll para Minhas Disciplinas)
+- Calendário → abre `ExamCalendarWidget` em modal/aba
+- Biblioteca → futura página de materiais agregados (ou scroll para Materiais)
+- Comunidade → `AnnouncementsBoard`
+- Mural do Aluno → `RecentActivity`
+- Meu Perfil → `/profile`
 
-**1. Por categoria (match exato)**
-Quando um material tem `category_id` preenchido, vincular automaticamente a todas as apostilas da mesma categoria.
+Mantém TODOS os widgets atuais abaixo (gamificação, pomodoro, gráficos, etc.).
 
-**2. Por título (match fuzzy)**
-Quando um material **não** tem `category_id`, usar correspondência de palavras-chave no título do material vs título/categoria da apostila para sugerir vínculos.
+**2. "Minhas Disciplinas" – formato lista densa (estilo IMG_5753)**
+Adiciono um toggle "Grid / Lista" na seção Minhas Disciplinas. No modo lista: linhas tipo `CÓDIGO_SEM_XX: NOME DA DISCIPLINA` separadas por divisor sutil, com mini-progress bar à direita. O grid de cards atual continua disponível.
 
-### Implementação
+**3. ApostilaPage / página de Disciplina – seções "UNIDADE I, II, III..."**
+Hoje a apostila é texto contínuo. Vou agrupar visualmente o conteúdo em **Unidades** (já existem `sections` parseadas), adicionando:
+- Header "UNIDADE I" com ícone de livro neon
+- Grade 2x2 de tiles tipo AVA: **Livro-texto** (azul ciano, abre conteúdo), **Slides** (verde neon, se houver material slides), **Videoaula 01/02/03/04** (tiles roxos com ícone play)
+- Entre unidades: tile "ATIVIDADE / QUESTIONÁRIO UNIDADE I" (laranja neon) que linka para ExercisesPage filtrado por unidade
+- No final: tile "BOLETIM DA DISCIPLINA" mostrando notas/progresso do aluno
 
-**Arquivo: `src/components/ApostilaMaterialsManager.tsx`**
-- Adicionar botão "Auto-vincular" no dialog
-- Ao clicar, executar lógica que:
-  1. Busca a categoria da apostila atual
-  2. Encontra materiais com a mesma `category_id` (ou com título contendo palavras da categoria)
-  3. Vincula automaticamente os que ainda não estão vinculados
-  4. Mostra toast com quantidade vinculada
+Tiles usam o mesmo padrão visual da imagem (ícone grande + label embaixo), mas com cards Decode (bg `#0a0a14`, border `border-cyan-500/30`, hover glow).
 
-**Arquivo: Novo botão no Admin (aba Apostilas)**
-- Adicionar botão "Auto-vincular Todos" que percorre todas as apostilas e executa o mesmo processo em lote
-- Mostra progresso e resumo final
+**4. Estética**
+- Cores dos tiles: ciano (#00f0ff), roxo (#a855f7), verde-neon, laranja-neon, vermelho-magenta — todos com `bg-gradient` sutil + `shadow-[0_0_30px]` no hover
+- Mantém Space Grotesk uppercase para os labels (igual AVA)
+- Layout mobile: grid 2 colunas (igual UNIP), desktop: 3-4 colunas
 
-### Regras de matching
-- Match por `category_id`: material.category_id → categories.name === apostila.category
-- Match por título: palavras do título do material (>4 chars) presentes no título ou categoria da apostila
-- Nunca duplicar vínculos existentes (checar `apostila_materials` antes de inserir)
+### Arquivos afetados
+- `src/pages/DashboardPage.tsx` — novo componente `QuickAccessHub` no topo + toggle de view nas disciplinas
+- `src/pages/ApostilaPage.tsx` — novo cabeçalho "UNIDADE X" + grade de tiles de recursos por unidade
+- `src/components/QuickAccessHub.tsx` (novo)
+- `src/components/UnitTilesGrid.tsx` (novo) — renderiza tiles Livro/Slides/Vídeos/Atividade
+- Reaproveita: `MaterialWidget`, `ExamCalendarWidget`, `AnnouncementsBoard`
 
-### O que NÃO muda
-- O manager manual continua funcionando normalmente
-- Nenhuma tabela ou schema é alterado
-- Materiais sem match não são afetados
+### Garantias
+- Nenhum widget/funcionalidade existente será removido (regra de ouro)
+- ScreenshotGuard, watermark, gamificação continuam ativos
+- Mantém estética high-tech — não copia as cores chapadas da UNIP, apenas a **arquitetura de informação**
 
