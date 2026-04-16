@@ -104,6 +104,8 @@ export default function LoginPage() {
       }
     } else {
       setLoginAttempts(0);
+      if (rememberMe) localStorage.setItem('decode_remember_email', email);
+      else localStorage.removeItem('decode_remember_email');
       toast.success('Login realizado!');
       navigate('/dashboard');
     }
