@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Fingerprint, Loader2, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
-import { verifyBiometric, disableBiometric, getBiometricEmail } from '@/hooks/useBiometricAuth';
+import { verifyBiometric, disableBiometric, getBiometricEmail, refreshBiometricToken } from '@/hooks/useBiometricAuth';
 import { toast } from 'sonner';
 import logoDark from '@/assets/logo-dark.jpeg';
 
@@ -17,28 +17,38 @@ export function AppLock({ onUnlock }: AppLockProps) {
   const handleUnlock = async () => {
     setVerifying(true);
     try {
-      const refreshToken = await verifyBiometric();
-      const { error } = await supabase.auth.refreshSession({ refresh_token: refreshToken });
-      if (error) {
-        const msg = (error.message || '').toLowerCase();
-        // Token expirou ou foi invalidado — limpa biometria e manda para login
-        if (msg.includes('refresh token') || msg.includes('invalid') || msg.includes('expired')) {
-          disableBiometric();
-          await supabase.auth.signOut().catch(() => {});
-          toast.error('Sua sessão expirou. Faça login novamente para reativar a biometria.');
-          window.location.href = '/login';
-          return;
+      // 1) Confirma biometria primeiro (sem usar o refresh token ainda)
+      const storedRefreshToken = await verifyBiometric();
+
+      // 2) Se já existe sessão válida em memória, basta desbloquear
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      if (currentSession?.user) {
+        // Re-criptografa o refresh token mais recente para a próxima vez
+        if (currentSession.refresh_token) {
+          await refreshBiometricToken(currentSession.refresh_token).catch(() => {});
         }
-        throw error;
+        toast.success('Desbloqueado!');
+        onUnlock();
+        return;
       }
+
+      // 3) Sem sessão ativa → tenta restaurar com o refresh token criptografado
+      const { data, error } = await supabase.auth.refreshSession({ refresh_token: storedRefreshToken });
+      if (error) throw error;
+
+      // Salva o NOVO refresh token retornado (Supabase rotaciona a cada uso)
+      if (data.session?.refresh_token) {
+        await refreshBiometricToken(data.session.refresh_token).catch(() => {});
+      }
+
       toast.success('Desbloqueado!');
       onUnlock();
     } catch (err: any) {
       const msg = (err?.message || '').toLowerCase();
-      if (msg.includes('refresh token') || msg.includes('not found')) {
+      if (msg.includes('refresh token') || msg.includes('not found') || msg.includes('expired') || msg.includes('invalid')) {
         disableBiometric();
         await supabase.auth.signOut().catch(() => {});
-        toast.error('Sua sessão expirou. Faça login novamente.');
+        toast.error('Sua sessão expirou. Faça login e reative a biometria nas configurações.');
         window.location.href = '/login';
         return;
       }
