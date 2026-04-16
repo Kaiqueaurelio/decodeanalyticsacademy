@@ -144,13 +144,19 @@ export default function CommunityPage() {
     if (!user || !activeChannel || !newPost.trim()) return;
     if (newPost.length > 2000) { toast.error('Máximo de 2000 caracteres'); return; }
     setSubmitting(true);
-    const { error } = await supabase.from('community_posts' as any).insert({
+    const content = newPost.trim();
+    const { data, error } = await supabase.from('community_posts' as any).insert({
       channel_id: activeChannel.id,
       user_id: user.id,
-      content: newPost.trim(),
-    } as any);
+      content,
+    } as any).select('id').maybeSingle();
     if (error) toast.error('Erro ao publicar');
-    else { setNewPost(''); toast.success('Publicado!'); }
+    else {
+      setNewPost('');
+      toast.success('Publicado!');
+      const postId = (data as any)?.id;
+      if (postId) notifyMentions({ text: content, authorId: user.id, contextType: 'post', contextId: postId });
+    }
     setSubmitting(false);
   };
 
@@ -202,12 +208,14 @@ export default function CommunityPage() {
     const text = (replyText[postId] || '').trim();
     if (!text) return;
     if (text.length > 1000) { toast.error('Máximo de 1000 caracteres'); return; }
-    const { error } = await supabase.from('community_replies' as any).insert({
+    const { data, error } = await supabase.from('community_replies' as any).insert({
       post_id: postId, user_id: user.id, content: text,
-    } as any);
+    } as any).select('id').maybeSingle();
     if (error) return toast.error('Erro ao responder');
     setReplyText(prev => ({ ...prev, [postId]: '' }));
     setPosts(prev => prev.map(p => p.id === postId ? { ...p, replies_count: (p.replies_count || 0) + 1 } : p));
+    const replyId = (data as any)?.id;
+    if (replyId) notifyMentions({ text, authorId: user.id, contextType: 'reply', contextId: replyId });
     toggleReplies(postId); // close
     setTimeout(() => toggleReplies(postId), 50); // reopen with fresh data
   };
