@@ -1,6 +1,7 @@
 // App root
+import React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
+import { BrowserRouter, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,6 +9,8 @@ import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/hooks/useTheme";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { DynamicWatermark } from "@/components/DynamicWatermark";
+import { useRouteTracker, getLastRoute } from "@/hooks/useRouteTracker";
+import { useInactivityLogout } from "@/hooks/useInactivityLogout";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
@@ -28,11 +31,34 @@ function WatermarkWrapper() {
   return <DynamicWatermark />;
 }
 
+function RouteRestorer() {
+  const { user, loading } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const hasRestored = React.useRef(false);
+
+  React.useEffect(() => {
+    if (loading || hasRestored.current) return;
+    hasRestored.current = true;
+    if (user && location.pathname === '/') {
+      const last = getLastRoute();
+      if (last && last !== '/') {
+        navigate(last, { replace: true });
+      }
+    }
+  }, [user, loading]);
+
+  return null;
+}
+
 function AnimatedRoutes() {
   const location = useLocation();
+  useRouteTracker();
+  useInactivityLogout();
 
   return (
     <>
+      <RouteRestorer />
       <WatermarkWrapper />
       <div key={location.pathname} className="animate-page-in">
         <Routes location={location}>

@@ -27,6 +27,7 @@ import { toast } from 'sonner';
 import type { Tables } from '@/integrations/supabase/types';
 import { AnimatedCounter } from '@/components/AnimatedCounter';
 import { ActivityChart } from '@/components/ActivityChart';
+import { ImageUploadButton } from '@/components/ImageUploadButton';
 
 type Apostila = Tables<'apostilas'>;
 type Exercise = Tables<'exercises'>;
@@ -1121,7 +1122,10 @@ export default function AdminPage() {
                         <CategorySelect value={manualCategory} onValueChange={setManualCategory} placeholder="Selecione a disciplina" />
                       </div>
                       <div>
-                        <Label htmlFor="manual-content" className="text-xs font-medium text-foreground">Conteúdo da Apostila</Label>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <Label htmlFor="manual-content" className="text-xs font-medium text-foreground">Conteúdo da Apostila</Label>
+                          <ImageUploadButton onImageInserted={(md) => setManualContent(prev => prev + md)} />
+                        </div>
                         <Textarea id="manual-content" value={manualContent} onChange={e => setManualContent(e.target.value)} rows={6} className="mt-1.5" placeholder="Digite ou cole o conteúdo completo da aula..." />
                       </div>
                       <div className="flex gap-3 pt-1">
@@ -1419,7 +1423,13 @@ export default function AdminPage() {
                     <div className="space-y-3">
                       <div><Label className="text-xs">Título</Label><Input value={editTitle} onChange={e => setEditTitle(e.target.value)} /></div>
                       <div><Label className="text-xs">Categoria</Label><CategorySelect value={editCategory} onValueChange={setEditCategory} /></div>
-                      <div><Label className="text-xs">Conteúdo</Label><Textarea value={editContent} onChange={e => setEditContent(e.target.value)} rows={6} /></div>
+                      <div>
+                        <div className="flex items-center justify-between mb-1">
+                          <Label className="text-xs">Conteúdo</Label>
+                          <ImageUploadButton onImageInserted={(md) => setEditContent(prev => prev + md)} />
+                        </div>
+                        <Textarea value={editContent} onChange={e => setEditContent(e.target.value)} rows={6} />
+                      </div>
                       <Button className="w-full gradient-primary text-primary-foreground" onClick={handleEditSave}>Salvar Apostila</Button>
                     </div>
 

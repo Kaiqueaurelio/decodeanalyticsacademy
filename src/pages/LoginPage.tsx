@@ -7,7 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { EvasiveButton } from '@/components/EvasiveButton';
-import { Loader2, ArrowLeft, Eye, EyeOff, BookOpen, BarChart3, Shield, AlertTriangle, Lock } from 'lucide-react';
+import { Loader2, ArrowLeft, Eye, EyeOff, BookOpen, BarChart3, Shield, AlertTriangle, Lock, Check } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import logoDark from '@/assets/logo-dark.jpeg';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -15,7 +16,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 export default function LoginPage() {
   const { signIn, signUp } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
+  const savedEmail = localStorage.getItem('decode_remember_email') || '';
+  const [email, setEmail] = useState(savedEmail);
   const [password, setPassword] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
   const [isReset, setIsReset] = useState(false);
@@ -26,6 +28,7 @@ export default function LoginPage() {
   const [shaking, setShaking] = useState(false);
   const [showLockModal, setShowLockModal] = useState(false);
   const [unverifiedEmail, setUnverifiedEmail] = useState(false);
+  const [rememberMe, setRememberMe] = useState(!!savedEmail);
   const passwordRef = useRef<HTMLInputElement>(null);
 
   const triggerShake = () => {
@@ -101,6 +104,8 @@ export default function LoginPage() {
       }
     } else {
       setLoginAttempts(0);
+      if (rememberMe) localStorage.setItem('decode_remember_email', email);
+      else localStorage.removeItem('decode_remember_email');
       toast.success('Login realizado!');
       navigate('/dashboard');
     }
@@ -286,9 +291,19 @@ export default function LoginPage() {
                     )}
 
                     {!isSignUp && (
-                      <button type="button" onClick={() => setIsReset(true)} className="w-full text-center text-xs text-muted-foreground hover:text-foreground smooth-all">
-                        {isLocked ? '🔓 Redefinir senha para desbloquear' : 'Esqueceu a senha?'}
-                      </button>
+                      <div className="flex items-center justify-between">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <Checkbox
+                            checked={rememberMe}
+                            onCheckedChange={(v) => setRememberMe(!!v)}
+                            className="h-3.5 w-3.5"
+                          />
+                          <span className="text-xs text-muted-foreground">Lembrar-me</span>
+                        </label>
+                        <button type="button" onClick={() => setIsReset(true)} className="text-xs text-muted-foreground hover:text-foreground smooth-all">
+                          {isLocked ? '🔓 Redefinir senha' : 'Esqueceu a senha?'}
+                        </button>
+                      </div>
                     )}
                   </form>
                   <div className="relative">

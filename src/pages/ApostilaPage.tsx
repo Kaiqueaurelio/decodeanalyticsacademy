@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { FlashcardsWidget } from '@/components/FlashcardsWidget';
 import { AnnotationsPanel } from '@/components/AnnotationsPanel';
 import { CommentsWidget } from '@/components/CommentsWidget';
+import { ApostilaExport } from '@/components/ApostilaExport';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
   ArrowLeft, BookOpen, PenLine, Eye, List, X,
@@ -217,6 +218,7 @@ export default function ApostilaPage() {
               >
                 <Eye className="h-3.5 w-3.5" /> {focusMode ? 'Foco ativo' : 'Modo foco'}
               </Button>
+              <ApostilaExport apostila={apostila} />
             </div>
           </div>
         </div>
@@ -316,7 +318,21 @@ export default function ApostilaPage() {
                     )}
                     {section.content.trim() && (
                       <div className="text-sm leading-[1.85] text-foreground/75 whitespace-pre-wrap">
-                        {section.content.trim()}
+                        {section.content.trim().split('\n').map((line, li) => {
+                          const imgMatch = line.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
+                          if (imgMatch) {
+                            return (
+                              <img
+                                key={li}
+                                src={imgMatch[2]}
+                                alt={imgMatch[1]}
+                                className="max-w-full rounded-lg my-3 border border-border/30"
+                                loading="lazy"
+                              />
+                            );
+                          }
+                          return <span key={li}>{line}{'\n'}</span>;
+                        })}
                       </div>
                     )}
                   </section>
