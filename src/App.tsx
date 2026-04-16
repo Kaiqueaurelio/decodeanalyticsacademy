@@ -8,6 +8,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/hooks/useTheme";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { BiometricLockGate } from "@/components/BiometricLockGate";
 import { DynamicWatermark } from "@/components/DynamicWatermark";
 import { ScreenshotGuard } from "@/components/ScreenshotGuard";
 import { useRouteTracker, getLastRoute } from "@/hooks/useRouteTracker";
@@ -235,7 +236,9 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <AuthProvider>
-            <AnimatedRoutes />
+            <BiometricLockGate>
+              <AnimatedRoutes />
+            </BiometricLockGate>
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
