@@ -868,6 +868,7 @@ export default function AdminPage() {
                 { id: 'exercises', label: 'Exercícios', icon: <PenLine className="h-3.5 w-3.5" />, count: totalExercises },
                 { id: 'materials', label: 'Materiais', icon: <FolderOpen className="h-3.5 w-3.5" />, count: materials.length },
                 { id: 'users', label: 'Usuários', icon: <Users className="h-3.5 w-3.5" />, count: users.length },
+                { id: 'announcements', label: 'Avisos', icon: <Megaphone className="h-3.5 w-3.5" /> },
               ]}
               activeTab={tab}
               onTabChange={(id) => setTab(id as Tab)}
@@ -1175,6 +1176,7 @@ export default function AdminPage() {
                                 </div>
                               </div>
                               <div className="flex items-center gap-1 shrink-0">
+                                <ApostilaMaterialsManager apostilaId={a.id} apostilaTitle={a.title} />
                                 <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => setShowExerciseDialog(a.id)} title="Ver exercícios">
                                   <PenLine className="h-3.5 w-3.5" />
                                 </Button>
