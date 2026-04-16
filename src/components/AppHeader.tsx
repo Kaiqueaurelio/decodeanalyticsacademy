@@ -6,12 +6,15 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { LogOut, LayoutDashboard, Shield, Menu, ArrowRight, Sun, Moon, User, Users } from 'lucide-react';
 import logoDark from '@/assets/logo-dark.jpeg';
+import { useMentionNotifications } from '@/hooks/useMentionNotifications';
 
 export function AppHeader() {
   const { user, isAdmin, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const { unreadCount } = useMentionNotifications();
+  const badge = unreadCount > 9 ? '9+' : String(unreadCount);
 
   const nav = (path: string) => { navigate(path); setOpen(false); };
 
@@ -32,8 +35,13 @@ export function AppHeader() {
               <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')} className="text-xs h-8 px-3 font-sans normal-case tracking-normal">
                 <LayoutDashboard className="mr-1.5 h-3.5 w-3.5" /> Dashboard
               </Button>
-              <Button variant="ghost" size="sm" onClick={() => navigate('/comunidade')} className="text-xs h-8 px-3 font-sans normal-case tracking-normal">
+              <Button variant="ghost" size="sm" onClick={() => navigate('/comunidade')} className="text-xs h-8 px-3 font-sans normal-case tracking-normal relative">
                 <Users className="mr-1.5 h-3.5 w-3.5" /> Comunidade
+                {unreadCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-primary text-[9px] font-mono font-bold text-primary-foreground flex items-center justify-center leading-none">
+                    {badge}
+                  </span>
+                )}
               </Button>
               {isAdmin && (
                 <Button variant="ghost" size="sm" onClick={() => navigate('/admin')} className="text-xs h-8 px-3 font-sans normal-case tracking-normal">
@@ -67,8 +75,13 @@ export function AppHeader() {
                   <Button variant="ghost" size="sm" className="justify-start text-sm font-sans normal-case tracking-normal" onClick={() => nav('/dashboard')}>
                     <LayoutDashboard className="mr-2 h-4 w-4" /> Dashboard
                   </Button>
-                  <Button variant="ghost" size="sm" className="justify-start text-sm font-sans normal-case tracking-normal" onClick={() => nav('/comunidade')}>
+                  <Button variant="ghost" size="sm" className="justify-start text-sm font-sans normal-case tracking-normal relative" onClick={() => nav('/comunidade')}>
                     <Users className="mr-2 h-4 w-4" /> Comunidade
+                    {unreadCount > 0 && (
+                      <span className="ml-auto min-w-[18px] h-4 px-1 rounded-full bg-primary text-[10px] font-mono font-bold text-primary-foreground flex items-center justify-center leading-none">
+                        {badge}
+                      </span>
+                    )}
                   </Button>
                   <Button variant="ghost" size="sm" className="justify-start text-sm font-sans normal-case tracking-normal" onClick={() => nav('/profile')}>
                     <User className="mr-2 h-4 w-4" /> Perfil
