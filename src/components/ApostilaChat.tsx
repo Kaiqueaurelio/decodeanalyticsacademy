@@ -238,23 +238,23 @@ export function ApostilaChat({ apostilaId, apostilaTitle, variant = 'panel' }: P
   const isInline = variant === 'inline';
 
   return (
-    <Card className={`flex flex-col ${isInline ? 'h-[600px]' : 'h-full'} overflow-hidden`}>
+    <Card className={`flex flex-col ${isInline ? 'h-[600px]' : 'h-full'} overflow-hidden border-0 rounded-none`}>
       {/* Header */}
-      <div className="flex items-center justify-between p-3 border-b border-border/60 shrink-0">
-        <div className="flex items-center gap-2 min-w-0">
-          <div className="h-7 w-7 rounded-lg bg-primary/15 text-primary flex items-center justify-center shrink-0">
-            <Sparkles className="h-3.5 w-3.5" />
+      <div className="flex items-center justify-between p-4 border-b border-border/60 shrink-0 bg-gradient-to-r from-primary/5 to-transparent">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="h-10 w-10 rounded-xl gradient-primary text-primary-foreground flex items-center justify-center shrink-0 shadow-md">
+            <Sparkles className="h-5 w-5" />
           </div>
           <div className="min-w-0">
-            <p className="text-xs font-semibold truncate">Conversar com a apostila</p>
-            <p className="text-[10px] text-muted-foreground truncate flex items-center gap-1">
-              <BookOpen className="h-2.5 w-2.5" /> {apostilaTitle}
+            <p className="text-sm font-bold truncate">Chat com IA</p>
+            <p className="text-xs text-muted-foreground truncate flex items-center gap-1">
+              <BookOpen className="h-3 w-3 shrink-0" /> <span className="truncate">{apostilaTitle}</span>
             </p>
           </div>
         </div>
         {messages.length > 0 && (
-          <Button variant="ghost" size="sm" onClick={clearHistory} className="h-7 w-7 p-0" title="Limpar histórico">
-            <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
+          <Button variant="ghost" size="sm" onClick={clearHistory} className="h-8 w-8 p-0 shrink-0" title="Limpar histórico">
+            <Trash2 className="h-4 w-4 text-muted-foreground" />
           </Button>
         )}
       </div>
