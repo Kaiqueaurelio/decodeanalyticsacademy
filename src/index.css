@@ -641,8 +641,8 @@ html {
    mantendo destaques ciano (#00f0ff) e roxo (#a855f7).
    ───────────────────────────────────────────── */
 .landing-light {
-  background: #e2e8f0 !important;
-  color: #0f172a !important;
+  background: #d6dde6 !important;
+  color: #0b1220 !important;
 }
 
 /* Força cor escura em todos os textos descendentes (exceto os com cor explícita ciano/roxo/branco em botões) */
@@ -654,9 +654,9 @@ html {
   color: #0f172a;
 }
 
-/* Backgrounds escuros → claros (cinza azulado, não branco puro) */
+/* Backgrounds escuros → cinza médio (não branco, para reduzir glare) */
 .landing-light [style*="background: #050508"],
-.landing-light [style*="background:#050508"] { background: #cbd5e1 !important; }
+.landing-light [style*="background:#050508"] { background: #b8c2d0 !important; }
 
 .landing-light [style*="background: #0a0a0f"],
 .landing-light [style*="background: #0a0a12"],
@@ -664,14 +664,14 @@ html {
 .landing-light [style*="background: #0d0d16"],
 .landing-light [style*="background: #0f0f1a"],
 .landing-light [style*="background: #0a0f14"],
-.landing-light [style*="background: #0f0a14"] { background: #f1f5f9 !important; }
+.landing-light [style*="background: #0f0a14"] { background: #c4ccd8 !important; }
 
 /* Gradients escuros → claros */
 .landing-light [style*="linear-gradient(180deg, #050508"],
 .landing-light [style*="linear-gradient(180deg, #050508,"],
 .landing-light [style*="linear-gradient(135deg, #0a0a14"],
 .landing-light [style*="linear-gradient(135deg, #0a0a12"] {
-  background: linear-gradient(180deg, #cbd5e1 0%, #e2e8f0 50%, #cbd5e1 100%) !important;
+  background: linear-gradient(180deg, #b8c2d0 0%, #d6dde6 50%, #b8c2d0 100%) !important;
 }
 
 /* Header fixo translúcido */
@@ -692,12 +692,14 @@ html {
   border-color: rgba(15,23,42,0.18) !important;
 }
 
-/* Cores de texto: forçar contraste alto */
+/* Cores de texto: forçar contraste alto (texto secundário bem legível) */
 .landing-light [style*="color: #94a3b8"] { color: #1e293b !important; }
-.landing-light [style*="color: #cbd5e1"] { color: #0f172a !important; }
-.landing-light [style*="color: #e2e8f0"] { color: #0f172a !important; }
-.landing-light [style*="color: #64748b"] { color: #334155 !important; }
-.landing-light [style*="color: #475569"] { color: #334155 !important; }
+.landing-light [style*="color: #cbd5e1"] { color: #1e293b !important; }
+.landing-light [style*="color: #e2e8f0"] { color: #1e293b !important; }
+.landing-light [style*="color: #64748b"] { color: #1e293b !important; }
+.landing-light [style*="color: #475569"] { color: #1e293b !important; }
+.landing-light [style*="color: #334155"] { color: #1e293b !important; }
+.landing-light [style*="color: #1e293b"] { color: #0b1220 !important; }
 .landing-light [style*="color: #0a0a12"] { color: #0f172a !important; }
 .landing-light [style*="color: #fff"],
 .landing-light [style*="color: #ffffff"],
