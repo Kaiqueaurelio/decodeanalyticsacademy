@@ -20,7 +20,7 @@ import {
   LayoutDashboard, CheckCircle, TrendingUp, Upload, BarChart3, Clock,
   Link as LinkIcon, Loader2, AlertCircle, Edit, Download, File, Image, Video, Music, FileSpreadsheet, Presentation,
   Users, ShieldBan, ShieldCheck, Search, Menu, X, Activity, GraduationCap, FolderOpen, Settings, RefreshCw,
-  Sun, Moon, FileUp, Sparkles, Wand2, Megaphone
+  Sun, Moon, FileUp, Sparkles, Wand2, Megaphone, Combine
 } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useTheme } from '@/hooks/useTheme';
@@ -1188,11 +1188,14 @@ export default function AdminPage() {
 
                 {/* Apostilas List */}
                 <div>
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
                     <h3 className="font-semibold text-sm flex items-center gap-2">
                       <BookOpen className="h-4 w-4 text-primary" /> Apostilas ({filteredApostilas.length})
                     </h3>
-                    <AutoLinkAllButton />
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <MergeButton onMerged={loadAll} />
+                      <AutoLinkAllButton />
+                    </div>
                   </div>
                   <div className="space-y-3">
                     {filteredApostilas.map(a => {
