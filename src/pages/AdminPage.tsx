@@ -96,6 +96,33 @@ function ThemeToggleButton() {
     </Button>
   );
 }
+function AutoLinkAllButton() {
+  const [running, setRunning] = useState(false);
+  const [progress, setProgress] = useState('');
+
+  const handleAutoLinkAll = async () => {
+    setRunning(true);
+    setProgress('Iniciando...');
+    try {
+      const result = await autoLinkAll((current, total, r) => {
+        setProgress(`${current}/${total} — ${r.apostilaTitle.slice(0, 30)}: +${r.linked}`);
+      });
+      toast.success(`Concluído! ${result.totalLinked} vínculo(s) criado(s) em ${result.apostilasProcessed} apostilas.`);
+    } catch {
+      toast.error('Erro ao auto-vincular em lote.');
+    } finally {
+      setRunning(false);
+      setProgress('');
+    }
+  };
+
+  return (
+    <Button size="sm" variant="outline" className="text-xs gap-1.5" onClick={handleAutoLinkAll} disabled={running}>
+      {running ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wand2 className="h-3 w-3" />}
+      {running ? progress : 'Auto-vincular Todos'}
+    </Button>
+  );
+}
 
 // ─── Sidebar Navigation ────────────────────────────────────────
 function AdminSidebar({ tab, setTab, stats, sidebarOpen, setSidebarOpen }: {
