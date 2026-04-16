@@ -325,6 +325,10 @@ export function AnnouncementsAdmin() {
             </div>
 
             <div>
+              <Label className="text-xs">Título</Label>
+              <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="Título do aviso" className="mt-1" />
+            </div>
+            <div>
               <Label className="text-xs">Conteúdo</Label>
               <Textarea value={content} onChange={e => setContent(e.target.value)} placeholder="Descreva o aviso..." rows={4} className="mt-1" />
             </div>
