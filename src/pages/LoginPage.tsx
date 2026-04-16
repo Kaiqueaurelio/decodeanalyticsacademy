@@ -31,8 +31,9 @@ export default function LoginPage() {
   const [isReset, setIsReset] = useState(false);
 
   const RA_DOMAIN = 'ra.unip.local';
-  const buildRaEmail = (raValue: string) => `${raValue.trim()}@${RA_DOMAIN}`;
-  const isValidRa = (raValue: string) => /^\d{8,13}$/.test(raValue.trim());
+  const normalizeRa = (raValue: string) => raValue.trim().toUpperCase();
+  const buildRaEmail = (raValue: string) => `${normalizeRa(raValue).toLowerCase()}@${RA_DOMAIN}`;
+  const isValidRa = (raValue: string) => /^[A-Z0-9]{6,13}$/.test(normalizeRa(raValue));
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loginAttempts, setLoginAttempts] = useState(0);
@@ -58,7 +59,7 @@ export default function LoginPage() {
     // Validate RA format if RA method
     if (authMethod === 'ra') {
       if (!isValidRa(ra)) {
-        toast.error('RA inválido. Digite apenas números (8 a 13 dígitos).');
+        toast.error('RA inválido. Use 6 a 13 caracteres (letras e números).');
         return;
       }
     }
@@ -375,13 +376,12 @@ export default function LoginPage() {
                         <Input
                           id="ra"
                           type="text"
-                          inputMode="numeric"
-                          pattern="[0-9]*"
+                          inputMode="text"
                           autoComplete="username"
                           required
                           value={ra}
-                          onChange={e => setRa(e.target.value.replace(/\D/g, ''))}
-                          placeholder="Apenas números (ex: 2312345678)"
+                          onChange={e => setRa(e.target.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase())}
+                          placeholder="Ex: G802144"
                           maxLength={13}
                         />
                         {isSignUp && (
