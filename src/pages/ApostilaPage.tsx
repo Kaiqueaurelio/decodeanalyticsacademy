@@ -10,11 +10,13 @@ import { AnnotationsPanel } from '@/components/AnnotationsPanel';
 import { CommentsWidget } from '@/components/CommentsWidget';
 
 import { ApostilaMaterials } from '@/components/ApostilaMaterials';
+import { ApostilaChat } from '@/components/ApostilaChat';
 import { UnitTilesGrid, buildUnitResources } from '@/components/UnitTilesGrid';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
   ArrowLeft, BookOpen, PenLine, Eye, List, X,
-  ChevronUp, StickyNote, Layers
+  ChevronUp, StickyNote, Layers, Sparkles, MessageSquare
 } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 
@@ -79,6 +81,7 @@ export default function ApostilaPage() {
   const [loading, setLoading] = useState(true);
   const contentRef = useRef<HTMLDivElement>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [chatOpen, setChatOpen] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -218,6 +221,16 @@ export default function ApostilaPage() {
                   <List className="h-3.5 w-3.5" /> Índice
                 </Button>
               )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setChatOpen(true)}
+                className="text-xs gap-1.5 hover-lift border-primary/40 text-primary hover:bg-primary/10"
+              >
+                <Sparkles className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Conversar com a apostila</span>
+                <span className="sm:hidden">Chat</span>
+              </Button>
               <Button
                 variant={focusMode ? 'default' : 'outline'}
                 size="sm"
@@ -423,6 +436,25 @@ export default function ApostilaPage() {
         >
           <ChevronUp className="h-5 w-5" />
         </button>
+
+        {/* FAB: Conversar com a apostila */}
+        <button
+          onClick={() => setChatOpen(true)}
+          className="fixed bottom-6 left-6 z-30 h-12 px-4 rounded-full gradient-primary text-primary-foreground flex items-center gap-2 shadow-xl hover-lift transition-all"
+          aria-label="Conversar com a apostila"
+        >
+          <Sparkles className="h-4 w-4" />
+          <span className="text-xs font-semibold hidden sm:inline">Conversar com a apostila</span>
+        </button>
+
+        {/* Chat Sheet */}
+        <Sheet open={chatOpen} onOpenChange={setChatOpen}>
+          <SheetContent side="right" className="w-full sm:max-w-md p-0 flex flex-col">
+            <div className="flex-1 overflow-hidden">
+              <ApostilaChat apostilaId={id!} apostilaTitle={apostila.title} />
+            </div>
+          </SheetContent>
+        </Sheet>
       </main>
     </div>
   );

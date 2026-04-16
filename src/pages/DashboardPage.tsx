@@ -30,6 +30,7 @@ import { MaterialWidget } from '@/components/MaterialWidget';
 import { AnnouncementsBoard } from '@/components/AnnouncementsBoard';
 import { TodayExamBanner } from '@/components/TodayExamBanner';
 import { QuickAccessHub } from '@/components/QuickAccessHub';
+import { useExamFocus } from '@/hooks/useExamFocus';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { getSubjectColor } from '@/lib/subject-colors';
 import {
@@ -46,6 +47,7 @@ export default function DashboardPage() {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const gamification = useGamification();
+  const examFocus = useExamFocus();
   const [apostilas, setApostilas] = useState<Apostila[]>([]);
   const [exerciseCounts, setExerciseCounts] = useState<Record<string, number>>({});
   const [stats, setStats] = useState({ total: 0, hits: 0, errors: 0, byApostila: {} as Record<string, { hits: number; errors: number; title: string }> });
@@ -128,12 +130,31 @@ export default function DashboardPage() {
     ? apostilas
     : apostilas.filter(a => (a.category || 'Geral') === selectedCategory);
 
+  // Identifica matéria foco da prova (matching por substring case-insensitive)
+  const focusSubjectLc = examFocus?.subject.toLowerCase() || null;
+  const isFocusApostila = (a: Apostila) => {
+    if (!focusSubjectLc) return false;
+    const cat = (a.category || '').toLowerCase();
+    const title = (a.title || '').toLowerCase();
+    return cat.includes(focusSubjectLc) || title.includes(focusSubjectLc) ||
+           focusSubjectLc.includes(cat) || focusSubjectLc.includes(title);
+  };
+  const isFocusCategory = (cat: string) =>
+    focusSubjectLc ? cat.toLowerCase().includes(focusSubjectLc) || focusSubjectLc.includes(cat.toLowerCase()) : false;
+
   const grouped = filteredApostilas.reduce((acc, a) => {
     const cat = a.category || 'Geral';
     if (!acc[cat]) acc[cat] = [];
     acc[cat].push(a);
     return acc;
   }, {} as Record<string, Apostila[]>);
+
+  // Reordena: categoria da matéria foco vem primeiro
+  const groupedEntries = Object.entries(grouped).sort(([catA], [catB]) => {
+    const fa = isFocusCategory(catA) ? -1 : 0;
+    const fb = isFocusCategory(catB) ? -1 : 0;
+    return fa - fb;
+  });
 
   const earnedBadges = gamification.badges
     .filter(b => gamification.earnedBadgeIds.includes(b.id))
@@ -294,10 +315,10 @@ export default function DashboardPage() {
                     <div key={i} className="skeleton-shimmer h-36 rounded-xl" />
                   ))}
                 </div>
-              ) : Object.entries(grouped).length > 0 ? (
+              ) : groupedEntries.length > 0 ? (
                 disciplinesView === 'list' ? (
                   <div className="rounded-xl border border-border/60 bg-card overflow-hidden">
-                    {Object.entries(grouped).map(([category, items]) => {
+                    {groupedEntries.map(([category, items]) => {
                       const color = getSubjectColor(category);
                       return items.map((a, idx) => {
                         const exCount = exerciseCounts[a.id] || 0;
@@ -328,20 +349,26 @@ export default function DashboardPage() {
                   </div>
                 ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {Object.entries(grouped).map(([category, items], catIdx) => {
+                  {groupedEntries.map(([category, items], catIdx) => {
                     const color = getSubjectColor(category);
                     return items.map((a, idx) => {
                       const exCount = exerciseCounts[a.id] || 0;
                       const answered = stats.byApostila[a.id];
                       const correctPct = answered ? Math.round((answered.hits / (answered.hits + answered.errors)) * 100) : 0;
                       const initial = category.charAt(0).toUpperCase();
+                      const isFocus = isFocusApostila(a) || isFocusCategory(category);
 
                       return (
                         <div
                           key={a.id}
-                          className="discipline-card animate-card-enter"
+                          className={`discipline-card animate-card-enter relative ${isFocus ? 'ring-2 ring-destructive/60 shadow-[0_0_25px_hsl(var(--destructive)/0.25)]' : ''}`}
                           style={{ animationDelay: `${(catIdx * items.length + idx) * 60}ms` }}
                         >
+                          {isFocus && examFocus && (
+                            <div className="absolute -top-2 left-3 z-10 px-2 py-0.5 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold uppercase tracking-wider flex items-center gap-1 shadow-lg animate-pulse">
+                              🔥 Prova {examFocus.daysUntil === 0 ? 'HOJE' : 'AMANHÃ'}
+                            </div>
+                          )}
                           {/* Colored header */}
                           <div
                             className="discipline-card-header"
