@@ -862,6 +862,7 @@ export default function AdminPage() {
     users: { title: 'Gerenciar Usuários', desc: `${users.length} usuários cadastrados` },
     announcements: { title: 'Mural de Avisos', desc: 'Gerencie avisos para os alunos' },
     calendar: { title: 'Calendário Acadêmico', desc: 'Importe cronogramas e gerencie provas/trabalhos' },
+    testimonials: { title: 'Depoimentos', desc: 'Aprove ou rejeite depoimentos dos alunos' },
   };
 
   return (
