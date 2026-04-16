@@ -59,7 +59,7 @@ export default function LoginPage() {
     // Validate RA format if RA method
     if (authMethod === 'ra') {
       if (!isValidRa(ra)) {
-        toast.error('RA inválido. Digite apenas números (8 a 13 dígitos).');
+        toast.error('RA inválido. Use 6 a 13 caracteres (letras e números).');
         return;
       }
     }
