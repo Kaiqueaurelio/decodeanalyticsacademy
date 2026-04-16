@@ -89,7 +89,11 @@ export function AnnouncementsBoard() {
             const cfg = CATEGORY_CONFIG[a.category] || CATEGORY_CONFIG.geral;
             const Icon = cfg.icon;
             return (
-              <Card key={a.id} className="hover:shadow-md transition-shadow animate-fade-in">
+              <Card
+                key={a.id}
+                className="hover:shadow-md transition-shadow animate-fade-in cursor-pointer active:scale-[0.98]"
+                onClick={() => navigate(`/aviso/${a.id}`)}
+              >
                 <CardContent className="p-4">
                   <div className="flex gap-3">
                     {a.image_url && (
@@ -106,17 +110,8 @@ export function AnnouncementsBoard() {
                       </div>
                       <h3 className="font-semibold text-sm mb-1 truncate">{a.title}</h3>
                       <p className="text-xs text-muted-foreground line-clamp-2">{a.content}</p>
-                      {a.link_url && (
-                        <a
-                          href={a.link_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-[10px] text-primary mt-2 hover:underline"
-                        >
-                          <ExternalLink className="h-3 w-3" /> Saiba mais
-                        </a>
-                      )}
                     </div>
+                    <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 self-center" />
                   </div>
                 </CardContent>
               </Card>
