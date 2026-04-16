@@ -1,59 +1,43 @@
 
-O usuário insiste em usar a chave Gemini própria do Google AI Studio. Já alertei 2x sobre exposição. Agora vou ceder e criar o fluxo correto: usar `add_secret` (popup seguro) ao invés da chave colada no chat. Vou criar uma edge function paralela que usa Google AI Studio direto, e dar opção de qual usar.
+O usuário está confuso/frustrado: "se eu ativei minha chave Google AI Studio (externa), por que ainda dá erro 402 de créditos do Lovable AI?"
 
-## Plano: Integrar Google AI Studio (Gemini) com chave própria
+Resposta curta: porque o toggle no Admin **nunca foi ativado** OU a chave Google está falhando silenciosamente e caindo no fallback Lovable (que está sem créditos).
 
-### Como vai funcionar (seguro)
-1. Você **NÃO cola a chave no chat** — vou abrir um popup seguro `add_secret` onde você gera nova chave em [aistudio.google.com/apikey](https://aistudio.google.com/apikey) e cola lá. Fica criptografada como secret do backend.
-2. Crio edge function `gemini-direct` que usa `GOOGLE_AI_API_KEY` para chamar a API oficial do Google (`generativelanguage.googleapis.com`).
-3. Mantenho o Lovable AI como fallback automático: se sua chave falhar (cota, 401, 429), cai pro Lovable AI sem você perceber.
+Preciso investigar: a função `apostila-chat` lê o setting `ai_provider.preferGoogle`. Se for false, vai direto pro Lovable (402). Se for true e Google falhar, também cai no Lovable.
 
-### O que vou construir
+## Diagnóstico
 
-**1. Nova edge function `gemini-direct`** (`supabase/functions/gemini-direct/index.ts`)
-- Recebe `{ messages, model?, systemPrompt? }`
-- Usa `GOOGLE_AI_API_KEY` (secret) para chamar Google AI Studio
-- Suporta streaming SSE compatível com o formato OpenAI (pra reusar parser do front)
-- Auto-fallback pro Lovable AI em caso de erro
+Pela leitura do `apostila-chat/index.ts`:
+- Linha que importa: `const preferGoogle = !!(settingRow?.value as any)?.preferGoogle && !!GOOGLE_AI_API_KEY;`
+- Se `preferGoogle = false` → vai DIRETO pro Lovable AI → 402
+- Se `preferGoogle = true` mas Google falhar → cai no Lovable AI → 402
 
-**2. Wrapper compartilhado `_shared/ai-client.ts`** dentro de cada função que precisar
-- Helper `callAI({ messages, preferOwn, stream })` que tenta sua chave primeiro, fallback Lovable
+**Causa mais provável**: o toggle no Admin → IA não foi ativado, então o app continua usando Lovable AI (sem créditos).
 
-**3. Toggle no Admin** (`AdminPage.tsx` → nova aba "IA")
-- Switch: "Usar minha chave Google AI Studio" (default OFF)
-- Status: ✅ chave configurada / ❌ não configurada
-- Botão "Testar chave" que faz uma chamada de teste e mostra resposta
-- Salva preferência em `app_settings` (nova tabela simples key/value)
+Causa secundária: mesmo ativando, se o Google retornar erro (chave inválida, cota, modelo errado), o código atual faz fallback automático pro Lovable → 402.
 
-**4. Atualizo `apostila-chat`** para respeitar o toggle
-- Se admin ativou + chave existe → usa `gemini-direct`
-- Senão → usa Lovable AI (comportamento atual)
+## Plano de correção
 
-### Migração SQL
-```sql
-create table public.app_settings (
-  key text primary key,
-  value jsonb not null,
-  updated_at timestamptz default now()
-);
-alter table public.app_settings enable row level security;
-create policy "anyone reads settings" on public.app_settings for select using (true);
-create policy "only admin writes" on public.app_settings for all using (has_role(auth.uid(),'admin'));
-```
+### 1. Forçar uso da chave Google quando ativada (sem fallback silencioso pra Lovable sem créditos)
+Em `apostila-chat/index.ts`: se `preferGoogle=true` e Google falhar, retornar erro claro do Google em vez de cair no Lovable. Só usar Lovable como fallback se ele tiver créditos.
 
-### Secret necessária
-- `GOOGLE_AI_API_KEY` — solicitarei via popup seguro `add_secret` (você gera nova chave no Google AI Studio e cola lá, **não no chat**)
+### 2. Mostrar status real no Admin
+No `AIProviderSettings.tsx`: badge claro indicando "ATIVO: respostas vêm da sua chave" vs "INATIVO: usando Lovable AI (pode falhar por créditos)".
 
-### Arquivos afetados
-- `supabase/functions/gemini-direct/index.ts` (novo)
-- `supabase/functions/apostila-chat/index.ts` (atualizar para checar toggle)
-- `src/pages/AdminPage.tsx` (nova aba "IA")
-- `src/components/AIProviderSettings.tsx` (novo — toggle + teste)
-- Nova migração SQL
+### 3. Aviso no chat quando cair no Lovable
+No `ApostilaChat.tsx`: se a resposta veio do Lovable AI mas o admin esperava Google, mostrar toast informando.
 
-### Importante
-⚠️ A chave que você colou nesta conversa (`AQ.Ab8RN6Jn...`) **continua exposta no histórico**. Antes de aprovar, **gere uma chave NOVA** em https://aistudio.google.com/apikey e revogue a antiga. A nova você cola no popup seguro, não aqui.
+### 4. Resposta direta ao usuário no chat (esta mensagem)
+Explicar que o toggle precisa estar ATIVO no Admin → IA, e que provavelmente está OFF.
 
-### O que NÃO mudo
-- Lovable AI continua como fallback (zero risco de quebrar o app)
-- Outras edge functions (`extract-content`, `generate-exercises`, etc.) ficam no Lovable AI por padrão — você pode estender depois se quiser
+## Arquivos a alterar
+- `supabase/functions/apostila-chat/index.ts` — quando `preferGoogle=true`, não cair no Lovable se Google falhar; retornar erro do Google
+- `src/components/AIProviderSettings.tsx` — banner de status mais claro + aviso quando OFF
+- `src/components/ApostilaChat.tsx` — exibir provedor usado no rodapé da mensagem
+
+## Ação imediata para o usuário
+1. Vá em **Admin → aba IA**
+2. Verifique se o switch **"Usar minha chave Google AI Studio"** está LIGADO (verde)
+3. Clique em **"Testar chamada de IA"** — o badge deve mostrar `google-direct`
+4. Se mostrar `lovable`, o toggle está OFF — ligue ele
+5. Se já está ON e ainda dá 402, sua chave Google pode estar inválida/sem cota — gere uma nova em https://aistudio.google.com/apikey e adicione novamente
