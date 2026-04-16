@@ -88,7 +88,8 @@ export function ApostilaMaterialsManager({ apostilaId, apostilaTitle }: Props) {
         toast.success(`${result.linked} material(is) vinculado(s) automaticamente!`);
         load();
       } else {
-        toast.info('Nenhum material novo encontrado para vincular.');
+        toast.info('Nenhum match automático. Abrindo seleção manual...');
+        setManualOpen(true);
       }
     } catch {
       toast.error('Erro ao auto-vincular.');
@@ -118,11 +119,16 @@ export function ApostilaMaterialsManager({ apostilaId, apostilaTitle }: Props) {
             </DialogTitle>
           </DialogHeader>
 
-          {/* Auto-link button */}
-          <Button size="sm" variant="outline" className="w-full text-xs gap-1.5 mb-2" onClick={handleAutoLink} disabled={autoLinking}>
-            {autoLinking ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wand2 className="h-3 w-3" />}
-            {autoLinking ? 'Vinculando...' : 'Auto-vincular por disciplina'}
-          </Button>
+          {/* Auto-link buttons */}
+          <div className="grid grid-cols-2 gap-2 mb-2">
+            <Button size="sm" variant="outline" className="text-xs gap-1.5" onClick={handleAutoLink} disabled={autoLinking}>
+              {autoLinking ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wand2 className="h-3 w-3" />}
+              Auto-vincular
+            </Button>
+            <Button size="sm" variant="outline" className="text-xs gap-1.5" onClick={() => setManualOpen(true)}>
+              <Search className="h-3 w-3" /> Escolher
+            </Button>
+          </div>
 
           {/* Linked materials */}
           <div className="space-y-2 mb-4">
