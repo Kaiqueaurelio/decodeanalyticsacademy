@@ -641,13 +641,22 @@ html {
    mantendo destaques ciano (#00f0ff) e roxo (#a855f7).
    ───────────────────────────────────────────── */
 .landing-light {
-  background: #f5f7fa !important;
-  color: #1a1a2e !important;
+  background: #e2e8f0 !important;
+  color: #0f172a !important;
 }
 
-/* Backgrounds escuros → claros */
+/* Força cor escura em todos os textos descendentes (exceto os com cor explícita ciano/roxo/branco em botões) */
+.landing-light p,
+.landing-light span,
+.landing-light li,
+.landing-light a,
+.landing-light div {
+  color: #0f172a;
+}
+
+/* Backgrounds escuros → claros (cinza azulado, não branco puro) */
 .landing-light [style*="background: #050508"],
-.landing-light [style*="background:#050508"] { background: #f5f7fa !important; }
+.landing-light [style*="background:#050508"] { background: #cbd5e1 !important; }
 
 .landing-light [style*="background: #0a0a0f"],
 .landing-light [style*="background: #0a0a12"],
@@ -655,24 +664,24 @@ html {
 .landing-light [style*="background: #0d0d16"],
 .landing-light [style*="background: #0f0f1a"],
 .landing-light [style*="background: #0a0f14"],
-.landing-light [style*="background: #0f0a14"] { background: #ffffff !important; }
+.landing-light [style*="background: #0f0a14"] { background: #f1f5f9 !important; }
 
 /* Gradients escuros → claros */
 .landing-light [style*="linear-gradient(180deg, #050508"],
 .landing-light [style*="linear-gradient(180deg, #050508,"],
 .landing-light [style*="linear-gradient(135deg, #0a0a14"],
 .landing-light [style*="linear-gradient(135deg, #0a0a12"] {
-  background: linear-gradient(180deg, #f5f7fa 0%, #eef2f7 50%, #f5f7fa 100%) !important;
+  background: linear-gradient(180deg, #cbd5e1 0%, #e2e8f0 50%, #cbd5e1 100%) !important;
 }
 
 /* Header fixo translúcido */
 .landing-light [style*="background: rgba(5,5,8,0.85)"],
 .landing-light [style*="background: rgba(5,5,8,0.5)"] {
-  background: rgba(255,255,255,0.85) !important;
-  border-bottom-color: rgba(0,0,0,0.06) !important;
+  background: rgba(241,245,249,0.92) !important;
+  border-bottom-color: rgba(0,0,0,0.12) !important;
 }
 
-/* Bordas brancas translúcidas → cinza claro */
+/* Bordas brancas translúcidas → cinza escuro visível */
 .landing-light [style*="border: 1px solid rgba(255,255,255,0.06)"],
 .landing-light [style*="border: 1px solid rgba(255,255,255,0.04)"],
 .landing-light [style*="border: 1px solid rgba(255,255,255,0.05)"],
@@ -680,46 +689,59 @@ html {
 .landing-light [style*="border: 1px solid rgba(255,255,255,0.1)"],
 .landing-light [style*="borderBottom: '1px solid rgba(255,255,255,0.06)'"],
 .landing-light [style*="border-bottom: 1px solid rgba(255,255,255,0.06)"] {
-  border-color: rgba(0,0,0,0.08) !important;
+  border-color: rgba(15,23,42,0.18) !important;
 }
 
-/* Cores de texto cinza-azulado escuro → cinza médio */
-.landing-light [style*="color: #94a3b8"] { color: #475569 !important; }
-.landing-light [style*="color: #cbd5e1"] { color: #1e293b !important; }
-.landing-light [style*="color: #e2e8f0"] { color: #1e293b !important; }
-.landing-light [style*="color: #64748b"] { color: #64748b !important; }
-.landing-light [style*="color: #475569"] { color: #64748b !important; }
-.landing-light [style*="color: #0a0a12"] { color: #1a1a2e !important; }
+/* Cores de texto: forçar contraste alto */
+.landing-light [style*="color: #94a3b8"] { color: #1e293b !important; }
+.landing-light [style*="color: #cbd5e1"] { color: #0f172a !important; }
+.landing-light [style*="color: #e2e8f0"] { color: #0f172a !important; }
+.landing-light [style*="color: #64748b"] { color: #334155 !important; }
+.landing-light [style*="color: #475569"] { color: #334155 !important; }
+.landing-light [style*="color: #0a0a12"] { color: #0f172a !important; }
+.landing-light [style*="color: #fff"],
+.landing-light [style*="color: #ffffff"],
+.landing-light [style*="color: white"] { color: #0f172a !important; }
 
-/* Sub-bg de cards translúcidos */
+/* Sub-bg de cards translúcidos — mais contraste */
 .landing-light [style*="background: rgba(255,255,255,0.02)"],
 .landing-light [style*="background: rgba(255,255,255,0.03)"],
-.landing-light [style*="background: rgba(255,255,255,0.04)"] {
-  background: rgba(0,0,0,0.025) !important;
+.landing-light [style*="background: rgba(255,255,255,0.04)"],
+.landing-light [style*="background: rgba(255,255,255,0.05)"],
+.landing-light [style*="background: rgba(255,255,255,0.06)"] {
+  background: rgba(15,23,42,0.06) !important;
 }
 
-/* Bg ciano translúcido (cards) — manter ciano mas mais visível */
+/* Bg ciano translúcido (cards) */
 .landing-light [style*="background: rgba(0,240,255,0.03)"],
 .landing-light [style*="background: rgba(0,240,255,0.06)"] {
-  background: rgba(0,180,200,0.06) !important;
+  background: rgba(0,140,160,0.10) !important;
 }
 
 /* Footer */
 .landing-light [style*="borderTop: '1px solid rgba(255,255,255,0.06)'"],
 .landing-light [style*="border-top: 1px solid rgba(255,255,255,0.06)"] {
-  border-top-color: rgba(0,0,0,0.08) !important;
+  border-top-color: rgba(15,23,42,0.18) !important;
 }
 
-/* Botão CTA preto sobre ciano vira preto sólido */
+/* Botão CTA preto sobre ciano permanece preto */
 .landing-light button[style*="color: #050508"],
 .landing-light a[style*="color: #050508"] { color: #050508 !important; }
 
-/* Glow orbs ficam mais sutis no modo claro */
+/* Glow orbs sutis */
 .landing-light [style*="rgba(0,240,255,0.06)"],
 .landing-light [style*="rgba(0,240,255,0.05)"],
-.landing-light [style*="rgba(0,240,255,0.04)"] { opacity: 0.4; }
+.landing-light [style*="rgba(0,240,255,0.04)"] { opacity: 0.35; }
 
-/* Headings em branco viram preto */
-.landing-light h1, .landing-light h2, .landing-light h3, .landing-light h4 {
-  color: #1a1a2e;
+/* Headings sempre escuros e fortes */
+.landing-light h1, .landing-light h2, .landing-light h3, .landing-light h4, .landing-light h5, .landing-light h6 {
+  color: #0f172a !important;
 }
+
+/* Ciano em texto: escurecer para contrastar com fundo claro */
+.landing-light [style*="color: #00f0ff"],
+.landing-light [style*="color:#00f0ff"] { color: #0891a6 !important; }
+
+/* Roxo em texto: escurecer um pouco */
+.landing-light [style*="color: #a855f7"],
+.landing-light [style*="color:#a855f7"] { color: #7c3aed !important; }
