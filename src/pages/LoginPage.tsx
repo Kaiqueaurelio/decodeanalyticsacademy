@@ -108,8 +108,13 @@ export default function LoginPage() {
       }
     } else {
       setLoginAttempts(0);
-      if (rememberMe) localStorage.setItem('decode_remember_email', email);
-      else localStorage.removeItem('decode_remember_email');
+      if (rememberMe) {
+        localStorage.setItem('decode_remember_email', email);
+        localStorage.setItem('decode_remember_password', btoa(password));
+      } else {
+        localStorage.removeItem('decode_remember_email');
+        localStorage.removeItem('decode_remember_password');
+      }
       toast.success('Login realizado!');
       const lastRoute = localStorage.getItem('decode_last_route');
       navigate(lastRoute && lastRoute !== '/' && lastRoute !== '/login' ? lastRoute : '/dashboard');
