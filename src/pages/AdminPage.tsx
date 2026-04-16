@@ -20,7 +20,7 @@ import {
   LayoutDashboard, CheckCircle, TrendingUp, Upload, BarChart3, Clock,
   Link as LinkIcon, Loader2, AlertCircle, Edit, Download, File, Image, Video, Music, FileSpreadsheet, Presentation,
   Users, ShieldBan, ShieldCheck, Search, Menu, X, Activity, GraduationCap, FolderOpen, Settings, RefreshCw,
-  Sun, Moon, FileUp, Sparkles, Wand2
+  Sun, Moon, FileUp, Sparkles, Wand2, Megaphone
 } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 import { toast } from 'sonner';
@@ -28,6 +28,8 @@ import type { Tables } from '@/integrations/supabase/types';
 import { AnimatedCounter } from '@/components/AnimatedCounter';
 import { ActivityChart } from '@/components/ActivityChart';
 import { ImageUploadButton } from '@/components/ImageUploadButton';
+import { AnnouncementsAdmin } from '@/components/AnnouncementsAdmin';
+import { ApostilaMaterialsManager } from '@/components/ApostilaMaterialsManager';
 
 type Apostila = Tables<'apostilas'>;
 type Exercise = Tables<'exercises'>;
@@ -67,7 +69,7 @@ function CategorySelect({ value, onValueChange, placeholder }: { value: string; 
   );
 }
 
-type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users';
+type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements';
 
 const ACCEPT_MAP: Record<string, string> = {
   pdf: '.pdf', image: 'image/*', gif: '.gif,image/gif',
@@ -106,6 +108,7 @@ function AdminSidebar({ tab, setTab, stats, sidebarOpen, setSidebarOpen }: {
     { id: 'exercises' as Tab, label: 'Exercícios', icon: PenLine, count: stats.exercises },
     { id: 'materials' as Tab, label: 'Materiais', icon: FolderOpen, count: stats.materials },
     { id: 'users' as Tab, label: 'Usuários', icon: Users, count: stats.users },
+    { id: 'announcements' as Tab, label: 'Avisos', icon: Megaphone, count: undefined },
   ];
 
   return (
