@@ -125,6 +125,17 @@ function AutoLinkAllButton() {
   );
 }
 
+function MergeButton({ onMerged }: { onMerged: () => void }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <Button size="sm" variant="outline" className="text-xs gap-1.5" onClick={() => setOpen(true)}>
+        <Combine className="h-3 w-3" /> Mesclar apostilas
+      </Button>
+      <MergeApostilasDialog open={open} onOpenChange={setOpen} onMerged={onMerged} />
+    </>
+  );
+}
 // ─── Sidebar Navigation ────────────────────────────────────────
 function AdminSidebar({ tab, setTab, stats, sidebarOpen, setSidebarOpen }: {
   tab: Tab; setTab: (t: Tab) => void;
