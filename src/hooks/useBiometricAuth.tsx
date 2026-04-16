@@ -73,14 +73,14 @@ async function getOrCreateAesKey(): Promise<CryptoKey> {
     localStorage.setItem(STORAGE.key, raw);
   }
   const keyBytes = b64decode(raw);
-  return crypto.subtle.importKey('raw', keyBytes, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']);
+  return crypto.subtle.importKey('raw', toBuf(keyBytes), { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']);
 }
 
 async function encryptString(plain: string): Promise<{ cipher: string; iv: string }> {
   const key = await getOrCreateAesKey();
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const data = new TextEncoder().encode(plain);
-  const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, data);
+  const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv: toBuf(iv) }, key, data);
   return { cipher: b64encode(ct), iv: b64encode(iv) };
 }
 
@@ -88,7 +88,7 @@ async function decryptString(cipherB64: string, ivB64: string): Promise<string> 
   const key = await getOrCreateAesKey();
   const iv = b64decode(ivB64);
   const ct = b64decode(cipherB64);
-  const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ct);
+  const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: toBuf(iv) }, key, toBuf(ct));
   return new TextDecoder().decode(pt);
 }
 
@@ -171,7 +171,7 @@ export async function verifyBiometric(): Promise<string> {
       rpId: window.location.hostname,
       userVerification: 'required',
       allowCredentials: [{
-        id: b64decode(credIdB64),
+        id: toBuf(b64decode(credIdB64)),
         type: 'public-key',
         transports: ['internal'],
       }],
