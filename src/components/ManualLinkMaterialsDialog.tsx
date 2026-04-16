@@ -74,7 +74,7 @@ export function ManualLinkMaterialsDialog({ open, onOpenChange, apostilaId, onLi
             <Loader2 className="h-6 w-6 animate-spin text-primary" />
           </div>
         ) : (
-          <ScrollArea className="flex-1 -mx-2 px-2">
+          <ScrollArea className="flex-1 -mx-2 px-2 h-[50vh] min-h-[200px]">
             {suggestions.length > 0 && (
               <div className="space-y-1.5 mb-4">
                 <p className="text-[10px] font-semibold text-primary uppercase tracking-wider">
