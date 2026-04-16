@@ -178,6 +178,9 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        {/* Quick Access Hub - estilo AVA */}
+        <QuickAccessHub />
+
         {/* Search */}
         <div className="mb-6 animate-content-show delay-1">
           <GlobalSearch />
@@ -209,10 +212,28 @@ export default function DashboardPage() {
           {/* Left Column — Disciplines */}
           <div className="lg:col-span-2 space-y-6">
             {/* Minhas Disciplinas */}
-            <div className="animate-content-show delay-3">
-              <div className="section-heading">
-                <BookOpen className="h-4 w-4 text-primary" />
-                <h2 className="text-base font-semibold">Minhas Disciplinas</h2>
+            <div id="minhas-disciplinas" className="animate-content-show delay-3 scroll-mt-24">
+              <div className="section-heading flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <BookOpen className="h-4 w-4 text-primary" />
+                  <h2 className="text-base font-semibold">Minhas Disciplinas</h2>
+                </div>
+                <div className="flex items-center gap-1 rounded-md border border-border/60 p-0.5 bg-card">
+                  <button
+                    onClick={() => setDisciplinesView('grid')}
+                    className={`p-1.5 rounded transition-colors ${disciplinesView === 'grid' ? 'bg-primary/15 text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                    aria-label="Visualização em grade"
+                  >
+                    <LayoutGrid className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    onClick={() => setDisciplinesView('list')}
+                    className={`p-1.5 rounded transition-colors ${disciplinesView === 'list' ? 'bg-primary/15 text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                    aria-label="Visualização em lista"
+                  >
+                    <ListIcon className="h-3.5 w-3.5" />
+                  </button>
+                </div>
               </div>
 
               {/* Category filter pills */}
