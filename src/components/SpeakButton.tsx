@@ -3,54 +3,105 @@ import { Volume2, Square, Pause, Play } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Props {
-  /** Função que retorna o texto a ler. Chamada apenas no clique para evitar custo. */
   getText: () => string;
   label?: string;
   className?: string;
   size?: 'sm' | 'md' | 'lg';
 }
 
-/** Botão de leitura em voz reutilizável usando Web Speech API (sem custos, offline). */
+const cleanText = (raw: string) =>
+  raw
+    .replace(/```[\s\S]*?```/g, '')
+    .replace(/`([^`]+)`/g, '$1')
+    .replace(/!\[[^\]]*\]\([^)]+\)/g, '')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/[*_#>~]+/g, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+
+/** Quebra texto em pedaços <= maxLen respeitando frases. iOS/Safari trava em textos longos. */
+const chunkText = (text: string, maxLen = 200): string[] => {
+  const sentences = text.match(/[^.!?\n]+[.!?\n]+|[^.!?\n]+$/g) || [text];
+  const chunks: string[] = [];
+  let current = '';
+  for (const s of sentences) {
+    const sentence = s.trim();
+    if (!sentence) continue;
+    if ((current + ' ' + sentence).length > maxLen && current) {
+      chunks.push(current.trim());
+      current = sentence;
+    } else {
+      current = current ? `${current} ${sentence}` : sentence;
+    }
+  }
+  if (current.trim()) chunks.push(current.trim());
+  return chunks;
+};
+
 export function SpeakButton({ getText, label = 'Ouvir em voz', className = '', size = 'md' }: Props) {
   const [state, setState] = useState<'idle' | 'speaking' | 'paused'>('idle');
-  const utterRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const queueRef = useRef<string[]>([]);
+  const indexRef = useRef(0);
+  const cancelledRef = useRef(false);
 
   useEffect(() => () => { try { window.speechSynthesis?.cancel(); } catch {} }, []);
 
-  const cleanText = (raw: string) =>
-    raw
-      .replace(/```[\s\S]*?```/g, '')
-      .replace(/`([^`]+)`/g, '$1')
-      .replace(/!\[[^\]]*\]\([^)]+\)/g, '')
-      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-      .replace(/[*_#>~]+/g, '')
-      .replace(/\n{3,}/g, '\n\n')
-      .trim();
+  const speakNext = () => {
+    if (cancelledRef.current) return;
+    const synth = window.speechSynthesis;
+    if (indexRef.current >= queueRef.current.length) {
+      setState('idle');
+      return;
+    }
+    const chunk = queueRef.current[indexRef.current];
+    const utter = new SpeechSynthesisUtterance(chunk);
+    utter.lang = 'pt-BR';
+    utter.rate = 1;
+    utter.pitch = 1;
+    utter.volume = 1;
+    const voices = synth.getVoices();
+    const ptVoice = voices.find(v => v.lang?.toLowerCase().startsWith('pt'));
+    if (ptVoice) utter.voice = ptVoice;
+    utter.onend = () => {
+      indexRef.current += 1;
+      speakNext();
+    };
+    utter.onerror = (e: any) => {
+      if (e?.error === 'canceled' || e?.error === 'interrupted') return;
+      console.warn('[SpeakButton] erro tts:', e?.error);
+      indexRef.current += 1;
+      speakNext();
+    };
+    synth.speak(utter);
+  };
 
   const start = () => {
-    if (!('speechSynthesis' in window)) {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
       toast.error('Seu navegador não suporta leitura em voz');
       return;
     }
     const synth = window.speechSynthesis;
+
+    // CRÍTICO: iOS Safari exige que speak() seja chamado dentro do gesto.
+    // Disparamos um utterance vazio sincronamente para "destravar" o motor.
+    const primer = new SpeechSynthesisUtterance(' ');
+    primer.volume = 0;
+    primer.lang = 'pt-BR';
+    synth.cancel();
+    synth.speak(primer);
+
     const text = cleanText(getText() || '');
     if (!text) {
       toast.message('Nada para ler');
       return;
     }
-    synth.cancel();
-    const utter = new SpeechSynthesisUtterance(text);
-    utter.lang = 'pt-BR';
-    utter.rate = 1;
-    utter.pitch = 1;
-    const voices = synth.getVoices();
-    const ptVoice = voices.find(v => v.lang?.toLowerCase().startsWith('pt'));
-    if (ptVoice) utter.voice = ptVoice;
-    utter.onend = () => setState('idle');
-    utter.onerror = () => setState('idle');
-    utterRef.current = utter;
+
+    queueRef.current = chunkText(text, 200);
+    indexRef.current = 0;
+    cancelledRef.current = false;
     setState('speaking');
-    synth.speak(utter);
+    // Pequeno delay para garantir que o primer não cancele os próximos
+    setTimeout(() => speakNext(), 50);
   };
 
   const togglePause = () => {
@@ -65,6 +116,9 @@ export function SpeakButton({ getText, label = 'Ouvir em voz', className = '', s
   };
 
   const stop = () => {
+    cancelledRef.current = true;
+    queueRef.current = [];
+    indexRef.current = 0;
     window.speechSynthesis?.cancel();
     setState('idle');
   };
