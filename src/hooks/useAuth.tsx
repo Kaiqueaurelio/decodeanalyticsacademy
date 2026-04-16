@@ -65,29 +65,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        setTimeout(() => checkRoles(session.user.id), 0);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, sess) => {
+      setSession(sess);
+      setUser(sess?.user ?? null);
+      if (sess?.user) {
+        setTimeout(() => {
+          checkRoles(sess.user.id).then((adminVal) => {
+            setCachedSession(sess.user, adminVal);
+          });
+        }, 0);
       } else {
         setIsAdmin(false);
         setIsBlocked(false);
         setRoleChecked(true);
+        setCachedSession(null, false);
       }
       setLoading(false);
     });
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        checkRoles(session.user.id).then(() => setLoading(false));
+    supabase.auth.getSession().then(({ data: { session: sess } }) => {
+      setSession(sess);
+      setUser(sess?.user ?? null);
+      if (sess?.user) {
+        checkRoles(sess.user.id).then((adminVal) => {
+          setCachedSession(sess.user, adminVal);
+          setLoading(false);
+        });
       } else {
         setRoleChecked(true);
+        setCachedSession(null, false);
         setLoading(false);
       }
     }).catch(() => {
+      setCachedSession(null, false);
       setLoading(false);
     });
 
