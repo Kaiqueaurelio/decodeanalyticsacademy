@@ -298,8 +298,28 @@ export default function ApostilaPage() {
                 </div>
               </div>
 
+              {/* Unit tiles - estilo AVA */}
+              <UnitTilesGrid
+                unitNumber="I"
+                unitTitle={apostila.title}
+                resources={buildUnitResources({
+                  onOpenContent: () => {
+                    document.getElementById('conteudo-principal')?.scrollIntoView({ behavior: 'smooth' });
+                  },
+                  onOpenSlides: () => {
+                    document.getElementById('materiais-vinculados')?.scrollIntoView({ behavior: 'smooth' });
+                  },
+                  onOpenVideos: () => {
+                    document.getElementById('materiais-vinculados')?.scrollIntoView({ behavior: 'smooth' });
+                  },
+                  onOpenActivity: () => navigate(`/exercises/${id}`),
+                  hasSlides: true,
+                  hasVideos: true,
+                })}
+              />
+
               {/* Rendered sections */}
-              <div className="space-y-10">
+              <div id="conteudo-principal" className="space-y-10 scroll-mt-24">
                 {sections.map((section, idx) => (
                   <section
                     key={section.id}
