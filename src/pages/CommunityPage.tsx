@@ -67,7 +67,7 @@ export default function CommunityPage() {
   const [submitting, setSubmitting] = useState(false);
   const [openReplies, setOpenReplies] = useState<Record<string, Reply[] | undefined>>({});
   const [replyText, setReplyText] = useState<Record<string, string>>({});
-  const [showChannels, setShowChannels] = useState(true); // mobile drawer
+  const [showChannels, setShowChannels] = useState(false); // mobile drawer (start on feed)
   const channelRef = useRef<any>(null);
 
   // Load channels
