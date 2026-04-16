@@ -187,8 +187,62 @@ export async function autoLinkAll(
 }
 
 /**
+ * Unify the content of multiple apostilas into a single seamless document.
+ * - Removes the apostila title repeated as a heading at the start of its content
+ * - Deduplicates identical paragraphs across apostilas
+ * - Drops standalone repeated section headers (introdução, conclusão, referências)
+ *   when they appear more than once — keeps only the first occurrence's content
+ */
+function unifyContent(apostilas: { title: string; content: string | null }[]): string {
+  const seenParagraphs = new Set<string>();
+  const seenSectionHeaders = new Set<string>();
+  const REPEATABLE_SECTIONS = /^(?:#{1,6}\s*)?(introdução|introducao|conclusão|conclusao|referências|referencias|bibliografia|sumário|sumario|índice|indice)\s*:?\s*$/i;
+
+  const allParagraphs: string[] = [];
+
+  for (const ap of apostilas) {
+    let content = (ap.content || '').trim();
+    if (!content) continue;
+
+    // Remove the title if it appears as the first heading
+    const titleNorm = ap.title.trim().toLowerCase();
+    const lines = content.split('\n');
+    while (lines.length > 0) {
+      const first = lines[0].trim().replace(/^#{1,6}\s*/, '').replace(/[*_`]/g, '').toLowerCase();
+      if (!first || first === titleNorm) { lines.shift(); continue; }
+      break;
+    }
+    content = lines.join('\n').trim();
+
+    // Split into paragraphs (double newline)
+    const paragraphs = content.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
+
+    for (const p of paragraphs) {
+      const normalized = p.toLowerCase().replace(/\s+/g, ' ').trim();
+
+      // Skip duplicated section headers
+      if (REPEATABLE_SECTIONS.test(p.trim())) {
+        if (seenSectionHeaders.has(normalized)) continue;
+        seenSectionHeaders.add(normalized);
+      }
+
+      // Skip exact duplicates of substantive paragraphs (>40 chars)
+      if (normalized.length > 40) {
+        if (seenParagraphs.has(normalized)) continue;
+        seenParagraphs.add(normalized);
+      }
+
+      allParagraphs.push(p);
+    }
+  }
+
+  return allParagraphs.join('\n\n');
+}
+
+/**
  * Merge multiple apostilas into a target one.
- * - Concatenates content with separators
+ * - All must belong to the same category (matéria)
+ * - Concatenates content as a single seamless document (no separators/extra headers)
  * - Moves all exercises to target
  * - Moves all material links to target (deduped)
  * - Deletes the source apostilas
