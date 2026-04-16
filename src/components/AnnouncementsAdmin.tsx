@@ -13,7 +13,7 @@ import { Switch } from '@/components/ui/switch';
 import {
   Plus, Trash2, Edit, Megaphone, GraduationCap, Calendar, Briefcase, Sparkles, Eye, EyeOff
 } from 'lucide-react';
-import { Upload, Loader2, ImageIcon } from 'lucide-react';
+import { Upload, Loader2, ImageIcon, Link2, Wand2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Announcement {
@@ -51,6 +51,64 @@ export function AnnouncementsAdmin() {
   const [linkUrl, setLinkUrl] = useState('');
   const [published, setPublished] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [autoFillUrl, setAutoFillUrl] = useState('');
+  const [autoFilling, setAutoFilling] = useState(false);
+
+  const handleAutoFill = async () => {
+    if (!autoFillUrl.trim()) return;
+    setAutoFilling(true);
+    try {
+      // Step 1: Scrape the URL
+      const { data: scrapeData, error: scrapeError } = await supabase.functions.invoke('firecrawl-scrape', {
+        body: { url: autoFillUrl.trim(), options: { formats: ['markdown'] } },
+      });
+
+      if (scrapeError || !scrapeData?.success) {
+        toast.error('Erro ao acessar o link. Verifique a URL.');
+        setAutoFilling(false);
+        return;
+      }
+
+      const markdown = scrapeData.data?.markdown || '';
+      const metadata = scrapeData.data?.metadata || {};
+
+      // Step 2: Use AI to extract structured info
+      const { data: aiData, error: aiError } = await supabase.functions.invoke('extract-announcement', {
+        body: { markdown, metadata, url: autoFillUrl.trim() },
+      });
+
+      if (aiError || !aiData) {
+        // Fallback: use metadata directly
+        setTitle(metadata.title || '');
+        setContent(markdown.slice(0, 1000) || metadata.description || '');
+        setLinkUrl(autoFillUrl.trim());
+        if (metadata.ogImage) setImageUrl(metadata.ogImage);
+        // Try to guess category
+        const urlLower = autoFillUrl.toLowerCase();
+        if (urlLower.includes('curso') || urlLower.includes('course') || urlLower.includes('udemy') || urlLower.includes('coursera')) {
+          setCategory('cursos');
+        } else if (urlLower.includes('emprego') || urlLower.includes('vaga') || urlLower.includes('job') || urlLower.includes('linkedin.com/jobs')) {
+          setCategory('empregos');
+        } else if (urlLower.includes('evento') || urlLower.includes('event')) {
+          setCategory('eventos');
+        }
+        toast.success('Campos preenchidos com dados básicos!');
+      } else {
+        // Use AI extracted data
+        if (aiData.title) setTitle(aiData.title);
+        if (aiData.content) setContent(aiData.content);
+        if (aiData.category) setCategory(aiData.category);
+        if (aiData.image_url) setImageUrl(aiData.image_url);
+        setLinkUrl(autoFillUrl.trim());
+        toast.success('Campos preenchidos automaticamente!');
+      }
+    } catch (err) {
+      console.error('Auto-fill error:', err);
+      toast.error('Erro ao preencher automaticamente');
+    } finally {
+      setAutoFilling(false);
+    }
+  };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -101,7 +159,7 @@ export function AnnouncementsAdmin() {
   const resetForm = () => {
     setTitle(''); setContent(''); setCategory('geral');
     setImageUrl(''); setLinkUrl(''); setPublished(true);
-    setEditing(null); setShowForm(false);
+    setAutoFillUrl(''); setEditing(null); setShowForm(false);
   };
 
   const openEdit = (a: Announcement) => {
@@ -238,6 +296,34 @@ export function AnnouncementsAdmin() {
             <DialogTitle className="text-base">{editing ? 'Editar Aviso' : 'Novo Aviso'}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
+            {/* Auto-fill from URL */}
+            <div className="p-3 rounded-lg border border-dashed border-primary/30 bg-primary/5">
+              <Label className="text-xs font-medium flex items-center gap-1.5 mb-2">
+                <Wand2 className="h-3.5 w-3.5 text-primary" />
+                Preencher automaticamente via link
+              </Label>
+              <div className="flex gap-2">
+                <Input
+                  value={autoFillUrl}
+                  onChange={e => setAutoFillUrl(e.target.value)}
+                  placeholder="Cole o link do curso, vaga, evento..."
+                  className="flex-1 text-xs"
+                  disabled={autoFilling}
+                />
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={handleAutoFill}
+                  disabled={autoFilling || !autoFillUrl.trim()}
+                  className="gap-1.5 shrink-0"
+                >
+                  {autoFilling ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Link2 className="h-3.5 w-3.5" />}
+                  {autoFilling ? 'Extraindo...' : 'Extrair'}
+                </Button>
+              </div>
+              <p className="text-[10px] text-muted-foreground mt-1.5">Cole a URL e clique em Extrair para preencher título, conteúdo e categoria automaticamente.</p>
+            </div>
+
             <div>
               <Label className="text-xs">Título</Label>
               <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="Título do aviso" className="mt-1" />
