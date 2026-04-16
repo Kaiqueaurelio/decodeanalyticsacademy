@@ -25,6 +25,7 @@ const CATEGORY_CONFIG: Record<string, { label: string; icon: any; color: string 
 };
 
 export function AnnouncementsBoard() {
+  const navigate = useNavigate();
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [filter, setFilter] = useState<string>('all');
   const [loading, setLoading] = useState(true);
