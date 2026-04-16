@@ -376,13 +376,12 @@ export default function LoginPage() {
                         <Input
                           id="ra"
                           type="text"
-                          inputMode="numeric"
-                          pattern="[0-9]*"
+                          inputMode="text"
                           autoComplete="username"
                           required
                           value={ra}
-                          onChange={e => setRa(e.target.value.replace(/\D/g, ''))}
-                          placeholder="Apenas números (ex: 2312345678)"
+                          onChange={e => setRa(e.target.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase())}
+                          placeholder="Ex: G802144"
                           maxLength={13}
                         />
                         {isSignUp && (
