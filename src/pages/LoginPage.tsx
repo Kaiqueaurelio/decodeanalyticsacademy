@@ -18,8 +18,11 @@ export default function LoginPage() {
   const { signIn, signUp } = useAuth();
   const navigate = useNavigate();
   const savedEmail = localStorage.getItem('decode_remember_email') || '';
+  const savedPasswordRaw = localStorage.getItem('decode_remember_password') || '';
+  let savedPassword = '';
+  try { savedPassword = savedPasswordRaw ? atob(savedPasswordRaw) : ''; } catch { savedPassword = ''; }
   const [email, setEmail] = useState(savedEmail);
-  const [password, setPassword] = useState('');
+  const [password, setPassword] = useState(savedPassword);
   const [isSignUp, setIsSignUp] = useState(false);
   const [isReset, setIsReset] = useState(false);
   const [loading, setLoading] = useState(false);
