@@ -865,6 +865,7 @@ export default function AdminPage() {
     announcements: { title: 'Mural de Avisos', desc: 'Gerencie avisos para os alunos' },
     calendar: { title: 'Calendário Acadêmico', desc: 'Importe cronogramas e gerencie provas/trabalhos' },
     testimonials: { title: 'Depoimentos', desc: 'Aprove ou rejeite depoimentos dos alunos' },
+    ai: { title: 'Provedor de IA', desc: 'Escolha entre Lovable AI ou sua chave Google AI Studio' },
   };
 
   return (
@@ -2218,6 +2219,11 @@ export default function AdminPage() {
             {/* TESTIMONIALS */}
             {tab === 'testimonials' && (
               <TestimonialsAdmin />
+            )}
+
+            {/* AI PROVIDER */}
+            {tab === 'ai' && (
+              <AIProviderSettings />
             )}
             </div>
           </main>
