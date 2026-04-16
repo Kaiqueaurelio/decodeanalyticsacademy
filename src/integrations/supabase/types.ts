@@ -287,8 +287,11 @@ export type Database = {
           created_at: string
           explanation: string | null
           id: string
+          min_chars: number
           options: Json
           question: string
+          reference_answer: string | null
+          type: string
         }
         Insert: {
           apostila_id: string
@@ -296,8 +299,11 @@ export type Database = {
           created_at?: string
           explanation?: string | null
           id?: string
+          min_chars?: number
           options?: Json
           question: string
+          reference_answer?: string | null
+          type?: string
         }
         Update: {
           apostila_id?: string
@@ -305,8 +311,11 @@ export type Database = {
           created_at?: string
           explanation?: string | null
           id?: string
+          min_chars?: number
           options?: Json
           question?: string
+          reference_answer?: string | null
+          type?: string
         }
         Relationships: [
           {
@@ -473,6 +482,44 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      respostas_foto: {
+        Row: {
+          created_at: string
+          exercise_id: string | null
+          feedback_ia: string | null
+          id: string
+          imagem_url: string
+          nota: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          exercise_id?: string | null
+          feedback_ia?: string | null
+          id?: string
+          imagem_url: string
+          nota?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          exercise_id?: string | null
+          feedback_ia?: string | null
+          id?: string
+          imagem_url?: string
+          nota?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "respostas_foto_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       security_alerts: {
         Row: {
