@@ -13,7 +13,7 @@ import { Switch } from '@/components/ui/switch';
 import {
   Plus, Trash2, Edit, Megaphone, GraduationCap, Calendar, Briefcase, Sparkles, Eye, EyeOff
 } from 'lucide-react';
-import { Upload, Loader2, ImageIcon } from 'lucide-react';
+import { Upload, Loader2, Link2, Wand2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Announcement {
@@ -36,6 +36,15 @@ const CATEGORIES = [
   { value: 'eventos', label: 'Eventos', icon: Sparkles },
 ];
 
+function isValidUrl(str: string): boolean {
+  try {
+    const url = new URL(str.startsWith('http') ? str : `https://${str}`);
+    return url.hostname.includes('.');
+  } catch {
+    return false;
+  }
+}
+
 export function AnnouncementsAdmin() {
   const { user } = useAuth();
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
@@ -51,17 +60,76 @@ export function AnnouncementsAdmin() {
   const [linkUrl, setLinkUrl] = useState('');
   const [published, setPublished] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [autoFillUrl, setAutoFillUrl] = useState('');
+  const [autoFilling, setAutoFilling] = useState(false);
+
+  const handleAutoFill = async () => {
+    const url = autoFillUrl.trim();
+    if (!url) return;
+
+    if (!isValidUrl(url)) {
+      toast.error('Por favor, insira uma URL válida (ex: https://exemplo.com)');
+      return;
+    }
+
+    setAutoFilling(true);
+    try {
+      const { data: scrapeData, error: scrapeError } = await supabase.functions.invoke('firecrawl-scrape', {
+        body: { url, options: { formats: ['markdown'] } },
+      });
+
+      if (scrapeError || !scrapeData?.success) {
+        toast.error('Erro ao acessar o link. Verifique a URL.');
+        setAutoFilling(false);
+        return;
+      }
+
+      const markdown = scrapeData.data?.markdown || '';
+      const metadata = scrapeData.data?.metadata || {};
+
+      const { data: aiData, error: aiError } = await supabase.functions.invoke('extract-announcement', {
+        body: { markdown, metadata, url },
+      });
+
+      if (aiError || !aiData || aiData.error) {
+        // Fallback: use metadata directly
+        setTitle(metadata.title || '');
+        setContent(metadata.description || markdown.slice(0, 500));
+        setLinkUrl(url);
+        if (metadata.ogImage) setImageUrl(metadata.ogImage);
+        const urlLower = url.toLowerCase();
+        if (urlLower.includes('curso') || urlLower.includes('course') || urlLower.includes('udemy') || urlLower.includes('coursera')) {
+          setCategory('cursos');
+        } else if (urlLower.includes('emprego') || urlLower.includes('vaga') || urlLower.includes('job') || urlLower.includes('linkedin.com/jobs')) {
+          setCategory('empregos');
+        } else if (urlLower.includes('evento') || urlLower.includes('event')) {
+          setCategory('eventos');
+        }
+        toast.success('Campos preenchidos com dados básicos!');
+      } else {
+        if (aiData.title) setTitle(aiData.title);
+        if (aiData.content) setContent(aiData.content);
+        if (aiData.category && CATEGORIES.some(c => c.value === aiData.category)) setCategory(aiData.category);
+        if (aiData.image_url) setImageUrl(aiData.image_url);
+        setLinkUrl(url);
+        toast.success('Campos preenchidos automaticamente!');
+      }
+    } catch (err) {
+      console.error('Auto-fill error:', err);
+      toast.error('Erro ao preencher automaticamente');
+    } finally {
+      setAutoFilling(false);
+    }
+  };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const maxSize = 5 * 1024 * 1024; // 5MB
-    if (file.size > maxSize) {
+    if (file.size > 5 * 1024 * 1024) {
       toast.error('Imagem muito grande. Máximo: 5MB');
       return;
     }
-
     if (!file.type.startsWith('image/')) {
       toast.error('Apenas imagens são permitidas');
       return;
@@ -81,10 +149,7 @@ export function AnnouncementsAdmin() {
       return;
     }
 
-    const { data: urlData } = supabase.storage
-      .from('announcements')
-      .getPublicUrl(fileName);
-
+    const { data: urlData } = supabase.storage.from('announcements').getPublicUrl(fileName);
     setImageUrl(urlData.publicUrl);
     setUploading(false);
     toast.success('Imagem enviada!');
@@ -101,7 +166,7 @@ export function AnnouncementsAdmin() {
   const resetForm = () => {
     setTitle(''); setContent(''); setCategory('geral');
     setImageUrl(''); setLinkUrl(''); setPublished(true);
-    setEditing(null); setShowForm(false);
+    setAutoFillUrl(''); setEditing(null); setShowForm(false);
   };
 
   const openEdit = (a: Announcement) => {
@@ -233,11 +298,39 @@ export function AnnouncementsAdmin() {
 
       {/* Create/Edit Dialog */}
       <Dialog open={showForm} onOpenChange={v => { if (!v) resetForm(); }}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg max-h-[85vh] flex flex-col">
           <DialogHeader>
             <DialogTitle className="text-base">{editing ? 'Editar Aviso' : 'Novo Aviso'}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-4 overflow-y-auto flex-1 pr-1">
+            {/* Auto-fill from URL */}
+            <div className="p-3 rounded-lg border border-dashed border-primary/30 bg-primary/5">
+              <Label className="text-xs font-medium flex items-center gap-1.5 mb-2">
+                <Wand2 className="h-3.5 w-3.5 text-primary" />
+                Preencher automaticamente via link
+              </Label>
+              <div className="flex gap-2">
+                <Input
+                  value={autoFillUrl}
+                  onChange={e => setAutoFillUrl(e.target.value)}
+                  placeholder="Cole o link do curso, vaga, evento..."
+                  className="flex-1 text-xs"
+                  disabled={autoFilling}
+                />
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={handleAutoFill}
+                  disabled={autoFilling || !autoFillUrl.trim()}
+                  className="gap-1.5 shrink-0"
+                >
+                  {autoFilling ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Link2 className="h-3.5 w-3.5" />}
+                  {autoFilling ? 'Extraindo...' : 'Extrair'}
+                </Button>
+              </div>
+              <p className="text-[10px] text-muted-foreground mt-1.5">Cole a URL e clique em Extrair para preencher título, conteúdo e categoria automaticamente.</p>
+            </div>
+
             <div>
               <Label className="text-xs">Título</Label>
               <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="Título do aviso" className="mt-1" />
