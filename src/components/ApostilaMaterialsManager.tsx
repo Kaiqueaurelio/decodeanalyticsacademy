@@ -42,6 +42,7 @@ export function ApostilaMaterialsManager({ apostilaId, apostilaTitle }: Props) {
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(false);
   const [autoLinking, setAutoLinking] = useState(false);
+  const [manualOpen, setManualOpen] = useState(false);
 
   const load = async () => {
     setLoading(true);
