@@ -79,6 +79,18 @@ export function AIProviderSettings() {
         return;
       }
 
+      const ctype = resp.headers.get('Content-Type') || '';
+      if (ctype.includes('application/json')) {
+        const j = await resp.json().catch(() => null);
+        if (j?.error) {
+          toast.error(j.error);
+          setTestOutput(j.error);
+          setUsedProvider(resp.headers.get('X-AI-Provider') || 'erro');
+          setTesting(false);
+          return;
+        }
+      }
+
       setUsedProvider(resp.headers.get('X-AI-Provider') || 'desconhecido');
 
       const reader = resp.body!.getReader();

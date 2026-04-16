@@ -98,6 +98,17 @@ export function ApostilaChat({ apostilaId, apostilaTitle, variant = 'panel' }: P
         return;
       }
 
+      // Erro tratado pelo backend (200 + fallback:true) — mostra toast e sai sem quebrar
+      const ctype = resp.headers.get('Content-Type') || '';
+      if (ctype.includes('application/json')) {
+        const j = await resp.json().catch(() => null);
+        if (j?.fallback || j?.error) {
+          toast.error(j?.error || 'IA temporariamente indisponível');
+          setLoading(false);
+          return;
+        }
+      }
+
       if (!resp.body) {
         toast.error('Resposta vazia');
         setLoading(false);

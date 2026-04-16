@@ -196,24 +196,18 @@ ${apostilaContent}
     aiResp = await callLovable();
 
     if (!aiResp.ok) {
-      if (aiResp.status === 429) {
-        return new Response(JSON.stringify({ error: "Limite de requisições atingido. Aguarde um instante." }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (aiResp.status === 402) {
-        return new Response(
-          JSON.stringify({ error: "Créditos de IA esgotados. Avise o administrador." }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-        );
-      }
-      const t = await aiResp.text();
-      console.error("AI gateway error", aiResp.status, t);
-      return new Response(JSON.stringify({ error: "Erro no provedor de IA" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      const status = aiResp.status;
+      const errText = await aiResp.text().catch(() => "");
+      console.error("AI gateway error", status, errText);
+      let msg = "Erro no provedor de IA. Tente novamente em instantes.";
+      if (status === 429) msg = "Muitas perguntas em sequência. Aguarde um instante.";
+      else if (status === 402) msg = "Os créditos de IA da plataforma se esgotaram. O administrador foi avisado — tente novamente em alguns minutos ou ative sua chave Google AI Studio em Admin → IA.";
+      else if (status === 503) msg = "O serviço de IA está temporariamente sobrecarregado. Tente novamente em alguns segundos.";
+      // Devolve 200 com fallback flag para o cliente exibir mensagem amigável sem quebrar
+      return new Response(
+        JSON.stringify({ error: msg, fallback: true, upstream_status: status }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
     }
 
     return new Response(aiResp.body, {
