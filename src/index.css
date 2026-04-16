@@ -634,10 +634,4 @@ html {
   overflow: hidden;
 }
 
-/* ─────────────────────────────────────────────
-   LANDING PAGE — LIGHT MODE OVERRIDES
-   Toggle local na landing (sol/lua), independente do tema do app.
-   Inverte fundos #050508/#0a0a* para tons claros, ajusta texto,
-   mantendo destaques ciano (#00f0ff) e roxo (#a855f7).
-   ───────────────────────────────────────────── */
-/* Landing light mode removed — landing is dark-only by design */
+/* Landing page is dark-only by design (light mode toggle removed). */
