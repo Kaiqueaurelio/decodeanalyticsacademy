@@ -32,6 +32,7 @@ import { ImageUploadButton } from '@/components/ImageUploadButton';
 import { AnnouncementsAdmin } from '@/components/AnnouncementsAdmin';
 import { ApostilaMaterialsManager } from '@/components/ApostilaMaterialsManager';
 import { autoLinkAll, autoLinkApostila } from '@/lib/auto-link-materials';
+import { MergeApostilasDialog } from '@/components/MergeApostilasDialog';
 
 type Apostila = Tables<'apostilas'>;
 type Exercise = Tables<'exercises'>;
