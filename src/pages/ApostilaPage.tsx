@@ -10,11 +10,13 @@ import { AnnotationsPanel } from '@/components/AnnotationsPanel';
 import { CommentsWidget } from '@/components/CommentsWidget';
 
 import { ApostilaMaterials } from '@/components/ApostilaMaterials';
+import { ApostilaChat } from '@/components/ApostilaChat';
 import { UnitTilesGrid, buildUnitResources } from '@/components/UnitTilesGrid';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
   ArrowLeft, BookOpen, PenLine, Eye, List, X,
-  ChevronUp, StickyNote, Layers
+  ChevronUp, StickyNote, Layers, Sparkles, MessageSquare
 } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 
@@ -79,6 +81,7 @@ export default function ApostilaPage() {
   const [loading, setLoading] = useState(true);
   const contentRef = useRef<HTMLDivElement>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [chatOpen, setChatOpen] = useState(false);
 
   useEffect(() => {
     if (!id) return;
