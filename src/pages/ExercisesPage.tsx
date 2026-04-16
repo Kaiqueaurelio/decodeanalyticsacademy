@@ -183,6 +183,16 @@ export default function ExercisesPage() {
   const pct = mcAnswered > 0 ? Math.round((correctCount / mcAnswered) * 100) : 0;
   const currentExercise = exercises[currentIndex];
 
+  const filteredReviewExercises = useMemo(() => {
+    return exercises.filter(ex => {
+      const ans = answers[ex.id];
+      if (reviewFilter === 'correct') return ans?.correct === true;
+      if (reviewFilter === 'incorrect') return ans && !ans.correct;
+      if (reviewFilter === 'unanswered') return !ans;
+      return true;
+    });
+  }, [exercises, answers, reviewFilter]);
+
   useEffect(() => {
     if (allAnswered && !showResults) {
       setShowResults(true);
