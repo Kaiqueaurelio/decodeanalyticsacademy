@@ -2,6 +2,24 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { supabase } from '@/integrations/supabase/client';
 import type { User, Session } from '@supabase/supabase-js';
 
+const SESSION_CACHE_KEY = 'decode_session_cache';
+
+function getCachedSession(): { user: User; isAdmin: boolean } | null {
+  try {
+    const raw = localStorage.getItem(SESSION_CACHE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch { return null; }
+}
+
+function setCachedSession(user: User | null, isAdmin: boolean) {
+  if (user) {
+    localStorage.setItem(SESSION_CACHE_KEY, JSON.stringify({ user, isAdmin }));
+  } else {
+    localStorage.removeItem(SESSION_CACHE_KEY);
+  }
+}
+
 type AuthCtx = {
   user: User | null;
   session: Session | null;
@@ -17,12 +35,13 @@ type AuthCtx = {
 const AuthContext = createContext<AuthCtx | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const cached = getCachedSession();
+  const [user, setUser] = useState<User | null>(cached?.user ?? null);
   const [session, setSession] = useState<Session | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(cached?.isAdmin ?? false);
   const [isBlocked, setIsBlocked] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [roleChecked, setRoleChecked] = useState(false);
+  const [loading, setLoading] = useState(!cached);
+  const [roleChecked, setRoleChecked] = useState(!!cached);
 
   const checkRoles = async (userId: string) => {
     setRoleChecked(false);
@@ -38,6 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsBlocked(false);
     }
     setRoleChecked(true);
+    setCachedSession(null, false); // will be set properly after
   };
 
   useEffect(() => {
