@@ -142,7 +142,9 @@ input, textarea, [contenteditable="true"] {
     scroll-snap-align: start;
   }
   .font-display {
-    font-family: 'Instrument Serif', serif;
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.02em;
   }
   .font-mono-label {
     font-family: 'DM Mono', monospace;
