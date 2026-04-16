@@ -107,7 +107,8 @@ export default function LoginPage() {
       if (rememberMe) localStorage.setItem('decode_remember_email', email);
       else localStorage.removeItem('decode_remember_email');
       toast.success('Login realizado!');
-      navigate('/dashboard');
+      const lastRoute = localStorage.getItem('decode_last_route');
+      navigate(lastRoute && lastRoute !== '/' && lastRoute !== '/login' ? lastRoute : '/dashboard');
     }
   };
 

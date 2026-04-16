@@ -2,6 +2,24 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { supabase } from '@/integrations/supabase/client';
 import type { User, Session } from '@supabase/supabase-js';
 
+const SESSION_CACHE_KEY = 'decode_session_cache';
+
+function getCachedSession(): { user: User; isAdmin: boolean } | null {
+  try {
+    const raw = localStorage.getItem(SESSION_CACHE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch { return null; }
+}
+
+function setCachedSession(user: User | null, isAdmin: boolean) {
+  if (user) {
+    localStorage.setItem(SESSION_CACHE_KEY, JSON.stringify({ user, isAdmin }));
+  } else {
+    localStorage.removeItem(SESSION_CACHE_KEY);
+  }
+}
+
 type AuthCtx = {
   user: User | null;
   session: Session | null;
@@ -17,12 +35,13 @@ type AuthCtx = {
 const AuthContext = createContext<AuthCtx | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const cached = getCachedSession();
+  const [user, setUser] = useState<User | null>(cached?.user ?? null);
   const [session, setSession] = useState<Session | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(cached?.isAdmin ?? false);
   const [isBlocked, setIsBlocked] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [roleChecked, setRoleChecked] = useState(false);
+  const [loading, setLoading] = useState(!cached);
+  const [roleChecked, setRoleChecked] = useState(!!cached);
 
   const checkRoles = async (userId: string) => {
     setRoleChecked(false);
@@ -31,39 +50,54 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         supabase.from('user_roles').select('role').eq('user_id', userId).eq('role', 'admin').maybeSingle(),
         supabase.from('profiles').select('is_blocked').eq('user_id', userId).maybeSingle(),
       ]);
-      setIsAdmin(!!adminRes.data);
+      const adminVal = !!adminRes.data;
+      setIsAdmin(adminVal);
       setIsBlocked(!!(profileRes.data as any)?.is_blocked);
+      setRoleChecked(true);
+      // Cache after role check completes
+      return adminVal;
     } catch {
       setIsAdmin(false);
       setIsBlocked(false);
+      setRoleChecked(true);
+      return false;
     }
-    setRoleChecked(true);
   };
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        setTimeout(() => checkRoles(session.user.id), 0);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, sess) => {
+      setSession(sess);
+      setUser(sess?.user ?? null);
+      if (sess?.user) {
+        setTimeout(() => {
+          checkRoles(sess.user.id).then((adminVal) => {
+            setCachedSession(sess.user, adminVal);
+          });
+        }, 0);
       } else {
         setIsAdmin(false);
         setIsBlocked(false);
         setRoleChecked(true);
+        setCachedSession(null, false);
       }
       setLoading(false);
     });
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        checkRoles(session.user.id).then(() => setLoading(false));
+    supabase.auth.getSession().then(({ data: { session: sess } }) => {
+      setSession(sess);
+      setUser(sess?.user ?? null);
+      if (sess?.user) {
+        checkRoles(sess.user.id).then((adminVal) => {
+          setCachedSession(sess.user, adminVal);
+          setLoading(false);
+        });
       } else {
         setRoleChecked(true);
+        setCachedSession(null, false);
         setLoading(false);
       }
     }).catch(() => {
+      setCachedSession(null, false);
       setLoading(false);
     });
 
@@ -81,6 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
+    setCachedSession(null, false);
     await supabase.auth.signOut();
   };
 

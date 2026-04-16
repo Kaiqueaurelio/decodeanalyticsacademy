@@ -40,10 +40,12 @@ function RouteRestorer() {
   React.useEffect(() => {
     if (loading || hasRestored.current) return;
     hasRestored.current = true;
-    if (user && location.pathname === '/') {
+    if (user && (location.pathname === '/' || location.pathname === '/login')) {
       const last = getLastRoute();
-      if (last && last !== '/') {
+      if (last && last !== '/' && last !== '/login') {
         navigate(last, { replace: true });
+      } else {
+        navigate('/dashboard', { replace: true });
       }
     }
   }, [user, loading]);
