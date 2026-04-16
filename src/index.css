@@ -641,8 +641,17 @@ html {
    mantendo destaques ciano (#00f0ff) e roxo (#a855f7).
    ───────────────────────────────────────────── */
 .landing-light {
-  background: #f5f7fa !important;
-  color: #1a1a2e !important;
+  background: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+/* Força cor escura em todos os textos descendentes (exceto os com cor explícita ciano/roxo/branco em botões) */
+.landing-light p,
+.landing-light span,
+.landing-light li,
+.landing-light a,
+.landing-light div {
+  color: #0f172a;
 }
 
 /* Backgrounds escuros → claros */
