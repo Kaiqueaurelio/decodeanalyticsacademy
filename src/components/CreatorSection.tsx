@@ -1,4 +1,5 @@
 import { GraduationCap, Code2, Heart, Users } from 'lucide-react';
+import kaiqueAvatar from '@/assets/kaique-creator.jpeg';
 
 /**
  * "De aluno para aluno" — Card destacando que a plataforma foi feita
@@ -35,14 +36,18 @@ export function CreatorSection() {
             {/* Avatar grande com inicial */}
             <div className="flex flex-col items-center md:items-start gap-3">
               <div
-                className="h-24 w-24 md:h-28 md:w-28 rounded-full flex items-center justify-center font-display text-3xl md:text-4xl font-bold"
+                className="h-24 w-24 md:h-28 md:w-28 rounded-full overflow-hidden p-[2px]"
                 style={{
                   background: 'linear-gradient(135deg, #00f0ff, #a855f7)',
-                  color: '#050508',
                   boxShadow: '0 0 40px rgba(0,240,255,0.4)',
                 }}
               >
-                KA
+                <img
+                  src={kaiqueAvatar}
+                  alt="Kaique Aurélio - Criador da Decode Analytics"
+                  className="h-full w-full rounded-full object-cover"
+                  style={{ background: '#050508' }}
+                />
               </div>
               <div className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-mono uppercase tracking-wider"
                 style={{ background: 'rgba(0,240,255,0.1)', color: '#00f0ff', border: '1px solid rgba(0,240,255,0.3)' }}>
