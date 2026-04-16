@@ -28,6 +28,7 @@ import { ApostilaProgressWidget } from '@/components/ApostilaProgressWidget';
 import { MobileCarousel } from '@/components/MobileCarousel';
 import { MaterialWidget } from '@/components/MaterialWidget';
 import { AnnouncementsBoard } from '@/components/AnnouncementsBoard';
+import { TodayExamBanner } from '@/components/TodayExamBanner';
 import { QuickAccessHub } from '@/components/QuickAccessHub';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { getSubjectColor } from '@/lib/subject-colors';
@@ -160,6 +161,9 @@ export default function DashboardPage() {
       {showOnboarding && <OnboardingTour onComplete={handleOnboardingComplete} />}
 
       <main className="container py-6 sm:py-8 px-4 sm:px-6 relative z-10 max-w-6xl">
+        {/* 🚨 Aviso de prova HOJE */}
+        <TodayExamBanner />
+
         {/* Header */}
         <div className="flex items-center justify-between mb-6 animate-content-show">
           <div>
