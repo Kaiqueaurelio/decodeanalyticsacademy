@@ -225,7 +225,7 @@ export default function ApostilaPage() {
               >
                 <Eye className="h-3.5 w-3.5" /> {focusMode ? 'Foco ativo' : 'Modo foco'}
               </Button>
-              <ApostilaExport apostila={apostila} />
+              
             </div>
           </div>
         </div>
