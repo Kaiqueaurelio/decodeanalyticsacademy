@@ -116,6 +116,12 @@ export function ApostilaMaterialsManager({ apostilaId, apostilaTitle }: Props) {
             </DialogTitle>
           </DialogHeader>
 
+          {/* Auto-link button */}
+          <Button size="sm" variant="outline" className="w-full text-xs gap-1.5 mb-2" onClick={handleAutoLink} disabled={autoLinking}>
+            {autoLinking ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wand2 className="h-3 w-3" />}
+            {autoLinking ? 'Vinculando...' : 'Auto-vincular por disciplina'}
+          </Button>
+
           {/* Linked materials */}
           <div className="space-y-2 mb-4">
             <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Vinculados ({linked.length})</p>
