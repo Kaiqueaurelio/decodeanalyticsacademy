@@ -7,6 +7,7 @@ import { AppHeader } from '@/components/AppHeader';
 import { EvolutionChart } from '@/components/EvolutionChart';
 import { KawaiiSlider } from '@/components/KawaiiSlider';
 import { BiometricToggle } from '@/components/BiometricToggle';
+import { TestimonialDialog } from '@/components/TestimonialDialog';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
