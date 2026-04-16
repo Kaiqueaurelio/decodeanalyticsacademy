@@ -9,6 +9,7 @@ import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/hooks/useTheme";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { BiometricLockGate } from "@/components/BiometricLockGate";
+import { BiometricOnboarding } from "@/components/BiometricOnboarding";
 import { DynamicWatermark } from "@/components/DynamicWatermark";
 import { ScreenshotGuard } from "@/components/ScreenshotGuard";
 import { useRouteTracker, getLastRoute } from "@/hooks/useRouteTracker";
@@ -240,6 +241,7 @@ const App = () => (
           <AuthProvider>
             <BiometricLockGate>
               <AnimatedRoutes />
+              <BiometricOnboarding />
             </BiometricLockGate>
           </AuthProvider>
         </BrowserRouter>
