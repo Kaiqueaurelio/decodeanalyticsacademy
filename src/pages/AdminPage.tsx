@@ -1348,11 +1348,15 @@ export default function AdminPage() {
                                   const { data, error } = await supabase.functions.invoke('generate-exercises', {
                                     body: { content: a.content, title: a.title, mcCount: aiMcCount, essayCount: aiEssayCount },
                                   });
-                                  if (error) throw error;
-                                  if (data.error) throw new Error(data.error);
-                                  setAiExercises(data.exercises || []);
-                                  if (data.exercises?.length > 0) toast.success(`${data.exercises.length} exercícios gerados!`);
-                                  else toast.error('Nenhum exercício foi gerado.');
+                                  if (error) {
+                                    let msg = error.message;
+                                    try { const ctx = await (error as any).context?.json?.(); if (ctx?.error) msg = ctx.error; } catch {}
+                                    throw new Error(msg);
+                                  }
+                                  if (data?.error) throw new Error(data.error);
+                                  if (!data?.exercises?.length) throw new Error('Nenhum exercício foi gerado.');
+                                  setAiExercises(data.exercises);
+                                  toast.success(`${data.exercises.length} exercícios gerados!`);
                                 } catch (err: any) { toast.error('Erro: ' + (err.message || 'Tente novamente')); }
                                 setAiGenerating(false);
                               }} disabled={aiGenerating} className="w-full gradient-primary text-primary-foreground">
@@ -1542,11 +1546,15 @@ export default function AdminPage() {
                                       const { data, error } = await supabase.functions.invoke('generate-exercises', {
                                         body: { content: editContent, title: editTitle, mcCount: editAiMcCount, essayCount: editAiEssayCount },
                                       });
-                                      if (error) throw error;
-                                      if (data.error) throw new Error(data.error);
-                                      setEditAiExercises(data.exercises || []);
-                                      if (data.exercises?.length > 0) toast.success(`${data.exercises.length} exercícios gerados!`);
-                                      else toast.error('Nenhum exercício gerado.');
+                                      if (error) {
+                                        let msg = error.message;
+                                        try { const ctx = await (error as any).context?.json?.(); if (ctx?.error) msg = ctx.error; } catch {}
+                                        throw new Error(msg);
+                                      }
+                                      if (data?.error) throw new Error(data.error);
+                                      if (!data?.exercises?.length) throw new Error('Nenhum exercício gerado.');
+                                      setEditAiExercises(data.exercises);
+                                      toast.success(`${data.exercises.length} exercícios gerados!`);
                                     } catch (err: any) { toast.error('Erro: ' + (err.message || 'Tente novamente')); }
                                     setAiGenerating(false);
                                   }} disabled={aiGenerating} className="w-full gradient-primary text-primary-foreground">
@@ -1711,13 +1719,17 @@ export default function AdminPage() {
                                   setAiGenerating(true);
                                   try {
                                     const { data, error } = await supabase.functions.invoke('generate-exercises', {
-                                      body: { content: apt.content, title: apt.title, count: 8 },
+                                      body: { content: apt.content, title: apt.title, mcCount: 8, essayCount: 2 },
                                     });
-                                    if (error) throw error;
-                                    if (data.error) throw new Error(data.error);
-                                    setAiExercises(data.exercises || []);
-                                    if (data.exercises?.length > 0) toast.success(`${data.exercises.length} exercícios gerados!`);
-                                    else toast.error('Nenhum exercício gerado.');
+                                    if (error) {
+                                      let msg = error.message;
+                                      try { const ctx = await (error as any).context?.json?.(); if (ctx?.error) msg = ctx.error; } catch {}
+                                      throw new Error(msg);
+                                    }
+                                    if (data?.error) throw new Error(data.error);
+                                    if (!data?.exercises?.length) throw new Error('Nenhum exercício gerado.');
+                                    setAiExercises(data.exercises);
+                                    toast.success(`${data.exercises.length} exercícios gerados!`);
                                   } catch (err: any) { toast.error('Erro: ' + (err.message || 'Tente novamente')); }
                                   setAiGenerating(false);
                                 }} disabled={aiGenerating} className="w-full gradient-primary text-primary-foreground">
