@@ -31,7 +31,7 @@ import { ActivityChart } from '@/components/ActivityChart';
 import { ImageUploadButton } from '@/components/ImageUploadButton';
 import { AnnouncementsAdmin } from '@/components/AnnouncementsAdmin';
 import { ApostilaMaterialsManager } from '@/components/ApostilaMaterialsManager';
-import { autoLinkAll } from '@/lib/auto-link-materials';
+import { autoLinkAll, autoLinkApostila } from '@/lib/auto-link-materials';
 
 type Apostila = Tables<'apostilas'>;
 type Exercise = Tables<'exercises'>;
@@ -1467,6 +1467,19 @@ export default function AdminPage() {
                         <Textarea value={editContent} onChange={e => setEditContent(e.target.value)} rows={6} />
                       </div>
                       <Button className="w-full gradient-primary text-primary-foreground" onClick={handleEditSave}>Salvar Apostila</Button>
+                      {editingApostila && (
+                        <Button
+                          variant="outline"
+                          className="w-full gap-1.5 text-xs"
+                          onClick={async () => {
+                            const r = await autoLinkApostila(editingApostila.id);
+                            if (r.linked > 0) toast.success(`${r.linked} material(is) vinculado(s) automaticamente!`);
+                            else toast.info('Nenhum material novo encontrado para vincular.');
+                          }}
+                        >
+                          <Wand2 className="h-3.5 w-3.5" /> Auto-vincular materiais
+                        </Button>
+                      )}
                     </div>
 
                     {editingApostila && (
