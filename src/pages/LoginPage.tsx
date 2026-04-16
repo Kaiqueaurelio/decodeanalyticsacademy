@@ -21,10 +21,18 @@ export default function LoginPage() {
   const savedPasswordRaw = localStorage.getItem('decode_remember_password') || '';
   let savedPassword = '';
   try { savedPassword = savedPasswordRaw ? atob(savedPasswordRaw) : ''; } catch { savedPassword = ''; }
+  const savedRa = localStorage.getItem('decode_remember_ra') || '';
+  const savedAuthMethod = (localStorage.getItem('decode_auth_method') as 'email' | 'ra') || 'email';
   const [email, setEmail] = useState(savedEmail);
   const [password, setPassword] = useState(savedPassword);
+  const [ra, setRa] = useState(savedRa);
+  const [authMethod, setAuthMethod] = useState<'email' | 'ra'>(savedAuthMethod);
   const [isSignUp, setIsSignUp] = useState(false);
   const [isReset, setIsReset] = useState(false);
+
+  const RA_DOMAIN = 'ra.unip.local';
+  const buildRaEmail = (raValue: string) => `${raValue.trim()}@${RA_DOMAIN}`;
+  const isValidRa = (raValue: string) => /^\d{8,13}$/.test(raValue.trim());
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loginAttempts, setLoginAttempts] = useState(0);
