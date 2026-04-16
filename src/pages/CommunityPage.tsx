@@ -14,6 +14,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { MentionTextarea, MentionContent } from '@/components/MentionTextarea';
+import { notifyMentions } from '@/lib/mentions';
 
 interface Channel {
   id: string;
