@@ -56,7 +56,9 @@ export default function ExercisesPage() {
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('right');
   const [animating, setAnimating] = useState(false);
 
-  // Confetti effect
+  // Review mode
+  const [reviewMode, setReviewMode] = useState(false);
+  const [reviewFilter, setReviewFilter] = useState<'all' | 'correct' | 'incorrect' | 'unanswered'>('all');
   const [showConfetti, setShowConfetti] = useState(false);
 
   useEffect(() => {
