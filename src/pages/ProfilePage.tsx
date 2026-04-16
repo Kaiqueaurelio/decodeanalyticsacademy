@@ -162,9 +162,12 @@ export default function ProfilePage() {
                 <Label className="text-xs text-muted-foreground">Email</Label>
                 <Input value={user?.email || ''} disabled className="mt-1 opacity-60" />
               </div>
-              <Button onClick={handleSave} disabled={saving} size="sm" className="gradient-primary text-primary-foreground">
-                <Save className="h-3.5 w-3.5 mr-1.5" /> {saving ? 'Salvando...' : 'Salvar'}
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button onClick={handleSave} disabled={saving} size="sm" className="gradient-primary text-primary-foreground">
+                  <Save className="h-3.5 w-3.5 mr-1.5" /> {saving ? 'Salvando...' : 'Salvar'}
+                </Button>
+                <TestimonialDialog />
+              </div>
             </div>
           </div>
         </Card>
