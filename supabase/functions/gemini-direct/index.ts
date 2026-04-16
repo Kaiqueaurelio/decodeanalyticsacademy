@@ -158,24 +158,17 @@ Deno.serve(async (req) => {
 
     const lResp = await callLovableStream(LOVABLE_API_KEY, lovableModel, finalMessages);
     if (!lResp.ok) {
-      if (lResp.status === 429) {
-        return new Response(JSON.stringify({ error: "Limite de requisições atingido." }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (lResp.status === 402) {
-        return new Response(JSON.stringify({ error: "Créditos de IA esgotados." }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      const t = await lResp.text();
-      console.error("Lovable AI error", lResp.status, t);
-      return new Response(JSON.stringify({ error: "Erro no provedor de IA" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      const status = lResp.status;
+      const errText = await lResp.text().catch(() => "");
+      console.error("Lovable AI error", status, errText);
+      let msg = "Erro no provedor de IA. Tente novamente em instantes.";
+      if (status === 429) msg = "Muitas requisições. Aguarde um instante.";
+      else if (status === 402) msg = "Créditos de IA da plataforma esgotados. Tente novamente mais tarde ou ative sua chave Google AI Studio.";
+      else if (status === 503) msg = "Serviço de IA temporariamente sobrecarregado. Tente em segundos.";
+      return new Response(
+        JSON.stringify({ error: msg, fallback: true, upstream_status: status }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
     }
 
     return new Response(lResp.body, {
