@@ -35,6 +35,7 @@ import { ApostilaMaterialsManager } from '@/components/ApostilaMaterialsManager'
 import { autoLinkAll, autoLinkApostila } from '@/lib/auto-link-materials';
 import { MergeApostilasDialog } from '@/components/MergeApostilasDialog';
 import { TestimonialsAdmin } from '@/components/TestimonialsAdmin';
+import { AIProviderSettings } from '@/components/AIProviderSettings';
 
 type Apostila = Tables<'apostilas'>;
 type Exercise = Tables<'exercises'>;
@@ -74,7 +75,7 @@ function CategorySelect({ value, onValueChange, placeholder }: { value: string; 
   );
 }
 
-type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements' | 'calendar' | 'testimonials';
+type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements' | 'calendar' | 'testimonials' | 'ai';
 
 const ACCEPT_MAP: Record<string, string> = {
   pdf: '.pdf', image: 'image/*', gif: '.gif,image/gif',
@@ -154,6 +155,7 @@ function AdminSidebar({ tab, setTab, stats, sidebarOpen, setSidebarOpen }: {
     { id: 'announcements' as Tab, label: 'Avisos', icon: Megaphone, count: undefined },
     { id: 'calendar' as Tab, label: 'Calendário', icon: CalIcon, count: undefined },
     { id: 'testimonials' as Tab, label: 'Depoimentos', icon: MessageSquareQuote, count: undefined },
+    { id: 'ai' as Tab, label: 'IA', icon: Sparkles, count: undefined },
   ];
 
   return (
@@ -863,6 +865,7 @@ export default function AdminPage() {
     announcements: { title: 'Mural de Avisos', desc: 'Gerencie avisos para os alunos' },
     calendar: { title: 'Calendário Acadêmico', desc: 'Importe cronogramas e gerencie provas/trabalhos' },
     testimonials: { title: 'Depoimentos', desc: 'Aprove ou rejeite depoimentos dos alunos' },
+    ai: { title: 'Provedor de IA', desc: 'Escolha entre Lovable AI ou sua chave Google AI Studio' },
   };
 
   return (
@@ -918,6 +921,7 @@ export default function AdminPage() {
                 { id: 'announcements', label: 'Avisos', icon: <Megaphone className="h-3.5 w-3.5" /> },
                 { id: 'calendar', label: 'Calendário', icon: <CalIcon className="h-3.5 w-3.5" /> },
                 { id: 'testimonials', label: 'Depoimentos', icon: <MessageSquareQuote className="h-3.5 w-3.5" /> },
+                { id: 'ai', label: 'IA', icon: <Sparkles className="h-3.5 w-3.5" /> },
               ]}
               activeTab={tab}
               onTabChange={(id) => setTab(id as Tab)}
@@ -2215,6 +2219,11 @@ export default function AdminPage() {
             {/* TESTIMONIALS */}
             {tab === 'testimonials' && (
               <TestimonialsAdmin />
+            )}
+
+            {/* AI PROVIDER */}
+            {tab === 'ai' && (
+              <AIProviderSettings />
             )}
             </div>
           </main>

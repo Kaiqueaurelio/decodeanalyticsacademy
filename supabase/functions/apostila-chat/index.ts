@@ -19,9 +19,10 @@ Deno.serve(async (req) => {
 
   try {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const GOOGLE_AI_API_KEY = Deno.env.get("GOOGLE_AI_API_KEY");
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
+    if (!LOVABLE_API_KEY && !GOOGLE_AI_API_KEY) throw new Error("Nenhum provedor de IA configurado");
 
     // Auth check
     const authHeader = req.headers.get("Authorization");
@@ -69,6 +70,14 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Lê preferência global de provedor
+    const { data: settingRow } = await supabase
+      .from("app_settings")
+      .select("value")
+      .eq("key", "ai_provider")
+      .maybeSingle();
+    const preferGoogle = !!(settingRow?.value as any)?.preferGoogle && !!GOOGLE_AI_API_KEY;
+
     // Trunca conteúdo para caber no contexto (~120k chars é seguro)
     const apostilaContent = (apostila.content || "").slice(0, 120000);
 
@@ -87,18 +96,104 @@ REGRAS RIGOROSAS:
 ${apostilaContent}
 ==== FIM DO CONTEÚDO ====`;
 
-    const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [{ role: "system", content: systemPrompt }, ...messages],
-        stream: true,
-      }),
-    });
+    // Helpers ===========================================================
+    const callGoogle = async () => {
+      const contents = messages.map((m) => ({
+        role: m.role === "assistant" ? "model" : "user",
+        parts: [{ text: m.content }],
+      }));
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse&key=${encodeURIComponent(GOOGLE_AI_API_KEY!)}`;
+      return await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents,
+          systemInstruction: { parts: [{ text: systemPrompt }] },
+          generationConfig: { temperature: 0.7 },
+        }),
+      });
+    };
+
+    const callLovable = async () => {
+      return await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash",
+          messages: [{ role: "system", content: systemPrompt }, ...messages],
+          stream: true,
+        }),
+      });
+    };
+
+    // Converte SSE Gemini → SSE OpenAI delta
+    const transformGoogle = (input: ReadableStream<Uint8Array>) => {
+      const reader = input.getReader();
+      const decoder = new TextDecoder();
+      const encoder = new TextEncoder();
+      let buf = "";
+      return new ReadableStream({
+        async pull(controller) {
+          const { done, value } = await reader.read();
+          if (done) {
+            controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+            controller.close();
+            return;
+          }
+          buf += decoder.decode(value, { stream: true });
+          let nl: number;
+          while ((nl = buf.indexOf("\n")) !== -1) {
+            let line = buf.slice(0, nl);
+            buf = buf.slice(nl + 1);
+            if (line.endsWith("\r")) line = line.slice(0, -1);
+            if (!line.startsWith("data: ")) continue;
+            const json = line.slice(6).trim();
+            if (!json) continue;
+            try {
+              const parsed = JSON.parse(json);
+              const text = parsed?.candidates?.[0]?.content?.parts?.map((p: any) => p.text).join("") ?? "";
+              if (text) {
+                const chunk = { choices: [{ delta: { content: text } }] };
+                controller.enqueue(encoder.encode(`data: ${JSON.stringify(chunk)}\n\n`));
+              }
+            } catch {
+              buf = line + "\n" + buf;
+              break;
+            }
+          }
+        },
+      });
+    };
+
+    // Tenta Google primeiro se preferido
+    let aiResp: Response | null = null;
+    let provider = "lovable";
+    if (preferGoogle) {
+      try {
+        const g = await callGoogle();
+        if (g.ok && g.body) {
+          provider = "google-direct";
+          return new Response(transformGoogle(g.body), {
+            headers: { ...corsHeaders, "Content-Type": "text/event-stream", "X-AI-Provider": provider },
+          });
+        }
+        console.warn("Google falhou, fallback Lovable:", g.status, (await g.text()).slice(0, 300));
+      } catch (e) {
+        console.warn("Google exception, fallback Lovable:", e);
+      }
+    }
+
+    if (!LOVABLE_API_KEY) {
+      return new Response(JSON.stringify({ error: "Provedor indisponível" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    aiResp = await callLovable();
 
     if (!aiResp.ok) {
       if (aiResp.status === 429) {
@@ -122,7 +217,7 @@ ${apostilaContent}
     }
 
     return new Response(aiResp.body, {
-      headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+      headers: { ...corsHeaders, "Content-Type": "text/event-stream", "X-AI-Provider": provider },
     });
   } catch (e) {
     console.error("apostila-chat error", e);
