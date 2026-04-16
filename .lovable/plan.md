@@ -1,33 +1,44 @@
 
 
-## Plano: Integrar materiais vinculados como conteúdo nativo da apostila
+## Plano: Auto-vincular materiais às apostilas por disciplina
 
-### Objetivo
-Ao invés de exibir os materiais vinculados numa seção separada "Material de Apoio" com cards, eles serão renderizados **inline no conteúdo da apostila**, como se fossem seções naturais dela — PDFs embutidos, vídeos, imagens, áudios etc., tudo fluindo junto com o texto.
+### Situação atual
+- Apostilas têm um campo `category` (texto, ex: "Arquitetura de Computadores")
+- Materiais têm um campo `category_id` (UUID, referência à tabela `categories`)
+- A maioria dos materiais **não tem** `category_id` preenchido (null)
+- A vinculação manual é feita pela tabela `apostila_materials`
 
-### O que muda
+### Estratégia de auto-vinculação
 
-**Arquivo: `src/components/ApostilaMaterials.tsx`**
-- Remover a apresentação em grid de cards com ícones e badges de tipo
-- Renderizar cada material diretamente no fluxo de leitura:
-  - **PDF/Office** → iframe embutido com visualizador, título como heading
-  - **Imagem/GIF** → imagem renderizada inline com legenda
-  - **Vídeo** → player embutido ou link para o video player interno
-  - **Áudio** → player inline (já existe o `InlineAudioPlayer`)
-  - **Link** → card discreto com botão "Acessar"
-- Remover o header "Material de Apoio" com ícone de clipe
-- Cada material aparece como uma seção com título (h3) e conteúdo renderizado diretamente
+Duas abordagens combinadas:
 
-**Arquivo: `src/pages/ApostilaPage.tsx`**
-- Nenhuma mudança necessária — o componente `ApostilaMaterials` já está posicionado após as seções de conteúdo
+**1. Por categoria (match exato)**
+Quando um material tem `category_id` preenchido, vincular automaticamente a todas as apostilas da mesma categoria.
 
-### Resultado visual
-Os materiais vinculados aparecerão como continuação natural do conteúdo da apostila, com títulos no mesmo estilo das seções existentes e o conteúdo embutido diretamente na página — sem cards, sem badges de tipo, sem separação visual como "seção de materiais".
+**2. Por título (match fuzzy)**
+Quando um material **não** tem `category_id`, usar correspondência de palavras-chave no título do material vs título/categoria da apostila para sugerir vínculos.
 
-### Detalhes técnicos
-- O componente `ApostilaMaterials` será refatorado para renderizar cada material inline
-- PDFs e Office usarão iframe (Google Docs viewer para Office)
-- Vídeos terão tag `<video>` nativa ou navegação para `/video/:id`
-- O botão de tela cheia será mantido para PDFs e Office
-- Signed URLs continuam sendo geradas normalmente
+### Implementação
+
+**Arquivo: `src/components/ApostilaMaterialsManager.tsx`**
+- Adicionar botão "Auto-vincular" no dialog
+- Ao clicar, executar lógica que:
+  1. Busca a categoria da apostila atual
+  2. Encontra materiais com a mesma `category_id` (ou com título contendo palavras da categoria)
+  3. Vincula automaticamente os que ainda não estão vinculados
+  4. Mostra toast com quantidade vinculada
+
+**Arquivo: Novo botão no Admin (aba Apostilas)**
+- Adicionar botão "Auto-vincular Todos" que percorre todas as apostilas e executa o mesmo processo em lote
+- Mostra progresso e resumo final
+
+### Regras de matching
+- Match por `category_id`: material.category_id → categories.name === apostila.category
+- Match por título: palavras do título do material (>4 chars) presentes no título ou categoria da apostila
+- Nunca duplicar vínculos existentes (checar `apostila_materials` antes de inserir)
+
+### O que NÃO muda
+- O manager manual continua funcionando normalmente
+- Nenhuma tabela ou schema é alterado
+- Materiais sem match não são afetados
 
