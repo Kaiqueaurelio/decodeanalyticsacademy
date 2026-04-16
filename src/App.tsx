@@ -22,6 +22,7 @@ import ExercisesPage from "./pages/ExercisesPage";
 import AdminPage from "./pages/AdminPage";
 import ProfilePage from "./pages/ProfilePage";
 import MaterialsPage from "./pages/MaterialsPage";
+import BibliotecaPage from "./pages/BibliotecaPage";
 import VideoPlayerPage from "./pages/VideoPlayerPage";
 import AnnouncementDetailPage from "./pages/AnnouncementDetailPage";
 import NotFound from "./pages/NotFound";
@@ -215,6 +216,7 @@ function AnimatedRoutes() {
           <Route path="/exercises/:id" element={<ProtectedRoute><ExercisesPage /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
           <Route path="/materials" element={<ProtectedRoute><MaterialsPage /></ProtectedRoute>} />
+          <Route path="/biblioteca" element={<ProtectedRoute><BibliotecaPage /></ProtectedRoute>} />
           <Route path="/video/:id" element={<ProtectedRoute><VideoPlayerPage /></ProtectedRoute>} />
           <Route path="/aviso/:id" element={<ProtectedRoute><AnnouncementDetailPage /></ProtectedRoute>} />
           <Route path="/admin" element={<ProtectedRoute adminOnly><AdminPage /></ProtectedRoute>} />
