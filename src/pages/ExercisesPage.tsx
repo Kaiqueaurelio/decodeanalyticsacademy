@@ -375,9 +375,13 @@ export default function ExercisesPage() {
                 )}
 
                 <div className="flex gap-2 justify-center">
+                  <Button size="sm" variant="outline" onClick={() => { setShowResults(false); setReviewMode(true); setReviewFilter('all'); setTimedMode(false); }}
+                    className="gap-1.5">
+                    <ListChecks className="h-3.5 w-3.5" /> Revisão
+                  </Button>
                   <Button size="sm" variant="outline" onClick={() => { setShowResults(false); setCurrentIndex(0); setTimedMode(false); }}
                     className="gap-1.5">
-                    <RotateCcw className="h-3.5 w-3.5" /> Revisar
+                    <RotateCcw className="h-3.5 w-3.5" /> Refazer
                   </Button>
                   <Button size="sm" onClick={() => navigate('/dashboard')} className="gradient-primary text-primary-foreground gap-1.5">
                     <Award className="h-3.5 w-3.5" /> Dashboard
