@@ -1,36 +1,6 @@
-import { useState } from 'react';
-import { Globe, Copy, Check, Share2, ExternalLink } from 'lucide-react';
-import { toast } from 'sonner';
-
-const APP_URL = 'https://decodeanalyticsacademy.vercel.app';
+import { ShieldCheck, Lock, Globe2, Zap } from 'lucide-react';
 
 export function LiveAppSection() {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(APP_URL);
-      setCopied(true);
-      toast.success('Link copiado!');
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      toast.error('Não foi possível copiar');
-    }
-  };
-
-  const handleShare = async () => {
-    const shareData = {
-      title: 'Decode Analytics Academy',
-      text: 'Plataforma de estudos para alunos de Ciência da Computação — apostilas, exercícios e comunidade.',
-      url: APP_URL,
-    };
-    if (navigator.share) {
-      try { await navigator.share(shareData); } catch { /* user cancelled */ }
-    } else {
-      handleCopy();
-    }
-  };
-
   return (
     <section className="py-16 px-4 relative overflow-hidden">
       <div className="container mx-auto max-w-4xl">
@@ -55,73 +25,88 @@ export function LiveAppSection() {
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
               </span>
               <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-primary">
-                // versão online · ao vivo
+                // infraestrutura · vercel edge network
               </p>
             </div>
 
             <h2 className="font-display text-2xl md:text-4xl mb-3">
-              Acesse o app <span className="text-primary">agora</span>
+              Hospedado na <span className="text-primary">Vercel</span>
             </h2>
-            <p className="text-sm text-muted-foreground mb-6 max-w-xl">
-              Estamos rodando em produção na Vercel. Abra direto no navegador, instale como PWA
-              ou compartilhe com sua turma — tudo pelo mesmo link.
+            <p className="text-sm md:text-base text-muted-foreground mb-8 max-w-2xl">
+              Nosso app roda na mesma infraestrutura usada por OpenAI, GitHub e Notion. Isso garante
+              velocidade global, criptografia de ponta e proteção contra ataques — sem você precisar
+              se preocupar com nada.
             </p>
 
-            {/* URL Pill */}
-            <div
-              className="flex items-center gap-2 rounded-xl p-2 pl-4 mb-4"
-              style={{
-                background: 'rgba(5,5,8,0.6)',
-                border: '1px solid rgba(0,240,255,0.25)',
-              }}
-            >
-              <Globe className="h-4 w-4 text-primary shrink-0" />
-              <a
-                href={APP_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 text-xs sm:text-sm font-mono text-foreground/90 truncate hover:text-primary transition-colors"
-              >
-                decodeanalyticsacademy.vercel.app
-              </a>
-              <button
-                onClick={handleCopy}
-                className="p-2 rounded-lg transition-colors hover:bg-primary/10 shrink-0"
-                aria-label="Copiar link"
-                title="Copiar link"
-              >
-                {copied
-                  ? <Check className="h-4 w-4 text-primary" />
-                  : <Copy className="h-4 w-4 text-muted-foreground" />}
-              </button>
-            </div>
-
-            {/* CTAs */}
-            <div className="flex flex-col sm:flex-row gap-2.5">
-              <a
-                href={APP_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition-transform hover:-translate-y-0.5"
-                style={{ background: '#00f0ff', color: '#050508' }}
-              >
-                <ExternalLink className="h-4 w-4" /> Acessar o app
-              </a>
-              <button
-                onClick={handleShare}
-                className="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition-colors"
+            {/* Security pillars */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-2">
+              <div
+                className="flex items-start gap-3 rounded-xl p-4"
                 style={{
-                  background: 'rgba(255,255,255,0.04)',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  color: '#e2e8f0',
+                  background: 'rgba(5,5,8,0.5)',
+                  border: '1px solid rgba(0,240,255,0.15)',
                 }}
               >
-                <Share2 className="h-4 w-4" /> Compartilhar com a turma
-              </button>
+                <Lock className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-semibold text-foreground">HTTPS por padrão</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Certificado SSL automático em toda requisição. Seus dados trafegam criptografados.
+                  </p>
+                </div>
+              </div>
+
+              <div
+                className="flex items-start gap-3 rounded-xl p-4"
+                style={{
+                  background: 'rgba(5,5,8,0.5)',
+                  border: '1px solid rgba(168,85,247,0.18)',
+                }}
+              >
+                <ShieldCheck className="h-5 w-5 text-accent shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-semibold text-foreground">Proteção DDoS</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Firewall de borda mitiga ataques automaticamente, mantendo o app sempre no ar.
+                  </p>
+                </div>
+              </div>
+
+              <div
+                className="flex items-start gap-3 rounded-xl p-4"
+                style={{
+                  background: 'rgba(5,5,8,0.5)',
+                  border: '1px solid rgba(0,240,255,0.15)',
+                }}
+              >
+                <Globe2 className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-semibold text-foreground">CDN global</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Servido a partir do data center mais próximo de você, com baixíssima latência.
+                  </p>
+                </div>
+              </div>
+
+              <div
+                className="flex items-start gap-3 rounded-xl p-4"
+                style={{
+                  background: 'rgba(5,5,8,0.5)',
+                  border: '1px solid rgba(168,85,247,0.18)',
+                }}
+              >
+                <Zap className="h-5 w-5 text-accent shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-semibold text-foreground">Uptime 99,99%</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Infraestrutura redundante de nível corporativo. O app fica online quando você precisa.
+                  </p>
+                </div>
+              </div>
             </div>
 
-            <p className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground/70 mt-4">
-              Hospedado na Vercel · HTTPS · PWA instalável · Funciona offline
+            <p className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground/70 mt-6">
+              vercel edge network · ssl/tls · soc 2 type ii · iso 27001
             </p>
           </div>
         </div>
