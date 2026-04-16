@@ -7,7 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { EvasiveButton } from '@/components/EvasiveButton';
-import { Loader2, ArrowLeft, Eye, EyeOff, BookOpen, BarChart3, Shield, AlertTriangle, Lock } from 'lucide-react';
+import { Loader2, ArrowLeft, Eye, EyeOff, BookOpen, BarChart3, Shield, AlertTriangle, Lock, Check } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import logoDark from '@/assets/logo-dark.jpeg';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -15,7 +16,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 export default function LoginPage() {
   const { signIn, signUp } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
+  const savedEmail = localStorage.getItem('decode_remember_email') || '';
+  const [email, setEmail] = useState(savedEmail);
   const [password, setPassword] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
   const [isReset, setIsReset] = useState(false);
@@ -26,6 +28,7 @@ export default function LoginPage() {
   const [shaking, setShaking] = useState(false);
   const [showLockModal, setShowLockModal] = useState(false);
   const [unverifiedEmail, setUnverifiedEmail] = useState(false);
+  const [rememberMe, setRememberMe] = useState(!!savedEmail);
   const passwordRef = useRef<HTMLInputElement>(null);
 
   const triggerShake = () => {
