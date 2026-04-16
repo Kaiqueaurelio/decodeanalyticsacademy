@@ -28,11 +28,13 @@ import { ApostilaProgressWidget } from '@/components/ApostilaProgressWidget';
 import { MobileCarousel } from '@/components/MobileCarousel';
 import { MaterialWidget } from '@/components/MaterialWidget';
 import { AnnouncementsBoard } from '@/components/AnnouncementsBoard';
+import { QuickAccessHub } from '@/components/QuickAccessHub';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { getSubjectColor } from '@/lib/subject-colors';
 import {
   BookOpen, CheckCircle, XCircle, TrendingUp, PenLine,
-  ChevronRight, BarChart3, User, FileText, Percent, ChevronDown
+  ChevronRight, BarChart3, User, FileText, Percent, ChevronDown,
+  LayoutGrid, List as ListIcon
 } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 
@@ -50,6 +52,7 @@ export default function DashboardPage() {
   const [showMoreWidgets, setShowMoreWidgets] = useState(false);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [disciplinesView, setDisciplinesView] = useState<'grid' | 'list'>('grid');
 
   useEffect(() => {
     if (!user) return;
