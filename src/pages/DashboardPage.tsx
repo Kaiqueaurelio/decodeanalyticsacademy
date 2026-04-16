@@ -315,10 +315,10 @@ export default function DashboardPage() {
                     <div key={i} className="skeleton-shimmer h-36 rounded-xl" />
                   ))}
                 </div>
-              ) : Object.entries(grouped).length > 0 ? (
+              ) : groupedEntries.length > 0 ? (
                 disciplinesView === 'list' ? (
                   <div className="rounded-xl border border-border/60 bg-card overflow-hidden">
-                    {Object.entries(grouped).map(([category, items]) => {
+                    {groupedEntries.map(([category, items]) => {
                       const color = getSubjectColor(category);
                       return items.map((a, idx) => {
                         const exCount = exerciseCounts[a.id] || 0;
@@ -349,7 +349,7 @@ export default function DashboardPage() {
                   </div>
                 ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {Object.entries(grouped).map(([category, items], catIdx) => {
+                  {groupedEntries.map(([category, items], catIdx) => {
                     const color = getSubjectColor(category);
                     return items.map((a, idx) => {
                       const exCount = exerciseCounts[a.id] || 0;
