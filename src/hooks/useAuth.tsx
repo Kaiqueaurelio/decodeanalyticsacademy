@@ -115,6 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
+    setCachedSession(null, false);
     await supabase.auth.signOut();
   };
 
