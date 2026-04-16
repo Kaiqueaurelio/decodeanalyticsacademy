@@ -87,7 +87,17 @@ export default function ExercisesPage() {
     return () => clearInterval(t);
   }, [timerActive, timeLeft]);
 
-  // Detect exercise type
+  // Keyboard navigation
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight') navigateQuestion('next');
+      if (e.key === 'ArrowLeft') navigateQuestion('prev');
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [currentIndex, animating, exercises.length]);
+
+
   const getExerciseType = useCallback((ex: Exercise): 'multiple_choice' | 'essay' => {
     const opts = Array.isArray(ex.options) ? ex.options as string[] : [];
     if (opts.length === 0 || ex.correct_answer === 'dissertativa') return 'essay';
