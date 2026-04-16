@@ -44,10 +44,25 @@ function toBuf(u: Uint8Array): ArrayBuffer {
   return u.buffer.slice(u.byteOffset, u.byteOffset + u.byteLength) as ArrayBuffer;
 }
 
+/** True when running inside a cross-origin iframe (e.g., Lovable preview).
+ *  WebAuthn is blocked there and any biometric prompt would fail with
+ *  "The origin of the document is not the same as its ancestors". */
+export function isInCrossOriginFrame(): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    if (window.self === window.top) return false;
+    void window.top!.location.href;
+    return false;
+  } catch {
+    return true;
+  }
+}
+
 export function isBiometricSupported(): boolean {
   return typeof window !== 'undefined'
     && !!window.PublicKeyCredential
-    && !!window.crypto?.subtle;
+    && !!window.crypto?.subtle
+    && !isInCrossOriginFrame();
 }
 
 export async function isBiometricAvailable(): Promise<boolean> {
