@@ -6,6 +6,7 @@ import { useGamification } from '@/hooks/useGamification';
 import { AppHeader } from '@/components/AppHeader';
 import { EvolutionChart } from '@/components/EvolutionChart';
 import { KawaiiSlider } from '@/components/KawaiiSlider';
+import { BiometricToggle } from '@/components/BiometricToggle';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -212,6 +213,9 @@ export default function ProfilePage() {
                 step={1}
                 label="Flashcards por dia"
               />
+            </div>
+            <div className="border-t border-border/30 pt-4">
+              <BiometricToggle />
             </div>
           </div>
         </Card>
