@@ -26,6 +26,7 @@ import MaterialsPage from "./pages/MaterialsPage";
 import BibliotecaPage from "./pages/BibliotecaPage";
 import VideoPlayerPage from "./pages/VideoPlayerPage";
 import AnnouncementDetailPage from "./pages/AnnouncementDetailPage";
+import CommunityPage from "./pages/CommunityPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -220,6 +221,7 @@ function AnimatedRoutes() {
           <Route path="/biblioteca" element={<ProtectedRoute><BibliotecaPage /></ProtectedRoute>} />
           <Route path="/video/:id" element={<ProtectedRoute><VideoPlayerPage /></ProtectedRoute>} />
           <Route path="/aviso/:id" element={<ProtectedRoute><AnnouncementDetailPage /></ProtectedRoute>} />
+          <Route path="/comunidade" element={<ProtectedRoute><CommunityPage /></ProtectedRoute>} />
           <Route path="/admin" element={<ProtectedRoute adminOnly><AdminPage /></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>

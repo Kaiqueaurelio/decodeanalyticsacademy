@@ -10,6 +10,7 @@ import {
   Flame, TrendingUp, Clock, CheckCircle,
 } from 'lucide-react';
 import logoDark from '@/assets/logo-dark.jpeg';
+import { TestimonialsSection } from '@/components/TestimonialsSection';
 
 /* ─── SECTION WRAPPER: Fade + slide on scroll ─── */
 function ScrollReveal({ children, className = '', delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
@@ -685,6 +686,9 @@ export default function LandingPage() {
           </div>
         </ScrollReveal>
       </section>
+
+      {/* ═══ TESTIMONIALS ═══ */}
+      <TestimonialsSection />
 
       {/* ═══ FOOTER ═══ */}
       <footer className="py-10 px-5" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
