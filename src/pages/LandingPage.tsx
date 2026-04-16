@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import logoDark from '@/assets/logo-dark.jpeg';
 import { TestimonialsSection } from '@/components/TestimonialsSection';
+import { CreatorSection } from '@/components/CreatorSection';
 
 /* ─── SECTION WRAPPER: Fade + slide on scroll ─── */
 function ScrollReveal({ children, className = '', delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
@@ -690,6 +691,9 @@ export default function LandingPage() {
       {/* ═══ TESTIMONIALS ═══ */}
       <TestimonialsSection />
 
+      {/* ═══ CREATOR / DE ALUNO PARA ALUNO ═══ */}
+      <CreatorSection />
+
       {/* ═══ FOOTER ═══ */}
       <footer className="py-10 px-5" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
         <div className="max-w-7xl mx-auto flex flex-col items-center gap-4">
@@ -697,8 +701,22 @@ export default function LandingPage() {
             <img src={logoDark} alt="Decode Analytics" className="h-6 w-6 rounded object-cover" />
             <span className="text-[11px] font-semibold uppercase tracking-[0.2em]" style={{ color: '#00f0ff' }}>Decode Analytics</span>
           </div>
+
+          {/* Selo "feito por aluno" */}
+          <div
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-mono uppercase tracking-[0.15em]"
+            style={{
+              background: 'rgba(0,240,255,0.06)',
+              border: '1px solid rgba(0,240,255,0.2)',
+              color: '#00f0ff',
+            }}
+          >
+            <span>🎓</span>
+            Feito por aluno · para alunos
+          </div>
+
           <p className="text-[10px] uppercase tracking-[0.15em] text-center" style={{ color: '#475569' }}>
-            © {new Date().getFullYear()} Decode Analytics Academy · Desenvolvido por Kaique Aurélio
+            © {new Date().getFullYear()} Decode Analytics Academy · Desenvolvido por Kaique Aurélio (Aluno de CC)
           </p>
         </div>
       </footer>
