@@ -217,7 +217,7 @@ ${apostilaContent}
     }
 
     return new Response(aiResp.body, {
-      headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+      headers: { ...corsHeaders, "Content-Type": "text/event-stream", "X-AI-Provider": provider },
     });
   } catch (e) {
     console.error("apostila-chat error", e);
