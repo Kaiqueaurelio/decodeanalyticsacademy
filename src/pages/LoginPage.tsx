@@ -11,6 +11,7 @@ import { Loader2, ArrowLeft, Eye, EyeOff, BookOpen, BarChart3, Shield, AlertTria
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import logoDark from '@/assets/logo-dark.jpeg';
+import loginHero from '@/assets/login-hero.jpg';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function LoginPage() {
@@ -180,30 +181,80 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* Right side - Form */}
+      {/* Right side - Form (desktop) / Full screen (mobile) */}
       <div className="flex flex-1 flex-col">
-        <div className="px-4 sm:px-6 pt-6">
+        {/* MOBILE HERO — only visible on small screens */}
+        <div className="relative lg:hidden w-full h-[42vh] min-h-[280px] max-h-[420px] overflow-hidden">
+          <img
+            src={loginHero}
+            alt="Estudante de tecnologia Decode Analytics"
+            className="absolute inset-0 w-full h-full object-cover object-center"
+          />
+          {/* Cyan/purple neon overlay */}
+          <div className="absolute inset-0 bg-gradient-to-b from-primary/10 via-background/30 to-background" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_hsl(var(--primary)/0.25),_transparent_60%)]" />
+
+          {/* Top bar — Voltar */}
+          <div className="absolute top-0 left-0 right-0 px-4 pt-5 flex items-center justify-between z-10">
+            <button onClick={() => navigate('/')} className="flex items-center gap-1.5 text-xs text-foreground/90 hover:text-foreground smooth-all backdrop-blur-md bg-background/30 px-3 py-1.5 rounded-full border border-white/10">
+              <ArrowLeft className="h-3.5 w-3.5" /> Voltar
+            </button>
+            <span className="font-mono-label text-[10px] uppercase tracking-widest text-foreground/80 backdrop-blur-md bg-background/30 px-3 py-1.5 rounded-full border border-white/10">
+              Decode Analytics
+            </span>
+          </div>
+
+          {/* Centered logo */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.85, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ type: 'spring', stiffness: 260, damping: 22, delay: 0.1 }}
+            className="absolute inset-0 flex items-center justify-center pointer-events-none"
+          >
+            <img
+              src={logoDark}
+              alt="Decode Analytics"
+              className="h-20 w-20 rounded-2xl object-cover shadow-[0_0_40px_hsl(var(--primary)/0.5)] border border-white/20"
+            />
+          </motion.div>
+
+          {/* Bottom title overlapping into form area */}
+          <div className="absolute bottom-0 left-0 right-0 px-6 pb-5 z-10">
+            <motion.h1
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.25, type: 'spring', stiffness: 240, damping: 22 }}
+              className="font-display text-3xl sm:text-4xl leading-tight text-foreground drop-shadow-[0_2px_20px_hsl(var(--background))]"
+            >
+              Área do(a) <span className="text-gradient-animated">Aluno(a)</span>
+            </motion.h1>
+          </div>
+        </div>
+
+        {/* DESKTOP back button */}
+        <div className="hidden lg:block px-4 sm:px-6 pt-6">
           <button onClick={() => navigate('/')} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground smooth-all">
             <ArrowLeft className="h-4 w-4" /> Voltar
           </button>
         </div>
 
-        <div className="flex flex-1 items-center justify-center px-4 sm:px-6 pb-8">
+        <div className="flex flex-1 items-start lg:items-center justify-center px-4 sm:px-6 pt-6 pb-8">
           <motion.div
             className="w-full max-w-sm"
             initial={{ opacity: 0, scale: 0.96, y: 16 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+            transition={{ type: 'spring', stiffness: 260, damping: 20, delay: 0.15 }}
           >
             <div className="bg-card rounded-lg p-6 sm:p-8 space-y-5 relative overflow-hidden" style={{ border: '1px solid hsl(0 0% 100% / 0.08)' }}>
               {/* Top accent line */}
               <div className="absolute top-0 left-0 right-0 h-px bg-primary" />
 
               <div className="text-center space-y-2">
+                {/* Desktop-only logo (mobile already shows it in hero) */}
                 <motion.img
                   src={logoDark}
                   alt="Decode Analytics"
-                  className="mx-auto h-12 w-12 rounded object-cover"
+                  className="mx-auto h-12 w-12 rounded object-cover lg:block hidden"
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ type: 'spring', stiffness: 400, damping: 15 }}
@@ -302,7 +353,7 @@ export default function LoginPage() {
                           <span className="text-xs text-muted-foreground">Lembrar-me</span>
                         </label>
                         <button type="button" onClick={() => setIsReset(true)} className="text-xs text-muted-foreground hover:text-foreground smooth-all">
-                          {isLocked ? '🔓 Redefinir senha' : 'Esqueceu a senha?'}
+                          {isLocked ? 'Redefinir senha' : 'Esqueceu a senha?'}
                         </button>
                       </div>
                     )}
