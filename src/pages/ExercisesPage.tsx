@@ -14,7 +14,7 @@ import { Textarea } from '@/components/ui/textarea';
 import {
   ArrowLeft, ArrowRight, CheckCircle, XCircle, Trophy, RotateCcw, Timer,
   BookOpen, Sparkles, ChevronLeft, ChevronRight, Eye, EyeOff, PenLine,
-  BarChart3, Clock, Target, Zap, Award, Send
+  BarChart3, Clock, Target, Zap, Award, Send, ListChecks, Filter
 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { Tables } from '@/integrations/supabase/types';
