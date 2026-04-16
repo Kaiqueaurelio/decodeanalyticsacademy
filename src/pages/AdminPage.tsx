@@ -1348,11 +1348,11 @@ export default function AdminPage() {
                                   const { data, error } = await supabase.functions.invoke('generate-exercises', {
                                     body: { content: a.content, title: a.title, mcCount: aiMcCount, essayCount: aiEssayCount },
                                   });
-                                  if (error) throw error;
-                                  if (data.error) throw new Error(data.error);
-                                  setAiExercises(data.exercises || []);
-                                  if (data.exercises?.length > 0) toast.success(`${data.exercises.length} exercícios gerados!`);
-                                  else toast.error('Nenhum exercício foi gerado.');
+                                  const result = data ?? error?.context;
+                                  if (result?.error) throw new Error(result.error);
+                                  if (!result?.exercises?.length) throw new Error('Nenhum exercício foi gerado.');
+                                  setAiExercises(result.exercises);
+                                  toast.success(`${result.exercises.length} exercícios gerados!`);
                                 } catch (err: any) { toast.error('Erro: ' + (err.message || 'Tente novamente')); }
                                 setAiGenerating(false);
                               }} disabled={aiGenerating} className="w-full gradient-primary text-primary-foreground">
@@ -1542,11 +1542,11 @@ export default function AdminPage() {
                                       const { data, error } = await supabase.functions.invoke('generate-exercises', {
                                         body: { content: editContent, title: editTitle, mcCount: editAiMcCount, essayCount: editAiEssayCount },
                                       });
-                                      if (error) throw error;
-                                      if (data.error) throw new Error(data.error);
-                                      setEditAiExercises(data.exercises || []);
-                                      if (data.exercises?.length > 0) toast.success(`${data.exercises.length} exercícios gerados!`);
-                                      else toast.error('Nenhum exercício gerado.');
+                                      const result = data ?? error?.context;
+                                      if (result?.error) throw new Error(result.error);
+                                      if (!result?.exercises?.length) throw new Error('Nenhum exercício gerado.');
+                                      setEditAiExercises(result.exercises);
+                                      toast.success(`${result.exercises.length} exercícios gerados!`);
                                     } catch (err: any) { toast.error('Erro: ' + (err.message || 'Tente novamente')); }
                                     setAiGenerating(false);
                                   }} disabled={aiGenerating} className="w-full gradient-primary text-primary-foreground">
@@ -1711,13 +1711,13 @@ export default function AdminPage() {
                                   setAiGenerating(true);
                                   try {
                                     const { data, error } = await supabase.functions.invoke('generate-exercises', {
-                                      body: { content: apt.content, title: apt.title, count: 8 },
+                                      body: { content: apt.content, title: apt.title, mcCount: 8, essayCount: 2 },
                                     });
-                                    if (error) throw error;
-                                    if (data.error) throw new Error(data.error);
-                                    setAiExercises(data.exercises || []);
-                                    if (data.exercises?.length > 0) toast.success(`${data.exercises.length} exercícios gerados!`);
-                                    else toast.error('Nenhum exercício gerado.');
+                                    const result = data ?? error?.context;
+                                    if (result?.error) throw new Error(result.error);
+                                    if (!result?.exercises?.length) throw new Error('Nenhum exercício gerado.');
+                                    setAiExercises(result.exercises);
+                                    toast.success(`${result.exercises.length} exercícios gerados!`);
                                   } catch (err: any) { toast.error('Erro: ' + (err.message || 'Tente novamente')); }
                                   setAiGenerating(false);
                                 }} disabled={aiGenerating} className="w-full gradient-primary text-primary-foreground">
