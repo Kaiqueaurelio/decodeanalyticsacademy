@@ -31,8 +31,9 @@ export default function LoginPage() {
   const [isReset, setIsReset] = useState(false);
 
   const RA_DOMAIN = 'ra.unip.local';
-  const buildRaEmail = (raValue: string) => `${raValue.trim()}@${RA_DOMAIN}`;
-  const isValidRa = (raValue: string) => /^\d{8,13}$/.test(raValue.trim());
+  const normalizeRa = (raValue: string) => raValue.trim().toUpperCase();
+  const buildRaEmail = (raValue: string) => `${normalizeRa(raValue).toLowerCase()}@${RA_DOMAIN}`;
+  const isValidRa = (raValue: string) => /^[A-Z0-9]{6,13}$/.test(normalizeRa(raValue));
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loginAttempts, setLoginAttempts] = useState(0);
