@@ -35,9 +35,9 @@ serve(async (req) => {
       });
     }
 
-    const { pdfBase64, pdfUrl, defaultSubject } = await req.json();
-    if (!pdfBase64 && !pdfUrl) {
-      return new Response(JSON.stringify({ error: "pdfBase64 or pdfUrl required" }), {
+    const { pdfBase64, pdfUrl, imageBase64, imageMime, imageUrl, defaultSubject } = await req.json();
+    if (!pdfBase64 && !pdfUrl && !imageBase64 && !imageUrl) {
+      return new Response(JSON.stringify({ error: "pdfBase64, pdfUrl, imageBase64 or imageUrl required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -51,8 +51,11 @@ Hoje é ${today}. Retorne datas no formato YYYY-MM-DD. Se houver hora, inclua em
     ];
     if (pdfBase64) {
       userContent.push({ type: "image_url", image_url: { url: `data:application/pdf;base64,${pdfBase64}` } });
+    } else if (imageBase64) {
+      const mime = imageMime || "image/png";
+      userContent.push({ type: "image_url", image_url: { url: `data:${mime};base64,${imageBase64}` } });
     } else {
-      userContent.push({ type: "image_url", image_url: { url: pdfUrl } });
+      userContent.push({ type: "image_url", image_url: { url: pdfUrl || imageUrl } });
     }
 
     const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {

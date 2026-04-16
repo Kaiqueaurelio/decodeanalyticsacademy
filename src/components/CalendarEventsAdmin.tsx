@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { FileUp, Sparkles, Trash2, Plus, Loader2, Calendar as CalIcon, Edit2 } from 'lucide-react';
+import { FileUp, Sparkles, Trash2, Plus, Loader2, Calendar as CalIcon, Edit2, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -62,27 +62,35 @@ export function CalendarEventsAdmin() {
   };
   useEffect(() => { load(); }, []);
 
-  const onPdfUpload = async (file: File) => {
+  const onFileUpload = async (file: File) => {
+    const isPdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name);
+    const isImage = file.type.startsWith('image/');
+    if (!isPdf && !isImage) {
+      toast.error('Envie um PDF ou imagem (foto/screenshot)');
+      return;
+    }
     if (file.size > 10 * 1024 * 1024) {
-      toast.error('PDF muito grande (máx 10MB)');
+      toast.error('Arquivo muito grande (máx 10MB)');
       return;
     }
     setExtracting(true);
     try {
       const reader = new FileReader();
-      const pdfBase64: string = await new Promise((res, rej) => {
+      const base64: string = await new Promise((res, rej) => {
         reader.onload = () => res((reader.result as string).split(',')[1]);
         reader.onerror = rej;
         reader.readAsDataURL(file);
       });
 
-      const { data, error } = await supabase.functions.invoke('extract-calendar-events', {
-        body: { pdfBase64, defaultSubject: defaultSubject || undefined },
-      });
+      const body: Record<string, unknown> = { defaultSubject: defaultSubject || undefined };
+      if (isPdf) body.pdfBase64 = base64;
+      else { body.imageBase64 = base64; body.imageMime = file.type || 'image/png'; }
+
+      const { data, error } = await supabase.functions.invoke('extract-calendar-events', { body });
       if (error) throw error;
       const extracted: Draft[] = data?.events ?? [];
       if (extracted.length === 0) {
-        toast.warning('Nenhum evento encontrado no PDF');
+        toast.warning('Nenhum evento encontrado');
       } else {
         toast.success(`${extracted.length} evento(s) detectado(s) — revise abaixo`);
         setDrafts(extracted);
@@ -154,9 +162,9 @@ export function CalendarEventsAdmin() {
       <Card className="p-5">
         <div className="flex items-center gap-2 mb-4">
           <Sparkles className="h-5 w-5 text-primary" />
-          <h3 className="font-semibold">Importar cronograma (PDF)</h3>
+          <h3 className="font-semibold">Importar cronograma</h3>
         </div>
-        <div className="grid sm:grid-cols-[1fr_auto_auto] gap-3 items-end">
+        <div className="grid sm:grid-cols-[1fr_auto_auto_auto] gap-3 items-end">
           <div>
             <Label className="text-xs">Disciplina padrão (opcional)</Label>
             <Input
@@ -167,7 +175,7 @@ export function CalendarEventsAdmin() {
             />
           </div>
           <div>
-            <Label className="text-xs invisible">Upload</Label>
+            <Label className="text-xs invisible">PDF</Label>
             <Button
               type="button"
               disabled={extracting}
@@ -178,7 +186,22 @@ export function CalendarEventsAdmin() {
             </Button>
             <input
               id="cal-pdf-input" type="file" accept=".pdf,application/pdf" className="hidden"
-              onChange={e => { const f = e.target.files?.[0]; if (f) onPdfUpload(f); e.target.value = ''; }}
+              onChange={e => { const f = e.target.files?.[0]; if (f) onFileUpload(f); e.target.value = ''; }}
+            />
+          </div>
+          <div>
+            <Label className="text-xs invisible">Imagem</Label>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={extracting}
+              onClick={() => document.getElementById('cal-img-input')?.click()}
+            >
+              <ImageIcon className="h-4 w-4 mr-2" /> Imagem
+            </Button>
+            <input
+              id="cal-img-input" type="file" accept="image/*" className="hidden"
+              onChange={e => { const f = e.target.files?.[0]; if (f) onFileUpload(f); e.target.value = ''; }}
             />
           </div>
           <div>
@@ -188,7 +211,7 @@ export function CalendarEventsAdmin() {
           </div>
         </div>
         <p className="text-xs text-muted-foreground mt-3">
-          Suba o cronograma da disciplina e a IA extrai provas, trabalhos e entregas. Você revisa e confirma antes de salvar.
+          Envie um PDF ou foto/print do cronograma — a IA extrai provas, trabalhos e entregas. Você revisa antes de salvar.
         </p>
       </Card>
 
