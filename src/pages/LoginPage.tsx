@@ -18,8 +18,11 @@ export default function LoginPage() {
   const { signIn, signUp } = useAuth();
   const navigate = useNavigate();
   const savedEmail = localStorage.getItem('decode_remember_email') || '';
+  const savedPasswordRaw = localStorage.getItem('decode_remember_password') || '';
+  let savedPassword = '';
+  try { savedPassword = savedPasswordRaw ? atob(savedPasswordRaw) : ''; } catch { savedPassword = ''; }
   const [email, setEmail] = useState(savedEmail);
-  const [password, setPassword] = useState('');
+  const [password, setPassword] = useState(savedPassword);
   const [isSignUp, setIsSignUp] = useState(false);
   const [isReset, setIsReset] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -105,8 +108,13 @@ export default function LoginPage() {
       }
     } else {
       setLoginAttempts(0);
-      if (rememberMe) localStorage.setItem('decode_remember_email', email);
-      else localStorage.removeItem('decode_remember_email');
+      if (rememberMe) {
+        localStorage.setItem('decode_remember_email', email);
+        localStorage.setItem('decode_remember_password', btoa(password));
+      } else {
+        localStorage.removeItem('decode_remember_email');
+        localStorage.removeItem('decode_remember_password');
+      }
       toast.success('Login realizado!');
       const lastRoute = localStorage.getItem('decode_last_route');
       navigate(lastRoute && lastRoute !== '/' && lastRoute !== '/login' ? lastRoute : '/dashboard');
@@ -292,7 +300,7 @@ export default function LoginPage() {
                   <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="space-y-1.5">
                       <Label htmlFor="email" className="text-xs text-muted-foreground">Email</Label>
-                      <Input id="email" type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="seu@email.com" />
+                      <Input id="email" type="email" autoComplete="username" required value={email} onChange={e => setEmail(e.target.value)} placeholder="seu@email.com" />
                     </div>
                     <div className="space-y-1.5">
                       <Label htmlFor="password" className="text-xs text-muted-foreground">Senha</Label>
@@ -301,6 +309,7 @@ export default function LoginPage() {
                           ref={passwordRef}
                           id="password"
                           type={showPassword ? 'text' : 'password'}
+                          autoComplete="current-password"
                           required
                           value={password}
                           onChange={e => setPassword(e.target.value)}
