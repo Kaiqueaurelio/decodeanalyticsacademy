@@ -1,5 +1,10 @@
-import { GraduationCap, Code2, Heart, Users, Quote } from 'lucide-react';
+import { GraduationCap, Code2, Heart, Users, Quote, MessageCircle, Mail } from 'lucide-react';
 import kaiqueAvatar from '@/assets/kaique-creator.jpeg';
+
+const WHATSAPP_NUMBER = '5511939222885';
+const WHATSAPP_MSG = encodeURIComponent('Olá Kaique! Vim pela Decode Analytics Academy 👋');
+const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_MSG}`;
+const EMAIL_URL = 'mailto:decodeanalytics@outlook.com.br?subject=Contato%20Decode%20Analytics%20Academy';
 
 /**
  * "De aluno para aluno" — Card destacando que a plataforma foi feita
@@ -98,7 +103,7 @@ export function CreatorSection() {
               </div>
 
               {/* Pilares */}
-              <div className="grid grid-cols-3 gap-2 sm:gap-3">
+              <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-5">
                 {[
                   { icon: Code2, label: 'Construído na faculdade' },
                   { icon: Users, label: 'Aberto pra turma' },
@@ -118,6 +123,36 @@ export function CreatorSection() {
                     </p>
                   </div>
                 ))}
+              </div>
+
+              {/* Falar com o criador */}
+              <div className="flex flex-col sm:flex-row gap-2">
+                <a
+                  href={WHATSAPP_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-semibold text-white transition-transform hover:scale-[1.02] active:scale-[0.98]"
+                  style={{
+                    background: 'linear-gradient(135deg, #25D366, #128C7E)',
+                    boxShadow: '0 4px 20px rgba(37,211,102,0.35)',
+                  }}
+                  aria-label="Falar com o criador no WhatsApp"
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  Falar no WhatsApp
+                </a>
+                <a
+                  href={EMAIL_URL}
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-semibold text-foreground transition-colors hover:bg-secondary/60"
+                  style={{
+                    background: 'rgba(255,255,255,0.04)',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                  }}
+                  aria-label="Enviar e-mail para o criador"
+                >
+                  <Mail className="h-4 w-4" />
+                  Enviar e-mail
+                </a>
               </div>
             </div>
           </div>
