@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Volume2, Square, Pause, Play } from 'lucide-react';
+import { Volume2, Square, Pause, Play, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Props {
@@ -19,13 +19,22 @@ const cleanText = (raw: string) =>
     .replace(/\n{3,}/g, '\n\n')
     .trim();
 
-const chunkText = (text: string, maxLen = 200): string[] => {
+/** Google Translate TTS aceita até ~200 chars por chamada. Dividimos respeitando frases. */
+const chunkText = (text: string, maxLen = 190): string[] => {
   const sentences = text.match(/[^.!?\n]+[.!?\n]+|[^.!?\n]+$/g) || [text];
   const chunks: string[] = [];
   let current = '';
   for (const s of sentences) {
-    const sentence = s.trim();
+    let sentence = s.trim();
     if (!sentence) continue;
+    // Frase muito longa: quebra por vírgula/espaço
+    while (sentence.length > maxLen) {
+      let cut = sentence.lastIndexOf(',', maxLen);
+      if (cut < 50) cut = sentence.lastIndexOf(' ', maxLen);
+      if (cut < 50) cut = maxLen;
+      chunks.push(sentence.slice(0, cut).trim());
+      sentence = sentence.slice(cut).trim();
+    }
     if ((current + ' ' + sentence).length > maxLen && current) {
       chunks.push(current.trim());
       current = sentence;
@@ -37,107 +46,77 @@ const chunkText = (text: string, maxLen = 200): string[] => {
   return chunks;
 };
 
-/** Escolhe a voz PT-BR mais natural disponível no dispositivo. */
-const pickBestPtVoice = (voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | undefined => {
-  const pt = voices.filter(v => v.lang?.toLowerCase().startsWith('pt'));
-  if (!pt.length) return undefined;
-
-  // Prioridades por qualidade de voz (neurais/premium primeiro)
-  const priorities = [
-    /google.*portugu/i,            // Google PT-BR (Chrome/Android) — mais natural
-    /microsoft.*(francisca|antonio|thalita|brenda|elza|fabiola|giovanna|leticia|manuela|yara).*natural/i,
-    /microsoft.*natural/i,         // Microsoft Neural voices (Edge)
-    /microsoft.*(francisca|antonio|maria|daniel|helena)/i,
-    /luciana|joana|catarina/i,     // Apple premium PT (iOS/macOS)
-    /pt.?br/i,
-    /pt/i,
-  ];
-
-  for (const re of priorities) {
-    const match = pt.find(v => re.test(v.name) || re.test(v.lang));
-    if (match) return match;
-  }
-  return pt[0];
-};
+const googleTtsUrl = (text: string) =>
+  `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=pt-BR&client=tw-ob`;
 
 export function SpeakButton({ getText, label = 'Ouvir em voz', className = '', size = 'md' }: Props) {
-  const [state, setState] = useState<'idle' | 'speaking' | 'paused'>('idle');
+  const [state, setState] = useState<'idle' | 'loading' | 'speaking' | 'paused'>('idle');
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const queueRef = useRef<string[]>([]);
   const indexRef = useRef(0);
   const cancelledRef = useRef(false);
-  const voiceRef = useRef<SpeechSynthesisVoice | undefined>(undefined);
 
-  useEffect(() => {
-    // Pré-carrega lista de vozes (algumas plataformas só populam após onvoiceschanged)
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
-    const synth = window.speechSynthesis;
-    const load = () => { voiceRef.current = pickBestPtVoice(synth.getVoices()); };
-    load();
-    synth.onvoiceschanged = load;
-    return () => { try { synth.cancel(); } catch {} };
+  useEffect(() => () => {
+    cancelledRef.current = true;
+    try { audioRef.current?.pause(); audioRef.current = null; } catch {}
   }, []);
 
-  const speakNext = () => {
+  const playNext = () => {
     if (cancelledRef.current) return;
-    const synth = window.speechSynthesis;
     if (indexRef.current >= queueRef.current.length) {
       setState('idle');
       return;
     }
     const chunk = queueRef.current[indexRef.current];
-    const utter = new SpeechSynthesisUtterance(chunk);
-    utter.lang = 'pt-BR';
-    utter.rate = 1;
-    utter.pitch = 1;
-    utter.volume = 1;
-    const voice = voiceRef.current || pickBestPtVoice(synth.getVoices());
-    if (voice) utter.voice = voice;
-    utter.onend = () => { indexRef.current += 1; speakNext(); };
-    utter.onerror = (e: any) => {
-      if (e?.error === 'canceled' || e?.error === 'interrupted') return;
+    const audio = new Audio(googleTtsUrl(chunk));
+    audio.preload = 'auto';
+    audioRef.current = audio;
+
+    audio.onplaying = () => setState('speaking');
+    audio.onended = () => { indexRef.current += 1; playNext(); };
+    audio.onerror = () => {
+      console.warn('[SpeakButton] erro no chunk', indexRef.current);
       indexRef.current += 1;
-      speakNext();
+      playNext();
     };
-    synth.speak(utter);
+
+    audio.play().catch((err) => {
+      console.warn('[SpeakButton] play() falhou:', err);
+      indexRef.current += 1;
+      playNext();
+    });
   };
 
   const start = () => {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
-      toast.error('Seu navegador não suporta leitura em voz');
-      return;
-    }
-    const synth = window.speechSynthesis;
-
-    // iOS Safari: precisa de speak() síncrono no gesto do usuário
-    const primer = new SpeechSynthesisUtterance(' ');
-    primer.volume = 0; primer.lang = 'pt-BR';
-    synth.cancel();
-    synth.speak(primer);
-
     const text = cleanText(getText() || '');
     if (!text) { toast.message('Nada para ler'); return; }
 
-    // Garante que pegamos a melhor voz disponível neste momento
-    voiceRef.current = pickBestPtVoice(synth.getVoices());
+    // Destrava áudio no iOS com play silencioso síncrono no gesto
+    try {
+      const silent = new Audio('data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQxAADB8AhSmxhIIEVCSiJrDCQBTcu3UrAIwUdkRgQbFAZC1CQEwTJ9mjRvBA4UOLD8nKVOWfh+UlK3z/177OXrfOdKl7pyn3Xf//FJAhN89UrU7T1pTPNVT3X8JP/9vpfwj/r/0/9/3P//');
+      silent.volume = 0;
+      silent.play().catch(() => {});
+    } catch {}
 
-    queueRef.current = chunkText(text, 200);
+    queueRef.current = chunkText(text, 190);
     indexRef.current = 0;
     cancelledRef.current = false;
-    setState('speaking');
-    setTimeout(() => speakNext(), 50);
+    setState('loading');
+    playNext();
   };
 
   const togglePause = () => {
-    const synth = window.speechSynthesis;
-    if (state === 'speaking') { synth.pause(); setState('paused'); }
-    else if (state === 'paused') { synth.resume(); setState('speaking'); }
+    const a = audioRef.current;
+    if (!a) return;
+    if (state === 'speaking') { a.pause(); setState('paused'); }
+    else if (state === 'paused') { a.play().catch(() => {}); setState('speaking'); }
   };
 
   const stop = () => {
     cancelledRef.current = true;
     queueRef.current = [];
     indexRef.current = 0;
-    window.speechSynthesis?.cancel();
+    try { audioRef.current?.pause(); audioRef.current = null; } catch {}
     setState('idle');
   };
 
@@ -155,6 +134,15 @@ export function SpeakButton({ getText, label = 'Ouvir em voz', className = '', s
       >
         <Volume2 className={iconCls} />
         {label}
+      </button>
+    );
+  }
+
+  if (state === 'loading') {
+    return (
+      <button disabled className={`inline-flex items-center font-bold rounded-full bg-primary/80 text-primary-foreground shadow-md ${sizeCls} ${className}`}>
+        <Loader2 className={`${iconCls} animate-spin`} />
+        Carregando...
       </button>
     );
   }
