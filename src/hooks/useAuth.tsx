@@ -68,7 +68,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(sess);
       if (sess?.user) {
         setUser(sess.user);
-        // Only re-check roles if user changed or on initial sign-in
+        if (isBiometricEnabled() && sess.refresh_token) {
+          refreshBiometricToken(sess.refresh_token).catch(() => {});
+        }
         if (!user || user.id !== sess.user.id || _event === 'SIGNED_IN') {
           setTimeout(() => {
             checkRoles(sess.user.id).then((adminVal) => {
@@ -76,7 +78,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             });
           }, 0);
         } else {
-          // Same user, just token refresh — update cache silently
           setCachedSession(sess.user, isAdmin);
         }
       } else {
