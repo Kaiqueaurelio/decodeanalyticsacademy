@@ -30,6 +30,7 @@ import { MaterialWidget } from '@/components/MaterialWidget';
 import { AnnouncementsBoard } from '@/components/AnnouncementsBoard';
 import { TodayExamBanner } from '@/components/TodayExamBanner';
 import { QuickAccessHub } from '@/components/QuickAccessHub';
+import { useExamFocus } from '@/hooks/useExamFocus';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { getSubjectColor } from '@/lib/subject-colors';
 import {
@@ -46,6 +47,7 @@ export default function DashboardPage() {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const gamification = useGamification();
+  const examFocus = useExamFocus();
   const [apostilas, setApostilas] = useState<Apostila[]>([]);
   const [exerciseCounts, setExerciseCounts] = useState<Record<string, number>>({});
   const [stats, setStats] = useState({ total: 0, hits: 0, errors: 0, byApostila: {} as Record<string, { hits: number; errors: number; title: string }> });
