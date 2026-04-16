@@ -291,6 +291,38 @@ export default function DashboardPage() {
                   ))}
                 </div>
               ) : Object.entries(grouped).length > 0 ? (
+                disciplinesView === 'list' ? (
+                  <div className="rounded-xl border border-border/60 bg-card overflow-hidden">
+                    {Object.entries(grouped).map(([category, items]) => {
+                      const color = getSubjectColor(category);
+                      return items.map((a, idx) => {
+                        const exCount = exerciseCounts[a.id] || 0;
+                        const answered = stats.byApostila[a.id];
+                        const totalEx = exCount;
+                        const answeredCount = answered ? answered.hits + answered.errors : 0;
+                        const prog = totalEx > 0 ? Math.round((answeredCount / totalEx) * 100) : 0;
+                        return (
+                          <button
+                            key={a.id}
+                            onClick={() => navigate(`/apostila/${a.id}`)}
+                            className="w-full flex items-center gap-3 px-4 py-3 text-left border-b border-border/40 last:border-b-0 hover:bg-muted/30 transition-colors animate-fade-in"
+                            style={{ animationDelay: `${idx * 30}ms` }}
+                          >
+                            <span className="font-mono-label text-[10px] uppercase tracking-wider px-2 py-0.5 rounded shrink-0" style={{ backgroundColor: `${color}15`, color }}>
+                              {category.slice(0, 6)}
+                            </span>
+                            <span className="text-sm font-medium text-foreground flex-1 truncate">{a.title}</span>
+                            <div className="hidden sm:flex items-center gap-2 w-32 shrink-0">
+                              <Progress value={prog} className="h-1 flex-1" />
+                              <span className="text-[10px] text-muted-foreground tabular-nums w-8 text-right">{prog}%</span>
+                            </div>
+                            <ChevronRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                          </button>
+                        );
+                      });
+                    })}
+                  </div>
+                ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {Object.entries(grouped).map(([category, items], catIdx) => {
                     const color = getSubjectColor(category);
@@ -375,6 +407,7 @@ export default function DashboardPage() {
                     });
                   })}
                 </div>
+                )
               ) : (
                 <div className="text-center py-16 text-muted-foreground animate-fade-in">
                   <BookOpen className="h-10 w-10 mx-auto mb-3 opacity-20" />
