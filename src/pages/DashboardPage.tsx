@@ -488,7 +488,9 @@ export default function DashboardPage() {
           <div className="animate-content-show delay-4 space-y-4">
             {/* Priority widgets always visible */}
             <WeeklyGoalWidget />
-            <ExamCalendarWidget />
+            <div id="calendario" className="scroll-mt-24">
+              <ExamCalendarWidget />
+            </div>
             <GamificationSidebarCard
               level={gamification.xp.level}
               xp={gamification.xp.xp_points}
@@ -501,7 +503,10 @@ export default function DashboardPage() {
             <MaterialWidget />
 
             {/* Mural de Avisos */}
-            <AnnouncementsBoard />
+            <div id="comunidade" className="scroll-mt-24">
+              <AnnouncementsBoard />
+            </div>
+            <div id="mural" className="scroll-mt-24" />
 
             {/* Materials shortcut */}
             <Card className="p-4 hover-lift">
