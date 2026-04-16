@@ -352,18 +352,25 @@ export default function LoginPage() {
                     )}
 
                     {!isSignUp && (
-                      <div className="flex items-center justify-between">
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <Checkbox
-                            checked={rememberMe}
-                            onCheckedChange={(v) => setRememberMe(!!v)}
-                            className="h-3.5 w-3.5"
-                          />
-                          <span className="text-xs text-muted-foreground">Lembrar-me</span>
-                        </label>
-                        <button type="button" onClick={() => setIsReset(true)} className="text-xs text-muted-foreground hover:text-foreground smooth-all">
-                          {isLocked ? 'Redefinir senha' : 'Esqueceu a senha?'}
-                        </button>
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <Checkbox
+                              checked={rememberMe}
+                              onCheckedChange={(v) => setRememberMe(!!v)}
+                              className="h-3.5 w-3.5"
+                            />
+                            <span className="text-xs text-muted-foreground">Lembrar-me</span>
+                          </label>
+                          <button type="button" onClick={() => setIsReset(true)} className="text-xs text-muted-foreground hover:text-foreground smooth-all">
+                            {isLocked ? 'Redefinir senha' : 'Esqueceu a senha?'}
+                          </button>
+                        </div>
+                        {rememberMe && (
+                          <p className="text-[10px] text-muted-foreground/70 leading-snug pl-6">
+                            🔒 A senha fica salva apenas neste dispositivo. Não use em computadores compartilhados.
+                          </p>
+                        )}
                       </div>
                     )}
                   </form>
