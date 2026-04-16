@@ -301,11 +301,15 @@ export function ApostilaChat({ apostilaId, apostilaTitle, variant = 'panel' }: P
                   {m.content && (
                     <button
                       onClick={() => speak(i, m.content)}
-                      className="inline-flex items-center gap-1 text-[10px] text-muted-foreground hover:text-primary transition-colors"
-                      title={speakingIdx === i ? 'Parar leitura' : 'Ouvir resposta'}
+                      className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border transition-all shadow-sm ${
+                        speakingIdx === i
+                          ? 'bg-destructive text-destructive-foreground border-destructive animate-pulse'
+                          : 'bg-primary text-primary-foreground border-primary hover:brightness-110 hover:-translate-y-px'
+                      }`}
+                      title={speakingIdx === i ? 'Parar leitura' : 'Ouvir resposta em voz'}
                     >
-                      {speakingIdx === i ? <Square className="h-2.5 w-2.5" /> : <Volume2 className="h-2.5 w-2.5" />}
-                      {speakingIdx === i ? 'Parar' : 'Ouvir'}
+                      {speakingIdx === i ? <Square className="h-3 w-3" /> : <Volume2 className="h-3 w-3" />}
+                      {speakingIdx === i ? 'Parar leitura' : 'Ouvir em voz'}
                     </button>
                   )}
                 </div>
