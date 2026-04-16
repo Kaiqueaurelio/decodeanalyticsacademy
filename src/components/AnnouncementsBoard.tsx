@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ChevronRight, Megaphone, GraduationCap, Calendar, Briefcase, Sparkles } from 'lucide-react';
+import { UpcomingExamsBoard } from './UpcomingExamsBoard';
 
 interface Announcement {
   id: string;
@@ -53,6 +54,9 @@ export function AnnouncementsBoard() {
 
   return (
     <div className="space-y-4">
+      {/* Sincronização: próximas avaliações do calendário aparecem aqui também */}
+      <UpcomingExamsBoard />
+
       <div className="flex items-center gap-2 mb-2">
         <Megaphone className="h-4 w-4 text-primary" />
         <h2 className="font-display text-lg font-bold">Mural de Avisos</h2>

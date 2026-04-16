@@ -14,6 +14,7 @@ import { TestimonialsSection } from '@/components/TestimonialsSection';
 import { CreatorSection } from '@/components/CreatorSection';
 import { TechStackSection } from '@/components/TechStackSection';
 import { LiveAppSection } from '@/components/LiveAppSection';
+import { SocialAndProjectsSection } from '@/components/SocialAndProjectsSection';
 
 /* ─── SECTION WRAPPER: Fade + slide on scroll ─── */
 function ScrollReveal({ children, className = '', delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
@@ -701,6 +702,9 @@ export default function LandingPage() {
 
       {/* ═══ LIVE APP / SHARE LINK ═══ */}
       <LiveAppSection />
+
+      {/* ═══ REDES SOCIAIS + WRITELAB ═══ */}
+      <SocialAndProjectsSection />
 
       {/* ═══ FOOTER ═══ */}
       <footer className="py-10 px-5" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
