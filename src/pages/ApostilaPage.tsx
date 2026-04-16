@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { FlashcardsWidget } from '@/components/FlashcardsWidget';
 import { AnnotationsPanel } from '@/components/AnnotationsPanel';
 import { CommentsWidget } from '@/components/CommentsWidget';
+import { ApostilaExport } from '@/components/ApostilaExport';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
   ArrowLeft, BookOpen, PenLine, Eye, List, X,
@@ -217,6 +218,7 @@ export default function ApostilaPage() {
               >
                 <Eye className="h-3.5 w-3.5" /> {focusMode ? 'Foco ativo' : 'Modo foco'}
               </Button>
+              <ApostilaExport apostila={apostila} />
             </div>
           </div>
         </div>
