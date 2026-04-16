@@ -1,121 +1,104 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Calendar, Plus, Trash2, Clock, X } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Calendar, Clock } from 'lucide-react';
 import { format, differenceInDays, isPast } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
-interface Exam {
+interface Event {
   id: string;
   title: string;
-  date: string;
+  event_date: string;
+  event_time: string | null;
+  event_type: string;
+  subject: string | null;
 }
 
+const TYPE_LABEL: Record<string, string> = {
+  prova: 'Prova', trabalho: 'Trabalho', atividade: 'Atividade',
+  seminario: 'Seminário', entrega: 'Entrega', aula: 'Aula',
+};
+const TYPE_STYLE: Record<string, string> = {
+  prova: 'bg-destructive/15 text-destructive border-destructive/30',
+  trabalho: 'bg-warning/15 text-warning border-warning/30',
+  atividade: 'bg-primary/15 text-primary border-primary/30',
+  seminario: 'bg-accent/15 text-accent-foreground border-accent/30',
+  entrega: 'bg-purple-500/15 text-purple-400 border-purple-500/30',
+  aula: 'bg-muted-foreground/15 text-muted-foreground border-border',
+};
+
 export function ExamCalendarWidget() {
-  const [exams, setExams] = useState<Exam[]>(() => {
-    const saved = localStorage.getItem('decode_exams');
-    return saved ? JSON.parse(saved) : [];
-  });
-  const [adding, setAdding] = useState(false);
-  const [newTitle, setNewTitle] = useState('');
-  const [newDate, setNewDate] = useState('');
+  const [events, setEvents] = useState<Event[]>([]);
 
   useEffect(() => {
-    if (exams.length === 0) return;
+    let active = true;
+    (async () => {
+      const today = new Date().toISOString().slice(0, 10);
+      const { data } = await supabase
+        .from('calendar_events')
+        .select('id,title,event_date,event_time,event_type,subject')
+        .gte('event_date', today)
+        .order('event_date', { ascending: true })
+        .limit(20);
+      if (active && data) setEvents(data as Event[]);
+    })();
+
+    const channel = supabase
+      .channel('calendar-events-widget')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'calendar_events' }, () => {
+        supabase.from('calendar_events')
+          .select('id,title,event_date,event_time,event_type,subject')
+          .gte('event_date', new Date().toISOString().slice(0, 10))
+          .order('event_date', { ascending: true })
+          .limit(20)
+          .then(({ data }) => { if (active && data) setEvents(data as Event[]); });
+      })
+      .subscribe();
+
+    return () => { active = false; supabase.removeChannel(channel); };
+  }, []);
+
+  useEffect(() => {
+    if (events.length === 0) return;
     const notifiedRaw = sessionStorage.getItem('decode_exam_notified_ids');
     const notified = new Set<string>(notifiedRaw ? JSON.parse(notifiedRaw) : []);
     const newNotified = new Set(notified);
-
-    exams.forEach((exam) => {
-      const examDate = new Date(exam.date + 'T23:59:59');
-      if (isPast(examDate) || notified.has(exam.id)) return;
-      const days = differenceInDays(examDate, new Date());
+    events.forEach(ev => {
+      if (ev.event_type !== 'prova' && ev.event_type !== 'trabalho' && ev.event_type !== 'entrega') return;
+      const d = new Date(ev.event_date + 'T23:59:59');
+      if (isPast(d) || notified.has(ev.id)) return;
+      const days = differenceInDays(d, new Date());
       if (days <= 3) {
-        newNotified.add(exam.id);
-        if (days === 0) {
-          toast.error(`Hoje é dia de prova: "${exam.title}"!`, { duration: 8000 });
-        } else {
-          toast.warning(`Prova "${exam.title}" em ${days} dia${days > 1 ? 's' : ''}!`, { duration: 6000 });
-        }
+        newNotified.add(ev.id);
+        if (days === 0) toast.error(`Hoje: "${ev.title}"!`, { duration: 8000 });
+        else toast.warning(`"${ev.title}" em ${days} dia${days > 1 ? 's' : ''}!`, { duration: 6000 });
       }
     });
-
     if (newNotified.size > notified.size) {
       sessionStorage.setItem('decode_exam_notified_ids', JSON.stringify([...newNotified]));
     }
-  }, [exams]);
-
-  const save = (list: Exam[]) => {
-    setExams(list);
-    localStorage.setItem('decode_exams', JSON.stringify(list));
-  };
-
-  const addExam = () => {
-    if (!newTitle.trim() || !newDate) return;
-    save([...exams, { id: crypto.randomUUID(), title: newTitle.trim(), date: newDate }]);
-    setNewTitle('');
-    setNewDate('');
-    setAdding(false);
-  };
-
-  const removeExam = (id: string) => save(exams.filter(e => e.id !== id));
-
-  const sorted = [...exams].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  }, [events]);
 
   return (
     <Card className="p-5 hover-lift">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-semibold flex items-center gap-2">
-          <Calendar className="h-4 w-4 text-primary" /> Próximas Provas
+          <Calendar className="h-4 w-4 text-primary" /> Calendário Acadêmico
         </h3>
-        <Button
-          size="sm"
-          variant="ghost"
-          className="h-7 w-7 p-0"
-          onClick={() => setAdding(!adding)}
-          aria-label={adding ? 'Cancelar' : 'Adicionar prova'}
-        >
-          {adding ? <X className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
-        </Button>
       </div>
-
-      {adding && (
-        <div className="space-y-2 mb-4 p-3 rounded-xl bg-muted/50 border border-border/30 animate-card-enter">
-          <label className="text-[11px] font-medium text-muted-foreground">Nome da prova</label>
-          <Input
-            placeholder="Ex: Prova de Cálculo"
-            value={newTitle}
-            onChange={e => setNewTitle(e.target.value)}
-            className="h-9 text-xs"
-          />
-          <label className="text-[11px] font-medium text-muted-foreground">Data</label>
-          <Input
-            type="date"
-            value={newDate}
-            onChange={e => setNewDate(e.target.value)}
-            className="h-9 text-xs"
-          />
-          <Button size="sm" className="w-full h-8 text-xs gradient-primary text-primary-foreground" onClick={addExam}>
-            Adicionar Prova
-          </Button>
-        </div>
-      )}
-
-      {sorted.length === 0 ? (
-        <p className="text-xs text-muted-foreground text-center py-6">Nenhuma prova agendada</p>
+      {events.length === 0 ? (
+        <p className="text-xs text-muted-foreground text-center py-6">Nenhum evento agendado</p>
       ) : (
         <div className="space-y-2">
-          {sorted.map((exam, idx) => {
-            const examDate = new Date(exam.date + 'T23:59:59');
-            const days = differenceInDays(examDate, new Date());
-            const past = isPast(examDate);
+          {events.slice(0, 8).map((ev, idx) => {
+            const d = new Date(ev.event_date + 'T23:59:59');
+            const days = differenceInDays(d, new Date());
             return (
               <div
-                key={exam.id}
+                key={ev.id}
                 className={`flex items-center gap-3 p-3 rounded-xl border transition-all duration-200 animate-card-enter ${
-                  past ? 'border-border/20 bg-muted/30 opacity-50' :
                   days <= 3 ? 'border-destructive/30 bg-destructive/5' :
                   days <= 7 ? 'border-warning/30 bg-warning/5' :
                   'border-border/30 bg-card hover:bg-muted/20'
@@ -123,31 +106,26 @@ export function ExamCalendarWidget() {
                 style={{ animationDelay: `${idx * 60}ms` }}
               >
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium truncate">{exam.title}</p>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <Badge variant="outline" className={`text-[9px] px-1.5 py-0 ${TYPE_STYLE[ev.event_type] ?? ''}`}>
+                      {TYPE_LABEL[ev.event_type] ?? ev.event_type}
+                    </Badge>
+                    <p className="text-xs font-medium truncate">{ev.title}</p>
+                  </div>
                   <p className="text-[11px] text-muted-foreground mt-0.5">
-                    {format(new Date(exam.date + 'T12:00:00'), "d 'de' MMM, yyyy", { locale: ptBR })}
+                    {format(new Date(ev.event_date + 'T12:00:00'), "d 'de' MMM", { locale: ptBR })}
+                    {ev.event_time && ` · ${ev.event_time.slice(0, 5)}`}
+                    {ev.subject && ` · ${ev.subject}`}
                   </p>
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  {!past && (
-                    <span className={`text-[10px] font-bold px-2.5 py-1 rounded-lg flex items-center gap-1 ${
-                      days <= 3 ? 'bg-destructive/10 text-destructive' :
-                      days <= 7 ? 'bg-warning/10 text-warning' :
-                      'bg-primary/10 text-primary'
-                    }`}>
-                      <Clock className="h-2.5 w-2.5" />
-                      {days === 0 ? 'Hoje!' : `${days}d`}
-                    </span>
-                  )}
-                  {past && <span className="text-[11px] text-muted-foreground italic">Concluída</span>}
-                  <button
-                    onClick={() => removeExam(exam.id)}
-                    className="p-1.5 rounded-lg hover:bg-destructive/10 transition-colors"
-                    aria-label={`Remover prova ${exam.title}`}
-                  >
-                    <Trash2 className="h-3 w-3 text-muted-foreground hover:text-destructive" />
-                  </button>
-                </div>
+                <span className={`text-[10px] font-bold px-2.5 py-1 rounded-lg flex items-center gap-1 shrink-0 ${
+                  days <= 3 ? 'bg-destructive/10 text-destructive' :
+                  days <= 7 ? 'bg-warning/10 text-warning' :
+                  'bg-primary/10 text-primary'
+                }`}>
+                  <Clock className="h-2.5 w-2.5" />
+                  {days === 0 ? 'Hoje!' : `${days}d`}
+                </span>
               </div>
             );
           })}
