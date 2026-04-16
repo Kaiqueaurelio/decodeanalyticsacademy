@@ -9,6 +9,7 @@ import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/hooks/useTheme";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { DynamicWatermark } from "@/components/DynamicWatermark";
+import { ScreenshotGuard } from "@/components/ScreenshotGuard";
 import { useRouteTracker, getLastRoute } from "@/hooks/useRouteTracker";
 import { useInactivityLogout } from "@/hooks/useInactivityLogout";
 import { getLocationRoute, getPageState, getScrollPosition, savePageState, saveScrollPosition } from "@/lib/app-persistence";
@@ -30,7 +31,12 @@ const queryClient = new QueryClient();
 function WatermarkWrapper() {
   const { user } = useAuth();
   if (!user) return null;
-  return <DynamicWatermark />;
+  return (
+    <>
+      <DynamicWatermark />
+      <ScreenshotGuard />
+    </>
+  );
 }
 
 function RouteRestorer() {
