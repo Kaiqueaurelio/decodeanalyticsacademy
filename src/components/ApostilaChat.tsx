@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { Send, Sparkles, Trash2, Loader2, BookOpen } from 'lucide-react';
+import { Send, Sparkles, Trash2, Loader2, BookOpen, Volume2, Square } from 'lucide-react';
 import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
 
