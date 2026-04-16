@@ -351,10 +351,51 @@ export default function LoginPage() {
               ) : (
                 <>
                   <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="space-y-1.5">
-                      <Label htmlFor="email" className="text-xs text-muted-foreground">Email</Label>
-                      <Input id="email" type="email" autoComplete="username" required value={email} onChange={e => setEmail(e.target.value)} placeholder="seu@email.com" />
+                    {/* Auth method toggle (RA vs Email) */}
+                    <div className="grid grid-cols-2 gap-1 p-1 bg-muted/40 rounded-md" style={{ border: '1px solid hsl(0 0% 100% / 0.06)' }}>
+                      <button
+                        type="button"
+                        onClick={() => { setAuthMethod('ra'); setUnverifiedEmail(false); setLoginAttempts(0); }}
+                        className={`text-xs py-1.5 px-2 rounded smooth-all font-medium ${authMethod === 'ra' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                      >
+                        Aluno UNIP (RA)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setAuthMethod('email'); setUnverifiedEmail(false); setLoginAttempts(0); }}
+                        className={`text-xs py-1.5 px-2 rounded smooth-all font-medium ${authMethod === 'email' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                      >
+                        Email
+                      </button>
                     </div>
+
+                    {authMethod === 'ra' ? (
+                      <div className="space-y-1.5">
+                        <Label htmlFor="ra" className="text-xs text-muted-foreground">RA (Registro Acadêmico)</Label>
+                        <Input
+                          id="ra"
+                          type="text"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
+                          autoComplete="username"
+                          required
+                          value={ra}
+                          onChange={e => setRa(e.target.value.replace(/\D/g, ''))}
+                          placeholder="Apenas números (ex: 2312345678)"
+                          maxLength={13}
+                        />
+                        {isSignUp && (
+                          <p className="text-[10px] text-muted-foreground/70 leading-snug">
+                            ⚠️ Cadastro por RA é rápido, mas você não poderá recuperar a senha por e-mail. Guarde-a em local seguro.
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="space-y-1.5">
+                        <Label htmlFor="email" className="text-xs text-muted-foreground">Email</Label>
+                        <Input id="email" type="email" autoComplete="username" required value={email} onChange={e => setEmail(e.target.value)} placeholder="seu@email.com" />
+                      </div>
+                    )}
                     <div className="space-y-1.5">
                       <Label htmlFor="password" className="text-xs text-muted-foreground">Senha</Label>
                       <div className={`relative ${shaking ? 'animate-shake' : ''}`}>
