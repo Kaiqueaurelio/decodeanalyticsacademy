@@ -90,6 +90,45 @@ export type Database = {
           },
         ]
       }
+      announcements: {
+        Row: {
+          category: string
+          content: string
+          created_at: string
+          created_by: string
+          id: string
+          image_url: string | null
+          link_url: string | null
+          published: boolean
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          content: string
+          created_at?: string
+          created_by: string
+          id?: string
+          image_url?: string | null
+          link_url?: string | null
+          published?: boolean
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          content?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          image_url?: string | null
+          link_url?: string | null
+          published?: boolean
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       answers: {
         Row: {
           created_at: string
@@ -121,6 +160,45 @@ export type Database = {
             columns: ["exercise_id"]
             isOneToOne: false
             referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      apostila_materials: {
+        Row: {
+          apostila_id: string
+          created_at: string
+          id: string
+          material_id: string
+          sort_order: number
+        }
+        Insert: {
+          apostila_id: string
+          created_at?: string
+          id?: string
+          material_id: string
+          sort_order?: number
+        }
+        Update: {
+          apostila_id?: string
+          created_at?: string
+          id?: string
+          material_id?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "apostila_materials_apostila_id_fkey"
+            columns: ["apostila_id"]
+            isOneToOne: false
+            referencedRelation: "apostilas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "apostila_materials_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "materials"
             referencedColumns: ["id"]
           },
         ]
