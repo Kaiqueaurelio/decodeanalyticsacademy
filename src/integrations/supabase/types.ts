@@ -739,6 +739,10 @@ export type Database = {
         Args: { _exercise_id: string; _selected_answer: string }
         Returns: Json
       }
+      delete_user_completely: {
+        Args: { _target_user_id: string }
+        Returns: undefined
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
