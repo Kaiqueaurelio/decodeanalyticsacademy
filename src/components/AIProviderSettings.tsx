@@ -48,6 +48,7 @@ export function AIProviderSettings() {
       toast.error('Falha ao salvar: ' + error.message);
       setPreferGoogle(!next);
     } else {
+      try { localStorage.setItem('ai_prefer_google_hint', next ? '1' : '0'); } catch {}
       toast.success(next ? 'Usando sua chave Google AI Studio' : 'Usando Lovable AI');
     }
   };
