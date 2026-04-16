@@ -1,17 +1,12 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
 import {
-  FileText, Image, Video, Music, Presentation, File, Link as LinkIcon,
-  FileSpreadsheet, ExternalLink, Paperclip, Eye, X, Maximize, Play, Pause,
-  SkipBack, SkipForward, Volume2, VolumeX, Loader2, AlertCircle
+  ExternalLink, Play, Pause, SkipBack, SkipForward,
+  Volume2, VolumeX, Loader2, AlertCircle, Music, Maximize, X
 } from 'lucide-react';
-import { useRef } from 'react';
 
 interface LinkedMaterial {
   id: string;
@@ -21,12 +16,6 @@ interface LinkedMaterial {
   file_path: string | null;
   description: string | null;
 }
-
-const TYPE_ICONS: Record<string, any> = {
-  pdf: FileText, image: Image, video: Video, audio: Music,
-  powerpoint: Presentation, word: FileText, excel: FileSpreadsheet,
-  link: LinkIcon, gif: Image, other: File, exam: FileText,
-};
 
 const fmt = (s: number) => {
   if (!s || !isFinite(s)) return '0:00';
@@ -43,7 +32,7 @@ export function ApostilaMaterials({ apostilaId }: Props) {
   const navigate = useNavigate();
   const [materials, setMaterials] = useState<LinkedMaterial[]>([]);
   const [loading, setLoading] = useState(true);
-  const [viewing, setViewing] = useState<LinkedMaterial | null>(null);
+  const [fullscreenMat, setFullscreenMat] = useState<LinkedMaterial | null>(null);
 
   useEffect(() => {
     supabase
@@ -55,13 +44,11 @@ export function ApostilaMaterials({ apostilaId }: Props) {
         if (!links || links.length === 0) { setLoading(false); return; }
         const ids = links.map(l => (l as any).material_id);
         const { data: mats } = await supabase.from('materials').select('id, title, type, file_url, file_path, description').in('id', ids);
-        // Preserve sort order & get signed URLs
         const matMap = new Map((mats || []).map(m => [m.id, m]));
         const sorted: LinkedMaterial[] = [];
         for (const id of ids) {
           const m = matMap.get(id);
           if (!m) continue;
-          // Get signed URL for private files
           if (m.file_path && m.type !== 'link') {
             const { data: signedData } = await supabase.storage
               .from('materials')
@@ -78,172 +65,35 @@ export function ApostilaMaterials({ apostilaId }: Props) {
       });
   }, [apostilaId]);
 
-  const openMaterial = (m: LinkedMaterial) => {
-    if (m.type === 'link' && m.file_url) {
-      window.open(m.file_url, '_blank');
-      return;
-    }
-    if (m.type === 'video') {
-      // Navigate to video player page
-      navigate(`/video/${m.id}`);
-      return;
-    }
-    setViewing(m);
-  };
-
   if (loading || materials.length === 0) return null;
 
   return (
-    <div className="mt-10 pt-8 border-t border-border/50 animate-content-show">
-      <div className="flex items-center gap-2 mb-4">
-        <Paperclip className="h-4 w-4 text-primary" />
-        <h3 className="font-display text-lg font-semibold">Material de Apoio</h3>
-      </div>
-      <div className="grid gap-2 sm:grid-cols-2">
-        {materials.map(m => {
-          const Icon = TYPE_ICONS[m.type] || File;
-          return (
-            <Card
-              key={m.id}
-              className="hover:shadow-md transition-shadow cursor-pointer group"
-              onClick={() => openMaterial(m)}
-            >
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="rounded-lg bg-primary/10 p-2.5 shrink-0">
-                    <Icon className="h-4 w-4 text-primary" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-medium text-sm truncate group-hover:text-primary transition-colors">{m.title}</h4>
-                    {m.description && (
-                      <p className="text-[10px] text-muted-foreground truncate">{m.description}</p>
-                    )}
-                    <Badge variant="secondary" className="text-[9px] mt-1">{m.type.toUpperCase()}</Badge>
-                  </div>
-                  <Eye className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-
-      {/* Viewer Dialog */}
-      {viewing && (
-        <MaterialViewerDialog material={viewing} onClose={() => setViewing(null)} />
-      )}
-    </div>
-  );
-}
-
-function MaterialViewerDialog({ material, onClose }: { material: LinkedMaterial; onClose: () => void }) {
-  const [fullscreen, setFullscreen] = useState(false);
-
-  const renderViewer = () => {
-    if (!material.file_url) {
-      return (
-        <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-          <AlertCircle className="h-8 w-8 mb-3 opacity-50" />
-          <p className="text-sm">Arquivo indisponível</p>
-        </div>
-      );
-    }
-
-    switch (material.type) {
-      case 'pdf':
-        return (
-          <div className="space-y-2">
-            <iframe src={material.file_url} className="w-full h-[60vh] rounded-lg border border-border/30" title={material.title} />
-            <div className="flex justify-end">
-              <Button size="sm" variant="outline" onClick={() => setFullscreen(true)}>
-                <Maximize className="h-3.5 w-3.5 mr-1.5" /> Tela cheia
-              </Button>
-            </div>
-          </div>
-        );
-
-      case 'image':
-      case 'gif':
-        return (
-          <div className="flex justify-center">
-            <img
-              src={material.file_url}
-              alt={material.title}
-              className="max-w-full max-h-[60vh] object-contain rounded-lg"
-            />
-          </div>
-        );
-
-      case 'audio':
-        return <InlineAudioPlayer url={material.file_url} title={material.title} />;
-
-      case 'powerpoint':
-      case 'word':
-      case 'excel': {
-        const viewerUrl = `https://docs.google.com/gview?url=${encodeURIComponent(material.file_url)}&embedded=true`;
-        const typeLabel = material.type === 'powerpoint' ? 'PowerPoint' : material.type === 'word' ? 'Word' : 'Excel';
-        return (
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 mb-2">
-              <Badge variant="secondary" className="text-[10px]">{typeLabel}</Badge>
-            </div>
-            <iframe src={viewerUrl} className="w-full h-[60vh] rounded-lg border border-border/30" title={material.title} />
-            <div className="flex justify-end">
-              <Button size="sm" variant="outline" onClick={() => setFullscreen(true)}>
-                <Maximize className="h-3.5 w-3.5 mr-1.5" /> Tela cheia
-              </Button>
-            </div>
-          </div>
-        );
-      }
-
-      default:
-        return (
-          <div className="flex flex-col items-center justify-center py-12 text-muted-foreground gap-3">
-            <File className="h-8 w-8 opacity-50" />
-            <p className="text-sm">Visualização não disponível para este formato</p>
-            <Button size="sm" variant="outline" asChild>
-              <a href={material.file_url} target="_blank" rel="noopener noreferrer">
-                <ExternalLink className="h-3.5 w-3.5 mr-1.5" /> Abrir externamente
-              </a>
-            </Button>
-          </div>
-        );
-    }
-  };
-
-  return (
     <>
-      <Dialog open onOpenChange={(v) => { if (!v) onClose(); }}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-base truncate flex items-center gap-2">
-              {(() => { const Icon = TYPE_ICONS[material.type] || File; return <Icon className="h-4 w-4 text-primary shrink-0" />; })()}
-              {material.title}
-            </DialogTitle>
-          </DialogHeader>
-          {renderViewer()}
-        </DialogContent>
-      </Dialog>
+      <div className="mt-8 space-y-10 animate-content-show">
+        {materials.map(m => (
+          <InlineMaterial
+            key={m.id}
+            material={m}
+            onNavigateVideo={() => navigate(`/video/${m.id}`)}
+            onFullscreen={() => setFullscreenMat(m)}
+          />
+        ))}
+      </div>
 
-      {/* Fullscreen overlay for PDF/Office */}
-      {fullscreen && material.file_url && (
+      {fullscreenMat && fullscreenMat.file_url && (
         <div className="fixed inset-0 z-[100] bg-background flex flex-col">
           <div className="flex items-center justify-between p-3 border-b border-border bg-card">
-            <div className="flex items-center gap-2 min-w-0">
-              {(() => { const Icon = TYPE_ICONS[material.type] || File; return <Icon className="h-4 w-4 text-primary shrink-0" />; })()}
-              <p className="font-medium text-sm truncate">{material.title}</p>
-            </div>
-            <button onClick={() => setFullscreen(false)} className="p-2 rounded-full hover:bg-muted transition-colors">
+            <p className="font-medium text-sm truncate">{fullscreenMat.title}</p>
+            <button onClick={() => setFullscreenMat(null)} className="p-2 rounded-full hover:bg-muted transition-colors">
               <X className="h-5 w-5" />
             </button>
           </div>
           <iframe
-            src={['powerpoint', 'word', 'excel'].includes(material.type)
-              ? `https://docs.google.com/gview?url=${encodeURIComponent(material.file_url)}&embedded=true`
-              : material.file_url}
+            src={['powerpoint', 'word', 'excel'].includes(fullscreenMat.type)
+              ? `https://docs.google.com/gview?url=${encodeURIComponent(fullscreenMat.file_url)}&embedded=true`
+              : fullscreenMat.file_url}
             className="flex-1 w-full"
-            title={material.title}
+            title={fullscreenMat.title}
           />
         </div>
       )}
@@ -251,7 +101,119 @@ function MaterialViewerDialog({ material, onClose }: { material: LinkedMaterial;
   );
 }
 
-/* Inline audio player for the dialog */
+function InlineMaterial({
+  material,
+  onNavigateVideo,
+  onFullscreen,
+}: {
+  material: LinkedMaterial;
+  onNavigateVideo: () => void;
+  onFullscreen: () => void;
+}) {
+  const { title, description, type, file_url } = material;
+
+  if (!file_url) return null;
+
+  const heading = (
+    <h3 className="font-display text-lg font-semibold mb-3 text-foreground">{title}</h3>
+  );
+
+  switch (type) {
+    case 'pdf':
+      return (
+        <section>
+          {heading}
+          {description && <p className="text-sm text-muted-foreground mb-3">{description}</p>}
+          <iframe src={file_url} className="w-full h-[55vh] rounded-xl border border-border/30" title={title} />
+          <div className="flex justify-end mt-2">
+            <Button size="sm" variant="ghost" onClick={onFullscreen} className="text-xs text-muted-foreground hover:text-primary">
+              <Maximize className="h-3.5 w-3.5 mr-1.5" /> Tela cheia
+            </Button>
+          </div>
+        </section>
+      );
+
+    case 'image':
+    case 'gif':
+      return (
+        <figure>
+          <img src={file_url} alt={title} className="w-full max-h-[60vh] object-contain rounded-xl" />
+          <figcaption className="text-xs text-muted-foreground mt-2 text-center italic">{title}</figcaption>
+        </figure>
+      );
+
+    case 'video':
+      return (
+        <section>
+          {heading}
+          {description && <p className="text-sm text-muted-foreground mb-3">{description}</p>}
+          <div
+            onClick={onNavigateVideo}
+            className="relative w-full aspect-video rounded-xl bg-muted/30 border border-border/30 flex items-center justify-center cursor-pointer group hover:border-primary/40 transition-colors"
+          >
+            <div className="p-4 rounded-full bg-primary/20 group-hover:bg-primary/30 transition-colors">
+              <Play className="h-8 w-8 text-primary" />
+            </div>
+            <span className="absolute bottom-3 left-3 text-xs text-muted-foreground">Clique para assistir</span>
+          </div>
+        </section>
+      );
+
+    case 'audio':
+      return (
+        <section>
+          {heading}
+          {description && <p className="text-sm text-muted-foreground mb-3">{description}</p>}
+          <InlineAudioPlayer url={file_url} title={title} />
+        </section>
+      );
+
+    case 'powerpoint':
+    case 'word':
+    case 'excel': {
+      const viewerUrl = `https://docs.google.com/gview?url=${encodeURIComponent(file_url)}&embedded=true`;
+      return (
+        <section>
+          {heading}
+          {description && <p className="text-sm text-muted-foreground mb-3">{description}</p>}
+          <iframe src={viewerUrl} className="w-full h-[55vh] rounded-xl border border-border/30" title={title} />
+          <div className="flex justify-end mt-2">
+            <Button size="sm" variant="ghost" onClick={onFullscreen} className="text-xs text-muted-foreground hover:text-primary">
+              <Maximize className="h-3.5 w-3.5 mr-1.5" /> Tela cheia
+            </Button>
+          </div>
+        </section>
+      );
+    }
+
+    case 'link':
+      return (
+        <section>
+          {heading}
+          {description && <p className="text-sm text-muted-foreground mb-3">{description}</p>}
+          <Button variant="outline" size="sm" asChild>
+            <a href={file_url} target="_blank" rel="noopener noreferrer">
+              <ExternalLink className="h-3.5 w-3.5 mr-1.5" /> Acessar
+            </a>
+          </Button>
+        </section>
+      );
+
+    default:
+      return (
+        <section>
+          {heading}
+          <Button variant="outline" size="sm" asChild>
+            <a href={file_url} target="_blank" rel="noopener noreferrer">
+              <ExternalLink className="h-3.5 w-3.5 mr-1.5" /> Abrir arquivo
+            </a>
+          </Button>
+        </section>
+      );
+  }
+}
+
+/* Inline audio player */
 function InlineAudioPlayer({ url, title }: { url: string; title: string }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [playing, setPlaying] = useState(false);
