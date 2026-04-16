@@ -20,7 +20,7 @@ import {
   LayoutDashboard, CheckCircle, TrendingUp, Upload, BarChart3, Clock,
   Link as LinkIcon, Loader2, AlertCircle, Edit, Download, File, Image, Video, Music, FileSpreadsheet, Presentation,
   Users, ShieldBan, ShieldCheck, Search, Menu, X, Activity, GraduationCap, FolderOpen, Settings, RefreshCw,
-  Sun, Moon, FileUp, Sparkles, Wand2, Megaphone
+  Sun, Moon, FileUp, Sparkles, Wand2, Megaphone, Combine
 } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useTheme } from '@/hooks/useTheme';
@@ -32,6 +32,7 @@ import { ImageUploadButton } from '@/components/ImageUploadButton';
 import { AnnouncementsAdmin } from '@/components/AnnouncementsAdmin';
 import { ApostilaMaterialsManager } from '@/components/ApostilaMaterialsManager';
 import { autoLinkAll, autoLinkApostila } from '@/lib/auto-link-materials';
+import { MergeApostilasDialog } from '@/components/MergeApostilasDialog';
 
 type Apostila = Tables<'apostilas'>;
 type Exercise = Tables<'exercises'>;
@@ -124,6 +125,17 @@ function AutoLinkAllButton() {
   );
 }
 
+function MergeButton({ onMerged }: { onMerged: () => void }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <Button size="sm" variant="outline" className="text-xs gap-1.5" onClick={() => setOpen(true)}>
+        <Combine className="h-3 w-3" /> Mesclar apostilas
+      </Button>
+      <MergeApostilasDialog open={open} onOpenChange={setOpen} onMerged={onMerged} />
+    </>
+  );
+}
 // ─── Sidebar Navigation ────────────────────────────────────────
 function AdminSidebar({ tab, setTab, stats, sidebarOpen, setSidebarOpen }: {
   tab: Tab; setTab: (t: Tab) => void;
@@ -1176,11 +1188,14 @@ export default function AdminPage() {
 
                 {/* Apostilas List */}
                 <div>
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
                     <h3 className="font-semibold text-sm flex items-center gap-2">
                       <BookOpen className="h-4 w-4 text-primary" /> Apostilas ({filteredApostilas.length})
                     </h3>
-                    <AutoLinkAllButton />
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <MergeButton onMerged={loadAll} />
+                      <AutoLinkAllButton />
+                    </div>
                   </div>
                   <div className="space-y-3">
                     {filteredApostilas.map(a => {
