@@ -34,9 +34,14 @@ function b64encode(buf: ArrayBuffer | Uint8Array): string {
 }
 function b64decode(s: string): Uint8Array {
   const raw = atob(s);
-  const arr = new Uint8Array(raw.length);
+  const buf = new ArrayBuffer(raw.length);
+  const arr = new Uint8Array(buf);
   for (let i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
   return arr;
+}
+
+function toBuf(u: Uint8Array): ArrayBuffer {
+  return u.buffer.slice(u.byteOffset, u.byteOffset + u.byteLength) as ArrayBuffer;
 }
 
 export function isBiometricSupported(): boolean {
