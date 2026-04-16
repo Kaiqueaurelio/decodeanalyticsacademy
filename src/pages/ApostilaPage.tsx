@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { FlashcardsWidget } from '@/components/FlashcardsWidget';
 import { AnnotationsPanel } from '@/components/AnnotationsPanel';
 import { CommentsWidget } from '@/components/CommentsWidget';
-import { ApostilaExport } from '@/components/ApostilaExport';
+
 import { ApostilaMaterials } from '@/components/ApostilaMaterials';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
