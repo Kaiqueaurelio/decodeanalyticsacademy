@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import { MentionTextarea, MentionContent } from '@/components/MentionTextarea';
 
 interface Channel {
   id: string;
@@ -280,16 +281,16 @@ export default function CommunityPage() {
             {/* New post */}
             {user && activeChannel && (
               <Card className="p-3 mb-4">
-                <Textarea
+                <MentionTextarea
                   value={newPost}
-                  onChange={e => setNewPost(e.target.value)}
-                  placeholder={`Compartilhe algo em #${activeChannel.name}...`}
+                  onChange={setNewPost}
+                  placeholder={`Compartilhe algo em #${activeChannel.name}... use @ para mencionar`}
                   className="min-h-[80px] text-sm bg-transparent border-0 resize-none focus-visible:ring-0"
                   maxLength={2000}
                 />
                 <div className="flex items-center justify-between mt-2 pt-2 border-t border-border/30">
                   <span className="text-[10px] text-muted-foreground font-mono">
-                    {newPost.length}/2000
+                    {newPost.length}/2000 · use <span className="text-primary">@</span> para mencionar
                   </span>
                   <Button size="sm" disabled={!newPost.trim() || submitting} onClick={handleSubmit}>
                     {submitting ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
@@ -333,9 +334,9 @@ export default function CommunityPage() {
                           </span>
                           <span className="text-[10px] text-muted-foreground">{formatTime(post.created_at)}</span>
                         </div>
-                        <p className="text-sm text-foreground/90 leading-relaxed whitespace-pre-line break-words">
+                        <MentionContent className="text-sm text-foreground/90 leading-relaxed whitespace-pre-line break-words block">
                           {post.content}
-                        </p>
+                        </MentionContent>
 
                         <div className="flex items-center gap-1 mt-3">
                           <Button size="sm" variant="ghost" className="h-7 px-2 gap-1.5 text-xs"
@@ -374,24 +375,22 @@ export default function CommunityPage() {
                                     </span>
                                     <span className="text-[9px] text-muted-foreground">{formatTime(reply.created_at)}</span>
                                   </div>
-                                  <p className="text-xs text-foreground/80 whitespace-pre-line break-words">{reply.content}</p>
+                                  <MentionContent className="text-xs text-foreground/80 whitespace-pre-line break-words block">{reply.content}</MentionContent>
                                 </div>
                               </div>
                             ))}
                             {user && (
                               <div className="flex gap-2 items-end pt-1">
-                                <Textarea
-                                  value={replyText[post.id] || ''}
-                                  onChange={e => setReplyText(prev => ({ ...prev, [post.id]: e.target.value }))}
-                                  placeholder="Responder..."
-                                  className="min-h-[36px] text-xs resize-none"
-                                  maxLength={1000}
-                                  onKeyDown={e => {
-                                    if (e.key === 'Enter' && !e.shiftKey) {
-                                      e.preventDefault(); handleReply(post.id);
-                                    }
-                                  }}
-                                />
+                                <div className="flex-1">
+                                  <MentionTextarea
+                                    value={replyText[post.id] || ''}
+                                    onChange={(v) => setReplyText(prev => ({ ...prev, [post.id]: v }))}
+                                    placeholder="Responder... use @ para mencionar"
+                                    className="min-h-[36px] text-xs resize-none"
+                                    maxLength={1000}
+                                    onSubmitShortcut={() => handleReply(post.id)}
+                                  />
+                                </div>
                                 <Button size="icon" className="h-9 w-9" onClick={() => handleReply(post.id)}>
                                   <Send className="h-3 w-3" />
                                 </Button>
