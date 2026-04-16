@@ -130,12 +130,31 @@ export default function DashboardPage() {
     ? apostilas
     : apostilas.filter(a => (a.category || 'Geral') === selectedCategory);
 
+  // Identifica matéria foco da prova (matching por substring case-insensitive)
+  const focusSubjectLc = examFocus?.subject.toLowerCase() || null;
+  const isFocusApostila = (a: Apostila) => {
+    if (!focusSubjectLc) return false;
+    const cat = (a.category || '').toLowerCase();
+    const title = (a.title || '').toLowerCase();
+    return cat.includes(focusSubjectLc) || title.includes(focusSubjectLc) ||
+           focusSubjectLc.includes(cat) || focusSubjectLc.includes(title);
+  };
+  const isFocusCategory = (cat: string) =>
+    focusSubjectLc ? cat.toLowerCase().includes(focusSubjectLc) || focusSubjectLc.includes(cat.toLowerCase()) : false;
+
   const grouped = filteredApostilas.reduce((acc, a) => {
     const cat = a.category || 'Geral';
     if (!acc[cat]) acc[cat] = [];
     acc[cat].push(a);
     return acc;
   }, {} as Record<string, Apostila[]>);
+
+  // Reordena: categoria da matéria foco vem primeiro
+  const groupedEntries = Object.entries(grouped).sort(([catA], [catB]) => {
+    const fa = isFocusCategory(catA) ? -1 : 0;
+    const fb = isFocusCategory(catB) ? -1 : 0;
+    return fa - fb;
+  });
 
   const earnedBadges = gamification.badges
     .filter(b => gamification.earnedBadgeIds.includes(b.id))
