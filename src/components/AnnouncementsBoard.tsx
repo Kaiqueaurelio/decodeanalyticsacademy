@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ExternalLink, Megaphone, GraduationCap, Calendar, Briefcase, Sparkles } from 'lucide-react';
+import { ChevronRight, Megaphone, GraduationCap, Calendar, Briefcase, Sparkles } from 'lucide-react';
 
 interface Announcement {
   id: string;
