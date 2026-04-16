@@ -9,6 +9,7 @@ import {
   Plus, Trash2, FileText, Image, Video, Music, Presentation, File, Link as LinkIcon, FileSpreadsheet, Search, Paperclip, Wand2, Loader2
 } from 'lucide-react';
 import { autoLinkApostila } from '@/lib/auto-link-materials';
+import { ManualLinkMaterialsDialog } from '@/components/ManualLinkMaterialsDialog';
 import { toast } from 'sonner';
 
 interface Props {
