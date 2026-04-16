@@ -1121,7 +1121,10 @@ export default function AdminPage() {
                         <CategorySelect value={manualCategory} onValueChange={setManualCategory} placeholder="Selecione a disciplina" />
                       </div>
                       <div>
-                        <Label htmlFor="manual-content" className="text-xs font-medium text-foreground">Conteúdo da Apostila</Label>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <Label htmlFor="manual-content" className="text-xs font-medium text-foreground">Conteúdo da Apostila</Label>
+                          <ImageUploadButton onImageInserted={(md) => setManualContent(prev => prev + md)} />
+                        </div>
                         <Textarea id="manual-content" value={manualContent} onChange={e => setManualContent(e.target.value)} rows={6} className="mt-1.5" placeholder="Digite ou cole o conteúdo completo da aula..." />
                       </div>
                       <div className="flex gap-3 pt-1">
