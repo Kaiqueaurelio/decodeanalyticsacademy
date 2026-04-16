@@ -50,14 +50,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         supabase.from('user_roles').select('role').eq('user_id', userId).eq('role', 'admin').maybeSingle(),
         supabase.from('profiles').select('is_blocked').eq('user_id', userId).maybeSingle(),
       ]);
-      setIsAdmin(!!adminRes.data);
+      const adminVal = !!adminRes.data;
+      setIsAdmin(adminVal);
       setIsBlocked(!!(profileRes.data as any)?.is_blocked);
+      setRoleChecked(true);
+      // Cache after role check completes
+      return adminVal;
     } catch {
       setIsAdmin(false);
       setIsBlocked(false);
+      setRoleChecked(true);
+      return false;
     }
-    setRoleChecked(true);
-    setCachedSession(null, false); // will be set properly after
   };
 
   useEffect(() => {
