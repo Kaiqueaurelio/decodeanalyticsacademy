@@ -21,10 +21,18 @@ export default function LoginPage() {
   const savedPasswordRaw = localStorage.getItem('decode_remember_password') || '';
   let savedPassword = '';
   try { savedPassword = savedPasswordRaw ? atob(savedPasswordRaw) : ''; } catch { savedPassword = ''; }
+  const savedRa = localStorage.getItem('decode_remember_ra') || '';
+  const savedAuthMethod = (localStorage.getItem('decode_auth_method') as 'email' | 'ra') || 'email';
   const [email, setEmail] = useState(savedEmail);
   const [password, setPassword] = useState(savedPassword);
+  const [ra, setRa] = useState(savedRa);
+  const [authMethod, setAuthMethod] = useState<'email' | 'ra'>(savedAuthMethod);
   const [isSignUp, setIsSignUp] = useState(false);
   const [isReset, setIsReset] = useState(false);
+
+  const RA_DOMAIN = 'ra.unip.local';
+  const buildRaEmail = (raValue: string) => `${raValue.trim()}@${RA_DOMAIN}`;
+  const isValidRa = (raValue: string) => /^\d{8,13}$/.test(raValue.trim());
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loginAttempts, setLoginAttempts] = useState(0);
@@ -46,10 +54,47 @@ export default function LoginPage() {
       setShowLockModal(true);
       return;
     }
+
+    // Validate RA format if RA method
+    if (authMethod === 'ra') {
+      if (!isValidRa(ra)) {
+        toast.error('RA inválido. Digite apenas números (8 a 13 dígitos).');
+        return;
+      }
+    }
+
     setLoading(true);
+    const effectiveEmail = authMethod === 'ra' ? buildRaEmail(ra) : email;
 
     if (isSignUp) {
-      const { error } = await signUp(email, password);
+      if (authMethod === 'ra') {
+        // RA signup: bypass email confirmation by passing metadata
+        const { error } = await supabase.auth.signUp({
+          email: effectiveEmail,
+          password,
+          options: {
+            data: { ra: ra.trim(), account_type: 'ra', full_name: `Aluno UNIP ${ra.trim()}` },
+            emailRedirectTo: `${window.location.origin}/dashboard`,
+          },
+        });
+        setLoading(false);
+        if (error) {
+          toast.error(error.message.includes('already') ? 'Este RA já está cadastrado.' : error.message);
+          return;
+        }
+        // Try immediate login (RA accounts don't need email verification in our flow)
+        const { error: signInError } = await signIn(effectiveEmail, password);
+        if (signInError) {
+          toast.success('Conta criada! Faça login com seu RA.');
+          setIsSignUp(false);
+        } else {
+          toast.success('Conta criada e login realizado!');
+          localStorage.setItem('decode_auth_method', 'ra');
+          navigate('/dashboard');
+        }
+        return;
+      }
+      const { error } = await signUp(effectiveEmail, password);
       setLoading(false);
       if (error) {
         toast.error(error.message);
@@ -62,7 +107,7 @@ export default function LoginPage() {
     }
 
     // Login flow
-    const { error } = await signIn(email, password);
+    const { error } = await signIn(effectiveEmail, password);
     setLoading(false);
 
     if (error) {
@@ -86,7 +131,7 @@ export default function LoginPage() {
           const { data: profileData } = await supabase
             .from('profiles')
             .select('user_id')
-            .eq('email', email)
+            .eq('email', effectiveEmail)
             .maybeSingle();
           if (profileData) {
             await supabase.from('profiles').update({
@@ -108,11 +153,19 @@ export default function LoginPage() {
       }
     } else {
       setLoginAttempts(0);
+      localStorage.setItem('decode_auth_method', authMethod);
       if (rememberMe) {
-        localStorage.setItem('decode_remember_email', email);
+        if (authMethod === 'ra') {
+          localStorage.setItem('decode_remember_ra', ra.trim());
+          localStorage.removeItem('decode_remember_email');
+        } else {
+          localStorage.setItem('decode_remember_email', email);
+          localStorage.removeItem('decode_remember_ra');
+        }
         localStorage.setItem('decode_remember_password', btoa(password));
       } else {
         localStorage.removeItem('decode_remember_email');
+        localStorage.removeItem('decode_remember_ra');
         localStorage.removeItem('decode_remember_password');
       }
       toast.success('Login realizado!');
@@ -298,10 +351,51 @@ export default function LoginPage() {
               ) : (
                 <>
                   <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="space-y-1.5">
-                      <Label htmlFor="email" className="text-xs text-muted-foreground">Email</Label>
-                      <Input id="email" type="email" autoComplete="username" required value={email} onChange={e => setEmail(e.target.value)} placeholder="seu@email.com" />
+                    {/* Auth method toggle (RA vs Email) */}
+                    <div className="grid grid-cols-2 gap-1 p-1 bg-muted/40 rounded-md" style={{ border: '1px solid hsl(0 0% 100% / 0.06)' }}>
+                      <button
+                        type="button"
+                        onClick={() => { setAuthMethod('ra'); setUnverifiedEmail(false); setLoginAttempts(0); }}
+                        className={`text-xs py-1.5 px-2 rounded smooth-all font-medium ${authMethod === 'ra' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                      >
+                        Aluno UNIP (RA)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setAuthMethod('email'); setUnverifiedEmail(false); setLoginAttempts(0); }}
+                        className={`text-xs py-1.5 px-2 rounded smooth-all font-medium ${authMethod === 'email' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                      >
+                        Email
+                      </button>
                     </div>
+
+                    {authMethod === 'ra' ? (
+                      <div className="space-y-1.5">
+                        <Label htmlFor="ra" className="text-xs text-muted-foreground">RA (Registro Acadêmico)</Label>
+                        <Input
+                          id="ra"
+                          type="text"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
+                          autoComplete="username"
+                          required
+                          value={ra}
+                          onChange={e => setRa(e.target.value.replace(/\D/g, ''))}
+                          placeholder="Apenas números (ex: 2312345678)"
+                          maxLength={13}
+                        />
+                        {isSignUp && (
+                          <p className="text-[10px] text-muted-foreground/70 leading-snug">
+                            ⚠️ Cadastro por RA é rápido, mas você não poderá recuperar a senha por e-mail. Guarde-a em local seguro.
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="space-y-1.5">
+                        <Label htmlFor="email" className="text-xs text-muted-foreground">Email</Label>
+                        <Input id="email" type="email" autoComplete="username" required value={email} onChange={e => setEmail(e.target.value)} placeholder="seu@email.com" />
+                      </div>
+                    )}
                     <div className="space-y-1.5">
                       <Label htmlFor="password" className="text-xs text-muted-foreground">Senha</Label>
                       <div className={`relative ${shaking ? 'animate-shake' : ''}`}>
