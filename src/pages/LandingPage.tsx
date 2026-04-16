@@ -94,6 +94,13 @@ export default function LandingPage() {
   const navigate = useNavigate();
   const [showInstallGuide, setShowInstallGuide] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [lightMode, setLightMode] = useState(() =>
+    typeof window !== 'undefined' && localStorage.getItem('decode_landing_light') === '1'
+  );
+
+  useEffect(() => {
+    localStorage.setItem('decode_landing_light', lightMode ? '1' : '0');
+  }, [lightMode]);
 
   const heroRef = useRef(null);
   const { scrollYProgress: heroScroll } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
@@ -115,7 +122,7 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen font-cyber overflow-x-hidden" style={{ background: '#050508', color: '#e2e8f0' }}>
+    <div className={`min-h-screen font-cyber overflow-x-hidden${lightMode ? ' landing-light' : ''}`} style={{ background: '#050508', color: '#e2e8f0' }}>
 
       {/* ═══ NAV ═══ */}
       <motion.header
