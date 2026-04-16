@@ -10,6 +10,7 @@ import { AnnotationsPanel } from '@/components/AnnotationsPanel';
 import { CommentsWidget } from '@/components/CommentsWidget';
 
 import { ApostilaMaterials } from '@/components/ApostilaMaterials';
+import { UnitTilesGrid, buildUnitResources } from '@/components/UnitTilesGrid';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
   ArrowLeft, BookOpen, PenLine, Eye, List, X,
@@ -297,8 +298,28 @@ export default function ApostilaPage() {
                 </div>
               </div>
 
+              {/* Unit tiles - estilo AVA */}
+              <UnitTilesGrid
+                unitNumber="I"
+                unitTitle={apostila.title}
+                resources={buildUnitResources({
+                  onOpenContent: () => {
+                    document.getElementById('conteudo-principal')?.scrollIntoView({ behavior: 'smooth' });
+                  },
+                  onOpenSlides: () => {
+                    document.getElementById('materiais-vinculados')?.scrollIntoView({ behavior: 'smooth' });
+                  },
+                  onOpenVideos: () => {
+                    document.getElementById('materiais-vinculados')?.scrollIntoView({ behavior: 'smooth' });
+                  },
+                  onOpenActivity: () => navigate(`/exercises/${id}`),
+                  hasSlides: true,
+                  hasVideos: true,
+                })}
+              />
+
               {/* Rendered sections */}
-              <div className="space-y-10">
+              <div id="conteudo-principal" className="space-y-10 scroll-mt-24">
                 {sections.map((section, idx) => (
                   <section
                     key={section.id}
@@ -351,7 +372,9 @@ export default function ApostilaPage() {
               </div>
 
               {/* Linked Materials */}
-              <ApostilaMaterials apostilaId={id!} />
+              <div id="materiais-vinculados" className="scroll-mt-24">
+                <ApostilaMaterials apostilaId={id!} />
+              </div>
 
               {/* Exercise CTA */}
               {exerciseCount > 0 && (

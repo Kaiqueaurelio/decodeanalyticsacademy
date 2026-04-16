@@ -28,11 +28,13 @@ import { ApostilaProgressWidget } from '@/components/ApostilaProgressWidget';
 import { MobileCarousel } from '@/components/MobileCarousel';
 import { MaterialWidget } from '@/components/MaterialWidget';
 import { AnnouncementsBoard } from '@/components/AnnouncementsBoard';
+import { QuickAccessHub } from '@/components/QuickAccessHub';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { getSubjectColor } from '@/lib/subject-colors';
 import {
   BookOpen, CheckCircle, XCircle, TrendingUp, PenLine,
-  ChevronRight, BarChart3, User, FileText, Percent, ChevronDown
+  ChevronRight, BarChart3, User, FileText, Percent, ChevronDown,
+  LayoutGrid, List as ListIcon
 } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 
@@ -50,6 +52,7 @@ export default function DashboardPage() {
   const [showMoreWidgets, setShowMoreWidgets] = useState(false);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [disciplinesView, setDisciplinesView] = useState<'grid' | 'list'>('grid');
 
   useEffect(() => {
     if (!user) return;
@@ -175,6 +178,9 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        {/* Quick Access Hub - estilo AVA */}
+        <QuickAccessHub />
+
         {/* Search */}
         <div className="mb-6 animate-content-show delay-1">
           <GlobalSearch />
@@ -206,10 +212,28 @@ export default function DashboardPage() {
           {/* Left Column — Disciplines */}
           <div className="lg:col-span-2 space-y-6">
             {/* Minhas Disciplinas */}
-            <div className="animate-content-show delay-3">
-              <div className="section-heading">
-                <BookOpen className="h-4 w-4 text-primary" />
-                <h2 className="text-base font-semibold">Minhas Disciplinas</h2>
+            <div id="minhas-disciplinas" className="animate-content-show delay-3 scroll-mt-24">
+              <div className="section-heading flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <BookOpen className="h-4 w-4 text-primary" />
+                  <h2 className="text-base font-semibold">Minhas Disciplinas</h2>
+                </div>
+                <div className="flex items-center gap-1 rounded-md border border-border/60 p-0.5 bg-card">
+                  <button
+                    onClick={() => setDisciplinesView('grid')}
+                    className={`p-1.5 rounded transition-colors ${disciplinesView === 'grid' ? 'bg-primary/15 text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                    aria-label="Visualização em grade"
+                  >
+                    <LayoutGrid className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    onClick={() => setDisciplinesView('list')}
+                    className={`p-1.5 rounded transition-colors ${disciplinesView === 'list' ? 'bg-primary/15 text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                    aria-label="Visualização em lista"
+                  >
+                    <ListIcon className="h-3.5 w-3.5" />
+                  </button>
+                </div>
               </div>
 
               {/* Category filter pills */}
@@ -267,6 +291,38 @@ export default function DashboardPage() {
                   ))}
                 </div>
               ) : Object.entries(grouped).length > 0 ? (
+                disciplinesView === 'list' ? (
+                  <div className="rounded-xl border border-border/60 bg-card overflow-hidden">
+                    {Object.entries(grouped).map(([category, items]) => {
+                      const color = getSubjectColor(category);
+                      return items.map((a, idx) => {
+                        const exCount = exerciseCounts[a.id] || 0;
+                        const answered = stats.byApostila[a.id];
+                        const totalEx = exCount;
+                        const answeredCount = answered ? answered.hits + answered.errors : 0;
+                        const prog = totalEx > 0 ? Math.round((answeredCount / totalEx) * 100) : 0;
+                        return (
+                          <button
+                            key={a.id}
+                            onClick={() => navigate(`/apostila/${a.id}`)}
+                            className="w-full flex items-center gap-3 px-4 py-3 text-left border-b border-border/40 last:border-b-0 hover:bg-muted/30 transition-colors animate-fade-in"
+                            style={{ animationDelay: `${idx * 30}ms` }}
+                          >
+                            <span className="font-mono-label text-[10px] uppercase tracking-wider px-2 py-0.5 rounded shrink-0" style={{ backgroundColor: `${color}15`, color }}>
+                              {category.slice(0, 6)}
+                            </span>
+                            <span className="text-sm font-medium text-foreground flex-1 truncate">{a.title}</span>
+                            <div className="hidden sm:flex items-center gap-2 w-32 shrink-0">
+                              <Progress value={prog} className="h-1 flex-1" />
+                              <span className="text-[10px] text-muted-foreground tabular-nums w-8 text-right">{prog}%</span>
+                            </div>
+                            <ChevronRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                          </button>
+                        );
+                      });
+                    })}
+                  </div>
+                ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {Object.entries(grouped).map(([category, items], catIdx) => {
                     const color = getSubjectColor(category);
@@ -351,6 +407,7 @@ export default function DashboardPage() {
                     });
                   })}
                 </div>
+                )
               ) : (
                 <div className="text-center py-16 text-muted-foreground animate-fade-in">
                   <BookOpen className="h-10 w-10 mx-auto mb-3 opacity-20" />
@@ -431,7 +488,9 @@ export default function DashboardPage() {
           <div className="animate-content-show delay-4 space-y-4">
             {/* Priority widgets always visible */}
             <WeeklyGoalWidget />
-            <ExamCalendarWidget />
+            <div id="calendario" className="scroll-mt-24">
+              <ExamCalendarWidget />
+            </div>
             <GamificationSidebarCard
               level={gamification.xp.level}
               xp={gamification.xp.xp_points}
@@ -444,7 +503,10 @@ export default function DashboardPage() {
             <MaterialWidget />
 
             {/* Mural de Avisos */}
-            <AnnouncementsBoard />
+            <div id="comunidade" className="scroll-mt-24">
+              <AnnouncementsBoard />
+            </div>
+            <div id="mural" className="scroll-mt-24" />
 
             {/* Materials shortcut */}
             <Card className="p-4 hover-lift">
