@@ -397,6 +397,140 @@ export default function ExercisesPage() {
               <ArrowLeft className="h-3.5 w-3.5 mr-1.5" /> Voltar
             </Button>
           </Card>
+        ) : reviewMode ? (
+          /* ========== REVIEW MODE ========== */
+          <div className="space-y-4 animate-fade-in">
+            {/* Filter tabs */}
+            <div className="flex gap-2 flex-wrap">
+              {([
+                { key: 'all', label: 'Todas', count: exercises.length },
+                { key: 'correct', label: 'Corretas', count: mcExercises.filter(e => answers[e.id]?.correct).length + essayExercises.filter(e => answers[e.id]).length },
+                { key: 'incorrect', label: 'Incorretas', count: exercises.filter(e => answers[e.id] && !answers[e.id]?.correct).length },
+                { key: 'unanswered', label: 'Não respondidas', count: exercises.filter(e => !answers[e.id]).length },
+              ] as const).map(f => (
+                <button
+                  key={f.key}
+                  onClick={() => setReviewFilter(f.key)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all flex items-center gap-1.5 ${
+                    reviewFilter === f.key
+                      ? 'bg-primary text-primary-foreground shadow-md shadow-primary/25'
+                      : 'bg-secondary/50 text-muted-foreground hover:bg-secondary'
+                  }`}
+                >
+                  {f.key === 'correct' && <CheckCircle className="h-3 w-3" />}
+                  {f.key === 'incorrect' && <XCircle className="h-3 w-3" />}
+                  {f.key === 'all' && <Filter className="h-3 w-3" />}
+                  {f.label}
+                  <span className={`ml-0.5 text-[10px] font-mono ${reviewFilter === f.key ? 'text-primary-foreground/70' : 'text-muted-foreground/60'}`}>
+                    {f.count}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            {filteredReviewExercises.length === 0 ? (
+              <Card className="p-8 text-center bg-card border border-border/50">
+                <Filter className="h-8 w-8 mx-auto mb-2 text-muted-foreground/30" />
+                <p className="text-sm text-muted-foreground">Nenhuma questão neste filtro.</p>
+              </Card>
+            ) : (
+              filteredReviewExercises.map((ex, idx) => {
+                const globalIdx = exercises.indexOf(ex);
+                const ans = answers[ex.id];
+                const type = getExerciseType(ex);
+                const options = Array.isArray(ex.options) ? ex.options as string[] : [];
+
+                return (
+                  <Card key={ex.id} className={`bg-card border overflow-hidden transition-all ${
+                    ans?.correct ? 'border-[hsl(var(--success))]/30' : ans ? 'border-destructive/30' : 'border-border/50'
+                  }`}>
+                    {/* Header */}
+                    <div className="px-4 py-2.5 border-b border-border/30 flex items-center justify-between bg-muted/30">
+                      <div className="flex items-center gap-2">
+                        <span className={`h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                          ans?.correct ? 'bg-[hsl(var(--success))]/15 text-[hsl(var(--success))]'
+                            : ans ? 'bg-destructive/15 text-destructive'
+                            : 'bg-secondary text-muted-foreground'
+                        }`}>
+                          {globalIdx + 1}
+                        </span>
+                        <Badge variant={type === 'essay' ? 'default' : 'secondary'} className="text-[10px]">
+                          {type === 'essay' ? 'Dissertativa' : 'Múltipla Escolha'}
+                        </Badge>
+                      </div>
+                      {ans && (
+                        <Badge variant={ans.correct ? 'default' : 'destructive'} className="text-[10px] gap-1">
+                          {ans.correct ? <><CheckCircle className="h-2.5 w-2.5" /> Correto</> : <><XCircle className="h-2.5 w-2.5" /> Incorreto</>}
+                        </Badge>
+                      )}
+                    </div>
+
+                    {/* Question */}
+                    <div className="p-4">
+                      <p className="text-sm font-medium leading-relaxed mb-3 whitespace-pre-line">{ex.question}</p>
+
+                      {/* Options review */}
+                      {type === 'multiple_choice' && (
+                        <div className="space-y-1.5">
+                          {options.map((opt, oi) => {
+                            const letter = String.fromCharCode(65 + oi);
+                            const isSelected = ans?.selected === letter;
+                            const isCorrectAnswer = ans ? letter === ans.correctAnswer : false;
+
+                            let cls = 'bg-secondary/20 border-border/30 text-muted-foreground';
+                            if (ans) {
+                              if (isCorrectAnswer) cls = 'bg-[hsl(var(--success))]/10 border-[hsl(var(--success))]/30 text-foreground';
+                              else if (isSelected && !ans.correct) cls = 'bg-destructive/10 border-destructive/30 text-foreground';
+                              else cls = 'bg-secondary/10 border-border/20 text-muted-foreground/50';
+                            }
+
+                            return (
+                              <div key={letter} className={`flex items-center gap-2.5 p-2.5 rounded-lg border text-xs ${cls}`}>
+                                <span className={`h-6 w-6 rounded flex items-center justify-center text-[10px] font-bold shrink-0 ${
+                                  isCorrectAnswer ? 'bg-[hsl(var(--success))]/20 text-[hsl(var(--success))]'
+                                    : isSelected && !ans?.correct ? 'bg-destructive/20 text-destructive'
+                                    : 'bg-muted text-muted-foreground'
+                                }`}>
+                                  {isCorrectAnswer ? <CheckCircle className="h-3 w-3" /> : isSelected && !ans?.correct ? <XCircle className="h-3 w-3" /> : letter}
+                                </span>
+                                <span className="flex-1 leading-relaxed">{opt}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      {/* Essay review */}
+                      {type === 'essay' && ans && (
+                        <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">
+                          <p className="text-xs text-primary font-medium mb-1 flex items-center gap-1"><PenLine className="h-3 w-3" /> Sua resposta</p>
+                          <p className="text-xs text-foreground/80 leading-relaxed whitespace-pre-line">{ans.selected}</p>
+                        </div>
+                      )}
+
+                      {/* Explanation */}
+                      {ans && ex.explanation && (
+                        <div className="mt-3 p-3 rounded-lg bg-accent/10 border border-accent/20">
+                          <p className="font-semibold text-[10px] text-accent mb-1 flex items-center gap-1">
+                            <Sparkles className="h-3 w-3" /> {type === 'essay' ? 'Resposta Modelo' : 'Explicação'}
+                          </p>
+                          <p className="text-muted-foreground text-xs leading-relaxed whitespace-pre-line">{ex.explanation}</p>
+                        </div>
+                      )}
+
+                      {/* Jump to question button for unanswered */}
+                      {!ans && (
+                        <Button size="sm" variant="outline" className="mt-3 text-xs gap-1.5"
+                          onClick={() => { setCurrentIndex(globalIdx); setReviewMode(false); }}>
+                          <Target className="h-3 w-3" /> Responder questão {globalIdx + 1}
+                        </Button>
+                      )}
+                    </div>
+                  </Card>
+                );
+              })
+            )}
+          </div>
         ) : !showResults && (
           <>
             {/* Question nav pills */}
