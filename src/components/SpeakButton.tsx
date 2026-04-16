@@ -49,12 +49,25 @@ const chunkText = (text: string, maxLen = 190): string[] => {
 const googleTtsUrl = (text: string) =>
   `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=pt-BR&client=tw-ob`;
 
+const SPEED_OPTIONS = [0.75, 1, 1.25, 1.5] as const;
+type Speed = typeof SPEED_OPTIONS[number];
+
 export function SpeakButton({ getText, label = 'Ouvir em voz', className = '', size = 'md' }: Props) {
   const [state, setState] = useState<'idle' | 'loading' | 'speaking' | 'paused'>('idle');
+  const [speed, setSpeed] = useState<Speed>(() => {
+    const saved = parseFloat(localStorage.getItem('speak_speed') || '1');
+    return (SPEED_OPTIONS as readonly number[]).includes(saved) ? (saved as Speed) : 1;
+  });
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const queueRef = useRef<string[]>([]);
   const indexRef = useRef(0);
   const cancelledRef = useRef(false);
+
+  const applySpeed = (s: Speed) => {
+    setSpeed(s);
+    localStorage.setItem('speak_speed', String(s));
+    if (audioRef.current) audioRef.current.playbackRate = s;
+  };
 
   useEffect(() => () => {
     cancelledRef.current = true;
