@@ -815,6 +815,7 @@ export default function AdminPage() {
     exercises: { title: 'Gerenciar Exercícios', desc: `${totalExercises} exercícios cadastrados` },
     materials: { title: 'Gerenciar Materiais', desc: `${materials.length} materiais disponíveis` },
     users: { title: 'Gerenciar Usuários', desc: `${users.length} usuários cadastrados` },
+    announcements: { title: 'Mural de Avisos', desc: 'Gerencie avisos para os alunos' },
   };
 
   return (
