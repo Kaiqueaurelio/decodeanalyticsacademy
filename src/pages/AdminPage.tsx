@@ -1423,7 +1423,13 @@ export default function AdminPage() {
                     <div className="space-y-3">
                       <div><Label className="text-xs">Título</Label><Input value={editTitle} onChange={e => setEditTitle(e.target.value)} /></div>
                       <div><Label className="text-xs">Categoria</Label><CategorySelect value={editCategory} onValueChange={setEditCategory} /></div>
-                      <div><Label className="text-xs">Conteúdo</Label><Textarea value={editContent} onChange={e => setEditContent(e.target.value)} rows={6} /></div>
+                      <div>
+                        <div className="flex items-center justify-between mb-1">
+                          <Label className="text-xs">Conteúdo</Label>
+                          <ImageUploadButton onImageInserted={(md) => setEditContent(prev => prev + md)} />
+                        </div>
+                        <Textarea value={editContent} onChange={e => setEditContent(e.target.value)} rows={6} />
+                      </div>
                       <Button className="w-full gradient-primary text-primary-foreground" onClick={handleEditSave}>Salvar Apostila</Button>
                     </div>
 
