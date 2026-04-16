@@ -2,20 +2,27 @@ import { useEffect, useState } from 'react';
 
 /**
  * Web-based screenshot protection:
- * - Blacks out the screen when the tab loses focus/visibility (mitigates iOS/Android app switcher screenshots and desktop screenshot tools that briefly defocus).
+ * - Desktop: blacks out the screen on visibility change (mitigates screenshot tools that briefly defocus the tab).
  * - Intercepts PrintScreen / Ctrl+P / Ctrl+Shift+S keys.
  * - Blocks copy / cut / context menu / drag.
  *
- * Note: True OS-level screenshot prevention (like WhatsApp) is only possible in a native app (Capacitor + FLAG_SECURE on Android, overlay on iOS).
+ * NOTE: We intentionally do NOT trigger the overlay on mobile visibility/blur events,
+ * because opening the keyboard, switching apps briefly, or tapping the URL bar fires those events
+ * and would constantly cover the UI with the "Conteúdo protegido" screen — bad UX with no real protection benefit
+ * (the OS-level screenshot already happens before any web event fires). Real prevention requires a native app.
  */
 export function ScreenshotGuard() {
   const [hidden, setHidden] = useState(false);
 
   useEffect(() => {
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+      || (typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)').matches);
+
     const hide = () => setHidden(true);
     const show = () => setHidden(false);
 
     const onVisibility = () => {
+      if (isMobile) return; // skip on mobile to avoid false positives
       if (document.visibilityState === 'hidden') hide();
       else show();
     };
@@ -40,8 +47,6 @@ export function ScreenshotGuard() {
     const block = (e: Event) => e.preventDefault();
 
     document.addEventListener('visibilitychange', onVisibility);
-    window.addEventListener('blur', hide);
-    window.addEventListener('focus', show);
     window.addEventListener('keydown', onKey);
     document.addEventListener('copy', block);
     document.addEventListener('cut', block);
@@ -50,8 +55,6 @@ export function ScreenshotGuard() {
 
     return () => {
       document.removeEventListener('visibilitychange', onVisibility);
-      window.removeEventListener('blur', hide);
-      window.removeEventListener('focus', show);
       window.removeEventListener('keydown', onKey);
       document.removeEventListener('copy', block);
       document.removeEventListener('cut', block);
