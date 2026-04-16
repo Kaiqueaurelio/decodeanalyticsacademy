@@ -7,6 +7,7 @@ import { Watermark } from '@/components/Watermark';
 import { Button } from '@/components/ui/button';
 import { FlashcardsWidget } from '@/components/FlashcardsWidget';
 import { AnnotationsPanel } from '@/components/AnnotationsPanel';
+import { CommentsWidget } from '@/components/CommentsWidget';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
   ArrowLeft, BookOpen, PenLine, Eye, List, X,
@@ -335,6 +336,11 @@ export default function ApostilaPage() {
                   </Button>
                 </div>
               )}
+
+              {/* Comments section */}
+              <div className="mt-12 pt-8 border-t border-border/50 animate-content-show">
+                <CommentsWidget contextType="apostila" contextId={id!} />
+              </div>
             </article>
 
             {/* Right: Tools sidebar */}
