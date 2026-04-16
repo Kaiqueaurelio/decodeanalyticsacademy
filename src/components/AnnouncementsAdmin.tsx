@@ -13,7 +13,7 @@ import { Switch } from '@/components/ui/switch';
 import {
   Plus, Trash2, Edit, Megaphone, GraduationCap, Calendar, Briefcase, Sparkles, Eye, EyeOff
 } from 'lucide-react';
-import { Upload, Loader2, ImageIcon } from 'lucide-react';
+import { Upload, Loader2, ImageIcon, Link2, Wand2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Announcement {
