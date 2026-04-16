@@ -731,6 +731,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          account_type: string
           avatar_url: string | null
           created_at: string
           email: string
@@ -739,9 +740,11 @@ export type Database = {
           is_blocked: boolean
           locked_at: string | null
           login_attempts: number
+          ra: string | null
           user_id: string
         }
         Insert: {
+          account_type?: string
           avatar_url?: string | null
           created_at?: string
           email?: string
@@ -750,9 +753,11 @@ export type Database = {
           is_blocked?: boolean
           locked_at?: string | null
           login_attempts?: number
+          ra?: string | null
           user_id: string
         }
         Update: {
+          account_type?: string
           avatar_url?: string | null
           created_at?: string
           email?: string
@@ -761,6 +766,7 @@ export type Database = {
           is_blocked?: boolean
           locked_at?: string | null
           login_attempts?: number
+          ra?: string | null
           user_id?: string
         }
         Relationships: []
