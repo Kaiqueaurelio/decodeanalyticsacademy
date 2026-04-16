@@ -440,16 +440,19 @@ export default function ApostilaPage() {
         {/* FAB: Conversar com a apostila */}
         <button
           onClick={() => setChatOpen(true)}
-          className="fixed bottom-6 left-6 z-30 h-12 px-4 rounded-full gradient-primary text-primary-foreground flex items-center gap-2 shadow-xl hover-lift transition-all"
-          aria-label="Conversar com a apostila"
+          className="fixed bottom-6 left-6 z-30 h-14 px-5 rounded-full gradient-primary text-primary-foreground flex items-center gap-2.5 shadow-2xl shadow-primary/40 hover:shadow-primary/60 hover-lift transition-all ring-2 ring-primary/30"
+          aria-label="Conversar com a IA sobre a apostila"
         >
-          <Sparkles className="h-4 w-4" />
-          <span className="text-xs font-semibold hidden sm:inline">Conversar com a apostila</span>
+          <div className="relative">
+            <Sparkles className="h-5 w-5" />
+            <span className="absolute -top-1 -right-1 h-2 w-2 bg-emerald-400 rounded-full animate-pulse" />
+          </div>
+          <span className="text-sm font-semibold">Chat IA</span>
         </button>
 
         {/* Chat Sheet */}
         <Sheet open={chatOpen} onOpenChange={setChatOpen}>
-          <SheetContent side="right" className="w-full sm:max-w-md p-0 flex flex-col">
+          <SheetContent side="right" className="w-full sm:max-w-lg lg:max-w-xl p-0 flex flex-col gap-0 border-l border-primary/20">
             <div className="flex-1 overflow-hidden">
               <ApostilaChat apostilaId={id!} apostilaTitle={apostila.title} />
             </div>
