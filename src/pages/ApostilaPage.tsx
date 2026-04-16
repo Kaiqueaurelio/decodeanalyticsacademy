@@ -11,6 +11,7 @@ import { CommentsWidget } from '@/components/CommentsWidget';
 
 import { ApostilaMaterials } from '@/components/ApostilaMaterials';
 import { ApostilaChat } from '@/components/ApostilaChat';
+import { SpeakButton } from '@/components/SpeakButton';
 import { UnitTilesGrid, buildUnitResources } from '@/components/UnitTilesGrid';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -296,7 +297,7 @@ export default function ApostilaPage() {
                 <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl leading-tight mb-4 text-foreground animate-fade-in" style={{ animationDelay: '100ms' }}>
                   {apostila.title}
                 </h1>
-                <div className="flex items-center gap-5 text-xs text-muted-foreground animate-fade-in" style={{ animationDelay: '200ms' }}>
+                <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-muted-foreground animate-fade-in" style={{ animationDelay: '200ms' }}>
                   <span className="flex items-center gap-1.5">
                     <Layers className="h-3.5 w-3.5" /> {sections.length} seções
                   </span>
@@ -308,6 +309,18 @@ export default function ApostilaPage() {
                   <span className="flex items-center gap-1.5 text-primary/70">
                     ~{Math.max(1, Math.round((apostila.content?.length || 0) / 1200))} min de leitura
                   </span>
+                </div>
+
+                {/* Ouvir apostila — botão grande e visível no topo */}
+                <div className="mt-5 animate-fade-in" style={{ animationDelay: '280ms' }}>
+                  <SpeakButton
+                    size="lg"
+                    label="Ouvir apostila em voz"
+                    getText={() => `${apostila.title}. ${apostila.content || ''}`}
+                  />
+                  <p className="text-[10px] text-muted-foreground mt-1.5">
+                    Leitura automática em português · funciona offline
+                  </p>
                 </div>
               </div>
 
