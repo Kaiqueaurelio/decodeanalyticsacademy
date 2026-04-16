@@ -309,6 +309,7 @@ export default function LoginPage() {
                           ref={passwordRef}
                           id="password"
                           type={showPassword ? 'text' : 'password'}
+                          autoComplete="current-password"
                           required
                           value={password}
                           onChange={e => setPassword(e.target.value)}
