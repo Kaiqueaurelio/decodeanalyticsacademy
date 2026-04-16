@@ -282,41 +282,39 @@ export function ApostilaChat({ apostilaId, apostilaTitle, variant = 'panel' }: P
         )}
 
         {messages.map((m, i) => (
-          <div
-            key={i}
-            className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}
-          >
-            <div
-              className={`max-w-[85%] rounded-2xl px-3 py-2 text-xs leading-relaxed ${
-                m.role === 'user'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted/60 text-foreground'
-              }`}
-            >
-              {m.role === 'assistant' ? (
-                <div className="space-y-1.5">
+          <div key={i} className="animate-fade-in">
+            <div className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div
+                className={`max-w-[85%] rounded-2xl px-3 py-2 text-xs leading-relaxed ${
+                  m.role === 'user'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted/60 text-foreground'
+                }`}
+              >
+                {m.role === 'assistant' ? (
                   <div className="prose prose-xs max-w-none prose-p:my-1.5 prose-ul:my-1.5 prose-ol:my-1.5 prose-headings:my-2 prose-code:text-[10px] prose-pre:text-[10px] dark:prose-invert">
                     <ReactMarkdown>{m.content || '...'}</ReactMarkdown>
                   </div>
-                  {m.content && (
-                    <button
-                      onClick={() => speak(i, m.content)}
-                      className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border transition-all shadow-sm ${
-                        speakingIdx === i
-                          ? 'bg-destructive text-destructive-foreground border-destructive animate-pulse'
-                          : 'bg-primary text-primary-foreground border-primary hover:brightness-110 hover:-translate-y-px'
-                      }`}
-                      title={speakingIdx === i ? 'Parar leitura' : 'Ouvir resposta em voz'}
-                    >
-                      {speakingIdx === i ? <Square className="h-3 w-3" /> : <Volume2 className="h-3 w-3" />}
-                      {speakingIdx === i ? 'Parar leitura' : 'Ouvir em voz'}
-                    </button>
-                  )}
-                </div>
-              ) : (
-                <p className="whitespace-pre-wrap">{m.content}</p>
-              )}
+                ) : (
+                  <p className="whitespace-pre-wrap">{m.content}</p>
+                )}
+              </div>
             </div>
+            {m.role === 'assistant' && m.content && (
+              <div className="flex justify-start mt-1.5">
+                <button
+                  onClick={() => speak(i, m.content)}
+                  className={`inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full transition-all shadow-md ${
+                    speakingIdx === i
+                      ? 'bg-destructive text-destructive-foreground animate-pulse'
+                      : 'bg-primary text-primary-foreground hover:brightness-110'
+                  }`}
+                >
+                  {speakingIdx === i ? <Square className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
+                  {speakingIdx === i ? 'Parar leitura' : 'Ouvir em voz'}
+                </button>
+              </div>
+            )}
           </div>
         ))}
 
