@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Card } from '@/components/ui/card';
 import {
-  Send, Heart, MessageCircle, Trash2, Loader2, Users, Pin, ChevronLeft,
+  Send, Heart, MessageCircle, Trash2, Loader2, Users, Pin,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
@@ -67,7 +67,7 @@ export default function CommunityPage() {
   const [submitting, setSubmitting] = useState(false);
   const [openReplies, setOpenReplies] = useState<Record<string, Reply[] | undefined>>({});
   const [replyText, setReplyText] = useState<Record<string, string>>({});
-  const [showChannels, setShowChannels] = useState(true); // mobile drawer
+  const [showChannels, setShowChannels] = useState(false); // mobile drawer (start on feed)
   const channelRef = useRef<any>(null);
 
   // Load channels
@@ -267,13 +267,26 @@ export default function CommunityPage() {
 
           {/* Feed */}
           <main className={cn(showChannels ? "hidden lg:block" : "block")}>
-            {/* Mobile back button */}
-            <button
-              onClick={() => setShowChannels(true)}
-              className="lg:hidden mb-3 flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
-            >
-              <ChevronLeft className="h-3 w-3" /> Trocar de canal
-            </button>
+            {/* Mobile: chip bar de canais (sempre visível) */}
+            <div className="lg:hidden mb-3 -mx-1 overflow-x-auto scrollbar-none">
+              <div className="flex gap-1.5 px-1 pb-1 min-w-max">
+                {channels.map(ch => (
+                  <button
+                    key={ch.id}
+                    onClick={() => setActiveChannel(ch)}
+                    className={cn(
+                      "shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs transition-colors border",
+                      activeChannel?.id === ch.id
+                        ? "bg-primary text-primary-foreground border-primary font-semibold"
+                        : "bg-secondary/40 border-border/40 text-foreground/80 hover:bg-secondary"
+                    )}
+                  >
+                    <span>{ch.icon}</span>
+                    <span>{ch.name}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
 
             {activeChannel && (
               <Card className="p-4 mb-4">
@@ -289,23 +302,31 @@ export default function CommunityPage() {
 
             {/* New post */}
             {user && activeChannel && (
-              <Card className="p-3 mb-4">
+              <Card className="p-3 mb-4 border-primary/30 bg-primary/5">
+                <p className="text-[10px] font-mono-label uppercase text-primary mb-2 tracking-wider">
+                  ✍️ Escreva sua mensagem
+                </p>
                 <MentionTextarea
                   value={newPost}
                   onChange={setNewPost}
-                  placeholder={`Compartilhe algo em #${activeChannel.name}... use @ para mencionar`}
-                  className="min-h-[80px] text-sm bg-transparent border-0 resize-none focus-visible:ring-0"
+                  placeholder={`Compartilhe algo, tire dúvidas em #${activeChannel.name}... use @ para mencionar`}
+                  className="min-h-[80px] text-sm bg-background border border-border/50 resize-none"
                   maxLength={2000}
                 />
                 <div className="flex items-center justify-between mt-2 pt-2 border-t border-border/30">
                   <span className="text-[10px] text-muted-foreground font-mono">
                     {newPost.length}/2000 · use <span className="text-primary">@</span> para mencionar
                   </span>
-                  <Button size="sm" disabled={!newPost.trim() || submitting} onClick={handleSubmit}>
+                  <Button size="sm" disabled={!newPost.trim() || submitting} onClick={handleSubmit} className="gap-1.5">
                     {submitting ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
                     Publicar
                   </Button>
                 </div>
+              </Card>
+            )}
+            {!user && activeChannel && (
+              <Card className="p-4 mb-4 text-center text-xs text-muted-foreground">
+                Faça login para participar da conversa.
               </Card>
             )}
 
