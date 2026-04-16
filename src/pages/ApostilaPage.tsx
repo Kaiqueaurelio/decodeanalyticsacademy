@@ -10,6 +10,7 @@ import { AnnotationsPanel } from '@/components/AnnotationsPanel';
 import { CommentsWidget } from '@/components/CommentsWidget';
 
 import { ApostilaMaterials } from '@/components/ApostilaMaterials';
+import { UnitTilesGrid, buildUnitResources } from '@/components/UnitTilesGrid';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
   ArrowLeft, BookOpen, PenLine, Eye, List, X,
