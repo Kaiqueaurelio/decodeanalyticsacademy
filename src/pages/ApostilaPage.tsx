@@ -372,7 +372,9 @@ export default function ApostilaPage() {
               </div>
 
               {/* Linked Materials */}
-              <ApostilaMaterials apostilaId={id!} />
+              <div id="materiais-vinculados" className="scroll-mt-24">
+                <ApostilaMaterials apostilaId={id!} />
+              </div>
 
               {/* Exercise CTA */}
               {exerciseCount > 0 && (
