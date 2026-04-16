@@ -31,6 +31,7 @@ import { ActivityChart } from '@/components/ActivityChart';
 import { ImageUploadButton } from '@/components/ImageUploadButton';
 import { AnnouncementsAdmin } from '@/components/AnnouncementsAdmin';
 import { ApostilaMaterialsManager } from '@/components/ApostilaMaterialsManager';
+import { autoLinkAll } from '@/lib/auto-link-materials';
 
 type Apostila = Tables<'apostilas'>;
 type Exercise = Tables<'exercises'>;
