@@ -20,7 +20,7 @@ import {
   LayoutDashboard, CheckCircle, TrendingUp, Upload, BarChart3, Clock,
   Link as LinkIcon, Loader2, AlertCircle, Edit, Download, File, Image, Video, Music, FileSpreadsheet, Presentation,
   Users, ShieldBan, ShieldCheck, Search, Menu, X, Activity, GraduationCap, FolderOpen, Settings, RefreshCw,
-  Sun, Moon, FileUp, Sparkles, Wand2, Megaphone, Combine
+  Sun, Moon, FileUp, Sparkles, Wand2, Megaphone, Combine, Calendar as CalIcon
 } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useTheme } from '@/hooks/useTheme';
@@ -30,6 +30,7 @@ import { AnimatedCounter } from '@/components/AnimatedCounter';
 import { ActivityChart } from '@/components/ActivityChart';
 import { ImageUploadButton } from '@/components/ImageUploadButton';
 import { AnnouncementsAdmin } from '@/components/AnnouncementsAdmin';
+import { CalendarEventsAdmin } from '@/components/CalendarEventsAdmin';
 import { ApostilaMaterialsManager } from '@/components/ApostilaMaterialsManager';
 import { autoLinkAll, autoLinkApostila } from '@/lib/auto-link-materials';
 import { MergeApostilasDialog } from '@/components/MergeApostilasDialog';
@@ -72,7 +73,7 @@ function CategorySelect({ value, onValueChange, placeholder }: { value: string; 
   );
 }
 
-type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements';
+type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements' | 'calendar';
 
 const ACCEPT_MAP: Record<string, string> = {
   pdf: '.pdf', image: 'image/*', gif: '.gif,image/gif',
@@ -150,6 +151,7 @@ function AdminSidebar({ tab, setTab, stats, sidebarOpen, setSidebarOpen }: {
     { id: 'materials' as Tab, label: 'Materiais', icon: FolderOpen, count: stats.materials },
     { id: 'users' as Tab, label: 'Usuários', icon: Users, count: stats.users },
     { id: 'announcements' as Tab, label: 'Avisos', icon: Megaphone, count: undefined },
+    { id: 'calendar' as Tab, label: 'Calendário', icon: CalIcon, count: undefined },
   ];
 
   return (
@@ -857,6 +859,7 @@ export default function AdminPage() {
     materials: { title: 'Gerenciar Materiais', desc: `${materials.length} materiais disponíveis` },
     users: { title: 'Gerenciar Usuários', desc: `${users.length} usuários cadastrados` },
     announcements: { title: 'Mural de Avisos', desc: 'Gerencie avisos para os alunos' },
+    calendar: { title: 'Calendário Acadêmico', desc: 'Importe cronogramas e gerencie provas/trabalhos' },
   };
 
   return (
@@ -910,6 +913,7 @@ export default function AdminPage() {
                 { id: 'materials', label: 'Materiais', icon: <FolderOpen className="h-3.5 w-3.5" />, count: materials.length },
                 { id: 'users', label: 'Usuários', icon: <Users className="h-3.5 w-3.5" />, count: users.length },
                 { id: 'announcements', label: 'Avisos', icon: <Megaphone className="h-3.5 w-3.5" /> },
+                { id: 'calendar', label: 'Calendário', icon: <CalIcon className="h-3.5 w-3.5" /> },
               ]}
               activeTab={tab}
               onTabChange={(id) => setTab(id as Tab)}
@@ -2197,6 +2201,11 @@ export default function AdminPage() {
             {/* ANNOUNCEMENTS */}
             {tab === 'announcements' && (
               <AnnouncementsAdmin />
+            )}
+
+            {/* CALENDAR */}
+            {tab === 'calendar' && (
+              <CalendarEventsAdmin />
             )}
             </div>
           </main>
