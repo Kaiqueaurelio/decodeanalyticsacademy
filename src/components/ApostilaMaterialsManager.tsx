@@ -95,6 +95,7 @@ export function ApostilaMaterialsManager({ apostilaId, apostilaTitle }: Props) {
     }
   };
 
+  const removeMaterial = async (linkId: string) => {
     await supabase.from('apostila_materials').delete().eq('id', linkId);
     toast.success('Material removido');
     load();
