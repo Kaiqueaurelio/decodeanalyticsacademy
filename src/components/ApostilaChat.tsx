@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { Send, Sparkles, Trash2, Loader2, BookOpen } from 'lucide-react';
+import { Send, Sparkles, Trash2, Loader2, BookOpen, Volume2, Square } from 'lucide-react';
 import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
 
@@ -32,7 +32,44 @@ export function ApostilaChat({ apostilaId, apostilaTitle, variant = 'panel' }: P
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [streaming, setStreaming] = useState(false);
+  const [speakingIdx, setSpeakingIdx] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Para a fala ao desmontar
+  useEffect(() => () => { try { window.speechSynthesis?.cancel(); } catch {} }, []);
+
+  const speak = (idx: number, text: string) => {
+    if (!('speechSynthesis' in window)) {
+      toast.error('Seu navegador não suporta leitura em voz');
+      return;
+    }
+    const synth = window.speechSynthesis;
+    if (speakingIdx === idx) {
+      synth.cancel();
+      setSpeakingIdx(null);
+      return;
+    }
+    synth.cancel();
+    // Remove markdown básico para leitura mais natural
+    const clean = text
+      .replace(/```[\s\S]*?```/g, '')
+      .replace(/`([^`]+)`/g, '$1')
+      .replace(/[*_#>~]+/g, '')
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+      .trim();
+    if (!clean) return;
+    const utter = new SpeechSynthesisUtterance(clean);
+    utter.lang = 'pt-BR';
+    utter.rate = 1;
+    utter.pitch = 1;
+    const voices = synth.getVoices();
+    const ptVoice = voices.find(v => v.lang?.toLowerCase().startsWith('pt'));
+    if (ptVoice) utter.voice = ptVoice;
+    utter.onend = () => setSpeakingIdx(null);
+    utter.onerror = () => setSpeakingIdx(null);
+    setSpeakingIdx(idx);
+    synth.speak(utter);
+  };
 
   // Carrega histórico
   useEffect(() => {
@@ -257,8 +294,20 @@ export function ApostilaChat({ apostilaId, apostilaTitle, variant = 'panel' }: P
               }`}
             >
               {m.role === 'assistant' ? (
-                <div className="prose prose-xs max-w-none prose-p:my-1.5 prose-ul:my-1.5 prose-ol:my-1.5 prose-headings:my-2 prose-code:text-[10px] prose-pre:text-[10px] dark:prose-invert">
-                  <ReactMarkdown>{m.content || '...'}</ReactMarkdown>
+                <div className="space-y-1.5">
+                  <div className="prose prose-xs max-w-none prose-p:my-1.5 prose-ul:my-1.5 prose-ol:my-1.5 prose-headings:my-2 prose-code:text-[10px] prose-pre:text-[10px] dark:prose-invert">
+                    <ReactMarkdown>{m.content || '...'}</ReactMarkdown>
+                  </div>
+                  {m.content && (
+                    <button
+                      onClick={() => speak(i, m.content)}
+                      className="inline-flex items-center gap-1 text-[10px] text-muted-foreground hover:text-primary transition-colors"
+                      title={speakingIdx === i ? 'Parar leitura' : 'Ouvir resposta'}
+                    >
+                      {speakingIdx === i ? <Square className="h-2.5 w-2.5" /> : <Volume2 className="h-2.5 w-2.5" />}
+                      {speakingIdx === i ? 'Parar' : 'Ouvir'}
+                    </button>
+                  )}
                 </div>
               ) : (
                 <p className="whitespace-pre-wrap">{m.content}</p>
