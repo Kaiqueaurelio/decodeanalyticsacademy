@@ -1,38 +1,33 @@
 
 
-## Plano: Exercícios completos nos 2 dialogs (Exercícios da apostila + Editar apostila)
+## Plano: Integrar materiais vinculados como conteúdo nativo da apostila
+
+### Objetivo
+Ao invés de exibir os materiais vinculados numa seção separada "Material de Apoio" com cards, eles serão renderizados **inline no conteúdo da apostila**, como se fossem seções naturais dela — PDFs embutidos, vídeos, imagens, áudios etc., tudo fluindo junto com o texto.
 
 ### O que muda
 
-Os dois dialogs que você mostrou nas screenshots ganham funcionalidades completas de gestão de exercícios:
+**Arquivo: `src/components/ApostilaMaterials.tsx`**
+- Remover a apresentação em grid de cards com ícones e badges de tipo
+- Renderizar cada material diretamente no fluxo de leitura:
+  - **PDF/Office** → iframe embutido com visualizador, título como heading
+  - **Imagem/GIF** → imagem renderizada inline com legenda
+  - **Vídeo** → player embutido ou link para o video player interno
+  - **Áudio** → player inline (já existe o `InlineAudioPlayer`)
+  - **Link** → card discreto com botão "Acessar"
+- Remover o header "Material de Apoio" com ícone de clipe
+- Cada material aparece como uma seção com título (h3) e conteúdo renderizado diretamente
 
-**1. Dialog "Exercícios — [Apostila]"** (abre ao clicar no ícone de caneta na lista de apostilas)
-- Mantém a lista de exercícios existentes + formulário manual individual
-- Adiciona toggle de 3 modos: **Individual** | **Importar em Lote** | **Gerar com IA**
-- **Importar em Lote**: campo de texto para colar exercícios no formato (pergunta, A-D, gabarito, explicação)
-- **Gerar com IA**: botão que envia o conteúdo da apostila para uma edge function, gera 8-10 exercícios, mostra preview editável antes de salvar
+**Arquivo: `src/pages/ApostilaPage.tsx`**
+- Nenhuma mudança necessária — o componente `ApostilaMaterials` já está posicionado após as seções de conteúdo
 
-**2. Dialog "Editar Apostila"** (abre ao clicar no ícone de edição)
-- Mantém campos de título, categoria e conteúdo
-- Adiciona seção abaixo com os mesmos 3 modos de exercícios (Individual, Lote, IA)
-- Lista os exercícios existentes da apostila com opção de excluir
+### Resultado visual
+Os materiais vinculados aparecerão como continuação natural do conteúdo da apostila, com títulos no mesmo estilo das seções existentes e o conteúdo embutido diretamente na página — sem cards, sem badges de tipo, sem separação visual como "seção de materiais".
 
 ### Detalhes técnicos
-
-**Nova Edge Function: `generate-exercises/index.ts`**
-- Recebe `{ content, title, count? }` 
-- Usa Lovable AI (gemini-3-flash-preview) via tool calling para retornar exercícios estruturados
-- Retorna array de `{ question, options, correct_answer, explanation }`
-
-**Mudanças em `AdminPage.tsx`**
-- Refatorar o dialog de exercícios (linhas 1127-1184) para incluir 3 abas: Individual, Lote, IA
-- Adicionar seção de exercícios no dialog de edição (linhas 1186-1197)
-- Novo estado `aiGenerating` e `aiExercises` para preview dos exercícios gerados
-- Reutilizar `parseBulkExercises` e `handleBulkExerciseImport` já existentes
-
-**Fluxo "Gerar com IA":**
-1. Clica "Gerar Exercícios" → loading spinner
-2. Edge function retorna exercícios → preview na tela
-3. Pode remover exercícios individuais do preview
-4. Clica "Salvar Todos" → insere no banco
+- O componente `ApostilaMaterials` será refatorado para renderizar cada material inline
+- PDFs e Office usarão iframe (Google Docs viewer para Office)
+- Vídeos terão tag `<video>` nativa ou navegação para `/video/:id`
+- O botão de tela cheia será mantido para PDFs e Office
+- Signed URLs continuam sendo geradas normalmente
 
