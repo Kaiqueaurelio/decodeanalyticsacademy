@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, useScroll, useTransform, useInView } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -7,7 +7,7 @@ import {
   ArrowRight, BookOpen, GraduationCap, Cpu, Brain, Award,
   ChevronRight, Download, Smartphone, Star, MessageCircle,
   Layers, Zap, Target, BarChart3, FileText, Users, PenLine,
-  Flame, TrendingUp, Clock, CheckCircle,
+  Flame, TrendingUp, Clock, CheckCircle, Sun, Moon,
 } from 'lucide-react';
 import logoDark from '@/assets/logo-dark.jpeg';
 import { TestimonialsSection } from '@/components/TestimonialsSection';
