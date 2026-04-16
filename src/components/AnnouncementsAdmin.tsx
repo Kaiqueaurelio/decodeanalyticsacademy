@@ -13,6 +13,7 @@ import { Switch } from '@/components/ui/switch';
 import {
   Plus, Trash2, Edit, Megaphone, GraduationCap, Calendar, Briefcase, Sparkles, Eye, EyeOff
 } from 'lucide-react';
+import { Upload, Loader2, ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Announcement {
@@ -49,6 +50,45 @@ export function AnnouncementsAdmin() {
   const [imageUrl, setImageUrl] = useState('');
   const [linkUrl, setLinkUrl] = useState('');
   const [published, setPublished] = useState(true);
+  const [uploading, setUploading] = useState(false);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
+      toast.error('Imagem muito grande. Máximo: 5MB');
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Apenas imagens são permitidas');
+      return;
+    }
+
+    setUploading(true);
+    const ext = file.name.split('.').pop() || 'jpg';
+    const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+
+    const { error } = await supabase.storage
+      .from('announcements')
+      .upload(fileName, file, { contentType: file.type });
+
+    if (error) {
+      toast.error(`Erro ao fazer upload: ${error.message}`);
+      setUploading(false);
+      return;
+    }
+
+    const { data: urlData } = supabase.storage
+      .from('announcements')
+      .getPublicUrl(fileName);
+
+    setImageUrl(urlData.publicUrl);
+    setUploading(false);
+    toast.success('Imagem enviada!');
+  };
 
   const loadAnnouncements = async () => {
     const { data } = await supabase.from('announcements').select('*').order('created_at', { ascending: false });
@@ -219,7 +259,29 @@ export function AnnouncementsAdmin() {
             </div>
             <div>
               <Label className="text-xs">URL da Imagem (opcional)</Label>
-              <Input value={imageUrl} onChange={e => setImageUrl(e.target.value)} placeholder="https://..." className="mt-1" />
+              <div className="flex gap-2 mt-1">
+                <Input value={imageUrl} onChange={e => setImageUrl(e.target.value)} placeholder="https://..." className="flex-1" />
+                <label className="cursor-pointer">
+                  <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} disabled={uploading} />
+                  <Button type="button" size="icon" variant="outline" className="h-9 w-9 shrink-0" disabled={uploading} asChild>
+                    <span>
+                      {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                    </span>
+                  </Button>
+                </label>
+              </div>
+              {imageUrl && (
+                <div className="mt-2 relative rounded-lg overflow-hidden border border-border">
+                  <img src={imageUrl} alt="Preview" className="w-full h-32 object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                  <button
+                    type="button"
+                    onClick={() => setImageUrl('')}
+                    className="absolute top-1.5 right-1.5 bg-background/80 backdrop-blur-sm rounded-full p-1 hover:bg-destructive/20 transition-colors"
+                  >
+                    <Trash2 className="h-3 w-3 text-destructive" />
+                  </button>
+                </div>
+              )}
             </div>
             <div>
               <Label className="text-xs">Link externo (opcional)</Label>
