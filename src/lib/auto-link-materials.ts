@@ -187,8 +187,62 @@ export async function autoLinkAll(
 }
 
 /**
+ * Unify the content of multiple apostilas into a single seamless document.
+ * - Removes the apostila title repeated as a heading at the start of its content
+ * - Deduplicates identical paragraphs across apostilas
+ * - Drops standalone repeated section headers (introdução, conclusão, referências)
+ *   when they appear more than once — keeps only the first occurrence's content
+ */
+function unifyContent(apostilas: { title: string; content: string | null }[]): string {
+  const seenParagraphs = new Set<string>();
+  const seenSectionHeaders = new Set<string>();
+  const REPEATABLE_SECTIONS = /^(?:#{1,6}\s*)?(introdução|introducao|conclusão|conclusao|referências|referencias|bibliografia|sumário|sumario|índice|indice)\s*:?\s*$/i;
+
+  const allParagraphs: string[] = [];
+
+  for (const ap of apostilas) {
+    let content = (ap.content || '').trim();
+    if (!content) continue;
+
+    // Remove the title if it appears as the first heading
+    const titleNorm = ap.title.trim().toLowerCase();
+    const lines = content.split('\n');
+    while (lines.length > 0) {
+      const first = lines[0].trim().replace(/^#{1,6}\s*/, '').replace(/[*_`]/g, '').toLowerCase();
+      if (!first || first === titleNorm) { lines.shift(); continue; }
+      break;
+    }
+    content = lines.join('\n').trim();
+
+    // Split into paragraphs (double newline)
+    const paragraphs = content.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
+
+    for (const p of paragraphs) {
+      const normalized = p.toLowerCase().replace(/\s+/g, ' ').trim();
+
+      // Skip duplicated section headers
+      if (REPEATABLE_SECTIONS.test(p.trim())) {
+        if (seenSectionHeaders.has(normalized)) continue;
+        seenSectionHeaders.add(normalized);
+      }
+
+      // Skip exact duplicates of substantive paragraphs (>40 chars)
+      if (normalized.length > 40) {
+        if (seenParagraphs.has(normalized)) continue;
+        seenParagraphs.add(normalized);
+      }
+
+      allParagraphs.push(p);
+    }
+  }
+
+  return allParagraphs.join('\n\n');
+}
+
+/**
  * Merge multiple apostilas into a target one.
- * - Concatenates content with separators
+ * - All must belong to the same category (matéria)
+ * - Concatenates content as a single seamless document (no separators/extra headers)
  * - Moves all exercises to target
  * - Moves all material links to target (deduped)
  * - Deletes the source apostilas
@@ -202,7 +256,7 @@ export async function mergeApostilas(
 
   // Fetch all apostilas
   const { data: apostilas } = await supabase
-    .from('apostilas').select('id, title, content').in('id', allIds);
+    .from('apostilas').select('id, title, content, category').in('id', allIds);
 
   if (!apostilas || apostilas.length < 2) {
     throw new Error('Selecione ao menos 2 apostilas para mesclar.');
@@ -213,11 +267,16 @@ export async function mergeApostilas(
 
   const sources = apostilas.filter(a => a.id !== targetId);
 
-  // 1. Concatenate content — preserve original formatting, no extra headers/separators
-  const parts = [target.content || '', ...sources.map(s => s.content || '')]
-    .map(c => c.trim())
-    .filter(Boolean);
-  const mergedContent = parts.join('\n\n');
+  // Validate: all must share the same category
+  const targetCat = target.category.trim().toLowerCase();
+  const mismatch = sources.find(s => s.category.trim().toLowerCase() !== targetCat);
+  if (mismatch) {
+    throw new Error(`Só é possível mesclar apostilas da mesma matéria. "${mismatch.title}" é de "${mismatch.category}".`);
+  }
+
+  // 1. Unify content as a single seamless apostila
+  const mergedContent = unifyContent([target, ...sources]);
+
 
   // 2. Move exercises
   const sourceIdList = sources.map(s => s.id);

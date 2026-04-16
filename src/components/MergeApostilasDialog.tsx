@@ -59,9 +59,14 @@ export function MergeApostilasDialog({ open, onOpenChange, onMerged }: Props) {
     setSelected(next);
   };
 
-  const filtered = apostilas.filter(a =>
-    !search.trim() || a.title.toLowerCase().includes(search.toLowerCase()) || a.category.toLowerCase().includes(search.toLowerCase())
-  );
+  // Lock selection to first selected apostila's category
+  const lockedCategory = selected.size > 0
+    ? apostilas.find(a => selected.has(a.id))?.category.trim().toLowerCase()
+    : null;
+
+  const filtered = apostilas
+    .filter(a => !search.trim() || a.title.toLowerCase().includes(search.toLowerCase()) || a.category.toLowerCase().includes(search.toLowerCase()))
+    .filter(a => !lockedCategory || a.category.trim().toLowerCase() === lockedCategory || selected.has(a.id));
 
   const handleMerge = async () => {
     if (selected.size < 2 || !targetId) return;
@@ -130,8 +135,13 @@ export function MergeApostilasDialog({ open, onOpenChange, onMerged }: Props) {
         ) : (
           <>
             <p className="text-xs text-muted-foreground">
-              Selecione 2+ apostilas. Marque a "principal" — ela receberá o conteúdo das outras.
+              Selecione 2+ apostilas <strong>da mesma matéria</strong>. Marque a "principal" — ela receberá o conteúdo das outras.
             </p>
+            {lockedCategory && (
+              <div className="text-[10px] text-primary bg-primary/10 rounded px-2 py-1">
+                Filtrando apenas: <strong>{apostilas.find(a => selected.has(a.id))?.category}</strong>
+              </div>
+            )}
             <div className="relative">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
               <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar..." className="pl-8 h-8 text-xs" />
