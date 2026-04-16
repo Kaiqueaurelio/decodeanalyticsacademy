@@ -1,23 +1,13 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-
-const ROUTE_KEY = 'decode_last_route';
-const EXCLUDED = ['/', '/login', '/reset-password'];
+import { getLastRoute, clearLastRoute, getLocationRoute, saveLastRoute } from '@/lib/app-persistence';
 
 export function useRouteTracker() {
   const location = useLocation();
 
   useEffect(() => {
-    if (!EXCLUDED.includes(location.pathname)) {
-      localStorage.setItem(ROUTE_KEY, location.pathname);
-    }
-  }, [location.pathname]);
+    saveLastRoute(getLocationRoute(location));
+  }, [location]);
 }
 
-export function getLastRoute(): string | null {
-  return localStorage.getItem(ROUTE_KEY);
-}
-
-export function clearLastRoute() {
-  localStorage.removeItem(ROUTE_KEY);
-}
+export { getLastRoute, clearLastRoute };
