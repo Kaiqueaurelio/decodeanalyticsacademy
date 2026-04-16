@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, useScroll, useTransform, useInView } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -7,7 +7,7 @@ import {
   ArrowRight, BookOpen, GraduationCap, Cpu, Brain, Award,
   ChevronRight, Download, Smartphone, Star, MessageCircle,
   Layers, Zap, Target, BarChart3, FileText, Users, PenLine,
-  Flame, TrendingUp, Clock, CheckCircle,
+  Flame, TrendingUp, Clock, CheckCircle, Sun, Moon,
 } from 'lucide-react';
 import logoDark from '@/assets/logo-dark.jpeg';
 import { TestimonialsSection } from '@/components/TestimonialsSection';
@@ -94,6 +94,13 @@ export default function LandingPage() {
   const navigate = useNavigate();
   const [showInstallGuide, setShowInstallGuide] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [lightMode, setLightMode] = useState(() =>
+    typeof window !== 'undefined' && localStorage.getItem('decode_landing_light') === '1'
+  );
+
+  useEffect(() => {
+    localStorage.setItem('decode_landing_light', lightMode ? '1' : '0');
+  }, [lightMode]);
 
   const heroRef = useRef(null);
   const { scrollYProgress: heroScroll } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
@@ -115,7 +122,7 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen font-cyber overflow-x-hidden" style={{ background: '#050508', color: '#e2e8f0' }}>
+    <div className={`min-h-screen font-cyber overflow-x-hidden${lightMode ? ' landing-light' : ''}`} style={{ background: '#050508', color: '#e2e8f0' }}>
 
       {/* ═══ NAV ═══ */}
       <motion.header
@@ -137,14 +144,24 @@ export default function LandingPage() {
             <a href="#roadmap" className="text-xs uppercase tracking-wider text-gray-400 hover:text-white transition-colors no-underline">Trilha</a>
             <a href="#depoimentos" className="text-xs uppercase tracking-wider text-gray-400 hover:text-white transition-colors no-underline">Depoimentos</a>
           </nav>
-          <Button
-            size="sm"
-            onClick={() => navigate('/login')}
-            className="h-8 px-4 text-[11px] font-semibold uppercase tracking-wider border-0 rounded-md"
-            style={{ background: '#00f0ff', color: '#050508' }}
-          >
-            Acessar <ArrowRight className="ml-1.5 h-3 w-3" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setLightMode(v => !v)}
+              aria-label={lightMode ? 'Mudar para modo escuro' : 'Mudar para modo claro'}
+              className="h-8 w-8 inline-flex items-center justify-center rounded-md transition-colors hover:bg-white/5"
+              style={{ border: '1px solid rgba(0,240,255,0.2)', color: '#00f0ff' }}
+            >
+              {lightMode ? <Moon className="h-3.5 w-3.5" /> : <Sun className="h-3.5 w-3.5" />}
+            </button>
+            <Button
+              size="sm"
+              onClick={() => navigate('/login')}
+              className="h-8 px-4 text-[11px] font-semibold uppercase tracking-wider border-0 rounded-md"
+              style={{ background: '#00f0ff', color: '#050508' }}
+            >
+              Acessar <ArrowRight className="ml-1.5 h-3 w-3" />
+            </Button>
+          </div>
         </div>
       </motion.header>
 

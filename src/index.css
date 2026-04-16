@@ -633,3 +633,93 @@ html {
   animation: collapse-open 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
   overflow: hidden;
 }
+
+/* ─────────────────────────────────────────────
+   LANDING PAGE — LIGHT MODE OVERRIDES
+   Toggle local na landing (sol/lua), independente do tema do app.
+   Inverte fundos #050508/#0a0a* para tons claros, ajusta texto,
+   mantendo destaques ciano (#00f0ff) e roxo (#a855f7).
+   ───────────────────────────────────────────── */
+.landing-light {
+  background: #f5f7fa !important;
+  color: #1a1a2e !important;
+}
+
+/* Backgrounds escuros → claros */
+.landing-light [style*="background: #050508"],
+.landing-light [style*="background:#050508"] { background: #f5f7fa !important; }
+
+.landing-light [style*="background: #0a0a0f"],
+.landing-light [style*="background: #0a0a12"],
+.landing-light [style*="background: #0a0a14"],
+.landing-light [style*="background: #0d0d16"],
+.landing-light [style*="background: #0f0f1a"],
+.landing-light [style*="background: #0a0f14"],
+.landing-light [style*="background: #0f0a14"] { background: #ffffff !important; }
+
+/* Gradients escuros → claros */
+.landing-light [style*="linear-gradient(180deg, #050508"],
+.landing-light [style*="linear-gradient(180deg, #050508,"],
+.landing-light [style*="linear-gradient(135deg, #0a0a14"],
+.landing-light [style*="linear-gradient(135deg, #0a0a12"] {
+  background: linear-gradient(180deg, #f5f7fa 0%, #eef2f7 50%, #f5f7fa 100%) !important;
+}
+
+/* Header fixo translúcido */
+.landing-light [style*="background: rgba(5,5,8,0.85)"],
+.landing-light [style*="background: rgba(5,5,8,0.5)"] {
+  background: rgba(255,255,255,0.85) !important;
+  border-bottom-color: rgba(0,0,0,0.06) !important;
+}
+
+/* Bordas brancas translúcidas → cinza claro */
+.landing-light [style*="border: 1px solid rgba(255,255,255,0.06)"],
+.landing-light [style*="border: 1px solid rgba(255,255,255,0.04)"],
+.landing-light [style*="border: 1px solid rgba(255,255,255,0.05)"],
+.landing-light [style*="border: 1px solid rgba(255,255,255,0.08)"],
+.landing-light [style*="border: 1px solid rgba(255,255,255,0.1)"],
+.landing-light [style*="borderBottom: '1px solid rgba(255,255,255,0.06)'"],
+.landing-light [style*="border-bottom: 1px solid rgba(255,255,255,0.06)"] {
+  border-color: rgba(0,0,0,0.08) !important;
+}
+
+/* Cores de texto cinza-azulado escuro → cinza médio */
+.landing-light [style*="color: #94a3b8"] { color: #475569 !important; }
+.landing-light [style*="color: #cbd5e1"] { color: #1e293b !important; }
+.landing-light [style*="color: #e2e8f0"] { color: #1e293b !important; }
+.landing-light [style*="color: #64748b"] { color: #64748b !important; }
+.landing-light [style*="color: #475569"] { color: #64748b !important; }
+.landing-light [style*="color: #0a0a12"] { color: #1a1a2e !important; }
+
+/* Sub-bg de cards translúcidos */
+.landing-light [style*="background: rgba(255,255,255,0.02)"],
+.landing-light [style*="background: rgba(255,255,255,0.03)"],
+.landing-light [style*="background: rgba(255,255,255,0.04)"] {
+  background: rgba(0,0,0,0.025) !important;
+}
+
+/* Bg ciano translúcido (cards) — manter ciano mas mais visível */
+.landing-light [style*="background: rgba(0,240,255,0.03)"],
+.landing-light [style*="background: rgba(0,240,255,0.06)"] {
+  background: rgba(0,180,200,0.06) !important;
+}
+
+/* Footer */
+.landing-light [style*="borderTop: '1px solid rgba(255,255,255,0.06)'"],
+.landing-light [style*="border-top: 1px solid rgba(255,255,255,0.06)"] {
+  border-top-color: rgba(0,0,0,0.08) !important;
+}
+
+/* Botão CTA preto sobre ciano vira preto sólido */
+.landing-light button[style*="color: #050508"],
+.landing-light a[style*="color: #050508"] { color: #050508 !important; }
+
+/* Glow orbs ficam mais sutis no modo claro */
+.landing-light [style*="rgba(0,240,255,0.06)"],
+.landing-light [style*="rgba(0,240,255,0.05)"],
+.landing-light [style*="rgba(0,240,255,0.04)"] { opacity: 0.4; }
+
+/* Headings em branco viram preto */
+.landing-light h1, .landing-light h2, .landing-light h3, .landing-light h4 {
+  color: #1a1a2e;
+}
