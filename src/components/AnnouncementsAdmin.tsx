@@ -291,11 +291,11 @@ export function AnnouncementsAdmin() {
 
       {/* Create/Edit Dialog */}
       <Dialog open={showForm} onOpenChange={v => { if (!v) resetForm(); }}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg max-h-[85vh] flex flex-col">
           <DialogHeader>
             <DialogTitle className="text-base">{editing ? 'Editar Aviso' : 'Novo Aviso'}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-4 overflow-y-auto flex-1 pr-1">
             {/* Auto-fill from URL */}
             <div className="p-3 rounded-lg border border-dashed border-primary/30 bg-primary/5">
               <Label className="text-xs font-medium flex items-center gap-1.5 mb-2">
