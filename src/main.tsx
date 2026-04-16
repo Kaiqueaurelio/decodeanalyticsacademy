@@ -20,4 +20,13 @@ if (!isPreviewHost && !isInIframe) {
 
 bootstrapSavedRoute();
 
+// Native screenshot prevention (Capacitor only — no-op on web)
+import('@capacitor/core').then(({ Capacitor }) => {
+  if (Capacitor.isNativePlatform()) {
+    import('@capacitor-community/privacy-screen').then(({ PrivacyScreen }) => {
+      PrivacyScreen.enable().catch(() => {});
+    }).catch(() => {});
+  }
+}).catch(() => {});
+
 createRoot(document.getElementById("root")!).render(<App />);
