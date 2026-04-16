@@ -22,6 +22,7 @@ import {
   Users, ShieldBan, ShieldCheck, Search, Menu, X, Activity, GraduationCap, FolderOpen, Settings, RefreshCw,
   Sun, Moon, FileUp, Sparkles, Wand2, Megaphone
 } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useTheme } from '@/hooks/useTheme';
 import { toast } from 'sonner';
 import type { Tables } from '@/integrations/supabase/types';
@@ -2074,20 +2075,54 @@ export default function AdminPage() {
                             </div>
                             <p className="text-[11px] text-muted-foreground truncate">{u.email} · Desde {new Date(u.created_at).toLocaleDateString('pt-BR')}</p>
                           </div>
-                          <Button
-                            size="sm"
-                            variant={u.is_blocked ? 'outline' : 'destructive'}
-                            className="text-xs h-9 gap-1.5 shrink-0"
-                            onClick={async () => {
-                              const newBlocked = !u.is_blocked;
-                              const { error } = await supabase.from('profiles').update({ is_blocked: newBlocked } as any).eq('user_id', u.user_id);
-                              if (error) { toast.error('Erro ao atualizar'); return; }
-                              toast.success(newBlocked ? `${u.full_name} foi bloqueado` : `${u.full_name} foi desbloqueado`);
-                              loadAll();
-                            }}
-                          >
-                            {u.is_blocked ? <><ShieldCheck className="h-3.5 w-3.5" /> Desbloquear</> : <><ShieldBan className="h-3.5 w-3.5" /> Bloquear</>}
-                          </Button>
+                          <div className="flex gap-1.5 shrink-0">
+                            <Button
+                              size="sm"
+                              variant={u.is_blocked ? 'outline' : 'destructive'}
+                              className="text-xs h-9 gap-1.5"
+                              onClick={async () => {
+                                const newBlocked = !u.is_blocked;
+                                const { error } = await supabase.from('profiles').update({ is_blocked: newBlocked } as any).eq('user_id', u.user_id);
+                                if (error) { toast.error('Erro ao atualizar'); return; }
+                                toast.success(newBlocked ? `${u.full_name} foi bloqueado` : `${u.full_name} foi desbloqueado`);
+                                loadAll();
+                              }}
+                            >
+                              {u.is_blocked ? <><ShieldCheck className="h-3.5 w-3.5" /> Desbloquear</> : <><ShieldBan className="h-3.5 w-3.5" /> Bloquear</>}
+                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button size="sm" variant="ghost" className="text-xs h-9 gap-1.5 text-destructive hover:text-destructive hover:bg-destructive/10">
+                                  <Trash2 className="h-3.5 w-3.5" /> Remover
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Remover usuário permanentemente?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Esta ação é <strong>irreversível</strong>. Todos os dados de <strong>{u.full_name || u.email}</strong> serão excluídos permanentemente: respostas, flashcards, anotações, progresso, XP e badges.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                    onClick={async () => {
+                                      const { error } = await supabase.rpc('delete_user_completely', { _target_user_id: u.user_id });
+                                      if (error) {
+                                        toast.error(`Erro ao remover: ${error.message}`);
+                                        return;
+                                      }
+                                      toast.success(`${u.full_name || u.email} foi removido permanentemente`);
+                                      setUsers(prev => prev.filter(x => x.user_id !== u.user_id));
+                                    }}
+                                  >
+                                    Sim, remover permanentemente
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
