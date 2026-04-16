@@ -40,6 +40,7 @@ export function ApostilaMaterialsManager({ apostilaId, apostilaTitle }: Props) {
   const [allMaterials, setAllMaterials] = useState<{ id: string; title: string; type: string; file_url: string | null; description: string | null }[]>([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(false);
+  const [autoLinking, setAutoLinking] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -77,7 +78,23 @@ export function ApostilaMaterialsManager({ apostilaId, apostilaTitle }: Props) {
     load();
   };
 
-  const removeMaterial = async (linkId: string) => {
+  const handleAutoLink = async () => {
+    setAutoLinking(true);
+    try {
+      const result = await autoLinkApostila(apostilaId);
+      if (result.linked > 0) {
+        toast.success(`${result.linked} material(is) vinculado(s) automaticamente!`);
+        load();
+      } else {
+        toast.info('Nenhum material novo encontrado para vincular.');
+      }
+    } catch {
+      toast.error('Erro ao auto-vincular.');
+    } finally {
+      setAutoLinking(false);
+    }
+  };
+
     await supabase.from('apostila_materials').delete().eq('id', linkId);
     toast.success('Material removido');
     load();
