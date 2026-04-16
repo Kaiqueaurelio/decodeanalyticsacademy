@@ -2101,6 +2101,11 @@ export default function AdminPage() {
                 </div>
               </div>
             )}
+
+            {/* ANNOUNCEMENTS */}
+            {tab === 'announcements' && (
+              <AnnouncementsAdmin />
+            )}
             </div>
           </main>
         </div>

@@ -9,6 +9,7 @@ import { FlashcardsWidget } from '@/components/FlashcardsWidget';
 import { AnnotationsPanel } from '@/components/AnnotationsPanel';
 import { CommentsWidget } from '@/components/CommentsWidget';
 import { ApostilaExport } from '@/components/ApostilaExport';
+import { ApostilaMaterials } from '@/components/ApostilaMaterials';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
   ArrowLeft, BookOpen, PenLine, Eye, List, X,
@@ -338,6 +339,9 @@ export default function ApostilaPage() {
                   </section>
                 ))}
               </div>
+
+              {/* Linked Materials */}
+              <ApostilaMaterials apostilaId={id!} />
 
               {/* Exercise CTA */}
               {exerciseCount > 0 && (
