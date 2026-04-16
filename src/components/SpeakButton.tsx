@@ -83,6 +83,7 @@ export function SpeakButton({ getText, label = 'Ouvir em voz', className = '', s
     const chunk = queueRef.current[indexRef.current];
     const audio = new Audio(googleTtsUrl(chunk));
     audio.preload = 'auto';
+    audio.playbackRate = speed;
     audioRef.current = audio;
 
     audio.onplaying = () => setState('speaking');
@@ -139,43 +140,71 @@ export function SpeakButton({ getText, label = 'Ouvir em voz', className = '', s
     'h-9 px-4 text-xs gap-1.5';
   const iconCls = size === 'lg' ? 'h-4 w-4' : 'h-3.5 w-3.5';
 
+  const SpeedSelector = (
+    <div className="inline-flex items-center rounded-full bg-muted/60 backdrop-blur p-0.5 gap-0.5 border border-border/50">
+      {SPEED_OPTIONS.map((s) => (
+        <button
+          key={s}
+          onClick={() => applySpeed(s)}
+          className={`px-2 h-7 rounded-full text-[10px] font-bold transition-all ${
+            speed === s
+              ? 'bg-primary text-primary-foreground shadow-sm'
+              : 'text-muted-foreground hover:text-foreground'
+          }`}
+          title={`Velocidade ${s}x`}
+        >
+          {s}x
+        </button>
+      ))}
+    </div>
+  );
+
   if (state === 'idle') {
     return (
-      <button
-        onClick={start}
-        className={`inline-flex items-center font-bold rounded-full bg-primary text-primary-foreground shadow-md hover:brightness-110 hover:-translate-y-px transition-all ${sizeCls} ${className}`}
-      >
-        <Volume2 className={iconCls} />
-        {label}
-      </button>
+      <div className={`inline-flex items-center gap-2 flex-wrap ${className}`}>
+        <button
+          onClick={start}
+          className={`inline-flex items-center font-bold rounded-full bg-primary text-primary-foreground shadow-md hover:brightness-110 hover:-translate-y-px transition-all ${sizeCls}`}
+        >
+          <Volume2 className={iconCls} />
+          {label}
+        </button>
+        {SpeedSelector}
+      </div>
     );
   }
 
   if (state === 'loading') {
     return (
-      <button disabled className={`inline-flex items-center font-bold rounded-full bg-primary/80 text-primary-foreground shadow-md ${sizeCls} ${className}`}>
-        <Loader2 className={`${iconCls} animate-spin`} />
-        Carregando...
-      </button>
+      <div className={`inline-flex items-center gap-2 flex-wrap ${className}`}>
+        <button disabled className={`inline-flex items-center font-bold rounded-full bg-primary/80 text-primary-foreground shadow-md ${sizeCls}`}>
+          <Loader2 className={`${iconCls} animate-spin`} />
+          Carregando...
+        </button>
+        {SpeedSelector}
+      </div>
     );
   }
 
   return (
-    <div className={`inline-flex items-center gap-1 ${className}`}>
-      <button
-        onClick={togglePause}
-        className={`inline-flex items-center font-bold rounded-full bg-primary text-primary-foreground shadow-md hover:brightness-110 transition-all ${sizeCls}`}
-      >
-        {state === 'speaking' ? <Pause className={iconCls} /> : <Play className={iconCls} />}
-        {state === 'speaking' ? 'Pausar' : 'Continuar'}
-      </button>
-      <button
-        onClick={stop}
-        className={`inline-flex items-center justify-center rounded-full bg-destructive text-destructive-foreground shadow-md hover:brightness-110 transition-all ${size === 'lg' ? 'h-11 w-11' : 'h-9 w-9'}`}
-        title="Parar leitura"
-      >
-        <Square className={iconCls} />
-      </button>
+    <div className={`inline-flex items-center gap-2 flex-wrap ${className}`}>
+      <div className="inline-flex items-center gap-1">
+        <button
+          onClick={togglePause}
+          className={`inline-flex items-center font-bold rounded-full bg-primary text-primary-foreground shadow-md hover:brightness-110 transition-all ${sizeCls}`}
+        >
+          {state === 'speaking' ? <Pause className={iconCls} /> : <Play className={iconCls} />}
+          {state === 'speaking' ? 'Pausar' : 'Continuar'}
+        </button>
+        <button
+          onClick={stop}
+          className={`inline-flex items-center justify-center rounded-full bg-destructive text-destructive-foreground shadow-md hover:brightness-110 transition-all ${size === 'lg' ? 'h-11 w-11' : 'h-9 w-9'}`}
+          title="Parar leitura"
+        >
+          <Square className={iconCls} />
+        </button>
+      </div>
+      {SpeedSelector}
     </div>
   );
 }
