@@ -300,7 +300,7 @@ export default function LoginPage() {
                   <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="space-y-1.5">
                       <Label htmlFor="email" className="text-xs text-muted-foreground">Email</Label>
-                      <Input id="email" type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="seu@email.com" />
+                      <Input id="email" type="email" autoComplete="username" required value={email} onChange={e => setEmail(e.target.value)} placeholder="seu@email.com" />
                     </div>
                     <div className="space-y-1.5">
                       <Label htmlFor="password" className="text-xs text-muted-foreground">Senha</Label>
