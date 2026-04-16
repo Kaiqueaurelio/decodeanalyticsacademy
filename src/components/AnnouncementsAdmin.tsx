@@ -159,7 +159,7 @@ export function AnnouncementsAdmin() {
   const resetForm = () => {
     setTitle(''); setContent(''); setCategory('geral');
     setImageUrl(''); setLinkUrl(''); setPublished(true);
-    setEditing(null); setShowForm(false);
+    setAutoFillUrl(''); setEditing(null); setShowForm(false);
   };
 
   const openEdit = (a: Announcement) => {
