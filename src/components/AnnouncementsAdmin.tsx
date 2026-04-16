@@ -51,6 +51,64 @@ export function AnnouncementsAdmin() {
   const [linkUrl, setLinkUrl] = useState('');
   const [published, setPublished] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [autoFillUrl, setAutoFillUrl] = useState('');
+  const [autoFilling, setAutoFilling] = useState(false);
+
+  const handleAutoFill = async () => {
+    if (!autoFillUrl.trim()) return;
+    setAutoFilling(true);
+    try {
+      // Step 1: Scrape the URL
+      const { data: scrapeData, error: scrapeError } = await supabase.functions.invoke('firecrawl-scrape', {
+        body: { url: autoFillUrl.trim(), options: { formats: ['markdown'] } },
+      });
+
+      if (scrapeError || !scrapeData?.success) {
+        toast.error('Erro ao acessar o link. Verifique a URL.');
+        setAutoFilling(false);
+        return;
+      }
+
+      const markdown = scrapeData.data?.markdown || '';
+      const metadata = scrapeData.data?.metadata || {};
+
+      // Step 2: Use AI to extract structured info
+      const { data: aiData, error: aiError } = await supabase.functions.invoke('extract-announcement', {
+        body: { markdown, metadata, url: autoFillUrl.trim() },
+      });
+
+      if (aiError || !aiData) {
+        // Fallback: use metadata directly
+        setTitle(metadata.title || '');
+        setContent(markdown.slice(0, 1000) || metadata.description || '');
+        setLinkUrl(autoFillUrl.trim());
+        if (metadata.ogImage) setImageUrl(metadata.ogImage);
+        // Try to guess category
+        const urlLower = autoFillUrl.toLowerCase();
+        if (urlLower.includes('curso') || urlLower.includes('course') || urlLower.includes('udemy') || urlLower.includes('coursera')) {
+          setCategory('cursos');
+        } else if (urlLower.includes('emprego') || urlLower.includes('vaga') || urlLower.includes('job') || urlLower.includes('linkedin.com/jobs')) {
+          setCategory('empregos');
+        } else if (urlLower.includes('evento') || urlLower.includes('event')) {
+          setCategory('eventos');
+        }
+        toast.success('Campos preenchidos com dados básicos!');
+      } else {
+        // Use AI extracted data
+        if (aiData.title) setTitle(aiData.title);
+        if (aiData.content) setContent(aiData.content);
+        if (aiData.category) setCategory(aiData.category);
+        if (aiData.image_url) setImageUrl(aiData.image_url);
+        setLinkUrl(autoFillUrl.trim());
+        toast.success('Campos preenchidos automaticamente!');
+      }
+    } catch (err) {
+      console.error('Auto-fill error:', err);
+      toast.error('Erro ao preencher automaticamente');
+    } finally {
+      setAutoFilling(false);
+    }
+  };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
