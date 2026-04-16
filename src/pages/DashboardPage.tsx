@@ -27,6 +27,7 @@ import { FlashcardSummaryWidget } from '@/components/FlashcardSummaryWidget';
 import { ApostilaProgressWidget } from '@/components/ApostilaProgressWidget';
 import { MobileCarousel } from '@/components/MobileCarousel';
 import { MaterialWidget } from '@/components/MaterialWidget';
+import { AnnouncementsBoard } from '@/components/AnnouncementsBoard';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { getSubjectColor } from '@/lib/subject-colors';
 import {
@@ -441,6 +442,9 @@ export default function DashboardPage() {
 
             {/* Material de Apoio Widget */}
             <MaterialWidget />
+
+            {/* Mural de Avisos */}
+            <AnnouncementsBoard />
 
             {/* Materials shortcut */}
             <Card className="p-4 hover-lift">

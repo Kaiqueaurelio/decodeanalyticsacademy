@@ -20,7 +20,7 @@ import {
   LayoutDashboard, CheckCircle, TrendingUp, Upload, BarChart3, Clock,
   Link as LinkIcon, Loader2, AlertCircle, Edit, Download, File, Image, Video, Music, FileSpreadsheet, Presentation,
   Users, ShieldBan, ShieldCheck, Search, Menu, X, Activity, GraduationCap, FolderOpen, Settings, RefreshCw,
-  Sun, Moon, FileUp, Sparkles, Wand2
+  Sun, Moon, FileUp, Sparkles, Wand2, Megaphone
 } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 import { toast } from 'sonner';
@@ -28,6 +28,8 @@ import type { Tables } from '@/integrations/supabase/types';
 import { AnimatedCounter } from '@/components/AnimatedCounter';
 import { ActivityChart } from '@/components/ActivityChart';
 import { ImageUploadButton } from '@/components/ImageUploadButton';
+import { AnnouncementsAdmin } from '@/components/AnnouncementsAdmin';
+import { ApostilaMaterialsManager } from '@/components/ApostilaMaterialsManager';
 
 type Apostila = Tables<'apostilas'>;
 type Exercise = Tables<'exercises'>;
@@ -67,7 +69,7 @@ function CategorySelect({ value, onValueChange, placeholder }: { value: string; 
   );
 }
 
-type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users';
+type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements';
 
 const ACCEPT_MAP: Record<string, string> = {
   pdf: '.pdf', image: 'image/*', gif: '.gif,image/gif',
@@ -106,6 +108,7 @@ function AdminSidebar({ tab, setTab, stats, sidebarOpen, setSidebarOpen }: {
     { id: 'exercises' as Tab, label: 'Exercícios', icon: PenLine, count: stats.exercises },
     { id: 'materials' as Tab, label: 'Materiais', icon: FolderOpen, count: stats.materials },
     { id: 'users' as Tab, label: 'Usuários', icon: Users, count: stats.users },
+    { id: 'announcements' as Tab, label: 'Avisos', icon: Megaphone, count: undefined },
   ];
 
   return (
@@ -812,6 +815,7 @@ export default function AdminPage() {
     exercises: { title: 'Gerenciar Exercícios', desc: `${totalExercises} exercícios cadastrados` },
     materials: { title: 'Gerenciar Materiais', desc: `${materials.length} materiais disponíveis` },
     users: { title: 'Gerenciar Usuários', desc: `${users.length} usuários cadastrados` },
+    announcements: { title: 'Mural de Avisos', desc: 'Gerencie avisos para os alunos' },
   };
 
   return (
@@ -864,6 +868,7 @@ export default function AdminPage() {
                 { id: 'exercises', label: 'Exercícios', icon: <PenLine className="h-3.5 w-3.5" />, count: totalExercises },
                 { id: 'materials', label: 'Materiais', icon: <FolderOpen className="h-3.5 w-3.5" />, count: materials.length },
                 { id: 'users', label: 'Usuários', icon: <Users className="h-3.5 w-3.5" />, count: users.length },
+                { id: 'announcements', label: 'Avisos', icon: <Megaphone className="h-3.5 w-3.5" /> },
               ]}
               activeTab={tab}
               onTabChange={(id) => setTab(id as Tab)}
@@ -1171,6 +1176,7 @@ export default function AdminPage() {
                                 </div>
                               </div>
                               <div className="flex items-center gap-1 shrink-0">
+                                <ApostilaMaterialsManager apostilaId={a.id} apostilaTitle={a.title} />
                                 <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => setShowExerciseDialog(a.id)} title="Ver exercícios">
                                   <PenLine className="h-3.5 w-3.5" />
                                 </Button>
@@ -2094,6 +2100,11 @@ export default function AdminPage() {
                   )}
                 </div>
               </div>
+            )}
+
+            {/* ANNOUNCEMENTS */}
+            {tab === 'announcements' && (
+              <AnnouncementsAdmin />
             )}
             </div>
           </main>
