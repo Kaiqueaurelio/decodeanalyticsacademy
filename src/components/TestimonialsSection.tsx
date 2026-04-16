@@ -1,22 +1,45 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Star, Quote } from 'lucide-react';
-import { Card } from '@/components/ui/card';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { cn } from '@/lib/utils';
+import { Star } from 'lucide-react';
 
 interface Testimonial {
   id: string;
   user_id: string;
   content: string;
   rating: number;
+  course: string | null;
+  semester: number | null;
   created_at: string;
   profile?: { full_name: string; email: string };
 }
 
 const getInitials = (name: string, email: string) => {
-  if (name) return name.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase();
-  return email?.[0]?.toUpperCase() || '?';
+  if (name) {
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    return parts[0].slice(0, 2).toUpperCase();
+  }
+  return email?.slice(0, 2)?.toUpperCase() || '??';
+};
+
+const displayName = (name: string, email: string) => {
+  if (name && name.trim()) return name.trim();
+  return email?.split('@')[0] || 'Aluno';
+};
+
+// Cores estilo "Ana Silva = ciano, Carlos Santos = roxo" — alterna por hash
+const AVATAR_BG = ['#00f0ff', '#a855f7', '#22d3ee', '#c084fc', '#06b6d4', '#d946ef'];
+const colorFor = (id: string) => {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+  return AVATAR_BG[h % AVATAR_BG.length];
+};
+
+const formatRole = (course: string | null, semester: number | null) => {
+  if (!course && !semester) return 'Aluno · Decode Analytics';
+  const c = course === 'OUTRO' ? 'Aluno' : `Aluno de ${course || ''}`.trim();
+  const s = semester ? ` - ${semester}º sem.` : '';
+  return `${c}${s}`.toUpperCase();
 };
 
 export function TestimonialsSection() {
@@ -63,35 +86,61 @@ export function TestimonialsSection() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {items.map(t => (
-            <Card key={t.id} className="p-6 relative hover:border-primary/40 transition-all hover:-translate-y-1 duration-300">
-              <Quote className="absolute top-4 right-4 h-6 w-6 text-primary/20" />
-              <div className="flex gap-0.5 mb-3">
-                {[1,2,3,4,5].map(n => (
-                  <Star key={n} className={cn(
-                    'h-3.5 w-3.5',
-                    n <= t.rating ? 'fill-primary text-primary' : 'text-muted-foreground/30'
-                  )} />
-                ))}
-              </div>
-              <p className="text-sm text-foreground/90 leading-relaxed mb-4 line-clamp-6">
-                "{t.content}"
-              </p>
-              <div className="flex items-center gap-2.5 pt-3 border-t border-border/30">
-                <Avatar className="h-8 w-8">
-                  <AvatarFallback className="text-[10px] bg-primary/10 text-primary font-semibold">
-                    {getInitials(t.profile?.full_name || '', t.profile?.email || '')}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="min-w-0">
-                  <p className="text-xs font-semibold truncate">
-                    {t.profile?.full_name || t.profile?.email?.split('@')[0] || 'Aluno'}
-                  </p>
-                  <p className="text-[10px] text-muted-foreground">Decode Analytics</p>
+          {items.map(t => {
+            const name = displayName(t.profile?.full_name || '', t.profile?.email || '');
+            const initials = getInitials(t.profile?.full_name || '', t.profile?.email || '');
+            const bg = colorFor(t.user_id);
+            return (
+              <div
+                key={t.id}
+                className="rounded-2xl p-6 transition-all hover:-translate-y-1 duration-300"
+                style={{
+                  background: '#0a0a12',
+                  border: '1px solid rgba(255,255,255,0.06)',
+                }}
+              >
+                {/* Header: avatar + nome + curso */}
+                <div className="flex items-center gap-3 mb-5">
+                  <div
+                    className="h-12 w-12 rounded-full flex items-center justify-center font-display font-bold text-base shrink-0"
+                    style={{ background: bg, color: '#050508' }}
+                  >
+                    {initials}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-base font-semibold truncate" style={{ color: '#f1f5f9' }}>
+                      {name}
+                    </p>
+                    <p className="text-[11px] font-mono tracking-wider truncate" style={{ color: '#64748b' }}>
+                      {formatRole(t.course, t.semester)}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Quote */}
+                <p
+                  className="text-[15px] italic leading-relaxed mb-5"
+                  style={{ color: '#cbd5e1' }}
+                >
+                  "{t.content}"
+                </p>
+
+                {/* Stars */}
+                <div className="flex gap-1">
+                  {[1,2,3,4,5].map(n => (
+                    <Star
+                      key={n}
+                      className="h-4 w-4"
+                      style={{
+                        fill: n <= t.rating ? '#00f0ff' : 'transparent',
+                        color: n <= t.rating ? '#00f0ff' : '#334155',
+                      }}
+                    />
+                  ))}
                 </div>
               </div>
-            </Card>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

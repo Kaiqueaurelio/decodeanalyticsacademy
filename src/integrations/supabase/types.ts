@@ -833,9 +833,11 @@ export type Database = {
           approved_at: string | null
           approved_by: string | null
           content: string
+          course: string | null
           created_at: string
           id: string
           rating: number
+          semester: number | null
           user_id: string
         }
         Insert: {
@@ -843,9 +845,11 @@ export type Database = {
           approved_at?: string | null
           approved_by?: string | null
           content: string
+          course?: string | null
           created_at?: string
           id?: string
           rating?: number
+          semester?: number | null
           user_id: string
         }
         Update: {
@@ -853,9 +857,11 @@ export type Database = {
           approved_at?: string | null
           approved_by?: string | null
           content?: string
+          course?: string | null
           created_at?: string
           id?: string
           rating?: number
+          semester?: number | null
           user_id?: string
         }
         Relationships: []

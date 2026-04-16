@@ -2,17 +2,29 @@ import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 import { Star, MessageSquareQuote, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
+const COURSES = [
+  { value: 'CC', label: 'Ciência da Computação (CC)' },
+  { value: 'SI', label: 'Sistemas de Informação (SI)' },
+  { value: 'EC', label: 'Engenharia de Computação (EC)' },
+  { value: 'ADS', label: 'Análise e Desenv. de Sistemas (ADS)' },
+  { value: 'OUTRO', label: 'Outro curso' },
+];
+
 export function TestimonialDialog() {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [content, setContent] = useState('');
   const [rating, setRating] = useState(5);
+  const [course, setCourse] = useState<string>('CC');
+  const [semester, setSemester] = useState<string>('1');
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async () => {
@@ -25,6 +37,8 @@ export function TestimonialDialog() {
       user_id: user.id,
       content: content.trim(),
       rating,
+      course,
+      semester: parseInt(semester, 10),
     } as any);
     setSubmitting(false);
 
@@ -43,7 +57,7 @@ export function TestimonialDialog() {
           Deixar depoimento
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-display">Compartilhe sua experiência</DialogTitle>
         </DialogHeader>
@@ -66,6 +80,32 @@ export function TestimonialDialog() {
                 )} />
               </button>
             ))}
+          </div>
+
+          {/* Curso e semestre */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Curso</Label>
+              <Select value={course} onValueChange={setCourse}>
+                <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {COURSES.map(c => (
+                    <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Semestre</Label>
+              <Select value={semester} onValueChange={setSemester}>
+                <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {[1,2,3,4,5,6,7,8].map(n => (
+                    <SelectItem key={n} value={String(n)}>{n}º semestre</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <Textarea
