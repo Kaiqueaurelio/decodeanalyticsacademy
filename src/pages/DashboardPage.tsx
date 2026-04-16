@@ -356,13 +356,19 @@ export default function DashboardPage() {
                       const answered = stats.byApostila[a.id];
                       const correctPct = answered ? Math.round((answered.hits / (answered.hits + answered.errors)) * 100) : 0;
                       const initial = category.charAt(0).toUpperCase();
+                      const isFocus = isFocusApostila(a) || isFocusCategory(category);
 
                       return (
                         <div
                           key={a.id}
-                          className="discipline-card animate-card-enter"
+                          className={`discipline-card animate-card-enter relative ${isFocus ? 'ring-2 ring-destructive/60 shadow-[0_0_25px_hsl(var(--destructive)/0.25)]' : ''}`}
                           style={{ animationDelay: `${(catIdx * items.length + idx) * 60}ms` }}
                         >
+                          {isFocus && examFocus && (
+                            <div className="absolute -top-2 left-3 z-10 px-2 py-0.5 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold uppercase tracking-wider flex items-center gap-1 shadow-lg animate-pulse">
+                              🔥 Prova {examFocus.daysUntil === 0 ? 'HOJE' : 'AMANHÃ'}
+                            </div>
+                          )}
                           {/* Colored header */}
                           <div
                             className="discipline-card-header"
