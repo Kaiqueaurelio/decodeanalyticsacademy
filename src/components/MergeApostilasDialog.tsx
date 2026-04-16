@@ -59,9 +59,14 @@ export function MergeApostilasDialog({ open, onOpenChange, onMerged }: Props) {
     setSelected(next);
   };
 
-  const filtered = apostilas.filter(a =>
-    !search.trim() || a.title.toLowerCase().includes(search.toLowerCase()) || a.category.toLowerCase().includes(search.toLowerCase())
-  );
+  // Lock selection to first selected apostila's category
+  const lockedCategory = selected.size > 0
+    ? apostilas.find(a => selected.has(a.id))?.category.trim().toLowerCase()
+    : null;
+
+  const filtered = apostilas
+    .filter(a => !search.trim() || a.title.toLowerCase().includes(search.toLowerCase()) || a.category.toLowerCase().includes(search.toLowerCase()))
+    .filter(a => !lockedCategory || a.category.trim().toLowerCase() === lockedCategory || selected.has(a.id));
 
   const handleMerge = async () => {
     if (selected.size < 2 || !targetId) return;
