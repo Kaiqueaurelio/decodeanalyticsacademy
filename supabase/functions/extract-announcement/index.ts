@@ -38,7 +38,7 @@ Retorne APENAS um JSON válido (sem markdown, sem backticks) com os campos:
   "image_url": "URL da imagem principal se encontrada no conteúdo, ou null"
 }`;
 
-    const response = await fetch('https://api.lovable.dev/v1/chat/completions', {
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiKey}`,
