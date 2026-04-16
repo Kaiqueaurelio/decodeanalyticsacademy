@@ -39,12 +39,12 @@ let inflight: Promise<Profile[]> | null = null;
 async function loadProfiles(): Promise<Profile[]> {
   if (profilesCache) return profilesCache;
   if (inflight) return inflight;
-  inflight = supabase.from('profiles').select('user_id, full_name, email').limit(500)
-    .then(({ data }) => {
-      profilesCache = (data as any[] || []) as Profile[];
-      inflight = null;
-      return profilesCache;
-    });
+  inflight = (async () => {
+    const { data } = await supabase.from('profiles').select('user_id, full_name, email').limit(500);
+    profilesCache = ((data as any[]) || []) as Profile[];
+    inflight = null;
+    return profilesCache;
+  })();
   return inflight;
 }
 
