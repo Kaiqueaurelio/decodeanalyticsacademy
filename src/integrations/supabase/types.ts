@@ -661,6 +661,39 @@ export type Database = {
           },
         ]
       }
+      mention_notifications: {
+        Row: {
+          author_id: string
+          context_id: string
+          context_type: string
+          created_at: string
+          id: string
+          read: boolean
+          recipient_id: string
+          snippet: string
+        }
+        Insert: {
+          author_id: string
+          context_id: string
+          context_type: string
+          created_at?: string
+          id?: string
+          read?: boolean
+          recipient_id: string
+          snippet?: string
+        }
+        Update: {
+          author_id?: string
+          context_id?: string
+          context_type?: string
+          created_at?: string
+          id?: string
+          read?: boolean
+          recipient_id?: string
+          snippet?: string
+        }
+        Relationships: []
+      }
       pomodoro_sessions: {
         Row: {
           apostila_id: string | null
