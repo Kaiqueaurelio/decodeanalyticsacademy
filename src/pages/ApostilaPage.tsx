@@ -445,7 +445,7 @@ export default function ApostilaPage() {
         >
           <div className="relative">
             <Sparkles className="h-5 w-5" />
-            <span className="absolute -top-1 -right-1 h-2 w-2 bg-emerald-400 rounded-full animate-pulse" />
+            <span className="absolute -top-1 -right-1 h-2 w-2 bg-accent rounded-full animate-pulse" />
           </div>
           <span className="text-sm font-semibold">Chat IA</span>
         </button>
