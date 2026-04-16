@@ -155,6 +155,7 @@ function AdminSidebar({ tab, setTab, stats, sidebarOpen, setSidebarOpen }: {
     { id: 'announcements' as Tab, label: 'Avisos', icon: Megaphone, count: undefined },
     { id: 'calendar' as Tab, label: 'Calendário', icon: CalIcon, count: undefined },
     { id: 'testimonials' as Tab, label: 'Depoimentos', icon: MessageSquareQuote, count: undefined },
+    { id: 'ai' as Tab, label: 'IA', icon: Sparkles, count: undefined },
   ];
 
   return (
@@ -919,6 +920,7 @@ export default function AdminPage() {
                 { id: 'announcements', label: 'Avisos', icon: <Megaphone className="h-3.5 w-3.5" /> },
                 { id: 'calendar', label: 'Calendário', icon: <CalIcon className="h-3.5 w-3.5" /> },
                 { id: 'testimonials', label: 'Depoimentos', icon: <MessageSquareQuote className="h-3.5 w-3.5" /> },
+                { id: 'ai', label: 'IA', icon: <Sparkles className="h-3.5 w-3.5" /> },
               ]}
               activeTab={tab}
               onTabChange={(id) => setTab(id as Tab)}
