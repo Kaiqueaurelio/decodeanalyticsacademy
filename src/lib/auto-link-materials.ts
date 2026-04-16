@@ -202,7 +202,7 @@ export async function mergeApostilas(
 
   // Fetch all apostilas
   const { data: apostilas } = await supabase
-    .from('apostilas').select('id, title, content').in('id', allIds);
+    .from('apostilas').select('id, title, content, category').in('id', allIds);
 
   if (!apostilas || apostilas.length < 2) {
     throw new Error('Selecione ao menos 2 apostilas para mesclar.');
@@ -213,11 +213,16 @@ export async function mergeApostilas(
 
   const sources = apostilas.filter(a => a.id !== targetId);
 
-  // 1. Concatenate content — preserve original formatting, no extra headers/separators
-  const parts = [target.content || '', ...sources.map(s => s.content || '')]
-    .map(c => c.trim())
-    .filter(Boolean);
-  const mergedContent = parts.join('\n\n');
+  // Validate: all must share the same category
+  const targetCat = target.category.trim().toLowerCase();
+  const mismatch = sources.find(s => s.category.trim().toLowerCase() !== targetCat);
+  if (mismatch) {
+    throw new Error(`Só é possível mesclar apostilas da mesma matéria. "${mismatch.title}" é de "${mismatch.category}".`);
+  }
+
+  // 1. Unify content as a single seamless apostila
+  const mergedContent = unifyContent([target, ...sources]);
+
 
   // 2. Move exercises
   const sourceIdList = sources.map(s => s.id);
