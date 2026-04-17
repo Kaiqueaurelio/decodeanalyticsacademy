@@ -22,6 +22,7 @@ type Flashcard = {
 
 export function FlashcardsWidget({ apostilaId }: Props) {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [cards, setCards] = useState<Flashcard[]>([]);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
@@ -36,6 +37,8 @@ export function FlashcardsWidget({ apostilaId }: Props) {
     q.then(({ data }) => setCards((data || []) as Flashcard[]));
   }, [user, apostilaId]);
 
+  const dueCount = cards.filter(c => !c.next_review || new Date(c.next_review).getTime() <= Date.now()).length;
+
   const addCard = async () => {
     if (!user || !front.trim() || !back.trim()) return;
     const { data, error } = await supabase.from('flashcards').insert({
@@ -48,14 +51,28 @@ export function FlashcardsWidget({ apostilaId }: Props) {
     toast.success('Flashcard criado!');
   };
 
-  const handleDifficulty = async (level: number) => {
+  const handleAnswer = async (quality: SRSQuality) => {
     const card = cards[currentIdx];
     if (!card) return;
-    const hours = level === 0 ? 1 : level === 1 ? 24 : 72;
-    const next = new Date(Date.now() + hours * 3600000).toISOString();
-    await supabase.from('flashcards').update({ difficulty: level, next_review: next }).eq('id', card.id);
+    const result = sm2(
+      {
+        ease_factor: card.ease_factor || 2.5,
+        interval_days: card.interval_days || 0,
+        repetitions: card.repetitions || 0,
+      },
+      quality,
+    );
+    await supabase.from('flashcards').update({
+      ease_factor: result.ease_factor,
+      interval_days: result.interval_days,
+      repetitions: result.repetitions,
+      next_review: result.next_review,
+      last_reviewed: new Date().toISOString(),
+      difficulty: quality < 3 ? 0 : quality === 3 ? 1 : 2,
+    }).eq('id', card.id);
+    toast.success(`Próx. revisão em ${formatNextReview(result.next_review)}`);
     setFlipped(false);
-    setCurrentIdx(prev => (prev + 1) % cards.length);
+    setCurrentIdx(prev => (prev + 1) % Math.max(1, cards.length));
   };
 
   const current = cards[currentIdx];
