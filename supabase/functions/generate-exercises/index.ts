@@ -40,21 +40,32 @@ serve(async (req) => {
       );
     }
 
-    const truncatedContent = content.slice(0, 12000);
+    // Aumentado de 12k para 30k — Flash aguenta tranquilo e dá MUITO mais contexto
+    const truncatedContent = content.slice(0, 30000);
 
-    let systemPrompt = `Voce e um professor universitario especialista em criar questoes para avaliacao. Gere exatamente ${total} exercicios baseados no conteudo fornecido:`;
-    
+    let systemPrompt = `Voce e um professor universitario brasileiro especialista em criar questoes de avaliacao de alta qualidade.
+
+REGRAS OBRIGATORIAS:
+- Gere EXATAMENTE ${total} exercicios baseados estritamente no conteudo fornecido.
+- Toda questao deve testar entendimento real do conteudo (nao perguntas triviais ou genericas).
+- Toda explicacao deve ser DETALHADA (minimo 2 frases) e justificar a resposta correta usando o conteudo.
+- Evite alternativas obvias ou pegadinhas baratas. Distratores devem ser plausiveis.
+- Linguagem clara, em portugues do Brasil.`;
+
     if (mc > 0) {
-      systemPrompt += `\n- ${mc} exercicio(s) de MULTIPLA ESCOLHA com 4 alternativas (A, B, C, D), sendo apenas uma correta. Defina type como "multiple_choice". Inclua explicacao para cada.`;
+      systemPrompt += `\n- ${mc} exercicio(s) de MULTIPLA ESCOLHA com 4 alternativas (A, B, C, D), sendo apenas uma correta. type="multiple_choice".`;
     }
     if (essay > 0) {
-      systemPrompt += `\n- ${essay} exercicio(s) DISSERTATIVO(S) (perguntas abertas que exigem resposta escrita). Defina type como "essay", nao inclua options, e inclua uma resposta modelo no campo explanation.`;
+      systemPrompt += `\n- ${essay} exercicio(s) DISSERTATIVO(S) (perguntas abertas). type="essay", options vazio, e o campo explanation deve conter uma resposta modelo COMPLETA (4-6 frases) que servira de gabarito.`;
     }
     if (mc > 0 && essay > 0) {
-      systemPrompt += `\n\nIMPORTANTE: Gere primeiro as ${mc} questoes de multipla escolha, depois as ${essay} dissertativas.`;
+      systemPrompt += `\n\nORDEM: gere primeiro as ${mc} de multipla escolha, depois as ${essay} dissertativas.`;
     }
 
-    const userPrompt = `Titulo: ${title || "Sem titulo"}\n\nConteudo:\n${truncatedContent}\n\nGere ${total} exercicios (${mc} multipla escolha + ${essay} dissertativas) sobre este conteudo.`;
+    const userPrompt = `Titulo: ${title || "Sem titulo"}\n\nConteudo da apostila:\n${truncatedContent}\n\nGere ${total} exercicios (${mc} multipla escolha + ${essay} dissertativas) baseados rigorosamente no conteudo acima.`;
+
+    // max_tokens proporcional ao numero de questoes (≈ 600 tokens por questao com explicacao detalhada)
+    const dynamicMaxTokens = Math.min(16000, Math.max(2500, total * 700));
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -68,6 +79,8 @@ serve(async (req) => {
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
         ],
+        temperature: 0.5,
+        max_tokens: dynamicMaxTokens,
         tools: [
           {
             type: "function",
@@ -99,7 +112,7 @@ serve(async (req) => {
                         },
                         explanation: {
                           type: "string",
-                          description: "Explanation or model answer for essay questions",
+                          description: "Detailed explanation (MC) or model answer (essay)",
                         },
                       },
                       required: ["type", "question", "explanation"],
@@ -139,16 +152,33 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
+    const choice = data.choices?.[0];
+    const finishReason = choice?.finish_reason;
+    const toolCall = choice?.message?.tool_calls?.[0];
+
+    if (finishReason === "length" || finishReason === "MAX_TOKENS") {
+      console.error("Resposta truncada por max_tokens. finish_reason:", finishReason);
+    }
 
     if (!toolCall?.function?.arguments) {
+      console.error("Sem tool_call. data:", JSON.stringify(data).slice(0, 800));
       return new Response(
-        JSON.stringify({ error: "Resposta inesperada da IA" }),
+        JSON.stringify({ error: "A IA nao conseguiu gerar exercicios estruturados. Tente reduzir o numero de questoes ou simplificar o conteudo." }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const parsed = JSON.parse(toolCall.function.arguments);
+    let parsed: { exercises?: any[] };
+    try {
+      parsed = JSON.parse(toolCall.function.arguments);
+    } catch (e) {
+      console.error("JSON parse falhou. args:", toolCall.function.arguments?.slice(0, 500));
+      return new Response(
+        JSON.stringify({ error: "Resposta da IA chegou incompleta. Tente novamente com menos questoes." }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const exercises = (parsed.exercises || []).filter(
       (ex: any) => ex.question && ex.type
     ).map((ex: any) => ({
