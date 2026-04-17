@@ -201,55 +201,138 @@ export default function BibliotecaPage() {
           </Card>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 stagger-children">
-            {filtered.map((m, idx) => {
-              const meta = TYPE_META[m.type] ?? TYPE_META.other;
-              const Icon = meta.icon;
-              return (
-                <button
-                  key={m.id}
-                  onClick={() => handleOpen(m)}
-                  className="group relative text-left rounded-xl border border-border/60 bg-card p-4 hover:-translate-y-0.5 hover:border-primary/40 transition-all duration-200 animate-card-enter overflow-hidden"
-                  style={{ animationDelay: `${Math.min(idx, 12) * 40}ms` }}
-                >
-                  <div
-                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
-                    style={{ background: `linear-gradient(135deg, hsl(${meta.hue} / 0.10) 0%, transparent 70%)` }}
-                  />
-                  <div className="relative flex items-start gap-3">
-                    <div
-                      className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
-                      style={{ backgroundColor: `hsl(${meta.hue} / 0.12)`, color: `hsl(${meta.hue})` }}
-                    >
-                      <Icon className="h-5 w-5" strokeWidth={1.75} />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <Badge variant="outline" className="text-[9px] px-1.5 py-0">{meta.label}</Badge>
-                        <span className="text-[10px] text-muted-foreground truncate">{categoryName(m.category_id)}</span>
-                      </div>
-                      <p className="text-sm font-semibold leading-snug line-clamp-2">{m.title}</p>
-                      {m.description && (
-                        <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2">{m.description}</p>
-                      )}
-                    </div>
-                  </div>
-                  <div className="relative flex items-center justify-end gap-1 mt-3 opacity-60 group-hover:opacity-100 transition-opacity">
-                    {m.type === 'video' ? (
-                      <span className="text-[10px] text-primary font-medium flex items-center gap-1">
-                        Assistir <ExternalLink className="h-3 w-3" />
-                      </span>
-                    ) : (
-                      <span className="text-[10px] text-primary font-medium flex items-center gap-1">
-                        Abrir <ExternalLink className="h-3 w-3" />
-                      </span>
-                    )}
-                  </div>
-                </button>
-              );
-            })}
+            {filtered.map((m, idx) => (
+              <MaterialCard
+                key={m.id}
+                material={m}
+                idx={idx}
+                categoryName={categoryName(m.category_id)}
+                onOpen={() => handleOpen(m)}
+              />
+            ))}
           </div>
         )}
       </main>
     </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────
+// Card individual com long-press → bottom sheet de ações
+// ─────────────────────────────────────────────────────────
+function MaterialCard({
+  material: m,
+  idx,
+  categoryName,
+  onOpen,
+}: {
+  material: Material;
+  idx: number;
+  categoryName: string;
+  onOpen: () => void;
+}) {
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const meta = TYPE_META[m.type] ?? TYPE_META.other;
+  const Icon = meta.icon;
+  const longPress = useLongPress(() => setSheetOpen(true));
+
+  const actions: ActionItem[] = [
+    {
+      id: 'open',
+      label: m.type === 'video' ? 'Assistir' : 'Abrir',
+      description: meta.label,
+      icon: Eye,
+      variant: 'primary',
+      onSelect: onOpen,
+    },
+    ...(m.file_url
+      ? [{
+          id: 'download',
+          label: 'Baixar',
+          description: 'Salvar no dispositivo',
+          icon: Download,
+          onSelect: () => window.open(m.file_url!, '_blank', 'noopener,noreferrer'),
+        } as ActionItem]
+      : []),
+    {
+      id: 'share',
+      label: 'Compartilhar',
+      icon: Share2,
+      onSelect: async () => {
+        const url = m.file_url || window.location.href;
+        try {
+          if (navigator.share) await navigator.share({ title: m.title, url });
+          else {
+            await navigator.clipboard.writeText(url);
+            toast.success('Link copiado');
+          }
+        } catch { /* cancelado */ }
+      },
+    },
+    {
+      id: 'copy',
+      label: 'Copiar link',
+      icon: Copy,
+      disabled: !m.file_url,
+      onSelect: async () => {
+        if (!m.file_url) return;
+        await navigator.clipboard.writeText(m.file_url);
+        toast.success('Link copiado');
+      },
+    },
+  ];
+
+  const card = (
+    <button
+      onClick={(e) => {
+        if (longPress.wasLongPress()) { e.preventDefault(); return; }
+        onOpen();
+      }}
+      onTouchStart={longPress.onTouchStart}
+      onTouchEnd={longPress.onTouchEnd}
+      onTouchMove={longPress.onTouchMove}
+      onTouchCancel={longPress.onTouchCancel}
+      className="group relative text-left rounded-xl border border-border/60 bg-card p-4 hover:-translate-y-0.5 hover:border-primary/40 transition-all duration-200 animate-card-enter overflow-hidden w-full"
+      style={{ animationDelay: `${Math.min(idx, 12) * 40}ms` }}
+    >
+      <div
+        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+        style={{ background: `linear-gradient(135deg, hsl(${meta.hue} / 0.10) 0%, transparent 70%)` }}
+      />
+      <div className="relative flex items-start gap-3">
+        <div
+          className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+          style={{ backgroundColor: `hsl(${meta.hue} / 0.12)`, color: `hsl(${meta.hue})` }}
+        >
+          <Icon className="h-5 w-5" strokeWidth={1.75} />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-1.5 mb-1">
+            <Badge variant="outline" className="text-[9px] px-1.5 py-0">{meta.label}</Badge>
+            <span className="text-[10px] text-muted-foreground truncate">{categoryName}</span>
+          </div>
+          <p className="text-sm font-semibold leading-snug line-clamp-2">{m.title}</p>
+          {m.description && (
+            <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2">{m.description}</p>
+          )}
+        </div>
+      </div>
+      <div className="relative flex items-center justify-end gap-1 mt-3 opacity-60 group-hover:opacity-100 transition-opacity">
+        <span className="text-[10px] text-primary font-medium flex items-center gap-1">
+          {m.type === 'video' ? 'Assistir' : 'Abrir'} <ExternalLink className="h-3 w-3" />
+        </span>
+      </div>
+    </button>
+  );
+
+  return (
+    <ActionSheet
+      open={sheetOpen}
+      onOpenChange={setSheetOpen}
+      title={m.title}
+      description={`${meta.label} • ${categoryName}`}
+      actions={actions}
+      trigger={card}
+    />
   );
 }
