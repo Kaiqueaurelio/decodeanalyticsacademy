@@ -9,12 +9,13 @@ import { Input } from '@/components/ui/input';
 import {
   ArrowLeft, FileText, Image as ImageIcon, Video, Music, FileSpreadsheet,
   Presentation, FileType, Link2, Library, Search, ExternalLink, Download,
-  Eye, Share2, Copy,
+  Eye, Share2, Copy, Star,
 } from 'lucide-react';
 import { ActionSheet, type ActionItem } from '@/components/ActionSheet';
 import { SwipeableRow, type SwipeAction } from '@/components/SwipeableRow';
 import { useLongPress } from '@/hooks/useLongPress';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useMaterialFavorites } from '@/hooks/useMaterialFavorites';
 import { toast } from 'sonner';
 import type { Tables } from '@/integrations/supabase/types';
 
