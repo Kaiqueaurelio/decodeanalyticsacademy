@@ -191,6 +191,27 @@ export type Database = {
         }
         Relationships: []
       }
+      apostila_completions: {
+        Row: {
+          apostila_id: string
+          completed_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          apostila_id: string
+          completed_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          apostila_id?: string
+          completed_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       apostila_materials: {
         Row: {
           apostila_id: string
