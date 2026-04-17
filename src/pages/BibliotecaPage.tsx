@@ -234,11 +234,15 @@ function MaterialCard({
   idx,
   categoryName,
   onOpen,
+  isFavorite,
+  onToggleFavorite,
 }: {
   material: Material;
   idx: number;
   categoryName: string;
   onOpen: () => void;
+  isFavorite: boolean;
+  onToggleFavorite: () => void | Promise<void>;
 }) {
   const [sheetOpen, setSheetOpen] = useState(false);
   const isMobile = useIsMobile();
