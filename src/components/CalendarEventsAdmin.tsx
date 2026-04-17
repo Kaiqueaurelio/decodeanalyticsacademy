@@ -360,6 +360,38 @@ export function CalendarEventsAdmin() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={textOpen} onOpenChange={setTextOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="h-4 w-4 text-primary" /> Colar texto do cronograma
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-xs text-muted-foreground">
+              Cole o texto bruto (lista de provas, e-mail do professor, anotações). A IA vai estruturar e organizar as datas — você revisa antes de salvar.
+            </p>
+            <Textarea
+              value={rawText}
+              onChange={e => setRawText(e.target.value)}
+              placeholder={`Ex:\nProva P1 — 15/05 às 19:00 (Cálculo)\nEntrega trabalho de POO: 22/05\nSeminário Banco de Dados — 30 de maio\n...`}
+              rows={12}
+              className="font-mono text-sm"
+            />
+            <div className="flex justify-end gap-2">
+              <Button variant="ghost" onClick={() => setTextOpen(false)} disabled={extracting}>Cancelar</Button>
+              <Button
+                className="gradient-primary text-primary-foreground"
+                onClick={extractFromText}
+                disabled={extracting || !rawText.trim()}
+              >
+                {extracting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Analisando…</> : <><Sparkles className="h-4 w-4 mr-2" /> Estruturar com IA</>}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
