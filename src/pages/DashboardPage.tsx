@@ -51,6 +51,7 @@ type Apostila = Tables<'apostilas'>;
 export default function DashboardPage() {
   const { user, isAdmin } = useAuth();
   const isMobile = useIsMobile();
+  const apostilaFavorites = useApostilaFavorites();
   const navigate = useNavigate();
   const gamification = useGamification();
   const examFocus = useExamFocus();
