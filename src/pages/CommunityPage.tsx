@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Card } from '@/components/ui/card';
 import {
-  Send, Heart, MessageCircle, Trash2, Loader2, Users, Pin, MoreHorizontal, Share2, Copy, Reply,
+  Send, Heart, MessageCircle, Trash2, Loader2, Users, Pin, Share2, Copy, Reply, Link2, Flag,
 } from 'lucide-react';
 import { ActionSheet, type ActionItem } from '@/components/ActionSheet';
 import { toast } from 'sonner';
@@ -16,6 +16,7 @@ import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { MentionTextarea, MentionContent } from '@/components/MentionTextarea';
 import { notifyMentions } from '@/lib/mentions';
+import { useLongPress } from '@/hooks/useLongPress';
 
 interface Channel {
   id: string;
