@@ -1,9 +1,10 @@
 import { useState, type ReactElement, cloneElement } from "react";
 import { useNavigate } from "react-router-dom";
-import { BookOpen, PenLine, Share2, Copy, Eye } from "lucide-react";
+import { BookOpen, PenLine, Share2, Copy, Eye, CheckCircle2, CircleDashed } from "lucide-react";
 import { toast } from "sonner";
 import { ActionSheet, type ActionItem } from "@/components/ActionSheet";
 import { useLongPress } from "@/hooks/useLongPress";
+import { useApostilaCompletions } from "@/hooks/useApostilaCompletions";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Apostila = Tables<"apostilas">;
@@ -30,6 +31,8 @@ export function ApostilaCardActions({
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const longPress = useLongPress(() => setOpen(true));
+  const { isCompleted, toggle: toggleCompletion } = useApostilaCompletions();
+  const done = isCompleted(a.id);
 
   const shareApostila = async () => {
     const url = `${window.location.origin}/apostila/${a.id}`;
@@ -72,6 +75,13 @@ export function ApostilaCardActions({
       description: "Abrir em nova aba",
       icon: Eye,
       onSelect: () => window.open(`/apostila/${a.id}`, "_blank", "noopener"),
+    },
+    {
+      id: "complete",
+      label: done ? "Desmarcar conclusão" : "Marcar como concluída",
+      description: done ? "Remover da lista de concluídas" : "Salva no seu progresso",
+      icon: done ? CircleDashed : CheckCircle2,
+      onSelect: () => toggleCompletion(a.id),
     },
     { id: "share", label: "Compartilhar", icon: Share2, onSelect: shareApostila },
     { id: "copy", label: "Copiar link", icon: Copy, onSelect: copyLink },
