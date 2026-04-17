@@ -24,7 +24,7 @@ export function CommandPalette() {
   const [query, setQuery] = useState('');
   const [apostilas, setApostilas] = useState<ApostilaRow[]>([]);
   const navigate = useNavigate();
-  const { theme, setTheme } = useTheme();
+  const { theme, toggleTheme } = useTheme();
   const { user, signOut } = useAuth();
 
   // Toggle com Cmd+K / Ctrl+K
@@ -109,7 +109,7 @@ export function CommandPalette() {
         <CommandSeparator />
 
         <CommandGroup heading="Ações">
-          <CommandItem onSelect={() => { setTheme(theme === 'dark' ? 'light' : 'dark'); setOpen(false); }}>
+          <CommandItem onSelect={() => { toggleTheme(); setOpen(false); }}>
             {theme === 'dark' ? <Sun className="mr-2 h-4 w-4" /> : <Moon className="mr-2 h-4 w-4" />}
             Alternar tema ({theme === 'dark' ? 'claro' : 'escuro'})
           </CommandItem>
