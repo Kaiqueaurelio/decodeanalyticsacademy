@@ -191,7 +191,7 @@ export function CalendarEventsAdmin() {
           <Sparkles className="h-5 w-5 text-primary" />
           <h3 className="font-semibold">Importar cronograma</h3>
         </div>
-        <div className="grid sm:grid-cols-[1fr_auto_auto_auto] gap-3 items-end">
+        <div className="grid sm:grid-cols-[1fr_auto_auto_auto_auto] gap-3 items-end">
           <div>
             <Label className="text-xs">Disciplina padrão (opcional)</Label>
             <Input
@@ -232,13 +232,20 @@ export function CalendarEventsAdmin() {
             />
           </div>
           <div>
+            <Label className="text-xs invisible">Texto</Label>
+            <Button type="button" variant="outline" disabled={extracting} onClick={() => setTextOpen(true)}>
+              <FileText className="h-4 w-4 mr-2" /> Texto bruto
+            </Button>
+          </div>
+          <div>
+            <Label className="text-xs invisible">Manual</Label>
             <Button variant="outline" onClick={() => setManualOpen(true)}>
               <Plus className="h-4 w-4 mr-2" /> Manual
             </Button>
           </div>
         </div>
         <p className="text-xs text-muted-foreground mt-3">
-          Envie um PDF ou foto/print do cronograma — a IA extrai provas, trabalhos e entregas. Você revisa antes de salvar.
+          Envie um PDF, foto/print ou cole o texto do cronograma — a IA extrai provas, trabalhos e entregas. Você revisa antes de salvar.
         </p>
       </Card>
 
