@@ -2,6 +2,7 @@ import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 import { bootstrapSavedRoute } from "@/lib/app-persistence";
+import { registerServiceWorker } from "@/lib/pwa";
 
 // PWA install prompt capture — only in production (not in iframe/preview)
 const isInIframe = (() => {
@@ -19,6 +20,9 @@ if (!isPreviewHost && !isInIframe) {
 }
 
 bootstrapSavedRoute();
+
+// Service Worker (PWA) — só ativa em produção real, fora de iframes
+registerServiceWorker();
 
 // Native screenshot prevention (Capacitor only — no-op on web)
 import('@capacitor/core').then(({ Capacitor }) => {
