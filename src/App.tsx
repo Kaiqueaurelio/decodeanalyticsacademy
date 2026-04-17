@@ -1,5 +1,5 @@
 // App root
-import React from "react";
+import React, { Suspense, lazy } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -12,23 +12,31 @@ import { BiometricLockGate } from "@/components/BiometricLockGate";
 import { BiometricOnboarding } from "@/components/BiometricOnboarding";
 import { DynamicWatermark } from "@/components/DynamicWatermark";
 import { ScreenshotGuard } from "@/components/ScreenshotGuard";
+import { CommandPalette } from "@/components/CommandPalette";
+import { ScrollToTopFab } from "@/components/ScrollToTopFab";
+import { PullToRefresh } from "@/components/PullToRefresh";
+import { PageSkeleton } from "@/components/PageSkeleton";
 import { useRouteTracker, getLastRoute } from "@/hooks/useRouteTracker";
 import { useInactivityLogout } from "@/hooks/useInactivityLogout";
 import { getLocationRoute, getPageState, getScrollPosition, savePageState, saveScrollPosition } from "@/lib/app-persistence";
+
+// Páginas críticas no bundle inicial (rápidas para o primeiro acesso)
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
-import ResetPasswordPage from "./pages/ResetPasswordPage";
-import DashboardPage from "./pages/DashboardPage";
-import ApostilaPage from "./pages/ApostilaPage";
-import ExercisesPage from "./pages/ExercisesPage";
-import AdminPage from "./pages/AdminPage";
-import ProfilePage from "./pages/ProfilePage";
-import MaterialsPage from "./pages/MaterialsPage";
-import BibliotecaPage from "./pages/BibliotecaPage";
-import VideoPlayerPage from "./pages/VideoPlayerPage";
-import AnnouncementDetailPage from "./pages/AnnouncementDetailPage";
-import CommunityPage from "./pages/CommunityPage";
-import NotFound from "./pages/NotFound";
+
+// Lazy: páginas internas (code-splitting)
+const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
+const DashboardPage = lazy(() => import("./pages/DashboardPage"));
+const ApostilaPage = lazy(() => import("./pages/ApostilaPage"));
+const ExercisesPage = lazy(() => import("./pages/ExercisesPage"));
+const AdminPage = lazy(() => import("./pages/AdminPage"));
+const ProfilePage = lazy(() => import("./pages/ProfilePage"));
+const MaterialsPage = lazy(() => import("./pages/MaterialsPage"));
+const BibliotecaPage = lazy(() => import("./pages/BibliotecaPage"));
+const VideoPlayerPage = lazy(() => import("./pages/VideoPlayerPage"));
+const AnnouncementDetailPage = lazy(() => import("./pages/AnnouncementDetailPage"));
+const CommunityPage = lazy(() => import("./pages/CommunityPage"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
 
@@ -39,6 +47,9 @@ function WatermarkWrapper() {
     <>
       <DynamicWatermark />
       <ScreenshotGuard />
+      <CommandPalette />
+      <ScrollToTopFab />
+      <PullToRefresh />
     </>
   );
 }
@@ -210,22 +221,24 @@ function AnimatedRoutes() {
       <ScrollRestoration />
       <WatermarkWrapper />
       <div key={location.pathname} className="animate-page-in">
-        <Routes location={location}>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/reset-password" element={<ResetPasswordPage />} />
-          <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-          <Route path="/apostila/:id" element={<ProtectedRoute><ApostilaPage /></ProtectedRoute>} />
-          <Route path="/exercises/:id" element={<ProtectedRoute><ExercisesPage /></ProtectedRoute>} />
-          <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-          <Route path="/materials" element={<ProtectedRoute><MaterialsPage /></ProtectedRoute>} />
-          <Route path="/biblioteca" element={<ProtectedRoute><BibliotecaPage /></ProtectedRoute>} />
-          <Route path="/video/:id" element={<ProtectedRoute><VideoPlayerPage /></ProtectedRoute>} />
-          <Route path="/aviso/:id" element={<ProtectedRoute><AnnouncementDetailPage /></ProtectedRoute>} />
-          <Route path="/comunidade" element={<ProtectedRoute><CommunityPage /></ProtectedRoute>} />
-          <Route path="/admin" element={<ProtectedRoute adminOnly><AdminPage /></ProtectedRoute>} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <Suspense fallback={<PageSkeleton />}>
+          <Routes location={location}>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+            <Route path="/apostila/:id" element={<ProtectedRoute><ApostilaPage /></ProtectedRoute>} />
+            <Route path="/exercises/:id" element={<ProtectedRoute><ExercisesPage /></ProtectedRoute>} />
+            <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+            <Route path="/materials" element={<ProtectedRoute><MaterialsPage /></ProtectedRoute>} />
+            <Route path="/biblioteca" element={<ProtectedRoute><BibliotecaPage /></ProtectedRoute>} />
+            <Route path="/video/:id" element={<ProtectedRoute><VideoPlayerPage /></ProtectedRoute>} />
+            <Route path="/aviso/:id" element={<ProtectedRoute><AnnouncementDetailPage /></ProtectedRoute>} />
+            <Route path="/comunidade" element={<ProtectedRoute><CommunityPage /></ProtectedRoute>} />
+            <Route path="/admin" element={<ProtectedRoute adminOnly><AdminPage /></ProtectedRoute>} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
       </div>
     </>
   );
