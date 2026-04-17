@@ -234,9 +234,27 @@ function MaterialCard({
   onOpen: () => void;
 }) {
   const [sheetOpen, setSheetOpen] = useState(false);
+  const isMobile = useIsMobile();
   const meta = TYPE_META[m.type] ?? TYPE_META.other;
   const Icon = meta.icon;
   const longPress = useLongPress(() => setSheetOpen(true));
+
+  const shareMaterial = async () => {
+    const url = m.file_url || window.location.href;
+    try {
+      if (navigator.share) await navigator.share({ title: m.title, url });
+      else {
+        await navigator.clipboard.writeText(url);
+        toast.success('Link copiado');
+      }
+    } catch { /* cancelado */ }
+  };
+
+  const copyLink = async () => {
+    if (!m.file_url) { toast.error('Sem link disponível'); return; }
+    await navigator.clipboard.writeText(m.file_url);
+    toast.success('Link copiado');
+  };
 
   const actions: ActionItem[] = [
     {
@@ -256,32 +274,14 @@ function MaterialCard({
           onSelect: () => window.open(m.file_url!, '_blank', 'noopener,noreferrer'),
         } as ActionItem]
       : []),
-    {
-      id: 'share',
-      label: 'Compartilhar',
-      icon: Share2,
-      onSelect: async () => {
-        const url = m.file_url || window.location.href;
-        try {
-          if (navigator.share) await navigator.share({ title: m.title, url });
-          else {
-            await navigator.clipboard.writeText(url);
-            toast.success('Link copiado');
-          }
-        } catch { /* cancelado */ }
-      },
-    },
-    {
-      id: 'copy',
-      label: 'Copiar link',
-      icon: Copy,
-      disabled: !m.file_url,
-      onSelect: async () => {
-        if (!m.file_url) return;
-        await navigator.clipboard.writeText(m.file_url);
-        toast.success('Link copiado');
-      },
-    },
+    { id: 'share', label: 'Compartilhar', icon: Share2, onSelect: shareMaterial },
+    { id: 'copy', label: 'Copiar link', icon: Copy, disabled: !m.file_url, onSelect: copyLink },
+  ];
+
+  const swipeActions: SwipeAction[] = [
+    { id: 'open', label: m.type === 'video' ? 'Ver' : 'Abrir', icon: Eye, variant: 'primary', onSelect: onOpen },
+    { id: 'share', label: 'Enviar', icon: Share2, onSelect: shareMaterial },
+    { id: 'more', label: 'Mais', icon: Copy, onSelect: () => setSheetOpen(true) },
   ];
 
   const card = (
@@ -334,7 +334,11 @@ function MaterialCard({
       title={m.title}
       description={`${meta.label} • ${categoryName}`}
       actions={actions}
-      trigger={card}
+      trigger={
+        <SwipeableRow rightActions={swipeActions} disabled={!isMobile}>
+          {card}
+        </SwipeableRow>
+      }
     />
   );
 }
