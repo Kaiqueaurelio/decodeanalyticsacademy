@@ -186,7 +186,7 @@ export default function BibliotecaPage() {
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="h-32 rounded-xl bg-muted/30 animate-pulse" />
+              <div key={i} className="h-32 rounded-xl shimmer" />
             ))}
           </div>
         ) : filtered.length === 0 ? (
@@ -196,7 +196,7 @@ export default function BibliotecaPage() {
             <p className="text-xs text-muted-foreground mt-1">Ajuste os filtros ou tente outra busca.</p>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 stagger-children">
             {filtered.map((m, idx) => {
               const meta = TYPE_META[m.type] ?? TYPE_META.other;
               const Icon = meta.icon;

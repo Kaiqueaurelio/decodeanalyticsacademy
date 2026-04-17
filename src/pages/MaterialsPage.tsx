@@ -667,7 +667,7 @@ export default function MaterialsPage() {
         </div>
 
         {/* Materials */}
-        <div className="space-y-4 animate-content-show delay-2">
+        <div className="space-y-4 animate-content-show delay-2 stagger-children">
           {filtered.map(renderMaterial)}
           {filtered.length === 0 && (
             <div className="text-center py-12 text-muted-foreground">
