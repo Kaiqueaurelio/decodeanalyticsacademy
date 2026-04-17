@@ -12,7 +12,9 @@ import {
   Eye, Share2, Copy,
 } from 'lucide-react';
 import { ActionSheet, type ActionItem } from '@/components/ActionSheet';
+import { SwipeableRow, type SwipeAction } from '@/components/SwipeableRow';
 import { useLongPress } from '@/hooks/useLongPress';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from 'sonner';
 import type { Tables } from '@/integrations/supabase/types';
 
