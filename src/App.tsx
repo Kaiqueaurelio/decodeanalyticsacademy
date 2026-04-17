@@ -222,12 +222,14 @@ function AnimatedRoutes() {
       <PageStatePersistence />
       <ScrollRestoration />
       <WatermarkWrapper />
+      <OfflineIndicator />
       <div key={location.pathname} className="animate-page-in">
         <Suspense fallback={<PageSkeleton />}>
           <Routes location={location}>
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/offline" element={<OfflinePage />} />
             <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
             <Route path="/apostila/:id" element={<ProtectedRoute><ApostilaPage /></ProtectedRoute>} />
             <Route path="/exercises/:id" element={<ProtectedRoute><ExercisesPage /></ProtectedRoute>} />
