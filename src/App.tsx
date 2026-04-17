@@ -16,6 +16,7 @@ import { CommandPalette } from "@/components/CommandPalette";
 import { ScrollToTopFab } from "@/components/ScrollToTopFab";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import { PageSkeleton } from "@/components/PageSkeleton";
+import { OfflineIndicator } from "@/components/OfflineIndicator";
 import { useRouteTracker, getLastRoute } from "@/hooks/useRouteTracker";
 import { useInactivityLogout } from "@/hooks/useInactivityLogout";
 import { getLocationRoute, getPageState, getScrollPosition, savePageState, saveScrollPosition } from "@/lib/app-persistence";
@@ -37,6 +38,7 @@ const VideoPlayerPage = lazy(() => import("./pages/VideoPlayerPage"));
 const AnnouncementDetailPage = lazy(() => import("./pages/AnnouncementDetailPage"));
 const CommunityPage = lazy(() => import("./pages/CommunityPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const OfflinePage = lazy(() => import("./pages/OfflinePage"));
 
 const queryClient = new QueryClient();
 
@@ -220,12 +222,14 @@ function AnimatedRoutes() {
       <PageStatePersistence />
       <ScrollRestoration />
       <WatermarkWrapper />
+      <OfflineIndicator />
       <div key={location.pathname} className="animate-page-in">
         <Suspense fallback={<PageSkeleton />}>
           <Routes location={location}>
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/offline" element={<OfflinePage />} />
             <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
             <Route path="/apostila/:id" element={<ProtectedRoute><ApostilaPage /></ProtectedRoute>} />
             <Route path="/exercises/:id" element={<ProtectedRoute><ExercisesPage /></ProtectedRoute>} />
