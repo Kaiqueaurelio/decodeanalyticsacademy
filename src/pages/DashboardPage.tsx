@@ -27,6 +27,7 @@ import { FlashcardSummaryWidget } from '@/components/FlashcardSummaryWidget';
 import { ApostilaProgressWidget } from '@/components/ApostilaProgressWidget';
 import { MobileCarousel } from '@/components/MobileCarousel';
 import { MaterialWidget } from '@/components/MaterialWidget';
+import { FavoriteMaterialsWidget } from '@/components/FavoriteMaterialsWidget';
 import { AnnouncementsBoard } from '@/components/AnnouncementsBoard';
 import { TodayExamBanner } from '@/components/TodayExamBanner';
 import { QuickAccessHub } from '@/components/QuickAccessHub';
