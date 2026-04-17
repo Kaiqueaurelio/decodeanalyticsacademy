@@ -276,6 +276,13 @@ function MaterialCard({
       variant: 'primary',
       onSelect: onOpen,
     },
+    {
+      id: 'favorite',
+      label: isFavorite ? 'Remover dos favoritos' : 'Favoritar',
+      description: isFavorite ? 'Já está nos favoritos' : 'Marcar para acesso rápido',
+      icon: Star,
+      onSelect: () => { void onToggleFavorite(); },
+    },
     ...(m.file_url
       ? [{
           id: 'download',
@@ -289,10 +296,21 @@ function MaterialCard({
     { id: 'copy', label: 'Copiar link', icon: Copy, disabled: !m.file_url, onSelect: copyLink },
   ];
 
-  const swipeActions: SwipeAction[] = [
+  const swipeRightActions: SwipeAction[] = [
     { id: 'open', label: m.type === 'video' ? 'Ver' : 'Abrir', icon: Eye, variant: 'primary', onSelect: onOpen },
     { id: 'share', label: 'Enviar', icon: Share2, onSelect: shareMaterial },
     { id: 'more', label: 'Mais', icon: Copy, onSelect: () => setSheetOpen(true) },
+  ];
+
+  // Swipe → direita revela "Favoritar" em amarelo (estilo iOS Mail "Sinalizar")
+  const swipeLeftActions: SwipeAction[] = [
+    {
+      id: 'favorite',
+      label: isFavorite ? 'Desfav.' : 'Favorito',
+      icon: Star,
+      variant: 'warning',
+      onSelect: () => { void onToggleFavorite(); },
+    },
   ];
 
   const card = (
