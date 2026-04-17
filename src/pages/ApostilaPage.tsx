@@ -30,6 +30,35 @@ interface Section {
   content: string;
 }
 
+/**
+ * Remove sintaxe markdown residual (negrito, itálico, código, links etc.)
+ * para renderizar texto puro com fonte unificada.
+ */
+function cleanText(input: string): string {
+  if (!input) return '';
+  return input
+    // imagens deixam para o renderer (já tratado depois)
+    // links [texto](url) → texto
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1')
+    // bold/italic combinados ***x*** ou ___x___
+    .replace(/\*{3}([^*]+)\*{3}/g, '$1')
+    .replace(/_{3}([^_]+)_{3}/g, '$1')
+    // bold **x** ou __x__
+    .replace(/\*{2}([^*]+)\*{2}/g, '$1')
+    .replace(/_{2}([^_]+)_{2}/g, '$1')
+    // italic *x* ou _x_ (evita pegar listas no início "* item")
+    .replace(/(?<![*\w])\*(?!\s)([^*\n]+?)\*(?!\w)/g, '$1')
+    .replace(/(?<![_\w])_(?!\s)([^_\n]+?)_(?!\w)/g, '$1')
+    // code `x`
+    .replace(/`([^`]+)`/g, '$1')
+    // strike ~~x~~
+    .replace(/~~([^~]+)~~/g, '$1')
+    // marcadores de bullet markdown no início → ponto
+    .replace(/^\s*[*+-]\s+/gm, '• ')
+    // headings hash residuais "# Título" → "Título"
+    .replace(/^\s*#{1,6}\s+/gm, '');
+}
+
 function parseContent(raw: string | null): Section[] {
   if (!raw) return [{ id: 'intro', title: 'Introdução', level: 1, content: '' }];
 
@@ -435,17 +464,17 @@ export default function ApostilaPage() {
                     {section.level === 1 && (
                       <h2 className="font-display text-2xl sm:text-3xl mb-5 text-foreground relative">
                         <span className="absolute -left-4 top-0 bottom-0 w-1 bg-primary/40 rounded-full hidden sm:block" />
-                        {section.title}
+                        {cleanText(section.title)}
                       </h2>
                     )}
                     {section.level === 2 && (
-                      <h3 className="text-lg sm:text-xl font-semibold mb-4 text-foreground/90">
-                        {section.title}
+                      <h3 className="font-display text-lg sm:text-xl font-semibold mb-4 text-foreground/90">
+                        {cleanText(section.title)}
                       </h3>
                     )}
                     {section.level === 3 && (
-                      <h4 className="text-base font-medium mb-3 text-foreground/80 font-mono-label">
-                        {section.title}
+                      <h4 className="font-display text-base font-semibold mb-3 text-foreground/85">
+                        {cleanText(section.title)}
                       </h4>
                     )}
                     {section.content.trim() && (
@@ -467,7 +496,7 @@ export default function ApostilaPage() {
                                 />
                               );
                             }
-                            return <span key={li}>{line}{'\n'}</span>;
+                            return <span key={li}>{cleanText(line)}{'\n'}</span>;
                           })}
                       </div>
                     )}
