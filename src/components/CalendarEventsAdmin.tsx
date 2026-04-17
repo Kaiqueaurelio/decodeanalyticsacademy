@@ -52,6 +52,32 @@ export function CalendarEventsAdmin() {
   const [defaultSubject, setDefaultSubject] = useState('');
   const [manualOpen, setManualOpen] = useState(false);
   const [manual, setManual] = useState<Draft>({ title: '', event_date: '', event_type: 'prova' });
+  const [textOpen, setTextOpen] = useState(false);
+  const [rawText, setRawText] = useState('');
+
+  const extractFromText = async () => {
+    if (!rawText.trim()) return toast.error('Cole ou digite o texto do cronograma');
+    setExtracting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('extract-calendar-events', {
+        body: { rawText, defaultSubject: defaultSubject || undefined },
+      });
+      if (error) throw error;
+      const extracted: Draft[] = data?.events ?? [];
+      if (extracted.length === 0) {
+        toast.warning('Nenhum evento encontrado no texto');
+      } else {
+        toast.success(`${extracted.length} evento(s) detectado(s) — revise abaixo`);
+        setDrafts(extracted);
+        setTextOpen(false);
+        setRawText('');
+      }
+    } catch (e: any) {
+      toast.error(e.message ?? 'Falha ao extrair eventos');
+    } finally {
+      setExtracting(false);
+    }
+  };
 
   const load = async () => {
     setLoading(true);
