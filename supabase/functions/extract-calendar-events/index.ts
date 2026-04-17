@@ -43,13 +43,15 @@ serve(async (req) => {
     }
 
     const today = new Date().toISOString().slice(0, 10);
-    const sysPrompt = `Você analisa cronogramas/planos de ensino acadêmicos em PDF e extrai TODOS os eventos avaliativos (provas, trabalhos, atividades, seminários, entregas).
-Hoje é ${today}. Retorne datas no formato YYYY-MM-DD. Se houver hora, inclua em HH:MM. Se a data tiver só dia/mês, assuma o ano corrente ou próximo coerente. Se houver várias datas, retorne todas. Não invente datas. event_type deve ser um de: prova, trabalho, atividade, seminario, entrega, aula. Se a disciplina não estiver clara em cada item, use o defaultSubject fornecido.`;
+    const sysPrompt = `Você analisa cronogramas/planos de ensino acadêmicos (em PDF, imagem ou TEXTO BRUTO digitado/colado) e extrai TODOS os eventos avaliativos (provas, trabalhos, atividades, seminários, entregas).
+Hoje é ${today}. Retorne datas no formato YYYY-MM-DD. Se houver hora, inclua em HH:MM. Se a data tiver só dia/mês, assuma o ano corrente ou próximo coerente. Se houver várias datas, retorne todas. Não invente datas. event_type deve ser um de: prova, trabalho, atividade, seminario, entrega, aula. Se a disciplina não estiver clara em cada item, use o defaultSubject fornecido. Aceite texto desorganizado/livre — interprete e estruture mesmo que mal formatado.`;
 
     const userContent: any[] = [
       { type: "text", text: `Extraia todos os eventos com data deste cronograma. defaultSubject="${defaultSubject ?? ""}".` },
     ];
-    if (pdfBase64) {
+    if (rawText) {
+      userContent.push({ type: "text", text: `Texto bruto do cronograma:\n\n${rawText}` });
+    } else if (pdfBase64) {
       userContent.push({ type: "image_url", image_url: { url: `data:application/pdf;base64,${pdfBase64}` } });
     } else if (imageBase64) {
       const mime = imageMime || "image/png";
