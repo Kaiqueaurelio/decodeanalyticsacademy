@@ -544,9 +544,4 @@ function PostCard({ post, isOwner, isAdmin, onLike, onToggleReplies, onDelete, r
     />
   );
 }
-          </main>
-        </div>
-      </div>
-    </div>
-  );
-}
+
