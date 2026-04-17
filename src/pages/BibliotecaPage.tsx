@@ -371,7 +371,7 @@ function MaterialCard({
       description={`${meta.label} • ${categoryName}`}
       actions={actions}
       trigger={
-        <SwipeableRow rightActions={swipeActions} disabled={!isMobile}>
+        <SwipeableRow rightActions={swipeRightActions} leftActions={swipeLeftActions} disabled={!isMobile}>
           {card}
         </SwipeableRow>
       }
