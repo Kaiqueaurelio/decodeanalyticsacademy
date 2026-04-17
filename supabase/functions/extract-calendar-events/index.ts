@@ -35,9 +35,9 @@ serve(async (req) => {
       });
     }
 
-    const { pdfBase64, pdfUrl, imageBase64, imageMime, imageUrl, defaultSubject } = await req.json();
-    if (!pdfBase64 && !pdfUrl && !imageBase64 && !imageUrl) {
-      return new Response(JSON.stringify({ error: "pdfBase64, pdfUrl, imageBase64 or imageUrl required" }), {
+    const { pdfBase64, pdfUrl, imageBase64, imageMime, imageUrl, rawText, defaultSubject } = await req.json();
+    if (!pdfBase64 && !pdfUrl && !imageBase64 && !imageUrl && !rawText) {
+      return new Response(JSON.stringify({ error: "pdfBase64, pdfUrl, imageBase64, imageUrl or rawText required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
