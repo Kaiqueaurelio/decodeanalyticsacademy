@@ -6,8 +6,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { FileUp, Sparkles, Trash2, Plus, Loader2, Calendar as CalIcon, Edit2, Image as ImageIcon } from 'lucide-react';
+import { FileUp, Sparkles, Trash2, Plus, Loader2, Calendar as CalIcon, Edit2, Image as ImageIcon, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -51,6 +52,32 @@ export function CalendarEventsAdmin() {
   const [defaultSubject, setDefaultSubject] = useState('');
   const [manualOpen, setManualOpen] = useState(false);
   const [manual, setManual] = useState<Draft>({ title: '', event_date: '', event_type: 'prova' });
+  const [textOpen, setTextOpen] = useState(false);
+  const [rawText, setRawText] = useState('');
+
+  const extractFromText = async () => {
+    if (!rawText.trim()) return toast.error('Cole ou digite o texto do cronograma');
+    setExtracting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('extract-calendar-events', {
+        body: { rawText, defaultSubject: defaultSubject || undefined },
+      });
+      if (error) throw error;
+      const extracted: Draft[] = data?.events ?? [];
+      if (extracted.length === 0) {
+        toast.warning('Nenhum evento encontrado no texto');
+      } else {
+        toast.success(`${extracted.length} evento(s) detectado(s) — revise abaixo`);
+        setDrafts(extracted);
+        setTextOpen(false);
+        setRawText('');
+      }
+    } catch (e: any) {
+      toast.error(e.message ?? 'Falha ao extrair eventos');
+    } finally {
+      setExtracting(false);
+    }
+  };
 
   const load = async () => {
     setLoading(true);
@@ -164,7 +191,7 @@ export function CalendarEventsAdmin() {
           <Sparkles className="h-5 w-5 text-primary" />
           <h3 className="font-semibold">Importar cronograma</h3>
         </div>
-        <div className="grid sm:grid-cols-[1fr_auto_auto_auto] gap-3 items-end">
+        <div className="grid sm:grid-cols-[1fr_auto_auto_auto_auto] gap-3 items-end">
           <div>
             <Label className="text-xs">Disciplina padrão (opcional)</Label>
             <Input
@@ -205,13 +232,20 @@ export function CalendarEventsAdmin() {
             />
           </div>
           <div>
+            <Label className="text-xs invisible">Texto</Label>
+            <Button type="button" variant="outline" disabled={extracting} onClick={() => setTextOpen(true)}>
+              <FileText className="h-4 w-4 mr-2" /> Texto bruto
+            </Button>
+          </div>
+          <div>
+            <Label className="text-xs invisible">Manual</Label>
             <Button variant="outline" onClick={() => setManualOpen(true)}>
               <Plus className="h-4 w-4 mr-2" /> Manual
             </Button>
           </div>
         </div>
         <p className="text-xs text-muted-foreground mt-3">
-          Envie um PDF ou foto/print do cronograma — a IA extrai provas, trabalhos e entregas. Você revisa antes de salvar.
+          Envie um PDF, foto/print ou cole o texto do cronograma — a IA extrai provas, trabalhos e entregas. Você revisa antes de salvar.
         </p>
       </Card>
 
@@ -323,6 +357,38 @@ export function CalendarEventsAdmin() {
             <div><Label className="text-xs">Descrição</Label>
               <Input value={manual.description ?? ''} onChange={e => setManual({ ...manual, description: e.target.value })} /></div>
             <Button className="w-full gradient-primary text-primary-foreground" onClick={saveManual}>Salvar</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={textOpen} onOpenChange={setTextOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="h-4 w-4 text-primary" /> Colar texto do cronograma
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-xs text-muted-foreground">
+              Cole o texto bruto (lista de provas, e-mail do professor, anotações). A IA vai estruturar e organizar as datas — você revisa antes de salvar.
+            </p>
+            <Textarea
+              value={rawText}
+              onChange={e => setRawText(e.target.value)}
+              placeholder={`Ex:\nProva P1 — 15/05 às 19:00 (Cálculo)\nEntrega trabalho de POO: 22/05\nSeminário Banco de Dados — 30 de maio\n...`}
+              rows={12}
+              className="font-mono text-sm"
+            />
+            <div className="flex justify-end gap-2">
+              <Button variant="ghost" onClick={() => setTextOpen(false)} disabled={extracting}>Cancelar</Button>
+              <Button
+                className="gradient-primary text-primary-foreground"
+                onClick={extractFromText}
+                disabled={extracting || !rawText.trim()}
+              >
+                {extracting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Analisando…</> : <><Sparkles className="h-4 w-4 mr-2" /> Estruturar com IA</>}
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
