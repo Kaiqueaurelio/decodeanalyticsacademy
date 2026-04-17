@@ -341,6 +341,13 @@ function MaterialCard({
           <div className="flex items-center gap-1.5 mb-1">
             <Badge variant="outline" className="text-[9px] px-1.5 py-0">{meta.label}</Badge>
             <span className="text-[10px] text-muted-foreground truncate">{categoryName}</span>
+            {isFavorite && (
+              <Star
+                className="h-3 w-3 ml-auto shrink-0"
+                style={{ color: 'hsl(45 100% 55%)', fill: 'hsl(45 100% 55%)' }}
+                aria-label="Favorito"
+              />
+            )}
           </div>
           <p className="text-sm font-semibold leading-snug line-clamp-2">{m.title}</p>
           {m.description && (
