@@ -696,9 +696,13 @@ export type Database = {
           back: string
           created_at: string
           difficulty: number
+          ease_factor: number
           front: string
           id: string
+          interval_days: number
+          last_reviewed: string | null
           next_review: string | null
+          repetitions: number
           user_id: string
         }
         Insert: {
@@ -706,9 +710,13 @@ export type Database = {
           back: string
           created_at?: string
           difficulty?: number
+          ease_factor?: number
           front: string
           id?: string
+          interval_days?: number
+          last_reviewed?: string | null
           next_review?: string | null
+          repetitions?: number
           user_id: string
         }
         Update: {
@@ -716,9 +724,13 @@ export type Database = {
           back?: string
           created_at?: string
           difficulty?: number
+          ease_factor?: number
           front?: string
           id?: string
+          interval_days?: number
+          last_reviewed?: string | null
           next_review?: string | null
+          repetitions?: number
           user_id?: string
         }
         Relationships: [
