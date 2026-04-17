@@ -362,81 +362,82 @@ export default function DashboardPage() {
                       const isFocus = isFocusApostila(a) || isFocusCategory(category);
 
                       return (
-                        <div
-                          key={a.id}
-                          className={`discipline-card animate-card-enter relative ${isFocus ? 'ring-2 ring-destructive/60 shadow-[0_0_25px_hsl(var(--destructive)/0.25)]' : ''}`}
-                          style={{ animationDelay: `${(catIdx * items.length + idx) * 60}ms` }}
-                        >
-                          {isFocus && examFocus && (
-                            <div className="absolute -top-2 left-3 z-10 px-2 py-0.5 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold uppercase tracking-wider flex items-center gap-1 shadow-lg animate-pulse">
-                              🔥 Prova {examFocus.daysUntil === 0 ? 'HOJE' : 'AMANHÃ'}
-                            </div>
-                          )}
-                          {/* Colored header */}
+                        <ApostilaCardActions key={a.id} apostila={a} exerciseCount={exCount}>
                           <div
-                            className="discipline-card-header"
-                            style={{ backgroundColor: `${color}15` }}
+                            className={`discipline-card animate-card-enter relative ${isFocus ? 'ring-2 ring-destructive/60 shadow-[0_0_25px_hsl(var(--destructive)/0.25)]' : ''}`}
+                            style={{ animationDelay: `${(catIdx * items.length + idx) * 60}ms` }}
                           >
-                            <div
-                              className="discipline-icon"
-                              style={{ backgroundColor: `${color}25`, color }}
-                            >
-                              {initial}
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <p className="text-[10px] font-medium uppercase tracking-wider" style={{ color }}>
-                                {category}
-                              </p>
-                              <h3 className="text-sm font-semibold truncate text-foreground leading-snug">
-                                {a.title}
-                              </h3>
-                            </div>
-                          </div>
-
-                          {/* Card body */}
-                          <div className="discipline-card-body">
-                            {/* Progress info */}
-                            <div className="flex items-center gap-3 mb-3 text-[11px] text-muted-foreground">
-                              {exCount > 0 && (
-                                <span className="flex items-center gap-1">
-                                  <PenLine className="h-3 w-3" /> {exCount} exercícios
-                                </span>
-                              )}
-                              {answered && (
-                                <span className="flex items-center gap-1 text-success">
-                                  <CheckCircle className="h-3 w-3" /> {correctPct}% acerto
-                                </span>
-                              )}
-                            </div>
-
-                            {/* Progress bar */}
-                            {answered && (
-                              <Progress value={correctPct} className="h-1.5 mb-3" />
+                            {isFocus && examFocus && (
+                              <div className="absolute -top-2 left-3 z-10 px-2 py-0.5 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold uppercase tracking-wider flex items-center gap-1 shadow-lg animate-pulse">
+                                🔥 Prova {examFocus.daysUntil === 0 ? 'HOJE' : 'AMANHÃ'}
+                              </div>
                             )}
-
-                            {/* Action buttons */}
-                            <div className="flex gap-2">
-                              <Button
-                                size="sm"
-                                onClick={() => navigate(`/apostila/${a.id}`)}
-                                className="flex-1 text-xs h-8 gap-1.5"
-                                style={{ backgroundColor: color, color: '#000' }}
+                            {/* Colored header */}
+                            <div
+                              className="discipline-card-header"
+                              style={{ backgroundColor: `${color}15` }}
+                            >
+                              <div
+                                className="discipline-icon"
+                                style={{ backgroundColor: `${color}25`, color }}
                               >
-                                <BookOpen className="h-3.5 w-3.5" /> Ler Apostila
-                              </Button>
-                              {exCount > 0 && (
+                                {initial}
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <p className="text-[10px] font-medium uppercase tracking-wider" style={{ color }}>
+                                  {category}
+                                </p>
+                                <h3 className="text-sm font-semibold truncate text-foreground leading-snug">
+                                  {a.title}
+                                </h3>
+                              </div>
+                            </div>
+
+                            {/* Card body */}
+                            <div className="discipline-card-body">
+                              {/* Progress info */}
+                              <div className="flex items-center gap-3 mb-3 text-[11px] text-muted-foreground">
+                                {exCount > 0 && (
+                                  <span className="flex items-center gap-1">
+                                    <PenLine className="h-3 w-3" /> {exCount} exercícios
+                                  </span>
+                                )}
+                                {answered && (
+                                  <span className="flex items-center gap-1 text-success">
+                                    <CheckCircle className="h-3 w-3" /> {correctPct}% acerto
+                                  </span>
+                                )}
+                              </div>
+
+                              {/* Progress bar */}
+                              {answered && (
+                                <Progress value={correctPct} className="h-1.5 mb-3" />
+                              )}
+
+                              {/* Action buttons */}
+                              <div className="flex gap-2">
                                 <Button
                                   size="sm"
-                                  variant="outline"
-                                  onClick={() => navigate(`/exercises/${a.id}`)}
-                                  className="text-xs h-8 gap-1.5"
+                                  onClick={(e) => { e.stopPropagation(); navigate(`/apostila/${a.id}`); }}
+                                  className="flex-1 text-xs h-8 gap-1.5"
+                                  style={{ backgroundColor: color, color: '#000' }}
                                 >
-                                  <PenLine className="h-3.5 w-3.5" /> Exercícios
+                                  <BookOpen className="h-3.5 w-3.5" /> Ler Apostila
                                 </Button>
-                              )}
+                                {exCount > 0 && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={(e) => { e.stopPropagation(); navigate(`/exercises/${a.id}`); }}
+                                    className="text-xs h-8 gap-1.5"
+                                  >
+                                    <PenLine className="h-3.5 w-3.5" /> Exercícios
+                                  </Button>
+                                )}
+                              </div>
                             </div>
                           </div>
-                        </div>
+                        </ApostilaCardActions>
                       );
                     });
                   })}
