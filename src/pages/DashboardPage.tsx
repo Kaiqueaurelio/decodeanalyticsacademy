@@ -213,6 +213,13 @@ export default function DashboardPage() {
         {/* Quick Access Hub - estilo AVA */}
         <QuickAccessHub />
 
+        {/* Carrossel de favoritos da Biblioteca */}
+        <Reveal from="bottom" delay={100}>
+          <div className="mt-4">
+            <FavoriteMaterialsWidget />
+          </div>
+        </Reveal>
+
         {/* Search */}
         <div className="mb-6 animate-content-show delay-1">
           <GlobalSearch />
