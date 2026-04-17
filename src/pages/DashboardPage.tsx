@@ -27,6 +27,7 @@ import { FlashcardSummaryWidget } from '@/components/FlashcardSummaryWidget';
 import { ApostilaProgressWidget } from '@/components/ApostilaProgressWidget';
 import { MobileCarousel } from '@/components/MobileCarousel';
 import { MaterialWidget } from '@/components/MaterialWidget';
+import { FavoriteMaterialsWidget } from '@/components/FavoriteMaterialsWidget';
 import { AnnouncementsBoard } from '@/components/AnnouncementsBoard';
 import { TodayExamBanner } from '@/components/TodayExamBanner';
 import { QuickAccessHub } from '@/components/QuickAccessHub';
@@ -212,6 +213,13 @@ export default function DashboardPage() {
 
         {/* Quick Access Hub - estilo AVA */}
         <QuickAccessHub />
+
+        {/* Carrossel de favoritos da Biblioteca */}
+        <Reveal from="bottom" delay={100}>
+          <div className="mt-4">
+            <FavoriteMaterialsWidget />
+          </div>
+        </Reveal>
 
         {/* Search */}
         <div className="mb-6 animate-content-show delay-1">
