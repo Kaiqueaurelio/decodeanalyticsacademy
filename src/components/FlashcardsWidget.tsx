@@ -5,17 +5,24 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus, RotateCcw, Check, X, Layers } from 'lucide-react';
+import { Plus, RotateCcw, Check, X, Layers, Sparkles, Brain } from 'lucide-react';
 import { toast } from 'sonner';
+import { sm2, formatNextReview, type SRSQuality } from '@/lib/srs';
+import { useNavigate } from 'react-router-dom';
 
 interface Props {
   apostilaId?: string;
 }
 
-type Flashcard = { id: string; front: string; back: string; difficulty: number; next_review: string | null };
+type Flashcard = {
+  id: string; front: string; back: string;
+  difficulty: number; next_review: string | null;
+  ease_factor: number; interval_days: number; repetitions: number;
+};
 
 export function FlashcardsWidget({ apostilaId }: Props) {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [cards, setCards] = useState<Flashcard[]>([]);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
@@ -30,6 +37,8 @@ export function FlashcardsWidget({ apostilaId }: Props) {
     q.then(({ data }) => setCards((data || []) as Flashcard[]));
   }, [user, apostilaId]);
 
+  const dueCount = cards.filter(c => !c.next_review || new Date(c.next_review).getTime() <= Date.now()).length;
+
   const addCard = async () => {
     if (!user || !front.trim() || !back.trim()) return;
     const { data, error } = await supabase.from('flashcards').insert({
@@ -42,14 +51,28 @@ export function FlashcardsWidget({ apostilaId }: Props) {
     toast.success('Flashcard criado!');
   };
 
-  const handleDifficulty = async (level: number) => {
+  const handleAnswer = async (quality: SRSQuality) => {
     const card = cards[currentIdx];
     if (!card) return;
-    const hours = level === 0 ? 1 : level === 1 ? 24 : 72;
-    const next = new Date(Date.now() + hours * 3600000).toISOString();
-    await supabase.from('flashcards').update({ difficulty: level, next_review: next }).eq('id', card.id);
+    const result = sm2(
+      {
+        ease_factor: card.ease_factor || 2.5,
+        interval_days: card.interval_days || 0,
+        repetitions: card.repetitions || 0,
+      },
+      quality,
+    );
+    await supabase.from('flashcards').update({
+      ease_factor: result.ease_factor,
+      interval_days: result.interval_days,
+      repetitions: result.repetitions,
+      next_review: result.next_review,
+      last_reviewed: new Date().toISOString(),
+      difficulty: quality < 3 ? 0 : quality === 3 ? 1 : 2,
+    }).eq('id', card.id);
+    toast.success(`Próx. revisão em ${formatNextReview(result.next_review)}`);
     setFlipped(false);
-    setCurrentIdx(prev => (prev + 1) % cards.length);
+    setCurrentIdx(prev => (prev + 1) % Math.max(1, cards.length));
   };
 
   const current = cards[currentIdx];
@@ -61,10 +84,22 @@ export function FlashcardsWidget({ apostilaId }: Props) {
           <Layers className="h-4 w-4 text-primary" />
           <span className="text-xs font-semibold">Flashcards</span>
           <span className="text-[10px] text-muted-foreground">({cards.length})</span>
+          {dueCount > 0 && (
+            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-warning/15 text-warning">
+              {dueCount} a revisar
+            </span>
+          )}
         </div>
-        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setShowForm(!showForm)}>
-          <Plus className="h-3.5 w-3.5" />
-        </Button>
+        <div className="flex items-center gap-1">
+          {dueCount > 0 && (
+            <Button size="icon" variant="ghost" className="h-7 w-7" title="Revisar todos" onClick={() => navigate('/review')}>
+              <Brain className="h-3.5 w-3.5 text-primary" />
+            </Button>
+          )}
+          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setShowForm(!showForm)}>
+            <Plus className="h-3.5 w-3.5" />
+          </Button>
+        </div>
       </div>
 
       {showForm && (
@@ -88,15 +123,18 @@ export function FlashcardsWidget({ apostilaId }: Props) {
             <p className="text-sm font-medium">{flipped ? current.back : current.front}</p>
           </button>
           {flipped && (
-            <div className="flex gap-1.5 justify-center animate-fade-in">
-              <Button size="sm" variant="outline" className="text-[10px] h-7 border-destructive/30 text-destructive" onClick={() => handleDifficulty(0)}>
-                <X className="h-3 w-3 mr-0.5" /> Difícil
+            <div className="grid grid-cols-4 gap-1 animate-fade-in">
+              <Button size="sm" variant="outline" className="text-[10px] h-7 px-1 border-destructive/30 text-destructive" onClick={() => handleAnswer(0)}>
+                <X className="h-3 w-3" />
               </Button>
-              <Button size="sm" variant="outline" className="text-[10px] h-7" onClick={() => handleDifficulty(1)}>
-                <RotateCcw className="h-3 w-3 mr-0.5" /> Médio
+              <Button size="sm" variant="outline" className="text-[10px] h-7 px-1" onClick={() => handleAnswer(3)}>
+                <RotateCcw className="h-3 w-3" />
               </Button>
-              <Button size="sm" variant="outline" className="text-[10px] h-7 border-success/30 text-success" onClick={() => handleDifficulty(2)}>
-                <Check className="h-3 w-3 mr-0.5" /> Fácil
+              <Button size="sm" variant="outline" className="text-[10px] h-7 px-1 border-primary/30 text-primary" onClick={() => handleAnswer(4)}>
+                <Check className="h-3 w-3" />
+              </Button>
+              <Button size="sm" variant="outline" className="text-[10px] h-7 px-1 border-success/30 text-success" onClick={() => handleAnswer(5)}>
+                <Sparkles className="h-3 w-3" />
               </Button>
             </div>
           )}
