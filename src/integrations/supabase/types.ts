@@ -272,6 +272,33 @@ export type Database = {
           },
         ]
       }
+      apostila_summaries: {
+        Row: {
+          apostila_id: string
+          generated_at: string
+          generated_by: string | null
+          id: string
+          mindmap_mermaid: string | null
+          summary_md: string | null
+        }
+        Insert: {
+          apostila_id: string
+          generated_at?: string
+          generated_by?: string | null
+          id?: string
+          mindmap_mermaid?: string | null
+          summary_md?: string | null
+        }
+        Update: {
+          apostila_id?: string
+          generated_at?: string
+          generated_by?: string | null
+          id?: string
+          mindmap_mermaid?: string | null
+          summary_md?: string | null
+        }
+        Relationships: []
+      }
       apostilas: {
         Row: {
           category: string
@@ -948,6 +975,60 @@ export type Database = {
           description?: string | null
           id?: string
           resolved?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
+      study_plans: {
+        Row: {
+          apostila_id: string
+          apostila_title: string
+          completed: boolean
+          completed_at: string | null
+          created_at: string
+          id: string
+          plan_date: string
+          pomodoros: number
+          reason: string
+          related_event_date: string | null
+          related_event_id: string | null
+          related_event_title: string | null
+          sort_order: number
+          subject: string | null
+          user_id: string
+        }
+        Insert: {
+          apostila_id: string
+          apostila_title: string
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          plan_date: string
+          pomodoros?: number
+          reason: string
+          related_event_date?: string | null
+          related_event_id?: string | null
+          related_event_title?: string | null
+          sort_order?: number
+          subject?: string | null
+          user_id: string
+        }
+        Update: {
+          apostila_id?: string
+          apostila_title?: string
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          plan_date?: string
+          pomodoros?: number
+          reason?: string
+          related_event_date?: string | null
+          related_event_id?: string | null
+          related_event_title?: string | null
+          sort_order?: number
+          subject?: string | null
           user_id?: string
         }
         Relationships: []
