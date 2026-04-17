@@ -5,14 +5,20 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus, RotateCcw, Check, X, Layers } from 'lucide-react';
+import { Plus, RotateCcw, Check, X, Layers, Sparkles, Brain } from 'lucide-react';
 import { toast } from 'sonner';
+import { sm2, formatNextReview, type SRSQuality } from '@/lib/srs';
+import { useNavigate } from 'react-router-dom';
 
 interface Props {
   apostilaId?: string;
 }
 
-type Flashcard = { id: string; front: string; back: string; difficulty: number; next_review: string | null };
+type Flashcard = {
+  id: string; front: string; back: string;
+  difficulty: number; next_review: string | null;
+  ease_factor: number; interval_days: number; repetitions: number;
+};
 
 export function FlashcardsWidget({ apostilaId }: Props) {
   const { user } = useAuth();

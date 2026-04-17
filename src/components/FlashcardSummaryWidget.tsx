@@ -67,7 +67,7 @@ export function FlashcardSummaryWidget() {
       </div>
 
       {dueToday > 0 ? (
-        <Button size="sm" className="w-full text-xs gap-1.5 gradient-primary text-primary-foreground" onClick={() => navigate('/dashboard')}>
+        <Button size="sm" className="w-full text-xs gap-1.5 gradient-primary text-primary-foreground" onClick={() => navigate('/review')}>
           <Play className="h-3 w-3" /> Revisar {dueToday} cards pendentes
         </Button>
       ) : (
