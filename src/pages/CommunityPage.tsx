@@ -7,8 +7,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Card } from '@/components/ui/card';
 import {
-  Send, Heart, MessageCircle, Trash2, Loader2, Users, Pin,
+  Send, Heart, MessageCircle, Trash2, Loader2, Users, Pin, MoreHorizontal, Share2, Copy, Reply,
 } from 'lucide-react';
+import { ActionSheet, type ActionItem } from '@/components/ActionSheet';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -379,13 +380,61 @@ export default function CommunityPage() {
                             <MessageCircle className="h-3.5 w-3.5" />
                             {post.replies_count || 0}
                           </Button>
-                          {(user?.id === post.user_id || isAdmin) && (
-                            <Button size="sm" variant="ghost"
-                              className="h-7 px-2 ml-auto text-xs text-muted-foreground hover:text-destructive"
-                              onClick={() => handleDeletePost(post.id)}>
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </Button>
-                          )}
+                          {/* Ações extras (bottom sheet no mobile) */}
+                          <ActionSheet
+                            title="Ações do post"
+                            description={post.profile?.full_name || post.profile?.email?.split('@')[0] || 'Post'}
+                            actions={[
+                              {
+                                id: 'reply',
+                                label: 'Responder',
+                                icon: Reply,
+                                variant: 'primary',
+                                onSelect: () => toggleReplies(post.id),
+                              },
+                              {
+                                id: 'like',
+                                label: post.user_liked ? 'Descurtir' : 'Curtir',
+                                icon: Heart,
+                                onSelect: () => handleLike(post),
+                              },
+                              {
+                                id: 'share',
+                                label: 'Compartilhar',
+                                icon: Share2,
+                                onSelect: async () => {
+                                  const url = `${window.location.origin}/comunidade#post-${post.id}`;
+                                  try {
+                                    if (navigator.share) await navigator.share({ title: 'Post da comunidade', text: post.content.slice(0, 100), url });
+                                    else { await navigator.clipboard.writeText(url); toast.success('Link copiado'); }
+                                  } catch { /* cancelado */ }
+                                },
+                              },
+                              {
+                                id: 'copy',
+                                label: 'Copiar texto',
+                                icon: Copy,
+                                onSelect: async () => {
+                                  await navigator.clipboard.writeText(post.content);
+                                  toast.success('Texto copiado');
+                                },
+                              },
+                              ...((user?.id === post.user_id || isAdmin)
+                                ? [{
+                                    id: 'delete',
+                                    label: 'Excluir post',
+                                    icon: Trash2,
+                                    variant: 'destructive' as const,
+                                    onSelect: () => handleDeletePost(post.id),
+                                  } as ActionItem]
+                                : []),
+                            ]}
+                            trigger={
+                              <Button size="sm" variant="ghost" className="h-7 px-2 ml-auto text-xs text-muted-foreground" aria-label="Mais ações">
+                                <MoreHorizontal className="h-3.5 w-3.5" />
+                              </Button>
+                            }
+                          />
                         </div>
 
                         {/* Replies */}

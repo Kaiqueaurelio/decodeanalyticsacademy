@@ -17,6 +17,7 @@ import { ScrollToTopFab } from "@/components/ScrollToTopFab";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import { PageSkeleton } from "@/components/PageSkeleton";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
+import { QuickActionsFab } from "@/components/QuickActionsFab";
 import { useRouteTracker, getLastRoute } from "@/hooks/useRouteTracker";
 import { useInactivityLogout } from "@/hooks/useInactivityLogout";
 import { getLocationRoute, getPageState, getScrollPosition, savePageState, saveScrollPosition } from "@/lib/app-persistence";
@@ -52,6 +53,7 @@ function WatermarkWrapper() {
       <CommandPalette />
       <ScrollToTopFab />
       <PullToRefresh />
+      <QuickActionsFab />
     </>
   );
 }

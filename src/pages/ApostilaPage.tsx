@@ -15,9 +15,11 @@ import { SpeakButton } from '@/components/SpeakButton';
 import { UnitTilesGrid, buildUnitResources } from '@/components/UnitTilesGrid';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { ActionSheet, type ActionItem } from '@/components/ActionSheet';
+import { toast } from 'sonner';
 import {
-  ArrowLeft, BookOpen, PenLine, Eye, List, X,
-  ChevronUp, StickyNote, Layers, Sparkles, MessageSquare
+  ArrowLeft, BookOpen, PenLine, Eye, List, X, MoreHorizontal,
+  ChevronUp, StickyNote, Layers, Sparkles, MessageSquare, Share2, CheckCircle2, Copy, Volume2
 } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 
@@ -240,7 +242,83 @@ export default function ApostilaPage() {
               >
                 <Eye className="h-3.5 w-3.5" /> {focusMode ? 'Foco ativo' : 'Modo foco'}
               </Button>
-              
+
+              {/* Bottom sheet de ações rápidas (mobile-first) */}
+              <ActionSheet
+                title={apostila?.title || 'Ações'}
+                description="Atalhos para esta apostila"
+                actions={[
+                  {
+                    id: 'mark-read',
+                    label: 'Marcar como lida',
+                    description: '+10 XP de progresso',
+                    icon: CheckCircle2,
+                    variant: 'primary',
+                    onSelect: async () => {
+                      await gamification.addXP(10);
+                      toast.success('Marcada como lida! +10 XP');
+                    },
+                  },
+                  {
+                    id: 'note',
+                    label: 'Nova anotação',
+                    description: 'Abrir painel lateral',
+                    icon: PenLine,
+                    onSelect: () => {
+                      const annotations = document.querySelector('[data-annotations-panel]');
+                      annotations?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    },
+                  },
+                  {
+                    id: 'chat',
+                    label: 'Conversar com a apostila',
+                    description: 'Tirar dúvidas com IA',
+                    icon: Sparkles,
+                    onSelect: () => setChatOpen(true),
+                  },
+                  {
+                    id: 'listen',
+                    label: 'Ouvir em voz',
+                    description: 'Rolar até o leitor de áudio',
+                    icon: Volume2,
+                    onSelect: () => {
+                      contentRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    },
+                  },
+                  {
+                    id: 'share',
+                    label: 'Compartilhar',
+                    description: 'Copiar link da apostila',
+                    icon: Share2,
+                    onSelect: async () => {
+                      const url = window.location.href;
+                      const shareData = { title: apostila?.title, url };
+                      try {
+                        if (navigator.share) {
+                          await navigator.share(shareData);
+                        } else {
+                          await navigator.clipboard.writeText(url);
+                          toast.success('Link copiado');
+                        }
+                      } catch { /* cancelado */ }
+                    },
+                  },
+                  {
+                    id: 'copy-link',
+                    label: 'Copiar link',
+                    icon: Copy,
+                    onSelect: async () => {
+                      await navigator.clipboard.writeText(window.location.href);
+                      toast.success('Link copiado');
+                    },
+                  },
+                ]}
+                trigger={
+                  <Button variant="outline" size="sm" className="text-xs gap-1.5 hover-lift" aria-label="Mais ações">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                }
+              />
             </div>
           </div>
         </div>
