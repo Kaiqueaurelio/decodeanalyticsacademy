@@ -31,6 +31,7 @@ import { AnnouncementsBoard } from '@/components/AnnouncementsBoard';
 import { TodayExamBanner } from '@/components/TodayExamBanner';
 import { QuickAccessHub } from '@/components/QuickAccessHub';
 import { Reveal } from '@/components/Reveal';
+import { ApostilaCardActions } from '@/components/ApostilaCardActions';
 import { useExamFocus } from '@/hooks/useExamFocus';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { getSubjectColor } from '@/lib/subject-colors';
