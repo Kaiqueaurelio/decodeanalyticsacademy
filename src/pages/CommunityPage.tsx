@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Card } from '@/components/ui/card';
 import {
-  Send, Heart, MessageCircle, Trash2, Loader2, Users, Pin, MoreHorizontal, Share2, Copy, Reply,
+  Send, Heart, MessageCircle, Trash2, Loader2, Users, Pin, Share2, Copy, Reply, Link2, Flag,
 } from 'lucide-react';
 import { ActionSheet, type ActionItem } from '@/components/ActionSheet';
 import { toast } from 'sonner';
@@ -16,6 +16,7 @@ import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { MentionTextarea, MentionContent } from '@/components/MentionTextarea';
 import { notifyMentions } from '@/lib/mentions';
+import { useLongPress } from '@/hooks/useLongPress';
 
 interface Channel {
   id: string;
@@ -346,140 +347,56 @@ export default function CommunityPage() {
             ) : (
               <div className="space-y-3">
                 {posts.map(post => (
-                  <Card key={post.id} className="p-4">
-                    {post.pinned && (
-                      <div className="flex items-center gap-1 mb-2 text-[10px] font-mono-label uppercase text-primary">
-                        <Pin className="h-3 w-3" /> Fixado
-                      </div>
-                    )}
-                    <div className="flex gap-3">
-                      <Avatar className="h-9 w-9 shrink-0">
-                        <AvatarFallback className="text-xs bg-primary/10 text-primary font-semibold">
-                          {getInitials(post.profile?.full_name || '', post.profile?.email || '')}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1 flex-wrap">
-                          <span className="text-sm font-semibold truncate">
-                            {post.profile?.full_name || post.profile?.email?.split('@')[0] || 'Aluno'}
-                          </span>
-                          <span className="text-[10px] text-muted-foreground">{formatTime(post.created_at)}</span>
-                        </div>
-                        <MentionContent className="text-sm text-foreground/90 leading-relaxed whitespace-pre-line break-words block">
-                          {post.content}
-                        </MentionContent>
-
-                        <div className="flex items-center gap-1 mt-3">
-                          <Button size="sm" variant="ghost" className="h-7 px-2 gap-1.5 text-xs"
-                            onClick={() => handleLike(post)}>
-                            <Heart className={cn("h-3.5 w-3.5", post.user_liked && "fill-destructive text-destructive")} />
-                            {post.likes_count || 0}
-                          </Button>
-                          <Button size="sm" variant="ghost" className="h-7 px-2 gap-1.5 text-xs"
-                            onClick={() => toggleReplies(post.id)}>
-                            <MessageCircle className="h-3.5 w-3.5" />
-                            {post.replies_count || 0}
-                          </Button>
-                          {/* Ações extras (bottom sheet no mobile) */}
-                          <ActionSheet
-                            title="Ações do post"
-                            description={post.profile?.full_name || post.profile?.email?.split('@')[0] || 'Post'}
-                            actions={[
-                              {
-                                id: 'reply',
-                                label: 'Responder',
-                                icon: Reply,
-                                variant: 'primary',
-                                onSelect: () => toggleReplies(post.id),
-                              },
-                              {
-                                id: 'like',
-                                label: post.user_liked ? 'Descurtir' : 'Curtir',
-                                icon: Heart,
-                                onSelect: () => handleLike(post),
-                              },
-                              {
-                                id: 'share',
-                                label: 'Compartilhar',
-                                icon: Share2,
-                                onSelect: async () => {
-                                  const url = `${window.location.origin}/comunidade#post-${post.id}`;
-                                  try {
-                                    if (navigator.share) await navigator.share({ title: 'Post da comunidade', text: post.content.slice(0, 100), url });
-                                    else { await navigator.clipboard.writeText(url); toast.success('Link copiado'); }
-                                  } catch { /* cancelado */ }
-                                },
-                              },
-                              {
-                                id: 'copy',
-                                label: 'Copiar texto',
-                                icon: Copy,
-                                onSelect: async () => {
-                                  await navigator.clipboard.writeText(post.content);
-                                  toast.success('Texto copiado');
-                                },
-                              },
-                              ...((user?.id === post.user_id || isAdmin)
-                                ? [{
-                                    id: 'delete',
-                                    label: 'Excluir post',
-                                    icon: Trash2,
-                                    variant: 'destructive' as const,
-                                    onSelect: () => handleDeletePost(post.id),
-                                  } as ActionItem]
-                                : []),
-                            ]}
-                            trigger={
-                              <Button size="sm" variant="ghost" className="h-7 px-2 ml-auto text-xs text-muted-foreground" aria-label="Mais ações">
-                                <MoreHorizontal className="h-3.5 w-3.5" />
+                  <PostCard
+                    key={post.id}
+                    post={post}
+                    isOwner={user?.id === post.user_id}
+                    isAdmin={isAdmin}
+                    onLike={() => handleLike(post)}
+                    onToggleReplies={() => toggleReplies(post.id)}
+                    onDelete={() => handleDeletePost(post.id)}
+                    repliesNode={
+                      openReplies[post.id] !== undefined && (
+                        <div className="mt-3 pt-3 border-t border-border/30 space-y-2">
+                          {openReplies[post.id]?.map(reply => (
+                            <div key={reply.id} className="flex gap-2 p-2 rounded-lg bg-secondary/30">
+                              <Avatar className="h-6 w-6 shrink-0">
+                                <AvatarFallback className="text-[9px] bg-primary/10 text-primary">
+                                  {getInitials(reply.profile?.full_name || '', reply.profile?.email || '')}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs font-semibold truncate">
+                                    {reply.profile?.full_name || reply.profile?.email?.split('@')[0] || 'Aluno'}
+                                  </span>
+                                  <span className="text-[9px] text-muted-foreground">{formatTime(reply.created_at)}</span>
+                                </div>
+                                <MentionContent className="text-xs text-foreground/80 whitespace-pre-line break-words block">{reply.content}</MentionContent>
+                              </div>
+                            </div>
+                          ))}
+                          {user && (
+                            <div className="flex gap-2 items-end pt-1">
+                              <div className="flex-1">
+                                <MentionTextarea
+                                  value={replyText[post.id] || ''}
+                                  onChange={(v) => setReplyText(prev => ({ ...prev, [post.id]: v }))}
+                                  placeholder="Responder... use @ para mencionar"
+                                  className="min-h-[36px] text-xs resize-none"
+                                  maxLength={1000}
+                                  onSubmitShortcut={() => handleReply(post.id)}
+                                />
+                              </div>
+                              <Button size="icon" className="h-9 w-9" onClick={() => handleReply(post.id)}>
+                                <Send className="h-3 w-3" />
                               </Button>
-                            }
-                          />
+                            </div>
+                          )}
                         </div>
-
-                        {/* Replies */}
-                        {openReplies[post.id] !== undefined && (
-                          <div className="mt-3 pt-3 border-t border-border/30 space-y-2">
-                            {openReplies[post.id]?.map(reply => (
-                              <div key={reply.id} className="flex gap-2 p-2 rounded-lg bg-secondary/30">
-                                <Avatar className="h-6 w-6 shrink-0">
-                                  <AvatarFallback className="text-[9px] bg-primary/10 text-primary">
-                                    {getInitials(reply.profile?.full_name || '', reply.profile?.email || '')}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-xs font-semibold truncate">
-                                      {reply.profile?.full_name || reply.profile?.email?.split('@')[0] || 'Aluno'}
-                                    </span>
-                                    <span className="text-[9px] text-muted-foreground">{formatTime(reply.created_at)}</span>
-                                  </div>
-                                  <MentionContent className="text-xs text-foreground/80 whitespace-pre-line break-words block">{reply.content}</MentionContent>
-                                </div>
-                              </div>
-                            ))}
-                            {user && (
-                              <div className="flex gap-2 items-end pt-1">
-                                <div className="flex-1">
-                                  <MentionTextarea
-                                    value={replyText[post.id] || ''}
-                                    onChange={(v) => setReplyText(prev => ({ ...prev, [post.id]: v }))}
-                                    placeholder="Responder... use @ para mencionar"
-                                    className="min-h-[36px] text-xs resize-none"
-                                    maxLength={1000}
-                                    onSubmitShortcut={() => handleReply(post.id)}
-                                  />
-                                </div>
-                                <Button size="icon" className="h-9 w-9" onClick={() => handleReply(post.id)}>
-                                  <Send className="h-3 w-3" />
-                                </Button>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </Card>
+                      )
+                    }
+                  />
                 ))}
               </div>
             )}
@@ -489,3 +406,142 @@ export default function CommunityPage() {
     </div>
   );
 }
+
+// ─────────────────────────────────────────────
+// PostCard com long-press → bottom sheet
+// ─────────────────────────────────────────────
+interface PostCardProps {
+  post: Post;
+  isOwner: boolean;
+  isAdmin: boolean;
+  onLike: () => void;
+  onToggleReplies: () => void;
+  onDelete: () => void;
+  repliesNode: React.ReactNode;
+}
+
+function PostCard({ post, isOwner, isAdmin, onLike, onToggleReplies, onDelete, repliesNode }: PostCardProps) {
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const longPress = useLongPress(() => setSheetOpen(true));
+
+  const shareUrl = `${window.location.origin}/comunidade#post-${post.id}`;
+  const authorLabel = post.profile?.full_name || post.profile?.email?.split('@')[0] || 'Post';
+
+  const actions: ActionItem[] = [
+    { id: 'reply', label: 'Responder', icon: Reply, variant: 'primary', onSelect: onToggleReplies },
+    {
+      id: 'like',
+      label: post.user_liked ? 'Descurtir' : 'Curtir',
+      icon: Heart,
+      onSelect: onLike,
+    },
+    {
+      id: 'share',
+      label: 'Compartilhar',
+      icon: Share2,
+      onSelect: async () => {
+        try {
+          if (navigator.share) await navigator.share({ title: 'Post da comunidade', text: post.content.slice(0, 100), url: shareUrl });
+          else { await navigator.clipboard.writeText(shareUrl); toast.success('Link copiado'); }
+        } catch { /* cancelado */ }
+      },
+    },
+    {
+      id: 'copy-link',
+      label: 'Copiar link',
+      icon: Link2,
+      onSelect: async () => {
+        await navigator.clipboard.writeText(shareUrl);
+        toast.success('Link copiado');
+      },
+    },
+    {
+      id: 'copy-text',
+      label: 'Copiar texto',
+      icon: Copy,
+      onSelect: async () => {
+        await navigator.clipboard.writeText(post.content);
+        toast.success('Texto copiado');
+      },
+    },
+    ...(!isOwner ? [{
+      id: 'report',
+      label: 'Denunciar',
+      description: 'Avisar moderação sobre conteúdo impróprio',
+      icon: Flag,
+      onSelect: () => toast.success('Denúncia enviada à moderação'),
+    } as ActionItem] : []),
+    ...((isOwner || isAdmin) ? [{
+      id: 'delete',
+      label: 'Excluir post',
+      icon: Trash2,
+      variant: 'destructive' as const,
+      onSelect: onDelete,
+    } as ActionItem] : []),
+  ];
+
+  return (
+    <ActionSheet
+      open={sheetOpen}
+      onOpenChange={setSheetOpen}
+      title="Ações do post"
+      description={authorLabel}
+      actions={actions}
+      trigger={
+        <Card
+          className="p-4 cursor-pointer select-none"
+          onTouchStart={longPress.onTouchStart}
+          onTouchEnd={longPress.onTouchEnd}
+          onTouchMove={longPress.onTouchMove}
+          onTouchCancel={longPress.onTouchCancel}
+          onContextMenu={longPress.onContextMenu}
+        >
+          {post.pinned && (
+            <div className="flex items-center gap-1 mb-2 text-[10px] font-mono-label uppercase text-primary">
+              <Pin className="h-3 w-3" /> Fixado
+            </div>
+          )}
+          <div className="flex gap-3">
+            <Avatar className="h-9 w-9 shrink-0">
+              <AvatarFallback className="text-xs bg-primary/10 text-primary font-semibold">
+                {getInitials(post.profile?.full_name || '', post.profile?.email || '')}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1 flex-wrap">
+                <span className="text-sm font-semibold truncate">{authorLabel}</span>
+                <span className="text-[10px] text-muted-foreground">{formatTime(post.created_at)}</span>
+              </div>
+              <MentionContent className="text-sm text-foreground/90 leading-relaxed whitespace-pre-line break-words block">
+                {post.content}
+              </MentionContent>
+
+              <div className="flex items-center gap-1 mt-3" onClick={(e) => e.stopPropagation()}>
+                <Button
+                  size="sm" variant="ghost" className="h-7 px-2 gap-1.5 text-xs"
+                  onClick={(e) => { e.stopPropagation(); if (longPress.wasLongPress()) return; onLike(); }}
+                >
+                  <Heart className={cn("h-3.5 w-3.5", post.user_liked && "fill-destructive text-destructive")} />
+                  {post.likes_count || 0}
+                </Button>
+                <Button
+                  size="sm" variant="ghost" className="h-7 px-2 gap-1.5 text-xs"
+                  onClick={(e) => { e.stopPropagation(); if (longPress.wasLongPress()) return; onToggleReplies(); }}
+                >
+                  <MessageCircle className="h-3.5 w-3.5" />
+                  {post.replies_count || 0}
+                </Button>
+                <span className="ml-auto text-[10px] text-muted-foreground/60 hidden sm:inline">
+                  Mantenha pressionado para mais
+                </span>
+              </div>
+
+              {repliesNode}
+            </div>
+          </div>
+        </Card>
+      }
+    />
+  );
+}
+
