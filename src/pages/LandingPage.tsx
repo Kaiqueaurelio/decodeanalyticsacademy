@@ -15,21 +15,14 @@ import { CreatorSection } from '@/components/CreatorSection';
 import { TechStackSection } from '@/components/TechStackSection';
 import { LiveAppSection } from '@/components/LiveAppSection';
 import { SocialAndProjectsSection } from '@/components/SocialAndProjectsSection';
+import { Reveal } from '@/components/Reveal';
 
-/* ─── SECTION WRAPPER: Fade + slide on scroll ─── */
+/* ─── SECTION WRAPPER: usa o Reveal compartilhado (IntersectionObserver + reduced-motion) ─── */
 function ScrollReveal({ children, className = '', delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: '-80px' });
   return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 60 }}
-      animate={isInView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.8, delay, ease: [0.22, 1, 0.36, 1] }}
-      className={className}
-    >
+    <Reveal from="bottom" distance={48} delay={delay * 1000} className={className}>
       {children}
-    </motion.div>
+    </Reveal>
   );
 }
 
