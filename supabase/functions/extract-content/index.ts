@@ -191,43 +191,71 @@ async function fetchGenericContent(url: string): Promise<{ text: string; title: 
   return { text: textContent, title: pageTitle };
 }
 
-const systemPrompt = `Voce e um professor universitario especialista em Ciencia da Computacao. Sua tarefa e produzir uma apostila educacional BEM ESTRUTURADA e PADRONIZADA.
+const systemPrompt = `Voce e um professor universitario brasileiro especialista em Ciencia da Computacao. Sua tarefa e produzir uma apostila educacional BEM ESTRUTURADA e PADRONIZADA, e retorna-la EXCLUSIVAMENTE chamando a funcao return_apostila.
 
-REGRAS DE FORMATACAO DO CONTEUDO (campo "content"):
-- Use EXATAMENTE este padrao de estrutura com secoes numeradas:
+REGRAS DE FORMATACAO DO CAMPO content:
+- Use EXATAMENTE este padrao com secoes numeradas em MAIUSCULAS:
   1. INTRODUCAO - contextualizacao do tema
   2. CONCEITOS FUNDAMENTAIS - definicoes e teoria base
-  3. DESENVOLVIMENTO - explicacao detalhada com subtopicos numerados (2.1, 2.2, etc.)
+  3. DESENVOLVIMENTO - explicacao detalhada (use subtopicos 3.1, 3.2, 3.3)
   4. EXEMPLOS PRATICOS - casos de uso reais, codigo ou cenarios aplicados
   5. RESUMO - sintese dos pontos principais
   6. REFERENCIAS - fontes mencionadas ou relevantes
 
-- Cada secao deve comecar com o titulo em MAIUSCULAS seguido de linha em branco
-- Use paragrafos bem separados (linha em branco entre eles)
-- Listas devem usar "." como marcador
-- Subtopicos devem usar numeracao (1.1, 1.2, 2.1, etc.)
-- O conteudo deve ter no MINIMO 1500 palavras
-- NAO use markdown (sem #, **, etc.) - apenas texto puro formatado
+- Cada secao comeca com o titulo em MAIUSCULAS seguido de linha em branco
+- Paragrafos bem separados (linha em branco entre eles)
+- Listas com "." como marcador
+- MINIMO 1500 palavras
+- TEXTO PURO (NAO use markdown, # ou **)
 
 REGRAS PARA EXERCICIOS:
 - Inclua de 8 a 10 exercicios de multipla escolha
-- Cubra diferentes niveis de dificuldade (facil, medio, dificil)
-- As opcoes devem comecar com "A) ", "B) ", "C) ", "D) "
+- Cubra niveis variados (facil, medio, dificil)
+- As opcoes comecam com "A) ", "B) ", "C) ", "D) "
+- Cada exercicio com explicacao DETALHADA (minimo 2 frases) que justifique a resposta correta`;
 
-Responda SOMENTE com JSON valido, sem markdown. Formato:
-{
-  "title": "Titulo claro e descritivo do assunto",
-  "category": "Categoria (Redes, IA, Seguranca, Cloud, Programacao, Banco de Dados, Sistemas Operacionais, Engenharia de Software, etc)",
-  "content": "Conteudo completo seguindo a estrutura padronizada acima",
-  "exercises": [
-    {
-      "question": "pergunta",
-      "options": ["A) opcao", "B) opcao", "C) opcao", "D) opcao"],
-      "correct_answer": "A",
-      "explanation": "explicacao da resposta correta"
-    }
-  ]
-}`;
+const apostilaTool = {
+  type: "function" as const,
+  function: {
+    name: "return_apostila",
+    description: "Retorna a apostila estruturada com titulo, categoria, conteudo e exercicios",
+    parameters: {
+      type: "object",
+      properties: {
+        title: { type: "string", description: "Titulo claro e descritivo do assunto" },
+        category: {
+          type: "string",
+          description: "Categoria (Redes, IA, Seguranca, Cloud, Programacao, Banco de Dados, Sistemas Operacionais, Engenharia de Software, etc)",
+        },
+        content: {
+          type: "string",
+          description: "Conteudo completo seguindo a estrutura padronizada (minimo 1500 palavras, texto puro sem markdown)",
+        },
+        exercises: {
+          type: "array",
+          description: "Lista de 8 a 10 exercicios de multipla escolha",
+          items: {
+            type: "object",
+            properties: {
+              question: { type: "string" },
+              options: {
+                type: "array",
+                items: { type: "string" },
+                description: "Exatamente 4 opcoes no formato 'A) ...', 'B) ...', 'C) ...', 'D) ...'",
+              },
+              correct_answer: { type: "string", description: "Letra A, B, C ou D" },
+              explanation: { type: "string", description: "Explicacao detalhada da resposta correta" },
+            },
+            required: ["question", "options", "correct_answer", "explanation"],
+            additionalProperties: false,
+          },
+        },
+      },
+      required: ["title", "category", "content", "exercises"],
+      additionalProperties: false,
+    },
+  },
+};
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -242,31 +270,31 @@ serve(async (req) => {
     if (!lovableApiKey) throw new Error("LOVABLE_API_KEY nao configurada");
 
     let userPrompt: string;
+    let extractionMethod = "fetch";
 
     if (rawText && rawText.trim().length > 0) {
       const cleanText = rawText.trim().substring(0, 40000);
-      userPrompt = `O usuario colou o seguinte texto bruto (pode estar baguncado, desorganizado, com formatacao inconsistente, copiado de slides, PDFs, ou anotacoes):
+      userPrompt = `O usuario colou o seguinte texto bruto (pode estar baguncado, copiado de slides/PDFs/anotacoes):
 
 ---
 ${cleanText}
 ---
 
 Sua tarefa:
-1. Identifique o tema/assunto principal do texto
-2. REORGANIZE e ESTRUTURE todo o conteudo seguindo rigorosamente o padrao de formatacao da apostila
-3. PRESERVE todo o conteudo original - nao remova informacoes
-4. Corrija erros de formatacao, organize em paragrafos coerentes
-5. Complemente com explicacoes adicionais se o conteudo for insuficiente para atingir 1500 palavras
+1. Identifique o tema/assunto principal
+2. REORGANIZE e ESTRUTURE todo o conteudo seguindo rigorosamente o padrao de formatacao
+3. PRESERVE todo o conhecimento original
+4. Corrija formatacao, organize em paragrafos coerentes
+5. Complemente se o conteudo for insuficiente para 1500 palavras
 6. Crie de 8 a 10 exercicios de multipla escolha baseados no conteudo
 
-IMPORTANTE: Mesmo que o texto pareca caotico, extraia TODO o conhecimento util e organize-o profissionalmente.`;
+Retorne APENAS chamando a funcao return_apostila.`;
     } else if (url) {
       const isJsRendered = isJsRenderedUrl(url);
       const isNotion = isNotionUrl(url);
 
       let textContent: string;
       let pageTitle: string;
-      let extractionMethod = "fetch";
 
       if (isJsRendered) {
         const result = await fetchViaFirecrawl(url);
@@ -282,7 +310,6 @@ IMPORTANTE: Mesmo que o texto pareca caotico, extraia TODO o conhecimento util e
         const result = await fetchGenericContent(url);
         textContent = result.text;
         pageTitle = result.title;
-        // Check if Firecrawl fallback was used (content was sparse and Firecrawl provided more)
         if (textContent.replace(/\s+/g, " ").trim().length < 200) {
           extractionMethod = "firecrawl-fallback";
         }
@@ -292,9 +319,9 @@ IMPORTANTE: Mesmo que o texto pareca caotico, extraia TODO o conhecimento util e
       const isSparse = cleanContent.length < 200;
 
       if (isSparse) {
-        userPrompt = `URL: ${url}\nTitulo da pagina: ${pageTitle}\n\nO conteudo extraido foi insuficiente. Com base no titulo e URL, crie uma apostila educacional COMPLETA e DETALHADA sobre o tema identificado, seguindo rigorosamente a estrutura padronizada. IMPORTANTE: inclua OBRIGATORIAMENTE de 8 a 10 exercicios.`;
+        userPrompt = `URL: ${url}\nTitulo da pagina: ${pageTitle}\n\nO conteudo extraido foi insuficiente. Com base no titulo e URL, crie uma apostila educacional COMPLETA sobre o tema identificado, seguindo a estrutura padronizada com 8-10 exercicios. Retorne APENAS chamando return_apostila.`;
       } else {
-        userPrompt = `URL: ${url}\nTitulo da pagina: ${pageTitle}\n\nConteudo extraido:\n${cleanContent.substring(0, 30000)}\n\nReorganize e estruture o conteudo acima seguindo rigorosamente o padrao de formatacao. PRESERVE todo o conteudo original mas reorganize-o nas secoes padronizadas. Complemente se necessario para atingir o minimo de 1500 palavras. IMPORTANTE: inclua de 8 a 10 exercicios.`;
+        userPrompt = `URL: ${url}\nTitulo da pagina: ${pageTitle}\n\nConteudo extraido:\n${cleanContent.substring(0, 30000)}\n\nReorganize e estruture o conteudo acima na estrutura padronizada. PRESERVE todo o conhecimento original. Complemente se necessario para atingir 1500 palavras. Inclua 8-10 exercicios. Retorne APENAS chamando return_apostila.`;
       }
     } else {
       throw new Error("Entrada invalida");
@@ -307,19 +334,21 @@ IMPORTANTE: Mesmo que o texto pareca caotico, extraia TODO o conhecimento util e
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "google/gemini-3-flash-preview",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
         ],
-        temperature: 0.3,
+        temperature: 0.4,
         max_tokens: 16000,
+        tools: [apostilaTool],
+        tool_choice: { type: "function", function: { name: "return_apostila" } },
       }),
     });
 
     if (!aiResponse.ok) {
       const errText = await aiResponse.text();
-      console.error("AI Error:", errText);
+      console.error("AI Error:", aiResponse.status, errText.slice(0, 500));
 
       if (aiResponse.status === 429) {
         return new Response(JSON.stringify({ error: "Limite de requisicoes excedido. Tente novamente em alguns instantes." }), {
@@ -328,49 +357,62 @@ IMPORTANTE: Mesmo que o texto pareca caotico, extraia TODO o conhecimento util e
         });
       }
       if (aiResponse.status === 402) {
-        return new Response(JSON.stringify({ error: "Creditos insuficientes. Adicione fundos na sua conta." }), {
+        return new Response(JSON.stringify({ error: "Creditos de IA esgotados. Adicione fundos na conta." }), {
           status: 402,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
 
-      return new Response(JSON.stringify({
-        title: "Sem titulo",
-        category: "Geral",
-        content: rawText ? rawText.substring(0, 10000) : "Nao foi possivel processar o conteudo.",
-        exercises: [],
-      }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ error: "Falha ao processar com a IA. Tente novamente em alguns instantes." }), {
+        status: 502,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     const aiData = await aiResponse.json();
-    const aiText = aiData.choices?.[0]?.message?.content || "";
+    const choice = aiData.choices?.[0];
+    const finishReason = choice?.finish_reason;
+    const toolCall = choice?.message?.tool_calls?.[0];
 
-    let parsed;
-    try {
-      const jsonStr = aiText.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-      parsed = JSON.parse(jsonStr);
-    } catch {
-      parsed = {
-        title: "Sem titulo",
-        category: "Geral",
-        content: rawText ? rawText.substring(0, 10000) : "Nao foi possivel processar o conteudo.",
-        exercises: [],
-      };
+    if (finishReason === "length" || finishReason === "MAX_TOKENS") {
+      console.error("Resposta truncada por max_tokens. finish_reason:", finishReason);
     }
 
-    const extractMethod = rawText ? "text" : (typeof extractionMethod !== "undefined" ? extractionMethod : "fetch");
+    let parsed: { title?: string; category?: string; content?: string; exercises?: any[] } = {};
+    if (toolCall?.function?.arguments) {
+      try {
+        parsed = JSON.parse(toolCall.function.arguments);
+      } catch (e) {
+        console.error("JSON tool_call parse falhou:", String(e).slice(0, 200));
+      }
+    } else {
+      // Fallback antigo: tenta extrair JSON do content (pode acontecer em respostas raras)
+      const aiText = choice?.message?.content || "";
+      try {
+        const jsonStr = aiText.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+        parsed = JSON.parse(jsonStr);
+      } catch {
+        console.error("Sem tool_call e content nao parseavel");
+      }
+    }
+
+    if (!parsed.content || parsed.content.length < 100) {
+      return new Response(JSON.stringify({
+        error: "A IA nao retornou conteudo suficiente. Tente outra URL ou cole o texto manualmente.",
+      }), { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
 
     return new Response(JSON.stringify({
       title: parsed.title || "Sem titulo",
       category: parsed.category || "Geral",
-      content: parsed.content || (rawText ? rawText.substring(0, 10000) : ""),
+      content: parsed.content,
       exercises: Array.isArray(parsed.exercises) ? parsed.exercises : [],
-      extraction_method: extractMethod,
+      extraction_method: rawText ? "text" : extractionMethod,
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
   } catch (error) {
     console.error("Error:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : "Erro desconhecido" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
