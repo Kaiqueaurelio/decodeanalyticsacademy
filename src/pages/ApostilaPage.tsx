@@ -12,6 +12,7 @@ import { CommentsWidget } from '@/components/CommentsWidget';
 import { ApostilaMaterials } from '@/components/ApostilaMaterials';
 import { ApostilaChat } from '@/components/ApostilaChat';
 import { SpeakButton } from '@/components/SpeakButton';
+import { ApostilaSummaryDialog } from '@/components/ApostilaSummaryDialog';
 import { UnitTilesGrid, buildUnitResources } from '@/components/UnitTilesGrid';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -418,17 +419,18 @@ export default function ApostilaPage() {
                   </span>
                 </div>
 
-                {/* Ouvir apostila — botão grande e visível no topo */}
-                <div className="mt-5 animate-fade-in" style={{ animationDelay: '280ms' }}>
+                {/* Ações rápidas — Ouvir, Resumo, Mapa Mental */}
+                <div className="mt-5 flex flex-wrap items-center gap-2 animate-fade-in" style={{ animationDelay: '280ms' }}>
                   <SpeakButton
                     size="lg"
-                    label="Ouvir apostila em voz"
+                    label="Ouvir apostila"
                     getText={() => `${apostila.title}. ${apostila.content || ''}`}
                   />
-                  <p className="text-[10px] text-muted-foreground mt-1.5">
-                    Leitura automática em português · funciona offline
-                  </p>
+                  <ApostilaSummaryDialog apostilaId={id!} apostilaTitle={apostila.title} />
                 </div>
+                <p className="text-[10px] text-muted-foreground mt-1.5">
+                  Leitura em PT-BR · resumo de 1 página + mapa mental gerado por IA
+                </p>
               </div>
 
               {/* Unit tiles - estilo AVA */}
