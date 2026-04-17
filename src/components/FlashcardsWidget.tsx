@@ -84,10 +84,22 @@ export function FlashcardsWidget({ apostilaId }: Props) {
           <Layers className="h-4 w-4 text-primary" />
           <span className="text-xs font-semibold">Flashcards</span>
           <span className="text-[10px] text-muted-foreground">({cards.length})</span>
+          {dueCount > 0 && (
+            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-warning/15 text-warning">
+              {dueCount} a revisar
+            </span>
+          )}
         </div>
-        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setShowForm(!showForm)}>
-          <Plus className="h-3.5 w-3.5" />
-        </Button>
+        <div className="flex items-center gap-1">
+          {dueCount > 0 && (
+            <Button size="icon" variant="ghost" className="h-7 w-7" title="Revisar todos" onClick={() => navigate('/review')}>
+              <Brain className="h-3.5 w-3.5 text-primary" />
+            </Button>
+          )}
+          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setShowForm(!showForm)}>
+            <Plus className="h-3.5 w-3.5" />
+          </Button>
+        </div>
       </div>
 
       {showForm && (
