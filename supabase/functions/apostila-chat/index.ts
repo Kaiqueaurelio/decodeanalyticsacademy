@@ -109,7 +109,11 @@ ${apostilaContent}
         body: JSON.stringify({
           contents,
           systemInstruction: { parts: [{ text: systemPrompt }] },
-          generationConfig: { temperature: 0.7 },
+          generationConfig: {
+            temperature: 0.6,
+            maxOutputTokens: 4096,
+            topP: 0.95,
+          },
         }),
       });
     };
@@ -122,47 +126,56 @@ ${apostilaContent}
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "google/gemini-2.5-flash",
+          model: "google/gemini-3-flash-preview",
           messages: [{ role: "system", content: systemPrompt }, ...messages],
           stream: true,
+          temperature: 0.6,
+          max_tokens: 4096,
         }),
       });
     };
 
-    // Converte SSE Gemini → SSE OpenAI delta
+    // Converte SSE Gemini → SSE OpenAI delta (drena tudo em vez de 1 chunk por pull)
     const transformGoogle = (input: ReadableStream<Uint8Array>) => {
       const reader = input.getReader();
       const decoder = new TextDecoder();
       const encoder = new TextEncoder();
       let buf = "";
       return new ReadableStream({
-        async pull(controller) {
-          const { done, value } = await reader.read();
-          if (done) {
+        async start(controller) {
+          try {
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+              buf += decoder.decode(value, { stream: true });
+              let nl: number;
+              while ((nl = buf.indexOf("\n")) !== -1) {
+                let line = buf.slice(0, nl);
+                buf = buf.slice(nl + 1);
+                if (line.endsWith("\r")) line = line.slice(0, -1);
+                if (!line.startsWith("data: ")) continue;
+                const json = line.slice(6).trim();
+                if (!json) continue;
+                try {
+                  const parsed = JSON.parse(json);
+                  const text =
+                    parsed?.candidates?.[0]?.content?.parts?.map((p: any) => p.text).join("") ?? "";
+                  if (text) {
+                    const chunk = { choices: [{ delta: { content: text } }] };
+                    controller.enqueue(encoder.encode(`data: ${JSON.stringify(chunk)}\n\n`));
+                  }
+                } catch {
+                  // JSON parcial — devolve ao buffer e espera próximo chunk
+                  buf = line + "\n" + buf;
+                  break;
+                }
+              }
+            }
+          } catch (e) {
+            console.error("transformGoogle stream error:", e);
+          } finally {
             controller.enqueue(encoder.encode("data: [DONE]\n\n"));
             controller.close();
-            return;
-          }
-          buf += decoder.decode(value, { stream: true });
-          let nl: number;
-          while ((nl = buf.indexOf("\n")) !== -1) {
-            let line = buf.slice(0, nl);
-            buf = buf.slice(nl + 1);
-            if (line.endsWith("\r")) line = line.slice(0, -1);
-            if (!line.startsWith("data: ")) continue;
-            const json = line.slice(6).trim();
-            if (!json) continue;
-            try {
-              const parsed = JSON.parse(json);
-              const text = parsed?.candidates?.[0]?.content?.parts?.map((p: any) => p.text).join("") ?? "";
-              if (text) {
-                const chunk = { choices: [{ delta: { content: text } }] };
-                controller.enqueue(encoder.encode(`data: ${JSON.stringify(chunk)}\n\n`));
-              }
-            } catch {
-              buf = line + "\n" + buf;
-              break;
-            }
           }
         },
       });
