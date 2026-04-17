@@ -212,6 +212,11 @@ export default function BibliotecaPage() {
                 idx={idx}
                 categoryName={categoryName(m.category_id)}
                 onOpen={() => handleOpen(m)}
+                isFavorite={isFavorite(m.id)}
+                onToggleFavorite={async () => {
+                  const nowFav = await toggleFavorite(m.id);
+                  toast.success(nowFav ? '⭐ Adicionado aos favoritos' : 'Removido dos favoritos');
+                }}
               />
             ))}
           </div>
