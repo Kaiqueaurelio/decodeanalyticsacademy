@@ -33,7 +33,8 @@ import { QuickAccessHub } from '@/components/QuickAccessHub';
 import { Reveal } from '@/components/Reveal';
 import { ApostilaCardActions } from '@/components/ApostilaCardActions';
 import { SwipeableRow, type SwipeAction } from '@/components/SwipeableRow';
-import { Share2 } from 'lucide-react';
+import { useApostilaFavorites } from '@/hooks/useApostilaFavorites';
+import { Share2, Star } from 'lucide-react';
 import { toast } from 'sonner';
 import { useExamFocus } from '@/hooks/useExamFocus';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -50,6 +51,7 @@ type Apostila = Tables<'apostilas'>;
 export default function DashboardPage() {
   const { user, isAdmin } = useAuth();
   const isMobile = useIsMobile();
+  const apostilaFavorites = useApostilaFavorites();
   const navigate = useNavigate();
   const gamification = useGamification();
   const examFocus = useExamFocus();
@@ -367,6 +369,16 @@ export default function DashboardPage() {
                           <ApostilaCardActions key={a.id} apostila={a} exerciseCount={exCount}>
                             <SwipeableRow
                               rightActions={swipeActions}
+                              leftActions={[{
+                                id: 'fav',
+                                label: apostilaFavorites.isFavorite(a.id) ? 'Remover' : 'Favorito',
+                                icon: Star,
+                                variant: 'warning',
+                                onSelect: async () => {
+                                  const nowFav = await apostilaFavorites.toggle(a.id);
+                                  toast.success(nowFav ? '⭐ Favoritada' : 'Removida dos favoritos');
+                                },
+                              }]}
                               disabled={!isMobile}
                               className="rounded-none border-b border-border/40 last:border-b-0"
                             >
@@ -378,7 +390,12 @@ export default function DashboardPage() {
                                 <span className="font-mono-label text-[10px] uppercase tracking-wider px-2 py-0.5 rounded shrink-0" style={{ backgroundColor: `${color}15`, color }}>
                                   {category.slice(0, 6)}
                                 </span>
-                                <span className="text-sm font-medium text-foreground flex-1 truncate">{a.title}</span>
+                                <span className="text-sm font-medium text-foreground flex-1 truncate flex items-center gap-1.5">
+                                  {apostilaFavorites.isFavorite(a.id) && (
+                                    <Star className="h-3 w-3 fill-yellow-400 text-yellow-400 shrink-0" />
+                                  )}
+                                  <span className="truncate">{a.title}</span>
+                                </span>
                                 <div className="hidden sm:flex items-center gap-2 w-32 shrink-0">
                                   <Progress value={prog} className="h-1 flex-1" />
                                   <span className="text-[10px] text-muted-foreground tabular-nums w-8 text-right">{prog}%</span>

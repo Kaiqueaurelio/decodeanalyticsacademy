@@ -212,6 +212,27 @@ export type Database = {
         }
         Relationships: []
       }
+      apostila_favorites: {
+        Row: {
+          apostila_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          apostila_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          apostila_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       apostila_materials: {
         Row: {
           apostila_id: string
