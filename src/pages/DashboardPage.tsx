@@ -30,6 +30,7 @@ import { MaterialWidget } from '@/components/MaterialWidget';
 import { AnnouncementsBoard } from '@/components/AnnouncementsBoard';
 import { TodayExamBanner } from '@/components/TodayExamBanner';
 import { QuickAccessHub } from '@/components/QuickAccessHub';
+import { Reveal } from '@/components/Reveal';
 import { useExamFocus } from '@/hooks/useExamFocus';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { getSubjectColor } from '@/lib/subject-colors';
@@ -449,22 +450,22 @@ export default function DashboardPage() {
             </div>
 
             {/* Charts */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-content-show delay-5">
+            <Reveal from="bottom" className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <EvolutionChart />
               <CategoryPerformanceChart data={categoryData} />
-            </div>
+            </Reveal>
 
             {/* Category Stats */}
-            <div className="animate-content-show delay-5">
+            <Reveal from="bottom" delay={80}>
               <CategoryStatsWidget
                 apostilas={apostilas}
                 byApostila={stats.byApostila}
                 exerciseCounts={exerciseCounts}
               />
-            </div>
+            </Reveal>
 
             {/* Gamification + Pomodoro */}
-            <div className="animate-content-show delay-6">
+            <Reveal from="bottom" delay={120}>
               <MobileCarousel desktopClassName="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <GamificationWidget
                   xpPoints={gamification.xp.xp_points}
@@ -479,11 +480,12 @@ export default function DashboardPage() {
                   <FlashcardsWidget />
                 </div>
               </MobileCarousel>
-            </div>
+            </Reveal>
 
             {/* Performance Section */}
             {stats.total > 0 && Object.keys(stats.byApostila).length > 0 && (
-              <Card className="p-5 animate-content-show delay-7">
+              <Reveal from="bottom" delay={80}>
+              <Card className="p-5">
                 <h2 className="text-sm font-semibold mb-4 flex items-center gap-2">
                   <TrendingUp className="h-4 w-4 text-primary" /> Desempenho Detalhado
                 </h2>
@@ -512,31 +514,38 @@ export default function DashboardPage() {
                   })}
                 </div>
               </Card>
+              </Reveal>
             )}
           </div>
 
           {/* Right Sidebar — Priority Order */}
-          <div className="animate-content-show delay-4 space-y-4">
+          <div className="space-y-4">
             {/* Priority widgets always visible */}
-            <WeeklyGoalWidget />
-            <div id="calendario" className="scroll-mt-24">
-              <ExamCalendarWidget />
-            </div>
-            <GamificationSidebarCard
-              level={gamification.xp.level}
-              xp={gamification.xp.xp_points}
-              streak={gamification.streak.current_streak}
-              xpForNext={gamification.xpForNextLevel(gamification.xp.level)}
-            />
-            <FlashcardSummaryWidget />
+            <Reveal from="right"><WeeklyGoalWidget /></Reveal>
+            <Reveal from="right" delay={60}>
+              <div id="calendario" className="scroll-mt-24">
+                <ExamCalendarWidget />
+              </div>
+            </Reveal>
+            <Reveal from="right" delay={120}>
+              <GamificationSidebarCard
+                level={gamification.xp.level}
+                xp={gamification.xp.xp_points}
+                streak={gamification.streak.current_streak}
+                xpForNext={gamification.xpForNextLevel(gamification.xp.level)}
+              />
+            </Reveal>
+            <Reveal from="right" delay={180}><FlashcardSummaryWidget /></Reveal>
 
             {/* Material de Apoio Widget */}
-            <MaterialWidget />
+            <Reveal from="right" delay={240}><MaterialWidget /></Reveal>
 
             {/* Mural de Avisos */}
-            <div id="comunidade" className="scroll-mt-24">
-              <AnnouncementsBoard />
-            </div>
+            <Reveal from="right" delay={300}>
+              <div id="comunidade" className="scroll-mt-24">
+                <AnnouncementsBoard />
+              </div>
+            </Reveal>
             <div id="mural" className="scroll-mt-24" />
 
             {/* Materials shortcut */}
