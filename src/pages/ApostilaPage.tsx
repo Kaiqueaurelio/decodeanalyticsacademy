@@ -464,17 +464,17 @@ export default function ApostilaPage() {
                     {section.level === 1 && (
                       <h2 className="font-display text-2xl sm:text-3xl mb-5 text-foreground relative">
                         <span className="absolute -left-4 top-0 bottom-0 w-1 bg-primary/40 rounded-full hidden sm:block" />
-                        {section.title}
+                        {cleanText(section.title)}
                       </h2>
                     )}
                     {section.level === 2 && (
-                      <h3 className="text-lg sm:text-xl font-semibold mb-4 text-foreground/90">
-                        {section.title}
+                      <h3 className="font-display text-lg sm:text-xl font-semibold mb-4 text-foreground/90">
+                        {cleanText(section.title)}
                       </h3>
                     )}
                     {section.level === 3 && (
-                      <h4 className="text-base font-medium mb-3 text-foreground/80 font-mono-label">
-                        {section.title}
+                      <h4 className="font-display text-base font-semibold mb-3 text-foreground/85">
+                        {cleanText(section.title)}
                       </h4>
                     )}
                     {section.content.trim() && (
@@ -496,7 +496,7 @@ export default function ApostilaPage() {
                                 />
                               );
                             }
-                            return <span key={li}>{line}{'\n'}</span>;
+                            return <span key={li}>{cleanText(line)}{'\n'}</span>;
                           })}
                       </div>
                     )}
