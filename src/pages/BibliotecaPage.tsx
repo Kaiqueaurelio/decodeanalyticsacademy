@@ -9,7 +9,11 @@ import { Input } from '@/components/ui/input';
 import {
   ArrowLeft, FileText, Image as ImageIcon, Video, Music, FileSpreadsheet,
   Presentation, FileType, Link2, Library, Search, ExternalLink, Download,
+  Eye, Share2, Copy,
 } from 'lucide-react';
+import { ActionSheet, type ActionItem } from '@/components/ActionSheet';
+import { useLongPress } from '@/hooks/useLongPress';
+import { toast } from 'sonner';
 import type { Tables } from '@/integrations/supabase/types';
 
 type Material = Tables<'materials'>;
