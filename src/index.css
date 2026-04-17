@@ -102,6 +102,30 @@ input, textarea, [contenteditable="true"] {
   h1 { @apply text-2xl sm:text-3xl font-bold tracking-tight; }
   h2 { @apply text-xl sm:text-2xl font-semibold tracking-tight; }
   h3 { @apply text-base sm:text-lg font-semibold; }
+
+  /* ─── Acessibilidade: focus ring visível só para teclado ─── */
+  :focus { outline: none; }
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  /* ─── Safe area iOS (notch / home indicator) ─── */
+  body {
+    padding-top: env(safe-area-inset-top, 0);
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+
+  /* ─── Respeita prefers-reduced-motion ─── */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 }
 
 @layer utilities {
