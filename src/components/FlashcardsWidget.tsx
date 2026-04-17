@@ -123,15 +123,18 @@ export function FlashcardsWidget({ apostilaId }: Props) {
             <p className="text-sm font-medium">{flipped ? current.back : current.front}</p>
           </button>
           {flipped && (
-            <div className="flex gap-1.5 justify-center animate-fade-in">
-              <Button size="sm" variant="outline" className="text-[10px] h-7 border-destructive/30 text-destructive" onClick={() => handleDifficulty(0)}>
-                <X className="h-3 w-3 mr-0.5" /> Difícil
+            <div className="grid grid-cols-4 gap-1 animate-fade-in">
+              <Button size="sm" variant="outline" className="text-[10px] h-7 px-1 border-destructive/30 text-destructive" onClick={() => handleAnswer(0)}>
+                <X className="h-3 w-3" />
               </Button>
-              <Button size="sm" variant="outline" className="text-[10px] h-7" onClick={() => handleDifficulty(1)}>
-                <RotateCcw className="h-3 w-3 mr-0.5" /> Médio
+              <Button size="sm" variant="outline" className="text-[10px] h-7 px-1" onClick={() => handleAnswer(3)}>
+                <RotateCcw className="h-3 w-3" />
               </Button>
-              <Button size="sm" variant="outline" className="text-[10px] h-7 border-success/30 text-success" onClick={() => handleDifficulty(2)}>
-                <Check className="h-3 w-3 mr-0.5" /> Fácil
+              <Button size="sm" variant="outline" className="text-[10px] h-7 px-1 border-primary/30 text-primary" onClick={() => handleAnswer(4)}>
+                <Check className="h-3 w-3" />
+              </Button>
+              <Button size="sm" variant="outline" className="text-[10px] h-7 px-1 border-success/30 text-success" onClick={() => handleAnswer(5)}>
+                <Sparkles className="h-3 w-3" />
               </Button>
             </div>
           )}
