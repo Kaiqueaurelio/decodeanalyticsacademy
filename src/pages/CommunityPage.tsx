@@ -347,8 +347,59 @@ export default function CommunityPage() {
             ) : (
               <div className="space-y-3">
                 {posts.map(post => (
-                  <Card key={post.id} className="p-4">
-                    {post.pinned && (
+                  <PostCard
+                    key={post.id}
+                    post={post}
+                    isOwner={user?.id === post.user_id}
+                    isAdmin={isAdmin}
+                    onLike={() => handleLike(post)}
+                    onToggleReplies={() => toggleReplies(post.id)}
+                    onDelete={() => handleDeletePost(post.id)}
+                    repliesNode={
+                      openReplies[post.id] !== undefined && (
+                        <div className="mt-3 pt-3 border-t border-border/30 space-y-2">
+                          {openReplies[post.id]?.map(reply => (
+                            <div key={reply.id} className="flex gap-2 p-2 rounded-lg bg-secondary/30">
+                              <Avatar className="h-6 w-6 shrink-0">
+                                <AvatarFallback className="text-[9px] bg-primary/10 text-primary">
+                                  {getInitials(reply.profile?.full_name || '', reply.profile?.email || '')}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs font-semibold truncate">
+                                    {reply.profile?.full_name || reply.profile?.email?.split('@')[0] || 'Aluno'}
+                                  </span>
+                                  <span className="text-[9px] text-muted-foreground">{formatTime(reply.created_at)}</span>
+                                </div>
+                                <MentionContent className="text-xs text-foreground/80 whitespace-pre-line break-words block">{reply.content}</MentionContent>
+                              </div>
+                            </div>
+                          ))}
+                          {user && (
+                            <div className="flex gap-2 items-end pt-1">
+                              <div className="flex-1">
+                                <MentionTextarea
+                                  value={replyText[post.id] || ''}
+                                  onChange={(v) => setReplyText(prev => ({ ...prev, [post.id]: v }))}
+                                  placeholder="Responder... use @ para mencionar"
+                                  className="min-h-[36px] text-xs resize-none"
+                                  maxLength={1000}
+                                  onSubmitShortcut={() => handleReply(post.id)}
+                                />
+                              </div>
+                              <Button size="icon" className="h-9 w-9" onClick={() => handleReply(post.id)}>
+                                <Send className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      )
+                    }
+                  />
+                ))}
+              </div>
+            )}
                       <div className="flex items-center gap-1 mb-2 text-[10px] font-mono-label uppercase text-primary">
                         <Pin className="h-3 w-3" /> Fixado
                       </div>
