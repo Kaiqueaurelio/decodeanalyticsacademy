@@ -30,6 +30,35 @@ interface Section {
   content: string;
 }
 
+/**
+ * Remove sintaxe markdown residual (negrito, itálico, código, links etc.)
+ * para renderizar texto puro com fonte unificada.
+ */
+function cleanText(input: string): string {
+  if (!input) return '';
+  return input
+    // imagens deixam para o renderer (já tratado depois)
+    // links [texto](url) → texto
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1')
+    // bold/italic combinados ***x*** ou ___x___
+    .replace(/\*{3}([^*]+)\*{3}/g, '$1')
+    .replace(/_{3}([^_]+)_{3}/g, '$1')
+    // bold **x** ou __x__
+    .replace(/\*{2}([^*]+)\*{2}/g, '$1')
+    .replace(/_{2}([^_]+)_{2}/g, '$1')
+    // italic *x* ou _x_ (evita pegar listas no início "* item")
+    .replace(/(?<![*\w])\*(?!\s)([^*\n]+?)\*(?!\w)/g, '$1')
+    .replace(/(?<![_\w])_(?!\s)([^_\n]+?)_(?!\w)/g, '$1')
+    // code `x`
+    .replace(/`([^`]+)`/g, '$1')
+    // strike ~~x~~
+    .replace(/~~([^~]+)~~/g, '$1')
+    // marcadores de bullet markdown no início → ponto
+    .replace(/^\s*[*+-]\s+/gm, '• ')
+    // headings hash residuais "# Título" → "Título"
+    .replace(/^\s*#{1,6}\s+/gm, '');
+}
+
 function parseContent(raw: string | null): Section[] {
   if (!raw) return [{ id: 'intro', title: 'Introdução', level: 1, content: '' }];
 
