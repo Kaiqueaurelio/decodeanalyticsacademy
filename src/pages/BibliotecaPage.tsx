@@ -49,6 +49,7 @@ const TYPE_GROUPS: { key: string; label: string; types: string[] }[] = [
 
 export default function BibliotecaPage() {
   const navigate = useNavigate();
+  const { isFavorite, toggle: toggleFavorite } = useMaterialFavorites();
   const [materials, setMaterials] = useState<Material[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
