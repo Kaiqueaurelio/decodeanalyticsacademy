@@ -2203,7 +2203,8 @@ export default function AdminPage() {
                         </div>
                       </CardContent>
                     </Card>
-                  ))}
+                  );
+                  })}
                   {filteredUsers.length === 0 && (
                     <div className="text-center py-12 text-muted-foreground">
                       <Users className="h-10 w-10 mx-auto mb-3 opacity-20" />
