@@ -12,26 +12,43 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 import { UserCircle2 } from "lucide-react";
 
 const DISMISS_KEY = "ra_name_prompt_dismissed_v1";
 
+const COURSES = [
+  { value: "CC", label: "Ciência da Computação (CC)" },
+  { value: "SI", label: "Sistemas de Informação (SI)" },
+  { value: "EC", label: "Engenharia da Computação (EC)" },
+];
+
+const SEMESTERS = Array.from({ length: 12 }, (_, i) => i + 1);
+
 export function RANamePrompt() {
   const { user, loading } = useAuth();
   const [open, setOpen] = useState(false);
   const [fullName, setFullName] = useState("");
+  const [course, setCourse] = useState<string>("");
+  const [semester, setSemester] = useState<string>("");
   const [saving, setSaving] = useState(false);
-  const [profileId, setProfileId] = useState<string | null>(null);
 
   useEffect(() => {
     if (loading || !user) return;
+    if (sessionStorage.getItem(DISMISS_KEY) === "1") return;
 
     let cancelled = false;
     (async () => {
       const { data, error } = await supabase
         .from("profiles")
-        .select("id, account_type, full_name, ra")
+        .select("account_type, full_name, course, semester")
         .eq("user_id", user.id)
         .maybeSingle();
 
@@ -41,14 +58,18 @@ export function RANamePrompt() {
         (data as any).account_type === "ra" ||
         (user.email || "").endsWith("@ra.unip.local");
       const name = ((data as any).full_name || "").trim();
-      // Considera "sem nome real" se vazio ou ainda no padrão "Aluno UNIP {RA}"
-      const looksDefault =
+      const looksDefaultName =
         !name ||
         /^aluno\s+unip\b/i.test(name) ||
         name.toLowerCase().includes("[teste bot]");
+      const missingCourse = !(data as any).course;
+      const missingSemester = !(data as any).semester;
 
-      if (isRA && looksDefault) {
-        setProfileId((data as any).id);
+      if (isRA && (looksDefaultName || missingCourse || missingSemester)) {
+        if (!looksDefaultName) setFullName(name);
+        if ((data as any).course) setCourse((data as any).course);
+        if ((data as any).semester)
+          setSemester(String((data as any).semester));
         setOpen(true);
       }
     })();
@@ -58,18 +79,35 @@ export function RANamePrompt() {
     };
   }, [user, loading]);
 
+  const nameValid = fullName.trim().length >= 3 && fullName.trim().length <= 100;
+  const courseValid = COURSES.some((c) => c.value === course);
+  const semNum = parseInt(semester, 10);
+  const semesterValid = !isNaN(semNum) && semNum >= 1 && semNum <= 12;
+  const canSave = nameValid && courseValid && semesterValid && !saving;
+
   const handleSave = async () => {
-    const trimmed = fullName.trim();
-    if (trimmed.length < 3) {
-      toast.error("Digite seu nome completo (mínimo 3 caracteres).");
+    if (!user) return;
+    if (!nameValid) {
+      toast.error("Digite seu nome completo (3 a 100 caracteres).");
       return;
     }
-    if (!user) return;
+    if (!courseValid) {
+      toast.error("Selecione seu curso.");
+      return;
+    }
+    if (!semesterValid) {
+      toast.error("Selecione o semestre atual.");
+      return;
+    }
 
     setSaving(true);
     const { error } = await supabase
       .from("profiles")
-      .update({ full_name: trimmed })
+      .update({
+        full_name: fullName.trim(),
+        course,
+        semester: semNum,
+      } as any)
       .eq("user_id", user.id);
     setSaving(false);
 
@@ -77,7 +115,7 @@ export function RANamePrompt() {
       toast.error("Não foi possível salvar. Tente novamente.");
       return;
     }
-    toast.success("Nome atualizado! Bons estudos 🦉");
+    toast.success("Perfil completo! Bons estudos 🦉");
     sessionStorage.setItem(DISMISS_KEY, "1");
     setOpen(false);
   };
@@ -86,14 +124,9 @@ export function RANamePrompt() {
     sessionStorage.setItem(DISMISS_KEY, "1");
     setOpen(false);
     toast("Tudo bem, você pode editar depois no seu Perfil.", {
-      description: "Acesse Perfil → Editar nome.",
+      description: "Acesse Perfil → Editar dados.",
     });
   };
-
-  // Se já dispensou nesta sessão, não reabrir
-  useEffect(() => {
-    if (sessionStorage.getItem(DISMISS_KEY) === "1") setOpen(false);
-  }, []);
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && handleLater()}>
@@ -104,22 +137,62 @@ export function RANamePrompt() {
           </div>
           <DialogTitle className="text-center">Complete seu perfil</DialogTitle>
           <DialogDescription className="text-center">
-            Você entrou com seu RA UNIP. Para personalizar sua experiência e
-            aparecer corretamente na comunidade e no ranking, por favor informe
-            seu <strong>nome completo</strong>.
+            Você entrou com seu RA UNIP. Para personalizar a experiência e
+            aparecer corretamente na comunidade e no ranking, informe seu
+            <strong> nome completo</strong>, <strong>curso</strong> e
+            <strong> semestre atual</strong>.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-2 py-2">
-          <Label htmlFor="ra-fullname">Nome completo</Label>
-          <Input
-            id="ra-fullname"
-            placeholder="Ex.: Maria Silva Santos"
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            autoFocus
-            disabled={saving}
-          />
+        <div className="space-y-3 py-2">
+          <div className="space-y-1.5">
+            <Label htmlFor="ra-fullname">Nome completo</Label>
+            <Input
+              id="ra-fullname"
+              placeholder="Ex.: Maria Silva Santos"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              maxLength={100}
+              autoFocus
+              disabled={saving}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="ra-course">Curso</Label>
+            <Select value={course} onValueChange={setCourse} disabled={saving}>
+              <SelectTrigger id="ra-course">
+                <SelectValue placeholder="Selecione seu curso" />
+              </SelectTrigger>
+              <SelectContent>
+                {COURSES.map((c) => (
+                  <SelectItem key={c.value} value={c.value}>
+                    {c.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="ra-semester">Semestre atual</Label>
+            <Select
+              value={semester}
+              onValueChange={setSemester}
+              disabled={saving}
+            >
+              <SelectTrigger id="ra-semester">
+                <SelectValue placeholder="Selecione o semestre" />
+              </SelectTrigger>
+              <SelectContent>
+                {SEMESTERS.map((s) => (
+                  <SelectItem key={s} value={String(s)}>
+                    {s}º semestre
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         <DialogFooter className="flex-col-reverse gap-2 sm:flex-row">
@@ -133,10 +206,10 @@ export function RANamePrompt() {
           </Button>
           <Button
             onClick={handleSave}
-            disabled={saving || fullName.trim().length < 3}
+            disabled={!canSave}
             className="sm:flex-1"
           >
-            {saving ? "Salvando..." : "Salvar nome"}
+            {saving ? "Salvando..." : "Salvar perfil"}
           </Button>
         </DialogFooter>
       </DialogContent>
