@@ -2130,21 +2130,29 @@ export default function AdminPage() {
 
                 {/* User List */}
                 <div className="space-y-2">
-                  {filteredUsers.map(u => (
-                    <Card key={u.id} className={`hover:shadow-md transition-shadow ${u.is_blocked ? 'border-destructive/30' : ''}`}>
+                  {filteredUsers.map(u => {
+                    const isTestBot = (u.full_name || '').toLowerCase().includes('[teste bot]') || (u.email || '').includes('teste.evasive');
+                    const isRA = (u as any).account_type === 'ra' || (u.email || '').endsWith('@ra.unip.local');
+                    return (
+                    <Card key={u.id} className={`hover:shadow-md transition-shadow ${u.is_blocked ? 'border-destructive/30' : ''} ${isTestBot ? 'border-amber-500/40 bg-amber-500/5' : ''}`}>
                       <CardContent className="p-4">
-                        <div className="flex items-center gap-3">
-                          <div className={`rounded-full p-2.5 shrink-0 ${u.is_blocked ? 'bg-destructive/10' : 'bg-accent'}`}>
-                            {u.is_blocked ? <ShieldBan className="h-5 w-5 text-destructive" /> : <ShieldCheck className="h-5 w-5 text-primary" />}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <p className="text-sm font-medium truncate">{u.full_name || 'Sem nome'}</p>
-                              {u.is_blocked && <Badge variant="destructive" className="text-[10px]">Bloqueado</Badge>}
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                          <div className="flex items-start gap-3 flex-1 min-w-0">
+                            <div className={`rounded-full p-2.5 shrink-0 ${u.is_blocked ? 'bg-destructive/10' : isTestBot ? 'bg-amber-500/15' : 'bg-accent'}`}>
+                              {u.is_blocked ? <ShieldBan className="h-5 w-5 text-destructive" /> : <ShieldCheck className={`h-5 w-5 ${isTestBot ? 'text-amber-500' : 'text-primary'}`} />}
                             </div>
-                            <p className="text-[11px] text-muted-foreground truncate">{u.email} · Desde {new Date(u.created_at).toLocaleDateString('pt-BR')}</p>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex flex-wrap items-center gap-1.5 mb-1">
+                                <p className="text-sm font-medium break-words">{u.full_name || 'Sem nome'}</p>
+                                {isTestBot && <Badge className="text-[10px] bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-500/30 hover:bg-amber-500/20">🤖 TESTE BOT</Badge>}
+                                {u.is_blocked && <Badge variant="destructive" className="text-[10px]">Bloqueado</Badge>}
+                                {isRA && <Badge variant="outline" className="text-[10px]">RA UNIP</Badge>}
+                              </div>
+                              <p className="text-xs text-foreground/80 break-all leading-snug font-mono">{u.email}</p>
+                              <p className="text-[11px] text-muted-foreground mt-0.5">Desde {new Date(u.created_at).toLocaleDateString('pt-BR')}</p>
+                            </div>
                           </div>
-                          <div className="flex gap-1.5 shrink-0">
+                          <div className="flex gap-1.5 shrink-0 sm:ml-auto">
                             <Button
                               size="sm"
                               variant={u.is_blocked ? 'outline' : 'destructive'}
@@ -2195,7 +2203,8 @@ export default function AdminPage() {
                         </div>
                       </CardContent>
                     </Card>
-                  ))}
+                  );
+                  })}
                   {filteredUsers.length === 0 && (
                     <div className="text-center py-12 text-muted-foreground">
                       <Users className="h-10 w-10 mx-auto mb-3 opacity-20" />
