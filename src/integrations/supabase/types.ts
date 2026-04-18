@@ -888,6 +888,7 @@ export type Database = {
         Row: {
           account_type: string
           avatar_url: string | null
+          course: string | null
           created_at: string
           email: string
           full_name: string
@@ -896,11 +897,13 @@ export type Database = {
           locked_at: string | null
           login_attempts: number
           ra: string | null
+          semester: number | null
           user_id: string
         }
         Insert: {
           account_type?: string
           avatar_url?: string | null
+          course?: string | null
           created_at?: string
           email?: string
           full_name?: string
@@ -909,11 +912,13 @@ export type Database = {
           locked_at?: string | null
           login_attempts?: number
           ra?: string | null
+          semester?: number | null
           user_id: string
         }
         Update: {
           account_type?: string
           avatar_url?: string | null
+          course?: string | null
           created_at?: string
           email?: string
           full_name?: string
@@ -922,6 +927,7 @@ export type Database = {
           locked_at?: string | null
           login_attempts?: number
           ra?: string | null
+          semester?: number | null
           user_id?: string
         }
         Relationships: []
