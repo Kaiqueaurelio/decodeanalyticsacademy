@@ -1,13 +1,24 @@
-// Subject color mapping
+// Subject color mapping — grade UNIP Ciência da Computação
 export const SUBJECT_COLORS: Record<string, string> = {
+  // 5º semestre (foco atual)
   'Inteligência Artificial': '#E8FF47',
-  'Redes de Computadores': '#6EE7B7',
+  'Arquitetura de Redes de Computadores': '#6EE7B7',
   'Sistemas Operacionais': '#93C5FD',
   'Teoria dos Grafos': '#F9A8D4',
-  'Arquitetura': '#FCD34D',
-  'Linguagens Formais': '#A78BFA',
+  'Arquitetura de Computadores Modernos': '#FCD34D',
+  'Linguagens Formais e Autômatos': '#A78BFA',
   'Computação Gráfica': '#FB923C',
-  'Metodologia': '#34D399',
+  'Análise Matemática': '#5EEAD4',
+  'Metodologia do Trabalho Acadêmico': '#34D399',
+  // Outras matérias com cor fixa
+  'Banco de Dados': '#60A5FA',
+  'Estrutura de Dados': '#F472B6',
+  'Engenharia de Software': '#C084FC',
+  'Sistemas Distribuídos': '#22D3EE',
+  'Ciência de Dados': '#4ADE80',
+  'Compiladores e Computabilidade': '#FBBF24',
+  'Linguagem de Programação Orientada a Objetos': '#F87171',
+  'Lógica de Programação e Algoritmos': '#A3E635',
 };
 
 export const DEFAULT_SUBJECT_COLOR = '#94A3B8';
