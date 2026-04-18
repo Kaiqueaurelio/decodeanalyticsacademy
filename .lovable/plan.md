@@ -1,50 +1,50 @@
 
-Olhando o que já existe (Dashboard rico, Pomodoro, Flashcards, Gamificação, Apostilas, Calendário de Provas, Favoritos, Heatmap, Leaderboard), o app já cobre muito bem consumo de conteúdo e produtividade básica. O que ainda falta para empurrar o aluno do "estudei" para o "aprendi de verdade e cheguei na prova preparado" são camadas de **planejamento**, **revisão inteligente** e **diagnóstico**.
 
-Aqui vão as ideias com maior impacto, ordenadas por retorno x esforço:
+O usuário pediu sugestões — não é tarefa de implementação. Vou responder direto com recomendações priorizadas baseadas no que já existe no app (apostilas, exercícios, flashcards, pomodoro, gamificação, simulado semanal, calendário de provas, comunidade).
 
-## Top 5 sugestões para os alunos
+## Minhas sugestões pra ajudar o aluno (ordem de impacto)
 
-### 1. Plano de Estudos Inteligente até a Prova
-A partir das provas já cadastradas no Calendário, gerar automaticamente um cronograma diário sugerindo:
-- Quais apostilas estudar a cada dia
-- Quanto tempo dedicar (em blocos de Pomodoro)
-- Revisões espaçadas dos tópicos já vistos
+### 🥇 Alto impacto, esforço baixo/médio
 
-Widget no Dashboard: "Hoje você precisa estudar X, Y e Z (≈90 min)". Marca como concluído e recalcula.
+**1. "Plano de estudo da semana" automático e personalizado**
+Hoje tem meta semanal de exercícios e simulado da semana, mas falta um **roteiro diário**. A IA poderia gerar toda segunda: "Seg: ler Apostila X (20min) + 10 flashcards de Y. Ter: 15 exercícios de Z..." baseado em provas próximas, fraquezas detectadas e disciplinas do semestre do aluno. Card no topo do Dashboard tipo checklist.
 
-### 2. Modo Revisão Espaçada (SRS) global
-Hoje os flashcards já existem isoladamente. Evoluir para um sistema único estilo Anki:
-- Toda apostila lida vira automaticamente um conjunto de flashcards (a IA já gera a partir do conteúdo)
-- Algoritmo SM-2: cards aparecem no dia certo de revisar
-- Card "Revisar hoje" no Dashboard com contador
+**2. Modo "Revisão Inteligente Pré-Prova"**
+Quando faltarem ≤7 dias pra uma prova no calendário, abrir um modo dedicado que mostra **só o conteúdo daquela disciplina**, ordenado por: (a) tópicos com mais erros do aluno, (b) flashcards atrasados, (c) resumo da IA dos pontos-chave. Botão grande "Modo Prova: Algoritmos em 3 dias".
 
-### 3. Simulado Adaptativo + Diagnóstico de Fraquezas
-- Botão "Simulado da Semana" que monta uma prova de 20 questões puxando dos exercícios de várias apostilas
-- Ao final: gráfico mostrando "você acerta 90% em Redes mas só 40% em Banco de Dados"
-- Sugestão automática: "Recomendo revisar a apostila X antes da prova de quinta"
+**3. Resumo em áudio (podcast da apostila)**
+Converter cada apostila num áudio de 5–10min via TTS pra ouvir no ônibus/academia. Já tem `SpeakButton` — falta agregar a apostila inteira em uma faixa contínua com play/pause/velocidade.
 
-### 4. Resumo em 1 Página + Mapa Mental
-Para cada apostila, dois novos botões:
-- **"Gerar Resumo Express"** → 1 página com bullets dos pontos-chave (cola na cola da prova)
-- **"Mapa Mental"** → visualização em árvore dos conceitos (usando a IA + react-flow ou mermaid)
+### 🥈 Médio impacto, alta retenção
 
-Útil para revisão rápida no dia da prova.
+**4. "Tira-dúvida instantâneo" com foto**
+Aluno fotografa um exercício do caderno/livro físico → IA explica o conceito + linka pra apostila relacionada do app. Ferramenta usada toda hora durante estudo, e puxa o aluno de volta pro app.
 
-### 5. Grupos de Estudo + Dúvidas com IA da Disciplina
-- Comunidade já existe — adicionar **canais por disciplina**
-- Em cada apostila, botão "Tirar dúvida" que abre chat com IA já contextualizada naquele conteúdo (o ApostilaChat já tem essa base, só falta destacar e permitir salvar perguntas frequentes)
-- Top 5 dúvidas mais feitas viram FAQ visível para todos
+**5. Grupos de estudo / salas por disciplina**
+Comunidade hoje é geral. Criar **salas por disciplina** (ex: "Cálculo I — 3º semestre") com chat, posts fixos e lista de quem está estudando agora. Aumenta muito o tempo de uso e a sensação de pertencimento.
 
-## Bônus rápidos (baixo esforço, alto carinho)
+**6. Notificações inteligentes (push real, não só toast)**
+- "Você tem 23 flashcards atrasados — 4min pra revisar 👀"
+- "Streak de 7 dias em risco! Faça 1 exercício antes da meia-noite 🔥"
+- "Prova de Banco de Dados em 2 dias — abrir Modo Revisão?"
 
-- **Modo Foco com bloqueio**: timer Pomodoro em tela cheia + esconde notificações do app
-- **Streak de leitura**: além do streak diário, "leu 5 apostilas seguidas sem pular"
-- **Exportar apostila em PDF** para estudar offline / imprimir
-- **Voz/áudio**: botão "ouvir apostila" (TTS) para estudar no transporte
-- **Resumo da semana por email**: "Você estudou 4h, completou 3 apostilas, próxima prova em 5 dias"
+### 🥉 Diferenciais que fidelizam
 
-## Minha recomendação se for escolher UMA agora
-**Plano de Estudos Inteligente até a Prova (#1)** — porque conecta calendário + apostilas + gamificação que já existem, e resolve a dor real do aluno: *"por onde eu começo hoje?"*. É o tipo de feature que faz o aluno abrir o app todo dia.
+**7. Histórico visual de evolução por tópico**
+Heatmap já existe pra atividade geral. Adicionar **gráfico por tópico/disciplina** mostrando: "Você era 40% em Recursão há 1 mês, agora está 78%". Reforço positivo visível = retenção.
 
-Me diz qual dessas (ou combinação) faz mais sentido pra você que eu detalho o plano técnico.
+**8. Modo Foco com bloqueio de distração**
+Pomodoro já existe. Evoluir pra um "Modo Foco" tela cheia com: timer, música lo-fi opcional, esconder notificações, e ao final mostrar XP ganho + próxima tarefa do plano de estudo.
+
+**9. Compartilhar conquista**
+Botão "Compartilhar" nas badges/streaks gerando uma imagem bonita pra story do Instagram com a marca Decode Analytics. Marketing orgânico grátis.
+
+**10. Banco de provas antigas resolvidas**
+Subir provas antigas da UNIP (NP1, NP2) com gabarito comentado pela IA. É o que aluno mais procura no Google na véspera de prova.
+
+---
+
+**Minha recomendação top 3 pra começar:** Plano de estudo automático (#1), Modo Revisão Pré-Prova (#2) e Tira-dúvida com foto (#4). São os que mais resolvem dor real do aluno e usam infraestrutura que já existe no app.
+
+Quer que eu detalhe um plano de implementação pra algum desses?
+
