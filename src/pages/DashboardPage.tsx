@@ -27,6 +27,7 @@ import { FlashcardSummaryWidget } from '@/components/FlashcardSummaryWidget';
 import { ApostilaProgressWidget } from '@/components/ApostilaProgressWidget';
 import { StudyPlanWidget } from '@/components/StudyPlanWidget';
 import { ReviewTodayCard } from '@/components/ReviewTodayCard';
+import { WeeklySimuladoCard } from '@/components/WeeklySimuladoCard';
 import { MobileCarousel } from '@/components/MobileCarousel';
 import { MaterialWidget } from '@/components/MaterialWidget';
 import { FavoriteMaterialsWidget } from '@/components/FavoriteMaterialsWidget';
@@ -218,8 +219,9 @@ export default function DashboardPage() {
 
         {/* Plano de Estudos Inteligente */}
         <Reveal from="bottom" delay={40}>
-          <div className="mt-4">
+          <div className="mt-4 space-y-3">
             <ReviewTodayCard />
+            <WeeklySimuladoCard />
           </div>
         </Reveal>
         <Reveal from="bottom" delay={50}>
