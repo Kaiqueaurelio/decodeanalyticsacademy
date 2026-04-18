@@ -62,6 +62,8 @@ export function AnnouncementsAdmin() {
   const [uploading, setUploading] = useState(false);
   const [autoFillUrl, setAutoFillUrl] = useState('');
   const [autoFilling, setAutoFilling] = useState(false);
+  const [rawText, setRawText] = useState('');
+  const [cleaningText, setCleaningText] = useState('');
 
   const handleAutoFill = async () => {
     const url = autoFillUrl.trim();
@@ -163,10 +165,41 @@ export function AnnouncementsAdmin() {
 
   useEffect(() => { loadAnnouncements(); }, []);
 
+  const handleCleanText = async () => {
+    const text = rawText.trim();
+    if (text.length < 20) {
+      toast.error('Cole pelo menos 20 caracteres de texto.');
+      return;
+    }
+    setCleaningText(text);
+    try {
+      const { data: aiData, error: aiError } = await supabase.functions.invoke('extract-announcement', {
+        body: { markdown: text, metadata: { title: '', description: text.slice(0, 200) } },
+      });
+
+      if (aiError || !aiData || aiData.error) {
+        toast.error('Não foi possível organizar o texto. Tente novamente.');
+        return;
+      }
+
+      if (aiData.title) setTitle(aiData.title);
+      if (aiData.content) setContent(aiData.content);
+      if (aiData.category && CATEGORIES.some(c => c.value === aiData.category)) setCategory(aiData.category);
+      if (aiData.image_url) setImageUrl(aiData.image_url);
+      setRawText('');
+      toast.success('Texto organizado e formatado!');
+    } catch (err) {
+      console.error('Clean text error:', err);
+      toast.error('Erro ao processar texto');
+    } finally {
+      setCleaningText('');
+    }
+  };
+
   const resetForm = () => {
     setTitle(''); setContent(''); setCategory('geral');
     setImageUrl(''); setLinkUrl(''); setPublished(true);
-    setAutoFillUrl(''); setEditing(null); setShowForm(false);
+    setAutoFillUrl(''); setRawText(''); setEditing(null); setShowForm(false);
   };
 
   const openEdit = (a: Announcement) => {
@@ -329,6 +362,33 @@ export function AnnouncementsAdmin() {
                 </Button>
               </div>
               <p className="text-[10px] text-muted-foreground mt-1.5">Cole a URL e clique em Extrair para preencher título, conteúdo e categoria automaticamente.</p>
+            </div>
+
+            {/* Clean raw text via AI */}
+            <div className="p-3 rounded-lg border border-dashed border-accent/40 bg-accent/5">
+              <Label className="text-xs font-medium flex items-center gap-1.5 mb-2">
+                <Sparkles className="h-3.5 w-3.5 text-accent-foreground" />
+                Colar texto bruto e organizar com IA
+              </Label>
+              <Textarea
+                value={rawText}
+                onChange={e => setRawText(e.target.value)}
+                placeholder="Cole aqui o texto cru do aviso (e-mail, comunicado, descrição copiada). A IA vai limpar, resumir e categorizar."
+                rows={4}
+                className="text-xs"
+                disabled={!!cleaningText}
+              />
+              <Button
+                type="button"
+                size="sm"
+                onClick={handleCleanText}
+                disabled={!!cleaningText || rawText.trim().length < 20}
+                className="gap-1.5 mt-2 w-full"
+              >
+                {cleaningText ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Wand2 className="h-3.5 w-3.5" />}
+                {cleaningText ? 'Organizando...' : 'Organizar com IA'}
+              </Button>
+              <p className="text-[10px] text-muted-foreground mt-1.5">A IA vai gerar título limpo, conteúdo formatado e detectar a categoria automaticamente.</p>
             </div>
 
             <div>
