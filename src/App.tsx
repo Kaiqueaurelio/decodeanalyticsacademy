@@ -10,6 +10,7 @@ import { ThemeProvider } from "@/hooks/useTheme";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { BiometricLockGate } from "@/components/BiometricLockGate";
 import { BiometricOnboarding } from "@/components/BiometricOnboarding";
+import { RANamePrompt } from "@/components/RANamePrompt";
 import { DynamicWatermark } from "@/components/DynamicWatermark";
 import { ScreenshotGuard } from "@/components/ScreenshotGuard";
 import { CommandPalette } from "@/components/CommandPalette";
@@ -265,6 +266,7 @@ const App = () => (
             <BiometricLockGate>
               <AnimatedRoutes />
               <BiometricOnboarding />
+              <RANamePrompt />
             </BiometricLockGate>
           </AuthProvider>
         </BrowserRouter>
