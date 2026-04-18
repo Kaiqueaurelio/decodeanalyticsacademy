@@ -146,10 +146,10 @@ export default function ProfilePage() {
           const isDefaultName = !trimmed || /^aluno\s+unip\b/i.test(trimmed);
           if (!isDefaultName) return null;
           return (
-            <div className="mb-4 rounded-xl border border-amber-500/40 bg-amber-500/10 p-4 animate-content-show">
+            <div className="mb-4 rounded-xl border border-warning/40 bg-warning/10 p-4 animate-content-show">
               <div className="flex items-start gap-3">
-                <div className="rounded-full bg-amber-500/20 p-2 shrink-0">
-                  <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                <div className="rounded-full bg-warning/20 p-2 shrink-0">
+                  <AlertCircle className="h-4 w-4 text-warning" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-foreground">Personalize seu perfil</p>
