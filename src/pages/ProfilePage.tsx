@@ -16,7 +16,7 @@ import { Progress } from '@/components/ui/progress';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   BookOpen, CheckCircle, XCircle, Camera, Save, ArrowLeft,
-  PenLine, Trophy, Target, Flame, Zap, Settings
+  PenLine, Trophy, Target, Flame, Zap, Settings, AlertCircle, PencilLine
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -140,6 +140,42 @@ export default function ProfilePage() {
           <ArrowLeft className="h-4 w-4" /> Voltar
         </button>
 
+        {/* Persistent banner: nome ainda no padrão "Aluno UNIP" */}
+        {(() => {
+          const trimmed = (fullName || '').trim();
+          const isDefaultName = !trimmed || /^aluno\s+unip\b/i.test(trimmed);
+          if (!isDefaultName) return null;
+          return (
+            <div className="mb-4 rounded-xl border border-warning/40 bg-warning/10 p-4 animate-content-show">
+              <div className="flex items-start gap-3">
+                <div className="rounded-full bg-warning/20 p-2 shrink-0">
+                  <AlertCircle className="h-4 w-4 text-warning" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-foreground">Personalize seu perfil</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Seu nome ainda está como <strong>"{trimmed || 'Aluno UNIP'}"</strong>. Adicione seu nome real
+                    para aparecer corretamente na comunidade e no ranking.
+                  </p>
+                  <Button
+                    size="sm"
+                    className="mt-3 gradient-primary text-primary-foreground gap-1.5"
+                    onClick={() => {
+                      const el = document.getElementById('profile-fullname-input') as HTMLInputElement | null;
+                      if (el) {
+                        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        setTimeout(() => { el.focus(); el.select(); }, 350);
+                      }
+                    }}
+                  >
+                    <PencilLine className="h-3.5 w-3.5" /> Editar nome agora
+                  </Button>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+
         {/* Profile Card */}
         <Card className="p-6 bg-card border border-border/50 mb-6 animate-content-show">
           <div className="flex flex-col sm:flex-row items-center gap-5">
@@ -156,7 +192,7 @@ export default function ProfilePage() {
             <div className="flex-1 space-y-3 w-full">
               <div>
                 <Label className="text-xs text-muted-foreground">Nome completo</Label>
-                <Input value={fullName} onChange={e => setFullName(e.target.value)} className="mt-1" placeholder="Seu nome" />
+                <Input id="profile-fullname-input" value={fullName} onChange={e => setFullName(e.target.value)} className="mt-1" placeholder="Seu nome" />
               </div>
               <div>
                 <Label className="text-xs text-muted-foreground">Email</Label>
