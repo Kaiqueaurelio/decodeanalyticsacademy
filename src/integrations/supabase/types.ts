@@ -1188,6 +1188,110 @@ export type Database = {
         }
         Relationships: []
       }
+      weekly_simulado_answers: {
+        Row: {
+          answered_at: string | null
+          apostila_id: string | null
+          correct_answer: string
+          created_at: string
+          exercise_id: string | null
+          explanation: string | null
+          id: string
+          is_correct: boolean | null
+          options: Json
+          question: string
+          question_index: number
+          selected_answer: string | null
+          simulado_id: string
+          subject: string | null
+          user_id: string
+        }
+        Insert: {
+          answered_at?: string | null
+          apostila_id?: string | null
+          correct_answer: string
+          created_at?: string
+          exercise_id?: string | null
+          explanation?: string | null
+          id?: string
+          is_correct?: boolean | null
+          options?: Json
+          question: string
+          question_index: number
+          selected_answer?: string | null
+          simulado_id: string
+          subject?: string | null
+          user_id: string
+        }
+        Update: {
+          answered_at?: string | null
+          apostila_id?: string | null
+          correct_answer?: string
+          created_at?: string
+          exercise_id?: string | null
+          explanation?: string | null
+          id?: string
+          is_correct?: boolean | null
+          options?: Json
+          question?: string
+          question_index?: number
+          selected_answer?: string | null
+          simulado_id?: string
+          subject?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "weekly_simulado_answers_simulado_id_fkey"
+            columns: ["simulado_id"]
+            isOneToOne: false
+            referencedRelation: "weekly_simulados"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      weekly_simulados: {
+        Row: {
+          correct_count: number
+          created_at: string
+          diagnosis: Json
+          finished_at: string | null
+          id: string
+          score: number
+          started_at: string
+          status: string
+          total_questions: number
+          user_id: string
+          week_start: string
+        }
+        Insert: {
+          correct_count?: number
+          created_at?: string
+          diagnosis?: Json
+          finished_at?: string | null
+          id?: string
+          score?: number
+          started_at?: string
+          status?: string
+          total_questions?: number
+          user_id: string
+          week_start: string
+        }
+        Update: {
+          correct_count?: number
+          created_at?: string
+          diagnosis?: Json
+          finished_at?: string | null
+          id?: string
+          score?: number
+          started_at?: string
+          status?: string
+          total_questions?: number
+          user_id?: string
+          week_start?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

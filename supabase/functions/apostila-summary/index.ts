@@ -26,7 +26,8 @@ serve(async (req) => {
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY")!;
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const GOOGLE_AI_API_KEY = Deno.env.get("GOOGLE_AI_API_KEY");
 
     const auth = req.headers.get("Authorization") ?? "";
     const userClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -67,6 +68,11 @@ serve(async (req) => {
       });
     }
 
+    // Lê preferência preferGoogle
+    const { data: settingRow } = await admin
+      .from("app_settings").select("value").eq("key", "ai_provider").maybeSingle();
+    const preferGoogle = !!(settingRow?.value as any)?.preferGoogle && !!GOOGLE_AI_API_KEY;
+
     const truncated = ap.content.slice(0, 25000);
 
     const systemPrompt = `Você é um professor universitário que cria resumos didáticos enxutos.
@@ -87,63 +93,96 @@ Para a apostila enviada, gere DOIS artefatos:
 
     const userPrompt = `Título: ${ap.title}\nCategoria: ${ap.category}\n\nConteúdo:\n${truncated}`;
 
-    const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
-        ],
-        temperature: 0.4,
-        max_tokens: 4000,
-        tools: [{
-          type: "function",
-          function: {
-            name: "return_summary",
-            description: "Return summary and mindmap",
-            parameters: {
-              type: "object",
-              properties: {
-                summary_md: { type: "string", description: "Resumo em Markdown" },
-                mindmap_mermaid: { type: "string", description: "Diagrama Mermaid do tipo mindmap" },
-              },
-              required: ["summary_md", "mindmap_mermaid"],
-              additionalProperties: false,
-            },
-          },
-        }],
-        tool_choice: { type: "function", function: { name: "return_summary" } },
-      }),
-    });
+    // ===== Google direto =====
+    const callGoogle = async (): Promise<{ summary_md: string; mindmap_mermaid: string } | null> => {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(GOOGLE_AI_API_KEY!)}`;
+      const resp = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ role: "user", parts: [{ text: userPrompt }] }],
+          systemInstruction: { parts: [{ text: systemPrompt + "\n\nResponda SOMENTE em JSON puro: { \"summary_md\": \"...\", \"mindmap_mermaid\": \"...\" }" }] },
+          generationConfig: { temperature: 0.4, maxOutputTokens: 4000, responseMimeType: "application/json" },
+        }),
+      });
+      if (!resp.ok) { console.error("Google summary error", resp.status, (await resp.text()).slice(0, 300)); return null; }
+      const data = await resp.json();
+      const text = data?.candidates?.[0]?.content?.parts?.map((p: any) => p.text).join("") ?? "";
+      try {
+        const cleaned = text.trim().replace(/^```(?:json)?/i, "").replace(/```$/i, "").trim();
+        const j = JSON.parse(cleaned);
+        if (j?.summary_md && j?.mindmap_mermaid) return j;
+      } catch (e) { console.error("parse google summary", e); }
+      return null;
+    };
 
-    if (!aiResp.ok) {
-      if (aiResp.status === 429) {
-        return new Response(JSON.stringify({ error: "Limite de IA. Tente em alguns segundos." }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    // ===== Lovable AI =====
+    const callLovable = async (): Promise<{ summary_md: string; mindmap_mermaid: string } | { __status: number } | null> => {
+      const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "google/gemini-3-flash-preview",
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt },
+          ],
+          temperature: 0.4, max_tokens: 4000,
+          tools: [{
+            type: "function",
+            function: {
+              name: "return_summary",
+              description: "Return summary and mindmap",
+              parameters: {
+                type: "object",
+                properties: {
+                  summary_md: { type: "string" },
+                  mindmap_mermaid: { type: "string" },
+                },
+                required: ["summary_md", "mindmap_mermaid"],
+                additionalProperties: false,
+              },
+            },
+          }],
+          tool_choice: { type: "function", function: { name: "return_summary" } },
+        }),
+      });
+      if (!aiResp.ok) return { __status: aiResp.status };
+      const data = await aiResp.json();
+      const args = data.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;
+      if (!args) return null;
+      try { return JSON.parse(args); } catch { return null; }
+    };
+
+    let parsed: { summary_md?: string; mindmap_mermaid?: string } | null = null;
+    if (preferGoogle) {
+      parsed = await callGoogle();
+      if (!parsed && LOVABLE_API_KEY) {
+        const r = await callLovable();
+        if (r && !("__status" in r)) parsed = r as any;
       }
-      if (aiResp.status === 402) {
-        return new Response(JSON.stringify({ error: "Créditos de IA esgotados." }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    } else if (LOVABLE_API_KEY) {
+      const r = await callLovable();
+      if (r && "__status" in r) {
+        if (GOOGLE_AI_API_KEY) parsed = await callGoogle();
+        if (!parsed) {
+          const status = r.__status;
+          let msg = "Erro ao gerar resumo.";
+          if (status === 402) msg = "Créditos de Lovable AI esgotados. Ative sua chave Google AI Studio em Admin → IA.";
+          else if (status === 429) msg = "Limite de IA. Tente em alguns segundos.";
+          return new Response(JSON.stringify({ error: msg }), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        }
+      } else {
+        parsed = r as any;
       }
-      const t = await aiResp.text();
-      console.error("AI error", aiResp.status, t);
-      return new Response(JSON.stringify({ error: "Erro ao gerar resumo" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    } else if (GOOGLE_AI_API_KEY) {
+      parsed = await callGoogle();
     }
 
-    const data = await aiResp.json();
-    const args = data.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;
-    if (!args) {
-      console.error("Sem tool_call", JSON.stringify(data).slice(0, 500));
+    if (!parsed?.summary_md || !parsed?.mindmap_mermaid) {
       return new Response(JSON.stringify({ error: "IA não estruturou resposta" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
-    const parsed = JSON.parse(args);
 
     // Sanitiza Mermaid (remove fences)
     let mindmap = String(parsed.mindmap_mermaid || "").trim()
