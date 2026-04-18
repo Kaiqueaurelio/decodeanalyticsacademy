@@ -43,6 +43,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const OfflinePage = lazy(() => import("./pages/OfflinePage"));
 const ReviewPage = lazy(() => import("./pages/ReviewPage"));
 const SimuladoPage = lazy(() => import("./pages/SimuladoPage"));
+const PreExamReviewPage = lazy(() => import("./pages/PreExamReviewPage"));
 
 const queryClient = new QueryClient();
 
@@ -238,6 +239,7 @@ function AnimatedRoutes() {
             <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
             <Route path="/review" element={<ProtectedRoute><ReviewPage /></ProtectedRoute>} />
             <Route path="/simulado" element={<ProtectedRoute><SimuladoPage /></ProtectedRoute>} />
+            <Route path="/revisao-prova/:eventId" element={<ProtectedRoute><PreExamReviewPage /></ProtectedRoute>} />
             <Route path="/apostila/:id" element={<ProtectedRoute><ApostilaPage /></ProtectedRoute>} />
             <Route path="/exercises/:id" element={<ProtectedRoute><ExercisesPage /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />

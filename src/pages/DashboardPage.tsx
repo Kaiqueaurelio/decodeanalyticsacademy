@@ -33,6 +33,7 @@ import { MaterialWidget } from '@/components/MaterialWidget';
 import { FavoriteMaterialsWidget } from '@/components/FavoriteMaterialsWidget';
 import { AnnouncementsBoard } from '@/components/AnnouncementsBoard';
 import { TodayExamBanner } from '@/components/TodayExamBanner';
+import { PreExamReviewBanner } from '@/components/PreExamReviewBanner';
 import { QuickAccessHub } from '@/components/QuickAccessHub';
 import { Reveal } from '@/components/Reveal';
 import { ApostilaCardActions } from '@/components/ApostilaCardActions';
@@ -195,6 +196,11 @@ export default function DashboardPage() {
       <main className="container py-6 sm:py-8 px-4 sm:px-6 relative z-10 max-w-6xl">
         {/* 🚨 Aviso de prova HOJE */}
         <TodayExamBanner />
+
+        {/* 📚 Modo Revisão Pré-Prova (≤7 dias) */}
+        <div className="mb-4">
+          <PreExamReviewBanner />
+        </div>
 
         {/* Header */}
         <div className="flex items-center justify-between mb-6 animate-content-show">
