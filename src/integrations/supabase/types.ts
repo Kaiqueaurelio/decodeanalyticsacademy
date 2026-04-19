@@ -1311,6 +1311,7 @@ export type Database = {
         Args: { _target_user_id: string }
         Returns: undefined
       }
+      get_email_for_ra: { Args: { _ra: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
