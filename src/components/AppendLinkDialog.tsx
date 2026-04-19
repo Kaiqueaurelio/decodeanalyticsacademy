@@ -56,7 +56,20 @@ export function AppendLinkDialog({ apostilaId, apostilaTitle, currentContent, tr
       setProgress({ current: i + 1, total: list.length });
       try {
         const { data, error } = await supabase.functions.invoke('extract-content', { body: { url } });
-        if (error) throw error;
+
+        // Extrai mensagem real do servidor (402 créditos, 429 rate limit, etc.)
+        const serverError = (data as any)?.error;
+        if (serverError) throw new Error(serverError);
+        if (error) {
+          // FunctionsHttpError tem context.response com o body
+          const ctx: any = (error as any).context;
+          let detail = error.message;
+          try {
+            const body = await ctx?.response?.json?.();
+            if (body?.error) detail = body.error;
+          } catch { /* ignore */ }
+          throw new Error(detail);
+        }
 
         const newTitle = (data?.title as string) || 'Conteúdo anexado';
         const newContent = (data?.content as string) || '';
