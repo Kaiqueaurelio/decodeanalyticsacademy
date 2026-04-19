@@ -20,10 +20,11 @@ export function AppHeader() {
 
   return (
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-xl" style={{ borderBottom: '1px solid hsl(0 0% 100% / 0.06)' }}>
-      <div className="container flex h-14 items-center justify-between px-4">
-        <Link to={user ? '/dashboard' : '/'} className="flex items-center gap-2.5">
-          <img src={logoDark} alt="Decode Analytics" className="h-7 w-7 rounded object-cover" />
-          <span className="font-mono-label text-xs font-medium uppercase tracking-widest text-foreground">Decode Analytics</span>
+      <div className="container flex h-14 items-center justify-between gap-2">
+        <Link to={user ? '/dashboard' : '/'} className="flex items-center gap-2 min-w-0 flex-shrink">
+          <img src={logoDark} alt="Decode Analytics" className="h-7 w-7 rounded object-cover flex-shrink-0" />
+          <span className="font-mono-label text-[11px] sm:text-xs font-medium uppercase tracking-widest text-foreground truncate hidden xs:inline">Decode Analytics</span>
+          <span className="font-mono-label text-[11px] font-medium uppercase tracking-widest text-foreground xs:hidden">Decode</span>
         </Link>
 
         <nav className="hidden sm:flex items-center gap-1">
