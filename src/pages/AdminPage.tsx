@@ -20,7 +20,7 @@ import {
   LayoutDashboard, CheckCircle, TrendingUp, Upload, BarChart3, Clock,
   Link as LinkIcon, Loader2, AlertCircle, Edit, Download, File, Image, Video, Music, FileSpreadsheet, Presentation,
   Users, ShieldBan, ShieldCheck, Search, Menu, X, Activity, GraduationCap, FolderOpen, Settings, RefreshCw,
-  Sun, Moon, FileUp, Sparkles, Wand2, Megaphone, Combine, Calendar as CalIcon, MessageSquareQuote
+  Sun, Moon, FileUp, Sparkles, Wand2, Megaphone, Combine, Calendar as CalIcon, MessageSquareQuote, Link2
 } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useTheme } from '@/hooks/useTheme';
@@ -32,6 +32,7 @@ import { ImageUploadButton } from '@/components/ImageUploadButton';
 import { AnnouncementsAdmin } from '@/components/AnnouncementsAdmin';
 import { CalendarEventsAdmin } from '@/components/CalendarEventsAdmin';
 import { ApostilaMaterialsManager } from '@/components/ApostilaMaterialsManager';
+import { AppendLinkDialog } from '@/components/AppendLinkDialog';
 import { autoLinkAll, autoLinkApostila } from '@/lib/auto-link-materials';
 import { MergeApostilasDialog } from '@/components/MergeApostilasDialog';
 import { TestimonialsAdmin } from '@/components/TestimonialsAdmin';
@@ -1246,6 +1247,17 @@ export default function AdminPage() {
                               </div>
                               <div className="flex items-center gap-1 shrink-0">
                                 <ApostilaMaterialsManager apostilaId={a.id} apostilaTitle={a.title} />
+                                <AppendLinkDialog
+                                  apostilaId={a.id}
+                                  apostilaTitle={a.title}
+                                  currentContent={a.content || ''}
+                                  onDone={loadAll}
+                                  trigger={
+                                    <Button size="icon" variant="ghost" className="h-8 w-8" title="Anexar link à apostila">
+                                      <Link2 className="h-3.5 w-3.5" />
+                                    </Button>
+                                  }
+                                />
                                 <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => setShowExerciseDialog(a.id)} title="Ver exercícios">
                                   <PenLine className="h-3.5 w-3.5" />
                                 </Button>
@@ -1506,6 +1518,23 @@ export default function AdminPage() {
                         <Textarea value={editContent} onChange={e => setEditContent(e.target.value)} rows={6} />
                       </div>
                       <Button className="w-full gradient-primary text-primary-foreground" onClick={handleEditSave}>Salvar Apostila</Button>
+                      {editingApostila && (
+                        <AppendLinkDialog
+                          apostilaId={editingApostila.id}
+                          apostilaTitle={editingApostila.title}
+                          currentContent={editContent}
+                          onDone={async () => {
+                            const { data: refreshed } = await supabase.from('apostilas').select('content').eq('id', editingApostila.id).maybeSingle();
+                            if (refreshed?.content) setEditContent(refreshed.content);
+                            loadAll();
+                          }}
+                          trigger={
+                            <Button variant="outline" className="w-full gap-1.5 text-xs">
+                              <Link2 className="h-3.5 w-3.5" /> Anexar link como continuação
+                            </Button>
+                          }
+                        />
+                      )}
                       {editingApostila && (
                         <Button
                           variant="outline"
