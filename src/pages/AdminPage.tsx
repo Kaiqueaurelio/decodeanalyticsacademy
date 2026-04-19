@@ -20,7 +20,7 @@ import {
   LayoutDashboard, CheckCircle, TrendingUp, Upload, BarChart3, Clock,
   Link as LinkIcon, Loader2, AlertCircle, Edit, Download, File, Image, Video, Music, FileSpreadsheet, Presentation,
   Users, ShieldBan, ShieldCheck, Search, Menu, X, Activity, GraduationCap, FolderOpen, Settings, RefreshCw,
-  Sun, Moon, FileUp, Sparkles, Wand2, Megaphone, Combine, Calendar as CalIcon, MessageSquareQuote
+  Sun, Moon, FileUp, Sparkles, Wand2, Megaphone, Combine, Calendar as CalIcon, MessageSquareQuote, Link2
 } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useTheme } from '@/hooks/useTheme';
