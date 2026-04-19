@@ -1220,6 +1220,20 @@ export default function AdminPage() {
                     <div className="flex items-center gap-2 flex-wrap">
                       <MergeButton onMerged={loadAll} />
                       <AutoLinkAllButton />
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 text-xs"
+                        onClick={async () => {
+                          toast.loading('Gerando embeddings...', { id: 'embed' });
+                          const { data, error } = await supabase.functions.invoke('embed-apostilas', { body: {} });
+                          if (error) { toast.error('Erro: ' + error.message, { id: 'embed' }); return; }
+                          toast.success(`Embeddings: ${data.processed} ok, ${data.failed} falhas`, { id: 'embed' });
+                        }}
+                        title="Gera embeddings das apostilas para o Tira-dúvida com foto"
+                      >
+                        <Sparkles className="h-3.5 w-3.5 mr-1" /> Indexar p/ Tira-dúvida
+                      </Button>
                     </div>
                   </div>
                   <div className="space-y-3">

@@ -305,6 +305,7 @@ export type Database = {
           content: string | null
           created_at: string
           created_by: string | null
+          embedding: string | null
           file_url: string | null
           id: string
           published: boolean
@@ -317,6 +318,7 @@ export type Database = {
           content?: string | null
           created_at?: string
           created_by?: string | null
+          embedding?: string | null
           file_url?: string | null
           id?: string
           published?: boolean
@@ -329,6 +331,7 @@ export type Database = {
           content?: string | null
           created_at?: string
           created_by?: string | null
+          embedding?: string | null
           file_url?: string | null
           id?: string
           published?: boolean
@@ -1120,6 +1123,56 @@ export type Database = {
         }
         Relationships: []
       }
+      tira_duvidas: {
+        Row: {
+          concept: string | null
+          created_at: string
+          full_answer: string | null
+          hint: string | null
+          id: string
+          image_path: string | null
+          image_url: string
+          related_apostila_id: string | null
+          related_apostila_title: string | null
+          similarity: number | null
+          user_id: string
+        }
+        Insert: {
+          concept?: string | null
+          created_at?: string
+          full_answer?: string | null
+          hint?: string | null
+          id?: string
+          image_path?: string | null
+          image_url: string
+          related_apostila_id?: string | null
+          related_apostila_title?: string | null
+          similarity?: number | null
+          user_id: string
+        }
+        Update: {
+          concept?: string | null
+          created_at?: string
+          full_answer?: string | null
+          hint?: string | null
+          id?: string
+          image_path?: string | null
+          image_url?: string
+          related_apostila_id?: string | null
+          related_apostila_title?: string | null
+          similarity?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tira_duvidas_related_apostila_id_fkey"
+            columns: ["related_apostila_id"]
+            isOneToOne: false
+            referencedRelation: "apostilas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_badges: {
         Row: {
           badge_id: string
@@ -1307,6 +1360,7 @@ export type Database = {
         Args: { _exercise_id: string; _selected_answer: string }
         Returns: Json
       }
+      count_tira_duvidas_today: { Args: { _user_id: string }; Returns: number }
       delete_user_completely: {
         Args: { _target_user_id: string }
         Returns: undefined
@@ -1322,6 +1376,15 @@ export type Database = {
       increment_xp: {
         Args: { _amount: number; _user_id: string }
         Returns: undefined
+      }
+      match_apostila: {
+        Args: { _embedding: string }
+        Returns: {
+          category: string
+          id: string
+          similarity: number
+          title: string
+        }[]
       }
     }
     Enums: {
