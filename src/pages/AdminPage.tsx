@@ -1519,6 +1519,23 @@ export default function AdminPage() {
                       </div>
                       <Button className="w-full gradient-primary text-primary-foreground" onClick={handleEditSave}>Salvar Apostila</Button>
                       {editingApostila && (
+                        <AppendLinkDialog
+                          apostilaId={editingApostila.id}
+                          apostilaTitle={editingApostila.title}
+                          currentContent={editContent}
+                          onDone={async () => {
+                            const { data: refreshed } = await supabase.from('apostilas').select('content').eq('id', editingApostila.id).maybeSingle();
+                            if (refreshed?.content) setEditContent(refreshed.content);
+                            loadAll();
+                          }}
+                          trigger={
+                            <Button variant="outline" className="w-full gap-1.5 text-xs">
+                              <Link2 className="h-3.5 w-3.5" /> Anexar link como continuação
+                            </Button>
+                          }
+                        />
+                      )}
+                      {editingApostila && (
                         <Button
                           variant="outline"
                           className="w-full gap-1.5 text-xs"
