@@ -1247,6 +1247,17 @@ export default function AdminPage() {
                               </div>
                               <div className="flex items-center gap-1 shrink-0">
                                 <ApostilaMaterialsManager apostilaId={a.id} apostilaTitle={a.title} />
+                                <AppendLinkDialog
+                                  apostilaId={a.id}
+                                  apostilaTitle={a.title}
+                                  currentContent={a.content || ''}
+                                  onDone={loadAll}
+                                  trigger={
+                                    <Button size="icon" variant="ghost" className="h-8 w-8" title="Anexar link à apostila">
+                                      <Link2 className="h-3.5 w-3.5" />
+                                    </Button>
+                                  }
+                                />
                                 <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => setShowExerciseDialog(a.id)} title="Ver exercícios">
                                   <PenLine className="h-3.5 w-3.5" />
                                 </Button>
