@@ -32,6 +32,7 @@ import { ImageUploadButton } from '@/components/ImageUploadButton';
 import { AnnouncementsAdmin } from '@/components/AnnouncementsAdmin';
 import { CalendarEventsAdmin } from '@/components/CalendarEventsAdmin';
 import { ApostilaMaterialsManager } from '@/components/ApostilaMaterialsManager';
+import { AppendLinkDialog } from '@/components/AppendLinkDialog';
 import { autoLinkAll, autoLinkApostila } from '@/lib/auto-link-materials';
 import { MergeApostilasDialog } from '@/components/MergeApostilasDialog';
 import { TestimonialsAdmin } from '@/components/TestimonialsAdmin';
