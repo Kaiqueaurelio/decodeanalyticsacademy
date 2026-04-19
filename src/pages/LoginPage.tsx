@@ -65,7 +65,20 @@ export default function LoginPage() {
     }
 
     setLoading(true);
-    const effectiveEmail = authMethod === 'ra' ? buildRaEmail(ra) : email;
+    let effectiveEmail = authMethod === 'ra' ? buildRaEmail(ra) : email;
+
+    // Login por RA: tenta primeiro resolver o RA para o e-mail real cadastrado
+    // (caso o RA esteja vinculado a uma conta criada originalmente por e-mail, ex: admin)
+    if (authMethod === 'ra' && !isSignUp) {
+      try {
+        const { data: realEmail } = await supabase.rpc('get_email_for_ra' as any, { _ra: ra.trim() });
+        if (realEmail && typeof realEmail === 'string' && realEmail.length > 0) {
+          effectiveEmail = realEmail;
+        }
+      } catch (e) {
+        console.warn('[Login] get_email_for_ra falhou, usando pseudo-email:', e);
+      }
+    }
 
     if (isSignUp) {
       if (authMethod === 'ra') {
