@@ -637,7 +637,14 @@ export default function AdminPage() {
   };
 
   const handleSaveImport = async () => {
-    if (!importTitle.trim() || !user) return;
+    if (!importTitle.trim()) { toast.error('Adicione um título'); return; }
+    // Revalida sessão atual antes de inserir (evita created_by inválido)
+    const { data: sessionData } = await supabase.auth.getUser();
+    const currentUser = sessionData?.user;
+    if (!currentUser) {
+      toast.error('Sessão expirou. Faça login novamente.');
+      return;
+    }
     setCloning(true);
     try {
       const isNotion = importUrl.includes('notion.site') || importUrl.includes('notion.so');
@@ -645,18 +652,23 @@ export default function AdminPage() {
       const { data: newApostila, error } = await supabase.from('apostilas').insert({
         title: importTitle.trim(), content: importContent,
         category: importTopic || 'Geral', source_type: sourceType,
-        file_url: importMode === 'text' ? null : isNotion ? null : importUrl, created_by: user.id, published: false,
+        file_url: importMode === 'text' ? null : isNotion ? null : importUrl, created_by: currentUser.id, published: false,
       }).select().single();
       if (error) throw error;
       if (importExercises.length > 0 && newApostila) {
-        await supabase.from('exercises').insert(importExercises.map(ex => ({
+        const { error: exErr } = await supabase.from('exercises').insert(importExercises.map(ex => ({
           apostila_id: newApostila.id, question: ex.question, options: ex.options,
           correct_answer: ex.correct_answer, explanation: ex.explanation || null,
         })));
+        if (exErr) console.warn('Falha ao salvar exercícios:', exErr);
       }
       toast.success(`Apostila salva com ${importExercises.length} exercícios!`);
       resetImportForm(); loadAll();
-    } catch (err: any) { toast.error('Erro ao salvar: ' + (err.message || 'Tente novamente')); }
+    } catch (err: any) {
+      console.error('[handleSaveImport] erro:', err);
+      const msg = err?.message || err?.error_description || err?.details || 'Erro desconhecido';
+      toast.error('Erro ao salvar: ' + msg);
+    }
     setCloning(false);
   };
 
