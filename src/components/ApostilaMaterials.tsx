@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
+import { AppImage } from '@/components/ui/app-image';
 import {
   ExternalLink, Play, Pause, SkipBack, SkipForward,
   Volume2, VolumeX, Loader2, AlertCircle, Music, Maximize, X
@@ -137,8 +138,7 @@ function InlineMaterial({
     case 'gif':
       return (
         <figure>
-          <img src={file_url} alt={title} className="w-full max-h-[60vh] object-contain rounded-xl" />
-          <figcaption className="text-xs text-muted-foreground mt-2 text-center italic">{title}</figcaption>
+          <AppImage src={file_url} alt={title} className="w-full max-h-[60vh] object-contain rounded-xl" fallbackClassName="w-full min-h-[220px] rounded-xl" />
         </figure>
       );
 

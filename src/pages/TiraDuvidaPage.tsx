@@ -8,6 +8,7 @@ import { Sparkles, BookOpen, Trash2, Camera, History as HistoryIcon } from "luci
 import { TiraDuvidaDialog } from "@/components/TiraDuvidaDialog";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
+import { AppImage } from "@/components/ui/app-image";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -107,7 +108,7 @@ export default function TiraDuvidaPage() {
                   <div className="flex gap-3 p-3">
                     {imgSrc && (
                       <button onClick={() => setExpanded(isExpanded ? null : item.id)} className="shrink-0">
-                        <img src={imgSrc} alt="Dúvida" className="h-20 w-20 object-cover rounded-md border border-border" />
+                        <AppImage src={imgSrc} alt="Dúvida" className="h-20 w-20 object-cover rounded-md border border-border" fallbackClassName="h-20 w-20 rounded-md" />
                       </button>
                     )}
                     <div className="flex-1 min-w-0">

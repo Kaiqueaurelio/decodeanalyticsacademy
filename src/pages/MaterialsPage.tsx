@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { AppHeader } from '@/components/AppHeader';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { AppImage } from '@/components/ui/app-image';
 import { Badge } from '@/components/ui/badge';
 import {
   ArrowLeft, FileText, Image, Video, Music, File, Download, ExternalLink,
@@ -306,11 +307,12 @@ function ImageViewer({ url, title }: { url: string; title: string }) {
             </div>
           ) : (
             <>
-              <img
+              <AppImage
                 src={url}
                 alt={title}
                 className="w-full max-h-[400px] object-contain bg-muted/30"
                 onError={() => setError(true)}
+                fallbackClassName="w-full h-48"
               />
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
                 <Maximize className="h-6 w-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -328,7 +330,7 @@ function ImageViewer({ url, title }: { url: string; title: string }) {
           <button className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white">
             <X className="h-5 w-5" />
           </button>
-          <img src={url} alt={title} className="max-w-full max-h-full object-contain" />
+          <AppImage src={url} alt={title} className="max-w-full max-h-full object-contain" fallbackClassName="w-full h-48" />
         </div>
       )}
     </>

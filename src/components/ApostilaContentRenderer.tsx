@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Check, Copy, Volume2, Info, Lightbulb, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
+import { AppImage } from '@/components/ui/app-image';
 
 /**
  * Limpa marcadores markdown inline (negrito, itálico, código inline, links etc.)
@@ -250,12 +251,13 @@ function ImageBlock({ alt, url }: { alt: string; url: string }) {
             Imagem indisponível
           </div>
         ) : (
-          <img
+          <AppImage
             src={url}
             alt={alt}
             loading="lazy"
             onError={() => setErrored(true)}
             className="block w-full h-auto rounded-lg max-h-[520px] object-contain mx-auto"
+            fallbackClassName="min-h-[180px] rounded-lg"
           />
         )}
       </div>

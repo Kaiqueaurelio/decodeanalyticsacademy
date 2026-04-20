@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { AppImage } from '@/components/ui/app-image';
 import { ChevronRight, Megaphone, GraduationCap, Calendar, Briefcase, Sparkles } from 'lucide-react';
 import { UpcomingExamsBoard } from './UpcomingExamsBoard';
 
@@ -101,7 +102,7 @@ export function AnnouncementsBoard() {
                 <CardContent className="p-4">
                   <div className="flex gap-3">
                     {a.image_url && (
-                      <img src={a.image_url} alt="" className="w-20 h-20 rounded-lg object-cover shrink-0" />
+                      <AppImage src={a.image_url} alt="" className="w-20 h-20 rounded-lg object-cover shrink-0" fallbackClassName="w-20 h-20 shrink-0 rounded-lg" />
                     )}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
