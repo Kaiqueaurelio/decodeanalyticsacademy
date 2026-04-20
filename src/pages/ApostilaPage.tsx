@@ -169,7 +169,6 @@ function parseContent(raw: string | null): Section[] {
   const result = sections.length > 0 ? sections : [{ id: 'intro', title: 'Conteúdo', level: 1, content: raw }];
   return redistributeOrphanImages(result);
 }
-}
 
 export default function ApostilaPage() {
   const { id } = useParams<{ id: string }>();
