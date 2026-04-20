@@ -19,9 +19,12 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ActionSheet, type ActionItem } from '@/components/ActionSheet';
 import { toast } from 'sonner';
+import { useAuth } from '@/hooks/useAuth';
+import { exportApostilaToPDF } from '@/lib/apostila-pdf';
 import {
   ArrowLeft, BookOpen, PenLine, Eye, List, X, MoreHorizontal,
-  ChevronUp, StickyNote, Layers, Sparkles, MessageSquare, Share2, CheckCircle2, Copy, Volume2
+  ChevronUp, StickyNote, Layers, Sparkles, MessageSquare, Share2, CheckCircle2, Copy, Volume2,
+  FileDown, Loader2
 } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 
@@ -107,6 +110,7 @@ export default function ApostilaPage() {
   const navigate = useNavigate();
   const gamification = useGamification();
   const isMobile = useIsMobile();
+  const { isAdmin } = useAuth();
   const [apostila, setApostila] = useState<Tables<'apostilas'> | null>(null);
   const [exerciseCount, setExerciseCount] = useState(0);
   const [focusMode, setFocusMode] = useState(false);
@@ -116,6 +120,26 @@ export default function ApostilaPage() {
   const contentRef = useRef<HTMLDivElement>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [chatOpen, setChatOpen] = useState(false);
+  const [exportingPdf, setExportingPdf] = useState(false);
+
+  const handleExportPdf = useCallback(async () => {
+    if (!apostila) return;
+    setExportingPdf(true);
+    const t = toast.loading('Gerando PDF da apostila…');
+    try {
+      await exportApostilaToPDF({
+        title: apostila.title,
+        category: apostila.category,
+        sections: sections.map((s) => ({ id: s.id, title: s.title, level: s.level, content: s.content })),
+      });
+      toast.success('PDF gerado com sucesso', { id: t });
+    } catch (e: any) {
+      console.error('PDF export error', e);
+      toast.error(e?.message || 'Falha ao gerar PDF', { id: t });
+    } finally {
+      setExportingPdf(false);
+    }
+  }, [apostila]);
 
   useEffect(() => {
     if (!id) return;
