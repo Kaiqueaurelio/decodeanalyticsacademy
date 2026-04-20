@@ -1,12 +1,10 @@
 import { useState, useMemo } from 'react';
-import { Check, Copy, Volume2 } from 'lucide-react';
+import { Check, Copy, Volume2, Info, Lightbulb, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 
 /**
- * Remove sintaxe markdown residual (negrito, itálico, código inline, links etc.)
- * para renderizar texto puro com fonte unificada.
- * NÃO toca em blocos de código (```), imagens (![...]) ou áudios — esses são
- * extraídos antes pelo parser de blocos.
+ * Limpa marcadores markdown inline (negrito, itálico, código inline, links etc.)
+ * mantendo o texto puro. NÃO toca em blocos especiais (já extraídos antes).
  */
 function cleanInlineText(input: string): string {
   if (!input) return '';
@@ -18,26 +16,40 @@ function cleanInlineText(input: string): string {
     .replace(/_{2}([^_]+)_{2}/g, '$1')
     .replace(/(?<![*\w])\*(?!\s)([^*\n]+?)\*(?!\w)/g, '$1')
     .replace(/(?<![_\w])_(?!\s)([^_\n]+?)_(?!\w)/g, '$1')
+    .replace(/==([^=]+)==/g, '$1')
     .replace(/`([^`]+)`/g, '$1')
     .replace(/~~([^~]+)~~/g, '$1')
-    .replace(/^\s*[*+-]\s+/gm, '• ')
     .replace(/^\s*#{1,6}\s+/gm, '');
 }
 
 type Block =
-  | { type: 'text'; content: string }
+  | { type: 'paragraph'; content: string }
+  | { type: 'heading'; level: number; content: string }
+  | { type: 'list'; items: string[]; ordered: boolean }
+  | { type: 'quote'; content: string }
+  | { type: 'callout'; kind: 'info' | 'tip' | 'warning'; title: string; content: string }
+  | { type: 'table'; header: string[]; rows: string[][] }
   | { type: 'code'; lang: string; code: string }
   | { type: 'image'; alt: string; url: string }
-  | { type: 'audio'; label: string; url: string };
+  | { type: 'audio'; label: string; url: string }
+  | { type: 'divider' };
 
 const AUDIO_RE = /\.(mp3|wav|ogg|m4a|aac|webm)(\?.*)?$/i;
 
-/** Quebra o conteúdo de uma seção em blocos (texto / código / imagem / áudio). */
+function calloutKind(label: string): { kind: 'info' | 'tip' | 'warning'; title: string } {
+  const l = label.toLowerCase();
+  if (/(dica|tip)/.test(l)) return { kind: 'tip', title: 'Dica' };
+  if (/(atenção|atencao|cuidado|alerta|warning)/.test(l)) return { kind: 'warning', title: 'Atenção' };
+  if (/(importante|nota|observa)/.test(l)) return { kind: 'info', title: label };
+  return { kind: 'info', title: label };
+}
+
+/** Quebra o conteúdo de uma seção em blocos tipados. */
 function parseBlocks(raw: string): Block[] {
   const blocks: Block[] = [];
   if (!raw) return blocks;
 
-  // Primeiro extrai blocos de código triplos para não conflitar com o resto
+  // 1) Extrai blocos de código triplos
   const codeRe = /```(\w+)?\n?([\s\S]*?)```/g;
   let lastIdx = 0;
   let m: RegExpExecArray | null;
@@ -50,61 +62,137 @@ function parseBlocks(raw: string): Block[] {
   }
   if (lastIdx < raw.length) segments.push({ text: raw.slice(lastIdx) });
 
-  // Para cada segmento de texto, varre linha-a-linha extraindo imagens/áudios isolados
-  // e ainda aceita imagens "no meio" de linhas curtas (![...](url) numa linha própria).
   for (const seg of segments) {
     if (seg.isCode) {
       blocks.push({ type: 'code', lang: seg.isCode.lang, code: seg.isCode.code });
       continue;
     }
-    const lines = seg.text.split('\n');
-    let buffer: string[] = [];
-    const flushText = () => {
-      const t = buffer.join('\n').trim();
-      if (t) blocks.push({ type: 'text', content: t });
-      buffer = [];
-    };
-    for (const line of lines) {
-      const trimmed = line.trim();
-      if (/^\s*(?:-{3,}|\*{3,}|_{3,})\s*$/.test(trimmed)) continue;
 
-      // ![alt](url) numa linha própria → imagem ou áudio
+    const lines = seg.text.split('\n');
+    let i = 0;
+    let paragraph: string[] = [];
+
+    const flushParagraph = () => {
+      const t = paragraph.join('\n').trim();
+      if (t) blocks.push({ type: 'paragraph', content: t });
+      paragraph = [];
+    };
+
+    while (i < lines.length) {
+      const line = lines[i];
+      const trimmed = line.trim();
+
+      // linha vazia
+      if (!trimmed) { flushParagraph(); i++; continue; }
+
+      // divisor horizontal
+      if (/^\s*(?:-{3,}|\*{3,}|_{3,})\s*$/.test(trimmed)) {
+        flushParagraph();
+        blocks.push({ type: 'divider' });
+        i++; continue;
+      }
+
+      // heading hash residual
+      const hMatch = trimmed.match(/^(#{1,6})\s+(.+)$/);
+      if (hMatch) {
+        flushParagraph();
+        blocks.push({ type: 'heading', level: hMatch[1].length, content: hMatch[2] });
+        i++; continue;
+      }
+
+      // imagem ou áudio em linha própria
       const imgMatch = trimmed.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
       if (imgMatch) {
-        const url = imgMatch[2];
-        const label = imgMatch[1];
-        if (AUDIO_RE.test(url)) {
-          flushText();
-          blocks.push({ type: 'audio', label: label || 'Áudio explicativo', url });
-        } else {
-          flushText();
-          blocks.push({ type: 'image', alt: label, url });
-        }
-        continue;
+        flushParagraph();
+        const url = imgMatch[2]; const label = imgMatch[1];
+        if (AUDIO_RE.test(url)) blocks.push({ type: 'audio', label: label || 'Áudio explicativo', url });
+        else blocks.push({ type: 'image', alt: label, url });
+        i++; continue;
       }
-
-      // [audio: rótulo](url) ou [áudio](url.mp3)
       const audioMatch = trimmed.match(/^\[(?:áudio|audio)[^\]]*\]\(([^)]+)\)$/i);
       if (audioMatch) {
-        flushText();
+        flushParagraph();
         blocks.push({ type: 'audio', label: 'Áudio explicativo', url: audioMatch[1] });
-        continue;
+        i++; continue;
       }
-
-      // Link cru pra arquivo de áudio numa linha própria
       if (/^https?:\/\/\S+$/.test(trimmed) && AUDIO_RE.test(trimmed)) {
-        flushText();
+        flushParagraph();
         blocks.push({ type: 'audio', label: 'Áudio explicativo', url: trimmed });
+        i++; continue;
+      }
+
+      // tabela markdown: detecta cabeçalho + separador
+      if (/^\|.+\|$/.test(trimmed) && i + 1 < lines.length && /^\|[\s:|-]+\|$/.test(lines[i + 1].trim())) {
+        flushParagraph();
+        const header = trimmed.slice(1, -1).split('|').map((c) => c.trim());
+        i += 2; // pula header + sep
+        const rows: string[][] = [];
+        while (i < lines.length && /^\|.+\|$/.test(lines[i].trim())) {
+          rows.push(lines[i].trim().slice(1, -1).split('|').map((c) => c.trim()));
+          i++;
+        }
+        blocks.push({ type: 'table', header, rows });
         continue;
       }
 
-      buffer.push(line);
+      // blockquote
+      if (/^>\s?/.test(trimmed)) {
+        flushParagraph();
+        const buf: string[] = [];
+        while (i < lines.length && /^>\s?/.test(lines[i].trim())) {
+          buf.push(lines[i].trim().replace(/^>\s?/, ''));
+          i++;
+        }
+        blocks.push({ type: 'quote', content: buf.join(' ') });
+        continue;
+      }
+
+      // lista (não-ordenada ou ordenada)
+      const ulMatch = trimmed.match(/^[*+\-•]\s+(.+)$/);
+      const olMatch = trimmed.match(/^\d+[.)]\s+(.+)$/);
+      if (ulMatch || olMatch) {
+        flushParagraph();
+        const ordered = !!olMatch;
+        const items: string[] = [];
+        while (i < lines.length) {
+          const t = lines[i].trim();
+          const u = t.match(/^[*+\-•]\s+(.+)$/);
+          const o = t.match(/^\d+[.)]\s+(.+)$/);
+          if (ordered && o) { items.push(o[1]); i++; }
+          else if (!ordered && u) { items.push(u[1]); i++; }
+          else break;
+        }
+        blocks.push({ type: 'list', items, ordered });
+        continue;
+      }
+
+      // callout (Importante: / Dica: / Atenção: ...)
+      const calloutMatch = trimmed.match(/^\*?\*?(Importante|Dica|Atenção|Atencao|Observação|Observacao|Nota|Cuidado):\*?\*?\s+(.+)$/i);
+      if (calloutMatch) {
+        flushParagraph();
+        const { kind, title } = calloutKind(calloutMatch[1]);
+        blocks.push({ type: 'callout', kind, title, content: calloutMatch[2] });
+        i++; continue;
+      }
+
+      // ==destaque== em linha solta vira callout info
+      const highlightMatch = trimmed.match(/^==(.+)==$/);
+      if (highlightMatch) {
+        flushParagraph();
+        blocks.push({ type: 'callout', kind: 'info', title: 'Destaque', content: highlightMatch[1] });
+        i++; continue;
+      }
+
+      paragraph.push(line);
+      i++;
     }
-    flushText();
+    flushParagraph();
   }
 
   return blocks;
 }
+
+/* ============= Sub-componentes ============= */
 
 function CodeBlock({ lang, code }: { lang: string; code: string }) {
   const [copied, setCopied] = useState(false);
@@ -120,9 +208,9 @@ function CodeBlock({ lang, code }: { lang: string; code: string }) {
   };
 
   return (
-    <figure className="my-5 rounded-xl border border-border/60 bg-[hsl(var(--muted))] overflow-hidden shadow-sm select-text">
+    <figure className="my-6 rounded-xl border border-border/60 bg-[hsl(var(--muted))] overflow-hidden shadow-sm select-text">
       <figcaption className="flex items-center justify-between gap-2 px-3 py-1.5 border-b border-border/50 bg-background/40">
-        <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+        <span className="font-mono-label text-[10px] uppercase tracking-wider text-muted-foreground">
           {lang || 'code'}
         </span>
         <button
@@ -130,12 +218,10 @@ function CodeBlock({ lang, code }: { lang: string; code: string }) {
           className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
           aria-label="Copiar código"
         >
-          {copied ? <Check className="h-3 w-3 text-[hsl(var(--success,142_76%_36%))]" /> : <Copy className="h-3 w-3" />}
+          {copied ? <Check className="h-3 w-3 text-primary" /> : <Copy className="h-3 w-3" />}
           {copied ? 'Copiado' : 'Copiar código'}
         </button>
       </figcaption>
-      {/* Apenas o <pre><code> é selecionável/copiável visualmente — mantém o resto da apostila com proteção */}
-      {/* data-allow-copy: libera seleção/cópia/menu de contexto APENAS aqui dentro */}
       <pre data-allow-copy className="m-0 p-3 sm:p-4 overflow-x-auto text-[12px] sm:text-[13px] leading-relaxed font-mono text-foreground/90 select-text">
         <code className={`language-${lang}`}>{code}</code>
       </pre>
@@ -145,15 +231,15 @@ function CodeBlock({ lang, code }: { lang: string; code: string }) {
 
 function ImageBlock({ alt, url }: { alt: string; url: string }) {
   return (
-    <figure className="my-6 flex flex-col items-center gap-2">
+    <figure className="my-7 flex flex-col items-center gap-2.5">
       <img
         src={url}
         alt={alt}
         loading="lazy"
-        className="max-w-full sm:max-w-[80%] rounded-xl border border-border/40 shadow-md"
+        className="max-w-full sm:max-w-[85%] rounded-xl border border-border/40 shadow-lg shadow-black/10"
       />
       {alt && (
-        <figcaption className="text-[11px] text-muted-foreground italic text-center max-w-prose">
+        <figcaption className="text-[12px] text-muted-foreground italic text-center max-w-prose leading-snug">
           {alt}
         </figcaption>
       )}
@@ -163,7 +249,7 @@ function ImageBlock({ alt, url }: { alt: string; url: string }) {
 
 function AudioBlock({ label, url }: { label: string; url: string }) {
   return (
-    <figure className="my-5 rounded-xl border border-primary/20 bg-primary/5 px-3 py-3 sm:px-4 sm:py-3.5 flex flex-col gap-2">
+    <figure className="my-6 rounded-xl border border-primary/25 bg-primary/5 px-3 py-3 sm:px-4 sm:py-3.5 flex flex-col gap-2">
       <div className="flex items-center gap-2 text-xs font-medium text-primary">
         <Volume2 className="h-3.5 w-3.5" />
         {label}
@@ -175,32 +261,143 @@ function AudioBlock({ label, url }: { label: string; url: string }) {
   );
 }
 
+function CalloutBlock({ kind, title, content }: { kind: 'info' | 'tip' | 'warning'; title: string; content: string }) {
+  const Icon = kind === 'tip' ? Lightbulb : kind === 'warning' ? AlertTriangle : Info;
+  const tone =
+    kind === 'warning'
+      ? 'border-l-destructive bg-destructive/5 text-destructive'
+      : kind === 'tip'
+      ? 'border-l-accent bg-accent/10 text-accent-foreground'
+      : 'border-l-primary bg-primary/5 text-foreground/90';
+  const labelTone =
+    kind === 'warning' ? 'text-destructive' : kind === 'tip' ? 'text-accent-foreground' : 'text-primary';
+
+  return (
+    <aside className={`my-5 rounded-r-lg border-l-4 ${tone} px-4 py-3 flex gap-3`}>
+      <Icon className={`h-4 w-4 mt-0.5 shrink-0 ${labelTone}`} />
+      <div className="flex-1 min-w-0">
+        <div className={`font-mono-label text-[10px] uppercase tracking-wider mb-1 ${labelTone}`}>
+          {title}
+        </div>
+        <p className="text-[14px] leading-[1.7] text-foreground/85 m-0">{cleanInlineText(content)}</p>
+      </div>
+    </aside>
+  );
+}
+
+function QuoteBlock({ content }: { content: string }) {
+  return (
+    <blockquote className="my-6 pl-5 border-l-4 border-primary/50 italic text-foreground/75 text-[15px] leading-[1.75]">
+      {cleanInlineText(content)}
+    </blockquote>
+  );
+}
+
+function ListBlock({ items, ordered }: { items: string[]; ordered: boolean }) {
+  if (ordered) {
+    return (
+      <ol className="my-4 ml-1 space-y-2 list-none counter-reset-decode">
+        {items.map((it, idx) => (
+          <li key={idx} className="pl-8 relative text-[15px] leading-[1.75] text-foreground/85">
+            <span className="absolute left-0 top-0 w-6 h-6 rounded-full bg-primary/10 text-primary font-mono-label text-[11px] flex items-center justify-center">
+              {idx + 1}
+            </span>
+            {cleanInlineText(it)}
+          </li>
+        ))}
+      </ol>
+    );
+  }
+  return (
+    <ul className="my-4 ml-1 space-y-2">
+      {items.map((it, idx) => (
+        <li key={idx} className="pl-5 relative text-[15px] leading-[1.75] text-foreground/85">
+          <span className="absolute left-0 top-[0.6em] w-1.5 h-1.5 rounded-full bg-primary" />
+          {cleanInlineText(it)}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function TableBlock({ header, rows }: { header: string[]; rows: string[][] }) {
+  return (
+    <div className="my-6 overflow-x-auto rounded-lg border border-border/50">
+      <table className="w-full text-[13px] border-collapse">
+        <thead>
+          <tr className="bg-muted/60">
+            {header.map((h, i) => (
+              <th key={i} className="text-left px-3 py-2 font-semibold text-foreground/90 border-b border-border/50">
+                {cleanInlineText(h)}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row, ri) => (
+            <tr key={ri} className={ri % 2 === 0 ? 'bg-background' : 'bg-muted/20'}>
+              {row.map((cell, ci) => (
+                <td key={ci} className="px-3 py-2 text-foreground/80 border-b border-border/30 align-top">
+                  {cleanInlineText(cell)}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function HeadingBlock({ level, content }: { level: number; content: string }) {
+  const text = cleanInlineText(content);
+  if (level <= 2) {
+    return (
+      <h3 className="font-display text-[20px] sm:text-[22px] mt-8 mb-3 text-foreground border-b border-border/40 pb-2">
+        {text}
+      </h3>
+    );
+  }
+  if (level === 3) {
+    return <h4 className="font-display text-[16px] font-semibold mt-6 mb-2 text-primary/90">{text}</h4>;
+  }
+  return <h5 className="font-display text-[15px] font-semibold mt-5 mb-2 text-foreground/90">{text}</h5>;
+}
+
 interface Props {
   content: string;
 }
 
 /**
- * Renderiza o conteúdo de uma seção da apostila com suporte a blocos especiais:
- * - Código triplo crase (```lang ... ```) → caixa com botão "Copiar código"
- * - Imagens ![alt](url) → centralizadas com legenda, no meio do texto
- * - Áudios (.mp3/.wav/.ogg) → player nativo inline
- * O texto comum permanece com proteção de cópia (herdada do ScreenshotGuard).
+ * Renderizador editorial da apostila com hierarquia tipográfica refinada,
+ * blocos especiais (citação, callout, tabela, lista, código, mídia) e
+ * ritmo de leitura confortável (~68ch, line-height 1.75).
  */
 export function ApostilaContentRenderer({ content }: Props) {
   const blocks = useMemo(() => parseBlocks(content), [content]);
 
   return (
-    <div className="text-sm leading-[1.85] text-foreground/75">
+    <div className="max-w-[68ch] text-[15px] sm:text-[16px] leading-[1.78] tracking-[0.005em] text-foreground/85">
       {blocks.map((b, i) => {
-        if (b.type === 'code') return <CodeBlock key={i} lang={b.lang} code={b.code} />;
-        if (b.type === 'image') return <ImageBlock key={i} alt={b.alt} url={b.url} />;
-        if (b.type === 'audio') return <AudioBlock key={i} label={b.label} url={b.url} />;
-        // Texto: respeita quebras de linha, limpa markdown inline
-        return (
-          <p key={i} className="whitespace-pre-wrap mb-4 last:mb-0">
-            {cleanInlineText(b.content)}
-          </p>
-        );
+        switch (b.type) {
+          case 'code': return <CodeBlock key={i} lang={b.lang} code={b.code} />;
+          case 'image': return <ImageBlock key={i} alt={b.alt} url={b.url} />;
+          case 'audio': return <AudioBlock key={i} label={b.label} url={b.url} />;
+          case 'callout': return <CalloutBlock key={i} kind={b.kind} title={b.title} content={b.content} />;
+          case 'quote': return <QuoteBlock key={i} content={b.content} />;
+          case 'list': return <ListBlock key={i} items={b.items} ordered={b.ordered} />;
+          case 'table': return <TableBlock key={i} header={b.header} rows={b.rows} />;
+          case 'heading': return <HeadingBlock key={i} level={b.level} content={b.content} />;
+          case 'divider':
+            return <div key={i} className="my-8 flex items-center justify-center gap-3 text-muted-foreground/50 text-sm tracking-[0.4em]">* * *</div>;
+          case 'paragraph':
+          default:
+            return (
+              <p key={i} className="whitespace-pre-wrap mb-5 last:mb-0">
+                {cleanInlineText(b.content)}
+              </p>
+            );
+        }
       })}
     </div>
   );
