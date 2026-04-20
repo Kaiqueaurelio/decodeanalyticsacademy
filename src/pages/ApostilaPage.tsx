@@ -19,9 +19,12 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ActionSheet, type ActionItem } from '@/components/ActionSheet';
 import { toast } from 'sonner';
+import { useAuth } from '@/hooks/useAuth';
+import { exportApostilaToPDF } from '@/lib/apostila-pdf';
 import {
   ArrowLeft, BookOpen, PenLine, Eye, List, X, MoreHorizontal,
-  ChevronUp, StickyNote, Layers, Sparkles, MessageSquare, Share2, CheckCircle2, Copy, Volume2
+  ChevronUp, StickyNote, Layers, Sparkles, MessageSquare, Share2, CheckCircle2, Copy, Volume2,
+  FileDown, Loader2
 } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 
@@ -107,6 +110,7 @@ export default function ApostilaPage() {
   const navigate = useNavigate();
   const gamification = useGamification();
   const isMobile = useIsMobile();
+  const { isAdmin } = useAuth();
   const [apostila, setApostila] = useState<Tables<'apostilas'> | null>(null);
   const [exerciseCount, setExerciseCount] = useState(0);
   const [focusMode, setFocusMode] = useState(false);
@@ -116,6 +120,8 @@ export default function ApostilaPage() {
   const contentRef = useRef<HTMLDivElement>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [chatOpen, setChatOpen] = useState(false);
+  const [exportingPdf, setExportingPdf] = useState(false);
+
 
   useEffect(() => {
     if (!id) return;
@@ -143,6 +149,25 @@ export default function ApostilaPage() {
   }, []);
 
   const sections = useMemo(() => parseContent(apostila?.content || null), [apostila?.content]);
+
+  const handleExportPdf = useCallback(async () => {
+    if (!apostila) return;
+    setExportingPdf(true);
+    const t = toast.loading('Gerando PDF da apostila…');
+    try {
+      await exportApostilaToPDF({
+        title: apostila.title,
+        category: apostila.category,
+        sections: sections.map((s) => ({ id: s.id, title: s.title, level: s.level, content: s.content })),
+      });
+      toast.success('PDF gerado com sucesso', { id: t });
+    } catch (e: any) {
+      console.error('PDF export error', e);
+      toast.error(e?.message || 'Falha ao gerar PDF', { id: t });
+    } finally {
+      setExportingPdf(false);
+    }
+  }, [apostila, sections]);
 
   useEffect(() => {
     if (!contentRef.current) return;
@@ -274,6 +299,19 @@ export default function ApostilaPage() {
                 <Eye className="h-3.5 w-3.5" /> {focusMode ? 'Foco ativo' : 'Modo foco'}
               </Button>
 
+              {isAdmin && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleExportPdf}
+                  disabled={exportingPdf}
+                  className="text-xs gap-1.5 hover-lift border-accent/40 text-accent-foreground hover:bg-accent/10"
+                  title="Baixar apostila em PDF (admin)"
+                >
+                  {exportingPdf ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <FileDown className="h-3.5 w-3.5" />}
+                  <span className="hidden sm:inline">{exportingPdf ? 'Gerando…' : 'Baixar PDF'}</span>
+                </Button>
+              )}
               {/* Bottom sheet de ações rápidas (mobile-first) */}
               <ActionSheet
                 title={apostila?.title || 'Ações'}
@@ -454,37 +492,47 @@ export default function ApostilaPage() {
                 })}
               />
 
-              {/* Rendered sections */}
-              <div id="conteudo-principal" className="space-y-10 scroll-mt-24">
-                {sections.map((section, idx) => (
-                  <section
-                    key={section.id}
-                    id={section.id}
-                    data-section-id={section.id}
-                    className="scroll-mt-24 animate-content-show"
-                    style={{ animationDelay: `${300 + idx * 80}ms` }}
-                  >
-                    {section.level === 1 && (
-                      <h2 className="font-display text-2xl sm:text-3xl mb-5 text-foreground relative">
-                        <span className="absolute -left-4 top-0 bottom-0 w-1 bg-primary/40 rounded-full hidden sm:block" />
-                        {cleanText(section.title)}
-                      </h2>
-                    )}
-                    {section.level === 2 && (
-                      <h3 className="font-display text-lg sm:text-xl font-semibold mb-4 text-foreground/90">
-                        {cleanText(section.title)}
-                      </h3>
-                    )}
-                    {section.level === 3 && (
-                      <h4 className="font-display text-base font-semibold mb-3 text-foreground/85">
-                        {cleanText(section.title)}
-                      </h4>
-                    )}
-                    {section.content.trim() && (
-                      <ApostilaContentRenderer content={section.content} />
-                    )}
-                  </section>
-                ))}
+              {/* Rendered sections — editorial layout */}
+              <div id="conteudo-principal" className="space-y-12 scroll-mt-24">
+                {sections.map((section, idx) => {
+                  const sectionNum = String(idx + 1).padStart(2, '0');
+                  const wordCount = (section.content || '').trim().split(/\s+/).filter(Boolean).length;
+                  const readMin = Math.max(1, Math.round(wordCount / 200));
+                  return (
+                    <section
+                      key={section.id}
+                      id={section.id}
+                      data-section-id={section.id}
+                      className="scroll-mt-24 animate-content-show"
+                      style={{ animationDelay: `${300 + idx * 80}ms` }}
+                    >
+                      {section.level === 1 && (
+                        <header className="mb-6">
+                          <div className="font-mono-label text-[10px] uppercase tracking-[0.22em] text-primary/80 mb-1.5">
+                            Seção {sectionNum} {wordCount > 50 && <span className="text-muted-foreground/70">· {readMin} min de leitura</span>}
+                          </div>
+                          <h2 className="font-display text-[28px] sm:text-[32px] leading-[1.2] text-foreground mb-3">
+                            {cleanText(section.title)}
+                          </h2>
+                          <div className="h-[2px] w-12 bg-primary rounded-full" />
+                        </header>
+                      )}
+                      {section.level === 2 && (
+                        <h3 className="font-display text-[20px] sm:text-[22px] mt-2 mb-4 text-foreground border-b border-border/40 pb-2">
+                          {cleanText(section.title)}
+                        </h3>
+                      )}
+                      {section.level === 3 && (
+                        <h4 className="font-display text-[16px] font-semibold mt-2 mb-3 text-primary/90">
+                          {cleanText(section.title)}
+                        </h4>
+                      )}
+                      {section.content.trim() && (
+                        <ApostilaContentRenderer content={section.content} />
+                      )}
+                    </section>
+                  );
+                })}
               </div>
 
               {/* Linked Materials */}
