@@ -31,6 +31,7 @@ serve(async (req) => {
     const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const GOOGLE_AI_API_KEY = Deno.env.get("GOOGLE_AI_API_KEY");
 
     const auth = req.headers.get("Authorization") ?? "";
     const userClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -146,10 +147,17 @@ serve(async (req) => {
       completed: completedSet.has(a.id),
     }));
 
-    // 6) Resumo IA dos pontos-chave (best-effort)
+    // 6) Resumo IA dos pontos-chave (best-effort) — dual provider
     let ai_summary = "";
-    if (LOVABLE_API_KEY && candidates.length > 0) {
+    let providerUsed: "google-direct" | "lovable-ai" | "none" = "none";
+
+    if ((LOVABLE_API_KEY || GOOGLE_AI_API_KEY) && candidates.length > 0) {
       try {
+        // Lê preferência
+        const { data: settingRow } = await admin
+          .from("app_settings").select("value").eq("key", "ai_provider").maybeSingle();
+        const preferGoogle = !!(settingRow?.value as any)?.preferGoogle && !!GOOGLE_AI_API_KEY;
+
         const { data: contents } = await admin
           .from("apostilas")
           .select("title,content")
@@ -158,32 +166,66 @@ serve(async (req) => {
           .map((c) => `## ${c.title}\n${(c.content || "").slice(0, 4000)}`)
           .join("\n\n");
 
-        if (corpus.trim().length > 0) {
+        const sysContent = "Você é um tutor que prepara alunos para provas. Gere um resumo enxuto em markdown com os 7-10 pontos mais cobrados em prova, fórmulas-chave e armadilhas comuns. Use bullets curtos e negrito nos termos. Máximo 400 palavras. Responda em português.";
+        const userContent = `Prova: ${ev.title} (${ev.subject || "geral"}) em ${daysUntil} dias.\n\nMaterial relacionado:\n${corpus}`;
+
+        const callGoogle = async (): Promise<string> => {
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(GOOGLE_AI_API_KEY!)}`;
+          const resp = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              contents: [{ role: "user", parts: [{ text: userContent }] }],
+              systemInstruction: { parts: [{ text: sysContent }] },
+              generationConfig: { temperature: 0.5, maxOutputTokens: 1500 },
+            }),
+          });
+          if (!resp.ok) {
+            console.error("Google pre-exam-review error", resp.status, (await resp.text()).slice(0, 300));
+            return "";
+          }
+          const data = await resp.json();
+          return data?.candidates?.[0]?.content?.parts?.map((p: any) => p.text).join("") ?? "";
+        };
+
+        const callLovable = async (): Promise<string> => {
           const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
             method: "POST",
-            headers: {
-              Authorization: `Bearer ${LOVABLE_API_KEY}`,
-              "Content-Type": "application/json",
-            },
+            headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
             body: JSON.stringify({
               model: "google/gemini-2.5-flash",
               messages: [
-                {
-                  role: "system",
-                  content: "Você é um tutor que prepara alunos para provas. Gere um resumo enxuto em markdown com os 7-10 pontos mais cobrados em prova, fórmulas-chave e armadilhas comuns. Use bullets curtos e negrito nos termos. Máximo 400 palavras. Responda em português.",
-                },
-                {
-                  role: "user",
-                  content: `Prova: ${ev.title} (${ev.subject || "geral"}) em ${daysUntil} dias.\n\nMaterial relacionado:\n${corpus}`,
-                },
+                { role: "system", content: sysContent },
+                { role: "user", content: userContent },
               ],
             }),
           });
-          if (aiResp.ok) {
-            const j = await aiResp.json();
-            ai_summary = j.choices?.[0]?.message?.content ?? "";
-          } else {
+          if (!aiResp.ok) {
             console.error("AI gateway error", aiResp.status, await aiResp.text());
+            return "";
+          }
+          const j = await aiResp.json();
+          return j.choices?.[0]?.message?.content ?? "";
+        };
+
+        if (corpus.trim().length > 0) {
+          if (preferGoogle && GOOGLE_AI_API_KEY) {
+            ai_summary = await callGoogle();
+            providerUsed = "google-direct";
+            if (!ai_summary && LOVABLE_API_KEY) {
+              ai_summary = await callLovable();
+              providerUsed = "lovable-ai";
+            }
+          } else if (LOVABLE_API_KEY) {
+            ai_summary = await callLovable();
+            providerUsed = "lovable-ai";
+            if (!ai_summary && GOOGLE_AI_API_KEY) {
+              ai_summary = await callGoogle();
+              providerUsed = "google-direct";
+            }
+          } else if (GOOGLE_AI_API_KEY) {
+            ai_summary = await callGoogle();
+            providerUsed = "google-direct";
           }
         }
       } catch (err) {

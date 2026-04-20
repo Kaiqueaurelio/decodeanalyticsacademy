@@ -1,5 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -267,7 +268,19 @@ serve(async (req) => {
     if (!url && !rawText) throw new Error("URL ou texto bruto e obrigatorio");
 
     const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
-    if (!lovableApiKey) throw new Error("LOVABLE_API_KEY nao configurada");
+    const googleApiKey = Deno.env.get("GOOGLE_AI_API_KEY");
+    const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+    const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
+    if (!lovableApiKey && !googleApiKey) throw new Error("Nenhum provedor de IA configurado");
+
+    // Lê preferência preferGoogle
+    let preferGoogle = false;
+    try {
+      const supa = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      const { data: settingRow } = await supa
+        .from("app_settings").select("value").eq("key", "ai_provider").maybeSingle();
+      preferGoogle = !!(settingRow?.value as any)?.preferGoogle && !!googleApiKey;
+    } catch { /* ignore */ }
 
     let userPrompt: string;
     let extractionMethod = "fetch";
@@ -327,76 +340,104 @@ Retorne APENAS chamando a funcao return_apostila.`;
       throw new Error("Entrada invalida");
     }
 
-    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${lovableApiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
-        ],
-        temperature: 0.4,
-        max_tokens: 16000,
-        tools: [apostilaTool],
-        tool_choice: { type: "function", function: { name: "return_apostila" } },
-      }),
-    });
-
-    if (!aiResponse.ok) {
-      const errText = await aiResponse.text();
-      console.error("AI Error:", aiResponse.status, errText.slice(0, 500));
-
-      if (aiResponse.status === 429) {
-        return new Response(JSON.stringify({ error: "Limite de requisicoes excedido. Tente novamente em alguns instantes." }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (aiResponse.status === 402) {
-        return new Response(JSON.stringify({ error: "Creditos de IA esgotados. Adicione fundos na conta." }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-
-      return new Response(JSON.stringify({ error: "Falha ao processar com a IA. Tente novamente em alguns instantes." }), {
-        status: 502,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+    // ===== Google AI Studio direto (JSON mode) =====
+    const callGoogle = async (): Promise<any | null> => {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${encodeURIComponent(googleApiKey!)}`;
+      const resp = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ role: "user", parts: [{ text: userPrompt }] }],
+          systemInstruction: { parts: [{ text: systemPrompt + "\n\nResponda SOMENTE com JSON puro no formato { \"title\": \"...\", \"category\": \"...\", \"content\": \"...\", \"exercises\": [...] }." }] },
+          generationConfig: {
+            temperature: 0.4,
+            maxOutputTokens: 16000,
+            responseMimeType: "application/json",
+          },
+        }),
       });
-    }
-
-    const aiData = await aiResponse.json();
-    const choice = aiData.choices?.[0];
-    const finishReason = choice?.finish_reason;
-    const toolCall = choice?.message?.tool_calls?.[0];
-
-    if (finishReason === "length" || finishReason === "MAX_TOKENS") {
-      console.error("Resposta truncada por max_tokens. finish_reason:", finishReason);
-    }
-
-    let parsed: { title?: string; category?: string; content?: string; exercises?: any[] } = {};
-    if (toolCall?.function?.arguments) {
-      try {
-        parsed = JSON.parse(toolCall.function.arguments);
-      } catch (e) {
-        console.error("JSON tool_call parse falhou:", String(e).slice(0, 200));
+      if (!resp.ok) {
+        console.error("Google extract-content error", resp.status, (await resp.text()).slice(0, 300));
+        return null;
       }
-    } else {
-      // Fallback antigo: tenta extrair JSON do content (pode acontecer em respostas raras)
+      const data = await resp.json();
+      const text = data?.candidates?.[0]?.content?.parts?.map((p: any) => p.text).join("") ?? "";
+      try {
+        const cleaned = text.trim().replace(/^```(?:json)?/i, "").replace(/```$/i, "").trim();
+        return JSON.parse(cleaned);
+      } catch (e) {
+        console.error("Google JSON parse failed", e, text.slice(0, 300));
+        return null;
+      }
+    };
+
+    // ===== Lovable AI =====
+    const callLovable = async (): Promise<any | { __status: number } | null> => {
+      const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${lovableApiKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "google/gemini-3-flash-preview",
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt },
+          ],
+          temperature: 0.4,
+          max_tokens: 16000,
+          tools: [apostilaTool],
+          tool_choice: { type: "function", function: { name: "return_apostila" } },
+        }),
+      });
+      if (!aiResponse.ok) return { __status: aiResponse.status };
+      const aiData = await aiResponse.json();
+      const choice = aiData.choices?.[0];
+      const toolCall = choice?.message?.tool_calls?.[0];
+      if (toolCall?.function?.arguments) {
+        try { return JSON.parse(toolCall.function.arguments); } catch { /* ignore */ }
+      }
       const aiText = choice?.message?.content || "";
       try {
         const jsonStr = aiText.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-        parsed = JSON.parse(jsonStr);
-      } catch {
-        console.error("Sem tool_call e content nao parseavel");
+        return JSON.parse(jsonStr);
+      } catch { return null; }
+    };
+
+    // ===== Estratégia dual =====
+    let parsed: { title?: string; category?: string; content?: string; exercises?: any[] } | null = null;
+    let providerUsed: "google-direct" | "lovable-ai" | "google-fallback" | "lovable-fallback" = "lovable-ai";
+
+    if (preferGoogle && googleApiKey) {
+      parsed = await callGoogle();
+      providerUsed = "google-direct";
+      if (!parsed && lovableApiKey) {
+        const r = await callLovable();
+        if (r && !("__status" in r)) { parsed = r; providerUsed = "lovable-fallback"; }
       }
+    } else if (lovableApiKey) {
+      const r = await callLovable();
+      if (r && typeof r === "object" && "__status" in r) {
+        if (googleApiKey) {
+          parsed = await callGoogle();
+          providerUsed = "google-fallback";
+        }
+        if (!parsed) {
+          const status = (r as any).__status;
+          let msg = "Falha ao processar com a IA. Tente novamente em alguns instantes.";
+          if (status === 429) msg = "Limite de requisicoes excedido. Tente novamente em alguns instantes.";
+          else if (status === 402) msg = "Creditos de IA esgotados. Ative sua chave Google AI Studio em Admin → IA.";
+          return new Response(JSON.stringify({ error: msg }), {
+            status, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+      } else {
+        parsed = r as any;
+      }
+    } else if (googleApiKey) {
+      parsed = await callGoogle();
+      providerUsed = "google-direct";
     }
 
-    if (!parsed.content || parsed.content.length < 100) {
+    if (!parsed?.content || parsed.content.length < 100) {
       return new Response(JSON.stringify({
         error: "A IA nao retornou conteudo suficiente. Tente outra URL ou cole o texto manualmente.",
       }), { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } });
@@ -408,7 +449,8 @@ Retorne APENAS chamando a funcao return_apostila.`;
       content: parsed.content,
       exercises: Array.isArray(parsed.exercises) ? parsed.exercises : [],
       extraction_method: rawText ? "text" : extractionMethod,
-    }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      provider: providerUsed,
+    }), { headers: { ...corsHeaders, "Content-Type": "application/json", "X-AI-Provider": providerUsed } });
 
   } catch (error) {
     console.error("Error:", error);
