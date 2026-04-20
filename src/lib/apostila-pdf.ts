@@ -172,6 +172,15 @@ function stripMd(s: string): string {
     .trim();
 }
 
+function isFilenameLikeAlt(alt: string): boolean {
+  const t = (alt || '').trim();
+  if (!t) return true;
+  if (/\.(png|jpe?g|gif|webp|svg|bmp|avif)$/i.test(t)) return true;
+  if (/^(IMG[_\-\s]?\d|Screenshot|Captura|Gemini[_ ]Generated|ChatGPT Image|image[_\-\s]?\d|photo[_\-\s]?\d|untitled)/i.test(t)) return true;
+  if (/^[a-z0-9_\-]{10,}$/i.test(t)) return true;
+  return false;
+}
+
 const AUDIO_RE = /\.(mp3|wav|ogg|m4a|aac|webm)(\?.*)?$/i;
 
 /** Mini-renderer markdown → HTML inline para o PDF. */
@@ -230,10 +239,13 @@ function renderMarkdownToHtml(raw: string, audioBucket: { label: string; url: st
         if (AUDIO_RE.test(url)) {
           audioBucket.push({ label: label || 'Áudio explicativo', url });
         } else {
+          const showCap = label && !isFilenameLikeAlt(label);
           out.push(`
-            <figure style="margin: 16px 0; text-align: center;">
-              <img src="${escapeAttr(url)}" alt="${escapeAttr(label)}" crossorigin="anonymous" style="max-width: 100%; max-height: 360px; border: 1px solid #e5e7eb; border-radius: 6px;" />
-              ${label ? `<figcaption style="font-size: 11px; color: #6b7280; font-style: italic; margin-top: 6px;">${escapeHtml(label)}</figcaption>` : ''}
+            <figure style="margin: 18px 0; text-align: center;">
+              <div style="display: inline-block; background: #ffffff; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.06);">
+                <img src="${escapeAttr(url)}" alt="${escapeAttr(label)}" crossorigin="anonymous" style="display: block; max-width: 100%; max-height: 360px; border-radius: 4px;" />
+              </div>
+              ${showCap ? `<figcaption style="font-size: 11px; color: #6b7280; font-style: italic; margin-top: 6px;">${escapeHtml(label)}</figcaption>` : ''}
             </figure>
           `);
         }

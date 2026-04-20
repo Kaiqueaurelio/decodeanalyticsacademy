@@ -229,16 +229,37 @@ function CodeBlock({ lang, code }: { lang: string; code: string }) {
   );
 }
 
+function isFilenameLikeAlt(alt: string): boolean {
+  const t = (alt || '').trim();
+  if (!t) return true;
+  if (/\.(png|jpe?g|gif|webp|svg|bmp|avif)$/i.test(t)) return true;
+  if (/^(IMG[_\-\s]?\d|Screenshot|Captura|Gemini[_ ]Generated|ChatGPT Image|image[_\-\s]?\d|photo[_\-\s]?\d|untitled)/i.test(t)) return true;
+  if (/^[a-z0-9_\-]{10,}$/i.test(t)) return true;
+  return false;
+}
+
 function ImageBlock({ alt, url }: { alt: string; url: string }) {
+  const [errored, setErrored] = useState(false);
+  const showCaption = !isFilenameLikeAlt(alt);
+
   return (
     <figure className="my-7 flex flex-col items-center gap-2.5">
-      <img
-        src={url}
-        alt={alt}
-        loading="lazy"
-        className="max-w-full sm:max-w-[85%] rounded-xl border border-border/40 shadow-lg shadow-black/10"
-      />
-      {alt && (
+      <div className="w-full sm:max-w-[90%] rounded-xl bg-white p-2 sm:p-3 border border-border/40 shadow-lg shadow-black/20">
+        {errored ? (
+          <div className="flex items-center justify-center min-h-[180px] text-sm text-muted-foreground italic bg-muted/40 rounded-lg">
+            Imagem indisponível
+          </div>
+        ) : (
+          <img
+            src={url}
+            alt={alt}
+            loading="lazy"
+            onError={() => setErrored(true)}
+            className="block w-full h-auto rounded-lg max-h-[520px] object-contain mx-auto"
+          />
+        )}
+      </div>
+      {showCaption && (
         <figcaption className="text-[12px] text-muted-foreground italic text-center max-w-prose leading-snug">
           {alt}
         </figcaption>
