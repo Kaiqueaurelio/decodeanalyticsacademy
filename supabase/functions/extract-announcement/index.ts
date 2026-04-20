@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -45,14 +46,29 @@ serve(async (req) => {
       );
     }
 
-    const apiKey = Deno.env.get("LOVABLE_API_KEY");
-    if (!apiKey) {
-      console.error("LOVABLE_API_KEY not configured");
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const GOOGLE_AI_API_KEY = Deno.env.get("GOOGLE_AI_API_KEY");
+    const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+    const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
+
+    if (!LOVABLE_API_KEY && !GOOGLE_AI_API_KEY) {
       return new Response(
         JSON.stringify({ error: "AI not configured" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    // Lê preferência preferGoogle
+    let preferGoogle = false;
+    try {
+      const supa = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      const { data: settingRow } = await supa
+        .from("app_settings")
+        .select("value")
+        .eq("key", "ai_provider")
+        .maybeSingle();
+      preferGoogle = !!(settingRow?.value as any)?.preferGoogle && !!GOOGLE_AI_API_KEY;
+    } catch { /* ignore */ }
 
     const truncatedMarkdown = (markdown || "").substring(0, 15000);
     const metaInfo = metadata
@@ -61,54 +77,102 @@ serve(async (req) => {
 
     const userPrompt = `Extraia as informacoes do seguinte conteudo:\n${metaInfo}\n\nConteudo da pagina:\n${truncatedMarkdown}`;
 
-    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash-lite",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
-        ],
-        temperature: 0.2,
-      }),
-    });
-
-    if (!aiResponse.ok) {
-      const errText = await aiResponse.text();
-      console.error("AI error:", aiResponse.status, errText);
-
-      if (aiResponse.status === 429) {
-        return new Response(
-          JSON.stringify({ error: "Rate limit exceeded" }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+    // ===== Google direto (JSON mode) =====
+    const callGoogle = async (): Promise<any | null> => {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(GOOGLE_AI_API_KEY!)}`;
+      const resp = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ role: "user", parts: [{ text: userPrompt }] }],
+          systemInstruction: { parts: [{ text: systemPrompt }] },
+          generationConfig: {
+            temperature: 0.2,
+            maxOutputTokens: 2000,
+            responseMimeType: "application/json",
+          },
+        }),
+      });
+      if (!resp.ok) {
+        console.error("Google extract-announcement error", resp.status, (await resp.text()).slice(0, 300));
+        return null;
       }
-      if (aiResponse.status === 402) {
-        return new Response(
-          JSON.stringify({ error: "Credits exhausted" }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+      const data = await resp.json();
+      const text = data?.candidates?.[0]?.content?.parts?.map((p: any) => p.text).join("") ?? "";
+      try {
+        const cleaned = text.trim().replace(/^```(?:json)?/i, "").replace(/```$/i, "").trim();
+        return JSON.parse(cleaned);
+      } catch (e) {
+        console.error("Google JSON parse failed", e);
+        return null;
       }
+    };
 
-      return new Response(
-        JSON.stringify({ error: "AI extraction failed" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    // ===== Lovable AI =====
+    const callLovable = async (): Promise<any | { __status: number } | null> => {
+      const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash-lite",
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt },
+          ],
+          temperature: 0.2,
+        }),
+      });
+      if (!aiResponse.ok) return { __status: aiResponse.status };
+      const aiData = await aiResponse.json();
+      const rawText = aiData.choices?.[0]?.message?.content || "";
+      try {
+        const cleaned = rawText.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+        return JSON.parse(cleaned);
+      } catch {
+        return null;
+      }
+    };
+
+    // ===== Estratégia dual =====
+    let parsed: any | null = null;
+    let providerUsed: "google-direct" | "lovable-ai" | "google-fallback" | "lovable-fallback" = "lovable-ai";
+
+    if (preferGoogle && GOOGLE_AI_API_KEY) {
+      parsed = await callGoogle();
+      providerUsed = "google-direct";
+      if (!parsed && LOVABLE_API_KEY) {
+        const r = await callLovable();
+        if (r && !("__status" in r)) { parsed = r; providerUsed = "lovable-fallback"; }
+      }
+    } else if (LOVABLE_API_KEY) {
+      const r = await callLovable();
+      if (r && "__status" in r) {
+        if (GOOGLE_AI_API_KEY) {
+          parsed = await callGoogle();
+          providerUsed = "google-fallback";
+        }
+        if (!parsed) {
+          const status = r.__status;
+          let msg = "AI extraction failed";
+          if (status === 429) msg = "Rate limit exceeded";
+          else if (status === 402) msg = "Credits exhausted";
+          return new Response(
+            JSON.stringify({ error: msg }),
+            { status, headers: { ...corsHeaders, "Content-Type": "application/json", "X-AI-Provider": "lovable-ai" } }
+          );
+        }
+      } else {
+        parsed = r;
+      }
+    } else if (GOOGLE_AI_API_KEY) {
+      parsed = await callGoogle();
+      providerUsed = "google-direct";
     }
 
-    const aiData = await aiResponse.json();
-    const rawText = aiData.choices?.[0]?.message?.content || "";
-
-    let parsed;
-    try {
-      const cleaned = rawText.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-      parsed = JSON.parse(cleaned);
-    } catch {
-      console.error("Failed to parse AI response:", rawText.substring(0, 200));
+    if (!parsed) {
       return new Response(
         JSON.stringify({ error: "AI extraction failed" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -117,13 +181,13 @@ serve(async (req) => {
 
     // Clean any residual markdown from content
     let cleanContent = (parsed.content || "")
-      .replace(/!\[.*?\]\(.*?\)/g, "")       // remove ![alt](url)
-      .replace(/\[([^\]]+)\]\(.*?\)/g, "$1")  // [text](url) -> text
-      .replace(/#{1,6}\s*/g, "")               // remove # headers
-      .replace(/\*{1,2}([^*]+)\*{1,2}/g, "$1") // remove **bold** / *italic*
-      .replace(/`([^`]+)`/g, "$1")             // remove `code`
-      .replace(/^[-*]\s+/gm, "• ")             // normalize list markers
-      .replace(/\n{3,}/g, "\n\n")              // collapse excessive newlines
+      .replace(/!\[.*?\]\(.*?\)/g, "")
+      .replace(/\[([^\]]+)\]\(.*?\)/g, "$1")
+      .replace(/#{1,6}\s*/g, "")
+      .replace(/\*{1,2}([^*]+)\*{1,2}/g, "$1")
+      .replace(/`([^`]+)`/g, "$1")
+      .replace(/^[-*]\s+/gm, "• ")
+      .replace(/\n{3,}/g, "\n\n")
       .trim();
 
     const validCategories = ["cursos", "empregos", "eventos", "tecnologia", "geral"];
@@ -135,8 +199,9 @@ serve(async (req) => {
         content: cleanContent,
         category,
         image_url: parsed.image_url || null,
+        provider: providerUsed,
       }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { headers: { ...corsHeaders, "Content-Type": "application/json", "X-AI-Provider": providerUsed } }
     );
   } catch (error) {
     console.error("Error:", error);
