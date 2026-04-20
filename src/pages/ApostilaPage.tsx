@@ -122,24 +122,6 @@ export default function ApostilaPage() {
   const [chatOpen, setChatOpen] = useState(false);
   const [exportingPdf, setExportingPdf] = useState(false);
 
-  const handleExportPdf = useCallback(async () => {
-    if (!apostila) return;
-    setExportingPdf(true);
-    const t = toast.loading('Gerando PDF da apostila…');
-    try {
-      await exportApostilaToPDF({
-        title: apostila.title,
-        category: apostila.category,
-        sections: sections.map((s) => ({ id: s.id, title: s.title, level: s.level, content: s.content })),
-      });
-      toast.success('PDF gerado com sucesso', { id: t });
-    } catch (e: any) {
-      console.error('PDF export error', e);
-      toast.error(e?.message || 'Falha ao gerar PDF', { id: t });
-    } finally {
-      setExportingPdf(false);
-    }
-  }, [apostila]);
 
   useEffect(() => {
     if (!id) return;
@@ -167,6 +149,25 @@ export default function ApostilaPage() {
   }, []);
 
   const sections = useMemo(() => parseContent(apostila?.content || null), [apostila?.content]);
+
+  const handleExportPdf = useCallback(async () => {
+    if (!apostila) return;
+    setExportingPdf(true);
+    const t = toast.loading('Gerando PDF da apostila…');
+    try {
+      await exportApostilaToPDF({
+        title: apostila.title,
+        category: apostila.category,
+        sections: sections.map((s) => ({ id: s.id, title: s.title, level: s.level, content: s.content })),
+      });
+      toast.success('PDF gerado com sucesso', { id: t });
+    } catch (e: any) {
+      console.error('PDF export error', e);
+      toast.error(e?.message || 'Falha ao gerar PDF', { id: t });
+    } finally {
+      setExportingPdf(false);
+    }
+  }, [apostila, sections]);
 
   useEffect(() => {
     if (!contentRef.current) return;
