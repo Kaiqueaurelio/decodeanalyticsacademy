@@ -299,6 +299,19 @@ export default function ApostilaPage() {
                 <Eye className="h-3.5 w-3.5" /> {focusMode ? 'Foco ativo' : 'Modo foco'}
               </Button>
 
+              {isAdmin && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleExportPdf}
+                  disabled={exportingPdf}
+                  className="text-xs gap-1.5 hover-lift border-accent/40 text-accent-foreground hover:bg-accent/10"
+                  title="Baixar apostila em PDF (admin)"
+                >
+                  {exportingPdf ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <FileDown className="h-3.5 w-3.5" />}
+                  <span className="hidden sm:inline">{exportingPdf ? 'Gerando…' : 'Baixar PDF'}</span>
+                </Button>
+              )}
               {/* Bottom sheet de ações rápidas (mobile-first) */}
               <ActionSheet
                 title={apostila?.title || 'Ações'}
