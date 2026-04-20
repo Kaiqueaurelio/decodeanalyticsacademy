@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { AppImage } from '@/components/ui/app-image';
 import {
   ArrowLeft, ExternalLink, Megaphone, GraduationCap, Calendar,
   Briefcase, Sparkles, Clock, Share2
@@ -121,11 +122,12 @@ export default function AnnouncementDetailPage() {
         {/* Hero Image */}
         {announcement.image_url && (
           <div className="relative w-full aspect-video overflow-hidden">
-            <img
+            <AppImage
               src={announcement.image_url}
               alt={announcement.title}
               className="w-full h-full object-cover"
               onError={(e) => { (e.target as HTMLImageElement).parentElement!.style.display = 'none'; }}
+              fallbackClassName="w-full h-full"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
           </div>

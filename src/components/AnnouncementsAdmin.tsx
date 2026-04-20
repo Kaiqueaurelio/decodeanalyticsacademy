@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
+import { AppImage } from '@/components/ui/app-image';
 import {
   Plus, Trash2, Edit, Megaphone, GraduationCap, Calendar, Briefcase, Sparkles, Eye, EyeOff
 } from 'lucide-react';
@@ -425,7 +426,7 @@ export function AnnouncementsAdmin() {
               </div>
               {imageUrl && (
                 <div className="mt-2 relative rounded-lg overflow-hidden border border-border">
-                  <img src={imageUrl} alt="Preview" className="w-full h-32 object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                  <AppImage src={imageUrl} alt="Preview" className="w-full h-32 object-cover" fallbackClassName="w-full h-32" />
                   <button
                     type="button"
                     onClick={() => setImageUrl('')}
