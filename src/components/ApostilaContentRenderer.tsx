@@ -135,7 +135,8 @@ function CodeBlock({ lang, code }: { lang: string; code: string }) {
         </button>
       </figcaption>
       {/* Apenas o <pre><code> é selecionável/copiável visualmente — mantém o resto da apostila com proteção */}
-      <pre className="m-0 p-3 sm:p-4 overflow-x-auto text-[12px] sm:text-[13px] leading-relaxed font-mono text-foreground/90">
+      {/* data-allow-copy: libera seleção/cópia/menu de contexto APENAS aqui dentro */}
+      <pre data-allow-copy className="m-0 p-3 sm:p-4 overflow-x-auto text-[12px] sm:text-[13px] leading-relaxed font-mono text-foreground/90 select-text">
         <code className={`language-${lang}`}>{code}</code>
       </pre>
     </figure>
