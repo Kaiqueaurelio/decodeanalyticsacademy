@@ -64,6 +64,70 @@ function cleanText(input: string): string {
     .replace(/^\s*#{1,6}\s+/gm, '');
 }
 
+const IMG_LINE_RE = /^\s*!\[[^\]]*\]\([^)]+\)\s*$/;
+
+/**
+ * Quando o autor cola todas as imagens no fim da apostila (ou no fim de uma seção),
+ * redistribuímos automaticamente entre as seções de conteúdo, inserindo cada imagem
+ * entre parágrafos. Isso evita o "amontoado de imagens" no rodapé.
+ */
+function redistributeOrphanImages(sections: Section[]): Section[] {
+  // 1) Extrai imagens "órfãs" — sequência contígua de imagens no FIM de cada seção
+  //    (ou seções inteiras compostas só de imagens).
+  const orphanImages: string[] = [];
+  const cleaned = sections.map((s) => {
+    const lines = s.content.split('\n');
+    // remove imagens contíguas no final
+    while (lines.length) {
+      const last = lines[lines.length - 1];
+      if (last.trim() === '') { lines.pop(); continue; }
+      if (IMG_LINE_RE.test(last)) {
+        orphanImages.unshift(last.trim());
+        lines.pop();
+        continue;
+      }
+      break;
+    }
+    return { ...s, content: lines.join('\n') };
+  });
+
+  if (!orphanImages.length) return sections;
+
+  // 2) Encontra seções "candidatas" — com pelo menos um parágrafo de texto real.
+  const targets = cleaned
+    .map((s, idx) => ({ idx, paragraphs: s.content.split(/\n\s*\n/).filter((p) => p.trim() && !IMG_LINE_RE.test(p.trim())).length }))
+    .filter((t) => t.paragraphs >= 1);
+
+  if (!targets.length) {
+    // fallback: anexa tudo de volta na última seção
+    cleaned[cleaned.length - 1].content += '\n\n' + orphanImages.join('\n\n');
+    return cleaned;
+  }
+
+  // 3) Distribui as imagens em rodízio pelas seções candidatas, inserindo entre parágrafos.
+  orphanImages.forEach((imgLine, i) => {
+    const target = targets[i % targets.length];
+    const sec = cleaned[target.idx];
+    const paragraphs = sec.content.split(/\n\s*\n/);
+    const realParagraphs = paragraphs.filter((p) => p.trim() && !IMG_LINE_RE.test(p.trim()));
+    // insere após ~metade dos parágrafos (varia pra não ficar tudo no mesmo lugar)
+    const insertAfter = Math.max(1, Math.ceil(realParagraphs.length / 2) + (i % 2));
+    let count = 0;
+    let insertIdx = paragraphs.length;
+    for (let p = 0; p < paragraphs.length; p++) {
+      const t = paragraphs[p].trim();
+      if (t && !IMG_LINE_RE.test(t)) {
+        count++;
+        if (count >= insertAfter) { insertIdx = p + 1; break; }
+      }
+    }
+    paragraphs.splice(insertIdx, 0, imgLine);
+    cleaned[target.idx] = { ...sec, content: paragraphs.join('\n\n') };
+  });
+
+  return cleaned;
+}
+
 function parseContent(raw: string | null): Section[] {
   if (!raw) return [{ id: 'intro', title: 'Introdução', level: 1, content: '' }];
 
@@ -102,7 +166,9 @@ function parseContent(raw: string | null): Section[] {
 
   if (current && (current.title.trim() || current.content.trim())) sections.push(current);
 
-  return sections.length > 0 ? sections : [{ id: 'intro', title: 'Conteúdo', level: 1, content: raw }];
+  const result = sections.length > 0 ? sections : [{ id: 'intro', title: 'Conteúdo', level: 1, content: raw }];
+  return redistributeOrphanImages(result);
+}
 }
 
 export default function ApostilaPage() {
