@@ -11,6 +11,7 @@ import { CommentsWidget } from '@/components/CommentsWidget';
 
 import { ApostilaMaterials } from '@/components/ApostilaMaterials';
 import { ApostilaChat } from '@/components/ApostilaChat';
+import { ApostilaContentRenderer } from '@/components/ApostilaContentRenderer';
 import { SpeakButton } from '@/components/SpeakButton';
 import { ApostilaSummaryDialog } from '@/components/ApostilaSummaryDialog';
 import { UnitTilesGrid, buildUnitResources } from '@/components/UnitTilesGrid';
@@ -480,27 +481,7 @@ export default function ApostilaPage() {
                       </h4>
                     )}
                     {section.content.trim() && (
-                      <div className="text-sm leading-[1.85] text-foreground/75 whitespace-pre-wrap">
-                        {section.content
-                          .trim()
-                          .split('\n')
-                          .filter((line) => !/^\s*(?:-{3,}|\*{3,}|_{3,})\s*$/.test(line))
-                          .map((line, li) => {
-                            const imgMatch = line.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
-                            if (imgMatch) {
-                              return (
-                                <img
-                                  key={li}
-                                  src={imgMatch[2]}
-                                  alt={imgMatch[1]}
-                                  className="max-w-full rounded-lg my-3 border border-border/30"
-                                  loading="lazy"
-                                />
-                              );
-                            }
-                            return <span key={li}>{cleanText(line)}{'\n'}</span>;
-                          })}
-                      </div>
+                      <ApostilaContentRenderer content={section.content} />
                     )}
                   </section>
                 ))}
