@@ -46,19 +46,30 @@ export function ScreenshotGuard() {
 
     const block = (e: Event) => e.preventDefault();
 
+    /**
+     * Permite copiar/recortar/menu de contexto dentro de elementos
+     * marcados explicitamente com `data-allow-copy` (ex.: blocos de código).
+     * Em qualquer outro lugar, mantém o bloqueio.
+     */
+    const allowInsideOptIn = (e: Event) => {
+      const target = e.target as HTMLElement | null;
+      if (target && target.closest?.('[data-allow-copy]')) return; // libera
+      e.preventDefault();
+    };
+
     document.addEventListener('visibilitychange', onVisibility);
     window.addEventListener('keydown', onKey);
-    document.addEventListener('copy', block);
-    document.addEventListener('cut', block);
-    document.addEventListener('contextmenu', block);
+    document.addEventListener('copy', allowInsideOptIn);
+    document.addEventListener('cut', allowInsideOptIn);
+    document.addEventListener('contextmenu', allowInsideOptIn);
     document.addEventListener('dragstart', block);
 
     return () => {
       document.removeEventListener('visibilitychange', onVisibility);
       window.removeEventListener('keydown', onKey);
-      document.removeEventListener('copy', block);
-      document.removeEventListener('cut', block);
-      document.removeEventListener('contextmenu', block);
+      document.removeEventListener('copy', allowInsideOptIn);
+      document.removeEventListener('cut', allowInsideOptIn);
+      document.removeEventListener('contextmenu', allowInsideOptIn);
       document.removeEventListener('dragstart', block);
     };
   }, []);
