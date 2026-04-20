@@ -1,64 +1,54 @@
 
 
-## Objetivo
-1. **Botão "Baixar PDF"** visível **só para Admin** na página da apostila — exporta toda a apostila (capa, sumário, seções com hierarquia, código, imagens, áudios listados como link).
-2. **Reformatar a leitura** da apostila com tipografia editorial mais bonita e organizada, inspirada em boas práticas de formatação web (hierarquia clara, ritmo vertical, blocos destacados, leitura confortável).
+## Diagnóstico
 
-## Parte 1 — Download PDF (Admin)
+Olhando a sua print + DOM + banco:
 
-**Onde:** `src/pages/ApostilaPage.tsx`, na barra de ações superior (ao lado de "Modo foco"), só renderiza se `isAdmin`.
+1. **A imagem ESTÁ sendo renderizada** (HTTP 200, 625KB). O que aparece como "vazio escuro" é a própria imagem — provavelmente um PNG com fundo escuro/transparente do Gemini/ChatGPT, que se funde com o fundo dark da apostila. Por isso parece "sumida".
+2. **A legenda "ChatGPT Image 19 de abr. de 2026, 19_07_14.png"** vem do `alt` do markdown (`![ChatGPT Image …](url)`), que o `ImageBlock` em `ApostilaContentRenderer.tsx` exibe como `<figcaption>`.
 
-**Como (client-side, sem edge function):**
-- Usar **`jspdf` + `html2canvas`** (libs leves, já comuns em projetos Vite). Gera PDF de alta qualidade direto no navegador.
-- Estratégia: criar um container off-screen com layout otimizado pra impressão (A4, fonte serifada, sem sidebars/chat), renderizar todas as seções via `ApostilaContentRenderer` numa versão "print", capturar com `html2canvas` por bloco e paginar com `jspdf`.
-- Capa com: título da apostila, disciplina, data de geração, "Decode Analytics Academy".
-- Rodapé com: número da página + "Desenvolvido por: Kaique Aurelio & Decode Analytics".
-- Imagens são embutidas (já são URLs públicas/assinadas). Áudios viram lista de links no fim (PDF não toca áudio).
-- Blocos de código mantém fonte monoespaçada e fundo cinza claro.
+## Solução
 
-**UX:** botão mostra spinner "Gerando PDF…", toast de sucesso/erro, salva como `{slug-do-titulo}.pdf`.
+Editar **`src/components/ApostilaContentRenderer.tsx`** → função `ImageBlock`:
 
-## Parte 2 — Reformatar leitura (mais bonito e organizado)
+**1. Remover legendas que parecem nome de arquivo**
+Detectar padrões tipo `*.png`, `*.jpg`, `Gemini_Generated_Image_…`, `ChatGPT Image …`, `IMG_1234`, `Screenshot …` e **não renderizar** o `<figcaption>` nesses casos. Só mostra legenda se o `alt` for texto descritivo real (sem extensão de arquivo, sem padrões de nome gerado).
 
-Foco em **tipografia editorial** + **hierarquia visual nítida** + **ritmo de leitura confortável**. Mudanças concentradas em `ApostilaPage.tsx` (cabeçalhos das seções) e `ApostilaContentRenderer.tsx` (parágrafos, blocos).
+**2. Garantir visibilidade da imagem em fundo escuro**
+- Embrulhar `<img>` em uma moldura com `bg-white` (ou `bg-zinc-50`) e `padding`, para que PNGs escuros/transparentes apareçam contra fundo claro.
+- Adicionar `min-height` e `loading="lazy"` + handler de erro mostrando placeholder visível ("Imagem indisponível") em vez de espaço vazio.
+- Manter `rounded-xl` e sombra elegante.
+- Largura confortável (`max-w-full sm:max-w-[90%]`), centralizada.
 
-**Tipografia & ritmo:**
-- Coluna de leitura limitada a `max-w-[68ch]` (ideal pra leitura — ~66 caracteres por linha).
-- Parágrafos com `text-[16px] sm:text-[17px] leading-[1.75] tracking-[0.01em]` e cor `text-foreground/85` (mais contraste sem cansar).
-- Primeiro parágrafo de cada seção com **letra capitular** (drop-cap) sutil opcional.
-- Espaço entre parágrafos `mb-5` (mais respiração).
+**3. Aplicar a mesma lógica no PDF (`src/lib/apostila-pdf.ts`)**
+Para a exportação ficar consistente: mesma moldura clara nas imagens e supressão de legendas com nome de arquivo.
 
-**Hierarquia de títulos refinada:**
-- **H1 (seção principal):** font-display, número da seção em cinza pequeno acima do título (ex: `01 — INTRODUÇÃO` em mono-uppercase tracking-wider), título em 28-32px, separador fino abaixo.
-- **H2:** 20-22px, sem barra lateral, com `border-b border-border/30 pb-2`.
-- **H3:** 16px semibold, cor `text-primary/90`.
+## Helper (lógica)
 
-**Blocos especiais (no `ApostilaContentRenderer`):**
-- **Citações (`> texto`)**: detectar e renderizar como `blockquote` com barra lateral colorida + itálico.
-- **Listas**: bullets coloridos (●) em `text-primary`, espaçamento entre itens.
-- **Destaques (`==texto==` ou `**Importante:**`)**: caixinha "callout" com ícone (Info/Lightbulb/AlertTriangle) e fundo `bg-primary/5 border-l-4 border-primary`.
-- **Definições** (linhas tipo `Termo: definição`): renderizar como `<dl>` estilizado.
-- **Código** e **imagens** já existem — refinar: imagens com legenda em itálico e sombra mais elegante; código com numeração de linhas opcional.
-- **Tabelas markdown** (`| col | col |`): suportar e renderizar com `<table>` estilizado (zebra rows, bordas sutis).
+```ts
+function isFilenameLike(alt: string): boolean {
+  if (!alt?.trim()) return true;
+  return (
+    /\.(png|jpe?g|gif|webp|svg|bmp)$/i.test(alt) ||           // extensão
+    /^(IMG[_\-]?\d|Screenshot|Captura|Gemini[_ ]Generated|ChatGPT Image)/i.test(alt) ||
+    /^[a-z0-9_\-]{8,}$/i.test(alt)                            // string aleatória sem espaços
+  );
+}
+```
 
-**Microelementos:**
-- Anchor link discreto (#) ao passar o mouse no título da seção (desktop).
-- Indicador "tempo de leitura desta seção" abaixo do H1 (calculado por palavras / 200 wpm).
-- Divisor decorativo `* * *` opcional entre subseções longas.
+Se `isFilenameLike(alt)` → não renderiza `<figcaption>`.
 
-## Arquivos a modificar
-- `src/pages/ApostilaPage.tsx` — botão PDF (admin only), refinar markup dos H1/H2/H3, ajustar `max-w` da coluna de conteúdo.
-- `src/components/ApostilaContentRenderer.tsx` — adicionar parsers/blocos para blockquote, callout, tabela, lista estilizada; ajustar tipografia base.
-- **Novo:** `src/lib/apostila-pdf.ts` — função `exportApostilaToPDF(apostila, sections)` usando jspdf + html2canvas.
-- `package.json` — adicionar `jspdf` e `html2canvas`.
+## Arquivos modificados
+- `src/components/ApostilaContentRenderer.tsx` — `ImageBlock`: moldura clara + supressão de caption de nome de arquivo + fallback de erro.
+- `src/lib/apostila-pdf.ts` — mesma melhoria visual para o PDF exportado.
 
 ## Não muda
-- Conteúdo salvo no banco (mesmo markdown).
-- Proteção anti-cópia (`ScreenshotGuard`) — botão de PDF é ação intencional do admin.
-- Layout 3 colunas em desktop / drawers em mobile.
-- Funcionamento do chat, anotações, flashcards, exercícios.
+- Conteúdo do banco (markdown intacto).
+- Distribuição de imagens entre seções (já funciona — você viu 4 imagens entre os parágrafos).
+- Nada do chat, anotações, exercícios, código copiável.
 
-## Resultado esperado
-- Admin vê botão "Baixar PDF" → gera arquivo bonito com toda a apostila pronta pra impressão/arquivamento.
-- Aluno e admin leem a apostila com **tipografia mais elegante**, hierarquia clara, blocos destacados (citação, callout, tabela) e ritmo de leitura confortável — mantendo todas as features atuais (código copiável, imagens inline, áudios inline).
+## Resultado
+- Sem mais "ChatGPT Image 19 de abr…" embaixo das imagens.
+- Imagens com fundo escuro passam a aparecer claramente sobre uma moldura branca arredondada.
+- Se algum dia o link de uma imagem quebrar, aparece um placeholder amigável em vez de buraco.
 
