@@ -249,8 +249,8 @@ serve(async (req) => {
       ai_summary,
     };
 
-    return new Response(JSON.stringify(bundle), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    return new Response(JSON.stringify({ ...bundle, provider: providerUsed }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json", "X-AI-Provider": providerUsed },
     });
   } catch (e) {
     console.error("pre-exam-review error:", e);
