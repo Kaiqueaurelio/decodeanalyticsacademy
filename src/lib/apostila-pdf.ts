@@ -172,6 +172,15 @@ function stripMd(s: string): string {
     .trim();
 }
 
+function isFilenameLikeAlt(alt: string): boolean {
+  const t = (alt || '').trim();
+  if (!t) return true;
+  if (/\.(png|jpe?g|gif|webp|svg|bmp|avif)$/i.test(t)) return true;
+  if (/^(IMG[_\-\s]?\d|Screenshot|Captura|Gemini[_ ]Generated|ChatGPT Image|image[_\-\s]?\d|photo[_\-\s]?\d|untitled)/i.test(t)) return true;
+  if (/^[a-z0-9_\-]{10,}$/i.test(t)) return true;
+  return false;
+}
+
 const AUDIO_RE = /\.(mp3|wav|ogg|m4a|aac|webm)(\?.*)?$/i;
 
 /** Mini-renderer markdown → HTML inline para o PDF. */
