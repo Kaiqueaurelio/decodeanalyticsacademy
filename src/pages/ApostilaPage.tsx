@@ -492,37 +492,47 @@ export default function ApostilaPage() {
                 })}
               />
 
-              {/* Rendered sections */}
-              <div id="conteudo-principal" className="space-y-10 scroll-mt-24">
-                {sections.map((section, idx) => (
-                  <section
-                    key={section.id}
-                    id={section.id}
-                    data-section-id={section.id}
-                    className="scroll-mt-24 animate-content-show"
-                    style={{ animationDelay: `${300 + idx * 80}ms` }}
-                  >
-                    {section.level === 1 && (
-                      <h2 className="font-display text-2xl sm:text-3xl mb-5 text-foreground relative">
-                        <span className="absolute -left-4 top-0 bottom-0 w-1 bg-primary/40 rounded-full hidden sm:block" />
-                        {cleanText(section.title)}
-                      </h2>
-                    )}
-                    {section.level === 2 && (
-                      <h3 className="font-display text-lg sm:text-xl font-semibold mb-4 text-foreground/90">
-                        {cleanText(section.title)}
-                      </h3>
-                    )}
-                    {section.level === 3 && (
-                      <h4 className="font-display text-base font-semibold mb-3 text-foreground/85">
-                        {cleanText(section.title)}
-                      </h4>
-                    )}
-                    {section.content.trim() && (
-                      <ApostilaContentRenderer content={section.content} />
-                    )}
-                  </section>
-                ))}
+              {/* Rendered sections — editorial layout */}
+              <div id="conteudo-principal" className="space-y-12 scroll-mt-24">
+                {sections.map((section, idx) => {
+                  const sectionNum = String(idx + 1).padStart(2, '0');
+                  const wordCount = (section.content || '').trim().split(/\s+/).filter(Boolean).length;
+                  const readMin = Math.max(1, Math.round(wordCount / 200));
+                  return (
+                    <section
+                      key={section.id}
+                      id={section.id}
+                      data-section-id={section.id}
+                      className="scroll-mt-24 animate-content-show"
+                      style={{ animationDelay: `${300 + idx * 80}ms` }}
+                    >
+                      {section.level === 1 && (
+                        <header className="mb-6">
+                          <div className="font-mono-label text-[10px] uppercase tracking-[0.22em] text-primary/80 mb-1.5">
+                            Seção {sectionNum} {wordCount > 50 && <span className="text-muted-foreground/70">· {readMin} min de leitura</span>}
+                          </div>
+                          <h2 className="font-display text-[28px] sm:text-[32px] leading-[1.2] text-foreground mb-3">
+                            {cleanText(section.title)}
+                          </h2>
+                          <div className="h-[2px] w-12 bg-primary rounded-full" />
+                        </header>
+                      )}
+                      {section.level === 2 && (
+                        <h3 className="font-display text-[20px] sm:text-[22px] mt-2 mb-4 text-foreground border-b border-border/40 pb-2">
+                          {cleanText(section.title)}
+                        </h3>
+                      )}
+                      {section.level === 3 && (
+                        <h4 className="font-display text-[16px] font-semibold mt-2 mb-3 text-primary/90">
+                          {cleanText(section.title)}
+                        </h4>
+                      )}
+                      {section.content.trim() && (
+                        <ApostilaContentRenderer content={section.content} />
+                      )}
+                    </section>
+                  );
+                })}
               </div>
 
               {/* Linked Materials */}
