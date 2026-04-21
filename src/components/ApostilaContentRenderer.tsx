@@ -64,9 +64,9 @@ const EXT_TO_LANG: Record<string, string> = {
   yaml: 'yaml', yml: 'yaml',
 };
 
-const CODE_START_RE = /^\s*(using\s+[\w.]+\s*;|import\s+[\w{}\s,*]+\s+from\s+['"]|import\s+[\w.]+\s*;?$|from\s+[\w.]+\s+import\s+|#include\s*[<"]|public\s+(?:static\s+)?(?:class|interface|enum|void|int|string|bool|float|double)\b|private\s+(?:static\s+)?(?:class|void|int|string|bool|float|double)\b|protected\s+(?:class|void|int|string)\b|class\s+[A-Z]\w*\s*[:({]?|function\s+\w+\s*\(|def\s+\w+\s*\(|const\s+\w+\s*=\s*(?:\(|function|async)|let\s+\w+\s*=|var\s+\w+\s*=|<\?php|<!DOCTYPE|<html\b|SELECT\s+.+\s+FROM\s+|CREATE\s+TABLE\s+)/i;
+const CODE_START_RE = /^\s*(using\s+[\w.]+\s*;|import\s+[\w{}\s,*]+\s+from\s+['"]|import\s+[\w.]+\s*;?$|from\s+[\w.]+\s+import\s+|#include\s*[<"]|namespace\s+[\w.]+|public\s+(?:static\s+)?(?:partial\s+)?(?:class|interface|enum|struct|void|int|string|bool|float|double|override|virtual|async|IEnumerator)\b|private\s+(?:static\s+)?(?:class|void|int|string|bool|float|double|readonly)\b|protected\s+(?:class|void|int|string|override)\b|internal\s+(?:class|void|sealed)\b|class\s+[A-Z]\w*\s*[:({]?|interface\s+I?[A-Z]\w*|function\s+\w+\s*\(|def\s+\w+\s*\(|const\s+\w+\s*=\s*(?:\(|function|async)|let\s+\w+\s*=|var\s+\w+\s*=|<\?php|<!DOCTYPE|<html\b|SELECT\s+.+\s+FROM\s+|CREATE\s+TABLE\s+|if\s*\([^)]+\)\s*\{?\s*$|for\s*\(.+;.+;.+\)|while\s*\([^)]+\)|switch\s*\([^)]+\)|[\w.]+\s*=\s*new\s+[A-Z]\w*\s*\(|@[A-Z]\w+\b|\[Serializable\]|\[SerializeField\]|void\s+(?:Start|Update|Awake|OnEnable|OnDisable|FixedUpdate|LateUpdate)\s*\(\s*\))/i;
 
-const CODE_LINE_RE = /^(\s{2,}|\t)|[{};]\s*$|^\s*(?:\/\/|\/\*|\*\s|#\s|--\s)/;
+const CODE_LINE_RE = /^(\s{2,}|\t)|[{};]\s*$|=>|^\s*(?:\/\/|\/\*|\*\s|#\s|--\s)|^\s*[\w.]+\s*\([^)]*\)\s*;?\s*$/;
 
 /** Detecta a linguagem a partir das primeiras linhas. */
 function guessLang(code: string): string {
@@ -172,7 +172,8 @@ function wrapInferredCodeBlocks(raw: string): string {
     // Remove linhas em branco no final
     while (codeLines.length && !codeLines[codeLines.length - 1].trim()) codeLines.pop();
 
-    if (codeLines.length >= 2) {
+    const hasStrongCodeSignals = codeLines.some((l) => /[{};]|=>|\(\s*\)\s*$/.test(l));
+    if (codeLines.length >= 2 || (codeLines.length >= 1 && hasStrongCodeSignals)) {
       const code = codeLines.join('\n');
       const lang = forcedLang || guessLang(code);
       out.push('```' + lang);
