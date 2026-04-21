@@ -20,8 +20,9 @@ import {
   LayoutDashboard, CheckCircle, TrendingUp, Upload, BarChart3, Clock,
   Link as LinkIcon, Loader2, AlertCircle, Edit, Download, File, Image, Video, Music, FileSpreadsheet, Presentation,
   Users, ShieldBan, ShieldCheck, Search, Menu, X, Activity, GraduationCap, FolderOpen, Settings, RefreshCw,
-  Sun, Moon, FileUp, Sparkles, Wand2, Megaphone, Combine, Calendar as CalIcon, MessageSquareQuote, Link2, FileDown
+  Sun, Moon, FileUp, Sparkles, Wand2, Megaphone, Combine, Calendar as CalIcon, MessageSquareQuote, Link2, FileDown, MoreHorizontal, Paperclip
 } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useTheme } from '@/hooks/useTheme';
 import { toast } from 'sonner';
