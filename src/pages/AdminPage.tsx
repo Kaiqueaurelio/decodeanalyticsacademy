@@ -1368,6 +1368,20 @@ export default function AdminPage() {
                     onOpenChange={(v) => setShowMaterialsFor(v ? a.id : null)}
                   />
                 ))}
+                {showAppendFor && (() => {
+                  const a = apostilas.find(x => x.id === showAppendFor);
+                  if (!a) return null;
+                  return (
+                    <AppendLinkDialog
+                      apostilaId={a.id}
+                      apostilaTitle={a.title}
+                      currentContent={a.content || ''}
+                      onDone={loadAll}
+                      open
+                      onOpenChange={(v) => { if (!v) setShowAppendFor(null); }}
+                    />
+                  );
+                })()}
 
                 {/* Exercise Dialog */}
                 {apostilas.map(a => (
