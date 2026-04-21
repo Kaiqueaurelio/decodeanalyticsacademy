@@ -172,7 +172,8 @@ function wrapInferredCodeBlocks(raw: string): string {
     // Remove linhas em branco no final
     while (codeLines.length && !codeLines[codeLines.length - 1].trim()) codeLines.pop();
 
-    if (codeLines.length >= 2) {
+    const hasStrongCodeSignals = codeLines.some((l) => /[{};]|=>|\(\s*\)\s*$/.test(l));
+    if (codeLines.length >= 2 || (codeLines.length >= 1 && hasStrongCodeSignals)) {
       const code = codeLines.join('\n');
       const lang = forcedLang || guessLang(code);
       out.push('```' + lang);
