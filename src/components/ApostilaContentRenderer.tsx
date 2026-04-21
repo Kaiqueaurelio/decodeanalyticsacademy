@@ -407,9 +407,14 @@ interface Props {
  */
 export function ApostilaContentRenderer({ content }: Props) {
   const blocks = useMemo(() => parseBlocks(content), [content]);
+  // Identifica o índice do primeiro parágrafo "real" (para aplicar drop-cap)
+  const firstParagraphIdx = useMemo(
+    () => blocks.findIndex((b) => b.type === 'paragraph' && b.content.trim().length > 80),
+    [blocks]
+  );
 
   return (
-    <div className="max-w-[68ch] text-[15px] sm:text-[16px] leading-[1.78] tracking-[0.005em] text-foreground/85">
+    <article className="apostila-prose max-w-[70ch] mx-auto text-[15.5px] sm:text-[16.5px] leading-[1.85] tracking-[0.005em] text-foreground/90">
       {blocks.map((b, i) => {
         switch (b.type) {
           case 'code': return <CodeBlock key={i} lang={b.lang} code={b.code} />;
@@ -421,16 +426,29 @@ export function ApostilaContentRenderer({ content }: Props) {
           case 'table': return <TableBlock key={i} header={b.header} rows={b.rows} />;
           case 'heading': return <HeadingBlock key={i} level={b.level} content={b.content} />;
           case 'divider':
-            return <div key={i} className="my-8 flex items-center justify-center gap-3 text-muted-foreground/50 text-sm tracking-[0.4em]">* * *</div>;
-          case 'paragraph':
-          default:
             return (
-              <p key={i} className="whitespace-pre-wrap mb-5 last:mb-0">
+              <div key={i} className="my-10 flex items-center justify-center gap-2" aria-hidden>
+                <span className="h-px w-12 bg-gradient-to-r from-transparent to-border" />
+                <span className="text-primary/60 text-xs tracking-[0.5em]">◆</span>
+                <span className="h-px w-12 bg-gradient-to-l from-transparent to-border" />
+              </div>
+            );
+          case 'paragraph':
+          default: {
+            const isFirst = i === firstParagraphIdx;
+            return (
+              <p
+                key={i}
+                className={`mb-6 last:mb-0 text-foreground/85 ${
+                  isFirst ? 'first-letter:font-display first-letter:text-[3.4em] first-letter:font-bold first-letter:text-primary first-letter:float-left first-letter:mr-2 first-letter:leading-[0.9] first-letter:mt-1' : ''
+                }`}
+              >
                 {cleanInlineText(b.content)}
               </p>
             );
+          }
         }
       })}
-    </div>
+    </article>
   );
 }
