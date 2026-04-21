@@ -376,15 +376,24 @@ function HeadingBlock({ level, content }: { level: number; content: string }) {
   const text = cleanInlineText(content);
   if (level <= 2) {
     return (
-      <h3 className="font-display text-[20px] sm:text-[22px] mt-8 mb-3 text-foreground border-b border-border/40 pb-2">
-        {text}
+      <h3 className="font-display text-[22px] sm:text-[26px] font-bold mt-12 mb-4 text-foreground tracking-tight leading-[1.25] flex items-center gap-3">
+        <span className="inline-block w-1 h-7 bg-gradient-to-b from-primary to-primary/40 rounded-full shrink-0" />
+        <span className="flex-1">{text}</span>
       </h3>
     );
   }
   if (level === 3) {
-    return <h4 className="font-display text-[16px] font-semibold mt-6 mb-2 text-primary/90">{text}</h4>;
+    return (
+      <h4 className="font-display text-[17px] sm:text-[18px] font-semibold mt-8 mb-3 text-primary tracking-tight leading-snug">
+        {text}
+      </h4>
+    );
   }
-  return <h5 className="font-display text-[15px] font-semibold mt-5 mb-2 text-foreground/90">{text}</h5>;
+  return (
+    <h5 className="font-display text-[15px] sm:text-[16px] font-semibold mt-6 mb-2 text-foreground/90 uppercase tracking-wider text-[13px]">
+      {text}
+    </h5>
+  );
 }
 
 interface Props {
@@ -398,9 +407,14 @@ interface Props {
  */
 export function ApostilaContentRenderer({ content }: Props) {
   const blocks = useMemo(() => parseBlocks(content), [content]);
+  // Identifica o índice do primeiro parágrafo "real" (para aplicar drop-cap)
+  const firstParagraphIdx = useMemo(
+    () => blocks.findIndex((b) => b.type === 'paragraph' && b.content.trim().length > 80),
+    [blocks]
+  );
 
   return (
-    <div className="max-w-[68ch] text-[15px] sm:text-[16px] leading-[1.78] tracking-[0.005em] text-foreground/85">
+    <article className="apostila-prose max-w-[70ch] mx-auto text-[15.5px] sm:text-[16.5px] leading-[1.85] tracking-[0.005em] text-foreground/90">
       {blocks.map((b, i) => {
         switch (b.type) {
           case 'code': return <CodeBlock key={i} lang={b.lang} code={b.code} />;
@@ -412,16 +426,29 @@ export function ApostilaContentRenderer({ content }: Props) {
           case 'table': return <TableBlock key={i} header={b.header} rows={b.rows} />;
           case 'heading': return <HeadingBlock key={i} level={b.level} content={b.content} />;
           case 'divider':
-            return <div key={i} className="my-8 flex items-center justify-center gap-3 text-muted-foreground/50 text-sm tracking-[0.4em]">* * *</div>;
-          case 'paragraph':
-          default:
             return (
-              <p key={i} className="whitespace-pre-wrap mb-5 last:mb-0">
+              <div key={i} className="my-10 flex items-center justify-center gap-2" aria-hidden>
+                <span className="h-px w-12 bg-gradient-to-r from-transparent to-border" />
+                <span className="text-primary/60 text-xs tracking-[0.5em]">◆</span>
+                <span className="h-px w-12 bg-gradient-to-l from-transparent to-border" />
+              </div>
+            );
+          case 'paragraph':
+          default: {
+            const isFirst = i === firstParagraphIdx;
+            return (
+              <p
+                key={i}
+                className={`mb-6 last:mb-0 text-foreground/85 ${
+                  isFirst ? 'first-letter:font-display first-letter:text-[3.4em] first-letter:font-bold first-letter:text-primary first-letter:float-left first-letter:mr-2 first-letter:leading-[0.9] first-letter:mt-1' : ''
+                }`}
+              >
                 {cleanInlineText(b.content)}
               </p>
             );
+          }
         }
       })}
-    </div>
+    </article>
   );
 }
