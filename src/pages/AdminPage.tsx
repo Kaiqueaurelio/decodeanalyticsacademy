@@ -1294,6 +1294,9 @@ export default function AdminPage() {
                                 <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => setShowExerciseDialog(a.id)} title="Ver exercícios">
                                   <PenLine className="h-3.5 w-3.5" />
                                 </Button>
+                                <Button size="icon" variant="ghost" className="h-8 w-8 text-primary" onClick={() => downloadApostilaPdf(a)} title="Baixar apostila em PDF">
+                                  <FileDown className="h-3.5 w-3.5" />
+                                </Button>
                                 <Button size="icon" variant="ghost" className={`h-8 w-8 ${a.published ? 'text-destructive' : 'text-[hsl(var(--success))]'}`} onClick={() => togglePublish(a.id, a.published)}>
                                   {a.published ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
                                 </Button>
