@@ -13,12 +13,16 @@ interface AppendLinkDialogProps {
   currentContent: string;
   trigger?: React.ReactNode;
   onDone?: () => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 type RowResult = { url: string; title: string; status: 'ok' | 'error'; error?: string; exercises?: number };
 
-export function AppendLinkDialog({ apostilaId, apostilaTitle, currentContent, trigger, onDone }: AppendLinkDialogProps) {
-  const [open, setOpen] = useState(false);
+export function AppendLinkDialog({ apostilaId, apostilaTitle, currentContent, trigger, onDone, open: openProp, onOpenChange }: AppendLinkDialogProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = openProp ?? internalOpen;
+  const setOpen = (v: boolean) => { onOpenChange ? onOpenChange(v) : setInternalOpen(v); };
   const [urls, setUrls] = useState('');
   const [running, setRunning] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
