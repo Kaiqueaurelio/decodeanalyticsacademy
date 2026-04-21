@@ -111,9 +111,11 @@ export function ApostilaMaterialsManager({ apostilaId, apostilaTitle, open: open
 
   return (
     <>
-      <Button size="sm" variant="outline" className="text-xs gap-1.5" onClick={() => setOpen(true)}>
-        <Paperclip className="h-3 w-3" /> Materiais ({linked.length})
-      </Button>
+      {!hideTrigger && (
+        <Button size="sm" variant="outline" className="text-xs gap-1.5" onClick={() => setOpen(true)}>
+          <Paperclip className="h-3 w-3" /> Materiais ({linked.length})
+        </Button>
+      )}
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-lg max-h-[80vh] flex flex-col overflow-hidden">
