@@ -329,7 +329,7 @@ export default function ApostilaPage() {
 
       <main className={`relative z-10 ${focusMode ? 'pt-16' : ''}`}>
         {/* Navigation bar */}
-        <div className={`container max-w-7xl px-4 ${focusMode ? 'py-2' : 'py-4'} animate-content-show`}>
+        <div className={`w-full max-w-7xl mx-auto px-3 sm:px-4 ${focusMode ? 'py-2' : 'py-4'} animate-content-show`}>
           <div className="flex items-center justify-between">
             <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')} className="text-xs gap-1.5 hover-lift">
               <ArrowLeft className="h-3.5 w-3.5" /> Voltar ao Dashboard
