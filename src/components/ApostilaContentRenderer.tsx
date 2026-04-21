@@ -1,7 +1,8 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Check, Copy, Volume2, Info, Lightbulb, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { AppImage } from '@/components/ui/app-image';
+import { highlightCode } from '@/lib/shiki-highlighter';
 
 /**
  * Limpa marcadores markdown inline (negrito, itálico, código inline, links etc.)
