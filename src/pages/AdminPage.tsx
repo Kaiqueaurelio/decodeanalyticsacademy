@@ -751,31 +751,6 @@ export default function AdminPage() {
     }
   };
 
-                {/* Mobile-controlled instances of secondary dialogs (triggered by kebab menu) */}
-                {apostilas.map(a => (
-                  <ApostilaMaterialsManager
-                    key={`mat-${a.id}`}
-                    apostilaId={a.id}
-                    apostilaTitle={a.title}
-                    hideTrigger
-                    open={showMaterialsFor === a.id}
-                    onOpenChange={(v) => setShowMaterialsFor(v ? a.id : null)}
-                  />
-                ))}
-                {showAppendFor && (() => {
-                  const a = apostilas.find(x => x.id === showAppendFor);
-                  if (!a) return null;
-                  return (
-                    <AppendLinkDialog
-                      apostilaId={a.id}
-                      apostilaTitle={a.title}
-                      currentContent={a.content || ''}
-                      onDone={loadAll}
-                      open
-                      onOpenChange={(v) => { if (!v) setShowAppendFor(null); }}
-                    />
-                  );
-                })()}
 
   const deleteApostila = async (id: string) => {
     if (!confirm('Excluir esta apostila e seus exercícios?')) return;
