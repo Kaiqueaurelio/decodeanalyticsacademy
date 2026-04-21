@@ -249,7 +249,7 @@ function OverviewTab({ apostilas, exercises, allAnswers, materials, users, setTa
     return (
       <div className="space-y-6">
         <div className="skeleton-shimmer h-8 w-40 rounded" />
-        <div className="grid gap-4 grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 sm:gap-4 grid-cols-1 xs:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3, 4, 5, 6].map(i => (
             <div key={i} className="skeleton-shimmer h-28 rounded-xl" />
           ))}
@@ -271,7 +271,7 @@ function OverviewTab({ apostilas, exercises, allAnswers, materials, users, setTa
       </div>
 
       {/* Stats Grid */}
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-3 sm:gap-4 grid-cols-1 xs:grid-cols-2 lg:grid-cols-3">
         {statCards.map((s, i) => (
           <motion.div
             key={s.label}
@@ -896,7 +896,7 @@ export default function AdminPage() {
         {/* Main Content */}
         <div className="flex-1 flex flex-col min-w-0">
           {/* Top Bar */}
-          <header className="sticky top-0 z-30 bg-card/95 backdrop-blur-xl border-b border-border h-14 flex items-center px-4 lg:px-6 gap-3">
+          <header className="sticky top-0 z-30 bg-card/95 backdrop-blur-xl border-b border-border h-14 flex items-center px-3 sm:px-4 lg:px-6 gap-2 sm:gap-3">
             <Button size="icon" variant="ghost" className="h-9 w-9 shrink-0" onClick={() => navigate('/dashboard')}>
               <ArrowLeft className="h-4 w-4" />
             </Button>
@@ -2162,7 +2162,7 @@ export default function AdminPage() {
             {tab === 'users' && (
               <div className="space-y-6">
                 {/* Stats */}
-                <div className="grid gap-4 grid-cols-3">
+                <div className="grid gap-3 grid-cols-3">
                   <Card>
                     <CardContent className="p-4 text-center">
                       <p className="text-2xl font-bold text-foreground">{users.length}</p>
