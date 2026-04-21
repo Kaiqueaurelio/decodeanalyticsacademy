@@ -15,6 +15,9 @@ import { toast } from 'sonner';
 interface Props {
   apostilaId: string;
   apostilaTitle: string;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  hideTrigger?: boolean;
 }
 
 interface LinkedMaterial {
