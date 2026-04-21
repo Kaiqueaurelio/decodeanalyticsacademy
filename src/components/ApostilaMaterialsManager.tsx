@@ -15,6 +15,9 @@ import { toast } from 'sonner';
 interface Props {
   apostilaId: string;
   apostilaTitle: string;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  hideTrigger?: boolean;
 }
 
 interface LinkedMaterial {
@@ -35,8 +38,10 @@ const TYPE_ICONS: Record<string, any> = {
   link: LinkIcon, gif: Image, other: File, exam: FileText,
 };
 
-export function ApostilaMaterialsManager({ apostilaId, apostilaTitle }: Props) {
-  const [open, setOpen] = useState(false);
+export function ApostilaMaterialsManager({ apostilaId, apostilaTitle, open: openProp, onOpenChange, hideTrigger }: Props) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = openProp ?? internalOpen;
+  const setOpen = (v: boolean) => { onOpenChange ? onOpenChange(v) : setInternalOpen(v); };
   const [linked, setLinked] = useState<LinkedMaterial[]>([]);
   const [allMaterials, setAllMaterials] = useState<{ id: string; title: string; type: string; file_url: string | null; description: string | null }[]>([]);
   const [search, setSearch] = useState('');
@@ -106,9 +111,11 @@ export function ApostilaMaterialsManager({ apostilaId, apostilaTitle }: Props) {
 
   return (
     <>
-      <Button size="sm" variant="outline" className="text-xs gap-1.5" onClick={() => setOpen(true)}>
-        <Paperclip className="h-3 w-3" /> Materiais ({linked.length})
-      </Button>
+      {!hideTrigger && (
+        <Button size="sm" variant="outline" className="text-xs gap-1.5" onClick={() => setOpen(true)}>
+          <Paperclip className="h-3 w-3" /> Materiais ({linked.length})
+        </Button>
+      )}
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-lg max-h-[80vh] flex flex-col overflow-hidden">

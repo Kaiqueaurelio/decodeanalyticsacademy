@@ -13,12 +13,16 @@ interface AppendLinkDialogProps {
   currentContent: string;
   trigger?: React.ReactNode;
   onDone?: () => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 type RowResult = { url: string; title: string; status: 'ok' | 'error'; error?: string; exercises?: number };
 
-export function AppendLinkDialog({ apostilaId, apostilaTitle, currentContent, trigger, onDone }: AppendLinkDialogProps) {
-  const [open, setOpen] = useState(false);
+export function AppendLinkDialog({ apostilaId, apostilaTitle, currentContent, trigger, onDone, open: openProp, onOpenChange }: AppendLinkDialogProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = openProp ?? internalOpen;
+  const setOpen = (v: boolean) => { onOpenChange ? onOpenChange(v) : setInternalOpen(v); };
   const [urls, setUrls] = useState('');
   const [running, setRunning] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
@@ -124,13 +128,15 @@ export function AppendLinkDialog({ apostilaId, apostilaTitle, currentContent, tr
 
   return (
     <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v && !running) reset(); }}>
-      <DialogTrigger asChild>
-        {trigger ?? (
-          <Button size="sm" variant="outline" className="gap-1.5">
-            <Link2 className="h-3.5 w-3.5" /> Anexar link
-          </Button>
-        )}
-      </DialogTrigger>
+      {openProp === undefined && (
+        <DialogTrigger asChild>
+          {trigger ?? (
+            <Button size="sm" variant="outline" className="gap-1.5">
+              <Link2 className="h-3.5 w-3.5" /> Anexar link
+            </Button>
+          )}
+        </DialogTrigger>
+      )}
       <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-base flex items-center gap-2">

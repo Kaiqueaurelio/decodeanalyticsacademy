@@ -20,8 +20,9 @@ import {
   LayoutDashboard, CheckCircle, TrendingUp, Upload, BarChart3, Clock,
   Link as LinkIcon, Loader2, AlertCircle, Edit, Download, File, Image, Video, Music, FileSpreadsheet, Presentation,
   Users, ShieldBan, ShieldCheck, Search, Menu, X, Activity, GraduationCap, FolderOpen, Settings, RefreshCw,
-  Sun, Moon, FileUp, Sparkles, Wand2, Megaphone, Combine, Calendar as CalIcon, MessageSquareQuote, Link2, FileDown
+  Sun, Moon, FileUp, Sparkles, Wand2, Megaphone, Combine, Calendar as CalIcon, MessageSquareQuote, Link2, FileDown, MoreHorizontal, Paperclip
 } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useTheme } from '@/hooks/useTheme';
 import { toast } from 'sonner';
@@ -464,6 +465,8 @@ export default function AdminPage() {
 
   // Apostila dialogs
   const [showExerciseDialog, setShowExerciseDialog] = useState<string | null>(null);
+  const [showMaterialsFor, setShowMaterialsFor] = useState<string | null>(null);
+  const [showAppendFor, setShowAppendFor] = useState<string | null>(null);
   const [selectedApostila, setSelectedApostila] = useState('');
   const [showManualForm, setShowManualForm] = useState(false);
   const [editingApostila, setEditingApostila] = useState<Apostila | null>(null);
@@ -1280,34 +1283,65 @@ export default function AdminPage() {
                                   </div>
                                 </div>
                               </div>
-                              <div className="flex items-center gap-1 flex-wrap sm:flex-nowrap shrink-0 justify-end pl-6 sm:pl-0">
-                                <ApostilaMaterialsManager apostilaId={a.id} apostilaTitle={a.title} />
-                                <AppendLinkDialog
-                                  apostilaId={a.id}
-                                  apostilaTitle={a.title}
-                                  currentContent={a.content || ''}
-                                  onDone={loadAll}
-                                  trigger={
-                                    <Button size="icon" variant="ghost" className="h-8 w-8" title="Anexar link à apostila">
-                                      <Link2 className="h-3.5 w-3.5" />
-                                    </Button>
-                                  }
-                                />
-                                <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => setShowExerciseDialog(a.id)} title="Ver exercícios">
-                                  <PenLine className="h-3.5 w-3.5" />
-                                </Button>
+                              <div className="flex items-center gap-1 sm:flex-nowrap shrink-0 justify-end pl-6 sm:pl-0">
+                                {/* Secondary actions — desktop only */}
+                                <div className="hidden sm:flex items-center gap-1">
+                                  <ApostilaMaterialsManager apostilaId={a.id} apostilaTitle={a.title} />
+                                  <AppendLinkDialog
+                                    apostilaId={a.id}
+                                    apostilaTitle={a.title}
+                                    currentContent={a.content || ''}
+                                    onDone={loadAll}
+                                    trigger={
+                                      <Button size="icon" variant="ghost" className="h-8 w-8" title="Anexar link à apostila">
+                                        <Link2 className="h-3.5 w-3.5" />
+                                      </Button>
+                                    }
+                                  />
+                                  <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => setShowExerciseDialog(a.id)} title="Ver exercícios">
+                                    <PenLine className="h-3.5 w-3.5" />
+                                  </Button>
+                                </div>
+
+                                {/* Primary actions — always visible */}
                                 <Button size="icon" variant="ghost" className="h-8 w-8 text-primary" onClick={() => downloadApostilaPdf(a)} title="Baixar apostila em PDF">
                                   <FileDown className="h-3.5 w-3.5" />
                                 </Button>
                                 <Button size="icon" variant="ghost" className={`h-8 w-8 ${a.published ? 'text-destructive' : 'text-[hsl(var(--success))]'}`} onClick={() => togglePublish(a.id, a.published)} title={a.published ? 'Ocultar' : 'Publicar'}>
                                   {a.published ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
                                 </Button>
-                                <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => { setEditingApostila(a); setEditTitle(a.title); setEditContent(a.content || ''); setEditCategory(a.category); }} title="Editar">
+                                <Button size="icon" variant="ghost" className="hidden sm:inline-flex h-8 w-8" onClick={() => { setEditingApostila(a); setEditTitle(a.title); setEditContent(a.content || ''); setEditCategory(a.category); }} title="Editar">
                                   <Edit className="h-3.5 w-3.5" />
                                 </Button>
                                 <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => deleteApostila(a.id)} title="Excluir">
                                   <Trash2 className="h-3.5 w-3.5" />
                                 </Button>
+
+                                {/* Kebab — mobile only, agrupa secundárias + editar */}
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button size="icon" variant="ghost" className="sm:hidden h-8 w-8" title="Mais ações">
+                                      <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end" className="w-52">
+                                    <DropdownMenuLabel className="text-xs">Mais ações</DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem onClick={() => setShowMaterialsFor(a.id)}>
+                                      <Paperclip className="h-3.5 w-3.5 mr-2" /> Materiais vinculados
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => setShowAppendFor(a.id)}>
+                                      <Link2 className="h-3.5 w-3.5 mr-2" /> Anexar link
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => setShowExerciseDialog(a.id)}>
+                                      <PenLine className="h-3.5 w-3.5 mr-2" /> Ver exercícios
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem onClick={() => { setEditingApostila(a); setEditTitle(a.title); setEditContent(a.content || ''); setEditCategory(a.category); }}>
+                                      <Edit className="h-3.5 w-3.5 mr-2" /> Editar conteúdo
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
                               </div>
                             </div>
                           </CardContent>
@@ -1322,6 +1356,32 @@ export default function AdminPage() {
                     )}
                   </div>
                 </div>
+
+                {/* Mobile-controlled secondary dialogs (triggered by kebab menu) */}
+                {apostilas.map(a => (
+                  <ApostilaMaterialsManager
+                    key={`mat-${a.id}`}
+                    apostilaId={a.id}
+                    apostilaTitle={a.title}
+                    hideTrigger
+                    open={showMaterialsFor === a.id}
+                    onOpenChange={(v) => setShowMaterialsFor(v ? a.id : null)}
+                  />
+                ))}
+                {showAppendFor && (() => {
+                  const a = apostilas.find(x => x.id === showAppendFor);
+                  if (!a) return null;
+                  return (
+                    <AppendLinkDialog
+                      apostilaId={a.id}
+                      apostilaTitle={a.title}
+                      currentContent={a.content || ''}
+                      onDone={loadAll}
+                      open
+                      onOpenChange={(v) => { if (!v) setShowAppendFor(null); }}
+                    />
+                  );
+                })()}
 
                 {/* Exercise Dialog */}
                 {apostilas.map(a => (
