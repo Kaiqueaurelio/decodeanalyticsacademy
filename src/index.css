@@ -779,3 +779,26 @@ html {
 }
 
 /* Landing page is dark-only by design (light mode toggle removed). */
+
+/* ─── Shiki syntax highlighting (github-dark-dimmed) ─── */
+.shiki-wrapper pre.shiki {
+  margin: 0;
+  padding: 0.75rem 1rem;
+  background-color: transparent !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  white-space: pre;
+  tab-size: 2;
+}
+.shiki-wrapper pre.shiki code {
+  display: block;
+  background: transparent;
+  font-size: inherit;
+  line-height: 1.65;
+}
+.shiki-wrapper .line {
+  display: block;
+  min-height: 1em;
+}
+@media (min-width: 640px) {
+  .shiki-wrapper pre.shiki { padding: 1rem 1.25rem; }
+}
