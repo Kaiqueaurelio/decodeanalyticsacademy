@@ -1260,25 +1260,27 @@ export default function AdminPage() {
                       const exCount = exercises[a.id]?.length || 0;
                       return (
                         <Card key={a.id} className="hover-lift card-alternate">
-                          <CardContent className="p-5">
-                            <div className="flex items-center gap-3">
-                              <span className={`h-3 w-3 rounded-full shrink-0 ${a.published ? 'bg-[hsl(var(--success))]' : 'bg-muted-foreground'}`} />
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  <h4 className="font-medium text-sm truncate">{a.title}</h4>
-                                  <Badge variant={a.published ? 'default' : 'secondary'} className="text-[10px] shrink-0">
-                                    {a.published ? 'Publicada' : 'Oculta'}
-                                  </Badge>
-                                </div>
-                                <div className="flex items-center gap-2 mt-1 text-[11px] text-muted-foreground">
-                                  <span>{a.category}</span>
-                                  <span>·</span>
-                                  <span>{exCount} exercícios</span>
-                                  <span>·</span>
-                                  <span>{new Date(a.created_at).toLocaleDateString('pt-BR')}</span>
+                          <CardContent className="p-3 sm:p-5">
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-3 min-w-0">
+                              <div className="flex items-start sm:items-center gap-3 min-w-0 flex-1">
+                                <span className={`h-3 w-3 rounded-full shrink-0 mt-1.5 sm:mt-0 ${a.published ? 'bg-[hsl(var(--success))]' : 'bg-muted-foreground'}`} />
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-start gap-2 flex-wrap">
+                                    <h4 className="font-medium text-sm break-words leading-snug min-w-0 flex-1">{a.title}</h4>
+                                    <Badge variant={a.published ? 'default' : 'secondary'} className="text-[10px] shrink-0">
+                                      {a.published ? 'Publicada' : 'Oculta'}
+                                    </Badge>
+                                  </div>
+                                  <div className="flex items-center gap-1.5 mt-1 text-[11px] text-muted-foreground flex-wrap">
+                                    <span className="truncate max-w-[140px]">{a.category}</span>
+                                    <span>·</span>
+                                    <span className="whitespace-nowrap">{exCount} ex.</span>
+                                    <span>·</span>
+                                    <span className="whitespace-nowrap">{new Date(a.created_at).toLocaleDateString('pt-BR')}</span>
+                                  </div>
                                 </div>
                               </div>
-                              <div className="flex items-center gap-1 shrink-0">
+                              <div className="flex items-center gap-1 flex-wrap sm:flex-nowrap shrink-0 justify-end pl-6 sm:pl-0">
                                 <ApostilaMaterialsManager apostilaId={a.id} apostilaTitle={a.title} />
                                 <AppendLinkDialog
                                   apostilaId={a.id}
@@ -1297,13 +1299,13 @@ export default function AdminPage() {
                                 <Button size="icon" variant="ghost" className="h-8 w-8 text-primary" onClick={() => downloadApostilaPdf(a)} title="Baixar apostila em PDF">
                                   <FileDown className="h-3.5 w-3.5" />
                                 </Button>
-                                <Button size="icon" variant="ghost" className={`h-8 w-8 ${a.published ? 'text-destructive' : 'text-[hsl(var(--success))]'}`} onClick={() => togglePublish(a.id, a.published)}>
+                                <Button size="icon" variant="ghost" className={`h-8 w-8 ${a.published ? 'text-destructive' : 'text-[hsl(var(--success))]'}`} onClick={() => togglePublish(a.id, a.published)} title={a.published ? 'Ocultar' : 'Publicar'}>
                                   {a.published ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
                                 </Button>
-                                <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => { setEditingApostila(a); setEditTitle(a.title); setEditContent(a.content || ''); setEditCategory(a.category); }}>
+                                <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => { setEditingApostila(a); setEditTitle(a.title); setEditContent(a.content || ''); setEditCategory(a.category); }} title="Editar">
                                   <Edit className="h-3.5 w-3.5" />
                                 </Button>
-                                <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => deleteApostila(a.id)}>
+                                <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => deleteApostila(a.id)} title="Excluir">
                                   <Trash2 className="h-3.5 w-3.5" />
                                 </Button>
                               </div>
