@@ -45,10 +45,154 @@ function calloutKind(label: string): { kind: 'info' | 'tip' | 'warning'; title: 
   return { kind: 'info', title: label };
 }
 
+/* ============================================================
+ * Detecção de blocos de código SEM cercas markdown.
+ * Muitos materiais (ex.: APS) trazem snippets de C#/Unity, Python,
+ * JS, SQL etc. apenas como texto. Aqui inferimos o início/fim
+ * desses blocos por heurística e os envolvemos em ``` para que
+ * o parser principal trate como bloco de código copiável.
+ * ============================================================ */
+
+const FILENAME_HEADER_RE = /^\s*(?:\d+[.)]\s*)?([A-Za-z_][\w-]*)\.(cs|js|jsx|ts|tsx|py|java|cpp|c|h|hpp|html?|css|scss|sql|php|rb|go|rs|kt|swift|sh|bash|json|xml|yaml|yml)\b/i;
+
+const EXT_TO_LANG: Record<string, string> = {
+  cs: 'csharp', js: 'javascript', jsx: 'jsx', ts: 'typescript', tsx: 'tsx',
+  py: 'python', java: 'java', cpp: 'cpp', c: 'c', h: 'c', hpp: 'cpp',
+  html: 'html', htm: 'html', css: 'css', scss: 'scss', sql: 'sql',
+  php: 'php', rb: 'ruby', go: 'go', rs: 'rust', kt: 'kotlin',
+  swift: 'swift', sh: 'bash', bash: 'bash', json: 'json', xml: 'xml',
+  yaml: 'yaml', yml: 'yaml',
+};
+
+const CODE_START_RE = /^\s*(using\s+[\w.]+\s*;|import\s+[\w{}\s,*]+\s+from\s+['"]|import\s+[\w.]+\s*;?$|from\s+[\w.]+\s+import\s+|#include\s*[<"]|public\s+(?:static\s+)?(?:class|interface|enum|void|int|string|bool|float|double)\b|private\s+(?:static\s+)?(?:class|void|int|string|bool|float|double)\b|protected\s+(?:class|void|int|string)\b|class\s+[A-Z]\w*\s*[:({]?|function\s+\w+\s*\(|def\s+\w+\s*\(|const\s+\w+\s*=\s*(?:\(|function|async)|let\s+\w+\s*=|var\s+\w+\s*=|<\?php|<!DOCTYPE|<html\b|SELECT\s+.+\s+FROM\s+|CREATE\s+TABLE\s+)/i;
+
+const CODE_LINE_RE = /^(\s{2,}|\t)|[{};]\s*$|^\s*(?:\/\/|\/\*|\*\s|#\s|--\s)/;
+
+/** Detecta a linguagem a partir das primeiras linhas. */
+function guessLang(code: string): string {
+  const head = code.slice(0, 400);
+  if (/using\s+UnityEngine|MonoBehaviour|public\s+class\s+\w+\s*:/.test(head)) return 'csharp';
+  if (/^\s*using\s+[A-Z]\w*(\.[A-Z]\w*)*\s*;/.test(head)) return 'csharp';
+  if (/^\s*#include\s*</.test(head)) return 'cpp';
+  if (/^\s*(?:from\s+\w+\s+import|def\s+\w+|import\s+\w+\s*$)/m.test(head)) return 'python';
+  if (/^\s*(?:import\s+.+from\s+['"]|export\s+(?:default\s+)?(?:function|const|class))/m.test(head)) return 'typescript';
+  if (/^\s*(?:function\s+\w+|const\s+\w+\s*=|let\s+\w+\s*=)/m.test(head)) return 'javascript';
+  if (/^\s*<\?php/.test(head)) return 'php';
+  if (/^\s*<!DOCTYPE|^\s*<html\b/i.test(head)) return 'html';
+  if (/^\s*SELECT\s+.+\s+FROM\s+/i.test(head)) return 'sql';
+  if (/public\s+(?:static\s+)?void\s+main\s*\(\s*String/.test(head)) return 'java';
+  return 'text';
+}
+
+/** Pré-processa o markdown injetando ``` em blocos de código sem cercas. */
+function wrapInferredCodeBlocks(raw: string): string {
+  if (!raw || raw.includes('```')) {
+    // Se já tem fences, ainda assim tentamos detectar trechos NÃO cercados,
+    // mas para evitar romper blocos existentes, dividimos pelos fences.
+    const parts = raw.split(/(```[\s\S]*?```)/g);
+    return parts.map((p) => (p.startsWith('```') ? p : wrapInferredCodeBlocks(p))).join('');
+  }
+
+  const lines = raw.split('\n');
+  const out: string[] = [];
+  let i = 0;
+
+  while (i < lines.length) {
+    const line = lines[i];
+
+    // Cabeçalho tipo "1. GameManager.cs" ou "GameManager.cs"
+    const fileMatch = line.match(FILENAME_HEADER_RE);
+    let forcedLang: string | null = null;
+    if (fileMatch) {
+      forcedLang = EXT_TO_LANG[fileMatch[2].toLowerCase()] || 'text';
+    }
+
+    const looksLikeCodeStart = CODE_START_RE.test(line);
+    if (!looksLikeCodeStart && !(fileMatch && i + 1 < lines.length)) {
+      out.push(line);
+      i++;
+      continue;
+    }
+
+    // Se foi um cabeçalho de arquivo, mantém o cabeçalho como parágrafo
+    // e procura o início real do código nas próximas ~3 linhas.
+    let startIdx = i;
+    if (fileMatch && !looksLikeCodeStart) {
+      out.push(line);
+      i++;
+      // pula linhas vazias ou descritivas curtas
+      let probed = 0;
+      while (i < lines.length && probed < 4) {
+        const l = lines[i];
+        if (CODE_START_RE.test(l)) { startIdx = i; break; }
+        if (!l.trim()) { out.push(l); i++; probed++; continue; }
+        // descrição curta antes do código
+        if (l.trim().length < 80 && !/[.;{}]$/.test(l.trim())) {
+          out.push(l); i++; probed++; continue;
+        }
+        break;
+      }
+      if (i >= lines.length || !CODE_START_RE.test(lines[i])) {
+        continue; // não achou código de fato
+      }
+    }
+
+    // Coleta linhas do bloco de código
+    const codeLines: string[] = [];
+    let blankRun = 0;
+    let j = startIdx;
+    while (j < lines.length) {
+      const l = lines[j];
+      const trimmed = l.trim();
+
+      if (!trimmed) {
+        blankRun++;
+        if (blankRun >= 2) break; // duas linhas em branco encerram o bloco
+        codeLines.push(l);
+        j++;
+        continue;
+      }
+      blankRun = 0;
+
+      // Se a linha parece prosa (sentença com pontuação final, sem sinais de código)
+      const looksLikeProse =
+        /[.!?]$/.test(trimmed) &&
+        !/[;{}=()<>]/.test(trimmed) &&
+        !CODE_LINE_RE.test(l) &&
+        trimmed.split(' ').length > 5;
+      // Cabeçalho de novo arquivo encerra o bloco atual
+      const isNewFileHeader = FILENAME_HEADER_RE.test(l) && j !== startIdx;
+
+      if (looksLikeProse || isNewFileHeader) break;
+
+      codeLines.push(l);
+      j++;
+    }
+
+    // Remove linhas em branco no final
+    while (codeLines.length && !codeLines[codeLines.length - 1].trim()) codeLines.pop();
+
+    if (codeLines.length >= 2) {
+      const code = codeLines.join('\n');
+      const lang = forcedLang || guessLang(code);
+      out.push('```' + lang);
+      out.push(code);
+      out.push('```');
+      i = j;
+    } else {
+      out.push(line);
+      i++;
+    }
+  }
+
+  return out.join('\n');
+}
+
 /** Quebra o conteúdo de uma seção em blocos tipados. */
-function parseBlocks(raw: string): Block[] {
+function parseBlocks(rawInput: string): Block[] {
   const blocks: Block[] = [];
-  if (!raw) return blocks;
+  if (!rawInput) return blocks;
+  const raw = wrapInferredCodeBlocks(rawInput);
 
   // 1) Extrai blocos de código triplos
   const codeRe = /```(\w+)?\n?([\s\S]*?)```/g;
