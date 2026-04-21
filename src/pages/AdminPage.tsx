@@ -732,6 +732,23 @@ export default function AdminPage() {
     toast.success(!current ? 'Apostila publicada!' : 'Apostila ocultada!'); loadAll();
   };
 
+  const downloadApostilaPdf = async (a: Apostila) => {
+    const t = toast.loading(`Gerando PDF de "${a.title}"…`);
+    try {
+      const sections = parseApostilaContent(a.content || '');
+      await exportApostilaToPDF({
+        title: a.title,
+        category: a.category,
+        sections: sections.map((s) => ({ id: s.id, title: s.title, level: s.level, content: s.content })),
+      });
+      toast.success('PDF gerado com sucesso', { id: t });
+    } catch (e: any) {
+      console.error('PDF export error', e);
+      toast.error(e?.message || 'Falha ao gerar PDF', { id: t });
+    }
+  };
+
+
   const deleteApostila = async (id: string) => {
     if (!confirm('Excluir esta apostila e seus exercícios?')) return;
     await supabase.from('exercises').delete().eq('apostila_id', id);
