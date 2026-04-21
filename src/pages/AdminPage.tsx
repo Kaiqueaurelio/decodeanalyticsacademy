@@ -37,6 +37,8 @@ import { autoLinkAll, autoLinkApostila } from '@/lib/auto-link-materials';
 import { MergeApostilasDialog } from '@/components/MergeApostilasDialog';
 import { TestimonialsAdmin } from '@/components/TestimonialsAdmin';
 import { AIProviderSettings } from '@/components/AIProviderSettings';
+import { exportApostilaToPDF } from '@/lib/apostila-pdf';
+import { parseApostilaContent } from '@/lib/apostila-parser';
 
 type Apostila = Tables<'apostilas'>;
 type Exercise = Tables<'exercises'>;
