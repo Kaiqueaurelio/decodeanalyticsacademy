@@ -2183,22 +2183,26 @@ export default function AdminPage() {
                       const Icon = typeIcon;
                       return (
                         <Card key={m.id} className="hover:shadow-md transition-shadow">
-                          <CardContent className="p-4">
-                            <div className="flex items-center gap-3">
-                              <div className="rounded-lg bg-accent p-2.5 shrink-0">
-                                <Icon className="h-4 w-4 text-primary" />
+                          <CardContent className="p-3 sm:p-4">
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                              <div className="flex items-start sm:items-center gap-3 min-w-0 flex-1">
+                                <div className="rounded-lg bg-accent p-2.5 shrink-0">
+                                  <Icon className="h-4 w-4 text-primary" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <h4 className="font-medium text-sm break-words leading-snug">{m.title}</h4>
+                                  <p className="text-[11px] text-muted-foreground break-words">
+                                    {m.type.toUpperCase()} · {new Date(m.created_at).toLocaleDateString('pt-BR')}
+                                    {m.description && ` · ${m.description}`}
+                                  </p>
+                                </div>
                               </div>
-                              <div className="flex-1 min-w-0">
-                                <h4 className="font-medium text-sm truncate">{m.title}</h4>
-                                <p className="text-[11px] text-muted-foreground">
-                                  {m.type.toUpperCase()} · {new Date(m.created_at).toLocaleDateString('pt-BR')}
-                                  {m.description && ` · ${m.description}`}
-                                </p>
-                              </div>
-                              <div className="flex items-center gap-1 shrink-0">
-                                <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => { setEditingMaterial(m); setEditMatTitle(m.title); setEditMatDesc(m.description || ''); }}>
+                              <div className="flex items-center gap-1 shrink-0 justify-end pl-12 sm:pl-0">
+                                {/* Secundário: Editar (apenas desktop como botão direto) */}
+                                <Button size="icon" variant="ghost" className="hidden sm:inline-flex h-8 w-8" onClick={() => { setEditingMaterial(m); setEditMatTitle(m.title); setEditMatDesc(m.description || ''); }}>
                                   <Edit className="h-3.5 w-3.5" />
                                 </Button>
+                                {/* Primários: Download + Excluir */}
                                 {m.file_url && (
                                   <Button size="icon" variant="ghost" className="h-8 w-8" asChild>
                                     <a href={m.file_url} target="_blank" rel="noopener noreferrer"><Download className="h-3.5 w-3.5" /></a>
@@ -2213,6 +2217,19 @@ export default function AdminPage() {
                                   }}>
                                   <Trash2 className="h-3.5 w-3.5" />
                                 </Button>
+                                {/* Kebab mobile com ações secundárias */}
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button size="icon" variant="ghost" className="sm:hidden h-8 w-8">
+                                      <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end" className="w-48">
+                                    <DropdownMenuItem onClick={() => { setEditingMaterial(m); setEditMatTitle(m.title); setEditMatDesc(m.description || ''); }}>
+                                      <Edit className="h-3.5 w-3.5 mr-2" /> Editar
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
                               </div>
                             </div>
                           </CardContent>
@@ -2291,7 +2308,8 @@ export default function AdminPage() {
                               <p className="text-[11px] text-muted-foreground mt-0.5">Desde {new Date(u.created_at).toLocaleDateString('pt-BR')}</p>
                             </div>
                           </div>
-                          <div className="flex gap-1.5 shrink-0 sm:ml-auto">
+                          <div className="flex gap-1.5 shrink-0 sm:ml-auto items-center justify-end flex-wrap">
+                            {/* Primário: Bloquear/Desbloquear */}
                             <Button
                               size="sm"
                               variant={u.is_blocked ? 'outline' : 'destructive'}
@@ -2306,9 +2324,10 @@ export default function AdminPage() {
                             >
                               {u.is_blocked ? <><ShieldCheck className="h-3.5 w-3.5" /> Desbloquear</> : <><ShieldBan className="h-3.5 w-3.5" /> Bloquear</>}
                             </Button>
+                            {/* Secundário: Remover — botão direto no desktop */}
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
-                                <Button size="sm" variant="ghost" className="text-xs h-9 gap-1.5 text-destructive hover:text-destructive hover:bg-destructive/10">
+                                <Button size="sm" variant="ghost" className="hidden sm:inline-flex text-xs h-9 gap-1.5 text-destructive hover:text-destructive hover:bg-destructive/10">
                                   <Trash2 className="h-3.5 w-3.5" /> Remover
                                 </Button>
                               </AlertDialogTrigger>
@@ -2338,6 +2357,29 @@ export default function AdminPage() {
                                 </AlertDialogFooter>
                               </AlertDialogContent>
                             </AlertDialog>
+                            {/* Kebab mobile: agrupa ação secundária Remover */}
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button size="icon" variant="ghost" className="sm:hidden h-9 w-9">
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="w-48">
+                                <DropdownMenuItem
+                                  className="text-destructive focus:text-destructive"
+                                  onSelect={async (e) => {
+                                    e.preventDefault();
+                                    if (!confirm(`Remover ${u.full_name || u.email} permanentemente? Esta ação é irreversível.`)) return;
+                                    const { error } = await supabase.rpc('delete_user_completely', { _target_user_id: u.user_id });
+                                    if (error) { toast.error(`Erro ao remover: ${error.message}`); return; }
+                                    toast.success(`${u.full_name || u.email} foi removido permanentemente`);
+                                    setUsers(prev => prev.filter(x => x.user_id !== u.user_id));
+                                  }}
+                                >
+                                  <Trash2 className="h-3.5 w-3.5 mr-2" /> Remover usuário
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                           </div>
                         </div>
                       </CardContent>
