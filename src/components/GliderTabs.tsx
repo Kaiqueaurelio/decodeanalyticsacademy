@@ -26,6 +26,12 @@ export function GliderTabs({ tabs, activeTab, onTabChange, className = '' }: Gli
         width: activeEl.offsetWidth,
         left: activeEl.offsetLeft,
       });
+      // Auto-scroll para que a aba ativa fique visível em mobile
+      try {
+        activeEl.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' });
+      } catch {
+        // ignora em browsers antigos
+      }
     }
   }, [activeTab, tabs]);
 

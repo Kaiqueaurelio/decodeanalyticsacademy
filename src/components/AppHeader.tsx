@@ -20,7 +20,7 @@ export function AppHeader() {
 
   return (
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-xl" style={{ borderBottom: '1px solid hsl(0 0% 100% / 0.06)' }}>
-      <div className="container flex h-14 items-center justify-between gap-2">
+      <div className="w-full max-w-screen-xl mx-auto flex h-14 items-center justify-between gap-2 px-3 sm:px-4 lg:px-6">
         <Link to={user ? '/dashboard' : '/'} className="flex items-center gap-2 min-w-0 flex-shrink">
           <img src={logoDark} alt="Decode Analytics" className="h-7 w-7 rounded object-cover flex-shrink-0" />
           <span className="font-mono-label text-[11px] sm:text-xs font-medium uppercase tracking-widest text-foreground truncate hidden xs:inline">Decode Analytics</span>

@@ -377,20 +377,20 @@ function CodeBlock({ lang, code }: { lang: string; code: string }) {
   const lineCount = code.split('\n').length;
 
   return (
-    <figure className="my-6 rounded-xl border border-border/60 bg-[#22272e] overflow-hidden shadow-sm select-text">
-      <figcaption className="flex items-center justify-between gap-2 px-3 py-1.5 border-b border-white/10 bg-black/20">
-        <span className="flex items-center gap-2">
-          <span className="inline-block h-2 w-2 rounded-full bg-primary/70" />
-          <span className="font-mono-label text-[10px] uppercase tracking-wider text-white/60">
+    <figure className="my-6 rounded-xl border border-border/60 bg-[#22272e] overflow-hidden shadow-sm select-text min-w-0 max-w-full">
+      <figcaption className="flex flex-wrap items-center justify-between gap-2 px-3 py-1.5 border-b border-white/10 bg-black/20">
+        <span className="flex items-center gap-2 min-w-0">
+          <span className="inline-block h-2 w-2 rounded-full bg-primary/70 flex-shrink-0" />
+          <span className="font-mono-label text-[10px] uppercase tracking-wider text-white/60 truncate">
             {label}
           </span>
-          <span className="font-mono-label text-[10px] text-white/40">
+          <span className="font-mono-label text-[10px] text-white/40 whitespace-nowrap">
             · {lineCount} linha{lineCount > 1 ? 's' : ''}
           </span>
         </span>
         <button
           onClick={handleCopy}
-          className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] font-medium text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+          className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] font-medium text-white/60 hover:text-white hover:bg-white/10 transition-colors flex-shrink-0"
           aria-label="Copiar código"
         >
           {copied ? <Check className="h-3 w-3 text-primary" /> : <Copy className="h-3 w-3" />}
@@ -400,11 +400,11 @@ function CodeBlock({ lang, code }: { lang: string; code: string }) {
       {highlighted ? (
         <div
           data-allow-copy
-          className="shiki-wrapper text-[12px] sm:text-[13px] leading-relaxed select-text overflow-x-auto"
+          className="shiki-wrapper leading-relaxed select-text"
           dangerouslySetInnerHTML={{ __html: highlighted }}
         />
       ) : (
-        <pre data-allow-copy className="m-0 p-3 sm:p-4 overflow-x-auto text-[12px] sm:text-[13px] leading-relaxed font-mono text-white/90 select-text">
+        <pre data-allow-copy className="m-0 p-3 sm:p-4 overflow-x-auto text-[12px] sm:text-[13px] leading-relaxed font-mono text-white/90 select-text max-w-full">
           <code className={`language-${lang}`}>{code}</code>
         </pre>
       )}
@@ -596,7 +596,7 @@ export function ApostilaContentRenderer({ content }: Props) {
   );
 
   return (
-    <article className="apostila-prose max-w-[70ch] mx-auto text-[15.5px] sm:text-[16.5px] leading-[1.85] tracking-[0.005em] text-foreground/90">
+    <article className="apostila-prose max-w-[70ch] mx-auto w-full min-w-0 px-1 sm:px-0 text-[15.5px] sm:text-[16.5px] leading-[1.85] tracking-[0.005em] text-foreground/90">
       {blocks.map((b, i) => {
         switch (b.type) {
           case 'code': return <CodeBlock key={i} lang={b.lang} code={b.code} />;

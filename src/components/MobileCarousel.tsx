@@ -33,13 +33,13 @@ export function MobileCarousel({ children, className = '', desktopClassName = 's
   }
 
   return (
-    <div className={className}>
+    <div className={`min-w-0 max-w-full ${className}`}>
       <div
         ref={scrollRef}
-        className="flex gap-3 overflow-x-auto snap-x snap-mandatory hide-scrollbar pb-2"
+        className="flex gap-3 overflow-x-auto snap-x snap-mandatory hide-scrollbar pb-2 -mx-3 px-3"
       >
         {childArray.map((child, i) => (
-          <div key={i} className="min-w-[80vw] snap-start flex-shrink-0">
+          <div key={i} className="min-w-[88%] max-w-[88%] snap-start flex-shrink-0">
             {child}
           </div>
         ))}

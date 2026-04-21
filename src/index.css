@@ -19,6 +19,10 @@ html, body {
   max-width: 100vw;
   overflow-x: hidden;
 }
+#root {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
 html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
@@ -33,11 +37,17 @@ html {
   /* Prevent iOS Safari from zooming on input focus */
   input, textarea, select { font-size: 16px; }
 }
-/* Avoid layout shift from images without intrinsic size */
-img, video { max-width: 100%; height: auto; }
-img {
-  display: block;
+/* Avoid layout shift from images/iframes without intrinsic size; prevent overflow */
+img, video, iframe, svg { max-width: 100%; }
+img, video { height: auto; }
+img { display: block; }
+/* Long words/URLs should never push the layout */
+p, li, h1, h2, h3, h4, h5, h6, span, a, blockquote, td, th {
+  overflow-wrap: anywhere;
+  word-break: normal;
 }
+/* Tables don't break line-flow */
+table { max-width: 100%; }
 input, textarea, [contenteditable="true"] {
   -webkit-user-select: text !important;
   -moz-user-select: text !important;
@@ -273,7 +283,15 @@ button:active:not(:disabled), [role="button"]:active:not(:disabled) {
   padding: 0.25rem;
   border-radius: 6px;
   border: 1px solid hsl(var(--border));
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
 }
+.glider-tabs::-webkit-scrollbar { display: none; }
+.glider-tabs .glider-tab { scroll-snap-align: start; }
 .glider-tabs .glider-tab {
   display: flex;
   align-items: center;
@@ -781,6 +799,12 @@ html {
 /* Landing page is dark-only by design (light mode toggle removed). */
 
 /* ─── Shiki syntax highlighting (github-dark-dimmed) ─── */
+.shiki-wrapper {
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
 .shiki-wrapper pre.shiki {
   margin: 0;
   padding: 0.75rem 1rem;
@@ -788,6 +812,7 @@ html {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   white-space: pre;
   tab-size: 2;
+  font-size: clamp(0.72rem, 2.4vw, 0.8125rem);
 }
 .shiki-wrapper pre.shiki code {
   display: block;
@@ -802,3 +827,22 @@ html {
 @media (min-width: 640px) {
   .shiki-wrapper pre.shiki { padding: 1rem 1.25rem; }
 }
+
+/* ─── Apostila prose: prevent overflow on mobile ─── */
+.apostila-prose {
+  min-width: 0;
+  max-width: 100%;
+}
+.apostila-prose img,
+.apostila-prose video,
+.apostila-prose iframe { max-width: 100%; height: auto; }
+.apostila-prose pre { max-width: 100%; overflow-x: auto; }
+@media (max-width: 640px) {
+  .apostila-prose p.has-dropcap::first-letter,
+  .apostila-prose p:first-of-type::first-letter {
+    font-size: 2.6em !important;
+  }
+}
+
+/* Utility: clamp container width even inside flex/grid */
+.min-w-0-safe { min-width: 0; }
