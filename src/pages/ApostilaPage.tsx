@@ -265,7 +265,7 @@ export default function ApostilaPage() {
     return (
       <div className="min-h-screen bg-background">
         <AppHeader />
-        <div className="container max-w-7xl px-4 py-12">
+        <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 py-12">
           <div className="skeleton-shimmer h-8 w-48 rounded-lg mb-4" />
           <div className="skeleton-shimmer h-12 w-3/4 rounded-lg mb-3" />
           <div className="skeleton-shimmer h-5 w-1/3 rounded-lg mb-10" />
@@ -459,7 +459,7 @@ export default function ApostilaPage() {
 
         {/* Mobile TOC overlay */}
         {isMobile && showTocMobile && (
-          <div className="fixed inset-0 z-40 bg-background/95 backdrop-blur-md pt-20 px-6 overflow-y-auto animate-fade-in">
+          <div className="fixed inset-0 z-40 bg-background/95 backdrop-blur-md pt-20 px-3 sm:px-6 overflow-y-auto animate-fade-in">
             <div className="flex items-center justify-between mb-6">
               <h3 className="font-display text-lg flex items-center gap-2">
                 <List className="h-4 w-4 text-primary" /> Índice da Apostila
@@ -473,7 +473,7 @@ export default function ApostilaPage() {
         )}
 
         {/* 3-column layout */}
-        <div className="container max-w-7xl px-4 pb-16">
+        <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 pb-16">
           <div className={`grid gap-8 ${
             focusMode
               ? 'grid-cols-1 max-w-3xl mx-auto'
