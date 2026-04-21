@@ -10,6 +10,10 @@ export const SUBJECT_COLORS: Record<string, string> = {
   'Computação Gráfica': '#FB923C',
   'Análise Matemática': '#5EEAD4',
   'Metodologia do Trabalho Acadêmico': '#34D399',
+  'APS': '#FF8FA3',
+  'Atividade Prática Supervisionada': '#FF8FA3',
+  'Extensão Curricular': '#B5F5C8',
+  'Atividade de Extensão Curricular': '#B5F5C8',
   // Outras matérias com cor fixa
   'Banco de Dados': '#60A5FA',
   'Estrutura de Dados': '#F472B6',
