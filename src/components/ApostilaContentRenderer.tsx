@@ -352,11 +352,29 @@ function CodeBlock({ lang, code }: { lang: string; code: string }) {
     }
   };
 
+  const LANG_LABEL: Record<string, string> = {
+    csharp: 'C#', cs: 'C#', javascript: 'JavaScript', js: 'JavaScript',
+    typescript: 'TypeScript', ts: 'TypeScript', tsx: 'TSX', jsx: 'JSX',
+    python: 'Python', py: 'Python', java: 'Java', cpp: 'C++', c: 'C',
+    html: 'HTML', css: 'CSS', scss: 'SCSS', sql: 'SQL', php: 'PHP',
+    ruby: 'Ruby', go: 'Go', rust: 'Rust', kotlin: 'Kotlin', swift: 'Swift',
+    bash: 'Bash', sh: 'Shell', json: 'JSON', xml: 'XML', yaml: 'YAML',
+    text: 'Código',
+  };
+  const label = LANG_LABEL[(lang || '').toLowerCase()] || (lang ? lang.toUpperCase() : 'Código');
+  const lineCount = code.split('\n').length;
+
   return (
     <figure className="my-6 rounded-xl border border-border/60 bg-[hsl(var(--muted))] overflow-hidden shadow-sm select-text">
       <figcaption className="flex items-center justify-between gap-2 px-3 py-1.5 border-b border-border/50 bg-background/40">
-        <span className="font-mono-label text-[10px] uppercase tracking-wider text-muted-foreground">
-          {lang || 'code'}
+        <span className="flex items-center gap-2">
+          <span className="inline-block h-2 w-2 rounded-full bg-primary/70" />
+          <span className="font-mono-label text-[10px] uppercase tracking-wider text-muted-foreground">
+            {label}
+          </span>
+          <span className="font-mono-label text-[10px] text-muted-foreground/60">
+            · {lineCount} linha{lineCount > 1 ? 's' : ''}
+          </span>
         </span>
         <button
           onClick={handleCopy}
