@@ -128,13 +128,15 @@ export function AppendLinkDialog({ apostilaId, apostilaTitle, currentContent, tr
 
   return (
     <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v && !running) reset(); }}>
-      <DialogTrigger asChild>
-        {trigger ?? (
-          <Button size="sm" variant="outline" className="gap-1.5">
-            <Link2 className="h-3.5 w-3.5" /> Anexar link
-          </Button>
-        )}
-      </DialogTrigger>
+      {openProp === undefined && (
+        <DialogTrigger asChild>
+          {trigger ?? (
+            <Button size="sm" variant="outline" className="gap-1.5">
+              <Link2 className="h-3.5 w-3.5" /> Anexar link
+            </Button>
+          )}
+        </DialogTrigger>
+      )}
       <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-base flex items-center gap-2">
