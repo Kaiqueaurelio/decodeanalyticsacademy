@@ -1357,6 +1357,18 @@ export default function AdminPage() {
                   </div>
                 </div>
 
+                {/* Mobile-controlled secondary dialogs (triggered by kebab menu) */}
+                {apostilas.map(a => (
+                  <ApostilaMaterialsManager
+                    key={`mat-${a.id}`}
+                    apostilaId={a.id}
+                    apostilaTitle={a.title}
+                    hideTrigger
+                    open={showMaterialsFor === a.id}
+                    onOpenChange={(v) => setShowMaterialsFor(v ? a.id : null)}
+                  />
+                ))}
+
                 {/* Exercise Dialog */}
                 {apostilas.map(a => (
                   <Dialog key={a.id} open={showExerciseDialog === a.id} onOpenChange={(v) => { setShowExerciseDialog(v ? a.id : null); if (v) { setExerciseDialogMode('individual'); setAiExercises([]); } }}>
