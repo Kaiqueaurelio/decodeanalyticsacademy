@@ -2308,7 +2308,78 @@ export default function AdminPage() {
                               <p className="text-[11px] text-muted-foreground mt-0.5">Desde {new Date(u.created_at).toLocaleDateString('pt-BR')}</p>
                             </div>
                           </div>
-                          <UserActions u={u} loadAll={loadAll} setUsers={setUsers} />
+                          <div className="flex gap-1.5 shrink-0 sm:ml-auto items-center justify-end flex-wrap">
+                            {/* Primário: Bloquear/Desbloquear */}
+                            <Button
+                              size="sm"
+                              variant={u.is_blocked ? 'outline' : 'destructive'}
+                              className="text-xs h-9 gap-1.5"
+                              onClick={async () => {
+                                const newBlocked = !u.is_blocked;
+                                const { error } = await supabase.from('profiles').update({ is_blocked: newBlocked } as any).eq('user_id', u.user_id);
+                                if (error) { toast.error('Erro ao atualizar'); return; }
+                                toast.success(newBlocked ? `${u.full_name} foi bloqueado` : `${u.full_name} foi desbloqueado`);
+                                loadAll();
+                              }}
+                            >
+                              {u.is_blocked ? <><ShieldCheck className="h-3.5 w-3.5" /> Desbloquear</> : <><ShieldBan className="h-3.5 w-3.5" /> Bloquear</>}
+                            </Button>
+                            {/* Secundário: Remover — botão direto no desktop */}
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button size="sm" variant="ghost" className="hidden sm:inline-flex text-xs h-9 gap-1.5 text-destructive hover:text-destructive hover:bg-destructive/10">
+                                  <Trash2 className="h-3.5 w-3.5" /> Remover
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Remover usuário permanentemente?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Esta ação é <strong>irreversível</strong>. Todos os dados de <strong>{u.full_name || u.email}</strong> serão excluídos permanentemente: respostas, flashcards, anotações, progresso, XP e badges.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                    onClick={async () => {
+                                      const { error } = await supabase.rpc('delete_user_completely', { _target_user_id: u.user_id });
+                                      if (error) {
+                                        toast.error(`Erro ao remover: ${error.message}`);
+                                        return;
+                                      }
+                                      toast.success(`${u.full_name || u.email} foi removido permanentemente`);
+                                      setUsers(prev => prev.filter(x => x.user_id !== u.user_id));
+                                    }}
+                                  >
+                                    Sim, remover permanentemente
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                            {/* Kebab mobile: agrupa ação secundária Remover */}
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button size="icon" variant="ghost" className="sm:hidden h-9 w-9">
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="w-48">
+                                <DropdownMenuItem
+                                  className="text-destructive focus:text-destructive"
+                                  onSelect={async (e) => {
+                                    e.preventDefault();
+                                    if (!confirm(`Remover ${u.full_name || u.email} permanentemente? Esta ação é irreversível.`)) return;
+                                    const { error } = await supabase.rpc('delete_user_completely', { _target_user_id: u.user_id });
+                                    if (error) { toast.error(`Erro ao remover: ${error.message}`); return; }
+                                    toast.success(`${u.full_name || u.email} foi removido permanentemente`);
+                                    setUsers(prev => prev.filter(x => x.user_id !== u.user_id));
+                                  }}
+                                >
+                                  <Trash2 className="h-3.5 w-3.5 mr-2" /> Remover usuário
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                           </div>
                         </div>
                       </CardContent>
