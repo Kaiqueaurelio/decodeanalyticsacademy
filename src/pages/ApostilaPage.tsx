@@ -28,12 +28,7 @@ import {
 } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 
-interface Section {
-  id: string;
-  title: string;
-  level: number;
-  content: string;
-}
+import { parseApostilaContent, type ApostilaSection as Section } from '@/lib/apostila-parser';
 
 /**
  * Remove sintaxe markdown residual (negrito, itálico, código, links etc.)
@@ -128,47 +123,7 @@ function redistributeOrphanImages(sections: Section[]): Section[] {
   return cleaned;
 }
 
-function parseContent(raw: string | null): Section[] {
-  if (!raw) return [{ id: 'intro', title: 'Introdução', level: 1, content: '' }];
-
-  const lines = raw
-    .replace(/\r\n/g, '\n')
-    .split('\n')
-    .filter((line) => !/^\s*(?:-{3,}|\*{3,}|_{3,})\s*$/.test(line));
-
-  const sections: Section[] = [];
-  let current: Section | null = null;
-
-  for (const line of lines) {
-    const trimmedLine = line.trim();
-    const numberedMatch = trimmedLine.match(/^(\d+(?:\.\d+)*)[.\s\-–]+\s*(.+)/);
-    const hashMatch = trimmedLine.match(/^(#{1,3})\s+(.+)/);
-
-    if (numberedMatch) {
-      if (current && (current.title.trim() || current.content.trim())) sections.push(current);
-      const depth = numberedMatch[1].split('.').length;
-      const title = numberedMatch[2].trim();
-      const id = `section-${sections.length}`;
-      current = { id, title, level: Math.min(depth, 3), content: '' };
-    } else if (hashMatch) {
-      if (current && (current.title.trim() || current.content.trim())) sections.push(current);
-      const level = hashMatch[1].length;
-      const title = hashMatch[2].trim();
-      const id = `section-${sections.length}`;
-      current = { id, title, level, content: '' };
-    } else {
-      if (!current) {
-        current = { id: 'section-0', title: 'Introdução', level: 1, content: '' };
-      }
-      current.content += line + '\n';
-    }
-  }
-
-  if (current && (current.title.trim() || current.content.trim())) sections.push(current);
-
-  const result = sections.length > 0 ? sections : [{ id: 'intro', title: 'Conteúdo', level: 1, content: raw }];
-  return redistributeOrphanImages(result);
-}
+const parseContent = parseApostilaContent;
 
 export default function ApostilaPage() {
   const { id } = useParams<{ id: string }>();
