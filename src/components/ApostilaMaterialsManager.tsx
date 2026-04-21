@@ -38,8 +38,10 @@ const TYPE_ICONS: Record<string, any> = {
   link: LinkIcon, gif: Image, other: File, exam: FileText,
 };
 
-export function ApostilaMaterialsManager({ apostilaId, apostilaTitle }: Props) {
-  const [open, setOpen] = useState(false);
+export function ApostilaMaterialsManager({ apostilaId, apostilaTitle, open: openProp, onOpenChange, hideTrigger }: Props) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = openProp ?? internalOpen;
+  const setOpen = (v: boolean) => { onOpenChange ? onOpenChange(v) : setInternalOpen(v); };
   const [linked, setLinked] = useState<LinkedMaterial[]>([]);
   const [allMaterials, setAllMaterials] = useState<{ id: string; title: string; type: string; file_url: string | null; description: string | null }[]>([]);
   const [search, setSearch] = useState('');
