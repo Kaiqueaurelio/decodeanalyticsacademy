@@ -222,6 +222,9 @@ function processUnfenced(raw: string): string {
       out.push(line);
       i++;
     }
+
+    // Garantia: nunca permitir que `i` fique parado (proteção contra loop infinito)
+    if (i <= prevI) i = prevI + 1;
   }
 
   return out.join('\n');
