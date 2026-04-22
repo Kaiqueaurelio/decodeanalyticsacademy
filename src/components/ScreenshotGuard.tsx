@@ -66,6 +66,7 @@ export function ScreenshotGuard() {
       const target = e.target as HTMLElement | null;
       if (target && target.closest?.('[data-allow-copy]')) return; // libera
       e.preventDefault();
+      if (e.type === 'copy' || e.type === 'cut') notifyBlocked();
     };
 
     document.addEventListener('visibilitychange', onVisibility);
