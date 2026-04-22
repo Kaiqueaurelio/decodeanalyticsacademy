@@ -537,7 +537,7 @@ export default function AdminPage() {
   // Realtime: notificação de novos cadastros
   useEffect(() => {
     const channel = supabase
-      .channel('admin-new-users')
+      .channel(`admin-new-users-${Math.random().toString(36).slice(2)}`)
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'profiles' },
