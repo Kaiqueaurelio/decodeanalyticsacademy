@@ -41,7 +41,7 @@ export function AppHeader() {
               <Button variant="ghost" size="sm" onClick={() => navigate('/tira-duvida')} className="text-xs h-8 px-3 font-sans normal-case tracking-normal">
                 <Camera className="mr-1.5 h-3.5 w-3.5" /> Tira-dúvida
               </Button>
-              <Button variant="ghost" size="sm" onClick={() => navigate('/comunidade')} className="text-xs h-8 px-3 font-sans normal-case tracking-normal relative">
+              <Button variant="ghost" size="sm" onClick={() => navigate('/comunidade')} className="text-xs h-8 px-3 font-sans normal-case tracking-normal relative bg-primary/10 hover:bg-primary/20 text-primary">
                 <Users className="mr-1.5 h-3.5 w-3.5" /> Comunidade
                 {unreadCount > 0 && (
                   <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-primary text-[9px] font-mono font-bold text-primary-foreground flex items-center justify-center leading-none">
