@@ -29,8 +29,8 @@ function SimpleFallback({ content }: { content: string }) {
 
   return (
     <article className="apostila-prose max-w-[70ch] mx-auto w-full min-w-0 px-1 sm:px-0 text-[15.5px] sm:text-[16.5px] leading-[1.85] text-foreground/90">
-      <div className="mb-6 flex items-start gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-200">
-        <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
+      <div className="mb-6 flex items-start gap-2 rounded-lg border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
+        <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-primary" />
         <span>
           Modo de leitura simplificado ativo. A formatação rica não pôde ser carregada,
           mas o conteúdo está disponível abaixo.
