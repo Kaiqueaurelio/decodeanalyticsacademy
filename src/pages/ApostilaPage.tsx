@@ -10,8 +10,10 @@ import { AnnotationsPanel } from '@/components/AnnotationsPanel';
 import { CommentsWidget } from '@/components/CommentsWidget';
 
 import { ApostilaMaterials } from '@/components/ApostilaMaterials';
+import { ApostilaAudios } from '@/components/ApostilaAudios';
 import { ApostilaChat } from '@/components/ApostilaChat';
 import { ApostilaContentRenderer } from '@/components/ApostilaContentRenderer';
+import { AskHelpFab } from '@/components/AskHelpFab';
 import { SpeakButton } from '@/components/SpeakButton';
 import { ApostilaSummaryDialog } from '@/components/ApostilaSummaryDialog';
 import { UnitTilesGrid, buildUnitResources } from '@/components/UnitTilesGrid';
@@ -493,9 +495,12 @@ export default function ApostilaPage() {
                 })}
               </div>
 
+              {/* Áudios das aulas — destaque no topo dos materiais */}
+              <ApostilaAudios apostilaId={id!} />
+
               {/* Linked Materials */}
               <div id="materiais-vinculados" className="scroll-mt-24">
-                <ApostilaMaterials apostilaId={id!} />
+                <ApostilaMaterials apostilaId={id!} excludeAudio />
               </div>
 
               {/* Exercise CTA */}
@@ -546,18 +551,8 @@ export default function ApostilaPage() {
           <ChevronUp className="h-5 w-5" />
         </button>
 
-        {/* FAB: Conversar com a apostila */}
-        <button
-          onClick={() => setChatOpen(true)}
-          className="fixed bottom-6 left-6 z-30 h-14 px-5 rounded-full gradient-primary text-primary-foreground flex items-center gap-2.5 shadow-2xl shadow-primary/40 hover:shadow-primary/60 hover-lift transition-all ring-2 ring-primary/30"
-          aria-label="Conversar com a IA sobre a apostila"
-        >
-          <div className="relative">
-            <Sparkles className="h-5 w-5" />
-            <span className="absolute -top-1 -right-1 h-2 w-2 bg-accent rounded-full animate-pulse" />
-          </div>
-          <span className="text-sm font-semibold">Chat IA</span>
-        </button>
+        {/* FAB: Pedir ajuda — Chat IA / Foto / Comunidade */}
+        <AskHelpFab onOpenChat={() => setChatOpen(true)} />
 
         {/* Chat Sheet */}
         <Sheet open={chatOpen} onOpenChange={setChatOpen}>

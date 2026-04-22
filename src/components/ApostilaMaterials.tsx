@@ -27,9 +27,11 @@ const fmt = (s: number) => {
 
 interface Props {
   apostilaId: string;
+  /** Quando true, oculta materiais do tipo 'audio' (renderizados em ApostilaAudios). */
+  excludeAudio?: boolean;
 }
 
-export function ApostilaMaterials({ apostilaId }: Props) {
+export function ApostilaMaterials({ apostilaId, excludeAudio }: Props) {
   const navigate = useNavigate();
   const [materials, setMaterials] = useState<LinkedMaterial[]>([]);
   const [loading, setLoading] = useState(true);
@@ -61,10 +63,11 @@ export function ApostilaMaterials({ apostilaId }: Props) {
           }
           sorted.push(m);
         }
-        setMaterials(sorted);
+        const filtered = excludeAudio ? sorted.filter((m) => m.type !== 'audio') : sorted;
+        setMaterials(filtered);
         setLoading(false);
       });
-  }, [apostilaId]);
+  }, [apostilaId, excludeAudio]);
 
   if (loading || materials.length === 0) return null;
 
