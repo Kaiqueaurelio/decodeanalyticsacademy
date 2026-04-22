@@ -41,6 +41,7 @@ import { AIProviderSettings } from '@/components/AIProviderSettings';
 import { exportApostilaToPDF } from '@/lib/apostila-pdf';
 import { parseApostilaContent } from '@/lib/apostila-parser';
 import { extractTextFromFile } from '@/lib/file-extract';
+import { MarkdownEditor } from '@/components/MarkdownEditor';
 
 type Apostila = Tables<'apostilas'>;
 type Exercise = Tables<'exercises'>;
@@ -1137,17 +1138,13 @@ export default function AdminPage() {
                             </div>
 
                             <div>
-                              <Label htmlFor="import-rawtext" className="text-xs font-medium text-foreground">Texto Bruto da Aula</Label>
-                              <Textarea id="import-rawtext"
+                              <Label htmlFor="import-rawtext" className="text-xs font-medium text-foreground mb-1.5 block">Texto Bruto da Aula</Label>
+                              <MarkdownEditor
                                 value={importRawText}
-                                onChange={e => setImportRawText(e.target.value)}
-                                placeholder={"Cole aqui qualquer texto — mesmo bagunçado, copiado de slides ou anotações.\n\nA IA vai organizar tudo em formato de apostila com exercícios."}
-                                rows={8}
-                                className="mt-1.5 text-xs"
+                                onChange={setImportRawText}
+                                placeholder={"Cole aqui qualquer texto — mesmo bagunçado, copiado de slides ou anotações.\n\nUse a barra de cima para formatar (negrito, títulos, listas).\n\nA IA vai organizar tudo em formato de apostila com exercícios."}
+                                rows={10}
                               />
-                              <p className="text-[10px] text-muted-foreground mt-1">
-                                {importRawText.trim().length > 0 ? `${importRawText.trim().split(/\s+/).length} palavras` : 'Cole qualquer texto — a IA estrutura automaticamente'}
-                              </p>
                             </div>
                             <Button onClick={handleExtract} disabled={cloning || !importRawText.trim()} className="w-full gradient-primary text-primary-foreground">
                               {cloning ? <><Loader2 className="h-4 w-4 animate-spin mr-1.5" /> Estruturando...</> : '✨ Estruturar como Apostila'}
@@ -1231,11 +1228,13 @@ export default function AdminPage() {
                         <CategorySelect value={manualCategory} onValueChange={setManualCategory} placeholder="Selecione a disciplina" />
                       </div>
                       <div>
-                        <div className="flex items-center justify-between mb-1.5">
-                          <Label htmlFor="manual-content" className="text-xs font-medium text-foreground">Conteúdo da Apostila</Label>
-                          <ImageUploadButton onImageInserted={(md) => setManualContent(prev => prev + md)} />
-                        </div>
-                        <Textarea id="manual-content" value={manualContent} onChange={e => setManualContent(e.target.value)} rows={6} className="mt-1.5" placeholder="Digite ou cole o conteúdo completo da aula..." />
+                        <Label htmlFor="manual-content" className="text-xs font-medium text-foreground mb-1.5 block">Conteúdo da Apostila</Label>
+                        <MarkdownEditor
+                          value={manualContent}
+                          onChange={setManualContent}
+                          placeholder="Digite ou cole o conteúdo completo da aula. Use a barra para formatar..."
+                          rows={12}
+                        />
                       </div>
                       <div className="flex gap-3 pt-1">
                         <Button variant="outline" className="flex-1 opacity-80" onClick={() => setShowManualForm(false)}>Cancelar</Button>
