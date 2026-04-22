@@ -40,6 +40,7 @@ import { TestimonialsAdmin } from '@/components/TestimonialsAdmin';
 import { AIProviderSettings } from '@/components/AIProviderSettings';
 import { exportApostilaToPDF } from '@/lib/apostila-pdf';
 import { parseApostilaContent } from '@/lib/apostila-parser';
+import { extractTextFromFile } from '@/lib/file-extract';
 
 type Apostila = Tables<'apostilas'>;
 type Exercise = Tables<'exercises'>;
