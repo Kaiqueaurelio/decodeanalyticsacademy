@@ -32,6 +32,7 @@ export function AppHeader() {
           <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-8 w-8">
             {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </Button>
+          {user && <NotificationBell />}
           {user ? (
             <>
               <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')} className="text-xs h-8 px-3 font-sans normal-case tracking-normal">
@@ -68,6 +69,7 @@ export function AppHeader() {
           <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-8 w-8">
             {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </Button>
+          {user && <NotificationBell />}
           {user ? (
             <Sheet open={open} onOpenChange={setOpen}>
               <SheetTrigger asChild>
