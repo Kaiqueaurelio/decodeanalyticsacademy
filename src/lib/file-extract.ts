@@ -3,7 +3,6 @@
 
 import * as pdfjsLib from 'pdfjs-dist';
 // Worker via URL importável pelo Vite (evita problema de CDN/CORS)
-// @ts-expect-error - vite resolve o ?url
 import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
