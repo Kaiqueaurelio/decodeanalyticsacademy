@@ -40,6 +40,7 @@ import { TestimonialsAdmin } from '@/components/TestimonialsAdmin';
 import { AIProviderSettings } from '@/components/AIProviderSettings';
 import { exportApostilaToPDF } from '@/lib/apostila-pdf';
 import { parseApostilaContent } from '@/lib/apostila-parser';
+import { extractTextFromFile } from '@/lib/file-extract';
 
 type Apostila = Tables<'apostilas'>;
 type Exercise = Tables<'exercises'>;
@@ -1080,17 +1081,23 @@ export default function AdminPage() {
                                 e.preventDefault();
                                 e.stopPropagation();
                                 const files = Array.from(e.dataTransfer.files);
-                                const pdfFile = files.find(f => f.type === 'application/pdf' || f.name.endsWith('.pdf'));
-                                const txtFile = files.find(f => f.type === 'text/plain' || f.name.endsWith('.txt'));
-                                const docFile = files.find(f => f.name.endsWith('.docx') || f.name.endsWith('.doc'));
-                                const file = pdfFile || txtFile || docFile;
+                                const file = files.find(f => /\.(pdf|txt|docx?)$/i.test(f.name));
                                 if (!file) { toast.error('Arraste um arquivo PDF, TXT ou DOCX'); return; }
-                                toast.info(`Lendo ${file.name}...`);
+                                const tId = toast.loading(`Lendo ${file.name}...`);
                                 try {
-                                  const text = await file.text();
+                                  const text = await extractTextFromFile(file, (p) => {
+                                    toast.loading(p.message, { id: tId });
+                                  });
+                                  if (!text || text.trim().length < 20) {
+                                    toast.error('Não foi possível extrair texto deste arquivo (pode estar protegido ou ser só imagens).', { id: tId });
+                                    return;
+                                  }
                                   setImportRawText(prev => prev ? prev + '\n\n' + text : text);
-                                  toast.success(`Conteúdo de "${file.name}" adicionado!`);
-                                } catch { toast.error('Erro ao ler o arquivo'); }
+                                  if (!importTitle) setImportTitle(file.name.replace(/\.[^.]+$/, ''));
+                                  toast.success(`"${file.name}" — ${text.split(/\s+/).length} palavras extraídas`, { id: tId });
+                                } catch (err: any) {
+                                  toast.error(err?.message || 'Erro ao ler o arquivo', { id: tId });
+                                }
                               }}
                               className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-4 text-center cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors"
                               onClick={() => {
@@ -1100,19 +1107,28 @@ export default function AdminPage() {
                                 input.onchange = async (ev) => {
                                   const file = (ev.target as HTMLInputElement).files?.[0];
                                   if (!file) return;
-                                  toast.info(`Lendo ${file.name}...`);
+                                  const tId = toast.loading(`Lendo ${file.name}...`);
                                   try {
-                                    const text = await file.text();
+                                    const text = await extractTextFromFile(file, (p) => {
+                                      toast.loading(p.message, { id: tId });
+                                    });
+                                    if (!text || text.trim().length < 20) {
+                                      toast.error('Não foi possível extrair texto deste arquivo.', { id: tId });
+                                      return;
+                                    }
                                     setImportRawText(prev => prev ? prev + '\n\n' + text : text);
-                                    toast.success(`Conteúdo de "${file.name}" adicionado!`);
-                                  } catch { toast.error('Erro ao ler o arquivo'); }
+                                    if (!importTitle) setImportTitle(file.name.replace(/\.[^.]+$/, ''));
+                                    toast.success(`"${file.name}" — ${text.split(/\s+/).length} palavras extraídas`, { id: tId });
+                                  } catch (err: any) {
+                                    toast.error(err?.message || 'Erro ao ler o arquivo', { id: tId });
+                                  }
                                 };
                                 input.click();
                               }}
                             >
                               <FileUp className="h-6 w-6 mx-auto text-muted-foreground mb-1.5" />
                               <p className="text-xs font-medium text-foreground">Arraste um PDF, TXT ou DOCX aqui</p>
-                              <p className="text-[10px] text-muted-foreground mt-0.5">ou clique para selecionar</p>
+                              <p className="text-[10px] text-muted-foreground mt-0.5">ou clique para selecionar (até 25MB)</p>
                             </div>
 
                             <div className="relative">
