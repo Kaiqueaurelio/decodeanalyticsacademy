@@ -48,6 +48,15 @@ p, li, h1, h2, h3, h4, h5, h6, span, a, blockquote, td, th {
 }
 /* Tables don't break line-flow */
 table { max-width: 100%; }
+/* Bloqueio global de seleção/cópia: nada é selecionável por padrão */
+html, body {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+/* Exceções: campos editáveis e blocos explicitamente liberados (ex.: código) */
 input, textarea, [contenteditable="true"],
 [data-allow-copy], [data-allow-copy] * {
   -webkit-user-select: text !important;
