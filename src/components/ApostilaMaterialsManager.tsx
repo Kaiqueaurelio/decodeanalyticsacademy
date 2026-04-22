@@ -113,6 +113,46 @@ export function ApostilaMaterialsManager({ apostilaId, apostilaTitle, open: open
     load();
   };
 
+  /**
+   * Upload rápido de áudio: cria material 'audio' + vincula à apostila em 1 clique.
+   * Útil para o admin subir as gravações das aulas direto pelo modal da apostila.
+   */
+  const handleAudioUpload = async (file: File) => {
+    if (!user) { toast.error('Sessão expirada'); return; }
+    if (file.size > 100 * 1024 * 1024) { toast.error('Áudio acima de 100MB.'); return; }
+
+    setUploadingAudio(true);
+    const tId = toast.loading(`Subindo ${file.name}...`);
+    try {
+      const ext = file.name.split('.').pop() || 'mp3';
+      const path = `audios/${apostilaId}/${Date.now()}.${ext}`;
+
+      const { error: upErr } = await supabase.storage
+        .from('materials').upload(path, file, { contentType: file.type, upsert: false });
+      if (upErr) throw upErr;
+
+      const title = file.name.replace(/\.[^.]+$/, '');
+      const { data: mat, error: insErr } = await supabase.from('materials').insert({
+        title, type: 'audio', file_path: path, created_by: user.id,
+      } as any).select().single();
+      if (insErr) throw insErr;
+
+      const maxOrder = linked.length > 0 ? Math.max(...linked.map((l) => l.sort_order)) + 1 : 0;
+      const { error: linkErr } = await supabase.from('apostila_materials').insert({
+        apostila_id: apostilaId, material_id: (mat as any).id, sort_order: maxOrder,
+      });
+      if (linkErr) throw linkErr;
+
+      toast.success(`Áudio "${title}" vinculado à apostila!`, { id: tId });
+      load();
+    } catch (err: any) {
+      toast.error(err?.message || 'Erro ao subir áudio', { id: tId });
+    } finally {
+      setUploadingAudio(false);
+      if (audioInputRef.current) audioInputRef.current.value = '';
+    }
+  };
+
   return (
     <>
       {!hideTrigger && (
