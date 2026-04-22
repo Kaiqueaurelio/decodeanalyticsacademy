@@ -28,6 +28,8 @@ export default defineConfig(({ mode }) => ({
       ],
       manifest: false, // mantemos public/manifest.json existente
       workbox: {
+        // Importa nosso handler de push (em /sw-push.js)
+        importScripts: ["/sw-push.js"],
         // Não cacheia rotas internas do Lovable nem o callback OAuth
         navigateFallbackDenylist: [/^\/~oauth/, /^\/api/],
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
@@ -89,6 +91,24 @@ export default defineConfig(({ mode }) => ({
       },
     }),
   ].filter(Boolean),
+  build: {
+    // Limites maiores: o aviso de chunk grande é informativo
+    chunkSizeWarningLimit: 1500,
+    rollupOptions: {
+      output: {
+        // Separar libs pesadas em chunks próprios para acelerar o primeiro load
+        manualChunks: {
+          react: ["react", "react-dom", "react-router-dom"],
+          query: ["@tanstack/react-query"],
+          charts: ["recharts"],
+          motion: ["framer-motion"],
+          pdf: ["pdfjs-dist"],
+          mermaid: ["mermaid"],
+          mammoth: ["mammoth"],
+        },
+      },
+    },
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

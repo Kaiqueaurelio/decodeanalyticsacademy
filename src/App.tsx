@@ -46,7 +46,18 @@ const SimuladoPage = lazy(() => import("./pages/SimuladoPage"));
 const PreExamReviewPage = lazy(() => import("./pages/PreExamReviewPage"));
 const TiraDuvidaPage = lazy(() => import("./pages/TiraDuvidaPage"));
 
-const queryClient = new QueryClient();
+// Cache agressivo: dados ficam frescos por 5min, em cache por 30min
+// → menos requisições, navegação instantânea entre páginas
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000,
+      gcTime: 30 * 60 * 1000,
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
 
 function WatermarkWrapper() {
   const { user } = useAuth();
