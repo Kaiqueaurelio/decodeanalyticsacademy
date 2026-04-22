@@ -170,6 +170,30 @@ export function ApostilaMaterialsManager({ apostilaId, apostilaTitle, open: open
             </DialogTitle>
           </DialogHeader>
 
+          {/* Upload rápido de áudio — destaque */}
+          <button
+            type="button"
+            onClick={() => audioInputRef.current?.click()}
+            disabled={uploadingAudio}
+            className="w-full mb-2 flex items-center gap-3 p-3 rounded-lg border-2 border-dashed border-primary/40 bg-primary/5 hover:bg-primary/10 transition-colors disabled:opacity-50"
+          >
+            <div className="h-9 w-9 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
+              {uploadingAudio ? <Loader2 className="h-4 w-4 animate-spin text-primary" /> : <Headphones className="h-4 w-4 text-primary" />}
+            </div>
+            <div className="text-left flex-1 min-w-0">
+              <p className="text-xs font-semibold text-foreground">Subir áudio da aula</p>
+              <p className="text-[10px] text-muted-foreground">MP3, WAV, M4A — vincula automaticamente</p>
+            </div>
+            <Upload className="h-3.5 w-3.5 text-primary shrink-0" />
+          </button>
+          <input
+            ref={audioInputRef}
+            type="file"
+            accept="audio/*,.mp3,.wav,.m4a,.ogg"
+            className="hidden"
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) handleAudioUpload(f); }}
+          />
+
           {/* Auto-link buttons */}
           <div className="grid grid-cols-2 gap-2 mb-2">
             <Button size="sm" variant="outline" className="text-xs gap-1.5" onClick={handleAutoLink} disabled={autoLinking}>
