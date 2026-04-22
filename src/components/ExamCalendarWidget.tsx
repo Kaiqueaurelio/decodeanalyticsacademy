@@ -46,7 +46,7 @@ export function ExamCalendarWidget() {
     })();
 
     const channel = supabase
-      .channel('calendar-events-widget')
+      .channel(`calendar-events-widget-${Math.random().toString(36).slice(2)}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'calendar_events' }, () => {
         supabase.from('calendar_events')
           .select('id,title,event_date,event_time,event_type,subject')

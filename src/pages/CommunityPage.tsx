@@ -132,7 +132,7 @@ export default function CommunityPage() {
 
     // Realtime subscription
     if (channelRef.current) supabase.removeChannel(channelRef.current);
-    const ch = supabase.channel(`community-${activeChannel.id}`)
+    const ch = supabase.channel(`community-${activeChannel.id}-${Math.random().toString(36).slice(2)}`)
       .on('postgres_changes', {
         event: '*', schema: 'public', table: 'community_posts',
         filter: `channel_id=eq.${activeChannel.id}`,

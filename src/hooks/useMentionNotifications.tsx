@@ -50,7 +50,7 @@ export function useMentionNotifications() {
   useEffect(() => {
     if (!user) return;
     const channel = supabase
-      .channel(`mentions:${user.id}`)
+      .channel(`mentions:${user.id}:${Math.random().toString(36).slice(2)}`)
       .on(
         'postgres_changes',
         {
