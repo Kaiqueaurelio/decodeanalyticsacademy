@@ -89,18 +89,46 @@ function guessLang(code: string): string {
 function wrapInferredCodeBlocks(raw: string): string {
   if (!raw) return raw;
   if (raw.includes('```')) {
-    // Se já tem fences, ainda assim tentamos detectar trechos NÃO cercados,
-    // mas para evitar romper blocos existentes, dividimos pelos fences.
-    const parts = raw.split(/(```[\s\S]*?```)/g);
-    return parts
-      .map((p) => {
-        if (p.startsWith('```')) return p;
-        // Evita recursão infinita se o trecho ainda contiver ``` (fence não fechada)
-        if (p.includes('```')) return p;
-        return wrapInferredCodeBlocks(p);
-      })
-      .join('');
+    // Divide pelos blocos cercados; processa apenas as partes fora das cercas.
+    // Dividimos linha-a-linha para tolerar cercas mal formadas (ímpares).
+    const linesAll = raw.split('\n');
+    const out: string[] = [];
+    let buffer: string[] = [];
+    let inFence = false;
+    const flush = () => {
+      if (!buffer.length) return;
+      const text = buffer.join('\n');
+      // Sem chamada recursiva: processamos diretamente o segmento sem cercas
+      out.push(processUnfenced(text));
+      buffer = [];
+    };
+    for (const l of linesAll) {
+      if (/^```/.test(l.trim())) {
+        if (inFence) {
+          out.push(l);
+          inFence = false;
+        } else {
+          flush();
+          out.push(l);
+          inFence = true;
+        }
+        continue;
+      }
+      if (inFence) out.push(l);
+      else buffer.push(l);
+    }
+    if (inFence) {
+      // Cerca não fechada — fecha automaticamente para preservar o restante
+      out.push('```');
+    }
+    flush();
+    return out.join('\n');
   }
+  return processUnfenced(raw);
+}
+
+/** Núcleo da heurística para detectar e cercar blocos de código sem fences. */
+function processUnfenced(raw: string): string {
 
   const lines = raw.split('\n');
   const out: string[] = [];
