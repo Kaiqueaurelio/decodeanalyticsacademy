@@ -3,6 +3,10 @@ import App from "./App.tsx";
 import "./index.css";
 import { bootstrapSavedRoute } from "@/lib/app-persistence";
 import { registerServiceWorker } from "@/lib/pwa";
+import { installChunkReloadGuard } from "@/lib/chunk-reload-guard";
+
+// Recupera automaticamente de chunks obsoletos após deploys
+installChunkReloadGuard();
 
 // PWA install prompt capture — only in production (not in iframe/preview)
 const isInIframe = (() => {
