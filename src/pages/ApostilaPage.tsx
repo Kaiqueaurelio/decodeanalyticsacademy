@@ -12,7 +12,7 @@ import { CommentsWidget } from '@/components/CommentsWidget';
 import { ApostilaMaterials } from '@/components/ApostilaMaterials';
 import { ApostilaAudios } from '@/components/ApostilaAudios';
 import { ApostilaChat } from '@/components/ApostilaChat';
-import { ApostilaContentRenderer } from '@/components/ApostilaContentRenderer';
+import { ApostilaContentBoundary } from '@/components/ApostilaContentBoundary';
 import { AskHelpFab } from '@/components/AskHelpFab';
 import { SpeakButton } from '@/components/SpeakButton';
 import { ApostilaSummaryDialog } from '@/components/ApostilaSummaryDialog';
@@ -488,7 +488,7 @@ export default function ApostilaPage() {
                         </h4>
                       )}
                       {section.content.trim() && (
-                        <ApostilaContentRenderer content={section.content} />
+                        <ApostilaContentBoundary content={section.content} />
                       )}
                     </section>
                   );
