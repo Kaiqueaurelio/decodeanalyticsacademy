@@ -135,6 +135,7 @@ function processUnfenced(raw: string): string {
   let i = 0;
 
   while (i < lines.length) {
+    const prevI = i;
     const line = lines[i];
 
     // Cabeçalho tipo "1. GameManager.cs" ou "GameManager.cs"
