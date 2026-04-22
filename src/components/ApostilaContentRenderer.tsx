@@ -87,11 +87,19 @@ function guessLang(code: string): string {
 
 /** Pré-processa o markdown injetando ``` em blocos de código sem cercas. */
 function wrapInferredCodeBlocks(raw: string): string {
-  if (!raw || raw.includes('```')) {
+  if (!raw) return raw;
+  if (raw.includes('```')) {
     // Se já tem fences, ainda assim tentamos detectar trechos NÃO cercados,
     // mas para evitar romper blocos existentes, dividimos pelos fences.
     const parts = raw.split(/(```[\s\S]*?```)/g);
-    return parts.map((p) => (p.startsWith('```') ? p : wrapInferredCodeBlocks(p))).join('');
+    return parts
+      .map((p) => {
+        if (p.startsWith('```')) return p;
+        // Evita recursão infinita se o trecho ainda contiver ``` (fence não fechada)
+        if (p.includes('```')) return p;
+        return wrapInferredCodeBlocks(p);
+      })
+      .join('');
   }
 
   const lines = raw.split('\n');
