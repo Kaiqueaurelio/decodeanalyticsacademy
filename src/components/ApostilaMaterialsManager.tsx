@@ -1,12 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
-  Plus, Trash2, FileText, Image, Video, Music, Presentation, File, Link as LinkIcon, FileSpreadsheet, Search, Paperclip, Wand2, Loader2
+  Plus, Trash2, FileText, Image, Video, Music, Presentation, File, Link as LinkIcon, FileSpreadsheet, Search, Paperclip, Wand2, Loader2, Headphones, Upload
 } from 'lucide-react';
 import { autoLinkApostila } from '@/lib/auto-link-materials';
 import { ManualLinkMaterialsDialog } from '@/components/ManualLinkMaterialsDialog';
@@ -48,6 +49,9 @@ export function ApostilaMaterialsManager({ apostilaId, apostilaTitle, open: open
   const [loading, setLoading] = useState(false);
   const [autoLinking, setAutoLinking] = useState(false);
   const [manualOpen, setManualOpen] = useState(false);
+  const [uploadingAudio, setUploadingAudio] = useState(false);
+  const audioInputRef = useRef<HTMLInputElement>(null);
+  const { user } = useAuth();
 
   const load = async () => {
     setLoading(true);
