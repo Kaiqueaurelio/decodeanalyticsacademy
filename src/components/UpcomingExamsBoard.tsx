@@ -58,7 +58,7 @@ export function UpcomingExamsBoard() {
     load();
 
     const channel = supabase
-      .channel('upcoming-exams-board')
+      .channel(`upcoming-exams-board-${Math.random().toString(36).slice(2)}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'calendar_events' }, load)
       .subscribe();
 
