@@ -43,7 +43,7 @@ export function useNotifications() {
   useEffect(() => {
     if (!user) return;
     const channel = supabase
-      .channel(`notif:${user.id}`)
+      .channel(`notif:${user.id}:${Math.random().toString(36).slice(2)}`)
       .on(
         "postgres_changes",
         {
@@ -58,7 +58,8 @@ export function useNotifications() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, refresh]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   const unreadCount = items.filter((n) => !n.read).length;
 
