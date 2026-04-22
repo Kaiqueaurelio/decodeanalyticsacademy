@@ -28,6 +28,8 @@ export default defineConfig(({ mode }) => ({
       ],
       manifest: false, // mantemos public/manifest.json existente
       workbox: {
+        // Importa nosso handler de push (em /sw-push.js)
+        importScripts: ["/sw-push.js"],
         // Não cacheia rotas internas do Lovable nem o callback OAuth
         navigateFallbackDenylist: [/^\/~oauth/, /^\/api/],
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],

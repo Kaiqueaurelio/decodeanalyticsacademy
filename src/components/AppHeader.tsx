@@ -7,6 +7,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { LogOut, LayoutDashboard, Shield, Menu, ArrowRight, Sun, Moon, User, Users, Camera } from 'lucide-react';
 import logoDark from '@/assets/logo-dark.jpeg';
 import { useMentionNotifications } from '@/hooks/useMentionNotifications';
+import { NotificationBell } from '@/components/NotificationBell';
 
 export function AppHeader() {
   const { user, isAdmin, signOut } = useAuth();
