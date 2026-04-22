@@ -1,4 +1,15 @@
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
+
+let lastCopyToast = 0;
+const notifyBlocked = () => {
+  const now = Date.now();
+  if (now - lastCopyToast < 2500) return;
+  lastCopyToast = now;
+  toast.info('Apenas blocos de código podem ser copiados', {
+    description: 'O restante do conteúdo está protegido.',
+  });
+};
 
 /**
  * Web-based screenshot protection:
