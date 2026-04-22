@@ -130,7 +130,9 @@ export function RANamePrompt() {
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && handleLater()}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent
+        className="sm:max-w-md top-4 translate-y-0 sm:top-8 data-[state=open]:slide-in-from-top-2"
+      >
         <DialogHeader>
           <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
             <UserCircle2 className="h-6 w-6 text-primary" />

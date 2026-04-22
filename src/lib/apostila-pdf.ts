@@ -27,14 +27,20 @@ function slugify(s: string) {
 /** Constrói o HTML "print-ready" da apostila inteira, fora da tela. */
 function buildPrintContainer({ title, category, sections }: ExportOpts): HTMLDivElement {
   const wrap = document.createElement('div');
+  // IMPORTANTE: o container precisa estar no fluxo visível para o html2canvas
+  // capturar corretamente (left:-10000px causava páginas em branco em alguns navegadores).
+  // Usamos opacity:0 + pointer-events:none para ficar invisível mas renderizável.
   wrap.style.cssText = `
-    position: fixed; left: -10000px; top: 0;
+    position: absolute; left: 0; top: 0;
     width: 794px; /* A4 @ 96dpi */
     background: #ffffff; color: #111827;
     font-family: 'Georgia', 'Times New Roman', serif;
     padding: 56px 64px 80px;
     box-sizing: border-box;
     line-height: 1.7;
+    opacity: 0;
+    pointer-events: none;
+    z-index: -1;
   `;
 
   const today = new Date().toLocaleDateString('pt-BR', {
@@ -326,20 +332,33 @@ export async function exportApostilaToPDF(opts: ExportOpts): Promise<void> {
     imgs.map(
       (img) =>
         new Promise<void>((res) => {
-          if (img.complete) return res();
+          if (img.complete && img.naturalWidth > 0) return res();
           img.onload = () => res();
           img.onerror = () => res();
+          // timeout de segurança 5s
+          setTimeout(res, 5000);
         })
     )
   );
+
+  // Espera fontes prontas (Georgia/Courier) + um frame de layout
+  if ((document as any).fonts?.ready) {
+    try { await (document as any).fonts.ready; } catch { /* ignore */ }
+  }
+  await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
 
   try {
     const canvas = await html2canvas(container, {
       scale: 2,
       useCORS: true,
+      allowTaint: false,
       backgroundColor: '#ffffff',
       logging: false,
       windowWidth: 794,
+      width: container.offsetWidth,
+      height: container.offsetHeight,
+      scrollX: 0,
+      scrollY: -window.scrollY,
     });
 
     const pdf = new jsPDF({ orientation: 'p', unit: 'pt', format: 'a4' });

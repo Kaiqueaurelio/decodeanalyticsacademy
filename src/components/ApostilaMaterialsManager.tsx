@@ -1,12 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
-  Plus, Trash2, FileText, Image, Video, Music, Presentation, File, Link as LinkIcon, FileSpreadsheet, Search, Paperclip, Wand2, Loader2
+  Plus, Trash2, FileText, Image, Video, Music, Presentation, File, Link as LinkIcon, FileSpreadsheet, Search, Paperclip, Wand2, Loader2, Headphones, Upload
 } from 'lucide-react';
 import { autoLinkApostila } from '@/lib/auto-link-materials';
 import { ManualLinkMaterialsDialog } from '@/components/ManualLinkMaterialsDialog';
@@ -48,6 +49,9 @@ export function ApostilaMaterialsManager({ apostilaId, apostilaTitle, open: open
   const [loading, setLoading] = useState(false);
   const [autoLinking, setAutoLinking] = useState(false);
   const [manualOpen, setManualOpen] = useState(false);
+  const [uploadingAudio, setUploadingAudio] = useState(false);
+  const audioInputRef = useRef<HTMLInputElement>(null);
+  const { user } = useAuth();
 
   const load = async () => {
     setLoading(true);
@@ -109,6 +113,46 @@ export function ApostilaMaterialsManager({ apostilaId, apostilaTitle, open: open
     load();
   };
 
+  /**
+   * Upload rápido de áudio: cria material 'audio' + vincula à apostila em 1 clique.
+   * Útil para o admin subir as gravações das aulas direto pelo modal da apostila.
+   */
+  const handleAudioUpload = async (file: File) => {
+    if (!user) { toast.error('Sessão expirada'); return; }
+    if (file.size > 100 * 1024 * 1024) { toast.error('Áudio acima de 100MB.'); return; }
+
+    setUploadingAudio(true);
+    const tId = toast.loading(`Subindo ${file.name}...`);
+    try {
+      const ext = file.name.split('.').pop() || 'mp3';
+      const path = `audios/${apostilaId}/${Date.now()}.${ext}`;
+
+      const { error: upErr } = await supabase.storage
+        .from('materials').upload(path, file, { contentType: file.type, upsert: false });
+      if (upErr) throw upErr;
+
+      const title = file.name.replace(/\.[^.]+$/, '');
+      const { data: mat, error: insErr } = await supabase.from('materials').insert({
+        title, type: 'audio', file_path: path, created_by: user.id,
+      } as any).select().single();
+      if (insErr) throw insErr;
+
+      const maxOrder = linked.length > 0 ? Math.max(...linked.map((l) => l.sort_order)) + 1 : 0;
+      const { error: linkErr } = await supabase.from('apostila_materials').insert({
+        apostila_id: apostilaId, material_id: (mat as any).id, sort_order: maxOrder,
+      });
+      if (linkErr) throw linkErr;
+
+      toast.success(`Áudio "${title}" vinculado à apostila!`, { id: tId });
+      load();
+    } catch (err: any) {
+      toast.error(err?.message || 'Erro ao subir áudio', { id: tId });
+    } finally {
+      setUploadingAudio(false);
+      if (audioInputRef.current) audioInputRef.current.value = '';
+    }
+  };
+
   return (
     <>
       {!hideTrigger && (
@@ -125,6 +169,30 @@ export function ApostilaMaterialsManager({ apostilaId, apostilaTitle, open: open
               Materiais: {apostilaTitle}
             </DialogTitle>
           </DialogHeader>
+
+          {/* Upload rápido de áudio — destaque */}
+          <button
+            type="button"
+            onClick={() => audioInputRef.current?.click()}
+            disabled={uploadingAudio}
+            className="w-full mb-2 flex items-center gap-3 p-3 rounded-lg border-2 border-dashed border-primary/40 bg-primary/5 hover:bg-primary/10 transition-colors disabled:opacity-50"
+          >
+            <div className="h-9 w-9 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
+              {uploadingAudio ? <Loader2 className="h-4 w-4 animate-spin text-primary" /> : <Headphones className="h-4 w-4 text-primary" />}
+            </div>
+            <div className="text-left flex-1 min-w-0">
+              <p className="text-xs font-semibold text-foreground">Subir áudio da aula</p>
+              <p className="text-[10px] text-muted-foreground">MP3, WAV, M4A — vincula automaticamente</p>
+            </div>
+            <Upload className="h-3.5 w-3.5 text-primary shrink-0" />
+          </button>
+          <input
+            ref={audioInputRef}
+            type="file"
+            accept="audio/*,.mp3,.wav,.m4a,.ogg"
+            className="hidden"
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) handleAudioUpload(f); }}
+          />
 
           {/* Auto-link buttons */}
           <div className="grid grid-cols-2 gap-2 mb-2">
