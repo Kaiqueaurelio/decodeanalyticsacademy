@@ -135,6 +135,7 @@ function processUnfenced(raw: string): string {
   let i = 0;
 
   while (i < lines.length) {
+    const prevI = i;
     const line = lines[i];
 
     // Cabeçalho tipo "1. GameManager.cs" ou "GameManager.cs"
@@ -221,6 +222,9 @@ function processUnfenced(raw: string): string {
       out.push(line);
       i++;
     }
+
+    // Garantia: nunca permitir que `i` fique parado (proteção contra loop infinito)
+    if (i <= prevI) i = prevI + 1;
   }
 
   return out.join('\n');
@@ -624,7 +628,16 @@ interface Props {
  * ritmo de leitura confortável (~68ch, line-height 1.75).
  */
 export function ApostilaContentRenderer({ content }: Props) {
-  const blocks = useMemo(() => parseBlocks(content), [content]);
+  const blocks = useMemo(() => {
+    try {
+      return parseBlocks(content);
+    } catch (err) {
+      console.error('[ApostilaContentRenderer] parse error, falling back to plain text:', err);
+      // Fallback: renderiza o conteúdo como parágrafos simples para evitar tela preta
+      const paragraphs = (content || '').split(/\n{2,}/).map((p) => p.trim()).filter(Boolean);
+      return paragraphs.map((content) => ({ type: 'paragraph' as const, content }));
+    }
+  }, [content]);
   // Identifica o índice do primeiro parágrafo "real" (para aplicar drop-cap)
   const firstParagraphIdx = useMemo(
     () => blocks.findIndex((b) => b.type === 'paragraph' && b.content.trim().length > 80),
