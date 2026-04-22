@@ -332,20 +332,33 @@ export async function exportApostilaToPDF(opts: ExportOpts): Promise<void> {
     imgs.map(
       (img) =>
         new Promise<void>((res) => {
-          if (img.complete) return res();
+          if (img.complete && img.naturalWidth > 0) return res();
           img.onload = () => res();
           img.onerror = () => res();
+          // timeout de segurança 5s
+          setTimeout(res, 5000);
         })
     )
   );
+
+  // Espera fontes prontas (Georgia/Courier) + um frame de layout
+  if ((document as any).fonts?.ready) {
+    try { await (document as any).fonts.ready; } catch { /* ignore */ }
+  }
+  await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
 
   try {
     const canvas = await html2canvas(container, {
       scale: 2,
       useCORS: true,
+      allowTaint: false,
       backgroundColor: '#ffffff',
       logging: false,
       windowWidth: 794,
+      width: container.offsetWidth,
+      height: container.offsetHeight,
+      scrollX: 0,
+      scrollY: -window.scrollY,
     });
 
     const pdf = new jsPDF({ orientation: 'p', unit: 'pt', format: 'a4' });
