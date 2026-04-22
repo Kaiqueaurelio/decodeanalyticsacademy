@@ -26,11 +26,13 @@ const tryReload = () => {
     /* sessionStorage indisponível — segue mesmo assim */
   }
   // Limpa caches do Service Worker (PWA) antes de recarregar
+  const reload = () => window.location.reload();
   if ('caches' in window) {
-    caches.keys().then((keys) => Promise.all(keys.map((k) => caches.delete(k))))
-      .finally(() => window.location.reload());
+    caches.keys()
+      .then((keys) => Promise.all(keys.map((k) => caches.delete(k))))
+      .then(reload, reload);
   } else {
-    window.location.reload();
+    reload();
   }
 };
 
