@@ -586,7 +586,7 @@ function CalloutBlock({ kind, title, content }: { kind: 'info' | 'tip' | 'warnin
         <div className={`font-mono-label text-[10px] uppercase tracking-wider mb-1 ${labelTone}`}>
           {title}
         </div>
-        <p className="text-[14px] leading-[1.7] text-foreground/85 m-0">{cleanInlineText(content)}</p>
+        <p className="text-[14px] leading-[1.7] text-foreground/85 m-0" dangerouslySetInnerHTML={renderInline(content)} />
       </div>
     </aside>
   );
