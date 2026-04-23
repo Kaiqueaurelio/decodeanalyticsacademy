@@ -42,7 +42,7 @@ const INITIAL_TESTS: TestResult[] = [
 ];
 
 export function SmokeTestsPanel() {
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const [tests, setTests] = useState<TestResult[]>(INITIAL_TESTS);
   const [running, setRunning] = useState(false);
   const [lastRun, setLastRun] = useState<Date | null>(null);
@@ -161,7 +161,7 @@ export function SmokeTestsPanel() {
             </CardTitle>
             <CardDescription className="text-xs mt-1">
               Executa verificações rápidas para validar a estabilidade do sistema.
-              {profile?.full_name && <> Logado como <span className="text-foreground font-medium">{profile.full_name}</span>.</>}
+              {user?.email && <> Sessão: <span className="text-foreground font-medium">{user.email}</span>.</>}
             </CardDescription>
           </div>
           <Button
