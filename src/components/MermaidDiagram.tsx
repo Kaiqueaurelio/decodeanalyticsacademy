@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import mermaid from 'mermaid';
+import { useSafeMode } from '@/hooks/useSafeMode';
 
 let initialized = false;
 function ensureInit() {
@@ -29,8 +30,10 @@ interface Props {
 export function MermaidDiagram({ chart, className }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string | null>(null);
+  const { enabled: safeMode } = useSafeMode();
 
   useEffect(() => {
+    if (safeMode) return; // Não inicializa mermaid em modo seguro
     ensureInit();
     let cancelled = false;
     const id = `mmd-${Math.random().toString(36).slice(2, 10)}`;
@@ -47,7 +50,16 @@ export function MermaidDiagram({ chart, className }: Props) {
       }
     })();
     return () => { cancelled = true; };
-  }, [chart]);
+  }, [chart, safeMode]);
+
+  if (safeMode) {
+    return (
+      <pre className={`text-xs text-muted-foreground p-3 rounded-lg bg-muted/40 border border-border overflow-x-auto whitespace-pre-wrap ${className ?? ''}`}>
+        <span className="block text-[10px] uppercase tracking-wider mb-2 text-foreground/60">Diagrama (modo seguro)</span>
+        {chart}
+      </pre>
+    );
+  }
 
   if (error) {
     return (
