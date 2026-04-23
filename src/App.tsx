@@ -19,6 +19,9 @@ import { PullToRefresh } from "@/components/PullToRefresh";
 import { PageSkeleton } from "@/components/PageSkeleton";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
 import { QuickActionsFab } from "@/components/QuickActionsFab";
+import { SafeModeBoundary } from "@/components/SafeModeBoundary";
+import { SafeModeBanner } from "@/components/SafeModeBanner";
+import { useSafeMode } from "@/hooks/useSafeMode";
 import { useRouteTracker, getLastRoute } from "@/hooks/useRouteTracker";
 import { useInactivityLogout } from "@/hooks/useInactivityLogout";
 import { getLocationRoute, getPageState, getScrollPosition, savePageState, saveScrollPosition } from "@/lib/app-persistence";
@@ -61,7 +64,11 @@ const queryClient = new QueryClient({
 
 function WatermarkWrapper() {
   const { user } = useAuth();
+  const { enabled: safeMode } = useSafeMode();
   if (!user) return null;
+  // Em modo seguro, desliga overlays pesados (watermark animada, screenshot guard,
+  // command palette, FABs) para reduzir trabalho de render.
+  if (safeMode) return null;
   return (
     <>
       <DynamicWatermark />
@@ -233,6 +240,7 @@ function AnimatedRoutes() {
   const location = useLocation();
   useRouteTracker();
   useInactivityLogout();
+  const { enabled: safeMode } = useSafeMode();
 
   return (
     <>
@@ -241,29 +249,33 @@ function AnimatedRoutes() {
       <ScrollRestoration />
       <WatermarkWrapper />
       <OfflineIndicator />
-      <div key={location.pathname} className="animate-page-in">
+      <SafeModeBanner />
+      {/* Em modo seguro, removemos a animação de transição entre páginas */}
+      <div key={location.pathname} className={safeMode ? '' : 'animate-page-in'}>
         <Suspense fallback={<PageSkeleton />}>
-          <Routes location={location}>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/reset-password" element={<ResetPasswordPage />} />
-            <Route path="/offline" element={<OfflinePage />} />
-            <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-            <Route path="/review" element={<ProtectedRoute><ReviewPage /></ProtectedRoute>} />
-            <Route path="/simulado" element={<ProtectedRoute><SimuladoPage /></ProtectedRoute>} />
-            <Route path="/revisao-prova/:eventId" element={<ProtectedRoute><PreExamReviewPage /></ProtectedRoute>} />
-            <Route path="/apostila/:id" element={<ProtectedRoute><ApostilaPage /></ProtectedRoute>} />
-            <Route path="/exercises/:id" element={<ProtectedRoute><ExercisesPage /></ProtectedRoute>} />
-            <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-            <Route path="/materials" element={<ProtectedRoute><MaterialsPage /></ProtectedRoute>} />
-            <Route path="/biblioteca" element={<ProtectedRoute><BibliotecaPage /></ProtectedRoute>} />
-            <Route path="/video/:id" element={<ProtectedRoute><VideoPlayerPage /></ProtectedRoute>} />
-            <Route path="/aviso/:id" element={<ProtectedRoute><AnnouncementDetailPage /></ProtectedRoute>} />
-            <Route path="/comunidade" element={<ProtectedRoute><CommunityPage /></ProtectedRoute>} />
-            <Route path="/tira-duvida" element={<ProtectedRoute><TiraDuvidaPage /></ProtectedRoute>} />
-            <Route path="/admin" element={<ProtectedRoute adminOnly><AdminPage /></ProtectedRoute>} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <SafeModeBoundary routeKey={location.pathname}>
+            <Routes location={location}>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
+              <Route path="/offline" element={<OfflinePage />} />
+              <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+              <Route path="/review" element={<ProtectedRoute><ReviewPage /></ProtectedRoute>} />
+              <Route path="/simulado" element={<ProtectedRoute><SimuladoPage /></ProtectedRoute>} />
+              <Route path="/revisao-prova/:eventId" element={<ProtectedRoute><PreExamReviewPage /></ProtectedRoute>} />
+              <Route path="/apostila/:id" element={<ProtectedRoute><ApostilaPage /></ProtectedRoute>} />
+              <Route path="/exercises/:id" element={<ProtectedRoute><ExercisesPage /></ProtectedRoute>} />
+              <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+              <Route path="/materials" element={<ProtectedRoute><MaterialsPage /></ProtectedRoute>} />
+              <Route path="/biblioteca" element={<ProtectedRoute><BibliotecaPage /></ProtectedRoute>} />
+              <Route path="/video/:id" element={<ProtectedRoute><VideoPlayerPage /></ProtectedRoute>} />
+              <Route path="/aviso/:id" element={<ProtectedRoute><AnnouncementDetailPage /></ProtectedRoute>} />
+              <Route path="/comunidade" element={<ProtectedRoute><CommunityPage /></ProtectedRoute>} />
+              <Route path="/tira-duvida" element={<ProtectedRoute><TiraDuvidaPage /></ProtectedRoute>} />
+              <Route path="/admin" element={<ProtectedRoute adminOnly><AdminPage /></ProtectedRoute>} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </SafeModeBoundary>
         </Suspense>
       </div>
     </>
