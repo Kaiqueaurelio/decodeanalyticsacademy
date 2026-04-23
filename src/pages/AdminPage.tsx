@@ -42,6 +42,7 @@ import { exportApostilaToPDF } from '@/lib/apostila-pdf';
 import { parseApostilaContent } from '@/lib/apostila-parser';
 import { extractTextFromFile } from '@/lib/file-extract';
 import { MarkdownEditor } from '@/components/MarkdownEditor';
+import { PerformanceMetrics } from '@/components/PerformanceMetrics';
 
 type Apostila = Tables<'apostilas'>;
 type Exercise = Tables<'exercises'>;
@@ -81,7 +82,7 @@ function CategorySelect({ value, onValueChange, placeholder }: { value: string; 
   );
 }
 
-type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements' | 'calendar' | 'testimonials' | 'ai';
+type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements' | 'calendar' | 'testimonials' | 'ai' | 'performance';
 
 const ACCEPT_MAP: Record<string, string> = {
   pdf: '.pdf', image: 'image/*', gif: '.gif,image/gif',
@@ -162,6 +163,7 @@ function AdminSidebar({ tab, setTab, stats, sidebarOpen, setSidebarOpen }: {
     { id: 'calendar' as Tab, label: 'Calendário', icon: CalIcon, count: undefined },
     { id: 'testimonials' as Tab, label: 'Depoimentos', icon: MessageSquareQuote, count: undefined },
     { id: 'ai' as Tab, label: 'IA', icon: Sparkles, count: undefined },
+    { id: 'performance' as Tab, label: 'Performance', icon: Activity, count: undefined },
   ];
 
   return (
@@ -913,6 +915,7 @@ export default function AdminPage() {
     calendar: { title: 'Calendário Acadêmico', desc: 'Importe cronogramas e gerencie provas/trabalhos' },
     testimonials: { title: 'Depoimentos', desc: 'Aprove ou rejeite depoimentos dos alunos' },
     ai: { title: 'Provedor de IA', desc: 'Escolha entre Lovable AI ou sua chave Google AI Studio' },
+    performance: { title: 'Performance', desc: 'Métricas de carregamento e erros de rede' },
   };
 
   return (
@@ -969,6 +972,7 @@ export default function AdminPage() {
                 { id: 'calendar', label: 'Calendário', icon: <CalIcon className="h-3.5 w-3.5" /> },
                 { id: 'testimonials', label: 'Depoimentos', icon: <MessageSquareQuote className="h-3.5 w-3.5" /> },
                 { id: 'ai', label: 'IA', icon: <Sparkles className="h-3.5 w-3.5" /> },
+                { id: 'performance', label: 'Perf', icon: <Activity className="h-3.5 w-3.5" /> },
               ]}
               activeTab={tab}
               onTabChange={(id) => setTab(id as Tab)}
@@ -2439,6 +2443,11 @@ export default function AdminPage() {
             {/* AI PROVIDER */}
             {tab === 'ai' && (
               <AIProviderSettings />
+            )}
+
+            {/* PERFORMANCE */}
+            {tab === 'performance' && (
+              <PerformanceMetrics />
             )}
             </div>
           </main>
