@@ -386,6 +386,12 @@ function CodeBlock({ lang, code }: { lang: string; code: string }) {
   const [highlighted, setHighlighted] = useState<string | null>(null);
 
   useEffect(() => {
+    // Modo Seguro: pula o highlight (Shiki é pesado) e mostra o code "cru"
+    try {
+      if (sessionStorage.getItem('decode:safe-mode:enabled:v1') === '1') {
+        return;
+      }
+    } catch { /* noop */ }
     let cancelled = false;
     highlightCode(code, lang).then((html) => {
       if (!cancelled) setHighlighted(html);
