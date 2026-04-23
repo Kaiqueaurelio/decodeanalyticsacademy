@@ -915,6 +915,7 @@ export default function AdminPage() {
     calendar: { title: 'Calendário Acadêmico', desc: 'Importe cronogramas e gerencie provas/trabalhos' },
     testimonials: { title: 'Depoimentos', desc: 'Aprove ou rejeite depoimentos dos alunos' },
     ai: { title: 'Provedor de IA', desc: 'Escolha entre Lovable AI ou sua chave Google AI Studio' },
+    performance: { title: 'Performance', desc: 'Métricas de carregamento e erros de rede' },
   };
 
   return (
