@@ -594,9 +594,10 @@ function CalloutBlock({ kind, title, content }: { kind: 'info' | 'tip' | 'warnin
 
 function QuoteBlock({ content }: { content: string }) {
   return (
-    <blockquote className="my-6 pl-5 border-l-4 border-primary/50 italic text-foreground/75 text-[15px] leading-[1.75]">
-      {cleanInlineText(content)}
-    </blockquote>
+    <blockquote
+      className="my-6 pl-5 border-l-4 border-primary/50 italic text-foreground/75 text-[15px] leading-[1.75]"
+      dangerouslySetInnerHTML={renderInline(content)}
+    />
   );
 }
 
