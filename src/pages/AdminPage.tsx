@@ -1632,17 +1632,19 @@ export default function AdminPage() {
 
                 {/* Edit Apostila Dialog */}
                 <Dialog open={!!editingApostila} onOpenChange={(v) => { if (!v) { setEditingApostila(null); setEditExerciseMode('individual'); setEditAiExercises([]); setEditBulkText(''); } }}>
-                  <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+                  <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader><DialogTitle className="text-base">Editar Apostila</DialogTitle></DialogHeader>
                     <div className="space-y-3">
                       <div><Label className="text-xs">Título</Label><Input value={editTitle} onChange={e => setEditTitle(e.target.value)} /></div>
                       <div><Label className="text-xs">Categoria</Label><CategorySelect value={editCategory} onValueChange={setEditCategory} /></div>
                       <div>
-                        <div className="flex items-center justify-between mb-1">
-                          <Label className="text-xs">Conteúdo</Label>
-                          <ImageUploadButton onImageInserted={(md) => setEditContent(prev => prev + md)} />
-                        </div>
-                        <Textarea value={editContent} onChange={e => setEditContent(e.target.value)} rows={6} />
+                        <Label className="text-xs mb-1 block">Conteúdo</Label>
+                        <MarkdownEditor
+                          value={editContent}
+                          onChange={setEditContent}
+                          rows={14}
+                          placeholder="Conteúdo da apostila — use a barra de formatação acima"
+                        />
                       </div>
                       <Button className="w-full gradient-primary text-primary-foreground" onClick={handleEditSave}>Salvar Apostila</Button>
                       {editingApostila && (
