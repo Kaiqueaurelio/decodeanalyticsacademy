@@ -32,10 +32,27 @@ export default defineConfig(({ mode }) => ({
         importScripts: ["/sw-push.js"],
         // Não cacheia rotas internas do Lovable nem o callback OAuth
         navigateFallbackDenylist: [/^\/~oauth/, /^\/api/],
-        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
-        // Limite generoso para apostilas grandes
-        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+        // Precache apenas do shell crítico (HTML/CSS/fontes/ícones e o entry).
+        // Linguagens Shiki, mermaid, cytoscape, charts, pdf, mammoth são
+        // pesados e raramente usados — vão para runtimeCaching sob demanda,
+        // economizando ~13MB no primeiro acesso (antes: ~16MB).
+        globPatterns: ["**/*.{css,html,ico,svg,woff2,png}", "assets/index-*.js", "assets/react-*.js"],
+        globIgnores: ["**/sw.js", "**/workbox-*.js"],
+        // Tamanho mais conservador: arquivos grandes vêm via runtime cache.
+        maximumFileSizeToCacheInBytes: 1.5 * 1024 * 1024,
         runtimeCaching: [
+          // 0) Chunks JS dinâmicos (lazy) — CacheFirst com revalidação por hash
+          {
+            urlPattern: ({ url, request }) =>
+              request.destination === "script" &&
+              url.pathname.startsWith("/assets/"),
+            handler: "CacheFirst",
+            options: {
+              cacheName: "js-chunks",
+              expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 30 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
           // 1) Apostilas (Supabase REST GET) — StaleWhileRevalidate
           {
             urlPattern: ({ url, request }) =>
@@ -96,15 +113,20 @@ export default defineConfig(({ mode }) => ({
     chunkSizeWarningLimit: 1500,
     rollupOptions: {
       output: {
-        // Separar libs pesadas em chunks próprios para acelerar o primeiro load
+        // Separar libs pesadas em chunks próprios.
+        // Tudo pesado fica fora do entry inicial — só baixa quando usado.
         manualChunks: {
+          // Núcleo crítico (entry inicial)
           react: ["react", "react-dom", "react-router-dom"],
           query: ["@tanstack/react-query"],
+          // Lazy: só carregam quando a página/feature requer
           charts: ["recharts"],
           motion: ["framer-motion"],
           pdf: ["pdfjs-dist"],
           mermaid: ["mermaid"],
           mammoth: ["mammoth"],
+          shiki: ["shiki"],
+          markdown: ["react-markdown", "remark-gfm", "rehype-raw"],
         },
       },
     },
