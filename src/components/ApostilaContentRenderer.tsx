@@ -635,9 +635,11 @@ function TableBlock({ header, rows }: { header: string[]; rows: string[][] }) {
         <thead>
           <tr className="bg-muted/60">
             {header.map((h, i) => (
-              <th key={i} className="text-left px-3 py-2 font-semibold text-foreground/90 border-b border-border/50">
-                {cleanInlineText(h)}
-              </th>
+              <th
+                key={i}
+                className="text-left px-3 py-2 font-semibold text-foreground/90 border-b border-border/50"
+                dangerouslySetInnerHTML={renderInline(h)}
+              />
             ))}
           </tr>
         </thead>
@@ -645,9 +647,11 @@ function TableBlock({ header, rows }: { header: string[]; rows: string[][] }) {
           {rows.map((row, ri) => (
             <tr key={ri} className={ri % 2 === 0 ? 'bg-background' : 'bg-muted/20'}>
               {row.map((cell, ci) => (
-                <td key={ci} className="px-3 py-2 text-foreground/80 border-b border-border/30 align-top">
-                  {cleanInlineText(cell)}
-                </td>
+                <td
+                  key={ci}
+                  className="px-3 py-2 text-foreground/80 border-b border-border/30 align-top"
+                  dangerouslySetInnerHTML={renderInline(cell)}
+                />
               ))}
             </tr>
           ))}
