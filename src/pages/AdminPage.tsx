@@ -1865,6 +1865,10 @@ export default function AdminPage() {
                         </div>
                       </>
                     )}
+                    </div>
+                    <div className="px-5 py-3 border-t border-border bg-muted/20 shrink-0">
+                      <Button className="w-full gradient-primary text-primary-foreground" onClick={handleEditSave}>Salvar Apostila</Button>
+                    </div>
                   </DialogContent>
                 </Dialog>
               </div>
