@@ -65,16 +65,26 @@ input, textarea, [contenteditable="true"],
   user-select: text !important;
   -webkit-touch-callout: default !important;
 }
+/* Modo admin: libera seleção/cópia em toda a página (controle total do admin) */
+html[data-admin-mode="true"], html[data-admin-mode="true"] * {
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+  user-select: text !important;
+  -webkit-touch-callout: default !important;
+}
 ::selection { background: transparent; color: inherit; }
 ::-moz-selection { background: transparent; color: inherit; }
 /* Allow visible selection inside copy-enabled blocks (e.g. code blocks) */
 [data-allow-copy] ::selection,
-[data-allow-copy]::selection {
+[data-allow-copy]::selection,
+html[data-admin-mode="true"] ::selection {
   background: hsl(var(--primary) / 0.35);
   color: inherit;
 }
 [data-allow-copy] ::-moz-selection,
-[data-allow-copy]::-moz-selection {
+[data-allow-copy]::-moz-selection,
+html[data-admin-mode="true"] ::-moz-selection {
   background: hsl(var(--primary) / 0.35);
   color: inherit;
 }
