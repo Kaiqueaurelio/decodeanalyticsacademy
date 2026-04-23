@@ -193,16 +193,40 @@ Deno.serve(async (req) => {
 
     if (!args) {
       if (!LOVABLE_API_KEY) {
-        return new Response(JSON.stringify({ error: "Nenhum provedor de IA configurado." }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-      }
-      try {
-        args = await visionLovable(LOVABLE_API_KEY, imageDataUrl);
-      } catch (e: any) {
-        const status = e?.status;
-        if (status === 429) return new Response(JSON.stringify({ error: "Muitas requisições. Tente novamente em instantes." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json", "X-AI-Provider": "lovable-ai" } });
-        if (status === 402) return new Response(JSON.stringify({ error: "Créditos de IA esgotados. Ative sua chave Google AI Studio no Admin ou avise o administrador." }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json", "X-AI-Provider": "lovable-ai" } });
-        console.error("vision fatal", e);
-        throw new Error("Falha na análise da imagem");
+        // Sem Lovable: tenta Google direto como último recurso
+        if (GOOGLE_AI_API_KEY) {
+          try {
+            args = await visionGoogle(GOOGLE_AI_API_KEY, imageDataUrl);
+            provider = "google-direct";
+          } catch (e) {
+            console.error("google fallback fatal", e);
+            return new Response(JSON.stringify({ error: "Falha na análise da imagem (provedor Google indisponível)." }), { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+          }
+        } else {
+          return new Response(JSON.stringify({ error: "Nenhum provedor de IA configurado." }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        }
+      } else {
+        try {
+          args = await visionLovable(LOVABLE_API_KEY, imageDataUrl);
+        } catch (e: any) {
+          const status = e?.status;
+          console.error("lovable vision falhou", status, e?.body?.slice?.(0, 300));
+          if (status === 429) return new Response(JSON.stringify({ error: "Muitas requisições. Tente novamente em instantes." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json", "X-AI-Provider": "lovable-ai" } });
+          if (status === 402) return new Response(JSON.stringify({ error: "Créditos de IA esgotados. Ative sua chave Google AI Studio no Admin ou avise o administrador." }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json", "X-AI-Provider": "lovable-ai" } });
+
+          // Último fallback: tenta Google direto se a chave existir
+          if (GOOGLE_AI_API_KEY) {
+            try {
+              args = await visionGoogle(GOOGLE_AI_API_KEY, imageDataUrl);
+              provider = "google-direct";
+            } catch (e2) {
+              console.error("google ultimate fallback fatal", e2);
+              return new Response(JSON.stringify({ error: "Falha na análise da imagem. Tente novamente em instantes." }), { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+            }
+          } else {
+            return new Response(JSON.stringify({ error: "Falha na análise da imagem. Tente novamente em instantes." }), { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+          }
+        }
       }
     }
 
