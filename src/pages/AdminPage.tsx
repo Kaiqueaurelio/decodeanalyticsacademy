@@ -534,6 +534,16 @@ export default function AdminPage() {
 
   useEffect(() => { loadAll(); }, []);
 
+  // Modo Admin: libera seleção/cópia global enquanto o admin estiver no painel.
+  // O ScreenshotGuard e o CSS global checam `html[data-admin-mode="true"]` para
+  // não bloquear seleção de texto na área administrativa.
+  useEffect(() => {
+    document.documentElement.setAttribute('data-admin-mode', 'true');
+    return () => {
+      document.documentElement.removeAttribute('data-admin-mode');
+    };
+  }, []);
+
   // Realtime: notificação de novos cadastros
   useEffect(() => {
     const channel = supabase

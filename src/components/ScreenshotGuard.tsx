@@ -58,11 +58,16 @@ export function ScreenshotGuard() {
     const block = (e: Event) => e.preventDefault();
 
     /**
-     * Permite copiar/recortar/menu de contexto dentro de elementos
-     * marcados explicitamente com `data-allow-copy` (ex.: blocos de código).
-     * Em qualquer outro lugar, mantém o bloqueio.
+     * Permite copiar/recortar/menu de contexto:
+     *  - Dentro de elementos marcados com `data-allow-copy` (ex.: blocos de código).
+     *  - Em qualquer lugar quando o modo admin está ativo (`<html data-admin-mode="true">`),
+     *    para que o admin tenha controle total sobre o texto na sua área de trabalho.
      */
+    const isAdminMode = () =>
+      document.documentElement.getAttribute('data-admin-mode') === 'true';
+
     const allowInsideOptIn = (e: Event) => {
+      if (isAdminMode()) return; // admin: libera tudo
       const target = e.target as HTMLElement | null;
       if (target && target.closest?.('[data-allow-copy]')) return; // libera
       e.preventDefault();

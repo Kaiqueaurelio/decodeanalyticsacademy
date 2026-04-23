@@ -7,12 +7,13 @@
  * - Toolbar com botões para Negrito / Itálico / Títulos / Listas / Citação
  *   / Código / Link / Imagem permite escrever sem decorar a sintaxe.
  */
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import {
   Bold, Italic, Heading1, Heading2, Heading3, List, ListOrdered, Quote, Code,
-  Link as LinkIcon, Image as ImageIcon, Eye, Pencil, Columns2, Minus,
+  Link as LinkIcon, Image as ImageIcon, Eye, Pencil, Columns2, Minus, GripVertical,
+  ArrowUp, ArrowDown,
 } from 'lucide-react';
 import { ApostilaContentRenderer } from '@/components/ApostilaContentRenderer';
 import { ImageUploadButton } from '@/components/ImageUploadButton';
@@ -108,6 +109,61 @@ export function MarkdownEditor({
 
   const wordCount = value.trim() ? value.trim().split(/\s+/).length : 0;
 
+  // ─── Imagens arrastáveis ──────────────────────────────────────────────
+  // Detecta todas as linhas markdown contendo `![alt](url)` e permite ao admin
+  // reordená-las arrastando um chip — útil quando a IA insere a imagem na
+  // posição errada dentro do texto.
+  const IMG_RE = /!\[[^\]]*\]\([^)]+\)/g;
+  const images = useMemo(() => {
+    const matches: { md: string; index: number; alt: string; url: string }[] = [];
+    let m: RegExpExecArray | null;
+    const re = new RegExp(IMG_RE.source, 'g');
+    while ((m = re.exec(value)) !== null) {
+      const md = m[0];
+      const altMatch = md.match(/!\[([^\]]*)\]/);
+      const urlMatch = md.match(/\(([^)]+)\)/);
+      matches.push({
+        md,
+        index: m.index,
+        alt: altMatch?.[1] ?? '',
+        url: urlMatch?.[1] ?? '',
+      });
+    }
+    return matches;
+  }, [value]);
+
+  /** Move a imagem na posição `from` para a posição `to` dentro do texto markdown. */
+  const moveImage = useCallback((from: number, to: number) => {
+    if (from === to || from < 0 || to < 0 || from >= images.length || to >= images.length) return;
+    // Reconstrói o texto removendo a imagem da origem e inserindo no destino
+    // baseado na ordem atual (`images` está em ordem de aparição).
+    const src = images[from];
+    const dst = images[to];
+    if (!src || !dst) return;
+
+    let next = value;
+    // 1. Remove a imagem de origem (e quebra de linha trailing se houver)
+    const removeRe = new RegExp(
+      src.md.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\n?',
+    );
+    next = next.replace(removeRe, '');
+
+    // 2. Recalcula a posição do destino no texto modificado
+    //    (procurando a ocorrência da imagem-destino).
+    const dstIndex = next.indexOf(dst.md);
+    if (dstIndex === -1) return;
+    // Se mover para baixo (from < to), inserir DEPOIS do destino;
+    // se mover para cima (from > to), inserir ANTES do destino.
+    const insertAt = from < to ? dstIndex + dst.md.length : dstIndex;
+    const sep = from < to ? '\n\n' : '';
+    const sepEnd = from < to ? '' : '\n\n';
+    next = next.slice(0, insertAt) + sep + src.md + sepEnd + next.slice(insertAt);
+
+    onChange(next);
+  }, [images, value, onChange]);
+
+  const [dragIdx, setDragIdx] = useState<number | null>(null);
+
   return (
     <div className={cn('rounded-lg border border-border bg-card overflow-hidden', className)}>
       {/* Toolbar — estilo Word */}
@@ -165,6 +221,65 @@ export function MarkdownEditor({
           </ModeBtn>
         </div>
       </div>
+
+      {/* Faixa de imagens reordenáveis (drag-and-drop) — útil quando a IA
+          insere a imagem no lugar errado e o admin quer reposicionar. */}
+      {images.length > 1 && (
+        <div className="border-b border-border bg-muted/20 px-2 py-1.5">
+          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground mb-1">
+            <ImageIcon className="h-3 w-3" />
+            <span>Imagens no texto · arraste para reordenar</span>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {images.map((img, i) => (
+              <div
+                key={`${img.url}-${i}`}
+                draggable
+                onDragStart={() => setDragIdx(i)}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  if (dragIdx !== null) moveImage(dragIdx, i);
+                  setDragIdx(null);
+                }}
+                onDragEnd={() => setDragIdx(null)}
+                className={cn(
+                  'group flex items-center gap-1 rounded border border-border bg-card pl-1 pr-1.5 py-0.5 text-[10px] cursor-grab active:cursor-grabbing transition-opacity',
+                  dragIdx === i && 'opacity-40',
+                )}
+                title={`Imagem ${i + 1}: ${img.alt || img.url}`}
+              >
+                <GripVertical className="h-3 w-3 text-muted-foreground" />
+                <img
+                  src={img.url}
+                  alt=""
+                  className="h-5 w-5 rounded object-cover pointer-events-none"
+                  onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                />
+                <span className="font-mono text-foreground/80">#{i + 1}</span>
+                <button
+                  type="button"
+                  className="ml-0.5 p-0.5 rounded hover:bg-muted disabled:opacity-30"
+                  title="Mover para cima"
+                  disabled={i === 0}
+                  onClick={() => moveImage(i, i - 1)}
+                >
+                  <ArrowUp className="h-3 w-3" />
+                </button>
+                <button
+                  type="button"
+                  className="p-0.5 rounded hover:bg-muted disabled:opacity-30"
+                  title="Mover para baixo"
+                  disabled={i === images.length - 1}
+                  onClick={() => moveImage(i, i + 1)}
+                >
+                  <ArrowDown className="h-3 w-3" />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Área de edição */}
       <div className={cn('grid', mode === 'split' ? 'md:grid-cols-2' : 'grid-cols-1')}>
