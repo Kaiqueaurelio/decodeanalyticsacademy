@@ -126,7 +126,7 @@ export default defineConfig(({ mode }) => ({
           mermaid: ["mermaid"],
           mammoth: ["mammoth"],
           shiki: ["shiki"],
-          markdown: ["react-markdown", "remark-gfm", "rehype-raw"],
+          markdown: ["react-markdown"],
         },
       },
     },
