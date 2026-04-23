@@ -222,6 +222,65 @@ export function MarkdownEditor({
         </div>
       </div>
 
+      {/* Faixa de imagens reordenáveis (drag-and-drop) — útil quando a IA
+          insere a imagem no lugar errado e o admin quer reposicionar. */}
+      {images.length > 1 && (
+        <div className="border-b border-border bg-muted/20 px-2 py-1.5">
+          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground mb-1">
+            <ImageIcon className="h-3 w-3" />
+            <span>Imagens no texto · arraste para reordenar</span>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {images.map((img, i) => (
+              <div
+                key={`${img.url}-${i}`}
+                draggable
+                onDragStart={() => setDragIdx(i)}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  if (dragIdx !== null) moveImage(dragIdx, i);
+                  setDragIdx(null);
+                }}
+                onDragEnd={() => setDragIdx(null)}
+                className={cn(
+                  'group flex items-center gap-1 rounded border border-border bg-card pl-1 pr-1.5 py-0.5 text-[10px] cursor-grab active:cursor-grabbing transition-opacity',
+                  dragIdx === i && 'opacity-40',
+                )}
+                title={`Imagem ${i + 1}: ${img.alt || img.url}`}
+              >
+                <GripVertical className="h-3 w-3 text-muted-foreground" />
+                <img
+                  src={img.url}
+                  alt=""
+                  className="h-5 w-5 rounded object-cover pointer-events-none"
+                  onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                />
+                <span className="font-mono text-foreground/80">#{i + 1}</span>
+                <button
+                  type="button"
+                  className="ml-0.5 p-0.5 rounded hover:bg-muted disabled:opacity-30"
+                  title="Mover para cima"
+                  disabled={i === 0}
+                  onClick={() => moveImage(i, i - 1)}
+                >
+                  <ArrowUp className="h-3 w-3" />
+                </button>
+                <button
+                  type="button"
+                  className="p-0.5 rounded hover:bg-muted disabled:opacity-30"
+                  title="Mover para baixo"
+                  disabled={i === images.length - 1}
+                  onClick={() => moveImage(i, i + 1)}
+                >
+                  <ArrowDown className="h-3 w-3" />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Área de edição */}
       <div className={cn('grid', mode === 'split' ? 'md:grid-cols-2' : 'grid-cols-1')}>
         {(mode === 'edit' || mode === 'split') && (
