@@ -24,6 +24,62 @@ function cleanInlineText(input: string): string {
     .replace(/^\s*#{1,6}\s+/gm, '');
 }
 
+/**
+ * Renderização inline rica: aceita formatação markdown comum e um subconjunto
+ * seguro de HTML inline (negrito/itálico/sublinhado/tachado/realce/cor/tamanho/
+ * sub/sup/alinhamento) — usado pelo MarkdownEditor estilo Word.
+ *
+ * Sanitização: removemos tags perigosas (script, iframe, on*) e atributos de
+ * evento; permitimos apenas style com `color`, `background`, `font-size`.
+ */
+function sanitizeInlineHtml(html: string): string {
+  return html
+    // Remove tags perigosas inteiras
+    .replace(/<\/?(script|style|iframe|object|embed|link|meta|form|input|button|svg)\b[^>]*>/gi, '')
+    // Remove handlers on*="..."
+    .replace(/\son[a-z]+\s*=\s*"[^"]*"/gi, '')
+    .replace(/\son[a-z]+\s*=\s*'[^']*'/gi, '')
+    // Remove javascript: em href/src
+    .replace(/\s(href|src)\s*=\s*"javascript:[^"]*"/gi, '')
+    // Filtra atributos style: mantém só color/background/font-size/text-align
+    .replace(/\sstyle\s*=\s*"([^"]*)"/gi, (_m, css: string) => {
+      const safe = css
+        .split(';')
+        .map((d) => d.trim())
+        .filter((d) => /^(color|background(-color)?|font-size|text-align)\s*:/i.test(d))
+        .join('; ');
+      return safe ? ` style="${safe}"` : '';
+    });
+}
+
+function renderInline(input: string): { __html: string } {
+  if (!input) return { __html: '' };
+  // 1. Escapa < e > exceto para tags permitidas
+  const ALLOWED = /<\/?(?:u|mark|sub|sup|span|div|strong|em|b|i|s|small|br)\b[^>]*\/?>/gi;
+  const placeholders: string[] = [];
+  let safe = input.replace(ALLOWED, (tag) => {
+    placeholders.push(sanitizeInlineHtml(tag));
+    return `\u0000HTML${placeholders.length - 1}\u0000`;
+  });
+  safe = safe
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+  // 2. Restaura tags permitidas
+  safe = safe.replace(/\u0000HTML(\d+)\u0000/g, (_m, i) => placeholders[Number(i)] || '');
+  // 3. Markdown inline → HTML
+  safe = safe
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener" class="text-primary underline">$1</a>')
+    .replace(/\*{3}([^*\n]+)\*{3}/g, '<strong><em>$1</em></strong>')
+    .replace(/\*{2}([^*\n]+)\*{2}/g, '<strong>$1</strong>')
+    .replace(/(?<![*\w])\*(?!\s)([^*\n]+?)\*(?!\w)/g, '<em>$1</em>')
+    .replace(/~~([^~\n]+)~~/g, '<s>$1</s>')
+    .replace(/==([^=\n]+)==/g, '<mark>$1</mark>')
+    .replace(/`([^`\n]+)`/g, '<code class="px-1 py-0.5 rounded bg-muted text-primary text-[0.92em] font-mono">$1</code>')
+    .replace(/^\s*#{1,6}\s+/gm, '');
+  return { __html: safe };
+}
+
 type Block =
   | { type: 'paragraph'; content: string }
   | { type: 'heading'; level: number; content: string }
