@@ -106,13 +106,23 @@ export function TiraDuvidaDialog({ open, onOpenChange }: Props) {
       // Convert to data URL for vision call
       const dataUrl = await fileToDataUrl(new File([compressed], "img.jpg", { type: "image/jpeg" }));
 
+      // invoke retorna error genérico em status >= 400, mas o body com a mensagem
+      // real ainda chega em `data` (parsed). Tratamos ambos os casos.
       const { data, error } = await supabase.functions.invoke("tira-duvida-foto", {
         body: { image: dataUrl, image_path: path },
       });
 
-      if (error) throw error;
-      if (data?.error) {
-        toast.error(data.error);
+      const serverMsg =
+        (data && typeof data === "object" && (data as any).error) ||
+        (error && (error as any)?.context?.body) ||
+        error?.message;
+
+      if (error || (data && (data as any).error)) {
+        const friendly =
+          typeof serverMsg === "string" && serverMsg.length < 200
+            ? serverMsg
+            : "Não consegui analisar a foto. Tente novamente em instantes.";
+        toast.error(friendly);
         setLoading(false);
         return;
       }
