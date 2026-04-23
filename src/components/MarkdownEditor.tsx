@@ -7,12 +7,13 @@
  * - Toolbar com botões para Negrito / Itálico / Títulos / Listas / Citação
  *   / Código / Link / Imagem permite escrever sem decorar a sintaxe.
  */
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import {
   Bold, Italic, Heading1, Heading2, Heading3, List, ListOrdered, Quote, Code,
-  Link as LinkIcon, Image as ImageIcon, Eye, Pencil, Columns2, Minus,
+  Link as LinkIcon, Image as ImageIcon, Eye, Pencil, Columns2, Minus, GripVertical,
+  ArrowUp, ArrowDown,
 } from 'lucide-react';
 import { ApostilaContentRenderer } from '@/components/ApostilaContentRenderer';
 import { ImageUploadButton } from '@/components/ImageUploadButton';
