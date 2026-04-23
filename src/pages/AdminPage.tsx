@@ -44,6 +44,7 @@ import { extractTextFromFile } from '@/lib/file-extract';
 import { MarkdownEditor } from '@/components/MarkdownEditor';
 import { PerformanceMetrics } from '@/components/PerformanceMetrics';
 import { SmokeTestsPanel } from '@/components/SmokeTestsPanel';
+import { DiagnosticsPanel } from '@/components/DiagnosticsPanel';
 
 type Apostila = Tables<'apostilas'>;
 type Exercise = Tables<'exercises'>;
@@ -83,7 +84,7 @@ function CategorySelect({ value, onValueChange, placeholder }: { value: string; 
   );
 }
 
-type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements' | 'calendar' | 'testimonials' | 'ai' | 'performance' | 'smoke';
+type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements' | 'calendar' | 'testimonials' | 'ai' | 'performance' | 'smoke' | 'diagnostics';
 
 const ACCEPT_MAP: Record<string, string> = {
   pdf: '.pdf', image: 'image/*', gif: '.gif,image/gif',
@@ -166,6 +167,7 @@ function AdminSidebar({ tab, setTab, stats, sidebarOpen, setSidebarOpen }: {
     { id: 'ai' as Tab, label: 'IA', icon: Sparkles, count: undefined },
     { id: 'performance' as Tab, label: 'Performance', icon: Activity, count: undefined },
     { id: 'smoke' as Tab, label: 'Testes', icon: CheckCircle, count: undefined },
+    { id: 'diagnostics' as Tab, label: 'Diagnóstico', icon: AlertCircle, count: undefined },
   ];
 
   return (
@@ -919,6 +921,7 @@ export default function AdminPage() {
     ai: { title: 'Provedor de IA', desc: 'Escolha entre Lovable AI ou sua chave Google AI Studio' },
     performance: { title: 'Performance', desc: 'Métricas de carregamento e erros de rede' },
     smoke: { title: 'Testes de Fumaça', desc: 'Checklist automático para validar a estabilidade do sistema' },
+    diagnostics: { title: 'Diagnóstico', desc: 'Logs de runtime, falhas de carregamento e desempenho por rota' },
   };
 
   return (
@@ -977,6 +980,7 @@ export default function AdminPage() {
                 { id: 'ai', label: 'IA', icon: <Sparkles className="h-3.5 w-3.5" /> },
                 { id: 'performance', label: 'Perf', icon: <Activity className="h-3.5 w-3.5" /> },
                 { id: 'smoke', label: 'Testes', icon: <CheckCircle className="h-3.5 w-3.5" /> },
+                { id: 'diagnostics', label: 'Diag', icon: <AlertCircle className="h-3.5 w-3.5" /> },
               ]}
               activeTab={tab}
               onTabChange={(id) => setTab(id as Tab)}
