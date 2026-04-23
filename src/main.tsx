@@ -6,6 +6,7 @@ import { registerServiceWorker } from "@/lib/pwa";
 import { installChunkReloadGuard } from "@/lib/chunk-reload-guard";
 import { installPerfMonitor } from "@/lib/perf-monitor";
 import { installSafeModeListeners } from "@/lib/safe-mode";
+import { installRuntimeLogger } from "@/lib/runtime-logs";
 
 // Recupera automaticamente de chunks obsoletos após deploys
 installChunkReloadGuard();
@@ -15,6 +16,9 @@ installPerfMonitor();
 
 // Detecta falhas repetidas e ativa Modo Seguro automaticamente
 installSafeModeListeners();
+
+// Captura erros de runtime, rejeições e console.error para o painel de diagnóstico
+installRuntimeLogger();
 
 // PWA install prompt capture — only in production (not in iframe/preview)
 const isInIframe = (() => {
