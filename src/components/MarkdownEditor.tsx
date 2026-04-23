@@ -109,6 +109,61 @@ export function MarkdownEditor({
 
   const wordCount = value.trim() ? value.trim().split(/\s+/).length : 0;
 
+  // ─── Imagens arrastáveis ──────────────────────────────────────────────
+  // Detecta todas as linhas markdown contendo `![alt](url)` e permite ao admin
+  // reordená-las arrastando um chip — útil quando a IA insere a imagem na
+  // posição errada dentro do texto.
+  const IMG_RE = /!\[[^\]]*\]\([^)]+\)/g;
+  const images = useMemo(() => {
+    const matches: { md: string; index: number; alt: string; url: string }[] = [];
+    let m: RegExpExecArray | null;
+    const re = new RegExp(IMG_RE.source, 'g');
+    while ((m = re.exec(value)) !== null) {
+      const md = m[0];
+      const altMatch = md.match(/!\[([^\]]*)\]/);
+      const urlMatch = md.match(/\(([^)]+)\)/);
+      matches.push({
+        md,
+        index: m.index,
+        alt: altMatch?.[1] ?? '',
+        url: urlMatch?.[1] ?? '',
+      });
+    }
+    return matches;
+  }, [value]);
+
+  /** Move a imagem na posição `from` para a posição `to` dentro do texto markdown. */
+  const moveImage = useCallback((from: number, to: number) => {
+    if (from === to || from < 0 || to < 0 || from >= images.length || to >= images.length) return;
+    // Reconstrói o texto removendo a imagem da origem e inserindo no destino
+    // baseado na ordem atual (`images` está em ordem de aparição).
+    const src = images[from];
+    const dst = images[to];
+    if (!src || !dst) return;
+
+    let next = value;
+    // 1. Remove a imagem de origem (e quebra de linha trailing se houver)
+    const removeRe = new RegExp(
+      src.md.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\n?',
+    );
+    next = next.replace(removeRe, '');
+
+    // 2. Recalcula a posição do destino no texto modificado
+    //    (procurando a ocorrência da imagem-destino).
+    const dstIndex = next.indexOf(dst.md);
+    if (dstIndex === -1) return;
+    // Se mover para baixo (from < to), inserir DEPOIS do destino;
+    // se mover para cima (from > to), inserir ANTES do destino.
+    const insertAt = from < to ? dstIndex + dst.md.length : dstIndex;
+    const sep = from < to ? '\n\n' : '';
+    const sepEnd = from < to ? '' : '\n\n';
+    next = next.slice(0, insertAt) + sep + src.md + sepEnd + next.slice(insertAt);
+
+    onChange(next);
+  }, [images, value, onChange]);
+
+  const [dragIdx, setDragIdx] = useState<number | null>(null);
+
   return (
     <div className={cn('rounded-lg border border-border bg-card overflow-hidden', className)}>
       {/* Toolbar — estilo Word */}
