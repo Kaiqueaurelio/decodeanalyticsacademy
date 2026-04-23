@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { BookOpen, PenLine, FileText, Search, Trophy, X } from 'lucide-react';
@@ -37,34 +38,64 @@ interface Props {
 
 export function OnboardingTour({ onComplete }: Props) {
   const [step, setStep] = useState(0);
+  const [mounted, setMounted] = useState(false);
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <Card className="max-w-sm w-full p-6 bg-card border border-border/50 animate-scale-in relative">
-        <button onClick={onComplete} className="absolute top-3 right-3 text-muted-foreground hover:text-foreground">
+  useEffect(() => {
+    setMounted(true);
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, []);
+
+  if (!mounted) return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[120] flex min-h-dvh items-center justify-center bg-background/70 backdrop-blur-sm p-4">
+      <Card className="relative w-full max-w-sm border border-border/50 bg-card p-6 shadow-lg animate-scale-in">
+        <button
+          onClick={onComplete}
+          className="absolute right-3 top-3 text-muted-foreground transition-colors hover:text-foreground"
+          aria-label="Fechar boas-vindas"
+        >
           <X className="h-4 w-4" />
         </button>
-        <div className="text-center mb-4">
+
+        <div className="mb-4 text-center">
           <div className="mx-auto mb-3">{STEPS[step].icon}</div>
-          <h2 className="text-lg font-bold mb-1">{STEPS[step].title}</h2>
+          <h2 className="mb-1 text-lg font-bold">{STEPS[step].title}</h2>
           <p className="text-sm text-muted-foreground">{STEPS[step].desc}</p>
         </div>
-        <div className="flex gap-1 justify-center mb-4">
+
+        <div className="mb-4 flex justify-center gap-1">
           {STEPS.map((_, i) => (
-            <div key={i} className={`h-1.5 rounded-full smooth-all ${i === step ? 'w-6 bg-primary' : 'w-1.5 bg-muted'}`} />
+            <div
+              key={i}
+              className={i === step ? 'h-1.5 w-6 rounded-full bg-primary smooth-all' : 'h-1.5 w-1.5 rounded-full bg-muted smooth-all'}
+            />
           ))}
         </div>
-        <div className="flex gap-2 justify-center">
+
+        <div className="flex justify-center gap-2">
           {step > 0 && (
-            <Button size="sm" variant="ghost" onClick={() => setStep(s => s - 1)}>Anterior</Button>
+            <Button size="sm" variant="ghost" onClick={() => setStep((s) => s - 1)}>
+              Anterior
+            </Button>
           )}
           {step < STEPS.length - 1 ? (
-            <Button size="sm" onClick={() => setStep(s => s + 1)} className="gradient-primary text-primary-foreground">Próximo</Button>
+            <Button size="sm" onClick={() => setStep((s) => s + 1)} className="gradient-primary text-primary-foreground">
+              Próximo
+            </Button>
           ) : (
-            <Button size="sm" onClick={onComplete} className="gradient-primary text-primary-foreground">Começar!</Button>
+            <Button size="sm" onClick={onComplete} className="gradient-primary text-primary-foreground">
+              Começar!
+            </Button>
           )}
         </div>
       </Card>
-    </div>
+    </div>,
+    document.body,
   );
 }
