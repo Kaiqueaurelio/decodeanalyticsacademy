@@ -2472,6 +2472,11 @@ export default function AdminPage() {
             {tab === 'smoke' && (
               <SmokeTestsPanel />
             )}
+
+            {/* DIAGNOSTICS */}
+            {tab === 'diagnostics' && (
+              <DiagnosticsPanel />
+            )}
             </div>
           </main>
         </div>
