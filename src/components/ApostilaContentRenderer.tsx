@@ -740,9 +740,8 @@ export function ApostilaContentRenderer({ content }: Props) {
                 className={`mb-6 last:mb-0 text-foreground/85 ${
                   isFirst ? 'first-letter:font-display first-letter:text-[3.4em] first-letter:font-bold first-letter:text-primary first-letter:float-left first-letter:mr-2 first-letter:leading-[0.9] first-letter:mt-1' : ''
                 }`}
-              >
-                {cleanInlineText(b.content)}
-              </p>
+                dangerouslySetInnerHTML={renderInline(b.content)}
+              />
             );
           }
         }
