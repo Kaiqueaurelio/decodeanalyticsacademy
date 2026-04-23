@@ -1650,38 +1650,38 @@ export default function AdminPage() {
                           placeholder="Comece a escrever — use a barra de formatação acima"
                         />
                       </div>
-                      <Button className="w-full gradient-primary text-primary-foreground" onClick={handleEditSave}>Salvar Apostila</Button>
-                      {editingApostila && (
-                        <AppendLinkDialog
-                          apostilaId={editingApostila.id}
-                          apostilaTitle={editingApostila.title}
-                          currentContent={editContent}
-                          onDone={async () => {
-                            const { data: refreshed } = await supabase.from('apostilas').select('content').eq('id', editingApostila.id).maybeSingle();
-                            if (refreshed?.content) setEditContent(refreshed.content);
-                            loadAll();
-                          }}
-                          trigger={
-                            <Button variant="outline" className="w-full gap-1.5 text-xs">
-                              <Link2 className="h-3.5 w-3.5" /> Anexar link como continuação
-                            </Button>
-                          }
-                        />
-                      )}
-                      {editingApostila && (
-                        <Button
-                          variant="outline"
-                          className="w-full gap-1.5 text-xs"
-                          onClick={async () => {
-                            const r = await autoLinkApostila(editingApostila.id);
-                            if (r.linked > 0) toast.success(`${r.linked} material(is) vinculado(s) automaticamente!`);
-                            else toast.info('Nenhum material novo encontrado para vincular.');
-                          }}
-                        >
-                          <Wand2 className="h-3.5 w-3.5" /> Auto-vincular materiais
-                        </Button>
-                      )}
-                    </div>
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        {editingApostila && (
+                          <AppendLinkDialog
+                            apostilaId={editingApostila.id}
+                            apostilaTitle={editingApostila.title}
+                            currentContent={editContent}
+                            onDone={async () => {
+                              const { data: refreshed } = await supabase.from('apostilas').select('content').eq('id', editingApostila.id).maybeSingle();
+                              if (refreshed?.content) setEditContent(refreshed.content);
+                              loadAll();
+                            }}
+                            trigger={
+                              <Button variant="outline" className="flex-1 gap-1.5 text-xs">
+                                <Link2 className="h-3.5 w-3.5" /> Anexar link como continuação
+                              </Button>
+                            }
+                          />
+                        )}
+                        {editingApostila && (
+                          <Button
+                            variant="outline"
+                            className="flex-1 gap-1.5 text-xs"
+                            onClick={async () => {
+                              const r = await autoLinkApostila(editingApostila.id);
+                              if (r.linked > 0) toast.success(`${r.linked} material(is) vinculado(s) automaticamente!`);
+                              else toast.info('Nenhum material novo encontrado para vincular.');
+                            }}
+                          >
+                            <Wand2 className="h-3.5 w-3.5" /> Auto-vincular materiais
+                          </Button>
+                        )}
+                      </div>
 
                     {editingApostila && (
                       <>
