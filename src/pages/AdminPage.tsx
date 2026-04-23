@@ -1632,52 +1632,56 @@ export default function AdminPage() {
 
                 {/* Edit Apostila Dialog */}
                 <Dialog open={!!editingApostila} onOpenChange={(v) => { if (!v) { setEditingApostila(null); setEditExerciseMode('individual'); setEditAiExercises([]); setEditBulkText(''); } }}>
-                  <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                    <DialogHeader><DialogTitle className="text-base">Editar Apostila</DialogTitle></DialogHeader>
-                    <div className="space-y-3">
-                      <div><Label className="text-xs">Título</Label><Input value={editTitle} onChange={e => setEditTitle(e.target.value)} /></div>
-                      <div><Label className="text-xs">Categoria</Label><CategorySelect value={editCategory} onValueChange={setEditCategory} /></div>
+                  <DialogContent className="max-w-5xl w-[calc(100vw-2rem)] max-h-[92vh] p-0 gap-0 flex flex-col overflow-hidden">
+                    <DialogHeader className="px-5 pt-5 pb-3 border-b border-border shrink-0">
+                      <DialogTitle className="text-base">Editar Apostila</DialogTitle>
+                    </DialogHeader>
+                    <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div><Label className="text-xs mb-1 block">Título</Label><Input value={editTitle} onChange={e => setEditTitle(e.target.value)} /></div>
+                        <div><Label className="text-xs mb-1 block">Categoria</Label><CategorySelect value={editCategory} onValueChange={setEditCategory} /></div>
+                      </div>
                       <div>
-                        <Label className="text-xs mb-1 block">Conteúdo</Label>
+                        <Label className="text-xs mb-1.5 block">Conteúdo</Label>
                         <MarkdownEditor
                           value={editContent}
                           onChange={setEditContent}
-                          rows={14}
-                          placeholder="Conteúdo da apostila — use a barra de formatação acima"
+                          rows={16}
+                          placeholder="Comece a escrever — use a barra de formatação acima"
                         />
                       </div>
-                      <Button className="w-full gradient-primary text-primary-foreground" onClick={handleEditSave}>Salvar Apostila</Button>
-                      {editingApostila && (
-                        <AppendLinkDialog
-                          apostilaId={editingApostila.id}
-                          apostilaTitle={editingApostila.title}
-                          currentContent={editContent}
-                          onDone={async () => {
-                            const { data: refreshed } = await supabase.from('apostilas').select('content').eq('id', editingApostila.id).maybeSingle();
-                            if (refreshed?.content) setEditContent(refreshed.content);
-                            loadAll();
-                          }}
-                          trigger={
-                            <Button variant="outline" className="w-full gap-1.5 text-xs">
-                              <Link2 className="h-3.5 w-3.5" /> Anexar link como continuação
-                            </Button>
-                          }
-                        />
-                      )}
-                      {editingApostila && (
-                        <Button
-                          variant="outline"
-                          className="w-full gap-1.5 text-xs"
-                          onClick={async () => {
-                            const r = await autoLinkApostila(editingApostila.id);
-                            if (r.linked > 0) toast.success(`${r.linked} material(is) vinculado(s) automaticamente!`);
-                            else toast.info('Nenhum material novo encontrado para vincular.');
-                          }}
-                        >
-                          <Wand2 className="h-3.5 w-3.5" /> Auto-vincular materiais
-                        </Button>
-                      )}
-                    </div>
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        {editingApostila && (
+                          <AppendLinkDialog
+                            apostilaId={editingApostila.id}
+                            apostilaTitle={editingApostila.title}
+                            currentContent={editContent}
+                            onDone={async () => {
+                              const { data: refreshed } = await supabase.from('apostilas').select('content').eq('id', editingApostila.id).maybeSingle();
+                              if (refreshed?.content) setEditContent(refreshed.content);
+                              loadAll();
+                            }}
+                            trigger={
+                              <Button variant="outline" className="flex-1 gap-1.5 text-xs">
+                                <Link2 className="h-3.5 w-3.5" /> Anexar link como continuação
+                              </Button>
+                            }
+                          />
+                        )}
+                        {editingApostila && (
+                          <Button
+                            variant="outline"
+                            className="flex-1 gap-1.5 text-xs"
+                            onClick={async () => {
+                              const r = await autoLinkApostila(editingApostila.id);
+                              if (r.linked > 0) toast.success(`${r.linked} material(is) vinculado(s) automaticamente!`);
+                              else toast.info('Nenhum material novo encontrado para vincular.');
+                            }}
+                          >
+                            <Wand2 className="h-3.5 w-3.5" /> Auto-vincular materiais
+                          </Button>
+                        )}
+                      </div>
 
                     {editingApostila && (
                       <>
@@ -1861,6 +1865,10 @@ export default function AdminPage() {
                         </div>
                       </>
                     )}
+                    </div>
+                    <div className="px-5 py-3 border-t border-border bg-muted/20 shrink-0">
+                      <Button className="w-full gradient-primary text-primary-foreground" onClick={handleEditSave}>Salvar Apostila</Button>
+                    </div>
                   </DialogContent>
                 </Dialog>
               </div>
