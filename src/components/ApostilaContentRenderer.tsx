@@ -24,6 +24,62 @@ function cleanInlineText(input: string): string {
     .replace(/^\s*#{1,6}\s+/gm, '');
 }
 
+/**
+ * Renderização inline rica: aceita formatação markdown comum e um subconjunto
+ * seguro de HTML inline (negrito/itálico/sublinhado/tachado/realce/cor/tamanho/
+ * sub/sup/alinhamento) — usado pelo MarkdownEditor estilo Word.
+ *
+ * Sanitização: removemos tags perigosas (script, iframe, on*) e atributos de
+ * evento; permitimos apenas style com `color`, `background`, `font-size`.
+ */
+function sanitizeInlineHtml(html: string): string {
+  return html
+    // Remove tags perigosas inteiras
+    .replace(/<\/?(script|style|iframe|object|embed|link|meta|form|input|button|svg)\b[^>]*>/gi, '')
+    // Remove handlers on*="..."
+    .replace(/\son[a-z]+\s*=\s*"[^"]*"/gi, '')
+    .replace(/\son[a-z]+\s*=\s*'[^']*'/gi, '')
+    // Remove javascript: em href/src
+    .replace(/\s(href|src)\s*=\s*"javascript:[^"]*"/gi, '')
+    // Filtra atributos style: mantém só color/background/font-size/text-align
+    .replace(/\sstyle\s*=\s*"([^"]*)"/gi, (_m, css: string) => {
+      const safe = css
+        .split(';')
+        .map((d) => d.trim())
+        .filter((d) => /^(color|background(-color)?|font-size|text-align)\s*:/i.test(d))
+        .join('; ');
+      return safe ? ` style="${safe}"` : '';
+    });
+}
+
+function renderInline(input: string): { __html: string } {
+  if (!input) return { __html: '' };
+  // 1. Escapa < e > exceto para tags permitidas
+  const ALLOWED = /<\/?(?:u|mark|sub|sup|span|div|strong|em|b|i|s|small|br)\b[^>]*\/?>/gi;
+  const placeholders: string[] = [];
+  let safe = input.replace(ALLOWED, (tag) => {
+    placeholders.push(sanitizeInlineHtml(tag));
+    return `\u0000HTML${placeholders.length - 1}\u0000`;
+  });
+  safe = safe
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+  // 2. Restaura tags permitidas
+  safe = safe.replace(/\u0000HTML(\d+)\u0000/g, (_m, i) => placeholders[Number(i)] || '');
+  // 3. Markdown inline → HTML
+  safe = safe
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener" class="text-primary underline">$1</a>')
+    .replace(/\*{3}([^*\n]+)\*{3}/g, '<strong><em>$1</em></strong>')
+    .replace(/\*{2}([^*\n]+)\*{2}/g, '<strong>$1</strong>')
+    .replace(/(?<![*\w])\*(?!\s)([^*\n]+?)\*(?!\w)/g, '<em>$1</em>')
+    .replace(/~~([^~\n]+)~~/g, '<s>$1</s>')
+    .replace(/==([^=\n]+)==/g, '<mark>$1</mark>')
+    .replace(/`([^`\n]+)`/g, '<code class="px-1 py-0.5 rounded bg-muted text-primary text-[0.92em] font-mono">$1</code>')
+    .replace(/^\s*#{1,6}\s+/gm, '');
+  return { __html: safe };
+}
+
 type Block =
   | { type: 'paragraph'; content: string }
   | { type: 'heading'; level: number; content: string }
@@ -530,7 +586,7 @@ function CalloutBlock({ kind, title, content }: { kind: 'info' | 'tip' | 'warnin
         <div className={`font-mono-label text-[10px] uppercase tracking-wider mb-1 ${labelTone}`}>
           {title}
         </div>
-        <p className="text-[14px] leading-[1.7] text-foreground/85 m-0">{cleanInlineText(content)}</p>
+        <p className="text-[14px] leading-[1.7] text-foreground/85 m-0" dangerouslySetInnerHTML={renderInline(content)} />
       </div>
     </aside>
   );
@@ -538,9 +594,10 @@ function CalloutBlock({ kind, title, content }: { kind: 'info' | 'tip' | 'warnin
 
 function QuoteBlock({ content }: { content: string }) {
   return (
-    <blockquote className="my-6 pl-5 border-l-4 border-primary/50 italic text-foreground/75 text-[15px] leading-[1.75]">
-      {cleanInlineText(content)}
-    </blockquote>
+    <blockquote
+      className="my-6 pl-5 border-l-4 border-primary/50 italic text-foreground/75 text-[15px] leading-[1.75]"
+      dangerouslySetInnerHTML={renderInline(content)}
+    />
   );
 }
 
@@ -553,7 +610,7 @@ function ListBlock({ items, ordered }: { items: string[]; ordered: boolean }) {
             <span className="absolute left-0 top-0 w-6 h-6 rounded-full bg-primary/10 text-primary font-mono-label text-[11px] flex items-center justify-center">
               {idx + 1}
             </span>
-            {cleanInlineText(it)}
+            <span dangerouslySetInnerHTML={renderInline(it)} />
           </li>
         ))}
       </ol>
@@ -564,7 +621,7 @@ function ListBlock({ items, ordered }: { items: string[]; ordered: boolean }) {
       {items.map((it, idx) => (
         <li key={idx} className="pl-5 relative text-[15px] leading-[1.75] text-foreground/85">
           <span className="absolute left-0 top-[0.6em] w-1.5 h-1.5 rounded-full bg-primary" />
-          {cleanInlineText(it)}
+          <span dangerouslySetInnerHTML={renderInline(it)} />
         </li>
       ))}
     </ul>
@@ -578,9 +635,11 @@ function TableBlock({ header, rows }: { header: string[]; rows: string[][] }) {
         <thead>
           <tr className="bg-muted/60">
             {header.map((h, i) => (
-              <th key={i} className="text-left px-3 py-2 font-semibold text-foreground/90 border-b border-border/50">
-                {cleanInlineText(h)}
-              </th>
+              <th
+                key={i}
+                className="text-left px-3 py-2 font-semibold text-foreground/90 border-b border-border/50"
+                dangerouslySetInnerHTML={renderInline(h)}
+              />
             ))}
           </tr>
         </thead>
@@ -588,9 +647,11 @@ function TableBlock({ header, rows }: { header: string[]; rows: string[][] }) {
           {rows.map((row, ri) => (
             <tr key={ri} className={ri % 2 === 0 ? 'bg-background' : 'bg-muted/20'}>
               {row.map((cell, ci) => (
-                <td key={ci} className="px-3 py-2 text-foreground/80 border-b border-border/30 align-top">
-                  {cleanInlineText(cell)}
-                </td>
+                <td
+                  key={ci}
+                  className="px-3 py-2 text-foreground/80 border-b border-border/30 align-top"
+                  dangerouslySetInnerHTML={renderInline(cell)}
+                />
               ))}
             </tr>
           ))}
@@ -679,9 +740,8 @@ export function ApostilaContentRenderer({ content }: Props) {
                 className={`mb-6 last:mb-0 text-foreground/85 ${
                   isFirst ? 'first-letter:font-display first-letter:text-[3.4em] first-letter:font-bold first-letter:text-primary first-letter:float-left first-letter:mr-2 first-letter:leading-[0.9] first-letter:mt-1' : ''
                 }`}
-              >
-                {cleanInlineText(b.content)}
-              </p>
+                dangerouslySetInnerHTML={renderInline(b.content)}
+              />
             );
           }
         }
