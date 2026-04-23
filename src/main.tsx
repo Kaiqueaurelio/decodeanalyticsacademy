@@ -4,9 +4,13 @@ import "./index.css";
 import { bootstrapSavedRoute } from "@/lib/app-persistence";
 import { registerServiceWorker } from "@/lib/pwa";
 import { installChunkReloadGuard } from "@/lib/chunk-reload-guard";
+import { installPerfMonitor } from "@/lib/perf-monitor";
 
 // Recupera automaticamente de chunks obsoletos após deploys
 installChunkReloadGuard();
+
+// Monitora performance (page load + erros de rede) para painel admin
+installPerfMonitor();
 
 // PWA install prompt capture — only in production (not in iframe/preview)
 const isInIframe = (() => {
