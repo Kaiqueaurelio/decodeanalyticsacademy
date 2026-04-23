@@ -610,7 +610,7 @@ function ListBlock({ items, ordered }: { items: string[]; ordered: boolean }) {
             <span className="absolute left-0 top-0 w-6 h-6 rounded-full bg-primary/10 text-primary font-mono-label text-[11px] flex items-center justify-center">
               {idx + 1}
             </span>
-            {cleanInlineText(it)}
+            <span dangerouslySetInnerHTML={renderInline(it)} />
           </li>
         ))}
       </ol>
@@ -621,7 +621,7 @@ function ListBlock({ items, ordered }: { items: string[]; ordered: boolean }) {
       {items.map((it, idx) => (
         <li key={idx} className="pl-5 relative text-[15px] leading-[1.75] text-foreground/85">
           <span className="absolute left-0 top-[0.6em] w-1.5 h-1.5 rounded-full bg-primary" />
-          {cleanInlineText(it)}
+          <span dangerouslySetInnerHTML={renderInline(it)} />
         </li>
       ))}
     </ul>
