@@ -2530,6 +2530,36 @@ export default function AdminPage() {
           </main>
         </div>
       </div>
+
+      {/* Diálogo de duplicata: detecta apostilas parecidas e mantém a melhor formatada */}
+      <DuplicateApostilaDialog
+        open={!!duplicateMatch}
+        match={duplicateMatch}
+        onReplaceExisting={async () => {
+          // Substitui o conteúdo existente pelo novo (que está melhor formatado)
+          const newContent = pendingSave ? (manualContent || importContent) : '';
+          await replaceExistingWithBetter(newContent || importContent || manualContent);
+          setDuplicateMatch(null);
+          setPendingSave(null);
+        }}
+        onKeepExisting={() => {
+          toast.info('Mantida a versão existente — a melhor formatada.');
+          // Apenas limpa formulários
+          resetImportForm();
+          setManualTitle(''); setManualContent(''); setManualCategory(''); setShowManualForm(false);
+          setDuplicateMatch(null);
+          setPendingSave(null);
+        }}
+        onCreateAnyway={async () => {
+          if (pendingSave) await pendingSave();
+          setDuplicateMatch(null);
+          setPendingSave(null);
+        }}
+        onCancel={() => {
+          setDuplicateMatch(null);
+          setPendingSave(null);
+        }}
+      />
     </CategoriesCtx.Provider>
   );
 }
