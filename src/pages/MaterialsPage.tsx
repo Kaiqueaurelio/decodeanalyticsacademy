@@ -340,7 +340,7 @@ function ImageViewer({ url, title }: { url: string; title: string }) {
 }
 
 // PDF Viewer with fullscreen
-function PdfViewer({ url, title }: { url: string; title: string }) {
+function PdfViewer({ url, title, canDownload }: { url: string; title: string; canDownload: boolean }) {
   const [fullscreen, setFullscreen] = useState(false);
 
   return (
@@ -356,11 +356,13 @@ function PdfViewer({ url, title }: { url: string; title: string }) {
             <Button size="sm" variant="outline" onClick={() => setFullscreen(true)}>
               <Maximize className="h-3.5 w-3.5 mr-1.5" /> Tela cheia
             </Button>
-            <Button size="sm" variant="outline" asChild>
-              <a href={url} target="_blank" rel="noopener noreferrer">
-                <Download className="h-3.5 w-3.5 mr-1.5" /> Baixar
-              </a>
-            </Button>
+            {canDownload && (
+              <Button size="sm" variant="outline" asChild>
+                <a href={url} target="_blank" rel="noopener noreferrer">
+                  <Download className="h-3.5 w-3.5 mr-1.5" /> Baixar
+                </a>
+              </Button>
+            )}
           </div>
         </div>
       </div>
@@ -384,7 +386,7 @@ function PdfViewer({ url, title }: { url: string; title: string }) {
 }
 
 // Office Document Viewer (Word, PowerPoint, Excel) via Google Docs Viewer
-function OfficeViewer({ url, title, typeLabel }: { url: string; title: string; typeLabel: string }) {
+function OfficeViewer({ url, title, typeLabel, canDownload }: { url: string; title: string; typeLabel: string; canDownload: boolean }) {
   const [expanded, setExpanded] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
   const [error, setError] = useState(false);
@@ -448,11 +450,13 @@ function OfficeViewer({ url, title, typeLabel }: { url: string; title: string; t
               <Button size="sm" variant="outline" onClick={() => setError(false)}>
                 Tentar novamente
               </Button>
-              <Button size="sm" variant="outline" asChild>
-                <a href={url} target="_blank" rel="noopener noreferrer">
-                  <Download className="h-3.5 w-3.5 mr-1.5" /> Baixar
-                </a>
-              </Button>
+              {canDownload && (
+                <Button size="sm" variant="outline" asChild>
+                  <a href={url} target="_blank" rel="noopener noreferrer">
+                    <Download className="h-3.5 w-3.5 mr-1.5" /> Baixar
+                  </a>
+                </Button>
+              )}
             </div>
           </div>
         ) : (
@@ -475,11 +479,13 @@ function OfficeViewer({ url, title, typeLabel }: { url: string; title: string; t
             <Button size="sm" variant="outline" onClick={() => setFullscreen(true)}>
               <Maximize className="h-3.5 w-3.5 mr-1.5" /> Tela cheia
             </Button>
-            <Button size="sm" variant="outline" asChild>
-              <a href={url} target="_blank" rel="noopener noreferrer">
-                <Download className="h-3.5 w-3.5" />
-              </a>
-            </Button>
+            {canDownload && (
+              <Button size="sm" variant="outline" asChild>
+                <a href={url} target="_blank" rel="noopener noreferrer">
+                  <Download className="h-3.5 w-3.5" />
+                </a>
+              </Button>
+            )}
           </div>
         </div>
       </div>
