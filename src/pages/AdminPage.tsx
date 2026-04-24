@@ -717,8 +717,8 @@ export default function AdminPage() {
     setCloning(false);
   };
 
-  const handleManualSave = async () => {
-    if (!manualTitle.trim() || !user) return;
+  const insertManualApostila = useCallback(async () => {
+    if (!user) return;
     const { error } = await supabase.from('apostilas').insert({
       title: manualTitle.trim(), content: manualContent,
       category: manualCategory || 'Geral', source_type: 'manual', created_by: user.id, published: false,
@@ -726,7 +726,35 @@ export default function AdminPage() {
     if (error) { toast.error('Erro ao criar'); return; }
     toast.success('Apostila criada!');
     setManualTitle(''); setManualContent(''); setManualCategory(''); setShowManualForm(false); loadAll();
+  }, [user, manualTitle, manualContent, manualCategory]);
+
+  const handleManualSave = async () => {
+    if (!manualTitle.trim() || !user) return;
+    // Detecta duplicata pelo conteúdo
+    const dup = await findDuplicateApostila(manualContent, manualTitle);
+    if (dup) {
+      setDuplicateMatch(dup);
+      setPendingSave(() => async () => { await insertManualApostila(); });
+      return;
+    }
+    await insertManualApostila();
   };
+
+  /** Atualiza uma apostila existente com o melhor conteúdo (chamado a partir do diálogo). */
+  const replaceExistingWithBetter = useCallback(async (newContent: string) => {
+    if (!duplicateMatch) return;
+    const { error } = await supabase
+      .from('apostilas')
+      .update({ content: newContent, updated_at: new Date().toISOString() })
+      .eq('id', duplicateMatch.apostila.id);
+    if (error) { toast.error('Erro ao atualizar: ' + error.message); return; }
+    toast.success(`"${duplicateMatch.apostila.title}" foi atualizada com a versão melhor formatada.`);
+    // Limpa formulário ativo (importação ou manual)
+    resetImportForm();
+    setManualTitle(''); setManualContent(''); setManualCategory(''); setShowManualForm(false);
+    loadAll();
+  }, [duplicateMatch]);
+
 
   const resetImportForm = () => {
     setImportUrl(''); setImportTitle(''); setImportTopic('');
