@@ -1719,8 +1719,8 @@ export default function AdminPage() {
                               loadAll();
                             }}
                             trigger={
-                              <Button variant="outline" className="flex-1 gap-1.5 text-xs">
-                                <Link2 className="h-3.5 w-3.5" /> Anexar link como continuação
+                              <Button variant="outline" className="w-full sm:flex-1 gap-1.5 text-xs">
+                                <Link2 className="h-3.5 w-3.5" /> <span className="truncate">Anexar link como continuação</span>
                               </Button>
                             }
                           />
@@ -1728,14 +1728,14 @@ export default function AdminPage() {
                         {editingApostila && (
                           <Button
                             variant="outline"
-                            className="flex-1 gap-1.5 text-xs"
+                            className="w-full sm:flex-1 gap-1.5 text-xs"
                             onClick={async () => {
                               const r = await autoLinkApostila(editingApostila.id);
                               if (r.linked > 0) toast.success(`${r.linked} material(is) vinculado(s) automaticamente!`);
                               else toast.info('Nenhum material novo encontrado para vincular.');
                             }}
                           >
-                            <Wand2 className="h-3.5 w-3.5" /> Auto-vincular materiais
+                            <Wand2 className="h-3.5 w-3.5" /> <span className="truncate">Auto-vincular materiais</span>
                           </Button>
                         )}
                       </div>
