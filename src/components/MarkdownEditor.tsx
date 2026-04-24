@@ -20,7 +20,9 @@ import {
   AlignLeft, AlignCenter, AlignRight, AlignJustify, Undo2, Redo2,
   Highlighter, Palette, Table as TableIcon, Subscript, Superscript,
   CheckSquare, Eraser, Type, RemoveFormatting,
+  Search, ChevronUp, ChevronDown, Replace, X,
 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import { ApostilaContentRenderer } from '@/components/ApostilaContentRenderer';
 import { ImageUploadButton } from '@/components/ImageUploadButton';
 import { cn } from '@/lib/utils';
