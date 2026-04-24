@@ -572,11 +572,14 @@ export default function ApostilaPage() {
               />
 
               {/* Rendered sections — editorial layout */}
-              <div id="conteudo-principal" className="space-y-12 scroll-mt-24">
-                {sections.map((section, idx) => {
-                  const sectionNum = String(idx + 1).padStart(2, '0');
+              <div id="conteudo-principal" className="space-y-10 scroll-mt-24">
+                {organizedSections.map((section, idx) => {
+                  if (section.isPlaceholder) return null;
+
+                  const sectionNumber = tocNumberById[section.id] || String(idx + 1);
                   const wordCount = (section.content || '').trim().split(/\s+/).filter(Boolean).length;
                   const readMin = Math.max(1, Math.round(wordCount / 200));
+
                   return (
                     <section
                       key={section.id}
@@ -586,27 +589,27 @@ export default function ApostilaPage() {
                       style={{ animationDelay: `${300 + idx * 80}ms` }}
                     >
                       {section.level === 1 && (
-                        <header className="mb-5">
+                        <header className={section.isGroupOnly ? 'mb-4' : 'mb-5'}>
                           <div className="font-mono-label text-[10px] uppercase tracking-[0.22em] text-primary/80 mb-1.5">
-                            Seção {sectionNum} {wordCount > 50 && <span className="text-muted-foreground/70">· {readMin} min de leitura</span>}
+                            Seção {sectionNumber}{section.hasContent && wordCount > 50 && <span className="text-muted-foreground/70"> · {readMin} min de leitura</span>}
                           </div>
                           <h2 className="font-display text-[22px] sm:text-[26px] leading-[1.25] tracking-tight text-foreground mb-2.5">
-                            {cleanText(section.title)}
+                            {section.displayTitle}
                           </h2>
-                          <div className="h-[2px] w-10 bg-primary/80 rounded-full" />
+                          <div className={`h-[2px] rounded-full ${section.isGroupOnly ? 'w-16 bg-border/70' : 'w-10 bg-primary/80'}`} />
                         </header>
                       )}
                       {section.level === 2 && (
-                        <h3 className="font-display text-[17px] sm:text-[18px] font-semibold mt-1 mb-3 text-foreground border-b border-border/40 pb-1.5">
-                          {cleanText(section.title)}
+                        <h3 className={`font-display text-[17px] sm:text-[18px] font-semibold mt-1 ${section.isGroupOnly ? 'mb-2 text-foreground/90' : 'mb-3 text-foreground border-b border-border/40 pb-1.5'}`}>
+                          {section.displayTitle}
                         </h3>
                       )}
                       {section.level === 3 && (
-                        <h4 className="font-display text-[15px] font-semibold mt-1 mb-2 text-primary/90">
-                          {cleanText(section.title)}
+                        <h4 className={`font-display text-[15px] font-semibold mt-1 ${section.isGroupOnly ? 'mb-1.5 text-foreground/80' : 'mb-2 text-primary/90'}`}>
+                          {section.displayTitle}
                         </h4>
                       )}
-                      {section.content.trim() && (
+                      {section.hasContent && (
                         <ApostilaContentBoundary content={section.content} />
                       )}
                     </section>
