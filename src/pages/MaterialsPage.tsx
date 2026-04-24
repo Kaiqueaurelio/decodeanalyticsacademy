@@ -281,11 +281,13 @@ function VideoPlayer({ url, title, canDownload }: { url: string; title: string; 
           <p className="font-medium text-sm">{title}</p>
           <p className="text-[10px] text-muted-foreground mt-0.5">Vídeo · Material de apoio</p>
         </div>
-        <Button size="sm" variant="outline" asChild>
-          <a href={url} target="_blank" rel="noopener noreferrer" download>
-            <Download className="h-3.5 w-3.5" />
-          </a>
-        </Button>
+        {canDownload && (
+          <Button size="sm" variant="outline" asChild>
+            <a href={url} target="_blank" rel="noopener noreferrer" download>
+              <Download className="h-3.5 w-3.5" />
+            </a>
+          </Button>
+        )}
       </div>
     </div>
   );
