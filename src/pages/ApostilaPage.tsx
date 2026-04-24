@@ -110,6 +110,28 @@ export default function ApostilaPage() {
 
   const sections = useMemo(() => parseContent(apostila?.content || null), [apostila?.content]);
 
+  /**
+   * Sumário organizado: filtra seções sem título legível e atribui numeração
+   * hierárquica (1, 1.1, 1.1.1, 2, 2.1...) ignorando "buracos" do parser.
+   */
+  const tocItems = useMemo(() => {
+    const counters = [0, 0, 0]; // níveis 1, 2, 3
+    return sections
+      .map((s) => {
+        const title = cleanText(s.title || '').trim();
+        return { ...s, displayTitle: title };
+      })
+      .filter((s) => s.displayTitle.length >= 2) // ignora títulos vazios/lixo
+      .map((s) => {
+        const level = Math.min(Math.max(s.level || 1, 1), 3);
+        counters[level - 1]++;
+        // zera contadores dos níveis abaixo
+        for (let k = level; k < counters.length; k++) counters[k] = 0;
+        const number = counters.slice(0, level).filter((n) => n > 0).join('.');
+        return { ...s, level, number };
+      });
+  }, [sections]);
+
   const handleExportPdf = useCallback(async () => {
     if (!apostila) return;
     setExportingPdf(true);
@@ -178,20 +200,25 @@ export default function ApostilaPage() {
 
   const tocContent = (
     <nav className="space-y-0.5">
-      {sections.map((s, i) => (
+      {tocItems.map((s, i) => (
         <button
           key={s.id}
           onClick={() => scrollToSection(s.id)}
-          className={`block w-full text-left py-2 px-3 rounded-lg text-xs transition-all duration-200 animate-fade-in ${
-            s.level === 1 ? 'font-semibold' : s.level === 2 ? 'pl-5' : 'pl-7 text-[11px]'
+          className={`group block w-full text-left py-1.5 px-2 rounded-md text-xs transition-all duration-200 animate-fade-in ${
+            s.level === 2 ? 'pl-5' : s.level === 3 ? 'pl-8' : ''
           } ${
             activeSection === s.id
               ? 'text-primary bg-primary/10 border-l-2 border-primary'
-              : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+              : 'text-muted-foreground hover:text-foreground hover:bg-muted/40'
           }`}
-          style={{ animationDelay: `${i * 40}ms` }}
+          style={{ animationDelay: `${i * 30}ms` }}
         >
-          {s.title}
+          <span className="font-mono-label text-[10px] text-primary/60 group-hover:text-primary tabular-nums mr-2">
+            {s.number}
+          </span>
+          <span className={s.level === 1 ? 'font-semibold' : ''}>
+            {s.displayTitle}
+          </span>
         </button>
       ))}
     </nav>
@@ -433,31 +460,48 @@ export default function ApostilaPage() {
               </div>
 
               {/* Sumário visual clicável */}
-              {sections.length > 1 && (
+              {tocItems.length > 1 && (
                 <div className="mb-8 rounded-xl border border-border/60 bg-card/40 backdrop-blur-sm overflow-hidden animate-fade-in" style={{ animationDelay: '320ms' }}>
                   <div className="flex items-center gap-2 px-4 py-3 border-b border-border/50 bg-muted/30">
                     <List className="h-3.5 w-3.5 text-primary" />
                     <span className="font-mono-label text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                      Sumário · {sections.length} {sections.length === 1 ? 'tópico' : 'tópicos'}
+                      Sumário · {tocItems.filter((t) => t.level === 1).length} {tocItems.filter((t) => t.level === 1).length === 1 ? 'capítulo' : 'capítulos'}
                     </span>
                   </div>
-                  <ol className="divide-y divide-border/40">
-                    {sections.map((s, i) => {
-                      const indent = s.level === 1 ? '' : s.level === 2 ? 'pl-8' : 'pl-12';
-                      const num = String(i + 1).padStart(2, '0');
+                  <ol className="py-1">
+                    {tocItems.map((s) => {
+                      const isMain = s.level === 1;
+                      const isSub = s.level === 2;
+                      const isSubSub = s.level === 3;
                       return (
                         <li key={s.id}>
                           <button
                             onClick={() => scrollToSection(s.id)}
-                            className={`group w-full text-left flex items-baseline gap-3 px-4 py-2.5 transition-colors hover:bg-primary/5 focus-visible:bg-primary/5 focus-visible:outline-none ${indent}`}
+                            className={`group w-full text-left flex items-baseline gap-3 transition-colors hover:bg-primary/5 focus-visible:bg-primary/5 focus-visible:outline-none ${
+                              isMain ? 'px-4 py-2.5 mt-1' : isSub ? 'px-4 py-1.5 pl-10' : 'px-4 py-1 pl-16'
+                            } ${isMain ? 'border-t border-border/30 first:border-t-0' : ''}`}
                           >
-                            <span className="font-mono-label text-[10px] text-primary/70 group-hover:text-primary tabular-nums shrink-0 w-6">
-                              {num}
+                            <span className={`font-mono-label tabular-nums shrink-0 ${
+                              isMain
+                                ? 'text-[11px] text-primary w-7'
+                                : isSub
+                                ? 'text-[10px] text-primary/70 w-8'
+                                : 'text-[10px] text-muted-foreground/70 w-10'
+                            }`}>
+                              {s.number}
                             </span>
-                            <span className={`flex-1 text-sm text-foreground/90 group-hover:text-primary transition-colors ${s.level === 1 ? 'font-medium' : 'text-muted-foreground'}`}>
-                              {cleanText(s.title)}
+                            <span className={`flex-1 transition-colors group-hover:text-primary ${
+                              isMain
+                                ? 'text-[14px] font-semibold text-foreground leading-snug'
+                                : isSub
+                                ? 'text-[13px] text-foreground/85 leading-snug'
+                                : 'text-[12px] text-muted-foreground leading-snug'
+                            }`}>
+                              {s.displayTitle}
                             </span>
-                            <span className="opacity-0 group-hover:opacity-100 text-[10px] text-primary transition-opacity">→</span>
+                            {isMain && (
+                              <span className="opacity-0 group-hover:opacity-100 text-[10px] text-primary transition-opacity">→</span>
+                            )}
                           </button>
                         </li>
                       );
