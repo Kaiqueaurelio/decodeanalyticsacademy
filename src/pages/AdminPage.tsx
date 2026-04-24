@@ -1435,7 +1435,7 @@ export default function AdminPage() {
                                 <Button size="icon" variant="ghost" className="hidden sm:inline-flex h-8 w-8" onClick={() => { setEditingApostila(a); setEditTitle(a.title); setEditContent(a.content || ''); setEditCategory(a.category); }} title="Editar">
                                   <Edit className="h-3.5 w-3.5" />
                                 </Button>
-                                <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => deleteApostila(a.id)} title="Excluir">
+                                <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => setConfirmDeleteId(a.id)} title="Excluir">
                                   <Trash2 className="h-3.5 w-3.5" />
                                 </Button>
 
