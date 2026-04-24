@@ -228,15 +228,19 @@ REGRAS OBRIGATORIAS:
     if (preferGoogle && GOOGLE_AI_API_KEY) {
       parsed = await callGoogle();
       providerUsed = "google-direct";
-      if (!parsed && LOVABLE_API_KEY) {
-        // fallback Lovable
+      if ((!parsed || !parsed.exercises?.length) && GOOGLE_AI_API_KEY) {
+        // Retry com mais tokens caso tenha sido truncado
+        console.log("Google retry com 32000 tokens");
+        parsed = await callGoogle(32000);
+        providerUsed = "google-direct-retry";
+      }
+      if ((!parsed || !parsed.exercises?.length) && LOVABLE_API_KEY) {
         const r = await callLovable();
         if (r && !("__status" in r)) { parsed = r; providerUsed = "lovable-fallback"; }
       }
     } else if (LOVABLE_API_KEY) {
       const r = await callLovable();
       if (r && "__status" in r) {
-        // Lovable falhou (402/429/etc) — tenta Google se houver chave
         if (GOOGLE_AI_API_KEY) {
           parsed = await callGoogle();
           providerUsed = "google-fallback";
@@ -255,6 +259,10 @@ REGRAS OBRIGATORIAS:
     } else if (GOOGLE_AI_API_KEY) {
       parsed = await callGoogle();
       providerUsed = "google-direct";
+      if (!parsed || !parsed.exercises?.length) {
+        parsed = await callGoogle(32000);
+        providerUsed = "google-direct-retry";
+      }
     }
 
     if (!parsed?.exercises) {
