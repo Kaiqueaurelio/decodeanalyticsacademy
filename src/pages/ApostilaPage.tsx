@@ -401,7 +401,7 @@ export default function ApostilaPage() {
                     <BookOpen className="h-3 w-3" /> {apostila.category}
                   </span>
                 </div>
-                <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl leading-tight mb-4 text-foreground animate-fade-in" style={{ animationDelay: '100ms' }}>
+                <h1 className="font-display text-2xl sm:text-3xl lg:text-[2.5rem] leading-[1.15] tracking-tight mb-4 text-foreground animate-fade-in" style={{ animationDelay: '100ms' }}>
                   {apostila.title}
                 </h1>
                 <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-muted-foreground animate-fade-in" style={{ animationDelay: '200ms' }}>
@@ -431,6 +431,40 @@ export default function ApostilaPage() {
                   Leitura em PT-BR · resumo de 1 página + mapa mental gerado por IA
                 </p>
               </div>
+
+              {/* Sumário visual clicável */}
+              {sections.length > 1 && (
+                <div className="mb-8 rounded-xl border border-border/60 bg-card/40 backdrop-blur-sm overflow-hidden animate-fade-in" style={{ animationDelay: '320ms' }}>
+                  <div className="flex items-center gap-2 px-4 py-3 border-b border-border/50 bg-muted/30">
+                    <List className="h-3.5 w-3.5 text-primary" />
+                    <span className="font-mono-label text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                      Sumário · {sections.length} {sections.length === 1 ? 'tópico' : 'tópicos'}
+                    </span>
+                  </div>
+                  <ol className="divide-y divide-border/40">
+                    {sections.map((s, i) => {
+                      const indent = s.level === 1 ? '' : s.level === 2 ? 'pl-8' : 'pl-12';
+                      const num = String(i + 1).padStart(2, '0');
+                      return (
+                        <li key={s.id}>
+                          <button
+                            onClick={() => scrollToSection(s.id)}
+                            className={`group w-full text-left flex items-baseline gap-3 px-4 py-2.5 transition-colors hover:bg-primary/5 focus-visible:bg-primary/5 focus-visible:outline-none ${indent}`}
+                          >
+                            <span className="font-mono-label text-[10px] text-primary/70 group-hover:text-primary tabular-nums shrink-0 w-6">
+                              {num}
+                            </span>
+                            <span className={`flex-1 text-sm text-foreground/90 group-hover:text-primary transition-colors ${s.level === 1 ? 'font-medium' : 'text-muted-foreground'}`}>
+                              {cleanText(s.title)}
+                            </span>
+                            <span className="opacity-0 group-hover:opacity-100 text-[10px] text-primary transition-opacity">→</span>
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ol>
+                </div>
+              )}
 
               {/* Unit tiles - estilo AVA */}
               <UnitTilesGrid
@@ -467,23 +501,23 @@ export default function ApostilaPage() {
                       style={{ animationDelay: `${300 + idx * 80}ms` }}
                     >
                       {section.level === 1 && (
-                        <header className="mb-6">
+                        <header className="mb-5">
                           <div className="font-mono-label text-[10px] uppercase tracking-[0.22em] text-primary/80 mb-1.5">
                             Seção {sectionNum} {wordCount > 50 && <span className="text-muted-foreground/70">· {readMin} min de leitura</span>}
                           </div>
-                          <h2 className="font-display text-[28px] sm:text-[32px] leading-[1.2] text-foreground mb-3">
+                          <h2 className="font-display text-[22px] sm:text-[26px] leading-[1.25] tracking-tight text-foreground mb-2.5">
                             {cleanText(section.title)}
                           </h2>
-                          <div className="h-[2px] w-12 bg-primary rounded-full" />
+                          <div className="h-[2px] w-10 bg-primary/80 rounded-full" />
                         </header>
                       )}
                       {section.level === 2 && (
-                        <h3 className="font-display text-[20px] sm:text-[22px] mt-2 mb-4 text-foreground border-b border-border/40 pb-2">
+                        <h3 className="font-display text-[17px] sm:text-[18px] font-semibold mt-1 mb-3 text-foreground border-b border-border/40 pb-1.5">
                           {cleanText(section.title)}
                         </h3>
                       )}
                       {section.level === 3 && (
-                        <h4 className="font-display text-[16px] font-semibold mt-2 mb-3 text-primary/90">
+                        <h4 className="font-display text-[15px] font-semibold mt-1 mb-2 text-primary/90">
                           {cleanText(section.title)}
                         </h4>
                       )}
