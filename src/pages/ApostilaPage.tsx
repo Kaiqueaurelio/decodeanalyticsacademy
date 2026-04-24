@@ -460,31 +460,48 @@ export default function ApostilaPage() {
               </div>
 
               {/* Sumário visual clicável */}
-              {sections.length > 1 && (
+              {tocItems.length > 1 && (
                 <div className="mb-8 rounded-xl border border-border/60 bg-card/40 backdrop-blur-sm overflow-hidden animate-fade-in" style={{ animationDelay: '320ms' }}>
                   <div className="flex items-center gap-2 px-4 py-3 border-b border-border/50 bg-muted/30">
                     <List className="h-3.5 w-3.5 text-primary" />
                     <span className="font-mono-label text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                      Sumário · {sections.length} {sections.length === 1 ? 'tópico' : 'tópicos'}
+                      Sumário · {tocItems.filter((t) => t.level === 1).length} {tocItems.filter((t) => t.level === 1).length === 1 ? 'capítulo' : 'capítulos'}
                     </span>
                   </div>
-                  <ol className="divide-y divide-border/40">
-                    {sections.map((s, i) => {
-                      const indent = s.level === 1 ? '' : s.level === 2 ? 'pl-8' : 'pl-12';
-                      const num = String(i + 1).padStart(2, '0');
+                  <ol className="py-1">
+                    {tocItems.map((s) => {
+                      const isMain = s.level === 1;
+                      const isSub = s.level === 2;
+                      const isSubSub = s.level === 3;
                       return (
                         <li key={s.id}>
                           <button
                             onClick={() => scrollToSection(s.id)}
-                            className={`group w-full text-left flex items-baseline gap-3 px-4 py-2.5 transition-colors hover:bg-primary/5 focus-visible:bg-primary/5 focus-visible:outline-none ${indent}`}
+                            className={`group w-full text-left flex items-baseline gap-3 transition-colors hover:bg-primary/5 focus-visible:bg-primary/5 focus-visible:outline-none ${
+                              isMain ? 'px-4 py-2.5 mt-1' : isSub ? 'px-4 py-1.5 pl-10' : 'px-4 py-1 pl-16'
+                            } ${isMain ? 'border-t border-border/30 first:border-t-0' : ''}`}
                           >
-                            <span className="font-mono-label text-[10px] text-primary/70 group-hover:text-primary tabular-nums shrink-0 w-6">
-                              {num}
+                            <span className={`font-mono-label tabular-nums shrink-0 ${
+                              isMain
+                                ? 'text-[11px] text-primary w-7'
+                                : isSub
+                                ? 'text-[10px] text-primary/70 w-8'
+                                : 'text-[10px] text-muted-foreground/70 w-10'
+                            }`}>
+                              {s.number}
                             </span>
-                            <span className={`flex-1 text-sm text-foreground/90 group-hover:text-primary transition-colors ${s.level === 1 ? 'font-medium' : 'text-muted-foreground'}`}>
-                              {cleanText(s.title)}
+                            <span className={`flex-1 transition-colors group-hover:text-primary ${
+                              isMain
+                                ? 'text-[14px] font-semibold text-foreground leading-snug'
+                                : isSub
+                                ? 'text-[13px] text-foreground/85 leading-snug'
+                                : 'text-[12px] text-muted-foreground leading-snug'
+                            }`}>
+                              {s.displayTitle}
                             </span>
-                            <span className="opacity-0 group-hover:opacity-100 text-[10px] text-primary transition-opacity">→</span>
+                            {isMain && (
+                              <span className="opacity-0 group-hover:opacity-100 text-[10px] text-primary transition-opacity">→</span>
+                            )}
                           </button>
                         </li>
                       );
