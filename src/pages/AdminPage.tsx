@@ -2596,6 +2596,31 @@ export default function AdminPage() {
           setPendingSave(null);
         }}
       />
+
+      {/* Confirmação de exclusão de apostila */}
+      <AlertDialog open={!!confirmDeleteId} onOpenChange={(v) => { if (!v) setConfirmDeleteId(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir apostila?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação remove a apostila, seus exercícios e os vínculos com materiais. Não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={async () => {
+                const id = confirmDeleteId;
+                setConfirmDeleteId(null);
+                if (id) await deleteApostila(id);
+              }}
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </CategoriesCtx.Provider>
   );
 }
