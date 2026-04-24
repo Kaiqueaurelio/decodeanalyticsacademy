@@ -80,36 +80,85 @@ REGRAS OBRIGATORIAS:
 
     const userPrompt = `Titulo: ${title || "Sem titulo"}\n\nConteudo da apostila:\n${truncatedContent}\n\nGere ${total} exercicios (${mc} multipla escolha + ${essay} dissertativas) baseados rigorosamente no conteudo acima.`;
 
+    // Reparo de JSON truncado: tenta extrair o array exercises mesmo se cortado
+    const tryRepairJson = (text: string): { exercises: any[] } | null => {
+      const cleaned = text.trim().replace(/^```(?:json)?/i, "").replace(/```$/i, "").trim();
+      // 1) parse direto
+      try {
+        const p = JSON.parse(cleaned);
+        if (Array.isArray(p?.exercises)) return p;
+      } catch {/* continua */}
+      // 2) extrai objetos completos do array exercises
+      const startIdx = cleaned.indexOf('"exercises"');
+      if (startIdx === -1) return null;
+      const arrStart = cleaned.indexOf("[", startIdx);
+      if (arrStart === -1) return null;
+      const items: any[] = [];
+      let i = arrStart + 1;
+      while (i < cleaned.length) {
+        // pula whitespace e vírgulas
+        while (i < cleaned.length && /[\s,]/.test(cleaned[i])) i++;
+        if (i >= cleaned.length || cleaned[i] === "]") break;
+        if (cleaned[i] !== "{") break;
+        // encontra o fechamento balanceado deste objeto
+        let depth = 0;
+        let inStr = false;
+        let esc = false;
+        const objStart = i;
+        for (; i < cleaned.length; i++) {
+          const ch = cleaned[i];
+          if (inStr) {
+            if (esc) esc = false;
+            else if (ch === "\\") esc = true;
+            else if (ch === '"') inStr = false;
+          } else {
+            if (ch === '"') inStr = true;
+            else if (ch === "{") depth++;
+            else if (ch === "}") {
+              depth--;
+              if (depth === 0) { i++; break; }
+            }
+          }
+        }
+        if (depth !== 0) break; // último objeto truncado — descarta
+        const objText = cleaned.slice(objStart, i);
+        try { items.push(JSON.parse(objText)); } catch {/* descarta inválido */}
+      }
+      return items.length ? { exercises: items } : null;
+    };
+
     // ====== Provider A: Google AI Studio (JSON mode) ======
-    const callGoogle = async (): Promise<{ exercises: any[] } | null> => {
+    const callGoogle = async (maxTokensOverride?: number): Promise<{ exercises: any[] } | null> => {
       const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(GOOGLE_AI_API_KEY!)}`;
+      const maxOutputTokens = maxTokensOverride ?? Math.min(32000, Math.max(4000, total * 1200));
       const resp = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           contents: [{ role: "user", parts: [{ text: userPrompt }] }],
-          systemInstruction: { parts: [{ text: systemPrompt + "\n\nResponda SOMENTE com JSON puro no formato { \"exercises\": [...] } sem texto extra." }] },
+          systemInstruction: { parts: [{ text: systemPrompt + "\n\nResponda SOMENTE com JSON puro no formato { \"exercises\": [...] } sem texto extra. Mantenha explanations concisas (2-3 frases) para caber no limite de tokens." }] },
           generationConfig: {
             temperature: 0.5,
-            maxOutputTokens: Math.min(16000, Math.max(2500, total * 700)),
+            maxOutputTokens,
             responseMimeType: "application/json",
           },
         }),
       });
       if (!resp.ok) {
         const t = await resp.text();
-        console.error("Google generate-exercises error", resp.status, t.slice(0, 400));
+        console.error("Google generate-exercises HTTP error", resp.status, t.slice(0, 400));
         return null;
       }
       const data = await resp.json();
+      const finishReason = data?.candidates?.[0]?.finishReason;
       const text = data?.candidates?.[0]?.content?.parts?.map((p: any) => p.text).join("") ?? "";
-      try {
-        const cleaned = text.trim().replace(/^```(?:json)?/i, "").replace(/```$/i, "").trim();
-        const parsed = JSON.parse(cleaned);
-        if (Array.isArray(parsed?.exercises)) return parsed;
-      } catch (e) {
-        console.error("Google JSON parse falhou", e, text.slice(0, 400));
+      console.log("Google response: finishReason=", finishReason, "len=", text.length, "maxTokens=", maxOutputTokens);
+      const repaired = tryRepairJson(text);
+      if (repaired && repaired.exercises.length > 0) {
+        console.log("Google parsed/repaired exercises:", repaired.exercises.length);
+        return repaired;
       }
+      console.error("Google JSON irrecuperável. finishReason=", finishReason, "preview=", text.slice(0, 300));
       return null;
     };
 
