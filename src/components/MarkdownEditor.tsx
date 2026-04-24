@@ -557,7 +557,7 @@ export function MarkdownEditor({
             <ModeBtn active={mode === 'edit'} title="Só editor" onClick={() => setMode('edit')}>
               <Pencil className="h-3.5 w-3.5" />
             </ModeBtn>
-            <ModeBtn active={mode === 'split'} title="Editor + Preview" onClick={() => setMode('split')}>
+            <ModeBtn active={mode === 'split'} title="Editor + Preview (apenas em telas grandes)" onClick={() => setMode('split')} className="hidden lg:inline-flex">
               <Columns2 className="h-3.5 w-3.5" />
             </ModeBtn>
             <ModeBtn active={mode === 'preview'} title="Só preview" onClick={() => setMode('preview')}>
