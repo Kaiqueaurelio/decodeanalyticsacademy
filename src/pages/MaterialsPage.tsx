@@ -509,7 +509,7 @@ function OfficeViewer({ url, title, typeLabel, canDownload }: { url: string; tit
 }
 
 export default function MaterialsPage() {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [materials, setMaterials] = useState<Material[]>([]);
   const [filter, setFilter] = useState<string>('all');
