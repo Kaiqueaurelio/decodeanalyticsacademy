@@ -111,26 +111,67 @@ export default function ApostilaPage() {
   const sections = useMemo(() => parseContent(apostila?.content || null), [apostila?.content]);
 
   /**
-   * Sumário organizado: filtra seções sem título legível e atribui numeração
-   * hierárquica (1, 1.1, 1.1.1, 2, 2.1...) ignorando "buracos" do parser.
+   * Normaliza as seções para evitar capítulos "mortos":
+   * - remove títulos vazios/repetidos consecutivos do fluxo
+   * - detecta títulos sem texto que servem apenas como agrupadores
+   * - esconde seções sem conteúdo e sem subtópicos
+   */
+  const organizedSections = useMemo(() => {
+    return sections.map((section, index) => {
+      const displayTitle = cleanText(section.title || '').trim();
+      const contentPreview = (section.content || '')
+        .replace(/!\[[^\]]*\]\([^)]+\)/g, ' ')
+        .replace(/[`#>*_~\-]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      const hasContent = contentPreview.length >= 24;
+
+      let hasChildren = false;
+      for (let i = index + 1; i < sections.length; i++) {
+        if ((sections[i].level || 1) <= (section.level || 1)) break;
+        if (cleanText(sections[i].title || '').trim().length >= 2) {
+          hasChildren = true;
+          break;
+        }
+      }
+
+      const previousTitle = index > 0 ? cleanText(sections[index - 1].title || '').trim().toLowerCase() : '';
+      const currentTitle = displayTitle.toLowerCase();
+      const isRepeated = !!currentTitle && currentTitle === previousTitle;
+      const isPlaceholder = displayTitle.length < 2 || isRepeated || (!hasContent && !hasChildren);
+      const isGroupOnly = !isPlaceholder && !hasContent && hasChildren;
+
+      return {
+        ...section,
+        displayTitle,
+        hasContent,
+        hasChildren,
+        isPlaceholder,
+        isGroupOnly,
+      };
+    });
+  }, [sections]);
+
+  /**
+   * Sumário organizado: só mostra itens úteis e renumera sem buracos.
    */
   const tocItems = useMemo(() => {
-    const counters = [0, 0, 0]; // níveis 1, 2, 3
-    return sections
-      .map((s) => {
-        const title = cleanText(s.title || '').trim();
-        return { ...s, displayTitle: title };
-      })
-      .filter((s) => s.displayTitle.length >= 2) // ignora títulos vazios/lixo
+    const counters = [0, 0, 0];
+    return organizedSections
+      .filter((s) => !s.isPlaceholder)
       .map((s) => {
         const level = Math.min(Math.max(s.level || 1, 1), 3);
         counters[level - 1]++;
-        // zera contadores dos níveis abaixo
         for (let k = level; k < counters.length; k++) counters[k] = 0;
         const number = counters.slice(0, level).filter((n) => n > 0).join('.');
         return { ...s, level, number };
       });
-  }, [sections]);
+  }, [organizedSections]);
+
+  const tocNumberById = useMemo(
+    () => Object.fromEntries(tocItems.map((item) => [item.id, item.number])),
+    [tocItems]
+  );
 
   const handleExportPdf = useCallback(async () => {
     if (!apostila) return;
@@ -531,11 +572,14 @@ export default function ApostilaPage() {
               />
 
               {/* Rendered sections — editorial layout */}
-              <div id="conteudo-principal" className="space-y-12 scroll-mt-24">
-                {sections.map((section, idx) => {
-                  const sectionNum = String(idx + 1).padStart(2, '0');
+              <div id="conteudo-principal" className="space-y-10 scroll-mt-24">
+                {organizedSections.map((section, idx) => {
+                  if (section.isPlaceholder) return null;
+
+                  const sectionNumber = tocNumberById[section.id] || String(idx + 1);
                   const wordCount = (section.content || '').trim().split(/\s+/).filter(Boolean).length;
                   const readMin = Math.max(1, Math.round(wordCount / 200));
+
                   return (
                     <section
                       key={section.id}
@@ -545,27 +589,27 @@ export default function ApostilaPage() {
                       style={{ animationDelay: `${300 + idx * 80}ms` }}
                     >
                       {section.level === 1 && (
-                        <header className="mb-5">
+                        <header className={section.isGroupOnly ? 'mb-4' : 'mb-5'}>
                           <div className="font-mono-label text-[10px] uppercase tracking-[0.22em] text-primary/80 mb-1.5">
-                            Seção {sectionNum} {wordCount > 50 && <span className="text-muted-foreground/70">· {readMin} min de leitura</span>}
+                            Seção {sectionNumber}{section.hasContent && wordCount > 50 && <span className="text-muted-foreground/70"> · {readMin} min de leitura</span>}
                           </div>
                           <h2 className="font-display text-[22px] sm:text-[26px] leading-[1.25] tracking-tight text-foreground mb-2.5">
-                            {cleanText(section.title)}
+                            {section.displayTitle}
                           </h2>
-                          <div className="h-[2px] w-10 bg-primary/80 rounded-full" />
+                          <div className={`h-[2px] rounded-full ${section.isGroupOnly ? 'w-16 bg-border/70' : 'w-10 bg-primary/80'}`} />
                         </header>
                       )}
                       {section.level === 2 && (
-                        <h3 className="font-display text-[17px] sm:text-[18px] font-semibold mt-1 mb-3 text-foreground border-b border-border/40 pb-1.5">
-                          {cleanText(section.title)}
+                        <h3 className={`font-display text-[17px] sm:text-[18px] font-semibold mt-1 ${section.isGroupOnly ? 'mb-2 text-foreground/90' : 'mb-3 text-foreground border-b border-border/40 pb-1.5'}`}>
+                          {section.displayTitle}
                         </h3>
                       )}
                       {section.level === 3 && (
-                        <h4 className="font-display text-[15px] font-semibold mt-1 mb-2 text-primary/90">
-                          {cleanText(section.title)}
+                        <h4 className={`font-display text-[15px] font-semibold mt-1 ${section.isGroupOnly ? 'mb-1.5 text-foreground/80' : 'mb-2 text-primary/90'}`}>
+                          {section.displayTitle}
                         </h4>
                       )}
-                      {section.content.trim() && (
+                      {section.hasContent && (
                         <ApostilaContentBoundary content={section.content} />
                       )}
                     </section>
