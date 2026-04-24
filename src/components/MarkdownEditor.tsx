@@ -326,6 +326,119 @@ export function MarkdownEditor({
 
   const [dragIdx, setDragIdx] = useState<number | null>(null);
 
+  // ─── Busca e Substituição (Ctrl+F / Ctrl+H) ────────────────────────────
+  const [findOpen, setFindOpen] = useState(false);
+  const [findQuery, setFindQuery] = useState('');
+  const [replaceQuery, setReplaceQuery] = useState('');
+  const [showReplace, setShowReplace] = useState(false);
+  const [caseSensitive, setCaseSensitive] = useState(false);
+  const [wholeWord, setWholeWord] = useState(false);
+  const [matchIdx, setMatchIdx] = useState(0);
+  const findInputRef = useRef<HTMLInputElement>(null);
+
+  const matches = useMemo(() => {
+    if (!findQuery) return [] as { start: number; end: number }[];
+    const flags = caseSensitive ? 'g' : 'gi';
+    const escaped = findQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const pattern = wholeWord ? `\\b${escaped}\\b` : escaped;
+    try {
+      const re = new RegExp(pattern, flags);
+      const out: { start: number; end: number }[] = [];
+      let m: RegExpExecArray | null;
+      while ((m = re.exec(value)) !== null) {
+        if (m[0].length === 0) { re.lastIndex++; continue; }
+        out.push({ start: m.index, end: m.index + m[0].length });
+      }
+      return out;
+    } catch {
+      return [];
+    }
+  }, [findQuery, value, caseSensitive, wholeWord]);
+
+  // Resetar índice quando matches mudam
+  useEffect(() => {
+    if (matches.length === 0) setMatchIdx(0);
+    else if (matchIdx >= matches.length) setMatchIdx(0);
+  }, [matches.length, matchIdx]);
+
+  const focusMatch = useCallback((idx: number) => {
+    const ta = taRef.current;
+    const m = matches[idx];
+    if (!ta || !m) return;
+    requestAnimationFrame(() => {
+      ta.focus();
+      ta.setSelectionRange(m.start, m.end);
+      // Scroll até a seleção (aproximação por linha)
+      const before = value.slice(0, m.start);
+      const line = before.split('\n').length;
+      const lineHeight = 18;
+      ta.scrollTop = Math.max(0, line * lineHeight - ta.clientHeight / 2);
+    });
+  }, [matches, value]);
+
+  const goNextMatch = useCallback(() => {
+    if (matches.length === 0) return;
+    const next = (matchIdx + 1) % matches.length;
+    setMatchIdx(next);
+    focusMatch(next);
+  }, [matches.length, matchIdx, focusMatch]);
+
+  const goPrevMatch = useCallback(() => {
+    if (matches.length === 0) return;
+    const prev = (matchIdx - 1 + matches.length) % matches.length;
+    setMatchIdx(prev);
+    focusMatch(prev);
+  }, [matches.length, matchIdx, focusMatch]);
+
+  const replaceCurrent = useCallback(() => {
+    const m = matches[matchIdx];
+    if (!m) return;
+    const next = value.slice(0, m.start) + replaceQuery + value.slice(m.end);
+    onChange(next);
+    requestAnimationFrame(() => {
+      const ta = taRef.current;
+      if (ta) {
+        const cursor = m.start + replaceQuery.length;
+        ta.focus();
+        ta.setSelectionRange(cursor, cursor);
+      }
+    });
+  }, [matches, matchIdx, value, replaceQuery, onChange]);
+
+  const replaceAll = useCallback(() => {
+    if (!findQuery || matches.length === 0) return;
+    const flags = caseSensitive ? 'g' : 'gi';
+    const escaped = findQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const pattern = wholeWord ? `\\b${escaped}\\b` : escaped;
+    try {
+      const re = new RegExp(pattern, flags);
+      onChange(value.replace(re, replaceQuery));
+    } catch { /* ignore */ }
+  }, [findQuery, matches.length, caseSensitive, wholeWord, value, replaceQuery, onChange]);
+
+  const openFind = useCallback(() => {
+    setFindOpen(true);
+    requestAnimationFrame(() => {
+      findInputRef.current?.focus();
+      findInputRef.current?.select();
+    });
+  }, []);
+
+  const closeFind = useCallback(() => {
+    setFindOpen(false);
+    setShowReplace(false);
+    requestAnimationFrame(() => taRef.current?.focus());
+  }, []);
+
+  // Foco automático na primeira ocorrência ao digitar
+  useEffect(() => {
+    if (findOpen && matches.length > 0) {
+      focusMatch(matchIdx);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [matches.length, findOpen]);
+
+
   return (
     <div className={cn('rounded-lg border border-border bg-card overflow-hidden', className)}>
       {/* Toolbar — estilo Word, em duas faixas */}
