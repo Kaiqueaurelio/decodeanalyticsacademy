@@ -1689,12 +1689,12 @@ export default function AdminPage() {
 
                 {/* Edit Apostila Dialog */}
                 <Dialog open={!!editingApostila} onOpenChange={(v) => { if (!v) { setEditingApostila(null); setEditExerciseMode('individual'); setEditAiExercises([]); setEditBulkText(''); } }}>
-                  <DialogContent className="max-w-5xl w-[calc(100vw-2rem)] max-h-[92vh] p-0 gap-0 flex flex-col overflow-hidden">
-                    <DialogHeader className="px-5 pt-5 pb-3 border-b border-border shrink-0">
-                      <DialogTitle className="text-base">Editar Apostila</DialogTitle>
+                  <DialogContent className="max-w-5xl w-[calc(100vw-1rem)] sm:w-[calc(100vw-2rem)] max-h-[95dvh] sm:max-h-[92vh] p-0 gap-0 flex flex-col overflow-hidden">
+                    <DialogHeader className="px-3 sm:px-5 pt-4 sm:pt-5 pb-2 sm:pb-3 border-b border-border shrink-0">
+                      <DialogTitle className="text-sm sm:text-base">Editar Apostila</DialogTitle>
                     </DialogHeader>
-                    <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="flex-1 overflow-y-auto px-3 sm:px-5 py-3 sm:py-4 space-y-3 sm:space-y-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                         <div><Label className="text-xs mb-1 block">Título</Label><Input value={editTitle} onChange={e => setEditTitle(e.target.value)} /></div>
                         <div><Label className="text-xs mb-1 block">Categoria</Label><CategorySelect value={editCategory} onValueChange={setEditCategory} /></div>
                       </div>
