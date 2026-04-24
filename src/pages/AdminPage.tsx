@@ -1689,12 +1689,12 @@ export default function AdminPage() {
 
                 {/* Edit Apostila Dialog */}
                 <Dialog open={!!editingApostila} onOpenChange={(v) => { if (!v) { setEditingApostila(null); setEditExerciseMode('individual'); setEditAiExercises([]); setEditBulkText(''); } }}>
-                  <DialogContent className="max-w-5xl w-[calc(100vw-2rem)] max-h-[92vh] p-0 gap-0 flex flex-col overflow-hidden">
-                    <DialogHeader className="px-5 pt-5 pb-3 border-b border-border shrink-0">
-                      <DialogTitle className="text-base">Editar Apostila</DialogTitle>
+                  <DialogContent className="max-w-5xl w-[calc(100vw-1rem)] sm:w-[calc(100vw-2rem)] max-h-[95dvh] sm:max-h-[92vh] p-0 gap-0 flex flex-col overflow-hidden">
+                    <DialogHeader className="px-3 sm:px-5 pt-4 sm:pt-5 pb-2 sm:pb-3 border-b border-border shrink-0">
+                      <DialogTitle className="text-sm sm:text-base">Editar Apostila</DialogTitle>
                     </DialogHeader>
-                    <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="flex-1 overflow-y-auto px-3 sm:px-5 py-3 sm:py-4 space-y-3 sm:space-y-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                         <div><Label className="text-xs mb-1 block">Título</Label><Input value={editTitle} onChange={e => setEditTitle(e.target.value)} /></div>
                         <div><Label className="text-xs mb-1 block">Categoria</Label><CategorySelect value={editCategory} onValueChange={setEditCategory} /></div>
                       </div>
@@ -1719,8 +1719,8 @@ export default function AdminPage() {
                               loadAll();
                             }}
                             trigger={
-                              <Button variant="outline" className="flex-1 gap-1.5 text-xs">
-                                <Link2 className="h-3.5 w-3.5" /> Anexar link como continuação
+                              <Button variant="outline" className="w-full sm:flex-1 gap-1.5 text-xs">
+                                <Link2 className="h-3.5 w-3.5" /> <span className="truncate">Anexar link como continuação</span>
                               </Button>
                             }
                           />
@@ -1728,14 +1728,14 @@ export default function AdminPage() {
                         {editingApostila && (
                           <Button
                             variant="outline"
-                            className="flex-1 gap-1.5 text-xs"
+                            className="w-full sm:flex-1 gap-1.5 text-xs"
                             onClick={async () => {
                               const r = await autoLinkApostila(editingApostila.id);
                               if (r.linked > 0) toast.success(`${r.linked} material(is) vinculado(s) automaticamente!`);
                               else toast.info('Nenhum material novo encontrado para vincular.');
                             }}
                           >
-                            <Wand2 className="h-3.5 w-3.5" /> Auto-vincular materiais
+                            <Wand2 className="h-3.5 w-3.5" /> <span className="truncate">Auto-vincular materiais</span>
                           </Button>
                         )}
                       </div>
@@ -1923,7 +1923,7 @@ export default function AdminPage() {
                       </>
                     )}
                     </div>
-                    <div className="px-5 py-3 border-t border-border bg-muted/20 shrink-0">
+                    <div className="px-3 sm:px-5 py-2.5 sm:py-3 border-t border-border bg-muted/20 shrink-0 pb-[max(env(safe-area-inset-bottom),0.625rem)]">
                       <Button className="w-full gradient-primary text-primary-foreground" onClick={handleEditSave}>Salvar Apostila</Button>
                     </div>
                   </DialogContent>
