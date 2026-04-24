@@ -719,6 +719,7 @@ export function MarkdownEditor({
         </div>
       )}
 
+      {/* Faixa de imagens reordenáveis */}
       {images.length > 1 && (
         <div className="border-b border-border bg-muted/20 px-2 py-1.5">
           <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground mb-1">
