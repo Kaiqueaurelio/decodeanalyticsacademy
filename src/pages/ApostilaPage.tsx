@@ -200,20 +200,25 @@ export default function ApostilaPage() {
 
   const tocContent = (
     <nav className="space-y-0.5">
-      {sections.map((s, i) => (
+      {tocItems.map((s, i) => (
         <button
           key={s.id}
           onClick={() => scrollToSection(s.id)}
-          className={`block w-full text-left py-2 px-3 rounded-lg text-xs transition-all duration-200 animate-fade-in ${
-            s.level === 1 ? 'font-semibold' : s.level === 2 ? 'pl-5' : 'pl-7 text-[11px]'
+          className={`group block w-full text-left py-1.5 px-2 rounded-md text-xs transition-all duration-200 animate-fade-in ${
+            s.level === 2 ? 'pl-5' : s.level === 3 ? 'pl-8' : ''
           } ${
             activeSection === s.id
               ? 'text-primary bg-primary/10 border-l-2 border-primary'
-              : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+              : 'text-muted-foreground hover:text-foreground hover:bg-muted/40'
           }`}
-          style={{ animationDelay: `${i * 40}ms` }}
+          style={{ animationDelay: `${i * 30}ms` }}
         >
-          {s.title}
+          <span className="font-mono-label text-[10px] text-primary/60 group-hover:text-primary tabular-nums mr-2">
+            {s.number}
+          </span>
+          <span className={s.level === 1 ? 'font-semibold' : ''}>
+            {s.displayTitle}
+          </span>
         </button>
       ))}
     </nav>
