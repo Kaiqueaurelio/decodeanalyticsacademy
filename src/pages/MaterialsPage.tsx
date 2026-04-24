@@ -591,13 +591,13 @@ export default function MaterialsPage() {
       case 'gif':
         return <ImageViewer key={m.id} url={m.file_url} title={m.title} />;
       case 'pdf':
-        return <PdfViewer key={m.id} url={m.file_url} title={m.title} />;
+        return <PdfViewer key={m.id} url={m.file_url} title={m.title} canDownload={isAdmin} />;
       case 'powerpoint':
-        return <OfficeViewer key={m.id} url={m.file_url} title={m.title} typeLabel="PowerPoint" />;
+        return <OfficeViewer key={m.id} url={m.file_url} title={m.title} typeLabel="PowerPoint" canDownload={isAdmin} />;
       case 'word':
-        return <OfficeViewer key={m.id} url={m.file_url} title={m.title} typeLabel="Word" />;
+        return <OfficeViewer key={m.id} url={m.file_url} title={m.title} typeLabel="Word" canDownload={isAdmin} />;
       case 'excel':
-        return <OfficeViewer key={m.id} url={m.file_url} title={m.title} typeLabel="Excel" />;
+        return <OfficeViewer key={m.id} url={m.file_url} title={m.title} typeLabel="Excel" canDownload={isAdmin} />;
       case 'link':
         return (
           <Card key={m.id} className="p-4 bg-card border border-border/50 hover:border-primary/30 transition-colors">
@@ -630,11 +630,13 @@ export default function MaterialsPage() {
                 {m.description && <p className="text-xs text-muted-foreground mt-0.5">{m.description}</p>}
                 <Badge className="text-[10px] mt-1">{m.type.toUpperCase()}</Badge>
               </div>
-              <Button size="sm" variant="outline" asChild>
-                <a href={m.file_url} target="_blank" rel="noopener noreferrer">
-                  <Download className="h-3.5 w-3.5" />
-                </a>
-              </Button>
+              {isAdmin && (
+                <Button size="sm" variant="outline" asChild>
+                  <a href={m.file_url} target="_blank" rel="noopener noreferrer">
+                    <Download className="h-3.5 w-3.5" />
+                  </a>
+                </Button>
+              )}
             </div>
           </Card>
         );
