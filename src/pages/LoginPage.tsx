@@ -431,6 +431,7 @@ export default function LoginPage() {
                       <AnimatePresence>
                         {loginAttempts > 0 && !isLocked && (
                           <motion.p
+                            key="login-attempts"
                             initial={{ opacity: 0, height: 0 }}
                             animate={{ opacity: 1, height: 'auto' }}
                             exit={{ opacity: 0, height: 0 }}
