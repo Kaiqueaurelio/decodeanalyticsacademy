@@ -45,6 +45,8 @@ import { MarkdownEditor } from '@/components/MarkdownEditor';
 import { PerformanceMetrics } from '@/components/PerformanceMetrics';
 import { SmokeTestsPanel } from '@/components/SmokeTestsPanel';
 import { DiagnosticsPanel } from '@/components/DiagnosticsPanel';
+import { DuplicateApostilaDialog } from '@/components/DuplicateApostilaDialog';
+import { findDuplicateApostila, type DuplicateMatch } from '@/lib/duplicate-detector';
 
 type Apostila = Tables<'apostilas'>;
 type Exercise = Tables<'exercises'>;
@@ -490,6 +492,9 @@ export default function AdminPage() {
   const [importExercises, setImportExercises] = useState<any[]>([]);
   const [extractionMethod, setExtractionMethod] = useState<string>('');
   const [cloning, setCloning] = useState(false);
+  // Detecção de apostila duplicada
+  const [duplicateMatch, setDuplicateMatch] = useState<DuplicateMatch | null>(null);
+  const [pendingSave, setPendingSave] = useState<null | (() => Promise<void> | void)>(null);
   const [importStep, setImportStep] = useState<'input' | 'review'>('input');
   const [importMode, setImportMode] = useState<'url' | 'text'>('url');
   const [importRawText, setImportRawText] = useState('');
