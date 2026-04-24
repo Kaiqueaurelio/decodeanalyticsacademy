@@ -111,26 +111,67 @@ export default function ApostilaPage() {
   const sections = useMemo(() => parseContent(apostila?.content || null), [apostila?.content]);
 
   /**
-   * Sumário organizado: filtra seções sem título legível e atribui numeração
-   * hierárquica (1, 1.1, 1.1.1, 2, 2.1...) ignorando "buracos" do parser.
+   * Normaliza as seções para evitar capítulos "mortos":
+   * - remove títulos vazios/repetidos consecutivos do fluxo
+   * - detecta títulos sem texto que servem apenas como agrupadores
+   * - esconde seções sem conteúdo e sem subtópicos
+   */
+  const organizedSections = useMemo(() => {
+    return sections.map((section, index) => {
+      const displayTitle = cleanText(section.title || '').trim();
+      const contentPreview = (section.content || '')
+        .replace(/!\[[^\]]*\]\([^)]+\)/g, ' ')
+        .replace(/[`#>*_~\-]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      const hasContent = contentPreview.length >= 24;
+
+      let hasChildren = false;
+      for (let i = index + 1; i < sections.length; i++) {
+        if ((sections[i].level || 1) <= (section.level || 1)) break;
+        if (cleanText(sections[i].title || '').trim().length >= 2) {
+          hasChildren = true;
+          break;
+        }
+      }
+
+      const previousTitle = index > 0 ? cleanText(sections[index - 1].title || '').trim().toLowerCase() : '';
+      const currentTitle = displayTitle.toLowerCase();
+      const isRepeated = !!currentTitle && currentTitle === previousTitle;
+      const isPlaceholder = displayTitle.length < 2 || isRepeated || (!hasContent && !hasChildren);
+      const isGroupOnly = !isPlaceholder && !hasContent && hasChildren;
+
+      return {
+        ...section,
+        displayTitle,
+        hasContent,
+        hasChildren,
+        isPlaceholder,
+        isGroupOnly,
+      };
+    });
+  }, [sections]);
+
+  /**
+   * Sumário organizado: só mostra itens úteis e renumera sem buracos.
    */
   const tocItems = useMemo(() => {
-    const counters = [0, 0, 0]; // níveis 1, 2, 3
-    return sections
-      .map((s) => {
-        const title = cleanText(s.title || '').trim();
-        return { ...s, displayTitle: title };
-      })
-      .filter((s) => s.displayTitle.length >= 2) // ignora títulos vazios/lixo
+    const counters = [0, 0, 0];
+    return organizedSections
+      .filter((s) => !s.isPlaceholder)
       .map((s) => {
         const level = Math.min(Math.max(s.level || 1, 1), 3);
         counters[level - 1]++;
-        // zera contadores dos níveis abaixo
         for (let k = level; k < counters.length; k++) counters[k] = 0;
         const number = counters.slice(0, level).filter((n) => n > 0).join('.');
         return { ...s, level, number };
       });
-  }, [sections]);
+  }, [organizedSections]);
+
+  const tocNumberById = useMemo(
+    () => Object.fromEntries(tocItems.map((item) => [item.id, item.number])),
+    [tocItems]
+  );
 
   const handleExportPdf = useCallback(async () => {
     if (!apostila) return;
