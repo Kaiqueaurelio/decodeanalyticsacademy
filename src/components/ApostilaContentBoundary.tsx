@@ -28,7 +28,7 @@ function SimpleFallback({ content }: { content: string }) {
     .filter(Boolean);
 
   return (
-    <article className="apostila-prose max-w-[70ch] mx-auto w-full min-w-0 px-1 sm:px-0 text-[15.5px] sm:text-[16.5px] leading-[1.85] text-foreground/90">
+    <article className="apostila-prose max-w-[68ch] mx-auto w-full min-w-0 px-1 sm:px-0 text-[15.5px] sm:text-[16px] leading-[1.7] text-foreground/95">
       <div className="mb-6 flex items-start gap-2 rounded-lg border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
         <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-primary" />
         <span>
