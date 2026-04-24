@@ -955,8 +955,14 @@ export default function AdminPage() {
   };
 
   const deleteExercise = async (id: string) => {
-    await supabase.from('exercises').delete().eq('id', id);
-    toast.success('Exercício excluído'); loadAll();
+    const { error } = await supabase.from('exercises').delete().eq('id', id);
+    if (error) {
+      console.error('[deleteExercise] erro:', error);
+      toast.error('Falha ao excluir exercício: ' + error.message);
+      return;
+    }
+    toast.success('Exercício excluído');
+    loadAll();
   };
 
   const handleEditMaterial = async () => {
