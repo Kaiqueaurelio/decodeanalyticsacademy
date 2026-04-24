@@ -401,7 +401,7 @@ export default function ApostilaPage() {
                     <BookOpen className="h-3 w-3" /> {apostila.category}
                   </span>
                 </div>
-                <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl leading-tight mb-4 text-foreground animate-fade-in" style={{ animationDelay: '100ms' }}>
+                <h1 className="font-display text-2xl sm:text-3xl lg:text-[2.5rem] leading-[1.15] tracking-tight mb-4 text-foreground animate-fade-in" style={{ animationDelay: '100ms' }}>
                   {apostila.title}
                 </h1>
                 <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-muted-foreground animate-fade-in" style={{ animationDelay: '200ms' }}>
