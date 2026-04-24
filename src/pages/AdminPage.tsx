@@ -477,6 +477,7 @@ export default function AdminPage() {
   const [showExerciseDialog, setShowExerciseDialog] = useState<string | null>(null);
   const [showMaterialsFor, setShowMaterialsFor] = useState<string | null>(null);
   const [showAppendFor, setShowAppendFor] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [selectedApostila, setSelectedApostila] = useState('');
   const [showManualForm, setShowManualForm] = useState(false);
   const [editingApostila, setEditingApostila] = useState<Apostila | null>(null);
@@ -798,8 +799,14 @@ export default function AdminPage() {
   };
 
   const togglePublish = async (id: string, current: boolean) => {
-    await supabase.from('apostilas').update({ published: !current }).eq('id', id);
-    toast.success(!current ? 'Apostila publicada!' : 'Apostila ocultada!'); loadAll();
+    const { error } = await supabase.from('apostilas').update({ published: !current }).eq('id', id);
+    if (error) {
+      console.error('[togglePublish] erro:', error);
+      toast.error('Falha ao alterar publicação: ' + error.message);
+      return;
+    }
+    toast.success(!current ? 'Apostila publicada!' : 'Apostila ocultada!');
+    loadAll();
   };
 
   const downloadApostilaPdf = async (a: Apostila) => {
@@ -820,16 +827,39 @@ export default function AdminPage() {
 
 
   const deleteApostila = async (id: string) => {
-    if (!confirm('Excluir esta apostila e seus exercícios?')) return;
-    await supabase.from('exercises').delete().eq('apostila_id', id);
-    await supabase.from('apostilas').delete().eq('id', id);
-    toast.success('Apostila excluída'); loadAll();
+    // Remove dependências antes para evitar foreign-key
+    const [exDel, matDel, apDel] = await Promise.all([
+      supabase.from('exercises').delete().eq('apostila_id', id),
+      supabase.from('apostila_materials').delete().eq('apostila_id', id),
+      Promise.resolve(null),
+    ]);
+    if (exDel.error) console.warn('[deleteApostila] exercícios:', exDel.error);
+    if (matDel.error) console.warn('[deleteApostila] vínculos materiais:', matDel.error);
+    const { error } = await supabase.from('apostilas').delete().eq('id', id);
+    if (error) {
+      console.error('[deleteApostila] erro:', error);
+      toast.error('Falha ao excluir: ' + error.message);
+      return;
+    }
+    toast.success('Apostila excluída');
+    loadAll();
   };
 
   const handleEditSave = async () => {
     if (!editingApostila) return;
-    await supabase.from('apostilas').update({ title: editTitle, content: editContent, category: editCategory }).eq('id', editingApostila.id);
-    toast.success('Apostila atualizada!'); setEditingApostila(null); loadAll();
+    if (!editTitle.trim()) { toast.error('O título não pode ficar vazio'); return; }
+    const { error } = await supabase
+      .from('apostilas')
+      .update({ title: editTitle.trim(), content: editContent, category: editCategory })
+      .eq('id', editingApostila.id);
+    if (error) {
+      console.error('[handleEditSave] erro:', error);
+      toast.error('Falha ao atualizar: ' + error.message);
+      return;
+    }
+    toast.success('Apostila atualizada!');
+    setEditingApostila(null);
+    loadAll();
   };
 
   const addExercise = async () => {
@@ -926,8 +956,14 @@ export default function AdminPage() {
   };
 
   const deleteExercise = async (id: string) => {
-    await supabase.from('exercises').delete().eq('id', id);
-    toast.success('Exercício excluído'); loadAll();
+    const { error } = await supabase.from('exercises').delete().eq('id', id);
+    if (error) {
+      console.error('[deleteExercise] erro:', error);
+      toast.error('Falha ao excluir exercício: ' + error.message);
+      return;
+    }
+    toast.success('Exercício excluído');
+    loadAll();
   };
 
   const handleEditMaterial = async () => {
@@ -1399,7 +1435,7 @@ export default function AdminPage() {
                                 <Button size="icon" variant="ghost" className="hidden sm:inline-flex h-8 w-8" onClick={() => { setEditingApostila(a); setEditTitle(a.title); setEditContent(a.content || ''); setEditCategory(a.category); }} title="Editar">
                                   <Edit className="h-3.5 w-3.5" />
                                 </Button>
-                                <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => deleteApostila(a.id)} title="Excluir">
+                                <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => setConfirmDeleteId(a.id)} title="Excluir">
                                   <Trash2 className="h-3.5 w-3.5" />
                                 </Button>
 
@@ -2560,6 +2596,31 @@ export default function AdminPage() {
           setPendingSave(null);
         }}
       />
+
+      {/* Confirmação de exclusão de apostila */}
+      <AlertDialog open={!!confirmDeleteId} onOpenChange={(v) => { if (!v) setConfirmDeleteId(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir apostila?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação remove a apostila, seus exercícios e os vínculos com materiais. Não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={async () => {
+                const id = confirmDeleteId;
+                setConfirmDeleteId(null);
+                if (id) await deleteApostila(id);
+              }}
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </CategoriesCtx.Provider>
   );
 }
