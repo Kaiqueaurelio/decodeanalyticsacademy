@@ -615,7 +615,110 @@ export function MarkdownEditor({
         </div>
       </div>
 
-      {/* Faixa de imagens reordenáveis */}
+      {/* Barra de Localizar e Substituir (Ctrl+F / Ctrl+H) — estilo Word */}
+      {findOpen && (
+        <div className="border-b border-border bg-muted/40 px-2 py-1.5 space-y-1.5">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <Search className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+            <Input
+              ref={findInputRef}
+              value={findQuery}
+              onChange={(e) => setFindQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  if (e.shiftKey) goPrevMatch(); else goNextMatch();
+                } else if (e.key === 'Escape') {
+                  e.preventDefault();
+                  closeFind();
+                }
+              }}
+              placeholder="Localizar no texto…"
+              className="h-7 w-48 text-xs"
+            />
+            <span className="text-[10px] text-muted-foreground tabular-nums min-w-[64px]">
+              {matches.length === 0
+                ? 'Nenhum'
+                : `${matchIdx + 1} de ${matches.length}`}
+            </span>
+            <ToolBtn title="Anterior (Shift+Enter)" onClick={goPrevMatch}>
+              <ChevronUp className="h-3.5 w-3.5" />
+            </ToolBtn>
+            <ToolBtn title="Próximo (Enter)" onClick={goNextMatch}>
+              <ChevronDown className="h-3.5 w-3.5" />
+            </ToolBtn>
+            <Sep />
+            <Button
+              type="button"
+              size="sm"
+              variant={caseSensitive ? 'secondary' : 'ghost'}
+              className="h-7 px-2 text-[10px] font-mono"
+              title="Diferenciar maiúsculas/minúsculas"
+              onClick={() => setCaseSensitive((v) => !v)}
+            >
+              Aa
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant={wholeWord ? 'secondary' : 'ghost'}
+              className="h-7 px-2 text-[10px] font-mono"
+              title="Palavra inteira"
+              onClick={() => setWholeWord((v) => !v)}
+            >
+              ab|
+            </Button>
+            <Sep />
+            <Button
+              type="button"
+              size="sm"
+              variant={showReplace ? 'secondary' : 'ghost'}
+              className="h-7 px-2 gap-1 text-[10px]"
+              title="Substituir (Ctrl+H)"
+              onClick={() => setShowReplace((v) => !v)}
+            >
+              <Replace className="h-3.5 w-3.5" />
+              Substituir
+            </Button>
+            <ToolBtn title="Fechar (Esc)" onClick={closeFind}>
+              <X className="h-3.5 w-3.5" />
+            </ToolBtn>
+          </div>
+
+          {showReplace && (
+            <div className="flex items-center gap-1.5 flex-wrap pl-5">
+              <Replace className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+              <Input
+                value={replaceQuery}
+                onChange={(e) => setReplaceQuery(e.target.value)}
+                placeholder="Substituir por…"
+                className="h-7 w-48 text-xs"
+              />
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="h-7 px-2 text-[10px]"
+                onClick={replaceCurrent}
+                disabled={matches.length === 0}
+              >
+                Substituir
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="h-7 px-2 text-[10px]"
+                onClick={replaceAll}
+                disabled={matches.length === 0}
+              >
+                Substituir tudo
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+
       {images.length > 1 && (
         <div className="border-b border-border bg-muted/20 px-2 py-1.5">
           <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground mb-1">
