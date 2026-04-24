@@ -26,17 +26,37 @@ export function ScreenshotGuard() {
   const [hidden, setHidden] = useState(false);
 
   useEffect(() => {
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
-      || (typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)').matches);
+    // Detecção mais permissiva: qualquer dispositivo touch OU viewport pequena
+    // é tratado como "mobile-like" para evitar falsos positivos no overlay
+    // (redimensionamento de janela, abrir DevTools, troca de aba rápida, etc.).
+    const isMobileLike = () =>
+      /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+      || (typeof window !== 'undefined' && (
+        window.matchMedia?.('(pointer: coarse)').matches
+        || window.innerWidth < 1024
+      ));
 
-    const hide = () => setHidden(true);
-    const show = () => setHidden(false);
+    let safetyTimer: number | undefined;
+    const hide = () => {
+      setHidden(true);
+      // Rede de segurança: nunca deixa o overlay travado por mais de 4s.
+      window.clearTimeout(safetyTimer);
+      safetyTimer = window.setTimeout(() => setHidden(false), 4000);
+    };
+    const show = () => {
+      window.clearTimeout(safetyTimer);
+      setHidden(false);
+    };
 
     const onVisibility = () => {
-      if (isMobile) return; // skip on mobile to avoid false positives
+      if (isMobileLike()) return; // skip em qualquer tela mobile-like
       if (document.visibilityState === 'hidden') hide();
       else show();
     };
+
+    // Resize/orientationchange NÃO devem acionar overlay — apenas garantir
+    // que ele saia se estiver ativo (caso de redimensionar enquanto oculto).
+    const onResize = () => show();
 
     const onKey = (e: KeyboardEvent) => {
       // PrintScreen
@@ -75,6 +95,8 @@ export function ScreenshotGuard() {
     };
 
     document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('resize', onResize);
+    window.addEventListener('orientationchange', onResize);
     window.addEventListener('keydown', onKey);
     document.addEventListener('copy', allowInsideOptIn);
     document.addEventListener('cut', allowInsideOptIn);
@@ -82,7 +104,10 @@ export function ScreenshotGuard() {
     document.addEventListener('dragstart', block);
 
     return () => {
+      window.clearTimeout(safetyTimer);
       document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('resize', onResize);
+      window.removeEventListener('orientationchange', onResize);
       window.removeEventListener('keydown', onKey);
       document.removeEventListener('copy', allowInsideOptIn);
       document.removeEventListener('cut', allowInsideOptIn);
@@ -95,13 +120,15 @@ export function ScreenshotGuard() {
 
   return (
     <div
-      className="fixed inset-0 z-[9999] bg-background flex flex-col items-center justify-center text-center p-8"
+      className="fixed inset-0 z-[9999] bg-background flex flex-col items-center justify-center text-center p-8 cursor-pointer"
       aria-hidden="true"
+      onClick={() => setHidden(false)}
+      onTouchStart={() => setHidden(false)}
     >
       <div className="text-4xl mb-4">🔒</div>
       <h2 className="font-display text-xl mb-2 text-foreground">Conteúdo protegido</h2>
       <p className="text-sm text-muted-foreground max-w-sm">
-        Por questões de privacidade, a captura de tela e a visualização em segundo plano foram bloqueadas.
+        Toque na tela para voltar ao conteúdo.
       </p>
     </div>
   );
