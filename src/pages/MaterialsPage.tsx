@@ -198,7 +198,7 @@ function AudioPlayer({ url, title }: { url: string; title: string }) {
 }
 
 // Robust Video Player (YouTube-style)
-function VideoPlayer({ url, title }: { url: string; title: string }) {
+function VideoPlayer({ url, title, canDownload }: { url: string; title: string; canDownload: boolean }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -281,11 +281,13 @@ function VideoPlayer({ url, title }: { url: string; title: string }) {
           <p className="font-medium text-sm">{title}</p>
           <p className="text-[10px] text-muted-foreground mt-0.5">Vídeo · Material de apoio</p>
         </div>
-        <Button size="sm" variant="outline" asChild>
-          <a href={url} target="_blank" rel="noopener noreferrer" download>
-            <Download className="h-3.5 w-3.5" />
-          </a>
-        </Button>
+        {canDownload && (
+          <Button size="sm" variant="outline" asChild>
+            <a href={url} target="_blank" rel="noopener noreferrer" download>
+              <Download className="h-3.5 w-3.5" />
+            </a>
+          </Button>
+        )}
       </div>
     </div>
   );
@@ -338,7 +340,7 @@ function ImageViewer({ url, title }: { url: string; title: string }) {
 }
 
 // PDF Viewer with fullscreen
-function PdfViewer({ url, title }: { url: string; title: string }) {
+function PdfViewer({ url, title, canDownload }: { url: string; title: string; canDownload: boolean }) {
   const [fullscreen, setFullscreen] = useState(false);
 
   return (
@@ -354,11 +356,13 @@ function PdfViewer({ url, title }: { url: string; title: string }) {
             <Button size="sm" variant="outline" onClick={() => setFullscreen(true)}>
               <Maximize className="h-3.5 w-3.5 mr-1.5" /> Tela cheia
             </Button>
-            <Button size="sm" variant="outline" asChild>
-              <a href={url} target="_blank" rel="noopener noreferrer">
-                <Download className="h-3.5 w-3.5 mr-1.5" /> Baixar
-              </a>
-            </Button>
+            {canDownload && (
+              <Button size="sm" variant="outline" asChild>
+                <a href={url} target="_blank" rel="noopener noreferrer">
+                  <Download className="h-3.5 w-3.5 mr-1.5" /> Baixar
+                </a>
+              </Button>
+            )}
           </div>
         </div>
       </div>
@@ -382,7 +386,7 @@ function PdfViewer({ url, title }: { url: string; title: string }) {
 }
 
 // Office Document Viewer (Word, PowerPoint, Excel) via Google Docs Viewer
-function OfficeViewer({ url, title, typeLabel }: { url: string; title: string; typeLabel: string }) {
+function OfficeViewer({ url, title, typeLabel, canDownload }: { url: string; title: string; typeLabel: string; canDownload: boolean }) {
   const [expanded, setExpanded] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
   const [error, setError] = useState(false);
@@ -446,11 +450,13 @@ function OfficeViewer({ url, title, typeLabel }: { url: string; title: string; t
               <Button size="sm" variant="outline" onClick={() => setError(false)}>
                 Tentar novamente
               </Button>
-              <Button size="sm" variant="outline" asChild>
-                <a href={url} target="_blank" rel="noopener noreferrer">
-                  <Download className="h-3.5 w-3.5 mr-1.5" /> Baixar
-                </a>
-              </Button>
+              {canDownload && (
+                <Button size="sm" variant="outline" asChild>
+                  <a href={url} target="_blank" rel="noopener noreferrer">
+                    <Download className="h-3.5 w-3.5 mr-1.5" /> Baixar
+                  </a>
+                </Button>
+              )}
             </div>
           </div>
         ) : (
@@ -473,11 +479,13 @@ function OfficeViewer({ url, title, typeLabel }: { url: string; title: string; t
             <Button size="sm" variant="outline" onClick={() => setFullscreen(true)}>
               <Maximize className="h-3.5 w-3.5 mr-1.5" /> Tela cheia
             </Button>
-            <Button size="sm" variant="outline" asChild>
-              <a href={url} target="_blank" rel="noopener noreferrer">
-                <Download className="h-3.5 w-3.5" />
-              </a>
-            </Button>
+            {canDownload && (
+              <Button size="sm" variant="outline" asChild>
+                <a href={url} target="_blank" rel="noopener noreferrer">
+                  <Download className="h-3.5 w-3.5" />
+                </a>
+              </Button>
+            )}
           </div>
         </div>
       </div>
@@ -501,7 +509,7 @@ function OfficeViewer({ url, title, typeLabel }: { url: string; title: string; t
 }
 
 export default function MaterialsPage() {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [materials, setMaterials] = useState<Material[]>([]);
   const [filter, setFilter] = useState<string>('all');
@@ -583,13 +591,13 @@ export default function MaterialsPage() {
       case 'gif':
         return <ImageViewer key={m.id} url={m.file_url} title={m.title} />;
       case 'pdf':
-        return <PdfViewer key={m.id} url={m.file_url} title={m.title} />;
+        return <PdfViewer key={m.id} url={m.file_url} title={m.title} canDownload={isAdmin} />;
       case 'powerpoint':
-        return <OfficeViewer key={m.id} url={m.file_url} title={m.title} typeLabel="PowerPoint" />;
+        return <OfficeViewer key={m.id} url={m.file_url} title={m.title} typeLabel="PowerPoint" canDownload={isAdmin} />;
       case 'word':
-        return <OfficeViewer key={m.id} url={m.file_url} title={m.title} typeLabel="Word" />;
+        return <OfficeViewer key={m.id} url={m.file_url} title={m.title} typeLabel="Word" canDownload={isAdmin} />;
       case 'excel':
-        return <OfficeViewer key={m.id} url={m.file_url} title={m.title} typeLabel="Excel" />;
+        return <OfficeViewer key={m.id} url={m.file_url} title={m.title} typeLabel="Excel" canDownload={isAdmin} />;
       case 'link':
         return (
           <Card key={m.id} className="p-4 bg-card border border-border/50 hover:border-primary/30 transition-colors">
@@ -622,11 +630,13 @@ export default function MaterialsPage() {
                 {m.description && <p className="text-xs text-muted-foreground mt-0.5">{m.description}</p>}
                 <Badge className="text-[10px] mt-1">{m.type.toUpperCase()}</Badge>
               </div>
-              <Button size="sm" variant="outline" asChild>
-                <a href={m.file_url} target="_blank" rel="noopener noreferrer">
-                  <Download className="h-3.5 w-3.5" />
-                </a>
-              </Button>
+              {isAdmin && (
+                <Button size="sm" variant="outline" asChild>
+                  <a href={m.file_url} target="_blank" rel="noopener noreferrer">
+                    <Download className="h-3.5 w-3.5" />
+                  </a>
+                </Button>
+              )}
             </div>
           </Card>
         );
