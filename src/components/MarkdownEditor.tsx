@@ -20,7 +20,9 @@ import {
   AlignLeft, AlignCenter, AlignRight, AlignJustify, Undo2, Redo2,
   Highlighter, Palette, Table as TableIcon, Subscript, Superscript,
   CheckSquare, Eraser, Type, RemoveFormatting,
+  Search, ChevronUp, ChevronDown, Replace, X,
 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import { ApostilaContentRenderer } from '@/components/ApostilaContentRenderer';
 import { ImageUploadButton } from '@/components/ImageUploadButton';
 import { cn } from '@/lib/utils';
@@ -324,6 +326,119 @@ export function MarkdownEditor({
 
   const [dragIdx, setDragIdx] = useState<number | null>(null);
 
+  // ─── Busca e Substituição (Ctrl+F / Ctrl+H) ────────────────────────────
+  const [findOpen, setFindOpen] = useState(false);
+  const [findQuery, setFindQuery] = useState('');
+  const [replaceQuery, setReplaceQuery] = useState('');
+  const [showReplace, setShowReplace] = useState(false);
+  const [caseSensitive, setCaseSensitive] = useState(false);
+  const [wholeWord, setWholeWord] = useState(false);
+  const [matchIdx, setMatchIdx] = useState(0);
+  const findInputRef = useRef<HTMLInputElement>(null);
+
+  const matches = useMemo(() => {
+    if (!findQuery) return [] as { start: number; end: number }[];
+    const flags = caseSensitive ? 'g' : 'gi';
+    const escaped = findQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const pattern = wholeWord ? `\\b${escaped}\\b` : escaped;
+    try {
+      const re = new RegExp(pattern, flags);
+      const out: { start: number; end: number }[] = [];
+      let m: RegExpExecArray | null;
+      while ((m = re.exec(value)) !== null) {
+        if (m[0].length === 0) { re.lastIndex++; continue; }
+        out.push({ start: m.index, end: m.index + m[0].length });
+      }
+      return out;
+    } catch {
+      return [];
+    }
+  }, [findQuery, value, caseSensitive, wholeWord]);
+
+  // Resetar índice quando matches mudam
+  useEffect(() => {
+    if (matches.length === 0) setMatchIdx(0);
+    else if (matchIdx >= matches.length) setMatchIdx(0);
+  }, [matches.length, matchIdx]);
+
+  const focusMatch = useCallback((idx: number) => {
+    const ta = taRef.current;
+    const m = matches[idx];
+    if (!ta || !m) return;
+    requestAnimationFrame(() => {
+      ta.focus();
+      ta.setSelectionRange(m.start, m.end);
+      // Scroll até a seleção (aproximação por linha)
+      const before = value.slice(0, m.start);
+      const line = before.split('\n').length;
+      const lineHeight = 18;
+      ta.scrollTop = Math.max(0, line * lineHeight - ta.clientHeight / 2);
+    });
+  }, [matches, value]);
+
+  const goNextMatch = useCallback(() => {
+    if (matches.length === 0) return;
+    const next = (matchIdx + 1) % matches.length;
+    setMatchIdx(next);
+    focusMatch(next);
+  }, [matches.length, matchIdx, focusMatch]);
+
+  const goPrevMatch = useCallback(() => {
+    if (matches.length === 0) return;
+    const prev = (matchIdx - 1 + matches.length) % matches.length;
+    setMatchIdx(prev);
+    focusMatch(prev);
+  }, [matches.length, matchIdx, focusMatch]);
+
+  const replaceCurrent = useCallback(() => {
+    const m = matches[matchIdx];
+    if (!m) return;
+    const next = value.slice(0, m.start) + replaceQuery + value.slice(m.end);
+    onChange(next);
+    requestAnimationFrame(() => {
+      const ta = taRef.current;
+      if (ta) {
+        const cursor = m.start + replaceQuery.length;
+        ta.focus();
+        ta.setSelectionRange(cursor, cursor);
+      }
+    });
+  }, [matches, matchIdx, value, replaceQuery, onChange]);
+
+  const replaceAll = useCallback(() => {
+    if (!findQuery || matches.length === 0) return;
+    const flags = caseSensitive ? 'g' : 'gi';
+    const escaped = findQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const pattern = wholeWord ? `\\b${escaped}\\b` : escaped;
+    try {
+      const re = new RegExp(pattern, flags);
+      onChange(value.replace(re, replaceQuery));
+    } catch { /* ignore */ }
+  }, [findQuery, matches.length, caseSensitive, wholeWord, value, replaceQuery, onChange]);
+
+  const openFind = useCallback(() => {
+    setFindOpen(true);
+    requestAnimationFrame(() => {
+      findInputRef.current?.focus();
+      findInputRef.current?.select();
+    });
+  }, []);
+
+  const closeFind = useCallback(() => {
+    setFindOpen(false);
+    setShowReplace(false);
+    requestAnimationFrame(() => taRef.current?.focus());
+  }, []);
+
+  // Foco automático na primeira ocorrência ao digitar
+  useEffect(() => {
+    if (findOpen && matches.length > 0) {
+      focusMatch(matchIdx);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [matches.length, findOpen]);
+
+
   return (
     <div className={cn('rounded-lg border border-border bg-card overflow-hidden', className)}>
       {/* Toolbar — estilo Word, em duas faixas */}
@@ -420,6 +535,10 @@ export function MarkdownEditor({
           <ToolBtn title="Limpar formatação" onClick={clearFormatting}>
             <RemoveFormatting className="h-3.5 w-3.5" />
           </ToolBtn>
+          <Sep />
+          <ToolBtn title="Localizar (Ctrl+F)" onClick={openFind}>
+            <Search className="h-3.5 w-3.5" />
+          </ToolBtn>
 
           <div className="ml-auto flex items-center gap-0.5">
             <ModeBtn active={mode === 'edit'} title="Só editor" onClick={() => setMode('edit')}>
@@ -495,6 +614,110 @@ export function MarkdownEditor({
           </div>
         </div>
       </div>
+
+      {/* Barra de Localizar e Substituir (Ctrl+F / Ctrl+H) — estilo Word */}
+      {findOpen && (
+        <div className="border-b border-border bg-muted/40 px-2 py-1.5 space-y-1.5">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <Search className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+            <Input
+              ref={findInputRef}
+              value={findQuery}
+              onChange={(e) => setFindQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  if (e.shiftKey) goPrevMatch(); else goNextMatch();
+                } else if (e.key === 'Escape') {
+                  e.preventDefault();
+                  closeFind();
+                }
+              }}
+              placeholder="Localizar no texto…"
+              className="h-7 w-48 text-xs"
+            />
+            <span className="text-[10px] text-muted-foreground tabular-nums min-w-[64px]">
+              {matches.length === 0
+                ? 'Nenhum'
+                : `${matchIdx + 1} de ${matches.length}`}
+            </span>
+            <ToolBtn title="Anterior (Shift+Enter)" onClick={goPrevMatch}>
+              <ChevronUp className="h-3.5 w-3.5" />
+            </ToolBtn>
+            <ToolBtn title="Próximo (Enter)" onClick={goNextMatch}>
+              <ChevronDown className="h-3.5 w-3.5" />
+            </ToolBtn>
+            <Sep />
+            <Button
+              type="button"
+              size="sm"
+              variant={caseSensitive ? 'secondary' : 'ghost'}
+              className="h-7 px-2 text-[10px] font-mono"
+              title="Diferenciar maiúsculas/minúsculas"
+              onClick={() => setCaseSensitive((v) => !v)}
+            >
+              Aa
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant={wholeWord ? 'secondary' : 'ghost'}
+              className="h-7 px-2 text-[10px] font-mono"
+              title="Palavra inteira"
+              onClick={() => setWholeWord((v) => !v)}
+            >
+              ab|
+            </Button>
+            <Sep />
+            <Button
+              type="button"
+              size="sm"
+              variant={showReplace ? 'secondary' : 'ghost'}
+              className="h-7 px-2 gap-1 text-[10px]"
+              title="Substituir (Ctrl+H)"
+              onClick={() => setShowReplace((v) => !v)}
+            >
+              <Replace className="h-3.5 w-3.5" />
+              Substituir
+            </Button>
+            <ToolBtn title="Fechar (Esc)" onClick={closeFind}>
+              <X className="h-3.5 w-3.5" />
+            </ToolBtn>
+          </div>
+
+          {showReplace && (
+            <div className="flex items-center gap-1.5 flex-wrap pl-5">
+              <Replace className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+              <Input
+                value={replaceQuery}
+                onChange={(e) => setReplaceQuery(e.target.value)}
+                placeholder="Substituir por…"
+                className="h-7 w-48 text-xs"
+              />
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="h-7 px-2 text-[10px]"
+                onClick={replaceCurrent}
+                disabled={matches.length === 0}
+              >
+                Substituir
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="h-7 px-2 text-[10px]"
+                onClick={replaceAll}
+                disabled={matches.length === 0}
+              >
+                Substituir tudo
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Faixa de imagens reordenáveis */}
       {images.length > 1 && (
@@ -572,6 +795,8 @@ export function MarkdownEditor({
               else if (k === 'i') { e.preventDefault(); wrap('*'); }
               else if (k === 'u') { e.preventDefault(); wrap('<u>', '</u>'); }
               else if (k === 'k') { e.preventDefault(); insertLink(); }
+              else if (k === 'f') { e.preventDefault(); openFind(); }
+              else if (k === 'h') { e.preventDefault(); setShowReplace(true); openFind(); }
               else if (k === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
               else if ((k === 'z' && e.shiftKey) || k === 'y') { e.preventDefault(); redo(); }
             }}
