@@ -798,8 +798,14 @@ export default function AdminPage() {
   };
 
   const togglePublish = async (id: string, current: boolean) => {
-    await supabase.from('apostilas').update({ published: !current }).eq('id', id);
-    toast.success(!current ? 'Apostila publicada!' : 'Apostila ocultada!'); loadAll();
+    const { error } = await supabase.from('apostilas').update({ published: !current }).eq('id', id);
+    if (error) {
+      console.error('[togglePublish] erro:', error);
+      toast.error('Falha ao alterar publicação: ' + error.message);
+      return;
+    }
+    toast.success(!current ? 'Apostila publicada!' : 'Apostila ocultada!');
+    loadAll();
   };
 
   const downloadApostilaPdf = async (a: Apostila) => {
@@ -820,16 +826,39 @@ export default function AdminPage() {
 
 
   const deleteApostila = async (id: string) => {
-    if (!confirm('Excluir esta apostila e seus exercícios?')) return;
-    await supabase.from('exercises').delete().eq('apostila_id', id);
-    await supabase.from('apostilas').delete().eq('id', id);
-    toast.success('Apostila excluída'); loadAll();
+    // Remove dependências antes para evitar foreign-key
+    const [exDel, matDel, apDel] = await Promise.all([
+      supabase.from('exercises').delete().eq('apostila_id', id),
+      supabase.from('apostila_materials').delete().eq('apostila_id', id),
+      Promise.resolve(null),
+    ]);
+    if (exDel.error) console.warn('[deleteApostila] exercícios:', exDel.error);
+    if (matDel.error) console.warn('[deleteApostila] vínculos materiais:', matDel.error);
+    const { error } = await supabase.from('apostilas').delete().eq('id', id);
+    if (error) {
+      console.error('[deleteApostila] erro:', error);
+      toast.error('Falha ao excluir: ' + error.message);
+      return;
+    }
+    toast.success('Apostila excluída');
+    loadAll();
   };
 
   const handleEditSave = async () => {
     if (!editingApostila) return;
-    await supabase.from('apostilas').update({ title: editTitle, content: editContent, category: editCategory }).eq('id', editingApostila.id);
-    toast.success('Apostila atualizada!'); setEditingApostila(null); loadAll();
+    if (!editTitle.trim()) { toast.error('O título não pode ficar vazio'); return; }
+    const { error } = await supabase
+      .from('apostilas')
+      .update({ title: editTitle.trim(), content: editContent, category: editCategory })
+      .eq('id', editingApostila.id);
+    if (error) {
+      console.error('[handleEditSave] erro:', error);
+      toast.error('Falha ao atualizar: ' + error.message);
+      return;
+    }
+    toast.success('Apostila atualizada!');
+    setEditingApostila(null);
+    loadAll();
   };
 
   const addExercise = async () => {
