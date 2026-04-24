@@ -110,6 +110,28 @@ export default function ApostilaPage() {
 
   const sections = useMemo(() => parseContent(apostila?.content || null), [apostila?.content]);
 
+  /**
+   * Sumário organizado: filtra seções sem título legível e atribui numeração
+   * hierárquica (1, 1.1, 1.1.1, 2, 2.1...) ignorando "buracos" do parser.
+   */
+  const tocItems = useMemo(() => {
+    const counters = [0, 0, 0]; // níveis 1, 2, 3
+    return sections
+      .map((s) => {
+        const title = cleanText(s.title || '').trim();
+        return { ...s, displayTitle: title };
+      })
+      .filter((s) => s.displayTitle.length >= 2) // ignora títulos vazios/lixo
+      .map((s) => {
+        const level = Math.min(Math.max(s.level || 1, 1), 3);
+        counters[level - 1]++;
+        // zera contadores dos níveis abaixo
+        for (let k = level; k < counters.length; k++) counters[k] = 0;
+        const number = counters.slice(0, level).filter((n) => n > 0).join('.');
+        return { ...s, level, number };
+      });
+  }, [sections]);
+
   const handleExportPdf = useCallback(async () => {
     if (!apostila) return;
     setExportingPdf(true);
