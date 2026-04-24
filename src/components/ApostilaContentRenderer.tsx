@@ -586,7 +586,7 @@ function CalloutBlock({ kind, title, content }: { kind: 'info' | 'tip' | 'warnin
         <div className={`font-mono-label text-[10px] uppercase tracking-wider mb-1 ${labelTone}`}>
           {title}
         </div>
-        <p className="text-[14px] leading-[1.7] text-foreground/85 m-0" dangerouslySetInnerHTML={renderInline(content)} />
+        <p className="text-[14.5px] leading-[1.65] text-foreground/90 m-0" dangerouslySetInnerHTML={renderInline(content)} />
       </div>
     </aside>
   );
@@ -595,7 +595,7 @@ function CalloutBlock({ kind, title, content }: { kind: 'info' | 'tip' | 'warnin
 function QuoteBlock({ content }: { content: string }) {
   return (
     <blockquote
-      className="my-6 pl-5 border-l-4 border-primary/50 italic text-foreground/75 text-[15px] leading-[1.75]"
+      className="my-6 pl-5 border-l-[3px] border-primary/50 italic text-foreground/80 text-[15px] leading-[1.7]"
       dangerouslySetInnerHTML={renderInline(content)}
     />
   );
@@ -604,10 +604,10 @@ function QuoteBlock({ content }: { content: string }) {
 function ListBlock({ items, ordered }: { items: string[]; ordered: boolean }) {
   if (ordered) {
     return (
-      <ol className="my-4 ml-1 space-y-2 list-none counter-reset-decode">
+      <ol className="my-4 ml-1 space-y-1.5 list-none counter-reset-decode">
         {items.map((it, idx) => (
-          <li key={idx} className="pl-8 relative text-[15px] leading-[1.75] text-foreground/85">
-            <span className="absolute left-0 top-0 w-6 h-6 rounded-full bg-primary/10 text-primary font-mono-label text-[11px] flex items-center justify-center">
+          <li key={idx} className="pl-8 relative text-[15.5px] sm:text-[16px] leading-[1.65] text-foreground/90">
+            <span className="absolute left-0 top-[0.15em] w-5 h-5 rounded-full bg-primary/12 text-primary font-mono-label text-[10px] flex items-center justify-center">
               {idx + 1}
             </span>
             <span dangerouslySetInnerHTML={renderInline(it)} />
@@ -617,10 +617,10 @@ function ListBlock({ items, ordered }: { items: string[]; ordered: boolean }) {
     );
   }
   return (
-    <ul className="my-4 ml-1 space-y-2">
+    <ul className="my-4 ml-1 space-y-1.5">
       {items.map((it, idx) => (
-        <li key={idx} className="pl-5 relative text-[15px] leading-[1.75] text-foreground/85">
-          <span className="absolute left-0 top-[0.6em] w-1.5 h-1.5 rounded-full bg-primary" />
+        <li key={idx} className="pl-5 relative text-[15.5px] sm:text-[16px] leading-[1.65] text-foreground/90">
+          <span className="absolute left-0 top-[0.7em] w-1.5 h-1.5 rounded-full bg-primary" />
           <span dangerouslySetInnerHTML={renderInline(it)} />
         </li>
       ))}
