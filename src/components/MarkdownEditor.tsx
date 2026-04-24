@@ -535,6 +535,10 @@ export function MarkdownEditor({
           <ToolBtn title="Limpar formatação" onClick={clearFormatting}>
             <RemoveFormatting className="h-3.5 w-3.5" />
           </ToolBtn>
+          <Sep />
+          <ToolBtn title="Localizar (Ctrl+F)" onClick={openFind}>
+            <Search className="h-3.5 w-3.5" />
+          </ToolBtn>
 
           <div className="ml-auto flex items-center gap-0.5">
             <ModeBtn active={mode === 'edit'} title="Só editor" onClick={() => setMode('edit')}>
