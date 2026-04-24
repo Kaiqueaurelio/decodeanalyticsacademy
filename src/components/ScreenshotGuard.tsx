@@ -95,6 +95,8 @@ export function ScreenshotGuard() {
     };
 
     document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('resize', onResize);
+    window.addEventListener('orientationchange', onResize);
     window.addEventListener('keydown', onKey);
     document.addEventListener('copy', allowInsideOptIn);
     document.addEventListener('cut', allowInsideOptIn);
@@ -102,7 +104,10 @@ export function ScreenshotGuard() {
     document.addEventListener('dragstart', block);
 
     return () => {
+      window.clearTimeout(safetyTimer);
       document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('resize', onResize);
+      window.removeEventListener('orientationchange', onResize);
       window.removeEventListener('keydown', onKey);
       document.removeEventListener('copy', allowInsideOptIn);
       document.removeEventListener('cut', allowInsideOptIn);
@@ -115,13 +120,15 @@ export function ScreenshotGuard() {
 
   return (
     <div
-      className="fixed inset-0 z-[9999] bg-background flex flex-col items-center justify-center text-center p-8"
+      className="fixed inset-0 z-[9999] bg-background flex flex-col items-center justify-center text-center p-8 cursor-pointer"
       aria-hidden="true"
+      onClick={() => setHidden(false)}
+      onTouchStart={() => setHidden(false)}
     >
       <div className="text-4xl mb-4">🔒</div>
       <h2 className="font-display text-xl mb-2 text-foreground">Conteúdo protegido</h2>
       <p className="text-sm text-muted-foreground max-w-sm">
-        Por questões de privacidade, a captura de tela e a visualização em segundo plano foram bloqueadas.
+        Toque na tela para voltar ao conteúdo.
       </p>
     </div>
   );
