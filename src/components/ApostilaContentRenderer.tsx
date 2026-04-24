@@ -665,21 +665,20 @@ function HeadingBlock({ level, content }: { level: number; content: string }) {
   const text = cleanInlineText(content);
   if (level <= 2) {
     return (
-      <h3 className="font-display text-[22px] sm:text-[26px] font-bold mt-12 mb-4 text-foreground tracking-tight leading-[1.25] flex items-center gap-3">
-        <span className="inline-block w-1 h-7 bg-gradient-to-b from-primary to-primary/40 rounded-full shrink-0" />
-        <span className="flex-1">{text}</span>
+      <h3 className="font-display text-[20px] sm:text-[22px] font-semibold mt-10 mb-3 text-foreground tracking-tight leading-[1.3]">
+        {text}
       </h3>
     );
   }
   if (level === 3) {
     return (
-      <h4 className="font-display text-[17px] sm:text-[18px] font-semibold mt-8 mb-3 text-primary tracking-tight leading-snug">
+      <h4 className="font-display text-[16px] sm:text-[17px] font-semibold mt-7 mb-2.5 text-foreground/95 tracking-tight leading-snug">
         {text}
       </h4>
     );
   }
   return (
-    <h5 className="font-display text-[15px] sm:text-[16px] font-semibold mt-6 mb-2 text-foreground/90 uppercase tracking-wider text-[13px]">
+    <h5 className="font-mono-label text-[12px] font-semibold mt-6 mb-2 text-primary/90 uppercase tracking-[0.12em]">
       {text}
     </h5>
   );
