@@ -477,6 +477,7 @@ export default function AdminPage() {
   const [showExerciseDialog, setShowExerciseDialog] = useState<string | null>(null);
   const [showMaterialsFor, setShowMaterialsFor] = useState<string | null>(null);
   const [showAppendFor, setShowAppendFor] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [selectedApostila, setSelectedApostila] = useState('');
   const [showManualForm, setShowManualForm] = useState(false);
   const [editingApostila, setEditingApostila] = useState<Apostila | null>(null);
