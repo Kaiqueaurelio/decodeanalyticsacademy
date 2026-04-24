@@ -665,34 +665,50 @@ export default function AdminPage() {
     setCloning(false);
   };
 
-  const handleSaveImport = async () => {
-    if (!importTitle.trim()) { toast.error('Adicione um título'); return; }
-    // Revalida sessão atual antes de inserir (evita created_by inválido)
+  /** Insere efetivamente a apostila importada (extraído para permitir bypass do diálogo de duplicatas). */
+  const insertImportApostila = useCallback(async () => {
     const { data: sessionData } = await supabase.auth.getUser();
     const currentUser = sessionData?.user;
     if (!currentUser) {
       toast.error('Sessão expirou. Faça login novamente.');
       return;
     }
+    const isNotion = importUrl.includes('notion.site') || importUrl.includes('notion.so');
+    const sourceType = importMode === 'text' ? 'text' : isNotion ? 'notion' : 'link';
+    const { data: newApostila, error } = await supabase.from('apostilas').insert({
+      title: importTitle.trim(), content: importContent,
+      category: importTopic || 'Geral', source_type: sourceType,
+      file_url: importMode === 'text' ? null : isNotion ? null : importUrl, created_by: currentUser.id, published: false,
+    }).select().single();
+    if (error) throw error;
+    if (importExercises.length > 0 && newApostila) {
+      const { error: exErr } = await supabase.from('exercises').insert(importExercises.map(ex => ({
+        apostila_id: newApostila.id, question: ex.question, options: ex.options,
+        correct_answer: ex.correct_answer, explanation: ex.explanation || null,
+      })));
+      if (exErr) console.warn('Falha ao salvar exercícios:', exErr);
+    }
+    toast.success(`Apostila salva com ${importExercises.length} exercícios!`);
+    resetImportForm(); loadAll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [importUrl, importMode, importTitle, importContent, importTopic, importExercises]);
+
+  const handleSaveImport = async () => {
+    if (!importTitle.trim()) { toast.error('Adicione um título'); return; }
     setCloning(true);
     try {
-      const isNotion = importUrl.includes('notion.site') || importUrl.includes('notion.so');
-      const sourceType = importMode === 'text' ? 'text' : isNotion ? 'notion' : 'link';
-      const { data: newApostila, error } = await supabase.from('apostilas').insert({
-        title: importTitle.trim(), content: importContent,
-        category: importTopic || 'Geral', source_type: sourceType,
-        file_url: importMode === 'text' ? null : isNotion ? null : importUrl, created_by: currentUser.id, published: false,
-      }).select().single();
-      if (error) throw error;
-      if (importExercises.length > 0 && newApostila) {
-        const { error: exErr } = await supabase.from('exercises').insert(importExercises.map(ex => ({
-          apostila_id: newApostila.id, question: ex.question, options: ex.options,
-          correct_answer: ex.correct_answer, explanation: ex.explanation || null,
-        })));
-        if (exErr) console.warn('Falha ao salvar exercícios:', exErr);
+      // 1) Verifica duplicata pela similaridade do conteúdo
+      const dup = await findDuplicateApostila(importContent, importTitle);
+      if (dup) {
+        setDuplicateMatch(dup);
+        // Guarda a ação para ser executada após decisão do admin
+        setPendingSave(() => async () => {
+          await insertImportApostila();
+        });
+        setCloning(false);
+        return;
       }
-      toast.success(`Apostila salva com ${importExercises.length} exercícios!`);
-      resetImportForm(); loadAll();
+      await insertImportApostila();
     } catch (err: any) {
       console.error('[handleSaveImport] erro:', err);
       const msg = err?.message || err?.error_description || err?.details || 'Erro desconhecido';
