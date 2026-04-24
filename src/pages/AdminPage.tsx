@@ -45,6 +45,8 @@ import { MarkdownEditor } from '@/components/MarkdownEditor';
 import { PerformanceMetrics } from '@/components/PerformanceMetrics';
 import { SmokeTestsPanel } from '@/components/SmokeTestsPanel';
 import { DiagnosticsPanel } from '@/components/DiagnosticsPanel';
+import { DuplicateApostilaDialog } from '@/components/DuplicateApostilaDialog';
+import { findDuplicateApostila, type DuplicateMatch } from '@/lib/duplicate-detector';
 
 type Apostila = Tables<'apostilas'>;
 type Exercise = Tables<'exercises'>;
@@ -490,6 +492,9 @@ export default function AdminPage() {
   const [importExercises, setImportExercises] = useState<any[]>([]);
   const [extractionMethod, setExtractionMethod] = useState<string>('');
   const [cloning, setCloning] = useState(false);
+  // Detecção de apostila duplicada
+  const [duplicateMatch, setDuplicateMatch] = useState<DuplicateMatch | null>(null);
+  const [pendingSave, setPendingSave] = useState<null | (() => Promise<void> | void)>(null);
   const [importStep, setImportStep] = useState<'input' | 'review'>('input');
   const [importMode, setImportMode] = useState<'url' | 'text'>('url');
   const [importRawText, setImportRawText] = useState('');
@@ -660,34 +665,50 @@ export default function AdminPage() {
     setCloning(false);
   };
 
-  const handleSaveImport = async () => {
-    if (!importTitle.trim()) { toast.error('Adicione um título'); return; }
-    // Revalida sessão atual antes de inserir (evita created_by inválido)
+  /** Insere efetivamente a apostila importada (extraído para permitir bypass do diálogo de duplicatas). */
+  const insertImportApostila = useCallback(async () => {
     const { data: sessionData } = await supabase.auth.getUser();
     const currentUser = sessionData?.user;
     if (!currentUser) {
       toast.error('Sessão expirou. Faça login novamente.');
       return;
     }
+    const isNotion = importUrl.includes('notion.site') || importUrl.includes('notion.so');
+    const sourceType = importMode === 'text' ? 'text' : isNotion ? 'notion' : 'link';
+    const { data: newApostila, error } = await supabase.from('apostilas').insert({
+      title: importTitle.trim(), content: importContent,
+      category: importTopic || 'Geral', source_type: sourceType,
+      file_url: importMode === 'text' ? null : isNotion ? null : importUrl, created_by: currentUser.id, published: false,
+    }).select().single();
+    if (error) throw error;
+    if (importExercises.length > 0 && newApostila) {
+      const { error: exErr } = await supabase.from('exercises').insert(importExercises.map(ex => ({
+        apostila_id: newApostila.id, question: ex.question, options: ex.options,
+        correct_answer: ex.correct_answer, explanation: ex.explanation || null,
+      })));
+      if (exErr) console.warn('Falha ao salvar exercícios:', exErr);
+    }
+    toast.success(`Apostila salva com ${importExercises.length} exercícios!`);
+    resetImportForm(); loadAll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [importUrl, importMode, importTitle, importContent, importTopic, importExercises]);
+
+  const handleSaveImport = async () => {
+    if (!importTitle.trim()) { toast.error('Adicione um título'); return; }
     setCloning(true);
     try {
-      const isNotion = importUrl.includes('notion.site') || importUrl.includes('notion.so');
-      const sourceType = importMode === 'text' ? 'text' : isNotion ? 'notion' : 'link';
-      const { data: newApostila, error } = await supabase.from('apostilas').insert({
-        title: importTitle.trim(), content: importContent,
-        category: importTopic || 'Geral', source_type: sourceType,
-        file_url: importMode === 'text' ? null : isNotion ? null : importUrl, created_by: currentUser.id, published: false,
-      }).select().single();
-      if (error) throw error;
-      if (importExercises.length > 0 && newApostila) {
-        const { error: exErr } = await supabase.from('exercises').insert(importExercises.map(ex => ({
-          apostila_id: newApostila.id, question: ex.question, options: ex.options,
-          correct_answer: ex.correct_answer, explanation: ex.explanation || null,
-        })));
-        if (exErr) console.warn('Falha ao salvar exercícios:', exErr);
+      // 1) Verifica duplicata pela similaridade do conteúdo
+      const dup = await findDuplicateApostila(importContent, importTitle);
+      if (dup) {
+        setDuplicateMatch(dup);
+        // Guarda a ação para ser executada após decisão do admin
+        setPendingSave(() => async () => {
+          await insertImportApostila();
+        });
+        setCloning(false);
+        return;
       }
-      toast.success(`Apostila salva com ${importExercises.length} exercícios!`);
-      resetImportForm(); loadAll();
+      await insertImportApostila();
     } catch (err: any) {
       console.error('[handleSaveImport] erro:', err);
       const msg = err?.message || err?.error_description || err?.details || 'Erro desconhecido';
@@ -696,8 +717,8 @@ export default function AdminPage() {
     setCloning(false);
   };
 
-  const handleManualSave = async () => {
-    if (!manualTitle.trim() || !user) return;
+  const insertManualApostila = useCallback(async () => {
+    if (!user) return;
     const { error } = await supabase.from('apostilas').insert({
       title: manualTitle.trim(), content: manualContent,
       category: manualCategory || 'Geral', source_type: 'manual', created_by: user.id, published: false,
@@ -705,7 +726,35 @@ export default function AdminPage() {
     if (error) { toast.error('Erro ao criar'); return; }
     toast.success('Apostila criada!');
     setManualTitle(''); setManualContent(''); setManualCategory(''); setShowManualForm(false); loadAll();
+  }, [user, manualTitle, manualContent, manualCategory]);
+
+  const handleManualSave = async () => {
+    if (!manualTitle.trim() || !user) return;
+    // Detecta duplicata pelo conteúdo
+    const dup = await findDuplicateApostila(manualContent, manualTitle);
+    if (dup) {
+      setDuplicateMatch(dup);
+      setPendingSave(() => async () => { await insertManualApostila(); });
+      return;
+    }
+    await insertManualApostila();
   };
+
+  /** Atualiza uma apostila existente com o melhor conteúdo (chamado a partir do diálogo). */
+  const replaceExistingWithBetter = useCallback(async (newContent: string) => {
+    if (!duplicateMatch) return;
+    const { error } = await supabase
+      .from('apostilas')
+      .update({ content: newContent, updated_at: new Date().toISOString() })
+      .eq('id', duplicateMatch.apostila.id);
+    if (error) { toast.error('Erro ao atualizar: ' + error.message); return; }
+    toast.success(`"${duplicateMatch.apostila.title}" foi atualizada com a versão melhor formatada.`);
+    // Limpa formulário ativo (importação ou manual)
+    resetImportForm();
+    setManualTitle(''); setManualContent(''); setManualCategory(''); setShowManualForm(false);
+    loadAll();
+  }, [duplicateMatch]);
+
 
   const resetImportForm = () => {
     setImportUrl(''); setImportTitle(''); setImportTopic('');
@@ -2481,6 +2530,36 @@ export default function AdminPage() {
           </main>
         </div>
       </div>
+
+      {/* Diálogo de duplicata: detecta apostilas parecidas e mantém a melhor formatada */}
+      <DuplicateApostilaDialog
+        open={!!duplicateMatch}
+        match={duplicateMatch}
+        onReplaceExisting={async () => {
+          // Substitui o conteúdo existente pelo novo (que está melhor formatado)
+          const newContent = pendingSave ? (manualContent || importContent) : '';
+          await replaceExistingWithBetter(newContent || importContent || manualContent);
+          setDuplicateMatch(null);
+          setPendingSave(null);
+        }}
+        onKeepExisting={() => {
+          toast.info('Mantida a versão existente — a melhor formatada.');
+          // Apenas limpa formulários
+          resetImportForm();
+          setManualTitle(''); setManualContent(''); setManualCategory(''); setShowManualForm(false);
+          setDuplicateMatch(null);
+          setPendingSave(null);
+        }}
+        onCreateAnyway={async () => {
+          if (pendingSave) await pendingSave();
+          setDuplicateMatch(null);
+          setPendingSave(null);
+        }}
+        onCancel={() => {
+          setDuplicateMatch(null);
+          setPendingSave(null);
+        }}
+      />
     </CategoriesCtx.Provider>
   );
 }
