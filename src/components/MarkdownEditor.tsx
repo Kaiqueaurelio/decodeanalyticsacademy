@@ -795,6 +795,8 @@ export function MarkdownEditor({
               else if (k === 'i') { e.preventDefault(); wrap('*'); }
               else if (k === 'u') { e.preventDefault(); wrap('<u>', '</u>'); }
               else if (k === 'k') { e.preventDefault(); insertLink(); }
+              else if (k === 'f') { e.preventDefault(); openFind(); }
+              else if (k === 'h') { e.preventDefault(); setShowReplace(true); openFind(); }
               else if (k === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
               else if ((k === 'z' && e.shiftKey) || k === 'y') { e.preventDefault(); redo(); }
             }}
