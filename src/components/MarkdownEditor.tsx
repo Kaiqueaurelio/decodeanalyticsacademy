@@ -78,7 +78,20 @@ export function MarkdownEditor({
   showWordCount = true,
 }: Props) {
   const taRef = useRef<HTMLTextAreaElement>(null);
-  const [mode, setMode] = useState<ViewMode>('split');
+  // Em telas pequenas o split fica ilegível — começa em 'edit'.
+  const [mode, setMode] = useState<ViewMode>(() => {
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) return 'edit';
+    return 'split';
+  });
+
+  // Se o usuário redimensionar para mobile estando em split, cai para 'edit'.
+  useEffect(() => {
+    const onResize = () => {
+      if (window.innerWidth < 1024 && mode === 'split') setMode('edit');
+    };
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [mode]);
 
   // ─── Histórico (undo/redo) ────────────────────────────────────────────
   // Mantemos uma pilha simples — o textarea nativo já tem undo, mas perde
@@ -778,7 +791,7 @@ export function MarkdownEditor({
       )}
 
       {/* Área de edição */}
-      <div className={cn('grid', mode === 'split' ? 'md:grid-cols-2' : 'grid-cols-1')}>
+      <div className={cn('grid', mode === 'split' ? 'lg:grid-cols-2' : 'grid-cols-1')}>
         {(mode === 'edit' || mode === 'split') && (
           <Textarea
             ref={taRef}
@@ -786,7 +799,7 @@ export function MarkdownEditor({
             onChange={(e) => onChange(e.target.value)}
             placeholder={placeholder}
             rows={rows}
-            className="rounded-none border-0 border-r-0 focus-visible:ring-0 font-mono text-xs leading-relaxed resize-none min-h-[280px]"
+            className="rounded-none border-0 border-r-0 focus-visible:ring-0 font-mono text-[13px] sm:text-xs leading-relaxed resize-none min-h-[260px] sm:min-h-[280px] w-full"
             onKeyDown={(e) => {
               const mod = e.metaKey || e.ctrlKey;
               if (!mod) return;
@@ -806,8 +819,8 @@ export function MarkdownEditor({
         {(mode === 'preview' || mode === 'split') && (
           <div
             className={cn(
-              'p-4 overflow-auto bg-background prose-sm max-w-none min-h-[280px]',
-              mode === 'split' && 'border-t md:border-t-0 md:border-l border-border',
+              'p-3 sm:p-4 overflow-auto bg-background prose-sm max-w-none min-h-[260px] sm:min-h-[280px]',
+              mode === 'split' && 'border-t lg:border-t-0 lg:border-l border-border',
             )}
             style={{ maxHeight: '60vh' }}
           >
