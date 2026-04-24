@@ -862,7 +862,7 @@ function ToolBtn({ children, title, onClick }: { children: React.ReactNode; titl
   );
 }
 
-function ModeBtn({ children, title, active, onClick }: { children: React.ReactNode; title: string; active: boolean; onClick: () => void }) {
+function ModeBtn({ children, title, active, onClick, className }: { children: React.ReactNode; title: string; active: boolean; onClick: () => void; className?: string }) {
   return (
     <Button
       type="button"
@@ -870,7 +870,7 @@ function ModeBtn({ children, title, active, onClick }: { children: React.ReactNo
       variant={active ? 'secondary' : 'ghost'}
       title={title}
       onClick={onClick}
-      className="h-7 w-7"
+      className={cn('h-7 w-7', className)}
     >
       {children}
     </Button>
