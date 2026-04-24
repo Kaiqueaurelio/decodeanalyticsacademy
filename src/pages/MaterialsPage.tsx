@@ -198,7 +198,7 @@ function AudioPlayer({ url, title }: { url: string; title: string }) {
 }
 
 // Robust Video Player (YouTube-style)
-function VideoPlayer({ url, title }: { url: string; title: string }) {
+function VideoPlayer({ url, title, canDownload }: { url: string; title: string; canDownload: boolean }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);
