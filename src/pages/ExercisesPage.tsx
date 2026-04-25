@@ -34,6 +34,21 @@ type EssayAnswer = {
   showModel: boolean;
 };
 
+type PhotoGrade = {
+  loading: boolean;
+  uploading: boolean;
+  files: File[];
+  previews: string[];
+  result?: {
+    correct: 'correct' | 'partial' | 'incorrect';
+    score: number;
+    detected_answer: string;
+    expected_answer: string;
+    feedback: string;
+  };
+  error?: string;
+};
+
 export default function ExercisesPage() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
