@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -277,12 +277,15 @@ export function ExerciseOrganizer({ apostilaId, exercises, onSaved }: ExerciseOr
   const [items, setItems] = useState<Exercise[]>(sorted);
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
+  const dirtyRef = useRef(false);
 
-  // Reset quando os exercises externos mudarem (após reload)
-  useMemo(() => {
+  // Sincroniza com a lista externa SEM sobrescrever edições locais não salvas.
+  useEffect(() => {
+    if (dirtyRef.current) return;
     setItems(sorted);
-    setDirty(false);
   }, [sorted]);
+
+  useEffect(() => { dirtyRef.current = dirty; }, [dirty]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
