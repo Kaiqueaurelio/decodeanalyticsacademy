@@ -1575,28 +1575,13 @@ export default function AdminPage() {
                     <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
                       <DialogHeader><DialogTitle className="text-base">Exercícios — {a.title}</DialogTitle></DialogHeader>
                       
-                      {/* Existing exercises */}
-                      {exercises[a.id]?.length === 0 && (
-                        <div className="text-center py-4 text-muted-foreground text-sm">
-                          <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-30" /> Nenhum exercício.
-                        </div>
-                      )}
-                      {exercises[a.id]?.map((ex, i) => (
-                        <div key={ex.id} className="border border-border/50 rounded-lg p-3 mb-2 text-sm">
-                          <div className="flex justify-between items-start">
-                            <p className="font-medium text-xs">{i + 1}. {ex.question}</p>
-                            <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => deleteExercise(ex.id)}>
-                              <Trash2 className="h-3 w-3 text-destructive" />
-                            </Button>
-                          </div>
-                          {Array.isArray(ex.options) && (ex.options as string[]).map((opt, oi) => (
-                            <p key={oi} className={`text-[11px] mt-0.5 ${String.fromCharCode(65 + oi) === ex.correct_answer ? 'text-[hsl(var(--success))] font-medium' : 'text-muted-foreground'}`}>
-                              {String.fromCharCode(65 + oi)}) {opt}
-                            </p>
-                          ))}
-                        </div>
-                      ))}
-                      
+                      {/* Organizador com drag-and-drop, edição inline, tipos e gabarito híbrido */}
+                      <ExerciseOrganizer
+                        apostilaId={a.id}
+                        exercises={exercises[a.id] || []}
+                        onSaved={loadAll}
+                      />
+
                       <Separator />
                       
                       {/* Mode Toggle */}
