@@ -895,6 +895,8 @@ export default function AdminPage() {
     const { error } = await supabase.from('exercises').insert({
       apostila_id: selectedApostila, question: exQuestion,
       options: exOptions, correct_answer: exCorrect, explanation: exExplanation || null,
+      sort_order: nextSortOrder(selectedApostila),
+      type: 'objective', question_type: 'objective', allow_image_upload: false,
     });
     if (error) { toast.error('Erro ao criar exercício'); return; }
     toast.success('Exercício adicionado!');
@@ -1035,10 +1037,17 @@ export default function AdminPage() {
     if (parsed.length === 0) { toast.error('Nenhum exercício detectado. Verifique o formato.'); return; }
     setBulkExerciseImporting(true);
     let ok = 0;
-    for (const ex of parsed) {
+    const base = nextSortOrder(selectedApostila) - 1;
+    for (let i = 0; i < parsed.length; i++) {
+      const ex = parsed[i];
+      const essay = ex.type === 'essay';
       const { error } = await supabase.from('exercises').insert({
         apostila_id: selectedApostila, question: ex.question,
         options: ex.options, correct_answer: ex.correct, explanation: ex.explanation || null,
+        sort_order: base + i + 1,
+        type: essay ? 'essay' : 'objective',
+        question_type: ex.questionType,
+        allow_image_upload: ex.questionType === 'calculation' || ex.questionType === 'graph' || ex.questionType === 'algorithm',
       });
       if (!error) ok++;
     }
