@@ -874,42 +874,79 @@ export default function AdminPage() {
   };
 
   const parseBulkExercises = (text: string) => {
-    // Split by double newline OR numbered question start (e.g. "1.", "2)", "1 -")
+    // Split por: linha em branco OU início de questão numerada (1. / 2) / Q1: / Questão 3)
     const blocks: string[] = [];
-    const rawBlocks = text.split(/\n(?=\s*\d+[\.\)\-]\s)/);
+    const rawBlocks = text.split(/\n(?=\s*(?:Quest[ãa]o\s+|Q\s*)?\d+\s*[\.\)\-:]\s)/i);
     for (const rb of rawBlocks) {
       const sub = rb.split(/\n\s*\n/).filter(b => b.trim());
       blocks.push(...sub);
     }
 
-    const parsed: { question: string; options: string[]; correct: string; explanation: string; type: 'multiple_choice' | 'essay' }[] = [];
+    type ParsedQ = {
+      question: string;
+      options: string[];
+      correct: string;
+      explanation: string;
+      type: 'multiple_choice' | 'essay';
+      questionType: 'objective' | 'essay' | 'calculation' | 'graph' | 'algorithm';
+    };
+    const parsed: ParsedQ[] = [];
+
+    // Heurísticas para detectar tipo da dissertativa
+    const detectDissertativeKind = (q: string): ParsedQ['questionType'] => {
+      const s = q.toLowerCase();
+      if (/\b(grafo|árvore|arvore|bfs|dfs|dijkstra|busca\s+gulosa|caminho\s+m[íi]nimo|expans[ãa]o)\b/.test(s)) return 'graph';
+      if (/\b(teste\s+de\s+mesa|pseudoc[óo]digo|fluxograma|algoritmo|c[óo]digo|funç[ãa]o|fun[çc][ãa]o)\b/.test(s)) return 'algorithm';
+      if (/\b(calcul|equa[çc][ãa]o|derivada|integral|matriz|determinante|resultado\s+num)\b/.test(s)) return 'calculation';
+      return 'essay';
+    };
+
     for (const block of blocks) {
       const lines = block.split('\n').map(l => l.trim()).filter(Boolean);
-      if (lines.length < 2) continue;
+      if (lines.length < 1) continue;
       let question = '';
       const options: string[] = [];
       let correct = '';
-      let explanationLines: string[] = [];
+      const explanationLines: string[] = [];
       let inExplanation = false;
       let isEssay = false;
+      let typeOverride: ParsedQ['questionType'] | null = null;
 
       for (const line of lines) {
-        // Detect essay marker
-        const essayMatch = line.match(/^(?:tipo|type)\s*[:=]\s*(?:dissertativa|essay|aberta)/i);
-        if (essayMatch) { isEssay = true; continue; }
+        // Marcador explícito de tipo
+        const typeMatch = line.match(/^(?:tipo|type)\s*[:=]\s*(.+)$/i);
+        if (typeMatch) {
+          const v = typeMatch[1].toLowerCase().trim();
+          if (/dissert|essay|aberta/.test(v)) { isEssay = true; typeOverride = 'essay'; }
+          else if (/c[áa]lculo|calc|matem/.test(v)) { isEssay = true; typeOverride = 'calculation'; }
+          else if (/grafo|[áa]rvore|bfs|dfs|busca/.test(v)) { isEssay = true; typeOverride = 'graph'; }
+          else if (/teste.*mesa|pseudo|c[óo]digo|algoritmo|fluxograma/.test(v)) { isEssay = true; typeOverride = 'algorithm'; }
+          continue;
+        }
 
-        // Match options: A), a), A., A -, A:, etc.
-        const optMatch = line.match(/^([A-Da-d])[\)\.\-:]\s*(.+)/);
-        // Match gabarito/resposta: various formats
-        const gabMatch = line.match(/^(?:gabarito|resposta|resposta correta|answer|correct)\s*[:=]\s*([A-Da-d])/i);
-        // Match explanation start
-        const expMatch = line.match(/^(?:explica[çc][ãa]o|justificativa|coment[áa]rio|explanation|resposta modelo|resposta esperada)\s*[:=]\s*(.*)/i);
-        // Match question number prefix (remove it)
-        const questionNumMatch = line.match(/^\d+[\.\)\-]\s*(.+)/);
+        // Opções: A), a., A -, A:, A) bla, ✅ A) bla, **A)** bla
+        const optMatch = line.match(/^[\*\s✅✔️🅰️]*\(?([A-Ea-e])[\)\.\-:]\s*(.+)/);
+        // Gabarito: várias formas
+        const gabMatch = line.match(/^[\*\s]*(?:gabarito|resposta(?:\s+correta)?|answer|correct|✅\s*resposta)\s*[:=]\s*\*?\*?\s*([A-Ea-e])\b/i);
+        // Marcador inline ✅ na opção: detecta "✅ B) Resposta"
+        const inlineCorrect = line.match(/✅\s*\(?([A-Ea-e])[\)\.\-:]/);
+        // Resposta em **negrito** indicando gabarito
+        const boldCorrect = line.match(/^\*\*([A-Ea-e])\*\*\s*[\)\.\-:]/);
+        // Explicação
+        const expMatch = line.match(/^[\*\s]*(?:explica[çc][ãa]o|justificativa|coment[áa]rio|explanation|resposta\s+modelo|resposta\s+esperada|gabarito\s+descritivo)\s*[:=]\s*(.*)/i);
+        // Prefixo numérico de questão
+        const questionNumMatch = line.match(/^(?:Quest[ãa]o\s+|Q\s*)?\d+\s*[\.\)\-:]\s*(.+)/i);
 
         if (gabMatch) {
           correct = gabMatch[1].toUpperCase();
           inExplanation = false;
+        } else if (inlineCorrect && options.length > 0) {
+          correct = inlineCorrect[1].toUpperCase();
+          // Continua processando como opção também
+          if (optMatch) options.push(optMatch[2].replace(/✅/g, '').trim());
+        } else if (boldCorrect) {
+          correct = boldCorrect[1].toUpperCase();
+          if (optMatch) options.push(optMatch[2]);
         } else if (expMatch) {
           if (expMatch[1]?.trim()) explanationLines.push(expMatch[1].trim());
           inExplanation = true;
@@ -925,13 +962,40 @@ export default function AdminPage() {
 
       const explanation = explanationLines.join(' ').trim();
 
-      // Essay: question with explanation/model answer but no options
-      if (isEssay || (question && options.length === 0 && explanation)) {
-        if (question) {
-          parsed.push({ question, options: [], correct: 'dissertativa', explanation, type: 'essay' });
-        }
-      } else if (question && options.length >= 2 && correct) {
-        parsed.push({ question, options, correct, explanation, type: 'multiple_choice' });
+      if (!question) continue;
+
+      // Limita opções a 4 (A-D padrão)
+      const finalOptions = options.slice(0, 4);
+
+      if (isEssay || (finalOptions.length === 0)) {
+        const qt = typeOverride || detectDissertativeKind(question);
+        parsed.push({
+          question,
+          options: [],
+          correct: 'dissertativa',
+          explanation,
+          type: 'essay',
+          questionType: qt,
+        });
+      } else if (finalOptions.length >= 2 && correct) {
+        parsed.push({
+          question,
+          options: finalOptions,
+          correct,
+          explanation,
+          type: 'multiple_choice',
+          questionType: 'objective',
+        });
+      } else if (finalOptions.length >= 2 && !correct) {
+        // Opções sem gabarito → ainda assim aceita, marcando como "A" e avisando depois
+        parsed.push({
+          question,
+          options: finalOptions,
+          correct: 'A',
+          explanation: (explanation ? explanation + ' ' : '') + '(⚠️ Gabarito não detectado — verifique)',
+          type: 'multiple_choice',
+          questionType: 'objective',
+        });
       }
     }
     return parsed;
