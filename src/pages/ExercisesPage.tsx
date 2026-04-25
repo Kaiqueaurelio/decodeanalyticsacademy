@@ -192,6 +192,79 @@ export default function ExercisesPage() {
     }));
   };
 
+  const handlePhotoSelect = (exerciseId: string, files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    const arr = Array.from(files).slice(0, 6).filter(f => f.type.startsWith('image/') || f.type === 'application/pdf');
+    if (arr.length === 0) { toast.error('Envie imagens (JPG/PNG) ou PDF.'); return; }
+    const previews = arr.map(f => URL.createObjectURL(f));
+    setPhotoGrades(prev => ({
+      ...prev,
+      [exerciseId]: { loading: false, uploading: false, files: arr, previews, result: undefined, error: undefined },
+    }));
+  };
+
+  const removePhoto = (exerciseId: string, idx: number) => {
+    setPhotoGrades(prev => {
+      const cur = prev[exerciseId];
+      if (!cur) return prev;
+      const files = cur.files.filter((_, i) => i !== idx);
+      const previews = cur.previews.filter((_, i) => i !== idx);
+      return { ...prev, [exerciseId]: { ...cur, files, previews } };
+    });
+  };
+
+  const handlePhotoSubmit = async (exerciseId: string) => {
+    if (!user) return;
+    const cur = photoGrades[exerciseId];
+    if (!cur || cur.files.length === 0) { toast.error('Selecione ao menos uma imagem.'); return; }
+
+    setPhotoGrades(prev => ({ ...prev, [exerciseId]: { ...prev[exerciseId], uploading: true, error: undefined } }));
+
+    try {
+      const uploaded: string[] = [];
+      for (const file of cur.files) {
+        const ext = file.name.split('.').pop() || 'jpg';
+        const path = `${user.id}/${exerciseId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+        const { error: upErr } = await supabase.storage.from('respostas-foto').upload(path, file, {
+          contentType: file.type, upsert: false,
+        });
+        if (upErr) throw upErr;
+        const { data: pub } = supabase.storage.from('respostas-foto').getPublicUrl(path);
+        uploaded.push(pub.publicUrl);
+      }
+
+      setPhotoGrades(prev => ({ ...prev, [exerciseId]: { ...prev[exerciseId], uploading: false, loading: true } }));
+
+      const essayText = essayAnswers[exerciseId]?.text;
+      const { data, error } = await supabase.functions.invoke('evaluate-photo-answer', {
+        body: { exercise_id: exerciseId, image_urls: uploaded, user_text: essayText || undefined },
+      });
+
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+
+      const result = data as PhotoGrade['result'];
+      setPhotoGrades(prev => ({ ...prev, [exerciseId]: { ...prev[exerciseId], loading: false, result } }));
+
+      setAnswers(prev => ({
+        ...prev,
+        [exerciseId]: { selected: result!.detected_answer || essayText || '(foto enviada)', correct: result!.correct === 'correct' },
+      }));
+
+      const xp = result!.correct === 'correct' ? 20 : result!.correct === 'partial' ? 10 : 5;
+      gamification.addXP(xp);
+      gamification.updateStreak();
+
+      const label = result!.correct === 'correct' ? '✅ Correto!' : result!.correct === 'partial' ? '🟡 Parcial' : '❌ Incorreto';
+      toast.success(`${label} — Nota ${result!.score}/100  (+${xp} XP)`);
+    } catch (e: any) {
+      console.error('photo submit error:', e);
+      const msg = e?.message || 'Falha ao avaliar a foto.';
+      setPhotoGrades(prev => ({ ...prev, [exerciseId]: { ...prev[exerciseId], uploading: false, loading: false, error: msg } }));
+      toast.error(msg);
+    }
+  };
+
   // Stats
   const answeredCount = exercises.filter(ex => answers[ex.id]).length;
   const mcAnswered = mcExercises.filter(ex => answers[ex.id]).length;
