@@ -648,39 +648,51 @@ export type Database = {
       }
       exercises: {
         Row: {
+          allow_image_upload: boolean
           apostila_id: string
           correct_answer: string
           created_at: string
+          expected_answer: Json
           explanation: string | null
           id: string
           min_chars: number
           options: Json
           question: string
+          question_type: string
           reference_answer: string | null
+          sort_order: number
           type: string
         }
         Insert: {
+          allow_image_upload?: boolean
           apostila_id: string
           correct_answer: string
           created_at?: string
+          expected_answer?: Json
           explanation?: string | null
           id?: string
           min_chars?: number
           options?: Json
           question: string
+          question_type?: string
           reference_answer?: string | null
+          sort_order?: number
           type?: string
         }
         Update: {
+          allow_image_upload?: boolean
           apostila_id?: string
           correct_answer?: string
           created_at?: string
+          expected_answer?: Json
           explanation?: string | null
           id?: string
           min_chars?: number
           options?: Json
           question?: string
+          question_type?: string
           reference_answer?: string | null
+          sort_order?: number
           type?: string
         }
         Relationships: [
@@ -1000,30 +1012,42 @@ export type Database = {
       }
       respostas_foto: {
         Row: {
+          correct: string | null
           created_at: string
+          detected_answer: string | null
           exercise_id: string | null
+          expected_answer_snapshot: string | null
           feedback_ia: string | null
           id: string
           imagem_url: string
           nota: number | null
+          score: number | null
           user_id: string
         }
         Insert: {
+          correct?: string | null
           created_at?: string
+          detected_answer?: string | null
           exercise_id?: string | null
+          expected_answer_snapshot?: string | null
           feedback_ia?: string | null
           id?: string
           imagem_url: string
           nota?: number | null
+          score?: number | null
           user_id: string
         }
         Update: {
+          correct?: string | null
           created_at?: string
+          detected_answer?: string | null
           exercise_id?: string | null
+          expected_answer_snapshot?: string | null
           feedback_ia?: string | null
           id?: string
           imagem_url?: string
           nota?: number | null
+          score?: number | null
           user_id?: string
         }
         Relationships: [
