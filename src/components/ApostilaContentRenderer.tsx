@@ -572,32 +572,21 @@ function CalloutBlock({ kind, title, content }: { kind: 'info' | 'tip' | 'warnin
   const Icon = kind === 'tip' ? Lightbulb : kind === 'warning' ? AlertTriangle : Info;
   const tone =
     kind === 'warning'
-      ? 'bg-destructive/[0.06] border-destructive/30'
+      ? 'border-l-destructive bg-destructive/5 text-destructive'
       : kind === 'tip'
-      ? 'bg-accent/[0.08] border-accent/30'
-      : 'bg-primary/[0.05] border-primary/25';
-  const iconTone =
-    kind === 'warning'
-      ? 'bg-destructive/15 text-destructive'
-      : kind === 'tip'
-      ? 'bg-accent/20 text-accent-foreground'
-      : 'bg-primary/15 text-primary';
+      ? 'border-l-accent bg-accent/10 text-accent-foreground'
+      : 'border-l-primary bg-primary/5 text-foreground/90';
   const labelTone =
     kind === 'warning' ? 'text-destructive' : kind === 'tip' ? 'text-accent-foreground' : 'text-primary';
 
   return (
-    <aside className={`my-6 rounded-xl border ${tone} px-4 py-3.5 sm:px-5 sm:py-4 flex gap-3.5 shadow-sm`}>
-      <span className={`flex-shrink-0 h-8 w-8 rounded-lg ${iconTone} flex items-center justify-center`}>
-        <Icon className="h-4 w-4" />
-      </span>
+    <aside className={`my-5 rounded-r-lg border-l-4 ${tone} px-4 py-3 flex gap-3`}>
+      <Icon className={`h-4 w-4 mt-0.5 shrink-0 ${labelTone}`} />
       <div className="flex-1 min-w-0">
-        <div className={`font-mono-label text-[10px] uppercase tracking-[0.18em] mb-1 ${labelTone} font-semibold`}>
+        <div className={`font-mono-label text-[10px] uppercase tracking-wider mb-1 ${labelTone}`}>
           {title}
         </div>
-        <p
-          className="text-[14.5px] leading-[1.65] text-foreground/90 m-0"
-          dangerouslySetInnerHTML={renderInline(content)}
-        />
+        <p className="text-[14.5px] leading-[1.65] text-foreground/90 m-0" dangerouslySetInnerHTML={renderInline(content)} />
       </div>
     </aside>
   );
@@ -605,33 +594,20 @@ function CalloutBlock({ kind, title, content }: { kind: 'info' | 'tip' | 'warnin
 
 function QuoteBlock({ content }: { content: string }) {
   return (
-    <figure className="my-7 relative pl-6 sm:pl-8 pr-2">
-      <span
-        aria-hidden
-        className="absolute left-0 top-0 font-display text-[44px] sm:text-[56px] leading-none text-primary/30 select-none"
-        style={{ fontFamily: '"Instrument Serif", Georgia, serif' }}
-      >
-        “
-      </span>
-      <blockquote
-        className="text-[16px] sm:text-[17px] leading-[1.75] italic text-foreground/85 font-medium"
-        style={{ fontFamily: '"Instrument Serif", Georgia, serif' }}
-        dangerouslySetInnerHTML={renderInline(content)}
-      />
-    </figure>
+    <blockquote
+      className="my-6 pl-5 border-l-[3px] border-primary/50 italic text-foreground/80 text-[15px] leading-[1.7]"
+      dangerouslySetInnerHTML={renderInline(content)}
+    />
   );
 }
 
 function ListBlock({ items, ordered }: { items: string[]; ordered: boolean }) {
   if (ordered) {
     return (
-      <ol className="my-5 space-y-2.5 list-none">
+      <ol className="my-4 ml-1 space-y-1.5 list-none counter-reset-decode">
         {items.map((it, idx) => (
-          <li
-            key={idx}
-            className="pl-10 relative text-[15.5px] sm:text-[16px] leading-[1.7] text-foreground/90"
-          >
-            <span className="absolute left-0 top-[0.05em] w-7 h-7 rounded-lg bg-primary/10 text-primary font-mono-label text-[12px] font-semibold flex items-center justify-center border border-primary/20">
+          <li key={idx} className="pl-8 relative text-[15.5px] sm:text-[16px] leading-[1.65] text-foreground/90">
+            <span className="absolute left-0 top-[0.15em] w-5 h-5 rounded-full bg-primary/12 text-primary font-mono-label text-[10px] flex items-center justify-center">
               {idx + 1}
             </span>
             <span dangerouslySetInnerHTML={renderInline(it)} />
@@ -641,13 +617,10 @@ function ListBlock({ items, ordered }: { items: string[]; ordered: boolean }) {
     );
   }
   return (
-    <ul className="my-5 space-y-2 list-none">
+    <ul className="my-4 ml-1 space-y-1.5">
       {items.map((it, idx) => (
-        <li
-          key={idx}
-          className="pl-6 relative text-[15.5px] sm:text-[16px] leading-[1.7] text-foreground/90"
-        >
-          <span className="absolute left-0 top-[0.6em] w-2 h-2 rounded-sm bg-primary/70 rotate-45" />
+        <li key={idx} className="pl-5 relative text-[15.5px] sm:text-[16px] leading-[1.65] text-foreground/90">
+          <span className="absolute left-0 top-[0.7em] w-1.5 h-1.5 rounded-full bg-primary" />
           <span dangerouslySetInnerHTML={renderInline(it)} />
         </li>
       ))}
@@ -657,14 +630,14 @@ function ListBlock({ items, ordered }: { items: string[]; ordered: boolean }) {
 
 function TableBlock({ header, rows }: { header: string[]; rows: string[][] }) {
   return (
-    <div className="my-7 overflow-x-auto rounded-xl border border-border/60 shadow-sm">
-      <table className="w-full text-[13.5px] border-collapse">
+    <div className="my-6 overflow-x-auto rounded-lg border border-border/50">
+      <table className="w-full text-[13px] border-collapse">
         <thead>
-          <tr className="bg-muted/50">
+          <tr className="bg-muted/60">
             {header.map((h, i) => (
               <th
                 key={i}
-                className="text-left px-3.5 py-2.5 font-semibold text-foreground border-b border-border/60 font-mono-label text-[11px] uppercase tracking-wider"
+                className="text-left px-3 py-2 font-semibold text-foreground/90 border-b border-border/50"
                 dangerouslySetInnerHTML={renderInline(h)}
               />
             ))}
@@ -672,11 +645,11 @@ function TableBlock({ header, rows }: { header: string[]; rows: string[][] }) {
         </thead>
         <tbody>
           {rows.map((row, ri) => (
-            <tr key={ri} className={ri % 2 === 0 ? 'bg-background' : 'bg-muted/15'}>
+            <tr key={ri} className={ri % 2 === 0 ? 'bg-background' : 'bg-muted/20'}>
               {row.map((cell, ci) => (
                 <td
                   key={ci}
-                  className="px-3.5 py-2.5 text-foreground/85 border-b border-border/30 align-top"
+                  className="px-3 py-2 text-foreground/80 border-b border-border/30 align-top"
                   dangerouslySetInnerHTML={renderInline(cell)}
                 />
               ))}
@@ -692,21 +665,20 @@ function HeadingBlock({ level, content }: { level: number; content: string }) {
   const text = cleanInlineText(content);
   if (level <= 2) {
     return (
-      <h3 className="font-display text-[20px] sm:text-[22px] font-semibold mt-10 mb-3 text-foreground tracking-tight leading-[1.3] flex items-baseline gap-2.5">
-        <span aria-hidden className="inline-block w-1 h-5 sm:h-6 rounded-full bg-primary/70 translate-y-[2px]" />
-        <span>{text}</span>
+      <h3 className="font-display text-[20px] sm:text-[22px] font-semibold mt-10 mb-3 text-foreground tracking-tight leading-[1.3]">
+        {text}
       </h3>
     );
   }
   if (level === 3) {
     return (
-      <h4 className="font-display text-[16px] sm:text-[17px] font-semibold mt-8 mb-2.5 text-foreground tracking-tight leading-snug">
+      <h4 className="font-display text-[16px] sm:text-[17px] font-semibold mt-7 mb-2.5 text-foreground/95 tracking-tight leading-snug">
         {text}
       </h4>
     );
   }
   return (
-    <h5 className="font-mono-label text-[11px] font-semibold mt-7 mb-2 text-primary uppercase tracking-[0.16em]">
+    <h5 className="font-mono-label text-[12px] font-semibold mt-6 mb-2 text-primary/90 uppercase tracking-[0.12em]">
       {text}
     </h5>
   );
