@@ -587,7 +587,7 @@ export default function AdminPage() {
     setRefreshing(true);
     const [{ data: ap }, { data: ex }, { data: ans }, { data: mats }, { data: cats }, { data: profs }] = await Promise.all([
       supabase.from('apostilas').select('*').order('created_at', { ascending: false }),
-      supabase.from('exercises').select('*'),
+      supabase.from('exercises').select('*').order('sort_order', { ascending: true }),
       supabase.from('answers').select('*'),
       supabase.from('materials').select('*').order('created_at', { ascending: false }),
       supabase.from('categories').select('*').order('sort_order', { ascending: true }),
@@ -596,12 +596,25 @@ export default function AdminPage() {
     setApostilas(ap || []);
     const map: Record<string, Exercise[]> = {};
     ex?.forEach(e => { if (!map[e.apostila_id]) map[e.apostila_id] = []; map[e.apostila_id].push(e); });
+    // Garante ordenação consistente por sort_order asc, mantendo dissertativas no fim como fallback
+    Object.keys(map).forEach(k => {
+      map[k].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+    });
     setExercises(map);
     setAllAnswers(ans || []);
     setMaterials(mats || []);
     setUsers((profs || []).map(p => ({ id: p.id, user_id: p.user_id, full_name: p.full_name, email: p.email, is_blocked: (p as any).is_blocked ?? false, created_at: p.created_at })));
     setDbCategories((cats || []).map(c => ({ id: c.id, name: c.name, sort_order: c.sort_order })));
     setRefreshing(false);
+  };
+
+  /** Calcula próximo sort_order para inserir um novo exercício na apostila. */
+  const nextSortOrder = (apostilaId: string) => (exercises[apostilaId]?.length || 0) + 1;
+
+  /** Heurística simples: detecta se um exercício é dissertativo a partir das opções/correct. */
+  const inferIsEssay = (opts: any, correct?: string | null) => {
+    const arr = Array.isArray(opts) ? opts : [];
+    return arr.length === 0 || correct === 'dissertativa';
   };
 
   // ─── Handlers ──────────────────────────────────
