@@ -697,10 +697,17 @@ export default function AdminPage() {
     }).select().single();
     if (error) throw error;
     if (importExercises.length > 0 && newApostila) {
-      const { error: exErr } = await supabase.from('exercises').insert(importExercises.map(ex => ({
-        apostila_id: newApostila.id, question: ex.question, options: ex.options,
-        correct_answer: ex.correct_answer, explanation: ex.explanation || null,
-      })));
+      const { error: exErr } = await supabase.from('exercises').insert(importExercises.map((ex, idx) => {
+        const essay = inferIsEssay(ex.options, ex.correct_answer);
+        return {
+          apostila_id: newApostila.id, question: ex.question, options: ex.options,
+          correct_answer: ex.correct_answer, explanation: ex.explanation || null,
+          sort_order: idx + 1,
+          type: essay ? 'essay' : 'objective',
+          question_type: essay ? 'essay' : 'objective',
+          allow_image_upload: false,
+        };
+      }));
       if (exErr) console.warn('Falha ao salvar exercícios:', exErr);
     }
     toast.success(`Apostila salva com ${importExercises.length} exercícios!`);
@@ -797,10 +804,17 @@ export default function AdminPage() {
         }).select().single();
         if (insertErr) throw insertErr;
         if (data.exercises?.length > 0 && newApostila) {
-          await supabase.from('exercises').insert(data.exercises.map((ex: any) => ({
-            apostila_id: newApostila.id, question: ex.question, options: ex.options,
-            correct_answer: ex.correct_answer, explanation: ex.explanation || null,
-          })));
+          await supabase.from('exercises').insert(data.exercises.map((ex: any, idx: number) => {
+            const essay = inferIsEssay(ex.options, ex.correct_answer);
+            return {
+              apostila_id: newApostila.id, question: ex.question, options: ex.options,
+              correct_answer: ex.correct_answer, explanation: ex.explanation || null,
+              sort_order: idx + 1,
+              type: essay ? 'essay' : 'objective',
+              question_type: essay ? 'essay' : 'objective',
+              allow_image_upload: false,
+            };
+          }));
         }
         setBatchProgress(prev => ({ ...prev, results: [...prev.results, { url, title: data.title || url, status: 'ok' }] }));
       } catch (err: any) {
