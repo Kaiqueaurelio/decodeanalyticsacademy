@@ -47,6 +47,7 @@ import { SmokeTestsPanel } from '@/components/SmokeTestsPanel';
 import { DiagnosticsPanel } from '@/components/DiagnosticsPanel';
 import { DuplicateApostilaDialog } from '@/components/DuplicateApostilaDialog';
 import { findDuplicateApostila, type DuplicateMatch } from '@/lib/duplicate-detector';
+import { ExerciseOrganizer } from '@/components/admin/ExerciseOrganizer';
 
 type Apostila = Tables<'apostilas'>;
 type Exercise = Tables<'exercises'>;
