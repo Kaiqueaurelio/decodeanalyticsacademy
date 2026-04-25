@@ -14,8 +14,7 @@ import { Textarea } from '@/components/ui/textarea';
 import {
   ArrowLeft, ArrowRight, CheckCircle, XCircle, Trophy, RotateCcw, Timer,
   BookOpen, Sparkles, ChevronLeft, ChevronRight, Eye, EyeOff, PenLine,
-  BarChart3, Clock, Target, Zap, Award, Send, ListChecks, Filter,
-  Camera, Upload, X as XIcon, Loader2, ImageIcon
+  BarChart3, Clock, Target, Zap, Award, Send, ListChecks, Filter
 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { Tables } from '@/integrations/supabase/types';
@@ -34,21 +33,6 @@ type EssayAnswer = {
   showModel: boolean;
 };
 
-type PhotoGrade = {
-  loading: boolean;
-  uploading: boolean;
-  files: File[];
-  previews: string[];
-  result?: {
-    correct: 'correct' | 'partial' | 'incorrect';
-    score: number;
-    detected_answer: string;
-    expected_answer: string;
-    feedback: string;
-  };
-  error?: string;
-};
-
 export default function ExercisesPage() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
@@ -58,7 +42,6 @@ export default function ExercisesPage() {
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [answers, setAnswers] = useState<Record<string, AnswerState | null>>({});
   const [essayAnswers, setEssayAnswers] = useState<Record<string, EssayAnswer>>({});
-  const [photoGrades, setPhotoGrades] = useState<Record<string, PhotoGrade>>({});
   const [title, setTitle] = useState('');
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showResults, setShowResults] = useState(false);
@@ -83,7 +66,7 @@ export default function ExercisesPage() {
     setLoading(true);
     Promise.all([
       supabase.from('apostilas').select('title').eq('id', id).single(),
-      supabase.from('exercises').select('id, question, options, explanation, apostila_id, created_at, correct_answer, question_type, expected_answer, allow_image_upload, reference_answer, sort_order, type, min_chars').eq('apostila_id', id).order('sort_order', { ascending: true }),
+      supabase.from('exercises').select('id, question, options, explanation, apostila_id, created_at, correct_answer').eq('apostila_id', id),
       supabase.from('answers').select('exercise_id, selected_answer, is_correct').eq('user_id', user.id),
     ]).then(([apostila, exercisesRes, answersRes]) => {
       if (apostila.data) setTitle(apostila.data.title);
@@ -190,79 +173,6 @@ export default function ExercisesPage() {
       ...prev,
       [exerciseId]: { ...prev[exerciseId], showModel: !prev[exerciseId]?.showModel }
     }));
-  };
-
-  const handlePhotoSelect = (exerciseId: string, files: FileList | null) => {
-    if (!files || files.length === 0) return;
-    const arr = Array.from(files).slice(0, 6).filter(f => f.type.startsWith('image/') || f.type === 'application/pdf');
-    if (arr.length === 0) { toast.error('Envie imagens (JPG/PNG) ou PDF.'); return; }
-    const previews = arr.map(f => URL.createObjectURL(f));
-    setPhotoGrades(prev => ({
-      ...prev,
-      [exerciseId]: { loading: false, uploading: false, files: arr, previews, result: undefined, error: undefined },
-    }));
-  };
-
-  const removePhoto = (exerciseId: string, idx: number) => {
-    setPhotoGrades(prev => {
-      const cur = prev[exerciseId];
-      if (!cur) return prev;
-      const files = cur.files.filter((_, i) => i !== idx);
-      const previews = cur.previews.filter((_, i) => i !== idx);
-      return { ...prev, [exerciseId]: { ...cur, files, previews } };
-    });
-  };
-
-  const handlePhotoSubmit = async (exerciseId: string) => {
-    if (!user) return;
-    const cur = photoGrades[exerciseId];
-    if (!cur || cur.files.length === 0) { toast.error('Selecione ao menos uma imagem.'); return; }
-
-    setPhotoGrades(prev => ({ ...prev, [exerciseId]: { ...prev[exerciseId], uploading: true, error: undefined } }));
-
-    try {
-      const uploaded: string[] = [];
-      for (const file of cur.files) {
-        const ext = file.name.split('.').pop() || 'jpg';
-        const path = `${user.id}/${exerciseId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-        const { error: upErr } = await supabase.storage.from('respostas-foto').upload(path, file, {
-          contentType: file.type, upsert: false,
-        });
-        if (upErr) throw upErr;
-        const { data: pub } = supabase.storage.from('respostas-foto').getPublicUrl(path);
-        uploaded.push(pub.publicUrl);
-      }
-
-      setPhotoGrades(prev => ({ ...prev, [exerciseId]: { ...prev[exerciseId], uploading: false, loading: true } }));
-
-      const essayText = essayAnswers[exerciseId]?.text;
-      const { data, error } = await supabase.functions.invoke('evaluate-photo-answer', {
-        body: { exercise_id: exerciseId, image_urls: uploaded, user_text: essayText || undefined },
-      });
-
-      if (error) throw error;
-      if ((data as any)?.error) throw new Error((data as any).error);
-
-      const result = data as PhotoGrade['result'];
-      setPhotoGrades(prev => ({ ...prev, [exerciseId]: { ...prev[exerciseId], loading: false, result } }));
-
-      setAnswers(prev => ({
-        ...prev,
-        [exerciseId]: { selected: result!.detected_answer || essayText || '(foto enviada)', correct: result!.correct === 'correct' },
-      }));
-
-      const xp = result!.correct === 'correct' ? 20 : result!.correct === 'partial' ? 10 : 5;
-      gamification.addXP(xp);
-      gamification.updateStreak();
-
-      const label = result!.correct === 'correct' ? '✅ Correto!' : result!.correct === 'partial' ? '🟡 Parcial' : '❌ Incorreto';
-      toast.success(`${label} — Nota ${result!.score}/100  (+${xp} XP)`);
-    } catch (e: any) {
-      console.error('photo submit error:', e);
-      const msg = e?.message || 'Falha ao avaliar a foto.';
-      setPhotoGrades(prev => ({ ...prev, [exerciseId]: { ...prev[exerciseId], uploading: false, loading: false, error: msg } }));
-      toast.error(msg);
-    }
   };
 
   // Stats
@@ -733,16 +643,12 @@ export default function ExercisesPage() {
                       )}
 
                       {/* Essay */}
-                      {type === 'essay' && (() => {
-                        const allowPhoto = (currentExercise as any).allow_image_upload === true
-                          || ['calculation','graph','algorithm'].includes((currentExercise as any).question_type);
-                        const photo = photoGrades[currentExercise.id];
-                        return (
+                      {type === 'essay' && (
                         <div className="space-y-3">
                           {!answered ? (
                             <>
                               <Textarea
-                                placeholder="Escreva sua resposta aqui (opcional se enviar foto)..."
+                                placeholder="Escreva sua resposta aqui..."
                                 value={essay.text}
                                 onChange={e => setEssayAnswers(prev => ({
                                   ...prev,
@@ -750,86 +656,6 @@ export default function ExercisesPage() {
                                 }))}
                                 className="min-h-[140px] resize-y text-sm leading-relaxed bg-secondary/20 border-border/50 focus:border-primary/50"
                               />
-
-                              {allowPhoto && (
-                                <div className="rounded-xl border border-dashed border-primary/30 bg-primary/5 p-3 space-y-2">
-                                  <div className="flex items-center gap-2 text-xs font-medium text-primary">
-                                    <Camera className="h-3.5 w-3.5" />
-                                    Resposta manuscrita (foto) — corrigida pela IA
-                                  </div>
-                                  <p className="text-[11px] text-muted-foreground leading-relaxed">
-                                    Tire foto do seu cálculo, grafo, teste de mesa ou código manuscrito.
-                                    A IA vai analisar e dar sua nota automaticamente.
-                                  </p>
-
-                                  <input
-                                    id={`photo-input-${currentExercise.id}`}
-                                    type="file"
-                                    accept="image/*,application/pdf"
-                                    multiple
-                                    capture="environment"
-                                    className="hidden"
-                                    onChange={e => handlePhotoSelect(currentExercise.id, e.target.files)}
-                                  />
-
-                                  {photo?.previews?.length ? (
-                                    <div className="grid grid-cols-3 gap-2">
-                                      {photo.previews.map((src, i) => (
-                                        <div key={i} className="relative group rounded-lg overflow-hidden border border-border/40 aspect-square bg-muted">
-                                          {photo.files[i]?.type === 'application/pdf' ? (
-                                            <div className="flex items-center justify-center h-full text-[10px] text-muted-foreground p-2 text-center">
-                                              📄 {photo.files[i].name.slice(0, 20)}
-                                            </div>
-                                          ) : (
-                                            <img src={src} alt={`Foto ${i + 1}`} className="w-full h-full object-cover" />
-                                          )}
-                                          <button
-                                            type="button"
-                                            onClick={() => removePhoto(currentExercise.id, i)}
-                                            className="absolute top-1 right-1 bg-destructive/90 text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition"
-                                            aria-label="Remover"
-                                          >
-                                            <XIcon className="h-3 w-3" />
-                                          </button>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  ) : null}
-
-                                  <div className="flex flex-wrap gap-2">
-                                    <Button
-                                      type="button" size="sm" variant="outline"
-                                      className="gap-1.5 text-xs"
-                                      onClick={() => document.getElementById(`photo-input-${currentExercise.id}`)?.click()}
-                                      disabled={photo?.uploading || photo?.loading}
-                                    >
-                                      <Upload className="h-3.5 w-3.5" />
-                                      {photo?.previews?.length ? 'Trocar fotos' : 'Selecionar fotos'}
-                                    </Button>
-                                    {photo?.previews?.length ? (
-                                      <Button
-                                        type="button" size="sm"
-                                        className="gap-1.5 text-xs gradient-primary text-primary-foreground"
-                                        onClick={() => handlePhotoSubmit(currentExercise.id)}
-                                        disabled={photo?.uploading || photo?.loading}
-                                      >
-                                        {photo?.uploading ? (
-                                          <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Enviando...</>
-                                        ) : photo?.loading ? (
-                                          <><Loader2 className="h-3.5 w-3.5 animate-spin" /> IA avaliando...</>
-                                        ) : (
-                                          <><Sparkles className="h-3.5 w-3.5" /> Avaliar com IA</>
-                                        )}
-                                      </Button>
-                                    ) : null}
-                                  </div>
-
-                                  {photo?.error && (
-                                    <p className="text-[11px] text-destructive">{photo.error}</p>
-                                  )}
-                                </div>
-                              )}
-
                               <div className="flex items-center justify-between">
                                 <span className="text-[10px] text-muted-foreground">
                                   {essay.text.length} caracteres
@@ -837,7 +663,7 @@ export default function ExercisesPage() {
                                 <Button size="sm" onClick={() => handleEssaySubmit(currentExercise.id)}
                                   disabled={!essay.text?.trim()}
                                   className="gap-1.5 gradient-primary text-primary-foreground">
-                                  <Send className="h-3.5 w-3.5" /> Enviar Texto
+                                  <Send className="h-3.5 w-3.5" /> Enviar Resposta
                                 </Button>
                               </div>
                             </>
@@ -849,43 +675,6 @@ export default function ExercisesPage() {
                                 </p>
                                 <p className="text-sm text-foreground/80 leading-relaxed whitespace-pre-line">{answered.selected}</p>
                               </div>
-
-                              {photo?.result && (
-                                <div className={`p-4 rounded-xl border animate-fade-in ${
-                                  photo.result.correct === 'correct' ? 'bg-emerald-500/5 border-emerald-500/30' :
-                                  photo.result.correct === 'partial' ? 'bg-amber-500/5 border-amber-500/30' :
-                                  'bg-destructive/5 border-destructive/30'
-                                }`}>
-                                  <div className="flex items-center justify-between mb-2">
-                                    <p className="text-xs font-semibold flex items-center gap-1.5">
-                                      <Sparkles className="h-3 w-3" />
-                                      Avaliação automática (IA)
-                                    </p>
-                                    <Badge variant="outline" className="text-[10px]">
-                                      Nota {photo.result.score}/100
-                                    </Badge>
-                                  </div>
-                                  {photo.previews.length > 0 && (
-                                    <div className="grid grid-cols-4 gap-1.5 mb-2">
-                                      {photo.previews.map((src, i) => (
-                                        <div key={i} className="aspect-square rounded-md overflow-hidden border border-border/40 bg-muted">
-                                          {photo.files[i]?.type === 'application/pdf' ? (
-                                            <div className="flex items-center justify-center h-full text-[9px] text-muted-foreground p-1">📄</div>
-                                          ) : (
-                                            <img src={src} alt="" className="w-full h-full object-cover" />
-                                          )}
-                                        </div>
-                                      ))}
-                                    </div>
-                                  )}
-                                  <div className="space-y-1.5 text-xs leading-relaxed">
-                                    <p><span className="font-medium text-foreground/80">Sua resposta detectada:</span> <span className="text-muted-foreground">{photo.result.detected_answer}</span></p>
-                                    <p><span className="font-medium text-foreground/80">Esperado:</span> <span className="text-muted-foreground">{photo.result.expected_answer}</span></p>
-                                    <p className="pt-1 whitespace-pre-line text-foreground/80">{photo.result.feedback}</p>
-                                  </div>
-                                </div>
-                              )}
-
                               {currentExercise.explanation && (
                                 <Button size="sm" variant="outline" className="gap-1.5 w-full"
                                   onClick={() => toggleModelAnswer(currentExercise.id)}>
@@ -895,8 +684,7 @@ export default function ExercisesPage() {
                             </div>
                           )}
                         </div>
-                        );
-                      })()}
+                      )}
 
                       {/* Explanation */}
                       {answered && currentExercise.explanation && (type === 'multiple_choice' || essay.showModel) && (

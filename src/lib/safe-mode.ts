@@ -83,19 +83,10 @@ export function disableSafeMode() {
 }
 
 /**
- * Rotas em que NUNCA devemos ativar Modo Seguro automaticamente
- * (ex: telas públicas leves de login/landing).
- */
-const SAFE_MODE_ROUTE_BLOCKLIST = ['/', '/login', '/reset-password', '/offline'];
-
-/**
  * Registra uma falha para uma rota. Se ultrapassar o limiar dentro da janela,
  * ativa o modo seguro automaticamente. Retorna `true` se ativou agora.
  */
 export function recordFailure(route: string, reason?: string): boolean {
-  // Não acumula falhas em rotas públicas — evita prender o usuário no login.
-  if (SAFE_MODE_ROUTE_BLOCKLIST.includes(route)) return false;
-
   const now = Date.now();
   const all = readFailures().filter((r) => now - r.ts < FAILURE_WINDOW_MS);
   all.push({ route, ts: now, reason });
