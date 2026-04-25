@@ -1928,6 +1928,8 @@ export default function AdminPage() {
                                 supabase.from('exercises').insert({
                                   apostila_id: editingApostila.id, question: exQuestion, options: exOptions,
                                   correct_answer: exCorrect, explanation: exExplanation || null,
+                                  sort_order: (exercises[editingApostila.id]?.length || 0) + 1,
+                                  type: 'objective', question_type: 'objective', allow_image_upload: false,
                                 }).then(({ error }) => {
                                   if (error) { toast.error('Erro'); return; }
                                   toast.success('Exercício adicionado!');
@@ -1952,10 +1954,17 @@ export default function AdminPage() {
                                 if (!editingApostila) return;
                                 const parsed = parseBulkExercises(editBulkText);
                                 if (parsed.length === 0) { toast.error('Nenhum exercício detectado.'); return; }
-                                Promise.all(parsed.map(ex => supabase.from('exercises').insert({
-                                  apostila_id: editingApostila.id, question: ex.question, options: ex.options,
-                                  correct_answer: ex.correct, explanation: ex.explanation || null,
-                                }))).then(results => {
+                                Promise.all(parsed.map((ex, idx) => {
+                                  const essay = ex.type === 'essay';
+                                  return supabase.from('exercises').insert({
+                                    apostila_id: editingApostila.id, question: ex.question, options: ex.options,
+                                    correct_answer: ex.correct, explanation: ex.explanation || null,
+                                    sort_order: (exercises[editingApostila.id]?.length || 0) + idx + 1,
+                                    type: essay ? 'essay' : 'objective',
+                                    question_type: ex.questionType,
+                                    allow_image_upload: ex.questionType === 'calculation' || ex.questionType === 'graph' || ex.questionType === 'algorithm',
+                                  });
+                                })).then(results => {
                                   const ok = results.filter(r => !r.error).length;
                                   toast.success(`${ok}/${parsed.length} exercícios importados!`);
                                   setEditBulkText(''); loadAll();
