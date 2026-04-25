@@ -58,6 +58,7 @@ export default function ExercisesPage() {
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [answers, setAnswers] = useState<Record<string, AnswerState | null>>({});
   const [essayAnswers, setEssayAnswers] = useState<Record<string, EssayAnswer>>({});
+  const [photoGrades, setPhotoGrades] = useState<Record<string, PhotoGrade>>({});
   const [title, setTitle] = useState('');
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showResults, setShowResults] = useState(false);
