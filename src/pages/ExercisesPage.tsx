@@ -733,12 +733,16 @@ export default function ExercisesPage() {
                       )}
 
                       {/* Essay */}
-                      {type === 'essay' && (
+                      {type === 'essay' && (() => {
+                        const allowPhoto = (currentExercise as any).allow_image_upload === true
+                          || ['calculation','graph','algorithm'].includes((currentExercise as any).question_type);
+                        const photo = photoGrades[currentExercise.id];
+                        return (
                         <div className="space-y-3">
                           {!answered ? (
                             <>
                               <Textarea
-                                placeholder="Escreva sua resposta aqui..."
+                                placeholder="Escreva sua resposta aqui (opcional se enviar foto)..."
                                 value={essay.text}
                                 onChange={e => setEssayAnswers(prev => ({
                                   ...prev,
@@ -746,6 +750,86 @@ export default function ExercisesPage() {
                                 }))}
                                 className="min-h-[140px] resize-y text-sm leading-relaxed bg-secondary/20 border-border/50 focus:border-primary/50"
                               />
+
+                              {allowPhoto && (
+                                <div className="rounded-xl border border-dashed border-primary/30 bg-primary/5 p-3 space-y-2">
+                                  <div className="flex items-center gap-2 text-xs font-medium text-primary">
+                                    <Camera className="h-3.5 w-3.5" />
+                                    Resposta manuscrita (foto) — corrigida pela IA
+                                  </div>
+                                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                                    Tire foto do seu cálculo, grafo, teste de mesa ou código manuscrito.
+                                    A IA vai analisar e dar sua nota automaticamente.
+                                  </p>
+
+                                  <input
+                                    id={`photo-input-${currentExercise.id}`}
+                                    type="file"
+                                    accept="image/*,application/pdf"
+                                    multiple
+                                    capture="environment"
+                                    className="hidden"
+                                    onChange={e => handlePhotoSelect(currentExercise.id, e.target.files)}
+                                  />
+
+                                  {photo?.previews?.length ? (
+                                    <div className="grid grid-cols-3 gap-2">
+                                      {photo.previews.map((src, i) => (
+                                        <div key={i} className="relative group rounded-lg overflow-hidden border border-border/40 aspect-square bg-muted">
+                                          {photo.files[i]?.type === 'application/pdf' ? (
+                                            <div className="flex items-center justify-center h-full text-[10px] text-muted-foreground p-2 text-center">
+                                              📄 {photo.files[i].name.slice(0, 20)}
+                                            </div>
+                                          ) : (
+                                            <img src={src} alt={`Foto ${i + 1}`} className="w-full h-full object-cover" />
+                                          )}
+                                          <button
+                                            type="button"
+                                            onClick={() => removePhoto(currentExercise.id, i)}
+                                            className="absolute top-1 right-1 bg-destructive/90 text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition"
+                                            aria-label="Remover"
+                                          >
+                                            <XIcon className="h-3 w-3" />
+                                          </button>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  ) : null}
+
+                                  <div className="flex flex-wrap gap-2">
+                                    <Button
+                                      type="button" size="sm" variant="outline"
+                                      className="gap-1.5 text-xs"
+                                      onClick={() => document.getElementById(`photo-input-${currentExercise.id}`)?.click()}
+                                      disabled={photo?.uploading || photo?.loading}
+                                    >
+                                      <Upload className="h-3.5 w-3.5" />
+                                      {photo?.previews?.length ? 'Trocar fotos' : 'Selecionar fotos'}
+                                    </Button>
+                                    {photo?.previews?.length ? (
+                                      <Button
+                                        type="button" size="sm"
+                                        className="gap-1.5 text-xs gradient-primary text-primary-foreground"
+                                        onClick={() => handlePhotoSubmit(currentExercise.id)}
+                                        disabled={photo?.uploading || photo?.loading}
+                                      >
+                                        {photo?.uploading ? (
+                                          <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Enviando...</>
+                                        ) : photo?.loading ? (
+                                          <><Loader2 className="h-3.5 w-3.5 animate-spin" /> IA avaliando...</>
+                                        ) : (
+                                          <><Sparkles className="h-3.5 w-3.5" /> Avaliar com IA</>
+                                        )}
+                                      </Button>
+                                    ) : null}
+                                  </div>
+
+                                  {photo?.error && (
+                                    <p className="text-[11px] text-destructive">{photo.error}</p>
+                                  )}
+                                </div>
+                              )}
+
                               <div className="flex items-center justify-between">
                                 <span className="text-[10px] text-muted-foreground">
                                   {essay.text.length} caracteres
@@ -753,7 +837,7 @@ export default function ExercisesPage() {
                                 <Button size="sm" onClick={() => handleEssaySubmit(currentExercise.id)}
                                   disabled={!essay.text?.trim()}
                                   className="gap-1.5 gradient-primary text-primary-foreground">
-                                  <Send className="h-3.5 w-3.5" /> Enviar Resposta
+                                  <Send className="h-3.5 w-3.5" /> Enviar Texto
                                 </Button>
                               </div>
                             </>
@@ -765,6 +849,43 @@ export default function ExercisesPage() {
                                 </p>
                                 <p className="text-sm text-foreground/80 leading-relaxed whitespace-pre-line">{answered.selected}</p>
                               </div>
+
+                              {photo?.result && (
+                                <div className={`p-4 rounded-xl border animate-fade-in ${
+                                  photo.result.correct === 'correct' ? 'bg-emerald-500/5 border-emerald-500/30' :
+                                  photo.result.correct === 'partial' ? 'bg-amber-500/5 border-amber-500/30' :
+                                  'bg-destructive/5 border-destructive/30'
+                                }`}>
+                                  <div className="flex items-center justify-between mb-2">
+                                    <p className="text-xs font-semibold flex items-center gap-1.5">
+                                      <Sparkles className="h-3 w-3" />
+                                      Avaliação automática (IA)
+                                    </p>
+                                    <Badge variant="outline" className="text-[10px]">
+                                      Nota {photo.result.score}/100
+                                    </Badge>
+                                  </div>
+                                  {photo.previews.length > 0 && (
+                                    <div className="grid grid-cols-4 gap-1.5 mb-2">
+                                      {photo.previews.map((src, i) => (
+                                        <div key={i} className="aspect-square rounded-md overflow-hidden border border-border/40 bg-muted">
+                                          {photo.files[i]?.type === 'application/pdf' ? (
+                                            <div className="flex items-center justify-center h-full text-[9px] text-muted-foreground p-1">📄</div>
+                                          ) : (
+                                            <img src={src} alt="" className="w-full h-full object-cover" />
+                                          )}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                  <div className="space-y-1.5 text-xs leading-relaxed">
+                                    <p><span className="font-medium text-foreground/80">Sua resposta detectada:</span> <span className="text-muted-foreground">{photo.result.detected_answer}</span></p>
+                                    <p><span className="font-medium text-foreground/80">Esperado:</span> <span className="text-muted-foreground">{photo.result.expected_answer}</span></p>
+                                    <p className="pt-1 whitespace-pre-line text-foreground/80">{photo.result.feedback}</p>
+                                  </div>
+                                </div>
+                              )}
+
                               {currentExercise.explanation && (
                                 <Button size="sm" variant="outline" className="gap-1.5 w-full"
                                   onClick={() => toggleModelAnswer(currentExercise.id)}>
@@ -774,7 +895,8 @@ export default function ExercisesPage() {
                             </div>
                           )}
                         </div>
-                      )}
+                        );
+                      })()}
 
                       {/* Explanation */}
                       {answered && currentExercise.explanation && (type === 'multiple_choice' || essay.showModel) && (
