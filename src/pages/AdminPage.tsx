@@ -1656,6 +1656,8 @@ export default function AdminPage() {
                             supabase.from('exercises').insert({
                               apostila_id: a.id, question: exQuestion, options: exOptions,
                               correct_answer: exCorrect, explanation: exExplanation || null,
+                              sort_order: (exercises[a.id]?.length || 0) + 1,
+                              type: 'objective', question_type: 'objective', allow_image_upload: false,
                             }).then(({ error }) => {
                               if (error) { toast.error('Erro'); return; }
                               toast.success('Exercício adicionado!');
