@@ -1674,9 +1674,13 @@ export default function AdminPage() {
                             const parsed = parseBulkExercises(bulkExerciseText);
                             if (parsed.length === 0) { toast.error('Nenhum exercício detectado.'); return; }
                             setBulkExerciseImporting(true);
-                            Promise.all(parsed.map(ex => supabase.from('exercises').insert({
+                            Promise.all(parsed.map((ex, idx) => supabase.from('exercises').insert({
                               apostila_id: a.id, question: ex.question, options: ex.options,
                               correct_answer: ex.correct, explanation: ex.explanation || null,
+                              type: ex.type === 'essay' ? 'essay' : 'objective',
+                              question_type: ex.questionType,
+                              allow_image_upload: ex.questionType === 'calculation' || ex.questionType === 'graph' || ex.questionType === 'algorithm',
+                              sort_order: (exercises[a.id]?.length || 0) + idx + 1,
                             }))).then(results => {
                               const ok = results.filter(r => !r.error).length;
                               toast.success(`${ok}/${parsed.length} exercícios importados!`);
