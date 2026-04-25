@@ -2048,10 +2048,17 @@ export default function AdminPage() {
                                     <Button className="flex-1 gradient-primary text-primary-foreground" onClick={async () => {
                                       if (!editingApostila) return;
                                       let ok = 0;
-                                      for (const ex of editAiExercises) {
+                                      const base = (exercises[editingApostila.id]?.length || 0);
+                                      for (let i = 0; i < editAiExercises.length; i++) {
+                                        const ex = editAiExercises[i];
+                                        const essay = inferIsEssay(ex.options, ex.correct_answer) || ex.type === 'essay';
                                         const { error } = await supabase.from('exercises').insert({
                                           apostila_id: editingApostila.id, question: ex.question, options: ex.options,
                                           correct_answer: ex.correct_answer, explanation: ex.explanation || null,
+                                          sort_order: base + i + 1,
+                                          type: essay ? 'essay' : 'objective',
+                                          question_type: essay ? 'essay' : 'objective',
+                                          allow_image_upload: false,
                                         });
                                         if (!error) ok++;
                                       }
@@ -2227,10 +2234,17 @@ export default function AdminPage() {
                                   <Button variant="outline" className="flex-1" onClick={() => setAiExercises([])}>Descartar</Button>
                                   <Button className="flex-1 gradient-primary text-primary-foreground" onClick={async () => {
                                     let ok = 0;
-                                    for (const ex of aiExercises) {
+                                    const base = (exercises[selectedApostila]?.length || 0);
+                                    for (let i = 0; i < aiExercises.length; i++) {
+                                      const ex = aiExercises[i];
+                                      const essay = inferIsEssay(ex.options, ex.correct_answer) || ex.type === 'essay';
                                       const { error } = await supabase.from('exercises').insert({
                                         apostila_id: selectedApostila, question: ex.question, options: ex.options,
                                         correct_answer: ex.correct_answer, explanation: ex.explanation || null,
+                                        sort_order: base + i + 1,
+                                        type: essay ? 'essay' : 'objective',
+                                        question_type: essay ? 'essay' : 'objective',
+                                        allow_image_upload: false,
                                       });
                                       if (!error) ok++;
                                     }
