@@ -1,5 +1,5 @@
 import { Component, ReactNode } from 'react';
-import { recordFailure, isSafeModeEnabled } from '@/lib/safe-mode';
+import { recordFailure, isSafeModeEnabled, disableSafeMode } from '@/lib/safe-mode';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -48,6 +48,9 @@ export class SafeModeBoundary extends Component<Props, State> {
   }
 
   handleRetry = () => {
+    // Limpa estado de falhas para evitar que o Modo Seguro continue ativo
+    // após o usuário pedir nova tentativa.
+    try { disableSafeMode(); } catch { /* noop */ }
     this.setState({ hasError: false, message: undefined });
   };
 

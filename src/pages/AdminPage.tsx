@@ -587,7 +587,7 @@ export default function AdminPage() {
     setRefreshing(true);
     const [{ data: ap }, { data: ex }, { data: ans }, { data: mats }, { data: cats }, { data: profs }] = await Promise.all([
       supabase.from('apostilas').select('*').order('created_at', { ascending: false }),
-      supabase.from('exercises').select('*'),
+      supabase.from('exercises').select('*').order('sort_order', { ascending: true }),
       supabase.from('answers').select('*'),
       supabase.from('materials').select('*').order('created_at', { ascending: false }),
       supabase.from('categories').select('*').order('sort_order', { ascending: true }),
@@ -596,12 +596,25 @@ export default function AdminPage() {
     setApostilas(ap || []);
     const map: Record<string, Exercise[]> = {};
     ex?.forEach(e => { if (!map[e.apostila_id]) map[e.apostila_id] = []; map[e.apostila_id].push(e); });
+    // Garante ordenação consistente por sort_order asc, mantendo dissertativas no fim como fallback
+    Object.keys(map).forEach(k => {
+      map[k].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+    });
     setExercises(map);
     setAllAnswers(ans || []);
     setMaterials(mats || []);
     setUsers((profs || []).map(p => ({ id: p.id, user_id: p.user_id, full_name: p.full_name, email: p.email, is_blocked: (p as any).is_blocked ?? false, created_at: p.created_at })));
     setDbCategories((cats || []).map(c => ({ id: c.id, name: c.name, sort_order: c.sort_order })));
     setRefreshing(false);
+  };
+
+  /** Calcula próximo sort_order para inserir um novo exercício na apostila. */
+  const nextSortOrder = (apostilaId: string) => (exercises[apostilaId]?.length || 0) + 1;
+
+  /** Heurística simples: detecta se um exercício é dissertativo a partir das opções/correct. */
+  const inferIsEssay = (opts: any, correct?: string | null) => {
+    const arr = Array.isArray(opts) ? opts : [];
+    return arr.length === 0 || correct === 'dissertativa';
   };
 
   // ─── Handlers ──────────────────────────────────
@@ -684,10 +697,17 @@ export default function AdminPage() {
     }).select().single();
     if (error) throw error;
     if (importExercises.length > 0 && newApostila) {
-      const { error: exErr } = await supabase.from('exercises').insert(importExercises.map(ex => ({
-        apostila_id: newApostila.id, question: ex.question, options: ex.options,
-        correct_answer: ex.correct_answer, explanation: ex.explanation || null,
-      })));
+      const { error: exErr } = await supabase.from('exercises').insert(importExercises.map((ex, idx) => {
+        const essay = inferIsEssay(ex.options, ex.correct_answer);
+        return {
+          apostila_id: newApostila.id, question: ex.question, options: ex.options,
+          correct_answer: ex.correct_answer, explanation: ex.explanation || null,
+          sort_order: idx + 1,
+          type: essay ? 'essay' : 'objective',
+          question_type: essay ? 'essay' : 'objective',
+          allow_image_upload: false,
+        };
+      }));
       if (exErr) console.warn('Falha ao salvar exercícios:', exErr);
     }
     toast.success(`Apostila salva com ${importExercises.length} exercícios!`);
@@ -784,10 +804,17 @@ export default function AdminPage() {
         }).select().single();
         if (insertErr) throw insertErr;
         if (data.exercises?.length > 0 && newApostila) {
-          await supabase.from('exercises').insert(data.exercises.map((ex: any) => ({
-            apostila_id: newApostila.id, question: ex.question, options: ex.options,
-            correct_answer: ex.correct_answer, explanation: ex.explanation || null,
-          })));
+          await supabase.from('exercises').insert(data.exercises.map((ex: any, idx: number) => {
+            const essay = inferIsEssay(ex.options, ex.correct_answer);
+            return {
+              apostila_id: newApostila.id, question: ex.question, options: ex.options,
+              correct_answer: ex.correct_answer, explanation: ex.explanation || null,
+              sort_order: idx + 1,
+              type: essay ? 'essay' : 'objective',
+              question_type: essay ? 'essay' : 'objective',
+              allow_image_upload: false,
+            };
+          }));
         }
         setBatchProgress(prev => ({ ...prev, results: [...prev.results, { url, title: data.title || url, status: 'ok' }] }));
       } catch (err: any) {
@@ -868,6 +895,8 @@ export default function AdminPage() {
     const { error } = await supabase.from('exercises').insert({
       apostila_id: selectedApostila, question: exQuestion,
       options: exOptions, correct_answer: exCorrect, explanation: exExplanation || null,
+      sort_order: nextSortOrder(selectedApostila),
+      type: 'objective', question_type: 'objective', allow_image_upload: false,
     });
     if (error) { toast.error('Erro ao criar exercício'); return; }
     toast.success('Exercício adicionado!');
@@ -1008,10 +1037,17 @@ export default function AdminPage() {
     if (parsed.length === 0) { toast.error('Nenhum exercício detectado. Verifique o formato.'); return; }
     setBulkExerciseImporting(true);
     let ok = 0;
-    for (const ex of parsed) {
+    const base = nextSortOrder(selectedApostila) - 1;
+    for (let i = 0; i < parsed.length; i++) {
+      const ex = parsed[i];
+      const essay = ex.type === 'essay';
       const { error } = await supabase.from('exercises').insert({
         apostila_id: selectedApostila, question: ex.question,
         options: ex.options, correct_answer: ex.correct, explanation: ex.explanation || null,
+        sort_order: base + i + 1,
+        type: essay ? 'essay' : 'objective',
+        question_type: ex.questionType,
+        allow_image_upload: ex.questionType === 'calculation' || ex.questionType === 'graph' || ex.questionType === 'algorithm',
       });
       if (!error) ok++;
     }
@@ -1620,6 +1656,8 @@ export default function AdminPage() {
                             supabase.from('exercises').insert({
                               apostila_id: a.id, question: exQuestion, options: exOptions,
                               correct_answer: exCorrect, explanation: exExplanation || null,
+                              sort_order: (exercises[a.id]?.length || 0) + 1,
+                              type: 'objective', question_type: 'objective', allow_image_upload: false,
                             }).then(({ error }) => {
                               if (error) { toast.error('Erro'); return; }
                               toast.success('Exercício adicionado!');
@@ -1758,10 +1796,17 @@ export default function AdminPage() {
                                 <Button variant="outline" className="flex-1" onClick={() => setAiExercises([])}>Descartar</Button>
                                 <Button className="flex-1 gradient-primary text-primary-foreground" onClick={async () => {
                                   let ok = 0;
-                                  for (const ex of aiExercises) {
+                                  const base = (exercises[a.id]?.length || 0);
+                                  for (let i = 0; i < aiExercises.length; i++) {
+                                    const ex = aiExercises[i];
+                                    const essay = inferIsEssay(ex.options, ex.correct_answer) || ex.type === 'essay';
                                     const { error } = await supabase.from('exercises').insert({
                                       apostila_id: a.id, question: ex.question, options: ex.options,
                                       correct_answer: ex.correct_answer, explanation: ex.explanation || null,
+                                      sort_order: base + i + 1,
+                                      type: essay ? 'essay' : 'objective',
+                                      question_type: essay ? 'essay' : 'objective',
+                                      allow_image_upload: false,
                                     });
                                     if (!error) ok++;
                                   }
@@ -1883,6 +1928,8 @@ export default function AdminPage() {
                                 supabase.from('exercises').insert({
                                   apostila_id: editingApostila.id, question: exQuestion, options: exOptions,
                                   correct_answer: exCorrect, explanation: exExplanation || null,
+                                  sort_order: (exercises[editingApostila.id]?.length || 0) + 1,
+                                  type: 'objective', question_type: 'objective', allow_image_upload: false,
                                 }).then(({ error }) => {
                                   if (error) { toast.error('Erro'); return; }
                                   toast.success('Exercício adicionado!');
@@ -1907,10 +1954,17 @@ export default function AdminPage() {
                                 if (!editingApostila) return;
                                 const parsed = parseBulkExercises(editBulkText);
                                 if (parsed.length === 0) { toast.error('Nenhum exercício detectado.'); return; }
-                                Promise.all(parsed.map(ex => supabase.from('exercises').insert({
-                                  apostila_id: editingApostila.id, question: ex.question, options: ex.options,
-                                  correct_answer: ex.correct, explanation: ex.explanation || null,
-                                }))).then(results => {
+                                Promise.all(parsed.map((ex, idx) => {
+                                  const essay = ex.type === 'essay';
+                                  return supabase.from('exercises').insert({
+                                    apostila_id: editingApostila.id, question: ex.question, options: ex.options,
+                                    correct_answer: ex.correct, explanation: ex.explanation || null,
+                                    sort_order: (exercises[editingApostila.id]?.length || 0) + idx + 1,
+                                    type: essay ? 'essay' : 'objective',
+                                    question_type: ex.questionType,
+                                    allow_image_upload: ex.questionType === 'calculation' || ex.questionType === 'graph' || ex.questionType === 'algorithm',
+                                  });
+                                })).then(results => {
                                   const ok = results.filter(r => !r.error).length;
                                   toast.success(`${ok}/${parsed.length} exercícios importados!`);
                                   setEditBulkText(''); loadAll();
@@ -1994,10 +2048,17 @@ export default function AdminPage() {
                                     <Button className="flex-1 gradient-primary text-primary-foreground" onClick={async () => {
                                       if (!editingApostila) return;
                                       let ok = 0;
-                                      for (const ex of editAiExercises) {
+                                      const base = (exercises[editingApostila.id]?.length || 0);
+                                      for (let i = 0; i < editAiExercises.length; i++) {
+                                        const ex = editAiExercises[i];
+                                        const essay = inferIsEssay(ex.options, ex.correct_answer) || ex.type === 'essay';
                                         const { error } = await supabase.from('exercises').insert({
                                           apostila_id: editingApostila.id, question: ex.question, options: ex.options,
                                           correct_answer: ex.correct_answer, explanation: ex.explanation || null,
+                                          sort_order: base + i + 1,
+                                          type: essay ? 'essay' : 'objective',
+                                          question_type: essay ? 'essay' : 'objective',
+                                          allow_image_upload: false,
                                         });
                                         if (!error) ok++;
                                       }
@@ -2173,10 +2234,17 @@ export default function AdminPage() {
                                   <Button variant="outline" className="flex-1" onClick={() => setAiExercises([])}>Descartar</Button>
                                   <Button className="flex-1 gradient-primary text-primary-foreground" onClick={async () => {
                                     let ok = 0;
-                                    for (const ex of aiExercises) {
+                                    const base = (exercises[selectedApostila]?.length || 0);
+                                    for (let i = 0; i < aiExercises.length; i++) {
+                                      const ex = aiExercises[i];
+                                      const essay = inferIsEssay(ex.options, ex.correct_answer) || ex.type === 'essay';
                                       const { error } = await supabase.from('exercises').insert({
                                         apostila_id: selectedApostila, question: ex.question, options: ex.options,
                                         correct_answer: ex.correct_answer, explanation: ex.explanation || null,
+                                        sort_order: base + i + 1,
+                                        type: essay ? 'essay' : 'objective',
+                                        question_type: essay ? 'essay' : 'objective',
+                                        allow_image_upload: false,
                                       });
                                       if (!error) ok++;
                                     }
