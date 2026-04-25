@@ -589,23 +589,26 @@ export default function ApostilaPage() {
                       style={{ animationDelay: `${300 + idx * 80}ms` }}
                     >
                       {section.level === 1 && (
-                        <header className={section.isGroupOnly ? 'mb-4' : 'mb-5'}>
-                          <div className="font-mono-label text-[10px] uppercase tracking-[0.22em] text-primary/80 mb-1.5">
-                            Seção {sectionNumber}{section.hasContent && wordCount > 50 && <span className="text-muted-foreground/70"> · {readMin} min de leitura</span>}
+                        <header className={`apostila-section-header ${section.isGroupOnly ? 'mb-5' : 'mb-7'}`}>
+                          <div className="font-mono-label text-[10px] uppercase tracking-[0.24em] text-primary/90 mb-2 font-semibold">
+                            Seção {sectionNumber}
+                            {section.hasContent && wordCount > 50 && (
+                              <span className="text-muted-foreground/60 font-normal normal-case tracking-wider"> · {readMin} min de leitura</span>
+                            )}
                           </div>
-                          <h2 className="font-display text-[22px] sm:text-[26px] leading-[1.25] tracking-tight text-foreground mb-2.5">
+                          <h2 className="font-display text-[24px] sm:text-[30px] leading-[1.18] tracking-tight text-foreground font-semibold">
                             {section.displayTitle}
                           </h2>
-                          <div className={`h-[2px] rounded-full ${section.isGroupOnly ? 'w-16 bg-border/70' : 'w-10 bg-primary/80'}`} />
                         </header>
                       )}
                       {section.level === 2 && (
-                        <h3 className={`font-display text-[17px] sm:text-[18px] font-semibold mt-1 ${section.isGroupOnly ? 'mb-2 text-foreground/90' : 'mb-3 text-foreground border-b border-border/40 pb-1.5'}`}>
-                          {section.displayTitle}
+                        <h3 className={`font-display tracking-tight ${section.isGroupOnly ? 'text-[16px] sm:text-[17px] font-medium mt-2 mb-2 text-foreground/85' : 'text-[18px] sm:text-[20px] font-semibold mt-2 mb-3.5 text-foreground flex items-baseline gap-2.5'}`}>
+                          {!section.isGroupOnly && <span aria-hidden className="inline-block w-1 h-5 sm:h-6 rounded-full bg-primary/70 translate-y-[2px]" />}
+                          <span>{section.displayTitle}</span>
                         </h3>
                       )}
                       {section.level === 3 && (
-                        <h4 className={`font-display text-[15px] font-semibold mt-1 ${section.isGroupOnly ? 'mb-1.5 text-foreground/80' : 'mb-2 text-primary/90'}`}>
+                        <h4 className={`font-display tracking-tight ${section.isGroupOnly ? 'text-[14px] mt-1 mb-1.5 text-foreground/75 font-medium' : 'text-[15px] sm:text-[16px] mt-1 mb-2.5 text-foreground font-semibold'}`}>
                           {section.displayTitle}
                         </h4>
                       )}

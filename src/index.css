@@ -860,28 +860,34 @@ html {
   .shiki-wrapper pre.shiki { padding: 1rem 1.25rem; }
 }
 
-/* ─── Apostila prose: tipografia editorial ─── */
+/* ─── Apostila prose: tipografia editorial refinada ─── */
 .apostila-prose {
   min-width: 0;
   max-width: 100%;
   font-feature-settings: "kern" 1, "liga" 1, "calt" 1, "ss01" 1;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   hanging-punctuation: first last;
+  color: hsl(var(--foreground) / 0.92);
 }
 
-/* Ritmo vertical: blocos consecutivos do mesmo tipo se aproximam,
-   blocos diferentes ganham respiro. */
-.apostila-prose > * + * { margin-top: 0.85rem; }
-.apostila-prose > p + p { margin-top: 1.1rem; }
+/* Ritmo vertical previsível, modular */
+.apostila-prose > * + * { margin-top: 1rem; }
+.apostila-prose > p + p { margin-top: 1.25rem; }
 .apostila-prose > h3,
 .apostila-prose > h4,
-.apostila-prose > h5 { margin-top: 2rem; }
+.apostila-prose > h5 { margin-top: 2.25rem; }
 .apostila-prose > h3 + p,
 .apostila-prose > h4 + p,
-.apostila-prose > h5 + p { margin-top: 0.6rem; }
+.apostila-prose > h5 + p { margin-top: 0.75rem; }
+.apostila-prose > figure + p,
+.apostila-prose > ul + p,
+.apostila-prose > ol + p,
+.apostila-prose > blockquote + p,
+.apostila-prose > aside + p { margin-top: 1.5rem; }
 
-/* Parágrafos: leitura confortável, sem justify duro (evita "rios"). */
+/* Parágrafos: leitura confortável e elegante */
 .apostila-prose p {
   text-align: left;
   hyphens: auto;
@@ -889,32 +895,62 @@ html {
   text-wrap: pretty;
   orphans: 2;
   widows: 2;
+  letter-spacing: -0.005em;
+}
+
+/* Drop-cap discreto: primeira letra do primeiro parágrafo da seção */
+.apostila-prose > p:first-of-type::first-letter {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 3.4em;
+  line-height: 0.88;
+  float: left;
+  padding: 0.18em 0.12em 0 0;
+  margin-right: 0.05em;
+  color: hsl(var(--primary));
+  font-weight: 400;
+  font-style: italic;
 }
 
 /* Ênfases mais sutis e legíveis */
-.apostila-prose strong { color: hsl(var(--foreground)); font-weight: 600; }
-.apostila-prose em { color: hsl(var(--foreground) / 0.95); }
+.apostila-prose strong {
+  color: hsl(var(--foreground));
+  font-weight: 600;
+  background: linear-gradient(180deg, transparent 62%, hsl(var(--primary) / 0.12) 62%);
+  padding: 0 0.05em;
+}
+.apostila-prose em {
+  color: hsl(var(--foreground) / 0.95);
+  font-style: italic;
+}
 .apostila-prose mark {
   background: hsl(var(--primary) / 0.18);
   color: inherit;
-  padding: 0.05em 0.25em;
-  border-radius: 0.25rem;
+  padding: 0.08em 0.3em;
+  border-radius: 0.3rem;
+  font-weight: 500;
 }
 .apostila-prose code {
-  font-size: 0.92em;
-  padding: 0.1em 0.4em;
-  border-radius: 0.3rem;
-  background: hsl(var(--muted) / 0.7);
+  font-size: 0.88em;
+  padding: 0.15em 0.45em;
+  border-radius: 0.35rem;
+  background: hsl(var(--muted));
   color: hsl(var(--primary));
+  border: 1px solid hsl(var(--border) / 0.6);
+  font-weight: 500;
 }
 .apostila-prose a {
   color: hsl(var(--primary));
   text-decoration: underline;
-  text-decoration-color: hsl(var(--primary) / 0.4);
+  text-decoration-color: hsl(var(--primary) / 0.35);
+  text-decoration-thickness: 1.5px;
   text-underline-offset: 3px;
-  transition: text-decoration-color 150ms;
+  transition: text-decoration-color 150ms, color 150ms;
+  font-weight: 500;
 }
-.apostila-prose a:hover { text-decoration-color: hsl(var(--primary)); }
+.apostila-prose a:hover {
+  text-decoration-color: hsl(var(--primary));
+  color: hsl(var(--primary));
+}
 
 /* Mídia e código: nunca estoura container */
 .apostila-prose img,
@@ -927,11 +963,35 @@ html {
 
 /* Mobile: corpo um pouquinho menor mas line-height generoso */
 @media (max-width: 640px) {
-  .apostila-prose { font-size: 15.5px; line-height: 1.68; }
-  .apostila-prose > p + p { margin-top: 1rem; }
+  .apostila-prose { font-size: 15.5px; line-height: 1.7; }
+  .apostila-prose > p + p { margin-top: 1.1rem; }
   .apostila-prose > h3,
   .apostila-prose > h4,
-  .apostila-prose > h5 { margin-top: 1.6rem; }
+  .apostila-prose > h5 { margin-top: 1.75rem; }
+  .apostila-prose > p:first-of-type::first-letter {
+    font-size: 2.9em;
+    padding-top: 0.22em;
+  }
+}
+
+/* ─── Cabeçalho de seção (Seção N · título) ─── */
+.apostila-section-header {
+  position: relative;
+  padding-left: 1.25rem;
+}
+.apostila-section-header::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.4rem;
+  bottom: 0.4rem;
+  width: 3px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, hsl(var(--primary)), hsl(var(--primary) / 0.2));
+}
+@media (max-width: 640px) {
+  .apostila-section-header { padding-left: 0.9rem; }
+  .apostila-section-header::before { width: 2px; }
 }
 
 /* Utility: clamp container width even inside flex/grid */
