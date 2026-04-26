@@ -149,7 +149,8 @@ export default function AdminBibliotecaPage() {
         <Button variant="ghost" size="sm" onClick={() => navigate('/admin')} className="mb-4">
           <ArrowLeft className="h-4 w-4 mr-1" /> Voltar ao Admin
         </Button>
-        <h1 className="text-2xl font-bold mb-6 flex items-center gap-2"><BookPlus className="h-5 w-5" /> Biblioteca — Admin</h1>
+        <h1 className="text-2xl font-bold mb-1 flex items-center gap-2"><BookPlus className="h-5 w-5" /> Biblioteca Decode Analytics Academy</h1>
+        <p className="text-sm text-muted-foreground mb-6">Acervo exclusivo de livros em PDF e EPUB. Outros materiais (vídeos, slides, imagens) continuam sendo gerenciados na aba <strong>Materiais</strong>.</p>
 
         <Card className="p-5 mb-8 space-y-3">
           <h2 className="font-semibold">Adicionar Livro</h2>
