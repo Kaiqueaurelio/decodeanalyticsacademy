@@ -1,6 +1,6 @@
 // Receives a photo of an exercise, returns concept + hint + related apostila.
 // Suporta dual provider: Google AI Studio direto (chave do user) ou Lovable AI Gateway (fallback).
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createClient } from "npm:@supabase/supabase-js@2.49.4";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
