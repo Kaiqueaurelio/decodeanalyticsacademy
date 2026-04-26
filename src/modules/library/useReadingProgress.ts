@@ -27,18 +27,32 @@ export function useReadingProgress(bookId: string | undefined, fileType: 'pdf' |
     return () => { active = false; };
   }, [user, bookId]);
 
-  const save = (patch: { current_page?: number; location?: string; progress_percentage?: number }) => {
+  const lastPatch = useRef<{ current_page?: number; location?: string; progress_percentage?: number } | null>(null);
+
+  const persist = async (patch: { current_page?: number; location?: string; progress_percentage?: number }) => {
     if (!user || !bookId) return;
-    if (saveTimer.current) window.clearTimeout(saveTimer.current);
-    saveTimer.current = window.setTimeout(async () => {
-      await supabase.from('reading_progress').upsert({
-        user_id: user.id,
-        book_id: bookId,
-        file_type: fileType,
-        ...patch,
-      }, { onConflict: 'user_id,book_id' });
-    }, 600);
+    await supabase.from('reading_progress').upsert({
+      user_id: user.id,
+      book_id: bookId,
+      file_type: fileType,
+      ...patch,
+    }, { onConflict: 'user_id,book_id' });
   };
 
-  return { progress, loaded, save };
+  const save = (patch: { current_page?: number; location?: string; progress_percentage?: number }) => {
+    if (!user || !bookId) return;
+    lastPatch.current = patch;
+    if (saveTimer.current) window.clearTimeout(saveTimer.current);
+    saveTimer.current = window.setTimeout(() => { void persist(patch); }, 600);
+  };
+
+  const flush = async () => {
+    if (saveTimer.current) {
+      window.clearTimeout(saveTimer.current);
+      saveTimer.current = null;
+    }
+    if (lastPatch.current) await persist(lastPatch.current);
+  };
+
+  return { progress, loaded, save, flush };
 }
