@@ -437,7 +437,7 @@ function OverviewTab({ apostilas, exercises, allAnswers, materials, users, setTa
                   { label: 'Upload Material', icon: Upload, action: () => setTab('materials') },
                   { label: 'Gerenciar Usuários', icon: Users, action: () => setTab('users') },
                   { label: 'Ver Materiais', icon: FolderOpen, action: () => setTab('materials') },
-                  { label: 'Biblioteca Digital', icon: BookOpen, action: () => navigate('/admin/biblioteca') },
+                  { label: 'Biblioteca Decode Analytics Academy', icon: BookOpen, action: () => navigate('/admin/biblioteca') },
                 ].map((a, i) => (
                   <motion.div
                     key={a.label}
