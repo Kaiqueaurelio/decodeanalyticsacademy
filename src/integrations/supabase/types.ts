@@ -389,6 +389,48 @@ export type Database = {
         }
         Relationships: []
       }
+      books: {
+        Row: {
+          author: string | null
+          cover_url: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          file_type: string
+          file_url: string
+          id: string
+          title: string
+          total_pages: number | null
+          updated_at: string
+        }
+        Insert: {
+          author?: string | null
+          cover_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          file_type: string
+          file_url: string
+          id?: string
+          title: string
+          total_pages?: number | null
+          updated_at?: string
+        }
+        Update: {
+          author?: string | null
+          cover_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          file_type?: string
+          file_url?: string
+          id?: string
+          title?: string
+          total_pages?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       calendar_events: {
         Row: {
           created_at: string
@@ -648,39 +690,51 @@ export type Database = {
       }
       exercises: {
         Row: {
+          allow_image_upload: boolean
           apostila_id: string
           correct_answer: string
           created_at: string
+          expected_answer: Json
           explanation: string | null
           id: string
           min_chars: number
           options: Json
           question: string
+          question_type: string
           reference_answer: string | null
+          sort_order: number
           type: string
         }
         Insert: {
+          allow_image_upload?: boolean
           apostila_id: string
           correct_answer: string
           created_at?: string
+          expected_answer?: Json
           explanation?: string | null
           id?: string
           min_chars?: number
           options?: Json
           question: string
+          question_type?: string
           reference_answer?: string | null
+          sort_order?: number
           type?: string
         }
         Update: {
+          allow_image_upload?: boolean
           apostila_id?: string
           correct_answer?: string
           created_at?: string
+          expected_answer?: Json
           explanation?: string | null
           id?: string
           min_chars?: number
           options?: Json
           question?: string
+          question_type?: string
           reference_answer?: string | null
+          sort_order?: number
           type?: string
         }
         Relationships: [
@@ -998,32 +1052,85 @@ export type Database = {
         }
         Relationships: []
       }
+      reading_progress: {
+        Row: {
+          book_id: string
+          current_page: number | null
+          file_type: string
+          id: string
+          location: string | null
+          progress_percentage: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          book_id: string
+          current_page?: number | null
+          file_type: string
+          id?: string
+          location?: string | null
+          progress_percentage?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          book_id?: string
+          current_page?: number | null
+          file_type?: string
+          id?: string
+          location?: string | null
+          progress_percentage?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reading_progress_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       respostas_foto: {
         Row: {
+          correct: string | null
           created_at: string
+          detected_answer: string | null
           exercise_id: string | null
+          expected_answer_snapshot: string | null
           feedback_ia: string | null
           id: string
           imagem_url: string
           nota: number | null
+          score: number | null
           user_id: string
         }
         Insert: {
+          correct?: string | null
           created_at?: string
+          detected_answer?: string | null
           exercise_id?: string | null
+          expected_answer_snapshot?: string | null
           feedback_ia?: string | null
           id?: string
           imagem_url: string
           nota?: number | null
+          score?: number | null
           user_id: string
         }
         Update: {
+          correct?: string | null
           created_at?: string
+          detected_answer?: string | null
           exercise_id?: string | null
+          expected_answer_snapshot?: string | null
           feedback_ia?: string | null
           id?: string
           imagem_url?: string
           nota?: number | null
+          score?: number | null
           user_id?: string
         }
         Relationships: [
