@@ -61,8 +61,10 @@ export default function BookReaderPage() {
   return (
     <div className="h-screen flex flex-col bg-background">
       <header className="flex items-center gap-2 px-3 sm:px-4 h-12 border-b border-border bg-background/95 backdrop-blur z-10">
-        <Button variant="ghost" size="sm" onClick={() => navigate('/livros')} className="h-8 px-2">
-          <ArrowLeft className="h-4 w-4 mr-1" /> Voltar
+        <Button variant="ghost" size="sm" onClick={goBack} className="h-8 px-2" title="Voltar à estante (progresso preservado)">
+          <ArrowLeft className="h-4 w-4 mr-1" />
+          <span className="hidden sm:inline">Voltar à estante</span>
+          <span className="sm:hidden">Voltar</span>
         </Button>
         <div className="flex-1 min-w-0">
           <h1 className="text-sm font-semibold truncate">{book.title}</h1>
