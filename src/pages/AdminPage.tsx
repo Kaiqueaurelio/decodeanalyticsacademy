@@ -222,6 +222,16 @@ function AdminSidebar({ tab, setTab, stats, sidebarOpen, setSidebarOpen }: {
                 )}
               </button>
             ))}
+
+            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider px-3 mt-4 mb-2">Acervos</p>
+            <button
+              onClick={() => { navigate('/admin/biblioteca'); setSidebarOpen(false); }}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group bg-primary/5 text-primary hover:bg-primary/10 border border-primary/20"
+            >
+              <BookOpen className="h-4 w-4 shrink-0 text-primary" />
+              <span className="flex-1 text-left">Biblioteca de Livros</span>
+              <Badge variant="secondary" className="text-[9px] h-4 px-1.5">PDF/EPUB</Badge>
+            </button>
           </div>
         </ScrollArea>
 
@@ -428,7 +438,28 @@ function OverviewTab({ apostilas, exercises, allAnswers, materials, users, setTa
               </CardTitle>
               <CardDescription>Acesse as principais funcionalidades</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-3">
+              {/* Featured: Biblioteca de Livros (PDF/EPUB) */}
+              <motion.button
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.85 }}
+                onClick={() => navigate('/admin/biblioteca')}
+                className="group w-full text-left rounded-xl border-2 border-primary/30 bg-gradient-to-br from-primary/10 via-primary/5 to-accent/10 hover:border-primary/60 hover:shadow-lg transition-all p-4 flex items-center gap-4"
+              >
+                <div className="rounded-xl bg-primary/15 p-3 shrink-0 group-hover:scale-110 transition-transform">
+                  <BookOpen className="h-6 w-6 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-foreground flex items-center gap-2 flex-wrap">
+                    Publicar Livros (PDF / EPUB)
+                    <Badge variant="secondary" className="text-[10px] h-4 px-1.5">Biblioteca Decode</Badge>
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Acervo exclusivo de livros — separado da aba Materiais</p>
+                </div>
+                <Plus className="h-4 w-4 text-primary shrink-0" />
+              </motion.button>
+
               <div className="grid grid-cols-2 gap-3">
                 {[
                   { label: 'Importar URL', icon: LinkIcon, action: () => setTab('apostilas') },
@@ -437,7 +468,6 @@ function OverviewTab({ apostilas, exercises, allAnswers, materials, users, setTa
                   { label: 'Upload Material', icon: Upload, action: () => setTab('materials') },
                   { label: 'Gerenciar Usuários', icon: Users, action: () => setTab('users') },
                   { label: 'Ver Materiais', icon: FolderOpen, action: () => setTab('materials') },
-                  { label: 'Biblioteca Decode Analytics Academy', icon: BookOpen, action: () => navigate('/admin/biblioteca') },
                 ].map((a, i) => (
                   <motion.div
                     key={a.label}
