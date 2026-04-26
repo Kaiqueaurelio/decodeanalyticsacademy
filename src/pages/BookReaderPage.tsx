@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2, Maximize } from 'lucide-react';
+import { ArrowLeft, Loader2, Maximize, BookmarkCheck } from 'lucide-react';
+import { toast } from 'sonner';
 import { PdfReader } from '@/modules/library/components/PdfReader';
 import { EpubReader } from '@/modules/library/components/EpubReader';
 import { useReadingProgress } from '@/modules/library/useReadingProgress';
@@ -13,7 +14,22 @@ export default function BookReaderPage() {
   const navigate = useNavigate();
   const [book, setBook] = useState<Book | null>(null);
   const [loading, setLoading] = useState(true);
-  const { progress, loaded, save } = useReadingProgress(id, (book?.file_type || 'pdf') as 'pdf' | 'epub');
+  const { progress, loaded, save, flush } = useReadingProgress(id, (book?.file_type || 'pdf') as 'pdf' | 'epub');
+
+  const goBack = async () => {
+    await flush();
+    toast.success('Progresso salvo', { icon: <BookmarkCheck className="h-4 w-4" />, duration: 1800 });
+    navigate('/livros');
+  };
+
+  useEffect(() => {
+    const onBeforeUnload = () => { void flush(); };
+    window.addEventListener('beforeunload', onBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', onBeforeUnload);
+      void flush();
+    };
+  }, [flush]);
 
   useEffect(() => {
     if (!id) return;
