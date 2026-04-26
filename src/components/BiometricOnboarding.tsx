@@ -19,7 +19,8 @@ export function BiometricOnboarding() {
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
 
-  // Decide se deve abrir
+  // Decide se deve abrir — só depois do tour de boas-vindas terminar,
+  // para não empilhar dois modais (que travava o app no mobile).
   useEffect(() => {
     if (!user) return;
     if (!supported || !available) return;
@@ -28,9 +29,28 @@ export function BiometricOnboarding() {
     const key = SEEN_KEY_PREFIX + user.id;
     if (localStorage.getItem(key)) return;
 
-    // Pequeno delay para não competir com outras animações de entrada
-    const t = setTimeout(() => setOpen(true), 1200);
-    return () => clearTimeout(t);
+    let cancelled = false;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+    const tryOpen = () => {
+      if (cancelled) return;
+      // Aguarda o tour de boas-vindas concluir antes de aparecer
+      const tourDone = localStorage.getItem('decode_onboarding_done');
+      if (!tourDone) {
+        timeoutId = setTimeout(tryOpen, 800);
+        return;
+      }
+      // Pequeno respiro depois do tour fechar
+      timeoutId = setTimeout(() => {
+        if (!cancelled) setOpen(true);
+      }, 600);
+    };
+
+    timeoutId = setTimeout(tryOpen, 1200);
+    return () => {
+      cancelled = true;
+      if (timeoutId) clearTimeout(timeoutId);
+    };
   }, [user, supported, available, enabled]);
 
   const markSeen = () => {
