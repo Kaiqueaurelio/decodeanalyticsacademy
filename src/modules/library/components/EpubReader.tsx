@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import ePub, { type Book as EpubBook, type Rendition } from 'epubjs';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Minus, Plus, List } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Minus, Plus, List } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { useTheme } from '@/hooks/useTheme';
 
