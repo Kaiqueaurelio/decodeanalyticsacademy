@@ -28,6 +28,49 @@ export default function AdminBibliotecaPage() {
 
   useEffect(() => { void load(); }, []);
 
+  const MAX_COVER_MB = 5;
+  const MAX_BOOK_MB = 50;
+  const COVER_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+  const COVER_EXTS = ['jpg', 'jpeg', 'png', 'webp'];
+  const BOOK_TYPES = ['application/pdf', 'application/epub+zip'];
+  const BOOK_EXTS = ['pdf', 'epub'];
+
+  const validateFile = (
+    file: File,
+    allowedTypes: string[],
+    allowedExts: string[],
+    maxMb: number,
+    label: string,
+  ): string | null => {
+    const ext = file.name.split('.').pop()?.toLowerCase() || '';
+    const typeOk = allowedTypes.includes(file.type) || allowedExts.includes(ext);
+    if (!typeOk) {
+      return `${label}: formato não permitido. Aceitos: ${allowedExts.join(', ').toUpperCase()}.`;
+    }
+    const sizeMb = file.size / (1024 * 1024);
+    if (sizeMb > maxMb) {
+      return `${label}: arquivo muito grande (${sizeMb.toFixed(1)}MB). Máximo: ${maxMb}MB.`;
+    }
+    if (file.size === 0) {
+      return `${label}: arquivo vazio.`;
+    }
+    return null;
+  };
+
+  const onPickCover = (f: File | null) => {
+    if (!f) { setCoverFile(null); return; }
+    const err = validateFile(f, COVER_TYPES, COVER_EXTS, MAX_COVER_MB, 'Capa');
+    if (err) { toast.error(err); return; }
+    setCoverFile(f);
+  };
+
+  const onPickBook = (f: File | null) => {
+    if (!f) { setBookFile(null); return; }
+    const err = validateFile(f, BOOK_TYPES, BOOK_EXTS, MAX_BOOK_MB, 'Livro');
+    if (err) { toast.error(err); return; }
+    setBookFile(f);
+  };
+
   const load = async () => {
     const { data } = await supabase.from('books').select('*').order('created_at', { ascending: false });
     setBooks((data || []) as Book[]);
@@ -37,6 +80,12 @@ export default function AdminBibliotecaPage() {
     if (!user || !bookFile || !title) {
       toast.error('Título e arquivo são obrigatórios');
       return;
+    }
+    const bookErr = validateFile(bookFile, BOOK_TYPES, BOOK_EXTS, MAX_BOOK_MB, 'Livro');
+    if (bookErr) { toast.error(bookErr); return; }
+    if (coverFile) {
+      const coverErr = validateFile(coverFile, COVER_TYPES, COVER_EXTS, MAX_COVER_MB, 'Capa');
+      if (coverErr) { toast.error(coverErr); return; }
     }
     setUploading(true);
     try {
@@ -112,11 +161,15 @@ export default function AdminBibliotecaPage() {
           <div className="grid sm:grid-cols-2 gap-3">
             <div>
               <Label>Capa (imagem)</Label>
-              <Input type="file" accept="image/*" onChange={(e) => setCoverFile(e.target.files?.[0] || null)} />
+              <Input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => onPickCover(e.target.files?.[0] || null)} />
+              <p className="text-[11px] text-muted-foreground mt-1">JPG, PNG ou WEBP · até {MAX_COVER_MB}MB</p>
+              {coverFile && <p className="text-[11px] text-muted-foreground mt-0.5 truncate">✓ {coverFile.name} ({(coverFile.size / 1024 / 1024).toFixed(2)}MB)</p>}
             </div>
             <div>
               <Label>Arquivo (PDF ou EPUB) *</Label>
-              <Input type="file" accept=".pdf,.epub,application/pdf,application/epub+zip" onChange={(e) => setBookFile(e.target.files?.[0] || null)} />
+              <Input type="file" accept=".pdf,.epub,application/pdf,application/epub+zip" onChange={(e) => onPickBook(e.target.files?.[0] || null)} />
+              <p className="text-[11px] text-muted-foreground mt-1">PDF ou EPUB · até {MAX_BOOK_MB}MB</p>
+              {bookFile && <p className="text-[11px] text-muted-foreground mt-0.5 truncate">✓ {bookFile.name} ({(bookFile.size / 1024 / 1024).toFixed(2)}MB)</p>}
             </div>
           </div>
           <Button onClick={upload} disabled={uploading || !title || !bookFile}>
