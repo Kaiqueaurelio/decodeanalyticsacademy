@@ -38,17 +38,41 @@ export function PdfReader({ fileUrl, initialPage = 1, onProgress }: PdfReaderPro
     if (numPages > 0) onProgress(page, numPages);
   }, [page, numPages, onProgress]);
 
-  const goNext = () => {
-    if (page < numPages) {
-      setDirection('next');
-      setPage((p) => p + 1);
-    }
+  const [pageInput, setPageInput] = useState('');
+
+  const goTo = (target: number) => {
+    if (!numPages) return;
+    const next = Math.max(1, Math.min(numPages, target));
+    if (next === page) return;
+    setDirection(next > page ? 'next' : 'prev');
+    setPage(next);
   };
-  const goPrev = () => {
-    if (page > 1) {
-      setDirection('prev');
-      setPage((p) => p - 1);
-    }
+  const goNext = () => goTo(page + 1);
+  const goPrev = () => goTo(page - 1);
+  const jumpForward = () => goTo(page + 10);
+  const jumpBackward = () => goTo(page - 10);
+  const goFirst = () => goTo(1);
+  const goLast = () => goTo(numPages);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement;
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+      if (e.key === 'ArrowRight' || e.key === 'PageDown') { e.preventDefault(); goNext(); }
+      else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); goPrev(); }
+      else if (e.key === 'Home') { e.preventDefault(); goFirst(); }
+      else if (e.key === 'End') { e.preventDefault(); goLast(); }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, numPages]);
+
+  const submitPageInput = (e: React.FormEvent) => {
+    e.preventDefault();
+    const n = parseInt(pageInput, 10);
+    if (!isNaN(n)) goTo(n);
+    setPageInput('');
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
