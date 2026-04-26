@@ -7,6 +7,7 @@ export interface Book {
   file_url: string;
   file_type: 'pdf' | 'epub';
   total_pages: number | null;
+  published?: boolean;
   created_at: string;
 }
 
