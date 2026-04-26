@@ -9,7 +9,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { ArrowLeft, BookPlus, Loader2, Trash2 } from 'lucide-react';
+import { ArrowLeft, BookPlus, Eye, EyeOff, Loader2, Trash2 } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
 import type { Book } from '@/modules/library/types';
 import { detectFileType } from '@/modules/library/types';
 
@@ -56,9 +58,10 @@ export default function AdminBibliotecaPage() {
       const { error } = await supabase.from('books').insert({
         title, author: author || null, description: description || null,
         cover_url: coverUrl, file_url: publicUrl, file_type: fileType, created_by: user.id,
+        published: false,
       });
       if (error) throw error;
-      toast.success('Livro adicionado!');
+      toast.success('Livro adicionado como rascunho. Publique quando estiver pronto.');
       setTitle(''); setAuthor(''); setDescription(''); setCoverFile(null); setBookFile(null);
       void load();
     } catch (e: any) {
@@ -66,6 +69,17 @@ export default function AdminBibliotecaPage() {
     } finally {
       setUploading(false);
     }
+  };
+
+  const togglePublished = async (book: Book) => {
+    const next = !book.published;
+    const { error } = await supabase.from('books').update({ published: next }).eq('id', book.id);
+    if (error) {
+      toast.error(error.message || 'Erro ao atualizar');
+      return;
+    }
+    toast.success(next ? 'Livro publicado' : 'Livro despublicado');
+    setBooks((prev) => prev.map((b) => (b.id === book.id ? { ...b, published: next } : b)));
   };
 
   const remove = async (id: string) => {
@@ -118,12 +132,22 @@ export default function AdminBibliotecaPage() {
                 {b.cover_url && <img src={b.cover_url} alt="" className="w-full h-full object-cover" />}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-sm truncate">{b.title}</p>
+                <div className="flex items-center gap-2">
+                  <p className="font-medium text-sm truncate">{b.title}</p>
+                  <Badge variant={b.published ? 'default' : 'secondary'} className="text-[10px] flex-shrink-0">
+                    {b.published ? <><Eye className="h-3 w-3 mr-1" />Publicado</> : <><EyeOff className="h-3 w-3 mr-1" />Rascunho</>}
+                  </Badge>
+                </div>
                 <p className="text-xs text-muted-foreground truncate">{b.author || '—'} · {b.file_type.toUpperCase()}</p>
               </div>
-              <Button variant="ghost" size="icon" onClick={() => remove(b.id)} className="h-8 w-8 text-destructive">
-                <Trash2 className="h-4 w-4" />
-              </Button>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5" title={b.published ? 'Despublicar' : 'Publicar'}>
+                  <Switch checked={!!b.published} onCheckedChange={() => togglePublished(b)} />
+                </div>
+                <Button variant="ghost" size="icon" onClick={() => remove(b.id)} className="h-8 w-8 text-destructive">
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
             </Card>
           ))}
         </div>
