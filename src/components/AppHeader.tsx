@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { LogOut, LayoutDashboard, Shield, Menu, ArrowRight, Sun, Moon, User, Users, Camera } from 'lucide-react';
+import { LogOut, LayoutDashboard, Shield, Menu, ArrowRight, Sun, Moon, User, Users, Camera, BookOpen } from 'lucide-react';
 import logoDark from '@/assets/logo-dark.jpeg';
 import { useMentionNotifications } from '@/hooks/useMentionNotifications';
 import { NotificationBell } from '@/components/NotificationBell';
@@ -37,6 +37,9 @@ export function AppHeader() {
             <>
               <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')} className="text-xs h-8 px-3 font-sans normal-case tracking-normal">
                 <LayoutDashboard className="mr-1.5 h-3.5 w-3.5" /> Dashboard
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => navigate('/livros')} className="text-xs h-8 px-3 font-sans normal-case tracking-normal">
+                <BookOpen className="mr-1.5 h-3.5 w-3.5" /> Biblioteca
               </Button>
               <Button variant="ghost" size="sm" onClick={() => navigate('/tira-duvida')} className="text-xs h-8 px-3 font-sans normal-case tracking-normal">
                 <Camera className="mr-1.5 h-3.5 w-3.5" /> Tira-dúvida
@@ -89,6 +92,9 @@ export function AppHeader() {
                         {badge}
                       </span>
                     )}
+                  </Button>
+                  <Button variant="ghost" size="sm" className="justify-start text-sm font-sans normal-case tracking-normal" onClick={() => nav('/livros')}>
+                    <BookOpen className="mr-2 h-4 w-4" /> Biblioteca
                   </Button>
                   <Button variant="ghost" size="sm" className="justify-start text-sm font-sans normal-case tracking-normal" onClick={() => nav('/tira-duvida')}>
                     <Camera className="mr-2 h-4 w-4" /> Tira-dúvida
