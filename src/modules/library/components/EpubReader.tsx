@@ -129,15 +129,20 @@ export function EpubReader({ fileUrl, initialLocation, onProgress }: EpubReaderP
           <SheetContent side="right" className="w-72 overflow-y-auto">
             <SheetHeader><SheetTitle>Capítulos</SheetTitle></SheetHeader>
             <div className="mt-4 flex flex-col gap-1">
-              {toc.map((item, i) => (
-                <button
-                  key={i}
-                  className="text-left text-sm py-2 px-3 rounded-md hover:bg-accent transition-colors"
-                  onClick={() => renditionRef.current?.display(item.href)}
-                >
-                  {item.label}
-                </button>
-              ))}
+              {toc.map((item, i) => {
+                const isCurrent = i === currentChapterIndex;
+                return (
+                  <button
+                    key={i}
+                    className={`text-left text-sm py-2 px-3 rounded-md transition-colors ${
+                      isCurrent ? 'bg-primary/10 text-primary font-medium' : 'hover:bg-accent'
+                    }`}
+                    onClick={() => renditionRef.current?.display(item.href)}
+                  >
+                    {item.label}
+                  </button>
+                );
+              })}
             </div>
           </SheetContent>
         </Sheet>
@@ -147,11 +152,14 @@ export function EpubReader({ fileUrl, initialLocation, onProgress }: EpubReaderP
         <div ref={viewerRef} className="absolute inset-0" />
       </div>
 
-      <div className="w-full border-t border-border bg-background/95 backdrop-blur px-4 py-2 flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={prev} className="h-8 w-8">
+      <div className="w-full border-t border-border bg-background/95 backdrop-blur px-3 py-2 flex items-center gap-1.5 sm:gap-2">
+        <Button variant="ghost" size="icon" onClick={prevChapter} disabled={toc.length === 0 || currentChapterIndex <= 0} className="h-8 w-8" title="Capítulo anterior (Shift+←)">
+          <ChevronsLeft className="h-4 w-4" />
+        </Button>
+        <Button variant="ghost" size="icon" onClick={prev} className="h-8 w-8" title="Página anterior (←)">
           <ChevronLeft className="h-4 w-4" />
         </Button>
-        <div className="flex-1">
+        <div className="flex-1 min-w-[80px]">
           <div className="h-1.5 bg-muted rounded-full overflow-hidden">
             <div className="h-full bg-primary transition-all" style={{ width: `${percentage}%` }} />
           </div>
@@ -159,8 +167,11 @@ export function EpubReader({ fileUrl, initialLocation, onProgress }: EpubReaderP
         <span className="text-xs text-muted-foreground tabular-nums whitespace-nowrap">
           {Math.round(percentage)}%
         </span>
-        <Button variant="ghost" size="icon" onClick={next} className="h-8 w-8">
+        <Button variant="ghost" size="icon" onClick={next} className="h-8 w-8" title="Próxima página (→)">
           <ChevronRight className="h-4 w-4" />
+        </Button>
+        <Button variant="ghost" size="icon" onClick={nextChapter} disabled={toc.length === 0 || currentChapterIndex >= toc.length - 1} className="h-8 w-8" title="Próximo capítulo (Shift+→)">
+          <ChevronsRight className="h-4 w-4" />
         </Button>
       </div>
     </div>
