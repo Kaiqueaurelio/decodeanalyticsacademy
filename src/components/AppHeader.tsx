@@ -38,8 +38,11 @@ export function AppHeader() {
               <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')} className="text-xs h-8 px-3 font-sans normal-case tracking-normal">
                 <LayoutDashboard className="mr-1.5 h-3.5 w-3.5" /> Dashboard
               </Button>
-              <Button variant="ghost" size="sm" onClick={() => navigate('/livros')} className="text-xs h-8 px-3 font-sans normal-case tracking-normal">
+              <Button variant="ghost" size="sm" onClick={() => navigate('/biblioteca')} className="text-xs h-8 px-3 font-sans normal-case tracking-normal">
                 <BookOpen className="mr-1.5 h-3.5 w-3.5" /> Biblioteca
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => navigate('/livros')} className="text-xs h-8 px-3 font-sans normal-case tracking-normal">
+                <Library className="mr-1.5 h-3.5 w-3.5" /> Livros
               </Button>
               <Button variant="ghost" size="sm" onClick={() => navigate('/tira-duvida')} className="text-xs h-8 px-3 font-sans normal-case tracking-normal">
                 <Camera className="mr-1.5 h-3.5 w-3.5" /> Tira-dúvida
