@@ -399,6 +399,7 @@ export type Database = {
           file_type: string
           file_url: string
           id: string
+          published: boolean
           title: string
           total_pages: number | null
           updated_at: string
@@ -412,6 +413,7 @@ export type Database = {
           file_type: string
           file_url: string
           id?: string
+          published?: boolean
           title: string
           total_pages?: number | null
           updated_at?: string
@@ -425,6 +427,7 @@ export type Database = {
           file_type?: string
           file_url?: string
           id?: string
+          published?: boolean
           title?: string
           total_pages?: number | null
           updated_at?: string
