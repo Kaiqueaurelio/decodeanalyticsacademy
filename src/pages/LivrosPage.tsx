@@ -36,9 +36,9 @@ export default function LivrosPage() {
       <main className="w-full max-w-screen-xl mx-auto px-4 sm:px-6 py-8">
         <div className="mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
-            <BookOpen className="h-6 w-6 text-primary" /> Biblioteca Digital
+            <BookOpen className="h-6 w-6 text-primary" /> Livros
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">Leia livros completos com experiência de leitor real.</p>
+          <p className="text-sm text-muted-foreground mt-1">Acervo de livros em PDF e EPUB publicados pela Decode Analytics.</p>
         </div>
 
         {loading ? (
