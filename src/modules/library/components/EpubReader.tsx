@@ -18,6 +18,7 @@ export function EpubReader({ fileUrl, initialLocation, onProgress }: EpubReaderP
   const [fontSize, setFontSize] = useState(100);
   const [percentage, setPercentage] = useState(0);
   const [toc, setToc] = useState<Array<{ label: string; href: string }>>([]);
+  const [currentHref, setCurrentHref] = useState<string>('');
   const { theme } = useTheme();
 
   useEffect(() => {
