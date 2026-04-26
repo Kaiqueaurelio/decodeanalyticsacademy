@@ -28,6 +28,49 @@ export default function AdminBibliotecaPage() {
 
   useEffect(() => { void load(); }, []);
 
+  const MAX_COVER_MB = 5;
+  const MAX_BOOK_MB = 50;
+  const COVER_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+  const COVER_EXTS = ['jpg', 'jpeg', 'png', 'webp'];
+  const BOOK_TYPES = ['application/pdf', 'application/epub+zip'];
+  const BOOK_EXTS = ['pdf', 'epub'];
+
+  const validateFile = (
+    file: File,
+    allowedTypes: string[],
+    allowedExts: string[],
+    maxMb: number,
+    label: string,
+  ): string | null => {
+    const ext = file.name.split('.').pop()?.toLowerCase() || '';
+    const typeOk = allowedTypes.includes(file.type) || allowedExts.includes(ext);
+    if (!typeOk) {
+      return `${label}: formato não permitido. Aceitos: ${allowedExts.join(', ').toUpperCase()}.`;
+    }
+    const sizeMb = file.size / (1024 * 1024);
+    if (sizeMb > maxMb) {
+      return `${label}: arquivo muito grande (${sizeMb.toFixed(1)}MB). Máximo: ${maxMb}MB.`;
+    }
+    if (file.size === 0) {
+      return `${label}: arquivo vazio.`;
+    }
+    return null;
+  };
+
+  const onPickCover = (f: File | null) => {
+    if (!f) { setCoverFile(null); return; }
+    const err = validateFile(f, COVER_TYPES, COVER_EXTS, MAX_COVER_MB, 'Capa');
+    if (err) { toast.error(err); return; }
+    setCoverFile(f);
+  };
+
+  const onPickBook = (f: File | null) => {
+    if (!f) { setBookFile(null); return; }
+    const err = validateFile(f, BOOK_TYPES, BOOK_EXTS, MAX_BOOK_MB, 'Livro');
+    if (err) { toast.error(err); return; }
+    setBookFile(f);
+  };
+
   const load = async () => {
     const { data } = await supabase.from('books').select('*').order('created_at', { ascending: false });
     setBooks((data || []) as Book[]);
