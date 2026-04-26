@@ -37,7 +37,7 @@ export default function BookReaderPage() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-3">
         <p className="text-sm text-muted-foreground">Livro não encontrado.</p>
-        <Button onClick={() => navigate('/biblioteca')} variant="outline" size="sm">Voltar</Button>
+        <Button onClick={() => navigate('/livros')} variant="outline" size="sm">Voltar</Button>
       </div>
     );
   }
@@ -45,7 +45,7 @@ export default function BookReaderPage() {
   return (
     <div className="h-screen flex flex-col bg-background">
       <header className="flex items-center gap-2 px-3 sm:px-4 h-12 border-b border-border bg-background/95 backdrop-blur z-10">
-        <Button variant="ghost" size="sm" onClick={() => navigate('/biblioteca')} className="h-8 px-2">
+        <Button variant="ghost" size="sm" onClick={() => navigate('/livros')} className="h-8 px-2">
           <ArrowLeft className="h-4 w-4 mr-1" /> Voltar
         </Button>
         <div className="flex-1 min-w-0">
