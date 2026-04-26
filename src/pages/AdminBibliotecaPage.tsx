@@ -161,11 +161,15 @@ export default function AdminBibliotecaPage() {
           <div className="grid sm:grid-cols-2 gap-3">
             <div>
               <Label>Capa (imagem)</Label>
-              <Input type="file" accept="image/*" onChange={(e) => setCoverFile(e.target.files?.[0] || null)} />
+              <Input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => onPickCover(e.target.files?.[0] || null)} />
+              <p className="text-[11px] text-muted-foreground mt-1">JPG, PNG ou WEBP · até {MAX_COVER_MB}MB</p>
+              {coverFile && <p className="text-[11px] text-muted-foreground mt-0.5 truncate">✓ {coverFile.name} ({(coverFile.size / 1024 / 1024).toFixed(2)}MB)</p>}
             </div>
             <div>
               <Label>Arquivo (PDF ou EPUB) *</Label>
-              <Input type="file" accept=".pdf,.epub,application/pdf,application/epub+zip" onChange={(e) => setBookFile(e.target.files?.[0] || null)} />
+              <Input type="file" accept=".pdf,.epub,application/pdf,application/epub+zip" onChange={(e) => onPickBook(e.target.files?.[0] || null)} />
+              <p className="text-[11px] text-muted-foreground mt-1">PDF ou EPUB · até {MAX_BOOK_MB}MB</p>
+              {bookFile && <p className="text-[11px] text-muted-foreground mt-0.5 truncate">✓ {bookFile.name} ({(bookFile.size / 1024 / 1024).toFixed(2)}MB)</p>}
             </div>
           </div>
           <Button onClick={upload} disabled={uploading || !title || !bookFile}>
