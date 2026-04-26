@@ -96,8 +96,11 @@ export function AppHeader() {
                       </span>
                     )}
                   </Button>
-                  <Button variant="ghost" size="sm" className="justify-start text-sm font-sans normal-case tracking-normal" onClick={() => nav('/livros')}>
+                  <Button variant="ghost" size="sm" className="justify-start text-sm font-sans normal-case tracking-normal" onClick={() => nav('/biblioteca')}>
                     <BookOpen className="mr-2 h-4 w-4" /> Biblioteca
+                  </Button>
+                  <Button variant="ghost" size="sm" className="justify-start text-sm font-sans normal-case tracking-normal" onClick={() => nav('/livros')}>
+                    <Library className="mr-2 h-4 w-4" /> Livros
                   </Button>
                   <Button variant="ghost" size="sm" className="justify-start text-sm font-sans normal-case tracking-normal" onClick={() => nav('/tira-duvida')}>
                     <Camera className="mr-2 h-4 w-4" /> Tira-dúvida
