@@ -43,6 +43,7 @@ export function EpubReader({ fileUrl, initialLocation, onProgress }: EpubReaderP
         const cfi = loc.start.cfi;
         const pct = book.locations.percentageFromCfi(cfi);
         setPercentage(pct * 100);
+        setCurrentHref(loc.start.href || '');
         onProgress(cfi, pct * 100);
       });
     });
