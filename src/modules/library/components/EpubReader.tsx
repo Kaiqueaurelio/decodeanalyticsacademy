@@ -76,6 +76,36 @@ export function EpubReader({ fileUrl, initialLocation, onProgress }: EpubReaderP
   const next = () => renditionRef.current?.next();
   const prev = () => renditionRef.current?.prev();
 
+  const currentChapterIndex = (() => {
+    if (!currentHref || toc.length === 0) return -1;
+    const base = currentHref.split('#')[0];
+    return toc.findIndex((t) => t.href.split('#')[0] === base);
+  })();
+
+  const goChapter = (delta: number) => {
+    if (toc.length === 0) return;
+    const idx = currentChapterIndex;
+    const target = idx === -1 ? (delta > 0 ? 0 : toc.length - 1) : idx + delta;
+    if (target < 0 || target >= toc.length) return;
+    renditionRef.current?.display(toc[target].href);
+  };
+  const nextChapter = () => goChapter(1);
+  const prevChapter = () => goChapter(-1);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement;
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+      if (e.key === 'ArrowRight' || e.key === 'PageDown') { e.preventDefault(); next(); }
+      else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); prev(); }
+      else if (e.shiftKey && e.key === 'ArrowRight') { e.preventDefault(); nextChapter(); }
+      else if (e.shiftKey && e.key === 'ArrowLeft') { e.preventDefault(); prevChapter(); }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [toc, currentHref]);
+
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const x = e.clientX - rect.left;
