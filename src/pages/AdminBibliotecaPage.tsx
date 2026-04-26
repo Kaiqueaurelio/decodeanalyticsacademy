@@ -132,12 +132,22 @@ export default function AdminBibliotecaPage() {
                 {b.cover_url && <img src={b.cover_url} alt="" className="w-full h-full object-cover" />}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-sm truncate">{b.title}</p>
+                <div className="flex items-center gap-2">
+                  <p className="font-medium text-sm truncate">{b.title}</p>
+                  <Badge variant={b.published ? 'default' : 'secondary'} className="text-[10px] flex-shrink-0">
+                    {b.published ? <><Eye className="h-3 w-3 mr-1" />Publicado</> : <><EyeOff className="h-3 w-3 mr-1" />Rascunho</>}
+                  </Badge>
+                </div>
                 <p className="text-xs text-muted-foreground truncate">{b.author || '—'} · {b.file_type.toUpperCase()}</p>
               </div>
-              <Button variant="ghost" size="icon" onClick={() => remove(b.id)} className="h-8 w-8 text-destructive">
-                <Trash2 className="h-4 w-4" />
-              </Button>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5" title={b.published ? 'Despublicar' : 'Publicar'}>
+                  <Switch checked={!!b.published} onCheckedChange={() => togglePublished(b)} />
+                </div>
+                <Button variant="ghost" size="icon" onClick={() => remove(b.id)} className="h-8 w-8 text-destructive">
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
             </Card>
           ))}
         </div>
