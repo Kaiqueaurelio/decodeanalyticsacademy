@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { LogOut, LayoutDashboard, Shield, Menu, ArrowRight, Sun, Moon, User, Users, Camera, BookOpen } from 'lucide-react';
+import { LogOut, LayoutDashboard, Shield, Menu, ArrowRight, Sun, Moon, User, Users, Camera, BookOpen, Library } from 'lucide-react';
 import logoDark from '@/assets/logo-dark.jpeg';
 import { useMentionNotifications } from '@/hooks/useMentionNotifications';
 import { NotificationBell } from '@/components/NotificationBell';
