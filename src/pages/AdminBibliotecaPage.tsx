@@ -81,6 +81,12 @@ export default function AdminBibliotecaPage() {
       toast.error('Título e arquivo são obrigatórios');
       return;
     }
+    const bookErr = validateFile(bookFile, BOOK_TYPES, BOOK_EXTS, MAX_BOOK_MB, 'Livro');
+    if (bookErr) { toast.error(bookErr); return; }
+    if (coverFile) {
+      const coverErr = validateFile(coverFile, COVER_TYPES, COVER_EXTS, MAX_COVER_MB, 'Capa');
+      if (coverErr) { toast.error(coverErr); return; }
+    }
     setUploading(true);
     try {
       const ext = bookFile.name.split('.').pop()?.toLowerCase() || 'pdf';
