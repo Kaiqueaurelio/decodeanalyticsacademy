@@ -131,20 +131,42 @@ export function PdfReader({ fileUrl, initialPage = 1, onProgress }: PdfReaderPro
         </div>
       </div>
 
-      <div className="w-full border-t border-border bg-background/95 backdrop-blur px-4 py-2 flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={goPrev} disabled={page <= 1} className="h-8 w-8">
+      <div className="w-full border-t border-border bg-background/95 backdrop-blur px-3 py-2 flex items-center gap-1.5 sm:gap-2 flex-wrap">
+        <Button variant="ghost" size="icon" onClick={goFirst} disabled={page <= 1} className="h-8 w-8" title="Primeira página (Home)">
+          <ChevronsLeft className="h-4 w-4" />
+        </Button>
+        <Button variant="ghost" size="icon" onClick={jumpBackward} disabled={page <= 1} className="h-8 w-8 hidden sm:inline-flex" title="Voltar 10 páginas">
+          <span className="text-[10px] font-semibold">-10</span>
+        </Button>
+        <Button variant="ghost" size="icon" onClick={goPrev} disabled={page <= 1} className="h-8 w-8" title="Página anterior (←)">
           <ChevronLeft className="h-4 w-4" />
         </Button>
-        <div className="flex-1">
+        <div className="flex-1 min-w-[100px]">
           <div className="h-1.5 bg-muted rounded-full overflow-hidden">
             <div className="h-full bg-primary transition-all" style={{ width: `${numPages ? (page / numPages) * 100 : 0}%` }} />
           </div>
         </div>
-        <span className="text-xs text-muted-foreground tabular-nums whitespace-nowrap">
-          {page} / {numPages || '—'}
-        </span>
-        <Button variant="ghost" size="icon" onClick={goNext} disabled={page >= numPages} className="h-8 w-8">
+        <form onSubmit={submitPageInput} className="flex items-center gap-1">
+          <Input
+            type="number"
+            min={1}
+            max={numPages || undefined}
+            value={pageInput}
+            onChange={(e) => setPageInput(e.target.value)}
+            placeholder={String(page)}
+            className="h-7 w-14 text-xs px-2 tabular-nums"
+            aria-label="Ir para página"
+          />
+          <span className="text-xs text-muted-foreground tabular-nums whitespace-nowrap">/ {numPages || '—'}</span>
+        </form>
+        <Button variant="ghost" size="icon" onClick={goNext} disabled={page >= numPages} className="h-8 w-8" title="Próxima página (→)">
           <ChevronRight className="h-4 w-4" />
+        </Button>
+        <Button variant="ghost" size="icon" onClick={jumpForward} disabled={page >= numPages} className="h-8 w-8 hidden sm:inline-flex" title="Avançar 10 páginas">
+          <span className="text-[10px] font-semibold">+10</span>
+        </Button>
+        <Button variant="ghost" size="icon" onClick={goLast} disabled={page >= numPages} className="h-8 w-8" title="Última página (End)">
+          <ChevronsRight className="h-4 w-4" />
         </Button>
       </div>
 
