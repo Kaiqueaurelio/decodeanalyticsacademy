@@ -242,6 +242,7 @@ function OverviewTab({ apostilas, exercises, allAnswers, materials, users, setTa
   apostilas: Apostila[]; exercises: Record<string, Exercise[]>; allAnswers: any[];
   materials: Material[]; users: any[]; setTab: (t: Tab) => void; loading?: boolean;
 }) {
+  const navigate = useNavigate();
   const totalExercises = Object.values(exercises).flat().length;
   const totalAnswers = allAnswers.length;
   const correctAnswers = allAnswers.filter(a => a.is_correct).length;
