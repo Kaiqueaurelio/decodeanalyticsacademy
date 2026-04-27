@@ -9,11 +9,53 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { ArrowLeft, BookPlus, Eye, EyeOff, Loader2, Trash2 } from 'lucide-react';
+import { ArrowLeft, BookPlus, Eye, EyeOff, Loader2, Trash2, CheckCircle2, AlertCircle, ImageIcon, FileText } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import type { Book } from '@/modules/library/types';
 import { detectFileType } from '@/modules/library/types';
+
+type UploadPhase = 'idle' | 'cover' | 'book' | 'saving' | 'done' | 'error';
+
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
+const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
+
+/** Upload via XHR to expose real progress events (supabase-js does not surface them). */
+function uploadWithProgress(opts: {
+  bucket: string;
+  path: string;
+  file: File;
+  token: string;
+  onProgress: (pct: number) => void;
+}): Promise<void> {
+  const { bucket, path, file, token, onProgress } = opts;
+  return new Promise((resolve, reject) => {
+    const url = `${SUPABASE_URL}/storage/v1/object/${bucket}/${encodeURIComponent(path)}`;
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', url, true);
+    xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+    xhr.setRequestHeader('apikey', SUPABASE_ANON);
+    xhr.setRequestHeader('x-upsert', 'false');
+    if (file.type) xhr.setRequestHeader('Content-Type', file.type);
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100));
+    };
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        onProgress(100);
+        resolve();
+      } else {
+        let msg = `Upload falhou (HTTP ${xhr.status})`;
+        try { const j = JSON.parse(xhr.responseText); msg = j.message || j.error || msg; } catch { /* noop */ }
+        reject(new Error(msg));
+      }
+    };
+    xhr.onerror = () => reject(new Error('Erro de rede ao enviar arquivo.'));
+    xhr.onabort = () => reject(new Error('Upload cancelado.'));
+    xhr.send(file);
+  });
+}
 
 export default function AdminBibliotecaPage() {
   const { user, isAdmin } = useAuth();
@@ -25,6 +67,11 @@ export default function AdminBibliotecaPage() {
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [bookFile, setBookFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [phase, setPhase] = useState<UploadPhase>('idle');
+  const [coverPct, setCoverPct] = useState(0);
+  const [bookPct, setBookPct] = useState(0);
+  const [statusMsg, setStatusMsg] = useState<string>('');
+  const [errorMsg, setErrorMsg] = useState<string>('');
 
   useEffect(() => { void load(); }, []);
 
