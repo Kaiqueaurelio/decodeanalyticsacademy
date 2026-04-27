@@ -133,12 +133,16 @@ export function PdfReader({ fileUrl, initialPage = 1, onProgress, onRequestReloa
   const [retryNonce, setRetryNonce] = useState(0);
   const [pageInput, setPageInput] = useState('');
   const [containerWidth, setContainerWidth] = useState(800);
+  const [previewPage, setPreviewPage] = useState<number | null>(null);
+  const [previewX, setPreviewX] = useState(0);
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const scrubberRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
   const touchStartT = useRef<number>(0);
   const hideTimer = useRef<number | null>(null);
+  const previewHideTimer = useRef<number | null>(null);
 
   // Memoize file option to prevent react-pdf from reloading the document on every render.
   // retryNonce is included so "Tentar novamente" forces a fresh load.
@@ -443,13 +447,53 @@ export function PdfReader({ fileUrl, initialPage = 1, onProgress, onRequestReloa
         }}
       >
         <div className="max-w-3xl mx-auto flex flex-col gap-2">
-          <Slider
-            value={[page]}
-            min={1}
-            max={Math.max(1, numPages)}
-            step={1}
-            onValueChange={(v) => goTo(v[0])}
-          />
+          {/* Scrubber + thumbnail preview */}
+          <div
+            ref={scrubberRef}
+            className="relative"
+            onPointerMove={(e) => {
+              if (!numPages || !scrubberRef.current) return;
+              const rect = scrubberRef.current.getBoundingClientRect();
+              const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+              const target = Math.max(1, Math.min(numPages, Math.round(ratio * (numPages - 1)) + 1));
+              setPreviewPage(target);
+              setPreviewX(e.clientX - rect.left);
+              if (previewHideTimer.current) { window.clearTimeout(previewHideTimer.current); previewHideTimer.current = null; }
+            }}
+            onPointerLeave={() => {
+              if (previewHideTimer.current) window.clearTimeout(previewHideTimer.current);
+              previewHideTimer.current = window.setTimeout(() => setPreviewPage(null), 180);
+            }}
+            onPointerDown={(e) => {
+              if (!numPages || !scrubberRef.current) return;
+              const rect = scrubberRef.current.getBoundingClientRect();
+              const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+              const target = Math.max(1, Math.min(numPages, Math.round(ratio * (numPages - 1)) + 1));
+              setPreviewPage(target);
+              setPreviewX(e.clientX - rect.left);
+            }}
+          >
+            {/* Thumbnail bubble */}
+            {previewPage !== null && numPages > 0 && (
+              <ThumbnailBubble
+                fileOption={fileOption}
+                page={previewPage}
+                x={previewX}
+                theme={theme}
+              />
+            )}
+            <Slider
+              value={[page]}
+              min={1}
+              max={Math.max(1, numPages)}
+              step={1}
+              onValueChange={(v) => { goTo(v[0]); setPreviewPage(v[0]); }}
+              onValueCommit={() => {
+                if (previewHideTimer.current) window.clearTimeout(previewHideTimer.current);
+                previewHideTimer.current = window.setTimeout(() => setPreviewPage(null), 600);
+              }}
+            />
+          </div>
           <div className="flex items-center justify-between text-[11px] tabular-nums" style={{ color: theme === 'dark' ? '#d4d4d4' : '#525252' }}>
             <form onSubmit={submitPageInput} className="flex items-center gap-1.5">
               <Input
