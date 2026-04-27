@@ -133,12 +133,16 @@ export function PdfReader({ fileUrl, initialPage = 1, onProgress, onRequestReloa
   const [retryNonce, setRetryNonce] = useState(0);
   const [pageInput, setPageInput] = useState('');
   const [containerWidth, setContainerWidth] = useState(800);
+  const [previewPage, setPreviewPage] = useState<number | null>(null);
+  const [previewX, setPreviewX] = useState(0);
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const scrubberRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
   const touchStartT = useRef<number>(0);
   const hideTimer = useRef<number | null>(null);
+  const previewHideTimer = useRef<number | null>(null);
 
   // Memoize file option to prevent react-pdf from reloading the document on every render.
   // retryNonce is included so "Tentar novamente" forces a fresh load.
@@ -443,13 +447,53 @@ export function PdfReader({ fileUrl, initialPage = 1, onProgress, onRequestReloa
         }}
       >
         <div className="max-w-3xl mx-auto flex flex-col gap-2">
-          <Slider
-            value={[page]}
-            min={1}
-            max={Math.max(1, numPages)}
-            step={1}
-            onValueChange={(v) => goTo(v[0])}
-          />
+          {/* Scrubber + thumbnail preview */}
+          <div
+            ref={scrubberRef}
+            className="relative"
+            onPointerMove={(e) => {
+              if (!numPages || !scrubberRef.current) return;
+              const rect = scrubberRef.current.getBoundingClientRect();
+              const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+              const target = Math.max(1, Math.min(numPages, Math.round(ratio * (numPages - 1)) + 1));
+              setPreviewPage(target);
+              setPreviewX(e.clientX - rect.left);
+              if (previewHideTimer.current) { window.clearTimeout(previewHideTimer.current); previewHideTimer.current = null; }
+            }}
+            onPointerLeave={() => {
+              if (previewHideTimer.current) window.clearTimeout(previewHideTimer.current);
+              previewHideTimer.current = window.setTimeout(() => setPreviewPage(null), 180);
+            }}
+            onPointerDown={(e) => {
+              if (!numPages || !scrubberRef.current) return;
+              const rect = scrubberRef.current.getBoundingClientRect();
+              const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+              const target = Math.max(1, Math.min(numPages, Math.round(ratio * (numPages - 1)) + 1));
+              setPreviewPage(target);
+              setPreviewX(e.clientX - rect.left);
+            }}
+          >
+            {/* Thumbnail bubble */}
+            {previewPage !== null && numPages > 0 && (
+              <ThumbnailBubble
+                fileOption={fileOption}
+                page={previewPage}
+                x={previewX}
+                theme={theme}
+              />
+            )}
+            <Slider
+              value={[page]}
+              min={1}
+              max={Math.max(1, numPages)}
+              step={1}
+              onValueChange={(v) => { goTo(v[0]); setPreviewPage(v[0]); }}
+              onValueCommit={() => {
+                if (previewHideTimer.current) window.clearTimeout(previewHideTimer.current);
+                previewHideTimer.current = window.setTimeout(() => setPreviewPage(null), 600);
+              }}
+            />
+          </div>
           <div className="flex items-center justify-between text-[11px] tabular-nums" style={{ color: theme === 'dark' ? '#d4d4d4' : '#525252' }}>
             <form onSubmit={submitPageInput} className="flex items-center gap-1.5">
               <Input
@@ -490,5 +534,100 @@ function ThemeChip({ active, onClick, icon, label }: { active: boolean; onClick:
       {icon}
       <span>{label}</span>
     </button>
+  );
+}
+
+const THUMB_WIDTH = 110; // px
+const THUMB_HEIGHT = 150; // ~A4 ratio
+
+function ThumbnailBubble({
+  fileOption,
+  page,
+  x,
+  theme,
+}: {
+  fileOption: { url: string; withCredentials: boolean };
+  page: number;
+  x: number;
+  theme: ReaderTheme;
+}) {
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const [parentW, setParentW] = useState(0);
+
+  useEffect(() => {
+    const el = wrapRef.current?.parentElement;
+    if (!el) return;
+    const update = () => setParentW(el.clientWidth);
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  // Clamp horizontally so bubble stays inside the scrubber bounds
+  const half = THUMB_WIDTH / 2;
+  const left = parentW > 0
+    ? Math.max(half + 4, Math.min(parentW - half - 4, x))
+    : x;
+
+  return (
+    <div
+      ref={wrapRef}
+      className="pointer-events-none absolute z-40 -translate-x-1/2 transition-opacity duration-150"
+      style={{
+        left,
+        bottom: 'calc(100% + 12px)',
+        opacity: 1,
+      }}
+    >
+      <div
+        className="rounded-md overflow-hidden border shadow-xl flex items-center justify-center"
+        style={{
+          width: THUMB_WIDTH,
+          height: THUMB_HEIGHT,
+          backgroundColor: theme === 'dark' ? '#2a2a2a' : '#ffffff',
+          borderColor: theme === 'dark' ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)',
+          filter: theme === 'dark' ? 'invert(1) hue-rotate(180deg)' : undefined,
+        }}
+      >
+        <Document
+          file={fileOption}
+          loading={<Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+          error={<span className="text-[10px] text-muted-foreground px-2 text-center">—</span>}
+        >
+          <Page
+            pageNumber={page}
+            width={THUMB_WIDTH}
+            renderAnnotationLayer={false}
+            renderTextLayer={false}
+            loading={<Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+          />
+        </Document>
+      </div>
+      {/* Page number caption */}
+      <div
+        className="mx-auto mt-1.5 px-2 py-0.5 rounded text-[11px] tabular-nums font-medium text-center"
+        style={{
+          width: 'fit-content',
+          backgroundColor: theme === 'dark' ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.95)',
+          color: theme === 'dark' ? '#f5f5f5' : '#1a1a1a',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+        }}
+      >
+        Página {page}
+      </div>
+      {/* Tail */}
+      <div
+        className="absolute left-1/2 -translate-x-1/2"
+        style={{
+          bottom: -4,
+          width: 0,
+          height: 0,
+          borderLeft: '6px solid transparent',
+          borderRight: '6px solid transparent',
+          borderTop: `6px solid ${theme === 'dark' ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.95)'}`,
+        }}
+      />
+    </div>
   );
 }
