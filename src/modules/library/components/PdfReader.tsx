@@ -21,6 +21,9 @@ import {
   WifiOff,
   Lock,
   Clock,
+  ScrollText,
+  BookOpen,
+  Maximize2,
 } from 'lucide-react';
 // Use the worker file shipped with the installed pdfjs-dist (matches the version exactly)
 import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
@@ -122,27 +125,68 @@ const THEME_STYLES: Record<ReaderTheme, { bg: string; pageShadow: string; filter
   dark:  { bg: '#1a1a1a', pageShadow: '0 8px 30px -6px rgba(0,0,0,0.6)', filter: 'invert(1) hue-rotate(180deg)' },
 };
 
+type ViewMode = 'paged' | 'scroll';
+type FitMode = 'manual' | 'width' | 'page';
+type Margin = 'tight' | 'cozy' | 'wide';
+
+const MARGIN_PX: Record<Margin, { x: number; y: number }> = {
+  tight: { x: 4, y: 16 },
+  cozy:  { x: 16, y: 36 },
+  wide:  { x: 48, y: 60 },
+};
+
+const STORAGE_KEY = 'pdf-reader-prefs-v1';
+
 export function PdfReader({ fileUrl, initialPage = 1, onProgress, onRequestReload }: PdfReaderProps) {
   const [numPages, setNumPages] = useState(0);
   const [page, setPage] = useState(initialPage);
   const [scale, setScale] = useState(1);
   const [theme, setTheme] = useState<ReaderTheme>('light');
+  const [viewMode, setViewMode] = useState<ViewMode>('paged');
+  const [fitMode, setFitMode] = useState<FitMode>('width');
+  const [margin, setMargin] = useState<Margin>('cozy');
+  const [pageAspect, setPageAspect] = useState<number>(1.4); // height/width, A4 ≈ 1.414
   const [chromeVisible, setChromeVisible] = useState(true);
   const [loadError, setLoadError] = useState<DiagnosedError | null>(null);
   const [loadingTooLong, setLoadingTooLong] = useState(false);
   const [retryNonce, setRetryNonce] = useState(0);
   const [pageInput, setPageInput] = useState('');
   const [containerWidth, setContainerWidth] = useState(800);
+  const [containerHeight, setContainerHeight] = useState(800);
   const [previewPage, setPreviewPage] = useState<number | null>(null);
   const [previewX, setPreviewX] = useState(0);
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const pageAreaRef = useRef<HTMLDivElement>(null);
   const scrubberRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
   const touchStartT = useRef<number>(0);
   const hideTimer = useRef<number | null>(null);
   const previewHideTimer = useRef<number | null>(null);
+  const scrollPageRefs = useRef<Map<number, HTMLDivElement>>(new Map());
+  const programmaticScroll = useRef(false);
+
+  // Load saved preferences
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      const p = JSON.parse(raw);
+      if (p.theme) setTheme(p.theme);
+      if (p.viewMode) setViewMode(p.viewMode);
+      if (p.fitMode) setFitMode(p.fitMode);
+      if (p.margin) setMargin(p.margin);
+      if (typeof p.scale === 'number' && p.scale > 0) setScale(p.scale);
+    } catch { /* noop */ }
+  }, []);
+
+  // Persist preferences
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ theme, viewMode, fitMode, margin, scale }));
+    } catch { /* noop */ }
+  }, [theme, viewMode, fitMode, margin, scale]);
 
   // Memoize file option to prevent react-pdf from reloading the document on every render.
   // retryNonce is included so "Tentar novamente" forces a fresh load.
@@ -173,8 +217,8 @@ export function PdfReader({ fileUrl, initialPage = 1, onProgress, onRequestReloa
   useEffect(() => {
     const update = () => {
       if (containerRef.current) {
-        const w = containerRef.current.clientWidth;
-        setContainerWidth(Math.min(w - 24, 920));
+        setContainerWidth(containerRef.current.clientWidth);
+        setContainerHeight(containerRef.current.clientHeight);
       }
     };
     update();
@@ -182,9 +226,64 @@ export function PdfReader({ fileUrl, initialPage = 1, onProgress, onRequestReloa
     return () => window.removeEventListener('resize', update);
   }, []);
 
+  // Compute the effective render width based on fit mode + margins.
+  // - 'width' fills the container minus horizontal margin (Google Play Books default).
+  // - 'page' fits the entire page within the visible viewport (height-bound).
+  // - 'manual' uses scale slider on top of width-based base.
+  const marginPx = MARGIN_PX[margin];
+  const effectiveWidth = useMemo(() => {
+    const baseWidth = Math.max(240, containerWidth - marginPx.x * 2);
+    if (fitMode === 'width') return Math.min(baseWidth, 1100);
+    if (fitMode === 'page') {
+      // Account for vertical chrome (top bar ~48 + bottom scrubber ~96) only in paged mode
+      const verticalChrome = viewMode === 'paged' ? 144 : marginPx.y * 2;
+      const availableHeight = Math.max(320, containerHeight - verticalChrome);
+      const widthFromHeight = availableHeight / pageAspect;
+      return Math.min(widthFromHeight, baseWidth, 1100);
+    }
+    // manual: width × scale (clamped)
+    return Math.min(Math.max(240, baseWidth * scale), 1600);
+  }, [containerWidth, containerHeight, fitMode, marginPx.x, marginPx.y, pageAspect, scale, viewMode]);
+
   useEffect(() => {
     if (numPages > 0) onProgress(page, numPages);
   }, [page, numPages, onProgress]);
+
+  // Scroll mode: scroll to the requested page when `page` changes from outside (scrubber, keys)
+  useEffect(() => {
+    if (viewMode !== 'scroll') return;
+    const el = scrollPageRefs.current.get(page);
+    const scroller = pageAreaRef.current;
+    if (!el || !scroller) return;
+    programmaticScroll.current = true;
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    window.setTimeout(() => { programmaticScroll.current = false; }, 700);
+  }, [page, viewMode]);
+
+  // Scroll mode: observe which page is most visible and update `page`
+  useEffect(() => {
+    if (viewMode !== 'scroll' || !pageAreaRef.current || numPages === 0) return;
+    const scroller = pageAreaRef.current;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (programmaticScroll.current) return;
+        let bestPage = page;
+        let bestRatio = 0;
+        for (const entry of entries) {
+          if (entry.intersectionRatio > bestRatio) {
+            bestRatio = entry.intersectionRatio;
+            const p = Number((entry.target as HTMLElement).dataset.page);
+            if (p) bestPage = p;
+          }
+        }
+        if (bestRatio > 0.4 && bestPage !== page) setPage(bestPage);
+      },
+      { root: scroller, threshold: [0.25, 0.5, 0.75] },
+    );
+    scrollPageRefs.current.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [viewMode, numPages]);
 
   const scheduleHide = useCallback(() => {
     if (hideTimer.current) window.clearTimeout(hideTimer.current);
@@ -324,11 +423,40 @@ export function PdfReader({ fileUrl, initialPage = 1, onProgress, onRequestReloa
                 </div>
               </div>
               <div>
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Modo de leitura</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <ThemeChip active={viewMode === 'paged'} onClick={() => setViewMode('paged')} icon={<BookOpen className="h-4 w-4" />} label="Página" />
+                  <ThemeChip active={viewMode === 'scroll'} onClick={() => setViewMode('scroll')} icon={<ScrollText className="h-4 w-4" />} label="Rolagem" />
+                </div>
+              </div>
+              <div>
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Ajuste automático</p>
+                <div className="grid grid-cols-3 gap-2">
+                  <ThemeChip active={fitMode === 'width'} onClick={() => setFitMode('width')} icon={<Maximize2 className="h-4 w-4" />} label="Largura" />
+                  <ThemeChip active={fitMode === 'page'} onClick={() => setFitMode('page')} icon={<BookOpen className="h-4 w-4" />} label="Página" />
+                  <ThemeChip active={fitMode === 'manual'} onClick={() => setFitMode('manual')} icon={<ZoomIn className="h-4 w-4" />} label="Manual" />
+                </div>
+              </div>
+              <div>
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Margens</p>
+                <div className="grid grid-cols-3 gap-2">
+                  <ThemeChip active={margin === 'tight'} onClick={() => setMargin('tight')} icon={<span className="text-[10px] font-bold">S</span>} label="Pequena" />
+                  <ThemeChip active={margin === 'cozy'} onClick={() => setMargin('cozy')} icon={<span className="text-[10px] font-bold">M</span>} label="Média" />
+                  <ThemeChip active={margin === 'wide'} onClick={() => setMargin('wide')} icon={<span className="text-[10px] font-bold">L</span>} label="Grande" />
+                </div>
+              </div>
+              <div>
                 <div className="flex items-center justify-between mb-2">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Zoom</p>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Zoom {fitMode !== 'manual' && <span className="opacity-60 normal-case">(manual)</span>}</p>
                   <span className="text-xs tabular-nums">{Math.round(scale * 100)}%</span>
                 </div>
-                <Slider value={[scale * 100]} min={50} max={250} step={10} onValueChange={(v) => setScale(v[0] / 100)} />
+                <Slider
+                  value={[scale * 100]}
+                  min={50}
+                  max={250}
+                  step={10}
+                  onValueChange={(v) => { setScale(v[0] / 100); setFitMode('manual'); }}
+                />
               </div>
               <div className="text-[11px] text-muted-foreground space-y-1 pt-2 border-t border-border">
                 <p>Atalhos:</p>
@@ -344,71 +472,118 @@ export function PdfReader({ fileUrl, initialPage = 1, onProgress, onRequestReloa
 
       {/* Page area */}
       <div
-        className="absolute inset-0 overflow-auto flex items-start justify-center py-10 px-3 select-none cursor-pointer"
-        onClick={handleClick}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
+        ref={pageAreaRef}
+        className={`absolute inset-0 overflow-auto select-none ${viewMode === 'paged' ? 'flex items-start justify-center cursor-pointer' : 'cursor-default'}`}
+        style={{ paddingLeft: marginPx.x, paddingRight: marginPx.x, paddingTop: marginPx.y, paddingBottom: marginPx.y + (viewMode === 'paged' ? 40 : 0) }}
+        onClick={viewMode === 'paged' ? handleClick : undefined}
+        onTouchStart={viewMode === 'paged' ? handleTouchStart : undefined}
+        onTouchEnd={viewMode === 'paged' ? handleTouchEnd : undefined}
       >
-        <div
-          key={page}
-          className="rounded-sm overflow-hidden"
-          style={{
-            boxShadow: themeStyle.pageShadow,
-            filter: themeStyle.filter,
-            animation: 'pdf-page-in 280ms ease-out',
-            backgroundColor: '#ffffff',
-          }}
-        >
-          <Document
-            file={fileOption}
-            onLoadSuccess={({ numPages: n }) => { setNumPages(n); setLoadError(null); setLoadingTooLong(false); }}
-            onLoadError={(err) => { setLoadError(diagnosePdfError(err, fileUrl)); }}
-            loading={
-              <div className="flex flex-col items-center justify-center gap-3 p-12 min-w-[280px] min-h-[360px] text-center">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                <p className="text-xs text-muted-foreground">Carregando livro…</p>
-                {loadingTooLong && (
-                  <div className="mt-4 space-y-3 max-w-xs">
-                    <p className="text-xs text-muted-foreground">
-                      Está demorando mais que o esperado. O link pode ter expirado ou a conexão está lenta.
-                    </p>
-                    <Button size="sm" variant="outline" onClick={handleRetry} className="gap-2">
-                      <RefreshCw className="h-3.5 w-3.5" />
-                      Tentar novamente
-                    </Button>
-                  </div>
-                )}
-              </div>
-            }
-            error={
-              <div className="flex flex-col items-center justify-center gap-3 p-10 min-w-[300px] min-h-[360px] text-center max-w-sm">
-                {loadError?.icon ?? <AlertTriangle className="h-6 w-6 text-destructive" />}
-                <p className="text-sm font-semibold text-foreground">{loadError?.title ?? 'Não foi possível abrir o PDF'}</p>
-                <p className="text-xs text-muted-foreground">{loadError?.description ?? 'Verifique sua conexão ou tente novamente.'}</p>
-                <p className="text-[11px] text-muted-foreground/80 italic">{loadError?.hint}</p>
-                <div className="flex gap-2 mt-2">
-                  <Button size="sm" onClick={handleRetry} className="gap-2">
+        <Document
+          file={fileOption}
+          onLoadSuccess={({ numPages: n }) => { setNumPages(n); setLoadError(null); setLoadingTooLong(false); }}
+          onLoadError={(err) => { setLoadError(diagnosePdfError(err, fileUrl)); }}
+          loading={
+            <div className="flex flex-col items-center justify-center gap-3 p-12 min-w-[280px] min-h-[360px] text-center mx-auto">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              <p className="text-xs text-muted-foreground">Carregando livro…</p>
+              {loadingTooLong && (
+                <div className="mt-4 space-y-3 max-w-xs">
+                  <p className="text-xs text-muted-foreground">
+                    Está demorando mais que o esperado. O link pode ter expirado ou a conexão está lenta.
+                  </p>
+                  <Button size="sm" variant="outline" onClick={handleRetry} className="gap-2">
                     <RefreshCw className="h-3.5 w-3.5" />
-                    {loadError?.kind === 'expired' ? 'Recarregar livro' : 'Tentar novamente'}
+                    Tentar novamente
                   </Button>
                 </div>
+              )}
+            </div>
+          }
+          error={
+            <div className="flex flex-col items-center justify-center gap-3 p-10 min-w-[300px] min-h-[360px] text-center max-w-sm mx-auto">
+              {loadError?.icon ?? <AlertTriangle className="h-6 w-6 text-destructive" />}
+              <p className="text-sm font-semibold text-foreground">{loadError?.title ?? 'Não foi possível abrir o PDF'}</p>
+              <p className="text-xs text-muted-foreground">{loadError?.description ?? 'Verifique sua conexão ou tente novamente.'}</p>
+              <p className="text-[11px] text-muted-foreground/80 italic">{loadError?.hint}</p>
+              <div className="flex gap-2 mt-2">
+                <Button size="sm" onClick={handleRetry} className="gap-2">
+                  <RefreshCw className="h-3.5 w-3.5" />
+                  {loadError?.kind === 'expired' ? 'Recarregar livro' : 'Tentar novamente'}
+                </Button>
               </div>
-            }
-          >
-            <Page
-              pageNumber={page}
-              width={containerWidth}
-              scale={scale}
-              renderAnnotationLayer={false}
-              renderTextLayer={false}
-              loading={
-                <div className="flex items-center justify-center" style={{ width: containerWidth, height: containerWidth * 1.4 }}>
-                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+            </div>
+          }
+        >
+          {viewMode === 'paged' ? (
+            <div
+              key={page}
+              className="rounded-sm overflow-hidden mx-auto"
+              style={{
+                boxShadow: themeStyle.pageShadow,
+                filter: themeStyle.filter,
+                animation: 'pdf-page-in 280ms ease-out',
+                backgroundColor: '#ffffff',
+                width: 'fit-content',
+              }}
+            >
+              <Page
+                pageNumber={page}
+                width={effectiveWidth}
+                renderAnnotationLayer={false}
+                renderTextLayer={false}
+                onLoadSuccess={(p) => {
+                  // Use first-rendered page to learn the aspect ratio for fit-page mode
+                  const w = p.width || p.originalWidth;
+                  const h = p.height || p.originalHeight;
+                  if (w && h) setPageAspect(h / w);
+                }}
+                loading={
+                  <div className="flex items-center justify-center" style={{ width: effectiveWidth, height: effectiveWidth * pageAspect }}>
+                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                  </div>
+                }
+              />
+            </div>
+          ) : (
+            <div className="flex flex-col items-center gap-4">
+              {Array.from({ length: numPages }, (_, i) => i + 1).map((p) => (
+                <div
+                  key={p}
+                  ref={(el) => {
+                    if (el) scrollPageRefs.current.set(p, el);
+                    else scrollPageRefs.current.delete(p);
+                  }}
+                  data-page={p}
+                  className="rounded-sm overflow-hidden"
+                  style={{
+                    boxShadow: themeStyle.pageShadow,
+                    filter: themeStyle.filter,
+                    backgroundColor: '#ffffff',
+                    width: 'fit-content',
+                  }}
+                >
+                  <Page
+                    pageNumber={p}
+                    width={effectiveWidth}
+                    renderAnnotationLayer={false}
+                    renderTextLayer={false}
+                    onLoadSuccess={p === 1 ? (pp) => {
+                      const w = pp.width || pp.originalWidth;
+                      const h = pp.height || pp.originalHeight;
+                      if (w && h) setPageAspect(h / w);
+                    } : undefined}
+                    loading={
+                      <div className="flex items-center justify-center" style={{ width: effectiveWidth, height: effectiveWidth * pageAspect }}>
+                        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                      </div>
+                    }
+                  />
                 </div>
-              }
-            />
-          </Document>
-        </div>
+              ))}
+            </div>
+          )}
+        </Document>
       </div>
 
       {/* Side tap hints — desktop only, very subtle */}
