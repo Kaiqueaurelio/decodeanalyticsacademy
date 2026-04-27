@@ -2488,6 +2488,8 @@ export default function AdminPage() {
                             >
                               {u.is_blocked ? <><ShieldCheck className="h-3.5 w-3.5" /> Desbloquear</> : <><ShieldBan className="h-3.5 w-3.5" /> Bloquear</>}
                             </Button>
+                            {/* Redefinir senha (admin) */}
+                            <AdminPasswordResetMenu user={u} />
                             {/* Secundário: Remover — botão direto no desktop */}
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
