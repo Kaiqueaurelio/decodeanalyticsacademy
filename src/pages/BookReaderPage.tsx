@@ -59,23 +59,22 @@ export default function BookReaderPage() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-background">
-      <header className="flex items-center gap-2 px-3 sm:px-4 h-12 border-b border-border bg-background/95 backdrop-blur z-10">
-        <Button variant="ghost" size="sm" onClick={goBack} className="h-8 px-2" title="Voltar à estante (progresso preservado)">
+    <div className="h-screen flex flex-col bg-background relative">
+      <header className="flex items-center gap-2 px-3 sm:px-4 h-12 border-b border-border/60 bg-background/80 backdrop-blur-md z-40">
+        <Button variant="ghost" size="sm" onClick={goBack} className="h-8 px-2 rounded-full" title="Voltar à estante (progresso preservado)">
           <ArrowLeft className="h-4 w-4 mr-1" />
-          <span className="hidden sm:inline">Voltar à estante</span>
-          <span className="sm:hidden">Voltar</span>
+          <span className="hidden sm:inline">Estante</span>
         </Button>
-        <div className="flex-1 min-w-0">
-          <h1 className="text-sm font-semibold truncate">{book.title}</h1>
+        <div className="flex-1 min-w-0 text-center">
+          <h1 className="text-sm font-medium truncate">{book.title}</h1>
           {book.author && <p className="text-[10px] text-muted-foreground truncate">{book.author}</p>}
         </div>
-        <Button variant="ghost" size="icon" onClick={goFullscreen} className="h-8 w-8">
+        <Button variant="ghost" size="icon" onClick={goFullscreen} className="h-8 w-8 rounded-full" title="Tela cheia">
           <Maximize className="h-4 w-4" />
         </Button>
       </header>
 
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-hidden relative">
         {book.file_type === 'pdf' ? (
           <PdfReader
             fileUrl={book.file_url}
