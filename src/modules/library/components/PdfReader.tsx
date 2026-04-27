@@ -387,11 +387,40 @@ export function PdfReader({ fileUrl, initialPage = 1, onProgress, onRequestReloa
                 </div>
               </div>
               <div>
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Modo de leitura</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <ThemeChip active={viewMode === 'paged'} onClick={() => setViewMode('paged')} icon={<BookOpen className="h-4 w-4" />} label="Página" />
+                  <ThemeChip active={viewMode === 'scroll'} onClick={() => setViewMode('scroll')} icon={<ScrollText className="h-4 w-4" />} label="Rolagem" />
+                </div>
+              </div>
+              <div>
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Ajuste automático</p>
+                <div className="grid grid-cols-3 gap-2">
+                  <ThemeChip active={fitMode === 'width'} onClick={() => setFitMode('width')} icon={<Maximize2 className="h-4 w-4" />} label="Largura" />
+                  <ThemeChip active={fitMode === 'page'} onClick={() => setFitMode('page')} icon={<BookOpen className="h-4 w-4" />} label="Página" />
+                  <ThemeChip active={fitMode === 'manual'} onClick={() => setFitMode('manual')} icon={<ZoomIn className="h-4 w-4" />} label="Manual" />
+                </div>
+              </div>
+              <div>
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Margens</p>
+                <div className="grid grid-cols-3 gap-2">
+                  <ThemeChip active={margin === 'tight'} onClick={() => setMargin('tight')} icon={<span className="text-[10px] font-bold">S</span>} label="Pequena" />
+                  <ThemeChip active={margin === 'cozy'} onClick={() => setMargin('cozy')} icon={<span className="text-[10px] font-bold">M</span>} label="Média" />
+                  <ThemeChip active={margin === 'wide'} onClick={() => setMargin('wide')} icon={<span className="text-[10px] font-bold">L</span>} label="Grande" />
+                </div>
+              </div>
+              <div>
                 <div className="flex items-center justify-between mb-2">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Zoom</p>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Zoom {fitMode !== 'manual' && <span className="opacity-60 normal-case">(manual)</span>}</p>
                   <span className="text-xs tabular-nums">{Math.round(scale * 100)}%</span>
                 </div>
-                <Slider value={[scale * 100]} min={50} max={250} step={10} onValueChange={(v) => setScale(v[0] / 100)} />
+                <Slider
+                  value={[scale * 100]}
+                  min={50}
+                  max={250}
+                  step={10}
+                  onValueChange={(v) => { setScale(v[0] / 100); setFitMode('manual'); }}
+                />
               </div>
               <div className="text-[11px] text-muted-foreground space-y-1 pt-2 border-t border-border">
                 <p>Atalhos:</p>
