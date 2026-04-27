@@ -134,34 +134,67 @@ export default function AdminBibliotecaPage() {
       const coverErr = validateFile(coverFile, COVER_TYPES, COVER_EXTS, MAX_COVER_MB, 'Capa');
       if (coverErr) { toast.error(coverErr); return; }
     }
+    const { data: sessionData } = await supabase.auth.getSession();
+    const token = sessionData.session?.access_token;
+    if (!token) { toast.error('Sessão expirada. Faça login novamente.'); return; }
+
     setUploading(true);
+    setErrorMsg('');
+    setCoverPct(0);
+    setBookPct(0);
     try {
+      let coverUrl: string | null = null;
+
+      if (coverFile) {
+        setPhase('cover');
+        setStatusMsg('Enviando capa…');
+        const cExt = coverFile.name.split('.').pop() || 'jpg';
+        const cPath = `${user.id}/covers/${Date.now()}.${cExt}`;
+        await uploadWithProgress({
+          bucket: 'books',
+          path: cPath,
+          file: coverFile,
+          token,
+          onProgress: (p) => setCoverPct(p),
+        });
+        coverUrl = supabase.storage.from('books').getPublicUrl(cPath).data.publicUrl;
+      }
+
+      setPhase('book');
+      setStatusMsg(`Enviando ${bookFile.name} (${(bookFile.size / 1024 / 1024).toFixed(1)}MB)…`);
       const ext = bookFile.name.split('.').pop()?.toLowerCase() || 'pdf';
       const fileType = detectFileType(bookFile.name);
       const path = `${user.id}/${Date.now()}.${ext}`;
-      const { error: upErr } = await supabase.storage.from('books').upload(path, bookFile);
-      if (upErr) throw upErr;
+      await uploadWithProgress({
+        bucket: 'books',
+        path,
+        file: bookFile,
+        token,
+        onProgress: (p) => setBookPct(p),
+      });
       const { data: { publicUrl } } = supabase.storage.from('books').getPublicUrl(path);
 
-      let coverUrl: string | null = null;
-      if (coverFile) {
-        const cExt = coverFile.name.split('.').pop() || 'jpg';
-        const cPath = `${user.id}/covers/${Date.now()}.${cExt}`;
-        const { error: cErr } = await supabase.storage.from('books').upload(cPath, coverFile);
-        if (!cErr) coverUrl = supabase.storage.from('books').getPublicUrl(cPath).data.publicUrl;
-      }
-
+      setPhase('saving');
+      setStatusMsg('Registrando livro no acervo…');
       const { error } = await supabase.from('books').insert({
         title, author: author || null, description: description || null,
         cover_url: coverUrl, file_url: publicUrl, file_type: fileType, created_by: user.id,
         published: false,
       });
       if (error) throw error;
+
+      setPhase('done');
+      setStatusMsg('Livro adicionado como rascunho.');
       toast.success('Livro adicionado como rascunho. Publique quando estiver pronto.');
       setTitle(''); setAuthor(''); setDescription(''); setCoverFile(null); setBookFile(null);
       void load();
+      window.setTimeout(() => { setPhase('idle'); setStatusMsg(''); setCoverPct(0); setBookPct(0); }, 2500);
     } catch (e: any) {
-      toast.error(e.message || 'Erro ao enviar');
+      setPhase('error');
+      const msg = e?.message || 'Erro ao enviar';
+      setErrorMsg(msg);
+      setStatusMsg('');
+      toast.error(msg);
     } finally {
       setUploading(false);
     }
