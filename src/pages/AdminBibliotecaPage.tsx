@@ -256,6 +256,55 @@ export default function AdminBibliotecaPage() {
           <Button onClick={upload} disabled={uploading || !title || !bookFile}>
             {uploading ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Enviando...</> : 'Adicionar'}
           </Button>
+
+          {/* Upload progress + status */}
+          {(phase !== 'idle') && (
+            <div className="mt-4 rounded-lg border border-border bg-muted/30 p-4 space-y-3" role="status" aria-live="polite">
+              <div className="flex items-center gap-2">
+                {phase === 'error' ? (
+                  <AlertCircle className="h-4 w-4 text-destructive" />
+                ) : phase === 'done' ? (
+                  <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                ) : (
+                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                )}
+                <p className="text-sm font-medium">
+                  {phase === 'cover' && 'Etapa 1 de 3 — Enviando capa'}
+                  {phase === 'book' && `Etapa ${coverFile ? '2' : '1'} de ${coverFile ? '3' : '2'} — Enviando livro`}
+                  {phase === 'saving' && `Etapa ${coverFile ? '3' : '2'} de ${coverFile ? '3' : '2'} — Salvando no acervo`}
+                  {phase === 'done' && 'Concluído!'}
+                  {phase === 'error' && 'Falha no envio'}
+                </p>
+              </div>
+
+              {coverFile && (phase === 'cover' || phase === 'book' || phase === 'saving' || phase === 'done') && (
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1.5"><ImageIcon className="h-3 w-3" /> Capa</span>
+                    <span className="tabular-nums">{coverPct}%</span>
+                  </div>
+                  <Progress value={coverPct} className="h-1.5" />
+                </div>
+              )}
+
+              {(phase === 'book' || phase === 'saving' || phase === 'done') && (
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1.5"><FileText className="h-3 w-3" /> {bookFile?.name ?? 'Arquivo do livro'}</span>
+                    <span className="tabular-nums">{bookPct}%</span>
+                  </div>
+                  <Progress value={bookPct} className="h-1.5" />
+                </div>
+              )}
+
+              {statusMsg && phase !== 'error' && (
+                <p className="text-xs text-muted-foreground">{statusMsg}</p>
+              )}
+              {phase === 'error' && errorMsg && (
+                <p className="text-xs text-destructive">{errorMsg}</p>
+              )}
+            </div>
+          )}
         </Card>
 
         <h2 className="font-semibold mb-3">Livros ({books.length})</h2>
