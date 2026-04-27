@@ -9,11 +9,53 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { ArrowLeft, BookPlus, Eye, EyeOff, Loader2, Trash2 } from 'lucide-react';
+import { ArrowLeft, BookPlus, Eye, EyeOff, Loader2, Trash2, CheckCircle2, AlertCircle, ImageIcon, FileText } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import type { Book } from '@/modules/library/types';
 import { detectFileType } from '@/modules/library/types';
+
+type UploadPhase = 'idle' | 'cover' | 'book' | 'saving' | 'done' | 'error';
+
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
+const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
+
+/** Upload via XHR to expose real progress events (supabase-js does not surface them). */
+function uploadWithProgress(opts: {
+  bucket: string;
+  path: string;
+  file: File;
+  token: string;
+  onProgress: (pct: number) => void;
+}): Promise<void> {
+  const { bucket, path, file, token, onProgress } = opts;
+  return new Promise((resolve, reject) => {
+    const url = `${SUPABASE_URL}/storage/v1/object/${bucket}/${encodeURIComponent(path)}`;
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', url, true);
+    xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+    xhr.setRequestHeader('apikey', SUPABASE_ANON);
+    xhr.setRequestHeader('x-upsert', 'false');
+    if (file.type) xhr.setRequestHeader('Content-Type', file.type);
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100));
+    };
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        onProgress(100);
+        resolve();
+      } else {
+        let msg = `Upload falhou (HTTP ${xhr.status})`;
+        try { const j = JSON.parse(xhr.responseText); msg = j.message || j.error || msg; } catch { /* noop */ }
+        reject(new Error(msg));
+      }
+    };
+    xhr.onerror = () => reject(new Error('Erro de rede ao enviar arquivo.'));
+    xhr.onabort = () => reject(new Error('Upload cancelado.'));
+    xhr.send(file);
+  });
+}
 
 export default function AdminBibliotecaPage() {
   const { user, isAdmin } = useAuth();
@@ -25,6 +67,11 @@ export default function AdminBibliotecaPage() {
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [bookFile, setBookFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [phase, setPhase] = useState<UploadPhase>('idle');
+  const [coverPct, setCoverPct] = useState(0);
+  const [bookPct, setBookPct] = useState(0);
+  const [statusMsg, setStatusMsg] = useState<string>('');
+  const [errorMsg, setErrorMsg] = useState<string>('');
 
   useEffect(() => { void load(); }, []);
 
@@ -87,34 +134,67 @@ export default function AdminBibliotecaPage() {
       const coverErr = validateFile(coverFile, COVER_TYPES, COVER_EXTS, MAX_COVER_MB, 'Capa');
       if (coverErr) { toast.error(coverErr); return; }
     }
+    const { data: sessionData } = await supabase.auth.getSession();
+    const token = sessionData.session?.access_token;
+    if (!token) { toast.error('Sessão expirada. Faça login novamente.'); return; }
+
     setUploading(true);
+    setErrorMsg('');
+    setCoverPct(0);
+    setBookPct(0);
     try {
+      let coverUrl: string | null = null;
+
+      if (coverFile) {
+        setPhase('cover');
+        setStatusMsg('Enviando capa…');
+        const cExt = coverFile.name.split('.').pop() || 'jpg';
+        const cPath = `${user.id}/covers/${Date.now()}.${cExt}`;
+        await uploadWithProgress({
+          bucket: 'books',
+          path: cPath,
+          file: coverFile,
+          token,
+          onProgress: (p) => setCoverPct(p),
+        });
+        coverUrl = supabase.storage.from('books').getPublicUrl(cPath).data.publicUrl;
+      }
+
+      setPhase('book');
+      setStatusMsg(`Enviando ${bookFile.name} (${(bookFile.size / 1024 / 1024).toFixed(1)}MB)…`);
       const ext = bookFile.name.split('.').pop()?.toLowerCase() || 'pdf';
       const fileType = detectFileType(bookFile.name);
       const path = `${user.id}/${Date.now()}.${ext}`;
-      const { error: upErr } = await supabase.storage.from('books').upload(path, bookFile);
-      if (upErr) throw upErr;
+      await uploadWithProgress({
+        bucket: 'books',
+        path,
+        file: bookFile,
+        token,
+        onProgress: (p) => setBookPct(p),
+      });
       const { data: { publicUrl } } = supabase.storage.from('books').getPublicUrl(path);
 
-      let coverUrl: string | null = null;
-      if (coverFile) {
-        const cExt = coverFile.name.split('.').pop() || 'jpg';
-        const cPath = `${user.id}/covers/${Date.now()}.${cExt}`;
-        const { error: cErr } = await supabase.storage.from('books').upload(cPath, coverFile);
-        if (!cErr) coverUrl = supabase.storage.from('books').getPublicUrl(cPath).data.publicUrl;
-      }
-
+      setPhase('saving');
+      setStatusMsg('Registrando livro no acervo…');
       const { error } = await supabase.from('books').insert({
         title, author: author || null, description: description || null,
         cover_url: coverUrl, file_url: publicUrl, file_type: fileType, created_by: user.id,
         published: false,
       });
       if (error) throw error;
+
+      setPhase('done');
+      setStatusMsg('Livro adicionado como rascunho.');
       toast.success('Livro adicionado como rascunho. Publique quando estiver pronto.');
       setTitle(''); setAuthor(''); setDescription(''); setCoverFile(null); setBookFile(null);
       void load();
+      window.setTimeout(() => { setPhase('idle'); setStatusMsg(''); setCoverPct(0); setBookPct(0); }, 2500);
     } catch (e: any) {
-      toast.error(e.message || 'Erro ao enviar');
+      setPhase('error');
+      const msg = e?.message || 'Erro ao enviar';
+      setErrorMsg(msg);
+      setStatusMsg('');
+      toast.error(msg);
     } finally {
       setUploading(false);
     }
@@ -176,6 +256,55 @@ export default function AdminBibliotecaPage() {
           <Button onClick={upload} disabled={uploading || !title || !bookFile}>
             {uploading ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Enviando...</> : 'Adicionar'}
           </Button>
+
+          {/* Upload progress + status */}
+          {(phase !== 'idle') && (
+            <div className="mt-4 rounded-lg border border-border bg-muted/30 p-4 space-y-3" role="status" aria-live="polite">
+              <div className="flex items-center gap-2">
+                {phase === 'error' ? (
+                  <AlertCircle className="h-4 w-4 text-destructive" />
+                ) : phase === 'done' ? (
+                  <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                ) : (
+                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                )}
+                <p className="text-sm font-medium">
+                  {phase === 'cover' && 'Etapa 1 de 3 — Enviando capa'}
+                  {phase === 'book' && `Etapa ${coverFile ? '2' : '1'} de ${coverFile ? '3' : '2'} — Enviando livro`}
+                  {phase === 'saving' && `Etapa ${coverFile ? '3' : '2'} de ${coverFile ? '3' : '2'} — Salvando no acervo`}
+                  {phase === 'done' && 'Concluído!'}
+                  {phase === 'error' && 'Falha no envio'}
+                </p>
+              </div>
+
+              {coverFile && (phase === 'cover' || phase === 'book' || phase === 'saving' || phase === 'done') && (
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1.5"><ImageIcon className="h-3 w-3" /> Capa</span>
+                    <span className="tabular-nums">{coverPct}%</span>
+                  </div>
+                  <Progress value={coverPct} className="h-1.5" />
+                </div>
+              )}
+
+              {(phase === 'book' || phase === 'saving' || phase === 'done') && (
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1.5"><FileText className="h-3 w-3" /> {bookFile?.name ?? 'Arquivo do livro'}</span>
+                    <span className="tabular-nums">{bookPct}%</span>
+                  </div>
+                  <Progress value={bookPct} className="h-1.5" />
+                </div>
+              )}
+
+              {statusMsg && phase !== 'error' && (
+                <p className="text-xs text-muted-foreground">{statusMsg}</p>
+              )}
+              {phase === 'error' && errorMsg && (
+                <p className="text-xs text-destructive">{errorMsg}</p>
+              )}
+            </div>
+          )}
         </Card>
 
         <h2 className="font-semibold mb-3">Livros ({books.length})</h2>
