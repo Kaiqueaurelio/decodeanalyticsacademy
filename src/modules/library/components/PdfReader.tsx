@@ -217,14 +217,33 @@ export function PdfReader({ fileUrl, initialPage = 1, onProgress, onRequestReloa
   useEffect(() => {
     const update = () => {
       if (containerRef.current) {
-        const w = containerRef.current.clientWidth;
-        setContainerWidth(Math.min(w - 24, 920));
+        setContainerWidth(containerRef.current.clientWidth);
+        setContainerHeight(containerRef.current.clientHeight);
       }
     };
     update();
     window.addEventListener('resize', update);
     return () => window.removeEventListener('resize', update);
   }, []);
+
+  // Compute the effective render width based on fit mode + margins.
+  // - 'width' fills the container minus horizontal margin (Google Play Books default).
+  // - 'page' fits the entire page within the visible viewport (height-bound).
+  // - 'manual' uses scale slider on top of width-based base.
+  const marginPx = MARGIN_PX[margin];
+  const effectiveWidth = useMemo(() => {
+    const baseWidth = Math.max(240, containerWidth - marginPx.x * 2);
+    if (fitMode === 'width') return Math.min(baseWidth, 1100);
+    if (fitMode === 'page') {
+      // Account for vertical chrome (top bar ~48 + bottom scrubber ~96) only in paged mode
+      const verticalChrome = viewMode === 'paged' ? 144 : marginPx.y * 2;
+      const availableHeight = Math.max(320, containerHeight - verticalChrome);
+      const widthFromHeight = availableHeight / pageAspect;
+      return Math.min(widthFromHeight, baseWidth, 1100);
+    }
+    // manual: width × scale (clamped)
+    return Math.min(Math.max(240, baseWidth * scale), 1600);
+  }, [containerWidth, containerHeight, fitMode, marginPx.x, marginPx.y, pageAspect, scale, viewMode]);
 
   useEffect(() => {
     if (numPages > 0) onProgress(page, numPages);
