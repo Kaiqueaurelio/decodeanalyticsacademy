@@ -357,19 +357,37 @@ export function PdfReader({ fileUrl, initialPage = 1, onProgress, onRequestReloa
         >
           <Document
             file={fileOption}
-            onLoadSuccess={({ numPages: n }) => { setNumPages(n); setLoadError(null); }}
-            onLoadError={(err) => { setLoadError(err?.message || 'Falha ao carregar o PDF.'); }}
+            onLoadSuccess={({ numPages: n }) => { setNumPages(n); setLoadError(null); setLoadingTooLong(false); }}
+            onLoadError={(err) => { setLoadError(diagnosePdfError(err, fileUrl)); }}
             loading={
-              <div className="flex flex-col items-center justify-center gap-3 p-16 min-w-[260px] min-h-[360px]">
+              <div className="flex flex-col items-center justify-center gap-3 p-12 min-w-[280px] min-h-[360px] text-center">
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                 <p className="text-xs text-muted-foreground">Carregando livro…</p>
+                {loadingTooLong && (
+                  <div className="mt-4 space-y-3 max-w-xs">
+                    <p className="text-xs text-muted-foreground">
+                      Está demorando mais que o esperado. O link pode ter expirado ou a conexão está lenta.
+                    </p>
+                    <Button size="sm" variant="outline" onClick={handleRetry} className="gap-2">
+                      <RefreshCw className="h-3.5 w-3.5" />
+                      Tentar novamente
+                    </Button>
+                  </div>
+                )}
               </div>
             }
             error={
-              <div className="flex flex-col items-center justify-center gap-3 p-10 min-w-[260px] min-h-[360px] text-center">
-                <AlertTriangle className="h-6 w-6 text-destructive" />
-                <p className="text-sm font-medium">Não foi possível abrir o PDF</p>
-                <p className="text-xs text-muted-foreground max-w-xs">{loadError || 'Verifique sua conexão ou tente novamente.'}</p>
+              <div className="flex flex-col items-center justify-center gap-3 p-10 min-w-[300px] min-h-[360px] text-center max-w-sm">
+                {loadError?.icon ?? <AlertTriangle className="h-6 w-6 text-destructive" />}
+                <p className="text-sm font-semibold text-foreground">{loadError?.title ?? 'Não foi possível abrir o PDF'}</p>
+                <p className="text-xs text-muted-foreground">{loadError?.description ?? 'Verifique sua conexão ou tente novamente.'}</p>
+                <p className="text-[11px] text-muted-foreground/80 italic">{loadError?.hint}</p>
+                <div className="flex gap-2 mt-2">
+                  <Button size="sm" onClick={handleRetry} className="gap-2">
+                    <RefreshCw className="h-3.5 w-3.5" />
+                    {loadError?.kind === 'expired' ? 'Recarregar livro' : 'Tentar novamente'}
+                  </Button>
+                </div>
               </div>
             }
           >
