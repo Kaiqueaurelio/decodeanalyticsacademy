@@ -436,71 +436,118 @@ export function PdfReader({ fileUrl, initialPage = 1, onProgress, onRequestReloa
 
       {/* Page area */}
       <div
-        className="absolute inset-0 overflow-auto flex items-start justify-center py-10 px-3 select-none cursor-pointer"
-        onClick={handleClick}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
+        ref={pageAreaRef}
+        className={`absolute inset-0 overflow-auto select-none ${viewMode === 'paged' ? 'flex items-start justify-center cursor-pointer' : 'cursor-default'}`}
+        style={{ paddingLeft: marginPx.x, paddingRight: marginPx.x, paddingTop: marginPx.y, paddingBottom: marginPx.y + (viewMode === 'paged' ? 40 : 0) }}
+        onClick={viewMode === 'paged' ? handleClick : undefined}
+        onTouchStart={viewMode === 'paged' ? handleTouchStart : undefined}
+        onTouchEnd={viewMode === 'paged' ? handleTouchEnd : undefined}
       >
-        <div
-          key={page}
-          className="rounded-sm overflow-hidden"
-          style={{
-            boxShadow: themeStyle.pageShadow,
-            filter: themeStyle.filter,
-            animation: 'pdf-page-in 280ms ease-out',
-            backgroundColor: '#ffffff',
-          }}
-        >
-          <Document
-            file={fileOption}
-            onLoadSuccess={({ numPages: n }) => { setNumPages(n); setLoadError(null); setLoadingTooLong(false); }}
-            onLoadError={(err) => { setLoadError(diagnosePdfError(err, fileUrl)); }}
-            loading={
-              <div className="flex flex-col items-center justify-center gap-3 p-12 min-w-[280px] min-h-[360px] text-center">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                <p className="text-xs text-muted-foreground">Carregando livro…</p>
-                {loadingTooLong && (
-                  <div className="mt-4 space-y-3 max-w-xs">
-                    <p className="text-xs text-muted-foreground">
-                      Está demorando mais que o esperado. O link pode ter expirado ou a conexão está lenta.
-                    </p>
-                    <Button size="sm" variant="outline" onClick={handleRetry} className="gap-2">
-                      <RefreshCw className="h-3.5 w-3.5" />
-                      Tentar novamente
-                    </Button>
-                  </div>
-                )}
-              </div>
-            }
-            error={
-              <div className="flex flex-col items-center justify-center gap-3 p-10 min-w-[300px] min-h-[360px] text-center max-w-sm">
-                {loadError?.icon ?? <AlertTriangle className="h-6 w-6 text-destructive" />}
-                <p className="text-sm font-semibold text-foreground">{loadError?.title ?? 'Não foi possível abrir o PDF'}</p>
-                <p className="text-xs text-muted-foreground">{loadError?.description ?? 'Verifique sua conexão ou tente novamente.'}</p>
-                <p className="text-[11px] text-muted-foreground/80 italic">{loadError?.hint}</p>
-                <div className="flex gap-2 mt-2">
-                  <Button size="sm" onClick={handleRetry} className="gap-2">
+        <Document
+          file={fileOption}
+          onLoadSuccess={({ numPages: n }) => { setNumPages(n); setLoadError(null); setLoadingTooLong(false); }}
+          onLoadError={(err) => { setLoadError(diagnosePdfError(err, fileUrl)); }}
+          loading={
+            <div className="flex flex-col items-center justify-center gap-3 p-12 min-w-[280px] min-h-[360px] text-center mx-auto">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              <p className="text-xs text-muted-foreground">Carregando livro…</p>
+              {loadingTooLong && (
+                <div className="mt-4 space-y-3 max-w-xs">
+                  <p className="text-xs text-muted-foreground">
+                    Está demorando mais que o esperado. O link pode ter expirado ou a conexão está lenta.
+                  </p>
+                  <Button size="sm" variant="outline" onClick={handleRetry} className="gap-2">
                     <RefreshCw className="h-3.5 w-3.5" />
-                    {loadError?.kind === 'expired' ? 'Recarregar livro' : 'Tentar novamente'}
+                    Tentar novamente
                   </Button>
                 </div>
+              )}
+            </div>
+          }
+          error={
+            <div className="flex flex-col items-center justify-center gap-3 p-10 min-w-[300px] min-h-[360px] text-center max-w-sm mx-auto">
+              {loadError?.icon ?? <AlertTriangle className="h-6 w-6 text-destructive" />}
+              <p className="text-sm font-semibold text-foreground">{loadError?.title ?? 'Não foi possível abrir o PDF'}</p>
+              <p className="text-xs text-muted-foreground">{loadError?.description ?? 'Verifique sua conexão ou tente novamente.'}</p>
+              <p className="text-[11px] text-muted-foreground/80 italic">{loadError?.hint}</p>
+              <div className="flex gap-2 mt-2">
+                <Button size="sm" onClick={handleRetry} className="gap-2">
+                  <RefreshCw className="h-3.5 w-3.5" />
+                  {loadError?.kind === 'expired' ? 'Recarregar livro' : 'Tentar novamente'}
+                </Button>
               </div>
-            }
-          >
-            <Page
-              pageNumber={page}
-              width={containerWidth}
-              scale={scale}
-              renderAnnotationLayer={false}
-              renderTextLayer={false}
-              loading={
-                <div className="flex items-center justify-center" style={{ width: containerWidth, height: containerWidth * 1.4 }}>
-                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+            </div>
+          }
+        >
+          {viewMode === 'paged' ? (
+            <div
+              key={page}
+              className="rounded-sm overflow-hidden mx-auto"
+              style={{
+                boxShadow: themeStyle.pageShadow,
+                filter: themeStyle.filter,
+                animation: 'pdf-page-in 280ms ease-out',
+                backgroundColor: '#ffffff',
+                width: 'fit-content',
+              }}
+            >
+              <Page
+                pageNumber={page}
+                width={effectiveWidth}
+                renderAnnotationLayer={false}
+                renderTextLayer={false}
+                onLoadSuccess={(p) => {
+                  // Use first-rendered page to learn the aspect ratio for fit-page mode
+                  const w = p.width || p.originalWidth;
+                  const h = p.height || p.originalHeight;
+                  if (w && h) setPageAspect(h / w);
+                }}
+                loading={
+                  <div className="flex items-center justify-center" style={{ width: effectiveWidth, height: effectiveWidth * pageAspect }}>
+                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                  </div>
+                }
+              />
+            </div>
+          ) : (
+            <div className="flex flex-col items-center gap-4">
+              {Array.from({ length: numPages }, (_, i) => i + 1).map((p) => (
+                <div
+                  key={p}
+                  ref={(el) => {
+                    if (el) scrollPageRefs.current.set(p, el);
+                    else scrollPageRefs.current.delete(p);
+                  }}
+                  data-page={p}
+                  className="rounded-sm overflow-hidden"
+                  style={{
+                    boxShadow: themeStyle.pageShadow,
+                    filter: themeStyle.filter,
+                    backgroundColor: '#ffffff',
+                    width: 'fit-content',
+                  }}
+                >
+                  <Page
+                    pageNumber={p}
+                    width={effectiveWidth}
+                    renderAnnotationLayer={false}
+                    renderTextLayer={false}
+                    onLoadSuccess={p === 1 ? (pp) => {
+                      const w = pp.width || pp.originalWidth;
+                      const h = pp.height || pp.originalHeight;
+                      if (w && h) setPageAspect(h / w);
+                    } : undefined}
+                    loading={
+                      <div className="flex items-center justify-center" style={{ width: effectiveWidth, height: effectiveWidth * pageAspect }}>
+                        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                      </div>
+                    }
+                  />
                 </div>
-              }
-            />
-          </Document>
-        </div>
+              ))}
+            </div>
+          )}
+        </Document>
       </div>
 
       {/* Side tap hints — desktop only, very subtle */}
