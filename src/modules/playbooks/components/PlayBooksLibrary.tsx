@@ -220,3 +220,28 @@ function BookCard({ book, progress, isDownloaded, isFavorite, onOpen }: {
     </button>
   );
 }
+
+// Capa procedural elegante quando o livro não tem cover_url
+function GeneratedCover({ title, author }: { title: string; author?: string | null }) {
+  // Hash simples do título para escolher gradiente determinístico
+  const hash = Array.from(title).reduce((a, c) => a + c.charCodeAt(0), 0);
+  const palettes = [
+    ['from-indigo-600', 'to-fuchsia-500'],
+    ['from-cyan-500', 'to-blue-700'],
+    ['from-emerald-500', 'to-teal-700'],
+    ['from-amber-500', 'to-rose-600'],
+    ['from-violet-600', 'to-indigo-800'],
+    ['from-rose-500', 'to-pink-700'],
+  ];
+  const [from, to] = palettes[hash % palettes.length];
+  return (
+    <div className={`w-full h-full bg-gradient-to-br ${from} ${to} flex flex-col justify-between p-3 relative overflow-hidden`}>
+      <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle at 20% 10%, rgba(255,255,255,0.5), transparent 40%)' }} />
+      <BookOpen className="h-4 w-4 text-white/70 relative z-10" />
+      <div className="relative z-10">
+        <p className="text-white font-semibold text-[11px] leading-tight line-clamp-4 drop-shadow-sm">{title}</p>
+        {author && <p className="text-white/75 text-[9px] mt-1 line-clamp-1">{author}</p>}
+      </div>
+    </div>
+  );
+}
