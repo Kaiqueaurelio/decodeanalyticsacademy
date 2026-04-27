@@ -25,8 +25,9 @@ import {
   BookOpen,
   Maximize2,
 } from 'lucide-react';
-// Use the worker file shipped with the installed pdfjs-dist (matches the version exactly)
-import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
+// Resolve worker URL via import.meta to keep it in sync with whichever pdfjs-dist
+// version is hoisted by react-pdf — avoids API/Worker version mismatch errors.
+const pdfWorker = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).href;
 
 pdfjs.GlobalWorkerOptions.workerSrc = pdfWorker;
 

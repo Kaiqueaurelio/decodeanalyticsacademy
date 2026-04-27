@@ -7,7 +7,10 @@ import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 import ePub, { type Book as EpubBook, type Rendition } from 'epubjs';
-import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
+// Use the worker shipped with the exact pdfjs version react-pdf uses.
+// Loading via new URL(...import.meta.url) keeps API and Worker versions in sync,
+// preventing "API version X does not match Worker version Y" errors after deps update.
+const pdfWorker = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).href;
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
