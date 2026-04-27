@@ -48,8 +48,6 @@ const ReviewPage = lazy(() => import("./pages/ReviewPage"));
 const SimuladoPage = lazy(() => import("./pages/SimuladoPage"));
 const PreExamReviewPage = lazy(() => import("./pages/PreExamReviewPage"));
 const TiraDuvidaPage = lazy(() => import("./pages/TiraDuvidaPage"));
-const LivrosPage = lazy(() => import("./pages/LivrosPage"));
-const BookReaderPage = lazy(() => import("./pages/BookReaderPage"));
 const AdminBibliotecaPage = lazy(() => import("./pages/AdminBibliotecaPage"));
 const PlayBooksPage = lazy(() => import("./pages/PlayBooksPage"));
 
@@ -276,8 +274,7 @@ function AnimatedRoutes() {
               <Route path="/aviso/:id" element={<ProtectedRoute><AnnouncementDetailPage /></ProtectedRoute>} />
               <Route path="/comunidade" element={<ProtectedRoute><CommunityPage /></ProtectedRoute>} />
               <Route path="/tira-duvida" element={<ProtectedRoute><TiraDuvidaPage /></ProtectedRoute>} />
-              <Route path="/livros" element={<ProtectedRoute><LivrosPage /></ProtectedRoute>} />
-              <Route path="/livros/:id" element={<ProtectedRoute><BookReaderPage /></ProtectedRoute>} />
+              <Route path="/livros" element={<ProtectedRoute><PlayBooksPage /></ProtectedRoute>} />
               <Route path="/playbooks" element={<ProtectedRoute><PlayBooksPage /></ProtectedRoute>} />
               <Route path="/admin/biblioteca" element={<ProtectedRoute adminOnly><AdminBibliotecaPage /></ProtectedRoute>} />
               <Route path="/admin" element={<ProtectedRoute adminOnly><AdminPage /></ProtectedRoute>} />

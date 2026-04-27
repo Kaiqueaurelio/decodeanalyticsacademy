@@ -185,11 +185,15 @@ function BookCard({ book, progress, isDownloaded, isFavorite, onOpen }: {
     <button onClick={onOpen} className="group flex flex-col text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-md w-full">
       <div className="relative aspect-[2/3] w-full rounded-md overflow-hidden bg-muted shadow-[0_4px_12px_-2px_rgba(0,0,0,0.18)] group-hover:shadow-[0_10px_24px_-4px_rgba(0,0,0,0.28)] transition-all duration-300 group-hover:-translate-y-1">
         {book.cover ? (
-          <img src={book.cover} alt={book.title} className="w-full h-full object-cover" loading="lazy" />
+          <img
+            src={book.cover}
+            alt={book.title}
+            className="w-full h-full object-cover"
+            loading="lazy"
+            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+          />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/30 to-primary/5">
-            <BookOpen className="h-10 w-10 text-primary/50" />
-          </div>
+          <GeneratedCover title={book.title} author={book.author} />
         )}
         <Badge className="absolute top-1.5 right-1.5 text-[9px] uppercase tracking-wide px-1.5 py-0 h-4 font-medium backdrop-blur-sm bg-background/80 text-foreground border-0" variant="secondary">
           {book.format}
@@ -214,5 +218,30 @@ function BookCard({ book, progress, isDownloaded, isFavorite, onOpen }: {
         {pct > 0 && <p className="text-[10px] text-primary font-medium">{pct}% lido</p>}
       </div>
     </button>
+  );
+}
+
+// Capa procedural elegante quando o livro não tem cover_url
+function GeneratedCover({ title, author }: { title: string; author?: string | null }) {
+  // Hash simples do título para escolher gradiente determinístico
+  const hash = Array.from(title).reduce((a, c) => a + c.charCodeAt(0), 0);
+  const palettes = [
+    ['from-indigo-600', 'to-fuchsia-500'],
+    ['from-cyan-500', 'to-blue-700'],
+    ['from-emerald-500', 'to-teal-700'],
+    ['from-amber-500', 'to-rose-600'],
+    ['from-violet-600', 'to-indigo-800'],
+    ['from-rose-500', 'to-pink-700'],
+  ];
+  const [from, to] = palettes[hash % palettes.length];
+  return (
+    <div className={`w-full h-full bg-gradient-to-br ${from} ${to} flex flex-col justify-between p-3 relative overflow-hidden`}>
+      <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle at 20% 10%, rgba(255,255,255,0.5), transparent 40%)' }} />
+      <BookOpen className="h-4 w-4 text-white/70 relative z-10" />
+      <div className="relative z-10">
+        <p className="text-white font-semibold text-[11px] leading-tight line-clamp-4 drop-shadow-sm">{title}</p>
+        {author && <p className="text-white/75 text-[9px] mt-1 line-clamp-1">{author}</p>}
+      </div>
+    </div>
   );
 }
