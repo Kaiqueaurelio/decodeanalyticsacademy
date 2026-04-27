@@ -942,6 +942,113 @@ export type Database = {
         }
         Relationships: []
       }
+      playbooks_bookmarks: {
+        Row: {
+          book_id: string
+          created_at: string
+          id: string
+          label: string | null
+          location: string | null
+          page: number | null
+          user_id: string
+        }
+        Insert: {
+          book_id: string
+          created_at?: string
+          id?: string
+          label?: string | null
+          location?: string | null
+          page?: number | null
+          user_id: string
+        }
+        Update: {
+          book_id?: string
+          created_at?: string
+          id?: string
+          label?: string | null
+          location?: string | null
+          page?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      playbooks_highlights: {
+        Row: {
+          book_id: string
+          color: string
+          created_at: string
+          end_location: string | null
+          id: string
+          page: number | null
+          start_location: string | null
+          text: string
+          user_id: string
+        }
+        Insert: {
+          book_id: string
+          color?: string
+          created_at?: string
+          end_location?: string | null
+          id?: string
+          page?: number | null
+          start_location?: string | null
+          text: string
+          user_id: string
+        }
+        Update: {
+          book_id?: string
+          color?: string
+          created_at?: string
+          end_location?: string | null
+          id?: string
+          page?: number | null
+          start_location?: string | null
+          text?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      playbooks_notes: {
+        Row: {
+          book_id: string
+          content: string
+          created_at: string
+          highlight_id: string | null
+          id: string
+          page: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          book_id: string
+          content: string
+          created_at?: string
+          highlight_id?: string | null
+          id?: string
+          page?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          book_id?: string
+          content?: string
+          created_at?: string
+          highlight_id?: string | null
+          id?: string
+          page?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "playbooks_notes_highlight_id_fkey"
+            columns: ["highlight_id"]
+            isOneToOne: false
+            referencedRelation: "playbooks_highlights"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pomodoro_sessions: {
         Row: {
           apostila_id: string | null
