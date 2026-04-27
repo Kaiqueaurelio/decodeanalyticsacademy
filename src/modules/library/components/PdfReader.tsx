@@ -17,6 +17,10 @@ import {
   Coffee,
   Loader2,
   AlertTriangle,
+  RefreshCw,
+  WifiOff,
+  Lock,
+  Clock,
 } from 'lucide-react';
 // Use the worker file shipped with the installed pdfjs-dist (matches the version exactly)
 import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
@@ -27,6 +31,87 @@ interface PdfReaderProps {
   fileUrl: string;
   initialPage?: number;
   onProgress: (page: number, totalPages: number) => void;
+  onRequestReload?: () => void; // optional: ask parent to refetch a fresh signed URL
+}
+
+type ErrorKind = 'cors' | 'auth' | 'expired' | 'notfound' | 'network' | 'corrupt' | 'unknown';
+
+interface DiagnosedError {
+  kind: ErrorKind;
+  title: string;
+  description: string;
+  hint: string;
+  icon: React.ReactNode;
+}
+
+function diagnosePdfError(err: unknown, fileUrl: string): DiagnosedError {
+  const raw = (err instanceof Error ? err.message : String(err ?? '')).toLowerCase();
+  const name = (err as any)?.name?.toLowerCase?.() || '';
+  const status = (err as any)?.status as number | undefined;
+
+  // Signed URL expirada (Supabase storage retorna parametros ?token= e ?expires=)
+  const looksSigned = /[?&](token|expires|x-amz-signature|signature)=/i.test(fileUrl);
+  if (status === 403 || raw.includes('forbidden') || raw.includes('expired') || (looksSigned && (raw.includes('400') || raw.includes('unauthorized')))) {
+    return {
+      kind: 'expired',
+      title: 'Link do livro expirou',
+      description: 'A URL assinada deste arquivo não é mais válida ou expirou.',
+      hint: 'Clique em "Recarregar livro" para gerar um novo link de acesso.',
+      icon: <Clock className="h-6 w-6 text-amber-500" />,
+    };
+  }
+  if (status === 401 || raw.includes('401') || raw.includes('unauthorized')) {
+    return {
+      kind: 'auth',
+      title: 'Sem autorização para abrir o arquivo',
+      description: 'Você não tem permissão para acessar este PDF, ou sua sessão expirou.',
+      hint: 'Faça login novamente e tente recarregar.',
+      icon: <Lock className="h-6 w-6 text-destructive" />,
+    };
+  }
+  if (status === 404 || raw.includes('404') || raw.includes('not found') || raw.includes('missingpdf')) {
+    return {
+      kind: 'notfound',
+      title: 'Arquivo não encontrado',
+      description: 'O PDF não está mais disponível no servidor.',
+      hint: 'Avise o administrador para republicar o livro.',
+      icon: <AlertTriangle className="h-6 w-6 text-destructive" />,
+    };
+  }
+  if (raw.includes('cors') || raw.includes('cross-origin') || raw.includes('cross origin')) {
+    return {
+      kind: 'cors',
+      title: 'Bloqueio de origem (CORS)',
+      description: 'O servidor do PDF não permite acesso a partir deste domínio.',
+      hint: 'Recarregue para tentar com uma URL assinada. Se persistir, contate o admin.',
+      icon: <AlertTriangle className="h-6 w-6 text-amber-500" />,
+    };
+  }
+  if (name.includes('invalidpdf') || raw.includes('invalid pdf') || raw.includes('corrupt')) {
+    return {
+      kind: 'corrupt',
+      title: 'Arquivo PDF inválido',
+      description: 'O arquivo está corrompido ou não é um PDF válido.',
+      hint: 'Solicite ao administrador que reenvie o livro.',
+      icon: <AlertTriangle className="h-6 w-6 text-destructive" />,
+    };
+  }
+  if (raw.includes('failed to fetch') || raw.includes('networkerror') || raw.includes('load failed') || raw.includes('network')) {
+    return {
+      kind: 'network',
+      title: 'Sem conexão com o servidor',
+      description: 'Não foi possível baixar o PDF. Verifique sua conexão com a internet.',
+      hint: 'Tente novamente em alguns segundos.',
+      icon: <WifiOff className="h-6 w-6 text-amber-500" />,
+    };
+  }
+  return {
+    kind: 'unknown',
+    title: 'Não foi possível abrir o PDF',
+    description: raw || 'Ocorreu um erro inesperado ao carregar o arquivo.',
+    hint: 'Tente recarregar. Se o problema persistir, contate o administrador.',
+    icon: <AlertTriangle className="h-6 w-6 text-destructive" />,
+  };
 }
 
 type ReaderTheme = 'light' | 'sepia' | 'dark';
@@ -37,13 +122,15 @@ const THEME_STYLES: Record<ReaderTheme, { bg: string; pageShadow: string; filter
   dark:  { bg: '#1a1a1a', pageShadow: '0 8px 30px -6px rgba(0,0,0,0.6)', filter: 'invert(1) hue-rotate(180deg)' },
 };
 
-export function PdfReader({ fileUrl, initialPage = 1, onProgress }: PdfReaderProps) {
+export function PdfReader({ fileUrl, initialPage = 1, onProgress, onRequestReload }: PdfReaderProps) {
   const [numPages, setNumPages] = useState(0);
   const [page, setPage] = useState(initialPage);
   const [scale, setScale] = useState(1);
   const [theme, setTheme] = useState<ReaderTheme>('light');
   const [chromeVisible, setChromeVisible] = useState(true);
-  const [loadError, setLoadError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<DiagnosedError | null>(null);
+  const [loadingTooLong, setLoadingTooLong] = useState(false);
+  const [retryNonce, setRetryNonce] = useState(0);
   const [pageInput, setPageInput] = useState('');
   const [containerWidth, setContainerWidth] = useState(800);
 
@@ -53,8 +140,31 @@ export function PdfReader({ fileUrl, initialPage = 1, onProgress }: PdfReaderPro
   const touchStartT = useRef<number>(0);
   const hideTimer = useRef<number | null>(null);
 
-  // Memoize file option to prevent react-pdf from reloading the document on every render
-  const fileOption = useMemo(() => ({ url: fileUrl, withCredentials: false }), [fileUrl]);
+  // Memoize file option to prevent react-pdf from reloading the document on every render.
+  // retryNonce is included so "Tentar novamente" forces a fresh load.
+  const fileOption = useMemo(
+    () => ({ url: fileUrl, withCredentials: false }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [fileUrl, retryNonce],
+  );
+
+  // Watchdog: if loading takes too long without success/error, surface a hint + retry option.
+  useEffect(() => {
+    setLoadingTooLong(false);
+    if (numPages > 0 || loadError) return;
+    const t = window.setTimeout(() => setLoadingTooLong(true), 12000);
+    return () => window.clearTimeout(t);
+  }, [fileUrl, retryNonce, numPages, loadError]);
+
+  const handleRetry = useCallback(async () => {
+    setLoadError(null);
+    setLoadingTooLong(false);
+    setNumPages(0);
+    if (onRequestReload) {
+      try { await onRequestReload(); } catch { /* noop */ }
+    }
+    setRetryNonce((n) => n + 1);
+  }, [onRequestReload]);
 
   useEffect(() => {
     const update = () => {
@@ -247,19 +357,37 @@ export function PdfReader({ fileUrl, initialPage = 1, onProgress }: PdfReaderPro
         >
           <Document
             file={fileOption}
-            onLoadSuccess={({ numPages: n }) => { setNumPages(n); setLoadError(null); }}
-            onLoadError={(err) => { setLoadError(err?.message || 'Falha ao carregar o PDF.'); }}
+            onLoadSuccess={({ numPages: n }) => { setNumPages(n); setLoadError(null); setLoadingTooLong(false); }}
+            onLoadError={(err) => { setLoadError(diagnosePdfError(err, fileUrl)); }}
             loading={
-              <div className="flex flex-col items-center justify-center gap-3 p-16 min-w-[260px] min-h-[360px]">
+              <div className="flex flex-col items-center justify-center gap-3 p-12 min-w-[280px] min-h-[360px] text-center">
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                 <p className="text-xs text-muted-foreground">Carregando livro…</p>
+                {loadingTooLong && (
+                  <div className="mt-4 space-y-3 max-w-xs">
+                    <p className="text-xs text-muted-foreground">
+                      Está demorando mais que o esperado. O link pode ter expirado ou a conexão está lenta.
+                    </p>
+                    <Button size="sm" variant="outline" onClick={handleRetry} className="gap-2">
+                      <RefreshCw className="h-3.5 w-3.5" />
+                      Tentar novamente
+                    </Button>
+                  </div>
+                )}
               </div>
             }
             error={
-              <div className="flex flex-col items-center justify-center gap-3 p-10 min-w-[260px] min-h-[360px] text-center">
-                <AlertTriangle className="h-6 w-6 text-destructive" />
-                <p className="text-sm font-medium">Não foi possível abrir o PDF</p>
-                <p className="text-xs text-muted-foreground max-w-xs">{loadError || 'Verifique sua conexão ou tente novamente.'}</p>
+              <div className="flex flex-col items-center justify-center gap-3 p-10 min-w-[300px] min-h-[360px] text-center max-w-sm">
+                {loadError?.icon ?? <AlertTriangle className="h-6 w-6 text-destructive" />}
+                <p className="text-sm font-semibold text-foreground">{loadError?.title ?? 'Não foi possível abrir o PDF'}</p>
+                <p className="text-xs text-muted-foreground">{loadError?.description ?? 'Verifique sua conexão ou tente novamente.'}</p>
+                <p className="text-[11px] text-muted-foreground/80 italic">{loadError?.hint}</p>
+                <div className="flex gap-2 mt-2">
+                  <Button size="sm" onClick={handleRetry} className="gap-2">
+                    <RefreshCw className="h-3.5 w-3.5" />
+                    {loadError?.kind === 'expired' ? 'Recarregar livro' : 'Tentar novamente'}
+                  </Button>
+                </div>
               </div>
             }
           >
