@@ -21,6 +21,9 @@ import {
   WifiOff,
   Lock,
   Clock,
+  ScrollText,
+  BookOpen,
+  Maximize2,
 } from 'lucide-react';
 // Use the worker file shipped with the installed pdfjs-dist (matches the version exactly)
 import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
@@ -122,27 +125,68 @@ const THEME_STYLES: Record<ReaderTheme, { bg: string; pageShadow: string; filter
   dark:  { bg: '#1a1a1a', pageShadow: '0 8px 30px -6px rgba(0,0,0,0.6)', filter: 'invert(1) hue-rotate(180deg)' },
 };
 
+type ViewMode = 'paged' | 'scroll';
+type FitMode = 'manual' | 'width' | 'page';
+type Margin = 'tight' | 'cozy' | 'wide';
+
+const MARGIN_PX: Record<Margin, { x: number; y: number }> = {
+  tight: { x: 4, y: 16 },
+  cozy:  { x: 16, y: 36 },
+  wide:  { x: 48, y: 60 },
+};
+
+const STORAGE_KEY = 'pdf-reader-prefs-v1';
+
 export function PdfReader({ fileUrl, initialPage = 1, onProgress, onRequestReload }: PdfReaderProps) {
   const [numPages, setNumPages] = useState(0);
   const [page, setPage] = useState(initialPage);
   const [scale, setScale] = useState(1);
   const [theme, setTheme] = useState<ReaderTheme>('light');
+  const [viewMode, setViewMode] = useState<ViewMode>('paged');
+  const [fitMode, setFitMode] = useState<FitMode>('width');
+  const [margin, setMargin] = useState<Margin>('cozy');
+  const [pageAspect, setPageAspect] = useState<number>(1.4); // height/width, A4 ≈ 1.414
   const [chromeVisible, setChromeVisible] = useState(true);
   const [loadError, setLoadError] = useState<DiagnosedError | null>(null);
   const [loadingTooLong, setLoadingTooLong] = useState(false);
   const [retryNonce, setRetryNonce] = useState(0);
   const [pageInput, setPageInput] = useState('');
   const [containerWidth, setContainerWidth] = useState(800);
+  const [containerHeight, setContainerHeight] = useState(800);
   const [previewPage, setPreviewPage] = useState<number | null>(null);
   const [previewX, setPreviewX] = useState(0);
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const pageAreaRef = useRef<HTMLDivElement>(null);
   const scrubberRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
   const touchStartT = useRef<number>(0);
   const hideTimer = useRef<number | null>(null);
   const previewHideTimer = useRef<number | null>(null);
+  const scrollPageRefs = useRef<Map<number, HTMLDivElement>>(new Map());
+  const programmaticScroll = useRef(false);
+
+  // Load saved preferences
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      const p = JSON.parse(raw);
+      if (p.theme) setTheme(p.theme);
+      if (p.viewMode) setViewMode(p.viewMode);
+      if (p.fitMode) setFitMode(p.fitMode);
+      if (p.margin) setMargin(p.margin);
+      if (typeof p.scale === 'number' && p.scale > 0) setScale(p.scale);
+    } catch { /* noop */ }
+  }, []);
+
+  // Persist preferences
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ theme, viewMode, fitMode, margin, scale }));
+    } catch { /* noop */ }
+  }, [theme, viewMode, fitMode, margin, scale]);
 
   // Memoize file option to prevent react-pdf from reloading the document on every render.
   // retryNonce is included so "Tentar novamente" forces a fresh load.
