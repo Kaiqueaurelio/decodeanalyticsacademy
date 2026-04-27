@@ -249,6 +249,42 @@ export function PdfReader({ fileUrl, initialPage = 1, onProgress, onRequestReloa
     if (numPages > 0) onProgress(page, numPages);
   }, [page, numPages, onProgress]);
 
+  // Scroll mode: scroll to the requested page when `page` changes from outside (scrubber, keys)
+  useEffect(() => {
+    if (viewMode !== 'scroll') return;
+    const el = scrollPageRefs.current.get(page);
+    const scroller = pageAreaRef.current;
+    if (!el || !scroller) return;
+    programmaticScroll.current = true;
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    window.setTimeout(() => { programmaticScroll.current = false; }, 700);
+  }, [page, viewMode]);
+
+  // Scroll mode: observe which page is most visible and update `page`
+  useEffect(() => {
+    if (viewMode !== 'scroll' || !pageAreaRef.current || numPages === 0) return;
+    const scroller = pageAreaRef.current;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (programmaticScroll.current) return;
+        let bestPage = page;
+        let bestRatio = 0;
+        for (const entry of entries) {
+          if (entry.intersectionRatio > bestRatio) {
+            bestRatio = entry.intersectionRatio;
+            const p = Number((entry.target as HTMLElement).dataset.page);
+            if (p) bestPage = p;
+          }
+        }
+        if (bestRatio > 0.4 && bestPage !== page) setPage(bestPage);
+      },
+      { root: scroller, threshold: [0.25, 0.5, 0.75] },
+    );
+    scrollPageRefs.current.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [viewMode, numPages]);
+
   const scheduleHide = useCallback(() => {
     if (hideTimer.current) window.clearTimeout(hideTimer.current);
     hideTimer.current = window.setTimeout(() => setChromeVisible(false), 2800);
