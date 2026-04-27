@@ -2658,3 +2658,149 @@ export default function AdminPage() {
     </CategoriesCtx.Provider>
   );
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Admin: redefinir senha de um usuário
+// ─────────────────────────────────────────────────────────────────────────────
+function AdminPasswordResetMenu({ user }: { user: { user_id: string; email: string; full_name: string } }) {
+  const [open, setOpen] = useState(false);
+  const [pwd, setPwd] = useState('');
+  const [confirmPwd, setConfirmPwd] = useState('');
+  const [showPwd, setShowPwd] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [sendingLink, setSendingLink] = useState(false);
+
+  const isRA = (user.email || '').endsWith('@ra.unip.local');
+
+  const generateSuggested = () => {
+    const chars = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789!@#$';
+    let p = '';
+    for (let i = 0; i < 12; i++) p += chars[Math.floor(Math.random() * chars.length)];
+    setPwd(p);
+    setConfirmPwd(p);
+    setShowPwd(true);
+  };
+
+  const handleSetPassword = async () => {
+    if (pwd.length < 6) { toast.error('A senha deve ter no mínimo 6 caracteres'); return; }
+    if (pwd !== confirmPwd) { toast.error('As senhas não coincidem'); return; }
+    setSaving(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-set-password', {
+        body: { target_user_id: user.user_id, new_password: pwd },
+      });
+      if (error || (data as any)?.error) {
+        toast.error(`Erro: ${(data as any)?.error || error?.message}`);
+        return;
+      }
+      toast.success(`Senha de ${user.full_name || user.email} alterada`);
+      setOpen(false);
+      setPwd(''); setConfirmPwd(''); setShowPwd(false);
+    } finally { setSaving(false); }
+  };
+
+  const handleSendResetLink = async () => {
+    if (isRA) { toast.error('Contas RA UNIP não recebem e-mail. Defina a senha manualmente.'); return; }
+    setSendingLink(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) { toast.error(`Erro: ${error.message}`); return; }
+      toast.success(`Link de redefinição enviado para ${user.email}`);
+    } finally { setSendingLink(false); }
+  };
+
+  return (
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button size="sm" variant="outline" className="text-xs h-9 gap-1.5">
+            <Settings className="h-3.5 w-3.5" /> Senha
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-56">
+          <DropdownMenuLabel className="text-[11px]">Redefinir senha</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setOpen(true); }}>
+            <PenLine className="h-3.5 w-3.5 mr-2" /> Definir nova senha
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            disabled={isRA || sendingLink}
+            onSelect={(e) => { e.preventDefault(); void handleSendResetLink(); }}
+          >
+            {sendingLink ? <Loader2 className="h-3.5 w-3.5 mr-2 animate-spin" /> : <LinkIcon className="h-3.5 w-3.5 mr-2" />}
+            Enviar link por e-mail
+          </DropdownMenuItem>
+          {isRA && (
+            <div className="px-2 py-1.5 text-[10px] text-muted-foreground">
+              Contas RA UNIP não recebem e-mail.
+            </div>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) { setPwd(''); setConfirmPwd(''); setShowPwd(false); } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Definir nova senha</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="text-xs text-muted-foreground">
+              Usuário: <span className="font-medium text-foreground">{user.full_name || user.email}</span>
+              <br />
+              <span className="font-mono">{user.email}</span>
+            </div>
+            <div>
+              <Label className="text-xs">Nova senha</Label>
+              <div className="relative mt-1">
+                <Input
+                  type={showPwd ? 'text' : 'password'}
+                  value={pwd}
+                  onChange={(e) => setPwd(e.target.value)}
+                  placeholder="Mínimo 6 caracteres"
+                  autoComplete="new-password"
+                />
+                <Button
+                  type="button" size="icon" variant="ghost"
+                  className="absolute right-1 top-1 h-7 w-7"
+                  onClick={() => setShowPwd((s) => !s)}
+                >
+                  {showPwd ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                </Button>
+              </div>
+            </div>
+            <div>
+              <Label className="text-xs">Confirmar nova senha</Label>
+              <Input
+                type={showPwd ? 'text' : 'password'}
+                value={confirmPwd}
+                onChange={(e) => setConfirmPwd(e.target.value)}
+                placeholder="Repita a senha"
+                className="mt-1"
+                autoComplete="new-password"
+              />
+            </div>
+            <div className="flex items-center justify-between gap-2 pt-1">
+              <Button type="button" size="sm" variant="ghost" className="text-xs" onClick={generateSuggested}>
+                <Sparkles className="h-3.5 w-3.5 mr-1.5" /> Gerar senha forte
+              </Button>
+              <div className="flex gap-2">
+                <Button type="button" size="sm" variant="outline" onClick={() => setOpen(false)} disabled={saving}>
+                  Cancelar
+                </Button>
+                <Button type="button" size="sm" onClick={handleSetPassword} disabled={saving}>
+                  {saving ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <CheckCircle className="h-3.5 w-3.5 mr-1.5" />}
+                  Salvar nova senha
+                </Button>
+              </div>
+            </div>
+            <p className="text-[11px] text-muted-foreground pt-1">
+              ⚠️ Informe a nova senha ao usuário por um canal seguro. O acesso anterior continuará válido até o usuário sair em outros dispositivos.
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
