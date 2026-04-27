@@ -185,11 +185,15 @@ function BookCard({ book, progress, isDownloaded, isFavorite, onOpen }: {
     <button onClick={onOpen} className="group flex flex-col text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-md w-full">
       <div className="relative aspect-[2/3] w-full rounded-md overflow-hidden bg-muted shadow-[0_4px_12px_-2px_rgba(0,0,0,0.18)] group-hover:shadow-[0_10px_24px_-4px_rgba(0,0,0,0.28)] transition-all duration-300 group-hover:-translate-y-1">
         {book.cover ? (
-          <img src={book.cover} alt={book.title} className="w-full h-full object-cover" loading="lazy" />
+          <img
+            src={book.cover}
+            alt={book.title}
+            className="w-full h-full object-cover"
+            loading="lazy"
+            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+          />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/30 to-primary/5">
-            <BookOpen className="h-10 w-10 text-primary/50" />
-          </div>
+          <GeneratedCover title={book.title} author={book.author} />
         )}
         <Badge className="absolute top-1.5 right-1.5 text-[9px] uppercase tracking-wide px-1.5 py-0 h-4 font-medium backdrop-blur-sm bg-background/80 text-foreground border-0" variant="secondary">
           {book.format}
