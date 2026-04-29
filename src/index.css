@@ -941,3 +941,49 @@ html {
 
 /* Utility: clamp container width even inside flex/grid */
 .min-w-0-safe { min-width: 0; }
+
+/* ============== Editor de Apostilas — folha A4 estilo Word/Docs ============== */
+.editor-page {
+  width: 794px;            /* A4 a 96dpi */
+  min-height: 1123px;
+  background: #ffffff;
+  color: #1a1a1a;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+  border-radius: 2px;
+  margin: 24px auto;
+  padding: 96px 96px 120px;
+  transform-origin: top center;
+  transition: transform 120ms ease;
+}
+.editor-page .ProseMirror { outline: none; min-height: 100%; }
+.editor-page .ProseMirror p { color: #1a1a1a; line-height: 1.55; margin: 0 0 0.6em; }
+.editor-page .ProseMirror h1,
+.editor-page .ProseMirror h2,
+.editor-page .ProseMirror h3 { color: #0a0a0a; font-weight: 700; margin: 1.4em 0 0.5em; }
+.editor-page .ProseMirror h1 { font-size: 1.9rem; border-bottom: 1px solid #e5e7eb; padding-bottom: .25em; }
+.editor-page .ProseMirror h2 { font-size: 1.45rem; }
+.editor-page .ProseMirror h3 { font-size: 1.15rem; }
+.editor-page .ProseMirror a  { color: #2563eb; text-decoration: underline; }
+.editor-page .ProseMirror code { background: #f1f5f9; color: #0f172a; padding: 1px 4px; border-radius: 3px; font-size: 0.92em; }
+.editor-page .ProseMirror pre { background: #0f172a; color: #f8fafc; padding: 12px 14px; border-radius: 6px; overflow-x: auto; }
+.editor-page .ProseMirror pre code { background: transparent; color: inherit; padding: 0; }
+.editor-page .ProseMirror blockquote { border-left: 3px solid #94a3b8; color: #475569; padding-left: 12px; margin: 1em 0; font-style: italic; }
+.editor-page .ProseMirror ul,
+.editor-page .ProseMirror ol { padding-left: 1.5rem; margin: 0.4em 0; }
+.editor-page .ProseMirror table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+.editor-page .ProseMirror th,
+.editor-page .ProseMirror td { border: 1px solid #cbd5e1; padding: 6px 10px; }
+.editor-page .ProseMirror th { background: #f1f5f9; font-weight: 600; }
+.editor-page .ProseMirror hr { border: 0; border-top: 1px solid #e5e7eb; margin: 1.4em 0; }
+.editor-page .ProseMirror img { max-width: 100%; height: auto; }
+.editor-page .ProseMirror ul[data-type="taskList"] { list-style: none; padding-left: 0.25rem; }
+.editor-page .ProseMirror ul[data-type="taskList"] li { display: flex; align-items: flex-start; gap: 6px; }
+.editor-page .ProseMirror ::selection { background: rgba(37, 99, 235, 0.18); }
+
+.editor-canvas { background: hsl(var(--muted) / 0.4); }
+
+@media print {
+  body * { visibility: hidden; }
+  .editor-page, .editor-page * { visibility: visible; }
+  .editor-page { position: absolute; left: 0; top: 0; box-shadow: none; margin: 0; }
+}
