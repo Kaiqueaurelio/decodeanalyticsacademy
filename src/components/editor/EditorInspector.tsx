@@ -160,6 +160,38 @@ function ImagePanel({
         )}
       </div>
 
+      {/* Presets de layout — combinam largura + alinhamento numa ação */}
+      <div>
+        <Label className="text-[11px] text-muted-foreground">Layout rápido</Label>
+        <div className="grid grid-cols-3 gap-1 mt-1">
+          {IMAGE_PRESETS.map((p) => {
+            const active = widthNum === p.width && attrs.align === p.align;
+            return (
+              <button
+                key={p.id}
+                type="button"
+                title={p.title}
+                onClick={() =>
+                  editor.chain().focus().updateAttributes('image', {
+                    width: `${p.width}%`,
+                    align: p.align,
+                  }).run()
+                }
+                className={cn(
+                  'group flex flex-col items-center gap-1 rounded border px-1.5 py-1.5 transition-colors',
+                  active
+                    ? 'border-primary bg-primary/10 text-primary'
+                    : 'border-border bg-background hover:bg-muted',
+                )}
+              >
+                <PresetGlyph width={p.width} align={p.align} active={active} />
+                <span className="text-[9px] font-mono leading-none">{p.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       <div>
         <Label className="text-[11px] text-muted-foreground flex items-center justify-between">
           <span>Largura</span>
@@ -174,12 +206,12 @@ function ImagePanel({
           className="mt-2"
         />
         <div className="flex gap-1 mt-2">
-          {[33, 50, 75, 100].map((p) => (
+          {[25, 50, 75, 100].map((p) => (
             <Button
               key={p}
               type="button"
               size="sm"
-              variant="outline"
+              variant={widthNum === p ? 'secondary' : 'outline'}
               className="h-6 px-2 text-[10px] flex-1"
               onClick={() => setWidth(p)}
             >
