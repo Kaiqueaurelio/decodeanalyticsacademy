@@ -144,12 +144,18 @@ export function PlayBooksReader({ book, initialPage = 1, initialLocation, onBack
   }, [selectionMenu, book.title]);
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col" style={{ background: themeStyle.bg, color: themeStyle.fg }} onMouseMove={showChrome}>
+    <div
+      className="fixed inset-0 z-50 flex flex-col"
+      style={{ background: themeStyle.bg, color: themeStyle.fg, height: '100dvh' }}
+      onMouseMove={showChrome}
+    >
       <header
-        className={`absolute top-0 inset-x-0 z-40 flex items-center justify-between gap-2 px-3 h-12 transition-all duration-300 ${
+        className={`absolute top-0 inset-x-0 z-40 flex items-center justify-between gap-2 px-3 transition-all duration-300 ${
           chrome ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-3 pointer-events-none'
         }`}
         style={{
+          paddingTop: 'env(safe-area-inset-top)',
+          height: 'calc(48px + env(safe-area-inset-top))',
           background: theme === 'dark'
             ? 'linear-gradient(to bottom, rgba(0,0,0,0.8), transparent)'
             : 'linear-gradient(to bottom, rgba(255,255,255,0.92), transparent)',
