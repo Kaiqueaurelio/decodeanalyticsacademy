@@ -694,7 +694,7 @@ function EpubEngine(props: {
             <List className="h-4 w-4" />
           </button>
         </SheetTrigger>
-        <SheetContent side="right" className="w-72 overflow-y-auto">
+        <SheetContent side="right" className="w-[85vw] sm:w-80 overflow-y-auto">
           <SheetHeader><SheetTitle>Sumário</SheetTitle></SheetHeader>
           <div className="mt-4 flex flex-col gap-1">
             {toc.map((it, i) => (
@@ -869,7 +869,7 @@ function SearchSheet({ query, setQuery, results, onPickResult }: {
       <SheetTrigger asChild>
         <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full"><Search className="h-4 w-4" /></Button>
       </SheetTrigger>
-      <SheetContent side="right" className="w-80">
+      <SheetContent side="right" className="w-[90vw] sm:w-80">
         <SheetHeader><SheetTitle>Buscar no livro</SheetTitle></SheetHeader>
         <div className="mt-4 space-y-3">
           <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Digite uma palavra ou frase…" autoFocus />
