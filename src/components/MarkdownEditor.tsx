@@ -210,41 +210,47 @@ export function MarkdownEditor({
           <EditorTOC editor={editor} collapsed={tocCollapsed} onToggle={toggleToc} />
         )}
 
-        {/* Canvas com folha A4 + paginação. Reservamos espaço pós-scale para
-            que o scroll funcione corretamente em qualquer zoom e em telas pequenas. */}
-        <div
-          className="flex-1 overflow-auto editor-canvas relative"
-          style={{ maxHeight: '78vh', minHeight: rows ? `${rows * 26}px` : '420px' }}
-          onClick={() => editor.commands.focus()}
-        >
+        <div className="flex-1 flex flex-col min-w-0">
+          {/* Régua superior estilo Word */}
+          {!focusMode && (
+            <div className="word-ruler">
+              <div className="word-ruler-marks">
+                <div className="word-ruler-inner" style={{ width: `${794 * zoom}px` }} />
+              </div>
+            </div>
+          )}
+
+          {/* Canvas com folha A4 + paginação. */}
           <div
-            className="px-2 sm:px-4 py-2 mx-auto"
-            style={{
-              // Garante que a folha escalada caiba no scroll horizontal/vertical
-              width: `calc(${794 * zoom}px + 2rem)`,
-              minWidth: '100%',
-            }}
+            className="flex-1 overflow-auto editor-canvas relative"
+            style={{ maxHeight: '78vh', minHeight: rows ? `${rows * 26}px` : '420px' }}
+            onClick={() => editor.commands.focus()}
           >
             <div
-              className="editor-page-shell"
-              style={{ transform: `scale(${zoom})`, transformOrigin: 'top center' }}
-              onClick={(e) => e.stopPropagation()}
+              className="px-2 sm:px-4 py-2 mx-auto"
+              style={{
+                width: `calc(${794 * zoom}px + 2rem)`,
+                minWidth: '100%',
+              }}
             >
-              <div ref={pageRef} className="editor-page">
-                <EditorContent editor={editor} />
-                <LinkBubbleMenu editor={editor} />
+              <div
+                className="editor-page-shell"
+                style={{ transform: `scale(${zoom})`, transformOrigin: 'top center' }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div ref={pageRef} className="editor-page">
+                  <EditorContent editor={editor} />
+                  <LinkBubbleMenu editor={editor} />
 
-                {/* Overlay de quebras de página — DENTRO da .editor-page para
-                    escalar com o zoom (transform do shell). Os offsets são em
-                    pixels do espaço sem zoom (usePageBreaks). */}
-                {breaks.map((top, i) => (
-                  <div
-                    key={i}
-                    className="page-break-overlay"
-                    data-page={i + 2}
-                    style={{ top }}
-                  />
-                ))}
+                  {breaks.map((top, i) => (
+                    <div
+                      key={i}
+                      className="page-break-overlay"
+                      data-page={i + 2}
+                      style={{ top }}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -260,14 +266,12 @@ export function MarkdownEditor({
       </div>
 
       {showWordCount && (
-        <div className="px-3 py-1.5 border-t border-border bg-muted/30 text-[10px] text-muted-foreground flex items-center justify-between gap-2">
+        <div className="word-statusbar">
           <span>
-            Pág {totalPages > 0 ? 1 : 0}/{totalPages} · {stats.words.toLocaleString('pt-BR')}{' '}
-            {stats.words === 1 ? 'palavra' : 'palavras'} · {stats.chars.toLocaleString('pt-BR')} caracteres ·
-            leitura ~{stats.minutes} min
+            Página {totalPages > 0 ? 1 : 0} de {totalPages}  ·  {stats.words.toLocaleString('pt-BR')} palavras  ·  Português (Brasil)
           </span>
-          <span className="hidden md:inline">
-            Digite <code className="px-1 rounded bg-muted text-foreground font-mono">/</code> para inserir blocos · Clique num link para editar
+          <span className="hidden md:inline opacity-90">
+            Digite <code>/</code> para inserir blocos  ·  {Math.round(zoom * 100)}%
           </span>
         </div>
       )}
