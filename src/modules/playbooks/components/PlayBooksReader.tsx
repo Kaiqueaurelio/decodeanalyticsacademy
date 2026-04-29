@@ -466,7 +466,7 @@ function PdfEngine(props: {
         className={`absolute right-3 z-30 h-10 w-10 rounded-full flex items-center justify-center transition-all ${
           chrome ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
-        style={{ background: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)' }}
+        style={{ top: 'calc(56px + env(safe-area-inset-top))', background: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)' }}
         title={isCurrentBookmarked ? 'Remover marcador' : 'Adicionar marcador'}
       >
         {isCurrentBookmarked
@@ -662,7 +662,7 @@ function EpubEngine(props: {
         className={`absolute right-3 z-30 h-10 w-10 rounded-full flex items-center justify-center transition-all ${
           chrome ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
-        style={{ background: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)' }}
+        style={{ top: 'calc(56px + env(safe-area-inset-top))', background: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)' }}
       >
         {isCurrentBookmarked
           ? <BookmarkCheck className="h-4 w-4" style={{ color: theme === 'dark' ? '#fbbf24' : '#d97706' }} />
@@ -688,7 +688,7 @@ function EpubEngine(props: {
             className={`absolute right-[60px] z-30 h-10 w-10 rounded-full flex items-center justify-center transition-all ${
               chrome ? 'opacity-100' : 'opacity-0 pointer-events-none'
             }`}
-            style={{ background: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)' }}
+            style={{ top: 'calc(56px + env(safe-area-inset-top))', background: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)' }}
             title="Sumário"
           >
             <List className="h-4 w-4" />
