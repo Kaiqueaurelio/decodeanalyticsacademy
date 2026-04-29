@@ -1,36 +1,50 @@
 /**
- * MarkdownEditor — editor lado-a-lado (texto/preview) com toolbar completa
- * estilo Microsoft Word.
+ * MarkdownEditor — Editor WYSIWYG estilo Microsoft Word / Google Docs
+ * baseado em TipTap. Mantém API compatível (value/onChange) com o componente
+ * antigo: recebe e devolve Markdown, mas internamente trabalha em HTML rico.
  *
- * Por que markdown e não rich-text WYSIWYG?
- * - O resto do app já consome o conteúdo da apostila como markdown
- *   (parser, PDF, chat, sumário). Mantemos compatibilidade total.
- * - Como o markdown puro não cobre 100% das funcionalidades do Word
- *   (sublinhado, tachado, cor, alinhamento), usamos HTML inline
- *   (<u>, <mark>, <span style="...">, <div align="...">) — react-markdown
- *   renderiza HTML quando rehype-raw está habilitado.
+ * Recursos principais:
+ *  - Imagens com preview real, drag-to-reorder no documento, redimensionar
+ *    com handle, alinhar (esquerda/centro/direita) — igual Word
+ *  - Toolbar dupla com formatação completa
+ *  - Tabelas, listas, checkboxes, código, citação
+ *  - Cor do texto, realce, tamanho de fonte, sublinhado, tachado, sub/sup
+ *  - Atalhos: Ctrl+B/I/U, Ctrl+K (link), Ctrl+Z/Y (undo/redo)
  */
-import { useCallback, useMemo, useRef, useState, useEffect } from 'react';
-import { Textarea } from '@/components/ui/textarea';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEditor, EditorContent, type Editor } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import Underline from '@tiptap/extension-underline';
+import Link from '@tiptap/extension-link';
+import TextAlign from '@tiptap/extension-text-align';
+import Highlight from '@tiptap/extension-highlight';
+import { Color } from '@tiptap/extension-color';
+import TextStyle from '@tiptap/extension-text-style';
+import Table from '@tiptap/extension-table';
+import TableRow from '@tiptap/extension-table-row';
+import TableCell from '@tiptap/extension-table-cell';
+import TableHeader from '@tiptap/extension-table-header';
+import TaskList from '@tiptap/extension-task-list';
+import TaskItem from '@tiptap/extension-task-item';
+import Subscript from '@tiptap/extension-subscript';
+import Superscript from '@tiptap/extension-superscript';
+
 import { Button } from '@/components/ui/button';
-import {
-  Bold, Italic, Underline, Strikethrough, Heading1, Heading2, Heading3,
-  List, ListOrdered, Quote, Code, Code2, Link as LinkIcon, Image as ImageIcon,
-  Eye, Pencil, Columns2, Minus, GripVertical, ArrowUp, ArrowDown,
-  AlignLeft, AlignCenter, AlignRight, AlignJustify, Undo2, Redo2,
-  Highlighter, Palette, Table as TableIcon, Subscript, Superscript,
-  CheckSquare, Eraser, Type, RemoveFormatting,
-  Search, ChevronUp, ChevronDown, Replace, X,
-} from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { ApostilaContentRenderer } from '@/components/ApostilaContentRenderer';
-import { ImageUploadButton } from '@/components/ImageUploadButton';
-import { cn } from '@/lib/utils';
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
 } from '@/components/ui/dropdown-menu';
-
-type ViewMode = 'edit' | 'split' | 'preview';
+import {
+  Bold, Italic, Underline as UnderlineIcon, Strikethrough,
+  Heading1, Heading2, Heading3, List, ListOrdered, Quote, Code, Code2,
+  Link as LinkIcon, AlignLeft, AlignCenter, AlignRight, AlignJustify,
+  Undo2, Redo2, Highlighter, Palette, Table as TableIcon,
+  Subscript as SubIcon, Superscript as SupIcon, CheckSquare,
+  RemoveFormatting, Minus, Type,
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { ImageUploadButton } from '@/components/ImageUploadButton';
+import { ResizableImage } from '@/components/editor/ResizableImage';
+import { markdownToHtml, htmlToMarkdown } from '@/lib/markdown-html';
 
 interface Props {
   value: string;
@@ -41,7 +55,6 @@ interface Props {
   showWordCount?: boolean;
 }
 
-// Paletas (alinhadas ao tema high-tech do app)
 const TEXT_COLORS = [
   { name: 'Padrão', value: '' },
   { name: 'Ciano', value: '#00f0ff' },
@@ -61,447 +74,172 @@ const HIGHLIGHT_COLORS = [
   { name: 'Laranja', value: '#fdba74' },
 ];
 
-const FONT_SIZES = [
-  { label: 'Pequeno', value: '12px' },
-  { label: 'Normal', value: '' },
-  { label: 'Médio', value: '18px' },
-  { label: 'Grande', value: '22px' },
-  { label: 'Enorme', value: '28px' },
-];
-
 export function MarkdownEditor({
   value,
   onChange,
-  placeholder,
+  placeholder = 'Comece a escrever sua apostila…',
   rows = 18,
   className,
   showWordCount = true,
 }: Props) {
-  const taRef = useRef<HTMLTextAreaElement>(null);
-  // Em telas pequenas o split fica ilegível — começa em 'edit'.
-  const [mode, setMode] = useState<ViewMode>(() => {
-    if (typeof window !== 'undefined' && window.innerWidth < 1024) return 'edit';
-    return 'split';
+  // Evita loop: só atualizamos o externo quando a edição partiu daqui.
+  const externalRef = useRef(value);
+
+  const editor = useEditor({
+    extensions: [
+      StarterKit.configure({
+        heading: { levels: [1, 2, 3] },
+        codeBlock: { HTMLAttributes: { class: 'rounded bg-muted p-3 font-mono text-sm' } },
+      }),
+      Underline,
+      TextStyle,
+      Color,
+      Highlight.configure({ multicolor: true }),
+      Link.configure({ openOnClick: false, autolink: true, HTMLAttributes: { class: 'text-primary underline' } }),
+      TextAlign.configure({ types: ['heading', 'paragraph'] }),
+      Subscript,
+      Superscript,
+      Table.configure({ resizable: true }),
+      TableRow,
+      TableHeader,
+      TableCell,
+      TaskList,
+      TaskItem.configure({ nested: true }),
+      ResizableImage,
+    ],
+    content: markdownToHtml(value),
+    editorProps: {
+      attributes: {
+        class: cn(
+          'prose prose-sm dark:prose-invert max-w-none focus:outline-none',
+          'min-h-[400px] px-6 sm:px-12 py-8 bg-background',
+          'prose-headings:font-semibold prose-headings:text-foreground',
+          'prose-p:my-2 prose-p:leading-relaxed',
+          'prose-img:my-3 prose-img:rounded-sm',
+          'prose-table:border prose-th:bg-muted prose-th:p-2 prose-td:p-2 prose-td:border prose-th:border',
+        ),
+        spellcheck: 'true',
+      },
+      handleDrop: () => false, // deixa o TipTap padrão lidar (drag de imagem dentro do doc)
+    },
+    onUpdate: ({ editor }) => {
+      const html = editor.getHTML();
+      const md = htmlToMarkdown(html);
+      externalRef.current = md;
+      onChange(md);
+    },
   });
 
-  // Se o usuário redimensionar para mobile estando em split, cai para 'edit'.
+  // Sincroniza quando o value externo muda (ex: IA preenche, reset, carregar nova apostila)
   useEffect(() => {
-    const onResize = () => {
-      if (window.innerWidth < 1024 && mode === 'split') setMode('edit');
-    };
-    window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
-  }, [mode]);
-
-  // ─── Histórico (undo/redo) ────────────────────────────────────────────
-  // Mantemos uma pilha simples — o textarea nativo já tem undo, mas perde
-  // estado quando alteramos `value` via toolbar. Esta pilha cobre o gap.
-  const historyRef = useRef<{ stack: string[]; index: number; lastPush: number }>({
-    stack: [value],
-    index: 0,
-    lastPush: Date.now(),
-  });
-
-  // Quando o valor externo muda (via toolbar/IA), agendamos snapshot
-  useEffect(() => {
-    const h = historyRef.current;
-    const top = h.stack[h.index];
-    if (top === value) return;
-    // Coalesce mudanças rápidas de digitação (<600ms)
-    const now = Date.now();
-    if (now - h.lastPush < 600 && h.index === h.stack.length - 1) {
-      h.stack[h.index] = value;
-      h.lastPush = now;
-      return;
+    if (!editor) return;
+    if (value === externalRef.current) return;
+    externalRef.current = value;
+    const html = markdownToHtml(value);
+    if (html !== editor.getHTML()) {
+      editor.commands.setContent(html, { emitUpdate: false });
     }
-    // Se estávamos no meio do histórico (após undo), descarta o futuro
-    h.stack = h.stack.slice(0, h.index + 1);
-    h.stack.push(value);
-    h.index = h.stack.length - 1;
-    h.lastPush = now;
-    // Limita tamanho
-    if (h.stack.length > 80) {
-      h.stack.shift();
-      h.index = h.stack.length - 1;
-    }
-  }, [value]);
+  }, [value, editor]);
 
-  const undo = useCallback(() => {
-    const h = historyRef.current;
-    if (h.index > 0) {
-      h.index -= 1;
-      onChange(h.stack[h.index]);
-    }
-  }, [onChange]);
+  // Word count
+  const stats = useMemo(() => {
+    const text = editor?.getText() || '';
+    const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+    return { words, chars: text.length };
+  }, [editor, value]);
 
-  const redo = useCallback(() => {
-    const h = historyRef.current;
-    if (h.index < h.stack.length - 1) {
-      h.index += 1;
-      onChange(h.stack[h.index]);
-    }
-  }, [onChange]);
-
-  /** Envolve a seleção com um prefixo/sufixo. */
-  const wrap = useCallback(
-    (before: string, after: string = before, placeholder = 'texto') => {
-      const ta = taRef.current;
-      if (!ta) return;
-      const start = ta.selectionStart;
-      const end = ta.selectionEnd;
-      const selected = value.slice(start, end) || placeholder;
-      const next = value.slice(0, start) + before + selected + after + value.slice(end);
-      onChange(next);
-      requestAnimationFrame(() => {
-        ta.focus();
-        const cursor = start + before.length + selected.length;
-        ta.setSelectionRange(cursor, cursor);
-      });
+  const insertImage = useCallback(
+    (md: string) => {
+      const m = md.match(/!\[([^\]]*)\]\(([^)]+)\)/);
+      if (!m || !editor) return;
+      editor.chain().focus().insertContent({
+        type: 'image',
+        attrs: { src: m[2], alt: m[1], align: 'center' },
+      }).run();
     },
-    [value, onChange],
+    [editor],
   );
-
-  /** Adiciona prefixo no início de cada linha selecionada. */
-  const prefixLines = useCallback(
-    (prefix: string) => {
-      const ta = taRef.current;
-      if (!ta) return;
-      const start = ta.selectionStart;
-      const end = ta.selectionEnd;
-      const lineStart = value.lastIndexOf('\n', start - 1) + 1;
-      const block = value.slice(lineStart, end);
-      const replaced = block
-        .split('\n')
-        .map((l) => (l.trim() ? prefix + l : l))
-        .join('\n');
-      const next = value.slice(0, lineStart) + replaced + value.slice(end);
-      onChange(next);
-      requestAnimationFrame(() => ta.focus());
-    },
-    [value, onChange],
-  );
-
-  const insertAtCursor = useCallback(
-    (text: string) => {
-      const ta = taRef.current;
-      if (!ta) {
-        onChange(value + text);
-        return;
-      }
-      const start = ta.selectionStart;
-      const end = ta.selectionEnd;
-      const next = value.slice(0, start) + text + value.slice(end);
-      onChange(next);
-      requestAnimationFrame(() => {
-        ta.focus();
-        const cursor = start + text.length;
-        ta.setSelectionRange(cursor, cursor);
-      });
-    },
-    [value, onChange],
-  );
-
-  /** Envolve a seleção com um <div align="..."> em torno do bloco selecionado. */
-  const setAlignment = useCallback(
-    (align: 'left' | 'center' | 'right' | 'justify') => {
-      const ta = taRef.current;
-      if (!ta) return;
-      const start = ta.selectionStart;
-      const end = ta.selectionEnd;
-      const lineStart = value.lastIndexOf('\n', start - 1) + 1;
-      let lineEnd = value.indexOf('\n', end);
-      if (lineEnd === -1) lineEnd = value.length;
-      const block = value.slice(lineStart, lineEnd);
-      // Remove alinhamento prévio se houver
-      const cleaned = block
-        .replace(/^<div align="(?:left|center|right|justify)">\s*/i, '')
-        .replace(/\s*<\/div>$/i, '');
-      const wrapped = `<div align="${align}">\n\n${cleaned}\n\n</div>`;
-      const next = value.slice(0, lineStart) + wrapped + value.slice(lineEnd);
-      onChange(next);
-      requestAnimationFrame(() => ta.focus());
-    },
-    [value, onChange],
-  );
-
-  const insertColor = useCallback((color: string) => {
-    if (!color) {
-      // Remove span de cor da seleção, se houver
-      const ta = taRef.current;
-      if (!ta) return;
-      const start = ta.selectionStart;
-      const end = ta.selectionEnd;
-      const sel = value.slice(start, end);
-      const cleaned = sel
-        .replace(/<span style="color:[^"]+">/gi, '')
-        .replace(/<\/span>/gi, '');
-      const next = value.slice(0, start) + cleaned + value.slice(end);
-      onChange(next);
-      return;
-    }
-    wrap(`<span style="color:${color}">`, '</span>', 'texto');
-  }, [value, onChange, wrap]);
-
-  const insertHighlight = useCallback((color: string) => {
-    wrap(`<mark style="background:${color}">`, '</mark>', 'texto');
-  }, [wrap]);
-
-  const insertFontSize = useCallback((size: string) => {
-    if (!size) return;
-    wrap(`<span style="font-size:${size}">`, '</span>', 'texto');
-  }, [wrap]);
-
-  /** Insere uma tabela markdown padrão (3 colunas x 2 linhas). */
-  const insertTable = useCallback(() => {
-    const tpl =
-      '\n\n| Coluna 1 | Coluna 2 | Coluna 3 |\n' +
-      '| --- | --- | --- |\n' +
-      '| valor 1 | valor 2 | valor 3 |\n' +
-      '| valor 4 | valor 5 | valor 6 |\n\n';
-    insertAtCursor(tpl);
-  }, [insertAtCursor]);
-
-  const insertCodeBlock = useCallback(() => {
-    wrap('\n```\n', '\n```\n', 'código aqui');
-  }, [wrap]);
-
-  const insertChecklist = useCallback(() => {
-    prefixLines('- [ ] ');
-  }, [prefixLines]);
-
-  const clearFormatting = useCallback(() => {
-    const ta = taRef.current;
-    if (!ta) return;
-    const start = ta.selectionStart;
-    const end = ta.selectionEnd;
-    if (start === end) return;
-    const sel = value.slice(start, end);
-    const cleaned = sel
-      .replace(/<\/?(?:u|mark|span|sub|sup|div|strong|em|b|i|s)\b[^>]*>/gi, '')
-      .replace(/\*\*(.*?)\*\*/g, '$1')
-      .replace(/(?<!\*)\*(?!\*)([^*]+)\*(?!\*)/g, '$1')
-      .replace(/~~(.*?)~~/g, '$1')
-      .replace(/`([^`]+)`/g, '$1');
-    const next = value.slice(0, start) + cleaned + value.slice(end);
-    onChange(next);
-  }, [value, onChange]);
 
   const insertLink = useCallback(() => {
-    const url = window.prompt('Cole o link (https://...)');
-    if (!url) return;
-    wrap('[', `](${url})`, 'texto do link');
-  }, [wrap]);
-
-  const wordCount = value.trim() ? value.trim().split(/\s+/).length : 0;
-  const charCount = value.length;
-
-  // ─── Imagens arrastáveis ──────────────────────────────────────────────
-  const IMG_RE = /!\[[^\]]*\]\([^)]+\)/g;
-  const images = useMemo(() => {
-    const matches: { md: string; index: number; alt: string; url: string }[] = [];
-    let m: RegExpExecArray | null;
-    const re = new RegExp(IMG_RE.source, 'g');
-    while ((m = re.exec(value)) !== null) {
-      const md = m[0];
-      const altMatch = md.match(/!\[([^\]]*)\]/);
-      const urlMatch = md.match(/\(([^)]+)\)/);
-      matches.push({
-        md,
-        index: m.index,
-        alt: altMatch?.[1] ?? '',
-        url: urlMatch?.[1] ?? '',
-      });
+    if (!editor) return;
+    const previous = editor.getAttributes('link').href as string | undefined;
+    const url = window.prompt('URL do link', previous || 'https://');
+    if (url === null) return;
+    if (url === '') {
+      editor.chain().focus().unsetLink().run();
+      return;
     }
-    return matches;
-  }, [value]);
+    editor.chain().focus().extendMarkRange('link').setLink({ href: url, target: '_blank' }).run();
+  }, [editor]);
 
-  const moveImage = useCallback((from: number, to: number) => {
-    if (from === to || from < 0 || to < 0 || from >= images.length || to >= images.length) return;
-    const src = images[from];
-    const dst = images[to];
-    if (!src || !dst) return;
+  const insertTable = useCallback(() => {
+    editor?.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
+  }, [editor]);
 
-    let next = value;
-    const removeRe = new RegExp(
-      src.md.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\n?',
+  if (!editor) {
+    return (
+      <div className={cn('rounded-lg border border-border bg-card p-8 text-center text-sm text-muted-foreground', className)}>
+        Carregando editor…
+      </div>
     );
-    next = next.replace(removeRe, '');
-
-    const dstIndex = next.indexOf(dst.md);
-    if (dstIndex === -1) return;
-    const insertAt = from < to ? dstIndex + dst.md.length : dstIndex;
-    const sep = from < to ? '\n\n' : '';
-    const sepEnd = from < to ? '' : '\n\n';
-    next = next.slice(0, insertAt) + sep + src.md + sepEnd + next.slice(insertAt);
-
-    onChange(next);
-  }, [images, value, onChange]);
-
-  const [dragIdx, setDragIdx] = useState<number | null>(null);
-
-  // ─── Busca e Substituição (Ctrl+F / Ctrl+H) ────────────────────────────
-  const [findOpen, setFindOpen] = useState(false);
-  const [findQuery, setFindQuery] = useState('');
-  const [replaceQuery, setReplaceQuery] = useState('');
-  const [showReplace, setShowReplace] = useState(false);
-  const [caseSensitive, setCaseSensitive] = useState(false);
-  const [wholeWord, setWholeWord] = useState(false);
-  const [matchIdx, setMatchIdx] = useState(0);
-  const findInputRef = useRef<HTMLInputElement>(null);
-
-  const matches = useMemo(() => {
-    if (!findQuery) return [] as { start: number; end: number }[];
-    const flags = caseSensitive ? 'g' : 'gi';
-    const escaped = findQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const pattern = wholeWord ? `\\b${escaped}\\b` : escaped;
-    try {
-      const re = new RegExp(pattern, flags);
-      const out: { start: number; end: number }[] = [];
-      let m: RegExpExecArray | null;
-      while ((m = re.exec(value)) !== null) {
-        if (m[0].length === 0) { re.lastIndex++; continue; }
-        out.push({ start: m.index, end: m.index + m[0].length });
-      }
-      return out;
-    } catch {
-      return [];
-    }
-  }, [findQuery, value, caseSensitive, wholeWord]);
-
-  // Resetar índice quando matches mudam
-  useEffect(() => {
-    if (matches.length === 0) setMatchIdx(0);
-    else if (matchIdx >= matches.length) setMatchIdx(0);
-  }, [matches.length, matchIdx]);
-
-  const focusMatch = useCallback((idx: number) => {
-    const ta = taRef.current;
-    const m = matches[idx];
-    if (!ta || !m) return;
-    requestAnimationFrame(() => {
-      ta.focus();
-      ta.setSelectionRange(m.start, m.end);
-      // Scroll até a seleção (aproximação por linha)
-      const before = value.slice(0, m.start);
-      const line = before.split('\n').length;
-      const lineHeight = 18;
-      ta.scrollTop = Math.max(0, line * lineHeight - ta.clientHeight / 2);
-    });
-  }, [matches, value]);
-
-  const goNextMatch = useCallback(() => {
-    if (matches.length === 0) return;
-    const next = (matchIdx + 1) % matches.length;
-    setMatchIdx(next);
-    focusMatch(next);
-  }, [matches.length, matchIdx, focusMatch]);
-
-  const goPrevMatch = useCallback(() => {
-    if (matches.length === 0) return;
-    const prev = (matchIdx - 1 + matches.length) % matches.length;
-    setMatchIdx(prev);
-    focusMatch(prev);
-  }, [matches.length, matchIdx, focusMatch]);
-
-  const replaceCurrent = useCallback(() => {
-    const m = matches[matchIdx];
-    if (!m) return;
-    const next = value.slice(0, m.start) + replaceQuery + value.slice(m.end);
-    onChange(next);
-    requestAnimationFrame(() => {
-      const ta = taRef.current;
-      if (ta) {
-        const cursor = m.start + replaceQuery.length;
-        ta.focus();
-        ta.setSelectionRange(cursor, cursor);
-      }
-    });
-  }, [matches, matchIdx, value, replaceQuery, onChange]);
-
-  const replaceAll = useCallback(() => {
-    if (!findQuery || matches.length === 0) return;
-    const flags = caseSensitive ? 'g' : 'gi';
-    const escaped = findQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const pattern = wholeWord ? `\\b${escaped}\\b` : escaped;
-    try {
-      const re = new RegExp(pattern, flags);
-      onChange(value.replace(re, replaceQuery));
-    } catch { /* ignore */ }
-  }, [findQuery, matches.length, caseSensitive, wholeWord, value, replaceQuery, onChange]);
-
-  const openFind = useCallback(() => {
-    setFindOpen(true);
-    requestAnimationFrame(() => {
-      findInputRef.current?.focus();
-      findInputRef.current?.select();
-    });
-  }, []);
-
-  const closeFind = useCallback(() => {
-    setFindOpen(false);
-    setShowReplace(false);
-    requestAnimationFrame(() => taRef.current?.focus());
-  }, []);
-
-  // Foco automático na primeira ocorrência ao digitar
-  useEffect(() => {
-    if (findOpen && matches.length > 0) {
-      focusMatch(matchIdx);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [matches.length, findOpen]);
-
+  }
 
   return (
-    <div className={cn('rounded-lg border border-border bg-card overflow-hidden', className)}>
-      {/* Toolbar — estilo Word, em duas faixas */}
-      <div className="border-b border-border bg-muted/40">
-        {/* Faixa 1: Histórico, Fonte, Formatação básica, Cores */}
+    <div className={cn('rounded-lg border border-border bg-card overflow-hidden flex flex-col', className)}>
+      {/* Toolbar — duas faixas estilo Word */}
+      <div className="border-b border-border bg-muted/40 sticky top-0 z-20">
+        {/* Faixa 1 */}
         <div className="flex items-center gap-0.5 px-2 py-1 flex-wrap">
-          <ToolBtn title="Desfazer (Ctrl+Z)" onClick={undo}>
+          <ToolBtn title="Desfazer (Ctrl+Z)" onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()}>
             <Undo2 className="h-3.5 w-3.5" />
           </ToolBtn>
-          <ToolBtn title="Refazer (Ctrl+Y)" onClick={redo}>
+          <ToolBtn title="Refazer (Ctrl+Y)" onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()}>
             <Redo2 className="h-3.5 w-3.5" />
           </ToolBtn>
           <Sep />
 
-          {/* Tamanho da fonte */}
+          {/* Estilo */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button type="button" size="sm" variant="ghost" className="h-7 px-2 gap-1" title="Tamanho do texto">
+              <Button type="button" size="sm" variant="ghost" className="h-7 px-2 gap-1" title="Estilo do parágrafo">
                 <Type className="h-3.5 w-3.5" />
-                <span className="text-[10px]">Tamanho</span>
+                <span className="text-[10px]">Estilo</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="bg-popover z-50">
-              {FONT_SIZES.map((s) => (
-                <DropdownMenuItem key={s.label} onClick={() => insertFontSize(s.value)}>
-                  <span style={{ fontSize: s.value || '14px' }}>{s.label}</span>
-                </DropdownMenuItem>
-              ))}
+              <DropdownMenuItem onClick={() => editor.chain().focus().setParagraph().run()}>
+                Texto normal
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}>
+                <Heading1 className="h-3.5 w-3.5 mr-2" /> Título 1
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}>
+                <Heading2 className="h-3.5 w-3.5 mr-2" /> Título 2
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}>
+                <Heading3 className="h-3.5 w-3.5 mr-2" /> Título 3
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-
           <Sep />
 
-          <ToolBtn title="Negrito (Ctrl+B)" onClick={() => wrap('**')}>
+          <ToolBtn title="Negrito (Ctrl+B)" active={editor.isActive('bold')} onClick={() => editor.chain().focus().toggleBold().run()}>
             <Bold className="h-3.5 w-3.5" />
           </ToolBtn>
-          <ToolBtn title="Itálico (Ctrl+I)" onClick={() => wrap('*')}>
+          <ToolBtn title="Itálico (Ctrl+I)" active={editor.isActive('italic')} onClick={() => editor.chain().focus().toggleItalic().run()}>
             <Italic className="h-3.5 w-3.5" />
           </ToolBtn>
-          <ToolBtn title="Sublinhado (Ctrl+U)" onClick={() => wrap('<u>', '</u>')}>
-            <Underline className="h-3.5 w-3.5" />
+          <ToolBtn title="Sublinhado (Ctrl+U)" active={editor.isActive('underline')} onClick={() => editor.chain().focus().toggleUnderline().run()}>
+            <UnderlineIcon className="h-3.5 w-3.5" />
           </ToolBtn>
-          <ToolBtn title="Tachado" onClick={() => wrap('~~')}>
+          <ToolBtn title="Tachado" active={editor.isActive('strike')} onClick={() => editor.chain().focus().toggleStrike().run()}>
             <Strikethrough className="h-3.5 w-3.5" />
           </ToolBtn>
-          <ToolBtn title="Subscrito" onClick={() => wrap('<sub>', '</sub>')}>
-            <Subscript className="h-3.5 w-3.5" />
+          <ToolBtn title="Subscrito" active={editor.isActive('subscript')} onClick={() => editor.chain().focus().toggleSubscript().run()}>
+            <SubIcon className="h-3.5 w-3.5" />
           </ToolBtn>
-          <ToolBtn title="Sobrescrito" onClick={() => wrap('<sup>', '</sup>')}>
-            <Superscript className="h-3.5 w-3.5" />
+          <ToolBtn title="Sobrescrito" active={editor.isActive('superscript')} onClick={() => editor.chain().focus().toggleSuperscript().run()}>
+            <SupIcon className="h-3.5 w-3.5" />
           </ToolBtn>
           <Sep />
 
@@ -514,7 +252,14 @@ export function MarkdownEditor({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="bg-popover z-50">
               {TEXT_COLORS.map((c) => (
-                <DropdownMenuItem key={c.name} onClick={() => insertColor(c.value)}>
+                <DropdownMenuItem
+                  key={c.name}
+                  onClick={() =>
+                    c.value
+                      ? editor.chain().focus().setColor(c.value).run()
+                      : editor.chain().focus().unsetColor().run()
+                  }
+                >
                   <span
                     className="inline-block h-3 w-3 rounded mr-2 border border-border"
                     style={{ background: c.value || 'transparent' }}
@@ -533,8 +278,14 @@ export function MarkdownEditor({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="bg-popover z-50">
+              <DropdownMenuItem onClick={() => editor.chain().focus().unsetHighlight().run()}>
+                Sem realce
+              </DropdownMenuItem>
               {HIGHLIGHT_COLORS.map((c) => (
-                <DropdownMenuItem key={c.name} onClick={() => insertHighlight(c.value)}>
+                <DropdownMenuItem
+                  key={c.name}
+                  onClick={() => editor.chain().focus().toggleHighlight({ color: c.value }).run()}
+                >
                   <span
                     className="inline-block h-3 w-3 rounded mr-2 border border-border"
                     style={{ background: c.value }}
@@ -545,324 +296,90 @@ export function MarkdownEditor({
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <ToolBtn title="Limpar formatação" onClick={clearFormatting}>
+          <ToolBtn title="Limpar formatação" onClick={() => editor.chain().focus().unsetAllMarks().clearNodes().run()}>
             <RemoveFormatting className="h-3.5 w-3.5" />
           </ToolBtn>
-          <Sep />
-          <ToolBtn title="Localizar (Ctrl+F)" onClick={openFind}>
-            <Search className="h-3.5 w-3.5" />
-          </ToolBtn>
-
-          <div className="ml-auto flex items-center gap-0.5">
-            <ModeBtn active={mode === 'edit'} title="Só editor" onClick={() => setMode('edit')}>
-              <Pencil className="h-3.5 w-3.5" />
-            </ModeBtn>
-            <ModeBtn active={mode === 'split'} title="Editor + Preview (apenas em telas grandes)" onClick={() => setMode('split')} className="hidden lg:inline-flex">
-              <Columns2 className="h-3.5 w-3.5" />
-            </ModeBtn>
-            <ModeBtn active={mode === 'preview'} title="Só preview" onClick={() => setMode('preview')}>
-              <Eye className="h-3.5 w-3.5" />
-            </ModeBtn>
-          </div>
         </div>
 
-        {/* Faixa 2: Estrutura, Listas, Alinhamento, Inserção */}
+        {/* Faixa 2 */}
         <div className="flex items-center gap-0.5 px-2 py-1 border-t border-border/60 flex-wrap">
-          <ToolBtn title="Título 1" onClick={() => prefixLines('# ')}>
-            <Heading1 className="h-3.5 w-3.5" />
-          </ToolBtn>
-          <ToolBtn title="Título 2" onClick={() => prefixLines('## ')}>
-            <Heading2 className="h-3.5 w-3.5" />
-          </ToolBtn>
-          <ToolBtn title="Título 3" onClick={() => prefixLines('### ')}>
-            <Heading3 className="h-3.5 w-3.5" />
-          </ToolBtn>
-          <Sep />
-
-          <ToolBtn title="Lista com marcadores" onClick={() => prefixLines('- ')}>
+          <ToolBtn title="Lista com marcadores" active={editor.isActive('bulletList')} onClick={() => editor.chain().focus().toggleBulletList().run()}>
             <List className="h-3.5 w-3.5" />
           </ToolBtn>
-          <ToolBtn title="Lista numerada" onClick={() => prefixLines('1. ')}>
+          <ToolBtn title="Lista numerada" active={editor.isActive('orderedList')} onClick={() => editor.chain().focus().toggleOrderedList().run()}>
             <ListOrdered className="h-3.5 w-3.5" />
           </ToolBtn>
-          <ToolBtn title="Lista de tarefas" onClick={insertChecklist}>
+          <ToolBtn title="Lista de tarefas" active={editor.isActive('taskList')} onClick={() => editor.chain().focus().toggleTaskList().run()}>
             <CheckSquare className="h-3.5 w-3.5" />
           </ToolBtn>
-          <ToolBtn title="Citação" onClick={() => prefixLines('> ')}>
+          <ToolBtn title="Citação" active={editor.isActive('blockquote')} onClick={() => editor.chain().focus().toggleBlockquote().run()}>
             <Quote className="h-3.5 w-3.5" />
           </ToolBtn>
           <Sep />
 
-          <ToolBtn title="Alinhar à esquerda" onClick={() => setAlignment('left')}>
+          <ToolBtn title="Alinhar à esquerda" active={editor.isActive({ textAlign: 'left' })} onClick={() => editor.chain().focus().setTextAlign('left').run()}>
             <AlignLeft className="h-3.5 w-3.5" />
           </ToolBtn>
-          <ToolBtn title="Centralizar" onClick={() => setAlignment('center')}>
+          <ToolBtn title="Centralizar" active={editor.isActive({ textAlign: 'center' })} onClick={() => editor.chain().focus().setTextAlign('center').run()}>
             <AlignCenter className="h-3.5 w-3.5" />
           </ToolBtn>
-          <ToolBtn title="Alinhar à direita" onClick={() => setAlignment('right')}>
+          <ToolBtn title="Alinhar à direita" active={editor.isActive({ textAlign: 'right' })} onClick={() => editor.chain().focus().setTextAlign('right').run()}>
             <AlignRight className="h-3.5 w-3.5" />
           </ToolBtn>
-          <ToolBtn title="Justificar" onClick={() => setAlignment('justify')}>
+          <ToolBtn title="Justificar" active={editor.isActive({ textAlign: 'justify' })} onClick={() => editor.chain().focus().setTextAlign('justify').run()}>
             <AlignJustify className="h-3.5 w-3.5" />
           </ToolBtn>
           <Sep />
 
-          <ToolBtn title="Código inline" onClick={() => wrap('`')}>
+          <ToolBtn title="Código inline" active={editor.isActive('code')} onClick={() => editor.chain().focus().toggleCode().run()}>
             <Code className="h-3.5 w-3.5" />
           </ToolBtn>
-          <ToolBtn title="Bloco de código" onClick={insertCodeBlock}>
+          <ToolBtn title="Bloco de código" active={editor.isActive('codeBlock')} onClick={() => editor.chain().focus().toggleCodeBlock().run()}>
             <Code2 className="h-3.5 w-3.5" />
           </ToolBtn>
           <ToolBtn title="Tabela" onClick={insertTable}>
             <TableIcon className="h-3.5 w-3.5" />
           </ToolBtn>
-          <ToolBtn title="Link" onClick={insertLink}>
+          <ToolBtn title="Link (Ctrl+K)" active={editor.isActive('link')} onClick={insertLink}>
             <LinkIcon className="h-3.5 w-3.5" />
           </ToolBtn>
-          <ToolBtn title="Linha horizontal" onClick={() => insertAtCursor('\n\n---\n\n')}>
+          <ToolBtn title="Linha horizontal" onClick={() => editor.chain().focus().setHorizontalRule().run()}>
             <Minus className="h-3.5 w-3.5" />
           </ToolBtn>
           <div className="ml-1">
-            <ImageUploadButton onImageInserted={(md) => insertAtCursor('\n' + md + '\n')} />
+            <ImageUploadButton onImageInserted={insertImage} />
           </div>
         </div>
       </div>
 
-      {/* Barra de Localizar e Substituir (Ctrl+F / Ctrl+H) — estilo Word */}
-      {findOpen && (
-        <div className="border-b border-border bg-muted/40 px-2 py-1.5 space-y-1.5">
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <Search className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-            <Input
-              ref={findInputRef}
-              value={findQuery}
-              onChange={(e) => setFindQuery(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  if (e.shiftKey) goPrevMatch(); else goNextMatch();
-                } else if (e.key === 'Escape') {
-                  e.preventDefault();
-                  closeFind();
-                }
-              }}
-              placeholder="Localizar no texto…"
-              className="h-7 w-48 text-xs"
-            />
-            <span className="text-[10px] text-muted-foreground tabular-nums min-w-[64px]">
-              {matches.length === 0
-                ? 'Nenhum'
-                : `${matchIdx + 1} de ${matches.length}`}
-            </span>
-            <ToolBtn title="Anterior (Shift+Enter)" onClick={goPrevMatch}>
-              <ChevronUp className="h-3.5 w-3.5" />
-            </ToolBtn>
-            <ToolBtn title="Próximo (Enter)" onClick={goNextMatch}>
-              <ChevronDown className="h-3.5 w-3.5" />
-            </ToolBtn>
-            <Sep />
-            <Button
-              type="button"
-              size="sm"
-              variant={caseSensitive ? 'secondary' : 'ghost'}
-              className="h-7 px-2 text-[10px] font-mono"
-              title="Diferenciar maiúsculas/minúsculas"
-              onClick={() => setCaseSensitive((v) => !v)}
-            >
-              Aa
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant={wholeWord ? 'secondary' : 'ghost'}
-              className="h-7 px-2 text-[10px] font-mono"
-              title="Palavra inteira"
-              onClick={() => setWholeWord((v) => !v)}
-            >
-              ab|
-            </Button>
-            <Sep />
-            <Button
-              type="button"
-              size="sm"
-              variant={showReplace ? 'secondary' : 'ghost'}
-              className="h-7 px-2 gap-1 text-[10px]"
-              title="Substituir (Ctrl+H)"
-              onClick={() => setShowReplace((v) => !v)}
-            >
-              <Replace className="h-3.5 w-3.5" />
-              Substituir
-            </Button>
-            <ToolBtn title="Fechar (Esc)" onClick={closeFind}>
-              <X className="h-3.5 w-3.5" />
-            </ToolBtn>
-          </div>
-
-          {showReplace && (
-            <div className="flex items-center gap-1.5 flex-wrap pl-5">
-              <Replace className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-              <Input
-                value={replaceQuery}
-                onChange={(e) => setReplaceQuery(e.target.value)}
-                placeholder="Substituir por…"
-                className="h-7 w-48 text-xs"
-              />
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                className="h-7 px-2 text-[10px]"
-                onClick={replaceCurrent}
-                disabled={matches.length === 0}
-              >
-                Substituir
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                className="h-7 px-2 text-[10px]"
-                onClick={replaceAll}
-                disabled={matches.length === 0}
-              >
-                Substituir tudo
-              </Button>
-            </div>
-          )}
+      {/* Folha de edição estilo Word/Docs */}
+      <div
+        className="overflow-auto bg-muted/20"
+        style={{ maxHeight: '70vh', minHeight: rows ? `${rows * 24}px` : '400px' }}
+        onClick={() => editor.commands.focus()}
+      >
+        <div className="mx-auto my-4 max-w-[820px] shadow-md ring-1 ring-border bg-background">
+          <EditorContent editor={editor} />
         </div>
-      )}
-
-      {/* Faixa de imagens reordenáveis */}
-      {images.length > 1 && (
-        <div className="border-b border-border bg-muted/20 px-2 py-1.5">
-          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground mb-1">
-            <ImageIcon className="h-3 w-3" />
-            <span>Imagens no texto · arraste para reordenar</span>
-          </div>
-          <div className="flex flex-wrap gap-1.5">
-            {images.map((img, i) => (
-              <div
-                key={`${img.url}-${i}`}
-                draggable
-                onDragStart={() => setDragIdx(i)}
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  if (dragIdx !== null) moveImage(dragIdx, i);
-                  setDragIdx(null);
-                }}
-                onDragEnd={() => setDragIdx(null)}
-                className={cn(
-                  'group flex items-center gap-1 rounded border border-border bg-card pl-1 pr-1.5 py-0.5 text-[10px] cursor-grab active:cursor-grabbing transition-opacity',
-                  dragIdx === i && 'opacity-40',
-                )}
-                title={`Imagem ${i + 1}: ${img.alt || img.url}`}
-              >
-                <GripVertical className="h-3 w-3 text-muted-foreground" />
-                <img
-                  src={img.url}
-                  alt=""
-                  className="h-5 w-5 rounded object-cover pointer-events-none"
-                  onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
-                />
-                <span className="font-mono text-foreground/80">#{i + 1}</span>
-                <button
-                  type="button"
-                  className="ml-0.5 p-0.5 rounded hover:bg-muted disabled:opacity-30"
-                  title="Mover para cima"
-                  disabled={i === 0}
-                  onClick={() => moveImage(i, i - 1)}
-                >
-                  <ArrowUp className="h-3 w-3" />
-                </button>
-                <button
-                  type="button"
-                  className="p-0.5 rounded hover:bg-muted disabled:opacity-30"
-                  title="Mover para baixo"
-                  disabled={i === images.length - 1}
-                  onClick={() => moveImage(i, i + 1)}
-                >
-                  <ArrowDown className="h-3 w-3" />
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Área de edição */}
-      <div className={cn('grid', mode === 'split' ? 'lg:grid-cols-2' : 'grid-cols-1')}>
-        {(mode === 'edit' || mode === 'split') && (
-          <Textarea
-            ref={taRef}
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            placeholder={placeholder}
-            rows={rows}
-            className="rounded-none border-0 border-r-0 focus-visible:ring-0 font-mono text-[13px] sm:text-xs leading-relaxed resize-none min-h-[260px] sm:min-h-[280px] w-full"
-            onKeyDown={(e) => {
-              const mod = e.metaKey || e.ctrlKey;
-              if (!mod) return;
-              const k = e.key.toLowerCase();
-              if (k === 'b') { e.preventDefault(); wrap('**'); }
-              else if (k === 'i') { e.preventDefault(); wrap('*'); }
-              else if (k === 'u') { e.preventDefault(); wrap('<u>', '</u>'); }
-              else if (k === 'k') { e.preventDefault(); insertLink(); }
-              else if (k === 'f') { e.preventDefault(); openFind(); }
-              else if (k === 'h') { e.preventDefault(); setShowReplace(true); openFind(); }
-              else if (k === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
-              else if ((k === 'z' && e.shiftKey) || k === 'y') { e.preventDefault(); redo(); }
-            }}
-          />
-        )}
-
-        {(mode === 'preview' || mode === 'split') && (
-          <div
-            className={cn(
-              'p-3 sm:p-4 overflow-auto bg-background prose-sm max-w-none min-h-[260px] sm:min-h-[280px]',
-              mode === 'split' && 'border-t lg:border-t-0 lg:border-l border-border',
-            )}
-            style={{ maxHeight: '60vh' }}
-          >
-            {value.trim() ? (
-              <ApostilaContentRenderer content={value} />
-            ) : (
-              <p className="text-xs text-muted-foreground italic">
-                Comece a escrever — o preview aparece aqui.
-              </p>
-            )}
-          </div>
-        )}
       </div>
 
       {showWordCount && (
         <div className="px-3 py-1.5 border-t border-border bg-muted/30 text-[10px] text-muted-foreground flex items-center justify-between gap-2">
           <span>
-            {wordCount} {wordCount === 1 ? 'palavra' : 'palavras'} · {charCount} caracteres
+            {stats.words} {stats.words === 1 ? 'palavra' : 'palavras'} · {stats.chars} caracteres
           </span>
-          <span className="hidden sm:inline">Ctrl+B negrito · Ctrl+I itálico · Ctrl+U sublinhado · Ctrl+K link · Ctrl+Z desfazer</span>
+          <span className="hidden sm:inline">
+            Ctrl+B negrito · Ctrl+I itálico · Ctrl+U sublinhado · Clique numa imagem para alinhar / redimensionar
+          </span>
         </div>
       )}
     </div>
   );
 }
 
-function ToolBtn({ children, title, onClick }: { children: React.ReactNode; title: string; onClick: () => void }) {
-  return (
-    <Button
-      type="button"
-      size="icon"
-      variant="ghost"
-      title={title}
-      onClick={onClick}
-      className="h-7 w-7"
-    >
-      {children}
-    </Button>
-  );
-}
-
-function ModeBtn({ children, title, active, onClick, className }: { children: React.ReactNode; title: string; active: boolean; onClick: () => void; className?: string }) {
+function ToolBtn({
+  children, title, onClick, active, disabled,
+}: { children: React.ReactNode; title: string; onClick: () => void; active?: boolean; disabled?: boolean }) {
   return (
     <Button
       type="button"
@@ -870,7 +387,8 @@ function ModeBtn({ children, title, active, onClick, className }: { children: Re
       variant={active ? 'secondary' : 'ghost'}
       title={title}
       onClick={onClick}
-      className={cn('h-7 w-7', className)}
+      disabled={disabled}
+      className={cn('h-7 w-7', active && 'text-primary')}
     >
       {children}
     </Button>
