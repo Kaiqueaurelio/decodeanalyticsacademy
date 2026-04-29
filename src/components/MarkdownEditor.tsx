@@ -58,11 +58,11 @@ const ZOOM_KEY = 'apostila-editor:zoom';
 const TOC_KEY = 'apostila-editor:toc-collapsed';
 const INSPECTOR_KEY = 'apostila-editor:inspector-collapsed';
 
-// Constantes da folha A4 a 96dpi (mantenha em sync com .editor-page no index.css)
-const PAGE_TOP_PADDING = 96;     // padding-top
-const PAGE_BOTTOM_PADDING = 120; // padding-bottom
-const PAGE_HEIGHT = 1123;        // altura total
-const PAGE_CONTENT_HEIGHT = PAGE_HEIGHT - PAGE_TOP_PADDING - PAGE_BOTTOM_PADDING;
+// Constantes da folha A4 a 96dpi — DEVEM bater com :root no index.css
+// 210mm × 297mm = 794×1123px; padding 1in = 96px (25.4mm) → conteúdo útil = 931px
+const PAGE_TOP_PADDING = 96;
+const PAGE_HEIGHT = 1123;
+const PAGE_CONTENT_HEIGHT = 931; // 1123 - 96 - 96
 
 export function MarkdownEditor({
   value,
