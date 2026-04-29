@@ -83,7 +83,7 @@ export function AppHeader() {
                   <Menu className="h-4 w-4" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-56 pt-10 bg-card">
+              <SheetContent side="right" className="w-[78vw] max-w-xs pt-10 bg-card">
                 <nav className="flex flex-col gap-1">
                   <Button variant="ghost" size="sm" className="justify-start text-sm font-sans normal-case tracking-normal" onClick={() => nav('/dashboard')}>
                     <LayoutDashboard className="mr-2 h-4 w-4" /> Dashboard
