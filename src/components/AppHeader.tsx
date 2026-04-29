@@ -25,7 +25,7 @@ export function AppHeader() {
         <Link to={user ? '/dashboard' : '/'} className="flex items-center gap-2 min-w-0 flex-shrink">
           <img src={logoDark} alt="Decode Analytics" className="h-7 w-7 rounded object-cover flex-shrink-0" />
           <span className="font-mono-label text-[11px] sm:text-xs font-medium uppercase tracking-widest text-foreground truncate hidden xs:inline">Decode Analytics</span>
-          <span className="font-mono-label text-[11px] font-medium uppercase tracking-widest text-foreground xs:hidden">Decode</span>
+          <span className="font-mono-label text-[11px] font-medium uppercase tracking-widest text-foreground inline xs:hidden">Decode</span>
         </Link>
 
         <nav className="hidden sm:flex items-center gap-1">
