@@ -212,16 +212,25 @@ export default function DashboardPage() {
             <p className="text-xs text-muted-foreground mt-0.5">Bem-vindo de volta! Continue de onde parou.</p>
           </div>
           <div className="flex gap-2">
-            <Button size="sm" variant="outline" onClick={() => navigate('/profile')} className="text-xs gap-1.5 h-8">
+            <StudyNowDialog />
+            <Button size="sm" variant="outline" onClick={() => navigate('/profile')} className="text-xs gap-1.5 h-8 hidden sm:inline-flex">
               <User className="h-3.5 w-3.5" /> Perfil
             </Button>
             {isAdmin && (
-              <Button size="sm" variant="outline" onClick={() => navigate('/admin')} className="text-xs gap-1.5 h-8">
+              <Button size="sm" variant="outline" onClick={() => navigate('/admin')} className="text-xs gap-1.5 h-8 hidden sm:inline-flex">
                 <BarChart3 className="h-3.5 w-3.5" /> Admin
               </Button>
             )}
           </div>
         </div>
+
+        {/* Continue de onde parou + Caderno de erros */}
+        <Reveal from="bottom" delay={20}>
+          <div className="grid gap-3 sm:grid-cols-2 mb-4">
+            <ContinueWhereLeftCard />
+            <MistakesNotebookCard />
+          </div>
+        </Reveal>
 
         {/* Quick Access Hub - estilo AVA */}
         <QuickAccessHub />
