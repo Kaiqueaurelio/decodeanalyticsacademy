@@ -39,6 +39,20 @@ export function PomodoroTimer({ onComplete }: Props) {
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
   }, [isRunning, timeLeft, mode]);
 
+  // Permite outro componente disparar o Pomodoro (ex: Modo Estudar agora).
+  // Evento: window.dispatchEvent(new CustomEvent('decode-pomodoro-start', { detail: { duration?: number } }))
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail || {};
+      const minutes = Number(detail.duration) > 0 ? Number(detail.duration) : getFocusMinutes();
+      setMode('focus');
+      setTimeLeft(minutes * 60);
+      setIsRunning(true);
+    };
+    window.addEventListener('decode-pomodoro-start', handler);
+    return () => window.removeEventListener('decode-pomodoro-start', handler);
+  }, []);
+
   const reset = () => { setIsRunning(false); setTimeLeft(mode === 'focus' ? focusTime : breakTime); };
   const toggle = () => setIsRunning(!isRunning);
 
