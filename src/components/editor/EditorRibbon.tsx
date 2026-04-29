@@ -3,12 +3,18 @@
  * Abas: Arquivo (azul) · Página Inicial · Inserir · Layout · Revisão.
  * Grupos com label embaixo, separadores verticais, seletor de fonte/tamanho,
  * botões grandes para ações principais (estilo "split button").
+ *
+ * Estados visuais (Office):
+ *   - hover: fundo cinza claro
+ *   - active (formatação aplicada): fundo azul claro + borda azul Word
+ *   - disabled: 40% opacidade, sem hover
  */
 import { useState } from 'react';
 import type { Editor } from '@tiptap/react';
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
 } from '@/components/ui/dropdown-menu';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import {
   Bold, Italic, Underline as UnderlineIcon, Strikethrough,
   Heading1, Heading2, Heading3, List, ListOrdered, Quote, Code, Code2,
@@ -16,10 +22,11 @@ import {
   Highlighter, Palette, Table as TableIcon,
   Subscript as SubIcon, Superscript as SupIcon, CheckSquare,
   RemoveFormatting, Minus, Type, Search, FileText, ChevronDown,
-  Pilcrow, Image as ImageIcon, Indent, Outdent, Save, Printer,
+  Indent, Outdent, Save, Printer, Check,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { ImageUploadButton } from '@/components/ImageUploadButton';
+import { RibbonImageButton } from '@/components/editor/RibbonImageButton';
+import { TableGridPicker } from '@/components/editor/TableGridPicker';
 
 const TEXT_COLORS = [
   { name: 'Automático', value: '' },
