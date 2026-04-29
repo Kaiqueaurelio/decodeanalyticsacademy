@@ -524,7 +524,7 @@ function PdfEngine(props: {
 
       {numPages > 0 && (
         <div
-          className={`absolute inset-x-3 z-30 transition-opacity ${chrome ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+          className={`absolute inset-x-3 z-30 transition-opacity ${chrome ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} style={{ bottom: 'calc(60px + env(safe-area-inset-bottom))' }}
         >
           <div className="bg-background/90 backdrop-blur rounded-full px-3 py-2 flex items-center gap-2 border border-border/40 shadow-lg">
             <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setPage(Math.max(1, page - 1))}><ChevronLeft className="h-3.5 w-3.5" /></Button>
@@ -671,7 +671,7 @@ function EpubEngine(props: {
 
       <div ref={viewerRef} className="w-full h-full" style={{ paddingTop: 12 }} />
 
-      <div className={`absolute inset-x-3 z-30 transition-opacity ${chrome ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+      <div className={`absolute inset-x-3 z-30 transition-opacity ${chrome ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} style={{ bottom: 'calc(60px + env(safe-area-inset-bottom))' }}>
         <div className="bg-background/90 backdrop-blur rounded-full px-3 py-2 flex items-center gap-2 border border-border/40 shadow-lg">
           <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => renditionRef.current?.prev()}><ChevronLeft className="h-3.5 w-3.5" /></Button>
           <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
