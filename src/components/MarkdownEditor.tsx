@@ -240,7 +240,7 @@ export function MarkdownEditor({
         onToggleFocus={() => setFocusMode((f) => !f)}
       />
 
-      {!focusMode && <EditorRibbon editor={editor} onInsertImage={insertImage} />}
+      {!focusMode && <EditorRibbon editor={editor} onInsertImage={insertImage} onSave={onSave} saveStatus={status} />}
 
       <div className="flex flex-1 min-h-0">
         {!focusMode && (
