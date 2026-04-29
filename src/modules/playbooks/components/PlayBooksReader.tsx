@@ -483,7 +483,7 @@ function PdfEngine(props: {
       <div
         ref={scrollerRef}
         className={`w-full h-full ${mode === 'scroll' ? 'overflow-y-auto' : 'overflow-hidden flex items-center justify-center'}`}
-        style={{ padding: mode === 'scroll' ? margin : 0 }}
+        style={{ padding: mode === 'scroll' ? effectiveMargin : 0 }}
         onClick={mode === 'paged' ? handleClickPage : undefined}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
