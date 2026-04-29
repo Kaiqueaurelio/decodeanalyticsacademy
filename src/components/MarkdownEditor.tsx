@@ -52,6 +52,8 @@ interface Props {
   rows?: number;
   className?: string;
   showWordCount?: boolean;
+  /** Callback chamado ao Ctrl+S ou clique em Salvar no ribbon. */
+  onSave?: () => void;
 }
 
 const ZOOM_KEY = 'apostila-editor:zoom';
@@ -70,6 +72,7 @@ export function MarkdownEditor({
   rows = 18,
   className,
   showWordCount = true,
+  onSave,
 }: Props) {
   const externalRef = useRef(value);
   const pageRef = useRef<HTMLDivElement>(null);
