@@ -1,12 +1,13 @@
 // PlayBooks Upload — drop a local EPUB/PDF and add to a personal in-browser shelf.
-// Saves to IndexedDB-backed Object URL stored in localStorage metadata so the user
-// can continue reading their own uploaded files. Does NOT touch the admin/published library.
+// Mobile: bottom sheet (Drawer). Desktop: modal centralizado.
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { Upload, FileText, X } from 'lucide-react';
 import { toast } from 'sonner';
+import { useIsMobile } from '@/hooks/use-mobile';
 import type { PBBook } from '../types';
 import { detectPBFormat } from '../types';
 
@@ -24,12 +25,11 @@ interface LocalUploadMeta {
 }
 
 export function PlayBooksUpload({ open, onClose, onAdded }: Props) {
+  const isMobile = useIsMobile();
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
-
-  if (!open) return null;
 
   const handleSave = async () => {
     if (!file || !title) { toast.error('Título e arquivo são obrigatórios'); return; }
@@ -39,8 +39,6 @@ export function PlayBooksUpload({ open, onClose, onAdded }: Props) {
 
     setBusy(true);
     try {
-      // Store the file in IndexedDB via a Blob URL session-cached for runtime use,
-      // but we also persist the binary so it survives reloads.
       const id = crypto.randomUUID();
       await idbPut(id, file);
       const meta: LocalUploadMeta = {
@@ -68,50 +66,71 @@ export function PlayBooksUpload({ open, onClose, onAdded }: Props) {
     }
   };
 
+  const formContent = (
+    <div className="space-y-3">
+      <div>
+        <Label className="text-xs">Título *</Label>
+        <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Ex.: Estruturas de Dados" className="text-[16px] sm:text-sm h-11 sm:h-10" />
+      </div>
+      <div>
+        <Label className="text-xs">Autor</Label>
+        <Input value={author} onChange={(e) => setAuthor(e.target.value)} placeholder="Opcional" className="text-[16px] sm:text-sm h-11 sm:h-10" />
+      </div>
+      <div>
+        <Label className="text-xs">Arquivo (PDF ou EPUB) *</Label>
+        <Input
+          type="file"
+          accept=".pdf,.epub,application/pdf,application/epub+zip"
+          onChange={(e) => setFile(e.target.files?.[0] || null)}
+          className="text-[14px] h-11 sm:h-10 file:mr-2 file:text-xs"
+        />
+        {file && (
+          <p className="text-[11px] text-muted-foreground mt-1 flex items-center gap-1 break-all">
+            <FileText className="h-3 w-3 shrink-0" /> {file.name} ({(file.size / 1024 / 1024).toFixed(1)}MB)
+          </p>
+        )}
+      </div>
+      <Button className="w-full h-11" onClick={handleSave} disabled={busy || !file || !title}>
+        {busy ? 'Enviando…' : 'Adicionar à estante'}
+      </Button>
+      <p className="text-[10px] text-muted-foreground text-center">
+        O arquivo é salvo localmente no seu dispositivo (offline).
+      </p>
+    </div>
+  );
+
+  if (isMobile) {
+    return (
+      <Drawer open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
+        <DrawerContent className="px-4 pb-6">
+          <DrawerHeader className="px-0 pt-2">
+            <DrawerTitle className="flex items-center gap-2 text-base"><Upload className="h-4 w-4" /> Enviar livro</DrawerTitle>
+          </DrawerHeader>
+          {formContent}
+        </DrawerContent>
+      </Drawer>
+    );
+  }
+
+  if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm" onClick={onClose}>
-      <div className="bg-card border border-border rounded-2xl shadow-2xl w-[92%] max-w-md p-5" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4" onClick={onClose}>
+      <div className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-md p-5" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold flex items-center gap-2"><Upload className="h-4 w-4" /> Enviar livro</h3>
-          <button onClick={onClose}><X className="h-4 w-4 text-muted-foreground" /></button>
+          <button onClick={onClose} aria-label="Fechar"><X className="h-4 w-4 text-muted-foreground" /></button>
         </div>
-        <div className="space-y-3">
-          <div>
-            <Label className="text-xs">Título *</Label>
-            <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Ex.: Estruturas de Dados" />
-          </div>
-          <div>
-            <Label className="text-xs">Autor</Label>
-            <Input value={author} onChange={(e) => setAuthor(e.target.value)} placeholder="Opcional" />
-          </div>
-          <div>
-            <Label className="text-xs">Arquivo (PDF ou EPUB) *</Label>
-            <Input type="file" accept=".pdf,.epub,application/pdf,application/epub+zip" onChange={(e) => setFile(e.target.files?.[0] || null)} />
-            {file && (
-              <p className="text-[11px] text-muted-foreground mt-1 flex items-center gap-1">
-                <FileText className="h-3 w-3" /> {file.name} ({(file.size / 1024 / 1024).toFixed(1)}MB)
-              </p>
-            )}
-          </div>
-          <Button className="w-full" onClick={handleSave} disabled={busy || !file || !title}>
-            {busy ? 'Enviando…' : 'Adicionar à estante'}
-          </Button>
-          <p className="text-[10px] text-muted-foreground text-center">
-            O arquivo é salvo localmente no seu dispositivo (offline).
-          </p>
-        </div>
+        {formContent}
       </div>
     </div>
   );
 }
 
-// Helpers — local upload metadata
 function readLocal(): LocalUploadMeta[] {
   try { return JSON.parse(localStorage.getItem(LOCAL_KEY) || '[]'); } catch { return []; }
 }
 function writeLocal(m: LocalUploadMeta[]) { localStorage.setItem(LOCAL_KEY, JSON.stringify(m)); }
 
-// Tiny IndexedDB wrapper
 function idb(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const r = indexedDB.open('playbooks', 1);
