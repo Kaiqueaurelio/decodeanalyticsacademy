@@ -987,3 +987,73 @@ html {
   .editor-page, .editor-page * { visibility: visible; }
   .editor-page { position: absolute; left: 0; top: 0; box-shadow: none; margin: 0; }
 }
+
+/* ============== Paginação real estilo Word ============== */
+.editor-page-shell {
+  position: relative;
+  width: 794px;
+  margin: 24px auto;
+  transform-origin: top center;
+  transition: transform 120ms ease;
+}
+.editor-page-shell .editor-page {
+  margin: 0;            /* a margem agora vive no shell para o overlay alinhar */
+  transform: none;      /* zoom é aplicado no shell, não na page */
+  transition: none;
+}
+.page-break-overlay {
+  position: absolute;
+  left: -16px;
+  right: -16px;
+  height: 0;
+  border-top: 1px dashed hsl(var(--primary) / 0.5);
+  pointer-events: none;
+  display: flex;
+  justify-content: center;
+}
+.page-break-overlay::before {
+  content: "— Página " attr(data-page) " —";
+  position: absolute;
+  top: -10px;
+  background: hsl(var(--background));
+  color: hsl(var(--muted-foreground));
+  font-size: 9px;
+  font-family: 'DM Mono', monospace;
+  padding: 1px 8px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 999px;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+
+@page {
+  size: A4;
+  margin: 0;
+}
+
+@media print {
+  html, body { background: white !important; }
+  body * { visibility: hidden; }
+  .editor-page-shell, .editor-page-shell * { visibility: visible; }
+  .page-break-overlay { display: none !important; }
+  .editor-page-shell {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    margin: 0 !important;
+    width: 210mm !important;
+    transform: none !important;
+  }
+  .editor-page {
+    width: 210mm !important;
+    min-height: 297mm !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    padding: 25mm 25mm 30mm !important;
+    page-break-after: auto;
+  }
+  /* Quebra automática a cada altura útil de página = 297mm − 55mm de padding */
+  .editor-page .ProseMirror > * {
+    page-break-inside: avoid;
+  }
+}
