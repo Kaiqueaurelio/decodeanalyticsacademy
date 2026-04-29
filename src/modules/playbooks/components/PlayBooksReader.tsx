@@ -343,13 +343,19 @@ function PdfEngine(props: {
     return () => window.removeEventListener('resize', update);
   }, []);
 
+  const effectiveMargin = useMemo(() => {
+    if (containerWidth < 380) return Math.min(margin, 12);
+    if (containerWidth < 640) return Math.min(margin, 18);
+    return margin;
+  }, [containerWidth, margin]);
+
   const pageWidth = useMemo(() => {
-    const baseW = Math.max(280, containerWidth - margin * 2);
-    const verticalChrome = mode === 'paged' ? 120 : margin * 2;
+    const baseW = Math.max(280, containerWidth - effectiveMargin * 2);
+    const verticalChrome = mode === 'paged' ? 140 : effectiveMargin * 2;
     const availableH = Math.max(360, containerHeight - verticalChrome);
     const widthFromHeight = availableH / pageAspect;
     return Math.min(baseW, widthFromHeight, 1100);
-  }, [containerWidth, containerHeight, pageAspect, margin, mode]);
+  }, [containerWidth, containerHeight, pageAspect, effectiveMargin, mode]);
 
   useEffect(() => { if (numPages > 0) onProgress(page, numPages); }, [page, numPages, onProgress]);
 
