@@ -1320,25 +1320,15 @@ export default function AdminPage() {
                         </div>
                         <div><Label className="text-xs text-muted-foreground">Título</Label><Input value={importTitle} onChange={e => setImportTitle(e.target.value)} className="mt-1" /></div>
                         <div><Label className="text-xs text-muted-foreground">Categoria</Label><CategorySelect value={importTopic} onValueChange={setImportTopic} /></div>
-                        <div><Label className="text-xs text-muted-foreground">Conteúdo</Label><Textarea value={importContent} onChange={e => setImportContent(e.target.value)} rows={6} className="mt-1 text-xs" /></div>
-                        {importExercises.length > 0 && (
-                          <div>
-                            <Label className="text-xs text-muted-foreground">{importExercises.length} exercícios gerados</Label>
-                            <div className="mt-2 space-y-2 max-h-48 overflow-y-auto">
-                              {importExercises.map((ex, i) => (
-                                <div key={i} className="border border-border/50 rounded-lg p-3 text-xs">
-                                  <p className="font-medium">{i + 1}. {ex.question}</p>
-                                  <div className="mt-1 space-y-0.5 text-muted-foreground">
-                                    {ex.options?.map((opt: string, oi: number) => (
-                                      <p key={oi} className={String.fromCharCode(65 + oi) === ex.correct_answer ? 'text-[hsl(var(--success))] font-medium' : ''}>{String.fromCharCode(65 + oi)}) {opt}</p>
-                                    ))}
-                                  </div>
-                                  <button className="mt-1 text-[10px] text-destructive hover:underline" onClick={() => setImportExercises(prev => prev.filter((_, idx) => idx !== i))}>Remover</button>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
+
+                        {/* Pré-visualização rica: sebras + estrutura + glossário + perguntas */}
+                        <ImportPreviewPanel content={importContent} aiExercises={importExercises} />
+
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Conteúdo (Markdown)</Label>
+                          <Textarea value={importContent} onChange={e => setImportContent(e.target.value)} rows={6} className="mt-1 text-xs font-mono" />
+                        </div>
+
                         <div className="flex gap-2">
                           <Button variant="outline" className="flex-1" onClick={resetImportForm}>Cancelar</Button>
                           <Button className="flex-1 gradient-primary text-primary-foreground" onClick={handleSaveImport} disabled={cloning || !importTitle.trim()}>
