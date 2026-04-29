@@ -96,12 +96,21 @@ export function EditorRibbon({ editor, onInsertImage, onSave, saveStatus = 'idle
       <div className="word-ribbon-body">
         {tab === 'home' && (
           <>
-            <Group label="Área de Transferência">
-              <button className="word-btn word-btn-tall" title="Salvar (Ctrl+S)" onClick={() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 's', ctrlKey: true }))}>
-                <Save />
-                <span>Salvar</span>
+            <Group label="Arquivo">
+              <button
+                className={cn('word-btn word-btn-tall', saveStatus === 'saved' && 'active')}
+                title="Salvar (Ctrl+S)"
+                onClick={() => onSave?.()}
+                disabled={!onSave}
+              >
+                {saveStatus === 'saved' ? <Check style={{ color: '#107C10' }} /> : <Save />}
+                <span>{saveStatus === 'unsaved' ? 'Salvar*' : 'Salvar'}</span>
               </button>
-              <button className="word-btn word-btn-tall" title="Imprimir (Ctrl+P)" onClick={() => window.print()}>
+              <button
+                className="word-btn word-btn-tall"
+                title="Imprimir (Ctrl+P)"
+                onClick={() => window.print()}
+              >
                 <Printer />
                 <span>Imprimir</span>
               </button>
