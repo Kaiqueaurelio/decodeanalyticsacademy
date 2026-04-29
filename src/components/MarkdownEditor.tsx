@@ -52,6 +52,8 @@ interface Props {
   rows?: number;
   className?: string;
   showWordCount?: boolean;
+  /** Callback chamado ao Ctrl+S ou clique em Salvar no ribbon. */
+  onSave?: () => void;
 }
 
 const ZOOM_KEY = 'apostila-editor:zoom';
@@ -70,6 +72,7 @@ export function MarkdownEditor({
   rows = 18,
   className,
   showWordCount = true,
+  onSave,
 }: Props) {
   const externalRef = useRef(value);
   const pageRef = useRef<HTMLDivElement>(null);
@@ -184,6 +187,40 @@ export function MarkdownEditor({
     topPadding: PAGE_TOP_PADDING,
   });
 
+  // ── Atalhos de teclado estilo Office ──────────────────────────────
+  // Ctrl+S salvar · Ctrl+P imprimir · Ctrl+K link
+  // (B/I/U/L/E/R/J já são tratados pelo TipTap StarterKit + extensions)
+  useEffect(() => {
+    if (!editor) return;
+    const onKey = (e: KeyboardEvent) => {
+      const mod = e.ctrlKey || e.metaKey;
+      if (!mod) return;
+      const key = e.key.toLowerCase();
+      // Só intercepta quando o foco está dentro do editor (ou no body)
+      const inside = document.activeElement?.closest('.editor-page') !== null
+        || document.activeElement === document.body;
+      if (!inside) return;
+
+      if (key === 's') {
+        e.preventDefault();
+        onSave?.();
+        setStatus('saved');
+      } else if (key === 'p') {
+        e.preventDefault();
+        window.print();
+      } else if (key === 'k') {
+        e.preventDefault();
+        const previous = editor.getAttributes('link').href as string | undefined;
+        const url = window.prompt('Endereço do link', previous || 'https://');
+        if (url === null) return;
+        if (url === '') editor.chain().focus().unsetLink().run();
+        else editor.chain().focus().extendMarkRange('link').setLink({ href: url, target: '_blank' }).run();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [editor, onSave]);
+
   if (!editor) {
     return (
       <div className={cn('rounded-lg border border-border bg-card p-8 text-center text-sm text-muted-foreground', className)}>
@@ -203,7 +240,7 @@ export function MarkdownEditor({
         onToggleFocus={() => setFocusMode((f) => !f)}
       />
 
-      {!focusMode && <EditorRibbon editor={editor} onInsertImage={insertImage} />}
+      {!focusMode && <EditorRibbon editor={editor} onInsertImage={insertImage} onSave={onSave} saveStatus={status} />}
 
       <div className="flex flex-1 min-h-0">
         {!focusMode && (

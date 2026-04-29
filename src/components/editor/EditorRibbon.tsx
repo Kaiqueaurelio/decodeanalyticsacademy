@@ -3,12 +3,18 @@
  * Abas: Arquivo (azul) · Página Inicial · Inserir · Layout · Revisão.
  * Grupos com label embaixo, separadores verticais, seletor de fonte/tamanho,
  * botões grandes para ações principais (estilo "split button").
+ *
+ * Estados visuais (Office):
+ *   - hover: fundo cinza claro
+ *   - active (formatação aplicada): fundo azul claro + borda azul Word
+ *   - disabled: 40% opacidade, sem hover
  */
 import { useState } from 'react';
 import type { Editor } from '@tiptap/react';
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
 } from '@/components/ui/dropdown-menu';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import {
   Bold, Italic, Underline as UnderlineIcon, Strikethrough,
   Heading1, Heading2, Heading3, List, ListOrdered, Quote, Code, Code2,
@@ -16,10 +22,11 @@ import {
   Highlighter, Palette, Table as TableIcon,
   Subscript as SubIcon, Superscript as SupIcon, CheckSquare,
   RemoveFormatting, Minus, Type, Search, FileText, ChevronDown,
-  Pilcrow, Image as ImageIcon, Indent, Outdent, Save, Printer,
+  Indent, Outdent, Save, Printer, Check,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { ImageUploadButton } from '@/components/ImageUploadButton';
+import { RibbonImageButton } from '@/components/editor/RibbonImageButton';
+import { TableGridPicker } from '@/components/editor/TableGridPicker';
 
 const TEXT_COLORS = [
   { name: 'Automático', value: '' },
@@ -47,12 +54,15 @@ type RibbonTab = 'home' | 'insert' | 'layout' | 'review';
 interface Props {
   editor: Editor;
   onInsertImage: (md: string) => void;
+  onSave?: () => void;
+  saveStatus?: 'saved' | 'unsaved' | 'idle';
 }
 
-export function EditorRibbon({ editor, onInsertImage }: Props) {
+export function EditorRibbon({ editor, onInsertImage, onSave, saveStatus = 'idle' }: Props) {
   const [tab, setTab] = useState<RibbonTab>('home');
   const [font, setFont] = useState('Aptos');
   const [size, setSize] = useState(11);
+  const [tableOpen, setTableOpen] = useState(false);
 
   const insertLink = () => {
     const previous = editor.getAttributes('link').href as string | undefined;
@@ -65,9 +75,11 @@ export function EditorRibbon({ editor, onInsertImage }: Props) {
     editor.chain().focus().extendMarkRange('link').setLink({ href: url, target: '_blank' }).run();
   };
 
-  const insertTable = () => {
-    editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
+  const insertTable = (rows: number, cols: number) => {
+    editor.chain().focus().insertTable({ rows, cols, withHeaderRow: true }).run();
+    setTableOpen(false);
   };
+
 
   return (
     <div className="word-ribbon">
@@ -84,12 +96,21 @@ export function EditorRibbon({ editor, onInsertImage }: Props) {
       <div className="word-ribbon-body">
         {tab === 'home' && (
           <>
-            <Group label="Área de Transferência">
-              <button className="word-btn word-btn-tall" title="Salvar (Ctrl+S)" onClick={() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 's', ctrlKey: true }))}>
-                <Save />
-                <span>Salvar</span>
+            <Group label="Arquivo">
+              <button
+                className={cn('word-btn word-btn-tall', saveStatus === 'saved' && 'active')}
+                title="Salvar (Ctrl+S)"
+                onClick={() => onSave?.()}
+                disabled={!onSave}
+              >
+                {saveStatus === 'saved' ? <Check style={{ color: '#107C10' }} /> : <Save />}
+                <span>{saveStatus === 'unsaved' ? 'Salvar*' : 'Salvar'}</span>
               </button>
-              <button className="word-btn word-btn-tall" title="Imprimir (Ctrl+P)" onClick={() => window.print()}>
+              <button
+                className="word-btn word-btn-tall"
+                title="Imprimir (Ctrl+P)"
+                onClick={() => window.print()}
+              >
                 <Printer />
                 <span>Imprimir</span>
               </button>
@@ -244,16 +265,24 @@ export function EditorRibbon({ editor, onInsertImage }: Props) {
               </button>
             </Group>
             <Group label="Tabelas">
-              <button className="word-btn word-btn-tall" title="Inserir tabela 3x3" onClick={insertTable}>
-                <TableIcon />
-                <span>Tabela</span>
-              </button>
+              <Popover open={tableOpen} onOpenChange={setTableOpen}>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    className={cn('word-btn word-btn-tall', editor.isActive('table') && 'active')}
+                    title="Inserir tabela"
+                  >
+                    <TableIcon />
+                    <span>Tabela ▾</span>
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent side="bottom" align="start" className="p-0 border-0 bg-transparent shadow-none w-auto">
+                  <TableGridPicker onPick={insertTable} />
+                </PopoverContent>
+              </Popover>
             </Group>
             <Group label="Ilustrações">
-              <div className="flex flex-col items-center">
-                <ImageUploadButton onImageInserted={onInsertImage} />
-                <span style={{ fontSize: 10, color: '#605E5C', marginTop: 2 }}>Imagem</span>
-              </div>
+              <RibbonImageButton onImageInserted={onInsertImage} />
             </Group>
             <Group label="Links">
               <button className="word-btn word-btn-tall" title="Inserir link (Ctrl+K)" data-active={editor.isActive('link')} onClick={insertLink}>
