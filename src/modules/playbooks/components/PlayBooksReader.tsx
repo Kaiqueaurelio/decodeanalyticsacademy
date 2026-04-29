@@ -228,29 +228,34 @@ export function PlayBooksReader({ book, initialPage = 1, initialLocation, onBack
           />
         )}
 
-        {selectionMenu && (
-          <div
-            className="absolute z-50 -translate-x-1/2 -translate-y-full"
-            style={{ left: selectionMenu.x, top: selectionMenu.y - 8 }}
-          >
-            <div className="bg-foreground text-background rounded-full shadow-2xl flex items-center gap-0.5 p-1 animate-in fade-in zoom-in-95">
-              {(['yellow', 'blue', 'green', 'pink', 'purple'] as HighlightColor[]).map((c) => (
-                <button
-                  key={c}
-                  onClick={() => handleHighlight(c)}
-                  className="h-7 w-7 rounded-full border-2 border-background/40 hover:scale-110 transition-transform"
-                  style={{ background: HIGHLIGHT_COLORS[c] }}
-                  title={`Destacar ${c}`}
-                />
-              ))}
-              <div className="w-px h-5 bg-background/30 mx-1" />
-              <button onClick={handleNote} className="h-7 w-7 rounded-full hover:bg-background/15 flex items-center justify-center" title="Nota"><StickyNote className="h-3.5 w-3.5" /></button>
-              <button onClick={handleCopy} className="h-7 w-7 rounded-full hover:bg-background/15 flex items-center justify-center" title="Copiar"><Copy className="h-3.5 w-3.5" /></button>
-              <button onClick={handleShare} className="h-7 w-7 rounded-full hover:bg-background/15 flex items-center justify-center" title="Compartilhar"><Share2 className="h-3.5 w-3.5" /></button>
-              <button onClick={() => setSelectionMenu(null)} className="h-7 w-7 rounded-full hover:bg-background/15 flex items-center justify-center" title="Fechar"><X className="h-3.5 w-3.5" /></button>
+        {selectionMenu && (() => {
+          const vw = typeof window !== 'undefined' ? window.innerWidth : 800;
+          // Clamp para nunca sair da viewport (bubble ~ 280px de largura)
+          const clampedX = Math.min(Math.max(selectionMenu.x, 150), vw - 24);
+          return (
+            <div
+              className="absolute z-50 -translate-x-1/2 -translate-y-full"
+              style={{ left: clampedX, top: Math.max(48, selectionMenu.y - 8) }}
+            >
+              <div className="bg-foreground text-background rounded-full shadow-2xl flex items-center gap-0.5 p-1 animate-in fade-in zoom-in-95 max-w-[calc(100vw-24px)] flex-wrap justify-center">
+                {(['yellow', 'blue', 'green', 'pink', 'purple'] as HighlightColor[]).map((c) => (
+                  <button
+                    key={c}
+                    onClick={() => handleHighlight(c)}
+                    className="h-7 w-7 rounded-full border-2 border-background/40 hover:scale-110 transition-transform shrink-0"
+                    style={{ background: HIGHLIGHT_COLORS[c] }}
+                    title={`Destacar ${c}`}
+                  />
+                ))}
+                <div className="w-px h-5 bg-background/30 mx-1" />
+                <button onClick={handleNote} className="h-7 w-7 rounded-full hover:bg-background/15 flex items-center justify-center shrink-0" title="Nota"><StickyNote className="h-3.5 w-3.5" /></button>
+                <button onClick={handleCopy} className="h-7 w-7 rounded-full hover:bg-background/15 flex items-center justify-center shrink-0" title="Copiar"><Copy className="h-3.5 w-3.5" /></button>
+                <button onClick={handleShare} className="h-7 w-7 rounded-full hover:bg-background/15 flex items-center justify-center shrink-0" title="Compartilhar"><Share2 className="h-3.5 w-3.5" /></button>
+                <button onClick={() => setSelectionMenu(null)} className="h-7 w-7 rounded-full hover:bg-background/15 flex items-center justify-center shrink-0" title="Fechar"><X className="h-3.5 w-3.5" /></button>
+              </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {dictWord && (
           <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-50 bg-background border border-border rounded-2xl shadow-2xl p-4 max-w-sm w-[90%]">
