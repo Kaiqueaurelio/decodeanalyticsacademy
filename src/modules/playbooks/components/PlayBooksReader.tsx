@@ -275,10 +275,12 @@ export function PlayBooksReader({ book, initialPage = 1, initialLocation, onBack
       </div>
 
       <footer
-        className={`absolute bottom-0 inset-x-0 z-40 flex items-center justify-around gap-1 px-3 h-14 transition-all duration-300 ${
+        className={`absolute bottom-0 inset-x-0 z-40 flex items-center justify-around gap-1 px-3 transition-all duration-300 ${
           chrome ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3 pointer-events-none'
         }`}
         style={{
+          paddingBottom: 'env(safe-area-inset-bottom)',
+          height: 'calc(56px + env(safe-area-inset-bottom))',
           background: theme === 'dark'
             ? 'linear-gradient(to top, rgba(0,0,0,0.85), transparent)'
             : 'linear-gradient(to top, rgba(255,255,255,0.95), transparent)',
