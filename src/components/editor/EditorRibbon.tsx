@@ -54,12 +54,15 @@ type RibbonTab = 'home' | 'insert' | 'layout' | 'review';
 interface Props {
   editor: Editor;
   onInsertImage: (md: string) => void;
+  onSave?: () => void;
+  saveStatus?: 'saved' | 'unsaved' | 'idle';
 }
 
-export function EditorRibbon({ editor, onInsertImage }: Props) {
+export function EditorRibbon({ editor, onInsertImage, onSave, saveStatus = 'idle' }: Props) {
   const [tab, setTab] = useState<RibbonTab>('home');
   const [font, setFont] = useState('Aptos');
   const [size, setSize] = useState(11);
+  const [tableOpen, setTableOpen] = useState(false);
 
   const insertLink = () => {
     const previous = editor.getAttributes('link').href as string | undefined;
@@ -72,9 +75,11 @@ export function EditorRibbon({ editor, onInsertImage }: Props) {
     editor.chain().focus().extendMarkRange('link').setLink({ href: url, target: '_blank' }).run();
   };
 
-  const insertTable = () => {
-    editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
+  const insertTable = (rows: number, cols: number) => {
+    editor.chain().focus().insertTable({ rows, cols, withHeaderRow: true }).run();
+    setTableOpen(false);
   };
+
 
   return (
     <div className="word-ribbon">
