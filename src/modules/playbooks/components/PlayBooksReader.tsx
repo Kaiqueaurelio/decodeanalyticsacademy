@@ -463,7 +463,7 @@ function PdfEngine(props: {
             if (b) props.onRemoveBookmark(b.id);
           } else props.onAddBookmark(page);
         }}
-        className={`absolute top-14 right-3 z-30 h-9 w-9 rounded-full flex items-center justify-center transition-all ${
+        className={`absolute right-3 z-30 h-10 w-10 rounded-full flex items-center justify-center transition-all ${
           chrome ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
         style={{ background: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)' }}
@@ -524,7 +524,7 @@ function PdfEngine(props: {
 
       {numPages > 0 && (
         <div
-          className={`absolute bottom-14 inset-x-3 z-30 transition-opacity ${chrome ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+          className={`absolute inset-x-3 z-30 transition-opacity ${chrome ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         >
           <div className="bg-background/90 backdrop-blur rounded-full px-3 py-2 flex items-center gap-2 border border-border/40 shadow-lg">
             <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setPage(Math.max(1, page - 1))}><ChevronLeft className="h-3.5 w-3.5" /></Button>
@@ -659,7 +659,7 @@ function EpubEngine(props: {
             if (b) props.onRemoveBookmark(b.id);
           } else props.onAddBookmark(currentLoc, `Capítulo ~ ${Math.round(pct)}%`);
         }}
-        className={`absolute top-14 right-3 z-30 h-9 w-9 rounded-full flex items-center justify-center transition-all ${
+        className={`absolute right-3 z-30 h-10 w-10 rounded-full flex items-center justify-center transition-all ${
           chrome ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
         style={{ background: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)' }}
@@ -671,7 +671,7 @@ function EpubEngine(props: {
 
       <div ref={viewerRef} className="w-full h-full" style={{ paddingTop: 12 }} />
 
-      <div className={`absolute bottom-14 inset-x-3 z-30 transition-opacity ${chrome ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+      <div className={`absolute inset-x-3 z-30 transition-opacity ${chrome ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
         <div className="bg-background/90 backdrop-blur rounded-full px-3 py-2 flex items-center gap-2 border border-border/40 shadow-lg">
           <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => renditionRef.current?.prev()}><ChevronLeft className="h-3.5 w-3.5" /></Button>
           <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
@@ -685,7 +685,7 @@ function EpubEngine(props: {
       <Sheet>
         <SheetTrigger asChild>
           <button
-            className={`absolute top-14 right-14 z-30 h-9 w-9 rounded-full flex items-center justify-center transition-all ${
+            className={`absolute right-[60px] z-30 h-10 w-10 rounded-full flex items-center justify-center transition-all ${
               chrome ? 'opacity-100' : 'opacity-0 pointer-events-none'
             }`}
             style={{ background: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)' }}
