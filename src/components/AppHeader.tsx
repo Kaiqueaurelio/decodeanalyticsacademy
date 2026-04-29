@@ -25,7 +25,7 @@ export function AppHeader() {
         <Link to={user ? '/dashboard' : '/'} className="flex items-center gap-2 min-w-0 flex-shrink">
           <img src={logoDark} alt="Decode Analytics" className="h-7 w-7 rounded object-cover flex-shrink-0" />
           <span className="font-mono-label text-[11px] sm:text-xs font-medium uppercase tracking-widest text-foreground truncate hidden xs:inline">Decode Analytics</span>
-          <span className="font-mono-label text-[11px] font-medium uppercase tracking-widest text-foreground xs:hidden">Decode</span>
+          <span className="font-mono-label text-[11px] font-medium uppercase tracking-widest text-foreground inline xs:hidden">Decode</span>
         </Link>
 
         <nav className="hidden sm:flex items-center gap-1">
@@ -71,7 +71,7 @@ export function AppHeader() {
           )}
         </nav>
 
-        <div className="sm:hidden flex items-center gap-1">
+        <div className="sm:hidden flex items-center gap-0.5">
           <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-8 w-8">
             {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </Button>
@@ -83,7 +83,7 @@ export function AppHeader() {
                   <Menu className="h-4 w-4" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-56 pt-10 bg-card">
+              <SheetContent side="right" className="w-[78vw] max-w-xs pt-10 bg-card">
                 <nav className="flex flex-col gap-1">
                   <Button variant="ghost" size="sm" className="justify-start text-sm font-sans normal-case tracking-normal" onClick={() => nav('/dashboard')}>
                     <LayoutDashboard className="mr-2 h-4 w-4" /> Dashboard

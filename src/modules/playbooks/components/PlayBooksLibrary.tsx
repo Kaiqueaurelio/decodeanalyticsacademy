@@ -1,4 +1,5 @@
 // PlayBooks Library — Home + grid/shelves with Continue Reading & shelves
+// Mobile-first refactor: tabs scrolláveis, grid 2→6 cols, prateleiras com snap.
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { fetchAllProgress, fetchBooks } from '../api';
@@ -56,9 +57,9 @@ export function PlayBooksLibrary({ onOpen, onUploadClick }: Props) {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Tabs */}
-      <div className="flex items-center gap-1 border-b border-border/60">
+    <div className="space-y-5 sm:space-y-6">
+      {/* Tabs — scrolláveis em mobile, com botão Enviar à direita em telas ≥sm */}
+      <div className="flex items-center gap-1 border-b border-border/60 -mx-1 px-1 overflow-x-auto scrollbar-hide">
         {[
           { id: 'home', label: 'Início', icon: BookOpen },
           { id: 'library', label: 'Biblioteca', icon: Star },
@@ -70,7 +71,7 @@ export function PlayBooksLibrary({ onOpen, onUploadClick }: Props) {
             <button
               key={t.id}
               onClick={() => setTab(t.id as any)}
-              className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+              className={`flex items-center gap-1.5 px-3 sm:px-4 py-2.5 text-[13px] sm:text-sm font-medium border-b-2 transition-colors whitespace-nowrap shrink-0 ${
                 active ? 'text-primary border-primary' : 'text-muted-foreground border-transparent hover:text-foreground'
               }`}
             >
@@ -78,17 +79,32 @@ export function PlayBooksLibrary({ onOpen, onUploadClick }: Props) {
             </button>
           );
         })}
-        <div className="ml-auto flex items-center gap-2">
-          <button onClick={onUploadClick} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors">
-            <UploadIcon className="h-3.5 w-3.5" /> Enviar
-          </button>
-        </div>
+        <button
+          onClick={onUploadClick}
+          className="ml-auto hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors shrink-0"
+        >
+          <UploadIcon className="h-3.5 w-3.5" /> Enviar
+        </button>
       </div>
 
-      {/* Search */}
-      <div className="relative">
-        <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar por título ou autor…" className="pl-9 rounded-full" />
+      {/* Search + Upload mobile */}
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1 min-w-0">
+          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Buscar por título ou autor…"
+            className="pl-9 rounded-full text-[16px] sm:text-sm h-10"
+          />
+        </div>
+        <button
+          onClick={onUploadClick}
+          className="sm:hidden h-10 w-10 rounded-full bg-primary/10 text-primary hover:bg-primary/20 flex items-center justify-center shrink-0 active:scale-95 transition-transform"
+          aria-label="Enviar livro"
+        >
+          <UploadIcon className="h-4 w-4" />
+        </button>
       </div>
 
       {tab === 'home' && (
@@ -108,7 +124,7 @@ export function PlayBooksLibrary({ onOpen, onUploadClick }: Props) {
       )}
 
       {tab === 'audiobooks' && (
-        <Card className="p-10 text-center">
+        <Card className="p-8 sm:p-10 text-center">
           <Headphones className="h-10 w-10 mx-auto mb-3 text-muted-foreground" />
           <p className="text-sm font-medium">Audiolivros em breve</p>
           <p className="text-xs text-muted-foreground mt-1">O acervo de áudio será disponibilizado nas próximas atualizações.</p>
@@ -128,12 +144,14 @@ function Shelf({ title, books, progress, downloaded, favorites, onOpen, variant 
   variant?: 'continue';
 }) {
   if (books.length === 0) return null;
+  const cardWidth = variant === 'continue' ? 132 : 112;
   return (
     <section>
-      <h2 className="text-base font-semibold mb-3">{title}</h2>
-      <div className="flex gap-4 overflow-x-auto pb-3 -mx-4 px-4 snap-x snap-mandatory scrollbar-hide">
+      <h2 className="text-base font-semibold mb-3 px-0.5">{title}</h2>
+      {/* Sangra para a borda da tela em mobile (compensa px-4 do container) */}
+      <div className="flex gap-3 sm:gap-4 overflow-x-auto pb-3 -mx-4 sm:-mx-2 px-4 sm:px-2 snap-x snap-mandatory scrollbar-hide">
         {books.map((b) => (
-          <div key={b.id} className="snap-start shrink-0" style={{ width: variant === 'continue' ? 132 : 116 }}>
+          <div key={b.id} className="snap-start shrink-0" style={{ width: cardWidth }}>
             <BookCard book={b} progress={progress[b.id]?.percentage} isDownloaded={downloaded.has(b.id)} isFavorite={favorites.has(b.id)} onOpen={() => onOpen(b)} />
           </div>
         ))}
@@ -151,14 +169,14 @@ function BookGrid({ books, progress, downloaded, favorites, onOpen }: {
 }) {
   if (books.length === 0) {
     return (
-      <Card className="p-10 text-center">
+      <Card className="p-8 sm:p-10 text-center">
         <BookOpen className="h-10 w-10 mx-auto mb-3 text-muted-foreground" />
         <p className="text-sm">Nenhum livro encontrado.</p>
       </Card>
     );
   }
   return (
-    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-x-3 gap-y-6">
+    <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-x-3 gap-y-5 sm:gap-y-6">
       {books.map((b) => (
         <BookCard
           key={b.id}
@@ -182,7 +200,10 @@ function BookCard({ book, progress, isDownloaded, isFavorite, onOpen }: {
 }) {
   const pct = progress ? Math.round(progress) : 0;
   return (
-    <button onClick={onOpen} className="group flex flex-col text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-md w-full">
+    <button
+      onClick={onOpen}
+      className="group flex flex-col text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-md w-full active:scale-[0.97] transition-transform"
+    >
       <div className="relative aspect-[2/3] w-full rounded-md overflow-hidden bg-muted shadow-[0_4px_12px_-2px_rgba(0,0,0,0.18)] group-hover:shadow-[0_10px_24px_-4px_rgba(0,0,0,0.28)] transition-all duration-300 group-hover:-translate-y-1">
         {book.cover ? (
           <img
@@ -213,17 +234,15 @@ function BookCard({ book, progress, isDownloaded, isFavorite, onOpen }: {
         )}
       </div>
       <div className="mt-2 px-0.5 flex flex-col gap-0.5">
-        <h3 className="font-medium text-[12px] leading-snug line-clamp-2">{book.title}</h3>
-        {book.author && <p className="text-[10px] text-muted-foreground line-clamp-1">{book.author}</p>}
+        <h3 className="font-medium text-[12px] sm:text-[13px] leading-snug line-clamp-2">{book.title}</h3>
+        {book.author && <p className="text-[10px] sm:text-[11px] text-muted-foreground line-clamp-1">{book.author}</p>}
         {pct > 0 && <p className="text-[10px] text-primary font-medium">{pct}% lido</p>}
       </div>
     </button>
   );
 }
 
-// Capa procedural elegante quando o livro não tem cover_url
 function GeneratedCover({ title, author }: { title: string; author?: string | null }) {
-  // Hash simples do título para escolher gradiente determinístico
   const hash = Array.from(title).reduce((a, c) => a + c.charCodeAt(0), 0);
   const palettes = [
     ['from-indigo-600', 'to-fuchsia-500'],

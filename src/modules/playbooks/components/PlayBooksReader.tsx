@@ -144,12 +144,18 @@ export function PlayBooksReader({ book, initialPage = 1, initialLocation, onBack
   }, [selectionMenu, book.title]);
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col" style={{ background: themeStyle.bg, color: themeStyle.fg }} onMouseMove={showChrome}>
+    <div
+      className="fixed inset-0 z-50 flex flex-col"
+      style={{ background: themeStyle.bg, color: themeStyle.fg, height: '100dvh' }}
+      onMouseMove={showChrome}
+    >
       <header
-        className={`absolute top-0 inset-x-0 z-40 flex items-center justify-between gap-2 px-3 h-12 transition-all duration-300 ${
+        className={`absolute top-0 inset-x-0 z-40 flex items-center justify-between gap-2 px-3 transition-all duration-300 ${
           chrome ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-3 pointer-events-none'
         }`}
         style={{
+          paddingTop: 'env(safe-area-inset-top)',
+          height: 'calc(48px + env(safe-area-inset-top))',
           background: theme === 'dark'
             ? 'linear-gradient(to bottom, rgba(0,0,0,0.8), transparent)'
             : 'linear-gradient(to bottom, rgba(255,255,255,0.92), transparent)',
@@ -222,29 +228,34 @@ export function PlayBooksReader({ book, initialPage = 1, initialLocation, onBack
           />
         )}
 
-        {selectionMenu && (
-          <div
-            className="absolute z-50 -translate-x-1/2 -translate-y-full"
-            style={{ left: selectionMenu.x, top: selectionMenu.y - 8 }}
-          >
-            <div className="bg-foreground text-background rounded-full shadow-2xl flex items-center gap-0.5 p-1 animate-in fade-in zoom-in-95">
-              {(['yellow', 'blue', 'green', 'pink', 'purple'] as HighlightColor[]).map((c) => (
-                <button
-                  key={c}
-                  onClick={() => handleHighlight(c)}
-                  className="h-7 w-7 rounded-full border-2 border-background/40 hover:scale-110 transition-transform"
-                  style={{ background: HIGHLIGHT_COLORS[c] }}
-                  title={`Destacar ${c}`}
-                />
-              ))}
-              <div className="w-px h-5 bg-background/30 mx-1" />
-              <button onClick={handleNote} className="h-7 w-7 rounded-full hover:bg-background/15 flex items-center justify-center" title="Nota"><StickyNote className="h-3.5 w-3.5" /></button>
-              <button onClick={handleCopy} className="h-7 w-7 rounded-full hover:bg-background/15 flex items-center justify-center" title="Copiar"><Copy className="h-3.5 w-3.5" /></button>
-              <button onClick={handleShare} className="h-7 w-7 rounded-full hover:bg-background/15 flex items-center justify-center" title="Compartilhar"><Share2 className="h-3.5 w-3.5" /></button>
-              <button onClick={() => setSelectionMenu(null)} className="h-7 w-7 rounded-full hover:bg-background/15 flex items-center justify-center" title="Fechar"><X className="h-3.5 w-3.5" /></button>
+        {selectionMenu && (() => {
+          const vw = typeof window !== 'undefined' ? window.innerWidth : 800;
+          // Clamp para nunca sair da viewport (bubble ~ 280px de largura)
+          const clampedX = Math.min(Math.max(selectionMenu.x, 150), vw - 24);
+          return (
+            <div
+              className="absolute z-50 -translate-x-1/2 -translate-y-full"
+              style={{ left: clampedX, top: Math.max(48, selectionMenu.y - 8) }}
+            >
+              <div className="bg-foreground text-background rounded-full shadow-2xl flex items-center gap-0.5 p-1 animate-in fade-in zoom-in-95 max-w-[calc(100vw-24px)] flex-wrap justify-center">
+                {(['yellow', 'blue', 'green', 'pink', 'purple'] as HighlightColor[]).map((c) => (
+                  <button
+                    key={c}
+                    onClick={() => handleHighlight(c)}
+                    className="h-7 w-7 rounded-full border-2 border-background/40 hover:scale-110 transition-transform shrink-0"
+                    style={{ background: HIGHLIGHT_COLORS[c] }}
+                    title={`Destacar ${c}`}
+                  />
+                ))}
+                <div className="w-px h-5 bg-background/30 mx-1" />
+                <button onClick={handleNote} className="h-7 w-7 rounded-full hover:bg-background/15 flex items-center justify-center shrink-0" title="Nota"><StickyNote className="h-3.5 w-3.5" /></button>
+                <button onClick={handleCopy} className="h-7 w-7 rounded-full hover:bg-background/15 flex items-center justify-center shrink-0" title="Copiar"><Copy className="h-3.5 w-3.5" /></button>
+                <button onClick={handleShare} className="h-7 w-7 rounded-full hover:bg-background/15 flex items-center justify-center shrink-0" title="Compartilhar"><Share2 className="h-3.5 w-3.5" /></button>
+                <button onClick={() => setSelectionMenu(null)} className="h-7 w-7 rounded-full hover:bg-background/15 flex items-center justify-center shrink-0" title="Fechar"><X className="h-3.5 w-3.5" /></button>
+              </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {dictWord && (
           <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-50 bg-background border border-border rounded-2xl shadow-2xl p-4 max-w-sm w-[90%]">
@@ -264,10 +275,12 @@ export function PlayBooksReader({ book, initialPage = 1, initialLocation, onBack
       </div>
 
       <footer
-        className={`absolute bottom-0 inset-x-0 z-40 flex items-center justify-around gap-1 px-3 h-14 transition-all duration-300 ${
+        className={`absolute bottom-0 inset-x-0 z-40 flex items-center justify-around gap-1 px-3 transition-all duration-300 ${
           chrome ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3 pointer-events-none'
         }`}
         style={{
+          paddingBottom: 'env(safe-area-inset-bottom)',
+          height: 'calc(56px + env(safe-area-inset-bottom))',
           background: theme === 'dark'
             ? 'linear-gradient(to top, rgba(0,0,0,0.85), transparent)'
             : 'linear-gradient(to top, rgba(255,255,255,0.95), transparent)',
@@ -330,13 +343,19 @@ function PdfEngine(props: {
     return () => window.removeEventListener('resize', update);
   }, []);
 
+  const effectiveMargin = useMemo(() => {
+    if (containerWidth < 380) return Math.min(margin, 12);
+    if (containerWidth < 640) return Math.min(margin, 18);
+    return margin;
+  }, [containerWidth, margin]);
+
   const pageWidth = useMemo(() => {
-    const baseW = Math.max(280, containerWidth - margin * 2);
-    const verticalChrome = mode === 'paged' ? 120 : margin * 2;
+    const baseW = Math.max(280, containerWidth - effectiveMargin * 2);
+    const verticalChrome = mode === 'paged' ? 140 : effectiveMargin * 2;
     const availableH = Math.max(360, containerHeight - verticalChrome);
     const widthFromHeight = availableH / pageAspect;
     return Math.min(baseW, widthFromHeight, 1100);
-  }, [containerWidth, containerHeight, pageAspect, margin, mode]);
+  }, [containerWidth, containerHeight, pageAspect, effectiveMargin, mode]);
 
   useEffect(() => { if (numPages > 0) onProgress(page, numPages); }, [page, numPages, onProgress]);
 
@@ -450,10 +469,10 @@ function PdfEngine(props: {
             if (b) props.onRemoveBookmark(b.id);
           } else props.onAddBookmark(page);
         }}
-        className={`absolute top-14 right-3 z-30 h-9 w-9 rounded-full flex items-center justify-center transition-all ${
+        className={`absolute right-3 z-30 h-10 w-10 rounded-full flex items-center justify-center transition-all ${
           chrome ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
-        style={{ background: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)' }}
+        style={{ top: 'calc(56px + env(safe-area-inset-top))', background: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)' }}
         title={isCurrentBookmarked ? 'Remover marcador' : 'Adicionar marcador'}
       >
         {isCurrentBookmarked
@@ -464,7 +483,7 @@ function PdfEngine(props: {
       <div
         ref={scrollerRef}
         className={`w-full h-full ${mode === 'scroll' ? 'overflow-y-auto' : 'overflow-hidden flex items-center justify-center'}`}
-        style={{ padding: mode === 'scroll' ? margin : 0 }}
+        style={{ padding: mode === 'scroll' ? effectiveMargin : 0 }}
         onClick={mode === 'paged' ? handleClickPage : undefined}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
@@ -511,7 +530,7 @@ function PdfEngine(props: {
 
       {numPages > 0 && (
         <div
-          className={`absolute bottom-14 inset-x-3 z-30 transition-opacity ${chrome ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+          className={`absolute inset-x-3 z-30 transition-opacity ${chrome ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} style={{ bottom: 'calc(60px + env(safe-area-inset-bottom))' }}
         >
           <div className="bg-background/90 backdrop-blur rounded-full px-3 py-2 flex items-center gap-2 border border-border/40 shadow-lg">
             <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setPage(Math.max(1, page - 1))}><ChevronLeft className="h-3.5 w-3.5" /></Button>
@@ -646,10 +665,10 @@ function EpubEngine(props: {
             if (b) props.onRemoveBookmark(b.id);
           } else props.onAddBookmark(currentLoc, `Capítulo ~ ${Math.round(pct)}%`);
         }}
-        className={`absolute top-14 right-3 z-30 h-9 w-9 rounded-full flex items-center justify-center transition-all ${
+        className={`absolute right-3 z-30 h-10 w-10 rounded-full flex items-center justify-center transition-all ${
           chrome ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
-        style={{ background: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)' }}
+        style={{ top: 'calc(56px + env(safe-area-inset-top))', background: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)' }}
       >
         {isCurrentBookmarked
           ? <BookmarkCheck className="h-4 w-4" style={{ color: theme === 'dark' ? '#fbbf24' : '#d97706' }} />
@@ -658,7 +677,7 @@ function EpubEngine(props: {
 
       <div ref={viewerRef} className="w-full h-full" style={{ paddingTop: 12 }} />
 
-      <div className={`absolute bottom-14 inset-x-3 z-30 transition-opacity ${chrome ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+      <div className={`absolute inset-x-3 z-30 transition-opacity ${chrome ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} style={{ bottom: 'calc(60px + env(safe-area-inset-bottom))' }}>
         <div className="bg-background/90 backdrop-blur rounded-full px-3 py-2 flex items-center gap-2 border border-border/40 shadow-lg">
           <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => renditionRef.current?.prev()}><ChevronLeft className="h-3.5 w-3.5" /></Button>
           <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
@@ -672,16 +691,16 @@ function EpubEngine(props: {
       <Sheet>
         <SheetTrigger asChild>
           <button
-            className={`absolute top-14 right-14 z-30 h-9 w-9 rounded-full flex items-center justify-center transition-all ${
+            className={`absolute right-[60px] z-30 h-10 w-10 rounded-full flex items-center justify-center transition-all ${
               chrome ? 'opacity-100' : 'opacity-0 pointer-events-none'
             }`}
-            style={{ background: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)' }}
+            style={{ top: 'calc(56px + env(safe-area-inset-top))', background: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)' }}
             title="Sumário"
           >
             <List className="h-4 w-4" />
           </button>
         </SheetTrigger>
-        <SheetContent side="right" className="w-72 overflow-y-auto">
+        <SheetContent side="right" className="w-[85vw] sm:w-80 overflow-y-auto">
           <SheetHeader><SheetTitle>Sumário</SheetTitle></SheetHeader>
           <div className="mt-4 flex flex-col gap-1">
             {toc.map((it, i) => (
@@ -856,7 +875,7 @@ function SearchSheet({ query, setQuery, results, onPickResult }: {
       <SheetTrigger asChild>
         <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full"><Search className="h-4 w-4" /></Button>
       </SheetTrigger>
-      <SheetContent side="right" className="w-80">
+      <SheetContent side="right" className="w-[90vw] sm:w-80">
         <SheetHeader><SheetTitle>Buscar no livro</SheetTitle></SheetHeader>
         <div className="mt-4 space-y-3">
           <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Digite uma palavra ou frase…" autoFocus />

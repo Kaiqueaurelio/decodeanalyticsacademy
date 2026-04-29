@@ -1,130 +1,98 @@
-
+# Plano: Responsividade Global + Mobile-First na Aba Play Books
 
 ## Objetivo
-Corrigir a responsividade global do app — hoje, em telas pequenas (≤414px) o conteúdo precisa ser redimensionado manualmente para ser lido. O alvo é eliminar overflow horizontal, ajustar paddings/tipografia em mobile e garantir que widgets, tabs, tabelas e código se adaptem ao viewport sem zoom.
+Eliminar pontos fracos de responsividade do app (em especial 320–414 px) e refinar a aba **Play Books** para ter experiência fluida e nativa em celular, sem quebrar nenhuma funcionalidade existente. Nada na lógica de leitura, sync ou banco será alterado — apenas layout, tamanhos, alvos de toque e overflow.
 
-## Diagnóstico (o que está errado hoje)
+---
 
-Verificando os principais arquivos do app, identifiquei estes problemas recorrentes que forçam o redimensionamento:
+## Escopo
 
-1. **Viewport / overflow horizontal**
-   - Containers com `min-w-[80vw]` (MobileCarousel), grids com colunas fixas e tabelas sem wrapper estouram a largura em 360–414px.
-   - `App.css` antigo limita `#root` a `max-width: 1280px` + `padding: 2rem` + `text-align: center` — herança Vite que conflita com layout mobile.
+### 1) Play Books — Library (`PlayBooksLibrary.tsx`)
+**Problemas atuais em mobile (411 px):**
+- Tabs (Início / Biblioteca / Audiolivros) + botão "Enviar" colidem na mesma linha → estouro horizontal.
+- Grid `grid-cols-3` força capas ~110 px de largura → títulos truncados demais; muito apertado em telas pequenas.
+- Prateleiras (Shelves) usam `-mx-4 px-4`, mas o container pai já tem `px-4 sm:px-6` no `PlayBooksPage` → não há sangramento real até a borda em mobile.
 
-2. **Tipografia não fluida**
-   - Headings de páginas usam tamanhos fixos (`text-3xl`/`text-4xl`) sem fallback mobile, quebrando linhas e empurrando o layout.
-   - Apostila usa `max-width: 70ch` ok, mas paddings laterais somam mais que o viewport em mobile.
+**Mudanças:**
+- Tabs viram **scroll horizontal** com `snap`, alturas/paddings reduzidos (`px-3 py-2`), botão "Enviar" sobe para o cabeçalho (lado do título no `PlayBooksPage`) liberando a linha de tabs.
+- Grid de capas em mobile: `grid-cols-2` (≤360 px) e `grid-cols-3 xs:grid-cols-3 sm:grid-cols-4 …` com `gap-y-5`.
+- Prateleiras em mobile usam scroll com `snap-x` + cards de **128 px** (continue) e **108 px** (demais), garantindo 2,5 cards visíveis em 375 px (descoberta visual).
+- Cobertura/escala de toque: cada `BookCard` ganha `min-h-[44px]` no rótulo e `active:scale-[0.97]` para feedback tátil.
+- Busca: input ganha `text-[16px]` (evita zoom automático no iOS) e ícone alinhado ao centro vertical.
 
-3. **GliderTabs / Tabs**
-   - Não rolam horizontalmente quando há muitas abas — comprimem o texto e o glider calcula offset errado.
+### 2) Play Books — Reader (`PlayBooksReader.tsx`)
+**Problemas atuais em mobile:**
+- Header e footer com altura fixa (12 / 14) e barras de progresso `inset-x-3 bottom-14` ficam quase tocando o footer → conflito visual.
+- Menu de seleção (highlights) usa coordenadas `absolute` baseadas em `clientRect` — em telas estreitas pode sair da viewport (`-translate-x-1/2` + 7 botões = ~280 px).
+- TypographySheet, BookmarksSheet, HighlightsSheet abrem como Sheet à direita (largura padrão) — desconfortável em mobile; ideal: bottom sheet.
+- TOC do EPUB: Sheet à direita `w-72` corta em telas <320.
+- `pageWidth` do PDF não respeita `safe-area-inset` (notch/home bar) e em landscape pode passar do limite.
+- Não há respeito a `env(safe-area-inset-*)` nem a `100dvh` (a barra de URL móvel "come" 100vh em iOS Safari).
 
-4. **Blocos de código (Shiki)**
-   - Já têm `overflow-x: auto`, mas o container pai não tem `min-width: 0`, então o flex/grid expande e empurra a página inteira.
+**Mudanças:**
+- Container raiz: `h-[100dvh]` + `paddingTop: env(safe-area-inset-top)` e `paddingBottom: env(safe-area-inset-bottom)` no header/footer (via inline style), nunca cortando conteúdo.
+- Cálculo de `pageWidth` do PDF passa a usar `Math.min(containerWidth - margin*2, containerHeight * 0.62, 1100)` e `margin` dinâmico (12 em <380 px, 24 em ≥640).
+- Menu de seleção (highlight bubble): clamp horizontal para ficar dentro de `[12, viewportWidth - 12]`; em mobile reduz para 5 botões essenciais (3 cores + Nota + Copiar) e move "Compartilhar/Fechar" para uma segunda linha colapsável quando width < 360.
+- Slider/page indicator inferior: sobe de `bottom-14` para `bottom-[calc(56px+env(safe-area-inset-bottom))]` e ganha 100% de largura útil.
+- TypographySheet, BookmarksSheet, HighlightsSheet, TOC: detectam mobile via `useIsMobile()` e passam `side="bottom"` no `<SheetContent>` com `h-[80vh] rounded-t-2xl`. No desktop continua à direita.
+- Botão de marcador (top-right) ganha `h-10 w-10` (alvo de toque WCAG ≥44 px) e `top-[calc(48px+env(safe-area-inset-top))]`.
+- Tap zones laterais (28% / 72%) ficam visíveis através de hint sutil na primeira abertura (já existe `chrome` overlay; reforçar contraste em <380 px).
 
-5. **Imagens da apostila**
-   - `<img>` sem `max-width: 100%` explícito em alguns renderers — em mobile vazam.
+### 3) Play Books — Upload (`PlayBooksUpload.tsx`)
+- Modal vira **bottom sheet** em mobile (Drawer com `vaul`, já disponível em `components/ui/drawer.tsx`), permanecendo como modal centralizado em ≥sm.
+- Inputs de arquivo recebem `text-[16px]` para não disparar zoom no iOS.
+- Botão "Adicionar à estante" com `h-11` para conforto.
 
-6. **Header e FABs**
-   - AppHeader e QuickActionsFab sobrepõem conteúdo em telas curtas (≤640px de altura). Faltam `safe-area-inset` para PWA.
+### 4) AppHeader (`AppHeader.tsx`)
+**Problemas atuais em mobile:**
+- 7+ ícones na barra (theme, sino, menu) podem amassar em 320 px se houver badge de notificação.
+- Botão "Decode Analytics" (logo + nome) usa breakpoint custom `xs:` que pode não estar configurado no Tailwind; conferir e padronizar.
 
-7. **Diálogos / Sheets**
-   - Alguns `Dialog` usam largura fixa (`max-w-2xl`) sem `w-[calc(100%-2rem)]`, cortando botões à direita em 360px.
+**Mudanças:**
+- Garantir que o nome da marca em mobile use `<360px:` ícone só; ≥360: "Decode"; ≥sm: nome completo (substituindo `xs:` custom por classes nativas).
+- Espaçamento dos ícones reduzido para `gap-0.5` em mobile.
+- Sheet menu (Drawer lateral) ganha `w-[85vw] max-w-xs` para não estourar nem ficar pequeno demais.
 
-8. **Tabelas (Admin)**
-   - Tabelas do AdminPage não têm wrapper `overflow-x-auto`, forçando scroll da página inteira.
+### 5) Tweaks globais
+- `index.css`: adicionar utilitário `.scrollbar-hide` (caso ainda não exista) e classe `.safe-bottom` (`padding-bottom: env(safe-area-inset-bottom)`).
+- `tailwind.config.ts`: adicionar (se ausente) breakpoint `xs: 380px` para evitar uso fantasma.
+- Páginas com tabela densa (Admin) já tratadas; nenhuma mudança aqui — apenas verificação que continuam funcionando.
+- `Dashboard`/`Biblioteca`: revisar paddings horizontais para serem `px-3 sm:px-6` consistentes (corrigir só onde houver overflow real).
 
-## Escopo da correção (global, não por tela)
+---
 
-### A. Reset global de layout
-**Arquivos:** `src/App.css`, `src/index.css`
+## Arquivos afetados
 
-- Remover regras herdadas do template Vite em `App.css` (`#root { max-width; padding; text-align }`) que conflitam com Tailwind.
-- Adicionar em `index.css`:
-  - `html, body { overflow-x: hidden; }` como rede de segurança.
-  - `* { min-width: 0; }` em containers flex/grid principais via classe utilitária.
-  - `img, video, iframe { max-width: 100%; height: auto; }` global.
-  - Suporte a `env(safe-area-inset-*)` para iOS PWA.
+```text
+src/modules/playbooks/components/PlayBooksLibrary.tsx   (refatorar grid + tabs + shelves mobile)
+src/modules/playbooks/components/PlayBooksReader.tsx    (safe-area, bottom sheets, clamp, dvh, alvos toque)
+src/modules/playbooks/components/PlayBooksUpload.tsx    (modal vira bottom sheet em mobile)
+src/pages/PlayBooksPage.tsx                             (mover botão "Enviar" para o cabeçalho)
+src/components/AppHeader.tsx                            (substituir xs:custom; reduzir gaps mobile)
+src/index.css                                           (utilitário .safe-bottom; .scrollbar-hide se faltar)
+tailwind.config.ts                                      (adicionar xs: 380px se não existir)
+```
 
-### B. Tipografia fluida
-**Arquivo:** `tailwind.config.ts` + `index.css`
+Nenhuma migração SQL, nenhuma edge function, nenhuma mudança em rotas, auth, gamificação, leitor de PDF/EPUB engine ou sync — apenas CSS/layout/sheet variants.
 
-- Adicionar utilitários `text-fluid-*` usando `clamp()` para H1/H2/H3:
-  - H1: `clamp(1.75rem, 4vw + 1rem, 2.5rem)`
-  - H2: `clamp(1.375rem, 2.5vw + 0.75rem, 1.875rem)`
-- Aplicar nas páginas que hoje usam `text-3xl/4xl` sem variantes mobile (Dashboard, Apostila, Materiais, Admin, Biblioteca, Profile).
+---
 
-### C. Containers e grids
-**Arquivos afetados (busca + replace direcionado):**
-- `src/pages/DashboardPage.tsx`
-- `src/pages/MaterialsPage.tsx`, `BibliotecaPage.tsx`, `ApostilaPage.tsx`, `ExercisesPage.tsx`, `SimuladoPage.tsx`, `AdminPage.tsx`, `ProfilePage.tsx`, `CommunityPage.tsx`, `ReviewPage.tsx`
-- `src/components/AppHeader.tsx`
+## Detalhes técnicos
 
-Mudanças:
-- Trocar paddings fixos `px-6/px-8` por `px-3 sm:px-4 lg:px-6`.
-- Garantir `max-w-screen-xl mx-auto w-full` nos wrappers de página.
-- Grids: `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3` em vez de `grid-cols-2` direto.
+- **`useIsMobile()`** já existe em `src/hooks/use-mobile.tsx` → usar para escolher `side="bottom" | "right"` nos `<SheetContent>` do Reader.
+- **`100dvh`** (dynamic viewport) substitui `h-screen` apenas no container fixed do Reader; fallback `h-screen` mantido via classe.
+- **Safe-area:** aplicado via `style={{ paddingTop: 'env(safe-area-inset-top)' }}` em header e `paddingBottom: 'env(safe-area-inset-bottom)'` em footer/slider — compatível com PWA standalone.
+- **Clamp do bubble de seleção:** `Math.min(Math.max(x, 90), window.innerWidth - 90)`.
+- **Não remover** nenhum botão/cor de highlight; apenas reorganizar visualmente quando `window.innerWidth < 360`.
+- **Não alterar** assinatura de props nem APIs internas — refactor puramente visual.
 
-### D. MobileCarousel
-**Arquivo:** `src/components/MobileCarousel.tsx`
+---
 
-- Trocar `min-w-[80vw]` por `min-w-[85%] max-w-[85%]` para nunca exceder o container pai.
-- Adicionar `min-w-0` no wrapper externo para evitar overflow em flex parents.
+## Critérios de aceite
 
-### E. GliderTabs
-**Arquivo:** `src/components/GliderTabs.tsx` + CSS em `index.css`
-
-- Adicionar `overflow-x: auto; scroll-snap-type: x mandatory;` no container.
-- Recalcular glider considerando `scrollLeft` quando ativo está fora da viewport.
-- Auto-scroll para a aba ativa em mobile.
-
-### F. Apostila — leitor responsivo
-**Arquivo:** `src/components/ApostilaContentRenderer.tsx`
-
-- Wrapper raiz: `max-w-[70ch] mx-auto px-3 sm:px-4 w-full min-w-0`.
-- `<img>` da apostila: garantir `class="max-w-full h-auto"`.
-- Drop-cap: reduzir em mobile (`text-[2.6em] sm:text-[3.4em]`) para não estourar.
-- Tabelas markdown: envolver em `<div class="overflow-x-auto -mx-3 px-3">`.
-
-### G. Blocos de código (Shiki)
-**Arquivo:** `src/components/ApostilaContentRenderer.tsx` + `index.css`
-
-- Container `CodeBlock`: adicionar `min-w-0` e `max-w-full`.
-- `.shiki-wrapper pre`: já tem `overflow-x: auto`, garantir `white-space: pre` e `font-size: clamp(0.75rem, 2vw, 0.875rem)` em mobile.
-- Header (linguagem + botão copiar): `flex-wrap` para não comprimir.
-
-### H. Diálogos e Sheets
-**Arquivos:** `src/components/ui/dialog.tsx`, `src/components/ui/sheet.tsx`
-
-- DialogContent: substituir largura fixa por `w-[calc(100%-1.5rem)] max-w-lg sm:max-w-2xl`.
-- SheetContent (lado direito): `w-full sm:max-w-md`.
-
-### I. Tabelas Admin
-**Arquivo:** `src/pages/AdminPage.tsx` (e onde houver `<Table>`)
-
-- Envolver cada `<Table>` em `<div className="w-full overflow-x-auto rounded-md border">`.
-
-### J. Header e FABs
-**Arquivos:** `src/components/AppHeader.tsx`, `src/components/QuickActionsFab.tsx`, `src/components/ScrollToTopFab.tsx`
-
-- AppHeader: `px-3 sm:px-4`, esconder textos secundários em `<sm` (já parcialmente feito), respeitar `pt-[env(safe-area-inset-top)]`.
-- FABs: `bottom-[calc(1rem+env(safe-area-inset-bottom))] right-3 sm:right-4`.
-
-## Não muda
-- Lógica de negócio, hooks, Supabase, autenticação, gamificação.
-- Conteúdo das apostilas, ordem de seções, cores do tema.
-- Estrutura de rotas e componentes.
-
-## Como vou validar
-1. Navegar em 360px, 390px, 414px e 768px no preview e verificar:
-   - Sem scroll horizontal em nenhuma página.
-   - Headings legíveis sem quebra estranha.
-   - Apostila com código C# rolando dentro do bloco, não da página.
-   - Tabs do Admin com scroll horizontal funcional.
-   - Diálogos cabem na tela com botões visíveis.
-2. Confirmar que desktop (≥1024px) permanece idêntico ao atual.
-
-## Resultado esperado
-- Você abre o app no celular e nada precisa ser redimensionado.
-- Apostilas, dashboards, admin e materiais se ajustam automaticamente entre 320px e 1920px.
-- Código continua copiável e com syntax highlighting, agora sem estourar a tela.
-
+1. Em 320 / 360 / 411 / 768 px nenhum elemento da aba Play Books gera scroll horizontal indesejado.
+2. Bubble de highlight permanece 100% visível em qualquer largura ≥ 320 px.
+3. Sheets de tipografia, marcadores, destaques e TOC abrem por baixo em mobile, à direita em desktop.
+4. Reader respeita notch/home bar em iOS PWA.
+5. Botão de upload acessível em qualquer aba (Início, Biblioteca, Audiolivros) sem competir por linha com as tabs.
+6. Todas as funcionalidades existentes (highlight, bookmark, search, TOC, sync, themes, modes) continuam funcionando exatamente como antes.
