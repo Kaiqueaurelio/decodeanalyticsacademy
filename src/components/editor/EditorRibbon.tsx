@@ -265,16 +265,24 @@ export function EditorRibbon({ editor, onInsertImage, onSave, saveStatus = 'idle
               </button>
             </Group>
             <Group label="Tabelas">
-              <button className="word-btn word-btn-tall" title="Inserir tabela 3x3" onClick={insertTable}>
-                <TableIcon />
-                <span>Tabela</span>
-              </button>
+              <Popover open={tableOpen} onOpenChange={setTableOpen}>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    className={cn('word-btn word-btn-tall', editor.isActive('table') && 'active')}
+                    title="Inserir tabela"
+                  >
+                    <TableIcon />
+                    <span>Tabela ▾</span>
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent side="bottom" align="start" className="p-0 border-0 bg-transparent shadow-none w-auto">
+                  <TableGridPicker onPick={insertTable} />
+                </PopoverContent>
+              </Popover>
             </Group>
             <Group label="Ilustrações">
-              <div className="flex flex-col items-center">
-                <ImageUploadButton onImageInserted={onInsertImage} />
-                <span style={{ fontSize: 10, color: '#605E5C', marginTop: 2 }}>Imagem</span>
-              </div>
+              <RibbonImageButton onImageInserted={onInsertImage} />
             </Group>
             <Group label="Links">
               <button className="word-btn word-btn-tall" title="Inserir link (Ctrl+K)" data-active={editor.isActive('link')} onClick={insertLink}>
