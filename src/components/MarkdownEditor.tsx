@@ -1,18 +1,20 @@
 /**
  * MarkdownEditor — Editor WYSIWYG estilo Microsoft Word / Google Docs (versão Pro).
  *
- * Arquitetura em 5 zonas:
+ * Arquitetura:
  *   ┌──────────────── Topbar (status, zoom, foco, imprimir) ────────────────┐
- *   │ Ribbon com abas (Início / Inserir / Layout / Revisão)                 │
- *   ├──────┬─────────────────────────────────────────────────────────────────┤
- *   │ TOC  │  Página A4 branca, centralizada (folha estilo Word)             │
- *   ├──────┴─────────────────────────────────────────────────────────────────┤
- *   │ Status bar (palavras, caracteres, dicas)                               │
- *   └────────────────────────────────────────────────────────────────────────┘
+ *   │ Ribbon (Início / Inserir / Layout / Revisão)                         │
+ *   ├────────┬───────────────────────────────────────────┬─────────────────┤
+ *   │  TOC   │  Folha A4 (com quebras de página visuais) │   Inspector     │
+ *   ├────────┴───────────────────────────────────────────┴─────────────────┤
+ *   │ Status bar                                                           │
+ *   └──────────────────────────────────────────────────────────────────────┘
  *
- * - Persistência continua em Markdown (compatível com renderer do aluno e PDF).
- * - HTML rico só vive em memória.
- * - Imagens, tabelas, listas, links, cor, realce, sub/sup, código — tudo WYSIWYG.
+ * Recursos:
+ * - Slash menu "/" para inserir blocos rápido
+ * - Link bubble menu (estilo Docs) ao posicionar cursor sobre links
+ * - Inspector contextual à direita (imagem, link, tabela, heading)
+ * - Paginação visual com linhas de quebra A4 + impressão fiel
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
@@ -38,6 +40,10 @@ import { markdownToHtml, htmlToMarkdown } from '@/lib/markdown-html';
 import { EditorTopbar, type SaveStatus } from '@/components/editor/EditorTopbar';
 import { EditorRibbon } from '@/components/editor/EditorRibbon';
 import { EditorTOC } from '@/components/editor/EditorTOC';
+import { EditorInspector } from '@/components/editor/EditorInspector';
+import { LinkBubbleMenu } from '@/components/editor/LinkBubbleMenu';
+import { SlashCommands } from '@/components/editor/SlashMenu';
+import { usePageBreaks } from '@/components/editor/usePageBreaks';
 
 interface Props {
   value: string;
@@ -50,6 +56,13 @@ interface Props {
 
 const ZOOM_KEY = 'apostila-editor:zoom';
 const TOC_KEY = 'apostila-editor:toc-collapsed';
+const INSPECTOR_KEY = 'apostila-editor:inspector-collapsed';
+
+// Constantes da folha A4 a 96dpi (mantenha em sync com .editor-page no index.css)
+const PAGE_TOP_PADDING = 96;     // padding-top
+const PAGE_BOTTOM_PADDING = 120; // padding-bottom
+const PAGE_HEIGHT = 1123;        // altura total
+const PAGE_CONTENT_HEIGHT = PAGE_HEIGHT - PAGE_TOP_PADDING - PAGE_BOTTOM_PADDING;
 
 export function MarkdownEditor({
   value,
@@ -59,6 +72,7 @@ export function MarkdownEditor({
   showWordCount = true,
 }: Props) {
   const externalRef = useRef(value);
+  const pageRef = useRef<HTMLDivElement>(null);
   const [status, setStatus] = useState<SaveStatus>('saved');
   const [zoom, setZoomState] = useState<number>(() => {
     if (typeof window === 'undefined') return 1;
@@ -69,18 +83,28 @@ export function MarkdownEditor({
     if (typeof window === 'undefined') return false;
     return window.localStorage.getItem(TOC_KEY) === '1';
   });
+  const [inspectorCollapsed, setInspectorCollapsed] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return window.localStorage.getItem(INSPECTOR_KEY) === '1';
+  });
   const [focusMode, setFocusMode] = useState(false);
 
   const setZoom = useCallback((z: number) => {
     setZoomState(z);
     try { window.localStorage.setItem(ZOOM_KEY, String(z)); } catch { /* noop */ }
   }, []);
-
   const toggleToc = useCallback(() => {
-    setTocCollapsed((prev) => {
-      const next = !prev;
-      try { window.localStorage.setItem(TOC_KEY, next ? '1' : '0'); } catch { /* noop */ }
-      return next;
+    setTocCollapsed((p) => {
+      const n = !p;
+      try { window.localStorage.setItem(TOC_KEY, n ? '1' : '0'); } catch { /* noop */ }
+      return n;
+    });
+  }, []);
+  const toggleInspector = useCallback(() => {
+    setInspectorCollapsed((p) => {
+      const n = !p;
+      try { window.localStorage.setItem(INSPECTOR_KEY, n ? '1' : '0'); } catch { /* noop */ }
+      return n;
     });
   }, []);
 
@@ -105,13 +129,11 @@ export function MarkdownEditor({
       TaskList,
       TaskItem.configure({ nested: true }),
       ResizableImage,
+      SlashCommands,
     ],
     content: markdownToHtml(value),
     editorProps: {
-      attributes: {
-        class: 'focus:outline-none',
-        spellcheck: 'true',
-      },
+      attributes: { class: 'focus:outline-none', spellcheck: 'true' },
       handleDrop: () => false,
     },
     onUpdate: ({ editor }) => {
@@ -120,7 +142,6 @@ export function MarkdownEditor({
       externalRef.current = md;
       setStatus('unsaved');
       onChange(md);
-      // Marca como salvo após pequeno debounce visual (a persistência real é feita pelo pai)
       window.clearTimeout((window as unknown as { __apsTimer?: number }).__apsTimer);
       (window as unknown as { __apsTimer?: number }).__apsTimer = window.setTimeout(
         () => setStatus('saved'),
@@ -158,6 +179,11 @@ export function MarkdownEditor({
     [editor],
   );
 
+  const { breaks, totalPages } = usePageBreaks(editor, pageRef, {
+    pageContentHeight: PAGE_CONTENT_HEIGHT,
+    topPadding: PAGE_TOP_PADDING,
+  });
+
   if (!editor) {
     return (
       <div className={cn('rounded-lg border border-border bg-card p-8 text-center text-sm text-muted-foreground', className)}>
@@ -184,35 +210,54 @@ export function MarkdownEditor({
           <EditorTOC editor={editor} collapsed={tocCollapsed} onToggle={toggleToc} />
         )}
 
-        {/* Canvas com folha A4 */}
+        {/* Canvas com folha A4 + paginação */}
         <div
-          className="flex-1 overflow-auto editor-canvas"
+          className="flex-1 overflow-auto editor-canvas relative"
           style={{ maxHeight: '78vh', minHeight: rows ? `${rows * 26}px` : '420px' }}
           onClick={() => editor.commands.focus()}
         >
-          <div className="px-2 sm:px-4">
+          <div className="px-2 sm:px-4 py-2">
             <div
-              className="editor-page"
-              style={{
-                transform: `scale(${zoom})`,
-                marginLeft: 'auto',
-                marginRight: 'auto',
-              }}
+              className="editor-page-shell"
+              style={{ transform: `scale(${zoom})` }}
+              onClick={(e) => e.stopPropagation()}
             >
-              <EditorContent editor={editor} />
+              <div ref={pageRef} className="editor-page relative">
+                <EditorContent editor={editor} />
+                <LinkBubbleMenu editor={editor} />
+              </div>
+
+              {/* Overlay de quebras de página */}
+              {breaks.map((top, i) => (
+                <div
+                  key={i}
+                  className="page-break-overlay"
+                  data-page={i + 2}
+                  style={{ top }}
+                />
+              ))}
             </div>
           </div>
         </div>
+
+        {!focusMode && (
+          <EditorInspector
+            editor={editor}
+            collapsed={inspectorCollapsed}
+            onToggle={toggleInspector}
+          />
+        )}
       </div>
 
       {showWordCount && (
         <div className="px-3 py-1.5 border-t border-border bg-muted/30 text-[10px] text-muted-foreground flex items-center justify-between gap-2">
           <span>
-            {stats.words.toLocaleString('pt-BR')} {stats.words === 1 ? 'palavra' : 'palavras'} ·{' '}
-            {stats.chars.toLocaleString('pt-BR')} caracteres · leitura ~{stats.minutes} min
+            Pág {totalPages > 0 ? 1 : 0}/{totalPages} · {stats.words.toLocaleString('pt-BR')}{' '}
+            {stats.words === 1 ? 'palavra' : 'palavras'} · {stats.chars.toLocaleString('pt-BR')} caracteres ·
+            leitura ~{stats.minutes} min
           </span>
           <span className="hidden md:inline">
-            Ctrl+B negrito · Ctrl+I itálico · Ctrl+U sublinhado · Clique numa imagem para alinhar / redimensionar
+            Digite <code className="px-1 rounded bg-muted text-foreground font-mono">/</code> para inserir blocos · Clique num link para editar
           </span>
         </div>
       )}
