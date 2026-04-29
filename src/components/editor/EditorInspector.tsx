@@ -23,6 +23,45 @@ import { Slider } from '@/components/ui/slider';
 import { useEditorSelection } from './useEditorSelection';
 import { isValidUrl } from './link-utils';
 
+/* Presets de layout para imagem (largura + alinhamento numa ação) */
+type ImageAlign = 'left' | 'center' | 'right';
+interface ImagePreset {
+  id: string;
+  label: string;
+  title: string;
+  width: number;
+  align: ImageAlign;
+}
+const IMAGE_PRESETS: ImagePreset[] = [
+  { id: 'full',    label: '100%',     title: 'Largura total',          width: 100, align: 'center' },
+  { id: 'big-c',   label: '75% C',    title: '75% centralizado',       width: 75,  align: 'center' },
+  { id: 'half-l',  label: '50% E',    title: '50% à esquerda',         width: 50,  align: 'left'   },
+  { id: 'half-c',  label: '50% C',    title: '50% centralizado',       width: 50,  align: 'center' },
+  { id: 'half-r',  label: '50% D',    title: '50% à direita',          width: 50,  align: 'right'  },
+  { id: 'small-c', label: '25% C',    title: '25% — miniatura central',width: 25,  align: 'center' },
+];
+
+/** Glyph SVG que mostra a "página" com a imagem do preset desenhada dentro */
+function PresetGlyph({ width, align, active }: { width: number; align: ImageAlign; active?: boolean }) {
+  const PAGE_W = 28;
+  const PAGE_H = 16;
+  const imgW = (width / 100) * (PAGE_W - 4);
+  const imgH = 6;
+  const y = 5;
+  const x = align === 'left' ? 2 : align === 'right' ? PAGE_W - 2 - imgW : (PAGE_W - imgW) / 2;
+  const stroke = active ? 'currentColor' : 'hsl(var(--muted-foreground))';
+  const fill = active ? 'currentColor' : 'hsl(var(--muted-foreground) / 0.5)';
+  return (
+    <svg width={PAGE_W} height={PAGE_H} viewBox={`0 0 ${PAGE_W} ${PAGE_H}`} aria-hidden>
+      <rect x={0.5} y={0.5} width={PAGE_W - 1} height={PAGE_H - 1} rx={1.5} fill="none" stroke={stroke} strokeOpacity={0.4} />
+      <line x1={2} y1={2.5} x2={PAGE_W - 2} y2={2.5} stroke={stroke} strokeOpacity={0.3} />
+      <rect x={x} y={y} width={imgW} height={imgH} rx={0.5} fill={fill} />
+      <line x1={2} y1={PAGE_H - 2.5} x2={PAGE_W - 2} y2={PAGE_H - 2.5} stroke={stroke} strokeOpacity={0.3} />
+    </svg>
+  );
+}
+
+
 interface Props {
   editor: Editor | null;
   collapsed: boolean;
@@ -160,6 +199,38 @@ function ImagePanel({
         )}
       </div>
 
+      {/* Presets de layout — combinam largura + alinhamento numa ação */}
+      <div>
+        <Label className="text-[11px] text-muted-foreground">Layout rápido</Label>
+        <div className="grid grid-cols-3 gap-1 mt-1">
+          {IMAGE_PRESETS.map((p) => {
+            const active = widthNum === p.width && attrs.align === p.align;
+            return (
+              <button
+                key={p.id}
+                type="button"
+                title={p.title}
+                onClick={() =>
+                  editor.chain().focus().updateAttributes('image', {
+                    width: `${p.width}%`,
+                    align: p.align,
+                  }).run()
+                }
+                className={cn(
+                  'group flex flex-col items-center gap-1 rounded border px-1.5 py-1.5 transition-colors',
+                  active
+                    ? 'border-primary bg-primary/10 text-primary'
+                    : 'border-border bg-background hover:bg-muted',
+                )}
+              >
+                <PresetGlyph width={p.width} align={p.align} active={active} />
+                <span className="text-[9px] font-mono leading-none">{p.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       <div>
         <Label className="text-[11px] text-muted-foreground flex items-center justify-between">
           <span>Largura</span>
@@ -174,12 +245,12 @@ function ImagePanel({
           className="mt-2"
         />
         <div className="flex gap-1 mt-2">
-          {[33, 50, 75, 100].map((p) => (
+          {[25, 50, 75, 100].map((p) => (
             <Button
               key={p}
               type="button"
               size="sm"
-              variant="outline"
+              variant={widthNum === p ? 'secondary' : 'outline'}
               className="h-6 px-2 text-[10px] flex-1"
               onClick={() => setWidth(p)}
             >

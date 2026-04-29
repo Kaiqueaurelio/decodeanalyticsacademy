@@ -58,11 +58,11 @@ const ZOOM_KEY = 'apostila-editor:zoom';
 const TOC_KEY = 'apostila-editor:toc-collapsed';
 const INSPECTOR_KEY = 'apostila-editor:inspector-collapsed';
 
-// Constantes da folha A4 a 96dpi (mantenha em sync com .editor-page no index.css)
-const PAGE_TOP_PADDING = 96;     // padding-top
-const PAGE_BOTTOM_PADDING = 120; // padding-bottom
-const PAGE_HEIGHT = 1123;        // altura total
-const PAGE_CONTENT_HEIGHT = PAGE_HEIGHT - PAGE_TOP_PADDING - PAGE_BOTTOM_PADDING;
+// Constantes da folha A4 a 96dpi — DEVEM bater com :root no index.css
+// 210mm × 297mm = 794×1123px; padding 1in = 96px (25.4mm) → conteúdo útil = 931px
+const PAGE_TOP_PADDING = 96;
+const PAGE_HEIGHT = 1123;
+const PAGE_CONTENT_HEIGHT = 931; // 1123 - 96 - 96
 
 export function MarkdownEditor({
   value,
@@ -210,32 +210,42 @@ export function MarkdownEditor({
           <EditorTOC editor={editor} collapsed={tocCollapsed} onToggle={toggleToc} />
         )}
 
-        {/* Canvas com folha A4 + paginação */}
+        {/* Canvas com folha A4 + paginação. Reservamos espaço pós-scale para
+            que o scroll funcione corretamente em qualquer zoom e em telas pequenas. */}
         <div
           className="flex-1 overflow-auto editor-canvas relative"
           style={{ maxHeight: '78vh', minHeight: rows ? `${rows * 26}px` : '420px' }}
           onClick={() => editor.commands.focus()}
         >
-          <div className="px-2 sm:px-4 py-2">
+          <div
+            className="px-2 sm:px-4 py-2 mx-auto"
+            style={{
+              // Garante que a folha escalada caiba no scroll horizontal/vertical
+              width: `calc(${794 * zoom}px + 2rem)`,
+              minWidth: '100%',
+            }}
+          >
             <div
               className="editor-page-shell"
-              style={{ transform: `scale(${zoom})` }}
+              style={{ transform: `scale(${zoom})`, transformOrigin: 'top center' }}
               onClick={(e) => e.stopPropagation()}
             >
-              <div ref={pageRef} className="editor-page relative">
+              <div ref={pageRef} className="editor-page">
                 <EditorContent editor={editor} />
                 <LinkBubbleMenu editor={editor} />
-              </div>
 
-              {/* Overlay de quebras de página */}
-              {breaks.map((top, i) => (
-                <div
-                  key={i}
-                  className="page-break-overlay"
-                  data-page={i + 2}
-                  style={{ top }}
-                />
-              ))}
+                {/* Overlay de quebras de página — DENTRO da .editor-page para
+                    escalar com o zoom (transform do shell). Os offsets são em
+                    pixels do espaço sem zoom (usePageBreaks). */}
+                {breaks.map((top, i) => (
+                  <div
+                    key={i}
+                    className="page-break-overlay"
+                    data-page={i + 2}
+                    style={{ top }}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         </div>

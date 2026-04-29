@@ -942,19 +942,45 @@ html {
 /* Utility: clamp container width even inside flex/grid */
 .min-w-0-safe { min-width: 0; }
 
-/* ============== Editor de Apostilas — folha A4 estilo Word/Docs ============== */
+/* ==============================================================
+   Editor de Apostilas — folha A4 (96dpi: 794×1123px = 210×297mm)
+   Padding interno = 96px (1in = 25.4mm). Altura útil = 931px.
+   ============================================================== */
+
+/* Variáveis JS-acessíveis para sincronizar paginação no React */
+:root {
+  --editor-page-w: 794px;
+  --editor-page-h: 1123px;
+  --editor-page-pad-x: 96px;
+  --editor-page-pad-top: 96px;
+  --editor-page-pad-bottom: 96px;
+  --editor-page-content-h: 931px; /* 1123 - 96 - 96 */
+}
+
+.editor-canvas { background: hsl(var(--muted) / 0.4); }
+
+.editor-page-shell {
+  position: relative;
+  width: var(--editor-page-w);
+  margin: 24px auto;
+  transform-origin: top center;
+  transition: transform 120ms ease;
+}
+
 .editor-page {
-  width: 794px;            /* A4 a 96dpi */
-  min-height: 1123px;
+  width: var(--editor-page-w);
+  min-height: var(--editor-page-h);
   background: #ffffff;
   color: #1a1a1a;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
   border-radius: 2px;
-  margin: 24px auto;
-  padding: 96px 96px 120px;
-  transform-origin: top center;
-  transition: transform 120ms ease;
+  margin: 0;
+  padding: var(--editor-page-pad-top) var(--editor-page-pad-x) var(--editor-page-pad-bottom);
+  position: relative;
+  /* Garante que cada página de conteúdo tenha exatamente content-h px de altura útil */
+  box-sizing: border-box;
 }
+
 .editor-page .ProseMirror { outline: none; min-height: 100%; }
 .editor-page .ProseMirror p { color: #1a1a1a; line-height: 1.55; margin: 0 0 0.6em; }
 .editor-page .ProseMirror h1,
@@ -980,41 +1006,22 @@ html {
 .editor-page .ProseMirror ul[data-type="taskList"] li { display: flex; align-items: flex-start; gap: 6px; }
 .editor-page .ProseMirror ::selection { background: rgba(37, 99, 235, 0.18); }
 
-.editor-canvas { background: hsl(var(--muted) / 0.4); }
-
-@media print {
-  body * { visibility: hidden; }
-  .editor-page, .editor-page * { visibility: visible; }
-  .editor-page { position: absolute; left: 0; top: 0; box-shadow: none; margin: 0; }
-}
-
-/* ============== Paginação real estilo Word ============== */
-.editor-page-shell {
-  position: relative;
-  width: 794px;
-  margin: 24px auto;
-  transform-origin: top center;
-  transition: transform 120ms ease;
-}
-.editor-page-shell .editor-page {
-  margin: 0;            /* a margem agora vive no shell para o overlay alinhar */
-  transform: none;      /* zoom é aplicado no shell, não na page */
-  transition: none;
-}
+/* Overlay de quebras de página — fica DENTRO do shell para escalar com o zoom */
 .page-break-overlay {
   position: absolute;
-  left: -16px;
-  right: -16px;
+  left: 0;
+  right: 0;
   height: 0;
-  border-top: 1px dashed hsl(var(--primary) / 0.5);
+  border-top: 1px dashed hsl(var(--primary) / 0.55);
   pointer-events: none;
-  display: flex;
-  justify-content: center;
+  z-index: 1;
 }
 .page-break-overlay::before {
   content: "— Página " attr(data-page) " —";
   position: absolute;
   top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
   background: hsl(var(--background));
   color: hsl(var(--muted-foreground));
   font-size: 9px;
@@ -1024,17 +1031,23 @@ html {
   border-radius: 999px;
   letter-spacing: .05em;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
+/* ============== Impressão A4 fiel (mm exatos) ============== */
 @page {
   size: A4;
   margin: 0;
 }
 
 @media print {
-  html, body { background: white !important; }
-  body * { visibility: hidden; }
-  .editor-page-shell, .editor-page-shell * { visibility: visible; }
+  html, body {
+    background: #ffffff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  body * { visibility: hidden !important; }
+  .editor-page-shell, .editor-page-shell * { visibility: visible !important; }
   .page-break-overlay { display: none !important; }
   .editor-page-shell {
     position: absolute !important;
@@ -1049,11 +1062,24 @@ html {
     min-height: 297mm !important;
     box-shadow: none !important;
     border-radius: 0 !important;
-    padding: 25mm 25mm 30mm !important;
-    page-break-after: auto;
+    /* 25.4mm = 96px (1 polegada), bate com o preview */
+    padding: 25.4mm 25.4mm 25.4mm !important;
+    margin: 0 !important;
   }
-  /* Quebra automática a cada altura útil de página = 297mm − 55mm de padding */
-  .editor-page .ProseMirror > * {
+  /* Evita cortar elementos no meio entre páginas */
+  .editor-page .ProseMirror h1,
+  .editor-page .ProseMirror h2,
+  .editor-page .ProseMirror h3,
+  .editor-page .ProseMirror img,
+  .editor-page .ProseMirror table,
+  .editor-page .ProseMirror pre,
+  .editor-page .ProseMirror blockquote {
     page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .editor-page .ProseMirror h1,
+  .editor-page .ProseMirror h2 {
+    page-break-after: avoid;
+    break-after: avoid;
   }
 }
