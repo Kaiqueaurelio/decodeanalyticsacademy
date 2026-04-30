@@ -2657,8 +2657,8 @@ export default function AdminPage() {
         match={duplicateMatch}
         onReplaceExisting={async () => {
           // Substitui o conteúdo existente pelo novo (que está melhor formatado)
-          const newContent = pendingSave ? (manualContent || importContent) : '';
-          await replaceExistingWithBetter(newContent || importContent || manualContent);
+          const newContent = pendingSave ? (manualContent || importContent || importRawText) : '';
+          await replaceExistingWithBetter(newContent || importContent || manualContent || importRawText);
           setDuplicateMatch(null);
           setPendingSave(null);
         }}
