@@ -88,7 +88,16 @@ type Block =
   | { type: 'callout'; kind: 'info' | 'tip' | 'warning'; title: string; content: string }
   | { type: 'table'; header: string[]; rows: string[][] }
   | { type: 'code'; lang: string; code: string }
-  | { type: 'image'; alt: string; url: string }
+  | {
+      type: 'image';
+      alt: string;
+      url: string;
+      width?: string | null;
+      align?: 'left' | 'center' | 'right';
+      float?: 'none' | 'left' | 'right';
+      marginX?: number;
+      marginY?: number;
+    }
   | { type: 'audio'; label: string; url: string }
   | { type: 'divider' };
 
