@@ -286,12 +286,40 @@ function ImagePanel({
       </div>
 
       <div>
-        <Label className="text-[11px] text-muted-foreground">Alinhamento</Label>
+        <Label className="text-[11px] text-muted-foreground">Alinhamento (bloco)</Label>
         <div className="grid grid-cols-3 gap-1 mt-1">
-          <AlignBtn active={attrs.align === 'left'} onClick={() => setAlign('left')} icon={AlignLeft} label="Esq." />
-          <AlignBtn active={attrs.align === 'center'} onClick={() => setAlign('center')} icon={AlignCenter} label="Centro" />
-          <AlignBtn active={attrs.align === 'right'} onClick={() => setAlign('right')} icon={AlignRight} label="Dir." />
+          <AlignBtn active={!isFloating && attrs.align === 'left'} onClick={() => setAlign('left')} icon={AlignLeft} label="Esq." />
+          <AlignBtn active={!isFloating && attrs.align === 'center'} onClick={() => setAlign('center')} icon={AlignCenter} label="Centro" />
+          <AlignBtn active={!isFloating && attrs.align === 'right'} onClick={() => setAlign('right')} icon={AlignRight} label="Dir." />
         </div>
+      </div>
+
+      <div>
+        <Label className="text-[11px] text-muted-foreground">Texto envolvendo (float)</Label>
+        <div className="grid grid-cols-3 gap-1 mt-1">
+          <AlignBtn active={float === 'none'} onClick={() => setFloat('none')} icon={Square} label="Em linha" />
+          <AlignBtn active={float === 'left'} onClick={() => setFloat('left')} icon={WrapText} label="Esq." />
+          <AlignBtn active={float === 'right'} onClick={() => setFloat('right')} icon={WrapText} label="Dir." />
+        </div>
+        <p className="text-[10px] text-muted-foreground mt-1 leading-tight">
+          {isFloating ? 'Texto envolve a imagem. No celular vira bloco cheio.' : 'Imagem ocupa linha própria.'}
+        </p>
+      </div>
+
+      <div>
+        <Label className="text-[11px] text-muted-foreground flex items-center justify-between">
+          <span>Margem horizontal</span>
+          <span className="font-mono">{marginX}px</span>
+        </Label>
+        <Slider value={[marginX]} min={0} max={48} step={2} onValueChange={(v) => setMarginX(v[0])} className="mt-2" />
+      </div>
+
+      <div>
+        <Label className="text-[11px] text-muted-foreground flex items-center justify-between">
+          <span>Margem vertical</span>
+          <span className="font-mono">{marginY}px</span>
+        </Label>
+        <Slider value={[marginY]} min={0} max={48} step={2} onValueChange={(v) => setMarginY(v[0])} className="mt-2" />
       </div>
 
       <Button
