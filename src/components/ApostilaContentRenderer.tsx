@@ -777,24 +777,25 @@ function slugify(text: string): string {
     .slice(0, 80) || 'secao';
 }
 
-function HeadingBlock({ level, content, id }: { level: number; content: string; id?: string }) {
+function HeadingBlock({ level, content, id, active }: { level: number; content: string; id?: string; active?: boolean }) {
   const text = cleanInlineText(content);
+  const activeCls = active ? 'apostila-heading-active' : '';
   if (level <= 2) {
     return (
-      <h3 id={id} className="font-display text-[20px] sm:text-[22px] font-semibold mt-10 mb-3 text-foreground tracking-tight leading-[1.3] scroll-mt-24">
+      <h3 id={id} data-active={active || undefined} className={cn('font-display text-[20px] sm:text-[22px] font-semibold mt-10 mb-3 text-foreground tracking-tight leading-[1.3] scroll-mt-24', activeCls)}>
         {text}
       </h3>
     );
   }
   if (level === 3) {
     return (
-      <h4 id={id} className="font-display text-[16px] sm:text-[17px] font-semibold mt-7 mb-2.5 text-foreground/95 tracking-tight leading-snug scroll-mt-24">
+      <h4 id={id} data-active={active || undefined} className={cn('font-display text-[16px] sm:text-[17px] font-semibold mt-7 mb-2.5 text-foreground/95 tracking-tight leading-snug scroll-mt-24', activeCls)}>
         {text}
       </h4>
     );
   }
   return (
-    <h5 id={id} className="font-mono-label text-[12px] font-semibold mt-6 mb-2 text-primary/90 uppercase tracking-[0.12em] scroll-mt-24">
+    <h5 id={id} data-active={active || undefined} className={cn('font-mono-label text-[12px] font-semibold mt-6 mb-2 text-primary/90 uppercase tracking-[0.12em] scroll-mt-24', activeCls)}>
       {text}
     </h5>
   );
