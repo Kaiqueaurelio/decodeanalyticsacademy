@@ -1503,3 +1503,59 @@ html {
     padding: 2px 6px;
   }
 }
+
+/* ============================================================
+ * RIBBON RESPONSIVO — tablet/mobile
+ * Permite scroll horizontal das abas e dos grupos quando o ribbon
+ * não cabe na largura disponível, mantendo todas as ferramentas
+ * acessíveis sem quebrar o layout.
+ * ============================================================ */
+@media (max-width: 1023px) {
+  /* Tabs do ribbon roláveis horizontalmente */
+  .word-tabs {
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
+  }
+  .word-tabs::-webkit-scrollbar { display: none; }
+  .word-tab { flex-shrink: 0; }
+
+  /* Corpo do ribbon: rola horizontalmente em vez de quebrar linha */
+  .word-ribbon-body {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
+    min-height: 64px;
+    padding: 4px 6px 2px;
+  }
+  .word-ribbon-body::-webkit-scrollbar { height: 4px; }
+  .word-ribbon-body::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.18);
+    border-radius: 2px;
+  }
+  .dark .word-ribbon-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); }
+
+  .word-group {
+    flex-shrink: 0;
+    padding: 0 6px;
+    min-height: 60px;
+  }
+  .word-btn-tall {
+    height: 48px;
+    min-width: 42px;
+    font-size: 9px;
+  }
+  .word-btn-tall svg { width: 18px; height: 18px; }
+}
+
+@media (max-width: 639px) {
+  .word-tab { padding: 0 10px; font-size: 11px; }
+  .word-group { padding: 0 4px; }
+  .word-group-label { font-size: 9px; }
+  .word-btn { height: 24px; min-width: 24px; }
+}
+

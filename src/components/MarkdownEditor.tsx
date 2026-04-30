@@ -48,7 +48,7 @@ import { StudentPreview } from '@/components/editor/StudentPreview';
 import { useEditorSelection } from '@/components/editor/useEditorSelection';
 import { useEditorOutline } from '@/components/editor/useEditorOutline';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { Eye, Pencil, ListTree, Wand2 } from 'lucide-react';
+import { Eye, Pencil, ListTree, Wand2, Columns2 } from 'lucide-react';
 
 interface Props {
   value: string;
@@ -98,7 +98,7 @@ export function MarkdownEditor({
     return window.localStorage.getItem(INSPECTOR_KEY) === '1';
   });
   const [focusMode, setFocusMode] = useState(false);
-  const [viewMode, setViewMode] = useState<'edit' | 'preview'>('edit');
+  const [viewMode, setViewMode] = useState<'edit' | 'preview' | 'split'>('edit');
   const [mobileTocOpen, setMobileTocOpen] = useState(false);
   const [mobileInspectorOpen, setMobileInspectorOpen] = useState(false);
 
@@ -129,11 +129,13 @@ export function MarkdownEditor({
     const computeFit = () => {
       if (typeof window === 'undefined') return;
       const w = window.innerWidth;
-      if (w >= 1024) { setAutoFit(null); return; }
+      // Em desktop largo sem split, deixa o usuário controlar o zoom
+      if (w >= 1024 && viewMode !== 'split') { setAutoFit(null); return; }
       const canvasW = canvasRef.current?.clientWidth ?? w;
-      const available = Math.max(280, canvasW - 32);
+      // No modo split, o canvas já ocupa metade — usa essa largura
+      const available = Math.max(280, canvasW - 24);
       const fit = Math.min(1, available / 794);
-      setAutoFit(Math.max(0.5, fit));
+      setAutoFit(Math.max(0.45, fit));
     };
     computeFit();
     window.addEventListener('resize', computeFit);
@@ -295,13 +297,13 @@ export function MarkdownEditor({
         onToggleFocus={() => setFocusMode((f) => !f)}
       />
 
-      {/* Toggle Editar / Visualizar como aluno */}
-      <div className="flex items-center gap-1 px-2 py-1 border-b border-border bg-muted/40">
+      {/* Toggle Editar / Split / Visualizar como aluno */}
+      <div className="flex items-center gap-1 px-2 py-1 border-b border-border bg-muted/40 overflow-x-auto">
         <button
           type="button"
           onClick={() => setViewMode('edit')}
           className={cn(
-            'inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-md transition-colors',
+            'inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-md transition-colors shrink-0',
             viewMode === 'edit'
               ? 'bg-background text-foreground shadow-sm border border-border'
               : 'text-muted-foreground hover:text-foreground',
@@ -312,9 +314,22 @@ export function MarkdownEditor({
         </button>
         <button
           type="button"
+          onClick={() => setViewMode('split')}
+          className={cn(
+            'hidden sm:inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-md transition-colors shrink-0',
+            viewMode === 'split'
+              ? 'bg-background text-primary shadow-sm border border-primary/40'
+              : 'text-muted-foreground hover:text-foreground',
+          )}
+          title="Editar e visualizar lado a lado"
+        >
+          <Columns2 className="h-3 w-3" /> Lado a lado
+        </button>
+        <button
+          type="button"
           onClick={() => setViewMode('preview')}
           className={cn(
-            'inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-md transition-colors',
+            'inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-md transition-colors shrink-0',
             viewMode === 'preview'
               ? 'bg-background text-primary shadow-sm border border-primary/40'
               : 'text-muted-foreground hover:text-foreground',
@@ -325,7 +340,7 @@ export function MarkdownEditor({
         </button>
       </div>
 
-      {viewMode === 'edit' && !focusMode && (
+      {(viewMode === 'edit' || viewMode === 'split') && !focusMode && (
         <EditorRibbon editor={editor} onInsertImage={insertImage} onSave={onSave} saveStatus={status} />
       )}
 
@@ -345,7 +360,7 @@ export function MarkdownEditor({
           ) : (
             <>
               {/* Régua superior estilo Word — escondida em <1024px via CSS */}
-              {!focusMode && (
+              {!focusMode && viewMode === 'edit' && (
                 <div className="word-ruler">
                   <div className="word-ruler-marks">
                     <div className="word-ruler-inner" style={{ width: `${794 * effectiveZoom}px` }} />
@@ -353,93 +368,122 @@ export function MarkdownEditor({
                 </div>
               )}
 
-              {/* Canvas com folha A4 + paginação. */}
-              <div
-                ref={canvasRef}
-                className="flex-1 overflow-auto editor-canvas relative"
-                style={{ maxHeight: 'calc(100vh - 220px)', minHeight: rows ? `${rows * 26}px` : '520px' }}
-                onClick={() => editor.commands.focus()}
-              >
+              {/* Wrapper: split coloca editor + preview lado a lado */}
+              <div className={cn(
+                'flex flex-1 min-h-0',
+                viewMode === 'split' ? 'flex-col sm:flex-row' : 'flex-col',
+              )}>
+                {/* Canvas com folha A4 + paginação. */}
                 <div
-                  className="px-2 sm:px-4 py-2 mx-auto"
+                  ref={canvasRef}
+                  className={cn(
+                    'flex-1 overflow-auto editor-canvas relative min-w-0',
+                    viewMode === 'split' && 'sm:border-r border-border',
+                  )}
                   style={{
-                    // Em mobile/tablet, usa largura escalada para evitar scroll horizontal
-                    width: autoFit !== null ? '100%' : `calc(${794 * effectiveZoom}px + 2rem)`,
-                    minWidth: '100%',
+                    maxHeight: viewMode === 'split' ? 'calc(100vh - 260px)' : 'calc(100vh - 220px)',
+                    minHeight: rows ? `${rows * 26}px` : '520px',
                   }}
+                  onClick={() => editor.commands.focus()}
                 >
                   <div
-                    className="editor-page-shell mx-auto"
+                    className="px-2 sm:px-4 py-2 mx-auto"
                     style={{
-                      transform: `scale(${effectiveZoom})`,
-                      transformOrigin: 'top center',
+                      // Em mobile/tablet/split, usa largura escalada para evitar scroll horizontal
+                      width: autoFit !== null ? '100%' : `calc(${794 * effectiveZoom}px + 2rem)`,
+                      minWidth: '100%',
                     }}
-                    onClick={(e) => e.stopPropagation()}
                   >
-                    <div ref={pageRef} className="editor-page">
-                      <EditorContent editor={editor} />
-                      <LinkBubbleMenu editor={editor} />
+                    <div
+                      className="editor-page-shell mx-auto"
+                      style={{
+                        transform: `scale(${effectiveZoom})`,
+                        transformOrigin: 'top center',
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div ref={pageRef} className="editor-page">
+                        <EditorContent editor={editor} />
+                        <LinkBubbleMenu editor={editor} />
 
-                      {breaks.map((top, i) => (
-                        <div
-                          key={i}
-                          className="page-break-overlay"
-                          data-page={i + 2}
-                          style={{ top }}
-                        />
-                      ))}
+                        {breaks.map((top, i) => (
+                          <div
+                            key={i}
+                            className="page-break-overlay"
+                            data-page={i + 2}
+                            style={{ top }}
+                          />
+                        ))}
+                      </div>
                     </div>
                   </div>
+
+                  {/* FAB mobile/tablet: abre Sumário e Inspector via Sheet */}
+                  {viewMode === 'edit' && !focusMode && (
+                    <div className="lg:hidden fixed bottom-20 right-4 z-30 flex flex-col gap-2">
+                      <Sheet open={mobileTocOpen} onOpenChange={setMobileTocOpen}>
+                        <SheetTrigger asChild>
+                          <button
+                            type="button"
+                            className="h-11 w-11 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center hover:scale-105 transition-transform"
+                            title="Sumário"
+                            aria-label="Abrir sumário"
+                          >
+                            <ListTree className="h-5 w-5" />
+                          </button>
+                        </SheetTrigger>
+                        <SheetContent side="left" className="w-72 p-0 flex flex-col">
+                          <SheetHeader className="px-4 py-3 border-b">
+                            <SheetTitle className="text-sm flex items-center gap-2">
+                              <ListTree className="h-4 w-4" /> Sumário
+                            </SheetTitle>
+                          </SheetHeader>
+                          <div className="flex-1 overflow-auto">
+                            <MobileToc editor={editor} onNavigate={() => setMobileTocOpen(false)} />
+                          </div>
+                        </SheetContent>
+                      </Sheet>
+
+                      <Sheet open={mobileInspectorOpen} onOpenChange={setMobileInspectorOpen}>
+                        <SheetTrigger asChild>
+                          <button
+                            type="button"
+                            className="h-11 w-11 rounded-full bg-card border border-border text-foreground shadow-lg flex items-center justify-center hover:scale-105 transition-transform"
+                            title="Inspector"
+                            aria-label="Abrir inspector"
+                          >
+                            <Wand2 className="h-5 w-5" />
+                          </button>
+                        </SheetTrigger>
+                        <SheetContent side="right" className="w-80 p-0 flex flex-col">
+                          <SheetHeader className="px-4 py-3 border-b">
+                            <SheetTitle className="text-sm flex items-center gap-2">
+                              <Wand2 className="h-4 w-4" /> Inspector
+                            </SheetTitle>
+                          </SheetHeader>
+                          <div className="flex-1 overflow-auto p-3 space-y-4">
+                            <MobileInspector editor={editor} stats={stats} />
+                          </div>
+                        </SheetContent>
+                      </Sheet>
+                    </div>
+                  )}
                 </div>
 
-                {/* FAB mobile/tablet: abre Sumário e Inspector via Sheet */}
-                {viewMode === 'edit' && !focusMode && (
-                  <div className="lg:hidden fixed bottom-20 right-4 z-30 flex flex-col gap-2">
-                    <Sheet open={mobileTocOpen} onOpenChange={setMobileTocOpen}>
-                      <SheetTrigger asChild>
-                        <button
-                          type="button"
-                          className="h-11 w-11 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center hover:scale-105 transition-transform"
-                          title="Sumário"
-                          aria-label="Abrir sumário"
-                        >
-                          <ListTree className="h-5 w-5" />
-                        </button>
-                      </SheetTrigger>
-                      <SheetContent side="left" className="w-72 p-0 flex flex-col">
-                        <SheetHeader className="px-4 py-3 border-b">
-                          <SheetTitle className="text-sm flex items-center gap-2">
-                            <ListTree className="h-4 w-4" /> Sumário
-                          </SheetTitle>
-                        </SheetHeader>
-                        <div className="flex-1 overflow-auto">
-                          <MobileToc editor={editor} onNavigate={() => setMobileTocOpen(false)} />
-                        </div>
-                      </SheetContent>
-                    </Sheet>
-
-                    <Sheet open={mobileInspectorOpen} onOpenChange={setMobileInspectorOpen}>
-                      <SheetTrigger asChild>
-                        <button
-                          type="button"
-                          className="h-11 w-11 rounded-full bg-card border border-border text-foreground shadow-lg flex items-center justify-center hover:scale-105 transition-transform"
-                          title="Inspector"
-                          aria-label="Abrir inspector"
-                        >
-                          <Wand2 className="h-5 w-5" />
-                        </button>
-                      </SheetTrigger>
-                      <SheetContent side="right" className="w-80 p-0 flex flex-col">
-                        <SheetHeader className="px-4 py-3 border-b">
-                          <SheetTitle className="text-sm flex items-center gap-2">
-                            <Wand2 className="h-4 w-4" /> Inspector
-                          </SheetTitle>
-                        </SheetHeader>
-                        <div className="flex-1 overflow-auto p-3 space-y-4">
-                          <MobileInspector editor={editor} stats={stats} />
-                        </div>
-                      </SheetContent>
-                    </Sheet>
+                {/* Painel de preview ao vivo no modo split */}
+                {viewMode === 'split' && (
+                  <div
+                    className="flex-1 overflow-auto bg-background min-w-0 border-t sm:border-t-0 border-border"
+                    style={{
+                      maxHeight: 'calc(100vh - 260px)',
+                      minHeight: '320px',
+                    }}
+                    aria-label="Pré-visualização ao vivo"
+                  >
+                    <div className="sticky top-0 z-10 px-3 py-1.5 text-[11px] font-medium text-muted-foreground bg-muted/70 backdrop-blur border-b border-border flex items-center gap-1.5">
+                      <Eye className="h-3 w-3" /> Pré-visualização ao vivo
+                    </div>
+                    <StudentPreview content={value} />
                   </div>
                 )}
               </div>
