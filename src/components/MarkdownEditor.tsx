@@ -343,17 +343,18 @@ export function MarkdownEditor({
             </div>
           ) : (
             <>
-              {/* Régua superior estilo Word */}
+              {/* Régua superior estilo Word — escondida em <1024px via CSS */}
               {!focusMode && (
                 <div className="word-ruler">
                   <div className="word-ruler-marks">
-                    <div className="word-ruler-inner" style={{ width: `${794 * zoom}px` }} />
+                    <div className="word-ruler-inner" style={{ width: `${794 * effectiveZoom}px` }} />
                   </div>
                 </div>
               )}
 
               {/* Canvas com folha A4 + paginação. */}
               <div
+                ref={canvasRef}
                 className="flex-1 overflow-auto editor-canvas relative"
                 style={{ maxHeight: '78vh', minHeight: rows ? `${rows * 26}px` : '420px' }}
                 onClick={() => editor.commands.focus()}
@@ -361,13 +362,19 @@ export function MarkdownEditor({
                 <div
                   className="px-2 sm:px-4 py-2 mx-auto"
                   style={{
-                    width: `calc(${794 * zoom}px + 2rem)`,
+                    // Em mobile/tablet, usa largura escalada para evitar scroll horizontal
+                    width: autoFit !== null ? '100%' : `calc(${794 * effectiveZoom}px + 2rem)`,
                     minWidth: '100%',
                   }}
                 >
                   <div
-                    className="editor-page-shell"
-                    style={{ transform: `scale(${zoom})`, transformOrigin: 'top center' }}
+                    className="editor-page-shell mx-auto"
+                    style={{
+                      transform: `scale(${effectiveZoom})`,
+                      transformOrigin: 'top center',
+                      // Compensa altura visual quando escalado para baixo
+                      ...(effectiveZoom < 1 ? { marginBottom: `${-1 * (1 - effectiveZoom) * 800}px` } : null),
+                    }}
                     onClick={(e) => e.stopPropagation()}
                   >
                     <div ref={pageRef} className="editor-page">
@@ -385,6 +392,57 @@ export function MarkdownEditor({
                     </div>
                   </div>
                 </div>
+
+                {/* FAB mobile/tablet: abre Sumário e Inspector via Sheet */}
+                {viewMode === 'edit' && !focusMode && (
+                  <div className="lg:hidden fixed bottom-20 right-4 z-30 flex flex-col gap-2">
+                    <Sheet open={mobileTocOpen} onOpenChange={setMobileTocOpen}>
+                      <SheetTrigger asChild>
+                        <button
+                          type="button"
+                          className="h-11 w-11 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center hover:scale-105 transition-transform"
+                          title="Sumário"
+                          aria-label="Abrir sumário"
+                        >
+                          <ListTree className="h-5 w-5" />
+                        </button>
+                      </SheetTrigger>
+                      <SheetContent side="left" className="w-72 p-0 flex flex-col">
+                        <SheetHeader className="px-4 py-3 border-b">
+                          <SheetTitle className="text-sm flex items-center gap-2">
+                            <ListTree className="h-4 w-4" /> Sumário
+                          </SheetTitle>
+                        </SheetHeader>
+                        <div className="flex-1 overflow-auto">
+                          <MobileToc editor={editor} onNavigate={() => setMobileTocOpen(false)} />
+                        </div>
+                      </SheetContent>
+                    </Sheet>
+
+                    <Sheet open={mobileInspectorOpen} onOpenChange={setMobileInspectorOpen}>
+                      <SheetTrigger asChild>
+                        <button
+                          type="button"
+                          className="h-11 w-11 rounded-full bg-card border border-border text-foreground shadow-lg flex items-center justify-center hover:scale-105 transition-transform"
+                          title="Inspector"
+                          aria-label="Abrir inspector"
+                        >
+                          <Wand2 className="h-5 w-5" />
+                        </button>
+                      </SheetTrigger>
+                      <SheetContent side="right" className="w-80 p-0 flex flex-col">
+                        <SheetHeader className="px-4 py-3 border-b">
+                          <SheetTitle className="text-sm flex items-center gap-2">
+                            <Wand2 className="h-4 w-4" /> Inspector
+                          </SheetTitle>
+                        </SheetHeader>
+                        <div className="flex-1 overflow-auto p-3 space-y-4">
+                          <MobileInspector editor={editor} stats={stats} />
+                        </div>
+                      </SheetContent>
+                    </Sheet>
+                  </div>
+                )}
               </div>
             </>
           )}
@@ -401,14 +459,68 @@ export function MarkdownEditor({
 
       {showWordCount && (
         <div className="word-statusbar">
-          <span>
-            Página {totalPages > 0 ? 1 : 0} de {totalPages}  ·  {stats.words.toLocaleString('pt-BR')} palavras  ·  Português (Brasil)
+          <span className="truncate">
+            Pág. {totalPages > 0 ? 1 : 0}/{totalPages} · {stats.words.toLocaleString('pt-BR')} palavras
           </span>
           <span className="hidden md:inline opacity-90">
-            Digite <code>/</code> para inserir blocos  ·  {Math.round(zoom * 100)}%
+            Digite <code>/</code> para inserir blocos · {Math.round(effectiveZoom * 100)}%
+            {autoFit !== null && <span className="ml-1 opacity-75">(auto)</span>}
           </span>
         </div>
       )}
     </div>
   );
+}
+
+/** Sumário mobile (renderiza dentro de Sheet). */
+function MobileToc({ editor, onNavigate }: { editor: any; onNavigate: () => void }) {
+  // Importa hook localmente para evitar duplicar lógica
+  const items = useEditorOutlineLazy(editor);
+  if (!items.length) {
+    return (
+      <p className="text-xs text-muted-foreground p-4 leading-relaxed">
+        Use os títulos (H1, H2, H3) para criar a estrutura. Eles aparecerão aqui.
+      </p>
+    );
+  }
+  return (
+    <ul className="p-2 space-y-0.5">
+      {items.map((it, i) => (
+        <li key={i}>
+          <button
+            type="button"
+            onClick={() => {
+              if (!editor) return;
+              editor.chain().focus().setTextSelection(it.pos + 1).run();
+              const dom = editor.view.domAtPos(it.pos + 1).node as HTMLElement;
+              const el = dom?.nodeType === 1 ? dom : dom?.parentElement;
+              el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              onNavigate();
+            }}
+            className={cn(
+              'w-full text-left text-xs rounded px-2 py-1.5 hover:bg-accent flex gap-2',
+              it.level === 1 && 'font-semibold',
+              it.level === 2 && 'pl-4',
+              it.level === 3 && 'pl-6 text-[11px] text-muted-foreground',
+            )}
+          >
+            <span className="font-mono text-[10px] text-primary shrink-0">{it.number}</span>
+            <span className="truncate">{it.text}</span>
+          </button>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/** Inspector mobile (renderiza dentro de Sheet). */
+function MobileInspector({ editor, stats }: { editor: any; stats: { words: number; chars: number; minutes: number } }) {
+  const sel = useEditorSelection(editor);
+  return <EditorInspectorBody editor={editor} stats={stats} sel={sel} />;
+}
+
+// helper local para evitar import circular
+function useEditorOutlineLazy(editor: any) {
+  // dynamic require pattern: import normal funciona; usar hook real
+  return useEditorOutlineHook(editor);
 }
