@@ -712,7 +712,7 @@ export default function AdminPage() {
     const { data: newApostila, error } = await supabase.from('apostilas').insert({
       title: importTitle.trim(), content: importContent,
       category: importTopic || 'Geral', source_type: sourceType,
-      file_url: importMode === 'text' ? null : isNotion ? null : importUrl, created_by: currentUser.id, published: false,
+      file_url: importMode === 'text' ? null : isNotion ? null : importUrl, created_by: currentUser.id, published: true,
     }).select().single();
     if (error) throw error;
     if (importExercises.length > 0 && newApostila) {
@@ -755,7 +755,7 @@ export default function AdminPage() {
     if (!user) return;
     const { error } = await supabase.from('apostilas').insert({
       title: manualTitle.trim(), content: manualContent,
-      category: manualCategory || 'Geral', source_type: 'manual', created_by: user.id, published: false,
+      category: manualCategory || 'Geral', source_type: 'manual', created_by: user.id, published: true,
     });
     if (error) { toast.error('Erro ao criar'); return; }
     toast.success('Apostila criada!');
@@ -812,7 +812,7 @@ export default function AdminPage() {
         const { data: newApostila, error: insertErr } = await supabase.from('apostilas').insert({
           title: data.title || 'Sem título', content: data.content || '',
           category: data.category || 'Geral', source_type: isNotion ? 'notion' : 'link',
-          file_url: isNotion ? null : url, created_by: user.id, published: false,
+          file_url: isNotion ? null : url, created_by: user.id, published: true,
         }).select().single();
         if (insertErr) throw insertErr;
         if (data.exercises?.length > 0 && newApostila) {

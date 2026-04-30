@@ -53,7 +53,7 @@ type RibbonTab = 'home' | 'insert' | 'layout' | 'review';
 
 interface Props {
   editor: Editor;
-  onInsertImage: (md: string) => void;
+  onInsertImage: (md: string, opts?: { tempUrl?: string; finalUrl?: string }) => void;
   onSave?: () => void;
   saveStatus?: 'saved' | 'unsaved' | 'idle';
 }

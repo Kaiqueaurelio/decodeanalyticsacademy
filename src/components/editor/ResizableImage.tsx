@@ -64,13 +64,15 @@ function ImageView({ node, updateAttributes, deleteNode, selected, editor }: Nod
     <NodeViewWrapper
       as="div"
       data-drag-handle
-      className={cn('group relative my-3 flex w-full', justify)}
+      className={cn('group relative my-3 flex w-full', justify, isEditable && 'cursor-grab active:cursor-grabbing')}
+      title={isEditable ? 'Arraste para mover · clique para selecionar e redimensionar' : undefined}
     >
       <div
         ref={wrapperRef}
         className={cn(
-          'relative inline-block max-w-full',
-          selected && 'outline outline-2 outline-primary rounded-sm',
+          'relative inline-block max-w-full transition-shadow',
+          selected && 'outline outline-2 outline-primary rounded-sm shadow-lg',
+          isEditable && !selected && 'hover:outline hover:outline-1 hover:outline-primary/40 hover:rounded-sm',
         )}
         style={{ width: width || 'auto' }}
       >
@@ -78,12 +80,21 @@ function ImageView({ node, updateAttributes, deleteNode, selected, editor }: Nod
           src={src}
           alt={alt}
           draggable={false}
-          className="block max-w-full h-auto rounded-sm select-none"
+          className="block max-w-full h-auto rounded-sm select-none pointer-events-none"
           style={{ width: width ? '100%' : undefined }}
           onError={(e) => {
             (e.currentTarget as HTMLImageElement).style.outline = '2px dashed hsl(var(--destructive))';
           }}
         />
+        {/* Hint visual de "arrastável" no hover */}
+        {isEditable && !selected && (
+          <div
+            contentEditable={false}
+            className="absolute top-1 left-1 opacity-0 group-hover:opacity-100 transition-opacity bg-background/90 backdrop-blur text-[10px] px-1.5 py-0.5 rounded border border-border text-muted-foreground pointer-events-none"
+          >
+            ✥ Arraste para mover
+          </div>
+        )}
 
         {/* Toolbar flutuante (aparece ao selecionar) */}
         {selected && isEditable && (
