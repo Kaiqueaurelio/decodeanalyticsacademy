@@ -1441,6 +1441,7 @@ html {
 
   .editor-canvas {
     padding-bottom: 24px;
+    overflow-x: hidden;
   }
 }
 
@@ -1456,6 +1457,7 @@ html {
 
   .editor-canvas {
     background-image: none;
+    overflow-y: auto;
   }
 
   /* Sombra mais sutil em mobile */
