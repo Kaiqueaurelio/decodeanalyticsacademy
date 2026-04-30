@@ -2691,6 +2691,23 @@ export default function AdminPage() {
         </div>
       </div>
 
+      {/* Validação estrutural (H2/H3): avisa antes de salvar quando faltam seções/subtópicos */}
+      <StructureValidationDialog
+        open={!!validationReport}
+        report={validationReport}
+        apostilaTitle={validationContext?.title}
+        onCancel={() => {
+          setValidationReport(null);
+          setValidationContext(null);
+        }}
+        onConfirm={async () => {
+          const ctx = validationContext;
+          setValidationReport(null);
+          setValidationContext(null);
+          if (ctx) await ctx.run();
+        }}
+      />
+
       {/* Diálogo de duplicata: detecta apostilas parecidas e mantém a melhor formatada */}
       <DuplicateApostilaDialog
         open={!!duplicateMatch}
