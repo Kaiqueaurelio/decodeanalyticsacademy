@@ -341,7 +341,8 @@ Retorne APENAS chamando a funcao return_apostila.`;
     }
 
     // ===== Google AI Studio direto (JSON mode) =====
-    const callGoogle = async (): Promise<any | null> => {
+    // Retorna { __status } em caso de erro HTTP para permitir fallback inteligente.
+    const callGoogle = async (): Promise<any | { __status: number } | null> => {
       const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${encodeURIComponent(googleApiKey!)}`;
       const resp = await fetch(url, {
         method: "POST",
@@ -358,7 +359,7 @@ Retorne APENAS chamando a funcao return_apostila.`;
       });
       if (!resp.ok) {
         console.error("Google extract-content error", resp.status, (await resp.text()).slice(0, 300));
-        return null;
+        return { __status: resp.status };
       }
       const data = await resp.json();
       const text = data?.candidates?.[0]?.content?.parts?.map((p: any) => p.text).join("") ?? "";
