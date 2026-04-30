@@ -1332,21 +1332,15 @@ export default function AdminPage() {
                             </div>
 
                             <div>
-                              <Label htmlFor="import-rawtext" className="text-xs font-medium text-foreground mb-1.5 block">Texto Bruto da Aula</Label>
-                              <MarkdownEditor
+                              <Label htmlFor="import-rawtext" className="text-xs font-medium text-foreground mb-1.5 block">Texto da Apostila</Label>
+                              <Textarea
+                                id="import-rawtext"
                                 value={importRawText}
-                                onChange={setImportRawText}
-                                placeholder={"Cole aqui qualquer texto — mesmo bagunçado, copiado de slides ou anotações.\n\nUse a barra de cima para formatar (negrito, títulos, listas).\n\nA IA vai organizar tudo em formato de apostila com exercícios."}
-                                rows={10}
+                                onChange={e => setImportRawText(e.target.value)}
+                                placeholder={"Cole aqui a aula bruta para estruturar com IA ou uma apostila já pronta para salvar direto.\n\nVocê pode colar texto com títulos, listas e links já organizados."}
+                                rows={14}
+                                className="min-h-[320px] resize-y leading-6"
                               />
-                            </div>
-                            <div className="grid gap-2 sm:grid-cols-2">
-                              <Button onClick={handleExtract} disabled={cloning || !importRawText.trim()} className="w-full gradient-primary text-primary-foreground">
-                                {cloning ? <><Loader2 className="h-4 w-4 animate-spin mr-1.5" /> Estruturando...</> : '✨ Estruturar como Apostila'}
-                              </Button>
-                              <Button onClick={handleSaveReadyText} disabled={cloning || !importRawText.trim() || !importTitle.trim()} variant="outline" className="w-full">
-                                {cloning ? <><Loader2 className="h-4 w-4 animate-spin mr-1.5" /> Salvando...</> : 'Salvar texto já formatado'}
-                              </Button>
                             </div>
                           </>
                         )}
@@ -1358,6 +1352,21 @@ export default function AdminPage() {
                           <Label htmlFor="import-topic" className="text-xs font-medium text-foreground">Disciplina / Tópico</Label>
                           <Input id="import-topic" value={importTopic} onChange={e => setImportTopic(e.target.value)} placeholder="Ex: Redes de Computadores, Banco de Dados" className="mt-1.5" />
                         </div>
+                        {importMode === 'text' && importStep === 'input' && (
+                          <div className="space-y-2">
+                            <p className="text-[11px] text-muted-foreground leading-relaxed">
+                              Use <strong>Estruturar como Apostila</strong> para organizar texto cru, ou <strong>Salvar texto já formatado</strong> quando a apostila já estiver pronta.
+                            </p>
+                            <div className="grid gap-2 sm:grid-cols-2">
+                              <Button onClick={handleExtract} disabled={cloning || !importRawText.trim()} className="w-full gradient-primary text-primary-foreground">
+                                {cloning ? <><Loader2 className="h-4 w-4 animate-spin mr-1.5" /> Estruturando...</> : '✨ Estruturar como Apostila'}
+                              </Button>
+                              <Button onClick={handleSaveReadyText} disabled={cloning || !importRawText.trim() || !importTitle.trim()} variant="outline" className="w-full">
+                                {cloning ? <><Loader2 className="h-4 w-4 animate-spin mr-1.5" /> Salvando...</> : 'Salvar texto já formatado'}
+                              </Button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     ) : (
                       <div className="space-y-3">
