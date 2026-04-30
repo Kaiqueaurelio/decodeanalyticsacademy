@@ -112,17 +112,18 @@ export function RibbonImageButton({ onImageInserted, label = 'Imagem' }: Props) 
         ref={inputRef}
         type="file"
         accept="image/*"
+        multiple
         className="hidden"
         onChange={(e) => {
-          const f = e.target.files?.[0];
-          if (f) handleUpload(f);
+          const files = Array.from(e.target.files || []);
+          if (files.length) handleUploadMany(files);
           e.target.value = '';
         }}
       />
       <button
         type="button"
         className="word-btn word-btn-tall"
-        title="Inserir imagem do computador"
+        title="Inserir uma ou várias imagens (segure Ctrl/Cmd para múltipla seleção)"
         disabled={uploading}
         onClick={() => inputRef.current?.click()}
       >
