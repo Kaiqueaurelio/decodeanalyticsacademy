@@ -758,26 +758,28 @@ export default function AdminPage() {
 
   const handleSaveImport = async () => {
     if (!importTitle.trim()) { toast.error('Adicione um título'); return; }
-    setCloning(true);
-    try {
-      // 1) Verifica duplicata pela similaridade do conteúdo
-      const dup = await findDuplicateApostila(importContent, importTitle);
-      if (dup) {
-        setDuplicateMatch(dup);
-        // Guarda a ação para ser executada após decisão do admin
-        setPendingSave(() => async () => {
-          await insertImportApostila();
-        });
-        setCloning(false);
-        return;
+    await guardWithValidation(importContent, importTitle, async () => {
+      setCloning(true);
+      try {
+        // 1) Verifica duplicata pela similaridade do conteúdo
+        const dup = await findDuplicateApostila(importContent, importTitle);
+        if (dup) {
+          setDuplicateMatch(dup);
+          // Guarda a ação para ser executada após decisão do admin
+          setPendingSave(() => async () => {
+            await insertImportApostila();
+          });
+          setCloning(false);
+          return;
+        }
+        await insertImportApostila();
+      } catch (err: any) {
+        console.error('[handleSaveImport] erro:', err);
+        const msg = err?.message || err?.error_description || err?.details || 'Erro desconhecido';
+        toast.error('Erro ao salvar: ' + msg);
       }
-      await insertImportApostila();
-    } catch (err: any) {
-      console.error('[handleSaveImport] erro:', err);
-      const msg = err?.message || err?.error_description || err?.details || 'Erro desconhecido';
-      toast.error('Erro ao salvar: ' + msg);
-    }
-    setCloning(false);
+      setCloning(false);
+    });
   };
 
   const handleSaveReadyText = async () => {
@@ -790,24 +792,26 @@ export default function AdminPage() {
       return;
     }
 
-    setCloning(true);
-    try {
-      const dup = await findDuplicateApostila(importRawText, importTitle);
-      if (dup) {
-        setDuplicateMatch(dup);
-        setPendingSave(() => async () => {
-          await insertReadyTextApostila();
-        });
-        setCloning(false);
-        return;
+    await guardWithValidation(importRawText, importTitle, async () => {
+      setCloning(true);
+      try {
+        const dup = await findDuplicateApostila(importRawText, importTitle);
+        if (dup) {
+          setDuplicateMatch(dup);
+          setPendingSave(() => async () => {
+            await insertReadyTextApostila();
+          });
+          setCloning(false);
+          return;
+        }
+        await insertReadyTextApostila();
+      } catch (err: any) {
+        console.error('[handleSaveReadyText] erro:', err);
+        const msg = err?.message || err?.error_description || err?.details || 'Erro desconhecido';
+        toast.error('Erro ao salvar: ' + msg);
       }
-      await insertReadyTextApostila();
-    } catch (err: any) {
-      console.error('[handleSaveReadyText] erro:', err);
-      const msg = err?.message || err?.error_description || err?.details || 'Erro desconhecido';
-      toast.error('Erro ao salvar: ' + msg);
-    }
-    setCloning(false);
+      setCloning(false);
+    });
   };
 
   const insertManualApostila = useCallback(async () => {
@@ -823,14 +827,16 @@ export default function AdminPage() {
 
   const handleManualSave = async () => {
     if (!manualTitle.trim() || !user) return;
-    // Detecta duplicata pelo conteúdo
-    const dup = await findDuplicateApostila(manualContent, manualTitle);
-    if (dup) {
-      setDuplicateMatch(dup);
-      setPendingSave(() => async () => { await insertManualApostila(); });
-      return;
-    }
-    await insertManualApostila();
+    await guardWithValidation(manualContent, manualTitle, async () => {
+      // Detecta duplicata pelo conteúdo
+      const dup = await findDuplicateApostila(manualContent, manualTitle);
+      if (dup) {
+        setDuplicateMatch(dup);
+        setPendingSave(() => async () => { await insertManualApostila(); });
+        return;
+      }
+      await insertManualApostila();
+    });
   };
 
   /** Atualiza uma apostila existente com o melhor conteúdo (chamado a partir do diálogo). */
