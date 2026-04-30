@@ -247,6 +247,33 @@ export function MarkdownEditor({
     topPadding: PAGE_TOP_PADDING,
   });
 
+  // ── SPLIT VIEW: sincroniza scroll editor ↔ preview e destaca seção ativa ──
+  const activeHeadingId = useActiveHeading(editor);
+  useSyncedScroll(canvasRef, previewRef, viewMode === 'split');
+
+  /**
+   * Quando o cursor entra em uma nova seção no editor, rola o preview
+   * suavemente até o heading correspondente. Só roda no modo split e
+   * quando o usuário não está rolando manualmente o preview.
+   */
+  const lastAutoScrollId = useRef<string | null>(null);
+  useEffect(() => {
+    if (viewMode !== 'split') { lastAutoScrollId.current = null; return; }
+    if (!activeHeadingId || activeHeadingId === lastAutoScrollId.current) return;
+    const container = previewRef.current;
+    if (!container) return;
+    // Pequeno debounce para esperar o React renderizar o id no preview
+    const t = window.setTimeout(() => {
+      const target = container.querySelector(`#${CSS.escape(activeHeadingId)}`) as HTMLElement | null;
+      if (!target) return;
+      const offset = target.offsetTop - 24;
+      container.scrollTo({ top: Math.max(0, offset), behavior: 'smooth' });
+      lastAutoScrollId.current = activeHeadingId;
+    }, 80);
+    return () => window.clearTimeout(t);
+  }, [activeHeadingId, viewMode, value]);
+
+
   // ── Atalhos de teclado estilo Office ──────────────────────────────
   // Ctrl+S salvar · Ctrl+P imprimir · Ctrl+K link
   // (B/I/U/L/E/R/J já são tratados pelo TipTap StarterKit + extensions)
