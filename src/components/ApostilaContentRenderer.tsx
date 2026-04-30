@@ -567,13 +567,70 @@ function isFilenameLikeAlt(alt: string): boolean {
   return false;
 }
 
-function ImageBlock({ alt, url }: { alt: string; url: string }) {
+function ImageBlock({
+  alt,
+  url,
+  width,
+  align = 'center',
+  float = 'none',
+  marginX = 0,
+  marginY = 0,
+}: {
+  alt: string;
+  url: string;
+  width?: string | null;
+  align?: 'left' | 'center' | 'right';
+  float?: 'none' | 'left' | 'right';
+  marginX?: number;
+  marginY?: number;
+}) {
   const [errored, setErrored] = useState(false);
   const showCaption = !isFilenameLikeAlt(alt);
 
+  // Responsividade: em telas estreitas (sm: <640px) o aluno NÃO vê float — a
+  // imagem assume largura total para legibilidade. Implementado via CSS class
+  // `student-img-block` (ver index.css) que cancela float em mobile.
+  const isFloating = float === 'left' || float === 'right';
+
+  // Wrapper figure usa float quando solicitado; caso contrário, alinhamento via flex.
+  const justify =
+    align === 'left' ? 'justify-start' : align === 'right' ? 'justify-end' : 'justify-center';
+
+  const figureStyle: React.CSSProperties = isFloating
+    ? {
+        float,
+        width: width || '50%',
+        maxWidth: '100%',
+        margin:
+          float === 'left'
+            ? `${marginY}px ${Math.max(16, marginX)}px ${marginY}px 0`
+            : `${marginY}px 0 ${marginY}px ${Math.max(16, marginX)}px`,
+        shapeOutside: 'margin-box',
+      }
+    : {
+        margin: marginX || marginY ? `${marginY || 16}px ${marginX}px` : undefined,
+      };
+
+  // Largura interna quando NÃO está flutuando (centralizado/alinhado)
+  const innerWidthStyle: React.CSSProperties = !isFloating && width
+    ? { width, maxWidth: '100%' }
+    : {};
+
   return (
-    <figure className="my-7 flex flex-col items-center gap-2.5">
-      <div className="w-full sm:max-w-[90%] rounded-xl bg-white p-2 sm:p-3 border border-border/40 shadow-lg shadow-black/20">
+    <figure
+      className={cn(
+        'student-img-block',
+        isFloating
+          ? 'block clear-none my-2 sm:my-3'
+          : cn('my-7 flex flex-col items-center gap-2.5', justify),
+      )}
+      style={figureStyle}
+      data-float={float}
+    >
+      <div
+        className="rounded-xl bg-white p-2 sm:p-3 border border-border/40 shadow-lg shadow-black/20"
+        style={isFloating ? { width: '100%' } : { width: '100%', ...innerWidthStyle }}
+      >
         {errored ? (
           <div className="flex items-center justify-center min-h-[180px] text-sm text-muted-foreground italic bg-muted/40 rounded-lg">
             Imagem indisponível
@@ -590,7 +647,7 @@ function ImageBlock({ alt, url }: { alt: string; url: string }) {
         )}
       </div>
       {showCaption && (
-        <figcaption className="text-[12px] text-muted-foreground italic text-center max-w-prose leading-snug">
+        <figcaption className="text-[12px] text-muted-foreground italic text-center max-w-prose leading-snug mt-1.5">
           {alt}
         </figcaption>
       )}
