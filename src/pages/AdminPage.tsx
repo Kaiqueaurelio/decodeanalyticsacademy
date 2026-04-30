@@ -42,6 +42,8 @@ import { exportApostilaToPDF } from '@/lib/apostila-pdf';
 import { parseApostilaContent } from '@/lib/apostila-parser';
 import { extractTextFromFile } from '@/lib/file-extract';
 import { MarkdownEditor } from '@/components/MarkdownEditor';
+import { StructureValidationDialog } from '@/components/admin/StructureValidationDialog';
+import { validateApostilaStructure, type ValidationReport } from '@/lib/apostilaValidation';
 import { PerformanceMetrics } from '@/components/PerformanceMetrics';
 import { SmokeTestsPanel } from '@/components/SmokeTestsPanel';
 import { DiagnosticsPanel } from '@/components/DiagnosticsPanel';
