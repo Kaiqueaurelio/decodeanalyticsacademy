@@ -148,9 +148,48 @@ export default function DashboardPage() {
     return totalEx > 0 ? Math.round((answeredEx / totalEx) * 100) : 0;
   })();
 
-  const filteredApostilas = selectedCategory === 'all'
-    ? apostilas
-    : apostilas.filter(a => (a.category || 'Geral') === selectedCategory);
+  const filteredApostilas = apostilas.filter((a) => {
+    const groupOk =
+      selectedGroup === 'all' || getCanonicalGroup(a.category, a.title) === selectedGroup;
+    const catOk =
+      selectedCategory === 'all' || (a.category || 'Geral') === selectedCategory;
+    return groupOk && catOk;
+  });
+
+  // Contadores e progresso por GRUPO canônico
+  const groupCounts: Record<CanonicalGroup, number> = {
+    Programação: 0, Redes: 0, IA: 0, Segurança: 0, Cloud: 0, Outros: 0,
+  };
+  const groupExTotals: Record<CanonicalGroup, number> = {
+    Programação: 0, Redes: 0, IA: 0, Segurança: 0, Cloud: 0, Outros: 0,
+  };
+  const groupExAnswered: Record<CanonicalGroup, number> = {
+    Programação: 0, Redes: 0, IA: 0, Segurança: 0, Cloud: 0, Outros: 0,
+  };
+  for (const a of apostilas) {
+    const g = getCanonicalGroup(a.category, a.title);
+    groupCounts[g] += 1;
+    groupExTotals[g] += exerciseCounts[a.id] || 0;
+    const st = stats.byApostila[a.id];
+    if (st) groupExAnswered[g] += st.hits + st.errors;
+  }
+  const groupProgress: Record<CanonicalGroup, number> = {
+    Programação: 0, Redes: 0, IA: 0, Segurança: 0, Cloud: 0, Outros: 0,
+  };
+  for (const g of CANONICAL_GROUPS) {
+    groupProgress[g] = groupExTotals[g] > 0
+      ? Math.round((groupExAnswered[g] / groupExTotals[g]) * 100)
+      : 0;
+  }
+
+  // Sub-categorias livres dentro do grupo selecionado
+  const visibleCategories = selectedGroup === 'all'
+    ? allCategories
+    : [...new Set(
+        apostilas
+          .filter((a) => getCanonicalGroup(a.category, a.title) === selectedGroup)
+          .map((a) => a.category || 'Geral'),
+      )];
 
   // Identifica matéria foco da prova (matching por substring case-insensitive)
   const focusSubjectLc = examFocus?.subject.toLowerCase() || null;
