@@ -37,6 +37,7 @@ import { PreExamReviewBanner } from '@/components/PreExamReviewBanner';
 import { ContinueWhereLeftCard } from '@/components/ContinueWhereLeftCard';
 import { MistakesNotebookCard } from '@/components/MistakesNotebookCard';
 import { StudyNowDialog } from '@/components/StudyNowDialog';
+import { OverallProgressCard } from '@/components/OverallProgressCard';
 import { QuickAccessHub } from '@/components/QuickAccessHub';
 import { Reveal } from '@/components/Reveal';
 import { ApostilaCardActions } from '@/components/ApostilaCardActions';
