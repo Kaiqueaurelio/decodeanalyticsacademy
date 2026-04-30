@@ -297,13 +297,13 @@ export function MarkdownEditor({
         onToggleFocus={() => setFocusMode((f) => !f)}
       />
 
-      {/* Toggle Editar / Visualizar como aluno */}
-      <div className="flex items-center gap-1 px-2 py-1 border-b border-border bg-muted/40">
+      {/* Toggle Editar / Split / Visualizar como aluno */}
+      <div className="flex items-center gap-1 px-2 py-1 border-b border-border bg-muted/40 overflow-x-auto">
         <button
           type="button"
           onClick={() => setViewMode('edit')}
           className={cn(
-            'inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-md transition-colors',
+            'inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-md transition-colors shrink-0',
             viewMode === 'edit'
               ? 'bg-background text-foreground shadow-sm border border-border'
               : 'text-muted-foreground hover:text-foreground',
@@ -314,9 +314,22 @@ export function MarkdownEditor({
         </button>
         <button
           type="button"
+          onClick={() => setViewMode('split')}
+          className={cn(
+            'hidden sm:inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-md transition-colors shrink-0',
+            viewMode === 'split'
+              ? 'bg-background text-primary shadow-sm border border-primary/40'
+              : 'text-muted-foreground hover:text-foreground',
+          )}
+          title="Editar e visualizar lado a lado"
+        >
+          <Columns2 className="h-3 w-3" /> Lado a lado
+        </button>
+        <button
+          type="button"
           onClick={() => setViewMode('preview')}
           className={cn(
-            'inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-md transition-colors',
+            'inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-md transition-colors shrink-0',
             viewMode === 'preview'
               ? 'bg-background text-primary shadow-sm border border-primary/40'
               : 'text-muted-foreground hover:text-foreground',
@@ -327,7 +340,7 @@ export function MarkdownEditor({
         </button>
       </div>
 
-      {viewMode === 'edit' && !focusMode && (
+      {(viewMode === 'edit' || viewMode === 'split') && !focusMode && (
         <EditorRibbon editor={editor} onInsertImage={insertImage} onSave={onSave} saveStatus={status} />
       )}
 
