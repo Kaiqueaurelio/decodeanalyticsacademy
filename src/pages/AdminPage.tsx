@@ -812,7 +812,7 @@ export default function AdminPage() {
         const { data: newApostila, error: insertErr } = await supabase.from('apostilas').insert({
           title: data.title || 'Sem título', content: data.content || '',
           category: data.category || 'Geral', source_type: isNotion ? 'notion' : 'link',
-          file_url: isNotion ? null : url, created_by: user.id, published: false,
+          file_url: isNotion ? null : url, created_by: user.id, published: true,
         }).select().single();
         if (insertErr) throw insertErr;
         if (data.exercises?.length > 0 && newApostila) {
