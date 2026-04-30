@@ -777,31 +777,32 @@ function slugify(text: string): string {
     .slice(0, 80) || 'secao';
 }
 
-function HeadingBlock({ level, content, id }: { level: number; content: string; id?: string }) {
+function HeadingBlock({ level, content, id, active }: { level: number; content: string; id?: string; active?: boolean }) {
   const text = cleanInlineText(content);
+  const activeCls = active ? 'apostila-heading-active' : '';
   if (level <= 2) {
     return (
-      <h3 id={id} className="font-display text-[20px] sm:text-[22px] font-semibold mt-10 mb-3 text-foreground tracking-tight leading-[1.3] scroll-mt-24">
+      <h3 id={id} data-active={active || undefined} className={cn('font-display text-[20px] sm:text-[22px] font-semibold mt-10 mb-3 text-foreground tracking-tight leading-[1.3] scroll-mt-24', activeCls)}>
         {text}
       </h3>
     );
   }
   if (level === 3) {
     return (
-      <h4 id={id} className="font-display text-[16px] sm:text-[17px] font-semibold mt-7 mb-2.5 text-foreground/95 tracking-tight leading-snug scroll-mt-24">
+      <h4 id={id} data-active={active || undefined} className={cn('font-display text-[16px] sm:text-[17px] font-semibold mt-7 mb-2.5 text-foreground/95 tracking-tight leading-snug scroll-mt-24', activeCls)}>
         {text}
       </h4>
     );
   }
   return (
-    <h5 id={id} className="font-mono-label text-[12px] font-semibold mt-6 mb-2 text-primary/90 uppercase tracking-[0.12em] scroll-mt-24">
+    <h5 id={id} data-active={active || undefined} className={cn('font-mono-label text-[12px] font-semibold mt-6 mb-2 text-primary/90 uppercase tracking-[0.12em] scroll-mt-24', activeCls)}>
       {text}
     </h5>
   );
 }
 
-/** Sumário clicável com hierarquia (nível 1-2 / 3 / 4+). Colapsável. */
-function ApostilaTOC({ items }: { items: Array<{ id: string; level: number; text: string; number: string }> }) {
+/** Sumário clicável com hierarquia (nível 1-2 / 3 / 4+). Colapsável + destaque ativo. */
+function ApostilaTOC({ items, activeId }: { items: Array<{ id: string; level: number; text: string; number: string }>; activeId?: string | null }) {
   const [open, setOpen] = useState(true);
   if (items.length < 2) return null;
 
@@ -843,23 +844,30 @@ function ApostilaTOC({ items }: { items: Array<{ id: string; level: number; text
       </button>
       {open && (
         <ol className="px-3 pb-3 pt-1 space-y-0.5 max-h-[60vh] overflow-y-auto">
-          {items.map((it) => (
-            <li key={it.id}>
-              <a
-                href={`#${it.id}`}
-                onClick={(e) => handleClick(e, it.id)}
-                className={cn(
-                  'flex items-baseline gap-2 px-2 py-1.5 rounded-md text-[13px] leading-snug hover:bg-accent/60 hover:text-foreground transition-colors',
-                  it.level <= 2 && 'font-semibold text-foreground',
-                  it.level === 3 && 'pl-5 text-foreground/85',
-                  it.level >= 4 && 'pl-8 text-[12px] text-muted-foreground',
-                )}
-              >
-                <span className="font-mono text-[10px] text-primary shrink-0 tabular-nums">{it.number}</span>
-                <span className="truncate">{it.text}</span>
-              </a>
-            </li>
-          ))}
+          {items.map((it) => {
+            const isActive = activeId === it.id;
+            return (
+              <li key={it.id}>
+                <a
+                  href={`#${it.id}`}
+                  onClick={(e) => handleClick(e, it.id)}
+                  aria-current={isActive ? 'location' : undefined}
+                  className={cn(
+                    'flex items-baseline gap-2 px-2 py-1.5 rounded-md text-[13px] leading-snug hover:bg-accent/60 hover:text-foreground transition-colors',
+                    it.level <= 2 && 'font-semibold text-foreground',
+                    it.level === 3 && 'pl-5 text-foreground/85',
+                    it.level >= 4 && 'pl-8 text-[12px] text-muted-foreground',
+                    isActive && 'bg-primary/15 text-primary border-l-2 border-primary -ml-px pl-[calc(0.5rem-1px)]',
+                    isActive && it.level === 3 && 'pl-[calc(1.25rem-1px)]',
+                    isActive && it.level >= 4 && 'pl-[calc(2rem-1px)]',
+                  )}
+                >
+                  <span className={cn('font-mono text-[10px] shrink-0 tabular-nums', isActive ? 'text-primary' : 'text-primary')}>{it.number}</span>
+                  <span className="truncate">{it.text}</span>
+                </a>
+              </li>
+            );
+          })}
         </ol>
       )}
     </nav>
@@ -868,6 +876,8 @@ function ApostilaTOC({ items }: { items: Array<{ id: string; level: number; text
 
 interface Props {
   content: string;
+  /** Quando informado, destaca o heading correspondente (split-view do editor). */
+  activeHeadingId?: string | null;
 }
 
 /**
@@ -875,7 +885,7 @@ interface Props {
  * blocos especiais (citação, callout, tabela, lista, código, mídia) e
  * ritmo de leitura confortável (~68ch, line-height 1.75).
  */
-export function ApostilaContentRenderer({ content }: Props) {
+export function ApostilaContentRenderer({ content, activeHeadingId }: Props) {
   const blocks = useMemo(() => {
     try {
       return parseBlocks(content);
@@ -926,7 +936,7 @@ export function ApostilaContentRenderer({ content }: Props) {
 
   return (
     <article className="apostila-prose max-w-[68ch] mx-auto w-full min-w-0 px-1 sm:px-0 text-[15.5px] sm:text-[16px] leading-[1.7] tracking-normal text-foreground/95">
-      <ApostilaTOC items={tocItems} />
+      <ApostilaTOC items={tocItems} activeId={activeHeadingId} />
       {blocks.map((b, i) => {
         switch (b.type) {
           case 'code': return <CodeBlock key={i} lang={b.lang} code={b.code} />;
@@ -947,7 +957,7 @@ export function ApostilaContentRenderer({ content }: Props) {
           case 'quote': return <QuoteBlock key={i} content={b.content} />;
           case 'list': return <ListBlock key={i} items={b.items} ordered={b.ordered} />;
           case 'table': return <TableBlock key={i} header={b.header} rows={b.rows} />;
-          case 'heading': return <HeadingBlock key={i} level={b.level} content={b.content} id={headingIds[i]} />;
+          case 'heading': return <HeadingBlock key={i} level={b.level} content={b.content} id={headingIds[i]} active={!!activeHeadingId && headingIds[i] === activeHeadingId} />;
           case 'divider':
             return (
               <div key={i} className="my-8 flex items-center justify-center" aria-hidden>

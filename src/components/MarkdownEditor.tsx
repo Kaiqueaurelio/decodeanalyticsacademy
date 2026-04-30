@@ -47,6 +47,8 @@ import { usePageBreaks } from '@/components/editor/usePageBreaks';
 import { StudentPreview } from '@/components/editor/StudentPreview';
 import { useEditorSelection } from '@/components/editor/useEditorSelection';
 import { useEditorOutline } from '@/components/editor/useEditorOutline';
+import { useActiveHeading } from '@/components/editor/useActiveHeading';
+import { useSyncedScroll } from '@/components/editor/useSyncedScroll';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Eye, Pencil, ListTree, Wand2, Columns2 } from 'lucide-react';
 
@@ -82,6 +84,7 @@ export function MarkdownEditor({
   const externalRef = useRef(value);
   const pageRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
+  const previewRef = useRef<HTMLDivElement>(null);
   const [status, setStatus] = useState<SaveStatus>('saved');
   const [zoom, setZoomState] = useState<number>(() => {
     if (typeof window === 'undefined') return 1;
@@ -243,6 +246,33 @@ export function MarkdownEditor({
     pageContentHeight: PAGE_CONTENT_HEIGHT,
     topPadding: PAGE_TOP_PADDING,
   });
+
+  // ── SPLIT VIEW: sincroniza scroll editor ↔ preview e destaca seção ativa ──
+  const activeHeadingId = useActiveHeading(editor);
+  useSyncedScroll(canvasRef, previewRef, viewMode === 'split');
+
+  /**
+   * Quando o cursor entra em uma nova seção no editor, rola o preview
+   * suavemente até o heading correspondente. Só roda no modo split e
+   * quando o usuário não está rolando manualmente o preview.
+   */
+  const lastAutoScrollId = useRef<string | null>(null);
+  useEffect(() => {
+    if (viewMode !== 'split') { lastAutoScrollId.current = null; return; }
+    if (!activeHeadingId || activeHeadingId === lastAutoScrollId.current) return;
+    const container = previewRef.current;
+    if (!container) return;
+    // Pequeno debounce para esperar o React renderizar o id no preview
+    const t = window.setTimeout(() => {
+      const target = container.querySelector(`#${CSS.escape(activeHeadingId)}`) as HTMLElement | null;
+      if (!target) return;
+      const offset = target.offsetTop - 24;
+      container.scrollTo({ top: Math.max(0, offset), behavior: 'smooth' });
+      lastAutoScrollId.current = activeHeadingId;
+    }, 80);
+    return () => window.clearTimeout(t);
+  }, [activeHeadingId, viewMode, value]);
+
 
   // ── Atalhos de teclado estilo Office ──────────────────────────────
   // Ctrl+S salvar · Ctrl+P imprimir · Ctrl+K link
@@ -470,20 +500,30 @@ export function MarkdownEditor({
                   )}
                 </div>
 
-                {/* Painel de preview ao vivo no modo split */}
+                {/* Painel de preview ao vivo no modo split (com sync de scroll) */}
                 {viewMode === 'split' && (
                   <div
-                    className="flex-1 overflow-auto bg-background min-w-0 border-t sm:border-t-0 border-border"
+                    className="flex-1 flex flex-col bg-background min-w-0 border-t sm:border-t-0 border-border"
                     style={{
                       maxHeight: 'calc(100vh - 260px)',
                       minHeight: '320px',
                     }}
                     aria-label="Pré-visualização ao vivo"
                   >
-                    <div className="sticky top-0 z-10 px-3 py-1.5 text-[11px] font-medium text-muted-foreground bg-muted/70 backdrop-blur border-b border-border flex items-center gap-1.5">
+                    <div className="z-10 px-3 py-1.5 text-[11px] font-medium text-muted-foreground bg-muted/70 backdrop-blur border-b border-border flex items-center gap-1.5 shrink-0">
                       <Eye className="h-3 w-3" /> Pré-visualização ao vivo
+                      {activeHeadingId && (
+                        <span className="ml-auto text-[10px] text-primary/80 truncate max-w-[60%]" title="Seção atual">
+                          ● Seção atual
+                        </span>
+                      )}
                     </div>
-                    <StudentPreview content={value} />
+                    <StudentPreview
+                      ref={previewRef}
+                      content={value}
+                      activeHeadingId={activeHeadingId}
+                      compact
+                    />
                   </div>
                 )}
               </div>
