@@ -854,23 +854,6 @@ export default function AdminPage() {
     loadAll();
   }, [duplicateMatch]);
 
-  /**
-   * Verifica a estrutura H2/H3 antes de executar o salvamento real.
-   * Se a apostila estiver dentro do padrão, executa direto.
-   * Caso contrário, abre o diálogo e só prossegue se o admin confirmar.
-   */
-  const guardWithValidation = useCallback(
-    async (content: string, title: string | undefined, run: () => Promise<void> | void) => {
-      const report = validateApostilaStructure(content || '');
-      if (report.ok) {
-        await run();
-        return;
-      }
-      setValidationReport(report);
-      setValidationContext({ title, run });
-    },
-    [],
-  );
 
 
   const resetImportForm = () => {
