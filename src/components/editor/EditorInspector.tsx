@@ -163,7 +163,15 @@ function ImagePanel({
   attrs,
 }: {
   editor: Editor;
-  attrs: { src?: string; alt?: string; width?: string | null; align?: 'left' | 'center' | 'right' };
+  attrs: {
+    src?: string;
+    alt?: string;
+    width?: string | null;
+    align?: 'left' | 'center' | 'right';
+    float?: 'none' | 'left' | 'right';
+    marginX?: number;
+    marginY?: number;
+  };
 }) {
   const widthNum = useMemo(() => {
     if (!attrs.width) return 100;
@@ -171,9 +179,25 @@ function ImagePanel({
     return Number.isFinite(n) ? Math.max(20, Math.min(100, n)) : 100;
   }, [attrs.width]);
 
+  const float = attrs.float || 'none';
+  const marginX = Number(attrs.marginX ?? 0);
+  const marginY = Number(attrs.marginY ?? 0);
+  const isFloating = float === 'left' || float === 'right';
+
   const setWidth = (w: number) => editor.chain().focus().updateAttributes('image', { width: `${w}%` }).run();
   const setAlign = (a: 'left' | 'center' | 'right') =>
-    editor.chain().focus().updateAttributes('image', { align: a }).run();
+    editor.chain().focus().updateAttributes('image', { align: a, float: 'none' }).run();
+  const setFloat = (f: 'none' | 'left' | 'right') => {
+    if (f === 'none') {
+      editor.chain().focus().updateAttributes('image', { float: 'none' }).run();
+    } else {
+      editor.chain().focus().updateAttributes('image', { float: f, align: f }).run();
+    }
+  };
+  const setMarginX = (n: number) =>
+    editor.chain().focus().updateAttributes('image', { marginX: n }).run();
+  const setMarginY = (n: number) =>
+    editor.chain().focus().updateAttributes('image', { marginY: n }).run();
 
   return (
     <div className="space-y-4">
