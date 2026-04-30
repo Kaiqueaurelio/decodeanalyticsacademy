@@ -500,20 +500,30 @@ export function MarkdownEditor({
                   )}
                 </div>
 
-                {/* Painel de preview ao vivo no modo split */}
+                {/* Painel de preview ao vivo no modo split (com sync de scroll) */}
                 {viewMode === 'split' && (
                   <div
-                    className="flex-1 overflow-auto bg-background min-w-0 border-t sm:border-t-0 border-border"
+                    className="flex-1 flex flex-col bg-background min-w-0 border-t sm:border-t-0 border-border"
                     style={{
                       maxHeight: 'calc(100vh - 260px)',
                       minHeight: '320px',
                     }}
                     aria-label="Pré-visualização ao vivo"
                   >
-                    <div className="sticky top-0 z-10 px-3 py-1.5 text-[11px] font-medium text-muted-foreground bg-muted/70 backdrop-blur border-b border-border flex items-center gap-1.5">
+                    <div className="z-10 px-3 py-1.5 text-[11px] font-medium text-muted-foreground bg-muted/70 backdrop-blur border-b border-border flex items-center gap-1.5 shrink-0">
                       <Eye className="h-3 w-3" /> Pré-visualização ao vivo
+                      {activeHeadingId && (
+                        <span className="ml-auto text-[10px] text-primary/80 truncate max-w-[60%]" title="Seção atual">
+                          ● Seção atual
+                        </span>
+                      )}
                     </div>
-                    <StudentPreview content={value} />
+                    <StudentPreview
+                      ref={previewRef}
+                      content={value}
+                      activeHeadingId={activeHeadingId}
+                      compact
+                    />
                   </div>
                 )}
               </div>
