@@ -37,6 +37,7 @@ import { PreExamReviewBanner } from '@/components/PreExamReviewBanner';
 import { ContinueWhereLeftCard } from '@/components/ContinueWhereLeftCard';
 import { MistakesNotebookCard } from '@/components/MistakesNotebookCard';
 import { StudyNowDialog } from '@/components/StudyNowDialog';
+import { OverallProgressCard } from '@/components/OverallProgressCard';
 import { QuickAccessHub } from '@/components/QuickAccessHub';
 import { Reveal } from '@/components/Reveal';
 import { ApostilaCardActions } from '@/components/ApostilaCardActions';
@@ -269,6 +270,17 @@ export default function DashboardPage() {
             )}
           </div>
         </div>
+
+        {/* 📊 Indicador de progresso geral + por grupo (visão rápida) */}
+        <Reveal from="bottom" delay={10}>
+          <OverallProgressCard
+            overallProgress={overallProgress}
+            overallAccuracy={pct}
+            groupProgress={groupProgress}
+            groupCounts={groupCounts}
+            totalApostilas={apostilas.length}
+          />
+        </Reveal>
 
         {/* Continue de onde parou + Caderno de erros */}
         <Reveal from="bottom" delay={20}>

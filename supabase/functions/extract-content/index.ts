@@ -192,22 +192,27 @@ async function fetchGenericContent(url: string): Promise<{ text: string; title: 
   return { text: textContent, title: pageTitle };
 }
 
-const systemPrompt = `Voce e um professor universitario brasileiro especialista em Ciencia da Computacao. Sua tarefa e produzir uma apostila educacional BEM ESTRUTURADA e PADRONIZADA, e retorna-la EXCLUSIVAMENTE chamando a funcao return_apostila.
+const systemPrompt = `Voce e um professor universitario brasileiro especialista em Ciencia da Computacao. Sua tarefa e produzir uma apostila educacional BEM ESTRUTURADA, HIERARQUICA e PADRONIZADA em MARKDOWN, e retorna-la EXCLUSIVAMENTE chamando a funcao return_apostila.
 
-REGRAS DE FORMATACAO DO CAMPO content:
-- Use EXATAMENTE este padrao com secoes numeradas em MAIUSCULAS:
-  1. INTRODUCAO - contextualizacao do tema
-  2. CONCEITOS FUNDAMENTAIS - definicoes e teoria base
-  3. DESENVOLVIMENTO - explicacao detalhada (use subtopicos 3.1, 3.2, 3.3)
-  4. EXEMPLOS PRATICOS - casos de uso reais, codigo ou cenarios aplicados
-  5. RESUMO - sintese dos pontos principais
-  6. REFERENCIAS - fontes mencionadas ou relevantes
-
-- Cada secao comeca com o titulo em MAIUSCULAS seguido de linha em branco
-- Paragrafos bem separados (linha em branco entre eles)
-- Listas com "." como marcador
-- MINIMO 1500 palavras
-- TEXTO PURO (NAO use markdown, # ou **)
+REGRAS DE FORMATACAO DO CAMPO content (MARKDOWN OBRIGATORIO):
+- O conteudo DEVE usar markdown com hierarquia clara de topicos e subtopicos.
+- Use "## " (H2) para os 6 TOPICOS PRINCIPAIS, exatamente nesta ordem:
+  ## 1. Introducao
+  ## 2. Conceitos Fundamentais
+  ## 3. Desenvolvimento
+  ## 4. Exemplos Praticos
+  ## 5. Resumo
+  ## 6. Referencias
+- DENTRO de "## 3. Desenvolvimento" use OBRIGATORIAMENTE de 3 a 6 SUBTOPICOS com "### " (H3),
+  numerados como "### 3.1 Nome do subtopico", "### 3.2 ...", "### 3.3 ..." etc.
+- DENTRO de "## 4. Exemplos Praticos" use de 2 a 4 subtopicos "### 4.1 ...", "### 4.2 ..." etc.
+- Cada subtopico deve ter pelo menos 2 paragrafos de conteudo proprio.
+- Use **negrito** para termos-chave (1 a 3 por paragrafo).
+- Listas com "- " como marcador.
+- Blocos de codigo com tres crases ``` quando houver codigo.
+- Paragrafos bem separados por linha em branco.
+- MINIMO 1500 palavras totais.
+- NAO use H1 ("# ") — o titulo da apostila ja e exibido a parte.
 
 REGRAS PARA EXERCICIOS:
 - Inclua de 8 a 10 exercicios de multipla escolha
@@ -230,7 +235,7 @@ const apostilaTool = {
         },
         content: {
           type: "string",
-          description: "Conteudo completo seguindo a estrutura padronizada (minimo 1500 palavras, texto puro sem markdown)",
+          description: "Conteudo completo em MARKDOWN com hierarquia: ## para 6 topicos principais e ### para subtopicos numerados (3.1, 3.2 etc). Minimo 1500 palavras.",
         },
         exercises: {
           type: "array",

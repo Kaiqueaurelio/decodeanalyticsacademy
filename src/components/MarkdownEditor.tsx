@@ -338,7 +338,7 @@ export function MarkdownEditor({
           {viewMode === 'preview' ? (
             <div
               className="flex-1 overflow-auto"
-              style={{ maxHeight: '78vh', minHeight: rows ? `${rows * 26}px` : '420px' }}
+              style={{ maxHeight: 'calc(100vh - 220px)', minHeight: rows ? `${rows * 26}px` : '520px' }}
             >
               <StudentPreview content={value} />
             </div>
@@ -357,7 +357,7 @@ export function MarkdownEditor({
               <div
                 ref={canvasRef}
                 className="flex-1 overflow-auto editor-canvas relative"
-                style={{ maxHeight: '78vh', minHeight: rows ? `${rows * 26}px` : '420px' }}
+                style={{ maxHeight: 'calc(100vh - 220px)', minHeight: rows ? `${rows * 26}px` : '520px' }}
                 onClick={() => editor.commands.focus()}
               >
                 <div
