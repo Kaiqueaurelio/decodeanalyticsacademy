@@ -14,6 +14,7 @@ import {
   AlignLeft, AlignCenter, AlignRight, AlignJustify,
   ChevronRight, ChevronLeft, Image as ImageIcon, Link as LinkIcon, Table as TableIcon,
   Type, Heading1, Heading2, Heading3, Trash2, ExternalLink, Wand2,
+  WrapText, Square,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
