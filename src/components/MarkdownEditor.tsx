@@ -129,11 +129,13 @@ export function MarkdownEditor({
     const computeFit = () => {
       if (typeof window === 'undefined') return;
       const w = window.innerWidth;
-      if (w >= 1024) { setAutoFit(null); return; }
+      // Em desktop largo sem split, deixa o usuário controlar o zoom
+      if (w >= 1024 && viewMode !== 'split') { setAutoFit(null); return; }
       const canvasW = canvasRef.current?.clientWidth ?? w;
-      const available = Math.max(280, canvasW - 32);
+      // No modo split, o canvas já ocupa metade — usa essa largura
+      const available = Math.max(280, canvasW - 24);
       const fit = Math.min(1, available / 794);
-      setAutoFit(Math.max(0.5, fit));
+      setAutoFit(Math.max(0.45, fit));
     };
     computeFit();
     window.addEventListener('resize', computeFit);
