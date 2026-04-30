@@ -1379,3 +1379,33 @@ html {
     break-after: avoid;
   }
 }
+
+/* ─── Responsividade de imagens com float (visão do aluno) ───────────────
+ * Em telas pequenas (<640px) cancelamos o float — a imagem vira bloco
+ * cheio para garantir leitura confortável e evitar texto espremido.
+ * Aplica-se tanto ao renderer do aluno (.student-img-block) quanto às
+ * imagens com data-float dentro da apostila publicada.
+ */
+@media (max-width: 639px) {
+  .student-img-block[data-float="left"],
+  .student-img-block[data-float="right"],
+  img[data-float="left"],
+  img[data-float="right"] {
+    float: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    margin-top: 1rem !important;
+    margin-bottom: 1rem !important;
+    shape-outside: none !important;
+    display: block !important;
+  }
+}
+
+/* Quando flutuante e seguido de texto, garante que parágrafos próximos
+ * "envelopem" a imagem sem colidir com a caixa branca. */
+.student-img-block[data-float="left"] + p,
+.student-img-block[data-float="right"] + p {
+  overflow: hidden;
+}
