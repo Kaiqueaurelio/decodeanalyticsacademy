@@ -42,6 +42,8 @@ import { exportApostilaToPDF } from '@/lib/apostila-pdf';
 import { parseApostilaContent } from '@/lib/apostila-parser';
 import { extractTextFromFile } from '@/lib/file-extract';
 import { MarkdownEditor } from '@/components/MarkdownEditor';
+import { StructureValidationDialog } from '@/components/admin/StructureValidationDialog';
+import { validateApostilaStructure, type ValidationReport } from '@/lib/apostilaValidation';
 import { PerformanceMetrics } from '@/components/PerformanceMetrics';
 import { SmokeTestsPanel } from '@/components/SmokeTestsPanel';
 import { DiagnosticsPanel } from '@/components/DiagnosticsPanel';
@@ -529,6 +531,9 @@ export default function AdminPage() {
   // Detecção de apostila duplicada
   const [duplicateMatch, setDuplicateMatch] = useState<DuplicateMatch | null>(null);
   const [pendingSave, setPendingSave] = useState<null | (() => Promise<void> | void)>(null);
+  // Validação estrutural (H2/H3) antes de salvar
+  const [validationReport, setValidationReport] = useState<ValidationReport | null>(null);
+  const [validationContext, setValidationContext] = useState<{ title?: string; run: () => Promise<void> | void } | null>(null);
   const [importStep, setImportStep] = useState<'input' | 'review'>('input');
   const [importMode, setImportMode] = useState<'url' | 'text'>('url');
   const [importRawText, setImportRawText] = useState('');
@@ -751,28 +756,48 @@ export default function AdminPage() {
     loadAll();
   }, [user, importTitle, importRawText, importTopic, loadAll]);
 
-  const handleSaveImport = async () => {
-    if (!importTitle.trim()) { toast.error('Adicione um título'); return; }
-    setCloning(true);
-    try {
-      // 1) Verifica duplicata pela similaridade do conteúdo
-      const dup = await findDuplicateApostila(importContent, importTitle);
-      if (dup) {
-        setDuplicateMatch(dup);
-        // Guarda a ação para ser executada após decisão do admin
-        setPendingSave(() => async () => {
-          await insertImportApostila();
-        });
-        setCloning(false);
+  /**
+   * Verifica a estrutura H2/H3 antes de executar o salvamento real.
+   * Se a apostila estiver dentro do padrão, executa direto.
+   * Caso contrário, abre o diálogo e só prossegue se o admin confirmar.
+   */
+  const guardWithValidation = useCallback(
+    async (content: string, title: string | undefined, run: () => Promise<void> | void) => {
+      const report = validateApostilaStructure(content || '');
+      if (report.ok) {
+        await run();
         return;
       }
-      await insertImportApostila();
-    } catch (err: any) {
-      console.error('[handleSaveImport] erro:', err);
-      const msg = err?.message || err?.error_description || err?.details || 'Erro desconhecido';
-      toast.error('Erro ao salvar: ' + msg);
-    }
-    setCloning(false);
+      setValidationReport(report);
+      setValidationContext({ title, run });
+    },
+    [],
+  );
+
+  const handleSaveImport = async () => {
+    if (!importTitle.trim()) { toast.error('Adicione um título'); return; }
+    await guardWithValidation(importContent, importTitle, async () => {
+      setCloning(true);
+      try {
+        // 1) Verifica duplicata pela similaridade do conteúdo
+        const dup = await findDuplicateApostila(importContent, importTitle);
+        if (dup) {
+          setDuplicateMatch(dup);
+          // Guarda a ação para ser executada após decisão do admin
+          setPendingSave(() => async () => {
+            await insertImportApostila();
+          });
+          setCloning(false);
+          return;
+        }
+        await insertImportApostila();
+      } catch (err: any) {
+        console.error('[handleSaveImport] erro:', err);
+        const msg = err?.message || err?.error_description || err?.details || 'Erro desconhecido';
+        toast.error('Erro ao salvar: ' + msg);
+      }
+      setCloning(false);
+    });
   };
 
   const handleSaveReadyText = async () => {
@@ -785,24 +810,26 @@ export default function AdminPage() {
       return;
     }
 
-    setCloning(true);
-    try {
-      const dup = await findDuplicateApostila(importRawText, importTitle);
-      if (dup) {
-        setDuplicateMatch(dup);
-        setPendingSave(() => async () => {
-          await insertReadyTextApostila();
-        });
-        setCloning(false);
-        return;
+    await guardWithValidation(importRawText, importTitle, async () => {
+      setCloning(true);
+      try {
+        const dup = await findDuplicateApostila(importRawText, importTitle);
+        if (dup) {
+          setDuplicateMatch(dup);
+          setPendingSave(() => async () => {
+            await insertReadyTextApostila();
+          });
+          setCloning(false);
+          return;
+        }
+        await insertReadyTextApostila();
+      } catch (err: any) {
+        console.error('[handleSaveReadyText] erro:', err);
+        const msg = err?.message || err?.error_description || err?.details || 'Erro desconhecido';
+        toast.error('Erro ao salvar: ' + msg);
       }
-      await insertReadyTextApostila();
-    } catch (err: any) {
-      console.error('[handleSaveReadyText] erro:', err);
-      const msg = err?.message || err?.error_description || err?.details || 'Erro desconhecido';
-      toast.error('Erro ao salvar: ' + msg);
-    }
-    setCloning(false);
+      setCloning(false);
+    });
   };
 
   const insertManualApostila = useCallback(async () => {
@@ -818,14 +845,16 @@ export default function AdminPage() {
 
   const handleManualSave = async () => {
     if (!manualTitle.trim() || !user) return;
-    // Detecta duplicata pelo conteúdo
-    const dup = await findDuplicateApostila(manualContent, manualTitle);
-    if (dup) {
-      setDuplicateMatch(dup);
-      setPendingSave(() => async () => { await insertManualApostila(); });
-      return;
-    }
-    await insertManualApostila();
+    await guardWithValidation(manualContent, manualTitle, async () => {
+      // Detecta duplicata pelo conteúdo
+      const dup = await findDuplicateApostila(manualContent, manualTitle);
+      if (dup) {
+        setDuplicateMatch(dup);
+        setPendingSave(() => async () => { await insertManualApostila(); });
+        return;
+      }
+      await insertManualApostila();
+    });
   };
 
   /** Atualiza uma apostila existente com o melhor conteúdo (chamado a partir do diálogo). */
@@ -935,18 +964,20 @@ export default function AdminPage() {
   const handleEditSave = async () => {
     if (!editingApostila) return;
     if (!editTitle.trim()) { toast.error('O título não pode ficar vazio'); return; }
-    const { error } = await supabase
-      .from('apostilas')
-      .update({ title: editTitle.trim(), content: editContent, category: editCategory })
-      .eq('id', editingApostila.id);
-    if (error) {
-      console.error('[handleEditSave] erro:', error);
-      toast.error('Falha ao atualizar: ' + error.message);
-      return;
-    }
-    toast.success('Apostila atualizada!');
-    setEditingApostila(null);
-    loadAll();
+    await guardWithValidation(editContent, editTitle, async () => {
+      const { error } = await supabase
+        .from('apostilas')
+        .update({ title: editTitle.trim(), content: editContent, category: editCategory })
+        .eq('id', editingApostila.id);
+      if (error) {
+        console.error('[handleEditSave] erro:', error);
+        toast.error('Falha ao atualizar: ' + error.message);
+        return;
+      }
+      toast.success('Apostila atualizada!');
+      setEditingApostila(null);
+      loadAll();
+    });
   };
 
   const addExercise = async () => {
@@ -2659,6 +2690,23 @@ export default function AdminPage() {
           </main>
         </div>
       </div>
+
+      {/* Validação estrutural (H2/H3): avisa antes de salvar quando faltam seções/subtópicos */}
+      <StructureValidationDialog
+        open={!!validationReport}
+        report={validationReport}
+        apostilaTitle={validationContext?.title}
+        onCancel={() => {
+          setValidationReport(null);
+          setValidationContext(null);
+        }}
+        onConfirm={async () => {
+          const ctx = validationContext;
+          setValidationReport(null);
+          setValidationContext(null);
+          if (ctx) await ctx.run();
+        }}
+      />
 
       {/* Diálogo de duplicata: detecta apostilas parecidas e mantém a melhor formatada */}
       <DuplicateApostilaDialog
