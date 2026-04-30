@@ -763,26 +763,106 @@ function TableBlock({ header, rows }: { header: string[]; rows: string[][] }) {
   );
 }
 
-function HeadingBlock({ level, content }: { level: number; content: string }) {
+/** Slug estável p/ ids de heading (suporta acentos e múltiplas ocorrências). */
+function slugify(text: string): string {
+  return text
+    .toString()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .slice(0, 80) || 'secao';
+}
+
+function HeadingBlock({ level, content, id }: { level: number; content: string; id?: string }) {
   const text = cleanInlineText(content);
   if (level <= 2) {
     return (
-      <h3 className="font-display text-[20px] sm:text-[22px] font-semibold mt-10 mb-3 text-foreground tracking-tight leading-[1.3]">
+      <h3 id={id} className="font-display text-[20px] sm:text-[22px] font-semibold mt-10 mb-3 text-foreground tracking-tight leading-[1.3] scroll-mt-24">
         {text}
       </h3>
     );
   }
   if (level === 3) {
     return (
-      <h4 className="font-display text-[16px] sm:text-[17px] font-semibold mt-7 mb-2.5 text-foreground/95 tracking-tight leading-snug">
+      <h4 id={id} className="font-display text-[16px] sm:text-[17px] font-semibold mt-7 mb-2.5 text-foreground/95 tracking-tight leading-snug scroll-mt-24">
         {text}
       </h4>
     );
   }
   return (
-    <h5 className="font-mono-label text-[12px] font-semibold mt-6 mb-2 text-primary/90 uppercase tracking-[0.12em]">
+    <h5 id={id} className="font-mono-label text-[12px] font-semibold mt-6 mb-2 text-primary/90 uppercase tracking-[0.12em] scroll-mt-24">
       {text}
     </h5>
+  );
+}
+
+/** Sumário clicável com hierarquia (nível 1-2 / 3 / 4+). Colapsável. */
+function ApostilaTOC({ items }: { items: Array<{ id: string; level: number; text: string; number: string }> }) {
+  const [open, setOpen] = useState(true);
+  if (items.length < 2) return null;
+
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+    e.preventDefault();
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      try { history.replaceState(null, '', `#${id}`); } catch { /* noop */ }
+    }
+  };
+
+  return (
+    <nav
+      aria-label="Sumário da apostila"
+      className="not-prose mb-8 rounded-xl border border-border/70 bg-muted/30 backdrop-blur-sm overflow-hidden"
+    >
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-muted/50 transition-colors"
+        aria-expanded={open}
+      >
+        <span className="flex items-center gap-2 text-[13px] font-semibold text-foreground/90">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
+            <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
+            <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+          </svg>
+          Nesta apostila
+          <span className="text-[11px] font-normal text-muted-foreground">· {items.length} seções</span>
+        </span>
+        <svg
+          width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+          className={cn('text-muted-foreground transition-transform', open && 'rotate-180')}
+          aria-hidden
+        >
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </button>
+      {open && (
+        <ol className="px-3 pb-3 pt-1 space-y-0.5 max-h-[60vh] overflow-y-auto">
+          {items.map((it) => (
+            <li key={it.id}>
+              <a
+                href={`#${it.id}`}
+                onClick={(e) => handleClick(e, it.id)}
+                className={cn(
+                  'flex items-baseline gap-2 px-2 py-1.5 rounded-md text-[13px] leading-snug hover:bg-accent/60 hover:text-foreground transition-colors',
+                  it.level <= 2 && 'font-semibold text-foreground',
+                  it.level === 3 && 'pl-5 text-foreground/85',
+                  it.level >= 4 && 'pl-8 text-[12px] text-muted-foreground',
+                )}
+              >
+                <span className="font-mono text-[10px] text-primary shrink-0 tabular-nums">{it.number}</span>
+                <span className="truncate">{it.text}</span>
+              </a>
+            </li>
+          ))}
+        </ol>
+      )}
+    </nav>
   );
 }
 
@@ -806,14 +886,47 @@ export function ApostilaContentRenderer({ content }: Props) {
       return paragraphs.map((content) => ({ type: 'paragraph' as const, content }));
     }
   }, [content]);
+
   // Identifica o índice do primeiro parágrafo "real" (para aplicar drop-cap)
   const firstParagraphIdx = useMemo(
     () => blocks.findIndex((b) => b.type === 'paragraph' && b.content.trim().length > 80),
     [blocks]
   );
 
+  /**
+   * Constrói o sumário a partir dos headings, atribuindo ids únicos
+   * (slug + sufixo numérico em caso de colisão) e numeração hierárquica
+   * estilo 1 / 1.1 / 1.1.1 — alinhada ao padrão usado no TOC do leitor.
+   */
+  const { tocItems, headingIds } = useMemo(() => {
+    const used = new Map<string, number>();
+    const counters = [0, 0, 0, 0, 0, 0];
+    const items: Array<{ id: string; level: number; text: string; number: string }> = [];
+    const ids: Record<number, string> = {};
+
+    blocks.forEach((b, idx) => {
+      if (b.type !== 'heading') return;
+      const text = cleanInlineText(b.content);
+      // Normaliza nível para profundidade do TOC: H1/H2 → 1, H3 → 2, H4+ → 3
+      const depth = b.level <= 2 ? 1 : b.level === 3 ? 2 : 3;
+      counters[depth - 1] += 1;
+      for (let k = depth; k < counters.length; k++) counters[k] = 0;
+      const number = counters.slice(0, depth).join('.');
+
+      const base = slugify(text);
+      const n = (used.get(base) || 0) + 1;
+      used.set(base, n);
+      const id = n === 1 ? base : `${base}-${n}`;
+
+      ids[idx] = id;
+      items.push({ id, level: b.level, text, number });
+    });
+    return { tocItems: items, headingIds: ids };
+  }, [blocks]);
+
   return (
     <article className="apostila-prose max-w-[68ch] mx-auto w-full min-w-0 px-1 sm:px-0 text-[15.5px] sm:text-[16px] leading-[1.7] tracking-normal text-foreground/95">
+      <ApostilaTOC items={tocItems} />
       {blocks.map((b, i) => {
         switch (b.type) {
           case 'code': return <CodeBlock key={i} lang={b.lang} code={b.code} />;
@@ -834,7 +947,7 @@ export function ApostilaContentRenderer({ content }: Props) {
           case 'quote': return <QuoteBlock key={i} content={b.content} />;
           case 'list': return <ListBlock key={i} items={b.items} ordered={b.ordered} />;
           case 'table': return <TableBlock key={i} header={b.header} rows={b.rows} />;
-          case 'heading': return <HeadingBlock key={i} level={b.level} content={b.content} />;
+          case 'heading': return <HeadingBlock key={i} level={b.level} content={b.content} id={headingIds[i]} />;
           case 'divider':
             return (
               <div key={i} className="my-8 flex items-center justify-center" aria-hidden>
