@@ -21,6 +21,7 @@ export function QuickAccessHub({ onJumpToSection }: QuickAccessHubProps) {
 
   const tiles: Tile[] = [
     { icon: BookOpen, label: 'Conteúdos Acadêmicos', sub: 'Disciplinas', hue: '189 100% 50%', scrollTo: 'minhas-disciplinas' },
+    { icon: TrendingUp, label: 'Meu Desempenho', sub: 'Ranking & metas', hue: '160 90% 50%', to: '/desempenho' },
     { icon: Calendar, label: 'Calendário', sub: 'Provas & prazos', hue: '270 91% 65%', scrollTo: 'calendario' },
     { icon: Library, label: 'Biblioteca', sub: 'Materiais', hue: '142 76% 55%', to: '/biblioteca' },
     { icon: BookOpen, label: 'Livros', sub: 'PDF & EPUB', hue: '45 95% 55%', to: '/livros' },
