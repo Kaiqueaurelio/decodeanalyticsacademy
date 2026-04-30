@@ -1409,3 +1409,54 @@ html {
 .student-img-block[data-float="right"] + p {
   overflow: hidden;
 }
+
+/* ============================================================
+ * EDITOR RESPONSIVO — tablet/mobile
+ * Em telas <1024px o editor reduz paddings, oculta régua
+ * e auto-escala a folha A4 para caber sem scroll horizontal feio.
+ * ============================================================ */
+@media (max-width: 1023px) {
+  /* Régua oculta em tablet/mobile (espaço precioso) */
+  .word-ruler { display: none; }
+
+  /* Status bar mais compacto */
+  .word-statusbar {
+    font-size: 10px;
+    padding: 2px 8px;
+    gap: 6px;
+  }
+
+  /* Reduz margem da folha — mais conteúdo visível */
+  .editor-page-shell { margin: 8px auto 16px; }
+}
+
+@media (max-width: 767px) {
+  /* Reduz paddings internos da página A4 em mobile (mantém aparência mas usa espaço) */
+  :root {
+    --editor-page-pad-x: 32px;
+    --editor-page-pad-top: 32px;
+    --editor-page-pad-bottom: 32px;
+  }
+
+  .editor-page-shell { margin: 4px auto 12px; }
+
+  /* Sombra mais sutil em mobile */
+  .editor-page {
+    box-shadow:
+      0 0 0 1px rgba(0,0,0,0.08),
+      0 1px 3px rgba(0,0,0,0.12);
+  }
+
+  /* Esconde indicadores de margem (cantos) — poluição visual em mobile */
+  .editor-page::before,
+  .editor-page::after { display: none; }
+
+  /* Esconde quebras de página (não fazem sentido em mobile) */
+  .page-break-overlay { display: none; }
+
+  /* Status bar ainda mais compacto */
+  .word-statusbar {
+    font-size: 9px;
+    padding: 2px 6px;
+  }
+}
