@@ -3,6 +3,7 @@ import { Check, Copy, Volume2, Info, Lightbulb, AlertTriangle } from 'lucide-rea
 import { toast } from 'sonner';
 import { AppImage } from '@/components/ui/app-image';
 import { highlightCode } from '@/lib/shiki-highlighter';
+import { cn } from '@/lib/utils';
 
 /**
  * Limpa marcadores markdown inline (negrito, itálico, código inline, links etc.)
@@ -88,7 +89,16 @@ type Block =
   | { type: 'callout'; kind: 'info' | 'tip' | 'warning'; title: string; content: string }
   | { type: 'table'; header: string[]; rows: string[][] }
   | { type: 'code'; lang: string; code: string }
-  | { type: 'image'; alt: string; url: string }
+  | {
+      type: 'image';
+      alt: string;
+      url: string;
+      width?: string | null;
+      align?: 'left' | 'center' | 'right';
+      float?: 'none' | 'left' | 'right';
+      marginX?: number;
+      marginY?: number;
+    }
   | { type: 'audio'; label: string; url: string }
   | { type: 'divider' };
 
@@ -344,6 +354,41 @@ function parseBlocks(rawInput: string): Block[] {
       }
 
       // imagem ou áudio em linha própria
+      // Aceita <img src="..." width="50%" align="left" data-float="left" data-mx="12" data-my="0" /> também
+      const htmlImgMatch = trimmed.match(/^<img\b([^>]*)\/?>$/i);
+      if (htmlImgMatch) {
+        const attrsStr = htmlImgMatch[1];
+        const get = (name: string) => {
+          const m = attrsStr.match(new RegExp(`\\b${name}\\s*=\\s*"([^"]*)"`, 'i'));
+          return m ? m[1] : '';
+        };
+        const url = get('src');
+        if (url) {
+          flushParagraph();
+          const alignAttr = (get('align') || get('data-align') || 'center').toLowerCase();
+          const floatAttr = (get('data-float') || 'none').toLowerCase();
+          const align: 'left' | 'center' | 'right' =
+            alignAttr === 'left' || alignAttr === 'right' ? alignAttr : 'center';
+          const float: 'none' | 'left' | 'right' =
+            floatAttr === 'left' || floatAttr === 'right' ? floatAttr : 'none';
+          const widthRaw = get('width');
+          const width = widthRaw ? (/^\d+$/.test(widthRaw) ? `${widthRaw}px` : widthRaw) : null;
+          const mx = parseInt(get('data-mx') || '0', 10) || 0;
+          const my = parseInt(get('data-my') || '0', 10) || 0;
+          blocks.push({
+            type: 'image',
+            alt: get('alt') || '',
+            url,
+            width,
+            align,
+            float,
+            marginX: mx,
+            marginY: my,
+          });
+          i++; continue;
+        }
+      }
+
       const imgMatch = trimmed.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
       if (imgMatch) {
         flushParagraph();
@@ -523,13 +568,70 @@ function isFilenameLikeAlt(alt: string): boolean {
   return false;
 }
 
-function ImageBlock({ alt, url }: { alt: string; url: string }) {
+function ImageBlock({
+  alt,
+  url,
+  width,
+  align = 'center',
+  float = 'none',
+  marginX = 0,
+  marginY = 0,
+}: {
+  alt: string;
+  url: string;
+  width?: string | null;
+  align?: 'left' | 'center' | 'right';
+  float?: 'none' | 'left' | 'right';
+  marginX?: number;
+  marginY?: number;
+}) {
   const [errored, setErrored] = useState(false);
   const showCaption = !isFilenameLikeAlt(alt);
 
+  // Responsividade: em telas estreitas (sm: <640px) o aluno NÃO vê float — a
+  // imagem assume largura total para legibilidade. Implementado via CSS class
+  // `student-img-block` (ver index.css) que cancela float em mobile.
+  const isFloating = float === 'left' || float === 'right';
+
+  // Wrapper figure usa float quando solicitado; caso contrário, alinhamento via flex.
+  const justify =
+    align === 'left' ? 'justify-start' : align === 'right' ? 'justify-end' : 'justify-center';
+
+  const figureStyle: React.CSSProperties = isFloating
+    ? {
+        float,
+        width: width || '50%',
+        maxWidth: '100%',
+        margin:
+          float === 'left'
+            ? `${marginY}px ${Math.max(16, marginX)}px ${marginY}px 0`
+            : `${marginY}px 0 ${marginY}px ${Math.max(16, marginX)}px`,
+        shapeOutside: 'margin-box',
+      }
+    : {
+        margin: marginX || marginY ? `${marginY || 16}px ${marginX}px` : undefined,
+      };
+
+  // Largura interna quando NÃO está flutuando (centralizado/alinhado)
+  const innerWidthStyle: React.CSSProperties = !isFloating && width
+    ? { width, maxWidth: '100%' }
+    : {};
+
   return (
-    <figure className="my-7 flex flex-col items-center gap-2.5">
-      <div className="w-full sm:max-w-[90%] rounded-xl bg-white p-2 sm:p-3 border border-border/40 shadow-lg shadow-black/20">
+    <figure
+      className={cn(
+        'student-img-block',
+        isFloating
+          ? 'block clear-none my-2 sm:my-3'
+          : cn('my-7 flex flex-col items-center gap-2.5', justify),
+      )}
+      style={figureStyle}
+      data-float={float}
+    >
+      <div
+        className="rounded-xl bg-white p-2 sm:p-3 border border-border/40 shadow-lg shadow-black/20"
+        style={isFloating ? { width: '100%' } : { width: '100%', ...innerWidthStyle }}
+      >
         {errored ? (
           <div className="flex items-center justify-center min-h-[180px] text-sm text-muted-foreground italic bg-muted/40 rounded-lg">
             Imagem indisponível
@@ -546,7 +648,7 @@ function ImageBlock({ alt, url }: { alt: string; url: string }) {
         )}
       </div>
       {showCaption && (
-        <figcaption className="text-[12px] text-muted-foreground italic text-center max-w-prose leading-snug">
+        <figcaption className="text-[12px] text-muted-foreground italic text-center max-w-prose leading-snug mt-1.5">
           {alt}
         </figcaption>
       )}
@@ -715,7 +817,18 @@ export function ApostilaContentRenderer({ content }: Props) {
       {blocks.map((b, i) => {
         switch (b.type) {
           case 'code': return <CodeBlock key={i} lang={b.lang} code={b.code} />;
-          case 'image': return <ImageBlock key={i} alt={b.alt} url={b.url} />;
+          case 'image': return (
+            <ImageBlock
+              key={i}
+              alt={b.alt}
+              url={b.url}
+              width={b.width}
+              align={b.align}
+              float={b.float}
+              marginX={b.marginX}
+              marginY={b.marginY}
+            />
+          );
           case 'audio': return <AudioBlock key={i} label={b.label} url={b.url} />;
           case 'callout': return <CalloutBlock key={i} kind={b.kind} title={b.title} content={b.content} />;
           case 'quote': return <QuoteBlock key={i} content={b.content} />;
