@@ -353,6 +353,41 @@ function parseBlocks(rawInput: string): Block[] {
       }
 
       // imagem ou áudio em linha própria
+      // Aceita <img src="..." width="50%" align="left" data-float="left" data-mx="12" data-my="0" /> também
+      const htmlImgMatch = trimmed.match(/^<img\b([^>]*)\/?>$/i);
+      if (htmlImgMatch) {
+        const attrsStr = htmlImgMatch[1];
+        const get = (name: string) => {
+          const m = attrsStr.match(new RegExp(`\\b${name}\\s*=\\s*"([^"]*)"`, 'i'));
+          return m ? m[1] : '';
+        };
+        const url = get('src');
+        if (url) {
+          flushParagraph();
+          const alignAttr = (get('align') || get('data-align') || 'center').toLowerCase();
+          const floatAttr = (get('data-float') || 'none').toLowerCase();
+          const align: 'left' | 'center' | 'right' =
+            alignAttr === 'left' || alignAttr === 'right' ? alignAttr : 'center';
+          const float: 'none' | 'left' | 'right' =
+            floatAttr === 'left' || floatAttr === 'right' ? floatAttr : 'none';
+          const widthRaw = get('width');
+          const width = widthRaw ? (/^\d+$/.test(widthRaw) ? `${widthRaw}px` : widthRaw) : null;
+          const mx = parseInt(get('data-mx') || '0', 10) || 0;
+          const my = parseInt(get('data-my') || '0', 10) || 0;
+          blocks.push({
+            type: 'image',
+            alt: get('alt') || '',
+            url,
+            width,
+            align,
+            float,
+            marginX: mx,
+            marginY: my,
+          });
+          i++; continue;
+        }
+      }
+
       const imgMatch = trimmed.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
       if (imgMatch) {
         flushParagraph();
