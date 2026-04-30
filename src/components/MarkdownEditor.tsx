@@ -48,7 +48,7 @@ import { StudentPreview } from '@/components/editor/StudentPreview';
 import { useEditorSelection } from '@/components/editor/useEditorSelection';
 import { useEditorOutline } from '@/components/editor/useEditorOutline';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { Eye, Pencil, ListTree, Wand2 } from 'lucide-react';
+import { Eye, Pencil, ListTree, Wand2, Columns2 } from 'lucide-react';
 
 interface Props {
   value: string;
