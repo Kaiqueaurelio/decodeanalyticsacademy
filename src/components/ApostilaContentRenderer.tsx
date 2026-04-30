@@ -876,6 +876,8 @@ function ApostilaTOC({ items, activeId }: { items: Array<{ id: string; level: nu
 
 interface Props {
   content: string;
+  /** Quando informado, destaca o heading correspondente (split-view do editor). */
+  activeHeadingId?: string | null;
 }
 
 /**
@@ -883,7 +885,7 @@ interface Props {
  * blocos especiais (citação, callout, tabela, lista, código, mídia) e
  * ritmo de leitura confortável (~68ch, line-height 1.75).
  */
-export function ApostilaContentRenderer({ content }: Props) {
+export function ApostilaContentRenderer({ content, activeHeadingId }: Props) {
   const blocks = useMemo(() => {
     try {
       return parseBlocks(content);
