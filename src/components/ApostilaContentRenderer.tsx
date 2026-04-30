@@ -936,7 +936,7 @@ export function ApostilaContentRenderer({ content, activeHeadingId }: Props) {
 
   return (
     <article className="apostila-prose max-w-[68ch] mx-auto w-full min-w-0 px-1 sm:px-0 text-[15.5px] sm:text-[16px] leading-[1.7] tracking-normal text-foreground/95">
-      <ApostilaTOC items={tocItems} />
+      <ApostilaTOC items={tocItems} activeId={activeHeadingId} />
       {blocks.map((b, i) => {
         switch (b.type) {
           case 'code': return <CodeBlock key={i} lang={b.lang} code={b.code} />;
