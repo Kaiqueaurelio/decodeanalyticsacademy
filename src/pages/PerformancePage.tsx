@@ -218,7 +218,6 @@ export default function PerformancePage() {
                 <p className="text-[10px] uppercase tracking-wide text-muted-foreground">{k.label}</p>
                 <p className={`text-xl font-bold ${k.color} tabular-nums`}>
                   <AnimatedCounter end={k.value} suffix={k.suffix || ''} />
-                  {k.suffix && <span className="text-xs ml-0.5">{k.suffix}</span>}
                 </p>
               </Card>
             ))}
