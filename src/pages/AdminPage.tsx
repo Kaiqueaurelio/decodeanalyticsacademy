@@ -733,6 +733,24 @@ export default function AdminPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [importUrl, importMode, importTitle, importContent, importTopic, importExercises]);
 
+  /** Salva direto o texto já formatado, sem passar pela etapa de estruturação com IA. */
+  const insertReadyTextApostila = useCallback(async () => {
+    if (!user) return;
+    const { error } = await supabase.from('apostilas').insert({
+      title: importTitle.trim(),
+      content: importRawText,
+      category: importTopic || 'Geral',
+      source_type: 'text',
+      created_by: user.id,
+      published: true,
+      file_url: null,
+    });
+    if (error) throw error;
+    toast.success('Apostila formatada salva com sucesso!');
+    resetImportForm();
+    loadAll();
+  }, [user, importTitle, importRawText, importTopic, loadAll]);
+
   const handleSaveImport = async () => {
     if (!importTitle.trim()) { toast.error('Adicione um título'); return; }
     setCloning(true);
@@ -751,6 +769,36 @@ export default function AdminPage() {
       await insertImportApostila();
     } catch (err: any) {
       console.error('[handleSaveImport] erro:', err);
+      const msg = err?.message || err?.error_description || err?.details || 'Erro desconhecido';
+      toast.error('Erro ao salvar: ' + msg);
+    }
+    setCloning(false);
+  };
+
+  const handleSaveReadyText = async () => {
+    if (!importTitle.trim()) {
+      toast.error('Adicione um título antes de salvar');
+      return;
+    }
+    if (!importRawText.trim()) {
+      toast.error('Adicione o conteúdo da apostila');
+      return;
+    }
+
+    setCloning(true);
+    try {
+      const dup = await findDuplicateApostila(importRawText, importTitle);
+      if (dup) {
+        setDuplicateMatch(dup);
+        setPendingSave(() => async () => {
+          await insertReadyTextApostila();
+        });
+        setCloning(false);
+        return;
+      }
+      await insertReadyTextApostila();
+    } catch (err: any) {
+      console.error('[handleSaveReadyText] erro:', err);
       const msg = err?.message || err?.error_description || err?.details || 'Erro desconhecido';
       toast.error('Erro ao salvar: ' + msg);
     }
