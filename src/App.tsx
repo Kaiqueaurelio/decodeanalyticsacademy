@@ -263,6 +263,7 @@ function AnimatedRoutes() {
               <Route path="/reset-password" element={<ResetPasswordPage />} />
               <Route path="/offline" element={<OfflinePage />} />
               <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+              <Route path="/desempenho" element={<ProtectedRoute><PerformancePage /></ProtectedRoute>} />
               <Route path="/review" element={<ProtectedRoute><ReviewPage /></ProtectedRoute>} />
               <Route path="/simulado" element={<ProtectedRoute><SimuladoPage /></ProtectedRoute>} />
               <Route path="/revisao-prova/:eventId" element={<ProtectedRoute><PreExamReviewPage /></ProtectedRoute>} />
