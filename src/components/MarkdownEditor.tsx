@@ -46,6 +46,7 @@ import { SlashCommands } from '@/components/editor/SlashMenu';
 import { usePageBreaks } from '@/components/editor/usePageBreaks';
 import { StudentPreview } from '@/components/editor/StudentPreview';
 import { useEditorSelection } from '@/components/editor/useEditorSelection';
+import { useEditorOutline } from '@/components/editor/useEditorOutline';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Eye, Pencil, ListTree, Wand2 } from 'lucide-react';
 
