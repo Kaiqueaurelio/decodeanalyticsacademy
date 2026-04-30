@@ -3,6 +3,7 @@ import { Check, Copy, Volume2, Info, Lightbulb, AlertTriangle } from 'lucide-rea
 import { toast } from 'sonner';
 import { AppImage } from '@/components/ui/app-image';
 import { highlightCode } from '@/lib/shiki-highlighter';
+import { cn } from '@/lib/utils';
 
 /**
  * Limpa marcadores markdown inline (negrito, itálico, código inline, links etc.)
