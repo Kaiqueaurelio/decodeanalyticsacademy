@@ -48,6 +48,12 @@ import { useExamFocus } from '@/hooks/useExamFocus';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { getSubjectColor } from '@/lib/subject-colors';
 import {
+  CANONICAL_GROUPS,
+  GROUP_META,
+  getCanonicalGroup,
+  type CanonicalGroup,
+} from '@/lib/subjectGroups';
+import {
   BookOpen, CheckCircle, XCircle, TrendingUp, PenLine,
   ChevronRight, BarChart3, User, FileText, Percent, ChevronDown,
   LayoutGrid, List as ListIcon
