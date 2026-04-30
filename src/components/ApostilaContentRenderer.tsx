@@ -957,7 +957,7 @@ export function ApostilaContentRenderer({ content, activeHeadingId }: Props) {
           case 'quote': return <QuoteBlock key={i} content={b.content} />;
           case 'list': return <ListBlock key={i} items={b.items} ordered={b.ordered} />;
           case 'table': return <TableBlock key={i} header={b.header} rows={b.rows} />;
-          case 'heading': return <HeadingBlock key={i} level={b.level} content={b.content} id={headingIds[i]} />;
+          case 'heading': return <HeadingBlock key={i} level={b.level} content={b.content} id={headingIds[i]} active={!!activeHeadingId && headingIds[i] === activeHeadingId} />;
           case 'divider':
             return (
               <div key={i} className="my-8 flex items-center justify-center" aria-hidden>
