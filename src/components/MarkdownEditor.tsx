@@ -93,6 +93,7 @@ export function MarkdownEditor({
     return window.localStorage.getItem(INSPECTOR_KEY) === '1';
   });
   const [focusMode, setFocusMode] = useState(false);
+  const [viewMode, setViewMode] = useState<'edit' | 'preview'>('edit');
 
   const setZoom = useCallback((z: number) => {
     setZoomState(z);
