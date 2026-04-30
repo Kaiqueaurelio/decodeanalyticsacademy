@@ -801,8 +801,8 @@ function HeadingBlock({ level, content, id, active }: { level: number; content: 
   );
 }
 
-/** Sumário clicável com hierarquia (nível 1-2 / 3 / 4+). Colapsável. */
-function ApostilaTOC({ items }: { items: Array<{ id: string; level: number; text: string; number: string }> }) {
+/** Sumário clicável com hierarquia (nível 1-2 / 3 / 4+). Colapsável + destaque ativo. */
+function ApostilaTOC({ items, activeId }: { items: Array<{ id: string; level: number; text: string; number: string }>; activeId?: string | null }) {
   const [open, setOpen] = useState(true);
   if (items.length < 2) return null;
 
@@ -844,23 +844,30 @@ function ApostilaTOC({ items }: { items: Array<{ id: string; level: number; text
       </button>
       {open && (
         <ol className="px-3 pb-3 pt-1 space-y-0.5 max-h-[60vh] overflow-y-auto">
-          {items.map((it) => (
-            <li key={it.id}>
-              <a
-                href={`#${it.id}`}
-                onClick={(e) => handleClick(e, it.id)}
-                className={cn(
-                  'flex items-baseline gap-2 px-2 py-1.5 rounded-md text-[13px] leading-snug hover:bg-accent/60 hover:text-foreground transition-colors',
-                  it.level <= 2 && 'font-semibold text-foreground',
-                  it.level === 3 && 'pl-5 text-foreground/85',
-                  it.level >= 4 && 'pl-8 text-[12px] text-muted-foreground',
-                )}
-              >
-                <span className="font-mono text-[10px] text-primary shrink-0 tabular-nums">{it.number}</span>
-                <span className="truncate">{it.text}</span>
-              </a>
-            </li>
-          ))}
+          {items.map((it) => {
+            const isActive = activeId === it.id;
+            return (
+              <li key={it.id}>
+                <a
+                  href={`#${it.id}`}
+                  onClick={(e) => handleClick(e, it.id)}
+                  aria-current={isActive ? 'location' : undefined}
+                  className={cn(
+                    'flex items-baseline gap-2 px-2 py-1.5 rounded-md text-[13px] leading-snug hover:bg-accent/60 hover:text-foreground transition-colors',
+                    it.level <= 2 && 'font-semibold text-foreground',
+                    it.level === 3 && 'pl-5 text-foreground/85',
+                    it.level >= 4 && 'pl-8 text-[12px] text-muted-foreground',
+                    isActive && 'bg-primary/15 text-primary border-l-2 border-primary -ml-px pl-[calc(0.5rem-1px)]',
+                    isActive && it.level === 3 && 'pl-[calc(1.25rem-1px)]',
+                    isActive && it.level >= 4 && 'pl-[calc(2rem-1px)]',
+                  )}
+                >
+                  <span className={cn('font-mono text-[10px] shrink-0 tabular-nums', isActive ? 'text-primary' : 'text-primary')}>{it.number}</span>
+                  <span className="truncate">{it.text}</span>
+                </a>
+              </li>
+            );
+          })}
         </ol>
       )}
     </nav>
