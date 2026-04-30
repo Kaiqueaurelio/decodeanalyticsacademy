@@ -1,20 +1,31 @@
 /**
- * ResizableImage — extensão TipTap que substitui a imagem padrão por uma
- * versão WYSIWYG estilo Word/Google Docs:
- *  - Mostra a imagem real (preview), nunca blank
- *  - Pode ser arrastada para outra posição no documento (drag handle nativo do PM)
- *  - Pode ser redimensionada com handle no canto inferior direito
- *  - Pode ser alinhada (esquerda / centro / direita) via toolbar flutuante
- *  - Suporta atributos width e align que sobrevivem no HTML salvo
+ * ResizableImage — extensão TipTap WYSIWYG estilo Word/Google Docs.
+ *
+ * Atributos persistidos no HTML/Markdown:
+ *  - src, alt, title
+ *  - width: "60%" ou "320px"
+ *  - align: 'left' | 'center' | 'right'   → quando float = 'none'
+ *  - float: 'none' | 'left' | 'right'     → faz texto envolver
+ *  - marginX, marginY: number (px)        → respiro ao redor
+ *
+ * Comportamento:
+ *  - Drag com handle nativo do ProseMirror (move o bloco no documento)
+ *  - Resize por handle no canto inferior direito (% da coluna)
+ *  - Toolbar flutuante para alinhamento, float, presets e remover
+ *  - Float left/right faz `shape-outside` natural com texto envolvendo
  */
 import { Node, mergeAttributes } from '@tiptap/core';
 import { ReactNodeViewRenderer, NodeViewWrapper } from '@tiptap/react';
 import type { NodeViewProps } from '@tiptap/react';
 import { useRef, useState, useCallback } from 'react';
-import { AlignLeft, AlignCenter, AlignRight, Trash2 } from 'lucide-react';
+import {
+  AlignLeft, AlignCenter, AlignRight, Trash2,
+  WrapText, Square,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 type Align = 'left' | 'center' | 'right';
+type Float = 'none' | 'left' | 'right';
 
 function ImageView({ node, updateAttributes, deleteNode, selected, editor }: NodeViewProps) {
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -23,6 +34,9 @@ function ImageView({ node, updateAttributes, deleteNode, selected, editor }: Nod
   const alt = (node.attrs.alt as string) || '';
   const width = (node.attrs.width as string | null) || null;
   const align: Align = (node.attrs.align as Align) || 'center';
+  const float: Float = (node.attrs.float as Float) || 'none';
+  const marginX = Number(node.attrs.marginX ?? 0);
+  const marginY = Number(node.attrs.marginY ?? 0);
   const isEditable = editor.isEditable;
 
   const startResize = useCallback(
@@ -55,17 +69,47 @@ function ImageView({ node, updateAttributes, deleteNode, selected, editor }: Nod
     [isEditable, updateAttributes],
   );
 
-  const setAlign = (a: Align) => updateAttributes({ align: a });
+  const setAlign = (a: Align) => updateAttributes({ align: a, float: 'none' });
+  const setFloat = (f: Float) => {
+    // Quando ativa float, alinhamento de bloco perde sentido; mantemos 'left'/'right'
+    if (f === 'none') updateAttributes({ float: 'none' });
+    else updateAttributes({ float: f, align: f });
+  };
 
-  const justify =
-    align === 'left' ? 'justify-start' : align === 'right' ? 'justify-end' : 'justify-center';
+  const isFloating = float === 'left' || float === 'right';
+
+  // Wrapper: usa flex (justify) quando NÃO está flutuando; caso contrário, usa float CSS.
+  const justify = isFloating
+    ? ''
+    : align === 'left'
+    ? 'justify-start'
+    : align === 'right'
+    ? 'justify-end'
+    : 'justify-center';
+
+  // Estilo aplicado no wrapper interno para implementar float + margens
+  const innerStyle: React.CSSProperties = {
+    width: width || 'auto',
+    float: isFloating ? float : 'none',
+    margin: isFloating
+      ? float === 'left'
+        ? `${marginY}px ${Math.max(12, marginX)}px ${marginY}px 0`
+        : `${marginY}px 0 ${marginY}px ${Math.max(12, marginX)}px`
+      : `${marginY}px ${marginX}px`,
+    shapeOutside: isFloating ? 'margin-box' : undefined,
+  };
 
   return (
     <NodeViewWrapper
       as="div"
       data-drag-handle
-      className={cn('group relative my-3 flex w-full', justify, isEditable && 'cursor-grab active:cursor-grabbing')}
-      title={isEditable ? 'Arraste para mover · clique para selecionar e redimensionar' : undefined}
+      data-float={float}
+      className={cn(
+        'group relative my-3',
+        isFloating ? 'block clear-none' : cn('flex w-full', justify),
+        isEditable && 'cursor-grab active:cursor-grabbing',
+      )}
+      title={isEditable ? 'Arraste para mover · clique para selecionar e ajustar' : undefined}
     >
       <div
         ref={wrapperRef}
@@ -74,7 +118,7 @@ function ImageView({ node, updateAttributes, deleteNode, selected, editor }: Nod
           selected && 'outline outline-2 outline-primary rounded-sm shadow-lg',
           isEditable && !selected && 'hover:outline hover:outline-1 hover:outline-primary/40 hover:rounded-sm',
         )}
-        style={{ width: width || 'auto' }}
+        style={innerStyle}
       >
         <img
           src={src}
@@ -96,46 +140,87 @@ function ImageView({ node, updateAttributes, deleteNode, selected, editor }: Nod
           </div>
         )}
 
-        {/* Toolbar flutuante (aparece ao selecionar) */}
+        {/* Toolbar flutuante */}
         {selected && isEditable && (
           <div
             contentEditable={false}
-            className="absolute -top-9 left-1/2 -translate-x-1/2 flex items-center gap-0.5 rounded-md border border-border bg-popover shadow-md px-1 py-0.5 z-10"
+            className="absolute -top-9 left-1/2 -translate-x-1/2 flex items-center gap-0.5 rounded-md border border-border bg-popover shadow-md px-1 py-0.5 z-10 whitespace-nowrap"
           >
+            {/* Alinhamento de bloco */}
             <button
               type="button"
-              title="Alinhar à esquerda"
+              title="Bloco — alinhar à esquerda"
               onClick={() => setAlign('left')}
               className={cn(
                 'h-6 w-6 grid place-items-center rounded hover:bg-muted',
-                align === 'left' && 'bg-muted text-primary',
+                !isFloating && align === 'left' && 'bg-muted text-primary',
               )}
             >
               <AlignLeft className="h-3.5 w-3.5" />
             </button>
             <button
               type="button"
-              title="Centralizar"
+              title="Bloco — centralizar"
               onClick={() => setAlign('center')}
               className={cn(
                 'h-6 w-6 grid place-items-center rounded hover:bg-muted',
-                align === 'center' && 'bg-muted text-primary',
+                !isFloating && align === 'center' && 'bg-muted text-primary',
               )}
             >
               <AlignCenter className="h-3.5 w-3.5" />
             </button>
             <button
               type="button"
-              title="Alinhar à direita"
+              title="Bloco — alinhar à direita"
               onClick={() => setAlign('right')}
               className={cn(
                 'h-6 w-6 grid place-items-center rounded hover:bg-muted',
-                align === 'right' && 'bg-muted text-primary',
+                !isFloating && align === 'right' && 'bg-muted text-primary',
               )}
             >
               <AlignRight className="h-3.5 w-3.5" />
             </button>
+
             <div className="w-px h-4 bg-border mx-1" />
+
+            {/* Modo de envolvimento de texto (float) */}
+            <button
+              type="button"
+              title="Texto envolvendo à esquerda da imagem"
+              onClick={() => setFloat('right')}
+              className={cn(
+                'h-6 px-1.5 grid place-items-center rounded hover:bg-muted',
+                float === 'right' && 'bg-muted text-primary',
+              )}
+            >
+              <WrapText className="h-3.5 w-3.5 -scale-x-100" />
+            </button>
+            <button
+              type="button"
+              title="Texto envolvendo à direita da imagem"
+              onClick={() => setFloat('left')}
+              className={cn(
+                'h-6 px-1.5 grid place-items-center rounded hover:bg-muted',
+                float === 'left' && 'bg-muted text-primary',
+              )}
+            >
+              <WrapText className="h-3.5 w-3.5" />
+            </button>
+            <button
+              type="button"
+              title="Em linha (sem envolver texto)"
+              onClick={() => setFloat('none')}
+              className={cn(
+                'h-6 px-1.5 grid place-items-center rounded hover:bg-muted',
+                float === 'none' && 'bg-muted text-primary',
+              )}
+            >
+              <Square className="h-3 w-3" />
+            </button>
+
+            <div className="w-px h-4 bg-border mx-1" />
+
+            {/* Largura rápida */}
             {[33, 50, 75, 100].map((pct) => (
               <button
                 key={pct}
@@ -147,7 +232,9 @@ function ImageView({ node, updateAttributes, deleteNode, selected, editor }: Nod
                 {pct}%
               </button>
             ))}
+
             <div className="w-px h-4 bg-border mx-1" />
+
             <button
               type="button"
               title="Remover imagem"
@@ -178,6 +265,10 @@ function ImageView({ node, updateAttributes, deleteNode, selected, editor }: Nod
 
 export const ResizableImage = Node.create({
   name: 'image',
+  // Float só funciona quando o nó é inline-block dentro de um parágrafo,
+  // mas mantemos como `block` + draggable para preservar drag handle do PM.
+  // O float é aplicado via CSS no wrapper interno e o renderer do aluno
+  // também respeita o atributo via classe.
   group: 'block',
   draggable: true,
   selectable: true,
@@ -190,6 +281,9 @@ export const ResizableImage = Node.create({
       title: { default: null },
       width: { default: null },
       align: { default: 'center' },
+      float: { default: 'none' },
+      marginX: { default: 0 },
+      marginY: { default: 0 },
     };
   },
 
@@ -199,14 +293,22 @@ export const ResizableImage = Node.create({
         tag: 'img[src]',
         getAttrs: (el) => {
           const node = el as HTMLElement;
-          const align = (node.getAttribute('align') as Align) || node.dataset.align || 'center';
+          const align = (node.getAttribute('align') as Align) || (node.dataset.align as Align) || 'center';
           const width = node.getAttribute('width') || node.style.width || null;
+          const float =
+            (node.dataset.float as Float) ||
+            (['left', 'right', 'none'].includes(node.style.float) ? (node.style.float as Float) : 'none');
+          const mx = parseInt(node.dataset.mx || '0', 10);
+          const my = parseInt(node.dataset.my || '0', 10);
           return {
             src: node.getAttribute('src'),
             alt: node.getAttribute('alt'),
             title: node.getAttribute('title'),
             width,
             align,
+            float,
+            marginX: Number.isFinite(mx) ? mx : 0,
+            marginY: Number.isFinite(my) ? my : 0,
           };
         },
       },
@@ -214,12 +316,23 @@ export const ResizableImage = Node.create({
   },
 
   renderHTML({ HTMLAttributes }) {
-    const { width, align, ...rest } = HTMLAttributes;
-    const style = width ? `width:${width}` : undefined;
+    const { width, align, float, marginX, marginY, ...rest } = HTMLAttributes;
+    const styleParts: string[] = [];
+    if (width) styleParts.push(`width:${width}`);
+    if (float && float !== 'none') styleParts.push(`float:${float}`);
+    const mx = Number(marginX) || 0;
+    const my = Number(marginY) || 0;
+    if (float === 'left') styleParts.push(`margin:${my}px ${Math.max(12, mx)}px ${my}px 0`);
+    else if (float === 'right') styleParts.push(`margin:${my}px 0 ${my}px ${Math.max(12, mx)}px`);
+    else if (mx || my) styleParts.push(`margin:${my}px ${mx}px`);
+    const style = styleParts.join(';');
     return [
       'img',
       mergeAttributes(rest, {
         'data-align': align,
+        'data-float': float || 'none',
+        'data-mx': String(mx),
+        'data-my': String(my),
         align,
         ...(width ? { width } : {}),
         ...(style ? { style } : {}),
