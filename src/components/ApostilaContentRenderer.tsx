@@ -817,7 +817,18 @@ export function ApostilaContentRenderer({ content }: Props) {
       {blocks.map((b, i) => {
         switch (b.type) {
           case 'code': return <CodeBlock key={i} lang={b.lang} code={b.code} />;
-          case 'image': return <ImageBlock key={i} alt={b.alt} url={b.url} />;
+          case 'image': return (
+            <ImageBlock
+              key={i}
+              alt={b.alt}
+              url={b.url}
+              width={b.width}
+              align={b.align}
+              float={b.float}
+              marginX={b.marginX}
+              marginY={b.marginY}
+            />
+          );
           case 'audio': return <AudioBlock key={i} label={b.label} url={b.url} />;
           case 'callout': return <CalloutBlock key={i} kind={b.kind} title={b.title} content={b.content} />;
           case 'quote': return <QuoteBlock key={i} content={b.content} />;
