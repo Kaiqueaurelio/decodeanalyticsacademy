@@ -235,7 +235,7 @@ const apostilaTool = {
         },
         content: {
           type: "string",
-          description: "Conteudo completo seguindo a estrutura padronizada (minimo 1500 palavras, texto puro sem markdown)",
+          description: "Conteudo completo em MARKDOWN com hierarquia: ## para 6 topicos principais e ### para subtopicos numerados (3.1, 3.2 etc). Minimo 1500 palavras.",
         },
         exercises: {
           type: "array",
