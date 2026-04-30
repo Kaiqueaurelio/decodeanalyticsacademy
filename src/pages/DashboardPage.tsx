@@ -76,6 +76,7 @@ export default function DashboardPage() {
   const [showMoreWidgets, setShowMoreWidgets] = useState(false);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [selectedGroup, setSelectedGroup] = useState<CanonicalGroup | 'all'>('all');
   const [disciplinesView, setDisciplinesView] = useState<'grid' | 'list'>('grid');
 
   useEffect(() => {
