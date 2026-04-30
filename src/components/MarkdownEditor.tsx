@@ -267,60 +267,103 @@ export function MarkdownEditor({
         onToggleFocus={() => setFocusMode((f) => !f)}
       />
 
-      {!focusMode && <EditorRibbon editor={editor} onInsertImage={insertImage} onSave={onSave} saveStatus={status} />}
+      {/* Toggle Editar / Visualizar como aluno */}
+      <div className="flex items-center gap-1 px-2 py-1 border-b border-border bg-muted/40">
+        <button
+          type="button"
+          onClick={() => setViewMode('edit')}
+          className={cn(
+            'inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-md transition-colors',
+            viewMode === 'edit'
+              ? 'bg-background text-foreground shadow-sm border border-border'
+              : 'text-muted-foreground hover:text-foreground',
+          )}
+          title="Editar conteúdo"
+        >
+          <Pencil className="h-3 w-3" /> Editar
+        </button>
+        <button
+          type="button"
+          onClick={() => setViewMode('preview')}
+          className={cn(
+            'inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-md transition-colors',
+            viewMode === 'preview'
+              ? 'bg-background text-primary shadow-sm border border-primary/40'
+              : 'text-muted-foreground hover:text-foreground',
+          )}
+          title="Ver como o aluno"
+        >
+          <Eye className="h-3 w-3" /> Visualizar como aluno
+        </button>
+      </div>
+
+      {viewMode === 'edit' && !focusMode && (
+        <EditorRibbon editor={editor} onInsertImage={insertImage} onSave={onSave} saveStatus={status} />
+      )}
 
       <div className="flex flex-1 min-h-0">
-        {!focusMode && (
+        {viewMode === 'edit' && !focusMode && (
           <EditorTOC editor={editor} collapsed={tocCollapsed} onToggle={toggleToc} />
         )}
 
         <div className="flex-1 flex flex-col min-w-0">
-          {/* Régua superior estilo Word */}
-          {!focusMode && (
-            <div className="word-ruler">
-              <div className="word-ruler-marks">
-                <div className="word-ruler-inner" style={{ width: `${794 * zoom}px` }} />
-              </div>
-            </div>
-          )}
-
-          {/* Canvas com folha A4 + paginação. */}
-          <div
-            className="flex-1 overflow-auto editor-canvas relative"
-            style={{ maxHeight: '78vh', minHeight: rows ? `${rows * 26}px` : '420px' }}
-            onClick={() => editor.commands.focus()}
-          >
+          {viewMode === 'preview' ? (
             <div
-              className="px-2 sm:px-4 py-2 mx-auto"
-              style={{
-                width: `calc(${794 * zoom}px + 2rem)`,
-                minWidth: '100%',
-              }}
+              className="flex-1 overflow-auto"
+              style={{ maxHeight: '78vh', minHeight: rows ? `${rows * 26}px` : '420px' }}
             >
-              <div
-                className="editor-page-shell"
-                style={{ transform: `scale(${zoom})`, transformOrigin: 'top center' }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div ref={pageRef} className="editor-page">
-                  <EditorContent editor={editor} />
-                  <LinkBubbleMenu editor={editor} />
+              <StudentPreview content={value} />
+            </div>
+          ) : (
+            <>
+              {/* Régua superior estilo Word */}
+              {!focusMode && (
+                <div className="word-ruler">
+                  <div className="word-ruler-marks">
+                    <div className="word-ruler-inner" style={{ width: `${794 * zoom}px` }} />
+                  </div>
+                </div>
+              )}
 
-                  {breaks.map((top, i) => (
-                    <div
-                      key={i}
-                      className="page-break-overlay"
-                      data-page={i + 2}
-                      style={{ top }}
-                    />
-                  ))}
+              {/* Canvas com folha A4 + paginação. */}
+              <div
+                className="flex-1 overflow-auto editor-canvas relative"
+                style={{ maxHeight: '78vh', minHeight: rows ? `${rows * 26}px` : '420px' }}
+                onClick={() => editor.commands.focus()}
+              >
+                <div
+                  className="px-2 sm:px-4 py-2 mx-auto"
+                  style={{
+                    width: `calc(${794 * zoom}px + 2rem)`,
+                    minWidth: '100%',
+                  }}
+                >
+                  <div
+                    className="editor-page-shell"
+                    style={{ transform: `scale(${zoom})`, transformOrigin: 'top center' }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div ref={pageRef} className="editor-page">
+                      <EditorContent editor={editor} />
+                      <LinkBubbleMenu editor={editor} />
+
+                      {breaks.map((top, i) => (
+                        <div
+                          key={i}
+                          className="page-break-overlay"
+                          data-page={i + 2}
+                          style={{ top }}
+                        />
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
+            </>
+          )}
         </div>
 
-        {!focusMode && (
+        {viewMode === 'edit' && !focusMode && (
           <EditorInspector
             editor={editor}
             collapsed={inspectorCollapsed}
