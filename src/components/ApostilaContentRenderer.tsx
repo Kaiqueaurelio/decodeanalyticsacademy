@@ -886,14 +886,47 @@ export function ApostilaContentRenderer({ content }: Props) {
       return paragraphs.map((content) => ({ type: 'paragraph' as const, content }));
     }
   }, [content]);
+
   // Identifica o índice do primeiro parágrafo "real" (para aplicar drop-cap)
   const firstParagraphIdx = useMemo(
     () => blocks.findIndex((b) => b.type === 'paragraph' && b.content.trim().length > 80),
     [blocks]
   );
 
+  /**
+   * Constrói o sumário a partir dos headings, atribuindo ids únicos
+   * (slug + sufixo numérico em caso de colisão) e numeração hierárquica
+   * estilo 1 / 1.1 / 1.1.1 — alinhada ao padrão usado no TOC do leitor.
+   */
+  const { tocItems, headingIds } = useMemo(() => {
+    const used = new Map<string, number>();
+    const counters = [0, 0, 0, 0, 0, 0];
+    const items: Array<{ id: string; level: number; text: string; number: string }> = [];
+    const ids: Record<number, string> = {};
+
+    blocks.forEach((b, idx) => {
+      if (b.type !== 'heading') return;
+      const text = cleanInlineText(b.content);
+      // Normaliza nível para profundidade do TOC: H1/H2 → 1, H3 → 2, H4+ → 3
+      const depth = b.level <= 2 ? 1 : b.level === 3 ? 2 : 3;
+      counters[depth - 1] += 1;
+      for (let k = depth; k < counters.length; k++) counters[k] = 0;
+      const number = counters.slice(0, depth).join('.');
+
+      const base = slugify(text);
+      const n = (used.get(base) || 0) + 1;
+      used.set(base, n);
+      const id = n === 1 ? base : `${base}-${n}`;
+
+      ids[idx] = id;
+      items.push({ id, level: b.level, text, number });
+    });
+    return { tocItems: items, headingIds: ids };
+  }, [blocks]);
+
   return (
     <article className="apostila-prose max-w-[68ch] mx-auto w-full min-w-0 px-1 sm:px-0 text-[15.5px] sm:text-[16px] leading-[1.7] tracking-normal text-foreground/95">
+      <ApostilaTOC items={tocItems} />
       {blocks.map((b, i) => {
         switch (b.type) {
           case 'code': return <CodeBlock key={i} lang={b.lang} code={b.code} />;
@@ -914,7 +947,7 @@ export function ApostilaContentRenderer({ content }: Props) {
           case 'quote': return <QuoteBlock key={i} content={b.content} />;
           case 'list': return <ListBlock key={i} items={b.items} ordered={b.ordered} />;
           case 'table': return <TableBlock key={i} header={b.header} rows={b.rows} />;
-          case 'heading': return <HeadingBlock key={i} level={b.level} content={b.content} />;
+          case 'heading': return <HeadingBlock key={i} level={b.level} content={b.content} id={headingIds[i]} />;
           case 'divider':
             return (
               <div key={i} className="my-8 flex items-center justify-center" aria-hidden>
