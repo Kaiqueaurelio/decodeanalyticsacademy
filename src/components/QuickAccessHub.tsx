@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import {
-  BookOpen, Calendar, Library, Users, Megaphone, User, type LucideIcon
+  BookOpen, Calendar, Library, Users, Megaphone, User, TrendingUp, type LucideIcon
 } from 'lucide-react';
 
 interface Tile {
