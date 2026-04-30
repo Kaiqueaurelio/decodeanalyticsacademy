@@ -173,10 +173,34 @@ export function MarkdownEditor({
     return { words, chars: text.length, minutes };
   }, [editor, value]);
 
+  /**
+   * Insere/atualiza imagem no editor.
+   * - md preenchido + tempUrl ausente → inserção normal.
+   * - md preenchido + tempUrl presente → preview otimista (insere com blob URL).
+   * - md vazio + tempUrl + finalUrl → troca todas as ocorrências do blob URL
+   *   pela URL pública após o upload concluir.
+   */
   const insertImage = useCallback(
-    (md: string) => {
+    (md: string, opts?: { tempUrl?: string; finalUrl?: string }) => {
+      if (!editor) return;
+      // Caso de troca: blob URL → URL pública
+      if (opts?.tempUrl && opts.finalUrl) {
+        const { tempUrl, finalUrl } = opts;
+        const { state } = editor;
+        const tr = state.tr;
+        let changed = false;
+        state.doc.descendants((node, pos) => {
+          if (node.type.name === 'image' && (node.attrs.src as string) === tempUrl) {
+            tr.setNodeMarkup(pos, undefined, { ...node.attrs, src: finalUrl });
+            changed = true;
+          }
+        });
+        if (changed) editor.view.dispatch(tr);
+        try { URL.revokeObjectURL(tempUrl); } catch { /* noop */ }
+        return;
+      }
       const m = md.match(/!\[([^\]]*)\]\(([^)]+)\)/);
-      if (!m || !editor) return;
+      if (!m) return;
       editor.chain().focus().insertContent({
         type: 'image',
         attrs: { src: m[2], alt: m[1], align: 'center' },
