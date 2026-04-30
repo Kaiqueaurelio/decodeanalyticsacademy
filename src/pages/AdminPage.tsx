@@ -712,7 +712,7 @@ export default function AdminPage() {
     const { data: newApostila, error } = await supabase.from('apostilas').insert({
       title: importTitle.trim(), content: importContent,
       category: importTopic || 'Geral', source_type: sourceType,
-      file_url: importMode === 'text' ? null : isNotion ? null : importUrl, created_by: currentUser.id, published: false,
+      file_url: importMode === 'text' ? null : isNotion ? null : importUrl, created_by: currentUser.id, published: true,
     }).select().single();
     if (error) throw error;
     if (importExercises.length > 0 && newApostila) {
