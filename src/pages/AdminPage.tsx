@@ -686,6 +686,9 @@ export default function AdminPage() {
     try {
       const body = isTextMode ? { rawText: importRawText.trim() } : { url: importUrl.trim() };
       const { data, error } = await supabase.functions.invoke('extract-content', { body });
+      // Quando o edge function retorna 4xx/5xx, supabase-js coloca o body em `data` ainda.
+      const apiError = (data as any)?.error;
+      if (apiError) throw new Error(apiError);
       if (error) throw error;
       setImportTitle(data.title || '');
       setImportTopic(data.category || 'Geral');
@@ -695,7 +698,10 @@ export default function AdminPage() {
       setImportStep('review');
       const methodLabel = data.extraction_method === 'firecrawl' ? ' (via Firecrawl 🔥)' : data.extraction_method === 'firecrawl-fallback' ? ' (Firecrawl fallback 🔥)' : '';
       toast.success(data.exercises?.length > 0 ? `Conteúdo estruturado com ${data.exercises.length} exercícios!${methodLabel}` : `Conteúdo estruturado!${methodLabel}`);
-    } catch (err: any) { toast.error('Erro ao processar: ' + (err.message || 'Tente novamente')); }
+    } catch (err: any) {
+      const msg = err?.message || 'Tente novamente';
+      toast.error(msg, { duration: 8000 });
+    }
     setCloning(false);
   };
 

@@ -105,16 +105,35 @@ export function EditorInspector({ editor, collapsed, onToggle }: Props) {
       </div>
 
       <div className="flex-1 overflow-auto p-3 space-y-4">
-        {!editor && <p className="text-xs text-muted-foreground">Carregando…</p>}
-
-        {editor && sel.type === 'none' && <StatsPanel stats={stats} />}
-        {editor && sel.type === 'image' && <ImagePanel editor={editor} attrs={sel.attrs} />}
-        {editor && sel.type === 'link' && <LinkPanel editor={editor} attrs={sel.attrs} text={sel.text} />}
-        {editor && sel.type === 'table' && <TablePanel editor={editor} />}
-        {editor && sel.type === 'heading' && <HeadingPanel editor={editor} level={sel.level} />}
-        {editor && sel.type === 'paragraph' && <ParagraphPanel editor={editor} />}
+        <EditorInspectorBody editor={editor} stats={stats} sel={sel} />
       </div>
     </aside>
+  );
+}
+
+/**
+ * Corpo do Inspector — exportado para ser reusado em Sheet mobile.
+ * Renderiza o painel contextual conforme a seleção atual.
+ */
+export function EditorInspectorBody({
+  editor,
+  stats,
+  sel,
+}: {
+  editor: Editor | null;
+  stats: { words: number; chars: number; minutes: number };
+  sel: ReturnType<typeof useEditorSelection>;
+}) {
+  return (
+    <>
+      {!editor && <p className="text-xs text-muted-foreground">Carregando…</p>}
+      {editor && sel.type === 'none' && <StatsPanel stats={stats} />}
+      {editor && sel.type === 'image' && <ImagePanel editor={editor} attrs={sel.attrs} />}
+      {editor && sel.type === 'link' && <LinkPanel editor={editor} attrs={sel.attrs} text={sel.text} />}
+      {editor && sel.type === 'table' && <TablePanel editor={editor} />}
+      {editor && sel.type === 'heading' && <HeadingPanel editor={editor} level={sel.level} />}
+      {editor && sel.type === 'paragraph' && <ParagraphPanel editor={editor} />}
+    </>
   );
 }
 

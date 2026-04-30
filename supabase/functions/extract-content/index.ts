@@ -341,7 +341,8 @@ Retorne APENAS chamando a funcao return_apostila.`;
     }
 
     // ===== Google AI Studio direto (JSON mode) =====
-    const callGoogle = async (): Promise<any | null> => {
+    // Retorna { __status } em caso de erro HTTP para permitir fallback inteligente.
+    const callGoogle = async (): Promise<any | { __status: number } | null> => {
       const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${encodeURIComponent(googleApiKey!)}`;
       const resp = await fetch(url, {
         method: "POST",
@@ -358,7 +359,7 @@ Retorne APENAS chamando a funcao return_apostila.`;
       });
       if (!resp.ok) {
         console.error("Google extract-content error", resp.status, (await resp.text()).slice(0, 300));
-        return null;
+        return { __status: resp.status };
       }
       const data = await resp.json();
       const text = data?.candidates?.[0]?.content?.parts?.map((p: any) => p.text).join("") ?? "";
@@ -402,45 +403,64 @@ Retorne APENAS chamando a funcao return_apostila.`;
       } catch { return null; }
     };
 
-    // ===== Estratégia dual =====
+    // ===== Estratégia dual com fallback automático =====
     let parsed: { title?: string; category?: string; content?: string; exercises?: any[] } | null = null;
     let providerUsed: "google-direct" | "lovable-ai" | "google-fallback" | "lovable-fallback" = "lovable-ai";
+    let lastStatus: number | null = null;
 
     if (preferGoogle && googleApiKey) {
-      parsed = await callGoogle();
-      providerUsed = "google-direct";
-      if (!parsed && lovableApiKey) {
-        const r = await callLovable();
-        if (r && !("__status" in r)) { parsed = r; providerUsed = "lovable-fallback"; }
+      const g = await callGoogle();
+      if (g && !("__status" in g)) {
+        parsed = g;
+        providerUsed = "google-direct";
+      } else {
+        if (g && "__status" in g) lastStatus = (g as any).__status;
+        // Fallback automático para Lovable AI quando Google falha (ex: 429 quota)
+        if (lovableApiKey) {
+          console.log("Google falhou (status", lastStatus, "). Caindo para Lovable AI...");
+          const r = await callLovable();
+          if (r && typeof r === "object" && !("__status" in r)) {
+            parsed = r as any;
+            providerUsed = "lovable-fallback";
+          } else if (r && "__status" in r) {
+            lastStatus = (r as any).__status;
+          }
+        }
       }
     } else if (lovableApiKey) {
       const r = await callLovable();
       if (r && typeof r === "object" && "__status" in r) {
+        lastStatus = (r as any).__status;
         if (googleApiKey) {
-          parsed = await callGoogle();
-          providerUsed = "google-fallback";
-        }
-        if (!parsed) {
-          const status = (r as any).__status;
-          let msg = "Falha ao processar com a IA. Tente novamente em alguns instantes.";
-          if (status === 429) msg = "Limite de requisicoes excedido. Tente novamente em alguns instantes.";
-          else if (status === 402) msg = "Creditos de IA esgotados. Ative sua chave Google AI Studio em Admin → IA.";
-          return new Response(JSON.stringify({ error: msg }), {
-            status, headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
+          const g = await callGoogle();
+          if (g && !("__status" in g)) { parsed = g; providerUsed = "google-fallback"; }
+          else if (g && "__status" in g) lastStatus = (g as any).__status;
         }
       } else {
         parsed = r as any;
       }
     } else if (googleApiKey) {
-      parsed = await callGoogle();
-      providerUsed = "google-direct";
+      const g = await callGoogle();
+      if (g && !("__status" in g)) { parsed = g; providerUsed = "google-direct"; }
+      else if (g && "__status" in g) lastStatus = (g as any).__status;
     }
 
     if (!parsed?.content || parsed.content.length < 100) {
-      return new Response(JSON.stringify({
-        error: "A IA nao retornou conteudo suficiente. Tente outra URL ou cole o texto manualmente.",
-      }), { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      let msg = "A IA nao retornou conteudo suficiente. Tente outra URL ou cole o texto manualmente.";
+      let status = 502;
+      if (lastStatus === 429) {
+        msg = "Limite de requisicoes da IA excedido (cota esgotada). Aguarde alguns minutos e tente novamente, ou alterne o provedor de IA em Admin → IA.";
+        status = 429;
+      } else if (lastStatus === 402) {
+        msg = "Creditos de IA esgotados. Configure outra chave em Admin → IA.";
+        status = 402;
+      } else if (lastStatus === 401 || lastStatus === 403) {
+        msg = "Chave de IA invalida ou sem permissao. Verifique em Admin → IA.";
+        status = lastStatus;
+      }
+      return new Response(JSON.stringify({ error: msg }), {
+        status, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     return new Response(JSON.stringify({
