@@ -733,6 +733,24 @@ export default function AdminPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [importUrl, importMode, importTitle, importContent, importTopic, importExercises]);
 
+  /** Salva direto o texto já formatado, sem passar pela etapa de estruturação com IA. */
+  const insertReadyTextApostila = useCallback(async () => {
+    if (!user) return;
+    const { error } = await supabase.from('apostilas').insert({
+      title: importTitle.trim(),
+      content: importRawText,
+      category: importTopic || 'Geral',
+      source_type: 'text',
+      created_by: user.id,
+      published: true,
+      file_url: null,
+    });
+    if (error) throw error;
+    toast.success('Apostila formatada salva com sucesso!');
+    resetImportForm();
+    loadAll();
+  }, [user, importTitle, importRawText, importTopic, loadAll]);
+
   const handleSaveImport = async () => {
     if (!importTitle.trim()) { toast.error('Adicione um título'); return; }
     setCloning(true);
@@ -751,6 +769,36 @@ export default function AdminPage() {
       await insertImportApostila();
     } catch (err: any) {
       console.error('[handleSaveImport] erro:', err);
+      const msg = err?.message || err?.error_description || err?.details || 'Erro desconhecido';
+      toast.error('Erro ao salvar: ' + msg);
+    }
+    setCloning(false);
+  };
+
+  const handleSaveReadyText = async () => {
+    if (!importTitle.trim()) {
+      toast.error('Adicione um título antes de salvar');
+      return;
+    }
+    if (!importRawText.trim()) {
+      toast.error('Adicione o conteúdo da apostila');
+      return;
+    }
+
+    setCloning(true);
+    try {
+      const dup = await findDuplicateApostila(importRawText, importTitle);
+      if (dup) {
+        setDuplicateMatch(dup);
+        setPendingSave(() => async () => {
+          await insertReadyTextApostila();
+        });
+        setCloning(false);
+        return;
+      }
+      await insertReadyTextApostila();
+    } catch (err: any) {
+      console.error('[handleSaveReadyText] erro:', err);
       const msg = err?.message || err?.error_description || err?.details || 'Erro desconhecido';
       toast.error('Erro ao salvar: ' + msg);
     }
@@ -1284,17 +1332,16 @@ export default function AdminPage() {
                             </div>
 
                             <div>
-                              <Label htmlFor="import-rawtext" className="text-xs font-medium text-foreground mb-1.5 block">Texto Bruto da Aula</Label>
-                              <MarkdownEditor
+                              <Label htmlFor="import-rawtext" className="text-xs font-medium text-foreground mb-1.5 block">Texto da Apostila</Label>
+                              <Textarea
+                                id="import-rawtext"
                                 value={importRawText}
-                                onChange={setImportRawText}
-                                placeholder={"Cole aqui qualquer texto — mesmo bagunçado, copiado de slides ou anotações.\n\nUse a barra de cima para formatar (negrito, títulos, listas).\n\nA IA vai organizar tudo em formato de apostila com exercícios."}
-                                rows={10}
+                                onChange={e => setImportRawText(e.target.value)}
+                                placeholder={"Cole aqui a aula bruta para estruturar com IA ou uma apostila já pronta para salvar direto.\n\nVocê pode colar texto com títulos, listas e links já organizados."}
+                                rows={14}
+                                className="min-h-[320px] resize-y leading-6"
                               />
                             </div>
-                            <Button onClick={handleExtract} disabled={cloning || !importRawText.trim()} className="w-full gradient-primary text-primary-foreground">
-                              {cloning ? <><Loader2 className="h-4 w-4 animate-spin mr-1.5" /> Estruturando...</> : '✨ Estruturar como Apostila'}
-                            </Button>
                           </>
                         )}
                         <div>
@@ -1305,6 +1352,21 @@ export default function AdminPage() {
                           <Label htmlFor="import-topic" className="text-xs font-medium text-foreground">Disciplina / Tópico</Label>
                           <Input id="import-topic" value={importTopic} onChange={e => setImportTopic(e.target.value)} placeholder="Ex: Redes de Computadores, Banco de Dados" className="mt-1.5" />
                         </div>
+                        {importMode === 'text' && importStep === 'input' && (
+                          <div className="space-y-2">
+                            <p className="text-[11px] text-muted-foreground leading-relaxed">
+                              Use <strong>Estruturar como Apostila</strong> para organizar texto cru, ou <strong>Salvar texto já formatado</strong> quando a apostila já estiver pronta.
+                            </p>
+                            <div className="grid gap-2 sm:grid-cols-2">
+                              <Button onClick={handleExtract} disabled={cloning || !importRawText.trim()} className="w-full gradient-primary text-primary-foreground">
+                                {cloning ? <><Loader2 className="h-4 w-4 animate-spin mr-1.5" /> Estruturando...</> : '✨ Estruturar como Apostila'}
+                              </Button>
+                              <Button onClick={handleSaveReadyText} disabled={cloning || !importRawText.trim() || !importTitle.trim()} variant="outline" className="w-full">
+                                {cloning ? <><Loader2 className="h-4 w-4 animate-spin mr-1.5" /> Salvando...</> : 'Salvar texto já formatado'}
+                              </Button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     ) : (
                       <div className="space-y-3">
@@ -2604,8 +2666,8 @@ export default function AdminPage() {
         match={duplicateMatch}
         onReplaceExisting={async () => {
           // Substitui o conteúdo existente pelo novo (que está melhor formatado)
-          const newContent = pendingSave ? (manualContent || importContent) : '';
-          await replaceExistingWithBetter(newContent || importContent || manualContent);
+          const newContent = pendingSave ? (manualContent || importContent || importRawText) : '';
+          await replaceExistingWithBetter(newContent || importContent || manualContent || importRawText);
           setDuplicateMatch(null);
           setPendingSave(null);
         }}
