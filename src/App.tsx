@@ -50,6 +50,7 @@ const PreExamReviewPage = lazy(() => import("./pages/PreExamReviewPage"));
 const TiraDuvidaPage = lazy(() => import("./pages/TiraDuvidaPage"));
 const AdminBibliotecaPage = lazy(() => import("./pages/AdminBibliotecaPage"));
 const PlayBooksPage = lazy(() => import("./pages/PlayBooksPage"));
+const PerformancePage = lazy(() => import("./pages/PerformancePage"));
 
 // Cache agressivo: dados ficam frescos por 5min, em cache por 30min
 // → menos requisições, navegação instantânea entre páginas
@@ -262,6 +263,7 @@ function AnimatedRoutes() {
               <Route path="/reset-password" element={<ResetPasswordPage />} />
               <Route path="/offline" element={<OfflinePage />} />
               <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+              <Route path="/desempenho" element={<ProtectedRoute><PerformancePage /></ProtectedRoute>} />
               <Route path="/review" element={<ProtectedRoute><ReviewPage /></ProtectedRoute>} />
               <Route path="/simulado" element={<ProtectedRoute><SimuladoPage /></ProtectedRoute>} />
               <Route path="/revisao-prova/:eventId" element={<ProtectedRoute><PreExamReviewPage /></ProtectedRoute>} />
