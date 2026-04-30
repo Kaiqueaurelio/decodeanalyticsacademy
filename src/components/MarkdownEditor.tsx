@@ -80,12 +80,14 @@ export function MarkdownEditor({
 }: Props) {
   const externalRef = useRef(value);
   const pageRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLDivElement>(null);
   const [status, setStatus] = useState<SaveStatus>('saved');
   const [zoom, setZoomState] = useState<number>(() => {
     if (typeof window === 'undefined') return 1;
     const v = parseFloat(window.localStorage.getItem(ZOOM_KEY) || '1');
     return Number.isFinite(v) && v > 0.4 && v < 2.5 ? v : 1;
   });
+  const [autoFit, setAutoFit] = useState<number | null>(null);
   const [tocCollapsed, setTocCollapsed] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
     return window.localStorage.getItem(TOC_KEY) === '1';
@@ -96,6 +98,8 @@ export function MarkdownEditor({
   });
   const [focusMode, setFocusMode] = useState(false);
   const [viewMode, setViewMode] = useState<'edit' | 'preview'>('edit');
+  const [mobileTocOpen, setMobileTocOpen] = useState(false);
+  const [mobileInspectorOpen, setMobileInspectorOpen] = useState(false);
 
   const setZoom = useCallback((z: number) => {
     setZoomState(z);
