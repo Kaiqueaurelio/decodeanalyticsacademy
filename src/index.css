@@ -1445,6 +1445,15 @@ html {
   }
 }
 
+/* Tablet (640-1023px): reduz paddings da folha A4 sem ocultar régua/sombra. */
+@media (min-width: 640px) and (max-width: 1023px) {
+  :root {
+    --editor-page-pad-x: 56px;
+    --editor-page-pad-top: 56px;
+    --editor-page-pad-bottom: 56px;
+  }
+}
+
 @media (max-width: 767px) {
   /* Reduz paddings internos da página A4 em mobile (mantém aparência mas usa espaço) */
   :root {
