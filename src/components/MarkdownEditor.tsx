@@ -44,6 +44,8 @@ import { EditorInspector } from '@/components/editor/EditorInspector';
 import { LinkBubbleMenu } from '@/components/editor/LinkBubbleMenu';
 import { SlashCommands } from '@/components/editor/SlashMenu';
 import { usePageBreaks } from '@/components/editor/usePageBreaks';
+import { StudentPreview } from '@/components/editor/StudentPreview';
+import { Eye, Pencil } from 'lucide-react';
 
 interface Props {
   value: string;
