@@ -1559,3 +1559,27 @@ html {
   .word-btn { height: 24px; min-width: 24px; }
 }
 
+
+/* ============================================================
+ * EDITOR SPLIT — destaque do heading ativo no preview
+ * Marcado pelo MarkdownEditor enquanto o cursor se move dentro
+ * de uma seção. Animação sutil — não distrai a leitura.
+ * ============================================================ */
+.apostila-heading-active {
+  position: relative;
+  background: linear-gradient(90deg, hsl(var(--primary) / 0.10), transparent 80%);
+  border-left: 3px solid hsl(var(--primary));
+  padding-left: 0.6rem;
+  margin-left: -0.9rem;
+  border-radius: 4px;
+  animation: apostila-heading-pulse 600ms ease-out;
+}
+
+@keyframes apostila-heading-pulse {
+  0%   { background-color: hsl(var(--primary) / 0.22); }
+  100% { background-color: transparent; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .apostila-heading-active { animation: none; }
+}
