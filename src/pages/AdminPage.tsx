@@ -1340,9 +1340,14 @@ export default function AdminPage() {
                                 rows={10}
                               />
                             </div>
-                            <Button onClick={handleExtract} disabled={cloning || !importRawText.trim()} className="w-full gradient-primary text-primary-foreground">
-                              {cloning ? <><Loader2 className="h-4 w-4 animate-spin mr-1.5" /> Estruturando...</> : '✨ Estruturar como Apostila'}
-                            </Button>
+                            <div className="grid gap-2 sm:grid-cols-2">
+                              <Button onClick={handleExtract} disabled={cloning || !importRawText.trim()} className="w-full gradient-primary text-primary-foreground">
+                                {cloning ? <><Loader2 className="h-4 w-4 animate-spin mr-1.5" /> Estruturando...</> : '✨ Estruturar como Apostila'}
+                              </Button>
+                              <Button onClick={handleSaveReadyText} disabled={cloning || !importRawText.trim() || !importTitle.trim()} variant="outline" className="w-full">
+                                {cloning ? <><Loader2 className="h-4 w-4 animate-spin mr-1.5" /> Salvando...</> : 'Salvar texto já formatado'}
+                              </Button>
+                            </div>
                           </>
                         )}
                         <div>
