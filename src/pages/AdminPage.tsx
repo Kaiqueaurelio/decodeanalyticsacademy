@@ -964,18 +964,20 @@ export default function AdminPage() {
   const handleEditSave = async () => {
     if (!editingApostila) return;
     if (!editTitle.trim()) { toast.error('O título não pode ficar vazio'); return; }
-    const { error } = await supabase
-      .from('apostilas')
-      .update({ title: editTitle.trim(), content: editContent, category: editCategory })
-      .eq('id', editingApostila.id);
-    if (error) {
-      console.error('[handleEditSave] erro:', error);
-      toast.error('Falha ao atualizar: ' + error.message);
-      return;
-    }
-    toast.success('Apostila atualizada!');
-    setEditingApostila(null);
-    loadAll();
+    await guardWithValidation(editContent, editTitle, async () => {
+      const { error } = await supabase
+        .from('apostilas')
+        .update({ title: editTitle.trim(), content: editContent, category: editCategory })
+        .eq('id', editingApostila.id);
+      if (error) {
+        console.error('[handleEditSave] erro:', error);
+        toast.error('Falha ao atualizar: ' + error.message);
+        return;
+      }
+      toast.success('Apostila atualizada!');
+      setEditingApostila(null);
+      loadAll();
+    });
   };
 
   const addExercise = async () => {
