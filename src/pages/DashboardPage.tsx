@@ -356,48 +356,90 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* Category filter pills */}
-              {allCategories.length > 1 && (
-                <div className="flex gap-2 overflow-x-auto pb-2 mb-4 hide-scrollbar">
+              {/* === Filtro principal: GRUPOS canônicos === */}
+              <div className="flex gap-2 overflow-x-auto pb-2 mb-2 hide-scrollbar">
+                <button
+                  onClick={() => { setSelectedGroup('all'); setSelectedCategory('all'); }}
+                  className={`relative flex items-center gap-1.5 px-3 py-1.5 pb-2.5 rounded-full text-xs font-medium whitespace-nowrap transition-all border overflow-hidden ${
+                    selectedGroup === 'all'
+                      ? 'bg-primary text-primary-foreground border-primary shadow-md shadow-primary/20'
+                      : 'bg-card text-muted-foreground border-border/50 hover:border-primary/30'
+                  }`}
+                >
+                  <span>📚</span>
+                  Todas
+                  <span className={`ml-0.5 px-1.5 rounded-full text-[10px] ${
+                    selectedGroup === 'all' ? 'bg-primary-foreground/20' : 'bg-muted'
+                  }`}>{apostilas.length}</span>
+                  <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-border/30 rounded-b-full overflow-hidden">
+                    <div className="h-full transition-all duration-500 rounded-b-full" style={{ width: `${overallProgress}%`, backgroundColor: selectedGroup === 'all' ? 'hsl(var(--primary-foreground) / 0.5)' : 'hsl(var(--primary) / 0.5)' }} />
+                  </div>
+                </button>
+                {CANONICAL_GROUPS.map((g) => {
+                  const meta = GROUP_META[g];
+                  const count = groupCounts[g];
+                  if (count === 0) return null;
+                  const prog = groupProgress[g];
+                  const active = selectedGroup === g;
+                  return (
+                    <button
+                      key={g}
+                      onClick={() => { setSelectedGroup(g); setSelectedCategory('all'); }}
+                      title={meta.description}
+                      className={`relative flex items-center gap-1.5 px-3 py-1.5 pb-2.5 rounded-full text-xs font-medium whitespace-nowrap transition-all border overflow-hidden ${
+                        active
+                          ? 'border-current text-foreground shadow-md'
+                          : 'bg-card text-muted-foreground border-border/50 hover:border-primary/30'
+                      }`}
+                      style={active ? { backgroundColor: `${meta.color.replace('hsl(', 'hsla(').replace(')', ', 0.15)')}`, borderColor: meta.color, color: meta.color } : {}}
+                    >
+                      <span>{meta.icon}</span>
+                      {g}
+                      <span className={`ml-0.5 px-1.5 rounded-full text-[10px] ${
+                        active ? 'bg-current/10' : 'bg-muted'
+                      }`}>{count}</span>
+                      <div className="absolute bottom-0 left-0 right-0 h-[3px] rounded-b-full overflow-hidden" style={{ backgroundColor: `${meta.color.replace('hsl(', 'hsla(').replace(')', ', 0.25)')}` }}>
+                        <div className="h-full transition-all duration-500 rounded-b-full" style={{ width: `${prog}%`, backgroundColor: meta.color }} />
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* === Sub-filtro: categorias livres dentro do grupo === */}
+              {visibleCategories.length > 1 && (
+                <div className="flex gap-1.5 overflow-x-auto pb-2 mb-4 hide-scrollbar pl-1 border-l-2" style={{ borderColor: selectedGroup !== 'all' ? GROUP_META[selectedGroup as CanonicalGroup].color + '40' : 'hsl(var(--border))' }}>
                   <button
                     onClick={() => setSelectedCategory('all')}
-                    className={`relative flex items-center gap-1.5 px-3 py-1.5 pb-2.5 rounded-full text-xs font-medium whitespace-nowrap transition-all border overflow-hidden ${
+                    className={`px-2.5 py-1 rounded-full text-[11px] font-medium whitespace-nowrap transition-all border ${
                       selectedCategory === 'all'
-                        ? 'bg-primary text-primary-foreground border-primary'
-                        : 'bg-card text-muted-foreground border-border/50 hover:border-primary/30'
+                        ? 'bg-foreground text-background border-foreground'
+                        : 'bg-transparent text-muted-foreground border-border/40 hover:border-primary/30'
                     }`}
                   >
-                    Todas
-                    <span className={`ml-0.5 px-1.5 rounded-full text-[10px] ${
-                      selectedCategory === 'all' ? 'bg-primary-foreground/20' : 'bg-muted'
-                    }`}>{apostilas.length}</span>
-                    <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-border/30 rounded-b-full overflow-hidden">
-                      <div className="h-full transition-all duration-500 rounded-b-full" style={{ width: `${overallProgress}%`, backgroundColor: selectedCategory === 'all' ? 'hsl(var(--primary-foreground) / 0.5)' : 'hsl(var(--primary) / 0.5)' }} />
-                    </div>
+                    Todas as disciplinas
                   </button>
-                  {allCategories.map(cat => {
+                  {visibleCategories.map((cat) => {
                     const color = getSubjectColor(cat);
-                    const count = apostilas.filter(a => (a.category || 'Geral') === cat).length;
-                    const prog = categoryProgress[cat] || 0;
+                    const count = apostilas.filter(
+                      (a) => (a.category || 'Geral') === cat &&
+                        (selectedGroup === 'all' || getCanonicalGroup(a.category, a.title) === selectedGroup),
+                    ).length;
+                    const active = selectedCategory === cat;
                     return (
                       <button
                         key={cat}
                         onClick={() => setSelectedCategory(cat)}
-                        className={`relative flex items-center gap-1.5 px-3 py-1.5 pb-2.5 rounded-full text-xs font-medium whitespace-nowrap transition-all border overflow-hidden ${
-                          selectedCategory === cat
+                        className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium whitespace-nowrap transition-all border ${
+                          active
                             ? 'border-current text-foreground'
-                            : 'bg-card text-muted-foreground border-border/50 hover:border-primary/30'
+                            : 'bg-transparent text-muted-foreground border-border/40 hover:border-primary/30'
                         }`}
-                        style={selectedCategory === cat ? { backgroundColor: `${color}20`, borderColor: color, color } : {}}
+                        style={active ? { backgroundColor: `${color}20`, borderColor: color, color } : {}}
                       >
-                        <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
+                        <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
                         {cat}
-                        <span className={`ml-0.5 px-1.5 rounded-full text-[10px] ${
-                          selectedCategory === cat ? 'bg-current/10' : 'bg-muted'
-                        }`}>{count}</span>
-                        <div className="absolute bottom-0 left-0 right-0 h-[3px] rounded-b-full overflow-hidden" style={{ backgroundColor: `${color}30` }}>
-                          <div className="h-full transition-all duration-500 rounded-b-full" style={{ width: `${prog}%`, backgroundColor: color }} />
-                        </div>
+                        <span className="text-[9px] opacity-70">·{count}</span>
                       </button>
                     );
                   })}
