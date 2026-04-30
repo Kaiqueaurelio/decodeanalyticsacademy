@@ -120,6 +120,27 @@ export function MarkdownEditor({
     });
   }, []);
 
+  /**
+   * Auto-fit: em telas <1024px ajusta o zoom da folha A4 (794px) para caber
+   * na largura do canvas, evitando scroll horizontal feio em mobile/tablet.
+   */
+  useEffect(() => {
+    const computeFit = () => {
+      if (typeof window === 'undefined') return;
+      const w = window.innerWidth;
+      if (w >= 1024) { setAutoFit(null); return; }
+      const canvasW = canvasRef.current?.clientWidth ?? w;
+      const available = Math.max(280, canvasW - 32);
+      const fit = Math.min(1, available / 794);
+      setAutoFit(Math.max(0.5, fit));
+    };
+    computeFit();
+    window.addEventListener('resize', computeFit);
+    return () => window.removeEventListener('resize', computeFit);
+  }, [viewMode, focusMode]);
+
+  const effectiveZoom = autoFit ?? zoom;
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
