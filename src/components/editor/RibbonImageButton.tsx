@@ -52,18 +52,12 @@ export function RibbonImageButton({ onImageInserted, label = 'Imagem' }: Props) 
   const [uploading, setUploading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleUpload = async (rawFile: File) => {
-    if (!rawFile.type.startsWith('image/')) {
-      toast.error('Selecione um arquivo de imagem');
-      return;
-    }
-
-    // 1) Preview otimista — insere já com blob URL
+  const uploadOne = async (rawFile: File, index?: number, total?: number) => {
     const tempUrl = URL.createObjectURL(rawFile);
     onImageInserted(`\n![${rawFile.name}](${tempUrl})\n`, { tempUrl });
 
-    setUploading(true);
-    const tId = toast.loading('Enviando imagem…');
+    const label = total && total > 1 ? ` (${index! + 1}/${total})` : '';
+    const tId = toast.loading(`Enviando imagem${label}…`);
 
     try {
       const file = await compressIfNeeded(rawFile);
@@ -78,15 +72,35 @@ export function RibbonImageButton({ onImageInserted, label = 'Imagem' }: Props) 
       if (error) throw error;
 
       const { data: urlData } = supabase.storage.from('materials').getPublicUrl(path);
-      const publicUrl = urlData.publicUrl;
-
-      // 2) Substitui o blob URL pela URL pública no editor
-      onImageInserted('', { tempUrl, finalUrl: publicUrl });
-
-      toast.success('Imagem enviada', { id: tId });
+      onImageInserted('', { tempUrl, finalUrl: urlData.publicUrl });
+      toast.success(`Imagem enviada${label}`, { id: tId });
+      return true;
     } catch (err: any) {
       toast.error('Falha no upload: ' + (err?.message || 'erro desconhecido'), { id: tId });
-      // Mantém o blob para o admin não perder a posição; ele pode tentar de novo.
+      return false;
+    }
+  };
+
+  const handleUploadMany = async (files: File[]) => {
+    const images = files.filter((f) => f.type.startsWith('image/'));
+    if (images.length === 0) {
+      toast.error('Selecione um ou mais arquivos de imagem');
+      return;
+    }
+    setUploading(true);
+    try {
+      // Sobe em paralelo (limite de 3 simultâneos para não saturar)
+      const CONCURRENCY = 3;
+      let i = 0;
+      const total = images.length;
+      const workers = Array.from({ length: Math.min(CONCURRENCY, total) }, async () => {
+        while (i < total) {
+          const idx = i++;
+          await uploadOne(images[idx], idx, total);
+        }
+      });
+      await Promise.all(workers);
+      if (total > 1) toast.success(`${total} imagens inseridas`);
     } finally {
       setUploading(false);
     }
@@ -98,17 +112,18 @@ export function RibbonImageButton({ onImageInserted, label = 'Imagem' }: Props) 
         ref={inputRef}
         type="file"
         accept="image/*"
+        multiple
         className="hidden"
         onChange={(e) => {
-          const f = e.target.files?.[0];
-          if (f) handleUpload(f);
+          const files = Array.from(e.target.files || []);
+          if (files.length) handleUploadMany(files);
           e.target.value = '';
         }}
       />
       <button
         type="button"
         className="word-btn word-btn-tall"
-        title="Inserir imagem do computador"
+        title="Inserir uma ou várias imagens (segure Ctrl/Cmd para múltipla seleção)"
         disabled={uploading}
         onClick={() => inputRef.current?.click()}
       >
