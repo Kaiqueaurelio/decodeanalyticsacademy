@@ -84,6 +84,7 @@ export function MarkdownEditor({
   const externalRef = useRef(value);
   const pageRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
+  const previewRef = useRef<HTMLDivElement>(null);
   const [status, setStatus] = useState<SaveStatus>('saved');
   const [zoom, setZoomState] = useState<number>(() => {
     if (typeof window === 'undefined') return 1;
