@@ -373,8 +373,6 @@ export function MarkdownEditor({
                     style={{
                       transform: `scale(${effectiveZoom})`,
                       transformOrigin: 'top center',
-                      // Compensa altura visual quando escalado para baixo
-                      ...(effectiveZoom < 1 ? { marginBottom: `${-1 * (1 - effectiveZoom) * 800}px` } : null),
                     }}
                     onClick={(e) => e.stopPropagation()}
                   >
