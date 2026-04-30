@@ -1180,6 +1180,16 @@ html {
   margin: 24px auto 32px;
   transform-origin: top center;
   transition: transform 120ms ease;
+  overflow: visible;
+}
+
+.editor-canvas > div {
+  overflow: visible;
+}
+
+.editor-page {
+  overflow-x: clip;
+  overflow-y: visible;
 }
 
 .editor-page {
@@ -1428,6 +1438,10 @@ html {
 
   /* Reduz margem da folha — mais conteúdo visível */
   .editor-page-shell { margin: 8px auto 16px; }
+
+  .editor-canvas {
+    padding-bottom: 24px;
+  }
 }
 
 @media (max-width: 767px) {
@@ -1440,11 +1454,29 @@ html {
 
   .editor-page-shell { margin: 4px auto 12px; }
 
+  .editor-canvas {
+    background-image: none;
+  }
+
   /* Sombra mais sutil em mobile */
   .editor-page {
     box-shadow:
       0 0 0 1px rgba(0,0,0,0.08),
       0 1px 3px rgba(0,0,0,0.12);
+    min-height: auto;
+  }
+
+  .editor-page .ProseMirror {
+    overflow-x: hidden;
+  }
+
+  .editor-page .ProseMirror p,
+  .editor-page .ProseMirror li,
+  .editor-page .ProseMirror blockquote,
+  .editor-page .ProseMirror td,
+  .editor-page .ProseMirror th {
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 
   /* Esconde indicadores de margem (cantos) — poluição visual em mobile */
