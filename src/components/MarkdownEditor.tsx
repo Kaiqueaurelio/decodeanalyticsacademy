@@ -40,12 +40,14 @@ import { markdownToHtml, htmlToMarkdown } from '@/lib/markdown-html';
 import { EditorTopbar, type SaveStatus } from '@/components/editor/EditorTopbar';
 import { EditorRibbon } from '@/components/editor/EditorRibbon';
 import { EditorTOC } from '@/components/editor/EditorTOC';
-import { EditorInspector } from '@/components/editor/EditorInspector';
+import { EditorInspector, EditorInspectorBody } from '@/components/editor/EditorInspector';
 import { LinkBubbleMenu } from '@/components/editor/LinkBubbleMenu';
 import { SlashCommands } from '@/components/editor/SlashMenu';
 import { usePageBreaks } from '@/components/editor/usePageBreaks';
 import { StudentPreview } from '@/components/editor/StudentPreview';
-import { Eye, Pencil } from 'lucide-react';
+import { useEditorSelection } from '@/components/editor/useEditorSelection';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Eye, Pencil, ListTree, Wand2 } from 'lucide-react';
 
 interface Props {
   value: string;
