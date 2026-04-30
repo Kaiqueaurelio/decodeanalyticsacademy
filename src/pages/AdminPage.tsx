@@ -531,6 +531,9 @@ export default function AdminPage() {
   // Detecção de apostila duplicada
   const [duplicateMatch, setDuplicateMatch] = useState<DuplicateMatch | null>(null);
   const [pendingSave, setPendingSave] = useState<null | (() => Promise<void> | void)>(null);
+  // Validação estrutural (H2/H3) antes de salvar
+  const [validationReport, setValidationReport] = useState<ValidationReport | null>(null);
+  const [validationContext, setValidationContext] = useState<{ title?: string; run: () => Promise<void> | void } | null>(null);
   const [importStep, setImportStep] = useState<'input' | 'review'>('input');
   const [importMode, setImportMode] = useState<'url' | 'text'>('url');
   const [importRawText, setImportRawText] = useState('');
