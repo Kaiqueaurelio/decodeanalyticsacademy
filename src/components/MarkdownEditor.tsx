@@ -475,8 +475,7 @@ export function MarkdownEditor({
 
 /** Sumário mobile (renderiza dentro de Sheet). */
 function MobileToc({ editor, onNavigate }: { editor: any; onNavigate: () => void }) {
-  // Importa hook localmente para evitar duplicar lógica
-  const items = useEditorOutlineLazy(editor);
+  const items = useEditorOutline(editor);
   if (!items.length) {
     return (
       <p className="text-xs text-muted-foreground p-4 leading-relaxed">
@@ -518,10 +517,4 @@ function MobileToc({ editor, onNavigate }: { editor: any; onNavigate: () => void
 function MobileInspector({ editor, stats }: { editor: any; stats: { words: number; chars: number; minutes: number } }) {
   const sel = useEditorSelection(editor);
   return <EditorInspectorBody editor={editor} stats={stats} sel={sel} />;
-}
-
-// helper local para evitar import circular
-function useEditorOutlineLazy(editor: any) {
-  // dynamic require pattern: import normal funciona; usar hook real
-  return useEditorOutlineHook(editor);
 }
