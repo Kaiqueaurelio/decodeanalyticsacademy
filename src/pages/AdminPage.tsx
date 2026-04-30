@@ -755,7 +755,7 @@ export default function AdminPage() {
     if (!user) return;
     const { error } = await supabase.from('apostilas').insert({
       title: manualTitle.trim(), content: manualContent,
-      category: manualCategory || 'Geral', source_type: 'manual', created_by: user.id, published: false,
+      category: manualCategory || 'Geral', source_type: 'manual', created_by: user.id, published: true,
     });
     if (error) { toast.error('Erro ao criar'); return; }
     toast.success('Apostila criada!');
