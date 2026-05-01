@@ -1,95 +1,71 @@
+## Diagnóstico
 
-# Sugestões para ajudar mais os alunos
+Mapeei os principais pontos que estão "comendo" performance hoje (sem mexer em features):
 
-Olhei o que o app já tem (gamificação, pomodoro, flashcards SRS, simulado semanal, plano de estudos, calendário de provas, comunidade, biblioteca, livros, tira-dúvida com foto, leaderboard, heatmap, pré-prova) e abaixo estão ideias **novas**, ranqueadas por impacto x esforço. Não vou implementar nada agora — escolha quais quer que eu faça.
+1. **Dashboard carrega tudo de uma vez**: `DashboardPage` importa ~40 widgets de forma estática e busca `apostilas`, `exercises` e a tabela inteira de `answers` (com joins) no primeiro render. Isso bloqueia a primeira tela e segura o JS thread.
+2. **Selects amplos** (`select('*')`) em várias páginas (Admin, Community, Profile, Dashboard) puxam colunas pesadas (incluindo o novo `content_backup` em `apostilas`, que pode ter centenas de KB).
+3. **Sem cache do React Query**: configuramos o `QueryClient`, mas quase ninguém usa `useQuery` — toda navegação refaz fetch direto via `supabase.from(...)`.
+4. **Widgets globais sempre montados**: `DynamicWatermark` (12 tiles + timer + fetch IP), `ScreenshotGuard`, `CommandPalette`, `PullToRefresh`, `QuickActionsFab`, `ScrollToTopFab` ficam ativos em todas as rotas, mesmo em telas onde não fazem sentido (login, biblioteca, leitor de PDF).
+5. **`PageStatePersistence` muito caro**: escuta `input`/`change` em `document` com `useCapture` e a cada evento varre todos os `input/textarea/select` da página. Em telas com formulários grandes (Admin, Editor) isso causa jank a cada tecla.
+6. **`ScrollRestoration` salva no `localStorage` em todo evento de scroll** (passive, mas ainda assim grava JSON a cada frame de rolagem).
+7. **Bundle inicial maior que o necessário**: `framer-motion` está no entry da Landing/Login, e ícones do `lucide-react` são importados em massa.
+8. **`api.ipify.org`** é chamado por toda sessão autenticada — adiciona latência e pode falhar lentamente.
 
----
+## O que vamos fazer
 
-## Tier 1 — Alto impacto, esforço baixo/médio
+### 1. Dashboard mais leve
+- Code-split dos widgets "abaixo da dobra" com `React.lazy` + `Suspense` (Leaderboard, EvolutionChart, StudyHeatmap, CategoryPerformanceChart, FlashcardSummaryWidget, MistakesNotebookCard, OverallProgressCard, etc.). O hero (saudação, streak, continuar de onde parou, CTA) renderiza imediatamente.
+- Substituir `select('*')` em `apostilas` por colunas explícitas (sem `content` nem `content_backup`); o conteúdo só carrega na `ApostilaPage`.
+- Trocar `select('*')` em `answers` por agregação no servidor (RPC `get_dashboard_stats(user_id)` que já retorna totais e por apostila). Cai de "linha por resposta" para uma chamada O(1) de tamanho.
+- Migrar essas chamadas para `useQuery` com chaves estáveis para reaproveitar o cache de 5min já configurado.
 
-### 1. Modo "Estudar agora" (1 clique) 🔥
-Um botão grande no dashboard que monta uma sessão de 25 min automaticamente:
-- Pega a matéria com prova mais próxima (já temos `useExamFocus`)
-- Abre Pomodoro + 5 flashcards pendentes + 1 apostila sugerida lado a lado
-- Termina a sessão com mini-quiz de 3 perguntas
-**Por quê:** elimina a fricção do "não sei por onde começar".
+### 2. Overlays globais sob demanda
+- `WatermarkWrapper` só monta em rotas de conteúdo protegido (apostila, exercícios, materiais, vídeo, livros). Login, Landing, Offline e Biblioteca de PDF ficam sem watermark/screenshot guard rodando.
+- `CommandPalette`, `ScrollToTopFab`, `PullToRefresh`, `QuickActionsFab` viram `lazy` e só montam após `requestIdleCallback` (não competem pelo first paint).
+- Watermark: reduzir tiles de 12 → 6 e remover o timer de 60s (atualizar só ao trocar de rota). Manter o conteúdo visível.
+- Remover a chamada a `api.ipify.org`; usar `"—"` como placeholder ou pegar o IP via uma única função edge cacheada na sessão.
 
-### 2. Resumo inteligente da apostila em 60 segundos
-Botão "TL;DR" em cada apostila que gera (via Lovable AI, já temos `apostila-summary`):
-- 5 bullets-chave
-- 3 conceitos que mais caem
-- 1 analogia simples
-Cacheado no banco para não regerar.
-**Por quê:** revisão rápida antes da aula/prova.
+### 3. Persistência de estado mais barata
+- `PageStatePersistence`: trocar listener global por opt-in (`data-persist-key` obrigatório). Hoje qualquer input dispara varredura DOM completa — o opt-in mantém a feature, mas só roda nos campos marcados.
+- Debounce de 400ms na coleta + `requestIdleCallback`.
+- `ScrollRestoration`: já é passive, mas adicionar throttle (rAF) e gravar no `sessionStorage` apenas no `pagehide`/`visibilitychange`. Durante o scroll, mantemos só em memória.
 
-### 3. Mapa mental automático da apostila
-Aproveita o TOC hierárquico já existente + Mermaid (`MermaidDiagram` já está no projeto) pra gerar um mindmap visual da apostila com 1 clique.
-**Por quê:** muitos alunos aprendem melhor visualmente; quase grátis de implementar.
+### 4. Cache de dados (React Query)
+- Criar hooks `useApostilas()`, `useApostilaById(id)`, `useExerciseCounts()`, `useDashboardStats()` em `src/hooks/queries/` usando `useQuery`. Páginas/widgets passam a consumir esses hooks → navegação volta instantânea com `staleTime` de 5min já configurado.
+- Não removemos nenhum lugar que faz `supabase.from(...)`; só os trocamos por hooks que internamente continuam chamando o Supabase. Mesma feature, com cache.
 
-### 4. Anotações com destaques coloridos + exportação
-Já existe `AnnotationsPanel`. Faltam:
-- Highlights coloridos (4 cores) sobre o texto da apostila
-- Exportar todas as anotações de uma matéria em PDF/Markdown
-- Filtrar "só minhas anotações" para revisão pré-prova
+### 5. Bundle e ícones
+- Mover `framer-motion` para fora da Landing/Login (já são páginas críticas no entry). Trocar pelas animações CSS que já temos (`Reveal`, `animate-page-in`).
+- Garantir que `recharts`, `pdfjs-dist`, `mermaid`, `mammoth`, `shiki` estão **só** nas rotas que usam (já há `manualChunks`, mas precisamos confirmar que não há import estático em algum widget do Dashboard).
+- Adicionar `loading="lazy"` e `decoding="async"` em `<img>` espalhados pelo app (Reveal, MaterialWidget, AnnouncementsBoard).
 
-### 5. Cronômetro de foco com bloqueio de saída
-Variante hardcore do Pomodoro: trava a aba (fullscreen + aviso ao tentar sair). Conta XP em dobro se concluir sem quebrar.
-**Por quê:** combate procrastinação real.
+### 6. Pequenas melhorias de UX que reduzem jank
+- `useDebouncedValue` na busca global e nos filtros do Dashboard (categoria/grupo) para evitar re-render a cada tecla.
+- `content-visibility: auto` em listas longas (apostilas no Dashboard, materiais, biblioteca) — o navegador pula renderização do que está fora da tela.
+- `will-change` removido de elementos estáticos (hoje o `Reveal` deixa fixo, o que aumenta uso de memória).
 
----
+## Métricas que vou checar depois
 
-## Tier 2 — Alto impacto, esforço médio
+Rodo `browser--performance_profile` antes/depois e reporto:
+- TTI no Dashboard (alvo: -40%)
+- Tamanho do JS baixado no primeiro acesso (alvo: -25%)
+- INP médio em digitação no Admin/Editor (alvo: <100ms)
+- Long tasks > 200ms (alvo: zero no caminho crítico)
 
-### 6. "Onde parei" global
-Card no topo do dashboard mostrando os 3 últimos pontos onde o aluno parou (apostila + posição de scroll, vídeo + timestamp, livro + página). Já temos `reading_progress`; só falta agregar com apostilas/vídeos.
+## Ordem de implementação
 
-### 7. Simulado adaptativo por fraqueza
-Hoje há `WeeklySimuladoCard`. Adicionar variante: gera 10 questões focadas só nas categorias onde o aluno tem <60% de acerto (já temos `CategoryStatsWidget`).
+1. Hooks de query + RPC `get_dashboard_stats` (base para os ganhos maiores)
+2. Code-split do Dashboard + `select` enxuto em `apostilas`
+3. Overlays globais condicionais
+4. PageStatePersistence opt-in + ScrollRestoration throttled
+5. Limpeza de bundle (framer-motion fora do entry, lazy de FABs)
+6. `content-visibility` + debounces + `loading="lazy"`
+7. Medir com performance profile e ajustar
 
-### 8. Modo revisão espaçada por matéria
-Tela "Revisar [matéria]" que junta: flashcards SRS dessa matéria + 5 questões antigas erradas + bullets do TL;DR. Roda em 15 min.
+## Garantias
 
-### 9. Grupos de estudo na comunidade
-Hoje a comunidade é um feed único. Criar sub-grupos por matéria/turma com:
-- Mural fixo com dúvidas mais votadas
-- "Tirar dúvida ao vivo" (canal de chat realtime — já temos Supabase Realtime configurado)
+- **Nenhuma funcionalidade removida**: watermark, screenshot guard, command palette, persistência de scroll/forms, animações Reveal — tudo permanece. Só passa a custar menos.
+- **Nada quebra para o admin**: `decoanalytics@outlook.com.br` mantém acesso total e os fluxos de Admin/Editor continuam idênticos.
+- **Compatível com modo seguro**: as otimizações se somam ao `safeMode` existente.
 
-### 10. Notificações inteligentes (push já existe)
-Regras automáticas:
-- "Você tem 12 flashcards atrasados" (D+1)
-- "Prova de X em 3 dias — quer revisar agora?"
-- "Você não estuda há 2 dias, sua streak vai quebrar"
-
----
-
-## Tier 3 — Diferenciais
-
-### 11. Leitor de voz (TTS) das apostilas
-Já existe `SpeakButton`. Expandir para:
-- Tocar a apostila inteira em background como podcast
-- Velocidade ajustável, marcador de progresso
-- Funciona com tela bloqueada (Media Session API)
-**Por quê:** estudar no ônibus / academia.
-
-### 12. Transcrição + resumo de aula gravada
-Aluno faz upload de áudio da aula, IA transcreve (Whisper via edge function) e devolve resumo + flashcards prontos. Salva como material da apostila.
-
-### 13. Caderno de erros automático
-Toda questão errada vai para um "caderno de erros" pessoal, agrupado por tópico, com explicação da IA do porquê errou. Revisar caderno = +XP.
-
-### 14. Modo competição entre amigos
-Convidar amigos por link, comparar XP/streak/acertos da semana num leaderboard privado. Versão social do já existente.
-
-### 15. Wellness check-in
-Antes de iniciar estudo: "Como você está? (😴 cansado / 🙂 ok / 🔥 focado)". Ajusta sugestão (cansado → flashcards leves; focado → simulado).
-
----
-
-## Minha recomendação para começar
-
-Se eu pudesse fazer só 3, faria nesta ordem:
-1. **"Onde parei" global** — resolve dor universal, baixo esforço
-2. **Modo "Estudar agora"** — diferencial claro e usa tudo que já existe
-3. **Mapa mental + TL;DR da apostila** — par perfeito de revisão pré-prova
-
-Me diga quais te interessam (pode escolher de tiers diferentes) que eu monto o plano técnico detalhado da implementação.
+Posso começar pela etapa 1 (RPC + hooks de query) que dá o maior ganho percebido. Aprovas o plano?

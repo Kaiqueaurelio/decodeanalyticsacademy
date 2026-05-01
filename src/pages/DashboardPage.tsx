@@ -60,8 +60,9 @@ import {
   LayoutGrid, List as ListIcon
 } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
+import { useApostilasList, useExerciseCounts, useDashboardStats, type ApostilaSummary } from '@/hooks/queries/useDashboardData';
 
-type Apostila = Tables<'apostilas'>;
+type Apostila = ApostilaSummary;
 
 export default function DashboardPage() {
   const { user, isAdmin } = useAuth();
@@ -70,52 +71,28 @@ export default function DashboardPage() {
   const navigate = useNavigate();
   const gamification = useGamification();
   const examFocus = useExamFocus();
-  const [apostilas, setApostilas] = useState<Apostila[]>([]);
-  const [exerciseCounts, setExerciseCounts] = useState<Record<string, number>>({});
-  const [stats, setStats] = useState({ total: 0, hits: 0, errors: 0, byApostila: {} as Record<string, { hits: number; errors: number; title: string }> });
+
+  // Cache via React Query — navegação volta instantânea (staleTime 5min em App.tsx).
+  const { data: apostilas = [], isLoading: loadingApostilas } = useApostilasList();
+  const { data: exerciseCounts = {} } = useExerciseCounts();
+  const { data: statsData, isLoading: loadingStats } = useDashboardStats(user?.id);
+  const stats = statsData || { total: 0, hits: 0, errors: 0, byApostila: {} };
+  const loading = loadingApostilas || loadingStats;
+
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showMoreWidgets, setShowMoreWidgets] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedGroup, setSelectedGroup] = useState<CanonicalGroup | 'all'>('all');
   const [disciplinesView, setDisciplinesView] = useState<'grid' | 'list'>('grid');
 
   useEffect(() => {
     if (!user) return;
-    loadData();
     const seen = localStorage.getItem('decode_onboarding_done');
     if (!seen) setShowOnboarding(true);
     gamification.updateStreak();
     gamification.checkAndAwardBadge('first_login');
   }, [user]);
 
-  const loadData = async () => {
-    setLoading(true);
-    const { data: ap } = await supabase.from('apostilas').select('*').eq('published', true).order('category').order('created_at', { ascending: false });
-    setApostilas(ap || []);
-
-    const { data: exs } = await supabase.from('exercises').select('apostila_id');
-    const counts: Record<string, number> = {};
-    exs?.forEach(e => { counts[e.apostila_id] = (counts[e.apostila_id] || 0) + 1; });
-    setExerciseCounts(counts);
-
-    const { data: answers } = await supabase.from('answers').select('*, exercises(apostila_id, apostilas:apostila_id(title))');
-    if (answers) {
-      const hits = answers.filter(a => a.is_correct).length;
-      const errors = answers.filter(a => !a.is_correct).length;
-      const byApostila: Record<string, { hits: number; errors: number; title: string }> = {};
-      answers.forEach((a: any) => {
-        const apId = a.exercises?.apostila_id;
-        const apTitle = a.exercises?.apostilas?.title || 'Sem título';
-        if (!apId) return;
-        if (!byApostila[apId]) byApostila[apId] = { hits: 0, errors: 0, title: apTitle };
-        if (a.is_correct) byApostila[apId].hits++;
-        else byApostila[apId].errors++;
-      });
-      setStats({ total: answers.length, hits, errors, byApostila });
-    }
-    setLoading(false);
-  };
 
   const handleOnboardingComplete = () => {
     localStorage.setItem('decode_onboarding_done', 'true');

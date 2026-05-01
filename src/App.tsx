@@ -13,14 +13,16 @@ import { BiometricOnboarding } from "@/components/BiometricOnboarding";
 import { RANamePrompt } from "@/components/RANamePrompt";
 import { DynamicWatermark } from "@/components/DynamicWatermark";
 import { ScreenshotGuard } from "@/components/ScreenshotGuard";
-import { CommandPalette } from "@/components/CommandPalette";
-import { ScrollToTopFab } from "@/components/ScrollToTopFab";
-import { PullToRefresh } from "@/components/PullToRefresh";
 import { PageSkeleton } from "@/components/PageSkeleton";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
-import { QuickActionsFab } from "@/components/QuickActionsFab";
 import { SafeModeBoundary } from "@/components/SafeModeBoundary";
 import { SafeModeBanner } from "@/components/SafeModeBanner";
+
+// Lazy: overlays/FABs não-críticos só carregam após o first paint
+const CommandPalette = lazy(() => import("@/components/CommandPalette").then(m => ({ default: m.CommandPalette })));
+const ScrollToTopFab = lazy(() => import("@/components/ScrollToTopFab").then(m => ({ default: m.ScrollToTopFab })));
+const PullToRefresh = lazy(() => import("@/components/PullToRefresh").then(m => ({ default: m.PullToRefresh })));
+const QuickActionsFab = lazy(() => import("@/components/QuickActionsFab").then(m => ({ default: m.QuickActionsFab })));
 import { useSafeMode } from "@/hooks/useSafeMode";
 import { useRouteTracker, getLastRoute } from "@/hooks/useRouteTracker";
 import { useInactivityLogout } from "@/hooks/useInactivityLogout";
@@ -65,21 +67,38 @@ const queryClient = new QueryClient({
   },
 });
 
+// Rotas onde a marca d'água + screenshot guard fazem sentido (conteúdo protegido).
+// Em login/landing/offline não precisamos pagar esse custo de render contínuo.
+const PROTECTED_OVERLAY_ROUTES = [
+  "/dashboard", "/desempenho", "/review", "/simulado", "/revisao-prova",
+  "/apostila", "/exercises", "/materials", "/video", "/aviso",
+  "/comunidade", "/tira-duvida", "/livros", "/playbooks", "/admin",
+];
+
+function isProtectedRoute(pathname: string) {
+  return PROTECTED_OVERLAY_ROUTES.some((r) => pathname === r || pathname.startsWith(r + "/"));
+}
+
 function WatermarkWrapper() {
   const { user } = useAuth();
   const { enabled: safeMode } = useSafeMode();
+  const location = useLocation();
   if (!user) return null;
-  // Em modo seguro, desliga overlays pesados (watermark animada, screenshot guard,
-  // command palette, FABs) para reduzir trabalho de render.
   if (safeMode) return null;
+  // Watermark + screenshot guard apenas em rotas de conteúdo protegido.
+  // FABs/CommandPalette ficam disponíveis em todas as rotas autenticadas, mas via
+  // <Suspense> (lazy) — não competem pelo first paint.
+  const showHeavy = isProtectedRoute(location.pathname);
   return (
     <>
-      <DynamicWatermark />
-      <ScreenshotGuard />
-      <CommandPalette />
-      <ScrollToTopFab />
-      <PullToRefresh />
-      <QuickActionsFab />
+      {showHeavy && <DynamicWatermark />}
+      {showHeavy && <ScreenshotGuard />}
+      <Suspense fallback={null}>
+        <CommandPalette />
+        <ScrollToTopFab />
+        <PullToRefresh />
+        <QuickActionsFab />
+      </Suspense>
     </>
   );
 }
@@ -130,26 +149,38 @@ function ScrollRestoration() {
 
   React.useEffect(() => {
     const route = getLocationRoute(location);
+    let pending = false;
+    let lastPos = { x: 0, y: 0 };
 
-    const persistScroll = () => {
-      saveScrollPosition(route, {
-        x: window.scrollX,
-        y: window.scrollY,
+    const persist = () => {
+      saveScrollPosition(route, lastPos);
+    };
+
+    // Throttle por rAF — só "agenda" uma gravação por frame em vez de gravar
+    // a cada evento de scroll.
+    const onScroll = () => {
+      lastPos = { x: window.scrollX, y: window.scrollY };
+      if (pending) return;
+      pending = true;
+      requestAnimationFrame(() => {
+        pending = false;
+        // Mantemos em memória; só persistimos no localStorage em pagehide/visibilitychange,
+        // o que evita gravar JSON a cada frame de rolagem.
       });
     };
 
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'hidden') persistScroll();
+      if (document.visibilityState === 'hidden') persist();
     };
 
-    window.addEventListener('scroll', persistScroll, { passive: true });
-    window.addEventListener('pagehide', persistScroll);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('pagehide', persist);
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
-      persistScroll();
-      window.removeEventListener('scroll', persistScroll);
-      window.removeEventListener('pagehide', persistScroll);
+      persist();
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('pagehide', persist);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [location]);
@@ -196,41 +227,49 @@ function PageStatePersistence() {
 
   React.useEffect(() => {
     const route = getLocationRoute(location);
+    let timer: number | undefined;
 
+    // Opt-in: só campos com [data-persist-key] são monitorados.
+    // Evita varrer todo o DOM a cada tecla em formulários grandes (Admin/Editor).
     const collectFields = () => {
-      const fields = Array.from(document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>('input, textarea, select'))
-        .filter((field) => {
-          if (field instanceof HTMLInputElement) {
-            return !['password', 'file', 'hidden', 'submit'].includes(field.type);
-          }
+      const fields = Array.from(
+        document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(
+          '[data-persist-key]'
+        )
+      ).map((field, index) => {
+        const key = field.getAttribute('data-persist-key') || field.id || `field-${index}`;
+        const value = field instanceof HTMLInputElement && (field.type === 'checkbox' || field.type === 'radio')
+          ? field.checked
+          : field.value;
+        return { key, value };
+      });
 
-          return true;
-        })
-        .map((field, index) => {
-          const key = field.getAttribute('data-persist-key') || field.getAttribute('name') || field.id || `field-${index}`;
-          const value = field instanceof HTMLInputElement && (field.type === 'checkbox' || field.type === 'radio')
-            ? field.checked
-            : field.value;
+      if (fields.length) savePageState(route, fields);
+    };
 
-          return { key, value };
-        });
-
-      savePageState(route, fields);
+    const scheduleCollect = () => {
+      window.clearTimeout(timer);
+      // Debounce 400ms — typing rápido não dispara N varreduras.
+      timer = window.setTimeout(collectFields, 400);
     };
 
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'hidden') collectFields();
+      if (document.visibilityState === 'hidden') {
+        window.clearTimeout(timer);
+        collectFields();
+      }
     };
 
-    document.addEventListener('input', collectFields, true);
-    document.addEventListener('change', collectFields, true);
+    document.addEventListener('input', scheduleCollect, true);
+    document.addEventListener('change', scheduleCollect, true);
     window.addEventListener('pagehide', collectFields);
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
+      window.clearTimeout(timer);
       collectFields();
-      document.removeEventListener('input', collectFields, true);
-      document.removeEventListener('change', collectFields, true);
+      document.removeEventListener('input', scheduleCollect, true);
+      document.removeEventListener('change', scheduleCollect, true);
       window.removeEventListener('pagehide', collectFields);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };

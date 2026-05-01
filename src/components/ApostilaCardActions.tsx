@@ -7,7 +7,9 @@ import { useLongPress } from "@/hooks/useLongPress";
 import { useApostilaCompletions } from "@/hooks/useApostilaCompletions";
 import type { Tables } from "@/integrations/supabase/types";
 
-type Apostila = Tables<"apostilas">;
+// Aceita o tipo completo OU apenas as colunas leves usadas no card
+// (id/title/category) — assim o Dashboard pode passar o resumo sem `content`.
+type Apostila = Pick<Tables<"apostilas">, "id" | "title"> & Partial<Tables<"apostilas">>;
 
 interface ApostilaCardActionsProps {
   apostila: Apostila;

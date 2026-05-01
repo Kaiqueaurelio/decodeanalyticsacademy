@@ -27,20 +27,8 @@ function getSessionEntry(): Date {
 
 export function DynamicWatermark() {
   const { user } = useAuth();
-  const [ip, setIp] = useState('');
   const [fullName, setFullName] = useState('');
-  const [now, setNow] = useState(new Date());
   const [entryAt] = useState<Date>(() => getSessionEntry());
-
-  useEffect(() => {
-    fetch('https://api.ipify.org?format=json')
-      .then(r => r.json())
-      .then(d => setIp(d.ip))
-      .catch(() => setIp('N/A'));
-
-    const timer = setInterval(() => setNow(new Date()), 60000);
-    return () => clearInterval(timer);
-  }, []);
 
   useEffect(() => {
     if (!user) { setFullName(''); return; }
@@ -66,10 +54,12 @@ export function DynamicWatermark() {
     `${d.toLocaleDateString('pt-BR')} ${d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
 
   const displayName = fullName || (user.email?.split('@')[0] || 'aluno');
-  const text = `${displayName} · ${ip} · ${device} · entrou ${fmtDateTime(entryAt)} · agora ${fmtDateTime(now)}`;
+  // Removido: chamada à api.ipify.org (latência variável, falhas lentas) e timer de 60s.
+  // O timestamp de entrada da sessão já identifica unicamente a sessão do aluno.
+  const text = `${displayName} · ${device} · entrou ${fmtDateTime(entryAt)}`;
 
-  // Create a diagonal repeating pattern
-  const tiles = Array.from({ length: 12 }, (_, i) => i);
+  // Tiles reduzidos de 12 → 6 (mantém cobertura visual, metade do trabalho de layout)
+  const tiles = Array.from({ length: 6 }, (_, i) => i);
 
   return (
     <div className="fixed inset-0 pointer-events-none select-none z-[9999] overflow-hidden" style={{ userSelect: 'none' }}>
@@ -78,7 +68,7 @@ export function DynamicWatermark() {
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(3, 1fr)',
-          gridTemplateRows: 'repeat(4, 1fr)',
+          gridTemplateRows: 'repeat(2, 1fr)',
           gap: '0',
           transform: 'rotate(-20deg) scale(1.6)',
           transformOrigin: 'center center',
