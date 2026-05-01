@@ -67,21 +67,38 @@ const queryClient = new QueryClient({
   },
 });
 
+// Rotas onde a marca d'água + screenshot guard fazem sentido (conteúdo protegido).
+// Em login/landing/offline não precisamos pagar esse custo de render contínuo.
+const PROTECTED_OVERLAY_ROUTES = [
+  "/dashboard", "/desempenho", "/review", "/simulado", "/revisao-prova",
+  "/apostila", "/exercises", "/materials", "/video", "/aviso",
+  "/comunidade", "/tira-duvida", "/livros", "/playbooks", "/admin",
+];
+
+function isProtectedRoute(pathname: string) {
+  return PROTECTED_OVERLAY_ROUTES.some((r) => pathname === r || pathname.startsWith(r + "/"));
+}
+
 function WatermarkWrapper() {
   const { user } = useAuth();
   const { enabled: safeMode } = useSafeMode();
+  const location = useLocation();
   if (!user) return null;
-  // Em modo seguro, desliga overlays pesados (watermark animada, screenshot guard,
-  // command palette, FABs) para reduzir trabalho de render.
   if (safeMode) return null;
+  // Watermark + screenshot guard apenas em rotas de conteúdo protegido.
+  // FABs/CommandPalette ficam disponíveis em todas as rotas autenticadas, mas via
+  // <Suspense> (lazy) — não competem pelo first paint.
+  const showHeavy = isProtectedRoute(location.pathname);
   return (
     <>
-      <DynamicWatermark />
-      <ScreenshotGuard />
-      <CommandPalette />
-      <ScrollToTopFab />
-      <PullToRefresh />
-      <QuickActionsFab />
+      {showHeavy && <DynamicWatermark />}
+      {showHeavy && <ScreenshotGuard />}
+      <Suspense fallback={null}>
+        <CommandPalette />
+        <ScrollToTopFab />
+        <PullToRefresh />
+        <QuickActionsFab />
+      </Suspense>
     </>
   );
 }
