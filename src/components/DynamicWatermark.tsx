@@ -68,7 +68,7 @@ export function DynamicWatermark() {
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(3, 1fr)',
-          gridTemplateRows: 'repeat(4, 1fr)',
+          gridTemplateRows: 'repeat(2, 1fr)',
           gap: '0',
           transform: 'rotate(-20deg) scale(1.6)',
           transformOrigin: 'center center',
