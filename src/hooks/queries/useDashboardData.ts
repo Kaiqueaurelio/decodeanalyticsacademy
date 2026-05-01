@@ -7,11 +7,12 @@ import type { Tables } from '@/integrations/supabase/types';
 
 export type ApostilaSummary = Pick<
   Tables<'apostilas'>,
-  'id' | 'title' | 'category' | 'description' | 'cover_image_url' | 'published' | 'created_at' | 'updated_at'
+  'id' | 'title' | 'category' | 'published' | 'source_type' | 'file_url' | 'created_at' | 'updated_at'
 >;
 
+// Colunas leves: SEM `content` nem `content_backup` (podem ter centenas de KB).
 const APOSTILA_LIST_COLUMNS =
-  'id, title, category, description, cover_image_url, published, created_at, updated_at';
+  'id, title, category, published, source_type, file_url, created_at, updated_at';
 
 /**
  * Lista todas as apostilas publicadas — SEM o campo `content` nem `content_backup`,
