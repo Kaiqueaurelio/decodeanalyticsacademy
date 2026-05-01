@@ -1651,7 +1651,9 @@ export type Database = {
         Args: { _target_user_id: string }
         Returns: undefined
       }
+      get_dashboard_stats: { Args: { _user_id: string }; Returns: Json }
       get_email_for_ra: { Args: { _ra: string }; Returns: string }
+      get_exercise_counts: { Args: never; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
