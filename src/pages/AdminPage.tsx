@@ -2670,7 +2670,10 @@ export default function AdminPage() {
 
             {/* AI PROVIDER */}
             {tab === 'ai' && (
-              <AIProviderSettings />
+              <div className="space-y-6">
+                <AIProviderSettings />
+                <ShareLinkSettings />
+              </div>
             )}
 
             {/* PERFORMANCE */}
