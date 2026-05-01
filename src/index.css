@@ -796,6 +796,9 @@ html {
   @apply rounded-xl overflow-hidden bg-card;
   border: 1px solid hsl(var(--border));
   transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s ease, border-color 0.25s ease;
+  /* Pula renderização de cards fora da tela — grande ganho em listas longas. */
+  content-visibility: auto;
+  contain-intrinsic-size: 180px;
 }
 .discipline-card:hover {
   transform: translateY(-3px);
