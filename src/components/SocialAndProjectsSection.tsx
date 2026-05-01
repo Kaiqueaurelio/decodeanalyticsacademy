@@ -1,8 +1,9 @@
 import { Instagram, MessageCircle, Share2, ExternalLink, PenLine, Sparkles, CheckCircle, Copy } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
-const APP_URL = 'https://decodeanalyticsacademy.lovable.app';
+const DEFAULT_APP_URL = 'https://decodeanalyticsacademydev.vercel.app/';
 const SHARE_TEXT = 'Conheça a Decode Analytics Academy — plataforma de estudos para alunos de Tecnologia 🚀';
 const WRITELAB_URL = 'https://writelab-one.vercel.app';
 
@@ -30,34 +31,55 @@ const SOCIALS = [
   },
 ];
 
-const SHARE_TARGETS = [
-  {
-    label: 'WhatsApp',
-    icon: MessageCircle,
-    color: '#25D366',
-    href: `https://wa.me/?text=${encodeURIComponent(SHARE_TEXT + ' ' + APP_URL)}`,
-  },
-  {
-    label: 'Telegram',
-    icon: Share2,
-    color: '#229ED9',
-    href: `https://t.me/share/url?url=${encodeURIComponent(APP_URL)}&text=${encodeURIComponent(SHARE_TEXT)}`,
-  },
-  {
-    label: 'Twitter / X',
-    icon: Share2,
-    color: '#ffffff',
-    href: `https://twitter.com/intent/tweet?text=${encodeURIComponent(SHARE_TEXT)}&url=${encodeURIComponent(APP_URL)}`,
-  },
-];
+function buildShareTargets(appUrl: string) {
+  return [
+    {
+      label: 'WhatsApp',
+      icon: MessageCircle,
+      color: '#25D366',
+      href: `https://wa.me/?text=${encodeURIComponent(SHARE_TEXT + ' ' + appUrl)}`,
+    },
+    {
+      label: 'Telegram',
+      icon: Share2,
+      color: '#229ED9',
+      href: `https://t.me/share/url?url=${encodeURIComponent(appUrl)}&text=${encodeURIComponent(SHARE_TEXT)}`,
+    },
+    {
+      label: 'Twitter / X',
+      icon: Share2,
+      color: '#ffffff',
+      href: `https://twitter.com/intent/tweet?text=${encodeURIComponent(SHARE_TEXT)}&url=${encodeURIComponent(appUrl)}`,
+    },
+  ];
+}
 
 export function SocialAndProjectsSection() {
   const [copied, setCopied] = useState(false);
+  const [appUrl, setAppUrl] = useState<string>(DEFAULT_APP_URL);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from('app_settings')
+        .select('value')
+        .eq('key', 'share_app_url')
+        .maybeSingle();
+      const raw = data?.value as unknown;
+      if (!cancelled && typeof raw === 'string' && raw.trim()) {
+        setAppUrl(raw.trim());
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  const shareTargets = buildShareTargets(appUrl);
 
   const handleNativeShare = async () => {
     if (navigator.share) {
       try {
-        await navigator.share({ title: 'Decode Analytics Academy', text: SHARE_TEXT, url: APP_URL });
+        await navigator.share({ title: 'Decode Analytics Academy', text: SHARE_TEXT, url: appUrl });
         return;
       } catch {/* user cancelled */}
     }
@@ -66,7 +88,7 @@ export function SocialAndProjectsSection() {
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(APP_URL);
+      await navigator.clipboard.writeText(appUrl);
       setCopied(true);
       toast.success('Link copiado!');
       setTimeout(() => setCopied(false), 2000);
@@ -162,7 +184,7 @@ export function SocialAndProjectsSection() {
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            {SHARE_TARGETS.map(t => (
+            {shareTargets.map(t => (
               <a
                 key={t.label}
                 href={t.href}
