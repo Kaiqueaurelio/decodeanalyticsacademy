@@ -149,26 +149,38 @@ function ScrollRestoration() {
 
   React.useEffect(() => {
     const route = getLocationRoute(location);
+    let pending = false;
+    let lastPos = { x: 0, y: 0 };
 
-    const persistScroll = () => {
-      saveScrollPosition(route, {
-        x: window.scrollX,
-        y: window.scrollY,
+    const persist = () => {
+      saveScrollPosition(route, lastPos);
+    };
+
+    // Throttle por rAF — só "agenda" uma gravação por frame em vez de gravar
+    // a cada evento de scroll.
+    const onScroll = () => {
+      lastPos = { x: window.scrollX, y: window.scrollY };
+      if (pending) return;
+      pending = true;
+      requestAnimationFrame(() => {
+        pending = false;
+        // Mantemos em memória; só persistimos no localStorage em pagehide/visibilitychange,
+        // o que evita gravar JSON a cada frame de rolagem.
       });
     };
 
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'hidden') persistScroll();
+      if (document.visibilityState === 'hidden') persist();
     };
 
-    window.addEventListener('scroll', persistScroll, { passive: true });
-    window.addEventListener('pagehide', persistScroll);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('pagehide', persist);
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
-      persistScroll();
-      window.removeEventListener('scroll', persistScroll);
-      window.removeEventListener('pagehide', persistScroll);
+      persist();
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('pagehide', persist);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [location]);
@@ -215,41 +227,49 @@ function PageStatePersistence() {
 
   React.useEffect(() => {
     const route = getLocationRoute(location);
+    let timer: number | undefined;
 
+    // Opt-in: só campos com [data-persist-key] são monitorados.
+    // Evita varrer todo o DOM a cada tecla em formulários grandes (Admin/Editor).
     const collectFields = () => {
-      const fields = Array.from(document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>('input, textarea, select'))
-        .filter((field) => {
-          if (field instanceof HTMLInputElement) {
-            return !['password', 'file', 'hidden', 'submit'].includes(field.type);
-          }
+      const fields = Array.from(
+        document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(
+          '[data-persist-key]'
+        )
+      ).map((field, index) => {
+        const key = field.getAttribute('data-persist-key') || field.id || `field-${index}`;
+        const value = field instanceof HTMLInputElement && (field.type === 'checkbox' || field.type === 'radio')
+          ? field.checked
+          : field.value;
+        return { key, value };
+      });
 
-          return true;
-        })
-        .map((field, index) => {
-          const key = field.getAttribute('data-persist-key') || field.getAttribute('name') || field.id || `field-${index}`;
-          const value = field instanceof HTMLInputElement && (field.type === 'checkbox' || field.type === 'radio')
-            ? field.checked
-            : field.value;
+      if (fields.length) savePageState(route, fields);
+    };
 
-          return { key, value };
-        });
-
-      savePageState(route, fields);
+    const scheduleCollect = () => {
+      window.clearTimeout(timer);
+      // Debounce 400ms — typing rápido não dispara N varreduras.
+      timer = window.setTimeout(collectFields, 400);
     };
 
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'hidden') collectFields();
+      if (document.visibilityState === 'hidden') {
+        window.clearTimeout(timer);
+        collectFields();
+      }
     };
 
-    document.addEventListener('input', collectFields, true);
-    document.addEventListener('change', collectFields, true);
+    document.addEventListener('input', scheduleCollect, true);
+    document.addEventListener('change', scheduleCollect, true);
     window.addEventListener('pagehide', collectFields);
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
+      window.clearTimeout(timer);
       collectFields();
-      document.removeEventListener('input', collectFields, true);
-      document.removeEventListener('change', collectFields, true);
+      document.removeEventListener('input', scheduleCollect, true);
+      document.removeEventListener('change', scheduleCollect, true);
       window.removeEventListener('pagehide', collectFields);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
