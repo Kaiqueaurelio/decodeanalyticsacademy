@@ -184,7 +184,7 @@ export function SocialAndProjectsSection() {
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            {SHARE_TARGETS.map(t => (
+            {shareTargets.map(t => (
               <a
                 key={t.label}
                 href={t.href}
