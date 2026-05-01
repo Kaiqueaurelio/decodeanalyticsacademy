@@ -13,14 +13,16 @@ import { BiometricOnboarding } from "@/components/BiometricOnboarding";
 import { RANamePrompt } from "@/components/RANamePrompt";
 import { DynamicWatermark } from "@/components/DynamicWatermark";
 import { ScreenshotGuard } from "@/components/ScreenshotGuard";
-import { CommandPalette } from "@/components/CommandPalette";
-import { ScrollToTopFab } from "@/components/ScrollToTopFab";
-import { PullToRefresh } from "@/components/PullToRefresh";
 import { PageSkeleton } from "@/components/PageSkeleton";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
-import { QuickActionsFab } from "@/components/QuickActionsFab";
 import { SafeModeBoundary } from "@/components/SafeModeBoundary";
 import { SafeModeBanner } from "@/components/SafeModeBanner";
+
+// Lazy: overlays/FABs não-críticos só carregam após o first paint
+const CommandPalette = lazy(() => import("@/components/CommandPalette").then(m => ({ default: m.CommandPalette })));
+const ScrollToTopFab = lazy(() => import("@/components/ScrollToTopFab").then(m => ({ default: m.ScrollToTopFab })));
+const PullToRefresh = lazy(() => import("@/components/PullToRefresh").then(m => ({ default: m.PullToRefresh })));
+const QuickActionsFab = lazy(() => import("@/components/QuickActionsFab").then(m => ({ default: m.QuickActionsFab })));
 import { useSafeMode } from "@/hooks/useSafeMode";
 import { useRouteTracker, getLastRoute } from "@/hooks/useRouteTracker";
 import { useInactivityLogout } from "@/hooks/useInactivityLogout";
