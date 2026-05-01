@@ -31,34 +31,55 @@ const SOCIALS = [
   },
 ];
 
-const SHARE_TARGETS = [
-  {
-    label: 'WhatsApp',
-    icon: MessageCircle,
-    color: '#25D366',
-    href: `https://wa.me/?text=${encodeURIComponent(SHARE_TEXT + ' ' + APP_URL)}`,
-  },
-  {
-    label: 'Telegram',
-    icon: Share2,
-    color: '#229ED9',
-    href: `https://t.me/share/url?url=${encodeURIComponent(APP_URL)}&text=${encodeURIComponent(SHARE_TEXT)}`,
-  },
-  {
-    label: 'Twitter / X',
-    icon: Share2,
-    color: '#ffffff',
-    href: `https://twitter.com/intent/tweet?text=${encodeURIComponent(SHARE_TEXT)}&url=${encodeURIComponent(APP_URL)}`,
-  },
-];
+function buildShareTargets(appUrl: string) {
+  return [
+    {
+      label: 'WhatsApp',
+      icon: MessageCircle,
+      color: '#25D366',
+      href: `https://wa.me/?text=${encodeURIComponent(SHARE_TEXT + ' ' + appUrl)}`,
+    },
+    {
+      label: 'Telegram',
+      icon: Share2,
+      color: '#229ED9',
+      href: `https://t.me/share/url?url=${encodeURIComponent(appUrl)}&text=${encodeURIComponent(SHARE_TEXT)}`,
+    },
+    {
+      label: 'Twitter / X',
+      icon: Share2,
+      color: '#ffffff',
+      href: `https://twitter.com/intent/tweet?text=${encodeURIComponent(SHARE_TEXT)}&url=${encodeURIComponent(appUrl)}`,
+    },
+  ];
+}
 
 export function SocialAndProjectsSection() {
   const [copied, setCopied] = useState(false);
+  const [appUrl, setAppUrl] = useState<string>(DEFAULT_APP_URL);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from('app_settings')
+        .select('value')
+        .eq('key', 'share_app_url')
+        .maybeSingle();
+      const raw = data?.value as unknown;
+      if (!cancelled && typeof raw === 'string' && raw.trim()) {
+        setAppUrl(raw.trim());
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  const shareTargets = buildShareTargets(appUrl);
 
   const handleNativeShare = async () => {
     if (navigator.share) {
       try {
-        await navigator.share({ title: 'Decode Analytics Academy', text: SHARE_TEXT, url: APP_URL });
+        await navigator.share({ title: 'Decode Analytics Academy', text: SHARE_TEXT, url: appUrl });
         return;
       } catch {/* user cancelled */}
     }
@@ -67,7 +88,7 @@ export function SocialAndProjectsSection() {
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(APP_URL);
+      await navigator.clipboard.writeText(appUrl);
       setCopied(true);
       toast.success('Link copiado!');
       setTimeout(() => setCopied(false), 2000);
