@@ -23,9 +23,8 @@ export function ShareLinkSettings() {
         .select('value')
         .eq('key', SETTING_KEY)
         .maybeSingle();
-      const value = typeof data?.value === 'string'
-        ? data.value
-        : (data?.value as string | undefined) ?? DEFAULT_URL;
+      const raw = data?.value as unknown;
+      const value = typeof raw === 'string' ? raw : DEFAULT_URL;
       setUrl(value);
       setOriginal(value);
       setLoading(false);
