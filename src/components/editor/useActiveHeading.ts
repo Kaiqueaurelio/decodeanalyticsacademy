@@ -28,13 +28,21 @@ export function useActiveHeading(editor: Editor | null): string | null {
     if (!editor) return;
 
     const compute = () => {
-      const cursor = editor.state.selection.from;
+      const { selection } = editor.state;
+      // Usa o "head" da seleção (ponta onde o cursor está após arrastar) para
+      // refletir melhor a intenção do usuário ao selecionar trechos. Quando há
+      // uma seleção expandida, também consideramos a posição mais avançada,
+      // garantindo que o heading da seção visível fique destacado.
+      const head = selection.head;
+      const anchor = selection.anchor;
+      const probe = Math.max(head, anchor);
+
       const seen = new Map<string, number>();
       let currentId: string | null = null;
 
       editor.state.doc.descendants((node, pos) => {
         if (node.type.name !== 'heading') return;
-        if (pos > cursor) return false; // depois do cursor → para
+        if (pos > probe) return false; // depois da seleção → para
         const text = (node.textContent || '').trim() || 'secao';
         const base = slugify(text);
         const n = (seen.get(base) || 0) + 1;
