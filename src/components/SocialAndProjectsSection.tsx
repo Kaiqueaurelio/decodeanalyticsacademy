@@ -1,8 +1,9 @@
 import { Instagram, MessageCircle, Share2, ExternalLink, PenLine, Sparkles, CheckCircle, Copy } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
-const APP_URL = 'https://decodeanalyticsacademy.lovable.app';
+const DEFAULT_APP_URL = 'https://decodeanalyticsacademydev.vercel.app/';
 const SHARE_TEXT = 'Conheça a Decode Analytics Academy — plataforma de estudos para alunos de Tecnologia 🚀';
 const WRITELAB_URL = 'https://writelab-one.vercel.app';
 
