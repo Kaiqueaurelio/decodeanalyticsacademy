@@ -303,12 +303,14 @@ export type Database = {
         Row: {
           category: string
           content: string | null
+          content_backup: string | null
           created_at: string
           created_by: string | null
           embedding: string | null
           file_url: string | null
           id: string
           published: boolean
+          reformatted_at: string | null
           source_type: string | null
           title: string
           updated_at: string
@@ -316,12 +318,14 @@ export type Database = {
         Insert: {
           category?: string
           content?: string | null
+          content_backup?: string | null
           created_at?: string
           created_by?: string | null
           embedding?: string | null
           file_url?: string | null
           id?: string
           published?: boolean
+          reformatted_at?: string | null
           source_type?: string | null
           title: string
           updated_at?: string
@@ -329,12 +333,14 @@ export type Database = {
         Update: {
           category?: string
           content?: string | null
+          content_backup?: string | null
           created_at?: string
           created_by?: string | null
           embedding?: string | null
           file_url?: string | null
           id?: string
           published?: boolean
+          reformatted_at?: string | null
           source_type?: string | null
           title?: string
           updated_at?: string
