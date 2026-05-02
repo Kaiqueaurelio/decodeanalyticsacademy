@@ -1098,10 +1098,23 @@ export default function AdminPage() {
 
   // Filtered data
   const filteredApostilas = useMemo(() => {
-    if (!searchQuery.trim()) return apostilas;
-    const q = searchQuery.toLowerCase();
-    return apostilas.filter(a => a.title.toLowerCase().includes(q) || a.category.toLowerCase().includes(q));
-  }, [apostilas, searchQuery]);
+    const q = searchQuery.trim().toLowerCase();
+    return apostilas.filter((a) => {
+      if (q && !(a.title.toLowerCase().includes(q) || a.category.toLowerCase().includes(q))) return false;
+      if (filterStatus === 'published' && !a.published) return false;
+      if (filterStatus === 'draft' && a.published) return false;
+      if (filterSemester !== 'all') {
+        if (filterSemester === 'none') { if (a.semester != null) return false; }
+        else if (String(a.semester) !== filterSemester) return false;
+      }
+      if (filterCourse !== 'all') {
+        const arr = (a.course || []) as string[];
+        if (filterCourse === 'none') { if (arr.length) return false; }
+        else if (!arr.includes(filterCourse)) return false;
+      }
+      return true;
+    });
+  }, [apostilas, searchQuery, filterStatus, filterSemester, filterCourse]);
 
   const filteredMaterials = useMemo(() => {
     if (!searchQuery.trim()) return materials;
