@@ -444,6 +444,44 @@ export default function AdminApostilaWorkbench() {
           className="h-7 text-xs border-0 bg-transparent focus-visible:ring-0 px-1 max-w-[180px] text-muted-foreground"
         />
 
+        {/* Semestre */}
+        <Select
+          value={semester ? String(semester) : 'none'}
+          onValueChange={(v) => setSemester(v === 'none' ? null : Number(v))}
+        >
+          <SelectTrigger className="h-7 text-[11px] w-[110px] gap-1">
+            <GraduationCap className="h-3 w-3 text-primary" />
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">Todos sem.</SelectItem>
+            {SEMESTER_OPTIONS.map((s) => (
+              <SelectItem key={s} value={String(s)}>{s}º semestre</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {/* Cursos (chips multi-select) */}
+        <div className="hidden md:flex items-center gap-0.5 rounded-md border border-border/60 p-0.5">
+          {COURSE_OPTIONS.map((c) => {
+            const active = course.includes(c);
+            return (
+              <button
+                key={c}
+                type="button"
+                onClick={() => setCourse((prev) => active ? prev.filter((x) => x !== c) : [...prev, c])}
+                title={active ? `Remover ${c}` : `Incluir ${c}`}
+                className={cn(
+                  'px-1.5 py-0.5 text-[10px] font-semibold rounded transition-colors',
+                  active ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground',
+                )}
+              >
+                {c}
+              </button>
+            );
+          })}
+        </div>
+
         <div className="ml-auto flex items-center gap-1.5">
           <Button size="sm" variant="outline" className="h-7 gap-1.5 text-xs" onClick={() => setPasteOpen(true)}>
             <Sparkles className="h-3 w-3 text-primary" /> Colar inteligente
