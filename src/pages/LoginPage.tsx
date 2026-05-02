@@ -17,23 +17,29 @@ import { motion, AnimatePresence } from 'framer-motion';
 export default function LoginPage() {
   const { signIn, signUp } = useAuth();
   const navigate = useNavigate();
-  const savedEmail = localStorage.getItem('decode_remember_email') || '';
+  const savedIdentifier = localStorage.getItem('decode_remember_identifier')
+    || localStorage.getItem('decode_remember_email')
+    || localStorage.getItem('decode_remember_ra')
+    || '';
   const savedPasswordRaw = localStorage.getItem('decode_remember_password') || '';
   let savedPassword = '';
   try { savedPassword = savedPasswordRaw ? atob(savedPasswordRaw) : ''; } catch { savedPassword = ''; }
-  const savedRa = localStorage.getItem('decode_remember_ra') || '';
-  const savedAuthMethod = (localStorage.getItem('decode_auth_method') as 'email' | 'ra') || 'email';
-  const [email, setEmail] = useState(savedEmail);
+  /** Identificador único: pode ser RA ou e-mail. Detectamos pela presença de "@". */
+  const [identifier, setIdentifier] = useState(savedIdentifier);
   const [password, setPassword] = useState(savedPassword);
-  const [ra, setRa] = useState(savedRa);
-  const [authMethod, setAuthMethod] = useState<'email' | 'ra'>(savedAuthMethod);
+  const [email, setEmail] = useState(''); // usado apenas no fluxo de reset por e-mail
   const [isSignUp, setIsSignUp] = useState(false);
   const [isReset, setIsReset] = useState(false);
 
   const RA_DOMAIN = 'ra.unip.local';
+  const looksLikeEmail = (v: string) => /@/.test(v.trim());
   const normalizeRa = (raValue: string) => raValue.trim().toUpperCase();
   const buildRaEmail = (raValue: string) => `${normalizeRa(raValue).toLowerCase()}@${RA_DOMAIN}`;
   const isValidRa = (raValue: string) => /^[A-Z0-9]{6,13}$/.test(normalizeRa(raValue));
+
+  /** Detecta se o identificador atual está no formato de e-mail (após o usuário digitar). */
+  const usingEmail = looksLikeEmail(identifier);
+
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loginAttempts, setLoginAttempts] = useState(0);
@@ -41,7 +47,7 @@ export default function LoginPage() {
   const [shaking, setShaking] = useState(false);
   const [showLockModal, setShowLockModal] = useState(false);
   const [unverifiedEmail, setUnverifiedEmail] = useState(false);
-  const [rememberMe, setRememberMe] = useState(!!savedEmail);
+  const [rememberMe, setRememberMe] = useState(!!savedIdentifier);
   const passwordRef = useRef<HTMLInputElement>(null);
 
   const triggerShake = () => {
