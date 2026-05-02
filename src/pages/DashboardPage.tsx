@@ -403,6 +403,7 @@ export default function DashboardPage() {
                     >
                       <ListIcon className="h-3.5 w-3.5" />
                     </button>
+                  </div>
                 </div>
               </div>
 
