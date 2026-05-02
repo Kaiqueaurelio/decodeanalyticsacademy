@@ -61,6 +61,9 @@ import {
 } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 import { useApostilasList, useExerciseCounts, useDashboardStats, type ApostilaSummary } from '@/hooks/queries/useDashboardData';
+import { useUserProfile } from '@/hooks/queries/useUserProfile';
+import { semesterShort, semesterLabel } from '@/lib/subject-semester-map';
+import { GraduationCap } from 'lucide-react';
 
 type Apostila = ApostilaSummary;
 
