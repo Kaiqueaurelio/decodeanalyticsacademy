@@ -1497,7 +1497,7 @@ export default function AdminPage() {
 
                 {/* Apostilas List */}
                 <div>
-                  <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+                  <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
                     <h3 className="font-semibold text-sm flex items-center gap-2">
                       <BookOpen className="h-4 w-4 text-primary" /> Apostilas ({filteredApostilas.length})
                     </h3>
@@ -1520,9 +1520,48 @@ export default function AdminPage() {
                       </Button>
                     </div>
                   </div>
+
+                  {/* Barra de filtros — semestre, curso, status */}
+                  <div className="flex items-center gap-2 mb-4 flex-wrap p-2 rounded-lg bg-muted/30 border border-border">
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground px-1">Filtros:</span>
+                    <Select value={filterSemester} onValueChange={setFilterSemester}>
+                      <SelectTrigger className="h-7 text-xs w-auto min-w-[140px]"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos os semestres</SelectItem>
+                        <SelectItem value="none">Sem semestre</SelectItem>
+                        {[1,2,3,4,5,6,7,8].map(n => <SelectItem key={n} value={String(n)}>{n}º Semestre</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                    <Select value={filterCourse} onValueChange={setFilterCourse}>
+                      <SelectTrigger className="h-7 text-xs w-auto min-w-[120px]"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos os cursos</SelectItem>
+                        <SelectItem value="none">Sem curso</SelectItem>
+                        <SelectItem value="CC">Ciência da Computação</SelectItem>
+                        <SelectItem value="SI">Sistemas de Informação</SelectItem>
+                        <SelectItem value="EC">Engenharia da Computação</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Select value={filterStatus} onValueChange={(v: any) => setFilterStatus(v)}>
+                      <SelectTrigger className="h-7 text-xs w-auto min-w-[110px]"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todas</SelectItem>
+                        <SelectItem value="published">Publicadas</SelectItem>
+                        <SelectItem value="draft">Ocultas</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {(filterSemester !== 'all' || filterCourse !== 'all' || filterStatus !== 'all') && (
+                      <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => { setFilterSemester('all'); setFilterCourse('all'); setFilterStatus('all'); }}>
+                        <X className="h-3 w-3 mr-1" /> Limpar
+                      </Button>
+                    )}
+                  </div>
+
                   <div className="space-y-3">
                     {filteredApostilas.map(a => {
                       const exCount = exercises[a.id]?.length || 0;
+                      const semBadge = a.semester ? `${a.semester}º sem` : null;
+                      const courseList = (a.course || []) as string[];
                       return (
                         <Card key={a.id} className="hover-lift card-alternate">
                           <CardContent className="p-3 sm:p-5">
@@ -1535,6 +1574,16 @@ export default function AdminPage() {
                                     <Badge variant={a.published ? 'default' : 'secondary'} className="text-[10px] shrink-0">
                                       {a.published ? 'Publicada' : 'Oculta'}
                                     </Badge>
+                                    {semBadge && (
+                                      <Badge variant="outline" className="text-[10px] shrink-0 border-primary/40 text-primary">
+                                        {semBadge}
+                                      </Badge>
+                                    )}
+                                    {courseList.map((c) => (
+                                      <Badge key={c} variant="outline" className="text-[9px] shrink-0">
+                                        {c}
+                                      </Badge>
+                                    ))}
                                   </div>
                                   <div className="flex items-center gap-1.5 mt-1 text-[11px] text-muted-foreground flex-wrap">
                                     <span className="truncate max-w-[140px]">{a.category}</span>
