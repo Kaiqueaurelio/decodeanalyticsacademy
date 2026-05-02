@@ -159,14 +159,20 @@ export default function AdminApostilaWorkbench() {
     }, AUTOSAVE_MS);
     return () => window.clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [title, category, content]);
+  }, [title, category, content, semester, course]);
 
   const doSave = async () => {
     if (!id || !dirtyRef.current) return;
     setSaving(true);
     const { error } = await supabase
       .from('apostilas')
-      .update({ title: title.trim() || 'Sem título', category, content })
+      .update({
+        title: title.trim() || 'Sem título',
+        category,
+        content,
+        semester,
+        course: course.length ? course : null,
+      })
       .eq('id', id);
     setSaving(false);
     if (error) {
@@ -175,11 +181,18 @@ export default function AdminApostilaWorkbench() {
     }
     dirtyRef.current = false;
     setLastSavedAt(new Date());
-    // Atualiza item na lista
     setApostilas((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, title: title.trim() || 'Sem título', category, updated_at: new Date().toISOString() } : p))
+      prev.map((p) => (p.id === id ? { ...p, title: title.trim() || 'Sem título', category, semester, course: course.length ? course : null, updated_at: new Date().toISOString() } : p))
     );
   };
+
+  // Sugere semestre automaticamente quando a categoria muda e ainda não há semestre
+  useEffect(() => {
+    if (!category || semester) return;
+    const guess = guessSemesterFromCategory(category);
+    if (guess) setSemester(guess);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [category]);
 
   // Ctrl+S manual
   useEffect(() => {
@@ -192,7 +205,7 @@ export default function AdminApostilaWorkbench() {
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [title, category, content, id]);
+  }, [title, category, content, semester, course, id]);
 
   // === Publicar / despublicar ===
   const togglePublish = async () => {
