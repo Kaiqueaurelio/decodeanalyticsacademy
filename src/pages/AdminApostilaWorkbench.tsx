@@ -50,6 +50,8 @@ interface ApostilaLite {
   category: string;
   published: boolean;
   updated_at: string;
+  semester: number | null;
+  course: CourseCode[] | null;
 }
 
 const AUTOSAVE_MS = 1500;
