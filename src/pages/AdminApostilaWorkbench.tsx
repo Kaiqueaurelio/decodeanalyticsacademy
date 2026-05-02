@@ -96,7 +96,7 @@ export default function AdminApostilaWorkbench() {
     (async () => {
       const { data } = await supabase
         .from('apostilas')
-        .select('id, title, category, published, updated_at')
+        .select('id, title, category, published, updated_at, semester, course')
         .order('updated_at', { ascending: false })
         .limit(200);
       setApostilas((data as ApostilaLite[]) || []);
@@ -108,7 +108,7 @@ export default function AdminApostilaWorkbench() {
     setLoading(true);
     initialLoadRef.current = true;
     const [{ data: ap }, { data: links, error: linksErr }, { count }] = await Promise.all([
-      supabase.from('apostilas').select('id, title, category, content, published').eq('id', apostilaId).maybeSingle(),
+      supabase.from('apostilas').select('id, title, category, content, published, semester, course').eq('id', apostilaId).maybeSingle(),
       supabase.from('apostila_materials').select('id, sort_order, material_id').eq('apostila_id', apostilaId).order('sort_order'),
       supabase.from('exercises').select('id', { count: 'exact', head: true }).eq('apostila_id', apostilaId),
     ]);
@@ -122,6 +122,8 @@ export default function AdminApostilaWorkbench() {
     setCategory(ap.category || '');
     setContent(ap.content || '');
     setPublished(!!ap.published);
+    setSemester((ap as any).semester ?? null);
+    setCourse(((ap as any).course as CourseCode[] | null) ?? []);
     setExerciseCount(count || 0);
 
     // Hidrata títulos dos materiais
