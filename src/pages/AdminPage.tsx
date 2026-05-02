@@ -508,6 +508,10 @@ export default function AdminPage() {
   const [users, setUsers] = useState<{ id: string; user_id: string; full_name: string; email: string; is_blocked: boolean; created_at: string }[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [refreshing, setRefreshing] = useState(false);
+  // Filtros admin avançados
+  const [filterSemester, setFilterSemester] = useState<string>('all');
+  const [filterCourse, setFilterCourse] = useState<string>('all');
+  const [filterStatus, setFilterStatus] = useState<'all' | 'published' | 'draft'>('all');
 
   // Apostila dialogs
   const [showExerciseDialog, setShowExerciseDialog] = useState<string | null>(null);
@@ -1094,10 +1098,23 @@ export default function AdminPage() {
 
   // Filtered data
   const filteredApostilas = useMemo(() => {
-    if (!searchQuery.trim()) return apostilas;
-    const q = searchQuery.toLowerCase();
-    return apostilas.filter(a => a.title.toLowerCase().includes(q) || a.category.toLowerCase().includes(q));
-  }, [apostilas, searchQuery]);
+    const q = searchQuery.trim().toLowerCase();
+    return apostilas.filter((a) => {
+      if (q && !(a.title.toLowerCase().includes(q) || a.category.toLowerCase().includes(q))) return false;
+      if (filterStatus === 'published' && !a.published) return false;
+      if (filterStatus === 'draft' && a.published) return false;
+      if (filterSemester !== 'all') {
+        if (filterSemester === 'none') { if (a.semester != null) return false; }
+        else if (String(a.semester) !== filterSemester) return false;
+      }
+      if (filterCourse !== 'all') {
+        const arr = (a.course || []) as string[];
+        if (filterCourse === 'none') { if (arr.length) return false; }
+        else if (!arr.includes(filterCourse)) return false;
+      }
+      return true;
+    });
+  }, [apostilas, searchQuery, filterStatus, filterSemester, filterCourse]);
 
   const filteredMaterials = useMemo(() => {
     if (!searchQuery.trim()) return materials;
@@ -1480,7 +1497,7 @@ export default function AdminPage() {
 
                 {/* Apostilas List */}
                 <div>
-                  <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+                  <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
                     <h3 className="font-semibold text-sm flex items-center gap-2">
                       <BookOpen className="h-4 w-4 text-primary" /> Apostilas ({filteredApostilas.length})
                     </h3>
@@ -1503,9 +1520,48 @@ export default function AdminPage() {
                       </Button>
                     </div>
                   </div>
+
+                  {/* Barra de filtros — semestre, curso, status */}
+                  <div className="flex items-center gap-2 mb-4 flex-wrap p-2 rounded-lg bg-muted/30 border border-border">
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground px-1">Filtros:</span>
+                    <Select value={filterSemester} onValueChange={setFilterSemester}>
+                      <SelectTrigger className="h-7 text-xs w-auto min-w-[140px]"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos os semestres</SelectItem>
+                        <SelectItem value="none">Sem semestre</SelectItem>
+                        {[1,2,3,4,5,6,7,8].map(n => <SelectItem key={n} value={String(n)}>{n}º Semestre</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                    <Select value={filterCourse} onValueChange={setFilterCourse}>
+                      <SelectTrigger className="h-7 text-xs w-auto min-w-[120px]"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos os cursos</SelectItem>
+                        <SelectItem value="none">Sem curso</SelectItem>
+                        <SelectItem value="CC">Ciência da Computação</SelectItem>
+                        <SelectItem value="SI">Sistemas de Informação</SelectItem>
+                        <SelectItem value="EC">Engenharia da Computação</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Select value={filterStatus} onValueChange={(v: any) => setFilterStatus(v)}>
+                      <SelectTrigger className="h-7 text-xs w-auto min-w-[110px]"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todas</SelectItem>
+                        <SelectItem value="published">Publicadas</SelectItem>
+                        <SelectItem value="draft">Ocultas</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {(filterSemester !== 'all' || filterCourse !== 'all' || filterStatus !== 'all') && (
+                      <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => { setFilterSemester('all'); setFilterCourse('all'); setFilterStatus('all'); }}>
+                        <X className="h-3 w-3 mr-1" /> Limpar
+                      </Button>
+                    )}
+                  </div>
+
                   <div className="space-y-3">
                     {filteredApostilas.map(a => {
                       const exCount = exercises[a.id]?.length || 0;
+                      const semBadge = a.semester ? `${a.semester}º sem` : null;
+                      const courseList = (a.course || []) as string[];
                       return (
                         <Card key={a.id} className="hover-lift card-alternate">
                           <CardContent className="p-3 sm:p-5">
@@ -1518,6 +1574,16 @@ export default function AdminPage() {
                                     <Badge variant={a.published ? 'default' : 'secondary'} className="text-[10px] shrink-0">
                                       {a.published ? 'Publicada' : 'Oculta'}
                                     </Badge>
+                                    {semBadge && (
+                                      <Badge variant="outline" className="text-[10px] shrink-0 border-primary/40 text-primary">
+                                        {semBadge}
+                                      </Badge>
+                                    )}
+                                    {courseList.map((c) => (
+                                      <Badge key={c} variant="outline" className="text-[9px] shrink-0">
+                                        {c}
+                                      </Badge>
+                                    ))}
                                   </div>
                                   <div className="flex items-center gap-1.5 mt-1 text-[11px] text-muted-foreground flex-wrap">
                                     <span className="truncate max-w-[140px]">{a.category}</span>
@@ -1556,12 +1622,13 @@ export default function AdminPage() {
                                   {a.published ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
                                 </Button>
                                 <Button
-                                  size="icon" variant="ghost"
-                                  className="hidden sm:inline-flex h-8 w-8 text-primary"
+                                  size="sm"
+                                  variant="default"
+                                  className="hidden sm:inline-flex h-8 px-2.5 text-xs gap-1.5 gradient-primary text-primary-foreground"
                                   onClick={() => navigate(`/admin/apostilas/${a.id}`)}
-                                  title="Workbench (editor unificado)"
+                                  title="Abrir no Workbench (editor completo)"
                                 >
-                                  <Sparkles className="h-3.5 w-3.5" />
+                                  <Sparkles className="h-3.5 w-3.5" /> Workbench
                                 </Button>
                                 <Button size="icon" variant="ghost" className="hidden sm:inline-flex h-8 w-8" onClick={() => { setEditingApostila(a); setEditTitle(a.title); setEditContent(a.content || ''); setEditCategory(a.category); }} title="Editar (modal clássico)">
                                   <Edit className="h-3.5 w-3.5" />

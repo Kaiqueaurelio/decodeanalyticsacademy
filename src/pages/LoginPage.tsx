@@ -17,23 +17,29 @@ import { motion, AnimatePresence } from 'framer-motion';
 export default function LoginPage() {
   const { signIn, signUp } = useAuth();
   const navigate = useNavigate();
-  const savedEmail = localStorage.getItem('decode_remember_email') || '';
+  const savedIdentifier = localStorage.getItem('decode_remember_identifier')
+    || localStorage.getItem('decode_remember_email')
+    || localStorage.getItem('decode_remember_ra')
+    || '';
   const savedPasswordRaw = localStorage.getItem('decode_remember_password') || '';
   let savedPassword = '';
   try { savedPassword = savedPasswordRaw ? atob(savedPasswordRaw) : ''; } catch { savedPassword = ''; }
-  const savedRa = localStorage.getItem('decode_remember_ra') || '';
-  const savedAuthMethod = (localStorage.getItem('decode_auth_method') as 'email' | 'ra') || 'email';
-  const [email, setEmail] = useState(savedEmail);
+  /** Identificador único: pode ser RA ou e-mail. Detectamos pela presença de "@". */
+  const [identifier, setIdentifier] = useState(savedIdentifier);
   const [password, setPassword] = useState(savedPassword);
-  const [ra, setRa] = useState(savedRa);
-  const [authMethod, setAuthMethod] = useState<'email' | 'ra'>(savedAuthMethod);
+  const [email, setEmail] = useState(''); // usado apenas no fluxo de reset por e-mail
   const [isSignUp, setIsSignUp] = useState(false);
   const [isReset, setIsReset] = useState(false);
 
   const RA_DOMAIN = 'ra.unip.local';
+  const looksLikeEmail = (v: string) => /@/.test(v.trim());
   const normalizeRa = (raValue: string) => raValue.trim().toUpperCase();
   const buildRaEmail = (raValue: string) => `${normalizeRa(raValue).toLowerCase()}@${RA_DOMAIN}`;
   const isValidRa = (raValue: string) => /^[A-Z0-9]{6,13}$/.test(normalizeRa(raValue));
+
+  /** Detecta se o identificador atual está no formato de e-mail (após o usuário digitar). */
+  const usingEmail = looksLikeEmail(identifier);
+
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loginAttempts, setLoginAttempts] = useState(0);
@@ -41,7 +47,7 @@ export default function LoginPage() {
   const [shaking, setShaking] = useState(false);
   const [showLockModal, setShowLockModal] = useState(false);
   const [unverifiedEmail, setUnverifiedEmail] = useState(false);
-  const [rememberMe, setRememberMe] = useState(!!savedEmail);
+  const [rememberMe, setRememberMe] = useState(!!savedIdentifier);
   const passwordRef = useRef<HTMLInputElement>(null);
 
   const triggerShake = () => {
@@ -56,38 +62,40 @@ export default function LoginPage() {
       return;
     }
 
-    // Validate RA format if RA method
-    if (authMethod === 'ra') {
-      if (!isValidRa(ra)) {
-        toast.error('RA inválido. Use 6 a 13 caracteres (letras e números).');
-        return;
-      }
+    const id = identifier.trim();
+    if (!id) { toast.error('Informe seu RA ou e-mail.'); return; }
+
+    const isEmail = looksLikeEmail(id);
+
+    // Validação básica
+    if (!isEmail && !isValidRa(id)) {
+      toast.error('Use um e-mail válido ou seu RA (6 a 13 letras/números).');
+      return;
     }
 
     setLoading(true);
-    let effectiveEmail = authMethod === 'ra' ? buildRaEmail(ra) : email;
+    let effectiveEmail = isEmail ? id : buildRaEmail(id);
 
-    // Login por RA: tenta primeiro resolver o RA para o e-mail real cadastrado
-    // (caso o RA esteja vinculado a uma conta criada originalmente por e-mail, ex: admin)
-    if (authMethod === 'ra' && !isSignUp) {
+    // Se for RA, tenta resolver para o e-mail real (caso conta tenha sido criada por e-mail)
+    if (!isEmail && !isSignUp) {
       try {
-        const { data: realEmail } = await supabase.rpc('get_email_for_ra' as any, { _ra: ra.trim() });
+        const { data: realEmail } = await supabase.rpc('get_email_for_ra' as any, { _ra: id });
         if (realEmail && typeof realEmail === 'string' && realEmail.length > 0) {
           effectiveEmail = realEmail;
         }
-      } catch (e) {
-        console.warn('[Login] get_email_for_ra falhou, usando pseudo-email:', e);
+      } catch (err) {
+        console.warn('[Login] get_email_for_ra falhou, usando pseudo-email:', err);
       }
     }
 
     if (isSignUp) {
-      if (authMethod === 'ra') {
-        // RA signup: bypass email confirmation by passing metadata
+      if (!isEmail) {
+        // Cadastro por RA — bypass email confirmation
         const { error } = await supabase.auth.signUp({
           email: effectiveEmail,
           password,
           options: {
-            data: { ra: ra.trim(), account_type: 'ra', full_name: `Aluno UNIP ${ra.trim()}` },
+            data: { ra: id, account_type: 'ra', full_name: `Aluno UNIP ${id}` },
             emailRedirectTo: `${window.location.origin}/dashboard`,
           },
         });
@@ -96,18 +104,17 @@ export default function LoginPage() {
           toast.error(error.message.includes('already') ? 'Este RA já está cadastrado.' : error.message);
           return;
         }
-        // Try immediate login (RA accounts don't need email verification in our flow)
         const { error: signInError } = await signIn(effectiveEmail, password);
         if (signInError) {
           toast.success('Conta criada! Faça login com seu RA.');
           setIsSignUp(false);
         } else {
           toast.success('Conta criada e login realizado!');
-          localStorage.setItem('decode_auth_method', 'ra');
           navigate('/dashboard');
         }
         return;
       }
+      // Cadastro por e-mail
       const { error } = await signUp(effectiveEmail, password);
       setLoading(false);
       if (error) {
@@ -120,14 +127,14 @@ export default function LoginPage() {
       return;
     }
 
-    // Login flow
+    // Fluxo de login
     const { error } = await signIn(effectiveEmail, password);
     setLoading(false);
 
     if (error) {
-      // Check if it's an unverified email error
       if (error.message?.includes('Email not confirmed')) {
         setUnverifiedEmail(true);
+        setEmail(effectiveEmail);
         toast.error('Verifique seu e-mail antes de acessar.');
         return;
       }
@@ -137,10 +144,8 @@ export default function LoginPage() {
       triggerShake();
 
       if (newAttempts >= 3) {
-        // Lock the account
         setIsLocked(true);
         setShowLockModal(true);
-        // Update profile in DB
         try {
           const { data: profileData } = await supabase
             .from('profiles')
@@ -167,21 +172,19 @@ export default function LoginPage() {
       }
     } else {
       setLoginAttempts(0);
-      localStorage.setItem('decode_auth_method', authMethod);
+      // Persistência unificada
       if (rememberMe) {
-        if (authMethod === 'ra') {
-          localStorage.setItem('decode_remember_ra', ra.trim());
-          localStorage.removeItem('decode_remember_email');
-        } else {
-          localStorage.setItem('decode_remember_email', email);
-          localStorage.removeItem('decode_remember_ra');
-        }
+        localStorage.setItem('decode_remember_identifier', id);
         localStorage.setItem('decode_remember_password', btoa(password));
       } else {
-        localStorage.removeItem('decode_remember_email');
-        localStorage.removeItem('decode_remember_ra');
+        localStorage.removeItem('decode_remember_identifier');
         localStorage.removeItem('decode_remember_password');
       }
+      // Limpa chaves antigas para não conflitar
+      localStorage.removeItem('decode_remember_email');
+      localStorage.removeItem('decode_remember_ra');
+      localStorage.removeItem('decode_auth_method');
+
       toast.success('Login realizado!');
       const lastRoute = localStorage.getItem('decode_last_route');
       navigate(lastRoute && lastRoute !== '/' && lastRoute !== '/login' ? lastRoute : '/dashboard');
@@ -365,50 +368,43 @@ export default function LoginPage() {
               ) : (
                 <>
                   <form onSubmit={handleSubmit} className="space-y-4">
-                    {/* Auth method toggle (RA vs Email) */}
-                    <div className="grid grid-cols-2 gap-1 p-1 bg-muted/40 rounded-md" style={{ border: '1px solid hsl(0 0% 100% / 0.06)' }}>
-                      <button
-                        type="button"
-                        onClick={() => { setAuthMethod('ra'); setUnverifiedEmail(false); setLoginAttempts(0); }}
-                        className={`text-xs py-1.5 px-2 rounded smooth-all font-medium ${authMethod === 'ra' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
-                      >
-                        Aluno UNIP (RA)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => { setAuthMethod('email'); setUnverifiedEmail(false); setLoginAttempts(0); }}
-                        className={`text-xs py-1.5 px-2 rounded smooth-all font-medium ${authMethod === 'email' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
-                      >
-                        Email
-                      </button>
+                    {/* Campo único: RA ou e-mail (detecção automática pela presença de @) */}
+                    <div className="space-y-1.5">
+                      <Label htmlFor="identifier" className="text-xs text-muted-foreground">
+                        RA ou e-mail
+                      </Label>
+                      <Input
+                        id="identifier"
+                        type="text"
+                        inputMode="email"
+                        autoComplete="username"
+                        required
+                        value={identifier}
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          if (looksLikeEmail(v)) {
+                            setIdentifier(v.trim());
+                          } else {
+                            setIdentifier(v.replace(/[^A-Za-z0-9@._-]/g, '').toUpperCase());
+                          }
+                          setUnverifiedEmail(false);
+                        }}
+                        placeholder="Ex: G802144 ou seu@email.com"
+                        maxLength={120}
+                      />
+                      <p className="text-[10px] text-muted-foreground/70 leading-snug">
+                        {usingEmail
+                          ? '✉️ Detectamos um e-mail. Login com verificação por e-mail.'
+                          : identifier.length > 0
+                            ? '🎓 Detectamos um RA. Login direto, sem verificação.'
+                            : 'Digite seu RA da UNIP ou seu e-mail cadastrado.'}
+                      </p>
+                      {isSignUp && !usingEmail && identifier.length > 0 && (
+                        <p className="text-[10px] text-warning/80 leading-snug">
+                          ⚠️ Cadastro por RA é rápido, mas você não poderá recuperar a senha por e-mail.
+                        </p>
+                      )}
                     </div>
-
-                    {authMethod === 'ra' ? (
-                      <div className="space-y-1.5">
-                        <Label htmlFor="ra" className="text-xs text-muted-foreground">RA (Registro Acadêmico)</Label>
-                        <Input
-                          id="ra"
-                          type="text"
-                          inputMode="text"
-                          autoComplete="username"
-                          required
-                          value={ra}
-                          onChange={e => setRa(e.target.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase())}
-                          placeholder="Ex: G802144"
-                          maxLength={13}
-                        />
-                        {isSignUp && (
-                          <p className="text-[10px] text-muted-foreground/70 leading-snug">
-                            ⚠️ Cadastro por RA é rápido, mas você não poderá recuperar a senha por e-mail. Guarde-a em local seguro.
-                          </p>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="space-y-1.5">
-                        <Label htmlFor="email" className="text-xs text-muted-foreground">Email</Label>
-                        <Input id="email" type="email" autoComplete="username" required value={email} onChange={e => setEmail(e.target.value)} placeholder="seu@email.com" />
-                      </div>
-                    )}
                     <div className="space-y-1.5">
                       <Label htmlFor="password" className="text-xs text-muted-foreground">Senha</Label>
                       <div className={`relative ${shaking ? 'animate-shake' : ''}`}>
