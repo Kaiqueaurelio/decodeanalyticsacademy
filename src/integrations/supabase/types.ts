@@ -304,6 +304,7 @@ export type Database = {
           category: string
           content: string | null
           content_backup: string | null
+          course: string[] | null
           created_at: string
           created_by: string | null
           embedding: string | null
@@ -311,6 +312,7 @@ export type Database = {
           id: string
           published: boolean
           reformatted_at: string | null
+          semester: number | null
           source_type: string | null
           title: string
           updated_at: string
@@ -319,6 +321,7 @@ export type Database = {
           category?: string
           content?: string | null
           content_backup?: string | null
+          course?: string[] | null
           created_at?: string
           created_by?: string | null
           embedding?: string | null
@@ -326,6 +329,7 @@ export type Database = {
           id?: string
           published?: boolean
           reformatted_at?: string | null
+          semester?: number | null
           source_type?: string | null
           title: string
           updated_at?: string
@@ -334,6 +338,7 @@ export type Database = {
           category?: string
           content?: string | null
           content_backup?: string | null
+          course?: string[] | null
           created_at?: string
           created_by?: string | null
           embedding?: string | null
@@ -341,6 +346,7 @@ export type Database = {
           id?: string
           published?: boolean
           reformatted_at?: string | null
+          semester?: number | null
           source_type?: string | null
           title?: string
           updated_at?: string

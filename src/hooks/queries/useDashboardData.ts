@@ -4,28 +4,56 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
+import type { CourseCode } from '@/lib/subject-semester-map';
 
 export type ApostilaSummary = Pick<
   Tables<'apostilas'>,
   'id' | 'title' | 'category' | 'published' | 'source_type' | 'file_url' | 'created_at' | 'updated_at'
->;
+> & {
+  semester: number | null;
+  course: CourseCode[] | null;
+};
 
 // Colunas leves: SEM `content` nem `content_backup` (podem ter centenas de KB).
 const APOSTILA_LIST_COLUMNS =
-  'id, title, category, published, source_type, file_url, created_at, updated_at';
+  'id, title, category, published, source_type, file_url, created_at, updated_at, semester, course';
+
+export interface ApostilasListOptions {
+  /** Filtra para mostrar apenas as do semestre informado + as sem semestre (extracurricular). */
+  semester?: number | null;
+  /** Filtra para o curso do aluno (mantém apostilas com course NULL/vazio). */
+  course?: CourseCode | null;
+  /** Quando false, ignora os filtros e retorna tudo. Default: true. */
+  enabled?: boolean;
+}
 
 /**
  * Lista todas as apostilas publicadas — SEM o campo `content` nem `content_backup`,
  * que podem somar centenas de KB. O conteúdo só carrega na ApostilaPage.
+ *
+ * Sem opções: retorna TODAS publicadas (compatibilidade com chamadas antigas).
+ * Com `{ semester, course }`: filtra server-side.
  */
-export function useApostilasList() {
+export function useApostilasList(options: ApostilasListOptions = {}) {
+  const { semester = null, course = null, enabled = true } = options;
   return useQuery({
-    queryKey: ['apostilas', 'list'],
+    queryKey: ['apostilas', 'list', semester, course, enabled],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let q = supabase
         .from('apostilas')
         .select(APOSTILA_LIST_COLUMNS)
-        .eq('published', true)
+        .eq('published', true);
+
+      if (enabled && semester) {
+        // Apostilas do semestre do aluno OU sem semestre definido (extracurricular)
+        q = q.or(`semester.eq.${semester},semester.is.null`);
+      }
+      if (enabled && course) {
+        // Apostilas para o curso OU sem restrição de curso
+        q = q.or(`course.is.null,course.cs.{${course}}`);
+      }
+
+      const { data, error } = await q
         .order('category')
         .order('created_at', { ascending: false });
       if (error) throw error;

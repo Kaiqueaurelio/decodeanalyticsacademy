@@ -27,6 +27,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MarkdownEditor } from '@/components/MarkdownEditor';
 import { ApostilaHealthBar } from '@/components/admin/ApostilaHealthBar';
 import { MaterialsDropZone } from '@/components/admin/MaterialsDropZone';
@@ -35,9 +36,10 @@ import { SmartPasteDialog } from '@/components/admin/SmartPasteDialog';
 import { ManualLinkMaterialsDialog } from '@/components/ManualLinkMaterialsDialog';
 import { autoLinkApostila } from '@/lib/auto-link-materials';
 import { ApostilaContentRenderer } from '@/components/ApostilaContentRenderer';
+import { guessSemesterFromCategory, SEMESTER_OPTIONS, COURSE_OPTIONS, type CourseCode } from '@/lib/subject-semester-map';
 import {
   ArrowLeft, Search, Save, Eye, Sparkles, Wand2, Loader2, Menu, FileText,
-  ListChecks, PanelRightClose, ExternalLink,
+  ListChecks, PanelRightClose, ExternalLink, GraduationCap,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -48,6 +50,8 @@ interface ApostilaLite {
   category: string;
   published: boolean;
   updated_at: string;
+  semester: number | null;
+  course: CourseCode[] | null;
 }
 
 const AUTOSAVE_MS = 1500;
@@ -67,6 +71,8 @@ export default function AdminApostilaWorkbench() {
   const [category, setCategory] = useState('');
   const [content, setContent] = useState('');
   const [published, setPublished] = useState(false);
+  const [semester, setSemester] = useState<number | null>(null);
+  const [course, setCourse] = useState<CourseCode[]>([]);
 
   // Materiais e exercícios (apenas contagem na health bar; full no painel direito)
   const [linkedMaterials, setLinkedMaterials] = useState<LinkedMaterialItem[]>([]);
@@ -90,7 +96,7 @@ export default function AdminApostilaWorkbench() {
     (async () => {
       const { data } = await supabase
         .from('apostilas')
-        .select('id, title, category, published, updated_at')
+        .select('id, title, category, published, updated_at, semester, course')
         .order('updated_at', { ascending: false })
         .limit(200);
       setApostilas((data as ApostilaLite[]) || []);
@@ -102,7 +108,7 @@ export default function AdminApostilaWorkbench() {
     setLoading(true);
     initialLoadRef.current = true;
     const [{ data: ap }, { data: links, error: linksErr }, { count }] = await Promise.all([
-      supabase.from('apostilas').select('id, title, category, content, published').eq('id', apostilaId).maybeSingle(),
+      supabase.from('apostilas').select('id, title, category, content, published, semester, course').eq('id', apostilaId).maybeSingle(),
       supabase.from('apostila_materials').select('id, sort_order, material_id').eq('apostila_id', apostilaId).order('sort_order'),
       supabase.from('exercises').select('id', { count: 'exact', head: true }).eq('apostila_id', apostilaId),
     ]);
@@ -116,6 +122,8 @@ export default function AdminApostilaWorkbench() {
     setCategory(ap.category || '');
     setContent(ap.content || '');
     setPublished(!!ap.published);
+    setSemester((ap as any).semester ?? null);
+    setCourse(((ap as any).course as CourseCode[] | null) ?? []);
     setExerciseCount(count || 0);
 
     // Hidrata títulos dos materiais
@@ -151,14 +159,20 @@ export default function AdminApostilaWorkbench() {
     }, AUTOSAVE_MS);
     return () => window.clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [title, category, content]);
+  }, [title, category, content, semester, course]);
 
   const doSave = async () => {
     if (!id || !dirtyRef.current) return;
     setSaving(true);
     const { error } = await supabase
       .from('apostilas')
-      .update({ title: title.trim() || 'Sem título', category, content })
+      .update({
+        title: title.trim() || 'Sem título',
+        category,
+        content,
+        semester,
+        course: course.length ? course : null,
+      })
       .eq('id', id);
     setSaving(false);
     if (error) {
@@ -167,11 +181,18 @@ export default function AdminApostilaWorkbench() {
     }
     dirtyRef.current = false;
     setLastSavedAt(new Date());
-    // Atualiza item na lista
     setApostilas((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, title: title.trim() || 'Sem título', category, updated_at: new Date().toISOString() } : p))
+      prev.map((p) => (p.id === id ? { ...p, title: title.trim() || 'Sem título', category, semester, course: course.length ? course : null, updated_at: new Date().toISOString() } : p))
     );
   };
+
+  // Sugere semestre automaticamente quando a categoria muda e ainda não há semestre
+  useEffect(() => {
+    if (!category || semester) return;
+    const guess = guessSemesterFromCategory(category);
+    if (guess) setSemester(guess);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [category]);
 
   // Ctrl+S manual
   useEffect(() => {
@@ -184,7 +205,7 @@ export default function AdminApostilaWorkbench() {
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [title, category, content, id]);
+  }, [title, category, content, semester, course, id]);
 
   // === Publicar / despublicar ===
   const togglePublish = async () => {
@@ -422,6 +443,44 @@ export default function AdminApostilaWorkbench() {
           placeholder="Disciplina"
           className="h-7 text-xs border-0 bg-transparent focus-visible:ring-0 px-1 max-w-[180px] text-muted-foreground"
         />
+
+        {/* Semestre */}
+        <Select
+          value={semester ? String(semester) : 'none'}
+          onValueChange={(v) => setSemester(v === 'none' ? null : Number(v))}
+        >
+          <SelectTrigger className="h-7 text-[11px] w-[110px] gap-1">
+            <GraduationCap className="h-3 w-3 text-primary" />
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">Todos sem.</SelectItem>
+            {SEMESTER_OPTIONS.map((s) => (
+              <SelectItem key={s} value={String(s)}>{s}º semestre</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {/* Cursos (chips multi-select) */}
+        <div className="hidden md:flex items-center gap-0.5 rounded-md border border-border/60 p-0.5">
+          {COURSE_OPTIONS.map((c) => {
+            const active = course.includes(c);
+            return (
+              <button
+                key={c}
+                type="button"
+                onClick={() => setCourse((prev) => active ? prev.filter((x) => x !== c) : [...prev, c])}
+                title={active ? `Remover ${c}` : `Incluir ${c}`}
+                className={cn(
+                  'px-1.5 py-0.5 text-[10px] font-semibold rounded transition-colors',
+                  active ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground',
+                )}
+              >
+                {c}
+              </button>
+            );
+          })}
+        </div>
 
         <div className="ml-auto flex items-center gap-1.5">
           <Button size="sm" variant="outline" className="h-7 gap-1.5 text-xs" onClick={() => setPasteOpen(true)}>
