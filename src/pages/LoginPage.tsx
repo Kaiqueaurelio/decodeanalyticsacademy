@@ -368,50 +368,43 @@ export default function LoginPage() {
               ) : (
                 <>
                   <form onSubmit={handleSubmit} className="space-y-4">
-                    {/* Auth method toggle (RA vs Email) */}
-                    <div className="grid grid-cols-2 gap-1 p-1 bg-muted/40 rounded-md" style={{ border: '1px solid hsl(0 0% 100% / 0.06)' }}>
-                      <button
-                        type="button"
-                        onClick={() => { setAuthMethod('ra'); setUnverifiedEmail(false); setLoginAttempts(0); }}
-                        className={`text-xs py-1.5 px-2 rounded smooth-all font-medium ${authMethod === 'ra' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
-                      >
-                        Aluno UNIP (RA)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => { setAuthMethod('email'); setUnverifiedEmail(false); setLoginAttempts(0); }}
-                        className={`text-xs py-1.5 px-2 rounded smooth-all font-medium ${authMethod === 'email' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
-                      >
-                        Email
-                      </button>
+                    {/* Campo único: RA ou e-mail (detecção automática pela presença de @) */}
+                    <div className="space-y-1.5">
+                      <Label htmlFor="identifier" className="text-xs text-muted-foreground">
+                        RA ou e-mail
+                      </Label>
+                      <Input
+                        id="identifier"
+                        type="text"
+                        inputMode="email"
+                        autoComplete="username"
+                        required
+                        value={identifier}
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          if (looksLikeEmail(v)) {
+                            setIdentifier(v.trim());
+                          } else {
+                            setIdentifier(v.replace(/[^A-Za-z0-9@._-]/g, '').toUpperCase());
+                          }
+                          setUnverifiedEmail(false);
+                        }}
+                        placeholder="Ex: G802144 ou seu@email.com"
+                        maxLength={120}
+                      />
+                      <p className="text-[10px] text-muted-foreground/70 leading-snug">
+                        {usingEmail
+                          ? '✉️ Detectamos um e-mail. Login com verificação por e-mail.'
+                          : identifier.length > 0
+                            ? '🎓 Detectamos um RA. Login direto, sem verificação.'
+                            : 'Digite seu RA da UNIP ou seu e-mail cadastrado.'}
+                      </p>
+                      {isSignUp && !usingEmail && identifier.length > 0 && (
+                        <p className="text-[10px] text-warning/80 leading-snug">
+                          ⚠️ Cadastro por RA é rápido, mas você não poderá recuperar a senha por e-mail.
+                        </p>
+                      )}
                     </div>
-
-                    {authMethod === 'ra' ? (
-                      <div className="space-y-1.5">
-                        <Label htmlFor="ra" className="text-xs text-muted-foreground">RA (Registro Acadêmico)</Label>
-                        <Input
-                          id="ra"
-                          type="text"
-                          inputMode="text"
-                          autoComplete="username"
-                          required
-                          value={ra}
-                          onChange={e => setRa(e.target.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase())}
-                          placeholder="Ex: G802144"
-                          maxLength={13}
-                        />
-                        {isSignUp && (
-                          <p className="text-[10px] text-muted-foreground/70 leading-snug">
-                            ⚠️ Cadastro por RA é rápido, mas você não poderá recuperar a senha por e-mail. Guarde-a em local seguro.
-                          </p>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="space-y-1.5">
-                        <Label htmlFor="email" className="text-xs text-muted-foreground">Email</Label>
-                        <Input id="email" type="email" autoComplete="username" required value={email} onChange={e => setEmail(e.target.value)} placeholder="seu@email.com" />
-                      </div>
-                    )}
                     <div className="space-y-1.5">
                       <Label htmlFor="password" className="text-xs text-muted-foreground">Senha</Label>
                       <div className={`relative ${shaking ? 'animate-shake' : ''}`}>
