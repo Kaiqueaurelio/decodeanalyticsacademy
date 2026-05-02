@@ -1622,12 +1622,13 @@ export default function AdminPage() {
                                   {a.published ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
                                 </Button>
                                 <Button
-                                  size="icon" variant="ghost"
-                                  className="hidden sm:inline-flex h-8 w-8 text-primary"
+                                  size="sm"
+                                  variant="default"
+                                  className="hidden sm:inline-flex h-8 px-2.5 text-xs gap-1.5 gradient-primary text-primary-foreground"
                                   onClick={() => navigate(`/admin/apostilas/${a.id}`)}
-                                  title="Workbench (editor unificado)"
+                                  title="Abrir no Workbench (editor completo)"
                                 >
-                                  <Sparkles className="h-3.5 w-3.5" />
+                                  <Sparkles className="h-3.5 w-3.5" /> Workbench
                                 </Button>
                                 <Button size="icon" variant="ghost" className="hidden sm:inline-flex h-8 w-8" onClick={() => { setEditingApostila(a); setEditTitle(a.title); setEditContent(a.content || ''); setEditCategory(a.category); }} title="Editar (modal clássico)">
                                   <Edit className="h-3.5 w-3.5" />
