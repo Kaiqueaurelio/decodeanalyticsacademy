@@ -27,6 +27,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MarkdownEditor } from '@/components/MarkdownEditor';
 import { ApostilaHealthBar } from '@/components/admin/ApostilaHealthBar';
 import { MaterialsDropZone } from '@/components/admin/MaterialsDropZone';
@@ -35,9 +36,10 @@ import { SmartPasteDialog } from '@/components/admin/SmartPasteDialog';
 import { ManualLinkMaterialsDialog } from '@/components/ManualLinkMaterialsDialog';
 import { autoLinkApostila } from '@/lib/auto-link-materials';
 import { ApostilaContentRenderer } from '@/components/ApostilaContentRenderer';
+import { guessSemesterFromCategory, SEMESTER_OPTIONS, COURSE_OPTIONS, type CourseCode } from '@/lib/subject-semester-map';
 import {
   ArrowLeft, Search, Save, Eye, Sparkles, Wand2, Loader2, Menu, FileText,
-  ListChecks, PanelRightClose, ExternalLink,
+  ListChecks, PanelRightClose, ExternalLink, GraduationCap,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
