@@ -64,8 +64,16 @@ export function MaterialsDropZone({ apostilaId, baseSortOrder, onUploaded, class
   const [dragOver, setDragOver] = useState(false);
   const [progress, setProgress] = useState<FileProgress[]>([]);
 
+  /** Sanitiza nome para uso em path do Storage (sem acentos/espaços/símbolos). */
+  const sanitizeName = (name: string) =>
+    name
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-zA-Z0-9._-]+/g, '-')
+      .replace(/-+/g, '-').replace(/^-|-$/g, '')
+      .toLowerCase();
+
   const upload = async (files: FileList | File[]) => {
-    if (!user) { toast.error('Sessão expirada'); return; }
+    if (!user) { toast.error('Sessão expirada — faça login novamente'); return; }
     const arr = Array.from(files);
     if (arr.length === 0) return;
 
@@ -73,47 +81,73 @@ export function MaterialsDropZone({ apostilaId, baseSortOrder, onUploaded, class
 
     let order = baseSortOrder;
     let okCount = 0;
+    const errors: string[] = [];
 
     for (let i = 0; i < arr.length; i++) {
       const file = arr[i];
       setProgress((prev) => prev.map((p, idx) => idx === i ? { ...p, status: 'uploading' } : p));
 
       try {
+        if (file.size === 0) throw new Error('Arquivo vazio');
         if (file.size > 100 * 1024 * 1024) {
-          throw new Error('Acima de 100MB');
+          throw new Error(`Acima de 100MB (${(file.size / 1024 / 1024).toFixed(1)}MB)`);
         }
-        const ext = file.name.split('.').pop() || 'bin';
+        const rawExt = file.name.split('.').pop() || 'bin';
+        const ext = sanitizeName(rawExt) || 'bin';
         const type = detectType(file);
-        const path = `${type}s/${apostilaId}/${Date.now()}-${i}.${ext}`;
+        const baseName = sanitizeName(file.name.replace(/\.[^.]+$/, '')) || 'arquivo';
+        // Caminho: <userId>/<apostilaId>/<timestamp>-<nome>.ext
+        // (usar userId como primeiro segmento é a convenção do bucket)
+        const path = `${user.id}/${apostilaId}/${Date.now()}-${i}-${baseName}.${ext}`;
 
         const { error: upErr } = await supabase.storage
-          .from('materials').upload(path, file, { contentType: file.type, upsert: false });
-        if (upErr) throw upErr;
+          .from('materials')
+          .upload(path, file, {
+            contentType: file.type || 'application/octet-stream',
+            upsert: false,
+            cacheControl: '3600',
+          });
+        if (upErr) {
+          console.error('[MaterialsDropZone] upload error', upErr);
+          throw new Error(upErr.message || 'Falha ao subir arquivo');
+        }
 
-        const title = file.name.replace(/\.[^.]+$/, '');
+        const title = file.name.replace(/\.[^.]+$/, '').slice(0, 200) || baseName;
         const { data: mat, error: insErr } = await supabase.from('materials').insert({
           title, type: type as any, file_path: path, created_by: user.id,
         } as any).select().single();
-        if (insErr) throw insErr;
+        if (insErr) {
+          console.error('[MaterialsDropZone] insert material error', insErr);
+          // Tenta limpar o arquivo órfão
+          await supabase.storage.from('materials').remove([path]).catch(() => {});
+          throw new Error(insErr.message || 'Falha ao registrar material');
+        }
 
         const { error: linkErr } = await supabase.from('apostila_materials').insert({
           apostila_id: apostilaId, material_id: (mat as any).id, sort_order: order++,
         });
-        if (linkErr) throw linkErr;
+        if (linkErr) {
+          console.error('[MaterialsDropZone] link error', linkErr);
+          throw new Error(linkErr.message || 'Falha ao vincular à apostila');
+        }
 
         okCount++;
         setProgress((prev) => prev.map((p, idx) => idx === i ? { ...p, status: 'done' } : p));
       } catch (err: any) {
-        setProgress((prev) => prev.map((p, idx) => idx === i ? { ...p, status: 'error', error: err?.message || 'Erro' } : p));
+        const msg = err?.message || 'Erro desconhecido';
+        errors.push(`${file.name}: ${msg}`);
+        setProgress((prev) => prev.map((p, idx) => idx === i ? { ...p, status: 'error', error: msg } : p));
       }
     }
 
     if (okCount > 0) {
-      toast.success(`${okCount} material(is) vinculado(s) à apostila!`);
+      toast.success(`${okCount} material(is) vinculado(s) à apostila`);
       onUploaded();
     }
-    // Limpa progresso após 3s
-    setTimeout(() => setProgress([]), 3000);
+    if (errors.length) {
+      toast.error(`${errors.length} falha(s)`, { description: errors.slice(0, 3).join(' • ') });
+    }
+    setTimeout(() => setProgress([]), 4000);
   };
 
   const onDrop = (e: React.DragEvent) => {
