@@ -71,6 +71,8 @@ export default function AdminApostilaWorkbench() {
   const [category, setCategory] = useState('');
   const [content, setContent] = useState('');
   const [published, setPublished] = useState(false);
+  const [semester, setSemester] = useState<number | null>(null);
+  const [course, setCourse] = useState<CourseCode[]>([]);
 
   // Materiais e exercícios (apenas contagem na health bar; full no painel direito)
   const [linkedMaterials, setLinkedMaterials] = useState<LinkedMaterialItem[]>([]);
