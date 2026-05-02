@@ -75,8 +75,28 @@ export default function DashboardPage() {
   const gamification = useGamification();
   const examFocus = useExamFocus();
 
+  // Perfil do aluno (semestre/curso) — base para filtrar apostilas
+  const { data: profile } = useUserProfile(user?.id);
+  const studentSemester = profile?.semester ?? null;
+  const studentCourse = profile?.course ?? null;
+
+  // Toggle: ver só apostilas do meu semestre OU todas. Persiste em localStorage.
+  const [semesterFilter, setSemesterFilter] = useState<'mine' | 'all'>(() => {
+    if (typeof window === 'undefined') return 'mine';
+    return (localStorage.getItem('apostilas.semesterFilter') as 'mine' | 'all') || 'mine';
+  });
+  useEffect(() => {
+    try { localStorage.setItem('apostilas.semesterFilter', semesterFilter); } catch {}
+  }, [semesterFilter]);
+
+  const useSemFilter = semesterFilter === 'mine' && !!studentSemester;
+
   // Cache via React Query — navegação volta instantânea (staleTime 5min em App.tsx).
-  const { data: apostilas = [], isLoading: loadingApostilas } = useApostilasList();
+  const { data: apostilas = [], isLoading: loadingApostilas } = useApostilasList({
+    semester: useSemFilter ? studentSemester : null,
+    course: useSemFilter ? studentCourse : null,
+    enabled: useSemFilter,
+  });
   const { data: exerciseCounts = {} } = useExerciseCounts();
   const { data: statsData, isLoading: loadingStats } = useDashboardStats(user?.id);
   const stats = statsData || { total: 0, hits: 0, errors: 0, byApostila: {} };
