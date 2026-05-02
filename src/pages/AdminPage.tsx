@@ -1555,7 +1555,15 @@ export default function AdminPage() {
                                 <Button size="icon" variant="ghost" className={`h-8 w-8 ${a.published ? 'text-destructive' : 'text-[hsl(var(--success))]'}`} onClick={() => togglePublish(a.id, a.published)} title={a.published ? 'Ocultar' : 'Publicar'}>
                                   {a.published ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
                                 </Button>
-                                <Button size="icon" variant="ghost" className="hidden sm:inline-flex h-8 w-8" onClick={() => { setEditingApostila(a); setEditTitle(a.title); setEditContent(a.content || ''); setEditCategory(a.category); }} title="Editar">
+                                <Button
+                                  size="icon" variant="ghost"
+                                  className="hidden sm:inline-flex h-8 w-8 text-primary"
+                                  onClick={() => navigate(`/admin/apostilas/${a.id}`)}
+                                  title="Workbench (editor unificado)"
+                                >
+                                  <Sparkles className="h-3.5 w-3.5" />
+                                </Button>
+                                <Button size="icon" variant="ghost" className="hidden sm:inline-flex h-8 w-8" onClick={() => { setEditingApostila(a); setEditTitle(a.title); setEditContent(a.content || ''); setEditCategory(a.category); }} title="Editar (modal clássico)">
                                   <Edit className="h-3.5 w-3.5" />
                                 </Button>
                                 <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => setConfirmDeleteId(a.id)} title="Excluir">
@@ -1582,8 +1590,11 @@ export default function AdminPage() {
                                       <PenLine className="h-3.5 w-3.5 mr-2" /> Ver exercícios
                                     </DropdownMenuItem>
                                     <DropdownMenuSeparator />
+                                    <DropdownMenuItem onClick={() => navigate(`/admin/apostilas/${a.id}`)}>
+                                      <Sparkles className="h-3.5 w-3.5 mr-2 text-primary" /> Abrir no Workbench
+                                    </DropdownMenuItem>
                                     <DropdownMenuItem onClick={() => { setEditingApostila(a); setEditTitle(a.title); setEditContent(a.content || ''); setEditCategory(a.category); }}>
-                                      <Edit className="h-3.5 w-3.5 mr-2" /> Editar conteúdo
+                                      <Edit className="h-3.5 w-3.5 mr-2" /> Editar (modal clássico)
                                     </DropdownMenuItem>
                                   </DropdownMenuContent>
                                 </DropdownMenu>
