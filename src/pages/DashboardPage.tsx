@@ -345,26 +345,64 @@ export default function DashboardPage() {
           <div className="lg:col-span-2 space-y-6">
             {/* Minhas Disciplinas */}
             <div id="minhas-disciplinas" className="animate-content-show delay-3 scroll-mt-24">
-              <div className="section-heading flex items-center justify-between">
+              <div className="section-heading flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-2">
                   <BookOpen className="h-4 w-4 text-primary" />
                   <h2 className="text-base font-semibold">Minhas Disciplinas</h2>
                 </div>
-                <div className="flex items-center gap-1 rounded-md border border-border/60 p-0.5 bg-card">
-                  <button
-                    onClick={() => setDisciplinesView('grid')}
-                    className={`p-1.5 rounded transition-colors ${disciplinesView === 'grid' ? 'bg-primary/15 text-primary' : 'text-muted-foreground hover:text-foreground'}`}
-                    aria-label="Visualização em grade"
-                  >
-                    <LayoutGrid className="h-3.5 w-3.5" />
-                  </button>
-                  <button
-                    onClick={() => setDisciplinesView('list')}
-                    className={`p-1.5 rounded transition-colors ${disciplinesView === 'list' ? 'bg-primary/15 text-primary' : 'text-muted-foreground hover:text-foreground'}`}
-                    aria-label="Visualização em lista"
-                  >
-                    <ListIcon className="h-3.5 w-3.5" />
-                  </button>
+                <div className="flex items-center gap-2">
+                  {/* Toggle Meu semestre / Todos — só aparece se o aluno tem semestre definido */}
+                  {studentSemester && (
+                    <div className="flex items-center gap-1 rounded-full border border-border/60 p-0.5 bg-card">
+                      <button
+                        onClick={() => setSemesterFilter('mine')}
+                        className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
+                          semesterFilter === 'mine'
+                            ? 'bg-primary text-primary-foreground'
+                            : 'text-muted-foreground hover:text-foreground'
+                        }`}
+                        title={`Mostrar apenas apostilas do ${semesterLabel(studentSemester)}`}
+                      >
+                        <GraduationCap className="h-3 w-3" />
+                        Meu sem. ({studentSemester}º)
+                      </button>
+                      <button
+                        onClick={() => setSemesterFilter('all')}
+                        className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
+                          semesterFilter === 'all'
+                            ? 'bg-primary text-primary-foreground'
+                            : 'text-muted-foreground hover:text-foreground'
+                        }`}
+                      >
+                        Todos
+                      </button>
+                    </div>
+                  )}
+                  {/* Banner discreto se o aluno não tem semestre cadastrado */}
+                  {!studentSemester && (
+                    <button
+                      onClick={() => navigate('/profile')}
+                      className="text-[11px] text-muted-foreground hover:text-primary underline-offset-2 hover:underline"
+                      title="Complete seu perfil para filtrar apostilas pelo seu semestre"
+                    >
+                      Definir meu semestre →
+                    </button>
+                  )}
+                  <div className="flex items-center gap-1 rounded-md border border-border/60 p-0.5 bg-card">
+                    <button
+                      onClick={() => setDisciplinesView('grid')}
+                      className={`p-1.5 rounded transition-colors ${disciplinesView === 'grid' ? 'bg-primary/15 text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                      aria-label="Visualização em grade"
+                    >
+                      <LayoutGrid className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      onClick={() => setDisciplinesView('list')}
+                      className={`p-1.5 rounded transition-colors ${disciplinesView === 'list' ? 'bg-primary/15 text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                      aria-label="Visualização em lista"
+                    >
+                      <ListIcon className="h-3.5 w-3.5" />
+                    </button>
                 </div>
               </div>
 
