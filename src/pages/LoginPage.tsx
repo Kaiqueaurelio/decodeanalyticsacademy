@@ -62,38 +62,40 @@ export default function LoginPage() {
       return;
     }
 
-    // Validate RA format if RA method
-    if (authMethod === 'ra') {
-      if (!isValidRa(ra)) {
-        toast.error('RA inválido. Use 6 a 13 caracteres (letras e números).');
-        return;
-      }
+    const id = identifier.trim();
+    if (!id) { toast.error('Informe seu RA ou e-mail.'); return; }
+
+    const isEmail = looksLikeEmail(id);
+
+    // Validação básica
+    if (!isEmail && !isValidRa(id)) {
+      toast.error('Use um e-mail válido ou seu RA (6 a 13 letras/números).');
+      return;
     }
 
     setLoading(true);
-    let effectiveEmail = authMethod === 'ra' ? buildRaEmail(ra) : email;
+    let effectiveEmail = isEmail ? id : buildRaEmail(id);
 
-    // Login por RA: tenta primeiro resolver o RA para o e-mail real cadastrado
-    // (caso o RA esteja vinculado a uma conta criada originalmente por e-mail, ex: admin)
-    if (authMethod === 'ra' && !isSignUp) {
+    // Se for RA, tenta resolver para o e-mail real (caso conta tenha sido criada por e-mail)
+    if (!isEmail && !isSignUp) {
       try {
-        const { data: realEmail } = await supabase.rpc('get_email_for_ra' as any, { _ra: ra.trim() });
+        const { data: realEmail } = await supabase.rpc('get_email_for_ra' as any, { _ra: id });
         if (realEmail && typeof realEmail === 'string' && realEmail.length > 0) {
           effectiveEmail = realEmail;
         }
-      } catch (e) {
-        console.warn('[Login] get_email_for_ra falhou, usando pseudo-email:', e);
+      } catch (err) {
+        console.warn('[Login] get_email_for_ra falhou, usando pseudo-email:', err);
       }
     }
 
     if (isSignUp) {
-      if (authMethod === 'ra') {
-        // RA signup: bypass email confirmation by passing metadata
+      if (!isEmail) {
+        // Cadastro por RA — bypass email confirmation
         const { error } = await supabase.auth.signUp({
           email: effectiveEmail,
           password,
           options: {
-            data: { ra: ra.trim(), account_type: 'ra', full_name: `Aluno UNIP ${ra.trim()}` },
+            data: { ra: id, account_type: 'ra', full_name: `Aluno UNIP ${id}` },
             emailRedirectTo: `${window.location.origin}/dashboard`,
           },
         });
@@ -102,18 +104,17 @@ export default function LoginPage() {
           toast.error(error.message.includes('already') ? 'Este RA já está cadastrado.' : error.message);
           return;
         }
-        // Try immediate login (RA accounts don't need email verification in our flow)
         const { error: signInError } = await signIn(effectiveEmail, password);
         if (signInError) {
           toast.success('Conta criada! Faça login com seu RA.');
           setIsSignUp(false);
         } else {
           toast.success('Conta criada e login realizado!');
-          localStorage.setItem('decode_auth_method', 'ra');
           navigate('/dashboard');
         }
         return;
       }
+      // Cadastro por e-mail
       const { error } = await signUp(effectiveEmail, password);
       setLoading(false);
       if (error) {
@@ -126,14 +127,14 @@ export default function LoginPage() {
       return;
     }
 
-    // Login flow
+    // Fluxo de login
     const { error } = await signIn(effectiveEmail, password);
     setLoading(false);
 
     if (error) {
-      // Check if it's an unverified email error
       if (error.message?.includes('Email not confirmed')) {
         setUnverifiedEmail(true);
+        setEmail(effectiveEmail);
         toast.error('Verifique seu e-mail antes de acessar.');
         return;
       }
@@ -143,10 +144,8 @@ export default function LoginPage() {
       triggerShake();
 
       if (newAttempts >= 3) {
-        // Lock the account
         setIsLocked(true);
         setShowLockModal(true);
-        // Update profile in DB
         try {
           const { data: profileData } = await supabase
             .from('profiles')
@@ -173,21 +172,19 @@ export default function LoginPage() {
       }
     } else {
       setLoginAttempts(0);
-      localStorage.setItem('decode_auth_method', authMethod);
+      // Persistência unificada
       if (rememberMe) {
-        if (authMethod === 'ra') {
-          localStorage.setItem('decode_remember_ra', ra.trim());
-          localStorage.removeItem('decode_remember_email');
-        } else {
-          localStorage.setItem('decode_remember_email', email);
-          localStorage.removeItem('decode_remember_ra');
-        }
+        localStorage.setItem('decode_remember_identifier', id);
         localStorage.setItem('decode_remember_password', btoa(password));
       } else {
-        localStorage.removeItem('decode_remember_email');
-        localStorage.removeItem('decode_remember_ra');
+        localStorage.removeItem('decode_remember_identifier');
         localStorage.removeItem('decode_remember_password');
       }
+      // Limpa chaves antigas para não conflitar
+      localStorage.removeItem('decode_remember_email');
+      localStorage.removeItem('decode_remember_ra');
+      localStorage.removeItem('decode_auth_method');
+
       toast.success('Login realizado!');
       const lastRoute = localStorage.getItem('decode_last_route');
       navigate(lastRoute && lastRoute !== '/' && lastRoute !== '/login' ? lastRoute : '/dashboard');
