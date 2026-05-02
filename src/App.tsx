@@ -51,6 +51,7 @@ const SimuladoPage = lazy(() => import("./pages/SimuladoPage"));
 const PreExamReviewPage = lazy(() => import("./pages/PreExamReviewPage"));
 const TiraDuvidaPage = lazy(() => import("./pages/TiraDuvidaPage"));
 const AdminBibliotecaPage = lazy(() => import("./pages/AdminBibliotecaPage"));
+const AdminApostilaWorkbench = lazy(() => import("./pages/AdminApostilaWorkbench"));
 const PlayBooksPage = lazy(() => import("./pages/PlayBooksPage"));
 const PerformancePage = lazy(() => import("./pages/PerformancePage"));
 
@@ -318,6 +319,7 @@ function AnimatedRoutes() {
               <Route path="/livros" element={<ProtectedRoute><PlayBooksPage /></ProtectedRoute>} />
               <Route path="/playbooks" element={<ProtectedRoute><PlayBooksPage /></ProtectedRoute>} />
               <Route path="/admin/biblioteca" element={<ProtectedRoute adminOnly><AdminBibliotecaPage /></ProtectedRoute>} />
+              <Route path="/admin/apostilas/:id" element={<ProtectedRoute adminOnly><AdminApostilaWorkbench /></ProtectedRoute>} />
               <Route path="/admin" element={<ProtectedRoute adminOnly><AdminPage /></ProtectedRoute>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
