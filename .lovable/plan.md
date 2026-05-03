@@ -1,69 +1,53 @@
-## Implementação: apostilas por semestre
+Vou corrigir o problema de sessão que está causando o “entra e desloga”.
 
-### 1. Migração de banco
+Diagnóstico
+- O app hoje usa um cache local próprio (`decode_session_cache`) em `src/hooks/useAuth.tsx` para restaurar `user` e `isAdmin` antes de confirmar a sessão real no backend.
+- Isso pode deixar a interface acreditando que o usuário está logado quando a sessão real ainda não existe ou ainda não foi restaurada.
+- Nesse intervalo, páginas protegidas e hooks começam a rodar com um `user.id` em cache, mas as requisições saem anônimas. O snapshot de rede confirma isso: chamadas com `authorization` anônimo enquanto o app ainda tenta usar um `user_id`.
+- Quando `getSession()` finalmente retorna `null`, o provider limpa o usuário e a rota protegida manda de volta para `/login`. É esse “entra e me desloga”.
+- Há também sinais de contenção no lock de autenticação no navegador, o que piora a instabilidade durante a inicialização.
 
-Adicionar em `apostilas`:
-- `semester smallint` (1–12, nullable — `NULL` = visível em todos)
-- `course text[]` (subset de `CC`,`SI`,`EC` — nullable = todos os cursos)
+Plano
+1. Reescrever a inicialização do `AuthProvider`
+- Remover o `decode_session_cache` como fonte de verdade para `user`.
+- Fazer o provider depender primeiro da sessão real do backend.
+- Manter `loading=true` até a checagem inicial terminar de forma confiável.
+- Só liberar rotas protegidas depois de confirmar sessão válida.
 
-Trigger `validate_apostila_semester_course` (sem CHECK constraint) valida intervalo e valores do array. Index em `(semester, published)` para a query do aluno.
+2. Separar cache visual de autenticação real
+- Se necessário, manter cache apenas para pequenos detalhes de UI, como `isAdmin`, nunca para autenticar usuário.
+- Garantir que `user`, `session` e redirects dependam apenas da sessão real.
 
-**Pré-classificação automática** das categorias existentes via `UPDATE` na própria migração, usando a grade UNIP CC do 1º ao 8º semestre. Apostilas que não baterem com nenhum padrão ficam `NULL` (aparecem para todos até o admin classificar). As 6 categorias já cadastradas (Inteligência Artificial, Arquitetura de Redes, Sistemas Operacionais, Teoria dos Grafos, Arquitetura de Computadores Modernos, Linguagens Formais, Computação Gráfica, APS V) ficam no **5º semestre**.
+3. Blindar o fluxo de login
+- Ajustar o `LoginPage` para navegar apenas com estado de autenticação estável.
+- Evitar corrida entre `signIn`, `onAuthStateChange` e `getSession()`.
+- Garantir que, após login bem-sucedido, o app não renderize uma área protegida com sessão indefinida.
 
-### 2. Helper TS — mapa disciplina→semestre
+4. Endurecer a proteção das rotas
+- Ajustar `ProtectedRoute` para esperar o bootstrap do auth terminar antes de decidir redirecionamento.
+- Evitar bounce para `/login` enquanto a sessão ainda estiver em restauração.
 
-`src/lib/subject-semester-map.ts`: função `guessSemesterFromCategory(category)` que retorna 1–8 ou `null`. Usado para auto-preencher o campo no admin quando uma disciplina é digitada/selecionada.
+5. Revisar o lock biométrico e logout indireto
+- Verificar o fluxo `BiometricLockGate` / `AppLock` para garantir que ele não force ida ao login em cenários normais de restauração de sessão.
+- Manter redirecionamento para login apenas quando a sessão realmente expirou ou o usuário escolheu sair.
 
-### 3. Admin — Workbench (`AdminApostilaWorkbench.tsx`)
+6. Reduzir contenção do auth lock
+- Minimizar chamadas concorrentes que dependem da sessão durante o boot.
+- Aproveitar melhor `useAuth()` nos hooks iniciais para evitar múltiplas leituras simultâneas de sessão.
 
-Na toolbar, ao lado de "Disciplina":
-- **Select Semestre**: opções "Todos", "1º", "2º"… "8º" (autosave igual ao resto).
-- **Multi-chip Curso**: CC / SI / EC (vazio = todos).
-- Quando o admin troca a disciplina e o semestre está vazio, sugere automaticamente via `guessSemesterFromCategory`.
+Resultado esperado
+- O usuário entra e permanece logado.
+- Não haverá mais “flash” de área interna seguido de retorno ao login.
+- As rotas protegidas só abrirão quando a sessão estiver validada.
+- O estado de admin e perfil continuará funcionando sem quebrar o que já foi feito.
 
-### 4. Admin — `AdminPage.tsx`
+Detalhes técnicos
+- Arquivos principais:
+  - `src/hooks/useAuth.tsx`
+  - `src/components/ProtectedRoute.tsx`
+  - `src/pages/LoginPage.tsx`
+  - `src/components/BiometricLockGate.tsx`
+  - `src/components/AppLock.tsx`
+- Não pretendo remover funcionalidades existentes; a correção será focada em estabilidade do login e persistência correta da sessão.
 
-- Badge "5º sem" no card da apostila (cor sutil, ao lado do badge de status).
-- Filtro "Semestre" na barra de busca (Select com "Todos" + 1–8).
-- Form "Criar manualmente" e "Importar": adicionar campo Semestre (com sugestão automática quando categoria é escolhida).
-- **Ação em lote**: checkbox em cada card + botão "Definir semestre nos selecionados" (resolve as apostilas órfãs em poucos cliques).
-
-### 5. Aluno — filtro por semestre
-
-`src/hooks/queries/useDashboardData.ts`:
-- `useApostilasList` aceita `{ semester?: number, course?: 'CC'|'SI'|'EC', mode: 'mine'|'all' }`.
-- Quando `mode='mine'` e `semester` definido, filtra `.or('semester.eq.X,semester.is.null')` e (se curso definido) `.or('course.is.null,course.cs.{X}')`.
-- Inclui `semester` e `course` nas colunas retornadas (sem custo: leves).
-
-`src/pages/DashboardPage.tsx`:
-- Lê `profile.semester` e `profile.course`.
-- Adiciona toggle Pill no header dos carrosséis: **"Meu semestre (5º)"** ↔ **"Todos"**.
-- Default = "Meu semestre". Preferência persistida em `localStorage` (`apostilas.semesterFilter`).
-- Quando "Todos", agrupa por semestre com headers ("1º semestre" → "8º semestre" → "Sem semestre").
-- Se aluno não tem `semester` no profile: banner discreto "Defina seu semestre no perfil" com link para `/profile`, e mostra todas como fallback.
-
-### 6. Card visual
-
-`src/components/ApostilaCardActions.tsx` (ou onde o card é renderizado): badge sutil com cor do `getSubjectColor` mostrando "Nº sem".
-
-## Arquivos afetados
-
-```text
-NOVOS:
-  supabase/migrations/<ts>_apostilas_semester_course.sql
-  src/lib/subject-semester-map.ts
-
-EDITADOS:
-  src/hooks/queries/useDashboardData.ts
-  src/pages/AdminApostilaWorkbench.tsx
-  src/pages/AdminPage.tsx
-  src/pages/DashboardPage.tsx
-  src/components/ApostilaCardActions.tsx (badge opcional)
-```
-
-## Garantias
-
-- **Não quebra nada**: como `semester` é nullable e o toggle "Todos" existe, alunos seguem vendo tudo até o admin classificar; e apostilas extracurriculares (NULL) sempre aparecem.
-- **Performance**: filtro server-side (`.eq` / `.is`), com index `(semester, published)`.
-- **Multi-curso**: já fica preparado para SI e EC, mesmo que hoje só CC esteja em uso.
-- **Pré-classificação**: roda 1x na migração; admin pode reclassificar depois.
+Se você aprovar, eu implemento essa correção agora.

@@ -1,24 +1,48 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useRef, useState, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { User, Session } from '@supabase/supabase-js';
 import { isBiometricEnabled, refreshBiometricToken } from '@/hooks/useBiometricAuth';
 
-const SESSION_CACHE_KEY = 'decode_session_cache';
+/**
+ * IMPORTANTE — Política de sessão
+ *
+ * Aprendemos na prática que NUNCA devemos restaurar `user`/`session` a partir
+ * de um cache local arbitrário (ex: localStorage 'decode_session_cache').
+ * Isso causava o bug "entra e desloga": o app fingia estar logado, hooks
+ * disparavam queries em paralelo (cada um chamando getSession), o lock interno
+ * do gotrue-js saturava e os refresh_token vinham com 429. Ao primeiro
+ * SIGNED_OUT vindo do servidor, a UI empurrava o usuário de volta ao /login.
+ *
+ * A única fonte de verdade aqui é `supabase.auth`:
+ *   1. Registramos `onAuthStateChange` ANTES de qualquer outra coisa.
+ *   2. Em seguida chamamos `getSession()` uma única vez para hidratar o estado.
+ *   3. `loading` só vira false depois desse bootstrap terminar.
+ *
+ * O cache local ainda é usado APENAS para lembrar o `isAdmin` e evitar um
+ * "flicker" no header — nunca para autenticar o usuário.
+ */
 
-function getCachedSession(): { user: User; isAdmin: boolean } | null {
+const ROLE_CACHE_KEY = 'decode_role_cache';
+
+type RoleCache = { userId: string; isAdmin: boolean };
+
+function readRoleCache(): RoleCache | null {
   try {
-    const raw = localStorage.getItem(SESSION_CACHE_KEY);
+    const raw = localStorage.getItem(ROLE_CACHE_KEY);
     if (!raw) return null;
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed.userId === 'string' && typeof parsed.isAdmin === 'boolean') {
+      return parsed;
+    }
+    return null;
   } catch { return null; }
 }
 
-function setCachedSession(user: User | null, isAdmin: boolean) {
-  if (user) {
-    localStorage.setItem(SESSION_CACHE_KEY, JSON.stringify({ user, isAdmin }));
-  } else {
-    localStorage.removeItem(SESSION_CACHE_KEY);
-  }
+function writeRoleCache(userId: string | null, isAdmin: boolean) {
+  try {
+    if (!userId) localStorage.removeItem(ROLE_CACHE_KEY);
+    else localStorage.setItem(ROLE_CACHE_KEY, JSON.stringify({ userId, isAdmin }));
+  } catch { /* storage cheio? ignorar */ }
 }
 
 type AuthCtx = {
@@ -36,13 +60,15 @@ type AuthCtx = {
 const AuthContext = createContext<AuthCtx | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const cached = getCachedSession();
-  const [user, setUser] = useState<User | null>(cached?.user ?? null);
+  const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
-  const [isAdmin, setIsAdmin] = useState(cached?.isAdmin ?? false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [isBlocked, setIsBlocked] = useState(false);
-  const [loading, setLoading] = useState(!cached);
-  const [roleChecked, setRoleChecked] = useState(!!cached);
+  const [loading, setLoading] = useState(true);
+  const [roleChecked, setRoleChecked] = useState(false);
+
+  // Evita rechecagem de role para o mesmo usuário em cada TOKEN_REFRESHED.
+  const lastRoleUserId = useRef<string | null>(null);
 
   const checkRoles = async (userId: string) => {
     try {
@@ -54,61 +80,86 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsAdmin(adminVal);
       setIsBlocked(!!(profileRes.data as any)?.is_blocked);
       setRoleChecked(true);
+      writeRoleCache(userId, adminVal);
       return adminVal;
     } catch {
-      setIsAdmin(false);
-      setIsBlocked(false);
       setRoleChecked(true);
       return false;
     }
   };
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, sess) => {
+    let mounted = true;
+
+    // 1) Listener PRIMEIRO — recomendação oficial Supabase para evitar perda de eventos.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, sess) => {
+      if (!mounted) return;
+
       setSession(sess);
+      setUser(sess?.user ?? null);
+
       if (sess?.user) {
-        setUser(sess.user);
-        if (isBiometricEnabled() && sess.refresh_token) {
-          refreshBiometricToken(sess.refresh_token).catch(() => {});
+        // Hidratação rápida do isAdmin via cache (apenas UI; RLS continua no servidor).
+        const cached = readRoleCache();
+        if (cached?.userId === sess.user.id) {
+          setIsAdmin(cached.isAdmin);
+          setRoleChecked(true);
         }
-        if (!user || user.id !== sess.user.id || _event === 'SIGNED_IN') {
-          setTimeout(() => {
-            checkRoles(sess.user.id).then((adminVal) => {
-              setCachedSession(sess.user, adminVal);
-            });
-          }, 0);
-        } else {
-          setCachedSession(sess.user, isAdmin);
+
+        // Re-checa role só quando o usuário muda OU explicitamente faz signin.
+        if (lastRoleUserId.current !== sess.user.id || event === 'SIGNED_IN') {
+          lastRoleUserId.current = sess.user.id;
+          // Defer para fora do callback do gotrue (evita reentrância no lock interno).
+          setTimeout(() => { void checkRoles(sess.user.id); }, 0);
+        }
+
+        // Mantém refresh token criptografado para biometria atualizado.
+        if (isBiometricEnabled() && sess.refresh_token) {
+          setTimeout(() => { refreshBiometricToken(sess.refresh_token!).catch(() => {}); }, 0);
         }
       } else {
-        setUser(null);
+        lastRoleUserId.current = null;
         setIsAdmin(false);
         setIsBlocked(false);
         setRoleChecked(true);
-        setCachedSession(null, false);
+        writeRoleCache(null, false);
       }
+
       setLoading(false);
     });
 
-    supabase.auth.getSession().then(({ data: { session: sess } }) => {
-      setSession(sess);
-      setUser(sess?.user ?? null);
-      if (sess?.user) {
-        checkRoles(sess.user.id).then((adminVal) => {
-          setCachedSession(sess.user, adminVal);
-          setLoading(false);
-        });
-      } else {
-        setRoleChecked(true);
-        setCachedSession(null, false);
+    // 2) DEPOIS hidratamos a sessão atual (uma única vez).
+    supabase.auth.getSession()
+      .then(({ data: { session: sess } }) => {
+        if (!mounted) return;
+        // Se o listener já populou, o setState abaixo é idempotente.
+        setSession(sess);
+        setUser(sess?.user ?? null);
+        if (sess?.user) {
+          const cached = readRoleCache();
+          if (cached?.userId === sess.user.id) {
+            setIsAdmin(cached.isAdmin);
+            setRoleChecked(true);
+          }
+          if (lastRoleUserId.current !== sess.user.id) {
+            lastRoleUserId.current = sess.user.id;
+            void checkRoles(sess.user.id);
+          }
+        } else {
+          setRoleChecked(true);
+        }
         setLoading(false);
-      }
-    }).catch(() => {
-      setCachedSession(null, false);
-      setLoading(false);
-    });
+      })
+      .catch(() => {
+        if (!mounted) return;
+        setRoleChecked(true);
+        setLoading(false);
+      });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {
@@ -122,7 +173,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
-    setCachedSession(null, false);
+    writeRoleCache(null, false);
+    lastRoleUserId.current = null;
     await supabase.auth.signOut();
   };
 
