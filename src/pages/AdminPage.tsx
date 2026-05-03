@@ -263,15 +263,26 @@ function OverviewTab({ apostilas, exercises, allAnswers, materials, users, setTa
   const approvalRate = totalAnswers > 0 ? Math.round((correctAnswers / totalAnswers) * 100) : 0;
   const published = apostilas.filter(a => a.published).length;
   const blocked = users.filter((u: any) => u.is_blocked).length;
+  const draft = apostilas.length - published;
+
+  // Novos cadastros últimos 7 dias
+  const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  const newUsers7d = users.filter((u: any) => new Date(u.created_at).getTime() > weekAgo).length;
 
   const statCards = [
-    { icon: BookOpen, label: 'Apostilas', value: apostilas.length, sub: `${published} publicadas`, color: 'bg-primary/10 text-primary' },
-    { icon: PenLine, label: 'Exercícios', value: totalExercises, sub: 'cadastrados', color: 'bg-accent text-accent-foreground' },
-    { icon: CheckCircle, label: 'Respostas', value: totalAnswers, sub: `${correctAnswers} corretas`, color: 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]' },
-    { icon: Users, label: 'Usuários', value: users.length, sub: `${blocked} bloqueados`, color: 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))]' },
-    { icon: FolderOpen, label: 'Materiais', value: materials.length, sub: 'arquivos', color: 'bg-primary/10 text-primary' },
-    { icon: TrendingUp, label: 'Aproveitamento', value: approvalRate, sub: 'geral', color: 'bg-accent text-accent-foreground', suffix: '%' },
-  ];
+    { icon: BookOpen, label: 'Apostilas', value: apostilas.length, sub: `${published} publicadas · ${draft} rascunho`, tone: 'primary', trend: published > 0 ? `${Math.round((published / Math.max(apostilas.length, 1)) * 100)}%` : null },
+    { icon: PenLine, label: 'Exercícios', value: totalExercises, sub: `em ${Object.keys(exercises).length} apostilas`, tone: 'violet', trend: null },
+    { icon: TrendingUp, label: 'Aproveitamento', value: approvalRate, sub: `${totalAnswers} respostas totais`, tone: 'success', trend: null, suffix: '%' },
+    { icon: Users, label: 'Usuários', value: users.length, sub: blocked > 0 ? `${blocked} bloqueados` : `+${newUsers7d} esta semana`, tone: blocked > 0 ? 'danger' : 'warning', trend: newUsers7d > 0 ? `+${newUsers7d}` : null },
+  ] as const;
+
+  const toneStyles: Record<string, { wrap: string; icon: string; ring: string }> = {
+    primary: { wrap: 'bg-primary/10', icon: 'text-primary', ring: 'group-hover:ring-primary/30' },
+    violet:  { wrap: 'bg-accent', icon: 'text-accent-foreground', ring: 'group-hover:ring-accent-foreground/20' },
+    success: { wrap: 'bg-[hsl(var(--success))]/10', icon: 'text-[hsl(var(--success))]', ring: 'group-hover:ring-[hsl(var(--success))]/30' },
+    warning: { wrap: 'bg-[hsl(var(--warning))]/10', icon: 'text-[hsl(var(--warning))]', ring: 'group-hover:ring-[hsl(var(--warning))]/30' },
+    danger:  { wrap: 'bg-destructive/10', icon: 'text-destructive', ring: 'group-hover:ring-destructive/30' },
+  };
 
   if (loading) {
     return (
@@ -292,71 +303,115 @@ function OverviewTab({ apostilas, exercises, allAnswers, materials, users, setTa
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-xl font-bold text-foreground">Visão Geral</h2>
-        <p className="text-sm text-muted-foreground">Resumo completo da plataforma</p>
+    <div className="space-y-8">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+        <div>
+          <h2 className="text-2xl font-bold text-foreground tracking-tight">Visão Geral</h2>
+          <p className="text-sm text-muted-foreground mt-1">Resumo executivo da plataforma · atualizado agora</p>
+        </div>
+        <Button variant="outline" size="sm" className="gap-2" onClick={() => setTab('apostilas')}>
+          <Plus className="h-4 w-4" /> Nova Apostila
+        </Button>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid gap-3 sm:gap-4 grid-cols-1 xs:grid-cols-2 lg:grid-cols-3">
-        {statCards.map((s, i) => (
-          <motion.div
-            key={s.label}
-            initial={{ opacity: 0, y: 20, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ type: 'spring', stiffness: 260, damping: 20, delay: i * 0.08 }}
-          >
-            <Card className="overflow-hidden hover-lift">
-              <CardContent className="p-5">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className={`rounded-xl p-2.5 ${s.color}`}>
-                    <s.icon className="h-5 w-5" />
+      {/* KPI Grid */}
+      <div className="grid gap-4 sm:gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+        {statCards.map((s, i) => {
+          const t = toneStyles[s.tone];
+          return (
+            <motion.div
+              key={s.label}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ type: 'spring', stiffness: 260, damping: 22, delay: i * 0.06 }}
+            >
+              <Card className="group overflow-hidden border-border/60 hover:border-border hover:shadow-lg transition-all duration-200">
+                <CardContent className="p-5">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className={`rounded-xl p-2.5 ${t.wrap}`}>
+                      <s.icon className={`h-5 w-5 ${t.icon}`} />
+                    </div>
+                    {s.trend && (
+                      <span className="text-[10px] font-mono-label font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
+                        {s.trend}
+                      </span>
+                    )}
                   </div>
-                </div>
-                <p className="text-3xl font-bold text-foreground">
-                  <AnimatedCounter end={typeof s.value === 'number' ? s.value : 0} suffix={(s as any).suffix} />
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">{s.label} · {s.sub}</p>
-              </CardContent>
-            </Card>
-          </motion.div>
-        ))}
+                  <p className="text-3xl font-bold text-foreground tabular-nums leading-none">
+                    <AnimatedCounter end={typeof s.value === 'number' ? s.value : 0} suffix={(s as any).suffix} />
+                  </p>
+                  <p className="text-sm font-semibold text-foreground mt-2">{s.label}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5 truncate">{s.sub}</p>
+                </CardContent>
+              </Card>
+            </motion.div>
+          );
+        })}
       </div>
 
-      {/* Performance Card */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ type: 'spring', stiffness: 260, damping: 20, delay: 0.5 }}
-      >
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Activity className="h-4 w-4 text-primary" />
-              Desempenho dos Alunos
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Taxa de acerto geral</span>
-              <span className="text-lg font-bold text-primary"><AnimatedCounter end={approvalRate} suffix="%" /></span>
-            </div>
-            <Progress value={approvalRate} className="h-3" />
-            <div className="flex gap-6 text-sm text-muted-foreground">
-              <span className="flex items-center gap-1.5">
-                <span className="h-3 w-3 rounded-full bg-[hsl(var(--success))]" /> {correctAnswers} acertos
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="h-3 w-3 rounded-full bg-destructive" /> {totalAnswers - correctAnswers} erros
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
+      {/* Performance + Activity */}
+      <div className="grid gap-5 lg:grid-cols-3">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: 'spring', stiffness: 260, damping: 22, delay: 0.3 }}
+          className="lg:col-span-1"
+        >
+          <Card className="h-full border-border/60">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Activity className="h-4 w-4 text-primary" />
+                Desempenho
+              </CardTitle>
+              <CardDescription className="text-xs">Taxa de acerto geral dos alunos</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-end justify-between">
+                <div>
+                  <p className="text-4xl font-bold text-primary tabular-nums leading-none">
+                    <AnimatedCounter end={approvalRate} suffix="%" />
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">Aproveitamento</p>
+                </div>
+                <div className="text-right space-y-1">
+                  <p className="text-xs text-muted-foreground">{totalAnswers} respostas</p>
+                  <p className="text-xs text-muted-foreground">{totalExercises} exercícios</p>
+                </div>
+              </div>
+              <Progress value={approvalRate} className="h-2.5" />
+              <div className="flex gap-4 text-xs">
+                <span className="flex items-center gap-1.5 text-muted-foreground">
+                  <span className="h-2.5 w-2.5 rounded-full bg-[hsl(var(--success))]" /> {correctAnswers} acertos
+                </span>
+                <span className="flex items-center gap-1.5 text-muted-foreground">
+                  <span className="h-2.5 w-2.5 rounded-full bg-destructive" /> {totalAnswers - correctAnswers} erros
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
 
-      {/* Activity Chart */}
-      <ActivityChart delay={0.55} />
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: 'spring', stiffness: 260, damping: 22, delay: 0.35 }}
+          className="lg:col-span-2"
+        >
+          <Card className="h-full border-border/60">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <BarChart3 className="h-4 w-4 text-primary" />
+                Atividade Recente
+              </CardTitle>
+              <CardDescription className="text-xs">Engajamento dos últimos dias</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ActivityChart delay={0.4} />
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
 
       {/* Blocked Users Alert */}
       {blocked > 0 && (
@@ -1209,7 +1264,7 @@ export default function AdminPage() {
           </div>
 
           {/* Content */}
-          <main className="flex-1 p-3 sm:p-4 lg:p-6 overflow-auto min-w-0">
+          <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-auto min-w-0 bg-muted/30">
             {/* Mobile search */}
             {tab !== 'overview' && (
               <div className="relative mb-4 sm:hidden">
