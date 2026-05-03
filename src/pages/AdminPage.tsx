@@ -1264,7 +1264,7 @@ export default function AdminPage() {
           </div>
 
           {/* Content */}
-          <main className="flex-1 p-3 sm:p-4 lg:p-6 overflow-auto min-w-0">
+          <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-auto min-w-0 bg-muted/30">
             {/* Mobile search */}
             {tab !== 'overview' && (
               <div className="relative mb-4 sm:hidden">
