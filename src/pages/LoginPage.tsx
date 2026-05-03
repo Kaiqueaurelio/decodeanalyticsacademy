@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -15,7 +15,7 @@ import loginHero from '@/assets/login-hero.jpg';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function LoginPage() {
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const savedIdentifier = localStorage.getItem('decode_remember_identifier')
     || localStorage.getItem('decode_remember_email')
@@ -48,7 +48,14 @@ export default function LoginPage() {
   const [showLockModal, setShowLockModal] = useState(false);
   const [unverifiedEmail, setUnverifiedEmail] = useState(false);
   const [rememberMe, setRememberMe] = useState(!!savedIdentifier);
+  const [awaitingSession, setAwaitingSession] = useState(false);
   const passwordRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (authLoading || !user) return;
+    const lastRoute = localStorage.getItem('decode_last_route');
+    navigate(lastRoute && lastRoute !== '/' && lastRoute !== '/login' ? lastRoute : '/dashboard', { replace: true });
+  }, [authLoading, user, navigate]);
 
   const triggerShake = () => {
     setShaking(true);
@@ -132,6 +139,7 @@ export default function LoginPage() {
     setLoading(false);
 
     if (error) {
+      setAwaitingSession(false);
       if (error.message?.includes('Email not confirmed')) {
         setUnverifiedEmail(true);
         setEmail(effectiveEmail);
@@ -186,8 +194,7 @@ export default function LoginPage() {
       localStorage.removeItem('decode_auth_method');
 
       toast.success('Login realizado!');
-      const lastRoute = localStorage.getItem('decode_last_route');
-      navigate(lastRoute && lastRoute !== '/' && lastRoute !== '/login' ? lastRoute : '/dashboard');
+      setAwaitingSession(true);
     }
   };
 
@@ -447,11 +454,11 @@ export default function LoginPage() {
                         Entrar
                       </EvasiveButton>
                     ) : (
-                      <Button type="submit" className="w-full" disabled={loading || isLocked}>
-                        {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      <Button type="submit" className="w-full" disabled={loading || awaitingSession || isLocked}>
+                        {(loading || awaitingSession) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         {isLocked ? (
                           <><Lock className="mr-2 h-4 w-4" /> Conta Bloqueada</>
-                        ) : isSignUp ? 'Criar conta' : 'Entrar'}
+                        ) : isSignUp ? 'Criar conta' : awaitingSession ? 'Entrando...' : 'Entrar'}
                       </Button>
                     )}
 
