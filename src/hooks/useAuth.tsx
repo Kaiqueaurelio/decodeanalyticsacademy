@@ -91,6 +91,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
+    // Limpa cache legado que decidia auth no client (causava "entra e desloga").
+    try { localStorage.removeItem('decode_session_cache'); } catch {}
+
     // 1) Listener PRIMEIRO — recomendação oficial Supabase para evitar perda de eventos.
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, sess) => {
       if (!mounted) return;
