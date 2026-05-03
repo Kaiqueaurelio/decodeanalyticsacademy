@@ -69,6 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Evita rechecagem de role para o mesmo usuário em cada TOKEN_REFRESHED.
   const lastRoleUserId = useRef<string | null>(null);
+  const bootstrapped = useRef(false);
 
   const checkRoles = async (userId: string) => {
     try {
@@ -128,13 +129,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         writeRoleCache(null, false);
       }
 
-      setLoading(false);
+      if (bootstrapped.current || event !== 'INITIAL_SESSION') {
+        setLoading(false);
+      }
     });
 
     // 2) DEPOIS hidratamos a sessão atual (uma única vez).
     supabase.auth.getSession()
       .then(({ data: { session: sess } }) => {
         if (!mounted) return;
+        bootstrapped.current = true;
         // Se o listener já populou, o setState abaixo é idempotente.
         setSession(sess);
         setUser(sess?.user ?? null);
@@ -155,6 +159,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       })
       .catch(() => {
         if (!mounted) return;
+        bootstrapped.current = true;
         setRoleChecked(true);
         setLoading(false);
       });
