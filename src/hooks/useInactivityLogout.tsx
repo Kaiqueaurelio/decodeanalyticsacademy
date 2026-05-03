@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 
-const TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
+const TIMEOUT_MS = 30 * 60 * 1000; // 30 min — mais conservador, evita logouts surpresa
 
 export function useInactivityLogout() {
-  const { user, signOut } = useAuth();
+  const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -24,7 +24,8 @@ export function useInactivityLogout() {
   }, [handleLogout]);
 
   useEffect(() => {
-    if (!user) return;
+    // Só ativa o cronômetro depois que o auth bootstrapou e existe usuário.
+    if (loading || !user) return;
 
     const events = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'] as const;
     events.forEach(e => window.addEventListener(e, resetTimer, { passive: true }));
@@ -34,5 +35,5 @@ export function useInactivityLogout() {
       events.forEach(e => window.removeEventListener(e, resetTimer));
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [user, resetTimer]);
+  }, [user, loading, resetTimer]);
 }
