@@ -263,15 +263,26 @@ function OverviewTab({ apostilas, exercises, allAnswers, materials, users, setTa
   const approvalRate = totalAnswers > 0 ? Math.round((correctAnswers / totalAnswers) * 100) : 0;
   const published = apostilas.filter(a => a.published).length;
   const blocked = users.filter((u: any) => u.is_blocked).length;
+  const draft = apostilas.length - published;
+
+  // Novos cadastros últimos 7 dias
+  const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  const newUsers7d = users.filter((u: any) => new Date(u.created_at).getTime() > weekAgo).length;
 
   const statCards = [
-    { icon: BookOpen, label: 'Apostilas', value: apostilas.length, sub: `${published} publicadas`, color: 'bg-primary/10 text-primary' },
-    { icon: PenLine, label: 'Exercícios', value: totalExercises, sub: 'cadastrados', color: 'bg-accent text-accent-foreground' },
-    { icon: CheckCircle, label: 'Respostas', value: totalAnswers, sub: `${correctAnswers} corretas`, color: 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]' },
-    { icon: Users, label: 'Usuários', value: users.length, sub: `${blocked} bloqueados`, color: 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))]' },
-    { icon: FolderOpen, label: 'Materiais', value: materials.length, sub: 'arquivos', color: 'bg-primary/10 text-primary' },
-    { icon: TrendingUp, label: 'Aproveitamento', value: approvalRate, sub: 'geral', color: 'bg-accent text-accent-foreground', suffix: '%' },
-  ];
+    { icon: BookOpen, label: 'Apostilas', value: apostilas.length, sub: `${published} publicadas · ${draft} rascunho`, tone: 'primary', trend: published > 0 ? `${Math.round((published / Math.max(apostilas.length, 1)) * 100)}%` : null },
+    { icon: PenLine, label: 'Exercícios', value: totalExercises, sub: `em ${Object.keys(exercises).length} apostilas`, tone: 'violet', trend: null },
+    { icon: TrendingUp, label: 'Aproveitamento', value: approvalRate, sub: `${totalAnswers} respostas totais`, tone: 'success', trend: null, suffix: '%' },
+    { icon: Users, label: 'Usuários', value: users.length, sub: blocked > 0 ? `${blocked} bloqueados` : `+${newUsers7d} esta semana`, tone: blocked > 0 ? 'danger' : 'warning', trend: newUsers7d > 0 ? `+${newUsers7d}` : null },
+  ] as const;
+
+  const toneStyles: Record<string, { wrap: string; icon: string; ring: string }> = {
+    primary: { wrap: 'bg-primary/10', icon: 'text-primary', ring: 'group-hover:ring-primary/30' },
+    violet:  { wrap: 'bg-accent', icon: 'text-accent-foreground', ring: 'group-hover:ring-accent-foreground/20' },
+    success: { wrap: 'bg-[hsl(var(--success))]/10', icon: 'text-[hsl(var(--success))]', ring: 'group-hover:ring-[hsl(var(--success))]/30' },
+    warning: { wrap: 'bg-[hsl(var(--warning))]/10', icon: 'text-[hsl(var(--warning))]', ring: 'group-hover:ring-[hsl(var(--warning))]/30' },
+    danger:  { wrap: 'bg-destructive/10', icon: 'text-destructive', ring: 'group-hover:ring-destructive/30' },
+  };
 
   if (loading) {
     return (
