@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { AppImage } from '@/components/ui/app-image';
 import { highlightCode } from '@/lib/shiki-highlighter';
 import { cn } from '@/lib/utils';
+import { renderMathToHTML } from '@/lib/math-render';
 
 /**
  * Limpa marcadores markdown inline (negrito, itálico, código inline, links etc.)
