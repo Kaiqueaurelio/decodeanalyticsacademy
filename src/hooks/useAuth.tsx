@@ -71,12 +71,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const lastRoleUserId = useRef<string | null>(null);
   const bootstrapped = useRef(false);
 
-  const checkRoles = async (userId: string) => {
+  const checkRoles = async (userId: string, attempt = 0): Promise<boolean> => {
     try {
       const [adminRes, profileRes] = await Promise.all([
         supabase.from('user_roles').select('role').eq('user_id', userId).eq('role', 'admin').maybeSingle(),
         supabase.from('profiles').select('is_blocked').eq('user_id', userId).maybeSingle(),
       ]);
+      // Erro de rede/RLS → não rebaixa privilégio. Tenta de novo (1x) com backoff curto.
+      if ((adminRes.error || profileRes.error) && attempt < 1) {
+        return await new Promise<boolean>((resolve) => {
+          setTimeout(() => resolve(checkRoles(userId, attempt + 1)), 600);
+        });
+      }
       const adminVal = !!adminRes.data;
       setIsAdmin(adminVal);
       setIsBlocked(!!(profileRes.data as any)?.is_blocked);
@@ -84,6 +90,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       writeRoleCache(userId, adminVal);
       return adminVal;
     } catch {
+      // Em caso de erro inesperado, mantemos o cache visual (não derrubamos o botão Admin).
       setRoleChecked(true);
       return false;
     }
