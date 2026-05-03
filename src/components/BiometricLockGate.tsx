@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { isBiometricEnabled } from '@/hooks/useBiometricAuth';
 import { AppLock } from '@/components/AppLock';
@@ -8,26 +8,40 @@ const STORAGE_KEY = 'decode_app_locked';
 
 /**
  * Locks the app behind biometry when:
- *  - Cold start (page reload) + biometric enabled + no active supabase session yet
- *  - Tab hidden for 5+ minutes
+ *  - Cold start (page reload) + biometric enabled + nenhuma sessão Supabase
+ *    (evita travar em "logout falso" durante refresh do token).
+ *  - Aba escondida por 5+ minutos.
+ *
+ * IMPORTANTE: nunca tratamos `user === null` momentâneo como motivo para
+ * bloquear o app. Só consideramos "sem sessão" depois de uma janela de
+ * estabilização — caso contrário o gate engana o usuário pensando que ele
+ * foi deslogado.
  */
 export function BiometricLockGate({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const [locked, setLocked] = useState(() => {
+    // Só bloqueia no cold start se biometria está ativa E o usuário não
+    // marcou a sessão como "destrancada" neste tab.
     return isBiometricEnabled() && sessionStorage.getItem(STORAGE_KEY) !== 'unlocked';
   });
+  const stabilizeRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // On cold start: if biometric enabled but supabase has no session after auth check, lock.
+  // Marca como destrancado assim que aparecer um usuário válido — isso evita
+  // o "loop de lock" se a sessão restaurar normalmente após o cold start.
   useEffect(() => {
     if (loading) return;
     if (!isBiometricEnabled()) {
       setLocked(false);
       return;
     }
-    if (!user) {
-      // No active session AND biometry enabled → require unlock
-      setLocked(true);
+    if (user) {
+      sessionStorage.setItem(STORAGE_KEY, 'unlocked');
+      setLocked(false);
+      if (stabilizeRef.current) clearTimeout(stabilizeRef.current);
+      stabilizeRef.current = null;
     }
+    // Se !user, NÃO bloqueamos imediatamente. ProtectedRoute já redireciona
+    // para /login quando o backend confirma "sem sessão".
   }, [loading, user]);
 
   // Lock again on prolonged hide
