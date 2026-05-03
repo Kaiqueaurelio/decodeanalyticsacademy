@@ -60,6 +60,7 @@
         "@tiptap/react": "^3.22.5",
         "@tiptap/starter-kit": "^3.22.5",
         "@tiptap/suggestion": "^3.22.5",
+        "@types/katex": "^0.16.8",
         "@types/turndown": "^5.0.6",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
@@ -72,6 +73,7 @@
         "html2pdf.js": "^0.14.0",
         "input-otp": "^1.4.2",
         "jspdf": "^4.2.1",
+        "katex": "^0.16.45",
         "lucide-react": "^0.462.0",
         "mammoth": "1.8.0",
         "marked": "^18.0.2",
@@ -893,6 +895,8 @@
     "@types/hast": ["@types/hast@3.0.4", "https://europe-west4-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/@types/hast/-/hast-3.0.4.tgz", { "dependencies": { "@types/unist": "*" } }, "sha512-WPs+bbQw5aCj+x6laNGWLH3wviHtoCv/P3+otBhbOhJgG8qtpdAMlTCxLtsTWA7LH1Oh/bFCHsBn0TPS5m30EQ=="],
 
     "@types/json-schema": ["@types/json-schema@7.0.15", "", {}, "sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA=="],
+
+    "@types/katex": ["@types/katex@0.16.8", "https://europe-west4-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/@types/katex/-/katex-0.16.8.tgz", {}, "sha512-trgaNyfU+Xh2Tc+ABIb44a5AYUpicB3uwirOioeOkNPPbmgRNtcWyDeeFRzjPZENO9Vq8gvVqfhaaXWLlevVwg=="],
 
     "@types/localforage": ["@types/localforage@0.0.34", "https://europe-west1-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/@types/localforage/-/localforage-0.0.34.tgz", { "dependencies": { "localforage": "*" } }, "sha512-tJxahnjm9dEI1X+hQSC5f2BSd/coZaqbIl1m3TCl0q9SVuC52XcXfV0XmoCU1+PmjyucuVITwoTnN8OlTbEXXA=="],
 

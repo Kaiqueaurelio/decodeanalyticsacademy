@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { AppImage } from '@/components/ui/app-image';
 import { highlightCode } from '@/lib/shiki-highlighter';
 import { cn } from '@/lib/utils';
+import { renderMathToHTML } from '@/lib/math-render';
 
 /**
  * Limpa marcadores markdown inline (negrito, itálico, código inline, links etc.)
@@ -55,10 +56,41 @@ function sanitizeInlineHtml(html: string): string {
 
 function renderInline(input: string): { __html: string } {
   if (!input) return { __html: '' };
+  // 0. Extrai fórmulas matemáticas ANTES de qualquer escape — evita que `_`,
+  //    `*`, `<` ou `&` dentro da fórmula sejam corrompidos pelo Markdown.
+  const mathPlaceholders: string[] = [];
+  let safe = input
+    // Bloco $$...$$ inline (ex: dentro de uma frase) → KaTeX displayMode
+    .replace(/\$\$([\s\S]+?)\$\$/g, (_m, tex) => {
+      mathPlaceholders.push(renderMathToHTML(String(tex).trim(), true));
+      return `\u0000MATH${mathPlaceholders.length - 1}\u0000`;
+    })
+    // \[ ... \] bloco
+    .replace(/\\\[([\s\S]+?)\\\]/g, (_m, tex) => {
+      mathPlaceholders.push(renderMathToHTML(String(tex).trim(), true));
+      return `\u0000MATH${mathPlaceholders.length - 1}\u0000`;
+    })
+    // \( ... \) inline
+    .replace(/\\\(([\s\S]+?)\\\)/g, (_m, tex) => {
+      mathPlaceholders.push(renderMathToHTML(String(tex).trim(), false));
+      return `\u0000MATH${mathPlaceholders.length - 1}\u0000`;
+    })
+    // $...$ inline (com heurística para evitar confundir com cifrão monetário)
+    .replace(/(^|[^\\$])\$([^\n$]{1,200}?)\$(?!\d)/g, (full, pre, tex) => {
+      const t = String(tex).trim();
+      const looksMath =
+        /[\\^_={}]|\\frac|\\sqrt|\\sum|\\int|\\pi|\\alpha|\\beta|\\theta|\\cdot|\\times|\\div|\\le|\\ge|\\ne|\\to|\\infty/.test(t)
+        || /[A-Za-z][\^_]/.test(t)
+        || /[\^_]\{?[A-Za-z0-9]/.test(t);
+      if (!looksMath) return full;
+      mathPlaceholders.push(renderMathToHTML(t, false));
+      return `${pre}\u0000MATH${mathPlaceholders.length - 1}\u0000`;
+    });
+
   // 1. Escapa < e > exceto para tags permitidas
   const ALLOWED = /<\/?(?:u|mark|sub|sup|span|div|strong|em|b|i|s|small|br)\b[^>]*\/?>/gi;
   const placeholders: string[] = [];
-  let safe = input.replace(ALLOWED, (tag) => {
+  safe = safe.replace(ALLOWED, (tag) => {
     placeholders.push(sanitizeInlineHtml(tag));
     return `\u0000HTML${placeholders.length - 1}\u0000`;
   });
@@ -78,6 +110,8 @@ function renderInline(input: string): { __html: string } {
     .replace(/==([^=\n]+)==/g, '<mark>$1</mark>')
     .replace(/`([^`\n]+)`/g, '<code class="px-1 py-0.5 rounded bg-muted text-primary text-[0.92em] font-mono">$1</code>')
     .replace(/^\s*#{1,6}\s+/gm, '');
+  // 4. Restaura blocos KaTeX (HTML pronto) por último — sem escape.
+  safe = safe.replace(/\u0000MATH(\d+)\u0000/g, (_m, i) => mathPlaceholders[Number(i)] || '');
   return { __html: safe };
 }
 
