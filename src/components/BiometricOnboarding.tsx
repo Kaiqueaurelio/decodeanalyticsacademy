@@ -61,7 +61,8 @@ export function BiometricOnboarding() {
     if (!user) return;
     setBusy(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { getCurrentSession } = await import('@/lib/auth-session');
+      const session = getCurrentSession();
       if (!session?.refresh_token) {
         toast.error('Faça login novamente para ativar a biometria.');
         return;
