@@ -12,6 +12,7 @@ import { PageSkeleton } from "@/components/PageSkeleton";
 // BUGFIX: AudioPlayerProvider NAO pode ser lazy-loaded pois é um Context Provider.
 // Lazy-loading um Provider causa crash/reset de contexto ao remontar.
 import { AudioPlayerProvider } from "@/contexts/AudioPlayerContext";
+import { SplashScreen } from "@/components/SplashScreen";
 
 // Páginas críticas no bundle inicial
 import LandingPage from "./pages/LandingPage";
@@ -53,8 +54,12 @@ const queryClient = new QueryClient({
 });
 
 function AnimatedRoutes() {
+  const [showSplash, setShowSplash] = React.useState(true);
+
   return (
-    <Suspense fallback={<PageSkeleton />}>
+    <>
+      {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} />}
+      <Suspense fallback={<PageSkeleton />}>
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
@@ -82,6 +87,7 @@ function AnimatedRoutes() {
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Suspense>
+    </>
   );
 }
 
