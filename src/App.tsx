@@ -13,15 +13,13 @@ import { DynamicWatermark } from "@/components/DynamicWatermark";
 import { ScreenshotGuard } from "@/components/ScreenshotGuard";
 import { PageSkeleton } from "@/components/PageSkeleton";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
-import { SafeModeBoundary } from "@/components/SafeModeBoundary";
-import { SafeModeBanner } from "@/components/SafeModeBanner";
 
 // Lazy: overlays/FABs não-críticos só carregam após o first paint
 const CommandPalette = lazy(() => import("@/components/CommandPalette").then(m => ({ default: m.CommandPalette })));
 const ScrollToTopFab = lazy(() => import("@/components/ScrollToTopFab").then(m => ({ default: m.ScrollToTopFab })));
 const PullToRefresh = lazy(() => import("@/components/PullToRefresh").then(m => ({ default: m.PullToRefresh })));
 const QuickActionsFab = lazy(() => import("@/components/QuickActionsFab").then(m => ({ default: m.QuickActionsFab })));
-import { useSafeMode } from "@/hooks/useSafeMode";
+
 import { useRouteTracker, getLastRoute } from "@/hooks/useRouteTracker";
 import { getLocationRoute, getPageState, getScrollPosition, savePageState, saveScrollPosition } from "@/lib/app-persistence";
 import { AudioPlayerProvider } from "@/contexts/AudioPlayerContext";
@@ -56,8 +54,6 @@ const PerformancePage = lazy(() => import("./pages/PerformancePage"));
 const FlashcardsPage = lazy(() => import("./pages/FlashcardsPage"));
 const GlobalAudioPlayer = lazy(() => import("@/components/GlobalAudioPlayer").then(m => ({ default: m.GlobalAudioPlayer })));
 
-// Cache agressivo: dados ficam frescos por 5min, em cache por 30min
-// → menos requisições, navegação instantânea entre páginas
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -69,8 +65,6 @@ const queryClient = new QueryClient({
   },
 });
 
-// Rotas onde a marca d'água + screenshot guard fazem sentido (conteúdo protegido).
-// Em login/landing/offline não precisamos pagar esse custo de render contínuo.
 const PROTECTED_OVERLAY_ROUTES = [
   "/dashboard", "/desempenho", "/review", "/simulado", "/revisao-prova",
   "/apostila", "/exercises", "/materials", "/video", "/aviso",
@@ -83,13 +77,8 @@ function isProtectedRoute(pathname: string) {
 
 function WatermarkWrapper() {
   const { user } = useAuth();
-  const { enabled: safeMode } = useSafeMode();
   const location = useLocation();
   if (!user) return null;
-  if (safeMode) return null;
-  // Watermark + screenshot guard apenas em rotas de conteúdo protegido.
-  // FABs/CommandPalette ficam disponíveis em todas as rotas autenticadas, mas via
-  // <Suspense> (lazy) — não competem pelo first paint.
   const showHeavy = isProtectedRoute(location.pathname);
   return (
     <>
@@ -164,16 +153,12 @@ function ScrollRestoration() {
       saveScrollPosition(route, lastPos);
     };
 
-    // Throttle por rAF — só "agenda" uma gravação por frame em vez de gravar
-    // a cada evento de scroll.
     const onScroll = () => {
       lastPos = { x: window.scrollX, y: window.scrollY };
       if (pending) return;
       pending = true;
       requestAnimationFrame(() => {
         pending = false;
-        // Mantemos em memória; só persistimos no localStorage em pagehide/visibilitychange,
-        // o que evita gravar JSON a cada frame de rolagem.
       });
     };
 
@@ -237,8 +222,6 @@ function PageStatePersistence() {
     const route = getLocationRoute(location);
     let timer: number | undefined;
 
-    // Opt-in: só campos com [data-persist-key] são monitorados.
-    // Evita varrer todo o DOM a cada tecla em formulários grandes (Admin/Editor).
     const collectFields = () => {
       const fields = Array.from(
         document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(
@@ -257,7 +240,6 @@ function PageStatePersistence() {
 
     const scheduleCollect = () => {
       window.clearTimeout(timer);
-      // Debounce 400ms — typing rápido não dispara N varreduras.
       timer = window.setTimeout(collectFields, 400);
     };
 
@@ -289,7 +271,6 @@ function PageStatePersistence() {
 function AnimatedRoutes() {
   const location = useLocation();
   useRouteTracker();
-  const { enabled: safeMode } = useSafeMode();
 
   return (
     <>
@@ -298,39 +279,34 @@ function AnimatedRoutes() {
       <ScrollRestoration />
       <WatermarkWrapper />
       <OfflineIndicator />
-      <SafeModeBanner />
-      {/* Em modo seguro, removemos a animação de transição entre páginas */}
-      <div key={location.pathname} className={safeMode ? '' : 'animate-page-in'}>
+      <div key={location.pathname} className="animate-page-in">
         <Suspense fallback={<PageSkeleton />}>
-          <SafeModeBoundary routeKey={location.pathname}>
-            <Routes location={location}>
-              <Route path="/livros" element={<PlayBooksPage />} />
-              <Route path="/playbooks" element={<PlayBooksPage />} />
-              <Route path="/flashcards" element={<FlashcardsPage />} />
-              <Route path="/admin" element={<AdminPage />} />
-              <Route path="/offline" element={<OfflinePage />} />
-              <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-              <Route path="/desempenho" element={<ProtectedRoute><PerformancePage /></ProtectedRoute>} />
-              <Route path="/review" element={<ProtectedRoute><ReviewPage /></ProtectedRoute>} />
-              <Route path="/simulado" element={<ProtectedRoute><SimuladoPage /></ProtectedRoute>} />
-              <Route path="/revisao-prova/:eventId" element={<ProtectedRoute><PreExamReviewPage /></ProtectedRoute>} />
-              <Route path="/apostila/:id" element={<ProtectedRoute><ApostilaPage /></ProtectedRoute>} />
-              <Route path="/exercises/:id" element={<ProtectedRoute><ExercisesPage /></ProtectedRoute>} />
-              <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-              <Route path="/materials" element={<ProtectedRoute><MaterialsPage /></ProtectedRoute>} />
-              <Route path="/biblioteca" element={<ProtectedRoute><BibliotecaPage /></ProtectedRoute>} />
-              <Route path="/video/:id" element={<ProtectedRoute><VideoPlayerPage /></ProtectedRoute>} />
-              <Route path="/aviso/:id" element={<ProtectedRoute><AnnouncementDetailPage /></ProtectedRoute>} />
-              <Route path="/comunidade" element={<ProtectedRoute><CommunityPage /></ProtectedRoute>} />
-              <Route path="/tira-duvida" element={<ProtectedRoute><TiraDuvidaPage /></ProtectedRoute>} />
-              <Route path="/livros" element={<ProtectedRoute><PlayBooksPage /></ProtectedRoute>} />
-              <Route path="/playbooks" element={<ProtectedRoute><PlayBooksPage /></ProtectedRoute>} />
-              <Route path="/admin/biblioteca" element={<ProtectedRoute adminOnly><AdminBibliotecaPage /></ProtectedRoute>} />
-              <Route path="/admin/apostilas/:id" element={<ProtectedRoute adminOnly><AdminApostilaWorkbench /></ProtectedRoute>} />
-              <Route path="/admin" element={<ProtectedRoute adminOnly><AdminPage /></ProtectedRoute>} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </SafeModeBoundary>
+          <Routes location={location}>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+            <Route path="/desempenho" element={<ProtectedRoute><PerformancePage /></ProtectedRoute>} />
+            <Route path="/review" element={<ProtectedRoute><ReviewPage /></ProtectedRoute>} />
+            <Route path="/simulado" element={<ProtectedRoute><SimuladoPage /></ProtectedRoute>} />
+            <Route path="/revisao-prova/:eventId" element={<ProtectedRoute><PreExamReviewPage /></ProtectedRoute>} />
+            <Route path="/apostila/:id" element={<ProtectedRoute><ApostilaPage /></ProtectedRoute>} />
+            <Route path="/exercises/:id" element={<ProtectedRoute><ExercisesPage /></ProtectedRoute>} />
+            <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+            <Route path="/materials" element={<ProtectedRoute><MaterialsPage /></ProtectedRoute>} />
+            <Route path="/biblioteca" element={<ProtectedRoute><BibliotecaPage /></ProtectedRoute>} />
+            <Route path="/video/:id" element={<ProtectedRoute><VideoPlayerPage /></ProtectedRoute>} />
+            <Route path="/aviso/:id" element={<ProtectedRoute><AnnouncementDetailPage /></ProtectedRoute>} />
+            <Route path="/comunidade" element={<ProtectedRoute><CommunityPage /></ProtectedRoute>} />
+            <Route path="/tira-duvida" element={<ProtectedRoute><TiraDuvidaPage /></ProtectedRoute>} />
+            <Route path="/livros" element={<ProtectedRoute><PlayBooksPage /></ProtectedRoute>} />
+            <Route path="/playbooks" element={<ProtectedRoute><PlayBooksPage /></ProtectedRoute>} />
+            <Route path="/flashcards" element={<ProtectedRoute><FlashcardsPage /></ProtectedRoute>} />
+            <Route path="/admin/biblioteca" element={<ProtectedRoute adminOnly><AdminBibliotecaPage /></ProtectedRoute>} />
+            <Route path="/admin/apostilas/:id" element={<ProtectedRoute adminOnly><AdminApostilaWorkbench /></ProtectedRoute>} />
+            <Route path="/admin" element={<ProtectedRoute adminOnly><AdminPage /></ProtectedRoute>} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
         </Suspense>
       </div>
     </>
