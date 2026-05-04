@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { getCurrentAccessToken } from "@/lib/auth-session";
 import { toast } from "sonner";
 
 export interface InvokeOptions {
@@ -38,13 +39,14 @@ export async function invokeFunction<T = unknown>(
   const { body, headers, errorTitle = "Falha na função", showToast = true } = options;
 
   try {
-    // Use direct fetch to capture response headers (request id) and body
-    const { data: { session } } = await supabase.auth.getSession();
+    // Reaproveita o token mantido pelo AuthProvider — evita várias chamadas
+    // paralelas a getSession() que disputam o LockManager interno do gotrue-js.
+    const accessToken = getCurrentAccessToken();
     const reqHeaders: Record<string, string> = {
       "Content-Type": "application/json",
       apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-      ...(session?.access_token
-        ? { Authorization: `Bearer ${session.access_token}` }
+      ...(accessToken
+        ? { Authorization: `Bearer ${accessToken}` }
         : {}),
       ...headers,
     };

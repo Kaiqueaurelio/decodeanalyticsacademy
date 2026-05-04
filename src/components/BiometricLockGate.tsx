@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { isBiometricEnabled } from '@/hooks/useBiometricAuth';
 import { AppLock } from '@/components/AppLock';
@@ -20,14 +20,11 @@ const STORAGE_KEY = 'decode_app_locked';
 export function BiometricLockGate({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const [locked, setLocked] = useState(() => {
-    // Só bloqueia no cold start se biometria está ativa E o usuário não
-    // marcou a sessão como "destrancada" neste tab.
     return isBiometricEnabled() && sessionStorage.getItem(STORAGE_KEY) !== 'unlocked';
   });
-  const stabilizeRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Marca como destrancado assim que aparecer um usuário válido — isso evita
-  // o "loop de lock" se a sessão restaurar normalmente após o cold start.
+  // Decide o lock SOMENTE depois do bootstrap do auth terminar.
+  // Isso evita o "lock fantasma" no PC quando a sessão ainda está hidratando.
   useEffect(() => {
     if (loading) return;
     if (!isBiometricEnabled()) {
@@ -37,11 +34,9 @@ export function BiometricLockGate({ children }: { children: React.ReactNode }) {
     if (user) {
       sessionStorage.setItem(STORAGE_KEY, 'unlocked');
       setLocked(false);
-      if (stabilizeRef.current) clearTimeout(stabilizeRef.current);
-      stabilizeRef.current = null;
     }
-    // Se !user, NÃO bloqueamos imediatamente. ProtectedRoute já redireciona
-    // para /login quando o backend confirma "sem sessão".
+    // Sem usuário após bootstrap: ProtectedRoute leva para /login.
+    // NÃO forçamos lock aqui, evita corrida com refresh token.
   }, [loading, user]);
 
   // Lock again on prolonged hide

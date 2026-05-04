@@ -15,15 +15,18 @@ export function AppLock({ onUnlock }: AppLockProps) {
   const email = getBiometricEmail();
 
   const handleUnlock = async () => {
+    if (verifying) return; // evita duplo clique → duplo refresh
     setVerifying(true);
     try {
       // 1) Confirma biometria primeiro (sem usar o refresh token ainda)
       const storedRefreshToken = await verifyBiometric();
 
-      // 2) Se já existe sessão válida em memória, basta desbloquear
-      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      // 2) Se já existe sessão válida em memória (auto-refresh do supabase-js
+      //    já restaurou), basta desbloquear — NÃO chamar refreshSession aqui,
+      //    isso causava cascata de /token e estouro de rate limit.
+      const { getCurrentSession } = await import('@/lib/auth-session');
+      const currentSession = getCurrentSession();
       if (currentSession?.user) {
-        // Re-criptografa o refresh token mais recente para a próxima vez
         if (currentSession.refresh_token) {
           await refreshBiometricToken(currentSession.refresh_token).catch(() => {});
         }
@@ -32,11 +35,11 @@ export function AppLock({ onUnlock }: AppLockProps) {
         return;
       }
 
-      // 3) Sem sessão ativa → tenta restaurar com o refresh token criptografado
+      // 3) Sem sessão ativa em memória → último recurso: tenta restaurar com
+      //    o refresh token criptografado guardado na biometria.
       const { data, error } = await supabase.auth.refreshSession({ refresh_token: storedRefreshToken });
       if (error) throw error;
 
-      // Salva o NOVO refresh token retornado (Supabase rotaciona a cada uso)
       if (data.session?.refresh_token) {
         await refreshBiometricToken(data.session.refresh_token).catch(() => {});
       }
