@@ -10,15 +10,13 @@ import { useMentionNotifications } from '@/hooks/useMentionNotifications';
 import { NotificationBell } from '@/components/NotificationBell';
 
 export function AppHeader() {
-  const { user, isAdmin, roleChecked, signOut } = useAuth();
+  const { user, isAdmin, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const { unreadCount } = useMentionNotifications();
   const badge = unreadCount > 9 ? '9+' : String(unreadCount);
-  // Mostra Admin enquanto o papel está sendo (re)verificado se já vimos isAdmin antes,
-  // evitando o "pisca-pisca" do botão. Só esconde quando temos certeza (roleChecked && !isAdmin).
-  const showAdmin = isAdmin || (!roleChecked && !!user);
+  const showAdmin = isAdmin;
 
   const nav = (path: string) => { navigate(path); setOpen(false); };
 
