@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Trash2, Edit2, Eye, ClickIcon, Loader2 } from 'lucide-react';
+import { Plus, Trash2, Edit2, Eye, MousePointerClick, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 
@@ -300,7 +300,7 @@ export function AdminAdsManager() {
                             <Eye size={14} /> {ad.view_count} visualizações
                           </span>
                           <span className="flex items-center gap-1">
-                            <ClickIcon size={14} /> {ad.click_count} cliques
+                            <MousePointerClick size={14} /> {ad.click_count} cliques
                           </span>
                         </div>
                       </div>

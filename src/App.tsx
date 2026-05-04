@@ -307,7 +307,7 @@ function AnimatedRoutes() {
               <Route path="/livros" element={<PlayBooksPage />} />
               <Route path="/playbooks" element={<PlayBooksPage />} />
               <Route path="/flashcards" element={<FlashcardsPage />} />
-              <Route path="/admin" element={<AdminPage />} />>
+              <Route path="/admin" element={<AdminPage />} />
               <Route path="/offline" element={<OfflinePage />} />
               <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
               <Route path="/desempenho" element={<ProtectedRoute><PerformancePage /></ProtectedRoute>} />
