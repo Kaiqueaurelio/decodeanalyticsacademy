@@ -40,6 +40,7 @@ import { StudyNowDialog } from '@/components/StudyNowDialog';
 import { OverallProgressCard } from '@/components/OverallProgressCard';
 import { QuickAccessHub } from '@/components/QuickAccessHub';
 import { Reveal } from '@/components/Reveal';
+import { DashboardMinimalist } from '@/components/DashboardMinimalist';
 import { ApostilaCardActions } from '@/components/ApostilaCardActions';
 import { SwipeableRow, type SwipeAction } from '@/components/SwipeableRow';
 import { useApostilaFavorites } from '@/hooks/useApostilaFavorites';
@@ -251,6 +252,18 @@ export default function DashboardPage() {
         {/* 📚 Modo Revisão Pré-Prova (≤7 dias) */}
         <div className="mb-4">
           <PreExamReviewBanner />
+        </div>
+
+        {/* Dashboard Minimalista */}
+        <div className="mb-12 animate-content-show">
+          <DashboardMinimalist
+            userName={profile?.full_name || 'Aluno'}
+            weeklyGoal={30}
+            weeklyProgress={gamification?.weeklyProgress || 0}
+            totalXP={gamification?.totalXP || 0}
+            level={gamification?.level || 1}
+            streak={gamification?.currentStreak || 0}
+          />
         </div>
 
         {/* Header */}
