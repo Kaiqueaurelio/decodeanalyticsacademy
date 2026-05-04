@@ -5,9 +5,11 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Slider } from '@/components/ui/slider';
+import { useAudioPlayer } from '@/contexts/AudioPlayerContext';
+import { Button } from '@/components/ui/button';
 import {
   Play, Pause, SkipBack, SkipForward, Volume2, VolumeX,
-  Loader2, AlertCircle, Music, Headphones, Gauge,
+  Loader2, AlertCircle, Music, Headphones, Gauge, PlayCircle,
 } from 'lucide-react';
 
 interface AudioMaterial {
@@ -85,7 +87,7 @@ export function ApostilaAudios({ apostilaId }: { apostilaId: string }) {
 
       <div className="space-y-3">
         {audios.map((a) => (
-          <AudioCard key={a.id} audio={a} />
+          <AudioCard key={a.id} audio={a} apostilaTitle="Apostila" />
         ))}
       </div>
     </section>
@@ -94,8 +96,9 @@ export function ApostilaAudios({ apostilaId }: { apostilaId: string }) {
 
 const SPEEDS = [1, 1.25, 1.5, 1.75, 2];
 
-function AudioCard({ audio }: { audio: AudioMaterial }) {
+function AudioCard({ audio, apostilaTitle }: { audio: AudioMaterial; apostilaTitle?: string }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const globalPlayer = useAudioPlayer();
   const [playing, setPlaying] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
@@ -127,6 +130,15 @@ function AudioCard({ audio }: { audio: AudioMaterial }) {
         .catch(() => { setLoading(false); setError(true); });
     }
   }, [playing]);
+
+  const playInGlobalPlayer = () => {
+    globalPlayer.play({
+      id: audio.id,
+      title: audio.title,
+      url: audio.file_url,
+      apostilaTitle,
+    });
+  };
 
   const cycleSpeed = () => {
     const el = audioRef.current; if (!el) return;
@@ -187,6 +199,17 @@ function AudioCard({ audio }: { audio: AudioMaterial }) {
           {loading ? <Loader2 className="h-5 w-5 animate-spin" /> :
             playing ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5 ml-0.5" />}
         </button>
+
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={playInGlobalPlayer}
+          className="gap-1.5 border-primary/20 text-primary hover:bg-primary/10"
+          title="Ouvir em player flutuante"
+        >
+          <PlayCircle size={14} />
+          <span className="hidden sm:inline text-[10px] uppercase font-bold">Player</span>
+        </Button>
 
         <button
           onClick={() => { if (audioRef.current) audioRef.current.currentTime = Math.min(duration, audioRef.current.currentTime + 15); }}

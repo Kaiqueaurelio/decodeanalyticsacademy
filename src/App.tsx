@@ -24,6 +24,7 @@ const QuickActionsFab = lazy(() => import("@/components/QuickActionsFab").then(m
 import { useSafeMode } from "@/hooks/useSafeMode";
 import { useRouteTracker, getLastRoute } from "@/hooks/useRouteTracker";
 import { getLocationRoute, getPageState, getScrollPosition, savePageState, saveScrollPosition } from "@/lib/app-persistence";
+import { AudioPlayerProvider } from "@/contexts/AudioPlayerContext";
 
 // Páginas críticas no bundle inicial (rápidas para o primeiro acesso)
 import LandingPage from "./pages/LandingPage";
@@ -52,6 +53,7 @@ const AdminApostilaWorkbench = lazy(() => import("./pages/AdminApostilaWorkbench
 const PlayBooksPage = lazy(() => import("./pages/PlayBooksPage"));
 const PerformancePage = lazy(() => import("./pages/PerformancePage"));
 const FlashcardsPage = lazy(() => import("./pages/FlashcardsPage"));
+const GlobalAudioPlayer = lazy(() => import("@/components/GlobalAudioPlayer").then(m => ({ default: m.GlobalAudioPlayer })));
 
 // Cache agressivo: dados ficam frescos por 5min, em cache por 30min
 // → menos requisições, navegação instantânea entre páginas
@@ -97,6 +99,9 @@ function WatermarkWrapper() {
         <ScrollToTopFab />
         <PullToRefresh />
         <QuickActionsFab />
+      </Suspense>
+      <Suspense fallback={null}>
+        <GlobalAudioPlayer />
       </Suspense>
     </>
   );
@@ -336,8 +341,10 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <AuthProvider>
-            <AnimatedRoutes />
-            <RANamePrompt />
+            <AudioPlayerProvider>
+              <AnimatedRoutes />
+              <RANamePrompt />
+            </AudioPlayerProvider>
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
