@@ -202,7 +202,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signIn = async (email: string, password: string) => {
+    console.log('[AUTH]', { event: 'sign_in_attempt', timestamp: Date.now(), email });
     const { error } = await supabase.auth.signInWithPassword({ email, password });
+    console.log('[AUTH]', {
+      event: error ? 'sign_in_error' : 'sign_in_success',
+      timestamp: Date.now(),
+      message: error?.message ?? null,
+    });
     return { error: error as Error | null };
   };
 
@@ -212,10 +218,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
+    console.log('[AUTH]', { event: 'sign_out_start', timestamp: Date.now() });
     writeRoleCache(null, false);
     lastRoleUserId.current = null;
     setCurrentSession(null);
+    setStatus('unauthenticated');
     await supabase.auth.signOut();
+    console.log('[AUTH]', { event: 'sign_out_done', timestamp: Date.now() });
   };
 
   return (
