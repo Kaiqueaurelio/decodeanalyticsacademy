@@ -33,7 +33,7 @@ interface AudioPlayerContextType {
 const AudioPlayerContext = createContext<AudioPlayerContextType | undefined>(undefined);
 
 export function AudioPlayerProvider({ children }: { children: React.ReactNode }) {
-  const audioRef = useRef<HTMLAudioElement>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const [currentTrack, setCurrentTrack] = useState<AudioTrack | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -43,23 +43,38 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
   const [queue, setQueue] = useState<AudioTrack[]>([]);
   const [queueIndex, setQueueIndex] = useState(0);
 
-  // Sincroniza o tempo de reprodução
   useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
+    const audio = new Audio();
+    audio.crossOrigin = "anonymous";
+    audioRef.current = audio;
 
     const handleTimeUpdate = () => setCurrentTime(audio.currentTime);
     const handleLoadedMetadata = () => setDuration(audio.duration);
     const handleEnded = () => skipNext();
+    const handlePlay = () => setIsPlaying(true);
+    const handlePause = () => setIsPlaying(false);
+    const handleError = (e: any) => {
+      console.error("Audio error:", e);
+      setIsPlaying(false);
+    };
 
     audio.addEventListener('timeupdate', handleTimeUpdate);
     audio.addEventListener('loadedmetadata', handleLoadedMetadata);
     audio.addEventListener('ended', handleEnded);
+    audio.addEventListener('play', handlePlay);
+    audio.addEventListener('pause', handlePause);
+    audio.addEventListener('error', handleError);
 
     return () => {
+      audio.pause();
+      audio.src = "";
       audio.removeEventListener('timeupdate', handleTimeUpdate);
       audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
       audio.removeEventListener('ended', handleEnded);
+      audio.removeEventListener('play', handlePlay);
+      audio.removeEventListener('pause', handlePause);
+      audio.removeEventListener('error', handleError);
+      audioRef.current = null;
     };
   }, []);
 
@@ -70,24 +85,25 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     setCurrentTrack(track);
     setQueue([track]);
     setQueueIndex(0);
-    audio.src = track.url;
-    audio.play();
-    setIsPlaying(true);
+    
+    if (audio.src !== track.url) {
+      audio.src = track.url;
+      audio.load();
+    }
+    
+    audio.play().catch(err => {
+      console.error("Playback failed:", err);
+      setIsPlaying(false);
+    });
   };
 
   const pause = () => {
-    const audio = audioRef.current;
-    if (audio) {
-      audio.pause();
-      setIsPlaying(false);
-    }
+    audioRef.current?.pause();
   };
 
   const resume = () => {
-    const audio = audioRef.current;
-    if (audio && currentTrack) {
-      audio.play();
-      setIsPlaying(true);
+    if (audioRef.current && currentTrack) {
+      audioRef.current.play().catch(console.error);
     }
   };
 
@@ -96,31 +112,28 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
     if (audio) {
       audio.pause();
       audio.currentTime = 0;
-      setIsPlaying(false);
       setCurrentTrack(null);
+      setIsPlaying(false);
     }
   };
 
   const setPlaybackRate = (rate: number) => {
-    const audio = audioRef.current;
-    if (audio) {
-      audio.playbackRate = rate;
+    if (audioRef.current) {
+      audioRef.current.playbackRate = rate;
       setPlaybackRateState(rate);
     }
   };
 
   const setVolume = (vol: number) => {
-    const audio = audioRef.current;
-    if (audio) {
-      audio.volume = vol;
+    if (audioRef.current) {
+      audioRef.current.volume = vol;
       setVolumeState(vol);
     }
   };
 
   const seek = (time: number) => {
-    const audio = audioRef.current;
-    if (audio) {
-      audio.currentTime = time;
+    if (audioRef.current) {
+      audioRef.current.currentTime = time;
       setCurrentTime(time);
     }
   };
@@ -131,9 +144,9 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
 
   const skipNext = () => {
     if (queueIndex < queue.length - 1) {
-      const nextTrack = queue[queueIndex + 1];
-      setQueueIndex(queueIndex + 1);
-      play(nextTrack);
+      const nextIndex = queueIndex + 1;
+      setQueueIndex(nextIndex);
+      play(queue[nextIndex]);
     } else {
       stop();
     }
@@ -141,9 +154,9 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
 
   const skipPrevious = () => {
     if (queueIndex > 0) {
-      const prevTrack = queue[queueIndex - 1];
-      setQueueIndex(queueIndex - 1);
-      play(prevTrack);
+      const prevIndex = queueIndex - 1;
+      setQueueIndex(prevIndex);
+      play(queue[prevIndex]);
     }
   };
 
@@ -169,7 +182,6 @@ export function AudioPlayerProvider({ children }: { children: React.ReactNode })
         skipPrevious,
       }}
     >
-      <audio ref={audioRef} crossOrigin="anonymous" />
       {children}
     </AudioPlayerContext.Provider>
   );
