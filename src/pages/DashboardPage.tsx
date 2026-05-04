@@ -68,7 +68,8 @@ import { GraduationCap } from 'lucide-react';
 type Apostila = ApostilaSummary;
 
 export default function DashboardPage() {
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, roleChecked } = useAuth();
+  const showAdmin = isAdmin || (!roleChecked && !!user);
   const isMobile = useIsMobile();
   const apostilaFavorites = useApostilaFavorites();
   const navigate = useNavigate();
@@ -263,7 +264,7 @@ export default function DashboardPage() {
             <Button size="sm" variant="outline" onClick={() => navigate('/profile')} className="text-xs gap-1.5 h-8 hidden sm:inline-flex">
               <User className="h-3.5 w-3.5" /> Perfil
             </Button>
-            {isAdmin && (
+            {showAdmin && (
               <Button size="sm" variant="outline" onClick={() => navigate('/admin')} className="text-xs gap-1.5 h-8 hidden sm:inline-flex">
                 <BarChart3 className="h-3.5 w-3.5" /> Admin
               </Button>
