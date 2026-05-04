@@ -58,7 +58,7 @@ export function AppHeader() {
                   </span>
                 )}
               </Button>
-              {isAdmin && (
+              {showAdmin && (
                 <Button variant="ghost" size="sm" onClick={() => navigate('/admin')} className="text-xs h-8 px-3 font-sans normal-case tracking-normal">
                   <Shield className="mr-1.5 h-3.5 w-3.5" /> Admin
                 </Button>
@@ -111,7 +111,7 @@ export function AppHeader() {
                   <Button variant="ghost" size="sm" className="justify-start text-sm font-sans normal-case tracking-normal" onClick={() => nav('/profile')}>
                     <User className="mr-2 h-4 w-4" /> Perfil
                   </Button>
-                  {isAdmin && (
+                  {showAdmin && (
                     <Button variant="ghost" size="sm" className="justify-start text-sm font-sans normal-case tracking-normal" onClick={() => nav('/admin')}>
                       <Shield className="mr-2 h-4 w-4" /> Admin
                     </Button>
