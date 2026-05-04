@@ -134,8 +134,8 @@ export default function AdminBibliotecaPage() {
       const coverErr = validateFile(coverFile, COVER_TYPES, COVER_EXTS, MAX_COVER_MB, 'Capa');
       if (coverErr) { toast.error(coverErr); return; }
     }
-    const { data: sessionData } = await supabase.auth.getSession();
-    const token = sessionData.session?.access_token;
+    const { getCurrentAccessToken } = await import('@/lib/auth-session');
+    const token = getCurrentAccessToken();
     if (!token) { toast.error('Sessão expirada. Faça login novamente.'); return; }
 
     setUploading(true);
