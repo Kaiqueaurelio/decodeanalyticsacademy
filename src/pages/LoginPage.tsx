@@ -15,7 +15,7 @@ import loginHero from '@/assets/login-hero.jpg';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function LoginPage() {
-  const { signIn, signUp, user, loading: authLoading } = useAuth();
+  const { signIn, signUp, user, loading: authLoading, status, isSessionHydrated } = useAuth();
   const navigate = useNavigate();
   const savedIdentifier = localStorage.getItem('decode_remember_identifier')
     || localStorage.getItem('decode_remember_email')
@@ -52,10 +52,18 @@ export default function LoginPage() {
   const passwordRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (authLoading || !user) return;
+    if (authLoading || !isSessionHydrated || status !== 'authenticated' || !user) return;
     const lastRoute = localStorage.getItem('decode_last_route');
     navigate(lastRoute && lastRoute !== '/' && lastRoute !== '/login' ? lastRoute : '/dashboard', { replace: true });
-  }, [authLoading, user, navigate]);
+  }, [authLoading, isSessionHydrated, status, user, navigate]);
+
+  useEffect(() => {
+    if (!awaitingSession) return;
+    if (!isSessionHydrated || status === 'loading') return;
+    if (status === 'unauthenticated' && !user) {
+      setAwaitingSession(false);
+    }
+  }, [awaitingSession, isSessionHydrated, status, user]);
 
   const triggerShake = () => {
     setShaking(true);
