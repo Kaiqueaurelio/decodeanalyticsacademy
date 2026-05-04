@@ -6,12 +6,14 @@ import { toast } from 'sonner';
 const TIMEOUT_MS = 30 * 60 * 1000; // 30 min — mais conservador, evita logouts surpresa
 
 export function useInactivityLogout() {
+  // CORREÇÃO: Desativado permanentemente para evitar logouts automáticos no PC
   const DISABLED_FOR_SESSION_HOTFIX = true;
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleLogout = useCallback(async () => {
+    if (DISABLED_FOR_SESSION_HOTFIX) return;
     await signOut();
     navigate('/login', { replace: true });
     toast.warning('Sua sessão foi encerrada por inatividade. Faça login novamente para continuar.', {
@@ -20,6 +22,7 @@ export function useInactivityLogout() {
   }, [signOut, navigate]);
 
   const resetTimer = useCallback(() => {
+    if (DISABLED_FOR_SESSION_HOTFIX) return;
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(handleLogout, TIMEOUT_MS);
   }, [handleLogout]);

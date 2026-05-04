@@ -116,9 +116,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     logAuthFlow('provider_init');
     setStatus('hydrating');
 
-    try {
-      localStorage.removeItem('decode_session_cache');
-    } catch {}
+    // CORREÇÃO: Removido o removeItem do session_cache que causava logout no PC
+    // try {
+    //   localStorage.removeItem('decode_session_cache');
+    // } catch {}
 
     const applySession = (nextSession: Session | null, source: 'bootstrap' | 'listener', authEvent?: string) => {
       if (!mountedRef.current) return;
