@@ -135,7 +135,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(nextSession);
       setUser(nextUser);
       setStatus(nextStatus);
-      setIsSessionHydrated(bootstrappedRef.current);
+      // BUGFIX: quando source === 'bootstrap', bootstrappedRef.current já foi setado
+      // para true ANTES de chamar applySession. Para o listener disparado antes do
+      // bootstrap (ex: SIGNED_IN imediato), usamos bootstrappedRef.current que ainda
+      // pode ser false — nesse caso forçamos true pois o listener só chega após init.
+      setIsSessionHydrated(source === 'bootstrap' ? true : bootstrappedRef.current);
 
       if (nextUser) {
         const cachedRole = readRoleCache();

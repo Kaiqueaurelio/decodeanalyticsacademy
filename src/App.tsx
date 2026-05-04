@@ -9,6 +9,9 @@ import { ThemeProvider } from "@/hooks/useTheme";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { RANamePrompt } from "@/components/RANamePrompt";
 import { PageSkeleton } from "@/components/PageSkeleton";
+// BUGFIX: AudioPlayerProvider NAO pode ser lazy-loaded pois é um Context Provider.
+// Lazy-loading um Provider causa crash/reset de contexto ao remontar.
+import { AudioPlayerProvider } from "@/contexts/AudioPlayerContext";
 
 // Páginas críticas no bundle inicial
 import LandingPage from "./pages/LandingPage";
@@ -37,7 +40,6 @@ const AdminApostilaWorkbench = lazy(() => import("./pages/AdminApostilaWorkbench
 const PlayBooksPage = lazy(() => import("./pages/PlayBooksPage"));
 const PerformancePage = lazy(() => import("./pages/PerformancePage"));
 const FlashcardsPage = lazy(() => import("./pages/FlashcardsPage"));
-const AudioPlayerProvider = lazy(() => import("@/contexts/AudioPlayerContext").then(m => ({ default: m.AudioPlayerProvider })));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -91,12 +93,10 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <AuthProvider>
-            <Suspense fallback={<PageSkeleton />}>
-              <AudioPlayerProvider>
-                <AnimatedRoutes />
-                <RANamePrompt />
-              </AudioPlayerProvider>
-            </Suspense>
+            <AudioPlayerProvider>
+              <AnimatedRoutes />
+              <RANamePrompt />
+            </AudioPlayerProvider>
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
