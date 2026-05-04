@@ -8,6 +8,7 @@ import { EvolutionChart } from '@/components/EvolutionChart';
 import { KawaiiSlider } from '@/components/KawaiiSlider';
 import { BiometricToggle } from '@/components/BiometricToggle';
 import { TestimonialDialog } from '@/components/TestimonialDialog';
+import { NewFeaturesShowcase } from '@/components/NewFeaturesShowcase';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -361,6 +362,11 @@ export default function ProfilePage() {
             </div>
           </Card>
         )}
+
+        {/* Seção de Novas Funcionalidades */}
+        <div className="mt-12 pt-8 border-t border-border/50">
+          <NewFeaturesShowcase />
+        </div>
       </main>
     </div>
   );

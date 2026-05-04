@@ -52,6 +52,7 @@ import { DuplicateApostilaDialog } from '@/components/DuplicateApostilaDialog';
 import { findDuplicateApostila, type DuplicateMatch } from '@/lib/duplicate-detector';
 import { ImportPreviewPanel } from '@/components/ImportPreviewPanel';
 import { AdminAdsManager } from '@/components/AdminAdsManager';
+import { AdminDashboardPro } from '@/components/AdminDashboardPro';
 
 type Apostila = Tables<'apostilas'>;
 type Exercise = Tables<'exercises'>;
@@ -91,7 +92,7 @@ function CategorySelect({ value, onValueChange, placeholder }: { value: string; 
   );
 }
 
-type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements' | 'calendar' | 'testimonials' | 'ai' | 'performance' | 'smoke' | 'diagnostics';
+type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements' | 'calendar' | 'testimonials' | 'ai' | 'performance' | 'smoke' | 'diagnostics' | 'ads' | 'social';
 
 const ACCEPT_MAP: Record<string, string> = {
   pdf: '.pdf', image: 'image/*', gif: '.gif,image/gif',
@@ -1277,7 +1278,7 @@ export default function AdminPage() {
             <div key={tab} className="animate-fade-in">
             {/* OVERVIEW */}
             {tab === 'overview' && (
-              <OverviewTab apostilas={apostilas} exercises={exercises} allAnswers={allAnswers} materials={materials} users={users} setTab={setTab} loading={refreshing} />
+              <AdminDashboardPro onNavigate={(newTab) => setTab(newTab as Tab)} />
             )}
 
             {/* APOSTILAS */}
