@@ -51,19 +51,21 @@ export default function LoginPage() {
   const [awaitingSession, setAwaitingSession] = useState(false);
   const passwordRef = useRef<HTMLInputElement>(null);
 
+  const authSettling = authLoading || !isSessionHydrated || status === 'loading' || status === 'hydrating';
+
   useEffect(() => {
-    if (authLoading || !isSessionHydrated || status !== 'authenticated' || !user) return;
+    if (authSettling || status !== 'authenticated' || !user) return;
     const lastRoute = localStorage.getItem('decode_last_route');
     navigate(lastRoute && lastRoute !== '/' && lastRoute !== '/login' ? lastRoute : '/dashboard', { replace: true });
-  }, [authLoading, isSessionHydrated, status, user, navigate]);
+  }, [authSettling, status, user, navigate]);
 
   useEffect(() => {
     if (!awaitingSession) return;
-    if (!isSessionHydrated || status === 'loading') return;
+    if (authSettling) return;
     if (status === 'unauthenticated' && !user) {
       setAwaitingSession(false);
     }
-  }, [awaitingSession, isSessionHydrated, status, user]);
+  }, [awaitingSession, authSettling, status, user]);
 
   const triggerShake = () => {
     setShaking(true);
