@@ -68,8 +68,8 @@ import { GraduationCap } from 'lucide-react';
 type Apostila = ApostilaSummary;
 
 export default function DashboardPage() {
-  const { user, isAdmin, roleChecked } = useAuth();
-  const showAdmin = isAdmin || (!roleChecked && !!user);
+  const { user, isAdmin } = useAuth();
+  const showAdmin = isAdmin;
   const isMobile = useIsMobile();
   const apostilaFavorites = useApostilaFavorites();
   const navigate = useNavigate();

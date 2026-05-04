@@ -8,8 +8,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/hooks/useTheme";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { BiometricLockGate } from "@/components/BiometricLockGate";
-import { BiometricOnboarding } from "@/components/BiometricOnboarding";
 import { RANamePrompt } from "@/components/RANamePrompt";
 import { DynamicWatermark } from "@/components/DynamicWatermark";
 import { ScreenshotGuard } from "@/components/ScreenshotGuard";
@@ -25,7 +23,6 @@ const PullToRefresh = lazy(() => import("@/components/PullToRefresh").then(m => 
 const QuickActionsFab = lazy(() => import("@/components/QuickActionsFab").then(m => ({ default: m.QuickActionsFab })));
 import { useSafeMode } from "@/hooks/useSafeMode";
 import { useRouteTracker, getLastRoute } from "@/hooks/useRouteTracker";
-import { useInactivityLogout } from "@/hooks/useInactivityLogout";
 import { getLocationRoute, getPageState, getScrollPosition, savePageState, saveScrollPosition } from "@/lib/app-persistence";
 
 // Páginas críticas no bundle inicial (rápidas para o primeiro acesso)
@@ -282,7 +279,6 @@ function PageStatePersistence() {
 function AnimatedRoutes() {
   const location = useLocation();
   useRouteTracker();
-  useInactivityLogout();
   const { enabled: safeMode } = useSafeMode();
 
   return (
@@ -338,11 +334,8 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <AuthProvider>
-            <BiometricLockGate>
-              <AnimatedRoutes />
-              <BiometricOnboarding />
-              <RANamePrompt />
-            </BiometricLockGate>
+            <AnimatedRoutes />
+            <RANamePrompt />
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
