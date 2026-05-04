@@ -129,6 +129,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (cached?.userId === sess.user.id) {
           setIsAdmin(cached.isAdmin);
           setRoleChecked(true);
+        } else {
+          setRoleChecked(false);
         }
 
         if (lastRoleUserId.current !== sess.user.id || event === 'SIGNED_IN') {
@@ -202,7 +204,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    console.log('[AUTH]', { event: 'sign_in_attempt', timestamp: Date.now(), email });
+    console.log('[AUTH]', { event: 'sign_in_attempt', timestamp: Date.now() });
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     console.log('[AUTH]', {
       event: error ? 'sign_in_error' : 'sign_in_success',
