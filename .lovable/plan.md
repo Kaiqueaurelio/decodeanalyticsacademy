@@ -1,123 +1,85 @@
-## Objetivo
-Resolver de forma conjunta estes 3 problemas sem remover nada do que já existe:
+# Plano de correção
 
-1. Fórmulas e cálculos das apostilas ficam bagunçados.
-2. O app ainda não permanece logado.
-3. O botão Admin some às vezes, mesmo na conta administradora.
+## Problema identificado
+O problema principal não é “login inválido”, e sim uma instabilidade de sessão no navegador do PC.
 
-## O que está acontecendo hoje
+Encontrei estes sinais claros:
+- Os logs de autenticação mostram uma tempestade de refresh token em sequência no endpoint `/token`, seguida de `429: Request rate limit reached`.
+- Isso explica o comportamento “entra, fica alguns minutos, cai de novo”. Quando o refresh entra em disputa/repetição, a sessão acaba sendo invalidada visualmente e o app volta para `/login`.
+- O botão Admin some porque algumas telas e o header decidem usando `isAdmin` antes do papel terminar de carregar com segurança.
 
-### 1) Apostilas com cálculo
-O `ApostilaContentRenderer` usa um parser próprio de Markdown/blocos e hoje não entende notação matemática. Então contas com frações, expoentes, raízes e equações acabam sendo tratadas como texto comum, ficando quebradas no layout do aluno.
+## O que vou corrigir
 
-### 2) Login que não persiste
-A autenticação melhorou, mas ainda existem pontos do app que podem desestabilizar a sessão:
-
-- `BiometricLockGate.tsx` hoje bloqueia o app quando `user` fica `null`, mesmo em cenários de restauração/transição da sessão. Isso pode simular “deslogou”.
-- `AppLock.tsx` chama `getSession()`, `refreshSession()` e até `signOut()` em fluxos que podem acontecer durante recuperação da sessão.
-- Há outros componentes que ainda chamam `supabase.auth.getSession()` diretamente em paralelo (`BiometricOnboarding`, `BiometricToggle`, `AdminBibliotecaPage`, `ApostilaChat`, `AIProviderSettings`). Isso aumenta contenção e pode piorar o boot do auth.
-- `useInactivityLogout.tsx` fica globalmente ativo em todas as rotas autenticadas; vou revisar para garantir que ele não esteja disparando logout indevido em reload/restore.
-
-### 3) Botão Admin sumindo
-O problema está no acoplamento entre `isAdmin` e `roleChecked`:
-
-- Em `AppHeader.tsx`, o botão depende só de `isAdmin`.
-- Em `useAuth.tsx`, `roleChecked` pode ficar verdadeiro cedo demais por causa do cache visual ou por corrida entre bootstrap e checagem real de role.
-- Resultado: a rota admin pode até continuar funcionando, mas o header às vezes renderiza sem o botão porque a role ainda não foi estabilizada naquele frame.
-
-## Plano de implementação
-
-### Etapa 1 — Blindar a autenticação como única fonte de verdade
-Vou refinar `useAuth.tsx` para que:
-
-- o bootstrap da sessão termine de forma determinística antes de liberar a UI protegida;
-- `loading`, `roleChecked` e `isAdmin` sejam sincronizados sem “atalhos” que criem estado intermediário inconsistente;
-- a checagem de role só marque como concluída quando a resposta real do backend chegar para o usuário atual;
-- troca de usuário, refresh de token e restore de sessão não reaproveitem estado antigo.
-
-### Etapa 2 — Corrigir o fluxo de bloqueio biométrico para não parecer logout
-Vou ajustar:
-
-- `src/components/BiometricLockGate.tsx`
-- `src/components/AppLock.tsx`
-- `src/components/BiometricOnboarding.tsx`
-- `src/components/BiometricToggle.tsx`
-
-Mudanças previstas:
-- não bloquear só porque `user` está momentaneamente nulo durante restauração;
-- separar melhor “app bloqueado” de “sessão expirada”;
-- evitar `signOut()` automático em casos ambíguos de restore;
-- usar o estado já fornecido por `useAuth()` sempre que possível, reduzindo chamadas paralelas de `getSession()`.
-
-### Etapa 3 — Endurecer navegação e logout automático
-Vou revisar:
-
-- `src/components/ProtectedRoute.tsx`
-- `src/pages/LoginPage.tsx`
-- `src/hooks/useInactivityLogout.tsx`
-- `src/App.tsx`
-
-Para garantir que:
-- o app só redirecione para `/login` quando a sessão realmente estiver inválida;
-- a página de login só navegue depois que a sessão estiver estável;
-- o logout por inatividade não dispare em momentos errados do boot;
-- restauração de rota (`RouteRestorer`) não brigue com o fluxo de autenticação.
-
-### Etapa 4 — Fixar o botão Admin no header sem flicker
-Vou ajustar `AppHeader.tsx` e o contrato do `useAuth()` para que o botão Admin:
-
-- não desapareça durante checagem de role;
-- respeite um estado de carregamento/estabilização antes de decidir esconder o botão;
-- use cache apenas como apoio visual, nunca como decisão final de permissão.
-
-Se necessário, o header passa a tratar explicitamente um estado “role carregando” em vez de assumir `isAdmin=false` cedo demais.
-
-### Etapa 5 — Suporte real a fórmulas matemáticas nas apostilas
-Vou adicionar renderização de matemática no fluxo das apostilas, mantendo compatibilidade com o que já existe.
-
-Implementação prevista:
-- suporte a `$...$` e `$$...$$` nas apostilas;
-- renderização inline e em bloco para cálculos, frações, potências, raiz, somatório, integral etc.;
-- fallback seguro quando a fórmula vier inválida;
-- integração no preview do aluno e no preview do admin, já que ambos usam o mesmo renderer.
-
+### 1) Blindar a restauração e manutenção da sessão
 Arquivos principais:
-- `src/components/ApostilaContentRenderer.tsx`
-- `src/components/editor/StudentPreview.tsx`
-- `src/lib/markdown-html.ts`
-- possivelmente um novo utilitário de render de matemática
-- `package.json` para a dependência de fórmulas
-
-## Resultado esperado
-Após a implementação:
-
-- o usuário entra e continua logado normalmente;
-- o app não “desloga sozinho” no restore;
-- o bloqueio biométrico não será confundido com logout;
-- o botão Admin ficará consistente para a conta administradora;
-- apostilas com cálculos e expressões matemáticas serão exibidas corretamente para o aluno.
-
-## Detalhes técnicos
-Arquivos com maior chance de mudança:
-
 - `src/hooks/useAuth.tsx`
 - `src/components/ProtectedRoute.tsx`
 - `src/pages/LoginPage.tsx`
-- `src/components/AppHeader.tsx`
-- `src/components/BiometricLockGate.tsx`
+
+Ajustes:
+- Transformar `useAuth` no único ponto de verdade da sessão, sem reprocessamentos que possam disparar cascatas de refresh.
+- Endurecer o bootstrap para evitar transições intermediárias `user -> null -> user` que fazem a UI “achar” que houve logout.
+- Separar melhor os estados `loading`, `session hydrated`, `role loading` e `signed out`.
+- Garantir que a navegação pós-login só aconteça depois da sessão estar realmente estável, e não apenas após o retorno do `signIn()`.
+- Evitar que um evento transitório de auth derrube imediatamente o usuário para `/login`.
+
+### 2) Eliminar pontos que podem amplificar refresh/token race no desktop
+Arquivos principais:
 - `src/components/AppLock.tsx`
+- `src/components/BiometricLockGate.tsx`
 - `src/components/BiometricOnboarding.tsx`
 - `src/components/BiometricToggle.tsx`
+- `src/components/ApostilaChat.tsx`
+- possíveis consumidores adicionais de `supabase.auth.getSession()`
+
+Ajustes:
+- Remover dependência de chamadas soltas de `getSession()` em componentes que só precisam do token/sessão atual.
+- Fazer esses componentes reutilizarem a sessão já mantida pelo contexto de autenticação.
+- Revisar o fluxo biométrico no desktop para impedir refresh manual redundante ou restauração indevida de sessão.
+- Evitar que o cold start com biometria ligada produza lock/restauração concorrente com o bootstrap normal.
+- Se necessário, adicionar proteção anti-duplicação para impedir múltiplas tentativas simultâneas de refresh/desbloqueio.
+
+### 3) Corrigir o desaparecimento do botão Admin
+Arquivos principais:
+- `src/components/AppHeader.tsx`
+- `src/pages/DashboardPage.tsx`
+- qualquer outra tela que use `isAdmin` diretamente
+
+Ajustes:
+- Fazer o header e as telas aguardarem `roleChecked` antes de decidir esconder ações administrativas.
+- Manter o último estado visual válido durante a revalidação de papel, evitando flicker.
+- Garantir consistência entre header, dashboard e rotas protegidas.
+
+### 4) Reduzir logout “fantasma” causado por lógica paralela de segurança
+Arquivos principais:
 - `src/hooks/useInactivityLogout.tsx`
-- `src/components/ApostilaContentRenderer.tsx`
-- `src/lib/markdown-html.ts`
-- `package.json`
+- `src/components/BiometricLockGate.tsx`
+- `src/components/AppLock.tsx`
 
-Não vou remover funcionalidades já criadas; a correção será focada em estabilidade, consistência visual e compatibilidade com o conteúdo existente.
+Ajustes:
+- Confirmar que o logout por inatividade só possa rodar quando a sessão estiver plenamente estável.
+- Impedir que bloqueio biométrico, signOut manual e redirecionamento concorram entre si.
+- Tratar melhor cenários de aba oculta, retorno ao foco e restauração de sessão no desktop.
 
-<lov-actions>
-  <lov-open-history>View History</lov-open-history>
-</lov-actions>
-<lov-actions>
-<lov-link url="https://docs.lovable.dev/tips-tricks/troubleshooting">Troubleshooting docs</lov-link>
-</lov-actions>
+## Resultado esperado
+Depois dessa correção:
+- o usuário continua logado no PC sem cair sozinho após alguns minutos;
+- o app para de entrar em ciclo de login/logout;
+- o botão Admin permanece visível de forma consistente para conta admin;
+- o fluxo biométrico deixa de interferir na sessão normal.
+
+## Detalhes técnicos
+- A evidência principal é o padrão de múltiplos refreshes seguidos com revogação/rotação de token e estouro de limite (`429`) no backend de autenticação.
+- O comportamento é compatível com corrida de sessão em navegador desktop, especialmente quando existem múltiplos consumidores consultando/restaurando sessão em paralelo.
+- Vou concentrar leitura de sessão no contexto de auth e fazer os demais pontos consumirem esse estado já resolvido.
+
+## Validação após implementar
+Vou validar estes cenários:
+1. Login no PC e permanência autenticada por vários minutos.
+2. Reload da página sem cair para `/login`.
+3. Navegação entre páginas autenticadas sem flicker de sessão.
+4. Presença estável do botão Admin no header e no dashboard.
+5. Fluxo com biometria habilitada e desabilitada.
+6. Verificação de que a tempestade de refresh/token não volta a acontecer.
+
+Se você aprovar, eu implemento essa correção agora.
