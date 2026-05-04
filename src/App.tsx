@@ -25,6 +25,7 @@ import { useSafeMode } from "@/hooks/useSafeMode";
 import { useRouteTracker, getLastRoute } from "@/hooks/useRouteTracker";
 import { getLocationRoute, getPageState, getScrollPosition, savePageState, saveScrollPosition } from "@/lib/app-persistence";
 import { AudioPlayerProvider } from "@/contexts/AudioPlayerContext";
+import { AdPopup } from "@/components/AdPopup";
 
 // Páginas críticas no bundle inicial (rápidas para o primeiro acesso)
 import LandingPage from "./pages/LandingPage";
@@ -102,6 +103,9 @@ function WatermarkWrapper() {
       </Suspense>
       <Suspense fallback={null}>
         <GlobalAudioPlayer />
+      </Suspense>
+      <Suspense fallback={null}>
+        <AdPopup trigger="onLoad" delay={3000} />
       </Suspense>
     </>
   );

@@ -18,6 +18,7 @@ import { SpeakButton } from '@/components/SpeakButton';
 import { ApostilaSummaryDialog } from '@/components/ApostilaSummaryDialog';
 import { ApostilaSocialSection } from '@/components/ApostilaSocialSection';
 import { ApostilaPreview } from '@/components/ApostilaPreview';
+import { AdBanner } from '@/components/AdBanner';
 import { UnitTilesGrid, buildUnitResources } from '@/components/UnitTilesGrid';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -642,6 +643,13 @@ export default function ApostilaPage() {
                   );
                 })}
               </div>
+
+              {/* Banner de Anúncios */}
+              {user && (
+                <div className="my-8 animate-content-show">
+                  <AdBanner position="inline" />
+                </div>
+              )}
 
               {/* Áudios das aulas — destaque no topo dos materiais */}
               <ApostilaAudios apostilaId={id!} />

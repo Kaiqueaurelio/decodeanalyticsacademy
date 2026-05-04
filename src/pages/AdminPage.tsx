@@ -51,6 +51,7 @@ import { DiagnosticsPanel } from '@/components/DiagnosticsPanel';
 import { DuplicateApostilaDialog } from '@/components/DuplicateApostilaDialog';
 import { findDuplicateApostila, type DuplicateMatch } from '@/lib/duplicate-detector';
 import { ImportPreviewPanel } from '@/components/ImportPreviewPanel';
+import { AdminAdsManager } from '@/components/AdminAdsManager';
 
 type Apostila = Tables<'apostilas'>;
 type Exercise = Tables<'exercises'>;
@@ -1256,6 +1257,7 @@ export default function AdminPage() {
                 { id: 'performance', label: 'Perf', icon: <Activity className="h-3.5 w-3.5" /> },
                 { id: 'smoke', label: 'Testes', icon: <CheckCircle className="h-3.5 w-3.5" /> },
                 { id: 'diagnostics', label: 'Diag', icon: <AlertCircle className="h-3.5 w-3.5" /> },
+                { id: 'ads', label: 'Anúncios', icon: <Megaphone className="h-3.5 w-3.5" /> },
               ]}
               activeTab={tab}
               onTabChange={(id) => setTab(id as Tab)}
@@ -2821,6 +2823,11 @@ export default function AdminPage() {
             {/* DIAGNOSTICS */}
             {tab === 'diagnostics' && (
               <DiagnosticsPanel />
+            )}
+
+            {/* ADS */}
+            {tab === 'ads' && (
+              <AdminAdsManager />
             )}
             </div>
           </main>
