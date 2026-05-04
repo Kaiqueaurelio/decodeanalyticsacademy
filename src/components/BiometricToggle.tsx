@@ -16,6 +16,9 @@ export function BiometricToggle() {
   const [busy, setBusy] = useState(false);
 
   const handleToggle = async (next: boolean) => {
+    toast.info('Biometria temporariamente desativada até estabilizar a sessão principal.');
+    refresh();
+    return;
     if (!user) return;
     setBusy(true);
     try {
