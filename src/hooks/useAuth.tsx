@@ -1,31 +1,29 @@
-import { createContext, useContext, useEffect, useRef, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import type { User, Session } from '@supabase/supabase-js';
-import { isBiometricEnabled, refreshBiometricToken } from '@/hooks/useBiometricAuth';
-import { setCurrentSession } from '@/lib/auth-session';
-
-/**
- * IMPORTANTE — Política de sessão
- *
- * Aprendemos na prática que NUNCA devemos restaurar `user`/`session` a partir
- * de um cache local arbitrário (ex: localStorage 'decode_session_cache').
- * Isso causava o bug "entra e desloga": o app fingia estar logado, hooks
- * disparavam queries em paralelo (cada um chamando getSession), o lock interno
- * do gotrue-js saturava e os refresh_token vinham com 429. Ao primeiro
- * SIGNED_OUT vindo do servidor, a UI empurrava o usuário de volta ao /login.
- *
- * A única fonte de verdade aqui é `supabase.auth`:
- *   1. Registramos `onAuthStateChange` ANTES de qualquer outra coisa.
- *   2. Em seguida chamamos `getSession()` uma única vez para hidratar o estado.
- *   3. `loading` só vira false depois desse bootstrap terminar.
- *
- * O cache local ainda é usado APENAS para lembrar o `isAdmin` e evitar um
- * "flicker" no header — nunca para autenticar o usuário.
- */
+import type { Session, User } from '@supabase/supabase-js';
+import { safeRefreshSession, setCurrentSession } from '@/lib/auth-session';
 
 const ROLE_CACHE_KEY = 'decode_role_cache';
 
 type RoleCache = { userId: string; isAdmin: boolean };
+export type AuthStatus = 'loading' | 'hydrating' | 'authenticated' | 'unauthenticated';
+
+type AuthCtx = {
+  user: User | null;
+  session: Session | null;
+  isAdmin: boolean;
+  isBlocked: boolean;
+  loading: boolean;
+  status: AuthStatus;
+  isSessionHydrated: boolean;
+  roleChecked: boolean;
+  signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string) => Promise<{ error: Error | null }>;
+  signOut: () => Promise<void>;
+  refreshSession: () => Promise<Session | null>;
+};
+
+const AuthContext = createContext<AuthCtx | undefined>(undefined);
 
 function readRoleCache(): RoleCache | null {
   try {
@@ -35,46 +33,42 @@ function readRoleCache(): RoleCache | null {
     if (parsed && typeof parsed.userId === 'string' && typeof parsed.isAdmin === 'boolean') {
       return parsed;
     }
-    return null;
-  } catch { return null; }
+  } catch {}
+  return null;
 }
 
 function writeRoleCache(userId: string | null, isAdmin: boolean) {
   try {
-    if (!userId) localStorage.removeItem(ROLE_CACHE_KEY);
-    else localStorage.setItem(ROLE_CACHE_KEY, JSON.stringify({ userId, isAdmin }));
-  } catch { /* storage cheio? ignorar */ }
+    if (!userId) {
+      localStorage.removeItem(ROLE_CACHE_KEY);
+      return;
+    }
+    localStorage.setItem(ROLE_CACHE_KEY, JSON.stringify({ userId, isAdmin }));
+  } catch {}
 }
-
-type AuthCtx = {
-  user: User | null;
-  session: Session | null;
-  isAdmin: boolean;
-  isBlocked: boolean;
-  loading: boolean;
-  status: 'loading' | 'authenticated' | 'unauthenticated';
-  isSessionHydrated: boolean;
-  roleChecked: boolean;
-  signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
-  signUp: (email: string, password: string) => Promise<{ error: Error | null }>;
-  signOut: () => Promise<void>;
-};
-
-const AuthContext = createContext<AuthCtx | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isBlocked, setIsBlocked] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [status, setStatus] = useState<'loading' | 'authenticated' | 'unauthenticated'>('loading');
+  const [status, setStatus] = useState<AuthStatus>('loading');
   const [isSessionHydrated, setIsSessionHydrated] = useState(false);
   const [roleChecked, setRoleChecked] = useState(false);
 
-  // Evita rechecagem de role para o mesmo usuário em cada TOKEN_REFRESHED.
-  const lastRoleUserId = useRef<string | null>(null);
-  const bootstrapped = useRef(false);
+  const mountedRef = useRef(true);
+  const bootstrappedRef = useRef(false);
+  const lastRoleUserIdRef = useRef<string | null>(null);
+
+  const loading = status === 'loading' || status === 'hydrating';
+
+  const logAuthFlow = (event: string, extra: Record<string, unknown> = {}) => {
+    console.log('[AUTH FLOW]', {
+      event,
+      timestamp: Date.now(),
+      ...extra,
+    });
+  };
 
   const checkRoles = async (userId: string, attempt = 0): Promise<boolean> => {
     try {
@@ -82,155 +76,196 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         supabase.from('user_roles').select('role').eq('user_id', userId).eq('role', 'admin').maybeSingle(),
         supabase.from('profiles').select('is_blocked').eq('user_id', userId).maybeSingle(),
       ]);
-      // Erro de rede/RLS → não rebaixa privilégio. Tenta de novo (1x) com backoff curto.
+
       if ((adminRes.error || profileRes.error) && attempt < 1) {
         return await new Promise<boolean>((resolve) => {
-          setTimeout(() => resolve(checkRoles(userId, attempt + 1)), 600);
+          setTimeout(() => resolve(checkRoles(userId, attempt + 1)), 500);
         });
       }
-      const adminVal = !!adminRes.data;
-      setIsAdmin(adminVal);
-      setIsBlocked(!!(profileRes.data as any)?.is_blocked);
+
+      if (!mountedRef.current) return false;
+
+      const adminValue = Boolean(adminRes.data);
+      const blockedValue = Boolean((profileRes.data as { is_blocked?: boolean } | null)?.is_blocked);
+
+      setIsAdmin(adminValue);
+      setIsBlocked(blockedValue);
       setRoleChecked(true);
-      writeRoleCache(userId, adminVal);
-      return adminVal;
-    } catch {
-      // Em caso de erro inesperado, mantemos o cache visual (não derrubamos o botão Admin).
+      writeRoleCache(userId, adminValue);
+
+      logAuthFlow('role_resolved', {
+        userId,
+        isAdmin: adminValue,
+        isBlocked: blockedValue,
+      });
+
+      return adminValue;
+    } catch (error) {
+      if (!mountedRef.current) return false;
       setRoleChecked(true);
+      logAuthFlow('role_resolution_error', {
+        userId,
+        message: error instanceof Error ? error.message : 'unknown error',
+      });
       return false;
     }
   };
 
   useEffect(() => {
-    let mounted = true;
+    mountedRef.current = true;
+    logAuthFlow('provider_init');
+    setStatus('hydrating');
 
-    const applySession = (sess: Session | null, source: string, event?: string) => {
-      if (!mounted) return;
+    try {
+      localStorage.removeItem('decode_session_cache');
+    } catch {}
 
-      setCurrentSession(sess);
-      setSession(sess);
-      setUser(sess?.user ?? null);
+    const applySession = (nextSession: Session | null, source: 'bootstrap' | 'listener', authEvent?: string) => {
+      if (!mountedRef.current) return;
 
-      const nextStatus = sess?.user ? 'authenticated' : 'unauthenticated';
+      const nextUser = nextSession?.user ?? null;
+      const nextStatus: AuthStatus = nextUser
+        ? 'authenticated'
+        : bootstrappedRef.current
+          ? 'unauthenticated'
+          : 'hydrating';
+
+      setCurrentSession(nextSession);
+      setSession(nextSession);
+      setUser(nextUser);
       setStatus(nextStatus);
+      setIsSessionHydrated(bootstrappedRef.current);
 
-      console.log('[AUTH]', {
-        event: 'session_update',
-        source,
-        authEvent: event ?? null,
-        timestamp: Date.now(),
-        status: nextStatus,
-        hasSession: Boolean(sess),
-        userId: sess?.user?.id ?? null,
-      });
-
-      if (sess?.user) {
-        const cached = readRoleCache();
-        if (cached?.userId === sess.user.id) {
-          setIsAdmin(cached.isAdmin);
+      if (nextUser) {
+        const cachedRole = readRoleCache();
+        if (cachedRole?.userId === nextUser.id) {
+          setIsAdmin(cachedRole.isAdmin);
           setRoleChecked(true);
         } else {
+          setIsAdmin(false);
+          setIsBlocked(false);
           setRoleChecked(false);
         }
 
-        if (lastRoleUserId.current !== sess.user.id || event === 'SIGNED_IN') {
-          lastRoleUserId.current = sess.user.id;
-          setTimeout(() => { void checkRoles(sess.user.id); }, 0);
-        }
-
-        if (isBiometricEnabled() && sess.refresh_token) {
-          setTimeout(() => { refreshBiometricToken(sess.refresh_token!).catch(() => {}); }, 0);
+        if (lastRoleUserIdRef.current !== nextUser.id || authEvent === 'SIGNED_IN') {
+          lastRoleUserIdRef.current = nextUser.id;
+          queueMicrotask(() => {
+            void checkRoles(nextUser.id);
+          });
         }
       } else {
-        lastRoleUserId.current = null;
+        lastRoleUserIdRef.current = null;
         setIsAdmin(false);
         setIsBlocked(false);
         setRoleChecked(true);
         writeRoleCache(null, false);
       }
 
-      if (bootstrapped.current) {
-        setIsSessionHydrated(true);
-        setLoading(false);
-      }
+      logAuthFlow('state_change', {
+        source,
+        authEvent: authEvent ?? null,
+        status: nextStatus,
+        hasSession: Boolean(nextSession),
+        userId: nextUser?.id ?? null,
+      });
     };
 
-    // Limpa cache legado que decidia auth no client (causava "entra e desloga").
-    try { localStorage.removeItem('decode_session_cache'); } catch {}
-
-    // 1) Listener PRIMEIRO — recomendação oficial Supabase para evitar perda de eventos.
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, sess) => {
-      if (!mounted) return;
-
-      console.log('[AUTH]', {
-        event: 'auth_state_change',
-        authEvent: event,
-        timestamp: Date.now(),
-        hasSession: Boolean(sess),
-        userId: sess?.user?.id ?? null,
-      });
-
-      applySession(sess, 'listener', event);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((authEvent, nextSession) => {
+      applySession(nextSession, 'listener', authEvent);
     });
 
-    // 2) DEPOIS hidratamos a sessão atual (uma única vez).
-    supabase.auth.getSession()
-      .then(({ data: { session: sess } }) => {
-        if (!mounted) return;
-        bootstrapped.current = true;
-        setIsSessionHydrated(true);
-        applySession(sess, 'bootstrap', 'INITIAL_SESSION');
+    void supabase.auth.getSession()
+      .then(({ data, error }) => {
+        if (!mountedRef.current) return;
+        bootstrappedRef.current = true;
+
+        if (error) {
+          setCurrentSession(null);
+          setSession(null);
+          setUser(null);
+          setStatus('unauthenticated');
+          setRoleChecked(true);
+          setIsSessionHydrated(true);
+          logAuthFlow('bootstrap_error', { message: error.message });
+          return;
+        }
+
+        applySession(data.session ?? null, 'bootstrap', 'INITIAL_SESSION');
       })
-      .catch(() => {
-        if (!mounted) return;
-        bootstrapped.current = true;
-        setStatus('unauthenticated');
+      .catch((error) => {
+        if (!mountedRef.current) return;
+        bootstrappedRef.current = true;
         setCurrentSession(null);
         setSession(null);
         setUser(null);
+        setStatus('unauthenticated');
         setRoleChecked(true);
         setIsSessionHydrated(true);
-        setLoading(false);
-        console.log('[AUTH]', {
-          event: 'bootstrap_error',
-          timestamp: Date.now(),
+        logAuthFlow('bootstrap_exception', {
+          message: error instanceof Error ? error.message : 'unknown error',
         });
       });
 
     return () => {
-      mounted = false;
+      mountedRef.current = false;
       subscription.unsubscribe();
+      logAuthFlow('provider_cleanup');
     };
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    console.log('[AUTH]', { event: 'sign_in_attempt', timestamp: Date.now() });
+    logAuthFlow('sign_in_attempt', { email });
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    console.log('[AUTH]', {
-      event: error ? 'sign_in_error' : 'sign_in_success',
-      timestamp: Date.now(),
+    logAuthFlow(error ? 'sign_in_error' : 'sign_in_success', {
+      email,
       message: error?.message ?? null,
     });
     return { error: error as Error | null };
   };
 
   const signUp = async (email: string, password: string) => {
+    logAuthFlow('sign_up_attempt', { email });
     const { error } = await supabase.auth.signUp({ email, password });
+    logAuthFlow(error ? 'sign_up_error' : 'sign_up_success', {
+      email,
+      message: error?.message ?? null,
+    });
     return { error: error as Error | null };
   };
 
   const signOut = async () => {
-    console.log('[AUTH]', { event: 'sign_out_start', timestamp: Date.now() });
+    logAuthFlow('explicit_sign_out_start');
     writeRoleCache(null, false);
-    lastRoleUserId.current = null;
-    setCurrentSession(null);
-    setStatus('unauthenticated');
+    lastRoleUserIdRef.current = null;
     await supabase.auth.signOut();
-    console.log('[AUTH]', { event: 'sign_out_done', timestamp: Date.now() });
+    logAuthFlow('explicit_sign_out_done');
+  };
+
+  const refreshSession = async () => {
+    logAuthFlow('refresh_requested', {
+      currentStatus: status,
+      hasSession: Boolean(session),
+    });
+    return safeRefreshSession();
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, isAdmin, isBlocked, loading, status, isSessionHydrated, roleChecked, signIn, signUp, signOut }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        session,
+        isAdmin,
+        isBlocked,
+        loading,
+        status,
+        isSessionHydrated,
+        roleChecked,
+        signIn,
+        signUp,
+        signOut,
+        refreshSession,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
