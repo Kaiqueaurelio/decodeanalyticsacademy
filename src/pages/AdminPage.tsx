@@ -772,8 +772,7 @@ export default function AdminPage() {
 
   /** Insere efetivamente a apostila importada (extraído para permitir bypass do diálogo de duplicatas). */
   const insertImportApostila = useCallback(async () => {
-    const { data: sessionData } = await supabase.auth.getUser();
-    const currentUser = sessionData?.user;
+    const currentUser = user;
     if (!currentUser) {
       toast.error('Sessão expirou. Faça login novamente.');
       return;

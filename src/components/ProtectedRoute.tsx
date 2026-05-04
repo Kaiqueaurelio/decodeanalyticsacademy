@@ -5,9 +5,9 @@ import { Button } from '@/components/ui/button';
 import { GlitchLoader } from '@/components/GlitchLoader';
 
 export function ProtectedRoute({ children, adminOnly = false }: { children: React.ReactNode; adminOnly?: boolean }) {
-  const { user, isAdmin, isBlocked, loading, roleChecked, signOut } = useAuth();
+  const { user, session, status, isSessionHydrated, isAdmin, isBlocked, loading, roleChecked, signOut } = useAuth();
 
-  if (loading || (user && !roleChecked)) {
+  if (loading || !isSessionHydrated || status === 'loading' || (user && !roleChecked)) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <GlitchLoader text="Carregando..." />
@@ -15,7 +15,17 @@ export function ProtectedRoute({ children, adminOnly = false }: { children: Reac
     );
   }
 
-  if (!user) return <Navigate to="/login" replace />;
+  if (status === 'unauthenticated' && session === null && !user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (!user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <GlitchLoader text="Sincronizando sessão..." />
+      </div>
+    );
+  }
 
   if (isBlocked) {
     return (

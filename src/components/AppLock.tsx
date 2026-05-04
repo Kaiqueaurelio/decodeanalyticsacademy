@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Fingerprint, Loader2, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 import { verifyBiometric, disableBiometric, getBiometricEmail, refreshBiometricToken } from '@/hooks/useBiometricAuth';
+import { getCurrentSession } from '@/lib/auth-session';
 import { toast } from 'sonner';
 import logoDark from '@/assets/logo-dark.jpeg';
 
@@ -12,19 +13,14 @@ interface AppLockProps {
 
 export function AppLock({ onUnlock }: AppLockProps) {
   const [verifying, setVerifying] = useState(false);
+  const { signOut } = useAuth();
   const email = getBiometricEmail();
 
   const handleUnlock = async () => {
     if (verifying) return; // evita duplo clique → duplo refresh
     setVerifying(true);
     try {
-      // 1) Confirma biometria primeiro (sem usar o refresh token ainda)
-      const storedRefreshToken = await verifyBiometric();
-
-      // 2) Se já existe sessão válida em memória (auto-refresh do supabase-js
-      //    já restaurou), basta desbloquear — NÃO chamar refreshSession aqui,
-      //    isso causava cascata de /token e estouro de rate limit.
-      const { getCurrentSession } = await import('@/lib/auth-session');
+      await verifyBiometric();
       const currentSession = getCurrentSession();
       if (currentSession?.user) {
         if (currentSession.refresh_token) {
@@ -34,23 +30,13 @@ export function AppLock({ onUnlock }: AppLockProps) {
         onUnlock();
         return;
       }
-
-      // 3) Sem sessão ativa em memória → último recurso: tenta restaurar com
-      //    o refresh token criptografado guardado na biometria.
-      const { data, error } = await supabase.auth.refreshSession({ refresh_token: storedRefreshToken });
-      if (error) throw error;
-
-      if (data.session?.refresh_token) {
-        await refreshBiometricToken(data.session.refresh_token).catch(() => {});
-      }
-
-      toast.success('Desbloqueado!');
-      onUnlock();
+      toast.error('Sua sessão expirou. Faça login novamente para continuar.');
+      window.location.href = '/login';
     } catch (err: any) {
       const msg = (err?.message || '').toLowerCase();
       if (msg.includes('refresh token') || msg.includes('not found') || msg.includes('expired') || msg.includes('invalid')) {
         disableBiometric();
-        await supabase.auth.signOut().catch(() => {});
+        await signOut().catch(() => {});
         toast.error('Sua sessão expirou. Faça login e reative a biometria nas configurações.');
         window.location.href = '/login';
         return;
@@ -63,7 +49,7 @@ export function AppLock({ onUnlock }: AppLockProps) {
 
   const handleSignOut = async () => {
     disableBiometric();
-    await supabase.auth.signOut();
+    await signOut();
     window.location.href = '/login';
   };
 

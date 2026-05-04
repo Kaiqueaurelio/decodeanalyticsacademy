@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 const TIMEOUT_MS = 30 * 60 * 1000; // 30 min — mais conservador, evita logouts surpresa
 
 export function useInactivityLogout() {
+  const DISABLED_FOR_SESSION_HOTFIX = true;
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -24,6 +25,11 @@ export function useInactivityLogout() {
   }, [handleLogout]);
 
   useEffect(() => {
+    if (DISABLED_FOR_SESSION_HOTFIX) {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      return;
+    }
+
     // Só ativa o cronômetro depois que o auth bootstrapou e existe usuário.
     if (loading || !user) return;
 

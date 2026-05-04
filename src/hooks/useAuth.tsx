@@ -52,6 +52,8 @@ type AuthCtx = {
   isAdmin: boolean;
   isBlocked: boolean;
   loading: boolean;
+  status: 'loading' | 'authenticated' | 'unauthenticated';
+  isSessionHydrated: boolean;
   roleChecked: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string) => Promise<{ error: Error | null }>;
@@ -66,6 +68,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isBlocked, setIsBlocked] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [status, setStatus] = useState<'loading' | 'authenticated' | 'unauthenticated'>('loading');
+  const [isSessionHydrated, setIsSessionHydrated] = useState(false);
   const [roleChecked, setRoleChecked] = useState(false);
 
   // Evita rechecagem de role para o mesmo usuário em cada TOKEN_REFRESHED.
@@ -100,35 +104,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
-    // Limpa cache legado que decidia auth no client (causava "entra e desloga").
-    try { localStorage.removeItem('decode_session_cache'); } catch {}
-
-    // 1) Listener PRIMEIRO — recomendação oficial Supabase para evitar perda de eventos.
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, sess) => {
+    const applySession = (sess: Session | null, source: string, event?: string) => {
       if (!mounted) return;
 
-      // Publica o token corrente para consumidores não-React (edge invoke, fetch direto)
       setCurrentSession(sess);
-
       setSession(sess);
       setUser(sess?.user ?? null);
 
+      const nextStatus = sess?.user ? 'authenticated' : 'unauthenticated';
+      setStatus(nextStatus);
+
+      console.log('[AUTH]', {
+        event: 'session_update',
+        source,
+        authEvent: event ?? null,
+        timestamp: Date.now(),
+        status: nextStatus,
+        hasSession: Boolean(sess),
+        userId: sess?.user?.id ?? null,
+      });
+
       if (sess?.user) {
-        // Hidratação rápida do isAdmin via cache (apenas UI; RLS continua no servidor).
         const cached = readRoleCache();
         if (cached?.userId === sess.user.id) {
           setIsAdmin(cached.isAdmin);
           setRoleChecked(true);
+        } else {
+          setRoleChecked(false);
         }
 
-        // Re-checa role só quando o usuário muda OU explicitamente faz signin.
         if (lastRoleUserId.current !== sess.user.id || event === 'SIGNED_IN') {
           lastRoleUserId.current = sess.user.id;
-          // Defer para fora do callback do gotrue (evita reentrância no lock interno).
           setTimeout(() => { void checkRoles(sess.user.id); }, 0);
         }
 
-        // Mantém refresh token criptografado para biometria atualizado.
         if (isBiometricEnabled() && sess.refresh_token) {
           setTimeout(() => { refreshBiometricToken(sess.refresh_token!).catch(() => {}); }, 0);
         }
@@ -140,9 +149,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         writeRoleCache(null, false);
       }
 
-      if (bootstrapped.current || event !== 'INITIAL_SESSION') {
+      if (bootstrapped.current) {
+        setIsSessionHydrated(true);
         setLoading(false);
       }
+    };
+
+    // Limpa cache legado que decidia auth no client (causava "entra e desloga").
+    try { localStorage.removeItem('decode_session_cache'); } catch {}
+
+    // 1) Listener PRIMEIRO — recomendação oficial Supabase para evitar perda de eventos.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, sess) => {
+      if (!mounted) return;
+
+      console.log('[AUTH]', {
+        event: 'auth_state_change',
+        authEvent: event,
+        timestamp: Date.now(),
+        hasSession: Boolean(sess),
+        userId: sess?.user?.id ?? null,
+      });
+
+      applySession(sess, 'listener', event);
     });
 
     // 2) DEPOIS hidratamos a sessão atual (uma única vez).
@@ -150,30 +178,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .then(({ data: { session: sess } }) => {
         if (!mounted) return;
         bootstrapped.current = true;
-        setCurrentSession(sess);
-        // Se o listener já populou, o setState abaixo é idempotente.
-        setSession(sess);
-        setUser(sess?.user ?? null);
-        if (sess?.user) {
-          const cached = readRoleCache();
-          if (cached?.userId === sess.user.id) {
-            setIsAdmin(cached.isAdmin);
-            setRoleChecked(true);
-          }
-          if (lastRoleUserId.current !== sess.user.id) {
-            lastRoleUserId.current = sess.user.id;
-            void checkRoles(sess.user.id);
-          }
-        } else {
-          setRoleChecked(true);
-        }
-        setLoading(false);
+        setIsSessionHydrated(true);
+        applySession(sess, 'bootstrap', 'INITIAL_SESSION');
       })
       .catch(() => {
         if (!mounted) return;
         bootstrapped.current = true;
+        setStatus('unauthenticated');
+        setCurrentSession(null);
+        setSession(null);
+        setUser(null);
         setRoleChecked(true);
+        setIsSessionHydrated(true);
         setLoading(false);
+        console.log('[AUTH]', {
+          event: 'bootstrap_error',
+          timestamp: Date.now(),
+        });
       });
 
     return () => {
@@ -183,7 +204,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signIn = async (email: string, password: string) => {
+    console.log('[AUTH]', { event: 'sign_in_attempt', timestamp: Date.now() });
     const { error } = await supabase.auth.signInWithPassword({ email, password });
+    console.log('[AUTH]', {
+      event: error ? 'sign_in_error' : 'sign_in_success',
+      timestamp: Date.now(),
+      message: error?.message ?? null,
+    });
     return { error: error as Error | null };
   };
 
@@ -193,14 +220,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
+    console.log('[AUTH]', { event: 'sign_out_start', timestamp: Date.now() });
     writeRoleCache(null, false);
     lastRoleUserId.current = null;
     setCurrentSession(null);
+    setStatus('unauthenticated');
     await supabase.auth.signOut();
+    console.log('[AUTH]', { event: 'sign_out_done', timestamp: Date.now() });
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, isAdmin, isBlocked, loading, roleChecked, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ user, session, isAdmin, isBlocked, loading, status, isSessionHydrated, roleChecked, signIn, signUp, signOut }}>
       {children}
     </AuthContext.Provider>
   );

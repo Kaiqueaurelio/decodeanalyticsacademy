@@ -18,7 +18,7 @@ const STORAGE_KEY = 'decode_app_locked';
  * foi deslogado.
  */
 export function BiometricLockGate({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, status, isSessionHydrated } = useAuth();
   const [locked, setLocked] = useState(() => {
     return isBiometricEnabled() && sessionStorage.getItem(STORAGE_KEY) !== 'unlocked';
   });
@@ -26,7 +26,7 @@ export function BiometricLockGate({ children }: { children: React.ReactNode }) {
   // Decide o lock SOMENTE depois do bootstrap do auth terminar.
   // Isso evita o "lock fantasma" no PC quando a sessão ainda está hidratando.
   useEffect(() => {
-    if (loading) return;
+    if (!isSessionHydrated || status === 'loading') return;
     if (!isBiometricEnabled()) {
       setLocked(false);
       return;
@@ -37,7 +37,7 @@ export function BiometricLockGate({ children }: { children: React.ReactNode }) {
     }
     // Sem usuário após bootstrap: ProtectedRoute leva para /login.
     // NÃO forçamos lock aqui, evita corrida com refresh token.
-  }, [loading, user]);
+  }, [isSessionHydrated, status, user]);
 
   // Lock again on prolonged hide
   useEffect(() => {
