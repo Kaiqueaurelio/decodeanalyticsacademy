@@ -31,8 +31,9 @@ export interface ApostilasListOptions {
  * Lista todas as apostilas publicadas — SEM o campo `content` nem `content_backup`,
  * que podem somar centenas de KB. O conteúdo só carrega na ApostilaPage.
  *
- * Sem opções: retorna TODAS publicadas (compatibilidade com chamadas antigas).
- * Com `{ semester, course }`: filtra server-side.
+ * CORREÇÃO: Removida a restrição de semestre/curso que causava o sumiço das apostilas.
+ * Agora retorna TODAS as apostilas publicadas, independentemente do perfil do aluno.
+ * O filtro por semestre/curso era muito restritivo e deixava o dashboard vazio.
  */
 export function useApostilasList(options: ApostilasListOptions = {}) {
   const { semester = null, course = null, enabled = true } = options;
@@ -44,14 +45,12 @@ export function useApostilasList(options: ApostilasListOptions = {}) {
         .select(APOSTILA_LIST_COLUMNS)
         .eq('published', true);
 
-      if (enabled && semester) {
-        // Apostilas do semestre do aluno OU sem semestre definido (extracurricular)
-        q = q.or(`semester.eq.${semester},semester.is.null`);
-      }
-      if (enabled && course) {
-        // Apostilas para o curso OU sem restrição de curso
-        q = q.or(`course.is.null,course.cs.{${course}}`);
-      }
+      // CORREÇÃO: Removida a lógica de filtro por semestre/curso
+      // Isso causava que apostilas desaparecessem quando o perfil do aluno
+      // não tinha semestre/curso preenchido ou não combinava com as apostilas
+      // 
+      // Agora o dashboard mostra TODAS as apostilas publicadas,
+      // e o aluno pode filtrar manualmente se desejar
 
       const { data, error } = await q
         .order('category')

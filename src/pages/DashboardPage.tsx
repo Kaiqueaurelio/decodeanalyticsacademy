@@ -91,14 +91,12 @@ export default function DashboardPage() {
     try { localStorage.setItem('apostilas.semesterFilter', semesterFilter); } catch {}
   }, [semesterFilter]);
 
-  const useSemFilter = semesterFilter === 'mine' && !!studentSemester;
-
+  // CORREÇÃO: Removido o filtro por semestre que causava o sumiço das apostilas
+  // Agora o dashboard sempre mostra TODAS as apostilas publicadas
+  
   // Cache via React Query — navegação volta instantânea (staleTime 5min em App.tsx).
-  const { data: apostilas = [], isLoading: loadingApostilas } = useApostilasList({
-    semester: useSemFilter ? studentSemester : null,
-    course: useSemFilter ? studentCourse : null,
-    enabled: useSemFilter,
-  });
+  // CORREÇÃO: Sempre carrega TODAS as apostilas publicadas
+  const { data: apostilas = [], isLoading: loadingApostilas } = useApostilasList();
   const { data: exerciseCounts = {} } = useExerciseCounts();
   const { data: statsData, isLoading: loadingStats } = useDashboardStats(user?.id);
   const stats = statsData || { total: 0, hits: 0, errors: 0, byApostila: {} };
