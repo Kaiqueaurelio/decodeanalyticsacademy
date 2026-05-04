@@ -27,6 +27,13 @@ export function BiometricLockGate({ children }: { children: React.ReactNode }) {
   // Isso evita o "lock fantasma" no PC quando a sessão ainda está hidratando.
   useEffect(() => {
     if (!isSessionHydrated || status === 'loading') return;
+    
+    // DESATIVADO: A biometria está causando logouts falsos no PC após reloads.
+    // Forçamos o desbloqueio para estabilizar a plataforma.
+    setLocked(false);
+    sessionStorage.setItem(STORAGE_KEY, 'unlocked');
+
+    /*
     if (!isBiometricEnabled()) {
       setLocked(false);
       return;
@@ -35,11 +42,11 @@ export function BiometricLockGate({ children }: { children: React.ReactNode }) {
       sessionStorage.setItem(STORAGE_KEY, 'unlocked');
       setLocked(false);
     }
-    // Sem usuário após bootstrap: ProtectedRoute leva para /login.
-    // NÃO forçamos lock aqui, evita corrida com refresh token.
+    */
   }, [isSessionHydrated, status, user]);
 
-  // Lock again on prolonged hide
+  // DESATIVADO: A trava de inatividade estava causando frustração no PC.
+  /*
   useEffect(() => {
     if (!isBiometricEnabled()) return;
     let hiddenAt: number | null = null;
@@ -59,13 +66,15 @@ export function BiometricLockGate({ children }: { children: React.ReactNode }) {
     document.addEventListener('visibilitychange', onVisibility);
     return () => document.removeEventListener('visibilitychange', onVisibility);
   }, []);
+  */
 
   const handleUnlock = () => {
     sessionStorage.setItem(STORAGE_KEY, 'unlocked');
     setLocked(false);
   };
 
-  if (locked && isBiometricEnabled()) {
+  // Nunca travamos o app via biometria por enquanto para estabilizar a plataforma.
+  if (false && locked && isBiometricEnabled()) {
     return <AppLock onUnlock={handleUnlock} />;
   }
 

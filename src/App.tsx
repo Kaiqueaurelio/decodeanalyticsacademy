@@ -51,6 +51,7 @@ const AdminBibliotecaPage = lazy(() => import("./pages/AdminBibliotecaPage"));
 const AdminApostilaWorkbench = lazy(() => import("./pages/AdminApostilaWorkbench"));
 const PlayBooksPage = lazy(() => import("./pages/PlayBooksPage"));
 const PerformancePage = lazy(() => import("./pages/PerformancePage"));
+const FlashcardsPage = lazy(() => import("./pages/FlashcardsPage"));
 
 // Cache agressivo: dados ficam frescos por 5min, em cache por 30min
 // → menos requisições, navegação instantânea entre páginas
@@ -294,9 +295,10 @@ function AnimatedRoutes() {
         <Suspense fallback={<PageSkeleton />}>
           <SafeModeBoundary routeKey={location.pathname}>
             <Routes location={location}>
-              <Route path="/" element={<LandingPage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/reset-password" element={<ResetPasswordPage />} />
+              <Route path="/livros" element={<PlayBooksPage />} />
+              <Route path="/playbooks" element={<PlayBooksPage />} />
+              <Route path="/flashcards" element={<FlashcardsPage />} />
+              <Route path="/admin" element={<AdminPage />} />>
               <Route path="/offline" element={<OfflinePage />} />
               <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
               <Route path="/desempenho" element={<ProtectedRoute><PerformancePage /></ProtectedRoute>} />

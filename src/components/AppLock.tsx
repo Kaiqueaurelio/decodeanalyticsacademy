@@ -30,15 +30,15 @@ export function AppLock({ onUnlock }: AppLockProps) {
         onUnlock();
         return;
       }
-      toast.error('Sua sessão expirou. Faça login novamente para continuar.');
-      window.location.href = '/login';
+      toast.error('Sua sessão expirou ou biometria falhou. Faça login novamente.');
+      // window.location.href = '/login'; // Removido para evitar loop de redirecionamento
     } catch (err: any) {
       const msg = (err?.message || '').toLowerCase();
       if (msg.includes('refresh token') || msg.includes('not found') || msg.includes('expired') || msg.includes('invalid')) {
         disableBiometric();
-        await signOut().catch(() => {});
-        toast.error('Sua sessão expirou. Faça login e reative a biometria nas configurações.');
-        window.location.href = '/login';
+        // await signOut().catch(() => {}); // Não força signOut automático
+        toast.error('Sua sessão expirou. Por favor, faça login manualmente.');
+        // window.location.href = '/login';
         return;
       }
       toast.error(err?.message || 'Falha na verificação biométrica');

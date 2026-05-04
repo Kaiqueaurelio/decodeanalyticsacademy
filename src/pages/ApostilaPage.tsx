@@ -311,6 +311,16 @@ export default function ApostilaPage() {
               <Button
                 variant="outline"
                 size="sm"
+                onClick={() => navigate('/flashcards')}
+                className="text-xs gap-1.5 hover-lift border-primary/40 bg-primary/5 text-primary hover:bg-primary/10"
+              >
+                <Brain className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Estudar Flashcards</span>
+                <span className="sm:hidden">Cards</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => setChatOpen(true)}
                 className="text-xs gap-1.5 hover-lift border-primary/40 text-primary hover:bg-primary/10"
               >
@@ -365,6 +375,14 @@ export default function ApostilaPage() {
                       const annotations = document.querySelector('[data-annotations-panel]');
                       annotations?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     },
+                  },
+                  {
+                    id: 'flashcards',
+                    label: 'Estudar Flashcards',
+                    description: 'Revisão ativa com IA',
+                    icon: Brain,
+                    variant: 'primary',
+                    onSelect: () => navigate('/flashcards'),
                   },
                   {
                     id: 'chat',

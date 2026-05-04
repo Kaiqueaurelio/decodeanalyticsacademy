@@ -294,6 +294,32 @@ export default function DashboardPage() {
         {/* Quick Access Hub - estilo AVA */}
         <QuickAccessHub />
 
+        {/* Flashcards & Revisão Ativa */}
+        <Reveal from="bottom" delay={35}>
+          <div className="mt-4">
+            <Card 
+              className="p-5 flex flex-col sm:flex-row items-center justify-between gap-4 border-primary/20 bg-primary/5 hover:bg-primary/10 transition-all cursor-pointer group shadow-sm"
+              onClick={() => navigate('/flashcards')}
+            >
+              <div className="flex items-center gap-4 text-center sm:text-left">
+                <div className="p-3 bg-primary/20 rounded-2xl text-primary group-hover:scale-110 transition-transform shadow-inner">
+                  <Brain size={28} />
+                </div>
+                <div>
+                  <h3 className="font-bold text-lg leading-tight mb-1 flex items-center justify-center sm:justify-start gap-2">
+                    Revisão Ativa com Flashcards
+                    <Badge variant="outline" className="bg-background/50 border-primary/20 text-primary font-mono text-[10px] h-4">NOVO</Badge>
+                  </h3>
+                  <p className="text-xs text-muted-foreground">Pratique com cartões inteligentes gerados por IA para fixar o conteúdo das apostilas.</p>
+                </div>
+              </div>
+              <Button size="sm" className="w-full sm:w-auto gap-2 shadow-md">
+                Estudar Agora <ChevronRight size={14} />
+              </Button>
+            </Card>
+          </div>
+        </Reveal>
+
         {/* Plano de Estudos Inteligente */}
         <Reveal from="bottom" delay={40}>
           <div className="mt-4 space-y-3">
