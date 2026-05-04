@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useRef, useState, ReactNode } fro
 import { supabase } from '@/integrations/supabase/client';
 import type { User, Session } from '@supabase/supabase-js';
 import { isBiometricEnabled, refreshBiometricToken } from '@/hooks/useBiometricAuth';
+import { setCurrentSession } from '@/lib/auth-session';
 
 /**
  * IMPORTANTE — Política de sessão
@@ -106,6 +107,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, sess) => {
       if (!mounted) return;
 
+      // Publica o token corrente para consumidores não-React (edge invoke, fetch direto)
+      setCurrentSession(sess);
+
       setSession(sess);
       setUser(sess?.user ?? null);
 
@@ -146,6 +150,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .then(({ data: { session: sess } }) => {
         if (!mounted) return;
         bootstrapped.current = true;
+        setCurrentSession(sess);
         // Se o listener já populou, o setState abaixo é idempotente.
         setSession(sess);
         setUser(sess?.user ?? null);
@@ -190,6 +195,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = async () => {
     writeRoleCache(null, false);
     lastRoleUserId.current = null;
+    setCurrentSession(null);
     await supabase.auth.signOut();
   };
 
