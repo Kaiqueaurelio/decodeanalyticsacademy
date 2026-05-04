@@ -12,6 +12,7 @@ import { FileUp, Sparkles, Trash2, Plus, Loader2, Calendar as CalIcon, Edit2, Im
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useAuth } from '@/hooks/useAuth';
 
 interface CalendarEvent {
   id: string;
@@ -45,6 +46,7 @@ const EVENT_TYPES = [
 const typeStyle = (t: string) => EVENT_TYPES.find(e => e.value === t)?.color || EVENT_TYPES[2].color;
 
 export function CalendarEventsAdmin() {
+  const { user } = useAuth();
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [extracting, setExtracting] = useState(false);
@@ -136,7 +138,6 @@ export function CalendarEventsAdmin() {
 
   const saveAllDrafts = async () => {
     if (!drafts || drafts.length === 0) return;
-    const { data: { user } } = await supabase.auth.getUser();
     if (!user) return toast.error('Sessão expirada');
     const rows = drafts
       .filter(d => d.title && d.event_date)
@@ -158,8 +159,7 @@ export function CalendarEventsAdmin() {
 
   const saveManual = async () => {
     if (!manual.title || !manual.event_date) return toast.error('Preencha título e data');
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) return toast.error('Sessão expirada');
     const { error } = await supabase.from('calendar_events').insert({
       title: manual.title,
       description: manual.description || null,
