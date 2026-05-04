@@ -254,7 +254,8 @@ export default function DashboardPage() {
           <PreExamReviewBanner />
         </div>
 
-        {/* Dashboard Minimalista */}
+        {/* Dashboard Minimalista - Temporariamente desativado para teste de estabilidade */}
+        {/* 
         <div className="mb-12 animate-content-show">
           <DashboardMinimalist
             userName={profile?.full_name || 'Aluno'}
@@ -265,6 +266,7 @@ export default function DashboardPage() {
             streak={gamification?.currentStreak || 0}
           />
         </div>
+        */}
 
         {/* Header */}
         <div className="flex items-center justify-between mb-6 animate-content-show">
