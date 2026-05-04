@@ -52,7 +52,7 @@ import { DuplicateApostilaDialog } from '@/components/DuplicateApostilaDialog';
 import { findDuplicateApostila, type DuplicateMatch } from '@/lib/duplicate-detector';
 import { ImportPreviewPanel } from '@/components/ImportPreviewPanel';
 import { AdminAdsManager } from '@/components/AdminAdsManager';
-import { AdminDashboardPro } from '@/components/AdminDashboardPro';
+import { AdminDashboardGleek } from '@/components/AdminDashboardGleek';
 
 type Apostila = Tables<'apostilas'>;
 type Exercise = Tables<'exercises'>;
@@ -1278,7 +1278,7 @@ export default function AdminPage() {
             <div key={tab} className="animate-fade-in">
             {/* OVERVIEW */}
             {tab === 'overview' && (
-              <AdminDashboardPro onNavigate={(newTab) => setTab(newTab as Tab)} />
+              <AdminDashboardGleek onNavigate={(newTab) => setTab(newTab as Tab)} />
             )}
 
             {/* APOSTILAS */}
