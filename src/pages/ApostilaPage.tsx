@@ -16,6 +16,8 @@ import { ApostilaContentBoundary } from '@/components/ApostilaContentBoundary';
 import { AskHelpFab } from '@/components/AskHelpFab';
 import { SpeakButton } from '@/components/SpeakButton';
 import { ApostilaSummaryDialog } from '@/components/ApostilaSummaryDialog';
+import { ApostilaSocialSection } from '@/components/ApostilaSocialSection';
+import { ApostilaPreview } from '@/components/ApostilaPreview';
 import { UnitTilesGrid, buildUnitResources } from '@/components/UnitTilesGrid';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -591,7 +593,13 @@ export default function ApostilaPage() {
 
               {/* Rendered sections — editorial layout */}
               <div id="conteudo-principal" className="space-y-10 scroll-mt-24">
-                {organizedSections.map((section, idx) => {
+                <ApostilaPreview
+                  content={apostila.content || ''}
+                  apostilaTitle={apostila.title}
+                  apostilaId={id!}
+                  isLoggedIn={!!user}
+                />
+                {user && organizedSections.map((section, idx) => {
                   if (section.isPlaceholder) return null;
 
                   const sectionNumber = tocNumberById[section.id] || String(idx + 1);
@@ -655,6 +663,11 @@ export default function ApostilaPage() {
                     <PenLine className="mr-2 h-4 w-4" /> Fazer {exerciseCount} exercícios
                   </Button>
                 </div>
+              )}
+
+              {/* Social Section — Likes, Comments, Shares */}
+              {user && (
+                <ApostilaSocialSection apostilaId={id!} apostilaTitle={apostila.title} />
               )}
 
               {/* Comments section */}
