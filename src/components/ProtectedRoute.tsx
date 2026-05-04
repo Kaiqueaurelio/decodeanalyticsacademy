@@ -19,6 +19,14 @@ export function ProtectedRoute({ children, adminOnly = false }: { children: Reac
     return <Navigate to="/login" replace />;
   }
 
+  if (!user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <GlitchLoader text="Sincronizando sessão..." />
+      </div>
+    );
+  }
+
   if (isBlocked) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background p-4">
