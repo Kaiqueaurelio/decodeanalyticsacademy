@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
 import type { CourseCode } from '@/lib/subject-semester-map';
+import { useAuth } from '@/hooks/useAuth';
 
 export type ApostilaSummary = Pick<
   Tables<'apostilas'>,
@@ -37,13 +38,19 @@ export interface ApostilasListOptions {
  */
 export function useApostilasList(options: ApostilasListOptions = {}) {
   const { semester = null, course = null, enabled = true } = options;
+  const { isAdmin } = useAuth();
+  
   return useQuery({
-    queryKey: ['apostilas', 'list', semester, course, enabled],
+    queryKey: ['apostilas', 'list', semester, course, enabled, isAdmin],
     queryFn: async () => {
       let q = supabase
         .from('apostilas')
-        .select(APOSTILA_LIST_COLUMNS)
-        .eq('published', true);
+        .select(APOSTILA_LIST_COLUMNS);
+      
+      // Se não for admin, mostra apenas as publicadas
+      if (!isAdmin) {
+        q = q.eq('published', true);
+      }
 
       // CORREÇÃO: Removida a lógica de filtro por semestre/curso
       // Isso causava que apostilas desaparecessem quando o perfil do aluno

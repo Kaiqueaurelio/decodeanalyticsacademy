@@ -9,7 +9,8 @@ import {
   BookOpen, PenLine, Users, Heart, MessageCircle, Megaphone,
   Eye, Zap, Settings, RefreshCw, Search, Bell, ChevronRight,
   BarChart3, TrendingUp, Activity, DollarSign, Brain, LayoutDashboard,
-  Calendar, FileText, Share2, ShieldCheck, ArrowUpRight, ArrowDownRight
+  Calendar, FileText, Share2, ShieldCheck, ArrowUpRight, ArrowDownRight,
+  Plus
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import {
