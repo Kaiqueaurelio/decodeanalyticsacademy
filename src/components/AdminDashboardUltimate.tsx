@@ -102,25 +102,29 @@ export function AdminDashboardUltimate({ onNavigate }: { onNavigate: (tab: strin
   const loadStats = async () => {
     try {
       setLoading(true);
-      const [
-        { count: apostilas },
-        { count: exercises },
-        { count: users },
-        { count: comments },
-        { count: likes },
-        { count: ads },
-        { count: adViews },
-        { count: adClicks },
-      ] = await Promise.all([
-        supabase.from('apostilas').select('id', { count: 'exact' }),
-        supabase.from('exercises').select('id', { count: 'exact' }),
-        supabase.from('profiles').select('id', { count: 'exact' }),
-        supabase.from('apostila_comments').select('id', { count: 'exact' }),
-        supabase.from('apostila_likes').select('id', { count: 'exact' }),
-        supabase.from('ads').select('id', { count: 'exact' }),
-        supabase.from('ad_views').select('id', { count: 'exact' }),
-        supabase.from('ad_clicks').select('id', { count: 'exact' }),
+      const results = await Promise.allSettled([
+        supabase.from('apostilas').select('id', { count: 'exact', head: true }),
+        supabase.from('exercises').select('id', { count: 'exact', head: true }),
+        supabase.from('profiles').select('id', { count: 'exact', head: true }),
+        supabase.from('apostila_comments').select('id', { count: 'exact', head: true }),
+        supabase.from('apostila_likes').select('id', { count: 'exact', head: true }),
+        supabase.from('ads').select('id', { count: 'exact', head: true }),
+        supabase.from('ad_views').select('id', { count: 'exact', head: true }),
+        supabase.from('ad_clicks').select('id', { count: 'exact', head: true }),
       ]);
+
+      const getCount = (res: any) => (res.status === 'fulfilled' && res.value.count ? res.value.count : 0);
+
+      const [
+        apostilas,
+        exercises,
+        users,
+        comments,
+        likes,
+        ads,
+        adViews,
+        adClicks
+      ] = results.map(getCount);
 
       setStats({
         totalApostillas: apostilas || 0,

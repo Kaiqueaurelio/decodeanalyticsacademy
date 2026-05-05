@@ -306,13 +306,14 @@ export default function LoginPage() {
             transition={{ type: 'spring', stiffness: 260, damping: 22, delay: 0.1 }}
             className="absolute inset-0 flex items-center justify-center pointer-events-none"
           >
-            <div className="relative h-24 w-24 sm:h-28 sm:w-28">
+            <div className="relative h-28 w-28 sm:h-32 sm:w-32">
               <img
                 src={logoDark}
                 alt="Decode Analytics"
-                className="h-full w-full rounded-[24px] object-cover shadow-[0_0_50px_hsl(var(--primary)/0.4)] border border-white/10"
+                className="h-full w-full rounded-[32px] object-cover shadow-[0_0_60px_hsl(var(--primary)/0.5)] border border-white/20"
+                style={{ imageRendering: 'auto' }}
               />
-              <div className="absolute inset-0 rounded-[24px] ring-1 ring-inset ring-white/10" />
+              <div className="absolute inset-0 rounded-[32px] ring-1 ring-inset ring-white/20" />
             </div>
           </motion.div>
 
