@@ -176,14 +176,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((authEvent, nextSession) => {
-      // Bloqueia eventos SIGNED_OUT automáticos que não foram disparados pelo usuário
-      if (authEvent === 'SIGNED_OUT' && bootstrappedRef.current) {
-        const isExplicit = localStorage.getItem('decode_explicit_signout') === '1';
-        if (!isExplicit) {
-          logAuthFlow('blocked_auto_signout', { authEvent });
-          return;
-        }
-      }
       applySession(nextSession, 'listener', authEvent);
     });
 
@@ -248,11 +240,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     logAuthFlow('explicit_sign_out_start');
-    try { localStorage.setItem('decode_explicit_signout', '1'); } catch {}
     writeRoleCache(null, false);
     lastRoleUserIdRef.current = null;
     await supabase.auth.signOut();
-    try { localStorage.removeItem('decode_explicit_signout'); } catch {}
     logAuthFlow('explicit_sign_out_done');
   };
 

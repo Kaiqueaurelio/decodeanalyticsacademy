@@ -23,10 +23,26 @@ export function AppHeader() {
   return (
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-xl" style={{ borderBottom: '1px solid hsl(0 0% 100% / 0.06)' }}>
       <div className="w-full max-w-screen-xl mx-auto flex h-14 items-center justify-between gap-2 px-3 sm:px-4 lg:px-6">
-        <Link to={user ? '/dashboard' : '/'} className="flex items-center gap-2 min-w-0 flex-shrink">
-          <img src={logoDark} alt="Decode Analytics" className="h-7 w-7 rounded object-cover flex-shrink-0" />
-          <span className="font-mono-label text-[11px] sm:text-xs font-medium uppercase tracking-widest text-foreground truncate hidden xs:inline">Decode Analytics</span>
-          <span className="font-mono-label text-[11px] font-medium uppercase tracking-widest text-foreground inline xs:hidden">Decode</span>
+        <Link to={user ? '/dashboard' : '/'} className="flex items-center gap-2.5 min-w-0 flex-shrink group">
+          <div className="relative h-8 w-8 flex-shrink-0">
+            <img 
+              src={logoDark} 
+              alt="Decode Analytics" 
+              className="h-full w-full rounded-lg object-cover shadow-sm border border-primary/10 transition-transform group-hover:scale-105" 
+            />
+            <div className="absolute inset-0 rounded-lg ring-1 ring-inset ring-black/5" />
+          </div>
+          <div className="flex flex-col leading-none">
+            <span className="font-display text-[13px] font-bold tracking-tight text-foreground truncate hidden xs:inline">
+              Decode <span className="text-primary">Analytics</span>
+            </span>
+            <span className="font-mono-label text-[9px] uppercase tracking-[0.2em] text-muted-foreground truncate hidden xs:inline opacity-80">
+              Academy
+            </span>
+            <span className="font-display text-[13px] font-bold tracking-tight text-foreground inline xs:hidden">
+              Decode
+            </span>
+          </div>
         </Link>
 
         <nav className="hidden sm:flex items-center gap-1">

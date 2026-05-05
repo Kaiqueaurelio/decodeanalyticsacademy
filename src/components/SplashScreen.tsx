@@ -46,7 +46,11 @@ export function SplashScreen({ onComplete, duration = 2500 }: SplashScreenProps)
           width="200"
           height="200"
           viewBox="0 0 200 240"
-          style={{ marginBottom: '20px', filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.1))' }}
+          style={{ 
+            marginBottom: '20px', 
+            filter: 'drop-shadow(0 12px 24px rgba(0,0,0,0.15))',
+            shapeRendering: 'geometricPrecision'
+          }}
         >
           {/* Owl Body */}
           <ellipse cx="100" cy="120" rx="45" ry="55" fill="#8B6F47" />
