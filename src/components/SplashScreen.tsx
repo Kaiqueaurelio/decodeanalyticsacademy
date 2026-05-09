@@ -34,7 +34,7 @@ export function SplashScreen({ onComplete, duration = 2500 }: SplashScreenProps)
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+        background: '#050508',
         opacity: opacity,
         transition: 'opacity 500ms ease-out',
         pointerEvents: opacity > 0 ? 'auto' : 'none',
@@ -85,11 +85,10 @@ export function SplashScreen({ onComplete, duration = 2500 }: SplashScreenProps)
           <path d="M 155 90 L 175 70 L 175 95 Z" fill="#06B6D4" transform="rotate(-45 165 82)" />
         </svg>
 
-        <h1 style={{ fontSize: '28px', fontWeight: 'bold', color: '#1a1a1a', margin: '0 0 8px 0' }}>
-          Decode Analytics
+        <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#ffffff', margin: '0 0 4px 0', letterSpacing: '-0.02em' }}>
+          Decode <span style={{ color: '#00f0ff' }}>Analytics</span>
         </h1>
-        <p style={{ fontSize: '18px', color: '#4a5568', margin: '0 0 4px 0' }}>Academy</p>
-        <p style={{ fontSize: '12px', color: '#718096', letterSpacing: '2px', margin: 0 }}>Powered by AI</p>
+        <p style={{ fontSize: '10px', color: '#94a3b8', letterSpacing: '0.4em', textTransform: 'uppercase', margin: 0 }}>Academy</p>
       </div>
 
       <style>{`

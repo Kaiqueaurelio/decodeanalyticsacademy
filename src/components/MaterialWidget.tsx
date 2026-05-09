@@ -57,16 +57,16 @@ export function MaterialWidget() {
       animate={{ opacity: 1, x: 0 }}
       transition={{ type: 'spring', stiffness: 260, damping: 20, delay: 0.2 }}
     >
-      <Card className="p-4 hover-lift overflow-hidden">
-        <button onClick={() => navigate('/materials')} className="w-full text-left group">
+      <Card className="p-4 hover-lift overflow-hidden bg-card/50 backdrop-blur-sm border-border/40 rounded-2xl">
+        <button onClick={() => navigate('/biblioteca')} className="w-full text-left group">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <div className="rounded-lg bg-primary/10 p-2">
+              <div className="rounded-lg bg-primary/10 p-2 group-hover:scale-110 transition-transform duration-300">
                 <FolderOpen className="h-4 w-4 text-primary" />
               </div>
-              <h3 className="text-sm font-semibold">Material de Apoio</h3>
+              <h3 className="text-sm font-semibold uppercase tracking-widest text-primary/90">Biblioteca</h3>
             </div>
-            <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+            <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-1" />
           </div>
         </button>
 

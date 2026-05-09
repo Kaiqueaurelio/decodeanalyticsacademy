@@ -233,9 +233,9 @@ export default function LoginPage() {
   ];
 
   return (
-    <div className="flex min-h-screen bg-background relative overflow-hidden">
+    <div className="flex min-h-screen bg-background relative overflow-hidden selection:bg-primary/20">
       {/* Left side - Editorial Branding */}
-      <div className="hidden lg:flex lg:w-1/2 relative items-center justify-center grid-lines-bg">
+      <div className="hidden lg:flex lg:w-1/2 relative items-center justify-center grid-lines-bg animate-content-show">
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full bg-primary/5 blur-[120px]" />
 
         <div className="relative z-10 max-w-md px-8 space-y-8 animate-page-in">
@@ -351,17 +351,17 @@ export default function LoginPage() {
               <div className="text-center space-y-2">
                 {/* Desktop-only logo (mobile already shows it in hero) */}
                 <motion.div
-                  className="mx-auto h-14 w-14 relative lg:block hidden"
+                  className="mx-auto h-16 w-16 relative lg:block hidden group"
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ type: 'spring', stiffness: 400, damping: 15 }}
                 >
+                  <div className="absolute -inset-1.5 bg-primary/20 rounded-2xl blur-lg opacity-50 group-hover:opacity-100 transition-opacity duration-500" />
                   <img
                     src={logoDark}
                     alt="Decode Analytics"
-                    className="h-full w-full rounded-xl object-cover shadow-md border border-primary/10"
+                    className="relative h-full w-full rounded-2xl object-cover shadow-2xl border border-white/10 transition-all duration-500 group-hover:scale-105 group-hover:border-primary/50"
                   />
-                  <div className="absolute inset-0 rounded-xl ring-1 ring-inset ring-black/5" />
                 </motion.div>
                 <h1 className="text-xl font-bold">
                   {isReset ? 'Recuperar Senha' : isSignUp ? 'Criar Conta' : isLocked ? 'Conta Bloqueada' : 'Entrar'}

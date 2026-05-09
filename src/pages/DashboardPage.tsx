@@ -238,12 +238,12 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-background relative">
+    <div className="min-h-screen bg-background relative selection:bg-primary/20">
       <Watermark />
       <AppHeader />
       {showOnboarding && <OnboardingTour onComplete={handleOnboardingComplete} />}
 
-      <main className="container py-6 sm:py-8 px-4 sm:px-6 relative z-10 max-w-6xl">
+      <main className="container py-6 sm:py-8 px-4 sm:px-6 relative z-10 max-w-6xl animate-content-show">
         {/* 🚨 Aviso de prova HOJE */}
         <TodayExamBanner />
 

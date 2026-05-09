@@ -108,7 +108,7 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="dark min-h-screen font-cyber overflow-x-hidden" style={{ background: '#050508', color: '#e2e8f0' }}>
+    <div className="dark min-h-screen font-cyber overflow-x-hidden selection:bg-primary/30" style={{ background: '#050508', color: '#e2e8f0' }}>
 
       {/* ═══ NAV ═══ */}
       <motion.header

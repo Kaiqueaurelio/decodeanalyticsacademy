@@ -108,9 +108,9 @@ export default function BibliotecaPage() {
     categories.find(c => c.id === id)?.name ?? 'Sem disciplina';
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background selection:bg-primary/20">
       <AppHeader />
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 animate-content-show">
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
           <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')} aria-label="Voltar">
@@ -192,16 +192,18 @@ export default function BibliotecaPage() {
 
         {/* Grid */}
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="h-32 rounded-xl shimmer" />
+              <div key={i} className="h-40 rounded-2xl shimmer bg-card/50" />
             ))}
           </div>
         ) : filtered.length === 0 ? (
-          <Card className="p-10 text-center">
-            <Library className="h-10 w-10 text-muted-foreground/40 mx-auto mb-3" />
-            <p className="text-sm font-medium">Nenhum material encontrado</p>
-            <p className="text-xs text-muted-foreground mt-1">Ajuste os filtros ou tente outra busca.</p>
+          <Card className="p-12 text-center border-dashed bg-card/30 backdrop-blur-sm rounded-3xl">
+            <div className="w-16 h-16 bg-muted/50 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Library className="h-8 w-8 text-muted-foreground/40" />
+            </div>
+            <p className="text-base font-semibold">Nenhum material encontrado</p>
+            <p className="text-sm text-muted-foreground mt-1 max-w-xs mx-auto">Não encontramos nada com esses filtros. Tente buscar por outros termos.</p>
           </Card>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 stagger-children">

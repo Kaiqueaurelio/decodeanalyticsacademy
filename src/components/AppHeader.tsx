@@ -21,26 +21,27 @@ export function AppHeader() {
   const nav = (path: string) => { navigate(path); setOpen(false); };
 
   return (
-    <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-xl" style={{ borderBottom: '1px solid hsl(0 0% 100% / 0.06)' }}>
+    <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60" style={{ borderBottom: '1px solid hsl(var(--border) / 0.1)' }}>
       <div className="w-full max-w-screen-xl mx-auto flex h-14 items-center justify-between gap-2 px-3 sm:px-4 lg:px-6">
-        <Link to={user ? '/dashboard' : '/'} className="flex items-center gap-2.5 min-w-0 flex-shrink group">
-          <div className="relative h-8 w-8 flex-shrink-0">
+        <Link to={user ? '/dashboard' : '/'} className="flex items-center gap-3 min-w-0 flex-shrink group relative">
+          <div className="relative h-9 w-9 flex-shrink-0">
+            {/* Efeito de brilho externo para o logo se destacar */}
+            <div className="absolute -inset-1 bg-primary/20 rounded-xl blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             <img 
               src={logoDark} 
               alt="Decode Analytics" 
-              className="h-full w-full rounded-lg object-cover shadow-sm border border-primary/10 transition-transform group-hover:scale-105" 
+              className="relative h-full w-full rounded-xl object-cover shadow-2xl border border-white/10 transition-all duration-500 group-hover:scale-105 group-hover:border-primary/50" 
             />
-            <div className="absolute inset-0 rounded-lg ring-1 ring-inset ring-black/5" />
           </div>
-          <div className="flex flex-col leading-none">
-            <span className="font-display text-[13px] font-bold tracking-tight text-foreground truncate hidden xs:inline">
-              Decode <span className="text-primary">Analytics</span>
+          <div className="flex flex-col leading-tight">
+            <span className="font-display text-[15px] font-extrabold tracking-tight text-foreground truncate hidden xs:inline">
+              DECODE <span className="text-primary tracking-tighter">ANALYTICS</span>
             </span>
-            <span className="font-mono-label text-[9px] uppercase tracking-[0.2em] text-muted-foreground truncate hidden xs:inline opacity-80">
+            <span className="font-mono-label text-[10px] font-medium uppercase tracking-[0.3em] text-primary/80 truncate hidden xs:inline">
               Academy
             </span>
-            <span className="font-display text-[13px] font-bold tracking-tight text-foreground inline xs:hidden">
-              Decode
+            <span className="font-display text-[15px] font-extrabold tracking-tight text-foreground inline xs:hidden">
+              DECODE
             </span>
           </div>
         </Link>

@@ -36,9 +36,9 @@ export function Leaderboard() {
   if (ranking.length === 0) return null;
 
   return (
-    <Card className="p-5 hover-lift">
-      <h3 className="text-xs font-semibold mb-4 flex items-center gap-2">
-        <Crown className="h-4 w-4 text-yellow-500" /> Ranking de XP
+    <Card className="p-5 hover-lift bg-card/50 backdrop-blur-sm border-border/40 rounded-2xl">
+      <h3 className="text-xs font-semibold mb-4 flex items-center gap-2 text-primary uppercase tracking-widest">
+        <Crown className="h-4 w-4 text-primary animate-pulse" /> Ranking Global
       </h3>
       <div className="space-y-2">
         {ranking.map((r, i) => (
