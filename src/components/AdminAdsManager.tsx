@@ -11,13 +11,15 @@ import { Plus, Trash2, Edit2, Eye, MousePointerClick, Loader2 } from 'lucide-rea
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 
+type AdType = 'banner' | 'popup' | 'inline' | 'sidebar' | 'footer';
+
 interface Ad {
   id: string;
   title: string;
   description: string | null;
   image_url: string | null;
   link_url: string;
-  ad_type: 'banner' | 'popup' | 'inline';
+  ad_type: AdType;
   is_active: boolean;
   display_duration: number;
   view_count: number;
@@ -28,7 +30,6 @@ export function AdminAdsManager() {
   const { user, isAdmin } = useAuth();
   const [ads, setAds] = useState<Ad[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isCreating, setIsCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
@@ -36,8 +37,9 @@ export function AdminAdsManager() {
     description: '',
     image_url: '',
     link_url: '',
-    ad_type: 'banner' as const,
+    ad_type: 'banner' as AdType,
     display_duration: 5,
+    is_active: true,
   });
 
   useEffect(() => {
@@ -99,6 +101,7 @@ export function AdminAdsManager() {
         link_url: '',
         ad_type: 'banner',
         display_duration: 5,
+        is_active: true,
       });
 
       loadAds();
@@ -129,10 +132,21 @@ export function AdminAdsManager() {
       description: ad.description || '',
       image_url: ad.image_url || '',
       link_url: ad.link_url,
-      ad_type: ad.ad_type as 'banner',
+      ad_type: ad.ad_type,
       display_duration: ad.display_duration,
+      is_active: ad.is_active,
     });
     setEditingId(ad.id);
+  };
+
+  const toggleActive = async (ad: Ad) => {
+    const { error } = await supabase.from('ads').update({ is_active: !ad.is_active }).eq('id', ad.id);
+    if (error) {
+      toast.error('Falha ao atualizar status');
+      return;
+    }
+    toast.success(ad.is_active ? 'Anúncio pausado' : 'Anúncio ativado');
+    loadAds();
   };
 
   if (!isAdmin) {
@@ -184,9 +198,11 @@ export function AdminAdsManager() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="banner">Banner</SelectItem>
+                    <SelectItem value="banner">Banner (Dashboard)</SelectItem>
+                    <SelectItem value="inline">Inline (dentro da apostila)</SelectItem>
+                    <SelectItem value="sidebar">Lateral (desktop)</SelectItem>
+                    <SelectItem value="footer">Rodapé (mobile)</SelectItem>
                     <SelectItem value="popup">Pop-up</SelectItem>
-                    <SelectItem value="inline">Inline</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -241,6 +257,7 @@ export function AdminAdsManager() {
                       link_url: '',
                       ad_type: 'banner',
                       display_duration: 5,
+                      is_active: true,
                     });
                   }}
                 >
@@ -307,6 +324,14 @@ export function AdminAdsManager() {
                       </div>
 
                       <div className="flex gap-2">
+                        <Button
+                          variant={ad.is_active ? 'secondary' : 'default'}
+                          size="sm"
+                          onClick={() => toggleActive(ad)}
+                          className="gap-1.5"
+                        >
+                          {ad.is_active ? 'Pausar' : 'Ativar'}
+                        </Button>
                         <Button
                           variant="outline"
                           size="sm"

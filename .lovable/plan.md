@@ -1,85 +1,80 @@
-# Plano de correção
+# Sistema de Anúncios In-App
 
-## Problema identificado
-O problema principal não é “login inválido”, e sim uma instabilidade de sessão no navegador do PC.
+Vou ativar o sistema de anúncios que já está parcialmente codado: o backend (tabelas) ainda não existe, e os componentes precisam ser distribuídos pelas telas. Você (admin) cria, aprova e gerencia tudo pelo painel `/admin → Anúncios`.
 
-Encontrei estes sinais claros:
-- Os logs de autenticação mostram uma tempestade de refresh token em sequência no endpoint `/token`, seguida de `429: Request rate limit reached`.
-- Isso explica o comportamento “entra, fica alguns minutos, cai de novo”. Quando o refresh entra em disputa/repetição, a sessão acaba sendo invalidada visualmente e o app volta para `/login`.
-- O botão Admin some porque algumas telas e o header decidem usando `isAdmin` antes do papel terminar de carregar com segurança.
+## 1. Backend (banco de dados)
 
-## O que vou corrigir
+Criar 3 tabelas novas:
 
-### 1) Blindar a restauração e manutenção da sessão
-Arquivos principais:
-- `src/hooks/useAuth.tsx`
-- `src/components/ProtectedRoute.tsx`
-- `src/pages/LoginPage.tsx`
+- **`ads`** — catálogo dos anúncios
+  - título, descrição, imagem, link de destino
+  - `ad_type`: `banner` | `popup` | `sidebar`
+  - `position`: ordem de exibição (rotação)
+  - `is_active`: liga/desliga sem precisar deletar
+  - `start_date` / `end_date`: validade opcional
+  - `display_duration`: segundos (para popup)
+  - `target_pages`: array opcional (`['dashboard','apostila','all']`)
+- **`ad_views`** — registra cada visualização (anônima ou logada)
+- **`ad_clicks`** — registra cada clique
 
-Ajustes:
-- Transformar `useAuth` no único ponto de verdade da sessão, sem reprocessamentos que possam disparar cascatas de refresh.
-- Endurecer o bootstrap para evitar transições intermediárias `user -> null -> user` que fazem a UI “achar” que houve logout.
-- Separar melhor os estados `loading`, `session hydrated`, `role loading` e `signed out`.
-- Garantir que a navegação pós-login só aconteça depois da sessão estar realmente estável, e não apenas após o retorno do `signIn()`.
-- Evitar que um evento transitório de auth derrube imediatamente o usuário para `/login`.
+**Acesso (RLS):**
+- Apenas admin cria, edita, exclui anúncios
+- Qualquer aluno autenticado lê anúncios `is_active = true` e dentro da validade
+- Qualquer um pode inserir view/click (para métricas funcionarem mesmo deslogado)
+- Apenas admin lê as tabelas `ad_views` e `ad_clicks`
 
-### 2) Eliminar pontos que podem amplificar refresh/token race no desktop
-Arquivos principais:
-- `src/components/AppLock.tsx`
-- `src/components/BiometricLockGate.tsx`
-- `src/components/BiometricOnboarding.tsx`
-- `src/components/BiometricToggle.tsx`
-- `src/components/ApostilaChat.tsx`
-- possíveis consumidores adicionais de `supabase.auth.getSession()`
+## 2. Posições no app (todas as 4 que você marcou)
 
-Ajustes:
-- Remover dependência de chamadas soltas de `getSession()` em componentes que só precisam do token/sessão atual.
-- Fazer esses componentes reutilizarem a sessão já mantida pelo contexto de autenticação.
-- Revisar o fluxo biométrico no desktop para impedir refresh manual redundante ou restauração indevida de sessão.
-- Evitar que o cold start com biometria ligada produza lock/restauração concorrente com o bootstrap normal.
-- Se necessário, adicionar proteção anti-duplicação para impedir múltiplas tentativas simultâneas de refresh/desbloqueio.
+```text
++--------------------------------------------------+
+| HEADER                                           |
++----------+--------------------------+------------+
+|          | [Banner topo Dashboard]  |            |
+| Sidebar  +--------------------------+  Sidebar   |
+| (ad      |                          |  (ad       |
+| desktop) |    Conteúdo principal    |  desktop)  |
+|          |                          |            |
+|          | [Banner inline apostila] |            |
++----------+--------------------------+------------+
+|         [Rodapé fixo mobile - mini banner]       |
++--------------------------------------------------+
+```
 
-### 3) Corrigir o desaparecimento do botão Admin
-Arquivos principais:
-- `src/components/AppHeader.tsx`
-- `src/pages/DashboardPage.tsx`
-- qualquer outra tela que use `isAdmin` diretamente
+- **Dashboard topo**: faixa logo abaixo do header em `/dashboard`
+- **Apostila inline**: já existe — vai começar a funcionar quando o banco estiver pronto
+- **Rodapé mobile fixo**: barra fina dispensável (X), aparece só em mobile, não cobre conteúdo
+- **Lateral desktop**: coluna de 160px à direita em telas ≥ 1280px no Dashboard e na Apostila, com até 2 anúncios empilhados
 
-Ajustes:
-- Fazer o header e as telas aguardarem `roleChecked` antes de decidir esconder ações administrativas.
-- Manter o último estado visual válido durante a revalidação de papel, evitando flicker.
-- Garantir consistência entre header, dashboard e rotas protegidas.
+## 3. Painel Admin (já existe, vai destravar)
 
-### 4) Reduzir logout “fantasma” causado por lógica paralela de segurança
-Arquivos principais:
-- `src/hooks/useInactivityLogout.tsx`
-- `src/components/BiometricLockGate.tsx`
-- `src/components/AppLock.tsx`
+A aba **Anúncios** em `/admin` (que hoje dá erro de tipo) vai voltar a funcionar com:
+- Lista de todos os anúncios com status (ativo, expirado, agendado)
+- Botão "Novo anúncio" → form com tipo, imagem, link, posições alvo, data de início/fim
+- Toggle ativar/desativar inline
+- Métricas por anúncio: visualizações × cliques × CTR
 
-Ajustes:
-- Confirmar que o logout por inatividade só possa rodar quando a sessão estiver plenamente estável.
-- Impedir que bloqueio biométrico, signOut manual e redirecionamento concorram entre si.
-- Tratar melhor cenários de aba oculta, retorno ao foco e restauração de sessão no desktop.
+## 4. Detalhes técnicos
 
-## Resultado esperado
-Depois dessa correção:
-- o usuário continua logado no PC sem cair sozinho após alguns minutos;
-- o app para de entrar em ciclo de login/logout;
-- o botão Admin permanece visível de forma consistente para conta admin;
-- o fluxo biométrico deixa de interferir na sessão normal.
+**Arquivos editados/criados:**
+- `supabase/migrations/...` — cria `ads`, `ad_views`, `ad_clicks` + RLS + índices
+- `src/hooks/useAds.ts` — remover cast `as any`, adicionar filtro `target_pages`
+- `src/components/AdBanner.tsx` — já existe, ajustar variantes (`top`, `inline`, `footer`, `sidebar`)
+- `src/components/AdSidebar.tsx` *(novo)* — coluna lateral desktop com 1-2 ads
+- `src/components/AdFooterMobile.tsx` *(novo)* — barra fina fixa mobile, dispensável
+- `src/components/AdminAdsManager.tsx` — destravar tipos e adicionar campo `target_pages`
+- `src/pages/DashboardPage.tsx` — montar `<AdBanner position="top" />` e `<AdSidebar />`
+- `src/pages/ApostilaPage.tsx` — adicionar `<AdSidebar />` em telas largas
+- `src/App.tsx` — montar `<AdFooterMobile />` global atrás do conteúdo
 
-## Detalhes técnicos
-- A evidência principal é o padrão de múltiplos refreshes seguidos com revogação/rotação de token e estouro de limite (`429`) no backend de autenticação.
-- O comportamento é compatível com corrida de sessão em navegador desktop, especialmente quando existem múltiplos consumidores consultando/restaurando sessão em paralelo.
-- Vou concentrar leitura de sessão no contexto de auth e fazer os demais pontos consumirem esse estado já resolvido.
+**Comportamento:**
+- Rotação automática a cada 30s nos banners
+- View registrada uma vez por sessão por anúncio (sem inflar métrica)
+- Click abre em nova aba e registra evento
+- Sem popup automático invasivo (você não pediu) — fica disponível no admin para uso manual futuro
+- Anúncios respeitam tema dark/light
 
-## Validação após implementar
-Vou validar estes cenários:
-1. Login no PC e permanência autenticada por vários minutos.
-2. Reload da página sem cair para `/login`.
-3. Navegação entre páginas autenticadas sem flicker de sessão.
-4. Presença estável do botão Admin no header e no dashboard.
-5. Fluxo com biometria habilitada e desabilitada.
-6. Verificação de que a tempestade de refresh/token não volta a acontecer.
+## 5. Não vou mexer
 
-Se você aprovar, eu implemento essa correção agora.
+- Conteúdo acadêmico, gamificação, autenticação
+- Comportamento existente do AdBanner inline na apostila (apenas vai começar a receber dados reais)
+- Performance: ads carregam de forma assíncrona, sem bloquear render

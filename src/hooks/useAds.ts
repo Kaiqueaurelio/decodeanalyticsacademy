@@ -9,21 +9,21 @@ export interface Ad {
   description: string | null;
   image_url: string | null;
   link_url: string;
-  ad_type: 'banner' | 'popup' | 'inline';
+  ad_type: 'banner' | 'popup' | 'inline' | 'sidebar' | 'footer';
   position: number;
   display_duration: number;
   view_count: number;
   click_count: number;
 }
 
-export function useAds(adType?: 'banner' | 'popup' | 'inline') {
+export function useAds(adType?: 'banner' | 'popup' | 'inline' | 'sidebar' | 'footer', targetPage?: string) {
   const { user } = useAuth();
   const [ads, setAds] = useState<Ad[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadAds();
-  }, [adType]);
+  }, [adType, targetPage]);
 
   const loadAds = async () => {
     try {
@@ -43,10 +43,14 @@ export function useAds(adType?: 'banner' | 'popup' | 'inline') {
 
       if (error) throw error;
 
-      // Filtra anúncios por data de validade
+      // Filtra anúncios por validade e página alvo
       const now = new Date();
-      const validAds = (data || []).filter((ad) => {
+      const validAds = (data || []).filter((ad: any) => {
+        if (ad.start_date && new Date(ad.start_date) > now) return false;
         if (ad.end_date && new Date(ad.end_date) < now) return false;
+        if (targetPage && Array.isArray(ad.target_pages) && ad.target_pages.length > 0) {
+          if (!ad.target_pages.includes('all') && !ad.target_pages.includes(targetPage)) return false;
+        }
         return true;
       });
 

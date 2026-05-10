@@ -19,6 +19,7 @@ import { ApostilaSummaryDialog } from '@/components/ApostilaSummaryDialog';
 import { ApostilaSocialSection } from '@/components/ApostilaSocialSection';
 import { ApostilaPreview } from '@/components/ApostilaPreview';
 import { AdBanner } from '@/components/AdBanner';
+import { AdSidebar } from '@/components/AdSidebar';
 import { UnitTilesGrid, buildUnitResources } from '@/components/UnitTilesGrid';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -272,6 +273,7 @@ export default function ApostilaPage() {
     <div className={`min-h-screen bg-background relative ${focusMode ? 'focus-mode' : ''}`}>
       {!focusMode && <Watermark />}
       {!focusMode && <AppHeader />}
+      {!focusMode && <AdSidebar />}
 
       {/* Reading progress bar */}
       <div className="fixed top-0 left-0 right-0 z-[60] h-0.5 bg-border/20">
