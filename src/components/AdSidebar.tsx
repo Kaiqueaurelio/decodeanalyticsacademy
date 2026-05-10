@@ -22,7 +22,7 @@ export function AdSidebar({ className = '' }: { className?: string }) {
 
   return (
     <aside
-      className={`hidden xl:flex flex-col gap-4 w-[180px] shrink-0 sticky top-24 self-start ${className}`}
+      className={`hidden xl:flex flex-col gap-3 w-[170px] fixed right-4 top-24 z-30 max-h-[calc(100vh-7rem)] overflow-y-auto ${className}`}
       aria-label="Publicidade"
     >
       <div className="flex items-center justify-between px-1">
