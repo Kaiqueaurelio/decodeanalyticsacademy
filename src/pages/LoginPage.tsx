@@ -360,7 +360,7 @@ export default function LoginPage() {
                   <img
                     src={logoDark}
                     alt="Decode Analytics"
-                    className="relative h-full w-full rounded-2xl object-cover shadow-2xl border border-white/10 transition-all duration-500 group-hover:scale-105 group-hover:border-primary/50"
+                    className="relative h-full w-full rounded-2xl object-contain bg-background shadow-2xl border border-white/10 transition-all duration-500 group-hover:scale-105 group-hover:border-primary/50"
                   />
                 </motion.div>
                 <h1 className="text-xl font-bold">
