@@ -310,7 +310,7 @@ export default function LoginPage() {
               <img
                 src={logoDark}
                 alt="Decode Analytics"
-                className="h-full w-full rounded-[32px] object-contain bg-background shadow-[0_0_60px_hsl(var(--primary)/0.5)] border border-white/20"
+                className="h-full w-full object-contain drop-shadow-[0_0_30px_rgba(0,240,255,0.55)]"
                 style={{ imageRendering: 'auto' }}
               />
               <div className="absolute inset-0 rounded-[32px] ring-1 ring-inset ring-white/20" />
