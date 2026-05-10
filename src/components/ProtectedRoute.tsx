@@ -20,12 +20,6 @@ export function ProtectedRoute({ children, adminOnly = false }: { children: Reac
   }
 
   if (!user || !session) {
-    // Se não há usuário nem sessão, e o status é unauthenticated, redireciona.
-    // Caso contrário (ex: status loading/hydrating), o loader acima já cuida.
-    if (status === 'unauthenticated') {
-      return <Navigate to="/login" replace />;
-    }
-    
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <GlitchLoader text="Sincronizando sessão..." />
