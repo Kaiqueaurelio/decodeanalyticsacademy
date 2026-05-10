@@ -9,7 +9,7 @@ import {
   Layers, Zap, Target, BarChart3, FileText, Users, PenLine,
   Flame, TrendingUp, Clock, CheckCircle,
 } from 'lucide-react';
-import logoDark from '@/assets/logo-dark.jpeg';
+import logoDark from '@/assets/logo-decode.png';
 import { TestimonialsSection } from '@/components/TestimonialsSection';
 import { CreatorSection } from '@/components/CreatorSection';
 import { TechStackSection } from '@/components/TechStackSection';
