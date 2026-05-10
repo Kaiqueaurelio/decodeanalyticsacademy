@@ -325,6 +325,14 @@ export function AdminAdsManager() {
 
                       <div className="flex gap-2">
                         <Button
+                          variant={ad.is_active ? 'secondary' : 'default'}
+                          size="sm"
+                          onClick={() => toggleActive(ad)}
+                          className="gap-1.5"
+                        >
+                          {ad.is_active ? 'Pausar' : 'Ativar'}
+                        </Button>
+                        <Button
                           variant="outline"
                           size="sm"
                           onClick={() => handleEdit(ad)}
