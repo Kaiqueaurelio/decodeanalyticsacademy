@@ -198,9 +198,11 @@ export function AdminAdsManager() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="banner">Banner</SelectItem>
+                    <SelectItem value="banner">Banner (Dashboard)</SelectItem>
+                    <SelectItem value="inline">Inline (dentro da apostila)</SelectItem>
+                    <SelectItem value="sidebar">Lateral (desktop)</SelectItem>
+                    <SelectItem value="footer">Rodapé (mobile)</SelectItem>
                     <SelectItem value="popup">Pop-up</SelectItem>
-                    <SelectItem value="inline">Inline</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -255,6 +257,7 @@ export function AdminAdsManager() {
                       link_url: '',
                       ad_type: 'banner',
                       display_duration: 5,
+                      is_active: true,
                     });
                   }}
                 >
