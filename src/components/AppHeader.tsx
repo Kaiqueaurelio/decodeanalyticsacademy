@@ -5,7 +5,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { LogOut, LayoutDashboard, Shield, Menu, ArrowRight, Sun, Moon, User, Users, Camera, BookOpen, Library } from 'lucide-react';
-import logoDark from '@/assets/logo-dark.jpeg';
+import logoDark from '@/assets/logo-decode.png';
 import { useMentionNotifications } from '@/hooks/useMentionNotifications';
 import { NotificationBell } from '@/components/NotificationBell';
 
@@ -30,7 +30,7 @@ export function AppHeader() {
             <img 
               src={logoDark} 
               alt="Decode Analytics" 
-              className="relative h-full w-full rounded-xl object-cover shadow-2xl border border-white/10 transition-all duration-500 group-hover:scale-105 group-hover:border-primary/50" 
+              className="relative h-full w-full rounded-xl object-contain bg-background shadow-2xl border border-white/10 transition-all duration-500 group-hover:scale-105 group-hover:border-primary/50" 
             />
           </div>
           <div className="flex flex-col leading-tight">
