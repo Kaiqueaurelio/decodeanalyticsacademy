@@ -708,7 +708,7 @@ export default function LandingPage() {
       <footer className="py-10 px-5" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
         <div className="max-w-7xl mx-auto flex flex-col items-center gap-4">
           <div className="flex items-center gap-2.5">
-            <img src={logoDark} alt="Decode Analytics" className="h-9 w-9 rounded-lg object-contain bg-white/95 ring-1 ring-cyan-400/50 shadow-[0_0_16px_rgba(0,240,255,0.4)]" />
+            <img src={logoDark} alt="Decode Analytics" className="h-9 w-9 object-contain drop-shadow-[0_0_10px_rgba(0,240,255,0.45)]" />
             <span className="text-[11px] font-semibold uppercase tracking-[0.2em]" style={{ color: '#00f0ff' }}>Decode Analytics</span>
           </div>
 
