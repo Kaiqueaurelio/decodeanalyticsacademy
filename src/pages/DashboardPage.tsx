@@ -4,6 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useGamification } from '@/hooks/useGamification';
 import { AppHeader } from '@/components/AppHeader';
+import { AdBanner } from '@/components/AdBanner';
+import { AdSidebar } from '@/components/AdSidebar';
 import { Watermark } from '@/components/Watermark';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -244,6 +246,11 @@ export default function DashboardPage() {
       {showOnboarding && <OnboardingTour onComplete={handleOnboardingComplete} />}
 
       <main className="container py-6 sm:py-8 px-4 sm:px-6 relative z-10 max-w-6xl animate-content-show">
+        {/* Banner de anúncio (topo do dashboard) */}
+        <div className="mb-4">
+          <AdBanner position="inline" />
+        </div>
+
         {/* 🚨 Aviso de prova HOJE */}
         <TodayExamBanner />
 

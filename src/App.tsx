@@ -13,6 +13,7 @@ import { PageSkeleton } from "@/components/PageSkeleton";
 // Lazy-loading um Provider causa crash/reset de contexto ao remontar.
 import { AudioPlayerProvider } from "@/contexts/AudioPlayerContext";
 import { SplashScreen } from "@/components/SplashScreen";
+import { AdFooterMobile } from "@/components/AdFooterMobile";
 
 // Páginas críticas no bundle inicial
 import LandingPage from "./pages/LandingPage";
@@ -102,6 +103,7 @@ const App = () => (
             <AudioPlayerProvider>
               <AnimatedRoutes />
               <RANamePrompt />
+              <AdFooterMobile />
             </AudioPlayerProvider>
           </AuthProvider>
         </BrowserRouter>
