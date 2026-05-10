@@ -1648,6 +1648,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      award_badge: { Args: { _criteria: string }; Returns: Json }
       check_exercise_answer: {
         Args: { _exercise_id: string; _selected_answer: string }
         Returns: Json
@@ -1669,6 +1670,10 @@ export type Database = {
       }
       increment_xp: {
         Args: { _amount: number; _user_id: string }
+        Returns: undefined
+      }
+      log_user_action: {
+        Args: { _action: string; _material_id?: string }
         Returns: undefined
       }
       match_apostila: {
