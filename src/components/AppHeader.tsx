@@ -24,13 +24,13 @@ export function AppHeader() {
     <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60" style={{ borderBottom: '1px solid hsl(var(--border) / 0.1)' }}>
       <div className="w-full max-w-screen-xl mx-auto flex h-14 items-center justify-between gap-2 px-3 sm:px-4 lg:px-6">
         <Link to={user ? '/dashboard' : '/'} className="flex items-center gap-3 min-w-0 flex-shrink group relative">
-          <div className="relative h-11 w-11 flex-shrink-0">
-            {/* Efeito de brilho externo para o logo se destacar */}
-            <div className="absolute -inset-1 bg-primary/20 rounded-xl blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <div className="relative h-12 w-12 flex-shrink-0">
+            {/* Glow ciano para destacar a coruja sobre o fundo escuro */}
+            <div className="absolute -inset-1 rounded-xl blur-md" style={{ background: 'rgba(0,240,255,0.35)' }} />
             <img 
               src={logoDark} 
               alt="Decode Analytics" 
-              className="relative h-full w-full rounded-xl object-contain shadow-2xl border border-white/10 transition-all duration-500 group-hover:scale-105 group-hover:border-primary/50" 
+              className="relative h-full w-full rounded-xl object-contain bg-white/95 ring-2 ring-cyan-400/60 shadow-[0_0_24px_rgba(0,240,255,0.45)] transition-all duration-500 group-hover:scale-105" 
             />
           </div>
           <div className="flex flex-col leading-tight">
