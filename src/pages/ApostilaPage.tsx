@@ -19,6 +19,7 @@ import { ApostilaSummaryDialog } from '@/components/ApostilaSummaryDialog';
 import { ApostilaSocialSection } from '@/components/ApostilaSocialSection';
 import { ApostilaPreview } from '@/components/ApostilaPreview';
 import { AdBanner } from '@/components/AdBanner';
+import { AdSidebar } from '@/components/AdSidebar';
 import { UnitTilesGrid, buildUnitResources } from '@/components/UnitTilesGrid';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
