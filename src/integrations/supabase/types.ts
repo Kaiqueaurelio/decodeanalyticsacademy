@@ -49,6 +49,130 @@ export type Database = {
           },
         ]
       }
+      ad_clicks: {
+        Row: {
+          ad_id: string
+          created_at: string
+          id: string
+          session_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          ad_id: string
+          created_at?: string
+          id?: string
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          ad_id?: string
+          created_at?: string
+          id?: string
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ad_clicks_ad_id_fkey"
+            columns: ["ad_id"]
+            isOneToOne: false
+            referencedRelation: "ads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ad_views: {
+        Row: {
+          ad_id: string
+          created_at: string
+          id: string
+          session_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          ad_id: string
+          created_at?: string
+          id?: string
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          ad_id?: string
+          created_at?: string
+          id?: string
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ad_views_ad_id_fkey"
+            columns: ["ad_id"]
+            isOneToOne: false
+            referencedRelation: "ads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ads: {
+        Row: {
+          ad_type: string
+          click_count: number
+          created_at: string
+          created_by: string | null
+          description: string | null
+          display_duration: number
+          end_date: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          link_url: string
+          position: number
+          start_date: string | null
+          target_pages: string[]
+          title: string
+          updated_at: string
+          view_count: number
+        }
+        Insert: {
+          ad_type?: string
+          click_count?: number
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          display_duration?: number
+          end_date?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          link_url: string
+          position?: number
+          start_date?: string | null
+          target_pages?: string[]
+          title: string
+          updated_at?: string
+          view_count?: number
+        }
+        Update: {
+          ad_type?: string
+          click_count?: number
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          display_duration?: number
+          end_date?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          link_url?: string
+          position?: number
+          start_date?: string | null
+          target_pages?: string[]
+          title?: string
+          updated_at?: string
+          view_count?: number
+        }
+        Relationships: []
+      }
       annotations: {
         Row: {
           apostila_id: string
