@@ -10,7 +10,7 @@ import { EvasiveButton } from '@/components/EvasiveButton';
 import { Loader2, ArrowLeft, Eye, EyeOff, BookOpen, BarChart3, Shield, AlertTriangle, Lock, Check } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
-import logoDark from '@/assets/logo-dark.jpeg';
+import logoDark from '@/assets/logo-decode.png';
 import loginHero from '@/assets/login-hero.jpg';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -310,7 +310,7 @@ export default function LoginPage() {
               <img
                 src={logoDark}
                 alt="Decode Analytics"
-                className="h-full w-full rounded-[32px] object-cover shadow-[0_0_60px_hsl(var(--primary)/0.5)] border border-white/20"
+                className="h-full w-full rounded-[32px] object-contain bg-background shadow-[0_0_60px_hsl(var(--primary)/0.5)] border border-white/20"
                 style={{ imageRendering: 'auto' }}
               />
               <div className="absolute inset-0 rounded-[32px] ring-1 ring-inset ring-white/20" />
@@ -360,7 +360,7 @@ export default function LoginPage() {
                   <img
                     src={logoDark}
                     alt="Decode Analytics"
-                    className="relative h-full w-full rounded-2xl object-cover shadow-2xl border border-white/10 transition-all duration-500 group-hover:scale-105 group-hover:border-primary/50"
+                    className="relative h-full w-full rounded-2xl object-contain bg-background shadow-2xl border border-white/10 transition-all duration-500 group-hover:scale-105 group-hover:border-primary/50"
                   />
                 </motion.div>
                 <h1 className="text-xl font-bold">

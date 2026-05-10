@@ -9,7 +9,7 @@ import {
   Layers, Zap, Target, BarChart3, FileText, Users, PenLine,
   Flame, TrendingUp, Clock, CheckCircle,
 } from 'lucide-react';
-import logoDark from '@/assets/logo-dark.jpeg';
+import logoDark from '@/assets/logo-decode.png';
 import { TestimonialsSection } from '@/components/TestimonialsSection';
 import { CreatorSection } from '@/components/CreatorSection';
 import { TechStackSection } from '@/components/TechStackSection';
@@ -120,7 +120,7 @@ export default function LandingPage() {
       >
         <div className="max-w-7xl mx-auto flex h-14 items-center justify-between px-5">
           <div className="flex items-center gap-2.5">
-            <img src={logoDark} alt="Decode Analytics" className="h-7 w-7 rounded object-cover" />
+            <img src={logoDark} alt="Decode Analytics" className="h-9 w-9 rounded-lg object-contain" />
             <span className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: '#00f0ff' }}>
               Decode Analytics
             </span>
@@ -705,7 +705,7 @@ export default function LandingPage() {
       <footer className="py-10 px-5" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
         <div className="max-w-7xl mx-auto flex flex-col items-center gap-4">
           <div className="flex items-center gap-2.5">
-            <img src={logoDark} alt="Decode Analytics" className="h-6 w-6 rounded object-cover" />
+            <img src={logoDark} alt="Decode Analytics" className="h-7 w-7 rounded object-contain" />
             <span className="text-[11px] font-semibold uppercase tracking-[0.2em]" style={{ color: '#00f0ff' }}>Decode Analytics</span>
           </div>
 

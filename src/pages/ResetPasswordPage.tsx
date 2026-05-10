@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
-import logoDark from '@/assets/logo-dark.jpeg';
+import logoDark from '@/assets/logo-decode.png';
 
 export default function ResetPasswordPage() {
   const navigate = useNavigate();
@@ -51,7 +51,7 @@ export default function ResetPasswordPage() {
         <div className="w-full max-w-sm space-y-6 animate-scale-in">
           <div className="glass rounded-2xl p-6 sm:p-8 space-y-6">
             <div className="text-center space-y-3">
-              <img src={logoDark} alt="Decode Analytics" className="mx-auto h-14 w-14 rounded-xl object-cover" />
+              <img src={logoDark} alt="Decode Analytics" className="mx-auto h-16 w-16 rounded-xl object-contain bg-background" />
               <div>
                 <h1 className="text-2xl font-bold">Nova Senha</h1>
                 <p className="text-sm text-muted-foreground mt-1">Digite sua nova senha</p>
