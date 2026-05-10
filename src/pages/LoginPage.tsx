@@ -10,7 +10,7 @@ import { EvasiveButton } from '@/components/EvasiveButton';
 import { Loader2, ArrowLeft, Eye, EyeOff, BookOpen, BarChart3, Shield, AlertTriangle, Lock, Check } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
-import logoDark from '@/assets/logo-dark.jpeg';
+import logoDark from '@/assets/logo-decode.png';
 import loginHero from '@/assets/login-hero.jpg';
 import { motion, AnimatePresence } from 'framer-motion';
 
