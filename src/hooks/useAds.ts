@@ -9,14 +9,14 @@ export interface Ad {
   description: string | null;
   image_url: string | null;
   link_url: string;
-  ad_type: 'banner' | 'popup' | 'inline';
+  ad_type: 'banner' | 'popup' | 'inline' | 'sidebar' | 'footer';
   position: number;
   display_duration: number;
   view_count: number;
   click_count: number;
 }
 
-export function useAds(adType?: 'banner' | 'popup' | 'inline') {
+export function useAds(adType?: 'banner' | 'popup' | 'inline' | 'sidebar' | 'footer') {
   const { user } = useAuth();
   const [ads, setAds] = useState<Ad[]>([]);
   const [loading, setLoading] = useState(true);
