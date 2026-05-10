@@ -57,7 +57,7 @@ export function AppLock({ onUnlock }: AppLockProps) {
     <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-background p-6">
       <div className="absolute inset-0 grid-lines-bg opacity-50" />
       <div className="relative z-10 w-full max-w-sm flex flex-col items-center gap-6 text-center">
-        <img src={logoDark} alt="Decode" className="h-16 w-16 rounded-2xl object-cover shadow-[0_0_40px_hsl(var(--primary)/0.4)]" />
+        <img src={logoDark} alt="Decode" className="h-20 w-20 rounded-2xl object-contain bg-background shadow-[0_0_40px_hsl(var(--primary)/0.4)]" />
         <div className="space-y-1">
           <h1 className="font-display text-2xl">App bloqueado</h1>
           {email && <p className="text-xs text-muted-foreground font-mono-label">{email}</p>}
