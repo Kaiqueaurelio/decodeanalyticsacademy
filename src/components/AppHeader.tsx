@@ -25,12 +25,10 @@ export function AppHeader() {
       <div className="w-full max-w-screen-xl mx-auto flex h-14 items-center justify-between gap-2 px-3 sm:px-4 lg:px-6">
         <Link to={user ? '/dashboard' : '/'} className="flex items-center gap-3 min-w-0 flex-shrink group relative">
           <div className="relative h-12 w-12 flex-shrink-0">
-            {/* Glow ciano para destacar a coruja sobre o fundo escuro */}
-            <div className="absolute -inset-1 rounded-xl blur-md" style={{ background: 'rgba(0,240,255,0.35)' }} />
             <img 
               src={logoDark} 
               alt="Decode Analytics" 
-              className="relative h-full w-full rounded-xl object-contain bg-white/95 ring-2 ring-cyan-400/60 shadow-[0_0_24px_rgba(0,240,255,0.45)] transition-all duration-500 group-hover:scale-105" 
+              className="relative h-full w-full object-contain drop-shadow-[0_0_12px_rgba(0,240,255,0.55)] transition-all duration-500 group-hover:scale-105" 
             />
           </div>
           <div className="flex flex-col leading-tight">
