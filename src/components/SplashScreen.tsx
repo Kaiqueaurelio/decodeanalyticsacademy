@@ -43,18 +43,26 @@ export function SplashScreen({ onComplete, duration = 2500 }: SplashScreenProps)
     >
       {/* Logo Decode Analytics Academy */}
       <div style={{ textAlign: 'center', animation: opacity > 0 ? 'pulse 2s infinite' : 'none' }}>
-        <img
-          src={logoDecode}
-          alt="Decode Analytics Academy"
-          style={{
-            width: '240px',
-            height: '240px',
-            objectFit: 'contain',
-            marginBottom: '8px',
-            filter: 'drop-shadow(0 12px 32px rgba(0, 240, 255, 0.25))',
-          }}
-        />
-
+        <div style={{
+          display: 'inline-block',
+          padding: '12px',
+          marginBottom: '16px',
+          borderRadius: '32px',
+          background: 'rgba(255,255,255,0.95)',
+          boxShadow: '0 0 60px rgba(0,240,255,0.5), 0 0 120px rgba(168,85,247,0.25)',
+          border: '2px solid rgba(0,240,255,0.6)',
+        }}>
+          <img
+            src={logoDecode}
+            alt="Decode Analytics Academy"
+            style={{
+              width: '220px',
+              height: '220px',
+              objectFit: 'contain',
+              display: 'block',
+            }}
+          />
+        </div>
         <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#ffffff', margin: '0 0 4px 0', letterSpacing: '-0.02em' }}>
           Decode <span style={{ color: '#00f0ff' }}>Analytics</span>
         </h1>

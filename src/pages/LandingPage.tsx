@@ -118,10 +118,13 @@ export default function LandingPage() {
         className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl"
         style={{ background: 'rgba(5,5,8,0.85)', borderBottom: '1px solid rgba(0,240,255,0.08)' }}
       >
-        <div className="max-w-7xl mx-auto flex h-14 items-center justify-between px-5">
-          <div className="flex items-center gap-2.5">
-            <img src={logoDark} alt="Decode Analytics" className="h-9 w-9 rounded-lg object-contain" />
-            <span className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: '#00f0ff' }}>
+        <div className="max-w-7xl mx-auto flex h-16 items-center justify-between px-5">
+          <div className="flex items-center gap-3">
+            <div className="relative h-12 w-12 flex-shrink-0">
+              <div className="absolute -inset-1 rounded-xl blur-md" style={{ background: 'rgba(0,240,255,0.35)' }} />
+              <img src={logoDark} alt="Decode Analytics" className="relative h-full w-full rounded-xl object-contain bg-white/95 ring-2 ring-cyan-400/60 shadow-[0_0_24px_rgba(0,240,255,0.45)]" />
+            </div>
+            <span className="text-sm font-semibold uppercase tracking-[0.2em]" style={{ color: '#00f0ff' }}>
               Decode Analytics
             </span>
           </div>
@@ -705,7 +708,7 @@ export default function LandingPage() {
       <footer className="py-10 px-5" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
         <div className="max-w-7xl mx-auto flex flex-col items-center gap-4">
           <div className="flex items-center gap-2.5">
-            <img src={logoDark} alt="Decode Analytics" className="h-7 w-7 rounded object-contain" />
+            <img src={logoDark} alt="Decode Analytics" className="h-9 w-9 rounded-lg object-contain bg-white/95 ring-1 ring-cyan-400/50 shadow-[0_0_16px_rgba(0,240,255,0.4)]" />
             <span className="text-[11px] font-semibold uppercase tracking-[0.2em]" style={{ color: '#00f0ff' }}>Decode Analytics</span>
           </div>
 
