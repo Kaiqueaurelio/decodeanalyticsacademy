@@ -120,7 +120,7 @@ export default function LandingPage() {
       >
         <div className="max-w-7xl mx-auto flex h-14 items-center justify-between px-5">
           <div className="flex items-center gap-2.5">
-            <img src={logoDark} alt="Decode Analytics" className="h-7 w-7 rounded object-cover" />
+            <img src={logoDark} alt="Decode Analytics" className="h-9 w-9 rounded-lg object-contain" />
             <span className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: '#00f0ff' }}>
               Decode Analytics
             </span>
