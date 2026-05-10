@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase as supabaseTyped } from '@/integrations/supabase/client';
+const supabase = supabaseTyped as any;
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -128,7 +129,7 @@ export function AdminAdsManager() {
       description: ad.description || '',
       image_url: ad.image_url || '',
       link_url: ad.link_url,
-      ad_type: ad.ad_type,
+      ad_type: ad.ad_type as 'banner',
       display_duration: ad.display_duration,
     });
     setEditingId(ad.id);
