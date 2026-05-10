@@ -273,6 +273,7 @@ export default function ApostilaPage() {
     <div className={`min-h-screen bg-background relative ${focusMode ? 'focus-mode' : ''}`}>
       {!focusMode && <Watermark />}
       {!focusMode && <AppHeader />}
+      {!focusMode && <AdSidebar />}
 
       {/* Reading progress bar */}
       <div className="fixed top-0 left-0 right-0 z-[60] h-0.5 bg-border/20">
