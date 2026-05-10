@@ -29,7 +29,7 @@ import { exportApostilaToPDF } from '@/lib/apostila-pdf';
 import {
   ArrowLeft, BookOpen, PenLine, Eye, List, X, MoreHorizontal,
   ChevronUp, StickyNote, Layers, Sparkles, MessageSquare, Share2, CheckCircle2, Copy, Volume2,
-  FileDown, Loader2
+  FileDown, Loader2, Brain
 } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 
@@ -73,7 +73,7 @@ export default function ApostilaPage() {
   const navigate = useNavigate();
   const gamification = useGamification();
   const isMobile = useIsMobile();
-  const { isAdmin } = useAuth();
+  const { isAdmin, user } = useAuth();
   const [apostila, setApostila] = useState<Tables<'apostilas'> | null>(null);
   const [exerciseCount, setExerciseCount] = useState(0);
   const [focusMode, setFocusMode] = useState(false);

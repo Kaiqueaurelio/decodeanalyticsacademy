@@ -1187,6 +1187,8 @@ export default function AdminPage() {
   const totalExercises = Object.values(exercises).flat().length;
 
   const tabTitles: Record<Tab, { title: string; desc: string }> = {
+    ads: { title: 'Anúncios', desc: 'Gerencie banners e popups exibidos no app' },
+    social: { title: 'Social', desc: 'Engajamento, curtidas e comentários' },
     overview: { title: 'Visão Geral', desc: 'Resumo completo da plataforma' },
     apostilas: { title: 'Gerenciar Apostilas', desc: `${apostilas.length} apostilas cadastradas` },
     exercises: { title: 'Gerenciar Exercícios', desc: `${totalExercises} exercícios cadastrados` },

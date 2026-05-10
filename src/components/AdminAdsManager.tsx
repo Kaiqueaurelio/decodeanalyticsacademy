@@ -129,7 +129,7 @@ export function AdminAdsManager() {
       description: ad.description || '',
       image_url: ad.image_url || '',
       link_url: ad.link_url,
-      ad_type: ad.ad_type,
+      ad_type: ad.ad_type as 'banner',
       display_duration: ad.display_duration,
     });
     setEditingId(ad.id);
