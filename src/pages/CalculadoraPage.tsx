@@ -12,6 +12,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { computeGrade, STATUS_COLORS, type GradeResult } from "@/lib/grade-calculator";
+import { QuickGradeEstimator } from "@/components/QuickGradeEstimator";
 
 type Row = {
   id?: string;
@@ -240,6 +241,11 @@ export default function CalculadoraPage() {
             </div>
           </div>
         </motion.div>
+
+        {/* Estimador rápido — sem precisar salvar nada */}
+        <div className="mb-6">
+          <QuickGradeEstimator />
+        </div>
 
         {/* Resumo */}
         <div className="grid grid-cols-4 gap-2 mb-6">
