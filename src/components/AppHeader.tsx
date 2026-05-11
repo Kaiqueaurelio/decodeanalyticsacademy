@@ -60,6 +60,9 @@ export function AppHeader() {
               <Button variant="ghost" size="sm" onClick={() => navigate('/livros')} className="text-xs h-8 px-3 font-sans normal-case tracking-normal">
                 <Library className="mr-1.5 h-3.5 w-3.5" /> Livros
               </Button>
+              <Button variant="ghost" size="sm" onClick={() => navigate('/calculadora')} className="text-xs h-8 px-3 font-sans normal-case tracking-normal">
+                <Calculator className="mr-1.5 h-3.5 w-3.5" /> Calculadora
+              </Button>
               <Button variant="ghost" size="sm" onClick={() => navigate('/tira-duvida')} className="text-xs h-8 px-3 font-sans normal-case tracking-normal">
                 <Camera className="mr-1.5 h-3.5 w-3.5" /> Tira-dúvida
               </Button>
