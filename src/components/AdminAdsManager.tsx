@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Plus, Trash2, Edit2, Eye, MousePointerClick, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
+import { AdImageUploadButton } from './AdImageUploadButton';
 
 type AdType = 'banner' | 'popup' | 'inline' | 'sidebar' | 'footer';
 
@@ -70,7 +71,7 @@ export function AdminAdsManager() {
     e.preventDefault();
 
     if (!formData.title || !formData.link_url) {
-      toast.error('Título e URL são obrigatórios');
+      toast.error('Título e URL de destino são obrigatórios');
       return;
     }
 
@@ -230,13 +231,27 @@ export function AdminAdsManager() {
             </div>
 
             <div>
-              <label className="text-sm font-medium mb-2 block">URL da Imagem</label>
+              <label className="text-sm font-medium mb-2 block">Imagem do Anúncio</label>
+              <p className="text-xs text-muted-foreground mb-3">
+                Você pode enviar uma imagem ou usar uma URL. Se enviar uma imagem, ela será armazenada automaticamente.
+              </p>
+              <AdImageUploadButton 
+                onImageUploaded={(url) => setFormData({ ...formData, image_url: url })}
+                currentImageUrl={formData.image_url}
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium mb-2 block">Ou URL da Imagem (opcional)</label>
               <Input
                 value={formData.image_url}
                 onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
                 placeholder="https://exemplo.com/imagem.jpg"
                 type="url"
               />
+              <p className="text-xs text-muted-foreground mt-1">
+                Use este campo se preferir fornecer uma URL em vez de fazer upload
+              </p>
             </div>
 
             <div className="flex gap-2">
@@ -289,9 +304,9 @@ export function AdminAdsManager() {
               >
                 <Card>
                   <CardContent className="pt-6">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
+                    <div className="flex flex-col md:flex-row items-start justify-between gap-4">
+                      <div className="flex-1 w-full">
+                        <div className="flex items-center gap-2 mb-2 flex-wrap">
                           <h4 className="font-semibold">{ad.title}</h4>
                           <span className={`text-xs px-2 py-1 rounded-full ${
                             ad.ad_type === 'banner'
@@ -313,6 +328,18 @@ export function AdminAdsManager() {
                         {ad.description && (
                           <p className="text-sm text-muted-foreground mb-2">{ad.description}</p>
                         )}
+                        {ad.image_url && (
+                          <div className="mb-3 max-w-xs border rounded-lg overflow-hidden bg-gray-50">
+                            <img
+                              src={ad.image_url}
+                              alt={ad.title}
+                              className="w-full h-auto object-cover max-h-32"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                              }}
+                            />
+                          </div>
+                        )}
                         <div className="flex gap-4 text-xs text-muted-foreground">
                           <span className="flex items-center gap-1">
                             <Eye size={14} /> {ad.view_count} visualizações
@@ -323,7 +350,7 @@ export function AdminAdsManager() {
                         </div>
                       </div>
 
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 w-full md:w-auto flex-wrap md:flex-nowrap">
                         <Button
                           variant={ad.is_active ? 'secondary' : 'default'}
                           size="sm"
