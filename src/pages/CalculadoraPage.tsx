@@ -242,6 +242,11 @@ export default function CalculadoraPage() {
           </div>
         </motion.div>
 
+        {/* Estimador rápido — sem precisar salvar nada */}
+        <div className="mb-6">
+          <QuickGradeEstimator />
+        </div>
+
         {/* Resumo */}
         <div className="grid grid-cols-4 gap-2 mb-6">
           <Card className="p-3 text-center bg-card/40 backdrop-blur">
