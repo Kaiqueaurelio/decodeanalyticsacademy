@@ -812,7 +812,8 @@ export default function DashboardPage() {
           {/* Right Sidebar — Priority Order */}
           <div className="space-y-4">
             {/* Priority widgets always visible */}
-            <Reveal from="right"><WeeklyGoalWidget /></Reveal>
+            <Reveal from="right"><GradeCalculatorWidget /></Reveal>
+            <Reveal from="right" delay={40}><WeeklyGoalWidget /></Reveal>
             <Reveal from="right" delay={60}>
               <div id="calendario" className="scroll-mt-24">
                 <ExamCalendarWidget />
