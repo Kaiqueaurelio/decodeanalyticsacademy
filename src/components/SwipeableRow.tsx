@@ -102,7 +102,7 @@ export const SwipeableRow = React.forwardRef<HTMLDivElement, SwipeableRowProps>(
   }, [translate]);
 
   if (disabled || (rightActions.length === 0 && leftActions.length === 0)) {
-    return <div className={className}>{children}</div>;
+    return <div ref={forwardedRef} className={className}>{children}</div>;
   }
 
   const onTouchStart = (e: React.TouchEvent) => {
