@@ -315,6 +315,44 @@ export type Database = {
         }
         Relationships: []
       }
+      apostila_comments: {
+        Row: {
+          apostila_id: string
+          content: string
+          created_at: string
+          id: string
+          likes_count: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          apostila_id: string
+          content: string
+          created_at?: string
+          id?: string
+          likes_count?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          apostila_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          likes_count?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "apostila_comments_apostila_id_fkey"
+            columns: ["apostila_id"]
+            isOneToOne: false
+            referencedRelation: "apostilas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       apostila_completions: {
         Row: {
           apostila_id: string
@@ -357,6 +395,35 @@ export type Database = {
         }
         Relationships: []
       }
+      apostila_likes: {
+        Row: {
+          apostila_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          apostila_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          apostila_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "apostila_likes_apostila_id_fkey"
+            columns: ["apostila_id"]
+            isOneToOne: false
+            referencedRelation: "apostilas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       apostila_materials: {
         Row: {
           apostila_id: string
@@ -396,6 +463,44 @@ export type Database = {
           },
         ]
       }
+      apostila_shares: {
+        Row: {
+          apostila_id: string
+          created_at: string
+          created_by: string
+          expires_at: string | null
+          id: string
+          share_token: string
+          view_count: number
+        }
+        Insert: {
+          apostila_id: string
+          created_at?: string
+          created_by: string
+          expires_at?: string | null
+          id?: string
+          share_token: string
+          view_count?: number
+        }
+        Update: {
+          apostila_id?: string
+          created_at?: string
+          created_by?: string
+          expires_at?: string | null
+          id?: string
+          share_token?: string
+          view_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "apostila_shares_apostila_id_fkey"
+            columns: ["apostila_id"]
+            isOneToOne: false
+            referencedRelation: "apostilas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       apostila_summaries: {
         Row: {
           apostila_id: string
@@ -422,6 +527,38 @@ export type Database = {
           summary_md?: string | null
         }
         Relationships: []
+      }
+      apostila_views: {
+        Row: {
+          apostila_id: string
+          id: string
+          session_id: string | null
+          user_id: string | null
+          viewed_at: string
+        }
+        Insert: {
+          apostila_id: string
+          id?: string
+          session_id?: string | null
+          user_id?: string | null
+          viewed_at?: string
+        }
+        Update: {
+          apostila_id?: string
+          id?: string
+          session_id?: string | null
+          user_id?: string | null
+          viewed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "apostila_views_apostila_id_fkey"
+            columns: ["apostila_id"]
+            isOneToOne: false
+            referencedRelation: "apostilas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       apostilas: {
         Row: {
