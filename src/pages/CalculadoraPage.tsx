@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Calculator, Plus, Trash2, Save, Trophy, AlertTriangle, Target, Sparkles } from "lucide-react";
+import { Calculator, Plus, Trash2, Save, Trophy, AlertTriangle, Target, Sparkles, Download, BookOpen, Loader2 } from "lucide-react";
 import { AppHeader } from "@/components/AppHeader";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
