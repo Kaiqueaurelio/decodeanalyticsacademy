@@ -52,6 +52,7 @@ import { DuplicateApostilaDialog } from '@/components/DuplicateApostilaDialog';
 import { findDuplicateApostila, type DuplicateMatch } from '@/lib/duplicate-detector';
 import { ImportPreviewPanel } from '@/components/ImportPreviewPanel';
 import { AdminAdsManager } from '@/components/AdminAdsManager';
+import { AdsChatBuilder } from '@/components/AdsChatBuilder';
 import { AdminDashboardUltimate } from '@/components/AdminDashboardUltimate';
 
 type Apostila = Tables<'apostilas'>;
@@ -92,7 +93,7 @@ function CategorySelect({ value, onValueChange, placeholder }: { value: string; 
   );
 }
 
-type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements' | 'calendar' | 'testimonials' | 'ai' | 'performance' | 'smoke' | 'diagnostics' | 'ads' | 'social';
+type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements' | 'calendar' | 'testimonials' | 'ai' | 'performance' | 'smoke' | 'diagnostics' | 'ads' | 'ads-chat' | 'social';
 
 const ACCEPT_MAP: Record<string, string> = {
   pdf: '.pdf', image: 'image/*', gif: '.gif,image/gif',
@@ -176,6 +177,7 @@ function AdminSidebar({ tab, setTab, stats, sidebarOpen, setSidebarOpen }: {
     { id: 'performance' as Tab, label: 'Performance', icon: Activity, count: undefined },
     { id: 'smoke' as Tab, label: 'Testes', icon: CheckCircle, count: undefined },
     { id: 'diagnostics' as Tab, label: 'Diagnóstico', icon: AlertCircle, count: undefined },
+    { id: 'ads-chat' as Tab, label: 'Anúncios (Chat)', icon: Megaphone, count: undefined },
   ];
 
   return (
@@ -2851,6 +2853,9 @@ export default function AdminPage() {
             {/* ADS */}
             {tab === 'ads' && (
               <AdminAdsManager />
+            )}
+            {tab === 'ads-chat' && (
+              <AdsChatBuilder />
             )}
             </div>
           </main>
