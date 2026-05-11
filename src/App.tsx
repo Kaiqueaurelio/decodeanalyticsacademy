@@ -83,6 +83,7 @@ function AnimatedRoutes() {
         <Route path="/livros" element={<ProtectedRoute><PlayBooksPage /></ProtectedRoute>} />
         <Route path="/playbooks" element={<ProtectedRoute><PlayBooksPage /></ProtectedRoute>} />
         <Route path="/flashcards" element={<ProtectedRoute><FlashcardsPage /></ProtectedRoute>} />
+        <Route path="/calculadora" element={<ProtectedRoute><CalculadoraPage /></ProtectedRoute>} />
         <Route path="/admin/biblioteca" element={<ProtectedRoute adminOnly><AdminBibliotecaPage /></ProtectedRoute>} />
         <Route path="/admin/apostilas/:id" element={<ProtectedRoute adminOnly><AdminApostilaWorkbench /></ProtectedRoute>} />
         <Route path="/admin" element={<ProtectedRoute adminOnly><AdminPage /></ProtectedRoute>} />
