@@ -27,7 +27,7 @@ interface ChatMessage {
     image_url?: string;
     video_url?: string;
     link_url?: string;
-    ad_type?: 'banner' | 'popup' | 'inline' | 'sidebar' | 'footer';
+    ad_type?: 'banner' | 'popup' | 'inline';
     display_duration?: number;
     is_active?: boolean;
   };
@@ -39,13 +39,13 @@ interface AdData {
   image_url: string;
   video_url: string;
   link_url: string;
-  ad_type: 'banner' | 'popup' | 'inline' | 'sidebar' | 'footer';
+  ad_type: 'banner' | 'popup' | 'inline';
   display_duration: number;
   is_active: boolean;
 }
 
 export function AdsChatBuilder() {
-  const { user, isAdmin } = useAuth();
+  const { user } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -69,7 +69,6 @@ export function AdsChatBuilder() {
   }, [messages]);
 
   useEffect(() => {
-    // Mensagem inicial do sistema
     setMessages([
       {
         id: '1',
@@ -79,6 +78,10 @@ export function AdsChatBuilder() {
       },
     ]);
   }, []);
+
+  const addMessage = (message: ChatMessage) => {
+    setMessages(prev => [...prev, message]);
+  };
 
   const handleFileUpload = async (file: File, fileType: 'image' | 'video') => {
     if (fileType === 'image' && !file.type.startsWith('image/')) {
@@ -134,8 +137,34 @@ export function AdsChatBuilder() {
     }
   };
 
-  const addMessage = (message: ChatMessage) => {
-    setMessages(prev => [...prev, message]);
+  const createAd = async () => {
+    try {
+      setLoading(true);
+      const { error } = await supabase.from('ads').insert({
+        title: adData.title,
+        description: adData.description || null,
+        image_url: adData.image_url || null,
+        link_url: adData.link_url,
+        ad_type: adData.ad_type,
+        display_duration: adData.display_duration,
+        is_active: adData.is_active,
+        created_by: user?.id
+      });
+
+      if (error) throw error;
+
+      toast.success('Anúncio criado com sucesso!');
+      addMessage({
+        id: Date.now().toString(),
+        type: 'system',
+        content: '🎉 Parabéns! O anúncio foi criado e já está ativo no sistema.',
+        timestamp: new Date(),
+      });
+    } catch (error: any) {
+      toast.error(`Erro ao criar anúncio: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSendMessage = async () => {
@@ -149,15 +178,15 @@ export function AdsChatBuilder() {
     };
 
     addMessage(userMessage);
+    const currentInput = input;
     setInput('');
     setLoading(true);
 
     try {
-      // Processar comandos de chat para atualizar dados do anúncio
-      const lowerInput = input.toLowerCase();
+      const lowerInput = currentInput.toLowerCase();
 
       if (lowerInput.includes('título') || lowerInput.includes('nome')) {
-        const titleMatch = input.match(/(?:título|nome)[:\s]+(.+?)(?:\.|$)/i);
+        const titleMatch = currentInput.match(/(?:título|nome)[:\s]+(.+?)(?:\.|$)/i);
         if (titleMatch) {
           setAdData(prev => ({ ...prev, title: titleMatch[1].trim() }));
           addMessage({
@@ -170,7 +199,7 @@ export function AdsChatBuilder() {
       }
 
       if (lowerInput.includes('descrição') || lowerInput.includes('descricao')) {
-        const descMatch = input.match(/(?:descrição|descricao)[:\s]+(.+?)(?:\.|$)/i);
+        const descMatch = currentInput.match(/(?:descrição|descricao)[:\s]+(.+?)(?:\.|$)/i);
         if (descMatch) {
           setAdData(prev => ({ ...prev, description: descMatch[1].trim() }));
           addMessage({
@@ -183,7 +212,7 @@ export function AdsChatBuilder() {
       }
 
       if (lowerInput.includes('link') || lowerInput.includes('url')) {
-        const urlMatch = input.match(/(?:link|url)[:\s]+(https?:\/\/[^\s]+)/i);
+        const urlMatch = currentInput.match(/(?:link|url)[:\s]+(https?:\/\/[^\s]+)/i);
         if (urlMatch) {
           setAdData(prev => ({ ...prev, link_url: urlMatch[1] }));
           addMessage({
@@ -196,7 +225,7 @@ export function AdsChatBuilder() {
       }
 
       if (lowerInput.includes('duração') || lowerInput.includes('duracao') || lowerInput.includes('segundos')) {
-        const durationMatch = input.match(/(\d+)\s*(?:segundo|seg|s)/i);
+        const durationMatch = currentInput.match(/(\d+)\s*(?:segundo|seg|s)/i);
         if (durationMatch) {
           const duration = Math.min(Math.max(parseInt(durationMatch[1]), 1), 30);
           setAdData(prev => ({ ...prev, display_duration: duration }));
@@ -214,8 +243,6 @@ export function AdsChatBuilder() {
         if (lowerInput.includes('banner')) adType = 'banner';
         else if (lowerInput.includes('popup') || lowerInput.includes('pop-up')) adType = 'popup';
         else if (lowerInput.includes('inline')) adType = 'inline';
-        else if (lowerInput.includes('lateral') || lowerInput.includes('sidebar')) adType = 'sidebar';
-        else if (lowerInput.includes('rodapé') || lowerInput.includes('rodape') || lowerInput.includes('footer')) adType = 'footer';
 
         setAdData(prev => ({ ...prev, ad_type: adType }));
         addMessage({
@@ -285,271 +312,201 @@ export function AdsChatBuilder() {
     }
   };
 
-  const createAd = async () => {
-    try {
-      setLoading(true);
-
-      const { error } = await supabase.from('ads').insert({
-        title: adData.title,
-        description: adData.description || null,
-        image_url: adData.image_url || null,
-        link_url: adData.link_url,
-        ad_type: adData.ad_type,
-        display_duration: adData.display_duration,
-        is_active: adData.is_active,
-        created_by: user?.id,
-      });
-
-      if (error) throw error;
-
-      addMessage({
-        id: Date.now().toString(),
-        type: 'system',
-        content: `🎉 Anúncio "${adData.title}" criado com sucesso! Ele está ${adData.is_active ? 'ativo' : 'inativo'}.`,
-        timestamp: new Date(),
-      });
-
-      // Limpar dados
-      setAdData({
-        title: '',
-        description: '',
-        image_url: '',
-        video_url: '',
-        link_url: '',
-        ad_type: 'banner',
-        display_duration: 5,
-        is_active: true,
-      });
-      setTestingAd(null);
-
-      toast.success('Anúncio criado com sucesso!');
-    } catch (error: any) {
-      addMessage({
-        id: Date.now().toString(),
-        type: 'system',
-        content: `❌ Erro ao criar anúncio: ${error.message}`,
-        timestamp: new Date(),
-      });
-      toast.error('Erro ao criar anúncio');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (!isAdmin) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-muted-foreground">Você não tem permissão para acessar esta funcionalidade.</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
-      {/* Chat */}
-      <div className="lg:col-span-2 flex flex-col">
-        <Card className="flex-1 flex flex-col">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Zap className="h-5 w-5 text-yellow-500" />
-              Gerenciador de Anúncios - Chat
-            </CardTitle>
-            <CardDescription>Crie anúncios de forma conversacional</CardDescription>
-          </CardHeader>
-          <CardContent className="flex-1 flex flex-col gap-4">
-            <ScrollArea className="flex-1 pr-4 border rounded-lg p-4 bg-muted/30">
-              <div className="space-y-4" ref={scrollRef}>
-                <AnimatePresence>
-                  {messages.map((msg, idx) => (
-                    <motion.div
-                      key={msg.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}
-                    >
-                      <div
-                        className={`max-w-xs px-4 py-2 rounded-lg ${
-                          msg.type === 'user'
-                            ? 'bg-primary text-primary-foreground'
-                            : msg.type === 'preview'
-                            ? 'bg-blue-100 text-blue-900 border border-blue-300'
-                            : 'bg-muted text-muted-foreground'
-                        }`}
-                      >
-                        <p className="text-sm">{msg.content}</p>
-                        {msg.metadata?.image_url && (
-                          <img src={msg.metadata.image_url} alt="Preview" className="mt-2 max-w-xs rounded" />
-                        )}
-                        {msg.metadata?.video_url && (
-                          <video src={msg.metadata.video_url} controls className="mt-2 max-w-xs rounded" />
-                        )}
-                        <span className="text-xs opacity-70 mt-1 block">
-                          {msg.timestamp.toLocaleTimeString('pt-BR')}
-                        </span>
-                      </div>
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-              </div>
-            </ScrollArea>
-
-            {/* Input Area */}
-            <div className="space-y-3 border-t pt-4">
-              <div className="flex gap-2">
-                <Input
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                  placeholder="Digite aqui... (ex: 'Título: Novo Curso', 'Link: https://...', 'Tipo: popup')"
-                  disabled={loading}
-                />
-                <Button
-                  onClick={handleSendMessage}
-                  disabled={loading || !input.trim()}
-                  size="icon"
-                >
-                  <Send className="h-4 w-4" />
-                </Button>
-              </div>
-
-              {/* Quick Actions */}
-              <div className="flex flex-wrap gap-2">
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button size="sm" variant="outline" className="gap-1.5">
-                      <ImageIcon className="h-3.5 w-3.5" />
-                      Foto
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Enviar Imagem</DialogTitle>
-                    </DialogHeader>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) handleFileUpload(file, 'image');
-                      }}
-                      className="block w-full"
-                    />
-                  </DialogContent>
-                </Dialog>
-
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button size="sm" variant="outline" className="gap-1.5">
-                      <VideoIcon className="h-3.5 w-3.5" />
-                      Vídeo
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Enviar Vídeo</DialogTitle>
-                    </DialogHeader>
-                    <input
-                      type="file"
-                      accept="video/*"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) handleFileUpload(file, 'video');
-                      }}
-                      className="block w-full"
-                    />
-                  </DialogContent>
-                </Dialog>
-
-                <Button size="sm" variant="outline" className="gap-1.5" onClick={() => setInput(input + ' Testar')}>
-                  <Eye className="h-3.5 w-3.5" />
-                  Testar
-                </Button>
-
-                <Button size="sm" variant="outline" className="gap-1.5" onClick={() => setInput(input + ' Criar')}>
-                  <Check className="h-3.5 w-3.5" />
-                  Criar
-                </Button>
-              </div>
+    <div className="flex flex-col lg:flex-row gap-6 h-[calc(100vh-200px)] min-h-[600px]">
+      {/* Chat Area */}
+      <Card className="flex-1 flex flex-col h-full bg-background/50 backdrop-blur">
+        <CardHeader className="border-b px-6 py-4">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+              <Zap className="h-6 w-6" />
             </div>
-          </CardContent>
-        </Card>
-      </div>
+            <div>
+              <CardTitle className="text-lg">Ads Chat Builder</CardTitle>
+              <CardDescription>Crie anúncios conversando com a IA</CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        
+        <CardContent className="flex-1 overflow-hidden p-0 flex flex-col">
+          <ScrollArea className="flex-1 p-6">
+            <div className="space-y-4">
+              <AnimatePresence initial={false}>
+                {messages.map((msg) => (
+                  <motion.div
+                    key={msg.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 ${
+                      msg.type === 'user' 
+                        ? 'bg-primary text-primary-foreground' 
+                        : 'bg-muted text-muted-foreground border'
+                    }`}>
+                      <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                      {msg.metadata?.image_url && (
+                        <img src={msg.metadata.image_url} alt="Uploaded" className="mt-2 rounded-lg max-h-40 w-full object-cover" />
+                      )}
+                      {msg.metadata?.video_url && (
+                        <video src={msg.metadata.video_url} controls className="mt-2 rounded-lg max-h-40 w-full" />
+                      )}
+                      <span className="text-[10px] opacity-50 mt-1 block">
+                        {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+              <div ref={scrollRef} />
+            </div>
+          </ScrollArea>
 
-      {/* Preview Panel */}
-      <div className="lg:col-span-1">
-        <Card className="sticky top-4">
-          <CardHeader>
-            <CardTitle className="text-base">Prévia do Anúncio</CardTitle>
+          <div className="p-4 border-t bg-background/80">
+            <div className="flex gap-2 mb-3 overflow-x-auto pb-2 scrollbar-hide">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="gap-2 shrink-0"
+                onClick={() => {
+                  const input = document.createElement('input');
+                  input.type = 'file';
+                  input.accept = 'image/*';
+                  input.onchange = (e) => {
+                    const file = (e.target as HTMLInputElement).files?.[0];
+                    if (file) handleFileUpload(file, 'image');
+                  };
+                  input.click();
+                }}
+              >
+                <ImageIcon className="h-4 w-4" /> Foto
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="gap-2 shrink-0"
+                onClick={() => {
+                  const input = document.createElement('input');
+                  input.type = 'file';
+                  input.accept = 'video/*';
+                  input.onchange = (e) => {
+                    const file = (e.target as HTMLInputElement).files?.[0];
+                    if (file) handleFileUpload(file, 'video');
+                  };
+                  input.click();
+                }}
+              >
+                <VideoIcon className="h-4 w-4" /> Vídeo
+              </Button>
+              <Button variant="outline" size="sm" className="gap-2 shrink-0" onClick={() => setInput('Tipo: Popup')}>
+                <Zap className="h-4 w-4" /> Popup
+              </Button>
+              <Button variant="outline" size="sm" className="gap-2 shrink-0" onClick={() => setInput('Link: https://')}>
+                <LinkIcon className="h-4 w-4" /> Link
+              </Button>
+            </div>
+
+            <div className="flex gap-2">
+              <Input
+                placeholder="Ex: Título: Promoção de Maio. Link: https://decode.com"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                disabled={loading}
+                className="flex-1"
+              />
+              <Button onClick={handleSendMessage} disabled={loading || !input.trim()}>
+                <Send className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Preview Area */}
+      <div className="w-full lg:w-80 flex flex-col gap-6">
+        <Card className="bg-background/50 backdrop-blur border-primary/20">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-bold flex items-center gap-2">
+              <Eye className="h-4 w-4 text-primary" /> PRÉVIA DO ANÚNCIO
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Current Ad Data */}
-            <div className="space-y-3 text-sm">
+            <div className="space-y-3">
               <div>
-                <label className="font-semibold text-xs text-muted-foreground">TÍTULO</label>
-                <p className="text-sm font-medium">{adData.title || '(não definido)'}</p>
+                <label className="font-semibold text-xs text-muted-foreground uppercase tracking-wider">Título</label>
+                <p className="text-sm font-medium leading-tight mt-1">{adData.title || '(aguardando título...)'}</p>
               </div>
 
               <div>
-                <label className="font-semibold text-xs text-muted-foreground">DESCRIÇÃO</label>
-                <p className="text-sm">{adData.description || '(não definida)'}</p>
+                <label className="font-semibold text-xs text-muted-foreground uppercase tracking-wider">Posição</label>
+                <div className="mt-1">
+                  <Badge variant="secondary" className="capitalize text-[10px]">
+                    {adData.ad_type}
+                  </Badge>
+                </div>
               </div>
 
               <div>
-                <label className="font-semibold text-xs text-muted-foreground">TIPO</label>
-                <Badge variant="secondary" className="mt-1">
-                  {adData.ad_type}
-                </Badge>
-              </div>
-
-              <div>
-                <label className="font-semibold text-xs text-muted-foreground">DURAÇÃO</label>
-                <p className="text-sm flex items-center gap-1">
+                <label className="font-semibold text-xs text-muted-foreground uppercase tracking-wider">Duração</label>
+                <p className="text-sm flex items-center gap-1 mt-1">
                   <Clock className="h-3 w-3" />
                   {adData.display_duration}s
                 </p>
               </div>
 
               <div>
-                <label className="font-semibold text-xs text-muted-foreground">LINK</label>
-                <p className="text-sm truncate text-blue-600">{adData.link_url || '(não definido)'}</p>
+                <label className="font-semibold text-xs text-muted-foreground uppercase tracking-wider">Link de Destino</label>
+                <p className="text-sm truncate text-blue-500 mt-1">{adData.link_url || '(não definido)'}</p>
               </div>
 
-              {adData.image_url && (
+              {(adData.image_url || adData.video_url) && (
                 <div>
-                  <label className="font-semibold text-xs text-muted-foreground">IMAGEM</label>
-                  <img src={adData.image_url} alt="Preview" className="w-full rounded mt-2 max-h-32 object-cover" />
-                </div>
-              )}
-
-              {adData.video_url && (
-                <div>
-                  <label className="font-semibold text-xs text-muted-foreground">VÍDEO</label>
-                  <video src={adData.video_url} controls className="w-full rounded mt-2 max-h-32" />
+                  <label className="font-semibold text-xs text-muted-foreground uppercase tracking-wider">Mídia</label>
+                  <div className="mt-2 rounded-lg overflow-hidden border bg-muted/30">
+                    {adData.image_url && (
+                      <img src={adData.image_url} alt="Preview" className="w-full h-32 object-cover" />
+                    )}
+                    {adData.video_url && (
+                      <video src={adData.video_url} className="w-full h-32 object-cover" />
+                    )}
+                  </div>
                 </div>
               )}
             </div>
 
-            {/* Action Buttons */}
-            <div className="space-y-2 pt-4 border-t">
+            <div className="pt-4 border-t space-y-2">
               <Button
-                className="w-full gap-2"
+                className="w-full gap-2 shadow-lg shadow-primary/20"
                 onClick={createAd}
                 disabled={!adData.title || !adData.link_url || loading}
               >
-                <Check className="h-4 w-4" />
-                Criar Anúncio
+                <Check className="h-4 w-4" /> Criar Anúncio
               </Button>
-
               <Button
-                variant="outline"
-                className="w-full gap-2"
+                variant="ghost"
+                size="sm"
+                className="w-full text-xs text-muted-foreground hover:text-destructive"
                 onClick={() => setInput('Limpar')}
               >
-                <X className="h-4 w-4" />
-                Limpar
+                <Trash2 className="h-3 w-3 mr-1" /> Resetar Formulário
               </Button>
             </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-primary/5 border-primary/10">
+          <CardContent className="p-4">
+            <h4 className="text-xs font-bold mb-2 flex items-center gap-1">
+              <AlertCircle className="h-3 w-3" /> DICAS DE COMANDOS
+            </h4>
+            <ul className="text-[11px] space-y-1 text-muted-foreground">
+              <li>• "Título: Oferta Especial"</li>
+              <li>• "Link: https://site.com"</li>
+              <li>• "Duração: 10 segundos"</li>
+              <li>• "Tipo: Popup" ou "Banner"</li>
+              <li>• "Criar" para finalizar</li>
+            </ul>
           </CardContent>
         </Card>
       </div>
