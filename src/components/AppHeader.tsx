@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { LogOut, LayoutDashboard, Shield, Menu, ArrowRight, Sun, Moon, User, Users, Camera, BookOpen, Library } from 'lucide-react';
+import { LogOut, LayoutDashboard, Shield, Menu, ArrowRight, Sun, Moon, User, Users, Camera, BookOpen, Library, Calculator } from 'lucide-react';
 import logoDark from '@/assets/logo-decode.png';
 import { useMentionNotifications } from '@/hooks/useMentionNotifications';
 import { NotificationBell } from '@/components/NotificationBell';
@@ -59,6 +59,9 @@ export function AppHeader() {
               </Button>
               <Button variant="ghost" size="sm" onClick={() => navigate('/livros')} className="text-xs h-8 px-3 font-sans normal-case tracking-normal">
                 <Library className="mr-1.5 h-3.5 w-3.5" /> Livros
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => navigate('/calculadora')} className="text-xs h-8 px-3 font-sans normal-case tracking-normal">
+                <Calculator className="mr-1.5 h-3.5 w-3.5" /> Calculadora
               </Button>
               <Button variant="ghost" size="sm" onClick={() => navigate('/tira-duvida')} className="text-xs h-8 px-3 font-sans normal-case tracking-normal">
                 <Camera className="mr-1.5 h-3.5 w-3.5" /> Tira-dúvida
@@ -117,6 +120,9 @@ export function AppHeader() {
                   </Button>
                   <Button variant="ghost" size="sm" className="justify-start text-sm font-sans normal-case tracking-normal" onClick={() => nav('/livros')}>
                     <Library className="mr-2 h-4 w-4" /> Livros
+                  </Button>
+                  <Button variant="ghost" size="sm" className="justify-start text-sm font-sans normal-case tracking-normal" onClick={() => nav('/calculadora')}>
+                    <Calculator className="mr-2 h-4 w-4" /> Calculadora de Médias
                   </Button>
                   <Button variant="ghost" size="sm" className="justify-start text-sm font-sans normal-case tracking-normal" onClick={() => nav('/tira-duvida')}>
                     <Camera className="mr-2 h-4 w-4" /> Tira-dúvida
