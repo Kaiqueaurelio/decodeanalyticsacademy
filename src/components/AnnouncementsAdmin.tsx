@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Switch } from '@/components/ui/switch';
 import { AppImage } from '@/components/ui/app-image';
 import {
-  Plus, Trash2, Edit, Megaphone, GraduationCap, Calendar, Briefcase, Sparkles, Eye, EyeOff
+  Plus, Trash2, Edit, Megaphone, GraduationCap, Calendar, Briefcase, Sparkles, Eye, EyeOff, Image as ImageIcon, X
 } from 'lucide-react';
 import { Upload, Loader2, Link2, Wand2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -142,20 +142,26 @@ export function AnnouncementsAdmin() {
     const ext = file.name.split('.').pop() || 'jpg';
     const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
-    const { error } = await supabase.storage
-      .from('announcements')
-      .upload(fileName, file, { contentType: file.type });
+    try {
+      const { error } = await supabase.storage
+        .from('announcements')
+        .upload(fileName, file, { contentType: file.type });
 
-    if (error) {
-      toast.error(`Erro ao fazer upload: ${error.message}`);
+      if (error) {
+        toast.error(`Erro ao fazer upload: ${error.message}`);
+        setUploading(false);
+        return;
+      }
+
+      const { data: urlData } = supabase.storage.from('announcements').getPublicUrl(fileName);
+      setImageUrl(urlData.publicUrl);
+      toast.success('Imagem enviada com sucesso!');
+    } catch (err) {
+      console.error('Upload error:', err);
+      toast.error('Erro ao fazer upload da imagem');
+    } finally {
       setUploading(false);
-      return;
     }
-
-    const { data: urlData } = supabase.storage.from('announcements').getPublicUrl(fileName);
-    setImageUrl(urlData.publicUrl);
-    setUploading(false);
-    toast.success('Imagem enviada!');
   };
 
   const loadAnnouncements = async () => {
@@ -289,7 +295,7 @@ export function AnnouncementsAdmin() {
         ) : announcements.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">
             <Megaphone className="h-10 w-10 mx-auto mb-3 opacity-20" />
-            <p className="text-sm">Nenhum aviso criado.</p>
+            <p className="text-sm">Nenhum aviso publicado.</p>
           </div>
         ) : (
           announcements.map(a => {
@@ -411,32 +417,56 @@ export function AnnouncementsAdmin() {
                 </SelectContent>
               </Select>
             </div>
-            <div>
-              <Label className="text-xs">URL da Imagem (opcional)</Label>
-              <div className="flex gap-2 mt-1">
-                <Input value={imageUrl} onChange={e => setImageUrl(e.target.value)} placeholder="https://..." className="flex-1" />
-                <label className="cursor-pointer">
-                  <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} disabled={uploading} />
-                  <Button type="button" size="icon" variant="outline" className="h-9 w-9 shrink-0" disabled={uploading} asChild>
-                    <span>
-                      {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-                    </span>
-                  </Button>
-                </label>
-              </div>
-              {imageUrl && (
-                <div className="mt-2 relative rounded-lg overflow-hidden border border-border">
-                  <AppImage src={imageUrl} alt="Preview" className="w-full h-32 object-cover" fallbackClassName="w-full h-32" />
-                  <button
-                    type="button"
-                    onClick={() => setImageUrl('')}
-                    className="absolute top-1.5 right-1.5 bg-background/80 backdrop-blur-sm rounded-full p-1 hover:bg-destructive/20 transition-colors"
-                  >
-                    <Trash2 className="h-3 w-3 text-destructive" />
-                  </button>
+            
+            <div className="space-y-2">
+              <Label className="text-xs">Imagem do Aviso</Label>
+              <div className="flex flex-col gap-3 p-3 border rounded-lg bg-muted/20">
+                <div className="flex items-center gap-2">
+                  <label className="flex-1 cursor-pointer">
+                    <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} disabled={uploading} />
+                    <Button type="button" variant="outline" className="w-full gap-2 h-10" disabled={uploading} asChild>
+                      <span>
+                        {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImageIcon className="h-4 w-4" />}
+                        {uploading ? 'Enviando...' : 'Subir Imagem'}
+                      </span>
+                    </Button>
+                  </label>
+                  {imageUrl && (
+                    <Button 
+                      type="button" 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-10 w-10 text-destructive hover:bg-destructive/10"
+                      onClick={() => setImageUrl('')}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
-              )}
+
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                    <Link2 className="h-3.5 w-3.5 text-muted-foreground" />
+                  </div>
+                  <Input 
+                    value={imageUrl} 
+                    onChange={e => setImageUrl(e.target.value)} 
+                    placeholder="Ou cole a URL da imagem aqui..." 
+                    className="pl-9 text-xs h-9" 
+                  />
+                </div>
+
+                {imageUrl && (
+                  <div className="relative rounded-lg overflow-hidden border border-border bg-background">
+                    <AppImage src={imageUrl} alt="Preview" className="w-full h-32 object-cover" fallbackClassName="w-full h-32" />
+                    <div className="absolute top-2 right-2 bg-primary text-primary-foreground text-[10px] px-2 py-0.5 rounded-full font-medium">
+                      Preview
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
+
             <div>
               <Label className="text-xs">Link externo (opcional)</Label>
               <Input value={linkUrl} onChange={e => setLinkUrl(e.target.value)} placeholder="https://..." className="mt-1" />
