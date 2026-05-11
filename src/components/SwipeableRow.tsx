@@ -54,7 +54,7 @@ const variantFg: Record<NonNullable<SwipeAction["variant"]>, string> = {
  * - Não interfere com clique, scroll vertical ou long-press do conteúdo
  *   (só ativa quando o movimento horizontal supera o vertical).
  */
-export function SwipeableRow({
+export const SwipeableRow = React.forwardRef<HTMLDivElement, SwipeableRowProps>(function SwipeableRow({
   children,
   rightActions = [],
   leftActions = [],
@@ -63,7 +63,7 @@ export function SwipeableRow({
   onOpenChange,
   className,
   disabled = false,
-}: SwipeableRowProps) {
+}, forwardedRef) {
   const rightWidth = rightActions.length * actionWidth;
   const leftWidth = leftActions.length * actionWidth;
   const rightThreshold = snapThreshold ?? rightWidth * 0.4;
@@ -102,7 +102,7 @@ export function SwipeableRow({
   }, [translate]);
 
   if (disabled || (rightActions.length === 0 && leftActions.length === 0)) {
-    return <div className={className}>{children}</div>;
+    return <div ref={forwardedRef} className={className}>{children}</div>;
   }
 
   const onTouchStart = (e: React.TouchEvent) => {
@@ -188,7 +188,11 @@ export function SwipeableRow({
 
   return (
     <div
-      ref={containerRef}
+      ref={(node) => {
+        containerRef.current = node;
+        if (typeof forwardedRef === 'function') forwardedRef(node);
+        else if (forwardedRef) forwardedRef.current = node;
+      }}
       className={cn("relative overflow-hidden rounded-xl", className)}
     >
       {/* Ações ESQUERDA (revelado ao arrastar para direita) */}
@@ -230,4 +234,4 @@ export function SwipeableRow({
       </div>
     </div>
   );
-}
+});
