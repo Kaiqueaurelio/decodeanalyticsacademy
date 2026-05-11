@@ -33,6 +33,7 @@ import { WeeklySimuladoCard } from '@/components/WeeklySimuladoCard';
 import { MobileCarousel } from '@/components/MobileCarousel';
 import { MaterialWidget } from '@/components/MaterialWidget';
 import { FavoriteMaterialsWidget } from '@/components/FavoriteMaterialsWidget';
+import { GradeCalculatorWidget } from '@/components/GradeCalculatorWidget';
 import { AnnouncementsBoard } from '@/components/AnnouncementsBoard';
 import { TodayExamBanner } from '@/components/TodayExamBanner';
 import { PreExamReviewBanner } from '@/components/PreExamReviewBanner';
@@ -811,7 +812,8 @@ export default function DashboardPage() {
           {/* Right Sidebar — Priority Order */}
           <div className="space-y-4">
             {/* Priority widgets always visible */}
-            <Reveal from="right"><WeeklyGoalWidget /></Reveal>
+            <Reveal from="right"><GradeCalculatorWidget /></Reveal>
+            <Reveal from="right" delay={40}><WeeklyGoalWidget /></Reveal>
             <Reveal from="right" delay={60}>
               <div id="calendario" className="scroll-mt-24">
                 <ExamCalendarWidget />
