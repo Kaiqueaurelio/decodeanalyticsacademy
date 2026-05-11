@@ -1,17 +1,15 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { motion } from "framer-motion";
-import { Calculator, Plus, Trash2, Save, Trophy, AlertTriangle, Target, Sparkles, Download, BookOpen, Loader2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Calculator, Plus, Trash2, Save, Trophy, AlertTriangle, Target, Sparkles, Download, BookOpen, Loader2, CheckCircle2, XCircle } from "lucide-react";
 import { AppHeader } from "@/components/AppHeader";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { computeGrade, STATUS_COLORS, type GradeResult } from "@/lib/grade-calculator";
 import { QuickGradeEstimator } from "@/components/QuickGradeEstimator";
 
 type Row = {
@@ -20,126 +18,203 @@ type Row = {
   np1: number | null;
   np2: number | null;
   exam: number | null;
-  notes?: string | null;
 };
 
-const numOrNull = (v: string): number | null => {
+const parse = (v: string): number | null => {
   if (v === "" || v === undefined) return null;
   const n = Number(v.replace(",", "."));
   if (Number.isNaN(n)) return null;
   return Math.max(0, Math.min(10, n));
 };
 
-function GradeCard({ row, result, onChange, onRemove, onSave }: {
+const fmt = (n: number) => n.toFixed(1).replace(".", ",");
+
+type Estimate =
+  | { kind: "empty" }
+  | { kind: "np1-only"; needNp2: number; possible: boolean }
+  | { kind: "approved"; avg: number }
+  | { kind: "exam-pending"; avg: number; needExam: number; possible: boolean }
+  | { kind: "passed-exam"; avg: number; finalGrade: number }
+  | { kind: "failed-exam"; avg: number; finalGrade: number };
+
+function estimate(row: Row): Estimate {
+  const { np1, np2, exam } = row;
+  if (np1 === null && np2 === null) return { kind: "empty" };
+
+  if (np1 !== null && np2 === null) {
+    const needNp2 = 14 - np1;
+    return { kind: "np1-only", needNp2, possible: needNp2 <= 10 };
+  }
+
+  if (np1 !== null && np2 !== null) {
+    const avg = (np1 + np2) / 2;
+    if (avg >= 7) return { kind: "approved", avg };
+
+    if (exam !== null) {
+      const finalGrade = (avg + exam) / 2;
+      return finalGrade >= 5
+        ? { kind: "passed-exam", avg, finalGrade }
+        : { kind: "failed-exam", avg, finalGrade };
+    }
+
+    const needExam = 10 - avg;
+    return { kind: "exam-pending", avg, needExam, possible: needExam <= 10 };
+  }
+
+  return { kind: "empty" };
+}
+
+function GradeRow({ row, onChange, onRemove }: {
   row: Row;
-  result: GradeResult;
   onChange: (patch: Partial<Row>) => void;
   onRemove: () => void;
-  onSave: () => void;
 }) {
-  const status = STATUS_COLORS[result.status];
+  const est = estimate(row);
+  const showExam =
+    est.kind === "exam-pending" ||
+    est.kind === "passed-exam" ||
+    est.kind === "failed-exam" ||
+    row.exam !== null;
 
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: 12 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -8 }}
-      transition={{ type: "spring", stiffness: 220, damping: 26 }}
+      transition={{ type: "spring", stiffness: 240, damping: 26 }}
     >
-      <Card className={`p-5 border ${status.bg} backdrop-blur-sm`}>
-        <div className="flex items-start gap-3 mb-4">
-          <div className="flex-1">
-            <Input
-              value={row.subject}
-              onChange={(e) => onChange({ subject: e.target.value })}
-              placeholder="Nome da disciplina"
-              className="bg-background/40 border-border/60 text-base font-semibold"
-            />
-          </div>
-          <Badge variant="outline" className={`${status.text} border-current`}>
-            {status.label}
-          </Badge>
-          <Button size="icon" variant="ghost" onClick={onRemove} className="h-9 w-9">
+      <Card className="p-4 bg-card/50 backdrop-blur border-border/60">
+        <div className="flex items-center gap-2 mb-3">
+          <Input
+            value={row.subject}
+            onChange={(e) => onChange({ subject: e.target.value })}
+            placeholder="Nome da disciplina"
+            className="bg-background/40 border-border/60 font-semibold flex-1"
+          />
+          <Button size="icon" variant="ghost" onClick={onRemove} className="h-9 w-9 text-muted-foreground hover:text-destructive">
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>
 
-        <div className="grid grid-cols-3 gap-3 mb-4">
-          {(["np1", "np2", "exam"] as const).map((field) => (
-            <div key={field}>
-              <Label className="text-xs uppercase tracking-wide text-muted-foreground">
-                {field === "exam" ? "Exame" : field.toUpperCase()}
-              </Label>
-              <Input
-                type="number"
-                inputMode="decimal"
-                step="0.1"
-                min="0"
-                max="10"
-                value={row[field] ?? ""}
-                onChange={(e) => onChange({ [field]: numOrNull(e.target.value) })}
-                placeholder="—"
-                className="bg-background/40 border-border/60 mt-1 text-center font-mono"
-              />
-            </div>
-          ))}
-        </div>
-
-        {/* Slider de simulação NP2 quando só NP1 está preenchida */}
-        {row.np1 !== null && row.np2 === null && (
-          <div className="mb-4 p-3 rounded-lg bg-background/30 border border-border/40">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs text-muted-foreground flex items-center gap-1">
-                <Target className="h-3 w-3" /> Simular NP2
-              </span>
-              <span className="text-sm font-mono text-primary">
-                Simulando: {(row.np2 as any) ?? "0.0"}
-              </span>
-            </div>
-            <Slider
-              defaultValue={[5]}
-              min={0}
-              max={10}
-              step={0.1}
-              onValueChange={([v]) => onChange({ np2: v })}
-              className="my-2"
+        <div className={`grid gap-2 mb-3 ${showExam ? "grid-cols-3" : "grid-cols-2"}`}>
+          <div>
+            <Label className="text-[10px] uppercase tracking-wide text-muted-foreground">NP1</Label>
+            <Input
+              type="number" inputMode="decimal" step="0.1" min="0" max="10"
+              value={row.np1 ?? ""}
+              onChange={(e) => onChange({ np1: parse(e.target.value) })}
+              placeholder="—"
+              className="bg-background/40 border-border/60 mt-1 text-center font-mono h-11 text-base"
             />
           </div>
-        )}
-
-        <div className={`p-3 rounded-lg border ${status.bg} mb-3`}>
-          <p className={`text-sm font-medium ${status.text}`}>{result.message}</p>
-          {result.average !== null && (
-            <p className="text-xs text-muted-foreground mt-1">
-              Média NP1+NP2: <span className="font-mono">{result.average.toFixed(2)}</span>
-              {result.finalGrade !== null && result.exam !== null && (
-                <> · Final c/ exame: <span className="font-mono">{result.finalGrade.toFixed(2)}</span></>
-              )}
-            </p>
-          )}
-        </div>
-
-        <div className="grid grid-cols-2 gap-2 text-xs">
-          {result.needNp2ForApproval !== null && row.np2 === null && (
-            <div className="p-2 rounded bg-emerald-500/10 border border-emerald-500/20">
-              <div className="text-emerald-300 font-semibold">Passar direto</div>
-              <div className="font-mono text-emerald-200">NP2 ≥ {result.needNp2ForApproval.toFixed(1)}</div>
-            </div>
-          )}
-          {result.needExam !== null && result.needExam > 0 && result.needExam <= 10 && row.exam === null && (
-            <div className="p-2 rounded bg-amber-500/10 border border-amber-500/20">
-              <div className="text-amber-300 font-semibold">Mínimo no exame</div>
-              <div className="font-mono text-amber-200">≥ {result.needExam.toFixed(1)}</div>
+          <div>
+            <Label className="text-[10px] uppercase tracking-wide text-muted-foreground">NP2</Label>
+            <Input
+              type="number" inputMode="decimal" step="0.1" min="0" max="10"
+              value={row.np2 ?? ""}
+              onChange={(e) => onChange({ np2: parse(e.target.value) })}
+              placeholder="—"
+              className="bg-background/40 border-border/60 mt-1 text-center font-mono h-11 text-base"
+            />
+          </div>
+          {showExam && (
+            <div>
+              <Label className="text-[10px] uppercase tracking-wide text-amber-300">Exame</Label>
+              <Input
+                type="number" inputMode="decimal" step="0.1" min="0" max="10"
+                value={row.exam ?? ""}
+                onChange={(e) => onChange({ exam: parse(e.target.value) })}
+                placeholder="—"
+                className="bg-background/40 border-amber-500/40 mt-1 text-center font-mono h-11 text-base"
+              />
             </div>
           )}
         </div>
 
-        <div className="flex justify-end mt-3">
-          <Button size="sm" variant="outline" onClick={onSave} className="gap-2">
-            <Save className="h-3 w-3" /> Salvar
-          </Button>
-        </div>
+        {/* Resultado simples */}
+        <AnimatePresence mode="wait">
+          {est.kind === "empty" && (
+            <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="text-xs text-muted-foreground text-center py-2">
+              Digite a NP1 para ver quanto falta.
+            </motion.div>
+          )}
+
+          {est.kind === "np1-only" && est.possible && (
+            <motion.div key="np1" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+              className="flex items-center gap-2 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30">
+              <Target className="h-4 w-4 text-emerald-300 flex-shrink-0" />
+              <div className="text-sm text-emerald-100">
+                Precisa tirar <span className="text-lg font-bold font-mono text-emerald-300">{fmt(est.needNp2)}</span> na NP2 para passar direto
+              </div>
+            </motion.div>
+          )}
+
+          {est.kind === "np1-only" && !est.possible && (
+            <motion.div key="np1-imp" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="flex items-center gap-2 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30">
+              <AlertTriangle className="h-4 w-4 text-amber-300 flex-shrink-0" />
+              <div className="text-sm text-amber-100">Vai para o exame — informe a NP2 para ver o mínimo.</div>
+            </motion.div>
+          )}
+
+          {est.kind === "approved" && (
+            <motion.div key="ok" initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
+              className="flex items-center gap-2 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30">
+              <CheckCircle2 className="h-4 w-4 text-emerald-300 flex-shrink-0" />
+              <div className="text-sm text-emerald-100 flex-1">
+                Aprovado direto · média <span className="font-mono font-bold text-emerald-300">{fmt(est.avg)}</span>
+              </div>
+              <Badge className="bg-emerald-500/20 text-emerald-200 border-emerald-500/40">Sem exame</Badge>
+            </motion.div>
+          )}
+
+          {est.kind === "exam-pending" && est.possible && (
+            <motion.div key="exam" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+              className="space-y-2">
+              <div className="text-xs text-muted-foreground">
+                Média <span className="font-mono text-amber-300">{fmt(est.avg)}</span> — vai para o exame
+              </div>
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30">
+                <Target className="h-4 w-4 text-amber-300 flex-shrink-0" />
+                <div className="text-sm text-amber-100">
+                  Precisa tirar <span className="text-lg font-bold font-mono text-amber-300">{fmt(est.needExam)}</span> no exame para não pegar DP
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {est.kind === "exam-pending" && !est.possible && (
+            <motion.div key="dp" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="flex items-center gap-2 p-3 rounded-lg bg-rose-500/10 border border-rose-500/30">
+              <XCircle className="h-4 w-4 text-rose-300 flex-shrink-0" />
+              <div className="text-sm text-rose-100">
+                Média <span className="font-mono">{fmt(est.avg)}</span> — DP (precisaria tirar {fmt(est.needExam)} no exame)
+              </div>
+            </motion.div>
+          )}
+
+          {est.kind === "passed-exam" && (
+            <motion.div key="pe" initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
+              className="flex items-center gap-2 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30">
+              <Trophy className="h-4 w-4 text-emerald-300 flex-shrink-0" />
+              <div className="text-sm text-emerald-100 flex-1">
+                Aprovado no exame · final <span className="font-mono font-bold text-emerald-300">{fmt(est.finalGrade)}</span>
+              </div>
+            </motion.div>
+          )}
+
+          {est.kind === "failed-exam" && (
+            <motion.div key="fe" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="flex items-center gap-2 p-3 rounded-lg bg-rose-500/10 border border-rose-500/30">
+              <XCircle className="h-4 w-4 text-rose-300 flex-shrink-0" />
+              <div className="text-sm text-rose-100">
+                DP · final <span className="font-mono font-bold text-rose-300">{fmt(est.finalGrade)}</span>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </Card>
     </motion.div>
   );
@@ -151,46 +226,41 @@ export default function CalculadoraPage() {
   const [loading, setLoading] = useState(true);
   const [pulling, setPulling] = useState(false);
   const [savingAll, setSavingAll] = useState(false);
+  const [profile, setProfile] = useState<{ course: string | null; semester: number | null } | null>(null);
 
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const { data, error } = await supabase
-        .from("calculator_grades")
-        .select("*")
-        .order("created_at", { ascending: true });
-      if (!error && data) {
-        setRows(data.map((d: any) => ({
-          id: d.id, subject: d.subject, np1: d.np1, np2: d.np2, exam: d.exam, notes: d.notes,
+      const [{ data: grades }, { data: prof }] = await Promise.all([
+        supabase.from("calculator_grades").select("*").order("created_at", { ascending: true }),
+        supabase.from("profiles").select("course, semester").eq("user_id", user.id).maybeSingle(),
+      ]);
+      if (grades) {
+        setRows(grades.map((d: any) => ({
+          id: d.id, subject: d.subject, np1: d.np1, np2: d.np2, exam: d.exam,
         })));
       }
+      setProfile(prof ?? null);
       setLoading(false);
     })();
   }, [user]);
 
-  const results = useMemo(() => rows.map(r => computeGrade(r)), [rows]);
-
   const summary = useMemo(() => {
-    const total = results.length;
-    const ok = results.filter(r => r.status === "approved").length;
-    const exam = results.filter(r => r.status === "exam").length;
-    const fail = results.filter(r => r.status === "failed").length;
-    return { total, ok, exam, fail };
-  }, [results]);
+    const ests = rows.map(estimate);
+    const ok = ests.filter(e => e.kind === "approved" || e.kind === "passed-exam").length;
+    const exam = ests.filter(e => e.kind === "exam-pending").length;
+    const fail = ests.filter(e => e.kind === "failed-exam" || (e.kind === "exam-pending" && !e.possible)).length;
+    return { total: rows.length, ok, exam, fail };
+  }, [rows]);
 
-  const addRow = () => {
-    setRows([...rows, { subject: "", np1: null, np2: null, exam: null }]);
-  };
+  const addRow = () => setRows([...rows, { subject: "", np1: null, np2: null, exam: null }]);
 
-  const updateRow = (idx: number, patch: Partial<Row>) => {
+  const updateRow = (idx: number, patch: Partial<Row>) =>
     setRows(rows.map((r, i) => i === idx ? { ...r, ...patch } : r));
-  };
 
   const removeRow = async (idx: number) => {
     const row = rows[idx];
-    if (row.id) {
-      await supabase.from("calculator_grades").delete().eq("id", row.id);
-    }
+    if (row.id) await supabase.from("calculator_grades").delete().eq("id", row.id);
     setRows(rows.filter((_, i) => i !== idx));
   };
 
@@ -198,27 +268,21 @@ export default function CalculadoraPage() {
     if (!user) return;
     setPulling(true);
     try {
-      // pega curso/semestre do perfil
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("course, semester")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      let q = supabase
-        .from("apostilas")
-        .select("category, course, semester")
-        .eq("published", true);
-
+      let q = supabase.from("apostilas").select("category, course, semester").eq("published", true);
       if (profile?.semester) q = q.eq("semester", profile.semester);
-      if (profile?.course) q = q.contains("course", [profile.course]);
-
       const { data, error } = await q;
       if (error) throw error;
 
+      // Filtra por curso se informado, mas mantém apostilas sem curso (compartilhadas)
+      const filtered = (data ?? []).filter((d: any) => {
+        if (!profile?.course) return true;
+        if (!d.course || d.course.length === 0) return true;
+        return d.course.includes(profile.course);
+      });
+
       const existing = new Set(rows.map(r => r.subject.trim().toLowerCase()).filter(Boolean));
       const subjects = Array.from(
-        new Set((data ?? []).map((d: any) => (d.category || "").trim()).filter(Boolean))
+        new Set(filtered.map((d: any) => (d.category || "").trim()).filter(Boolean))
       ).sort((a, b) => a.localeCompare(b, "pt-BR"));
 
       const toAdd = subjects
@@ -226,11 +290,15 @@ export default function CalculadoraPage() {
         .map(s => ({ subject: s, np1: null, np2: null, exam: null } as Row));
 
       if (toAdd.length === 0) {
-        toast.info(
-          subjects.length === 0
-            ? "Nenhuma matéria encontrada para o seu curso/semestre. Cadastre seu curso no perfil."
-            : "Suas matérias já estão na lista."
-        );
+        if (subjects.length === 0) {
+          toast.info(
+            profile?.semester
+              ? `Nenhuma matéria encontrada para o ${profile.semester}º semestre.`
+              : "Cadastre seu curso e semestre no perfil para puxar as matérias."
+          );
+        } else {
+          toast.info("Suas matérias já estão na lista.");
+        }
       } else {
         setRows([...rows, ...toAdd]);
         toast.success(`${toAdd.length} matéria(s) adicionada(s).`);
@@ -240,34 +308,6 @@ export default function CalculadoraPage() {
     } finally {
       setPulling(false);
     }
-  };
-
-  const saveRow = async (idx: number) => {
-    const row = rows[idx];
-    if (!user || !row.subject.trim()) {
-      toast.error("Informe o nome da disciplina.");
-      return;
-    }
-    const payload = {
-      user_id: user.id,
-      subject: row.subject.trim(),
-      np1: row.np1,
-      np2: row.np2,
-      exam: row.exam,
-    };
-    if (row.id) {
-      const { error } = await supabase.from("calculator_grades").update(payload).eq("id", row.id);
-      if (error) { toast.error("Erro ao salvar"); return; }
-    } else {
-      const { data, error } = await supabase
-        .from("calculator_grades")
-        .upsert(payload, { onConflict: "user_id,subject" })
-        .select()
-        .single();
-      if (error) { toast.error("Erro ao salvar"); return; }
-      setRows(rows.map((r, i) => i === idx ? { ...r, id: data.id } : r));
-    }
-    toast.success(`${row.subject} salvo.`);
   };
 
   const saveAll = async () => {
@@ -282,16 +322,13 @@ export default function CalculadoraPage() {
       const payload = valid.map(r => ({
         user_id: user.id,
         subject: r.subject.trim(),
-        np1: r.np1,
-        np2: r.np2,
-        exam: r.exam,
+        np1: r.np1, np2: r.np2, exam: r.exam,
       }));
       const { data, error } = await supabase
         .from("calculator_grades")
         .upsert(payload, { onConflict: "user_id,subject" })
         .select();
       if (error) throw error;
-      // sincroniza ids
       const byKey = new Map((data ?? []).map((d: any) => [d.subject.toLowerCase(), d.id]));
       setRows(rows.map(r => {
         const id = byKey.get(r.subject.trim().toLowerCase());
@@ -299,22 +336,17 @@ export default function CalculadoraPage() {
       }));
       toast.success(`Boletim salvo (${valid.length} matéria${valid.length > 1 ? "s" : ""}).`);
     } catch (e: any) {
-      toast.error("Erro ao salvar boletim: " + (e?.message ?? ""));
+      toast.error("Erro ao salvar: " + (e?.message ?? ""));
     } finally {
       setSavingAll(false);
     }
   };
 
-
   return (
     <div className="min-h-screen bg-background">
       <AppHeader />
       <main className="container mx-auto px-4 py-6 pb-24 max-w-3xl">
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-6"
-        >
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
           <div className="flex items-center gap-3 mb-2">
             <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary/30 to-purple-500/30 border border-primary/40 flex items-center justify-center">
               <Calculator className="h-6 w-6 text-primary" />
@@ -328,44 +360,37 @@ export default function CalculadoraPage() {
           </div>
         </motion.div>
 
-        {/* Estimador rápido — sem precisar salvar nada */}
+        {/* Estimador rápido */}
         <div className="mb-6">
           <QuickGradeEstimator />
         </div>
 
-        {/* Resumo */}
-        <div className="grid grid-cols-4 gap-2 mb-6">
-          <Card className="p-3 text-center bg-card/40 backdrop-blur">
-            <div className="text-2xl font-bold">{summary.total}</div>
-            <div className="text-[10px] text-muted-foreground uppercase">Matérias</div>
-          </Card>
-          <Card className="p-3 text-center bg-emerald-500/10 border-emerald-500/30">
-            <div className="text-2xl font-bold text-emerald-300">{summary.ok}</div>
-            <div className="text-[10px] text-emerald-300/80 uppercase">Aprovadas</div>
-          </Card>
-          <Card className="p-3 text-center bg-amber-500/10 border-amber-500/30">
-            <div className="text-2xl font-bold text-amber-300">{summary.exam}</div>
-            <div className="text-[10px] text-amber-300/80 uppercase">Exame</div>
-          </Card>
-          <Card className="p-3 text-center bg-rose-500/10 border-rose-500/30">
-            <div className="text-2xl font-bold text-rose-300">{summary.fail}</div>
-            <div className="text-[10px] text-rose-300/80 uppercase">Risco</div>
-          </Card>
+        {/* Boletim por disciplina */}
+        <div className="flex items-center justify-between mb-3 mt-8">
+          <h2 className="text-lg font-bold flex items-center gap-2">
+            <BookOpen className="h-5 w-5 text-primary" /> Meu boletim
+          </h2>
+          {rows.length > 0 && (
+            <span className="text-xs text-muted-foreground">
+              {summary.ok} aprovada{summary.ok !== 1 ? "s" : ""} · {summary.exam} exame · {summary.fail} risco
+            </span>
+          )}
         </div>
 
-        {/* Lista */}
-        <div className="space-y-4">
+        <div className="space-y-3">
           {loading ? (
             <Card className="p-8 text-center text-muted-foreground">Carregando…</Card>
           ) : rows.length === 0 ? (
-            <Card className="p-8 text-center">
+            <Card className="p-8 text-center bg-card/40 backdrop-blur">
               <Sparkles className="h-8 w-8 mx-auto text-primary mb-3" />
               <p className="text-sm text-muted-foreground mb-4">
-                Puxe automaticamente as matérias do seu semestre ou adicione manualmente.
+                {profile?.semester
+                  ? `Puxar as ${"matérias"} do seu ${profile.semester}º semestre ou adicionar manualmente.`
+                  : "Puxe automaticamente as matérias do seu semestre ou adicione manualmente."}
               </p>
               <div className="flex flex-wrap justify-center gap-2">
                 <Button onClick={pullMySubjects} disabled={pulling} className="gap-2">
-                  {pulling ? <Loader2 className="h-4 w-4 animate-spin" /> : <BookOpen className="h-4 w-4" />}
+                  {pulling ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
                   Puxar minhas matérias
                 </Button>
                 <Button onClick={addRow} variant="outline" className="gap-2">
@@ -374,32 +399,34 @@ export default function CalculadoraPage() {
               </div>
             </Card>
           ) : (
-            rows.map((row, i) => (
-              <GradeCard
-                key={row.id ?? i}
-                row={row}
-                result={results[i]}
-                onChange={(patch) => updateRow(i, patch)}
-                onRemove={() => removeRow(i)}
-                onSave={() => saveRow(i)}
-              />
-            ))
+            <AnimatePresence>
+              {rows.map((row, i) => (
+                <GradeRow
+                  key={row.id ?? `new-${i}`}
+                  row={row}
+                  onChange={(patch) => updateRow(i, patch)}
+                  onRemove={() => removeRow(i)}
+                />
+              ))}
+            </AnimatePresence>
           )}
         </div>
 
         {rows.length > 0 && (
-          <div className="mt-6 flex flex-wrap justify-center gap-2">
-            <Button onClick={pullMySubjects} disabled={pulling} variant="outline" className="gap-2">
-              {pulling ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-              Puxar matérias do meu semestre
-            </Button>
-            <Button onClick={addRow} variant="outline" className="gap-2">
-              <Plus className="h-4 w-4" /> Adicionar manualmente
-            </Button>
-            <Button onClick={saveAll} disabled={savingAll} className="gap-2">
-              {savingAll ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-              Salvar boletim
-            </Button>
+          <div className="mt-5 flex flex-wrap justify-center gap-2 sticky bottom-4 z-10">
+            <div className="flex flex-wrap gap-2 p-2 rounded-2xl bg-background/80 backdrop-blur border border-border/60 shadow-lg">
+              <Button onClick={pullMySubjects} disabled={pulling} variant="outline" size="sm" className="gap-2">
+                {pulling ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                Puxar matérias
+              </Button>
+              <Button onClick={addRow} variant="outline" size="sm" className="gap-2">
+                <Plus className="h-4 w-4" /> Adicionar
+              </Button>
+              <Button onClick={saveAll} disabled={savingAll} size="sm" className="gap-2">
+                {savingAll ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                Salvar boletim
+              </Button>
+            </div>
           </div>
         )}
 
