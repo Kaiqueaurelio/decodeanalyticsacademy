@@ -30,26 +30,49 @@ export function AdImageUploadButton({ onImageUploaded, currentImageUrl }: Props)
     const path = `ads/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
     try {
-      const { error } = await supabase.storage.from('announcements').upload(path, file, {
-        cacheControl: '3600',
-        upsert: false,
-      });
+      console.log('Iniciando upload para o bucket ads, caminho:', path);
+      
+      const { error, data } = await supabase.storage
+        .from('ads')
+        .upload(path, file, {
+          cacheControl: '3600',
+          upsert: false,
+          contentType: file.type,
+        });
 
       if (error) {
+        console.error('Erro no upload de imagem do anúncio:', error);
+        console.error('Detalhes do erro:', {
+          message: error.message,
+          status: (error as any).status,
+          statusCode: (error as any).statusCode,
+        });
         toast.error('Erro no upload: ' + error.message);
         setUploading(false);
         return;
       }
 
-      const { data: urlData } = supabase.storage.from('announcements').getPublicUrl(path);
+      console.log('Upload realizado com sucesso:', data);
+      
+      const { data: urlData } = supabase.storage.from('ads').getPublicUrl(path);
       const publicUrl = urlData.publicUrl;
 
+      console.log('URL pública gerada:', publicUrl);
+      
       setPreviewUrl(publicUrl);
       onImageUploaded(publicUrl);
       toast.success('Imagem enviada com sucesso!');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao fazer upload:', error);
-      toast.error('Erro ao fazer upload da imagem');
+      console.error('Stack trace:', error?.stack);
+      
+      if (error?.message?.includes('fetch')) {
+        toast.error('Erro de conexão ao fazer upload. Verifique sua internet e tente novamente.');
+      } else if (error?.message?.includes('401') || error?.message?.includes('403')) {
+        toast.error('Erro de permissão ao fazer upload. Verifique as configurações do bucket.');
+      } else {
+        toast.error('Erro ao fazer upload da imagem: ' + (error?.message || 'Desconhecido'));
+      }
     } finally {
       setUploading(false);
     }
