@@ -27,10 +27,15 @@ export function AdImageUploadButton({ onImageUploaded, currentImageUrl }: Props)
 
     setUploading(true);
     const ext = file.name.split('.').pop() || 'png';
-    const path = `ads/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const path = `ads/${fileName}`;
 
     try {
-      console.log('Iniciando upload para o bucket ads, caminho:', path);
+      console.log('Iniciando upload para o bucket ads');
+      console.log('Bucket: ads');
+      console.log('Caminho do arquivo:', path);
+      console.log('Tipo do arquivo:', file.type);
+      console.log('Tamanho do arquivo:', file.size);
       
       const { error, data } = await supabase.storage
         .from('ads')
