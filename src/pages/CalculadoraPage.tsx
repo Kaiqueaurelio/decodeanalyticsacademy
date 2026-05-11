@@ -11,6 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { QuickGradeEstimator } from "@/components/QuickGradeEstimator";
+import { getCurriculumSubjects, subjectKey } from "@/lib/curriculum-subjects";
 
 type Row = {
   id?: string;
