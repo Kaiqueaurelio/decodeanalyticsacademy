@@ -42,6 +42,7 @@ const AdminApostilaWorkbench = lazy(() => import("./pages/AdminApostilaWorkbench
 const PlayBooksPage = lazy(() => import("./pages/PlayBooksPage"));
 const PerformancePage = lazy(() => import("./pages/PerformancePage"));
 const FlashcardsPage = lazy(() => import("./pages/FlashcardsPage"));
+const CalculadoraPage = lazy(() => import("./pages/CalculadoraPage"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
