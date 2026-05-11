@@ -188,7 +188,11 @@ export const SwipeableRow = React.forwardRef<HTMLDivElement, SwipeableRowProps>(
 
   return (
     <div
-      ref={containerRef}
+      ref={(node) => {
+        containerRef.current = node;
+        if (typeof forwardedRef === 'function') forwardedRef(node);
+        else if (forwardedRef) forwardedRef.current = node;
+      }}
       className={cn("relative overflow-hidden rounded-xl", className)}
     >
       {/* Ações ESQUERDA (revelado ao arrastar para direita) */}
@@ -230,4 +234,4 @@ export const SwipeableRow = React.forwardRef<HTMLDivElement, SwipeableRowProps>(
       </div>
     </div>
   );
-}
+});
