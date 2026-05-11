@@ -121,6 +121,9 @@ export function AppHeader() {
                   <Button variant="ghost" size="sm" className="justify-start text-sm font-sans normal-case tracking-normal" onClick={() => nav('/livros')}>
                     <Library className="mr-2 h-4 w-4" /> Livros
                   </Button>
+                  <Button variant="ghost" size="sm" className="justify-start text-sm font-sans normal-case tracking-normal" onClick={() => nav('/calculadora')}>
+                    <Calculator className="mr-2 h-4 w-4" /> Calculadora de Médias
+                  </Button>
                   <Button variant="ghost" size="sm" className="justify-start text-sm font-sans normal-case tracking-normal" onClick={() => nav('/tira-duvida')}>
                     <Camera className="mr-2 h-4 w-4" /> Tira-dúvida
                   </Button>
