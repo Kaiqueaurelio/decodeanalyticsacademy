@@ -361,11 +361,17 @@ export default function CalculadoraPage() {
             <Card className="p-8 text-center">
               <Sparkles className="h-8 w-8 mx-auto text-primary mb-3" />
               <p className="text-sm text-muted-foreground mb-4">
-                Adicione suas disciplinas e simule notas em tempo real.
+                Puxe automaticamente as matérias do seu semestre ou adicione manualmente.
               </p>
-              <Button onClick={addRow} className="gap-2">
-                <Plus className="h-4 w-4" /> Adicionar disciplina
-              </Button>
+              <div className="flex flex-wrap justify-center gap-2">
+                <Button onClick={pullMySubjects} disabled={pulling} className="gap-2">
+                  {pulling ? <Loader2 className="h-4 w-4 animate-spin" /> : <BookOpen className="h-4 w-4" />}
+                  Puxar minhas matérias
+                </Button>
+                <Button onClick={addRow} variant="outline" className="gap-2">
+                  <Plus className="h-4 w-4" /> Adicionar manualmente
+                </Button>
+              </div>
             </Card>
           ) : (
             rows.map((row, i) => (
@@ -382,9 +388,17 @@ export default function CalculadoraPage() {
         </div>
 
         {rows.length > 0 && (
-          <div className="mt-6 flex justify-center">
+          <div className="mt-6 flex flex-wrap justify-center gap-2">
+            <Button onClick={pullMySubjects} disabled={pulling} variant="outline" className="gap-2">
+              {pulling ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+              Puxar matérias do meu semestre
+            </Button>
             <Button onClick={addRow} variant="outline" className="gap-2">
-              <Plus className="h-4 w-4" /> Adicionar mais uma
+              <Plus className="h-4 w-4" /> Adicionar manualmente
+            </Button>
+            <Button onClick={saveAll} disabled={savingAll} className="gap-2">
+              {savingAll ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+              Salvar boletim
             </Button>
           </div>
         )}
