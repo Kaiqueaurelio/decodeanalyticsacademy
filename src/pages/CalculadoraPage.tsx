@@ -269,40 +269,57 @@ export default function CalculadoraPage() {
     if (!user) return;
     setPulling(true);
     try {
-      let q = supabase.from("apostilas").select("category, course, semester").eq("published", true);
-      if (profile?.semester) q = q.eq("semester", profile.semester);
-      const { data, error } = await q;
+      if (!profile?.semester) {
+        toast.info("Cadastre seu curso e semestre no perfil para puxar as matérias.");
+        return;
+      }
+
+      // 1) Grade canônica do curso/semestre
+      const canonical = getCurriculumSubjects(profile.course, profile.semester);
+
+      // 2) Apostilas publicadas do mesmo semestre (complementa a grade)
+      const { data, error } = await supabase
+        .from("apostilas")
+        .select("category, course, semester")
+        .eq("published", true)
+        .eq("semester", profile.semester);
       if (error) throw error;
 
-      // Filtra por curso se informado, mas mantém apostilas sem curso (compartilhadas)
-      const filtered = (data ?? []).filter((d: any) => {
-        if (!profile?.course) return true;
-        if (!d.course || d.course.length === 0) return true;
-        return d.course.includes(profile.course);
-      });
+      const fromApostilas = (data ?? [])
+        .filter((d: any) => {
+          if (!profile.course) return true;
+          if (!d.course || d.course.length === 0) return true;
+          return d.course.includes(profile.course);
+        })
+        .map((d: any) => (d.category || "").trim())
+        .filter(Boolean);
 
-      const existing = new Set(rows.map(r => r.subject.trim().toLowerCase()).filter(Boolean));
-      const subjects = Array.from(
-        new Set(filtered.map((d: any) => (d.category || "").trim()).filter(Boolean))
-      ).sort((a, b) => a.localeCompare(b, "pt-BR"));
+      // 3) Mescla deduplicando por chave normalizada (canônica tem prioridade no nome)
+      const seen = new Map<string, string>();
+      for (const s of canonical) seen.set(subjectKey(s), s);
+      for (const s of fromApostilas) {
+        const k = subjectKey(s);
+        if (!seen.has(k)) seen.set(k, s);
+      }
+      const allSubjects = Array.from(seen.values()).sort((a, b) =>
+        a.localeCompare(b, "pt-BR")
+      );
 
-      const toAdd = subjects
-        .filter(s => !existing.has(s.toLowerCase()))
-        .map(s => ({ subject: s, np1: null, np2: null, exam: null } as Row));
+      // 4) Adiciona apenas as que ainda não estão no boletim
+      const existing = new Set(
+        rows.map((r) => subjectKey(r.subject)).filter(Boolean)
+      );
+      const toAdd = allSubjects
+        .filter((s) => !existing.has(subjectKey(s)))
+        .map((s) => ({ subject: s, np1: null, np2: null, exam: null } as Row));
 
       if (toAdd.length === 0) {
-        if (subjects.length === 0) {
-          toast.info(
-            profile?.semester
-              ? `Nenhuma matéria encontrada para o ${profile.semester}º semestre.`
-              : "Cadastre seu curso e semestre no perfil para puxar as matérias."
-          );
-        } else {
-          toast.info("Suas matérias já estão na lista.");
-        }
+        toast.info("Todas as matérias do seu semestre já estão na lista.");
       } else {
         setRows([...rows, ...toAdd]);
-        toast.success(`${toAdd.length} matéria(s) adicionada(s).`);
+        toast.success(
+          `${toAdd.length} matéria${toAdd.length > 1 ? "s" : ""} adicionada${toAdd.length > 1 ? "s" : ""} (${profile.semester}º sem).`
+        );
       }
     } catch (e: any) {
       toast.error("Erro ao buscar matérias: " + (e?.message ?? ""));
