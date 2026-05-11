@@ -33,6 +33,7 @@ import { WeeklySimuladoCard } from '@/components/WeeklySimuladoCard';
 import { MobileCarousel } from '@/components/MobileCarousel';
 import { MaterialWidget } from '@/components/MaterialWidget';
 import { FavoriteMaterialsWidget } from '@/components/FavoriteMaterialsWidget';
+import { GradeCalculatorWidget } from '@/components/GradeCalculatorWidget';
 import { AnnouncementsBoard } from '@/components/AnnouncementsBoard';
 import { TodayExamBanner } from '@/components/TodayExamBanner';
 import { PreExamReviewBanner } from '@/components/PreExamReviewBanner';
