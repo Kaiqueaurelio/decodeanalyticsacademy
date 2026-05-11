@@ -149,6 +149,8 @@ export default function CalculadoraPage() {
   const { user } = useAuth();
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
+  const [pulling, setPulling] = useState(false);
+  const [savingAll, setSavingAll] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -192,6 +194,54 @@ export default function CalculadoraPage() {
     setRows(rows.filter((_, i) => i !== idx));
   };
 
+  const pullMySubjects = async () => {
+    if (!user) return;
+    setPulling(true);
+    try {
+      // pega curso/semestre do perfil
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("course, semester")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      let q = supabase
+        .from("apostilas")
+        .select("category, course, semester")
+        .eq("published", true);
+
+      if (profile?.semester) q = q.eq("semester", profile.semester);
+      if (profile?.course) q = q.contains("course", [profile.course]);
+
+      const { data, error } = await q;
+      if (error) throw error;
+
+      const existing = new Set(rows.map(r => r.subject.trim().toLowerCase()).filter(Boolean));
+      const subjects = Array.from(
+        new Set((data ?? []).map((d: any) => (d.category || "").trim()).filter(Boolean))
+      ).sort((a, b) => a.localeCompare(b, "pt-BR"));
+
+      const toAdd = subjects
+        .filter(s => !existing.has(s.toLowerCase()))
+        .map(s => ({ subject: s, np1: null, np2: null, exam: null } as Row));
+
+      if (toAdd.length === 0) {
+        toast.info(
+          subjects.length === 0
+            ? "Nenhuma matéria encontrada para o seu curso/semestre. Cadastre seu curso no perfil."
+            : "Suas matérias já estão na lista."
+        );
+      } else {
+        setRows([...rows, ...toAdd]);
+        toast.success(`${toAdd.length} matéria(s) adicionada(s).`);
+      }
+    } catch (e: any) {
+      toast.error("Erro ao buscar matérias: " + (e?.message ?? ""));
+    } finally {
+      setPulling(false);
+    }
+  };
+
   const saveRow = async (idx: number) => {
     const row = rows[idx];
     if (!user || !row.subject.trim()) {
@@ -219,6 +269,42 @@ export default function CalculadoraPage() {
     }
     toast.success(`${row.subject} salvo.`);
   };
+
+  const saveAll = async () => {
+    if (!user) return;
+    const valid = rows.filter(r => r.subject.trim());
+    if (valid.length === 0) {
+      toast.error("Adicione ao menos uma disciplina.");
+      return;
+    }
+    setSavingAll(true);
+    try {
+      const payload = valid.map(r => ({
+        user_id: user.id,
+        subject: r.subject.trim(),
+        np1: r.np1,
+        np2: r.np2,
+        exam: r.exam,
+      }));
+      const { data, error } = await supabase
+        .from("calculator_grades")
+        .upsert(payload, { onConflict: "user_id,subject" })
+        .select();
+      if (error) throw error;
+      // sincroniza ids
+      const byKey = new Map((data ?? []).map((d: any) => [d.subject.toLowerCase(), d.id]));
+      setRows(rows.map(r => {
+        const id = byKey.get(r.subject.trim().toLowerCase());
+        return id ? { ...r, id } : r;
+      }));
+      toast.success(`Boletim salvo (${valid.length} matéria${valid.length > 1 ? "s" : ""}).`);
+    } catch (e: any) {
+      toast.error("Erro ao salvar boletim: " + (e?.message ?? ""));
+    } finally {
+      setSavingAll(false);
+    }
+  };
+
 
   return (
     <div className="min-h-screen bg-background">
