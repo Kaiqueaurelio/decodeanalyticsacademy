@@ -54,7 +54,7 @@ const variantFg: Record<NonNullable<SwipeAction["variant"]>, string> = {
  * - Não interfere com clique, scroll vertical ou long-press do conteúdo
  *   (só ativa quando o movimento horizontal supera o vertical).
  */
-export function SwipeableRow({
+export const SwipeableRow = React.forwardRef<HTMLDivElement, SwipeableRowProps>(function SwipeableRow({
   children,
   rightActions = [],
   leftActions = [],
@@ -63,7 +63,7 @@ export function SwipeableRow({
   onOpenChange,
   className,
   disabled = false,
-}: SwipeableRowProps) {
+}, forwardedRef) {
   const rightWidth = rightActions.length * actionWidth;
   const leftWidth = leftActions.length * actionWidth;
   const rightThreshold = snapThreshold ?? rightWidth * 0.4;
