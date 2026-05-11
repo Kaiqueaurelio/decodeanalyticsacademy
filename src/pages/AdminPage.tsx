@@ -529,6 +529,23 @@ function OverviewTab({ apostilas, exercises, allAnswers, materials, users, setTa
                   { label: 'Upload Material', icon: Upload, action: () => setTab('materials') },
                   { label: 'Gerenciar Usuários', icon: Users, action: () => setTab('users') },
                   { label: 'Ver Materiais', icon: FolderOpen, action: () => setTab('materials') },
+                  { label: 'Download Logo', icon: Download, action: async () => {
+                    try {
+                      const response = await fetch('/logo-decode.png');
+                      const blob = await response.blob();
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = 'logo-decode.png';
+                      document.body.appendChild(a);
+                      a.click();
+                      document.body.removeChild(a);
+                      URL.revokeObjectURL(url);
+                      toast.success('Logo baixado com sucesso!');
+                    } catch (err) {
+                      toast.error('Erro ao baixar logo');
+                    }
+                  } },
                 ].map((a, i) => (
                   <motion.div
                     key={a.label}
@@ -536,7 +553,10 @@ function OverviewTab({ apostilas, exercises, allAnswers, materials, users, setTa
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.9 + i * 0.05 }}
                   >
-                    <Button variant="outline" className="h-auto py-4 flex-col gap-2 text-xs w-full" onClick={a.action}>
+                    <Button variant="outline" className="h-auto py-4 flex-col gap-2 text-xs w-full" onClick={() => {
+                      const result = a.action();
+                      if (result instanceof Promise) result.catch(() => {});
+                    }}>
                       <a.icon className="h-5 w-5 text-primary" />
                       {a.label}
                     </Button>
