@@ -707,6 +707,45 @@ export type Database = {
         }
         Relationships: []
       }
+      calculator_grades: {
+        Row: {
+          created_at: string
+          exam: number | null
+          id: string
+          notes: string | null
+          np1: number | null
+          np2: number | null
+          semester: number | null
+          subject: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          exam?: number | null
+          id?: string
+          notes?: string | null
+          np1?: number | null
+          np2?: number | null
+          semester?: number | null
+          subject: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          exam?: number | null
+          id?: string
+          notes?: string | null
+          np1?: number | null
+          np2?: number | null
+          semester?: number | null
+          subject?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       calendar_events: {
         Row: {
           created_at: string
