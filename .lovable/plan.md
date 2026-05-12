@@ -1,39 +1,49 @@
-## Plano: Coruja como ícone do app
+# Plano: Modo Claro legível + Pop-up de Anúncio funcionando
 
-### 1. Salvar a imagem da coruja
-- Copiar `user-uploads://image-16.png` para `src/assets/owl-icon.png` (uso em componentes React).
-- Copiar também para `public/owl-source.png` (fonte para gerar ícones).
+## 1. Modo Claro (light mode) — revisão completa
 
-### 2. Gerar todos os ícones do app a partir da coruja
-Usando ImageMagick, gerar a partir de `public/owl-source.png`:
-- `public/favicon.ico` (multi-size)
-- `public/favicon.png` (256x256)
-- `public/apple-touch-icon.png` (180x180)
-- `public/icon-192.png` (192x192)
-- `public/icon-512.png` (512x512)
-- `public/logo-decode.png` (1024x1024)
+Hoje os tokens light em `src/index.css` (`:root`) usam um fundo cinza-azulado (`220 14% 96%`) com primário ciano escuro (`188 92% 28%`) e bordas/muted muito próximos do fundo, gerando baixo contraste e "lavagem" geral. Resultado: texto e cards desaparecem.
 
-Isso faz com que, ao instalar o app no celular (PWA / "Adicionar à tela inicial"), o ícone seja a coruja. O `manifest.json` já aponta para esses arquivos — não precisa mexer.
+**Ações:**
+- Reescrever a paleta `:root` em `src/index.css` para um light mode "Apple-like" limpo:
+  - `--background`: branco puro (`0 0% 100%`)
+  - `--foreground`: quase preto (`222 47% 8%`) — contraste AAA
+  - `--card`: `0 0% 100%` com `--card-foreground` igual ao foreground
+  - `--muted`: `220 14% 96%` (suave) / `--muted-foreground`: `222 16% 28%` (legível)
+  - `--border`: `220 13% 88%` (visível mas sutil) / `--input`: igual
+  - `--primary`: ciano da marca, mas escurecido para contrastar com branco (`188 95% 32%`) com `--primary-foreground` branco
+  - `--accent`: roxo da marca em tom legível (`271 70% 50%`)
+  - `--secondary`: `220 14% 94%` com texto escuro
+  - `--destructive`, `--success`, `--warning`: tons saturados sobre branco com foreground branco
+  - `--ring`: usa primary
+- Adicionar sombras suaves específicas para light mode (token `--shadow-elegant` já existente, validar se funciona em ambos os temas; ajustar opacidade no light).
+- Verificar superfícies que usam `bg-background/80 backdrop-blur` (header, popovers): garantir que com fundo branco continuam legíveis (aumentar opacidade base se preciso).
+- Conferir gradientes hard-coded no Dashboard/Landing que assumem fundo escuro — se houver `from-black`, `to-black`, `text-white` fixos, substituir por tokens semânticos quando o usuário realmente quiser legibilidade no claro. (Escopo limitado: só o que estiver visivelmente quebrado.)
 
-### 3. Atualizar `index.html`
-Bumpar o cache (`?v=3`) nas tags de favicon e apple-touch-icon para forçar atualização nos navegadores.
+## 2. Pop-up de Anúncio não aparece — correções
 
-### 4. Adicionar logo da coruja onde ainda não aparece
-Manter intactos os locais que já mostram a coruja (Header, Splash, AppLock, Login). Adicionar nestes pontos onde hoje não há logo:
-- **`src/pages/LandingPage.tsx`** — adicionar a coruja no hero (ao lado do título principal) caso ainda não exista.
-- **`src/pages/NotFound.tsx`** — coruja acima do "404".
-- **`src/pages/OfflinePage.tsx`** — coruja acima da mensagem de offline.
-- **`src/components/SafeModeBanner.tsx`** — pequeno ícone da coruja ao lado do título.
-- **Footer da Landing** (dentro de `LandingPage.tsx` ou componente próprio) — coruja pequena junto da assinatura "Desenvolvido por: Kaique Aurelio & Decode Analytics".
+Inspeção mostra:
+- 2 anúncios `popup` ativos no banco (target=all). Backend OK.
+- `<AdPopup trigger="onLoad" delay={2500} />` está montado em `App.tsx`. ✅
+- **Bugs no `src/components/AdPopup.tsx`:**
+  1. `sessionStorage.setItem('popup_ad_shown', 'true')` é gravado **antes** de o pop-up aparecer com sucesso. Se o usuário visitou o app uma vez na sessão (ou o timer disparou antes do anúncio carregar), o flag fica gravado e o pop-up nunca mais aparece naquela aba — mesmo após F5 dependendo do navegador.
+  2. O `useEffect` de trigger depende de `currentAd` e `hasShownThisSession`, mas só lê `sessionStorage` uma vez no mount; múltiplos re-renders podem agendar múltiplos `setTimeout`.
+  3. Não há log/erro visível quando RLS bloqueia `ad_views` insert.
 
-Antes de editar cada um, leio o arquivo para confirmar se já tem logo e só adiciono onde estiver faltando, preservando 100% do conteúdo existente (Regra de Ouro).
+**Ações:**
+- Em `AdPopup.tsx`:
+  - Mover `sessionStorage.setItem('popup_ad_shown', ...)` para **dentro** de `showPopup`, depois de confirmar `currentAd` existe.
+  - Garantir `clearTimeout` no cleanup do `useEffect` (já existe, mas remover `currentAd` das dependências para não reagendar).
+  - Adicionar `console.debug('[AdPopup]', { adsCount, loading, hasShownThisSession })` para diagnosticar no preview.
+  - Adicionar fallback: se `sessionStorage` indisponível, ainda exibir.
+- Verificar RLS da tabela `ad_views` / `ad_clicks` — se `INSERT` exige usuário autenticado, anônimos quebram. Confirmar e ajustar policy se necessário (permitir insert anônimo apenas com `session_id` não nulo).
 
-### 5. Validação
-- Verificar que arquivos de ícone foram gerados nos tamanhos corretos (`identify`).
-- Confirmar build limpo (sem imports quebrados).
+## 3. Validação
+- Alternar tema no header e revisar visualmente Dashboard, Landing, Login, Apostila e Admin no modo claro.
+- Limpar `sessionStorage.popup_ad_shown` no console e recarregar para conferir o pop-up aparecer após 2,5s.
+- Verificar console por logs `[AdPopup]` e erros de RLS.
 
-### Detalhes técnicos
-- Não tocar em `src/integrations/supabase/*`, `.env`, `supabase/config.toml`.
-- Não alterar `manifest.json` (já referencia os caminhos corretos).
-- Imports da coruja em componentes via `@/assets/owl-icon.png`.
-- Tokens semânticos preservados — só adição de `<img>` com classes Tailwind existentes.
+## Arquivos afetados
+- `src/index.css` (tokens `:root`)
+- `src/components/AdPopup.tsx`
+- Possivelmente nova migração para policy `ad_views`/`ad_clicks` (somente se confirmado bloqueio)
