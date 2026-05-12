@@ -14,7 +14,7 @@ const NotFound = () => {
       <div className="text-center space-y-4">
         <img
           src={owlLogo}
-          alt="Decode Analytics Academy"
+          alt="Logo da coruja"
           className="mx-auto h-24 w-24 object-contain drop-shadow-[0_0_24px_rgba(0,240,255,0.45)]"
         />
         <h1 className="text-6xl font-extrabold text-gradient">404</h1>

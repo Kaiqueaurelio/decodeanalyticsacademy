@@ -51,7 +51,7 @@ export default function ResetPasswordPage() {
         <div className="w-full max-w-sm space-y-6 animate-scale-in">
           <div className="glass rounded-2xl p-6 sm:p-8 space-y-6">
             <div className="text-center space-y-3">
-              <img src={logoDark} alt="Decode Analytics" className="mx-auto h-20 w-20 object-contain drop-shadow-[0_0_18px_rgba(0,240,255,0.5)]" />
+              <img src={logoDark} alt="Logo da coruja" className="mx-auto h-20 w-20 object-contain drop-shadow-[0_0_18px_rgba(0,240,255,0.5)]" />
               <div>
                 <h1 className="text-2xl font-bold">Nova Senha</h1>
                 <p className="text-sm text-muted-foreground mt-1">Digite sua nova senha</p>
@@ -100,7 +100,7 @@ export default function ResetPasswordPage() {
             </form>
           </div>
           <p className="text-center text-xs text-muted-foreground">
-            Decode Analytics — por Kaique Aurelio
+            Coruja Academy — por Kaique Aurelio
           </p>
         </div>
       </div>
