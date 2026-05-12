@@ -243,7 +243,7 @@ export default function LoginPage() {
             <span className="font-mono-label text-[11px] uppercase tracking-widest text-primary inline-flex items-center gap-2 px-3 py-1.5 rounded bg-primary/10" style={{ border: '1px solid hsl(68 100% 64% / 0.2)' }}>
               Plataforma de Estudos
             </span>
-            <h1 className="font-display text-4xl xl:text-5xl leading-tight">
+            <h1 className="font-display text-4xl xl:text-5xl leading-tight text-foreground">
               Bem-vindo à{' '}
               <span className="text-gradient-animated">Decode Analytics</span>
             </h1>
@@ -291,10 +291,10 @@ export default function LoginPage() {
 
           {/* Top bar — Voltar */}
           <div className="absolute top-0 left-0 right-0 px-4 pt-5 flex items-center justify-between z-10">
-            <button onClick={() => navigate('/')} className="flex items-center gap-1.5 text-xs text-foreground/90 hover:text-foreground smooth-all backdrop-blur-md bg-background/30 px-3 py-1.5 rounded-full border border-white/10">
+              <button onClick={() => navigate('/')} className="flex items-center gap-1.5 rounded-full border border-border/70 bg-background/80 px-3 py-1.5 text-xs text-foreground shadow-sm backdrop-blur-md smooth-all hover:bg-background">
               <ArrowLeft className="h-3.5 w-3.5" /> Voltar
             </button>
-            <span className="font-mono-label text-[10px] uppercase tracking-widest text-foreground/80 backdrop-blur-md bg-background/30 px-3 py-1.5 rounded-full border border-white/10">
+              <span className="font-mono-label rounded-full border border-border/70 bg-background/80 px-3 py-1.5 text-[10px] uppercase tracking-widest text-foreground shadow-sm backdrop-blur-md">
               Decode Analytics
             </span>
           </div>
@@ -344,7 +344,7 @@ export default function LoginPage() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ type: 'spring', stiffness: 260, damping: 20, delay: 0.15 }}
           >
-            <div className="bg-card rounded-lg p-6 sm:p-8 space-y-5 relative overflow-hidden" style={{ border: '1px solid hsl(var(--border))' }}>
+            <div className="relative overflow-hidden rounded-lg bg-card p-6 shadow-sm ring-1 ring-border/70 sm:p-8 space-y-5">
               {/* Top accent line */}
               <div className="absolute top-0 left-0 right-0 h-px bg-primary" />
 
@@ -417,6 +417,7 @@ export default function LoginPage() {
                         }}
                         placeholder="Ex: G802144 ou seu@email.com"
                         maxLength={120}
+                        className="border-border/80 bg-background/90 text-foreground placeholder:text-muted-foreground/85"
                       />
                       <p className="text-[10px] text-muted-foreground/70 leading-snug">
                         {usingEmail
@@ -443,7 +444,7 @@ export default function LoginPage() {
                           value={password}
                           onChange={e => setPassword(e.target.value)}
                           placeholder="--------"
-                          className={`pr-10 ${loginAttempts > 0 ? 'border-destructive focus-visible:ring-destructive' : ''}`}
+                          className={`border-border/80 bg-background/90 pr-10 text-foreground placeholder:text-muted-foreground/85 ${loginAttempts > 0 ? 'border-destructive focus-visible:ring-destructive' : ''}`}
                         />
                         <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground smooth-all">
                           {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -508,7 +509,7 @@ export default function LoginPage() {
                     <div className="absolute inset-0 flex items-center"><span className="w-full" style={{ borderTop: '1px solid hsl(var(--border))' }} /></div>
                     <div className="relative flex justify-center text-xs uppercase"><span className="bg-card px-2 text-muted-foreground font-mono-label text-[10px] tracking-widest">ou</span></div>
                   </div>
-                  <Button type="button" variant="outline" className="w-full font-sans normal-case tracking-normal text-sm" onClick={() => { setIsSignUp(!isSignUp); setUnverifiedEmail(false); setLoginAttempts(0); }}>
+                  <Button type="button" variant="outline" className="w-full border-border/80 bg-background/80 font-sans text-sm normal-case tracking-normal text-foreground hover:bg-muted" onClick={() => { setIsSignUp(!isSignUp); setUnverifiedEmail(false); setLoginAttempts(0); }}>
                     {isSignUp ? 'Já tenho conta' : 'Criar conta'}
                   </Button>
                 </>
