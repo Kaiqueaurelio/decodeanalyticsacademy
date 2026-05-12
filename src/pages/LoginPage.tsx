@@ -260,7 +260,7 @@ export default function LoginPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ type: 'spring', stiffness: 260, damping: 20, delay: 0.3 + i * 0.15 }}
                 className="flex items-center gap-3 p-3 rounded-lg bg-card"
-                style={{ border: '1px solid hsl(0 0% 100% / 0.06)' }}
+                style={{ border: '1px solid hsl(var(--border))' }}
               >
                 <div className="rounded bg-primary/10 p-2.5">
                   <h.icon className="h-4 w-4 text-primary" />
@@ -344,7 +344,7 @@ export default function LoginPage() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ type: 'spring', stiffness: 260, damping: 20, delay: 0.15 }}
           >
-            <div className="bg-card rounded-lg p-6 sm:p-8 space-y-5 relative overflow-hidden" style={{ border: '1px solid hsl(0 0% 100% / 0.08)' }}>
+            <div className="bg-card rounded-lg p-6 sm:p-8 space-y-5 relative overflow-hidden" style={{ border: '1px solid hsl(var(--border))' }}>
               {/* Top accent line */}
               <div className="absolute top-0 left-0 right-0 h-px bg-primary" />
 
@@ -505,7 +505,7 @@ export default function LoginPage() {
                     )}
                   </form>
                   <div className="relative">
-                    <div className="absolute inset-0 flex items-center"><span className="w-full" style={{ borderTop: '1px solid hsl(0 0% 100% / 0.06)' }} /></div>
+                    <div className="absolute inset-0 flex items-center"><span className="w-full" style={{ borderTop: '1px solid hsl(var(--border))' }} /></div>
                     <div className="relative flex justify-center text-xs uppercase"><span className="bg-card px-2 text-muted-foreground font-mono-label text-[10px] tracking-widest">ou</span></div>
                   </div>
                   <Button type="button" variant="outline" className="w-full font-sans normal-case tracking-normal text-sm" onClick={() => { setIsSignUp(!isSignUp); setUnverifiedEmail(false); setLoginAttempts(0); }}>
