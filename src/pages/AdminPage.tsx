@@ -556,7 +556,7 @@ function OverviewTab({ apostilas, exercises, allAnswers, materials, users, setTa
                     transition={{ delay: 0.9 + i * 0.05 }}
                   >
                     <Button variant="outline" className="h-auto py-4 flex-col gap-2 text-xs w-full" onClick={() => {
-                      const result = a.action();
+                      const result = a.action() as unknown;
                       if (result instanceof Promise) result.catch(() => {});
                     }}>
                       <a.icon className="h-5 w-5 text-primary" />
@@ -1223,6 +1223,7 @@ export default function AdminPage() {
     performance: { title: 'Performance', desc: 'Métricas de carregamento e erros de rede' },
     smoke: { title: 'Testes de Fumaça', desc: 'Checklist automático para validar a estabilidade do sistema' },
     diagnostics: { title: 'Diagnóstico', desc: 'Logs de runtime, falhas de carregamento e desempenho por rota' },
+    'ads-chat': { title: 'Ads Chat Builder', desc: 'Gere criativos de anúncios com IA' },
   };
 
   return (
