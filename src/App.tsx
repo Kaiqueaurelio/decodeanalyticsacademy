@@ -14,6 +14,7 @@ import { PageSkeleton } from "@/components/PageSkeleton";
 import { AudioPlayerProvider } from "@/contexts/AudioPlayerContext";
 import { SplashScreen } from "@/components/SplashScreen";
 import { AdFooterMobile } from "@/components/AdFooterMobile";
+import { AdPopup } from "@/components/AdPopup";
 
 // Páginas críticas no bundle inicial
 import LandingPage from "./pages/LandingPage";
@@ -106,6 +107,7 @@ const App = () => (
               <AnimatedRoutes />
               <RANamePrompt />
               <AdFooterMobile />
+              <AdPopup trigger="onLoad" delay={2500} />
             </AudioPlayerProvider>
           </AuthProvider>
         </BrowserRouter>
