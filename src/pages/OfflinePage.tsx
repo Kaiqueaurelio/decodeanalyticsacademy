@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { WifiOff, RefreshCw, BookOpen, Home } from "lucide-react";
-import logoDecode from "@/assets/logo-decode.png";
+import logoDecode from "@/assets/owl-icon.png";
 
 export default function OfflinePage() {
   const [online, setOnline] = useState(navigator.onLine);

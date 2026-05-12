@@ -5,7 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { verifyBiometric, disableBiometric, getBiometricEmail, refreshBiometricToken } from '@/hooks/useBiometricAuth';
 import { getCurrentSession } from '@/lib/auth-session';
 import { toast } from 'sonner';
-import logoDark from '@/assets/logo-decode.png';
+import logoDark from '@/assets/owl-icon.png';
 
 interface AppLockProps {
   onUnlock: () => void;

@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
-import logoDark from '@/assets/logo-decode.png';
+import logoDark from '@/assets/owl-icon.png';
 
 export default function ResetPasswordPage() {
   const navigate = useNavigate();
