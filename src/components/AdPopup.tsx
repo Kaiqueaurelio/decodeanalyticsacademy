@@ -20,31 +20,41 @@ export function AdPopup({ trigger = 'onLoad', delay = 2000 }: AdPopupProps) {
 
   // Verifica se já mostrou o pop-up nesta sessão
   useEffect(() => {
-    const shown = sessionStorage.getItem('popup_ad_shown');
-    if (shown) {
-      setHasShownThisSession(true);
+    try {
+      const shown = sessionStorage.getItem('popup_ad_shown');
+      if (shown) setHasShownThisSession(true);
+    } catch {
+      /* sessionStorage indisponível — segue exibindo */
     }
   }, []);
 
   // Controla quando mostrar o pop-up
   useEffect(() => {
+    console.debug('[AdPopup]', {
+      loading,
+      adsCount: ads.length,
+      hasShownThisSession,
+      trigger,
+    });
     if (loading || ads.length === 0 || hasShownThisSession) return;
+    if (trigger !== 'onLoad') return;
 
-    const showPopup = () => {
+    const timer = setTimeout(() => {
+      const ad = ads[0];
+      if (!ad) return;
       setIsVisible(true);
-      sessionStorage.setItem('popup_ad_shown', 'true');
-      if (currentAd) {
-        recordAdView(currentAd.id);
+      try {
+        sessionStorage.setItem('popup_ad_shown', 'true');
+      } catch {
+        /* ignore */
       }
-    };
+      setHasShownThisSession(true);
+      recordAdView(ad.id);
+    }, delay);
 
-    if (trigger === 'onLoad') {
-      const timer = setTimeout(showPopup, delay);
-      return () => clearTimeout(timer);
-    }
-
-    // Outros triggers podem ser implementados aqui (onScroll, onExit)
-  }, [loading, ads, trigger, delay, hasShownThisSession, currentAd]);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, ads.length, trigger, delay, hasShownThisSession]);
 
   // Countdown do pop-up
   useEffect(() => {
