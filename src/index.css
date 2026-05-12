@@ -91,29 +91,29 @@ html[data-admin-mode="true"] ::-moz-selection {
 
 @layer base {
   :root {
-    --background: 225 10% 90%;
-    --foreground: 220 20% 10%;
-    --card: 0 0% 97%;
-    --card-foreground: 220 20% 10%;
-    --popover: 0 0% 97%;
-    --popover-foreground: 220 20% 10%;
-    --primary: 68 65% 35%;
+    --background: 220 14% 96%;
+    --foreground: 222 30% 8%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 30% 8%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 30% 8%;
+    --primary: 188 92% 28%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 220 8% 82%;
-    --secondary-foreground: 220 20% 10%;
-    --muted: 220 6% 85%;
-    --muted-foreground: 215 12% 38%;
-    --accent: 160 45% 34%;
+    --secondary: 220 14% 88%;
+    --secondary-foreground: 222 30% 12%;
+    --muted: 220 14% 92%;
+    --muted-foreground: 222 16% 30%;
+    --accent: 271 70% 42%;
     --accent-foreground: 0 0% 100%;
-    --destructive: 0 65% 48%;
+    --destructive: 0 72% 42%;
     --destructive-foreground: 0 0% 100%;
-    --border: 220 10% 78%;
-    --input: 220 10% 78%;
-    --ring: 68 65% 35%;
+    --border: 220 13% 80%;
+    --input: 220 13% 80%;
+    --ring: 188 92% 28%;
     --radius: 0.625rem;
-    --success: 160 55% 32%;
+    --success: 160 70% 28%;
     --success-foreground: 0 0% 100%;
-    --warning: 38 80% 44%;
+    --warning: 32 90% 36%;
     --warning-foreground: 0 0% 100%;
   }
 
@@ -238,11 +238,11 @@ html[data-admin-mode="true"] ::-moz-selection {
     scroll-snap-align: start;
   }
   .glass-card {
-    @apply bg-card/60 backdrop-blur-xl border border-white/10 dark:border-white/5;
+    @apply bg-card/80 backdrop-blur-xl border border-border/60 dark:bg-card/60 dark:border-white/10;
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05);
   }
   .glass-card-hover {
-    @apply transition-all duration-300 hover:bg-card/80 hover:shadow-xl hover:-translate-y-1;
+    @apply transition-all duration-300 hover:bg-card hover:shadow-xl hover:-translate-y-1 dark:hover:bg-card/80;
   }
   .animate-float {
     animation: float 6s ease-in-out infinite;
