@@ -21,7 +21,7 @@ export const Flashcard = ({ question, answer, onRate }: FlashcardProps) => {
         onClick={() => setIsFlipped(!isFlipped)}
       >
         {/* Frente do Cartão */}
-        <Card className="absolute inset-0 w-full h-full backface-hidden flex flex-col items-center justify-center p-8 text-center bg-white shadow-xl border-2 border-primary/10">
+        <Card className="absolute inset-0 w-full h-full backface-hidden flex flex-col items-center justify-center p-8 text-center bg-card shadow-xl border-2 border-primary/10">
           <div className="absolute top-4 left-4 text-primary/40">
             <Brain size={24} />
           </div>

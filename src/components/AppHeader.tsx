@@ -21,7 +21,7 @@ export function AppHeader() {
   const nav = (path: string) => { navigate(path); setOpen(false); };
 
   return (
-    <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60" style={{ borderBottom: '1px solid hsl(var(--border) / 0.1)' }}>
+    <header className="sticky top-0 z-50 bg-background/85 backdrop-blur-xl supports-[backdrop-filter]:bg-background/70 border-b border-border">
       <div className="w-full max-w-screen-xl mx-auto flex h-14 items-center justify-between gap-2 px-3 sm:px-4 lg:px-6">
         <Link to={user ? '/dashboard' : '/'} className="flex items-center gap-3 min-w-0 flex-shrink group relative">
           <div className="relative h-12 w-12 flex-shrink-0">
