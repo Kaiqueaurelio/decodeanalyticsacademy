@@ -295,7 +295,7 @@ export default function LoginPage() {
               <ArrowLeft className="h-3.5 w-3.5" /> Voltar
             </button>
               <span className="font-mono-label rounded-full border border-border/70 bg-background/80 px-3 py-1.5 text-[10px] uppercase tracking-widest text-foreground shadow-sm backdrop-blur-md">
-              Decode Analytics
+                Coruja Academy
             </span>
           </div>
 
@@ -309,7 +309,7 @@ export default function LoginPage() {
             <div className="relative h-28 w-28 sm:h-32 sm:w-32">
               <img
                 src={logoDark}
-                alt="Decode Analytics"
+                alt="Logo da coruja"
                 className="h-full w-full object-contain drop-shadow-[0_0_30px_rgba(0,240,255,0.55)]"
                 style={{ imageRendering: 'auto' }}
               />
@@ -359,7 +359,7 @@ export default function LoginPage() {
                   <div className="absolute -inset-1.5 bg-primary/20 rounded-2xl blur-lg opacity-50 group-hover:opacity-100 transition-opacity duration-500" />
                   <img
                     src={logoDark}
-                    alt="Decode Analytics"
+                    alt="Logo da coruja"
                     className="relative h-full w-full object-contain drop-shadow-[0_0_18px_rgba(0,240,255,0.5)] transition-all duration-500 group-hover:scale-105"
                   />
                 </motion.div>
@@ -373,7 +373,7 @@ export default function LoginPage() {
                     ? 'Crie sua conta para começar'
                     : isLocked
                     ? 'Redefina sua senha para desbloquear'
-                    : 'Acesse sua conta Decode Analytics'}
+                    : 'Acesse sua conta da Coruja Academy'}
                 </p>
               </div>
 
@@ -515,8 +515,8 @@ export default function LoginPage() {
                 </>
               )}
             </div>
-            <p className="text-center text-[11px] font-mono-label text-muted-foreground mt-4 uppercase tracking-wider">
-              Decode Analytics · Kaique Aurélio
+            <p className="mt-4 text-center font-mono-label text-[11px] uppercase tracking-wider text-muted-foreground">
+              Coruja Academy · Kaique Aurélio
             </p>
           </motion.div>
         </div>
