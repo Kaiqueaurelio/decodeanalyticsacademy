@@ -21,25 +21,22 @@ export function AppHeader() {
   const nav = (path: string) => { navigate(path); setOpen(false); };
 
   return (
-    <header className="sticky top-0 z-50 bg-background/85 backdrop-blur-xl supports-[backdrop-filter]:bg-background/70 border-b border-border">
-      <div className="w-full max-w-screen-xl mx-auto flex h-14 items-center justify-between gap-2 px-3 sm:px-4 lg:px-6">
-        <Link to={user ? '/dashboard' : '/'} className="flex items-center gap-3 min-w-0 flex-shrink group relative">
-          <div className="relative h-12 w-12 flex-shrink-0">
+    <header className="sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur-xl supports-[backdrop-filter]:bg-background/75">
+      <div className="mx-auto flex h-16 w-full max-w-screen-xl items-center justify-between gap-3 px-2.5 sm:px-4 lg:px-6">
+        <Link to={user ? '/dashboard' : '/'} className="group relative flex min-w-0 max-w-[calc(100vw-8.5rem)] flex-shrink items-center gap-2.5 sm:max-w-none sm:gap-3">
+          <div className="relative h-10 w-10 flex-shrink-0 sm:h-12 sm:w-12">
             <img 
               src={logoDark} 
-              alt="Decode Analytics" 
+              alt="Logo da coruja" 
               className="relative h-full w-full object-contain drop-shadow-[0_0_12px_rgba(0,240,255,0.55)] transition-all duration-500 group-hover:scale-105" 
             />
           </div>
-          <div className="flex flex-col leading-tight">
-            <span className="font-display text-[15px] font-extrabold tracking-tight text-foreground truncate hidden xs:inline">
+          <div className="hidden min-w-0 flex-col leading-tight sm:flex">
+            <span className="truncate font-display text-[15px] font-extrabold tracking-tight text-foreground">
               DECODE <span className="text-primary tracking-tighter">ANALYTICS</span>
             </span>
-            <span className="font-mono-label text-[10px] font-medium uppercase tracking-[0.3em] text-primary/80 truncate hidden xs:inline">
+            <span className="truncate font-mono-label text-[10px] font-medium uppercase tracking-[0.3em] text-primary/80">
               Academy
-            </span>
-            <span className="font-display text-[15px] font-extrabold tracking-tight text-foreground inline xs:hidden">
-              DECODE
             </span>
           </div>
         </Link>
@@ -90,15 +87,15 @@ export function AppHeader() {
           )}
         </nav>
 
-        <div className="sm:hidden flex items-center gap-0.5">
-          <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-8 w-8">
+        <div className="flex shrink-0 items-center gap-1 sm:hidden">
+          <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-9 w-9 shrink-0 rounded-md">
             {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </Button>
           {user && <NotificationBell />}
           {user ? (
             <Sheet open={open} onOpenChange={setOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0 rounded-md">
                   <Menu className="h-4 w-4" />
                 </Button>
               </SheetTrigger>
