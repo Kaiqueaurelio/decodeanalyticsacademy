@@ -41,11 +41,11 @@ export function SplashScreen({ onComplete, duration = 2500 }: SplashScreenProps)
         pointerEvents: opacity > 0 ? 'auto' : 'none',
       }}
     >
-      {/* Logo Decode Analytics Academy */}
+      {/* Logo principal do app */}
       <div style={{ textAlign: 'center', animation: opacity > 0 ? 'pulse 2s infinite' : 'none' }}>
         <img
           src={logoDecode}
-          alt="Decode Analytics Academy"
+          alt="Logo da coruja"
           style={{
             width: '260px',
             height: '260px',
@@ -56,7 +56,7 @@ export function SplashScreen({ onComplete, duration = 2500 }: SplashScreenProps)
           }}
         />
         <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#ffffff', margin: '0 0 4px 0', letterSpacing: '-0.02em' }}>
-          Decode <span style={{ color: '#00f0ff' }}>Analytics</span>
+          Coruja <span style={{ color: '#00f0ff' }}>Academy</span>
         </h1>
         <p style={{ fontSize: '10px', color: '#94a3b8', letterSpacing: '0.4em', textTransform: 'uppercase', margin: 0 }}>Academy</p>
       </div>
