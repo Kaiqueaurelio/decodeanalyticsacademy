@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { WifiOff, RefreshCw, BookOpen, Home } from "lucide-react";
+import owlLogo from "@/assets/owl-icon.png";
 
 export default function OfflinePage() {
   const [online, setOnline] = useState(navigator.onLine);
@@ -19,6 +20,11 @@ export default function OfflinePage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-6 py-12">
       <div className="max-w-md w-full text-center space-y-8 animate-fade-in">
+        <img
+          src={owlLogo}
+          alt="Decode Analytics Academy"
+          className="mx-auto h-20 w-20 object-contain drop-shadow-[0_0_20px_rgba(0,240,255,0.45)]"
+        />
         {/* Ícone animado */}
         <div className="relative mx-auto w-24 h-24">
           <div className="absolute inset-0 rounded-full bg-primary/10 animate-ping" />
