@@ -29,23 +29,19 @@ export function useAds(adType?: 'banner' | 'popup' | 'inline' | 'sidebar' | 'foo
     try {
       setLoading(true);
 
-      let query = supabase
+      // Buscamos TODOS os anúncios ativos. O filtro por ad_type é aplicado
+      // depois no cliente — assim, se o admin só cadastrou anúncios "banner",
+      // eles ainda servem como fallback para popup/sidebar/footer/inline.
+      const { data, error } = await supabase
         .from('ads')
         .select('*')
         .eq('is_active', true)
         .order('position', { ascending: true });
 
-      if (adType) {
-        query = query.eq('ad_type', adType);
-      }
-
-      const { data, error } = await query;
-
       if (error) throw error;
 
-      // Filtra anúncios por validade e página alvo
       const now = new Date();
-      const validAds = (data || []).filter((ad: any) => {
+      const baseValid = (data || []).filter((ad: any) => {
         if (ad.start_date && new Date(ad.start_date) > now) return false;
         if (ad.end_date && new Date(ad.end_date) < now) return false;
         if (targetPage && Array.isArray(ad.target_pages) && ad.target_pages.length > 0) {
@@ -53,6 +49,13 @@ export function useAds(adType?: 'banner' | 'popup' | 'inline' | 'sidebar' | 'foo
         }
         return true;
       });
+
+      let validAds = baseValid;
+      if (adType) {
+        const matching = baseValid.filter((ad: any) => ad.ad_type === adType);
+        // Se não houver anúncio do tipo pedido, faz fallback para todos
+        validAds = matching.length > 0 ? matching : baseValid;
+      }
 
       setAds(validAds);
     } catch (error) {

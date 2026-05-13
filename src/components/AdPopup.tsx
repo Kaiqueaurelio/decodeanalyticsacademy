@@ -12,49 +12,53 @@ interface AdPopupProps {
 export function AdPopup({ trigger = 'onLoad', delay = 2000 }: AdPopupProps) {
   const { ads, loading, recordAdView, recordAdClick } = useAds('popup');
   const [isVisible, setIsVisible] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(5);
+  const [timeLeft, setTimeLeft] = useState(8);
   const [currentAdIndex, setCurrentAdIndex] = useState(0);
-  const [hasShownThisSession, setHasShownThisSession] = useState(false);
+
+  const COOLDOWN_MS = 3 * 60 * 1000; // 3 min entre popups
+  const STORAGE_KEY = 'popup_ad_last_shown';
 
   const currentAd = ads[currentAdIndex];
 
-  // Verifica se já mostrou o pop-up nesta sessão
-  useEffect(() => {
+  const canShowNow = () => {
     try {
-      const shown = sessionStorage.getItem('popup_ad_shown');
-      if (shown) setHasShownThisSession(true);
+      const last = Number(localStorage.getItem(STORAGE_KEY) || 0);
+      return Date.now() - last > COOLDOWN_MS;
     } catch {
-      /* sessionStorage indisponível — segue exibindo */
+      return true;
     }
-  }, []);
+  };
 
-  // Controla quando mostrar o pop-up
+  // Mostra na carga + reagenda a cada cooldown
   useEffect(() => {
-    console.debug('[AdPopup]', {
-      loading,
-      adsCount: ads.length,
-      hasShownThisSession,
-      trigger,
-    });
-    if (loading || ads.length === 0 || hasShownThisSession) return;
-    if (trigger !== 'onLoad') return;
+    if (loading || ads.length === 0 || trigger !== 'onLoad') return;
 
-    const timer = setTimeout(() => {
-      const ad = ads[0];
-      if (!ad) return;
+    const showAd = () => {
+      if (!canShowNow() || document.hidden) return;
+      // Rotaciona ad
+      setCurrentAdIndex((i) => {
+        const next = (i + 1) % ads.length;
+        const ad = ads[next];
+        if (ad) recordAdView(ad.id);
+        return next;
+      });
+      setTimeLeft(8);
       setIsVisible(true);
       try {
-        sessionStorage.setItem('popup_ad_shown', 'true');
+        localStorage.setItem(STORAGE_KEY, String(Date.now()));
       } catch {
         /* ignore */
       }
-      setHasShownThisSession(true);
-      recordAdView(ad.id);
-    }, delay);
+    };
 
-    return () => clearTimeout(timer);
+    const initial = setTimeout(showAd, delay);
+    const interval = setInterval(showAd, COOLDOWN_MS + 5000);
+    return () => {
+      clearTimeout(initial);
+      clearInterval(interval);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading, ads.length, trigger, delay, hasShownThisSession]);
+  }, [loading, ads.length, trigger, delay]);
 
   // Countdown do pop-up
   useEffect(() => {
@@ -64,7 +68,7 @@ export function AdPopup({ trigger = 'onLoad', delay = 2000 }: AdPopupProps) {
       setTimeLeft((prev) => {
         if (prev <= 1) {
           setIsVisible(false);
-          return 5;
+          return 8;
         }
         return prev - 1;
       });
@@ -167,7 +171,7 @@ export function AdPopup({ trigger = 'onLoad', delay = 2000 }: AdPopupProps) {
             <div className="absolute bottom-0 left-0 right-0 h-1 bg-muted">
               <motion.div
                 initial={{ width: '100%' }}
-                animate={{ width: `${(timeLeft / 5) * 100}%` }}
+                animate={{ width: `${(timeLeft / 8) * 100}%` }}
                 className="h-full bg-primary"
               />
             </div>
