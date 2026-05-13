@@ -288,8 +288,6 @@ export default function LoginPage() {
         </div>
 
         <div className="flex flex-1 items-start justify-center px-4 sm:px-6 pt-6 pb-8">
-
-        <div className="flex flex-1 items-start lg:items-center justify-center px-4 sm:px-6 pt-6 pb-8">
           <motion.div
             className="w-full max-w-sm"
             initial={{ opacity: 0, scale: 0.96, y: 16 }}
