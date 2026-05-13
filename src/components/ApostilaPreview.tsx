@@ -24,8 +24,12 @@ export function ApostilaPreview({
   const previewContent = content.substring(0, 500);
   const hasMoreContent = content.length > 500;
 
+  // Quando o aluno está logado, o conteúdo formatado é renderizado pelas
+  // seções abaixo (ApostilaContentBoundary). Esse preview só serve para o
+  // estado deslogado (paywall com blur). Renderizar `content` cru aqui via
+  // dangerouslySetInnerHTML transformava o markdown em um paredão de texto.
   if (isLoggedIn) {
-    return <div dangerouslySetInnerHTML={{ __html: content }} className="prose prose-sm max-w-none" />;
+    return null;
   }
 
   return (
