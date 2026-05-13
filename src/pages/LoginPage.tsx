@@ -234,52 +234,10 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen bg-background relative overflow-hidden selection:bg-primary/20">
-      {/* Left side - Editorial Branding */}
-      <div className="hidden lg:flex lg:w-1/2 relative items-center justify-center grid-lines-bg animate-content-show">
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full bg-primary/5 blur-[120px]" />
-
-        <div className="relative z-10 max-w-md px-8 space-y-8 animate-page-in">
-          <div className="space-y-5">
-            <span className="font-mono-label text-[11px] uppercase tracking-widest text-primary inline-flex items-center gap-2 px-3 py-1.5 rounded bg-primary/10" style={{ border: '1px solid hsl(68 100% 64% / 0.2)' }}>
-              Plataforma de Estudos
-            </span>
-            <h1 className="font-display text-4xl xl:text-5xl leading-tight text-foreground">
-              Bem-vindo à{' '}
-              <span className="text-gradient-animated">Decode Analytics</span>
-            </h1>
-            <p className="text-muted-foreground leading-relaxed text-sm">
-              Sua plataforma completa de estudos para Ciência da Computação com IA, gamificação e conteúdo protegido.
-            </p>
-          </div>
-
-          <div className="space-y-3">
-            {highlights.map((h, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ type: 'spring', stiffness: 260, damping: 20, delay: 0.3 + i * 0.15 }}
-                className="flex items-center gap-3 p-3 rounded-lg bg-card"
-                style={{ border: '1px solid hsl(var(--border))' }}
-              >
-                <div className="rounded bg-primary/10 p-2.5">
-                  <h.icon className="h-4 w-4 text-primary" />
-                </div>
-                <span className="text-sm font-medium">{h.text}</span>
-              </motion.div>
-            ))}
-          </div>
-
-          <p className="text-[11px] font-mono-label text-muted-foreground uppercase tracking-wider">
-            Desenvolvido por Kaique Aurélio
-          </p>
-        </div>
-      </div>
-
-      {/* Right side - Form (desktop) / Full screen (mobile) */}
+      {/* Layout unificado mobile + desktop */}
       <div className="flex flex-1 flex-col">
-        {/* MOBILE HERO — only visible on small screens */}
-        <div className="relative lg:hidden w-full h-[42vh] min-h-[280px] max-h-[420px] overflow-hidden">
+        {/* HERO — visível em todos os tamanhos */}
+        <div className="relative w-full h-[42vh] min-h-[280px] max-h-[420px] overflow-hidden">
           <img
             src={loginHero}
             alt="Estudante de tecnologia Decode Analytics"
@@ -313,7 +271,6 @@ export default function LoginPage() {
                 className="h-full w-full object-contain drop-shadow-[0_0_30px_rgba(0,240,255,0.55)]"
                 style={{ imageRendering: 'auto' }}
               />
-              <div className="absolute inset-0 rounded-[32px] ring-1 ring-inset ring-white/20" />
             </div>
           </motion.div>
 
@@ -330,14 +287,7 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* DESKTOP back button */}
-        <div className="hidden lg:block px-4 sm:px-6 pt-6">
-          <button onClick={() => navigate('/')} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground smooth-all">
-            <ArrowLeft className="h-4 w-4" /> Voltar
-          </button>
-        </div>
-
-        <div className="flex flex-1 items-start lg:items-center justify-center px-4 sm:px-6 pt-6 pb-8">
+        <div className="flex flex-1 items-start justify-center px-4 sm:px-6 pt-6 pb-8">
           <motion.div
             className="w-full max-w-sm"
             initial={{ opacity: 0, scale: 0.96, y: 16 }}
@@ -349,20 +299,7 @@ export default function LoginPage() {
               <div className="absolute top-0 left-0 right-0 h-px bg-primary" />
 
               <div className="text-center space-y-2">
-                {/* Desktop-only logo (mobile already shows it in hero) */}
-                <motion.div
-                  className="mx-auto h-16 w-16 relative lg:block hidden group"
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 15 }}
-                >
-                  <div className="absolute -inset-1.5 bg-primary/20 rounded-2xl blur-lg opacity-50 group-hover:opacity-100 transition-opacity duration-500" />
-                  <img
-                    src={logoDark}
-                    alt="Logo da coruja"
-                    className="relative h-full w-full object-contain drop-shadow-[0_0_18px_rgba(0,240,255,0.5)] transition-all duration-500 group-hover:scale-105"
-                  />
-                </motion.div>
+                {/* Logo já aparece no hero acima */}
                 <h1 className="text-xl font-bold">
                   {isReset ? 'Recuperar Senha' : isSignUp ? 'Criar Conta' : isLocked ? 'Conta Bloqueada' : 'Entrar'}
                 </h1>
