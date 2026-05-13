@@ -58,7 +58,6 @@ export function SplashScreen({ onComplete, duration = 2500 }: SplashScreenProps)
         <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#ffffff', margin: '0 0 4px 0', letterSpacing: '-0.02em' }}>
           DECODE ANALYTICS <span style={{ color: '#00f0ff' }}>Academy</span>
         </h1>
-        <p style={{ fontSize: '10px', color: '#94a3b8', letterSpacing: '0.4em', textTransform: 'uppercase', margin: 0 }}>Academy</p>
       </div>
 
       <style>{`
