@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import logoDecode from '@/assets/owl-icon.png';
+import logoDecode from '@/assets/owl-splash.png';
 
 interface SplashScreenProps {
   onComplete: () => void;
