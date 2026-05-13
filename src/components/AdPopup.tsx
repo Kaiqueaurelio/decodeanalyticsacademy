@@ -171,7 +171,7 @@ export function AdPopup({ trigger = 'onLoad', delay = 2000 }: AdPopupProps) {
             <div className="absolute bottom-0 left-0 right-0 h-1 bg-muted">
               <motion.div
                 initial={{ width: '100%' }}
-                animate={{ width: `${(timeLeft / 5) * 100}%` }}
+                animate={{ width: `${(timeLeft / 8) * 100}%` }}
                 className="h-full bg-primary"
               />
             </div>
