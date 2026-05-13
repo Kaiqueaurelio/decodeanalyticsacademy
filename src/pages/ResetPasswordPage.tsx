@@ -100,7 +100,7 @@ export default function ResetPasswordPage() {
             </form>
           </div>
           <p className="text-center text-xs text-muted-foreground">
-            Coruja Academy — por Kaique Aurelio
+            Decode Analytics Academy — por Kaique Aurelio
           </p>
         </div>
       </div>

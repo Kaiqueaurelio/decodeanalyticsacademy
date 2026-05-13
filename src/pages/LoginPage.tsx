@@ -295,7 +295,7 @@ export default function LoginPage() {
               <ArrowLeft className="h-3.5 w-3.5" /> Voltar
             </button>
               <span className="font-mono-label rounded-full border border-border/70 bg-background/80 px-3 py-1.5 text-[10px] uppercase tracking-widest text-foreground shadow-sm backdrop-blur-md">
-                Coruja Academy
+                Decode Analytics Academy
             </span>
           </div>
 
@@ -373,7 +373,7 @@ export default function LoginPage() {
                     ? 'Crie sua conta para começar'
                     : isLocked
                     ? 'Redefina sua senha para desbloquear'
-                    : 'Acesse sua conta da Coruja Academy'}
+                    : 'Acesse sua conta da Decode Analytics Academy'}
                 </p>
               </div>
 
@@ -516,7 +516,7 @@ export default function LoginPage() {
               )}
             </div>
             <p className="mt-4 text-center font-mono-label text-[11px] uppercase tracking-wider text-muted-foreground">
-              Coruja Academy · Kaique Aurélio
+              Decode Analytics Academy · Kaique Aurélio
             </p>
           </motion.div>
         </div>
