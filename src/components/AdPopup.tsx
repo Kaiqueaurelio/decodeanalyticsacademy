@@ -68,7 +68,7 @@ export function AdPopup({ trigger = 'onLoad', delay = 2000 }: AdPopupProps) {
       setTimeLeft((prev) => {
         if (prev <= 1) {
           setIsVisible(false);
-          return 5;
+          return 8;
         }
         return prev - 1;
       });
