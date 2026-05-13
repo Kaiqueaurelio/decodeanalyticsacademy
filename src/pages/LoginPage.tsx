@@ -299,20 +299,7 @@ export default function LoginPage() {
               <div className="absolute top-0 left-0 right-0 h-px bg-primary" />
 
               <div className="text-center space-y-2">
-                {/* Desktop-only logo (mobile already shows it in hero) */}
-                <motion.div
-                  className="mx-auto h-16 w-16 relative lg:block hidden group"
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 15 }}
-                >
-                  <div className="absolute -inset-1.5 bg-primary/20 rounded-2xl blur-lg opacity-50 group-hover:opacity-100 transition-opacity duration-500" />
-                  <img
-                    src={logoDark}
-                    alt="Logo da coruja"
-                    className="relative h-full w-full object-contain drop-shadow-[0_0_18px_rgba(0,240,255,0.5)] transition-all duration-500 group-hover:scale-105"
-                  />
-                </motion.div>
+                {/* Logo já aparece no hero acima */}
                 <h1 className="text-xl font-bold">
                   {isReset ? 'Recuperar Senha' : isSignUp ? 'Criar Conta' : isLocked ? 'Conta Bloqueada' : 'Entrar'}
                 </h1>
