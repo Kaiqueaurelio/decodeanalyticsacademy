@@ -264,7 +264,7 @@ export default function LoginPage() {
             transition={{ type: 'spring', stiffness: 260, damping: 22, delay: 0.1 }}
             className="absolute inset-0 flex items-center justify-center pointer-events-none"
           >
-            <div className="relative h-28 w-28 sm:h-32 sm:w-32">
+            <div className="relative h-24 w-24 sm:h-28 sm:w-28">
               <img
                 src={logoDark}
                 alt="Logo da coruja"

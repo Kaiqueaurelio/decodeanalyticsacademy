@@ -24,7 +24,7 @@ export function AppHeader() {
     <header className="sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur-xl supports-[backdrop-filter]:bg-background/75">
       <div className="mx-auto flex h-16 w-full max-w-screen-xl items-center justify-between gap-3 px-2.5 sm:px-4 lg:px-6">
         <Link to={user ? '/dashboard' : '/'} className="group relative flex min-w-0 max-w-[calc(100vw-8.5rem)] flex-shrink items-center gap-2.5 sm:max-w-none sm:gap-3">
-          <div className="relative h-10 w-10 flex-shrink-0 sm:h-12 sm:w-12">
+          <div className="relative h-10 w-10 flex-shrink-0 sm:h-11 sm:w-11">
             <img 
               src={logoDark} 
               alt="Logo da coruja" 
@@ -32,7 +32,7 @@ export function AppHeader() {
             />
           </div>
           <div className="hidden min-w-0 flex-col leading-tight sm:flex">
-            <span className="truncate font-display text-[15px] font-extrabold tracking-tight text-foreground">
+            <span className="truncate font-display text-[14px] font-extrabold tracking-tight text-foreground">
               DECODE <span className="text-primary tracking-tighter">ANALYTICS</span>
             </span>
             <span className="truncate font-mono-label text-[10px] font-medium uppercase tracking-[0.3em] text-primary/80">

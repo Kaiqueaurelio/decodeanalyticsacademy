@@ -120,7 +120,7 @@ export default function LandingPage() {
       >
         <div className="max-w-7xl mx-auto flex h-16 items-center justify-between px-5">
           <div className="flex items-center gap-3">
-            <div className="relative h-12 w-12 flex-shrink-0">
+            <div className="relative h-10 w-10 flex-shrink-0">
               <img src={logoDark} alt="Decode Analytics" className="relative h-full w-full object-contain drop-shadow-[0_0_12px_rgba(0,240,255,0.5)]" />
             </div>
             <span className="text-sm font-semibold uppercase tracking-[0.2em]" style={{ color: '#00f0ff' }}>
@@ -707,7 +707,7 @@ export default function LandingPage() {
       <footer className="py-10 px-5" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
         <div className="max-w-7xl mx-auto flex flex-col items-center gap-4">
           <div className="flex items-center gap-2.5">
-            <img src={logoDark} alt="Decode Analytics" className="h-9 w-9 object-contain drop-shadow-[0_0_10px_rgba(0,240,255,0.45)]" />
+            <img src={logoDark} alt="Decode Analytics" className="h-8 w-8 object-contain drop-shadow-[0_0_10px_rgba(0,240,255,0.45)]" />
             <span className="text-[11px] font-semibold uppercase tracking-[0.2em]" style={{ color: '#00f0ff' }}>Decode Analytics</span>
           </div>
 
