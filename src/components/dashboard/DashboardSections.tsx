@@ -120,13 +120,17 @@ export function RecommendedExercisesSection({ apostilas, exerciseCounts }: RecPr
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {top3.map((a, i) => {
             const Icon = icons[i];
-            const tone = tones[i];
+            const cfg = [
+              { ring: 'hover:border-primary/40', bg: 'bg-primary/15', text: 'text-primary', bar: 'bg-primary' },
+              { ring: 'hover:border-accent/40', bg: 'bg-accent/15', text: 'text-accent', bar: 'bg-accent' },
+              { ring: 'hover:border-warning/40', bg: 'bg-warning/15', text: 'text-warning', bar: 'bg-warning' },
+            ][i];
             return (
               <div
                 key={a.id}
-                className={`group relative rounded-xl border border-border/60 bg-muted/10 p-4 hover:border-${tone}/40 transition-all`}
+                className={`group relative rounded-xl border border-border/60 bg-muted/10 p-4 transition-all ${cfg.ring}`}
               >
-                <div className={`w-12 h-12 rounded-xl bg-${tone}/15 text-${tone} flex items-center justify-center mb-3`}>
+                <div className={`w-12 h-12 rounded-xl ${cfg.bg} ${cfg.text} flex items-center justify-center mb-3`}>
                   <Icon className="h-6 w-6" />
                 </div>
                 <div className="font-bold text-sm leading-tight truncate" title={a.category || 'Geral'}>
@@ -139,7 +143,7 @@ export function RecommendedExercisesSection({ apostilas, exerciseCounts }: RecPr
                   {[0, 1, 2].map((d) => (
                     <span
                       key={d}
-                      className={`h-1.5 w-5 rounded-full ${d <= i ? `bg-${tone}` : 'bg-muted'}`}
+                      className={`h-1.5 w-5 rounded-full ${d <= i ? cfg.bar : 'bg-muted'}`}
                     />
                   ))}
                   <span className="text-[10px] text-muted-foreground ml-1.5">

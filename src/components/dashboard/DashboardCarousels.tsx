@@ -107,11 +107,11 @@ interface SummaryProps {
 
 export function ProgressSummaryRow({ disciplinas, atividades, exercicios, apostilas }: SummaryProps) {
   const items = [
-    { label: 'Disciplinas', a: disciplinas.ativas, b: disciplinas.total, sub: 'disciplinas ativas', tone: 'primary' },
-    { label: 'Atividades', a: atividades.concluidas, b: atividades.total, sub: 'concluídas', tone: 'success' },
-    { label: 'Exercícios', a: exercicios.resolvidos, b: exercicios.total, sub: 'resolvidos', tone: 'warning' },
-    { label: 'Apostilas', a: apostilas.lidas, b: apostilas.total, sub: 'lidas', tone: 'accent' },
-  ] as const;
+    { label: 'Disciplinas', a: disciplinas.ativas, b: disciplinas.total, sub: 'disciplinas ativas', bar: 'bg-primary' },
+    { label: 'Atividades', a: atividades.concluidas, b: atividades.total, sub: 'concluídas', bar: 'bg-success' },
+    { label: 'Exercícios', a: exercicios.resolvidos, b: exercicios.total, sub: 'resolvidos', bar: 'bg-warning' },
+    { label: 'Apostilas', a: apostilas.lidas, b: apostilas.total, sub: 'lidas', bar: 'bg-accent' },
+  ];
 
   return (
     <div className="rounded-2xl border border-border bg-card p-5">
@@ -132,7 +132,7 @@ export function ProgressSummaryRow({ disciplinas, atividades, exercicios, aposti
               <div className="text-[10px] text-muted-foreground mb-2">{it.sub}</div>
               <div className="h-1.5 rounded-full bg-muted overflow-hidden">
                 <div
-                  className={`h-full bg-${it.tone} rounded-full transition-all duration-700`}
+                  className={`h-full ${it.bar} rounded-full transition-all duration-700`}
                   style={{ width: `${pct}%` }}
                 />
               </div>
