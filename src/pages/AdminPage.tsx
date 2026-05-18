@@ -53,7 +53,7 @@ import { findDuplicateApostila, type DuplicateMatch } from '@/lib/duplicate-dete
 import { ImportPreviewPanel } from '@/components/ImportPreviewPanel';
 import { AdminAdsManager } from '@/components/AdminAdsManager';
 import { AdsChatBuilder } from '@/components/AdsChatBuilder';
-import { AdminDashboardUltimate } from '@/components/AdminDashboardUltimate';
+import { AdminDashboardModern } from '@/components/AdminDashboardModern';
 
 type Apostila = Tables<'apostilas'>;
 type Exercise = Tables<'exercises'>;
