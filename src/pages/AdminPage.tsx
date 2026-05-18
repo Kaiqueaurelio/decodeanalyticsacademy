@@ -1303,7 +1303,7 @@ export default function AdminPage() {
             <div key={tab} className="animate-fade-in">
             {/* OVERVIEW */}
             {tab === 'overview' && (
-              <AdminDashboardUltimate onNavigate={(newTab) => setTab(newTab as Tab)} />
+              <AdminDashboardModern onNavigate={(newTab) => setTab(newTab as Tab)} />
             )}
 
             {/* APOSTILAS */}
