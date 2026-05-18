@@ -454,21 +454,22 @@ export default function DashboardPage() {
                   </div>
                   <div className="space-y-4">
                     <GamificationWidget
-                      level={gamification.level}
-                      xp={gamification.xp}
-                      xpForNext={gamification.xpForNextLevel}
-                      currentStreak={gamification.currentStreak}
-                      badges={earnedBadges}
+                      level={gamification.xp.level}
+                      xpPoints={gamification.xp.xp_points}
+                      xpForNext={gamification.xpForNextLevel(gamification.xp.level)}
+                      currentStreak={gamification.streak.current_streak}
+                      longestStreak={gamification.streak.longest_streak}
+                      earnedBadges={earnedBadges}
                     />
                     <PomodoroTimer onComplete={handlePomodoroComplete} />
                     <FlashcardsWidget />
                     <Leaderboard />
-                    <EvolutionChart data={categoryData} />
+                    <EvolutionChart />
                     <GradeCalculatorWidget />
                     <AnnouncementsBoard />
                     <WeeklyGoalWidget />
                     <FlashcardSummaryWidget />
-                    <CategoryStatsWidget categoryProgress={categoryProgress} />
+                    <CategoryStatsWidget apostilas={apostilas as any} byApostila={stats.byApostila} exerciseCounts={exerciseCounts} />
                     <CategoryPerformanceChart data={categoryData} />
                   </div>
                 </div>
