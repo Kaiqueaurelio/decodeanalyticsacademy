@@ -12,6 +12,42 @@ window.addEventListener('unhandledrejection', (event) => {
   console.error('Unhandled promise rejection:', event.reason);
 });
 
+// Sanitiza warnings de postMessage do script do editor (preview iframe).
+// O lovable.js publica mensagens de tipos que evoluem entre versões; quando
+// rodando em sandbox de preview, ignoramos silenciosamente esses tipos
+// desconhecidos para não poluir o console do app real.
+(() => {
+  const IGNORED_PATTERNS = [
+    /Unknown message type:/i,
+    /postMessage.*origin/i,
+    /target origin provided.*does not match/i,
+  ];
+  const origWarn = console.warn.bind(console);
+  console.warn = (...args: unknown[]) => {
+    const msg = args.map((a) => (typeof a === 'string' ? a : '')).join(' ');
+    if (IGNORED_PATTERNS.some((re) => re.test(msg))) return;
+    origWarn(...args);
+  };
+
+  // Filtro para mensagens recebidas: aceita apenas origens conhecidas.
+  const TRUSTED_ORIGIN_RES = [
+    /lovable(project)?\.app$/i,
+    /lovableproject\.com$/i,
+    /gpteng\.co$/i,
+    /^https?:\/\/localhost(:\d+)?$/i,
+    new RegExp(`^${window.location.origin}$`, 'i'),
+  ];
+  window.addEventListener('message', (e) => {
+    try {
+      const origin = e.origin || '';
+      if (!origin) return;
+      if (!TRUSTED_ORIGIN_RES.some((re) => re.test(origin))) {
+        e.stopImmediatePropagation();
+      }
+    } catch { /* ignore */ }
+  }, true);
+})();
+
 createRoot(document.getElementById("root")!).render(
   <ErrorBoundary>
     <App />

@@ -78,6 +78,10 @@ export function AdminDashboardModern({ onNavigate }: Props) {
   // Detalhe do aluno
   const [studentDetail, setStudentDetail] = useState<any | null>(null);
   const [studentLoading, setStudentLoading] = useState(false);
+  const [historyApostilaFilter, setHistoryApostilaFilter] = useState<string>('all');
+  const [historyStatusFilter, setHistoryStatusFilter] = useState<'all' | 'correct' | 'wrong'>('all');
+  const [historyPage, setHistoryPage] = useState(1);
+  const HISTORY_PAGE_SIZE = 10;
 
   const load = async () => {
     setLoading(true);
@@ -241,6 +245,9 @@ export function AdminDashboardModern({ onNavigate }: Props) {
   const openStudent = async (r: Ranking) => {
     setStudentLoading(true);
     setStudentDetail({ loading: true, ranking: r });
+    setHistoryApostilaFilter('all');
+    setHistoryStatusFilter('all');
+    setHistoryPage(1);
     const { data, error } = await supabase.rpc('get_student_detail', { _user_id: r.user_id });
     setStudentLoading(false);
     if (error) { toast.error('Erro: ' + error.message); setStudentDetail(null); return; }
@@ -779,37 +786,114 @@ export function AdminDashboardModern({ onNavigate }: Props) {
                 </div>
 
                 {/* Histórico de tentativas */}
-                <div>
-                  <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
-                    <Filter className="h-4 w-4" /> Últimas tentativas
-                  </h3>
-                  {(studentDetail.history || []).length === 0 ? (
-                    <p className="text-xs text-muted-foreground py-3 text-center">Sem tentativas registradas.</p>
-                  ) : (
-                    <div className="space-y-1.5">
-                      {studentDetail.history.map((h: any) => (
-                        <div
-                          key={h.id}
-                          className={`flex items-start gap-2 rounded-lg p-2.5 border text-xs ${
-                            h.is_correct
-                              ? 'border-emerald-500/30 bg-emerald-500/5'
-                              : 'border-rose-500/30 bg-rose-500/5'
-                          }`}
-                        >
-                          {h.is_correct
-                            ? <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
-                            : <XCircle className="h-4 w-4 text-rose-600 shrink-0 mt-0.5" />}
-                          <div className="flex-1 min-w-0">
-                            <p className="text-foreground line-clamp-2">{h.question}</p>
-                            <p className="text-muted-foreground mt-0.5">
-                              {h.apostila_title || '—'} · {new Date(h.created_at).toLocaleString('pt-BR')}
-                            </p>
-                          </div>
+                {(() => {
+                  const allHistory: any[] = studentDetail.history || [];
+                  const apostilaOptions = Array.from(
+                    new Map(
+                      allHistory
+                        .filter((h) => h.apostila_title)
+                        .map((h) => [h.apostila_title, h.apostila_title])
+                    ).values()
+                  );
+                  const filtered = allHistory.filter((h) => {
+                    if (historyApostilaFilter !== 'all' && h.apostila_title !== historyApostilaFilter) return false;
+                    if (historyStatusFilter === 'correct' && !h.is_correct) return false;
+                    if (historyStatusFilter === 'wrong' && h.is_correct) return false;
+                    return true;
+                  });
+                  const totalPages = Math.max(1, Math.ceil(filtered.length / HISTORY_PAGE_SIZE));
+                  const page = Math.min(historyPage, totalPages);
+                  const pageItems = filtered.slice((page - 1) * HISTORY_PAGE_SIZE, page * HISTORY_PAGE_SIZE);
+
+                  return (
+                    <div>
+                      <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
+                        <h3 className="text-sm font-semibold flex items-center gap-2">
+                          <Filter className="h-4 w-4" /> Histórico de tentativas
+                          <span className="text-xs font-normal text-muted-foreground">({filtered.length})</span>
+                        </h3>
+                        <div className="flex gap-2 flex-wrap">
+                          <Select
+                            value={historyApostilaFilter}
+                            onValueChange={(v) => { setHistoryApostilaFilter(v); setHistoryPage(1); }}
+                          >
+                            <SelectTrigger className="h-8 text-xs w-[180px]">
+                              <SelectValue placeholder="Apostila" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">Todas apostilas</SelectItem>
+                              {apostilaOptions.map((t) => (
+                                <SelectItem key={t} value={t}>{t}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <Select
+                            value={historyStatusFilter}
+                            onValueChange={(v: any) => { setHistoryStatusFilter(v); setHistoryPage(1); }}
+                          >
+                            <SelectTrigger className="h-8 text-xs w-[140px]">
+                              <SelectValue placeholder="Status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">Todos</SelectItem>
+                              <SelectItem value="correct">Acertos</SelectItem>
+                              <SelectItem value="wrong">Erros</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </div>
-                      ))}
+                      </div>
+
+                      {filtered.length === 0 ? (
+                        <p className="text-xs text-muted-foreground py-3 text-center">Nenhuma tentativa para os filtros.</p>
+                      ) : (
+                        <>
+                          <div className="space-y-1.5">
+                            {pageItems.map((h: any) => (
+                              <div
+                                key={h.id}
+                                className={`flex items-start gap-2 rounded-lg p-2.5 border text-xs ${
+                                  h.is_correct
+                                    ? 'border-emerald-500/30 bg-emerald-500/5'
+                                    : 'border-rose-500/30 bg-rose-500/5'
+                                }`}
+                              >
+                                {h.is_correct
+                                  ? <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
+                                  : <XCircle className="h-4 w-4 text-rose-600 shrink-0 mt-0.5" />}
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-foreground line-clamp-2">{h.question}</p>
+                                  <p className="text-muted-foreground mt-0.5">
+                                    {h.apostila_title || '—'} · {new Date(h.created_at).toLocaleString('pt-BR')}
+                                  </p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+
+                          {totalPages > 1 && (
+                            <div className="flex items-center justify-between mt-3 text-xs">
+                              <span className="text-muted-foreground">
+                                Página {page} de {totalPages}
+                              </span>
+                              <div className="flex gap-1">
+                                <Button
+                                  size="sm" variant="outline" className="h-7 px-2"
+                                  disabled={page <= 1}
+                                  onClick={() => setHistoryPage((p) => Math.max(1, p - 1))}
+                                >Anterior</Button>
+                                <Button
+                                  size="sm" variant="outline" className="h-7 px-2"
+                                  disabled={page >= totalPages}
+                                  onClick={() => setHistoryPage((p) => Math.min(totalPages, p + 1))}
+                                >Próxima</Button>
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      )}
                     </div>
-                  )}
-                </div>
+                  );
+                })()}
               </div>
             </ScrollArea>
           ) : null}
