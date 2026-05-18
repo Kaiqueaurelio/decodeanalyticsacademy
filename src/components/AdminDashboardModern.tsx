@@ -245,6 +245,9 @@ export function AdminDashboardModern({ onNavigate }: Props) {
   const openStudent = async (r: Ranking) => {
     setStudentLoading(true);
     setStudentDetail({ loading: true, ranking: r });
+    setHistoryApostilaFilter('all');
+    setHistoryStatusFilter('all');
+    setHistoryPage(1);
     const { data, error } = await supabase.rpc('get_student_detail', { _user_id: r.user_id });
     setStudentLoading(false);
     if (error) { toast.error('Erro: ' + error.message); setStudentDetail(null); return; }
