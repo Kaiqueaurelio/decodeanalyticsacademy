@@ -66,6 +66,8 @@ function AnimatedRoutes() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/auth" element={<Navigate to="/login" replace />} />
+        <Route path="/auth/*" element={<Navigate to="/login" replace />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
         <Route path="/desempenho" element={<ProtectedRoute><PerformancePage /></ProtectedRoute>} />
