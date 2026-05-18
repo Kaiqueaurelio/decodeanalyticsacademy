@@ -7,15 +7,20 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Progress } from '@/components/ui/progress';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import {
   BookOpen, PenLine, Users, Megaphone, RefreshCw, Search, ChevronRight, Sparkles,
-  Activity, GraduationCap, Bell, ArrowUpRight, Link as LinkIcon, FileText, FileUp,
-  Eye, EyeOff, Edit, Trash2, Trophy, Medal, Award, Filter, X,
+  GraduationCap, Bell, Link as LinkIcon, FileText, FileUp,
+  Eye, EyeOff, Edit, Trash2, Trophy, Medal, Award, Filter, X, Check,
+  CheckCircle2, XCircle, CalendarDays, ArrowDownUp,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import {
@@ -27,7 +32,7 @@ interface Props { onNavigate: (tab: string) => void }
 
 type ApostilaRow = {
   id: string; title: string; category: string | null;
-  published: boolean; created_at: string;
+  published: boolean; created_at: string; updated_at: string;
 };
 
 type Ranking = {
@@ -36,12 +41,9 @@ type Ranking = {
   errors: number; accuracy: number;
 };
 
-const DATE_RANGES = [
-  { value: 'all', label: 'Qualquer data' },
-  { value: '7', label: 'Últimos 7 dias' },
-  { value: '30', label: 'Últimos 30 dias' },
-  { value: '90', label: 'Últimos 90 dias' },
-];
+type SortKey = 'created_desc' | 'created_asc' | 'updated_desc' | 'updated_asc';
+
+const PAGE_SIZE = 12;
 
 export function AdminDashboardModern({ onNavigate }: Props) {
   const { user, isAdmin } = useAuth();
@@ -57,11 +59,25 @@ export function AdminDashboardModern({ onNavigate }: Props) {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'published' | 'draft'>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
-  const [dateRange, setDateRange] = useState<string>('all');
+  const [dateFrom, setDateFrom] = useState<string>('');
+  const [dateUntil, setDateUntil] = useState<string>('');
+  const [sortKey, setSortKey] = useState<SortKey>('created_desc');
 
-  // Delete confirm
+  // Paginação
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+
+  // Seleção em lote
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+
+  // Confirmações
   const [deleteTarget, setDeleteTarget] = useState<ApostilaRow | null>(null);
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [bulkBusy, setBulkBusy] = useState(false);
+
+  // Detalhe do aluno
+  const [studentDetail, setStudentDetail] = useState<any | null>(null);
+  const [studentLoading, setStudentLoading] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -74,9 +90,9 @@ export function AdminDashboardModern({ onNavigate }: Props) {
         supabase.from('apostila_likes').select('id', { count: 'exact', head: true }),
         supabase.from('ads').select('id', { count: 'exact', head: true }),
         supabase.from('apostilas')
-          .select('id,title,category,published,created_at')
+          .select('id,title,category,published,created_at,updated_at')
           .order('created_at', { ascending: false })
-          .limit(100),
+          .limit(500),
         supabase.rpc('get_student_rankings', { _limit: 10 }),
       ]);
       setStats({
@@ -106,20 +122,64 @@ export function AdminDashboardModern({ onNavigate }: Props) {
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    const now = Date.now();
-    const days = dateRange === 'all' ? null : parseInt(dateRange, 10);
-    return apostilas.filter((a) => {
+    const fromTs = dateFrom ? new Date(dateFrom + 'T00:00:00').getTime() : null;
+    const untilTs = dateUntil ? new Date(dateUntil + 'T23:59:59').getTime() : null;
+
+    const list = apostilas.filter((a) => {
       if (q && !a.title.toLowerCase().includes(q)) return false;
       if (statusFilter === 'published' && !a.published) return false;
       if (statusFilter === 'draft' && a.published) return false;
       if (categoryFilter !== 'all' && a.category !== categoryFilter) return false;
-      if (days) {
-        const ageDays = (now - new Date(a.created_at).getTime()) / 86400000;
-        if (ageDays > days) return false;
-      }
+      const ts = new Date(a.created_at).getTime();
+      if (fromTs && ts < fromTs) return false;
+      if (untilTs && ts > untilTs) return false;
       return true;
     });
-  }, [apostilas, search, statusFilter, categoryFilter, dateRange]);
+
+    const sorted = [...list].sort((x, y) => {
+      switch (sortKey) {
+        case 'created_asc': return new Date(x.created_at).getTime() - new Date(y.created_at).getTime();
+        case 'updated_desc': return new Date(y.updated_at).getTime() - new Date(x.updated_at).getTime();
+        case 'updated_asc': return new Date(x.updated_at).getTime() - new Date(y.updated_at).getTime();
+        default: return new Date(y.created_at).getTime() - new Date(x.created_at).getTime();
+      }
+    });
+    return sorted;
+  }, [apostilas, search, statusFilter, categoryFilter, dateFrom, dateUntil, sortKey]);
+
+  // Reset paginação quando filtros mudam
+  useEffect(() => { setVisibleCount(PAGE_SIZE); }, [search, statusFilter, categoryFilter, dateFrom, dateUntil, sortKey]);
+
+  const visibleItems = filtered.slice(0, visibleCount);
+  const hasMore = visibleCount < filtered.length;
+
+  // Sincroniza seleção quando a lista filtrada muda (remove ids fora)
+  useEffect(() => {
+    setSelected((prev) => {
+      const valid = new Set(filtered.map((a) => a.id));
+      const next = new Set<string>();
+      prev.forEach((id) => { if (valid.has(id)) next.add(id); });
+      return next;
+    });
+  }, [filtered]);
+
+  const allVisibleSelected = visibleItems.length > 0 && visibleItems.every((i) => selected.has(i.id));
+  const toggleSelectAllVisible = () => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (allVisibleSelected) visibleItems.forEach((i) => next.delete(i.id));
+      else visibleItems.forEach((i) => next.add(i.id));
+      return next;
+    });
+  };
+  const toggleSelectOne = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+  const clearSelection = () => setSelected(new Set());
 
   const handleQuickCreate = (kind: 'link' | 'pdf' | 'text') => {
     sessionStorage.setItem('admin.quickCreate', kind);
@@ -138,9 +198,7 @@ export function AdminDashboardModern({ onNavigate }: Props) {
     toast.success(a.published ? 'Despublicada' : 'Publicada');
   };
 
-  const handleEdit = (a: ApostilaRow) => {
-    navigate(`/admin/apostilas/${a.id}`);
-  };
+  const handleEdit = (a: ApostilaRow) => navigate(`/admin/apostilas/${a.id}`);
 
   const confirmDelete = async () => {
     if (!deleteTarget) return;
@@ -153,10 +211,48 @@ export function AdminDashboardModern({ onNavigate }: Props) {
     setDeleteTarget(null);
   };
 
-  const clearFilters = () => {
-    setSearch(''); setStatusFilter('all'); setCategoryFilter('all'); setDateRange('all');
+  // Ações em lote
+  const bulkSetPublished = async (publish: boolean) => {
+    const ids = Array.from(selected);
+    if (ids.length === 0) return;
+    setBulkBusy(true);
+    const { error } = await supabase.from('apostilas').update({ published: publish }).in('id', ids);
+    setBulkBusy(false);
+    if (error) { toast.error('Erro: ' + error.message); return; }
+    setApostilas((prev) => prev.map((x) => selected.has(x.id) ? { ...x, published: publish } : x));
+    toast.success(`${ids.length} apostila(s) ${publish ? 'publicadas' : 'despublicadas'}`);
+    clearSelection();
   };
-  const hasFilters = !!search || statusFilter !== 'all' || categoryFilter !== 'all' || dateRange !== 'all';
+
+  const bulkDelete = async () => {
+    const ids = Array.from(selected);
+    if (ids.length === 0) return;
+    setBulkBusy(true);
+    const { error } = await supabase.from('apostilas').delete().in('id', ids);
+    setBulkBusy(false);
+    if (error) { toast.error('Erro: ' + error.message); return; }
+    setApostilas((prev) => prev.filter((x) => !selected.has(x.id)));
+    toast.success(`${ids.length} apostila(s) excluídas`);
+    clearSelection();
+    setBulkDeleteOpen(false);
+  };
+
+  // Detalhe do aluno
+  const openStudent = async (r: Ranking) => {
+    setStudentLoading(true);
+    setStudentDetail({ loading: true, ranking: r });
+    const { data, error } = await supabase.rpc('get_student_detail', { _user_id: r.user_id });
+    setStudentLoading(false);
+    if (error) { toast.error('Erro: ' + error.message); setStudentDetail(null); return; }
+    setStudentDetail({ ...data, ranking: r });
+  };
+
+  const clearFilters = () => {
+    setSearch(''); setStatusFilter('all'); setCategoryFilter('all');
+    setDateFrom(''); setDateUntil(''); setSortKey('created_desc');
+  };
+  const hasFilters = !!search || statusFilter !== 'all' || categoryFilter !== 'all'
+    || !!dateFrom || !!dateUntil || sortKey !== 'created_desc';
 
   const cards = [
     { label: 'Apostilas', value: stats.apostilas, icon: BookOpen, gradient: 'from-blue-500 to-blue-600', tab: 'apostilas' },
@@ -301,7 +397,7 @@ export function AdminDashboardModern({ onNavigate }: Props) {
               <CardTitle className="text-lg flex items-center gap-2">
                 <Trophy className="h-5 w-5 text-amber-500" /> Ranking
               </CardTitle>
-              <CardDescription>Top alunos por acertos</CardDescription>
+              <CardDescription>Clique para ver detalhes</CardDescription>
             </div>
             <Button size="sm" variant="ghost" onClick={() => onNavigate('users')}>
               <ChevronRight className="h-4 w-4" />
@@ -317,7 +413,12 @@ export function AdminDashboardModern({ onNavigate }: Props) {
               const MedalIcon = idx === 0 ? Trophy : idx === 1 ? Medal : idx === 2 ? Award : null;
               const medalColor = idx === 0 ? 'text-amber-500' : idx === 1 ? 'text-slate-400' : idx === 2 ? 'text-orange-600' : '';
               return (
-                <div key={r.user_id} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-muted/40 transition-colors">
+                <button
+                  key={r.user_id}
+                  type="button"
+                  onClick={() => openStudent(r)}
+                  className="w-full text-left flex items-center gap-3 p-2.5 rounded-xl hover:bg-muted/40 transition-colors"
+                >
                   <div className="w-7 text-center font-bold text-sm text-muted-foreground">
                     {MedalIcon ? <MedalIcon className={`h-5 w-5 ${medalColor} mx-auto`} /> : `${idx + 1}º`}
                   </div>
@@ -335,7 +436,7 @@ export function AdminDashboardModern({ onNavigate }: Props) {
                   <Badge variant="outline" className="rounded-full bg-emerald-500/10 text-emerald-600 border-emerald-500/30">
                     {r.accuracy}%
                   </Badge>
-                </div>
+                </button>
               );
             })}
           </CardContent>
@@ -355,8 +456,8 @@ export function AdminDashboardModern({ onNavigate }: Props) {
             </Button>
           </div>
 
-          {/* Filtros */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 pt-3">
+          {/* Filtros linha 1: busca, categoria, status */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 pt-3">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -381,81 +482,190 @@ export function AdminDashboardModern({ onNavigate }: Props) {
                 <SelectItem value="draft">Rascunhos</SelectItem>
               </SelectContent>
             </Select>
-            <Select value={dateRange} onValueChange={setDateRange}>
-              <SelectTrigger className="rounded-full"><SelectValue placeholder="Data" /></SelectTrigger>
+          </div>
+
+          {/* Filtros linha 2: intervalo de datas + ordenação */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 pt-2">
+            <div className="flex items-center gap-2">
+              <CalendarDays className="h-4 w-4 text-muted-foreground shrink-0" />
+              <Input
+                type="date"
+                value={dateFrom}
+                onChange={(e) => setDateFrom(e.target.value)}
+                className="rounded-full"
+                aria-label="De"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground shrink-0">até</span>
+              <Input
+                type="date"
+                value={dateUntil}
+                onChange={(e) => setDateUntil(e.target.value)}
+                className="rounded-full"
+                aria-label="Até"
+              />
+            </div>
+            <Select value={sortKey} onValueChange={(v: any) => setSortKey(v)}>
+              <SelectTrigger className="rounded-full">
+                <ArrowDownUp className="h-3.5 w-3.5 mr-1.5" />
+                <SelectValue placeholder="Ordenar" />
+              </SelectTrigger>
               <SelectContent>
-                {DATE_RANGES.map((d) => <SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>)}
+                <SelectItem value="created_desc">Criada · mais recente</SelectItem>
+                <SelectItem value="created_asc">Criada · mais antiga</SelectItem>
+                <SelectItem value="updated_desc">Atualizada · mais recente</SelectItem>
+                <SelectItem value="updated_asc">Atualizada · mais antiga</SelectItem>
               </SelectContent>
             </Select>
           </div>
-          {hasFilters && (
-            <div className="flex items-center justify-between pt-2">
+
+          {(hasFilters || selected.size > 0) && (
+            <div className="flex items-center justify-between pt-2 flex-wrap gap-2">
               <p className="text-xs text-muted-foreground flex items-center gap-1">
-                <Filter className="h-3 w-3" /> {filtered.length} resultado(s)
+                <Filter className="h-3 w-3" /> {filtered.length} resultado(s) · mostrando {Math.min(visibleCount, filtered.length)}
               </p>
-              <Button variant="ghost" size="sm" onClick={clearFilters} className="h-7 text-xs">
-                <X className="h-3 w-3 mr-1" /> Limpar
-              </Button>
+              {hasFilters && (
+                <Button variant="ghost" size="sm" onClick={clearFilters} className="h-7 text-xs">
+                  <X className="h-3 w-3 mr-1" /> Limpar filtros
+                </Button>
+              )}
             </div>
           )}
         </CardHeader>
+
         <CardContent>
+          {/* Barra de ações em lote */}
+          {selected.size > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-3 flex flex-wrap items-center gap-2 rounded-xl border border-primary/30 bg-primary/5 px-3 py-2"
+            >
+              <Badge className="rounded-full bg-primary/15 text-primary border-primary/30">
+                {selected.size} selecionada(s)
+              </Badge>
+              <div className="flex-1" />
+              <Button
+                size="sm" variant="outline" className="rounded-full"
+                onClick={() => bulkSetPublished(true)} disabled={bulkBusy}
+              >
+                <Eye className="h-3.5 w-3.5 mr-1.5" /> Publicar
+              </Button>
+              <Button
+                size="sm" variant="outline" className="rounded-full"
+                onClick={() => bulkSetPublished(false)} disabled={bulkBusy}
+              >
+                <EyeOff className="h-3.5 w-3.5 mr-1.5" /> Despublicar
+              </Button>
+              <Button
+                size="sm" variant="destructive" className="rounded-full"
+                onClick={() => setBulkDeleteOpen(true)} disabled={bulkBusy}
+              >
+                <Trash2 className="h-3.5 w-3.5 mr-1.5" /> Excluir
+              </Button>
+              <Button size="sm" variant="ghost" className="rounded-full" onClick={clearSelection}>
+                <X className="h-3.5 w-3.5" />
+              </Button>
+            </motion.div>
+          )}
+
+          {/* Cabeçalho com select-all */}
+          {visibleItems.length > 0 && (
+            <div className="flex items-center gap-3 px-3 py-1.5 text-xs text-muted-foreground border-b border-border/40 mb-2">
+              <Checkbox
+                checked={allVisibleSelected}
+                onCheckedChange={toggleSelectAllVisible}
+                aria-label="Selecionar todas visíveis"
+              />
+              <span>Selecionar todas visíveis</span>
+            </div>
+          )}
+
           <div className="space-y-2">
             {filtered.length === 0 && (
               <p className="text-sm text-muted-foreground text-center py-8">Nenhuma apostila encontrada.</p>
             )}
-            {filtered.slice(0, 12).map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center gap-3 p-3 rounded-xl border border-border/50 hover:bg-muted/30 transition-colors"
-              >
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white shrink-0">
-                  <BookOpen className="h-5 w-5" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium truncate">{item.title}</p>
-                  <p className="text-xs text-muted-foreground truncate">
-                    {item.category || 'Sem categoria'} · {new Date(item.created_at).toLocaleDateString('pt-BR')}
-                  </p>
-                </div>
-                <Badge
-                  variant="outline"
-                  className={item.published
-                    ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30'
-                    : 'bg-amber-500/10 text-amber-600 border-amber-500/30'}
+            {visibleItems.map((item) => {
+              const isSel = selected.has(item.id);
+              return (
+                <div
+                  key={item.id}
+                  className={`flex items-center gap-3 p-3 rounded-xl border transition-colors ${
+                    isSel ? 'border-primary/40 bg-primary/5' : 'border-border/50 hover:bg-muted/30'
+                  }`}
                 >
-                  {item.published ? 'Publicada' : 'Rascunho'}
-                </Badge>
-                <div className="flex items-center gap-1">
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    title={item.published ? 'Despublicar' : 'Publicar'}
-                    disabled={busyId === item.id}
-                    onClick={() => handleTogglePublish(item)}
+                  <Checkbox
+                    checked={isSel}
+                    onCheckedChange={() => toggleSelectOne(item.id)}
+                    aria-label={`Selecionar ${item.title}`}
+                  />
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white shrink-0">
+                    <BookOpen className="h-5 w-5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium truncate">{item.title}</p>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {item.category || 'Sem categoria'} · criada {new Date(item.created_at).toLocaleDateString('pt-BR')}
+                      {item.updated_at && item.updated_at !== item.created_at && (
+                        <> · atualizada {new Date(item.updated_at).toLocaleDateString('pt-BR')}</>
+                      )}
+                    </p>
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={item.published
+                      ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30'
+                      : 'bg-amber-500/10 text-amber-600 border-amber-500/30'}
                   >
-                    {item.published ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </Button>
-                  <Button size="icon" variant="ghost" title="Editar" onClick={() => handleEdit(item)}>
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    title="Excluir"
-                    className="text-destructive hover:text-destructive"
-                    onClick={() => setDeleteTarget(item)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                    {item.published ? 'Publicada' : 'Rascunho'}
+                  </Badge>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      size="icon" variant="ghost"
+                      title={item.published ? 'Despublicar' : 'Publicar'}
+                      disabled={busyId === item.id}
+                      onClick={() => handleTogglePublish(item)}
+                    >
+                      {item.published ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </Button>
+                    <Button size="icon" variant="ghost" title="Editar" onClick={() => handleEdit(item)}>
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="icon" variant="ghost" title="Excluir"
+                      className="text-destructive hover:text-destructive"
+                      onClick={() => setDeleteTarget(item)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
+
+          {/* Paginação - Carregar mais */}
+          {hasMore && (
+            <div className="flex justify-center pt-4">
+              <Button
+                variant="outline"
+                onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
+                className="rounded-full"
+              >
+                Carregar mais ({filtered.length - visibleCount} restantes)
+              </Button>
+            </div>
+          )}
+          {!hasMore && filtered.length > PAGE_SIZE && (
+            <p className="text-center text-xs text-muted-foreground pt-4">
+              Fim da lista · {filtered.length} apostila(s)
+            </p>
+          )}
         </CardContent>
       </Card>
 
-      {/* Delete confirm */}
+      {/* Confirm individual delete */}
       <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -475,6 +685,136 @@ export function AdminDashboardModern({ onNavigate }: Props) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Confirm bulk delete */}
+      <AlertDialog open={bulkDeleteOpen} onOpenChange={setBulkDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir {selected.size} apostila(s)?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Todas as apostilas selecionadas serão removidas permanentemente. Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={bulkBusy}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={bulkDelete}
+              disabled={bulkBusy}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {bulkBusy ? 'Excluindo...' : 'Excluir tudo'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Modal de detalhe do aluno */}
+      <Dialog open={!!studentDetail} onOpenChange={(o) => !o && setStudentDetail(null)}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-semibold text-sm overflow-hidden">
+                {studentDetail?.ranking?.avatar_url
+                  ? <img src={studentDetail.ranking.avatar_url} alt="" className="w-full h-full object-cover" />
+                  : (studentDetail?.ranking?.full_name || '?').slice(0, 2).toUpperCase()}
+              </div>
+              <div>
+                <div>{studentDetail?.ranking?.full_name || 'Aluno'}</div>
+                {studentDetail?.ranking?.ra && (
+                  <DialogDescription className="text-xs">RA {studentDetail.ranking.ra}</DialogDescription>
+                )}
+              </div>
+            </DialogTitle>
+          </DialogHeader>
+
+          {studentLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <RefreshCw className="h-6 w-6 animate-spin text-primary" />
+            </div>
+          ) : studentDetail && !studentDetail.loading ? (
+            <ScrollArea className="flex-1 -mx-6 px-6">
+              <div className="space-y-5 pb-4">
+                {/* Totais */}
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/30 p-3 text-center">
+                    <p className="text-xs text-muted-foreground">Acertos</p>
+                    <p className="text-2xl font-bold text-emerald-600">{studentDetail.hits ?? 0}</p>
+                  </div>
+                  <div className="rounded-xl bg-rose-500/10 border border-rose-500/30 p-3 text-center">
+                    <p className="text-xs text-muted-foreground">Erros</p>
+                    <p className="text-2xl font-bold text-rose-600">{studentDetail.errors ?? 0}</p>
+                  </div>
+                  <div className="rounded-xl bg-primary/10 border border-primary/30 p-3 text-center">
+                    <p className="text-xs text-muted-foreground">Precisão</p>
+                    <p className="text-2xl font-bold text-primary">{studentDetail.accuracy ?? 0}%</p>
+                  </div>
+                </div>
+
+                {/* Progresso por apostila */}
+                <div>
+                  <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
+                    <BookOpen className="h-4 w-4" /> Desempenho por apostila
+                  </h3>
+                  {(studentDetail.by_apostila || []).length === 0 ? (
+                    <p className="text-xs text-muted-foreground py-3 text-center">Sem dados ainda.</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {studentDetail.by_apostila.map((b: any) => (
+                        <div key={b.apostila_id} className="rounded-lg border border-border/50 p-3">
+                          <div className="flex items-center justify-between gap-2 mb-1.5">
+                            <p className="text-sm font-medium truncate">{b.title || 'Apostila'}</p>
+                            <Badge variant="outline" className="rounded-full text-xs shrink-0">
+                              {b.accuracy}%
+                            </Badge>
+                          </div>
+                          <Progress value={b.accuracy} className="h-1.5" />
+                          <p className="text-xs text-muted-foreground mt-1.5">
+                            <span className="text-emerald-600">{b.hits} acertos</span> ·{' '}
+                            <span className="text-rose-600">{b.errors} erros</span> · total {b.total}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Histórico de tentativas */}
+                <div>
+                  <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
+                    <Filter className="h-4 w-4" /> Últimas tentativas
+                  </h3>
+                  {(studentDetail.history || []).length === 0 ? (
+                    <p className="text-xs text-muted-foreground py-3 text-center">Sem tentativas registradas.</p>
+                  ) : (
+                    <div className="space-y-1.5">
+                      {studentDetail.history.map((h: any) => (
+                        <div
+                          key={h.id}
+                          className={`flex items-start gap-2 rounded-lg p-2.5 border text-xs ${
+                            h.is_correct
+                              ? 'border-emerald-500/30 bg-emerald-500/5'
+                              : 'border-rose-500/30 bg-rose-500/5'
+                          }`}
+                        >
+                          {h.is_correct
+                            ? <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
+                            : <XCircle className="h-4 w-4 text-rose-600 shrink-0 mt-0.5" />}
+                          <div className="flex-1 min-w-0">
+                            <p className="text-foreground line-clamp-2">{h.question}</p>
+                            <p className="text-muted-foreground mt-0.5">
+                              {h.apostila_title || '—'} · {new Date(h.created_at).toLocaleString('pt-BR')}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </ScrollArea>
+          ) : null}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
