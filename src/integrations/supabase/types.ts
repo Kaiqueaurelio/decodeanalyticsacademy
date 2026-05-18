@@ -1961,6 +1961,19 @@ export type Database = {
       get_dashboard_stats: { Args: { _user_id: string }; Returns: Json }
       get_email_for_ra: { Args: { _ra: string }; Returns: string }
       get_exercise_counts: { Args: never; Returns: Json }
+      get_student_rankings: {
+        Args: { _limit?: number }
+        Returns: {
+          accuracy: number
+          avatar_url: string
+          errors: number
+          full_name: string
+          hits: number
+          ra: string
+          total: number
+          user_id: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
