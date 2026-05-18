@@ -314,12 +314,12 @@ export function AdminDashboardModern({ onNavigate }: Props) {
               </p>
             )}
             {rankings.map((r, idx) => {
-              const medal = idx === 0 ? Trophy : idx === 1 ? Medal : idx === 2 ? Award : null;
+              const MedalIcon = idx === 0 ? Trophy : idx === 1 ? Medal : idx === 2 ? Award : null;
               const medalColor = idx === 0 ? 'text-amber-500' : idx === 1 ? 'text-slate-400' : idx === 2 ? 'text-orange-600' : '';
               return (
                 <div key={r.user_id} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-muted/40 transition-colors">
                   <div className="w-7 text-center font-bold text-sm text-muted-foreground">
-                    {medal ? <medal className={`h-5 w-5 ${medalColor} mx-auto`} /> : `${idx + 1}º`}
+                    {MedalIcon ? <MedalIcon className={`h-5 w-5 ${medalColor} mx-auto`} /> : `${idx + 1}º`}
                   </div>
                   <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-semibold text-xs shrink-0 overflow-hidden">
                     {r.avatar_url
