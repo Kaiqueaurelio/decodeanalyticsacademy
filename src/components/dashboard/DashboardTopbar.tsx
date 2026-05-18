@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Sun, Moon } from 'lucide-react';
 import { useUserProfile } from '@/hooks/queries/useUserProfile';
 import { useState } from 'react';
-import { useGlobalSearchData } from '@/hooks/useGlobalSearchData';
+import { useApostilasList } from '@/hooks/queries/useDashboardData';
 
 export function DashboardTopbar() {
   const navigate = useNavigate();
@@ -15,13 +15,13 @@ export function DashboardTopbar() {
   const { theme, toggleTheme } = useTheme();
   const { data: profile } = useUserProfile(user?.id);
   const [query, setQuery] = useState('');
-  const search = useGlobalSearchData();
+  const { data: apostilas = [] } = useApostilasList();
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!query.trim()) return;
     const lower = query.toLowerCase();
-    const hit = search?.apostilas?.find((a: any) => a.title?.toLowerCase().includes(lower));
+    const hit = apostilas.find((a: any) => a.title?.toLowerCase().includes(lower));
     if (hit) navigate(`/apostila/${hit.id}`);
   };
 
