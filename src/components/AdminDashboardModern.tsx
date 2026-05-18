@@ -78,6 +78,10 @@ export function AdminDashboardModern({ onNavigate }: Props) {
   // Detalhe do aluno
   const [studentDetail, setStudentDetail] = useState<any | null>(null);
   const [studentLoading, setStudentLoading] = useState(false);
+  const [historyApostilaFilter, setHistoryApostilaFilter] = useState<string>('all');
+  const [historyStatusFilter, setHistoryStatusFilter] = useState<'all' | 'correct' | 'wrong'>('all');
+  const [historyPage, setHistoryPage] = useState(1);
+  const HISTORY_PAGE_SIZE = 10;
 
   const load = async () => {
     setLoading(true);
