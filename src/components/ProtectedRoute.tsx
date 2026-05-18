@@ -46,7 +46,18 @@ export function ProtectedRoute({ children, adminOnly = false }: { children: Reac
     );
   }
 
-  if (adminOnly && !isAdmin) return <Navigate to="/dashboard" replace />;
+  if (adminOnly) {
+    console.log('[ADMIN GUARD]', {
+      event: isAdmin ? 'admin_access_granted' : 'admin_access_denied',
+      userId: user.id,
+      email: user.email,
+      isAdmin,
+      roleChecked,
+      path: typeof window !== 'undefined' ? window.location.pathname : null,
+      timestamp: Date.now(),
+    });
+    if (!isAdmin) return <Navigate to="/dashboard" replace />;
+  }
 
   return <>{children}</>;
 }
