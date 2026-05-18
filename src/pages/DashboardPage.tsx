@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useGamification } from '@/hooks/useGamification';
-import { AppHeader } from '@/components/AppHeader';
+// AppHeader substituído pelo DashboardTopbar dentro do novo layout
 import { StudentSidebar } from '@/components/dashboard/StudentSidebar';
 import { DashboardTopbar } from '@/components/dashboard/DashboardTopbar';
 import { HeroGreetingCard } from '@/components/dashboard/HeroGreetingCard';
