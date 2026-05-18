@@ -620,6 +620,20 @@ export default function AdminPage() {
   const [validationContext, setValidationContext] = useState<{ title?: string; run: () => Promise<void> | void } | null>(null);
   const [importStep, setImportStep] = useState<'input' | 'review'>('input');
   const [importMode, setImportMode] = useState<'url' | 'text'>('url');
+
+  // Quick-create hint from dashboard: 'link' | 'pdf' | 'text'
+  useEffect(() => {
+    if (tab !== 'apostilas') return;
+    const hint = sessionStorage.getItem('admin.quickCreate');
+    if (!hint) return;
+    sessionStorage.removeItem('admin.quickCreate');
+    setBatchMode(false);
+    setImportStep('input');
+    setImportMode(hint === 'link' ? 'url' : 'text');
+    setTimeout(() => {
+      document.querySelector('[data-import-card]')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  }, [tab]);
   const [importRawText, setImportRawText] = useState('');
   const [batchMode, setBatchMode] = useState(false);
   const [batchUrls, setBatchUrls] = useState('');
