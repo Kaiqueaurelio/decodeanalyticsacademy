@@ -1324,7 +1324,7 @@ export default function AdminPage() {
             {tab === 'apostilas' && (
               <div className="space-y-6">
                 {/* Import Card */}
-                <Card className="overflow-hidden">
+                <Card className="overflow-hidden" data-import-card>
                   <div className="h-1 bg-primary" />
                   <CardContent className="p-5 space-y-4">
                     <div className="flex items-center justify-between flex-wrap gap-2">
