@@ -50,11 +50,14 @@ export function AdFooterMobile() {
       >
         <div className="flex items-center gap-2 px-3 py-2">
           {current.image_url && (
-            <img
+            <AppImage
               src={current.image_url}
               alt=""
-              className="h-10 w-10 rounded-md object-cover shrink-0"
+              referrerPolicy="no-referrer"
               loading="lazy"
+              className="h-10 w-10 rounded-md object-cover shrink-0"
+              wrapperClassName="h-10 w-10 rounded-md shrink-0"
+              fallbackLabel=""
             />
           )}
           <button
