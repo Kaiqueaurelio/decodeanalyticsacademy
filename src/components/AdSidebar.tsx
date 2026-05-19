@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useAds } from '@/hooks/useAds';
 import { motion } from 'framer-motion';
 import { ExternalLink, X } from 'lucide-react';
+import { AppImage } from '@/components/ui/app-image';
 
 /**
  * Coluna lateral de anúncios — só aparece em telas largas (>= xl).
