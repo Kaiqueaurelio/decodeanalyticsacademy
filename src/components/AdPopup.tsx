@@ -3,6 +3,7 @@ import { useAds, type Ad } from '@/hooks/useAds';
 import { Button } from '@/components/ui/button';
 import { X, ExternalLink } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { AppImage } from '@/components/ui/app-image';
 
 interface AdPopupProps {
   trigger?: 'onLoad' | 'onScroll' | 'onExit';
