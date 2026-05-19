@@ -54,11 +54,14 @@ export function AdSidebar({ className = '' }: { className?: string }) {
         >
           {ad.image_url && (
             <div className="aspect-square overflow-hidden bg-muted">
-              <img
+              <AppImage
                 src={ad.image_url}
                 alt={ad.title}
+                referrerPolicy="no-referrer"
                 loading="lazy"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                wrapperClassName="w-full h-full"
+                fallbackLabel="Imagem indisponível"
               />
             </div>
           )}
