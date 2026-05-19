@@ -3,6 +3,7 @@ import { useAds, type Ad } from '@/hooks/useAds';
 import { Button } from '@/components/ui/button';
 import { X, ExternalLink } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { AppImage } from '@/components/ui/app-image';
 
 interface AdBannerProps {
   position?: 'top' | 'bottom' | 'inline';
@@ -50,10 +51,13 @@ export function AdBanner({ position = 'inline', className = '' }: AdBannerProps)
       {/* Imagem do Anúncio */}
       {currentAd.image_url && (
         <div className="shrink-0">
-          <img
+          <AppImage
             src={currentAd.image_url}
             alt={currentAd.title}
+            referrerPolicy="no-referrer"
             className="h-16 w-24 object-cover rounded-md"
+            wrapperClassName="h-16 w-24 rounded-md"
+            fallbackLabel=""
           />
         </div>
       )}
