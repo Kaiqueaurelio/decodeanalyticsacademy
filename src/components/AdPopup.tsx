@@ -97,47 +97,61 @@ export function AdPopup({ trigger = 'onLoad', delay = 2000 }: AdPopupProps) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-3 sm:p-6 overflow-y-auto"
+          onClick={handleClose}
         >
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
-            className="relative w-full max-w-md rounded-2xl bg-white dark:bg-card shadow-2xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+            className="relative w-full max-w-md max-h-[90vh] my-auto rounded-2xl bg-white dark:bg-card shadow-2xl flex flex-col overflow-hidden"
           >
-            {/* Imagem do Anúncio */}
-            {currentAd.image_url && (
-              <div className="relative h-48 overflow-hidden bg-gradient-to-br from-primary/20 to-primary/5">
-                <AppImage
-                  src={currentAd.image_url}
-                  alt={currentAd.title}
-                  referrerPolicy="no-referrer"
-                  loading="eager"
-                  className="w-full h-full object-cover"
-                  wrapperClassName="w-full h-full"
-                  fallbackLabel="Imagem do anúncio indisponível"
-                />
-              </div>
-            )}
+            {/* Botão de Fechar (X) — sempre visível, acima de tudo */}
+            <button
+              onClick={handleClose}
+              className="absolute top-3 right-3 z-20 h-10 w-10 rounded-full bg-black/60 hover:bg-black/80 flex items-center justify-center text-white shadow-lg ring-2 ring-white/40 transition-all"
+              aria-label="Fechar anúncio"
+            >
+              <X size={20} />
+            </button>
 
-            {/* Conteúdo */}
-            <div className="p-6 space-y-4">
-              <div>
-                <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-2">
-                  Publicidade Patrocinada
-                </p>
-                <h2 className="text-xl font-bold text-foreground mb-2">
-                  {currentAd.title}
-                </h2>
-                {currentAd.description && (
-                  <p className="text-sm text-muted-foreground">
-                    {currentAd.description}
+            {/* Área scrollável (imagem + texto) */}
+            <div className="flex-1 overflow-y-auto overscroll-contain">
+              {currentAd.image_url && (
+                <div className="relative h-40 sm:h-48 overflow-hidden bg-gradient-to-br from-primary/20 to-primary/5">
+                  <AppImage
+                    src={currentAd.image_url}
+                    alt={currentAd.title}
+                    referrerPolicy="no-referrer"
+                    loading="eager"
+                    className="w-full h-full object-cover"
+                    wrapperClassName="w-full h-full"
+                    fallbackLabel="Imagem do anúncio indisponível"
+                  />
+                </div>
+              )}
+
+              <div className="p-5 sm:p-6 space-y-3">
+                <div>
+                  <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-2">
+                    Publicidade Patrocinada
                   </p>
-                )}
+                  <h2 className="text-lg sm:text-xl font-bold text-foreground mb-2">
+                    {currentAd.title}
+                  </h2>
+                  {currentAd.description && (
+                    <p className="text-sm text-muted-foreground">
+                      {currentAd.description}
+                    </p>
+                  )}
+                </div>
               </div>
+            </div>
 
-              {/* Botões */}
-              <div className="flex gap-3 pt-4">
+            {/* Footer fixo com botões — sempre visíveis */}
+            <div className="shrink-0 border-t border-border/60 bg-card/95 backdrop-blur p-4 space-y-2">
+              <div className="flex gap-3">
                 <Button
                   onClick={handleClick}
                   className="flex-1 gap-2 bg-primary hover:bg-primary/90"
@@ -153,24 +167,11 @@ export function AdPopup({ trigger = 'onLoad', delay = 2000 }: AdPopupProps) {
                   Fechar
                 </Button>
               </div>
-
-              {/* Countdown */}
-              <div className="text-center">
-                <p className="text-xs text-muted-foreground">
-                  Fecha automaticamente em{' '}
-                  <span className="font-bold text-primary">{timeLeft}s</span>
-                </p>
-              </div>
+              <p className="text-center text-xs text-muted-foreground">
+                Fecha automaticamente em{' '}
+                <span className="font-bold text-primary">{timeLeft}s</span>
+              </p>
             </div>
-
-            {/* Botão de Fechar (X) */}
-            <button
-              onClick={handleClose}
-              className="absolute top-3 right-3 h-8 w-8 rounded-full bg-black/20 hover:bg-black/40 flex items-center justify-center text-white transition-all"
-              aria-label="Fechar"
-            >
-              <X size={18} />
-            </button>
 
             {/* Barra de Progresso */}
             <div className="absolute bottom-0 left-0 right-0 h-1 bg-muted">
