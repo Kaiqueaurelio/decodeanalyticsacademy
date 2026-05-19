@@ -3,6 +3,7 @@ import { useAds } from '@/hooks/useAds';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ExternalLink } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
+import { AppImage } from '@/components/ui/app-image';
 
 /**
  * Barra fina de anúncio fixa no rodapé (apenas mobile).
