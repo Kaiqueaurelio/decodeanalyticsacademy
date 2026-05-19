@@ -108,10 +108,14 @@ export function AdPopup({ trigger = 'onLoad', delay = 2000 }: AdPopupProps) {
             {/* Imagem do Anúncio */}
             {currentAd.image_url && (
               <div className="relative h-48 overflow-hidden bg-gradient-to-br from-primary/20 to-primary/5">
-                <img
+                <AppImage
                   src={currentAd.image_url}
                   alt={currentAd.title}
+                  referrerPolicy="no-referrer"
+                  loading="eager"
                   className="w-full h-full object-cover"
+                  wrapperClassName="w-full h-full"
+                  fallbackLabel="Imagem do anúncio indisponível"
                 />
               </div>
             )}
