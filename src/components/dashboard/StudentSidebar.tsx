@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Home, BookOpen, ClipboardList, PenLine, FileText, Calendar, MessagesSquare, User, Trophy, Sheet as SheetIcon, Library, Calculator } from 'lucide-react';
+import { Home, BookOpen, ClipboardList, PenLine, FileText, Calendar, MessagesSquare, User, Trophy, Sheet as SheetIcon, Library, Calculator, ShieldCheck } from 'lucide-react';
 import logoOwl from '@/assets/owl-icon.png';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
@@ -17,12 +17,12 @@ const items = [
   { to: '/profile', icon: User, label: 'Perfil' },
 ];
 
-export function StudentSidebar() {
+export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const navigate = useNavigate();
   const { isAdmin } = useAuth();
 
   return (
-    <aside className="hidden lg:flex fixed left-0 top-0 bottom-0 w-64 z-40 flex-col border-r border-border bg-card/60 backdrop-blur-xl">
+    <div className="h-full flex flex-col bg-card/60 backdrop-blur-xl">
       {/* Brand */}
       <div className="flex items-center gap-3 px-5 py-5 border-b border-border/60">
         <img src={logoOwl} alt="" className="h-10 w-10 object-contain drop-shadow-[0_0_12px_hsl(var(--primary)/0.6)]" />
@@ -43,6 +43,7 @@ export function StudentSidebar() {
             key={it.to}
             to={it.to}
             end={it.to === '/dashboard'}
+            onClick={onNavigate}
             className={({ isActive }) =>
               `group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all
               ${isActive
@@ -57,15 +58,16 @@ export function StudentSidebar() {
         {isAdmin && (
           <NavLink
             to="/admin"
+            onClick={onNavigate}
             className={({ isActive }) =>
-              `group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all border border-accent/30
+              `group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all border border-accent/40 mt-2
               ${isActive
                 ? 'bg-accent text-accent-foreground'
                 : 'text-accent hover:bg-accent/10'}`
             }
           >
-            <Trophy className="h-4 w-4 shrink-0" />
-            <span className="truncate">Admin</span>
+            <ShieldCheck className="h-4 w-4 shrink-0" />
+            <span className="truncate">Painel Admin</span>
           </NavLink>
         )}
       </nav>
@@ -81,12 +83,20 @@ export function StudentSidebar() {
           <Button
             size="sm"
             className="w-full h-8 text-[11px] font-bold"
-            onClick={() => navigate('/dashboard#atividades')}
+            onClick={() => { navigate('/dashboard#atividades'); onNavigate?.(); }}
           >
             Ver minhas metas
           </Button>
         </div>
       </div>
+    </div>
+  );
+}
+
+export function StudentSidebar() {
+  return (
+    <aside className="hidden lg:flex fixed left-0 top-0 bottom-0 w-64 z-40 flex-col border-r border-border">
+      <SidebarContent />
     </aside>
   );
 }
