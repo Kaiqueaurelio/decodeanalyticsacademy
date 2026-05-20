@@ -1089,64 +1089,116 @@ export default function AdminPage() {
   };
 
   const parseBulkExercises = (text: string) => {
-    // Split by double newline OR numbered question start (e.g. "1.", "2)", "1 -")
+    // Normaliza: remove BOM, unifica quebras, tira espaços invisíveis comuns de copy/paste
+    const normalized = (text || '')
+      .replace(/^\uFEFF/, '')
+      .replace(/\r\n?/g, '\n')
+      .replace(/[\u00A0\u202F\u2007]/g, ' ') // nbsp variantes
+      .replace(/[ \t]+\n/g, '\n');
+
+    // Regex que detecta o INÍCIO de uma nova questão. Suporta:
+    //   1. / 1) / 1- / 1 - / 01) / (1) / [1]
+    //   Questão 1: / Questao 1 / Q1) / Q 1: / Pergunta 1 - / Exercício 1 / Ex 1:
+    const QUESTION_START = /^(?:\s*)(?:[\(\[]?\d{1,3}[\)\]]?[\.\)\-:]?|(?:quest[aã]o|pergunta|exerc[ií]cio|ex|q)\s*\d{1,3}\s*[\)\.\-:]?)\s+/i;
+
+    // Quebra em blocos: split em linhas-início-de-questão OU parágrafos vazios
+    const lines = normalized.split('\n');
     const blocks: string[] = [];
-    const rawBlocks = text.split(/\n(?=\s*\d+[\.\)\-]\s)/);
-    for (const rb of rawBlocks) {
-      const sub = rb.split(/\n\s*\n/).filter(b => b.trim());
-      blocks.push(...sub);
+    let buf: string[] = [];
+    const flush = () => { if (buf.join('\n').trim()) blocks.push(buf.join('\n')); buf = []; };
+    for (const line of lines) {
+      const isStart = QUESTION_START.test(line);
+      const isBlank = !line.trim();
+      if ((isStart && buf.length) || (isBlank && buf.length)) flush();
+      if (!isBlank) buf.push(line);
     }
+    flush();
+
+    // Regex auxiliares
+    const OPT_RE = /^\s*(?:[\(\[])?\s*([A-Ea-e])\s*(?:[\)\].:\-])\s*(.+?)\s*$/;
+    const OPT_MARKED_CORRECT = /^\s*[*✓✔→»]\s*(?:[\(\[])?\s*([A-Ea-e])\s*(?:[\)\].:\-])\s*(.+?)\s*$/;
+    const OPT_INLINE_CORRECT = /\((?:correta|certa|gabarito|resposta)\)\s*$/i;
+    const GAB_RE = /^\s*(?:gabarito|resposta(?:\s+correta)?|alternativa\s+correta|alternativa|letra|answer|correct)\s*[:=\-]?\s*\(?\s*([A-Ea-e])\s*\)?\s*\.?\s*$/i;
+    const EXP_RE = /^\s*(?:explica[çc][ãa]o|justificativa|coment[áa]rio|explanation|resposta modelo|resposta esperada|coment\.?|just\.?)\s*[:=\-]\s*(.*)$/i;
+    const ESSAY_RE = /^\s*(?:tipo|type)\s*[:=]\s*(?:dissertativa|essay|aberta|discursiva)/i;
+    const Q_PREFIX = /^(?:\s*)(?:[\(\[]?\d{1,3}[\)\]]?[\.\)\-:]?|(?:quest[aã]o|pergunta|exerc[ií]cio|ex|q)\s*\d{1,3}\s*[\)\.\-:]?)\s+(.+)$/i;
 
     const parsed: { question: string; options: string[]; correct: string; explanation: string; type: 'multiple_choice' | 'essay' }[] = [];
+
     for (const block of blocks) {
-      const lines = block.split('\n').map(l => l.trim()).filter(Boolean);
-      if (lines.length < 2) continue;
+      const bl = block.split('\n').map(l => l.replace(/\s+$/, '')).filter(l => l.trim());
+      if (bl.length < 1) continue;
+
       let question = '';
       const options: string[] = [];
       let correct = '';
-      let explanationLines: string[] = [];
+      const explanationLines: string[] = [];
       let inExplanation = false;
       let isEssay = false;
 
-      for (const line of lines) {
-        // Detect essay marker
-        const essayMatch = line.match(/^(?:tipo|type)\s*[:=]\s*(?:dissertativa|essay|aberta)/i);
-        if (essayMatch) { isEssay = true; continue; }
+      for (let i = 0; i < bl.length; i++) {
+        const raw = bl[i];
+        const line = raw.trim();
+        if (!line) continue;
 
-        // Match options: A), a), A., A -, A:, etc.
-        const optMatch = line.match(/^([A-Da-d])[\)\.\-:]\s*(.+)/);
-        // Match gabarito/resposta: various formats
-        const gabMatch = line.match(/^(?:gabarito|resposta|resposta correta|answer|correct)\s*[:=]\s*([A-Da-d])/i);
-        // Match explanation start
-        const expMatch = line.match(/^(?:explica[çc][ãa]o|justificativa|coment[áa]rio|explanation|resposta modelo|resposta esperada)\s*[:=]\s*(.*)/i);
-        // Match question number prefix (remove it)
-        const questionNumMatch = line.match(/^\d+[\.\)\-]\s*(.+)/);
+        if (ESSAY_RE.test(line)) { isEssay = true; continue; }
 
-        if (gabMatch) {
-          correct = gabMatch[1].toUpperCase();
-          inExplanation = false;
-        } else if (expMatch) {
-          if (expMatch[1]?.trim()) explanationLines.push(expMatch[1].trim());
+        const exp = line.match(EXP_RE);
+        if (exp) {
+          if (exp[1]?.trim()) explanationLines.push(exp[1].trim());
           inExplanation = true;
-        } else if (optMatch && !inExplanation) {
-          options.push(optMatch[2]);
-        } else if (!correct && options.length === 0 && !inExplanation) {
-          const cleaned = questionNumMatch ? questionNumMatch[1] : line;
-          question = question ? question + ' ' + cleaned : cleaned;
-        } else if (inExplanation) {
-          explanationLines.push(line);
+          continue;
         }
+
+        const gab = line.match(GAB_RE);
+        if (gab) {
+          correct = gab[1].toUpperCase();
+          inExplanation = false;
+          continue;
+        }
+
+        const markedOpt = line.match(OPT_MARKED_CORRECT);
+        if (markedOpt && !inExplanation) {
+          options.push(markedOpt[2].replace(OPT_INLINE_CORRECT, '').trim());
+          correct = markedOpt[1].toUpperCase();
+          continue;
+        }
+
+        const opt = line.match(OPT_RE);
+        if (opt && !inExplanation) {
+          const optText = opt[2].trim();
+          if (OPT_INLINE_CORRECT.test(optText)) correct = opt[1].toUpperCase();
+          options.push(optText.replace(OPT_INLINE_CORRECT, '').trim());
+          continue;
+        }
+
+        if (inExplanation) {
+          explanationLines.push(line);
+          continue;
+        }
+
+        // Caso contrário, faz parte do enunciado
+        const qm = line.match(Q_PREFIX);
+        const cleaned = qm ? qm[1] : line;
+        question = question ? question + ' ' + cleaned : cleaned;
       }
 
       const explanation = explanationLines.join(' ').trim();
+      const validLetters = new Set(['A', 'B', 'C', 'D', 'E']);
+      if (correct && !validLetters.has(correct)) correct = '';
+      // Garante que a letra apontada como correta existe nas opções
+      if (correct && options.length > 0) {
+        const idx = correct.charCodeAt(0) - 65;
+        if (idx < 0 || idx >= options.length) correct = '';
+      }
 
-      // Essay: question with explanation/model answer but no options
       if (isEssay || (question && options.length === 0 && explanation)) {
-        if (question) {
-          parsed.push({ question, options: [], correct: 'dissertativa', explanation, type: 'essay' });
-        }
+        if (question) parsed.push({ question, options: [], correct: 'dissertativa', explanation, type: 'essay' });
       } else if (question && options.length >= 2 && correct) {
         parsed.push({ question, options, correct, explanation, type: 'multiple_choice' });
+      } else if (question && options.length >= 2 && !correct) {
+        // Sem gabarito explícito: assume primeira como correta e marca para o admin revisar
+        parsed.push({ question, options, correct: 'A', explanation: explanation || '⚠️ Gabarito não detectado — revise.', type: 'multiple_choice' });
       }
     }
     return parsed;

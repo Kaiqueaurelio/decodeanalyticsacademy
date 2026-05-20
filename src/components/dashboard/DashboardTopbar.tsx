@@ -38,7 +38,7 @@ export function DashboardTopbar() {
         <Sheet open={navOpen} onOpenChange={setNavOpen}>
           <SheetTrigger asChild>
             <Button variant="ghost" size="icon" className="lg:hidden h-9 w-9 rounded-xl" aria-label="Abrir menu">
-              <Menu className="h-5 w-5" />
+              <Menu strokeWidth={2.5} className="h-[18px] w-[18px]" />
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="p-0 w-72 border-r border-border">
@@ -54,14 +54,14 @@ export function DashboardTopbar() {
             className="lg:hidden h-9 px-2.5 gap-1.5 border-accent/50 text-accent hover:bg-accent/10"
             aria-label="Painel Admin"
           >
-            <ShieldCheck className="h-4 w-4" />
+            <ShieldCheck strokeWidth={2.5} className="h-[16px] w-[16px]" />
             <span className="text-[11px] font-bold">Admin</span>
           </Button>
         )}
 
         {/* Search */}
         <form onSubmit={submit} className="flex-1 max-w-2xl relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+          <Search strokeWidth={2.5} className="absolute left-4 top-1/2 -translate-y-1/2 h-[16px] w-[16px] text-muted-foreground pointer-events-none" />
           <input
             type="text"
             value={query}
@@ -73,7 +73,7 @@ export function DashboardTopbar() {
 
         <div className="flex items-center gap-2 ml-auto">
           <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-9 w-9 rounded-xl">
-            {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            {theme === 'dark' ? <Sun strokeWidth={2.5} className="h-[16px] w-[16px]" /> : <Moon strokeWidth={2.5} className="h-[16px] w-[16px]" />}
           </Button>
           {user && <NotificationBell />}
 
