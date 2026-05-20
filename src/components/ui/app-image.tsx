@@ -7,6 +7,7 @@ type AppImageProps = Omit<React.ImgHTMLAttributes<HTMLImageElement>, 'src'> & {
   fallbackLabel?: string;
   fallbackClassName?: string;
   wrapperClassName?: string;
+  maxRetries?: number;
 };
 
 function normalizeImageSrc(src?: string | null) {
@@ -17,16 +18,36 @@ function normalizeImageSrc(src?: string | null) {
 }
 
 export const AppImage = React.forwardRef<HTMLImageElement, AppImageProps>(function AppImage(
-  { src, alt = '', className, wrapperClassName, fallbackClassName, fallbackLabel = 'Imagem indisponível', onError, ...props },
+  {
+    src,
+    alt = '',
+    className,
+    wrapperClassName,
+    fallbackClassName,
+    fallbackLabel = 'Imagem indisponível',
+    onError,
+    onLoad,
+    maxRetries = 2,
+    ...props
+  },
   ref,
 ) {
   const [failed, setFailed] = React.useState(false);
-
-  React.useEffect(() => {
-    setFailed(false);
-  }, [src]);
+  const [retryKey, setRetryKey] = React.useState(0);
+  const retryCountRef = React.useRef(0);
+  const retryTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const normalizedSrc = normalizeImageSrc(src);
+
+  // Reseta estado a cada mudança real de src
+  React.useEffect(() => {
+    setFailed(false);
+    setRetryKey(0);
+    retryCountRef.current = 0;
+    return () => {
+      if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
+    };
+  }, [normalizedSrc]);
 
   if (!normalizedSrc || failed) {
     return (
@@ -47,13 +68,31 @@ export const AppImage = React.forwardRef<HTMLImageElement, AppImageProps>(functi
     );
   }
 
+  // Cache-buster apenas em tentativas de retry — primeira tentativa usa URL limpa (aproveita cache)
+  const finalSrc =
+    retryKey > 0 ? `${normalizedSrc}${normalizedSrc.includes('?') ? '&' : '?'}_r=${retryKey}` : normalizedSrc;
+
   return (
     <img
       ref={ref}
-      src={normalizedSrc}
+      key={retryKey}
+      src={finalSrc}
       alt={alt}
       decoding="async"
+      onLoad={(event) => {
+        retryCountRef.current = 0;
+        onLoad?.(event);
+      }}
       onError={(event) => {
+        if (retryCountRef.current < maxRetries) {
+          retryCountRef.current += 1;
+          const delay = 400 * retryCountRef.current;
+          if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
+          retryTimerRef.current = setTimeout(() => {
+            setRetryKey((k) => k + 1);
+          }, delay);
+          return;
+        }
         setFailed(true);
         onError?.(event);
       }}
