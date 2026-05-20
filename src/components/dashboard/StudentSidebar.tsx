@@ -37,7 +37,7 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
+      <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-0.5">
         {items.map((it) => (
           <NavLink
             key={it.to}
@@ -45,14 +45,29 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
             end={it.to === '/dashboard'}
             onClick={onNavigate}
             className={({ isActive }) =>
-              `group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all
+              `group relative flex items-center gap-3 pl-4 pr-3 py-2.5 rounded-xl text-sm font-medium transition-all
               ${isActive
-                ? 'bg-primary text-primary-foreground shadow-[0_0_20px_hsl(var(--primary)/0.35)]'
-                : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'}`
+                ? 'bg-primary/12 text-foreground'
+                : 'text-muted-foreground hover:bg-muted/40 hover:text-foreground'}`
             }
           >
-            <it.icon className="h-4 w-4 shrink-0" />
-            <span className="truncate">{it.label}</span>
+            {({ isActive }) => (
+              <>
+                <span
+                  aria-hidden
+                  className={`absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[3px] rounded-r-full transition-all ${
+                    isActive ? 'bg-primary shadow-[0_0_10px_hsl(var(--primary)/0.7)]' : 'bg-transparent group-hover:bg-border'
+                  }`}
+                />
+                <it.icon
+                  strokeWidth={isActive ? 2.5 : 2}
+                  className={`h-[18px] w-[18px] shrink-0 transition-colors ${
+                    isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'
+                  }`}
+                />
+                <span className="truncate tracking-tight">{it.label}</span>
+              </>
+            )}
           </NavLink>
         ))}
         {isAdmin && (
@@ -60,14 +75,12 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
             to="/admin"
             onClick={onNavigate}
             className={({ isActive }) =>
-              `group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all border border-accent/40 mt-2
-              ${isActive
-                ? 'bg-accent text-accent-foreground'
-                : 'text-accent hover:bg-accent/10'}`
+              `group flex items-center gap-3 pl-4 pr-3 py-2.5 rounded-xl text-sm font-bold transition-all mt-3 border border-accent/30
+              ${isActive ? 'bg-accent/15 text-accent' : 'text-accent/90 hover:bg-accent/10'}`
             }
           >
-            <ShieldCheck className="h-4 w-4 shrink-0" />
-            <span className="truncate">Painel Admin</span>
+            <ShieldCheck strokeWidth={2.5} className="h-[18px] w-[18px] shrink-0" />
+            <span className="truncate tracking-tight">Painel Admin</span>
           </NavLink>
         )}
       </nav>
