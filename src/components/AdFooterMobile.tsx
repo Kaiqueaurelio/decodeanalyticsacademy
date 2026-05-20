@@ -53,7 +53,7 @@ export function AdFooterMobile() {
             <AppImage
               src={current.image_url}
               alt=""
-              referrerPolicy="no-referrer"
+              referrerPolicy="strict-origin-when-cross-origin"
               loading="lazy"
               className="h-10 w-10 rounded-md object-cover shrink-0"
               wrapperClassName="h-10 w-10 rounded-md shrink-0"

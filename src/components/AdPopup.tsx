@@ -123,7 +123,7 @@ export function AdPopup({ trigger = 'onLoad', delay = 2000 }: AdPopupProps) {
                   <AppImage
                     src={currentAd.image_url}
                     alt={currentAd.title}
-                    referrerPolicy="no-referrer"
+                    referrerPolicy="strict-origin-when-cross-origin"
                     loading="eager"
                     className="w-full h-full object-cover"
                     wrapperClassName="w-full h-full"

@@ -54,7 +54,7 @@ export function AdBanner({ position = 'inline', className = '' }: AdBannerProps)
           <AppImage
             src={currentAd.image_url}
             alt={currentAd.title}
-            referrerPolicy="no-referrer"
+            referrerPolicy="strict-origin-when-cross-origin"
             className="h-16 w-24 object-cover rounded-md"
             wrapperClassName="h-16 w-24 rounded-md"
             fallbackLabel=""

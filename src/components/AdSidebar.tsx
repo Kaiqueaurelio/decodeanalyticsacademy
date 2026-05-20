@@ -57,7 +57,7 @@ export function AdSidebar({ className = '' }: { className?: string }) {
               <AppImage
                 src={ad.image_url}
                 alt={ad.title}
-                referrerPolicy="no-referrer"
+                referrerPolicy="strict-origin-when-cross-origin"
                 loading="lazy"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 wrapperClassName="w-full h-full"
