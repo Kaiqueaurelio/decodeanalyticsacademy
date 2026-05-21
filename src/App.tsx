@@ -25,6 +25,7 @@ const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
 const DashboardPage = lazy(() => import("./pages/DashboardPage"));
 const ApostilaPage = lazy(() => import("./pages/ApostilaPage"));
 const ExercisesPage = lazy(() => import("./pages/ExercisesPage"));
+const ExerciciosIndexPage = lazy(() => import("./pages/ExerciciosIndexPage"));
 const AdminPage = lazy(() => import("./pages/AdminPage"));
 const ProfilePage = lazy(() => import("./pages/ProfilePage"));
 const MaterialsPage = lazy(() => import("./pages/MaterialsPage"));
@@ -76,6 +77,8 @@ function AnimatedRoutes() {
         <Route path="/revisao-prova/:eventId" element={<ProtectedRoute><PreExamReviewPage /></ProtectedRoute>} />
         <Route path="/apostila/:id" element={<ProtectedRoute><ApostilaPage /></ProtectedRoute>} />
         <Route path="/exercises/:id" element={<ProtectedRoute><ExercisesPage /></ProtectedRoute>} />
+        <Route path="/exercicios" element={<ProtectedRoute><ExerciciosIndexPage /></ProtectedRoute>} />
+        <Route path="/exercises" element={<Navigate to="/exercicios" replace />} />
         <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
         <Route path="/materials" element={<ProtectedRoute><MaterialsPage /></ProtectedRoute>} />
         <Route path="/biblioteca" element={<ProtectedRoute><BibliotecaPage /></ProtectedRoute>} />
