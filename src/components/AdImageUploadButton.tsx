@@ -1,31 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Image, Loader2, X } from 'lucide-react';
 import { toast } from 'sonner';
-import { invokeFunction } from '@/lib/invoke-function';
-
-function normalizeAdsImageUrl(value?: string | null) {
-  const url = value?.trim();
-  if (!url) return null;
-
-  try {
-    const parsed = new URL(url);
-    const marker = '/storage/v1/object/public/ads/';
-    const markerIndex = parsed.pathname.indexOf(marker);
-
-    if (markerIndex >= 0) {
-      let objectPath = parsed.pathname.slice(markerIndex + marker.length).replace(/^\/+/, '');
-      objectPath = objectPath.replace(/^(ads\/)+/, 'ads/');
-      const { data } = supabase.storage.from('ads').getPublicUrl(objectPath);
-      return data.publicUrl;
-    }
-  } catch {
-    return url;
-  }
-
-  return url;
-}
 
 interface Props {
   onImageUploaded: (imageUrl: string) => void;
@@ -34,23 +11,8 @@ interface Props {
 
 export function AdImageUploadButton({ onImageUploaded, currentImageUrl }: Props) {
   const [uploading, setUploading] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(normalizeAdsImageUrl(currentImageUrl));
+  const [previewUrl, setPreviewUrl] = useState<string | null>(currentImageUrl || null);
   const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    setPreviewUrl(normalizeAdsImageUrl(currentImageUrl));
-  }, [currentImageUrl]);
-
-  const fileToBase64 = (file: File) =>
-    new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const result = String(reader.result || '');
-        resolve(result.includes(',') ? result.split(',')[1] : result);
-      };
-      reader.onerror = () => reject(reader.error || new Error('Falha ao ler arquivo'));
-      reader.readAsDataURL(file);
-    });
 
   const handleUpload = async (file: File) => {
     if (!file.type.startsWith('image/')) {
@@ -66,35 +28,56 @@ export function AdImageUploadButton({ onImageUploaded, currentImageUrl }: Props)
     setUploading(true);
     const ext = file.name.split('.').pop() || 'png';
     const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const path = `ads/${fileName}`;
 
     try {
-      const base64Data = await fileToBase64(file);
-      const { data, error } = await invokeFunction<{ publicUrl: string }>('admin-upload-ad-image', {
-        body: {
-          fileName,
-          contentType: file.type || 'image/png',
-          base64Data,
-        },
-        errorTitle: 'Erro ao enviar imagem',
-        showToast: false,
-      });
+      console.log('Iniciando upload para o bucket ads');
+      console.log('Bucket: ads');
+      console.log('Caminho do arquivo:', path);
+      console.log('Tipo do arquivo:', file.type);
+      console.log('Tamanho do arquivo:', file.size);
+      
+      const { error, data } = await supabase.storage
+        .from('ads')
+        .upload(path, file, {
+          cacheControl: '3600',
+          upsert: false,
+          contentType: file.type,
+        });
 
       if (error) {
-        toast.error(error.message || 'Falha ao enviar a imagem');
+        console.error('Erro no upload de imagem do anúncio:', error);
+        console.error('Detalhes do erro:', {
+          message: error.message,
+          status: (error as any).status,
+          statusCode: (error as any).statusCode,
+        });
+        toast.error('Erro no upload: ' + error.message);
+        setUploading(false);
         return;
       }
 
-      const publicUrl = normalizeAdsImageUrl(data?.publicUrl) || data?.publicUrl || null;
-      if (!publicUrl) {
-        toast.error('A imagem foi enviada, mas a URL não foi retornada');
-        return;
-      }
+      console.log('Upload realizado com sucesso:', data);
+      
+      const { data: urlData } = supabase.storage.from('ads').getPublicUrl(path);
+      const publicUrl = urlData.publicUrl;
 
+      console.log('URL pública gerada:', publicUrl);
+      
       setPreviewUrl(publicUrl);
       onImageUploaded(publicUrl);
       toast.success('Imagem enviada com sucesso!');
     } catch (error: any) {
-      toast.error('Erro ao fazer upload da imagem: ' + (error?.message || 'Desconhecido'));
+      console.error('Erro ao fazer upload:', error);
+      console.error('Stack trace:', error?.stack);
+      
+      if (error?.message?.includes('fetch')) {
+        toast.error('Erro de conexão ao fazer upload. Verifique sua internet e tente novamente.');
+      } else if (error?.message?.includes('401') || error?.message?.includes('403')) {
+        toast.error('Erro de permissão ao fazer upload. Verifique as configurações do bucket.');
+      } else {
+        toast.error('Erro ao fazer upload da imagem: ' + (error?.message || 'Desconhecido'));
+      }
     } finally {
       setUploading(false);
     }
