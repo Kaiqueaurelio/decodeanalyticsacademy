@@ -4,6 +4,28 @@ import { Button } from '@/components/ui/button';
 import { Image, Loader2, X } from 'lucide-react';
 import { toast } from 'sonner';
 
+function normalizeAdsImageUrl(value?: string | null) {
+  const url = value?.trim();
+  if (!url) return null;
+
+  try {
+    const parsed = new URL(url);
+    const marker = '/storage/v1/object/public/ads/';
+    const markerIndex = parsed.pathname.indexOf(marker);
+
+    if (markerIndex >= 0) {
+      let objectPath = parsed.pathname.slice(markerIndex + marker.length).replace(/^\/+/, '');
+      objectPath = objectPath.replace(/^(ads\/)+/, 'ads/');
+      const { data } = supabase.storage.from('ads').getPublicUrl(objectPath);
+      return data.publicUrl;
+    }
+  } catch {
+    return url;
+  }
+
+  return url;
+}
+
 interface Props {
   onImageUploaded: (imageUrl: string) => void;
   currentImageUrl?: string | null;
@@ -11,8 +33,16 @@ interface Props {
 
 export function AdImageUploadButton({ onImageUploaded, currentImageUrl }: Props) {
   const [uploading, setUploading] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(currentImageUrl || null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(normalizeAdsImageUrl(currentImageUrl));
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const syncPreview = (value?: string | null) => {
+    setPreviewUrl(normalizeAdsImageUrl(value));
+  };
+
+  useState(() => {
+    syncPreview(currentImageUrl);
+  });
 
   const handleUpload = async (file: File) => {
     if (!file.type.startsWith('image/')) {
@@ -41,7 +71,7 @@ export function AdImageUploadButton({ onImageUploaded, currentImageUrl }: Props)
         .from('ads')
         .upload(path, file, {
           cacheControl: '3600',
-          upsert: false,
+          upsert: true,
           contentType: file.type,
         });
 
@@ -60,7 +90,7 @@ export function AdImageUploadButton({ onImageUploaded, currentImageUrl }: Props)
       console.log('Upload realizado com sucesso:', data);
       
       const { data: urlData } = supabase.storage.from('ads').getPublicUrl(path);
-      const publicUrl = urlData.publicUrl;
+      const publicUrl = normalizeAdsImageUrl(urlData.publicUrl) || urlData.publicUrl;
 
       console.log('URL pública gerada:', publicUrl);
       
