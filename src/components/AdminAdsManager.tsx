@@ -11,6 +11,7 @@ import { Plus, Trash2, Edit2, Eye, MousePointerClick, Loader2 } from 'lucide-rea
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { AdImageUploadButton } from './AdImageUploadButton';
+import { AppImage } from '@/components/ui/app-image';
 
 type AdType = 'banner' | 'popup' | 'inline' | 'sidebar' | 'footer';
 
@@ -330,13 +331,13 @@ export function AdminAdsManager() {
                         )}
                         {ad.image_url && (
                           <div className="mb-3 max-w-xs border rounded-lg overflow-hidden bg-gray-50">
-                            <img
+                            <AppImage
                               src={ad.image_url}
                               alt={ad.title}
+                              referrerPolicy="strict-origin-when-cross-origin"
                               className="w-full h-auto object-cover max-h-32"
-                              onError={(e) => {
-                                e.currentTarget.style.display = 'none';
-                              }}
+                              wrapperClassName="w-full min-h-24"
+                              fallbackLabel="Imagem indisponível"
                             />
                           </div>
                         )}
