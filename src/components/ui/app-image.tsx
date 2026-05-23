@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { ImageOff } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { toPromoMediaUrl } from '@/lib/promo-media';
 
 type AppImageProps = Omit<React.ImgHTMLAttributes<HTMLImageElement>, 'src'> & {
   src?: string | null;
@@ -26,7 +27,8 @@ function buildSupabasePublicUrl(bucket: string, path: string) {
 }
 
 function buildImageCandidates(src?: string | null) {
-  const normalized = normalizeImageSrc(src);
+  const proxied = toPromoMediaUrl(src);
+  const normalized = normalizeImageSrc(proxied ?? src);
   if (!normalized) return [];
 
   const candidates = new Set<string>();
