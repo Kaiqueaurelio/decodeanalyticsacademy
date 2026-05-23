@@ -1,1 +1,4 @@
 project_id = "gynguskgysompgcajunc"
+
+[functions.promo-media]
+verify_jwt = false
