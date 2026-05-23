@@ -41,7 +41,12 @@ export async function invokeFunction<T = unknown>(
   try {
     // Reaproveita o token mantido pelo AuthProvider — evita várias chamadas
     // paralelas a getSession() que disputam o LockManager interno do gotrue-js.
-    const accessToken = getCurrentAccessToken();
+    let accessToken = getCurrentAccessToken();
+    if (!accessToken) {
+      const { data } = await supabase.auth.getSession();
+      accessToken = data.session?.access_token ?? null;
+    }
+
     const reqHeaders: Record<string, string> = {
       "Content-Type": "application/json",
       apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,

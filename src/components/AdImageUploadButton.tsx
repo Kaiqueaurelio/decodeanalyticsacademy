@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
+import { AppImage } from '@/components/ui/app-image';
 import { Image, Loader2, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { invokeFunction } from '@/lib/invoke-function';
@@ -11,13 +12,17 @@ function normalizeAdsImageUrl(value?: string | null) {
 
   try {
     const parsed = new URL(url);
-    const marker = '/storage/v1/object/public/ads/';
+    const marker = '/storage/v1/object/public/';
     const markerIndex = parsed.pathname.indexOf(marker);
 
     if (markerIndex >= 0) {
-      let objectPath = parsed.pathname.slice(markerIndex + marker.length).replace(/^\/+/, '');
-      objectPath = objectPath.replace(/^(ads\/)+/, 'ads/');
-      const { data } = supabase.storage.from('ads').getPublicUrl(objectPath);
+      const storagePath = parsed.pathname.slice(markerIndex + marker.length).replace(/^\/+/, '');
+      const [bucket, ...pathParts] = storagePath.split('/');
+      const objectPath = pathParts.join('/').replace(/^(ads\/)+/, 'ads/');
+
+      if (!bucket || !objectPath) return url;
+
+      const { data } = supabase.storage.from(bucket).getPublicUrl(objectPath);
       return data.publicUrl;
     }
   } catch {
@@ -52,6 +57,39 @@ export function AdImageUploadButton({ onImageUploaded, currentImageUrl }: Props)
       reader.readAsDataURL(file);
     });
 
+  const uploadViaStorage = async (file: File, fileName: string) => {
+    const objectPath = `ads/${fileName}`;
+    const { error } = await supabase.storage.from('ads').upload(objectPath, file, {
+      contentType: file.type || 'image/png',
+      cacheControl: '3600',
+      upsert: true,
+    });
+
+    if (error) throw error;
+
+    const { data } = supabase.storage.from('ads').getPublicUrl(objectPath);
+    return data.publicUrl;
+  };
+
+  const uploadViaFunction = async (file: File, fileName: string) => {
+    const base64Data = await fileToBase64(file);
+    const { data, error } = await invokeFunction<{ publicUrl: string }>('admin-upload-ad-image', {
+      body: {
+        fileName,
+        contentType: file.type || 'image/png',
+        base64Data,
+      },
+      errorTitle: 'Erro ao enviar imagem',
+      showToast: false,
+    });
+
+    if (error) {
+      throw new Error(error.message || 'Falha ao enviar a imagem');
+    }
+
+    return data?.publicUrl || null;
+  };
+
   const handleUpload = async (file: File) => {
     if (!file.type.startsWith('image/')) {
       toast.error('Selecione um arquivo de imagem');
@@ -68,23 +106,16 @@ export function AdImageUploadButton({ onImageUploaded, currentImageUrl }: Props)
     const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
     try {
-      const base64Data = await fileToBase64(file);
-      const { data, error } = await invokeFunction<{ publicUrl: string }>('admin-upload-ad-image', {
-        body: {
-          fileName,
-          contentType: file.type || 'image/png',
-          base64Data,
-        },
-        errorTitle: 'Erro ao enviar imagem',
-        showToast: false,
-      });
+      let publicUrl: string | null = null;
 
-      if (error) {
-        toast.error(error.message || 'Falha ao enviar a imagem');
-        return;
+      try {
+        publicUrl = await uploadViaStorage(file, fileName);
+      } catch (storageError) {
+        console.warn('[ads] upload direto falhou, tentando fallback via função', storageError);
+        publicUrl = await uploadViaFunction(file, fileName);
       }
 
-      const publicUrl = normalizeAdsImageUrl(data?.publicUrl) || data?.publicUrl || null;
+      publicUrl = normalizeAdsImageUrl(publicUrl) || publicUrl || null;
       if (!publicUrl) {
         toast.error('A imagem foi enviada, mas a URL não foi retornada');
         return;
@@ -155,10 +186,12 @@ export function AdImageUploadButton({ onImageUploaded, currentImageUrl }: Props)
 
       {previewUrl && (
         <div className="relative w-full max-w-xs border rounded-lg overflow-hidden bg-gray-50">
-          <img
+          <AppImage
             src={previewUrl}
             alt="Preview da imagem do anúncio"
             className="w-full h-auto object-cover max-h-48"
+            wrapperClassName="w-full min-h-32"
+            fallbackLabel="Preview indisponível"
           />
           <div className="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded">
             Imagem selecionada
