@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase as supabaseTyped } from '@/integrations/supabase/client';
 const supabase = supabaseTyped as any;
 import { useAuth } from './useAuth';
+import { toPromoMediaUrl } from '@/lib/promo-media';
 
 export interface Ad {
   id: string;
@@ -57,7 +58,11 @@ export function useAds(adType?: 'banner' | 'popup' | 'inline' | 'sidebar' | 'foo
         validAds = matching.length > 0 ? matching : baseValid;
       }
 
-      setAds(validAds);
+      const withProxy = validAds.map((ad: any) => ({
+        ...ad,
+        image_url: toPromoMediaUrl(ad.image_url),
+      }));
+      setAds(withProxy);
     } catch (error) {
       console.error('Erro ao carregar anúncios:', error);
     } finally {
