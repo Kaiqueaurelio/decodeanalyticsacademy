@@ -1,67 +1,45 @@
+# Plano: GIF showcase do app na landing
+
 ## Objetivo
-Eliminar o erro persistente dos anúncios em dois pontos:
-1. upload de imagem no admin que ainda cai em "Failed to fetch"
-2. exibição inconsistente de imagens antigas, principalmente em desktop
+Criar um GIF de ~25s mostrando as principais telas do Decode Analytics Academy e inseri-lo numa nova seção **"Veja por dentro"** na landing page.
 
-## Problema confirmado
-- As imagens antigas já existem no storage e várias URLs legadas continuam válidas.
-- O erro principal restante está no fluxo de upload do admin.
-- Hoje o envio tenta um caminho direto e, em fallback, usa uma chamada `fetch` manual para a função `admin-upload-ad-image`.
-- Esse fallback é o ponto mais suspeito para o "fetch error" em preview/browser, porque depende de token válido no header e de um caminho de função mais frágil.
-- Também há normalização espalhada entre componentes, o que pode deixar banner/sidebar/admin com comportamentos diferentes para URLs antigas.
+## Conteúdo do GIF (storyboard, ~25s @ 24fps)
+Mockup de notebook/navegador com transições suaves entre 6 cenas:
+1. **Login/Portal** (3s) — split-screen com identidade Decode
+2. **Dashboard do aluno** (4s) — hero greeting, widgets, carrosséis de apostilas
+3. **Leitura de apostila** (4s) — layout 3 colunas com TOC hierárquico
+4. **Exercícios + Gamificação** (4s) — questão, feedback, XP subindo, badge
+5. **Flashcards + Pomodoro** (4s) — ferramentas de produtividade
+6. **Biblioteca Digital + Leaderboard** (6s) — PDFs estilo Google Play + ranking
 
-## Plano
-### 1) Unificar a lógica de URL dos anúncios
-- Criar uma normalização única para URLs/caminhos de anúncios.
-- Garantir suporte consistente para:
-  - `announcements/ads/...`
-  - `ads/ads/...`
-  - caminhos sem bucket completo
-- Aplicar essa mesma normalização em:
-  - listagem/admin
-  - banner
-  - sidebar
-  - popup
-  - footer
+Estética: dark #050508, ciano #00f0ff, roxo #a855f7, fonte Space Grotesk. Transições estilo Apple (fade + leve scale/parallax).
 
-### 2) Corrigir o fluxo de upload para não depender do fallback frágil
-- Revisar `AdImageUploadButton` para usar um único fluxo robusto de upload.
-- Priorizar o upload nativo no bucket `ads` com tratamento explícito de erro.
-- Remover ou reestruturar o fallback via `fetch` manual para função backend se ele continuar sendo a origem do problema.
-- Se a função backend continuar necessária, trocar a chamada para um fluxo mais seguro e previsível, com autenticação e erro legível.
+## Como será produzido
+- Construir cenas via **Remotion** (React + Tailwind) com mocks fiéis ao app (sem precisar logar/screenshotar telas reais, evitando dados sensíveis e marca d'água).
+- Renderizar primeiro um MP4 1280x720 mudo, depois converter para **GIF otimizado** via `ffmpeg` com palette (paletteuse) para manter qualidade e tamanho razoável (~3-6 MB).
+- Salvar em `public/showcase/decode-app-tour.gif` para uso direto na landing.
 
-### 3) Ajustar a função de upload para compatibilidade real com browser
-- Revisar o contrato da função `admin-upload-ad-image`.
-- Garantir que respostas de sucesso e erro sejam consistentes para chamadas do app.
-- Validar se o problema está no header/token antes da execução da função e adaptar o cliente para isso.
-
-### 4) Corrigir a exibição desktop dos anúncios
-- Conferir especificamente o `AdSidebar` e o banner desktop para garantir que usem a URL final normalizada.
-- Verificar se algum anúncio antigo ainda entra com caminho duplicado e se a imagem está sendo montada com bucket errado em algum fluxo.
-- Garantir fallback visual consistente quando a imagem vier inválida.
-
-### 5) Validar ponta a ponta
-- Testar no dashboard desktop:
-  - banner com imagem antiga
-  - sidebar com imagem antiga
-- Testar no admin:
-  - upload de nova imagem
-  - preview imediato
-  - salvamento do anúncio
-  - reabertura do anúncio salvo com imagem correta
+## Nova seção na landing
+- Criar `src/components/landing/AppShowcaseSection.tsx`:
+  - Título: "Veja por dentro da Academy"
+  - Subtítulo curto
+  - GIF dentro de um frame de notebook/mac com glow ciano/roxo
+  - Pequenos chips destacando: Dashboard · Apostilas · Exercícios · Gamificação · Biblioteca
+- Inserir entre o hero e a próxima seção existente em `src/pages/Index.tsx` (ou equivalente da landing), mantendo todas as seções atuais intactas (Regra de Ouro).
+- Animação de entrada com Framer Motion (fade + slide) seguindo o sistema já existente.
 
 ## Detalhes técnicos
-- Arquivos principais a ajustar:
-  - `src/components/AdImageUploadButton.tsx`
-  - `src/components/ui/app-image.tsx`
-  - `src/hooks/useAds.ts`
-  - `src/components/AdminAdsManager.tsx`
-  - `supabase/functions/admin-upload-ad-image/index.ts`
-  - possivelmente `src/lib/invoke-function.ts`
-- Se necessário, também aplicarei uma correção de dados existentes para padronizar URLs antigas no banco.
+- **Remotion**: scaffold em `remotion/` com `bun init`, render via `scripts/render-remotion.mjs` (headless chrome-for-testing, muted).
+- **Conversão GIF**: `ffmpeg -i tour.mp4 -vf "fps=18,scale=900:-1:flags=lanczos,palettegen" palette.png` + `paletteuse` para reduzir peso.
+- Fallback: também gerar uma versão `.mp4`/`.webm` e usar `<picture>`/`<video autoplay loop muted playsinline>` com `<img>` GIF como fallback — melhor performance no mobile sem perder o "GIF" pedido.
+- Lazy-load com `loading="lazy"` e `prefers-reduced-motion` exibe um still PNG.
 
-## Resultado esperado
-- Upload sem "Failed to fetch"
-- Imagens antigas aparecendo corretamente em desktop
-- Mesmo comportamento de imagem no admin e no app
-- Menos lógica duplicada e menos chance de regressão
+## Arquivos
+- Criar: `remotion/*` (Root, MainVideo, 6 scenes, render script)
+- Criar: `public/showcase/decode-app-tour.gif` (+ `.mp4`, `.webm`, poster `.png`)
+- Criar: `src/components/landing/AppShowcaseSection.tsx`
+- Editar: arquivo da landing (Index/Landing) para incluir a seção
+
+## Entregáveis
+- GIF funcionando na landing dentro de seção "Veja por dentro"
+- Fontes do Remotion versionadas para futuras edições
