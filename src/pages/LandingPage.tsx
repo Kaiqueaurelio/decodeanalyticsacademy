@@ -308,6 +308,9 @@ export default function LandingPage() {
         </motion.div>
       </section>
 
+      {/* ═══ APP SHOWCASE (Veja por dentro) ═══ */}
+      <AppShowcaseSection />
+
       {/* ═══ RECURSOS ═══ */}
       <section id="recursos" className="relative py-28 md:py-36">
         <CyberGrid />
