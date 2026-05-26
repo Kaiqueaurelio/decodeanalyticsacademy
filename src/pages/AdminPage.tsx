@@ -171,13 +171,14 @@ function AdminSidebar({ tab, setTab, stats, sidebarOpen, setSidebarOpen }: {
     { id: 'materials' as Tab, label: 'Materiais', icon: FolderOpen, count: stats.materials },
     { id: 'users' as Tab, label: 'Usuários', icon: Users, count: stats.users },
     { id: 'announcements' as Tab, label: 'Avisos', icon: Megaphone, count: undefined },
+    { id: 'ads' as Tab, label: 'Anúncios', icon: Megaphone, count: undefined },
     { id: 'calendar' as Tab, label: 'Calendário', icon: CalIcon, count: undefined },
     { id: 'testimonials' as Tab, label: 'Depoimentos', icon: MessageSquareQuote, count: undefined },
     { id: 'ai' as Tab, label: 'IA', icon: Sparkles, count: undefined },
     { id: 'performance' as Tab, label: 'Performance', icon: Activity, count: undefined },
     { id: 'smoke' as Tab, label: 'Testes', icon: CheckCircle, count: undefined },
     { id: 'diagnostics' as Tab, label: 'Diagnóstico', icon: AlertCircle, count: undefined },
-    { id: 'ads-chat' as Tab, label: 'Anúncios (Chat)', icon: Megaphone, count: undefined },
+    { id: 'ads-chat' as Tab, label: 'Assistente de anúncios', icon: Sparkles, count: undefined },
   ];
 
   return (
