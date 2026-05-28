@@ -3,13 +3,13 @@ import { useAds } from '@/hooks/useAds';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ExternalLink } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
-import { AppImage } from '@/components/ui/app-image';
+import { AdMediaPreview } from '@/components/AdMediaPreview';
 
 /**
- * Barra fina de anúncio fixa no rodapé (apenas mobile).
- * - Só aparece em rotas autenticadas (não na landing/login)
- * - Pode ser fechada (memorizado por sessão)
- * - Rotaciona anúncios "footer" a cada 30s
+ * Barra fina de anuncio fixa no rodape (apenas mobile).
+ * - So aparece em rotas autenticadas (nao na landing/login)
+ * - Pode ser fechada (memorizado por sessao)
+ * - Rotaciona anuncios "footer" a cada 30s
  */
 export function AdFooterMobile() {
   const location = useLocation();
@@ -19,7 +19,7 @@ export function AdFooterMobile() {
     typeof window !== 'undefined' && sessionStorage.getItem('ad_footer_dismissed') === '1'
   );
 
-  // Não mostra em landing, login, reset
+  // Nao mostra em landing, login, reset
   const hiddenRoutes = ['/', '/login', '/reset-password'];
   const shouldHide = hiddenRoutes.includes(location.pathname);
 
@@ -46,18 +46,15 @@ export function AdFooterMobile() {
         exit={{ y: 60, opacity: 0 }}
         className="fixed bottom-0 left-0 right-0 z-40 md:hidden border-t border-border/60 bg-card/95 backdrop-blur-md shadow-lg"
         role="complementary"
-        aria-label="Anúncio"
+        aria-label="Anuncio"
       >
         <div className="flex items-center gap-2 px-3 py-2">
           {current.image_url && (
-            <AppImage
+            <AdMediaPreview
               src={current.image_url}
-              alt=""
-              referrerPolicy="strict-origin-when-cross-origin"
-              loading="lazy"
-              className="h-10 w-10 rounded-md object-cover shrink-0"
-              wrapperClassName="h-10 w-10 rounded-md shrink-0"
-              fallbackLabel=""
+              title={current.title}
+              compact
+              className="h-10 w-10 shrink-0"
             />
           )}
           <button
@@ -91,7 +88,7 @@ export function AdFooterMobile() {
               setDismissed(true);
             }}
             className="shrink-0 h-7 w-7 inline-flex items-center justify-center rounded-full text-muted-foreground hover:bg-muted"
-            aria-label="Fechar anúncio"
+            aria-label="Fechar anuncio"
           >
             <X size={14} />
           </button>
