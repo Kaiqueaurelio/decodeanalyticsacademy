@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { AppImage } from '@/components/ui/app-image';
-import { Image, Loader2, X } from 'lucide-react';
+import { Image, Loader2, X, Video, Mic } from 'lucide-react';
 import { toast } from 'sonner';
 import { invokeFunction } from '@/lib/invoke-function';
 import { toPromoMediaUrl } from '@/lib/promo-media';
@@ -9,12 +9,61 @@ import { toPromoMediaUrl } from '@/lib/promo-media';
 interface Props {
   onImageUploaded: (imageUrl: string) => void;
   currentImageUrl?: string | null;
+  accept?: string;
+  label?: string;
+  mediaType?: 'image' | 'video' | 'audio' | 'all';
+  maxSizeMb?: number;
+  showPreview?: boolean;
+  variant?: 'default' | 'outline' | 'ghost' | 'secondary';
+  size?: 'default' | 'sm' | 'lg' | 'icon';
+  className?: string;
 }
 
-export function AdImageUploadButton({ onImageUploaded, currentImageUrl }: Props) {
+const ACCEPT_BY_TYPE = {
+  image: 'image/*',
+  video: 'video/*',
+  audio: 'audio/*',
+  all: 'image/*,video/*,audio/*',
+};
+
+const LABEL_BY_TYPE = {
+  image: 'Enviar Imagem',
+  video: 'Enviar Video',
+  audio: 'Enviar Audio',
+  all: 'Enviar Midia',
+};
+
+const IconByType = {
+  image: Image,
+  video: Video,
+  audio: Mic,
+  all: Image,
+};
+
+function getKind(fileOrUrl: File | string): 'image' | 'video' | 'audio' | 'file' {
+  const value = typeof fileOrUrl === 'string' ? fileOrUrl.toLowerCase() : fileOrUrl.type.toLowerCase();
+  if (value.startsWith('image/') || /\.(png|jpe?g|webp|gif|svg)(\?|#|$)/.test(value)) return 'image';
+  if (value.startsWith('video/') || /\.(mp4|mov|webm|m4v|avi|mkv)(\?|#|$)/.test(value)) return 'video';
+  if (value.startsWith('audio/') || /\.(mp3|wav|m4a|ogg|aac|webm)(\?|#|$)/.test(value)) return 'audio';
+  return 'file';
+}
+
+export function AdImageUploadButton({
+  onImageUploaded,
+  currentImageUrl,
+  accept,
+  label,
+  mediaType = 'image',
+  maxSizeMb = mediaType === 'image' ? 5 : 50,
+  showPreview = true,
+  variant = 'outline',
+  size = 'sm',
+  className,
+}: Props) {
   const [uploading, setUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(toPromoMediaUrl(currentImageUrl));
   const inputRef = useRef<HTMLInputElement>(null);
+  const Icon = IconByType[mediaType];
 
   useEffect(() => {
     setPreviewUrl(toPromoMediaUrl(currentImageUrl));
@@ -32,37 +81,42 @@ export function AdImageUploadButton({ onImageUploaded, currentImageUrl }: Props)
     });
 
   const handleUpload = async (file: File) => {
-    if (!file.type.startsWith('image/')) {
-      toast.error('Selecione um arquivo de imagem');
+    const kind = getKind(file);
+    if (mediaType !== 'all' && kind !== mediaType) {
+      toast.error(`Selecione um arquivo de ${mediaType === 'image' ? 'imagem' : mediaType === 'video' ? 'video' : 'audio'}`);
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('A imagem deve ter no máximo 5MB');
+    if (kind === 'file') {
+      toast.error('Selecione uma imagem, video ou audio valido');
+      return;
+    }
+    if (file.size > maxSizeMb * 1024 * 1024) {
+      toast.error(`O arquivo deve ter no maximo ${maxSizeMb}MB`);
       return;
     }
 
     setUploading(true);
-    const ext = (file.name.split('.').pop() || 'png').toLowerCase().replace(/[^a-z0-9]/g, '');
-    const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext || 'png'}`;
+    const ext = (file.name.split('.').pop() || kind).toLowerCase().replace(/[^a-z0-9]/g, '');
+    const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext || kind}`;
 
     try {
       const base64Data = await fileToBase64(file);
       const { data, error } = await invokeFunction<{ publicUrl: string }>('promo-media', {
-        body: { fileName, contentType: file.type || 'image/png', base64Data },
-        errorTitle: 'Erro ao enviar imagem',
+        body: { fileName, contentType: file.type || `${kind}/${ext || kind}`, base64Data },
+        errorTitle: 'Erro ao enviar midia',
         showToast: false,
       });
 
-      if (error) throw new Error(error.message || 'Falha ao enviar a imagem');
+      if (error) throw new Error(error.message || 'Falha ao enviar a midia');
       const publicUrl = data?.publicUrl;
       if (!publicUrl) {
-        toast.error('A imagem foi enviada, mas a URL não foi retornada');
+        toast.error('A midia foi enviada, mas a URL nao foi retornada');
         return;
       }
 
       setPreviewUrl(publicUrl);
       onImageUploaded(publicUrl);
-      toast.success('Imagem enviada com sucesso!');
+      toast.success(`${kind === 'image' ? 'Imagem' : kind === 'video' ? 'Video' : 'Audio'} enviado com sucesso!`);
     } catch (e: any) {
       toast.error('Erro ao fazer upload: ' + (e?.message || 'desconhecido'));
     } finally {
@@ -75,13 +129,15 @@ export function AdImageUploadButton({ onImageUploaded, currentImageUrl }: Props)
     onImageUploaded('');
   };
 
+  const previewKind = previewUrl ? getKind(previewUrl) : null;
+
   return (
     <div className="space-y-3">
       <div className="flex gap-2 items-center">
         <input
           ref={inputRef}
           type="file"
-          accept="image/*"
+          accept={accept || ACCEPT_BY_TYPE[mediaType]}
           className="hidden"
           onChange={(e) => {
             const f = e.target.files?.[0];
@@ -91,25 +147,25 @@ export function AdImageUploadButton({ onImageUploaded, currentImageUrl }: Props)
         />
         <Button
           type="button"
-          variant="outline"
-          size="sm"
-          className="gap-1.5"
+          variant={variant}
+          size={size}
+          className={className || 'gap-1.5'}
           disabled={uploading}
           onClick={() => inputRef.current?.click()}
         >
           {uploading ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" />
-              Enviando...
+              {size === 'icon' ? null : 'Enviando...'}
             </>
           ) : (
             <>
-              <Image className="h-4 w-4" />
-              Enviar Imagem
+              <Icon className="h-4 w-4" />
+              {size === 'icon' ? null : label || LABEL_BY_TYPE[mediaType]}
             </>
           )}
         </Button>
-        {previewUrl && (
+        {previewUrl && showPreview && (
           <Button
             type="button"
             variant="ghost"
@@ -123,17 +179,25 @@ export function AdImageUploadButton({ onImageUploaded, currentImageUrl }: Props)
         )}
       </div>
 
-      {previewUrl && (
+      {previewUrl && showPreview && (
         <div className="relative w-full max-w-xs border rounded-lg overflow-hidden bg-gray-50">
-          <AppImage
-            src={previewUrl}
-            alt="Preview da imagem do anúncio"
-            className="w-full h-auto object-cover max-h-48"
-            wrapperClassName="w-full min-h-32"
-            fallbackLabel="Preview indisponível"
-          />
+          {previewKind === 'video' ? (
+            <video src={previewUrl} controls className="w-full max-h-48 bg-black" />
+          ) : previewKind === 'audio' ? (
+            <div className="p-3 bg-card">
+              <audio src={previewUrl} controls className="w-full" />
+            </div>
+          ) : (
+            <AppImage
+              src={previewUrl}
+              alt="Preview da midia do anuncio"
+              className="w-full h-auto object-cover max-h-48"
+              wrapperClassName="w-full min-h-32"
+              fallbackLabel="Preview indisponivel"
+            />
+          )}
           <div className="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded">
-            Imagem selecionada
+            Midia selecionada
           </div>
         </div>
       )}
