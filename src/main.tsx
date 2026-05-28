@@ -3,6 +3,22 @@ import App from "./App.tsx";
 import "./index.css";
 import ErrorBoundary from "./components/ErrorBoundary";
 
+// Remove credenciais antigas que foram salvas em base64 pelo fluxo "lembrar-me".
+// O app pode lembrar apenas o identificador; senha deve ficar com o navegador/gerenciador de senhas.
+(() => {
+  try {
+    localStorage.removeItem('decode_remember_password');
+
+    const originalSetItem = localStorage.setItem.bind(localStorage);
+    localStorage.setItem = (key: string, value: string) => {
+      if (key === 'decode_remember_password') return;
+      originalSetItem(key, value);
+    };
+  } catch {
+    // Em modos privados ou ambientes restritos, localStorage pode falhar.
+  }
+})();
+
 // Global error handlers
 window.addEventListener('error', (event) => {
   console.error('Global error:', event.error);
