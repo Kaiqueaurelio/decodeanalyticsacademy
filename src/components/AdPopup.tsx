@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useAds, type Ad } from '@/hooks/useAds';
+import { useAds } from '@/hooks/useAds';
 import { Button } from '@/components/ui/button';
 import { X, ExternalLink } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AppImage } from '@/components/ui/app-image';
+import { AdMediaPreview } from '@/components/AdMediaPreview';
 
 interface AdPopupProps {
   trigger?: 'onLoad' | 'onScroll' | 'onExit';
@@ -107,28 +107,20 @@ export function AdPopup({ trigger = 'onLoad', delay = 2000 }: AdPopupProps) {
             onClick={(e) => e.stopPropagation()}
             className="relative w-full max-w-md max-h-[90vh] my-auto rounded-2xl bg-white dark:bg-card shadow-2xl flex flex-col overflow-hidden"
           >
-            {/* Botão de Fechar (X) — sempre visível, acima de tudo */}
+            {/* Botao de Fechar (X) sempre visivel, acima de tudo */}
             <button
               onClick={handleClose}
               className="absolute top-3 right-3 z-20 h-10 w-10 rounded-full bg-black/60 hover:bg-black/80 flex items-center justify-center text-white shadow-lg ring-2 ring-white/40 transition-all"
-              aria-label="Fechar anúncio"
+              aria-label="Fechar anuncio"
             >
               <X size={20} />
             </button>
 
-            {/* Área scrollável (imagem + texto) */}
+            {/* Area scrollavel (midia + texto) */}
             <div className="flex-1 overflow-y-auto overscroll-contain">
               {currentAd.image_url && (
                 <div className="relative h-40 sm:h-48 overflow-hidden bg-gradient-to-br from-primary/20 to-primary/5">
-                  <AppImage
-                    src={currentAd.image_url}
-                    alt={currentAd.title}
-                    referrerPolicy="strict-origin-when-cross-origin"
-                    loading="eager"
-                    className="w-full h-full object-cover"
-                    wrapperClassName="w-full h-full"
-                    fallbackLabel="Imagem do anúncio indisponível"
-                  />
+                  <AdMediaPreview src={currentAd.image_url} title={currentAd.title} />
                 </div>
               )}
 
@@ -149,7 +141,7 @@ export function AdPopup({ trigger = 'onLoad', delay = 2000 }: AdPopupProps) {
               </div>
             </div>
 
-            {/* Footer fixo com botões — sempre visíveis */}
+            {/* Footer fixo com botoes sempre visiveis */}
             <div className="shrink-0 border-t border-border/60 bg-card/95 backdrop-blur p-4 space-y-2">
               <div className="flex gap-3">
                 <Button
