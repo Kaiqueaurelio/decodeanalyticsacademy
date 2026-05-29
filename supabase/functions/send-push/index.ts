@@ -1,17 +1,3 @@
-// Edge function: envia uma Web Push notification para todos os subscriptions de um user_id
-// (e cria também a notificação in-app na tabela `notifications`).
-//
-// Requisitos: VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT (mailto:...) configurados.
-//
-// POST body:
-// {
-//   user_id: string,        // destinatário
-//   title: string,
-//   body?: string,
-//   link?: string,
-//   type?: string,
-//   inAppOnly?: boolean,    // se true, só cria notification (sem push)
-// }
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import webpush from "https://esm.sh/web-push@3.6.7";
@@ -31,78 +17,144 @@ const VAPID_SUBJECT =
 
 webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
 
-const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
+const admin = createClient(SUPABASE_URL, SERVICE_KEY);
+
+async function requireAdmin(req: Request) {
+  const auth = req.headers.get("Authorization") || "";
+  const token = auth.replace(/^Bearer\s+/i, "").trim();
+  if (!token) return { ok: false as const, userId: null };
+
+  const authClient = createClient(SUPABASE_URL, SERVICE_KEY, {
+    global: { headers: { Authorization: `Bearer ${token}` } },
+  });
+  const { data, error } = await authClient.auth.getUser(token);
+  if (error || !data.user) return { ok: false as const, userId: null };
+
+  const { data: role } = await admin
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", data.user.id)
+    .eq("role", "admin")
+    .maybeSingle();
+
+  return { ok: Boolean(role), userId: data.user.id } as const;
+}
+
+async function collectTargetUserIds(input: any): Promise<string[]> {
+  if (Array.isArray(input.user_ids) && input.user_ids.length) {
+    return [...new Set(input.user_ids.filter((id: unknown) => typeof id === "string"))];
+  }
+  if (typeof input.user_id === "string" && input.user_id) return [input.user_id];
+  if (input.allUsers || input.broadcast) {
+    const { data, error } = await admin
+      .from("profiles")
+      .select("user_id")
+      .eq("is_blocked", false);
+    if (error) throw error;
+    return [...new Set((data || []).map((row: any) => row.user_id).filter(Boolean))];
+  }
+  return [];
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { user_id, title, body, link, type = "info", inAppOnly = false } =
-      await req.json();
+    const guard = await requireAdmin(req);
+    if (!guard.ok) {
+      return new Response(JSON.stringify({ error: "Admin required" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
-    if (!user_id || !title) {
-      return new Response(JSON.stringify({ error: "user_id and title required" }), {
+    const input = await req.json();
+    const {
+      title,
+      body,
+      link,
+      type = "admin_broadcast",
+      inAppOnly = false,
+    } = input;
+
+    if (!title) {
+      return new Response(JSON.stringify({ error: "title required" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // 1) Cria notification in-app
-    const { data: notif, error: insErr } = await supabase
-      .from("notifications")
-      .insert({ user_id, title, body, link, type })
-      .select()
-      .single();
+    const userIds = await collectTargetUserIds(input);
+    if (userIds.length === 0) {
+      return new Response(JSON.stringify({ error: "No recipients" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
-    if (insErr) console.error("[send-push] insert notif failed:", insErr);
+    const notifications = userIds.map((user_id) => ({
+      user_id,
+      title,
+      body: body || null,
+      link: link || "/dashboard",
+      type,
+    }));
 
-    // 2) Envia web push (se não for in-app only)
+    const { error: insErr } = await admin.from("notifications").insert(notifications);
+    if (insErr) throw insErr;
+
     let pushed = 0;
     let failed = 0;
+    let subscriptions = 0;
+
     if (!inAppOnly) {
-      const { data: subs } = await supabase
+      const { data: subs, error: subErr } = await admin
         .from("push_subscriptions")
         .select("*")
-        .eq("user_id", user_id);
+        .in("user_id", userIds);
+      if (subErr) throw subErr;
+      subscriptions = subs?.length || 0;
 
-      if (subs && subs.length) {
-        const payload = JSON.stringify({
-          title,
-          body: body || "",
-          link: link || "/dashboard",
-          type,
-        });
+      const payload = JSON.stringify({
+        title,
+        body: body || "",
+        link: link || "/dashboard",
+        type,
+        tag: input.tag || "decode-admin-broadcast",
+      });
 
-        await Promise.all(
-          subs.map(async (s: any) => {
-            try {
-              await webpush.sendNotification(
-                {
-                  endpoint: s.endpoint,
-                  keys: { p256dh: s.p256dh, auth: s.auth },
-                },
-                payload,
-              );
-              pushed++;
-            } catch (err: any) {
-              failed++;
-              // 410 Gone / 404 → endpoint expirado, remove
-              if (err?.statusCode === 410 || err?.statusCode === 404) {
-                await supabase
-                  .from("push_subscriptions")
-                  .delete()
-                  .eq("endpoint", s.endpoint);
-              } else {
-                console.error("[send-push] push failed:", err?.statusCode, err?.body);
-              }
+      await Promise.all(
+        (subs || []).map(async (s: any) => {
+          try {
+            await webpush.sendNotification(
+              {
+                endpoint: s.endpoint,
+                keys: { p256dh: s.p256dh, auth: s.auth },
+              },
+              payload,
+            );
+            pushed++;
+          } catch (err: any) {
+            failed++;
+            if (err?.statusCode === 410 || err?.statusCode === 404) {
+              await admin.from("push_subscriptions").delete().eq("endpoint", s.endpoint);
+            } else {
+              console.error("[send-push] push failed:", err?.statusCode, err?.body);
             }
-          }),
-        );
-      }
+          }
+        }),
+      );
     }
 
     return new Response(
-      JSON.stringify({ ok: true, notif_id: notif?.id, pushed, failed }),
+      JSON.stringify({
+        ok: true,
+        recipients: userIds.length,
+        notifications: notifications.length,
+        subscriptions,
+        pushed,
+        failed,
+      }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (err: any) {
