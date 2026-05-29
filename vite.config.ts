@@ -24,21 +24,37 @@ export default defineConfig(({ mode }) => ({
       manifest: false,
       workbox: {
         importScripts: ["/sw-push.js"],
+        skipWaiting: true,
+        clientsClaim: true,
+        cleanupOutdatedCaches: true,
         navigateFallbackDenylist: [/^\/~oauth/, /^\/api/],
-        globPatterns: ["**/*.{css,html,ico,svg,woff2,png}", "assets/index-*.js", "assets/react-*.js"],
+        globPatterns: ["**/*.{css,html,ico,svg,woff2,png}", "assets/*.js"],
         globIgnores: ["**/sw.js", "**/workbox-*.js"],
-        maximumFileSizeToCacheInBytes: 1.5 * 1024 * 1024,
+        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
         runtimeCaching: [
           {
             urlPattern: ({ request }) => request.destination === "script",
-            handler: "StaleWhileRevalidate",
-            options: { cacheName: "js-cache" }
+            handler: "NetworkFirst",
+            options: {
+              cacheName: "decode-js-v2",
+              networkTimeoutSeconds: 4,
+              expiration: {
+                maxEntries: 80,
+                maxAgeSeconds: 60 * 60,
+              },
+            },
           },
           {
             urlPattern: ({ request }) => request.destination === "image",
             handler: "CacheFirst",
-            options: { cacheName: "images" }
-          }
+            options: {
+              cacheName: "decode-images-v2",
+              expiration: {
+                maxEntries: 120,
+                maxAgeSeconds: 7 * 24 * 60 * 60,
+              },
+            },
+          },
         ],
         navigateFallback: "/index.html",
       },
