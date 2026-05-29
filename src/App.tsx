@@ -58,8 +58,39 @@ const queryClient = new QueryClient({
   },
 });
 
+function useAdminCopyPatch() {
+  React.useEffect(() => {
+    const replacements = new Map([
+      ["Assistente de anuncios", "Copilot App"],
+      ["Assistente de anúncios", "Copilot App"],
+      ["Ads Chat Builder", "Copilot App"],
+      ["Copiloto do App", "Copilot App"],
+      ["Gere criativos de anúncios com IA", "Copiloto geral para acoes administrativas do app"],
+    ]);
+
+    const patchCopy = () => {
+      document.querySelectorAll("h1,h2,h3,p,span").forEach((node) => {
+        const current = node.textContent?.trim();
+        const next = current ? replacements.get(current) : undefined;
+
+        if (next && node.textContent !== next) {
+          node.textContent = next;
+        }
+      });
+    };
+
+    patchCopy();
+
+    const observer = new MutationObserver(patchCopy);
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    return () => observer.disconnect();
+  }, []);
+}
+
 function AnimatedRoutes() {
   const [showSplash, setShowSplash] = React.useState(true);
+  useAdminCopyPatch();
 
   return (
     <>
