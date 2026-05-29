@@ -1,25 +1,33 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
+  BellRing,
   Bot,
+  CalendarPlus,
   Camera,
   Check,
   CheckCircle2,
-  FileAudio,
+  ClipboardList,
+  FileText,
   Image,
   Loader2,
+  Megaphone,
   Mic,
   MoreVertical,
   Paperclip,
   RotateCcw,
   Send,
+  ShieldCheck,
   Sparkles,
   Square,
+  Trash2,
   Wand2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { supabase as supabaseTyped } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -29,45 +37,34 @@ const supabase = supabaseTyped as any;
 
 type AdType = 'banner' | 'popup' | 'inline' | 'sidebar' | 'footer';
 type MediaKind = 'image' | 'video' | 'audio';
-type Step = 'type' | 'title' | 'link' | 'review' | 'done';
+type ActionType = 'create_ad' | 'create_reminder' | 'delete_reminder' | 'create_announcement' | 'create_apostila' | 'send_push';
 
 interface Msg {
   id: string;
-  role: 'bot' | 'user';
+  role: 'bot' | 'user' | 'system';
   text: string;
   ts: number;
   mediaUrl?: string;
   mediaKind?: MediaKind;
 }
 
-interface Draft {
-  ad_type: AdType | '';
+interface AppAction {
+  type: ActionType;
   title: string;
-  description: string;
-  link_url: string;
-  image_url: string;
-  display_duration: number;
+  summary: string;
+  payload: Record<string, any>;
 }
 
-interface AIResult {
+interface AIPlan {
   reply?: string;
-  updates?: Partial<Draft>;
-  ready_to_review?: boolean;
+  action?: AppAction | null;
+  needs_more_info?: boolean;
 }
-
-const EMPTY_DRAFT: Draft = {
-  ad_type: '',
-  title: '',
-  description: '',
-  link_url: '',
-  image_url: '',
-  display_duration: 5,
-};
 
 const AD_TYPES: { value: AdType; label: string; desc: string }[] = [
   { value: 'banner', label: 'Banner', desc: 'Topo das paginas' },
   { value: 'popup', label: 'Popup', desc: 'Modal de destaque' },
-  { value: 'inline', label: 'Inline', desc: 'No feed de conteudo' },
+  { value: 'inline', label: 'Inline', desc: 'Feed de conteudo' },
   { value: 'sidebar', label: 'Sidebar', desc: 'Lateral desktop' },
   { value: 'footer', label: 'Rodape', desc: 'Barra mobile' },
 ];
@@ -80,10 +77,20 @@ const AD_TYPE_LABELS: Record<AdType, string> = {
   footer: 'Rodape',
 };
 
+const ACTION_LABELS: Record<ActionType, string> = {
+  create_ad: 'Anuncio persistente',
+  create_reminder: 'Lembrete na agenda',
+  delete_reminder: 'Remover lembrete',
+  create_announcement: 'Aviso no app',
+  create_apostila: 'Apostila',
+  send_push: 'Push para usuarios',
+};
+
 const SUGGESTIONS = [
-  'Crie um popup para divulgar minha mentoria com titulo Semana da Aprovacao',
-  'Quero um banner no topo chamando para uma aula gratuita',
-  'Troque o texto para ficar mais direto e persuasivo',
+  'Crie um anuncio popup para minha mentoria com link https://decodeanalyticsacademy.com',
+  'Adicione um lembrete de prova de Estatistica para amanha as 19h',
+  'Crie uma apostila sobre regressao linear com resumo, exemplos e exercicios',
+  'Envie uma notificacao push: aula ao vivo comeca em 10 minutos',
 ];
 
 function uid() {
@@ -101,22 +108,55 @@ function getMediaKind(url: string): MediaKind {
   return 'image';
 }
 
-function getMissingField(draft: Draft): Step | null {
-  if (!draft.ad_type) return 'type';
-  if (!draft.title.trim()) return 'title';
-  if (!draft.link_url.trim()) return 'link';
-  return null;
+function parseAdType(value: string): AdType {
+  const normalized = normalizeText(value);
+  if (normalized.includes('pop')) return 'popup';
+  if (normalized.includes('rodape') || normalized.includes('footer') || normalized.includes('baixo')) return 'footer';
+  if (normalized.includes('side') || normalized.includes('lateral')) return 'sidebar';
+  if (normalized.includes('inline') || normalized.includes('feed') || normalized.includes('conteudo')) return 'inline';
+  return 'banner';
 }
 
-function getStepFromDraft(draft: Draft): Step {
-  return getMissingField(draft) || 'review';
+function cleanUrl(value: string) {
+  return value.match(/https?:\/\/[^\s)]+/i)?.[0]?.replace(/[.,;!?]+$/, '') || '';
 }
 
-function isReady(draft: Draft) {
-  return Boolean(draft.ad_type && draft.title.trim() && draft.link_url.trim());
+function extractAfter(value: string, words: string[]) {
+  const escaped = words.map((word) => word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+  const match = value.match(new RegExp(`(?:${escaped})\\s*(?:e|eh|:|-)?\\s*[\"']?([^\"'\n]{4,180})`, 'i'));
+  return match?.[1]?.trim().replace(/[.!?]+$/, '') || '';
 }
 
-function extractJson(text: string): AIResult | null {
+function parseDateText(value: string) {
+  const normalized = normalizeText(value);
+  const today = new Date();
+  const date = new Date(today);
+  if (normalized.includes('amanha')) date.setDate(today.getDate() + 1);
+  else if (normalized.includes('depois de amanha')) date.setDate(today.getDate() + 2);
+  else {
+    const iso = value.match(/\b(20\d{2})-(\d{2})-(\d{2})\b/);
+    if (iso) return `${iso[1]}-${iso[2]}-${iso[3]}`;
+    const br = value.match(/\b(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?\b/);
+    if (br) {
+      const day = br[1].padStart(2, '0');
+      const month = br[2].padStart(2, '0');
+      const year = br[3] ? (br[3].length === 2 ? `20${br[3]}` : br[3]) : String(today.getFullYear());
+      return `${year}-${month}-${day}`;
+    }
+    return '';
+  }
+  return date.toISOString().slice(0, 10);
+}
+
+function parseTimeText(value: string) {
+  const match = normalizeText(value).match(/\b(\d{1,2})(?::|h)(\d{2})?\b/);
+  if (!match) return null;
+  const hour = Math.min(23, Number(match[1])).toString().padStart(2, '0');
+  const minute = (match[2] || '00').padStart(2, '0');
+  return `${hour}:${minute}:00`;
+}
+
+function extractJson(text: string): AIPlan | null {
   const cleaned = text.trim().replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```$/i, '').trim();
   const start = cleaned.indexOf('{');
   const end = cleaned.lastIndexOf('}');
@@ -128,11 +168,17 @@ function extractJson(text: string): AIResult | null {
   }
 }
 
-function renderMedia(url: string, kind: MediaKind, title = 'Midia do anuncio') {
-  if (kind === 'video') {
-    return <video src={url} controls playsInline className="mt-3 max-h-64 w-full rounded-xl bg-black object-contain" />;
-  }
+function actionIcon(type: ActionType) {
+  if (type === 'create_ad') return Megaphone;
+  if (type === 'create_reminder') return CalendarPlus;
+  if (type === 'delete_reminder') return Trash2;
+  if (type === 'create_announcement') return ClipboardList;
+  if (type === 'create_apostila') return FileText;
+  return BellRing;
+}
 
+function renderMedia(url: string, kind: MediaKind, title = 'Midia') {
+  if (kind === 'video') return <video src={url} controls playsInline className="mt-3 max-h-64 w-full rounded-xl bg-black object-contain" />;
   if (kind === 'audio') {
     return (
       <div className="mt-3 rounded-xl border border-border/60 bg-background/60 p-2">
@@ -140,110 +186,153 @@ function renderMedia(url: string, kind: MediaKind, title = 'Midia do anuncio') {
       </div>
     );
   }
-
   return <img src={url} alt={title} className="mt-3 max-h-64 w-full rounded-xl object-cover" />;
 }
 
-function parseType(value: string): AdType | null {
-  const normalized = normalizeText(value);
-  if (normalized.includes('pop')) return 'popup';
-  if (normalized.includes('rodape') || normalized.includes('footer') || normalized.includes('baixo')) return 'footer';
-  if (normalized.includes('side') || normalized.includes('lateral')) return 'sidebar';
-  if (normalized.includes('inline') || normalized.includes('feed') || normalized.includes('conteudo')) return 'inline';
-  if (normalized.includes('banner') || normalized.includes('topo')) return 'banner';
-  return null;
+function makeApostilaContent(topic: string, requested: string) {
+  return [
+    `# ${topic}`,
+    '',
+    '## Objetivo',
+    `Entender ${topic} de forma pratica, com foco em aplicacao nos estudos da Decode Analytics Academy.`,
+    '',
+    '## Resumo guiado',
+    requested || `Explique os conceitos centrais de ${topic}, destaque termos importantes e conecte cada conceito com exemplos simples.`,
+    '',
+    '## Roteiro de estudo',
+    '1. Leia o resumo e marque os pontos que ainda parecem abstratos.',
+    '2. Refaça os exemplos sem olhar a resposta.',
+    '3. Transforme cada definicao em uma pergunta curta.',
+    '4. Revise os erros depois de 24 horas.',
+    '',
+    '## Exercicios sugeridos',
+    `1. Explique ${topic} com suas palavras em ate cinco linhas.`,
+    '2. Crie um exemplo real usando dados, negocio ou rotina de estudos.',
+    '3. Liste tres erros comuns e como evita-los.',
+  ].join('\n');
 }
 
-function cleanCapturedText(value: string) {
-  return value.replace(/https?:\/\/[^\s)]+/gi, '').replace(/\s+/g, ' ').trim();
-}
-
-function localExtract(message: string, draft: Draft): Partial<Draft> {
-  const updates: Partial<Draft> = {};
+function localPlan(message: string, mediaUrl?: string): AIPlan {
   const normalized = normalizeText(message);
-  const type = parseType(message);
-  if (type) updates.ad_type = type;
+  const url = cleanUrl(message);
+  const isDelete = /\b(remover|remove|apagar|excluir|deletar)\b/.test(normalized);
 
-  const urlMatch = message.match(/https?:\/\/[^\s)]+/i);
-  if (urlMatch) updates.link_url = urlMatch[0].replace(/[.,;!?]+$/, '');
-
-  const secondsMatch = normalized.match(/(?:por|durante|fica|ficar|dura|durar)?\s*(\d{1,2})\s*(?:s|seg|segundos?)/);
-  if (secondsMatch) updates.display_duration = Math.max(1, Math.min(30, Number(secondsMatch[1])));
-
-  const titleMatch = message.match(/(?:titulo|título|chama|chamar|nome)\s*(?:é|e|:|-)?\s*["“']?([^"”'\n.]{3,90})/i);
-  if (titleMatch) updates.title = titleMatch[1].trim();
-
-  const descriptionMatch = message.match(/(?:descri[cç][aã]o|texto|subtitulo|subtítulo|copy|legenda)\s*(?:é|e|:|-)?\s*["“']?([^"”'\n]{3,220})/i);
-  if (descriptionMatch) updates.description = descriptionMatch[1].trim();
-
-  if (/\b(sem descricao|sem descrição|remove a descricao|remove a descrição)\b/.test(normalized)) {
-    updates.description = '';
+  if ((normalized.includes('push') || normalized.includes('notificacao') || normalized.includes('notificar')) && !isDelete) {
+    const title = extractAfter(message, ['titulo', 'titulo da notificacao']) || 'Aviso Decode Analytics';
+    const body = extractAfter(message, ['mensagem', 'texto', 'notificacao', 'push']) || message.replace(/envie|manda|mandar|notificacao|push/gi, '').trim();
+    return {
+      reply: 'Preparei uma notificacao para todos os usuarios cadastrados. Confirme para enviar.',
+      action: {
+        type: 'send_push',
+        title: 'Enviar notificacao push',
+        summary: `${title} - ${body}`,
+        payload: { title, body, link: url || '/', allUsers: true },
+      },
+    };
   }
 
-  if (!updates.title && !draft.title.trim()) {
-    const short = cleanCapturedText(message);
-    const commandOnly = /^(quero|crie|criar|fazer|faca|faça|preciso|pode|anuncio|anúncio|banner|popup|inline|sidebar|rodape|footer)\b/i.test(short);
-    if (short.length >= 8 && short.length <= 80 && !commandOnly) {
-      updates.title = short.replace(/[.!?]+$/, '').trim();
+  if ((normalized.includes('lembrete') || normalized.includes('agenda') || normalized.includes('calendario') || normalized.includes('prova')) && isDelete) {
+    const query = message.replace(/remover|remove|apagar|excluir|deletar|lembrete|evento|agenda|calendario/gi, '').trim();
+    return {
+      reply: 'Vou procurar esse lembrete na agenda e remover o item correspondente depois da sua confirmacao.',
+      action: {
+        type: 'delete_reminder',
+        title: 'Remover lembrete',
+        summary: query || message,
+        payload: { query: query || message },
+      },
+    };
+  }
+
+  if (normalized.includes('lembrete') || normalized.includes('agenda') || normalized.includes('calendario') || normalized.includes('prova')) {
+    const eventDate = parseDateText(message);
+    const title = extractAfter(message, ['lembrete', 'evento', 'titulo']) || message.replace(/crie|criar|adicione|adicionar|um|uma|lembrete|evento|agenda/gi, '').trim().slice(0, 90) || 'Novo lembrete';
+    if (!eventDate) {
+      return { reply: 'Consigo criar esse lembrete. Qual data devo usar? Pode mandar como 30/05 ou amanha.', needs_more_info: true };
     }
+    return {
+      reply: 'Montei o lembrete para a agenda. Confirme para salvar.',
+      action: {
+        type: 'create_reminder',
+        title: 'Criar lembrete',
+        summary: `${title} em ${eventDate}`,
+        payload: { title, description: message, event_date: eventDate, event_time: parseTimeText(message), event_type: 'deadline', subject: extractAfter(message, ['materia', 'disciplina', 'assunto']) || null },
+      },
+    };
   }
 
-  return updates;
-}
-
-function localReply(draft: Draft, hadUpdates: boolean) {
-  const missing = getMissingField(draft);
-  if (missing === 'type') return 'Consigo montar isso. Qual formato voce prefere: banner, popup, inline, sidebar ou rodape?';
-  if (missing === 'title') return 'Perfeito. Me diga o titulo principal do anuncio. Pode escrever do seu jeito.';
-  if (missing === 'link') return 'Boa, ja entendi a ideia. Agora me mande o link de destino com https:// para eu fechar a previa.';
-  if (hadUpdates) return 'Atualizei o rascunho. Pode continuar pedindo ajustes como se estivesse conversando comigo.';
-  return 'Estou acompanhando. Me diga o que voce quer mudar no anuncio ou publique quando estiver pronto.';
-}
-
-function mergeDraft(base: Draft, updates?: Partial<Draft>) {
-  const next = { ...base };
-  if (!updates) return next;
-  if (updates.ad_type && AD_TYPES.some((type) => type.value === updates.ad_type)) next.ad_type = updates.ad_type;
-  if (typeof updates.title === 'string') next.title = updates.title.trim().slice(0, 90);
-  if (typeof updates.description === 'string') next.description = updates.description.trim().slice(0, 240);
-  if (typeof updates.link_url === 'string' && updates.link_url.trim()) next.link_url = updates.link_url.trim();
-  if (typeof updates.image_url === 'string') next.image_url = updates.image_url.trim();
-  if (typeof updates.display_duration === 'number' && Number.isFinite(updates.display_duration)) {
-    next.display_duration = Math.max(1, Math.min(30, Math.round(updates.display_duration)));
+  if (normalized.includes('apostila')) {
+    const title = extractAfter(message, ['apostila sobre', 'apostila de', 'titulo']) || message.replace(/crie|criar|gere|gerar|uma|apostila|sobre|de/gi, '').trim().slice(0, 90) || 'Nova apostila';
+    return {
+      reply: 'Preparei uma apostila inicial. Ela entra como rascunho para voce revisar antes de publicar.',
+      action: {
+        type: 'create_apostila',
+        title: 'Criar apostila',
+        summary: title,
+        payload: { title, category: 'ia', content: makeApostilaContent(title, message), published: false },
+      },
+    };
   }
-  return next;
+
+  if (normalized.includes('aviso') || normalized.includes('comunicado')) {
+    const title = extractAfter(message, ['titulo', 'aviso', 'comunicado']) || 'Novo aviso';
+    const content = extractAfter(message, ['texto', 'mensagem', 'conteudo']) || message;
+    return {
+      reply: 'Preparei um aviso para o app. Confirme para publicar.',
+      action: {
+        type: 'create_announcement',
+        title: 'Criar aviso',
+        summary: title,
+        payload: { title, content, category: 'geral', link_url: url || null, image_url: mediaUrl || null, published: true },
+      },
+    };
+  }
+
+  if (normalized.includes('anuncio') || normalized.includes('anuncio') || normalized.includes('banner') || normalized.includes('popup')) {
+    const title = extractAfter(message, ['titulo', 'chama', 'nome']) || message.replace(/crie|criar|faca|fazer|um|uma|anuncio|anuncio|banner|popup/gi, '').trim().slice(0, 90) || 'Novo anuncio';
+    if (!url) {
+      return { reply: 'Consigo criar o anuncio persistente. Me envie tambem o link de destino com https:// para eu salvar corretamente.', needs_more_info: true };
+    }
+    return {
+      reply: 'Preparei um anuncio persistente para o app. Confirme para publicar.',
+      action: {
+        type: 'create_ad',
+        title: 'Criar anuncio',
+        summary: `${title} (${AD_TYPE_LABELS[parseAdType(message)]})`,
+        payload: { title, description: extractAfter(message, ['texto', 'copy', 'descricao']) || null, link_url: url, image_url: mediaUrl || null, ad_type: parseAdType(message), display_duration: 5, is_active: true },
+      },
+    };
+  }
+
+  return { reply: 'Posso ajudar com anuncios, lembretes, avisos, apostilas e notificacoes push. Me diga a tarefa do jeito que voce falaria para um assistente.' };
 }
 
 export function AdsChatBuilder() {
   const { user, isAdmin } = useAuth();
   const [messages, setMessages] = useState<Msg[]>([]);
-  const [step, setStep] = useState<Step>('type');
-  const [draft, setDraft] = useState<Draft>(EMPTY_DRAFT);
   const [input, setInput] = useState('');
-  const [saving, setSaving] = useState(false);
   const [thinking, setThinking] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [listening, setListening] = useState(false);
   const [attachmentsOpen, setAttachmentsOpen] = useState(false);
+  const [latestMedia, setLatestMedia] = useState<{ url: string; kind: MediaKind } | null>(null);
+  const [pendingAction, setPendingAction] = useState<AppAction | null>(null);
+  const [pushTitle, setPushTitle] = useState('Aviso Decode Analytics');
+  const [pushBody, setPushBody] = useState('');
+  const [pushLink, setPushLink] = useState('/');
   const scrollRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
-  const draftRef = useRef<Draft>(EMPTY_DRAFT);
   const messagesRef = useRef<Msg[]>([]);
 
   useEffect(() => {
-    const intro = 'Oi, eu sou seu assistente de anuncios. Pode falar livremente: me diga o objetivo, o formato, o titulo, a copy, o link e mande midia pelo clipe quando quiser. Eu vou montando o rascunho com voce.';
-    setMessages([{ id: uid(), role: 'bot', text: intro, ts: Date.now() }]);
+    setMessages([{ id: uid(), role: 'bot', text: 'Oi. Eu sou o copiloto do app: posso criar anuncios persistentes, adicionar ou remover lembretes, montar apostilas, publicar avisos e preparar notificacoes push. Escreva o que voce precisa em linguagem normal.', ts: Date.now() }]);
   }, []);
 
-  useEffect(() => { draftRef.current = draft; }, [draft]);
   useEffect(() => { messagesRef.current = messages; }, [messages]);
+  useEffect(() => { scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }); }, [messages, thinking, attachmentsOpen, pendingAction]);
 
-  useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
-  }, [messages, attachmentsOpen, thinking]);
-
-  const mediaKind = useMemo(() => (draft.image_url ? getMediaKind(draft.image_url) : null), [draft.image_url]);
-  const missing = getMissingField(draft);
-  const showSuggestions = messages.filter((message) => message.role === 'user').length === 0;
+  const pendingIcon = useMemo(() => (pendingAction ? actionIcon(pendingAction.type) : ShieldCheck), [pendingAction]);
+  const PendingIcon = pendingIcon;
 
   function pushBot(text: string) {
     setMessages((m) => [...m, { id: uid(), role: 'bot', text, ts: Date.now() }]);
@@ -253,12 +342,12 @@ export function AdsChatBuilder() {
     setMessages((m) => [...m, { id: uid(), role: 'user', text, ts: Date.now(), mediaUrl, mediaKind }]);
   }
 
-  async function callAI(userMessage: string, baseDraft: Draft): Promise<AIResult | null> {
+  async function callAI(userMessage: string, mediaUrl?: string): Promise<AIPlan | null> {
     try {
       const { getCurrentAccessToken } = await import('@/lib/auth-session');
       const accessToken = getCurrentAccessToken();
       const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/gemini-direct`;
-      const recent = messagesRef.current.slice(-8).map((m) => ({ role: m.role === 'bot' ? 'assistant' : 'user', content: m.text }));
+      const recent = messagesRef.current.slice(-10).map((m) => ({ role: m.role === 'bot' ? 'assistant' : 'user', content: m.text }));
       const resp = await fetch(url, {
         method: 'POST',
         headers: {
@@ -268,18 +357,20 @@ export function AdsChatBuilder() {
         },
         body: JSON.stringify({
           systemPrompt: [
-            'Voce e um copilot brasileiro para criar anuncios dentro de um painel administrativo.',
-            'Converse de forma natural, curta e util, como um GPT de produto. Nao prenda o usuario em botoes.',
-            'Extraia e atualize o rascunho quando o usuario falar formato, titulo, texto, link, tempo ou midia.',
-            'Campos validos: ad_type banner|popup|inline|sidebar|footer, title, description, link_url, image_url, display_duration de 1 a 30.',
-            'Obrigatorios para publicar: ad_type, title, link_url. Se faltar algo, faca so uma pergunta objetiva.',
-            'Se o usuario pedir ideias, sugira copy e CTA. Se pedir alteracao, atualize somente o necessario.',
-            'Responda SOMENTE JSON valido neste formato:',
-            '{"reply":"mensagem curta em portugues","updates":{},"ready_to_review":false}',
+            'Voce e o copiloto administrativo da Decode Analytics Academy.',
+            'O usuario fala em portugues e quer que voce execute tarefas do app.',
+            'Classifique a mensagem em uma action quando for possivel executar algo no banco.',
+            'Actions validas: create_ad, create_reminder, delete_reminder, create_announcement, create_apostila, send_push.',
+            'Para lembretes use event_date em YYYY-MM-DD e event_time HH:MM:SS quando houver horario.',
+            'Para anuncios use ad_type banner|popup|inline|sidebar|footer, title, link_url, description, image_url.',
+            'Para apostila gere content em markdown e published false por padrao.',
+            'Para push use title, body, link e allUsers true quando for para todos.',
+            'Se faltar informacao obrigatoria, retorne action null e faca uma unica pergunta objetiva.',
+            'Responda SOMENTE JSON valido: {"reply":"texto curto","needs_more_info":false,"action":{"type":"create_ad","title":"...","summary":"...","payload":{}}}',
           ].join('\n'),
           messages: [
             ...recent,
-            { role: 'user', content: `Rascunho atual: ${JSON.stringify(baseDraft)}\nMensagem atual: ${userMessage}` },
+            { role: 'user', content: `Mensagem atual: ${userMessage}\nMidia anexada: ${mediaUrl || 'nenhuma'}\nData de hoje: ${new Date().toISOString().slice(0, 10)}` },
           ],
         }),
       });
@@ -302,10 +393,7 @@ export function AdsChatBuilder() {
           if (line.endsWith('\r')) line = line.slice(0, -1);
           if (!line.startsWith('data: ')) continue;
           const json = line.slice(6).trim();
-          if (json === '[DONE]') {
-            done = true;
-            break;
-          }
+          if (json === '[DONE]') { done = true; break; }
           try {
             const parsed = JSON.parse(json);
             const delta = parsed.choices?.[0]?.delta?.content;
@@ -315,28 +403,49 @@ export function AdsChatBuilder() {
           }
         }
       }
-
       return extractJson(collected);
     } catch (error) {
-      console.warn('AI ad chat fallback:', error);
+      console.warn('App copilot fallback:', error);
       return null;
     }
   }
 
-  async function processFreeMessage(value: string) {
-    const base = draftRef.current;
+  function normalizeAction(action: AppAction | null | undefined): AppAction | null {
+    if (!action?.type || !ACTION_LABELS[action.type]) return null;
+    const title = action.title || ACTION_LABELS[action.type];
+    return { ...action, title, summary: action.summary || title, payload: action.payload || {} };
+  }
+
+  async function processMessage(value: string) {
+    const media = latestMedia;
+    const confirmWords = ['sim', 'confirmar', 'confirma', 'executar', 'pode fazer', 'faça', 'faca'];
+    const cancelWords = ['cancelar', 'cancela', 'nao', 'não', 'deixa pra la'];
+    const normalized = normalizeText(value.trim());
+
+    if (pendingAction && confirmWords.some((word) => normalized === normalizeText(word) || normalized.includes(normalizeText(word)))) {
+      await runAction(pendingAction);
+      return;
+    }
+
+    if (pendingAction && cancelWords.some((word) => normalized === normalizeText(word) || normalized.includes(normalizeText(word)))) {
+      setPendingAction(null);
+      pushBot('Tudo bem, cancelei essa acao. Pode mandar a proxima tarefa.');
+      return;
+    }
+
     setThinking(true);
     try {
-      const localUpdates = localExtract(value, base);
-      const localDraft = mergeDraft(base, localUpdates);
-      setDraft(localDraft);
-      setStep(getStepFromDraft(localDraft));
+      const ai = await callAI(value, media?.url);
+      const fallback = localPlan(value, media?.url);
+      const plan = normalizeAction(ai?.action) ? ai : fallback;
+      const action = normalizeAction(plan.action);
 
-      const ai = await callAI(value, localDraft);
-      const nextDraft = mergeDraft(localDraft, ai?.updates);
-      setDraft(nextDraft);
-      setStep(ai?.ready_to_review || isReady(nextDraft) ? 'review' : getStepFromDraft(nextDraft));
-      pushBot(ai?.reply?.trim() || localReply(nextDraft, Object.keys(localUpdates).length > 0));
+      if (action) {
+        setPendingAction(action);
+        pushBot(`${plan.reply || 'Preparei a acao.'}\n\nDigite "sim" para executar ou "cancelar" para descartar.`);
+      } else {
+        pushBot(plan.reply || fallback.reply || 'Entendi. Me diga exatamente o que voce quer que eu faca no app.');
+      }
     } finally {
       setThinking(false);
     }
@@ -344,26 +453,19 @@ export function AdsChatBuilder() {
 
   function submitMessage(value: string) {
     const text = value.trim();
-    if (!text || thinking || step === 'done') return;
+    if (!text || thinking || saving) return;
     setInput('');
     setAttachmentsOpen(false);
     pushUser(text);
-    void processFreeMessage(text);
-  }
-
-  function handleType(t: AdType) {
-    const label = AD_TYPE_LABELS[t];
-    submitMessage(`Use o formato ${label}.`);
+    void processMessage(text);
   }
 
   function handleMediaUploaded(url: string, kind: MediaKind) {
     if (!url) return;
     setAttachmentsOpen(false);
-    const next = mergeDraft(draftRef.current, { image_url: url });
-    setDraft(next);
-    setStep(isReady(next) ? 'review' : getStepFromDraft(next));
-    pushUser(kind === 'image' ? 'Enviei uma foto para o anuncio' : kind === 'video' ? 'Enviei um video para o anuncio' : 'Enviei um audio para o anuncio', url, kind);
-    pushBot(isReady(next) ? 'Midia recebida. Atualizei a previa; se quiser, posso ajustar a copy para combinar com ela.' : localReply(next, true));
+    setLatestMedia({ url, kind });
+    pushUser(kind === 'image' ? 'Enviei uma imagem.' : kind === 'video' ? 'Enviei um video.' : 'Enviei um audio.', url, kind);
+    pushBot('Recebi a midia. Agora me diga o que quer fazer com ela: criar anuncio, aviso, apostila ou apenas analisar.');
   }
 
   function startVoiceInput() {
@@ -372,94 +474,180 @@ export function AdsChatBuilder() {
       setListening(false);
       return;
     }
-
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
       toast.error('Seu navegador nao liberou ditado por voz aqui. Use o campo de mensagem ou anexe um audio pelo clipe.');
       setAttachmentsOpen(true);
       return;
     }
-
     const recognition = new SpeechRecognition();
     recognition.lang = 'pt-BR';
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
     recognitionRef.current = recognition;
     setListening(true);
-
     recognition.onresult = (event: any) => {
       const transcript = event.results?.[0]?.[0]?.transcript?.trim();
       if (transcript) submitMessage(transcript);
     };
-    recognition.onerror = () => {
-      toast.error('Nao consegui ouvir agora. Tente novamente ou digite a mensagem.');
-    };
+    recognition.onerror = () => toast.error('Nao consegui ouvir agora. Tente novamente ou digite a mensagem.');
     recognition.onend = () => setListening(false);
     recognition.start();
   }
 
   function reset() {
-    setDraft(EMPTY_DRAFT);
-    draftRef.current = EMPTY_DRAFT;
     setInput('');
     setThinking(false);
+    setSaving(false);
     setListening(false);
     setAttachmentsOpen(false);
-    setStep('type');
-    setMessages([{ id: uid(), role: 'bot', text: 'Novo anuncio iniciado. Me conte livremente o que voce quer divulgar.', ts: Date.now() }]);
+    setLatestMedia(null);
+    setPendingAction(null);
+    setMessages([{ id: uid(), role: 'bot', text: 'Novo atendimento iniciado. Pode mandar qualquer tarefa do app em linguagem normal.', ts: Date.now() }]);
   }
 
-  async function publish() {
+  async function runAction(action: AppAction) {
     if (!isAdmin) {
-      toast.error('Apenas admins podem publicar anuncios');
-      return;
-    }
-    if (!draft.ad_type || !draft.title.trim() || !draft.link_url.trim()) {
-      toast.error('Ainda falta formato, titulo ou link do anuncio');
+      toast.error('Apenas admins podem executar acoes administrativas');
       return;
     }
     setSaving(true);
     try {
-      const { error } = await supabase.from('ads').insert({
-        title: draft.title,
-        description: draft.description || null,
-        image_url: draft.image_url || null,
-        link_url: draft.link_url,
-        ad_type: draft.ad_type,
-        display_duration: draft.display_duration,
-        is_active: true,
-        created_by: user?.id,
-      });
-      if (error) throw error;
-      toast.success('Anuncio publicado!');
-      pushBot('Publicado. O anuncio ja esta ativo no app.');
-      setStep('done');
-    } catch (e: any) {
-      console.error(e);
-      toast.error('Erro ao publicar: ' + (e?.message || 'desconhecido'));
+      const payload = action.payload || {};
+
+      if (action.type === 'create_ad') {
+        if (!payload.title || !payload.link_url) throw new Error('O anuncio precisa de titulo e link de destino.');
+        const { error } = await supabase.from('ads').insert({
+          title: payload.title,
+          description: payload.description || null,
+          image_url: payload.image_url || latestMedia?.url || null,
+          link_url: payload.link_url,
+          ad_type: payload.ad_type || 'banner',
+          display_duration: payload.display_duration || 5,
+          is_active: payload.is_active ?? true,
+          created_by: user?.id,
+        });
+        if (error) throw error;
+      }
+
+      if (action.type === 'create_reminder') {
+        if (!payload.title || !payload.event_date) throw new Error('O lembrete precisa de titulo e data.');
+        const { error } = await supabase.from('calendar_events').insert({
+          title: payload.title,
+          description: payload.description || null,
+          event_date: payload.event_date,
+          event_time: payload.event_time || null,
+          event_type: payload.event_type || 'deadline',
+          subject: payload.subject || null,
+          created_by: user?.id,
+        });
+        if (error) throw error;
+      }
+
+      if (action.type === 'delete_reminder') {
+        const query = String(payload.query || action.summary || '').trim();
+        if (!query) throw new Error('Diga qual lembrete devo remover.');
+        const { data, error } = await supabase
+          .from('calendar_events')
+          .select('id,title,event_date')
+          .or(`title.ilike.%${query}%,subject.ilike.%${query}%,description.ilike.%${query}%`)
+          .limit(5);
+        if (error) throw error;
+        if (!data?.length) throw new Error('Nao encontrei um lembrete com esse termo.');
+        if (data.length > 1) {
+          const list = data.map((item: any) => `- ${item.title} (${item.event_date})`).join('\n');
+          setPendingAction(null);
+          pushBot(`Encontrei mais de um lembrete. Me diga o titulo exato para eu remover:\n${list}`);
+          return;
+        }
+        const { error: deleteError } = await supabase.from('calendar_events').delete().eq('id', data[0].id);
+        if (deleteError) throw deleteError;
+      }
+
+      if (action.type === 'create_announcement') {
+        if (!payload.title || !payload.content) throw new Error('O aviso precisa de titulo e conteudo.');
+        const { error } = await supabase.from('announcements').insert({
+          title: payload.title,
+          content: payload.content,
+          category: payload.category || 'geral',
+          image_url: payload.image_url || latestMedia?.url || null,
+          link_url: payload.link_url || null,
+          published: payload.published ?? true,
+          created_by: user?.id,
+        });
+        if (error) throw error;
+      }
+
+      if (action.type === 'create_apostila') {
+        if (!payload.title) throw new Error('A apostila precisa de titulo.');
+        const { error } = await supabase.from('apostilas').insert({
+          title: payload.title,
+          category: payload.category || 'ia',
+          content: payload.content || makeApostilaContent(payload.title, ''),
+          published: payload.published ?? false,
+          source_type: 'ai_copilot',
+          created_by: user?.id,
+        });
+        if (error) throw error;
+      }
+
+      if (action.type === 'send_push') {
+        if (!payload.title || !payload.body) throw new Error('A notificacao precisa de titulo e mensagem.');
+        const { data, error } = await supabase.functions.invoke('send-push', {
+          body: {
+            allUsers: true,
+            title: payload.title,
+            body: payload.body,
+            link: payload.link || '/',
+            type: 'admin_broadcast',
+          },
+        });
+        if (error) throw error;
+        if (data?.ok === false) throw new Error(data?.error || 'Falha ao enviar push.');
+      }
+
+      toast.success('Acao executada com sucesso');
+      setPendingAction(null);
+      pushBot(`Feito: ${ACTION_LABELS[action.type]}. A alteracao ja foi salva no app.`);
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error?.message || 'Erro ao executar acao');
+      pushBot(`Nao consegui executar agora: ${error?.message || 'erro desconhecido'}.`);
     } finally {
       setSaving(false);
     }
   }
 
-  const canType = step !== 'done' && !thinking;
-  const placeholder = listening ? 'Ouvindo...' : thinking ? 'A IA esta respondendo...' : 'Converse com a IA sobre o anuncio';
+  function sendPushFromPanel() {
+    if (!pushBody.trim()) {
+      toast.error('Escreva a mensagem da notificacao');
+      return;
+    }
+    void runAction({
+      type: 'send_push',
+      title: 'Enviar notificacao push',
+      summary: `${pushTitle} - ${pushBody}`,
+      payload: { title: pushTitle, body: pushBody, link: pushLink || '/', allUsers: true },
+    });
+  }
+
+  const placeholder = listening ? 'Ouvindo...' : thinking ? 'Pensando...' : 'Digite uma tarefa para o copiloto';
 
   return (
-    <div className="grid h-[calc(100vh-132px)] min-h-[660px] overflow-hidden rounded-2xl border border-border bg-background shadow-sm lg:grid-cols-[minmax(0,1fr)_360px]">
-      <section className="flex min-h-0 flex-col bg-[radial-gradient(circle_at_top_left,hsl(var(--primary)/0.10),transparent_35%),hsl(var(--background))]">
-        <div className="flex h-16 shrink-0 items-center gap-3 border-b border-border/70 bg-card/80 px-4 backdrop-blur-xl">
-          <div className="relative flex h-10 w-10 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-[0_10px_28px_hsl(var(--primary)/0.25)]">
+    <div className="app-command-shell grid h-[calc(100vh-132px)] min-h-[680px] overflow-hidden rounded-2xl border border-border bg-background shadow-sm lg:grid-cols-[minmax(0,1fr)_380px]">
+      <section className="flex min-h-0 flex-col bg-[radial-gradient(circle_at_top_left,hsl(var(--primary)/0.08),transparent_32%),hsl(var(--background))]">
+        <div className="flex h-16 shrink-0 items-center gap-3 border-b border-border/70 bg-card/85 px-4 backdrop-blur-xl">
+          <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-[0_10px_28px_hsl(var(--primary)/0.22)]">
             <Bot className="h-5 w-5" />
             <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-card bg-success" />
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <h2 className="truncate text-sm font-bold">Assistente de Anuncios</h2>
-              <Badge variant="outline" className="hidden h-5 px-1.5 text-[10px] sm:inline-flex">chat livre</Badge>
+              <h2 className="truncate text-sm font-bold">Copiloto do App</h2>
+              <Badge variant="outline" className="hidden h-5 px-1.5 text-[10px] sm:inline-flex">admin</Badge>
             </div>
             <p className="truncate text-xs text-muted-foreground">
-              {listening ? 'ouvindo sua voz...' : thinking ? 'pensando na melhor resposta...' : isReady(draft) ? 'rascunho pronto para revisar' : 'fale, digite ou envie midia'}
+              {listening ? 'ouvindo sua voz...' : thinking ? 'lendo contexto e preparando acao...' : pendingAction ? 'aguardando confirmacao' : 'converse livremente e peça tarefas completas'}
             </p>
           </div>
           <Button variant="ghost" size="icon" onClick={reset} className="h-9 w-9 rounded-xl" aria-label="Recomecar">
@@ -475,13 +663,14 @@ export function AdsChatBuilder() {
             {messages.map((m) => (
               <motion.div
                 key={m.id}
-                initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                data-ad-chat-message
+                initial={{ opacity: 0, y: 10, scale: 0.985 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -6 }}
-                transition={{ duration: 0.22 }}
+                transition={{ duration: 0.2 }}
                 className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
-                <div className={`max-w-[88%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm sm:max-w-[72%] ${m.role === 'user' ? 'rounded-br-md bg-primary text-primary-foreground' : 'rounded-bl-md border border-border/70 bg-card text-card-foreground'}`}>
+                <div className={`max-w-[88%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm sm:max-w-[74%] ${m.role === 'user' ? 'rounded-br-md bg-primary text-primary-foreground' : 'rounded-bl-md border border-border/70 bg-card text-card-foreground'}`}>
                   <p className="whitespace-pre-wrap">{m.text}</p>
                   {m.mediaUrl && m.mediaKind && renderMedia(m.mediaUrl, m.mediaKind)}
                   <div className={`mt-2 flex items-center justify-end gap-1 text-[10px] ${m.role === 'user' ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
@@ -493,17 +682,17 @@ export function AdsChatBuilder() {
             ))}
           </AnimatePresence>
 
-          {showSuggestions && (
-            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="max-w-2xl space-y-3">
+          {messages.filter((message) => message.role === 'user').length === 0 && (
+            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="max-w-3xl space-y-3">
               <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
-                <Sparkles className="h-3.5 w-3.5 text-primary" /> Comece com uma mensagem pronta ou escreva do seu jeito
+                <Sparkles className="h-3.5 w-3.5 text-primary" /> Fale como se estivesse pedindo para um assistente de verdade
               </div>
-              <div className="grid gap-2 sm:grid-cols-3">
+              <div className="grid gap-2 sm:grid-cols-2">
                 {SUGGESTIONS.map((suggestion) => (
                   <button
                     key={suggestion}
                     onClick={() => submitMessage(suggestion)}
-                    className="rounded-2xl border border-border/70 bg-card/70 p-3 text-left text-xs leading-relaxed text-muted-foreground transition hover:-translate-y-0.5 hover:border-primary/40 hover:text-foreground hover:shadow-md"
+                    className="rounded-xl border border-border/70 bg-card/80 p-3 text-left text-xs leading-relaxed text-muted-foreground transition hover:-translate-y-0.5 hover:border-primary/40 hover:text-foreground hover:shadow-md"
                   >
                     {suggestion}
                   </button>
@@ -512,18 +701,25 @@ export function AdsChatBuilder() {
             </motion.div>
           )}
 
-          {!draft.ad_type && !showSuggestions && (
-            <div className="flex flex-wrap gap-2">
-              {AD_TYPES.map((t) => (
-                <button
-                  key={t.value}
-                  onClick={() => handleType(t.value)}
-                  className="rounded-full border border-border/70 bg-card px-3 py-2 text-left text-xs font-medium text-foreground shadow-sm transition hover:border-primary/40 hover:bg-primary/10"
-                >
-                  {t.label}
-                  <span className="ml-1 text-[10px] font-normal text-muted-foreground">{t.desc}</span>
-                </button>
-              ))}
+          {pendingAction && (
+            <div className="max-w-xl rounded-2xl border border-primary/35 bg-primary/5 p-4 shadow-sm">
+              <div className="flex items-start gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <PendingIcon className="h-5 w-5" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <Badge variant="outline" className="mb-2">{ACTION_LABELS[pendingAction.type]}</Badge>
+                  <h3 className="text-sm font-semibold">{pendingAction.title}</h3>
+                  <p className="mt-1 text-xs text-muted-foreground">{pendingAction.summary}</p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Button size="sm" onClick={() => runAction(pendingAction)} disabled={saving} className="gap-2">
+                      {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+                      Executar
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => { setPendingAction(null); pushBot('Acao cancelada.'); }} disabled={saving}>Cancelar</Button>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
@@ -543,7 +739,7 @@ export function AdsChatBuilder() {
           )}
         </div>
 
-        <div className="relative shrink-0 border-t border-border/70 bg-card/85 px-3 py-3 backdrop-blur-xl">
+        <div className="relative shrink-0 border-t border-border/70 bg-card/90 px-3 py-3 backdrop-blur-xl">
           <AnimatePresence>
             {attachmentsOpen && (
               <motion.div
@@ -553,15 +749,15 @@ export function AdsChatBuilder() {
                 className="absolute bottom-[76px] left-3 z-10 grid w-64 grid-cols-3 gap-2 rounded-2xl border border-border bg-popover p-3 shadow-xl"
               >
                 <div className="flex flex-col items-center gap-1 text-[11px] text-muted-foreground">
-                  <AdImageUploadButton mediaType="image" label="Foto" showPreview={false} size="icon" className="h-12 w-12 rounded-2xl bg-[#8f66ff] text-white hover:bg-[#7a55df]" onImageUploaded={(url) => handleMediaUploaded(url, 'image')} />
+                  <AdImageUploadButton mediaType="image" label="Foto" showPreview={false} size="icon" className="h-12 w-12 rounded-xl bg-[#6d5dfc] text-white hover:bg-[#5b4be0]" onImageUploaded={(url) => handleMediaUploaded(url, 'image')} />
                   Foto
                 </div>
                 <div className="flex flex-col items-center gap-1 text-[11px] text-muted-foreground">
-                  <AdImageUploadButton mediaType="video" label="Video" showPreview={false} size="icon" className="h-12 w-12 rounded-2xl bg-[#ff2e74] text-white hover:bg-[#db285f]" onImageUploaded={(url) => handleMediaUploaded(url, 'video')} />
+                  <AdImageUploadButton mediaType="video" label="Video" showPreview={false} size="icon" className="h-12 w-12 rounded-xl bg-[#ef476f] text-white hover:bg-[#d93d64]" onImageUploaded={(url) => handleMediaUploaded(url, 'video')} />
                   Video
                 </div>
                 <div className="flex flex-col items-center gap-1 text-[11px] text-muted-foreground">
-                  <AdImageUploadButton mediaType="audio" label="Audio" showPreview={false} size="icon" className="h-12 w-12 rounded-2xl bg-[#00a884] text-white hover:bg-[#008f72]" onImageUploaded={(url) => handleMediaUploaded(url, 'audio')} />
+                  <AdImageUploadButton mediaType="audio" label="Audio" showPreview={false} size="icon" className="h-12 w-12 rounded-xl bg-[#0f9f7a] text-white hover:bg-[#0d8466]" onImageUploaded={(url) => handleMediaUploaded(url, 'audio')} />
                   Audio
                 </div>
               </motion.div>
@@ -572,7 +768,7 @@ export function AdsChatBuilder() {
             <Button type="button" variant="ghost" size="icon" onClick={() => setAttachmentsOpen((open) => !open)} className="mb-1 h-10 w-10 shrink-0 rounded-xl" aria-label="Anexar midia">
               <Paperclip className="h-5 w-5" />
             </Button>
-            <Button type="button" variant="ghost" size="icon" onClick={() => setAttachmentsOpen(true)} className="mb-1 hidden h-10 w-10 shrink-0 rounded-xl sm:inline-flex" aria-label="Abrir anexos de imagem e video">
+            <Button type="button" variant="ghost" size="icon" onClick={() => setAttachmentsOpen(true)} className="mb-1 hidden h-10 w-10 shrink-0 rounded-xl sm:inline-flex" aria-label="Abrir anexos">
               <Camera className="h-5 w-5" />
             </Button>
             <div className="flex min-h-[46px] flex-1 items-end rounded-2xl border border-border bg-background px-3 py-1 focus-within:border-primary/50">
@@ -586,17 +782,17 @@ export function AdsChatBuilder() {
                   }
                 }}
                 placeholder={placeholder}
-                disabled={!canType || listening}
+                disabled={thinking || saving || listening}
                 className="min-h-[38px] flex-1 resize-none border-0 bg-transparent px-1 py-2 text-[15px] shadow-none focus-visible:ring-0"
                 autoFocus
               />
             </div>
             {input.trim() ? (
-              <Button onClick={() => submitMessage(input)} disabled={!canType} size="icon" className="mb-1 h-11 w-11 shrink-0 rounded-2xl">
+              <Button onClick={() => submitMessage(input)} disabled={thinking || saving} size="icon" className="mb-1 h-11 w-11 shrink-0 rounded-2xl">
                 <Send className="h-5 w-5" />
               </Button>
             ) : (
-              <Button type="button" onClick={startVoiceInput} disabled={step === 'done' || thinking} size="icon" className={`mb-1 h-11 w-11 shrink-0 rounded-2xl ${listening ? 'bg-destructive hover:bg-destructive/90' : ''}`} aria-label={listening ? 'Parar gravacao de voz' : 'Falar com a IA'}>
+              <Button type="button" onClick={startVoiceInput} disabled={thinking || saving} size="icon" className={`mb-1 h-11 w-11 shrink-0 rounded-2xl ${listening ? 'bg-destructive hover:bg-destructive/90' : ''}`} aria-label={listening ? 'Parar voz' : 'Falar com a IA'}>
                 {listening ? <Square className="h-4 w-4" /> : <Mic className="h-5 w-5" />}
               </Button>
             )}
@@ -604,46 +800,66 @@ export function AdsChatBuilder() {
         </div>
       </section>
 
-      <aside className="hidden min-h-0 border-l border-border bg-card/55 p-4 backdrop-blur-xl lg:flex lg:flex-col">
-        <div className="mb-4 flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Rascunho vivo</p>
-            <h3 className="text-base font-bold">Previa do anuncio</h3>
-          </div>
-          <Badge variant={isReady(draft) ? 'default' : 'outline'}>{isReady(draft) ? 'pronto' : 'incompleto'}</Badge>
+      <aside className="ops-panel hidden min-h-0 border-l border-border bg-card/60 p-4 backdrop-blur-xl lg:flex lg:flex-col">
+        <div className="mb-4">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Operacoes</p>
+          <h3 className="text-base font-bold">O que o copiloto pode fazer</h3>
         </div>
 
-        <div className="flex-1 overflow-y-auto rounded-2xl border border-border bg-background/70 p-4 shadow-inner">
-          <div className="mb-3 flex flex-wrap gap-2">
-            <Badge variant="outline">{draft.ad_type ? AD_TYPE_LABELS[draft.ad_type] : 'formato pendente'}</Badge>
-            <Badge variant="outline">{draft.display_duration}s</Badge>
-            {mediaKind && <Badge variant="outline">{mediaKind === 'image' ? 'foto' : mediaKind === 'video' ? 'video' : 'audio'}</Badge>}
-          </div>
-          {draft.image_url && mediaKind && renderMedia(draft.image_url, mediaKind, draft.title)}
-          <div className="mt-4 rounded-2xl border border-border/70 bg-card p-4">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-primary">{draft.ad_type ? AD_TYPE_LABELS[draft.ad_type] : 'Novo anuncio'}</p>
-            <h4 className="mt-2 text-lg font-bold leading-tight">{draft.title || 'Titulo ainda nao definido'}</h4>
-            <p className="mt-2 text-sm text-muted-foreground">{draft.description || 'A descricao aparece aqui quando voce pedir ou enviar uma copy.'}</p>
-            <p className="mt-3 break-all text-xs text-muted-foreground">{draft.link_url || 'https://link-do-anuncio.com'}</p>
-          </div>
+        <div className="space-y-2">
+          {[
+            { icon: Megaphone, title: 'Adicionar anuncios', text: 'Cria registros persistentes na tabela de anuncios.' },
+            { icon: CalendarPlus, title: 'Gerenciar lembretes', text: 'Adiciona ou remove eventos da agenda.' },
+            { icon: FileText, title: 'Gerar apostilas', text: 'Cria rascunhos em markdown para revisao.' },
+            { icon: BellRing, title: 'Enviar push', text: 'Dispara notificacoes para usuarios cadastrados.' },
+          ].map((item) => {
+            const Icon = item.icon;
+            return (
+              <div key={item.title} className="rounded-xl border border-border/70 bg-background/70 p-3">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><Icon className="h-4 w-4" /></div>
+                  <div>
+                    <p className="text-sm font-semibold">{item.title}</p>
+                    <p className="text-xs leading-relaxed text-muted-foreground">{item.text}</p>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
 
-          {!isReady(draft) && (
-            <div className="mt-4 rounded-2xl border border-dashed border-border p-4 text-xs text-muted-foreground">
-              Falta: {missing === 'type' ? 'formato do anuncio' : missing === 'title' ? 'titulo principal' : missing === 'link' ? 'link de destino' : 'revisao'}.
+        <div className="mt-4 rounded-2xl border border-border bg-background/75 p-4">
+          <div className="mb-3 flex items-center gap-2">
+            <BellRing className="h-4 w-4 text-primary" />
+            <h4 className="text-sm font-semibold">Push rapido</h4>
+          </div>
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="push-title" className="text-xs">Titulo</Label>
+              <Input id="push-title" value={pushTitle} onChange={(e) => setPushTitle(e.target.value)} className="h-9" />
             </div>
-          )}
+            <div className="space-y-1.5">
+              <Label htmlFor="push-body" className="text-xs">Mensagem</Label>
+              <Textarea id="push-body" value={pushBody} onChange={(e) => setPushBody(e.target.value)} className="min-h-[82px] resize-none" placeholder="Ex: Aula ao vivo comeca em 10 minutos" />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="push-link" className="text-xs">Link ao abrir</Label>
+              <Input id="push-link" value={pushLink} onChange={(e) => setPushLink(e.target.value)} className="h-9" placeholder="/dashboard" />
+            </div>
+            <Button onClick={sendPushFromPanel} disabled={saving || !pushBody.trim()} className="w-full gap-2">
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <BellRing className="h-4 w-4" />}
+              Enviar para usuarios
+            </Button>
+            <p className="text-[11px] leading-relaxed text-muted-foreground">Usuarios precisam ter ativado notificacoes no app para receber push no navegador. Mesmo assim, o aviso tambem fica salvo na central de notificacoes.</p>
+          </div>
         </div>
 
-        <div className="mt-4 grid grid-cols-2 gap-2">
-          <Button onClick={publish} disabled={!isReady(draft) || saving || step === 'done'} className="gap-2">
-            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
-            Publicar
-          </Button>
-          <Button variant="outline" onClick={reset} disabled={saving}>Novo</Button>
-        </div>
-        <p className="mt-3 text-[11px] text-muted-foreground">
-          Antes de publicar, voce pode pedir: mudar formato, encurtar texto, melhorar CTA, trocar link ou ajustar tempo.
-        </p>
+        {latestMedia && (
+          <div className="mt-4 rounded-2xl border border-border bg-background/75 p-4">
+            <div className="mb-2 flex items-center gap-2 text-sm font-semibold"><Image className="h-4 w-4 text-primary" /> Midia recente</div>
+            {renderMedia(latestMedia.url, latestMedia.kind)}
+          </div>
+        )}
       </aside>
     </div>
   );
