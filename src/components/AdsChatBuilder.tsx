@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
   Bot,
   Camera,
@@ -13,7 +13,9 @@ import {
   Paperclip,
   RotateCcw,
   Send,
-  Video,
+  Sparkles,
+  Square,
+  Wand2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -27,16 +29,7 @@ const supabase = supabaseTyped as any;
 
 type AdType = 'banner' | 'popup' | 'inline' | 'sidebar' | 'footer';
 type MediaKind = 'image' | 'video' | 'audio';
-
-type Step =
-  | 'type'
-  | 'title'
-  | 'description'
-  | 'link'
-  | 'image'
-  | 'duration'
-  | 'review'
-  | 'done';
+type Step = 'type' | 'title' | 'link' | 'review' | 'done';
 
 interface Msg {
   id: string;
@@ -79,8 +72,6 @@ const AD_TYPES: { value: AdType; label: string; desc: string }[] = [
   { value: 'footer', label: 'Rodape', desc: 'Barra mobile' },
 ];
 
-const STEP_ORDER: Step[] = ['type', 'title', 'description', 'link', 'image', 'duration', 'review'];
-
 const AD_TYPE_LABELS: Record<AdType, string> = {
   banner: 'Banner',
   popup: 'Popup',
@@ -88,6 +79,12 @@ const AD_TYPE_LABELS: Record<AdType, string> = {
   sidebar: 'Sidebar',
   footer: 'Rodape',
 };
+
+const SUGGESTIONS = [
+  'Crie um popup para divulgar minha mentoria com titulo Semana da Aprovacao',
+  'Quero um banner no topo chamando para uma aula gratuita',
+  'Troque o texto para ficar mais direto e persuasivo',
+];
 
 function uid() {
   return Math.random().toString(36).slice(2) + Date.now().toString(36);
@@ -133,18 +130,18 @@ function extractJson(text: string): AIResult | null {
 
 function renderMedia(url: string, kind: MediaKind, title = 'Midia do anuncio') {
   if (kind === 'video') {
-    return <video src={url} controls playsInline className="mt-2 max-h-60 w-full rounded-lg bg-black object-contain" />;
+    return <video src={url} controls playsInline className="mt-3 max-h-64 w-full rounded-xl bg-black object-contain" />;
   }
 
   if (kind === 'audio') {
     return (
-      <div className="mt-2 rounded-lg bg-black/5 p-2 dark:bg-white/10">
+      <div className="mt-3 rounded-xl border border-border/60 bg-background/60 p-2">
         <audio src={url} controls className="w-full" />
       </div>
     );
   }
 
-  return <img src={url} alt={title} className="mt-2 max-h-60 w-full rounded-lg object-cover" />;
+  return <img src={url} alt={title} className="mt-3 max-h-64 w-full rounded-xl object-cover" />;
 }
 
 function parseType(value: string): AdType | null {
@@ -157,52 +154,58 @@ function parseType(value: string): AdType | null {
   return null;
 }
 
+function cleanCapturedText(value: string) {
+  return value.replace(/https?:\/\/[^\s)]+/gi, '').replace(/\s+/g, ' ').trim();
+}
+
 function localExtract(message: string, draft: Draft): Partial<Draft> {
   const updates: Partial<Draft> = {};
+  const normalized = normalizeText(message);
   const type = parseType(message);
   if (type) updates.ad_type = type;
 
   const urlMatch = message.match(/https?:\/\/[^\s)]+/i);
   if (urlMatch) updates.link_url = urlMatch[0].replace(/[.,;!?]+$/, '');
 
-  const secondsMatch = normalizeText(message).match(/(?:por|durante|fica|ficar|dura|durar)?\s*(\d{1,2})\s*(?:s|seg|segundos?)/);
-  if (secondsMatch) {
-    const seconds = Math.max(1, Math.min(30, Number(secondsMatch[1])));
-    updates.display_duration = seconds;
-  }
+  const secondsMatch = normalized.match(/(?:por|durante|fica|ficar|dura|durar)?\s*(\d{1,2})\s*(?:s|seg|segundos?)/);
+  if (secondsMatch) updates.display_duration = Math.max(1, Math.min(30, Number(secondsMatch[1])));
 
-  const titleMatch = message.match(/(?:titulo|título|chama|chamar|nome)\s*(?:é|e|:|-)?\s*["“']?([^"”'\n.]{3,80})/i);
+  const titleMatch = message.match(/(?:titulo|título|chama|chamar|nome)\s*(?:é|e|:|-)?\s*["“']?([^"”'\n.]{3,90})/i);
   if (titleMatch) updates.title = titleMatch[1].trim();
 
-  const descriptionMatch = message.match(/(?:descri[cç][aã]o|texto|subtitulo|subtítulo)\s*(?:é|e|:|-)?\s*["“']?([^"”'\n]{3,180})/i);
+  const descriptionMatch = message.match(/(?:descri[cç][aã]o|texto|subtitulo|subtítulo|copy|legenda)\s*(?:é|e|:|-)?\s*["“']?([^"”'\n]{3,220})/i);
   if (descriptionMatch) updates.description = descriptionMatch[1].trim();
 
+  if (/\b(sem descricao|sem descrição|remove a descricao|remove a descrição)\b/.test(normalized)) {
+    updates.description = '';
+  }
+
   if (!updates.title && !draft.title.trim()) {
-    const withoutUrl = message.replace(/https?:\/\/[^\s)]+/gi, '').trim();
-    const isCommandOnly = /^(quero|crie|criar|fazer|faça|preciso|pode|anuncio|anúncio|banner|popup|inline|sidebar|rodape|footer)\b/i.test(withoutUrl);
-    if (withoutUrl.length >= 8 && withoutUrl.length <= 80 && !isCommandOnly) {
-      updates.title = withoutUrl.replace(/[.!?]+$/, '').trim();
+    const short = cleanCapturedText(message);
+    const commandOnly = /^(quero|crie|criar|fazer|faca|faça|preciso|pode|anuncio|anúncio|banner|popup|inline|sidebar|rodape|footer)\b/i.test(short);
+    if (short.length >= 8 && short.length <= 80 && !commandOnly) {
+      updates.title = short.replace(/[.!?]+$/, '').trim();
     }
   }
 
   return updates;
 }
 
-function localReply(draft: Draft) {
+function localReply(draft: Draft, hadUpdates: boolean) {
   const missing = getMissingField(draft);
-  if (missing === 'type') return 'Entendi. Qual formato voce prefere: banner, popup, inline, sidebar ou rodape?';
-  if (missing === 'title') return 'Boa. Me manda o titulo principal do anuncio.';
-  if (missing === 'link') return 'Agora cola o link de destino com https:// para eu fechar o anuncio.';
-  if (!draft.image_url) return 'Ja tenho o essencial. Se quiser, anexe uma foto, video ou audio pelo clipe; se nao, pode publicar assim.';
-  return 'Perfeito, ja montei o anuncio. Confira a previa e publique quando estiver pronto.';
+  if (missing === 'type') return 'Consigo montar isso. Qual formato voce prefere: banner, popup, inline, sidebar ou rodape?';
+  if (missing === 'title') return 'Perfeito. Me diga o titulo principal do anuncio. Pode escrever do seu jeito.';
+  if (missing === 'link') return 'Boa, ja entendi a ideia. Agora me mande o link de destino com https:// para eu fechar a previa.';
+  if (hadUpdates) return 'Atualizei o rascunho. Pode continuar pedindo ajustes como se estivesse conversando comigo.';
+  return 'Estou acompanhando. Me diga o que voce quer mudar no anuncio ou publique quando estiver pronto.';
 }
 
 function mergeDraft(base: Draft, updates?: Partial<Draft>) {
   const next = { ...base };
   if (!updates) return next;
   if (updates.ad_type && AD_TYPES.some((type) => type.value === updates.ad_type)) next.ad_type = updates.ad_type;
-  if (typeof updates.title === 'string' && updates.title.trim()) next.title = updates.title.trim().slice(0, 80);
-  if (typeof updates.description === 'string') next.description = updates.description.trim().slice(0, 220);
+  if (typeof updates.title === 'string') next.title = updates.title.trim().slice(0, 90);
+  if (typeof updates.description === 'string') next.description = updates.description.trim().slice(0, 240);
   if (typeof updates.link_url === 'string' && updates.link_url.trim()) next.link_url = updates.link_url.trim();
   if (typeof updates.image_url === 'string') next.image_url = updates.image_url.trim();
   if (typeof updates.display_duration === 'number' && Number.isFinite(updates.display_duration)) {
@@ -219,20 +222,28 @@ export function AdsChatBuilder() {
   const [input, setInput] = useState('');
   const [saving, setSaving] = useState(false);
   const [thinking, setThinking] = useState(false);
+  const [listening, setListening] = useState(false);
   const [attachmentsOpen, setAttachmentsOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const recognitionRef = useRef<any>(null);
+  const draftRef = useRef<Draft>(EMPTY_DRAFT);
+  const messagesRef = useRef<Msg[]>([]);
 
   useEffect(() => {
-    pushBot('Oi! Pode falar comigo livremente. Me diga o anuncio que voce quer criar, o formato, o texto, o link e, se quiser, mande foto, video ou audio pelo clipe.');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const intro = 'Oi, eu sou seu assistente de anuncios. Pode falar livremente: me diga o objetivo, o formato, o titulo, a copy, o link e mande midia pelo clipe quando quiser. Eu vou montando o rascunho com voce.';
+    setMessages([{ id: uid(), role: 'bot', text: intro, ts: Date.now() }]);
   }, []);
+
+  useEffect(() => { draftRef.current = draft; }, [draft]);
+  useEffect(() => { messagesRef.current = messages; }, [messages]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
-  }, [messages, step, attachmentsOpen, thinking]);
+  }, [messages, attachmentsOpen, thinking]);
 
-  const currentIdx = step === 'done' ? STEP_ORDER.length : Math.max(STEP_ORDER.indexOf(step), 0) + 1;
   const mediaKind = useMemo(() => (draft.image_url ? getMediaKind(draft.image_url) : null), [draft.image_url]);
+  const missing = getMissingField(draft);
+  const showSuggestions = messages.filter((message) => message.role === 'user').length === 0;
 
   function pushBot(text: string) {
     setMessages((m) => [...m, { id: uid(), role: 'bot', text, ts: Date.now() }]);
@@ -247,6 +258,7 @@ export function AdsChatBuilder() {
       const { getCurrentAccessToken } = await import('@/lib/auth-session');
       const accessToken = getCurrentAccessToken();
       const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/gemini-direct`;
+      const recent = messagesRef.current.slice(-8).map((m) => ({ role: m.role === 'bot' ? 'assistant' : 'user', content: m.text }));
       const resp = await fetch(url, {
         method: 'POST',
         headers: {
@@ -256,16 +268,18 @@ export function AdsChatBuilder() {
         },
         body: JSON.stringify({
           systemPrompt: [
-            'Voce e uma IA brasileira que cria anuncios dentro de um chat estilo WhatsApp.',
-            'O usuario pode conversar livremente. Extraia dados do anuncio sem obrigar cliques.',
-            'Campos: ad_type banner|popup|inline|sidebar|footer, title, description, link_url, display_duration de 1 a 30.',
-            'Se faltar algo obrigatorio, faca UMA pergunta curta e natural. Obrigatorios: ad_type, title, link_url.',
-            'Se o usuario pedir para alterar algo, atualize apenas aquele campo.',
+            'Voce e um copilot brasileiro para criar anuncios dentro de um painel administrativo.',
+            'Converse de forma natural, curta e util, como um GPT de produto. Nao prenda o usuario em botoes.',
+            'Extraia e atualize o rascunho quando o usuario falar formato, titulo, texto, link, tempo ou midia.',
+            'Campos validos: ad_type banner|popup|inline|sidebar|footer, title, description, link_url, image_url, display_duration de 1 a 30.',
+            'Obrigatorios para publicar: ad_type, title, link_url. Se faltar algo, faca so uma pergunta objetiva.',
+            'Se o usuario pedir ideias, sugira copy e CTA. Se pedir alteracao, atualize somente o necessario.',
             'Responda SOMENTE JSON valido neste formato:',
             '{"reply":"mensagem curta em portugues","updates":{},"ready_to_review":false}',
           ].join('\n'),
           messages: [
-            { role: 'user', content: `Rascunho atual: ${JSON.stringify(baseDraft)}\nMensagem do usuario: ${userMessage}` },
+            ...recent,
+            { role: 'user', content: `Rascunho atual: ${JSON.stringify(baseDraft)}\nMensagem atual: ${userMessage}` },
           ],
         }),
       });
@@ -310,10 +324,11 @@ export function AdsChatBuilder() {
   }
 
   async function processFreeMessage(value: string) {
+    const base = draftRef.current;
     setThinking(true);
     try {
-      const localUpdates = localExtract(value, draft);
-      const localDraft = mergeDraft(draft, localUpdates);
+      const localUpdates = localExtract(value, base);
+      const localDraft = mergeDraft(base, localUpdates);
       setDraft(localDraft);
       setStep(getStepFromDraft(localDraft));
 
@@ -321,62 +336,77 @@ export function AdsChatBuilder() {
       const nextDraft = mergeDraft(localDraft, ai?.updates);
       setDraft(nextDraft);
       setStep(ai?.ready_to_review || isReady(nextDraft) ? 'review' : getStepFromDraft(nextDraft));
-      pushBot(ai?.reply?.trim() || localReply(nextDraft));
+      pushBot(ai?.reply?.trim() || localReply(nextDraft, Object.keys(localUpdates).length > 0));
     } finally {
       setThinking(false);
     }
   }
 
-  function handleType(t: AdType) {
-    const next = mergeDraft(draft, { ad_type: t });
-    setDraft(next);
-    setStep(getStepFromDraft(next));
-    pushUser(AD_TYPE_LABELS[t]);
-    void processFreeMessage(`Formato escolhido: ${AD_TYPE_LABELS[t]}`);
-  }
-
-  function handleSendText() {
-    const value = input.trim();
-    if (!value || thinking || step === 'done') return;
+  function submitMessage(value: string) {
+    const text = value.trim();
+    if (!text || thinking || step === 'done') return;
     setInput('');
-    pushUser(value);
-    void processFreeMessage(value);
+    setAttachmentsOpen(false);
+    pushUser(text);
+    void processFreeMessage(text);
   }
 
-  function handleSkip() {
-    if (step === 'description') {
-      const next = mergeDraft(draft, { description: '' });
-      setDraft(next);
-      setStep(getStepFromDraft(next));
-      pushUser('Pular descricao');
-      pushBot(localReply(next));
-    } else if (step === 'image') {
-      const next = mergeDraft(draft, { image_url: '' });
-      setDraft(next);
-      setStep(getStepFromDraft(next));
-      pushUser('Sem midia');
-      pushBot(localReply(next));
-    }
+  function handleType(t: AdType) {
+    const label = AD_TYPE_LABELS[t];
+    submitMessage(`Use o formato ${label}.`);
   }
 
   function handleMediaUploaded(url: string, kind: MediaKind) {
     if (!url) return;
     setAttachmentsOpen(false);
-    const next = mergeDraft(draft, { image_url: url });
+    const next = mergeDraft(draftRef.current, { image_url: url });
     setDraft(next);
     setStep(isReady(next) ? 'review' : getStepFromDraft(next));
-    pushUser(kind === 'image' ? 'Foto anexada' : kind === 'video' ? 'Video anexado' : 'Audio anexado', url, kind);
-    pushBot(isReady(next) ? 'Midia recebida. Ja deixei a previa pronta para voce revisar.' : localReply(next));
+    pushUser(kind === 'image' ? 'Enviei uma foto para o anuncio' : kind === 'video' ? 'Enviei um video para o anuncio' : 'Enviei um audio para o anuncio', url, kind);
+    pushBot(isReady(next) ? 'Midia recebida. Atualizei a previa; se quiser, posso ajustar a copy para combinar com ela.' : localReply(next, true));
+  }
+
+  function startVoiceInput() {
+    if (listening) {
+      recognitionRef.current?.stop?.();
+      setListening(false);
+      return;
+    }
+
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      toast.error('Seu navegador nao liberou ditado por voz aqui. Use o campo de mensagem ou anexe um audio pelo clipe.');
+      setAttachmentsOpen(true);
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'pt-BR';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    recognitionRef.current = recognition;
+    setListening(true);
+
+    recognition.onresult = (event: any) => {
+      const transcript = event.results?.[0]?.[0]?.transcript?.trim();
+      if (transcript) submitMessage(transcript);
+    };
+    recognition.onerror = () => {
+      toast.error('Nao consegui ouvir agora. Tente novamente ou digite a mensagem.');
+    };
+    recognition.onend = () => setListening(false);
+    recognition.start();
   }
 
   function reset() {
     setDraft(EMPTY_DRAFT);
-    setMessages([]);
+    draftRef.current = EMPTY_DRAFT;
     setInput('');
     setThinking(false);
+    setListening(false);
     setAttachmentsOpen(false);
     setStep('type');
-    setTimeout(() => pushBot('Vamos criar outro anuncio. Pode me explicar livremente o que voce quer.'), 50);
+    setMessages([{ id: uid(), role: 'bot', text: 'Novo anuncio iniciado. Me conte livremente o que voce quer divulgar.', ts: Date.now() }]);
   }
 
   async function publish() {
@@ -413,240 +443,208 @@ export function AdsChatBuilder() {
   }
 
   const canType = step !== 'done' && !thinking;
-  const placeholder = thinking ? 'A IA esta digitando...' : 'Mensagem';
+  const placeholder = listening ? 'Ouvindo...' : thinking ? 'A IA esta respondendo...' : 'Converse com a IA sobre o anuncio';
 
   return (
-    <div className="flex h-[calc(100vh-132px)] min-h-[640px] flex-col overflow-hidden rounded-lg border border-border bg-[#efeae2] shadow-sm dark:bg-[#0b141a]">
-      <div className="flex h-16 shrink-0 items-center gap-3 bg-[#075e54] px-4 text-white dark:bg-[#202c33]">
-        <div className="relative flex h-10 w-10 items-center justify-center rounded-full bg-white/15">
-          <Bot className="h-5 w-5" />
-          <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-[#075e54] bg-[#25d366] dark:border-[#202c33]" />
+    <div className="grid h-[calc(100vh-132px)] min-h-[660px] overflow-hidden rounded-2xl border border-border bg-background shadow-sm lg:grid-cols-[minmax(0,1fr)_360px]">
+      <section className="flex min-h-0 flex-col bg-[radial-gradient(circle_at_top_left,hsl(var(--primary)/0.10),transparent_35%),hsl(var(--background))]">
+        <div className="flex h-16 shrink-0 items-center gap-3 border-b border-border/70 bg-card/80 px-4 backdrop-blur-xl">
+          <div className="relative flex h-10 w-10 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-[0_10px_28px_hsl(var(--primary)/0.25)]">
+            <Bot className="h-5 w-5" />
+            <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-card bg-success" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <h2 className="truncate text-sm font-bold">Assistente de Anuncios</h2>
+              <Badge variant="outline" className="hidden h-5 px-1.5 text-[10px] sm:inline-flex">chat livre</Badge>
+            </div>
+            <p className="truncate text-xs text-muted-foreground">
+              {listening ? 'ouvindo sua voz...' : thinking ? 'pensando na melhor resposta...' : isReady(draft) ? 'rascunho pronto para revisar' : 'fale, digite ou envie midia'}
+            </p>
+          </div>
+          <Button variant="ghost" size="icon" onClick={reset} className="h-9 w-9 rounded-xl" aria-label="Recomecar">
+            <RotateCcw className="h-4 w-4" />
+          </Button>
+          <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl" aria-label="Mais opcoes">
+            <MoreVertical className="h-4 w-4" />
+          </Button>
         </div>
-        <div className="min-w-0 flex-1">
-          <div className="truncate text-sm font-semibold">Assistente de Anuncios</div>
-          <div className="truncate text-xs text-white/75">{thinking ? 'digitando...' : `online · ${isReady(draft) ? 'pronto para revisar' : `etapa ${Math.min(currentIdx, STEP_ORDER.length)} de ${STEP_ORDER.length}`}`}</div>
-        </div>
-        <Button variant="ghost" size="icon" onClick={reset} className="h-9 w-9 rounded-full text-white hover:bg-white/10 hover:text-white" aria-label="Recomecar">
-          <RotateCcw className="h-4 w-4" />
-        </Button>
-        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full text-white hover:bg-white/10 hover:text-white" aria-label="Mais opcoes">
-          <MoreVertical className="h-4 w-4" />
-        </Button>
-      </div>
 
-      <div
-        ref={scrollRef}
-        className="flex-1 space-y-2 overflow-y-auto px-3 py-4 sm:px-6"
-        style={{
-          backgroundImage:
-            'radial-gradient(circle at 20px 20px, rgba(255,255,255,.18) 2px, transparent 0), radial-gradient(circle at 70px 70px, rgba(0,0,0,.04) 2px, transparent 0)',
-          backgroundSize: '96px 96px',
-        }}
-      >
-        <AnimatePresence initial={false}>
-          {messages.map((m) => (
-            <motion.div
-              key={m.id}
-              initial={{ opacity: 0, y: 8, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
-            >
-              <div
-                className={`relative max-w-[86%] rounded-lg px-3 py-2 text-[13px] leading-relaxed shadow-sm sm:max-w-[68%] ${
-                  m.role === 'user'
-                    ? 'rounded-tr-none bg-[#d9fdd3] text-[#111b21] dark:bg-[#005c4b] dark:text-white'
-                    : 'rounded-tl-none bg-white text-[#111b21] dark:bg-[#202c33] dark:text-[#e9edef]'
-                }`}
+        <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto px-4 py-5 sm:px-6">
+          <AnimatePresence initial={false}>
+            {messages.map((m) => (
+              <motion.div
+                key={m.id}
+                initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.22 }}
+                className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
-                <p className="whitespace-pre-wrap">{m.text}</p>
-                {m.mediaUrl && m.mediaKind && renderMedia(m.mediaUrl, m.mediaKind)}
-                <div className={`mt-1 flex items-center justify-end gap-1 text-[10px] ${m.role === 'user' ? 'text-[#667781] dark:text-white/60' : 'text-[#667781]'}`}>
-                  {new Date(m.ts).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                  {m.role === 'user' && <Check className="h-3 w-3 text-[#53bdeb]" />}
+                <div className={`max-w-[88%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm sm:max-w-[72%] ${m.role === 'user' ? 'rounded-br-md bg-primary text-primary-foreground' : 'rounded-bl-md border border-border/70 bg-card text-card-foreground'}`}>
+                  <p className="whitespace-pre-wrap">{m.text}</p>
+                  {m.mediaUrl && m.mediaKind && renderMedia(m.mediaUrl, m.mediaKind)}
+                  <div className={`mt-2 flex items-center justify-end gap-1 text-[10px] ${m.role === 'user' ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
+                    {new Date(m.ts).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                    {m.role === 'user' && <Check className="h-3 w-3" />}
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+
+          {showSuggestions && (
+            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="max-w-2xl space-y-3">
+              <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
+                <Sparkles className="h-3.5 w-3.5 text-primary" /> Comece com uma mensagem pronta ou escreva do seu jeito
+              </div>
+              <div className="grid gap-2 sm:grid-cols-3">
+                {SUGGESTIONS.map((suggestion) => (
+                  <button
+                    key={suggestion}
+                    onClick={() => submitMessage(suggestion)}
+                    className="rounded-2xl border border-border/70 bg-card/70 p-3 text-left text-xs leading-relaxed text-muted-foreground transition hover:-translate-y-0.5 hover:border-primary/40 hover:text-foreground hover:shadow-md"
+                  >
+                    {suggestion}
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {!draft.ad_type && !showSuggestions && (
+            <div className="flex flex-wrap gap-2">
+              {AD_TYPES.map((t) => (
+                <button
+                  key={t.value}
+                  onClick={() => handleType(t.value)}
+                  className="rounded-full border border-border/70 bg-card px-3 py-2 text-left text-xs font-medium text-foreground shadow-sm transition hover:border-primary/40 hover:bg-primary/10"
+                >
+                  {t.label}
+                  <span className="ml-1 text-[10px] font-normal text-muted-foreground">{t.desc}</span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {thinking && (
+            <div className="flex justify-start">
+              <div className="rounded-2xl rounded-bl-md border border-border/70 bg-card px-4 py-3 shadow-sm">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Wand2 className="h-3.5 w-3.5 text-primary" />
+                  <span className="flex gap-1">
+                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground" />
+                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground [animation-delay:120ms]" />
+                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground [animation-delay:240ms]" />
+                  </span>
                 </div>
               </div>
-            </motion.div>
-          ))}
-        </AnimatePresence>
-
-        {thinking && (
-          <div className="flex justify-start">
-            <div className="rounded-lg rounded-tl-none bg-white px-4 py-3 shadow-sm dark:bg-[#202c33]">
-              <div className="flex gap-1">
-                <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#8696a0]" />
-                <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#8696a0] [animation-delay:120ms]" />
-                <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#8696a0] [animation-delay:240ms]" />
-              </div>
             </div>
-          </div>
-        )}
-
-        {!draft.ad_type && (
-          <div className="flex flex-wrap gap-2 pl-1 pt-2 sm:max-w-[70%]">
-            {AD_TYPES.map((t) => (
-              <button
-                key={t.value}
-                onClick={() => handleType(t.value)}
-                className="rounded-full bg-white px-3 py-2 text-left text-xs font-medium text-[#075e54] shadow-sm transition hover:bg-[#e7ffdb] dark:bg-[#202c33] dark:text-[#25d366] dark:hover:bg-[#263942]"
-              >
-                {t.label}
-                <span className="ml-1 text-[10px] font-normal text-[#667781]">{t.desc}</span>
-              </button>
-            ))}
-          </div>
-        )}
-
-        {(step === 'description' || step === 'image') && (
-          <div className="flex gap-2 pl-1 pt-2">
-            <button
-              onClick={handleSkip}
-              className="rounded-full bg-white px-3 py-2 text-xs font-medium text-[#075e54] shadow-sm hover:bg-[#e7ffdb] dark:bg-[#202c33] dark:text-[#25d366]"
-            >
-              Pular
-            </button>
-          </div>
-        )}
-
-        {isReady(draft) && step !== 'done' && (
-          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="max-w-[92%] sm:max-w-md">
-            <div className="rounded-lg rounded-tl-none bg-white p-3 text-[#111b21] shadow-sm dark:bg-[#202c33] dark:text-[#e9edef]">
-              <div className="mb-2 flex flex-wrap items-center gap-2">
-                <Badge className="bg-[#25d366]/15 text-[#075e54] hover:bg-[#25d366]/15 dark:text-[#25d366]">
-                  {draft.ad_type ? AD_TYPE_LABELS[draft.ad_type] : 'Anuncio'}
-                </Badge>
-                <Badge variant="outline">{draft.display_duration}s</Badge>
-                {mediaKind && <Badge variant="outline">{mediaKind === 'image' ? 'foto' : mediaKind === 'video' ? 'video' : 'audio'}</Badge>}
-              </div>
-              {draft.image_url && mediaKind && renderMedia(draft.image_url, mediaKind, draft.title)}
-              <div className="mt-3 font-semibold">{draft.title}</div>
-              {draft.description && <div className="mt-1 text-sm text-[#667781] dark:text-[#aebac1]">{draft.description}</div>}
-              <div className="mt-2 break-all text-xs text-[#667781] dark:text-[#aebac1]">{draft.link_url}</div>
-              <div className="mt-3 grid grid-cols-2 gap-2">
-                <Button onClick={publish} disabled={saving} className="gap-2 bg-[#128c7e] hover:bg-[#075e54]">
-                  {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
-                  Publicar
-                </Button>
-                <Button variant="outline" onClick={reset} disabled={saving}>
-                  Recomecar
-                </Button>
-              </div>
-              <p className="mt-2 text-[11px] text-[#667781] dark:text-[#aebac1]">
-                Pode mandar outra mensagem para alterar titulo, texto, link, formato ou tempo antes de publicar.
-              </p>
-            </div>
-          </motion.div>
-        )}
-
-        {step === 'done' && (
-          <div className="pt-2">
-            <button onClick={reset} className="rounded-full bg-white px-4 py-2 text-xs font-semibold text-[#075e54] shadow-sm hover:bg-[#e7ffdb] dark:bg-[#202c33] dark:text-[#25d366]">
-              Criar outro anuncio
-            </button>
-          </div>
-        )}
-      </div>
-
-      <div className="relative shrink-0 bg-[#f0f2f5] px-3 py-2 dark:bg-[#202c33]">
-        <AnimatePresence>
-          {attachmentsOpen && (
-            <motion.div
-              initial={{ opacity: 0, y: 12, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 12, scale: 0.98 }}
-              className="absolute bottom-[72px] left-3 z-10 grid w-64 grid-cols-3 gap-2 rounded-2xl bg-white p-3 shadow-xl dark:bg-[#111b21]"
-            >
-              <div className="flex flex-col items-center gap-1 text-[11px] text-[#54656f] dark:text-[#aebac1]">
-                <AdImageUploadButton
-                  mediaType="image"
-                  label="Foto"
-                  showPreview={false}
-                  size="icon"
-                  className="h-12 w-12 rounded-full bg-[#8f66ff] text-white hover:bg-[#7a55df]"
-                  onImageUploaded={(url) => handleMediaUploaded(url, 'image')}
-                />
-                Foto
-              </div>
-              <div className="flex flex-col items-center gap-1 text-[11px] text-[#54656f] dark:text-[#aebac1]">
-                <AdImageUploadButton
-                  mediaType="video"
-                  label="Video"
-                  showPreview={false}
-                  size="icon"
-                  className="h-12 w-12 rounded-full bg-[#ff2e74] text-white hover:bg-[#db285f]"
-                  onImageUploaded={(url) => handleMediaUploaded(url, 'video')}
-                />
-                Video
-              </div>
-              <div className="flex flex-col items-center gap-1 text-[11px] text-[#54656f] dark:text-[#aebac1]">
-                <AdImageUploadButton
-                  mediaType="audio"
-                  label="Audio"
-                  showPreview={false}
-                  size="icon"
-                  className="h-12 w-12 rounded-full bg-[#00a884] text-white hover:bg-[#008f72]"
-                  onImageUploaded={(url) => handleMediaUploaded(url, 'audio')}
-                />
-                Audio
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        <div className="flex items-end gap-2">
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={() => setAttachmentsOpen((open) => !open)}
-            className="mb-1 h-10 w-10 shrink-0 rounded-full text-[#54656f] hover:bg-black/5 dark:text-[#aebac1] dark:hover:bg-white/10"
-            aria-label="Anexar midia"
-          >
-            <Paperclip className="h-5 w-5" />
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={() => setAttachmentsOpen(true)}
-            className="mb-1 hidden h-10 w-10 shrink-0 rounded-full text-[#54656f] hover:bg-black/5 dark:text-[#aebac1] dark:hover:bg-white/10 sm:inline-flex"
-            aria-label="Abrir camera"
-          >
-            <Camera className="h-5 w-5" />
-          </Button>
-          <div className="flex min-h-[44px] flex-1 items-end rounded-3xl bg-white px-3 py-1 dark:bg-[#2a3942]">
-            <Textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSendText();
-                }
-              }}
-              placeholder={placeholder}
-              disabled={!canType}
-              className="min-h-[36px] flex-1 resize-none border-0 bg-transparent px-1 py-2 text-[15px] shadow-none focus-visible:ring-0 dark:text-[#e9edef]"
-              autoFocus
-            />
-          </div>
-          {input.trim() ? (
-            <Button onClick={handleSendText} disabled={!canType} size="icon" className="mb-1 h-11 w-11 shrink-0 rounded-full bg-[#00a884] hover:bg-[#008f72]">
-              <Send className="h-5 w-5" />
-            </Button>
-          ) : (
-            <Button
-              type="button"
-              onClick={() => setAttachmentsOpen(true)}
-              disabled={step === 'done'}
-              size="icon"
-              className="mb-1 h-11 w-11 shrink-0 rounded-full bg-[#00a884] hover:bg-[#008f72]"
-              aria-label="Enviar audio"
-            >
-              {step === 'image' ? <Image className="h-5 w-5" /> : step === 'duration' ? <FileAudio className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
-            </Button>
           )}
         </div>
-      </div>
+
+        <div className="relative shrink-0 border-t border-border/70 bg-card/85 px-3 py-3 backdrop-blur-xl">
+          <AnimatePresence>
+            {attachmentsOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: 12, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 12, scale: 0.98 }}
+                className="absolute bottom-[76px] left-3 z-10 grid w-64 grid-cols-3 gap-2 rounded-2xl border border-border bg-popover p-3 shadow-xl"
+              >
+                <div className="flex flex-col items-center gap-1 text-[11px] text-muted-foreground">
+                  <AdImageUploadButton mediaType="image" label="Foto" showPreview={false} size="icon" className="h-12 w-12 rounded-2xl bg-[#8f66ff] text-white hover:bg-[#7a55df]" onImageUploaded={(url) => handleMediaUploaded(url, 'image')} />
+                  Foto
+                </div>
+                <div className="flex flex-col items-center gap-1 text-[11px] text-muted-foreground">
+                  <AdImageUploadButton mediaType="video" label="Video" showPreview={false} size="icon" className="h-12 w-12 rounded-2xl bg-[#ff2e74] text-white hover:bg-[#db285f]" onImageUploaded={(url) => handleMediaUploaded(url, 'video')} />
+                  Video
+                </div>
+                <div className="flex flex-col items-center gap-1 text-[11px] text-muted-foreground">
+                  <AdImageUploadButton mediaType="audio" label="Audio" showPreview={false} size="icon" className="h-12 w-12 rounded-2xl bg-[#00a884] text-white hover:bg-[#008f72]" onImageUploaded={(url) => handleMediaUploaded(url, 'audio')} />
+                  Audio
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <div className="flex items-end gap-2">
+            <Button type="button" variant="ghost" size="icon" onClick={() => setAttachmentsOpen((open) => !open)} className="mb-1 h-10 w-10 shrink-0 rounded-xl" aria-label="Anexar midia">
+              <Paperclip className="h-5 w-5" />
+            </Button>
+            <Button type="button" variant="ghost" size="icon" onClick={() => setAttachmentsOpen(true)} className="mb-1 hidden h-10 w-10 shrink-0 rounded-xl sm:inline-flex" aria-label="Abrir anexos de imagem e video">
+              <Camera className="h-5 w-5" />
+            </Button>
+            <div className="flex min-h-[46px] flex-1 items-end rounded-2xl border border-border bg-background px-3 py-1 focus-within:border-primary/50">
+              <Textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    submitMessage(input);
+                  }
+                }}
+                placeholder={placeholder}
+                disabled={!canType || listening}
+                className="min-h-[38px] flex-1 resize-none border-0 bg-transparent px-1 py-2 text-[15px] shadow-none focus-visible:ring-0"
+                autoFocus
+              />
+            </div>
+            {input.trim() ? (
+              <Button onClick={() => submitMessage(input)} disabled={!canType} size="icon" className="mb-1 h-11 w-11 shrink-0 rounded-2xl">
+                <Send className="h-5 w-5" />
+              </Button>
+            ) : (
+              <Button type="button" onClick={startVoiceInput} disabled={step === 'done' || thinking} size="icon" className={`mb-1 h-11 w-11 shrink-0 rounded-2xl ${listening ? 'bg-destructive hover:bg-destructive/90' : ''}`} aria-label={listening ? 'Parar gravacao de voz' : 'Falar com a IA'}>
+                {listening ? <Square className="h-4 w-4" /> : <Mic className="h-5 w-5" />}
+              </Button>
+            )}
+          </div>
+        </div>
+      </section>
+
+      <aside className="hidden min-h-0 border-l border-border bg-card/55 p-4 backdrop-blur-xl lg:flex lg:flex-col">
+        <div className="mb-4 flex items-center justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Rascunho vivo</p>
+            <h3 className="text-base font-bold">Previa do anuncio</h3>
+          </div>
+          <Badge variant={isReady(draft) ? 'default' : 'outline'}>{isReady(draft) ? 'pronto' : 'incompleto'}</Badge>
+        </div>
+
+        <div className="flex-1 overflow-y-auto rounded-2xl border border-border bg-background/70 p-4 shadow-inner">
+          <div className="mb-3 flex flex-wrap gap-2">
+            <Badge variant="outline">{draft.ad_type ? AD_TYPE_LABELS[draft.ad_type] : 'formato pendente'}</Badge>
+            <Badge variant="outline">{draft.display_duration}s</Badge>
+            {mediaKind && <Badge variant="outline">{mediaKind === 'image' ? 'foto' : mediaKind === 'video' ? 'video' : 'audio'}</Badge>}
+          </div>
+          {draft.image_url && mediaKind && renderMedia(draft.image_url, mediaKind, draft.title)}
+          <div className="mt-4 rounded-2xl border border-border/70 bg-card p-4">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-primary">{draft.ad_type ? AD_TYPE_LABELS[draft.ad_type] : 'Novo anuncio'}</p>
+            <h4 className="mt-2 text-lg font-bold leading-tight">{draft.title || 'Titulo ainda nao definido'}</h4>
+            <p className="mt-2 text-sm text-muted-foreground">{draft.description || 'A descricao aparece aqui quando voce pedir ou enviar uma copy.'}</p>
+            <p className="mt-3 break-all text-xs text-muted-foreground">{draft.link_url || 'https://link-do-anuncio.com'}</p>
+          </div>
+
+          {!isReady(draft) && (
+            <div className="mt-4 rounded-2xl border border-dashed border-border p-4 text-xs text-muted-foreground">
+              Falta: {missing === 'type' ? 'formato do anuncio' : missing === 'title' ? 'titulo principal' : missing === 'link' ? 'link de destino' : 'revisao'}.
+            </div>
+          )}
+        </div>
+
+        <div className="mt-4 grid grid-cols-2 gap-2">
+          <Button onClick={publish} disabled={!isReady(draft) || saving || step === 'done'} className="gap-2">
+            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+            Publicar
+          </Button>
+          <Button variant="outline" onClick={reset} disabled={saving}>Novo</Button>
+        </div>
+        <p className="mt-3 text-[11px] text-muted-foreground">
+          Antes de publicar, voce pode pedir: mudar formato, encurtar texto, melhorar CTA, trocar link ou ajustar tempo.
+        </p>
+      </aside>
     </div>
   );
 }
