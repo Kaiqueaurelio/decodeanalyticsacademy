@@ -5,14 +5,14 @@
 }
 
 @keyframes decode-border-breathe {
-  0%, 100% { box-shadow: 0 0 0 0 hsl(var(--primary) / 0.00), inset 0 0 0 1px hsl(var(--primary) / 0.18); }
-  50% { box-shadow: 0 16px 42px -26px hsl(var(--primary) / 0.55), inset 0 0 0 1px hsl(var(--primary) / 0.34); }
+  0%, 100% { box-shadow: 0 0 0 0 hsl(var(--primary) / 0.00), inset 0 0 0 1px hsl(var(--primary) / 0.14); }
+  50% { box-shadow: 0 18px 48px -34px hsl(var(--primary) / 0.46), inset 0 0 0 1px hsl(var(--primary) / 0.28); }
 }
 
 @keyframes decode-sheen {
   0% { transform: translateX(-120%) skewX(-18deg); opacity: 0; }
-  18% { opacity: 0.55; }
-  42%, 100% { transform: translateX(160%) skewX(-18deg); opacity: 0; }
+  20% { opacity: 0.38; }
+  46%, 100% { transform: translateX(160%) skewX(-18deg); opacity: 0; }
 }
 
 @keyframes decode-chat-arrive {
@@ -20,8 +20,13 @@
   to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
 }
 
+@keyframes decode-panel-enter {
+  from { opacity: 0; transform: translate3d(0, 8px, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
 .dashboard-focus-card {
-  animation: decode-border-breathe 5.5s ease-in-out infinite;
+  animation: decode-border-breathe 6.5s ease-in-out infinite;
 }
 
 .dashboard-focus-card::before {
@@ -29,9 +34,9 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(110deg, transparent 0%, hsl(var(--primary) / 0.16) 45%, transparent 70%);
+  background: linear-gradient(110deg, transparent 0%, hsl(var(--primary) / 0.11) 45%, transparent 70%);
   transform: translateX(-120%) skewX(-18deg);
-  animation: decode-sheen 6.5s ease-in-out infinite;
+  animation: decode-sheen 8s ease-in-out infinite;
 }
 
 main > section,
@@ -43,8 +48,8 @@ main [class*="rounded-2xl"][class*="bg-card"] {
 main > section:hover,
 main > div.rounded-2xl:hover,
 main [class*="rounded-2xl"][class*="bg-card"]:hover {
-  border-color: hsl(var(--primary) / 0.24);
-  box-shadow: 0 18px 50px -38px hsl(var(--primary) / 0.45);
+  border-color: hsl(var(--primary) / 0.20);
+  box-shadow: 0 18px 50px -42px hsl(var(--primary) / 0.38);
 }
 
 /* Landing page: keep motion refined and product-like. */
@@ -60,13 +65,13 @@ main [class*="rounded-2xl"][class*="bg-card"]:hover {
 
 .font-cyber section [class*="rounded-xl"],
 .font-cyber section [class*="rounded-2xl"] {
-  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1), border-color 260ms ease, box-shadow 260ms ease, background-color 260ms ease;
+  transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1), border-color 240ms ease, box-shadow 240ms ease, background-color 240ms ease;
 }
 
 .font-cyber section [class*="rounded-xl"]:hover,
 .font-cyber section [class*="rounded-2xl"]:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 22px 70px -46px rgba(0, 240, 255, 0.38);
+  transform: translateY(-2px);
+  box-shadow: 0 22px 72px -54px rgba(0, 240, 255, 0.28);
 }
 
 .font-cyber section [style*="Decode Analytics Dashboard"]::after,
@@ -75,15 +80,49 @@ main [class*="rounded-2xl"][class*="bg-card"]:hover {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(110deg, transparent 20%, rgba(255,255,255,0.08) 45%, transparent 65%);
+  background: linear-gradient(110deg, transparent 22%, rgba(255,255,255,0.06) 45%, transparent 66%);
   transform: translateX(-120%) skewX(-18deg);
-  animation: decode-sheen 7s ease-in-out infinite;
+  animation: decode-sheen 8.5s ease-in-out infinite;
 }
 
-/* Ad assistant: make the workspace feel like a real conversational tool. */
-[data-ad-chat-message],
+/* General app copilot: sober command-center surfaces. */
+.app-command-shell {
+  background:
+    linear-gradient(180deg, hsl(var(--card) / 0.70), hsl(var(--background))),
+    hsl(var(--background));
+}
+
+.app-command-shell [data-ad-chat-message],
 .ad-chat-message {
   animation: decode-chat-arrive 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.app-command-shell button,
+.ops-panel button {
+  letter-spacing: 0;
+}
+
+.ops-panel > div,
+.app-command-shell aside > div {
+  animation: decode-panel-enter 360ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.ops-panel [class*="rounded-xl"],
+.ops-panel [class*="rounded-2xl"] {
+  box-shadow: 0 14px 42px -38px hsl(var(--foreground) / 0.35);
+}
+
+.ops-panel [class*="rounded-xl"]:hover,
+.ops-panel [class*="rounded-2xl"]:hover {
+  border-color: hsl(var(--primary) / 0.22);
+  transform: translateY(-1px);
+}
+
+/* Tone down decorative AI-template glow without removing the brand mood. */
+.font-cyber [class*="blur-3xl"],
+.font-cyber [class*="blur-["],
+.font-cyber [class*="animate-pulse"] {
+  opacity: 0.55;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -93,7 +132,9 @@ main [class*="rounded-2xl"][class*="bg-card"]:hover {
   .font-cyber section [style*="Decode Analytics Dashboard"]::after,
   .font-cyber section [class*="overflow-hidden"][style*="rgba(0,240,255"]::after,
   [data-ad-chat-message],
-  .ad-chat-message {
+  .ad-chat-message,
+  .ops-panel > div,
+  .app-command-shell aside > div {
     animation: none !important;
   }
 
@@ -101,7 +142,9 @@ main [class*="rounded-2xl"][class*="bg-card"]:hover {
   main > div.rounded-2xl,
   main [class*="rounded-2xl"][class*="bg-card"],
   .font-cyber section [class*="rounded-xl"],
-  .font-cyber section [class*="rounded-2xl"] {
+  .font-cyber section [class*="rounded-2xl"],
+  .ops-panel [class*="rounded-xl"],
+  .ops-panel [class*="rounded-2xl"] {
     transition: none !important;
   }
 }
