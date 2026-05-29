@@ -9,18 +9,19 @@ import { ThemeProvider } from "@/hooks/useTheme";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { RANamePrompt } from "@/components/RANamePrompt";
 import { PageSkeleton } from "@/components/PageSkeleton";
-// BUGFIX: AudioPlayerProvider NAO pode ser lazy-loaded pois é um Context Provider.
+import "@/styles/polish.css";
+// BUGFIX: AudioPlayerProvider NAO pode ser lazy-loaded pois e um Context Provider.
 // Lazy-loading um Provider causa crash/reset de contexto ao remontar.
 import { AudioPlayerProvider } from "@/contexts/AudioPlayerContext";
 import { SplashScreen } from "@/components/SplashScreen";
 import { AdFooterMobile } from "@/components/AdFooterMobile";
 import { AdPopup } from "@/components/AdPopup";
 
-// Páginas críticas no bundle inicial
+// Paginas criticas no bundle inicial
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 
-// Lazy: páginas internas (code-splitting)
+// Lazy: paginas internas (code-splitting)
 const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
 const DashboardPage = lazy(() => import("./pages/DashboardPage"));
 const ApostilaPage = lazy(() => import("./pages/ApostilaPage"));
