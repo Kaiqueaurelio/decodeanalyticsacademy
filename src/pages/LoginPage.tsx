@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { EvasiveButton } from '@/components/EvasiveButton';
-import { Loader2, ArrowLeft, Eye, EyeOff, BookOpen, BarChart3, Shield, AlertTriangle, Lock, Check } from 'lucide-react';
+import { Loader2, ArrowLeft, Eye, EyeOff, BookOpen, BarChart3, Shield, AlertTriangle, Lock } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import logoDark from '@/assets/owl-icon.png';
@@ -21,12 +21,9 @@ export default function LoginPage() {
     || localStorage.getItem('decode_remember_email')
     || localStorage.getItem('decode_remember_ra')
     || '';
-  const savedPasswordRaw = localStorage.getItem('decode_remember_password') || '';
-  let savedPassword = '';
-  try { savedPassword = savedPasswordRaw ? atob(savedPasswordRaw) : ''; } catch { savedPassword = ''; }
   /** Identificador único: pode ser RA ou e-mail. Detectamos pela presença de "@". */
   const [identifier, setIdentifier] = useState(savedIdentifier);
-  const [password, setPassword] = useState(savedPassword);
+  const [password, setPassword] = useState('');
   const [email, setEmail] = useState(''); // usado apenas no fluxo de reset por e-mail
   const [isSignUp, setIsSignUp] = useState(false);
   const [isReset, setIsReset] = useState(false);
@@ -190,14 +187,13 @@ export default function LoginPage() {
       }
     } else {
       setLoginAttempts(0);
-      // Persistência unificada
+      // Persistência unificada: lembra apenas o identificador. Senha fica com o navegador/gerenciador de senhas.
       if (rememberMe) {
         localStorage.setItem('decode_remember_identifier', id);
-        localStorage.setItem('decode_remember_password', btoa(password));
       } else {
         localStorage.removeItem('decode_remember_identifier');
-        localStorage.removeItem('decode_remember_password');
       }
+      localStorage.removeItem('decode_remember_password');
       // Limpa chaves antigas para não conflitar
       localStorage.removeItem('decode_remember_email');
       localStorage.removeItem('decode_remember_ra');
@@ -358,14 +354,14 @@ export default function LoginPage() {
                       />
                       <p className="text-[10px] text-muted-foreground/70 leading-snug">
                         {usingEmail
-                          ? '✉️ Detectamos um e-mail. Login com verificação por e-mail.'
+                          ? 'Detectamos um e-mail. Login com verificação por e-mail.'
                           : identifier.length > 0
-                            ? '🎓 Detectamos um RA. Login direto, sem verificação.'
+                            ? 'Detectamos um RA. Login direto, sem verificação.'
                             : 'Digite seu RA da UNIP ou seu e-mail cadastrado.'}
                       </p>
                       {isSignUp && !usingEmail && identifier.length > 0 && (
                         <p className="text-[10px] text-warning/80 leading-snug">
-                          ⚠️ Cadastro por RA é rápido, mas você não poderá recuperar a senha por e-mail.
+                          Cadastro por RA é rápido, mas você não poderá recuperar a senha por e-mail.
                         </p>
                       )}
                     </div>
@@ -436,7 +432,7 @@ export default function LoginPage() {
                         </div>
                         {rememberMe && (
                           <p className="text-[10px] text-muted-foreground/70 leading-snug pl-6">
-                            🔒 A senha fica salva apenas neste dispositivo. Não use em computadores compartilhados.
+                            Apenas seu RA/e-mail será lembrado neste dispositivo. A senha fica com o navegador ou gerenciador de senhas.
                           </p>
                         )}
                       </div>
