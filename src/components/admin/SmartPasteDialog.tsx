@@ -3,15 +3,16 @@
  * vai mudar. Usa paste-cleaner para normalizar o texto antes de inserir
  * no editor.
  */
-import { useState, useEffect } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Sparkles, ClipboardPaste } from 'lucide-react';
+import { Sparkles, ClipboardPaste, FileText, Wand2 } from 'lucide-react';
 import { cleanPastedContent } from '@/lib/paste-cleaner';
+import { cn } from '@/lib/utils';
 
 interface Props {
   open: boolean;
@@ -22,13 +23,19 @@ interface Props {
 
 export function SmartPasteDialog({ open, onOpenChange, onApply }: Props) {
   const [raw, setRaw] = useState('');
-  const [smartHeadings, setSmartHeadings] = useState(true);
+  const [smartHeadings, setSmartHeadings] = useState(false);
   const [cleanUrls, setCleanUrls] = useState(true);
   const [mode, setMode] = useState<'append' | 'replace'>('append');
 
-  useEffect(() => { if (!open) { setRaw(''); } }, [open]);
+  useEffect(() => { if (!open) { setRaw(''); setSmartHeadings(false); setMode('append'); } }, [open]);
 
   const result = raw ? cleanPastedContent(raw, { smartHeadings, cleanUrls }) : { cleaned: '', changes: [] };
+  const stats = useMemo(() => {
+    const text = result.cleaned || raw;
+    const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+    const chars = text.length;
+    return { words, chars };
+  }, [raw, result.cleaned]);
 
   const handlePaste = async () => {
     try {
@@ -41,58 +48,87 @@ export function SmartPasteDialog({ open, onOpenChange, onApply }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[85vh] flex flex-col">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+      <DialogContent className="flex max-h-[92dvh] w-[calc(100vw-1rem)] max-w-4xl flex-col gap-3 overflow-hidden p-3 sm:p-6">
+        <DialogHeader className="space-y-1 pr-8">
+          <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
             <Sparkles className="h-4 w-4 text-primary" />
-            Colar de qualquer lugar
+            Colar apostila
           </DialogTitle>
+          <p className="text-xs text-muted-foreground">
+            Cole seu texto ou Markdown. Por padrão, o app preserva sua escrita e só limpa formatação invisível.
+          </p>
         </DialogHeader>
 
-        <div className="flex items-center gap-3 flex-wrap text-xs">
-          <Button size="sm" variant="outline" onClick={handlePaste} className="gap-1.5 h-7">
-            <ClipboardPaste className="h-3 w-3" />
-            Colar do clipboard
-          </Button>
-          <div className="flex items-center gap-2">
-            <Switch id="smart-h" checked={smartHeadings} onCheckedChange={setSmartHeadings} />
-            <Label htmlFor="smart-h" className="text-xs cursor-pointer">Inferir títulos</Label>
-          </div>
-          <div className="flex items-center gap-2">
-            <Switch id="clean-u" checked={cleanUrls} onCheckedChange={setCleanUrls} />
-            <Label htmlFor="clean-u" className="text-xs cursor-pointer">Limpar rastreadores de URL</Label>
-          </div>
-          <div className="ml-auto flex items-center gap-1">
-            <Button size="sm" variant={mode === 'append' ? 'default' : 'outline'} className="h-7 text-xs" onClick={() => setMode('append')}>
-              Acrescentar ao final
+        <div className="grid gap-2 rounded-lg border border-border bg-muted/20 p-2 sm:grid-cols-[1fr_auto] sm:items-center">
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+            <Button size="sm" variant="outline" onClick={handlePaste} className="h-9 justify-center gap-1.5 text-xs sm:h-8">
+              <ClipboardPaste className="h-3.5 w-3.5" />
+              Colar
             </Button>
-            <Button size="sm" variant={mode === 'replace' ? 'default' : 'outline'} className="h-7 text-xs" onClick={() => setMode('replace')}>
-              Substituir tudo
+            <Button
+              size="sm"
+              variant={mode === 'append' ? 'default' : 'outline'}
+              className="h-9 justify-center text-xs sm:h-8"
+              onClick={() => setMode('append')}
+            >
+              Acrescentar
             </Button>
+            <Button
+              size="sm"
+              variant={mode === 'replace' ? 'default' : 'outline'}
+              className="h-9 justify-center text-xs sm:h-8"
+              onClick={() => setMode('replace')}
+            >
+              Substituir
+            </Button>
+            <div className="flex items-center justify-center gap-1.5 rounded-md border border-border bg-background px-2 text-[11px] text-muted-foreground sm:h-8">
+              <FileText className="h-3 w-3" />
+              {stats.words.toLocaleString('pt-BR')} palavras
+            </div>
+          </div>
+
+          <div className="grid gap-2 sm:flex sm:items-center sm:justify-end">
+            <label
+              className={cn(
+                'flex items-center justify-between gap-3 rounded-md border px-3 py-2 text-xs sm:h-8 sm:py-0',
+                !smartHeadings ? 'border-primary/40 bg-primary/10 text-primary' : 'border-border bg-background',
+              )}
+            >
+              <span>Preservar texto</span>
+              <Switch checked={!smartHeadings} onCheckedChange={(checked) => setSmartHeadings(!checked)} />
+            </label>
+            <label className="flex items-center justify-between gap-3 rounded-md border border-border bg-background px-3 py-2 text-xs sm:h-8 sm:py-0">
+              <span className="flex items-center gap-1.5"><Wand2 className="h-3 w-3" /> Inferir títulos</span>
+              <Switch checked={smartHeadings} onCheckedChange={setSmartHeadings} />
+            </label>
+            <div className="flex items-center gap-2 px-1">
+              <Switch id="clean-u" checked={cleanUrls} onCheckedChange={setCleanUrls} />
+              <Label htmlFor="clean-u" className="text-xs cursor-pointer">Limpar URLs</Label>
+            </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 flex-1 min-h-0">
-          <div className="flex flex-col min-h-0">
-            <Label className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Cole aqui (de Notion, Word, site…)</Label>
+        <div className="grid flex-1 min-h-0 grid-cols-1 gap-3 lg:grid-cols-2">
+          <div className="flex min-h-0 flex-col">
+            <Label className="mb-1 text-[10px] uppercase tracking-wider text-muted-foreground">Texto original</Label>
             <Textarea
               value={raw}
               onChange={(e) => setRaw(e.target.value)}
-              placeholder="Ctrl+V para colar do Notion, Word, Google Docs, sites…"
-              className="flex-1 min-h-[260px] font-mono text-xs resize-none"
+              placeholder="Cole aqui seu texto, Markdown, material do Word, PDF, Notion ou Google Docs..."
+              className="min-h-[34dvh] flex-1 resize-none text-sm leading-relaxed sm:min-h-[360px]"
             />
           </div>
-          <div className="flex flex-col min-h-0">
-            <Label className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Resultado limpo (markdown)</Label>
-            <ScrollArea className="flex-1 min-h-[260px] rounded-md border border-border bg-muted/20">
-              <pre className="text-xs p-3 whitespace-pre-wrap break-words font-mono">
+          <div className="flex min-h-0 flex-col">
+            <Label className="mb-1 text-[10px] uppercase tracking-wider text-muted-foreground">Como será inserido</Label>
+            <ScrollArea className="min-h-[30dvh] flex-1 rounded-md border border-border bg-muted/20 sm:min-h-[360px]">
+              <pre className="whitespace-pre-wrap break-words p-3 text-xs leading-relaxed font-mono">
                 {result.cleaned || <span className="text-muted-foreground">— vazio —</span>}
               </pre>
             </ScrollArea>
             {result.changes.length > 0 && (
-              <ul className="mt-1.5 space-y-0.5">
+              <ul className="mt-1.5 grid gap-0.5 sm:grid-cols-2">
                 {result.changes.map((c, i) => (
-                  <li key={i} className="text-[10px] text-emerald-600 dark:text-emerald-400 flex items-start gap-1">
+                  <li key={i} className="flex items-start gap-1 text-[10px] text-emerald-600 dark:text-emerald-400">
                     <span>✓</span><span>{c}</span>
                   </li>
                 ))}
@@ -101,13 +137,14 @@ export function SmartPasteDialog({ open, onOpenChange, onApply }: Props) {
           </div>
         </div>
 
-        <DialogFooter className="gap-2">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
+        <DialogFooter className="grid grid-cols-2 gap-2 sm:flex sm:justify-end">
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="h-10 sm:h-9">Cancelar</Button>
           <Button
             disabled={!result.cleaned}
+            className="h-10 sm:h-9"
             onClick={() => { onApply(result.cleaned, mode); onOpenChange(false); }}
           >
-            {mode === 'append' ? 'Inserir no editor' : 'Substituir conteúdo'}
+            {mode === 'append' ? 'Inserir' : 'Substituir'}
           </Button>
         </DialogFooter>
       </DialogContent>
