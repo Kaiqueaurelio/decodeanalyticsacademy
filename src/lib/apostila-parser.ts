@@ -15,9 +15,14 @@ function isNumberedHeadingCandidate(number: string, title: string) {
   if (cleanTitle.length > 90 || words.length > 12) return false;
   if (/[.!?;:]$/.test(cleanTitle)) return false;
 
-  // Keeps obvious outlines like "1. Introducao" or "2.1 Conceitos" while
-  // preserving regular numbered paragraphs/questions as body text.
-  return number.includes('.') || /^[A-ZÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇ0-9]/.test(cleanTitle);
+  // Top-level numbered lines are often questions or ordered-list items.
+  // Only split them into sections when they look like compact topic titles.
+  if (!number.includes('.')) {
+    return words.length <= 6 && /^[A-ZÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇ0-9]/.test(cleanTitle);
+  }
+
+  // Sub-numbered outlines such as 2.1 or 3.1.2 are usually structure.
+  return true;
 }
 
 function redistributeOrphanImages(sections: ApostilaSection[]): ApostilaSection[] {
