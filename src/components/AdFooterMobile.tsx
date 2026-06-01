@@ -44,7 +44,7 @@ export function AdFooterMobile() {
         initial={{ y: 60, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 60, opacity: 0 }}
-        className="fixed bottom-0 left-0 right-0 z-40 md:hidden border-t border-border/60 bg-card/95 backdrop-blur-md shadow-lg"
+        className="fixed bottom-[calc(4.75rem+env(safe-area-inset-bottom))] left-0 right-0 z-40 md:hidden border-t border-border/60 bg-card/95 backdrop-blur-md shadow-lg"
         role="complementary"
         aria-label="Anuncio"
       >
