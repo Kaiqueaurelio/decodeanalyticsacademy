@@ -77,11 +77,13 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Reset failed-attempts counter / unblock if applicable
+    // Reset login-attempts counter / unblock if applicable.
+    // The current schema uses login_attempts, not failed_login_attempts.
     try {
       await admin.from('profiles').update({
-        failed_login_attempts: 0,
+        login_attempts: 0,
         is_blocked: false,
+        locked_at: null,
       } as any).eq('user_id', targetUserId);
     } catch { /* non-fatal */ }
 
