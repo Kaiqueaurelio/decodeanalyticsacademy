@@ -7,6 +7,19 @@ export interface ApostilaSection {
 
 const IMG_LINE_RE = /^\s*!\[[^\]]*\]\([^)]+\)\s*$/;
 
+function isNumberedHeadingCandidate(number: string, title: string) {
+  const cleanTitle = title.trim();
+  const words = cleanTitle.split(/\s+/).filter(Boolean);
+
+  if (!cleanTitle) return false;
+  if (cleanTitle.length > 90 || words.length > 12) return false;
+  if (/[.!?;:]$/.test(cleanTitle)) return false;
+
+  // Keeps obvious outlines like "1. Introducao" or "2.1 Conceitos" while
+  // preserving regular numbered paragraphs/questions as body text.
+  return number.includes('.') || /^[A-ZÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇ0-9]/.test(cleanTitle);
+}
+
 function redistributeOrphanImages(sections: ApostilaSection[]): ApostilaSection[] {
   const orphanImages: string[] = [];
   const cleaned = sections.map((s) => {
@@ -73,18 +86,18 @@ export function parseApostilaContent(raw: string | null): ApostilaSection[] {
     const numberedMatch = trimmedLine.match(/^(\d+(?:\.\d+)*)[.\s\-–]+\s*(.+)/);
     const hashMatch = trimmedLine.match(/^(#{1,3})\s+(.+)/);
 
-    if (numberedMatch) {
-      if (current && (current.title.trim() || current.content.trim())) sections.push(current);
-      const depth = numberedMatch[1].split('.').length;
-      const title = numberedMatch[2].trim();
-      const id = `section-${sections.length}`;
-      current = { id, title, level: Math.min(depth, 3), content: '' };
-    } else if (hashMatch) {
+    if (hashMatch) {
       if (current && (current.title.trim() || current.content.trim())) sections.push(current);
       const level = hashMatch[1].length;
       const title = hashMatch[2].trim();
       const id = `section-${sections.length}`;
       current = { id, title, level, content: '' };
+    } else if (numberedMatch && isNumberedHeadingCandidate(numberedMatch[1], numberedMatch[2])) {
+      if (current && (current.title.trim() || current.content.trim())) sections.push(current);
+      const depth = numberedMatch[1].split('.').length;
+      const title = numberedMatch[2].trim();
+      const id = `section-${sections.length}`;
+      current = { id, title, level: Math.min(depth, 3), content: '' };
     } else {
       if (!current) {
         current = { id: 'section-0', title: 'Introdução', level: 1, content: '' };
