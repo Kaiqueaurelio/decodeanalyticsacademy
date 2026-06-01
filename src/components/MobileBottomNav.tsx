@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type MouseEvent } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { BookOpen, Home, Library, Menu, PenLine } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -28,7 +28,7 @@ export function MobileBottomNav() {
 
   if (!user) return null;
 
-  const handleNavigate = (to: string) => (event: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleNavigate = (to: string) => (event: MouseEvent<HTMLAnchorElement>) => {
     const [path, hash] = to.split('#');
     if (!hash) return;
 
