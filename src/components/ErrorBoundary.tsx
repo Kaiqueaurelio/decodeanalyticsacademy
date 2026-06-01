@@ -61,9 +61,14 @@ class ErrorBoundary extends Component<Props, State> {
     console.error('Error caught in ErrorBoundary: ', error, errorInfo);
 
     const alreadyRecovered = sessionStorage.getItem(RECOVERY_KEY) === 'true';
-    if (isChunkOrCacheError(error) && !alreadyRecovered) {
+    if (!alreadyRecovered) {
       sessionStorage.setItem(RECOVERY_KEY, 'true');
       clearRuntimeCaches().finally(() => window.location.reload());
+      return;
+    }
+
+    if (isChunkOrCacheError(error)) {
+      clearRuntimeCaches().catch(() => undefined);
     }
   }
 
@@ -83,7 +88,7 @@ class ErrorBoundary extends Component<Props, State> {
             </div>
             <h1 className="text-xl font-bold">Precisamos atualizar o app</h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              Uma versao antiga ficou presa no cache do navegador. Clique abaixo para limpar e abrir a versao nova.
+              Uma versao antiga pode ter ficado presa no cache do navegador. Clique abaixo para limpar e abrir a versao nova.
             </p>
             <button
               type="button"
