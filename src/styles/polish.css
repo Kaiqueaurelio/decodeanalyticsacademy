@@ -182,6 +182,11 @@ main [class*="rounded-2xl"][class*="bg-card"]:hover {
   max-width: 100%;
 }
 
+#conteudo-principal .student-img-block:has(> div:not(:has(img))),
+#conteudo-principal .student-img-block:has([aria-label="Imagem indisponível"]) {
+  display: none !important;
+}
+
 @media (min-width: 1024px) {
   #conteudo-principal .apostila-prose {
     font-size: 1.045rem;
