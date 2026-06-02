@@ -6,29 +6,29 @@ import { BookOpen, PenLine, FileText, Search, Trophy, X } from 'lucide-react';
 
 const STEPS = [
   {
-    icon: <BookOpen className="h-8 w-8 text-primary" />,
+    icon: <BookOpen className="h-7 w-7 text-primary" />,
     title: 'Bem-vindo à Decode!',
-    desc: 'Aqui você encontra apostilas, exercícios e materiais para todo o curso de Ciência da Computação.',
+    desc: 'Acesse apostilas, exercícios e materiais organizados para seus estudos.',
   },
   {
-    icon: <PenLine className="h-8 w-8 text-primary" />,
+    icon: <PenLine className="h-7 w-7 text-primary" />,
     title: 'Exercícios Interativos',
-    desc: 'Teste seus conhecimentos com questões por apostila. Veja explicações detalhadas após responder.',
+    desc: 'Teste seus conhecimentos por apostila e acompanhe sua evolução.',
   },
   {
-    icon: <FileText className="h-8 w-8 text-primary" />,
+    icon: <FileText className="h-7 w-7 text-primary" />,
     title: 'Materiais de Apoio',
-    desc: 'Acesse PDFs, vídeos, áudios e apresentações organizados por categoria e semestre.',
+    desc: 'Encontre PDFs, vídeos, áudios e apresentações por categoria.',
   },
   {
-    icon: <Trophy className="h-8 w-8 text-primary" />,
+    icon: <Trophy className="h-7 w-7 text-primary" />,
     title: 'Gamificação',
-    desc: 'Ganhe XP, mantenha seu streak de estudos, desbloqueie conquistas e suba no ranking!',
+    desc: 'Ganhe XP, mantenha sua sequência de estudos e desbloqueie conquistas.',
   },
   {
-    icon: <Search className="h-8 w-8 text-primary" />,
+    icon: <Search className="h-7 w-7 text-primary" />,
     title: 'Ferramentas de Estudo',
-    desc: 'Use flashcards, timer Pomodoro e anotações para maximizar seu aprendizado.',
+    desc: 'Use flashcards, timer Pomodoro e anotações sem sair do fluxo.',
   },
 ];
 
@@ -47,8 +47,8 @@ export function OnboardingTour({ onComplete }: Props) {
   if (!mounted) return null;
 
   return createPortal(
-    <div className="pointer-events-none fixed inset-0 z-[120] flex min-h-dvh items-center justify-center bg-background/45 backdrop-blur-[2px] p-4">
-      <Card className="pointer-events-auto relative w-full max-w-sm border border-border/50 bg-card p-6 shadow-lg animate-scale-in">
+    <div className="pointer-events-none fixed inset-x-3 bottom-3 z-[120] flex justify-end sm:inset-x-auto sm:right-4 sm:bottom-4">
+      <Card className="pointer-events-auto relative w-full max-w-[360px] border border-primary/35 bg-card/95 p-4 shadow-2xl shadow-black/35 backdrop-blur animate-scale-in">
         <button
           onClick={onComplete}
           className="absolute right-3 top-3 text-muted-foreground transition-colors hover:text-foreground"
@@ -57,13 +57,15 @@ export function OnboardingTour({ onComplete }: Props) {
           <X className="h-4 w-4" />
         </button>
 
-        <div className="mb-4 text-center">
-          <div className="mx-auto mb-3">{STEPS[step].icon}</div>
-          <h2 className="mb-1 text-lg font-bold">{STEPS[step].title}</h2>
-          <p className="text-sm text-muted-foreground">{STEPS[step].desc}</p>
+        <div className="mb-3 flex gap-3 pr-6">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">{STEPS[step].icon}</div>
+          <div className="min-w-0">
+            <h2 className="mb-1 text-sm font-bold leading-tight">{STEPS[step].title}</h2>
+            <p className="text-xs leading-relaxed text-muted-foreground">{STEPS[step].desc}</p>
+          </div>
         </div>
 
-        <div className="mb-4 flex justify-center gap-1">
+        <div className="mb-3 flex gap-1">
           {STEPS.map((_, i) => (
             <div
               key={i}
@@ -72,7 +74,7 @@ export function OnboardingTour({ onComplete }: Props) {
           ))}
         </div>
 
-        <div className="flex justify-center gap-2">
+        <div className="flex justify-end gap-2">
           {step > 0 && (
             <Button size="sm" variant="ghost" onClick={() => setStep((s) => s - 1)}>
               Anterior
@@ -84,7 +86,7 @@ export function OnboardingTour({ onComplete }: Props) {
             </Button>
           ) : (
             <Button size="sm" onClick={onComplete} className="gradient-primary text-primary-foreground">
-              Começar!
+              Começar
             </Button>
           )}
         </div>
