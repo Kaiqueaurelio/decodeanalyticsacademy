@@ -26,6 +26,15 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   ChevronsLeft,
+  Sparkles,
+  Timer,
+  Activity,
+  HelpCircle,
+  Trophy,
+  RotateCcw,
+  Megaphone,
+  LogOut,
+  Settings,
 } from 'lucide-react';
 import logoOwl from '@/assets/owl-icon.png';
 import { Button } from '@/components/ui/button';
@@ -56,17 +65,28 @@ const menuGroups = [
       { to: '/exercicios', icon: PenLine, label: 'Exercícios' },
       { to: '/biblioteca', icon: Library, label: 'Biblioteca' },
       { to: '/livros', icon: SheetIcon, label: 'Livros' },
+      { to: '/flashcards', icon: Sparkles, label: 'Flashcards' },
+      { to: '/review', icon: RotateCcw, label: 'Revisão' },
+      { to: '/simulado', icon: Trophy, label: 'Simulado' },
     ],
   },
   {
     label: 'Ferramentas',
     items: [
       { to: '/calculadora', icon: Calculator, label: 'Calculadora' },
-      { to: '/comunidade', icon: MessagesSquare, label: 'Mensagens' },
-      { to: '/profile', icon: User, label: 'Perfil' },
+      { to: '/performance', icon: Activity, label: 'Desempenho' },
+      { to: '/tira-duvida', icon: HelpCircle, label: 'Tira-dúvidas' },
+      { to: '/comunidade', icon: MessagesSquare, label: 'Comunidade' },
+    ],
+  },
+  {
+    label: 'Conta',
+    items: [
+      { to: '/profile', icon: User, label: 'Meu Perfil' },
     ],
   },
 ];
+
 
 const adminMenuItems = [
   { to: '/admin', icon: Users, label: 'Usuários' },
