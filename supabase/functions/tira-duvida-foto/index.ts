@@ -29,6 +29,34 @@ function dataUrlToBase64(dataUrl: string): { mimeType: string; data: string } {
   return { mimeType: match[1], data: match[2] };
 }
 
+function base64ToBytes(base64: string) {
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes;
+}
+
+async function saveImageWithServiceRole(admin: any, userId: string, imageDataUrl: string, imageName?: string) {
+  try {
+    const { mimeType, data } = dataUrlToBase64(imageDataUrl);
+    const ext = mimeType.includes("png") ? "png" : "jpg";
+    const safeName = (imageName || `duvida.${ext}`).replace(/[^a-z0-9_.-]/gi, "-").slice(-80);
+    const path = `${userId}/${Date.now()}-${safeName.endsWith(`.${ext}`) ? safeName : `${safeName}.${ext}`}`;
+    const { error } = await admin.storage.from("tira-duvida").upload(path, base64ToBytes(data), {
+      contentType: mimeType,
+      upsert: false,
+    });
+    if (error) {
+      console.warn("storage save skipped", error.message);
+      return { imagePath: null, imageUrl: "inline" };
+    }
+    return { imagePath: path, imageUrl: path };
+  } catch (error) {
+    console.warn("storage save failed", error);
+    return { imagePath: null, imageUrl: "inline" };
+  }
+}
+
 async function visionGoogle(apiKey: string, imageDataUrl: string) {
   const { mimeType, data } = dataUrlToBase64(imageDataUrl);
   const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
@@ -153,14 +181,17 @@ Deno.serve(async (req) => {
 
     const body = await req.json();
     const imageDataUrl: string | undefined = body.image;
-    const imagePath: string | undefined = body.image_path;
-    const imageUrl: string | undefined = body.image_url;
+    const providedImagePath: string | undefined = body.image_path;
+    const providedImageUrl: string | undefined = body.image_url;
+    const imageName: string | undefined = body.image_name;
     if (!imageDataUrl) {
       return new Response(JSON.stringify({ error: "Imagem ausente" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
+    const admin = createClient(SUPABASE_URL, SERVICE_KEY);
+
     // Daily limit
-    const { data: countToday } = await userClient.rpc("count_tira_duvidas_today", { _user_id: user.id });
+    const { data: countToday } = await admin.rpc("count_tira_duvidas_today", { _user_id: user.id });
     if ((countToday ?? 0) >= DAILY_LIMIT) {
       return new Response(JSON.stringify({ error: `Limite diário de ${DAILY_LIMIT} dúvidas atingido. Tente novamente amanhã.` }), {
         status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -168,7 +199,6 @@ Deno.serve(async (req) => {
     }
 
     // Read provider preference (admin client to bypass RLS on app_settings if needed)
-    const admin = createClient(SUPABASE_URL, SERVICE_KEY);
     let preferGoogle = false;
     try {
       const { data: setting } = await admin.from("app_settings").select("value").eq("key", "ai_provider").maybeSingle();
@@ -193,7 +223,6 @@ Deno.serve(async (req) => {
 
     if (!args) {
       if (!LOVABLE_API_KEY) {
-        // Sem Lovable: tenta Google direto como último recurso
         if (GOOGLE_AI_API_KEY) {
           try {
             args = await visionGoogle(GOOGLE_AI_API_KEY, imageDataUrl);
@@ -214,7 +243,6 @@ Deno.serve(async (req) => {
           if (status === 429) return new Response(JSON.stringify({ error: "Muitas requisições. Tente novamente em instantes." }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json", "X-AI-Provider": "lovable-ai" } });
           if (status === 402) return new Response(JSON.stringify({ error: "Créditos de IA esgotados. Ative sua chave Google AI Studio no Admin ou avise o administrador." }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json", "X-AI-Provider": "lovable-ai" } });
 
-          // Último fallback: tenta Google direto se a chave existir
           if (GOOGLE_AI_API_KEY) {
             try {
               args = await visionGoogle(GOOGLE_AI_API_KEY, imageDataUrl);
@@ -232,7 +260,7 @@ Deno.serve(async (req) => {
 
     const { topic, concept, hint, search_query } = args;
 
-    // Step 2: Embed search query (mesma preferência)
+    // Step 2: Embed search query
     let relatedApostila: { id: string; title: string; category: string; similarity: number } | null = null;
     try {
       const text = `${topic}\n${search_query}`;
@@ -247,13 +275,17 @@ Deno.serve(async (req) => {
       console.error("embed/match err", e);
     }
 
+    const savedImage = providedImagePath || providedImageUrl
+      ? { imagePath: providedImagePath ?? null, imageUrl: providedImageUrl ?? providedImagePath ?? "inline" }
+      : await saveImageWithServiceRole(admin, user.id, imageDataUrl, imageName);
+
     const fullAnswer = `**Tema:** ${topic}\n\n## Conceito\n${concept}\n\n## Dica de resolução\n${hint}`;
 
-    // Step 3: Save
-    const { data: saved, error: saveErr } = await userClient.from("tira_duvidas").insert({
+    // Step 3: Save with service role after authenticating the user.
+    const { data: saved, error: saveErr } = await admin.from("tira_duvidas").insert({
       user_id: user.id,
-      image_url: imageUrl ?? imagePath ?? "inline",
-      image_path: imagePath ?? null,
+      image_url: savedImage.imageUrl,
+      image_path: savedImage.imagePath,
       concept,
       hint,
       full_answer: fullAnswer,
