@@ -38,10 +38,12 @@ export interface ApostilasListOptions {
  */
 export function useApostilasList(options: ApostilasListOptions = {}) {
   const { semester = null, course = null, enabled = true } = options;
-  const { isAdmin } = useAuth();
+  const { isAdmin, isSessionHydrated, roleChecked } = useAuth();
+  const canLoadApostilas = enabled && isSessionHydrated && roleChecked;
   
   return useQuery({
-    queryKey: ['apostilas', 'list', semester, course, enabled, isAdmin],
+    queryKey: ['apostilas', 'list', semester, course, canLoadApostilas, isAdmin],
+    enabled: canLoadApostilas,
     queryFn: async () => {
       let q = supabase
         .from('apostilas')
