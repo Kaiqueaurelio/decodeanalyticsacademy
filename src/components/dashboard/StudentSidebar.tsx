@@ -1,4 +1,4 @@
-import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Home, BookOpen, ClipboardList, PenLine, FileText, MessagesSquare, User, Sheet as SheetIcon, Library, Calculator, ShieldCheck, GraduationCap, MoreHorizontal, Bell, LayoutDashboard, Package, Users, TrendingUp, Globe, BarChart3, Store, LifeBuoy } from 'lucide-react';
 import logoOwl from '@/assets/owl-icon.png';
 import { Button } from '@/components/ui/button';
@@ -47,25 +47,40 @@ const railItems = [
   { to: '/comunidade', icon: LifeBuoy, label: 'Suporte' },
 ];
 
+function setDashboardHash(id: string) {
+  window.history.replaceState(null, '', `/dashboard#${id}`);
+}
+
+function findDashboardSection(id: string) {
+  return document.getElementById(id) || document.querySelector(`[data-sidebar-section="${id}"]`);
+}
+
 function scrollToDashboardSection(id: string, navigate: ReturnType<typeof useNavigate>) {
-  const go = () => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      window.history.replaceState(null, '', `/dashboard#${id}`);
-      return true;
-    }
-    return false;
+  const scroll = () => {
+    const el = findDashboardSection(id);
+    if (!el) return false;
+
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setDashboardHash(id);
+    return true;
+  };
+
+  const retryScroll = () => {
+    requestAnimationFrame(() => {
+      if (scroll()) return;
+      window.setTimeout(scroll, 120);
+      window.setTimeout(scroll, 320);
+      window.setTimeout(scroll, 700);
+    });
   };
 
   if (window.location.pathname !== '/dashboard') {
     navigate(`/dashboard#${id}`);
-    window.setTimeout(go, 220);
-    window.setTimeout(go, 650);
+    retryScroll();
     return;
   }
 
-  if (!go()) window.setTimeout(go, 120);
+  if (!scroll()) retryScroll();
 }
 
 function isRouteActive(currentPath: string, currentHash: string, to: string) {
