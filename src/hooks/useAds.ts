@@ -17,6 +17,23 @@ export interface Ad {
   click_count: number;
 }
 
+const viewedInSession = new Set<string>();
+const clickedInFlight = new Set<string>();
+
+function getSessionId() {
+  const current = sessionStorage.getItem('session_id');
+  if (current) return current;
+
+  const next = `session_${Date.now()}`;
+  sessionStorage.setItem('session_id', next);
+  return next;
+}
+
+function isAbortLikeError(error: unknown) {
+  const text = `${(error as any)?.name || ''} ${(error as any)?.message || ''}`.toLowerCase();
+  return text.includes('abort') || text.includes('cancelled') || text.includes('canceled');
+}
+
 export function useAds(adType?: 'banner' | 'popup' | 'inline' | 'sidebar' | 'footer', targetPage?: string) {
   const { user } = useAuth();
   const [ads, setAds] = useState<Ad[]>([]);
@@ -64,43 +81,51 @@ export function useAds(adType?: 'banner' | 'popup' | 'inline' | 'sidebar' | 'foo
       }));
       setAds(withProxy);
     } catch (error) {
-      console.error('Erro ao carregar anúncios:', error);
+      if (!isAbortLikeError(error)) {
+        console.error('Erro ao carregar anúncios:', error);
+      }
     } finally {
       setLoading(false);
     }
   };
 
   const recordAdView = async (adId: string) => {
-    try {
-      const sessionId = sessionStorage.getItem('session_id') || `session_${Date.now()}`;
-      if (!sessionStorage.getItem('session_id')) {
-        sessionStorage.setItem('session_id', sessionId);
-      }
+    const sessionId = getSessionId();
+    const viewKey = `${user?.id || sessionId}:${adId}`;
+    if (viewedInSession.has(viewKey)) return;
+    viewedInSession.add(viewKey);
 
+    try {
       await supabase.from('ad_views').insert({
         ad_id: adId,
         user_id: user?.id || null,
         session_id: user ? null : sessionId,
       });
     } catch (error) {
-      console.error('Erro ao registrar visualização de anúncio:', error);
+      if (!isAbortLikeError(error)) {
+        console.error('Erro ao registrar visualização de anúncio:', error);
+      }
     }
   };
 
   const recordAdClick = async (adId: string) => {
-    try {
-      const sessionId = sessionStorage.getItem('session_id') || `session_${Date.now()}`;
-      if (!sessionStorage.getItem('session_id')) {
-        sessionStorage.setItem('session_id', sessionId);
-      }
+    const sessionId = getSessionId();
+    const clickKey = `${user?.id || sessionId}:${adId}`;
+    if (clickedInFlight.has(clickKey)) return;
+    clickedInFlight.add(clickKey);
 
+    try {
       await supabase.from('ad_clicks').insert({
         ad_id: adId,
         user_id: user?.id || null,
         session_id: user ? null : sessionId,
       });
     } catch (error) {
-      console.error('Erro ao registrar clique de anúncio:', error);
+      if (!isAbortLikeError(error)) {
+        console.error('Erro ao registrar clique de anúncio:', error);
+      }
+    } finally {
+      window.setTimeout(() => clickedInFlight.delete(clickKey), 2500);
     }
   };
 
