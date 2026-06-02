@@ -187,6 +187,79 @@ main [class*="rounded-2xl"][class*="bg-card"]:hover {
   display: none !important;
 }
 
+/* Student sidebar: match the Decode app palette instead of the old purple block. */
+aside.fixed.bottom-0.left-0.top-0.z-40 {
+  border-right-color: rgba(0, 240, 255, 0.28) !important;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(0, 240, 255, 0.18), transparent 34%),
+    linear-gradient(180deg, #07131b 0%, #050508 58%, #071018 100%) !important;
+}
+
+aside.fixed.bottom-0.left-0.top-0.z-40 > .h-full {
+  background:
+    radial-gradient(circle at 25% 12%, rgba(0, 240, 255, 0.16), transparent 28%),
+    radial-gradient(circle at 82% 74%, rgba(223, 255, 31, 0.08), transparent 34%),
+    linear-gradient(180deg, #07131b 0%, #050508 64%, #071018 100%) !important;
+  color: #f8fbff !important;
+}
+
+aside.fixed.bottom-0.left-0.top-0.z-40 > .h-full > div:first-child {
+  background:
+    linear-gradient(180deg, rgba(0, 240, 255, 0.08), rgba(5, 5, 8, 0.96)),
+    #050508 !important;
+  border-right: 1px solid rgba(0, 240, 255, 0.22);
+}
+
+aside.fixed.bottom-0.left-0.top-0.z-40 > .h-full > div:nth-child(2) {
+  background:
+    radial-gradient(circle at 16% 0%, rgba(0, 240, 255, 0.13), transparent 32%),
+    linear-gradient(180deg, #07131b 0%, #050508 100%) !important;
+}
+
+aside.fixed.bottom-0.left-0.top-0.z-40 [class*="bg-[#240035]"],
+aside.fixed.bottom-0.left-0.top-0.z-40 [class*="bg-[#250039]"],
+aside.fixed.bottom-0.left-0.top-0.z-40 [class*="bg-[#3b0056]"],
+aside.fixed.bottom-0.left-0.top-0.z-40 [class*="bg-[#7a0086]"] {
+  background: rgba(5, 5, 8, 0.92) !important;
+}
+
+aside.fixed.bottom-0.left-0.top-0.z-40 [class*="bg-[#5b006a]"],
+aside.fixed.bottom-0.left-0.top-0.z-40 [class*="bg-[#6d007f]"] {
+  background: rgba(0, 240, 255, 0.07) !important;
+  border-color: rgba(223, 255, 31, 0.74) !important;
+  color: #dfff1f !important;
+}
+
+aside.fixed.bottom-0.left-0.top-0.z-40 [class*="border-[#ff22ff]"] {
+  border-color: rgba(223, 255, 31, 0.82) !important;
+}
+
+aside.fixed.bottom-0.left-0.top-0.z-40 [class*="bg-[#8a0098]"],
+aside.fixed.bottom-0.left-0.top-0.z-40 [class*="bg-[#5e006f]"],
+aside.fixed.bottom-0.left-0.top-0.z-40 [class*="bg-[#520064]"] {
+  background: linear-gradient(135deg, rgba(0, 240, 255, 0.12), rgba(223, 255, 31, 0.08)) !important;
+  color: #ffffff !important;
+  box-shadow: inset 4px 0 0 #dfff1f, 0 0 24px rgba(0, 240, 255, 0.1) !important;
+}
+
+aside.fixed.bottom-0.left-0.top-0.z-40 [class*="shadow-[0_0_22px"] {
+  box-shadow: 0 0 24px rgba(0, 240, 255, 0.28) !important;
+}
+
+aside.fixed.bottom-0.left-0.top-0.z-40 button:hover {
+  border-color: rgba(223, 255, 31, 0.9) !important;
+  background-color: rgba(0, 240, 255, 0.1) !important;
+}
+
+aside.fixed.bottom-0.left-0.top-0.z-40 nav button:hover {
+  color: #ffffff !important;
+}
+
+aside.fixed.bottom-0.left-0.top-0.z-40 .text-[#dfff1f],
+aside.fixed.bottom-0.left-0.top-0.z-40 .text-[#9af5df] {
+  color: #dfff1f !important;
+}
+
 @media (min-width: 1024px) {
   #conteudo-principal .apostila-prose {
     font-size: 1.045rem;
