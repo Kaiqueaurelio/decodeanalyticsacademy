@@ -81,7 +81,7 @@ export function MobileBottomNav() {
                 <span>Menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-[86vw] max-w-xs p-0 border-r border-border">
+            <SheetContent side="left" className="w-[92vw] max-w-[360px] p-0 border-r border-border">
               <SidebarContent onNavigate={() => setOpen(false)} />
             </SheetContent>
           </Sheet>
