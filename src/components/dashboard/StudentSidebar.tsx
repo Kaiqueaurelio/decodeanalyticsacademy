@@ -184,20 +184,22 @@ export function SidebarContent({
   onNavigate?: () => void;
 }) {
   const location = useLocation();
-  const { isAdmin } = useAuth();
+  const { isAdmin, signOut } = useAuth();
   const { navigate, open } = useSidebarNavigation(onNavigate);
   const visibleRailItems = mode === 'rail' ? railItems.filter((item) => !item.adminOnly || isAdmin) : [];
   const isFull = mode === 'full';
   const canToggle = typeof setMode === 'function';
+  // Mobile drawer = sem rail decorativo, com header próprio incluindo logo
+  const showRail = canToggle;
 
   return (
-    <div className="h-full flex overflow-hidden bg-[#240035] text-white shadow-2xl">
-      {(canToggle || !isFull) && (
-        <div className="flex w-[104px] shrink-0 flex-col items-center bg-[#7a0086] py-3">
+    <div className="h-full flex overflow-hidden bg-background text-foreground shadow-2xl">
+      {showRail && (
+        <div className="flex w-[104px] shrink-0 flex-col items-center border-r border-border bg-card/60 py-3">
           <button
             type="button"
             onClick={() => open('/dashboard')}
-            className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-[#250039] shadow-[0_0_22px_rgba(223,255,31,0.28)] transition hover:bg-[#360052]"
+            className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-background shadow-[0_0_22px_hsl(var(--primary)/0.25)] ring-1 ring-primary/30 transition hover:ring-primary/60"
             aria-label="Ir para o dashboard"
           >
             <img src={logoOwl} alt="Decode Analytics Academy" className="h-10 w-10 object-contain" />
@@ -207,7 +209,7 @@ export function SidebarContent({
             <button
               type="button"
               onClick={() => setMode!(isFull ? 'rail' : 'full')}
-              className="mb-3 flex h-9 w-[84px] items-center justify-center gap-2 border border-[#dfff1f]/60 bg-[#5b006a] text-[10px] font-black uppercase tracking-wide text-[#dfff1f] transition hover:bg-[#6d007f]"
+              className="mb-3 flex h-9 w-[84px] items-center justify-center gap-2 rounded-md border border-primary/40 bg-primary/10 text-[10px] font-black uppercase tracking-wide text-primary transition hover:bg-primary/20"
               aria-label={isFull ? 'Recolher menu principal' : 'Expandir menu principal'}
               title={isFull ? 'Recolher menu principal' : 'Expandir menu principal'}
             >
@@ -218,11 +220,11 @@ export function SidebarContent({
 
           {isFull ? (
             <div className="flex min-h-0 flex-1 flex-col items-center justify-between pb-5 pt-3">
-              <div className="h-px w-10 bg-white/10" />
-              <span className="rotate-180 text-[10px] font-black uppercase tracking-[0.22em] text-white/45 [writing-mode:vertical-rl]">
+              <div className="h-px w-10 bg-border" />
+              <span className="rotate-180 text-[10px] font-black uppercase tracking-[0.22em] text-muted-foreground [writing-mode:vertical-rl]">
                 Menu
               </span>
-              <div className="h-px w-10 bg-white/10" />
+              <div className="h-px w-10 bg-border" />
             </div>
           ) : (
             <div className="flex min-h-0 flex-1 flex-col items-stretch gap-1 overflow-y-auto px-2 pb-3">
@@ -234,14 +236,11 @@ export function SidebarContent({
                     key={`${item.label}-${item.to}`}
                     type="button"
                     onClick={() => open(item.to)}
-                    className={`group relative flex min-h-12 w-[88px] flex-col items-center justify-center gap-1 border px-1.5 text-center text-[10px] font-bold leading-tight transition
-                      ${active ? 'border-[#dfff1f] bg-[#08313a] text-white shadow-[inset_3px_0_0_#dfff1f]' : 'border-transparent text-white/78 hover:border-[#dfff1f]/45 hover:bg-[#07303a] hover:text-white'}`}
+                    className={`group relative flex min-h-12 w-[88px] flex-col items-center justify-center gap-1 rounded-md border px-1.5 text-center text-[10px] font-bold leading-tight transition
+                      ${active ? 'border-primary bg-primary/15 text-foreground' : 'border-transparent text-muted-foreground hover:border-primary/40 hover:bg-muted hover:text-foreground'}`}
                     title={item.label}
                     aria-label={item.label}
                   >
-                    {item.label === 'Notificações' && (
-                      <span className="absolute left-8 top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">1</span>
-                    )}
                     <Icon className="h-5 w-5 shrink-0" strokeWidth={2.2} />
                     <span className="w-full truncate">{item.label}</span>
                   </button>
@@ -252,23 +251,29 @@ export function SidebarContent({
         </div>
       )}
 
-
       {isFull && (
-        <div className="flex min-w-0 flex-1 flex-col bg-[#3b0056]">
-          <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
-            <button type="button" onClick={() => open('/dashboard')} className="min-w-0 text-left transition hover:opacity-85">
-              <div className="font-display text-[13px] font-extrabold tracking-tight text-white">
-                DECODE <span className="text-[#dfff1f]">ANALYTICS</span>
-              </div>
-              <div className="font-mono-label text-[9px] font-medium uppercase tracking-[0.3em] text-[#dfff1f]">
-                Academy
-              </div>
+        <div className="flex min-w-0 flex-1 flex-col bg-card/40">
+          <div className="flex items-center justify-between border-b border-border px-4 py-4">
+            <button type="button" onClick={() => open('/dashboard')} className="flex min-w-0 items-center gap-3 text-left transition hover:opacity-85">
+              {!showRail && (
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-background ring-1 ring-primary/40 shadow-[0_0_18px_hsl(var(--primary)/0.25)]">
+                  <img src={logoOwl} alt="Decode Analytics Academy" className="h-8 w-8 object-contain" />
+                </span>
+              )}
+              <span className="min-w-0">
+                <span className="block font-display text-[13px] font-extrabold tracking-tight text-foreground">
+                  DECODE <span className="text-primary">ANALYTICS</span>
+                </span>
+                <span className="block font-mono text-[9px] font-medium uppercase tracking-[0.3em] text-primary">
+                  Academy
+                </span>
+              </span>
             </button>
             {canToggle && (
               <button
                 type="button"
                 onClick={() => setMode!('hidden')}
-                className="flex h-9 w-9 shrink-0 items-center justify-center border border-[#dfff1f]/45 text-[#dfff1f] transition hover:bg-[#dfff1f] hover:text-black"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-primary/40 text-primary transition hover:bg-primary hover:text-primary-foreground"
                 aria-label="Esconder menu lateral"
                 title="Esconder menu lateral"
               >
@@ -277,13 +282,13 @@ export function SidebarContent({
             )}
           </div>
 
-          <nav className="flex-1 space-y-4 overflow-y-auto px-3 py-4">
+          <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-4">
             {menuGroups.map((group) => (
               <div key={group.label}>
-                <div className="px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.22em] text-white/45">
+                <div className="px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.22em] text-muted-foreground">
                   {group.label}
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-1">
                   {group.items.map((it) => {
                     const active = isRouteActive(location.pathname, location.hash, it.to);
                     const Icon = it.icon;
@@ -292,12 +297,12 @@ export function SidebarContent({
                         key={it.to}
                         type="button"
                         onClick={() => open(it.to)}
-                        className={`group flex w-full items-center gap-3 border px-4 py-3 text-left text-sm font-semibold transition-all
+                        className={`group flex w-full items-center gap-3 rounded-lg border px-3.5 py-2.5 text-left text-sm font-semibold transition-all
                           ${active
-                            ? 'border-[#dfff1f] bg-[#08313a] text-white shadow-[inset_4px_0_0_#dfff1f]'
-                            : 'border-white/8 text-white/82 hover:border-[#dfff1f]/45 hover:bg-[#07303a] hover:text-white'}`}
+                            ? 'border-primary/60 bg-primary/15 text-foreground shadow-[inset_3px_0_0_hsl(var(--primary))]'
+                            : 'border-transparent text-muted-foreground hover:border-border hover:bg-muted hover:text-foreground'}`}
                       >
-                        <Icon strokeWidth={active ? 2.6 : 2.1} className="h-[19px] w-[19px] shrink-0" />
+                        <Icon strokeWidth={active ? 2.6 : 2.1} className={`h-[18px] w-[18px] shrink-0 ${active ? 'text-primary' : ''}`} />
                         <span className="truncate">{it.label}</span>
                       </button>
                     );
@@ -308,10 +313,10 @@ export function SidebarContent({
 
             {isAdmin && (
               <div>
-                <div className="px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.22em] text-white/45">
+                <div className="px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.22em] text-muted-foreground">
                   Administração
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-1">
                   {adminMenuItems.map((it) => {
                     const active = isRouteActive(location.pathname, location.hash, it.to);
                     const Icon = it.icon;
@@ -320,12 +325,12 @@ export function SidebarContent({
                         key={`${it.label}-${it.to}`}
                         type="button"
                         onClick={() => open(it.to)}
-                        className={`group flex w-full items-center gap-3 border px-4 py-3 text-left text-sm font-semibold transition-all
+                        className={`group flex w-full items-center gap-3 rounded-lg border px-3.5 py-2.5 text-left text-sm font-semibold transition-all
                           ${active
-                            ? 'border-[#54f7d2] bg-[#062d34] text-white shadow-[inset_4px_0_0_#54f7d2]'
-                            : 'border-white/8 text-white/76 hover:border-[#54f7d2]/45 hover:bg-[#07303a] hover:text-white'}`}
+                            ? 'border-accent/60 bg-accent/15 text-foreground shadow-[inset_3px_0_0_hsl(var(--accent))]'
+                            : 'border-transparent text-muted-foreground hover:border-border hover:bg-muted hover:text-foreground'}`}
                       >
-                        <Icon strokeWidth={active ? 2.6 : 2.1} className="h-[19px] w-[19px] shrink-0" />
+                        <Icon strokeWidth={active ? 2.6 : 2.1} className={`h-[18px] w-[18px] shrink-0 ${active ? 'text-accent' : ''}`} />
                         <span className="truncate">{it.label}</span>
                       </button>
                     );
@@ -335,32 +340,45 @@ export function SidebarContent({
                 <button
                   type="button"
                   onClick={() => open('/admin')}
-                  className={`mt-3 group flex w-full items-center gap-3 border px-4 py-3 text-left text-sm font-bold transition-all
+                  className={`mt-2 group flex w-full items-center gap-3 rounded-lg border px-3.5 py-2.5 text-left text-sm font-bold transition-all
                     ${location.pathname.startsWith('/admin')
-                      ? 'border-[#54f7d2] bg-[#004c56] text-white shadow-[inset_4px_0_0_#54f7d2]'
-                      : 'border-[#54f7d2]/25 text-[#9af5df] hover:border-[#54f7d2]/55 hover:bg-[#07303a]'}`}
+                      ? 'border-accent bg-accent/20 text-foreground shadow-[inset_3px_0_0_hsl(var(--accent))]'
+                      : 'border-accent/35 text-accent hover:border-accent/70 hover:bg-accent/10'}`}
                 >
-                  <ShieldCheck strokeWidth={2.5} className="h-[19px] w-[19px] shrink-0" />
+                  <ShieldCheck strokeWidth={2.5} className="h-[18px] w-[18px] shrink-0" />
                   <span className="truncate">Painel Admin</span>
                 </button>
               </div>
             )}
-          </nav>
 
-          <div className="m-4 border border-[#dfff1f]/28 bg-[#07131b]/80 p-3">
-            <div className="relative">
-              <h4 className="text-xs font-bold text-white">Mantenha o foco</h4>
-              <Button
-                size="sm"
-                className="mt-2 h-8 w-full rounded-none bg-[#dfff1f] text-[10px] font-black uppercase text-black hover:bg-[#edff55]"
+            <div className="pt-2">
+              <button
+                type="button"
                 onClick={() => {
-                  scrollToDashboardSection('atividades', navigate);
+                  signOut();
                   onNavigate?.();
                 }}
+                className="group flex w-full items-center gap-3 rounded-lg border border-transparent px-3.5 py-2.5 text-left text-sm font-semibold text-muted-foreground transition-all hover:border-destructive/40 hover:bg-destructive/10 hover:text-destructive"
               >
-                Ver metas
-              </Button>
+                <LogOut strokeWidth={2.1} className="h-[18px] w-[18px] shrink-0" />
+                <span className="truncate">Sair da conta</span>
+              </button>
             </div>
+          </nav>
+
+          <div className="m-3 rounded-xl border border-primary/30 bg-primary/5 p-3">
+            <h4 className="text-xs font-bold text-foreground">Mantenha o foco</h4>
+            <p className="mt-0.5 text-[11px] text-muted-foreground">Acompanhe suas metas e atividades pendentes.</p>
+            <Button
+              size="sm"
+              className="mt-2 h-8 w-full rounded-md bg-primary text-[11px] font-black uppercase text-primary-foreground hover:bg-primary/90"
+              onClick={() => {
+                scrollToDashboardSection('atividades', navigate);
+                onNavigate?.();
+              }}
+            >
+              Ver metas
+            </Button>
           </div>
         </div>
       )}
