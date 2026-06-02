@@ -11,6 +11,8 @@ type AppImageProps = Omit<React.ImgHTMLAttributes<HTMLImageElement>, 'src'> & {
   maxRetries?: number;
 };
 
+const PUBLIC_IMAGE_BUCKETS = ['materials', 'ads', 'announcements', 'apostilas', 'avatars'];
+
 function normalizeImageSrc(src?: string | null) {
   const value = src?.trim();
   if (!value) return null;
@@ -46,8 +48,9 @@ function buildImageCandidates(src?: string | null) {
 
   const pushStoragePathVariants = (path: string) => {
     const normalizedPath = path.replace(/^\/+/, '');
-    addCandidate(buildSupabasePublicUrl('ads', normalizedPath));
-    addCandidate(buildSupabasePublicUrl('announcements', normalizedPath));
+    PUBLIC_IMAGE_BUCKETS.forEach((bucket) => {
+      addCandidate(buildSupabasePublicUrl(bucket, normalizedPath));
+    });
   };
 
   if (/^https?:\/\//i.test(normalized)) {
@@ -67,10 +70,13 @@ function buildImageCandidates(src?: string | null) {
           if (!objectPath.startsWith('ads/')) {
             pushStoragePathVariants(`ads/${objectPath}`);
           }
+          if (!objectPath.startsWith('apostila-images/')) {
+            pushStoragePathVariants(`apostila-images/${objectPath}`);
+          }
         }
       }
     } catch {
-      // Ignora URLs inválidas e mantém somente a original.
+      // Ignora URLs invalidas e mantem somente a original.
     }
 
     return Array.from(candidates);
@@ -79,6 +85,9 @@ function buildImageCandidates(src?: string | null) {
   pushStoragePathVariants(normalized);
   if (!normalized.startsWith('ads/')) {
     pushStoragePathVariants(`ads/${normalized}`);
+  }
+  if (!normalized.startsWith('apostila-images/')) {
+    pushStoragePathVariants(`apostila-images/${normalized}`);
   }
 
   return Array.from(candidates);
@@ -116,7 +125,7 @@ export const AppImage = React.forwardRef<HTMLImageElement, AppImageProps>(functi
   const candidateSrcs = React.useMemo(() => buildImageCandidates(src), [src]);
   const activeCandidate = blobFallbackUrl ?? candidateSrcs[candidateIndex] ?? null;
 
-  // Reseta estado a cada mudança real de src
+  // Reseta estado a cada mudanca real de src
   React.useEffect(() => {
     setFailed(false);
     setRetryKey(0);
