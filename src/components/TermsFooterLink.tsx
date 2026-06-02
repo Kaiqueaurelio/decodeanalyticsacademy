@@ -1,11 +1,9 @@
 import { Link, useLocation } from 'react-router-dom';
 import { FileText } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
 
 const HIDDEN_ROUTES = ['/login', '/reset-password'];
 
 export function TermsFooterLink() {
-  const { user } = useAuth();
   const location = useLocation();
 
   if (HIDDEN_ROUTES.includes(location.pathname) || location.pathname === '/termos') return null;
