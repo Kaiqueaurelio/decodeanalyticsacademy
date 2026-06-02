@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Home, BookOpen, ClipboardList, PenLine, FileText, Calendar, MessagesSquare, User, Trophy, Sheet as SheetIcon, Library, Calculator, ShieldCheck } from 'lucide-react';
+import { Home, BookOpen, ClipboardList, PenLine, FileText, MessagesSquare, User, Sheet as SheetIcon, Library, Calculator, ShieldCheck, GraduationCap } from 'lucide-react';
 import logoOwl from '@/assets/owl-icon.png';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
@@ -10,6 +10,7 @@ const items = [
   { to: '/dashboard#atividades', icon: ClipboardList, label: 'Atividades' },
   { to: '/exercicios', icon: PenLine, label: 'Exercicios' },
   { to: '/dashboard#apostilas', icon: FileText, label: 'Apostilas' },
+  { to: '/cursos', icon: GraduationCap, label: 'Cursos' },
   { to: '/biblioteca', icon: Library, label: 'Biblioteca' },
   { to: '/livros', icon: SheetIcon, label: 'Livros' },
   { to: '/calculadora', icon: Calculator, label: 'Calculadora' },
