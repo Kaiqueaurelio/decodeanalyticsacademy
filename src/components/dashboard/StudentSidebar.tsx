@@ -155,12 +155,12 @@ function getInitialSidebarMode(): SidebarMode {
 }
 
 export function SidebarContent({
-  mode,
+  mode = 'full',
   setMode,
   onNavigate,
 }: {
-  mode: Exclude<SidebarMode, 'hidden'>;
-  setMode: (mode: SidebarMode) => void;
+  mode?: Exclude<SidebarMode, 'hidden'>;
+  setMode?: (mode: SidebarMode) => void;
   onNavigate?: () => void;
 }) {
   const location = useLocation();
@@ -168,6 +168,7 @@ export function SidebarContent({
   const { navigate, open } = useSidebarNavigation(onNavigate);
   const visibleRailItems = mode === 'rail' ? railItems.filter((item) => !item.adminOnly || isAdmin) : [];
   const isFull = mode === 'full';
+  const canToggle = typeof setMode === 'function';
 
   return (
     <div className="h-full flex overflow-hidden bg-[#240035] text-white shadow-2xl">
@@ -181,16 +182,18 @@ export function SidebarContent({
           <img src={logoOwl} alt="Decode Analytics Academy" className="h-10 w-10 object-contain" />
         </button>
 
-        <button
-          type="button"
-          onClick={() => setMode(isFull ? 'rail' : 'full')}
-          className="mb-3 flex h-9 w-[84px] items-center justify-center gap-2 border border-[#dfff1f]/60 bg-[#5b006a] text-[10px] font-black uppercase tracking-wide text-[#dfff1f] transition hover:bg-[#6d007f]"
-          aria-label={isFull ? 'Recolher menu principal' : 'Expandir menu principal'}
-          title={isFull ? 'Recolher menu principal' : 'Expandir menu principal'}
-        >
-          {isFull ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeftOpen className="h-4 w-4" />}
-          {isFull ? 'Menor' : 'Abrir'}
-        </button>
+        {canToggle && (
+          <button
+            type="button"
+            onClick={() => setMode!(isFull ? 'rail' : 'full')}
+            className="mb-3 flex h-9 w-[84px] items-center justify-center gap-2 border border-[#dfff1f]/60 bg-[#5b006a] text-[10px] font-black uppercase tracking-wide text-[#dfff1f] transition hover:bg-[#6d007f]"
+            aria-label={isFull ? 'Recolher menu principal' : 'Expandir menu principal'}
+            title={isFull ? 'Recolher menu principal' : 'Expandir menu principal'}
+          >
+            {isFull ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeftOpen className="h-4 w-4" />}
+            {isFull ? 'Menor' : 'Abrir'}
+          </button>
+        )}
 
         {isFull ? (
           <div className="flex min-h-0 flex-1 flex-col items-center justify-between pb-5 pt-3">
@@ -238,15 +241,17 @@ export function SidebarContent({
                 Academy
               </div>
             </button>
-            <button
-              type="button"
-              onClick={() => setMode('hidden')}
-              className="flex h-9 w-9 shrink-0 items-center justify-center border border-[#dfff1f]/45 text-[#dfff1f] transition hover:bg-[#dfff1f] hover:text-black"
-              aria-label="Esconder menu lateral"
-              title="Esconder menu lateral"
-            >
-              <ChevronsLeft className="h-4 w-4" />
-            </button>
+            {canToggle && (
+              <button
+                type="button"
+                onClick={() => setMode!('hidden')}
+                className="flex h-9 w-9 shrink-0 items-center justify-center border border-[#dfff1f]/45 text-[#dfff1f] transition hover:bg-[#dfff1f] hover:text-black"
+                aria-label="Esconder menu lateral"
+                title="Esconder menu lateral"
+              >
+                <ChevronsLeft className="h-4 w-4" />
+              </button>
+            )}
           </div>
 
           <nav className="flex-1 space-y-4 overflow-y-auto px-3 py-4">
