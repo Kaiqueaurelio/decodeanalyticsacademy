@@ -92,18 +92,18 @@ export default function CoursesPage() {
           ))}
         </div>
 
-        <section className="grid gap-4 lg:grid-cols-2">
+        <section className="grid gap-3 sm:gap-4 lg:grid-cols-2">
           {courses.map((course) => {
             const isReady = course.status === 'available' && course.linkUrl !== '#';
             return (
-              <article key={course.id} className="rounded-2xl border border-border bg-card/80 p-4 shadow-sm transition-colors hover:border-primary/30 sm:p-5">
-                <div className="flex gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                    <course.icon className="h-5 w-5" />
+              <article key={course.id} className="rounded-2xl border border-border bg-card/80 p-3 shadow-sm transition-colors hover:border-primary/30 sm:p-5">
+                <div className="flex gap-3 sm:gap-4">
+                  <div className="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                    <course.icon className="h-4 w-4 sm:h-5 sm:w-5" />
                   </div>
-                  <div className="min-w-0 flex-1 space-y-3">
+                  <div className="min-w-0 flex-1 space-y-2.5 sm:space-y-3">
                     <div className="space-y-1">
-                      <div className="flex flex-wrap items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-1.5">
                         <Badge variant="outline" className="h-5 rounded-full px-2 text-[10px]">
                           {course.area}
                         </Badge>
@@ -111,48 +111,48 @@ export default function CoursesPage() {
                           <Badge className="h-5 rounded-full px-2 text-[10px]">Destaque</Badge>
                         )}
                         <Badge variant={isReady ? 'secondary' : 'outline'} className={cn('h-5 rounded-full px-2 text-[10px]', !isReady && 'text-muted-foreground')}>
-                          {isReady ? 'Disponivel' : 'Aguardando link oficial'}
+                          {isReady ? 'Disponivel' : 'Aguardando link'}
                         </Badge>
                       </div>
-                      <h2 className="text-base font-bold leading-snug text-foreground sm:text-lg">{course.title}</h2>
-                      <p className="text-xs font-medium text-primary/90">{course.provider}</p>
+                      <h2 className="text-sm font-bold leading-snug text-foreground sm:text-lg">{course.title}</h2>
+                      <p className="text-[11px] sm:text-xs font-medium text-primary/90">{course.provider}</p>
                     </div>
 
-                    <p className="text-sm leading-6 text-muted-foreground">{course.description}</p>
+                    <p className="text-xs sm:text-sm leading-5 sm:leading-6 text-muted-foreground line-clamp-3 sm:line-clamp-none">{course.description}</p>
 
-                    <div className="grid gap-2 text-xs text-muted-foreground sm:grid-cols-2">
-                      <div className="rounded-lg bg-muted/30 px-3 py-2">
+                    <div className="grid grid-cols-2 gap-2 text-[11px] sm:text-xs text-muted-foreground">
+                      <div className="rounded-lg bg-muted/30 px-2.5 py-1.5">
                         <span className="font-semibold text-foreground">Carga:</span> {course.workload}
                       </div>
-                      <div className="rounded-lg bg-muted/30 px-3 py-2">
-                        <span className="font-semibold text-foreground">Certificado:</span> sim
+                      <div className="rounded-lg bg-muted/30 px-2.5 py-1.5">
+                        <span className="font-semibold text-foreground">Cert.:</span> sim
                       </div>
                     </div>
 
-                    <div className="rounded-lg border border-border/70 bg-muted/20 px-3 py-2 text-xs leading-5 text-muted-foreground">
+                    <div className="hidden sm:block rounded-lg border border-border/70 bg-muted/20 px-3 py-2 text-xs leading-5 text-muted-foreground">
                       {course.validityNote}
                     </div>
 
-                    <div className="flex flex-wrap gap-1.5">
-                      {course.tags.map((tag) => (
-                        <span key={tag} className="rounded-full bg-muted px-2 py-1 text-[10px] font-semibold text-muted-foreground">
+                    <div className="flex flex-wrap gap-1">
+                      {course.tags.slice(0, 3).map((tag) => (
+                        <span key={tag} className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold text-muted-foreground">
                           {tag}
                         </span>
                       ))}
                     </div>
 
-                    <div className="flex flex-wrap gap-2 pt-1">
+                    <div className="flex flex-wrap gap-2 pt-0.5">
                       <Button
                         size="sm"
                         disabled={!isReady}
-                        className="h-8 gap-1.5 text-xs"
+                        className="h-8 gap-1.5 text-xs flex-1 sm:flex-none"
                         onClick={() => window.open(course.linkUrl, '_blank', 'noopener,noreferrer')}
                       >
-                        <ExternalLink className="h-3.5 w-3.5" /> Abrir curso
+                        <ExternalLink className="h-3.5 w-3.5" /> Abrir
                       </Button>
                       {!isReady && (
-                        <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs" disabled>
-                          <PlusCircle className="h-3.5 w-3.5" /> Inserir link oficial
+                        <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs flex-1 sm:flex-none" disabled>
+                          <PlusCircle className="h-3.5 w-3.5" /> Aguardando link
                         </Button>
                       )}
                     </div>
