@@ -41,23 +41,19 @@ export function SplashScreen({ onComplete, duration = 2500 }: SplashScreenProps)
         pointerEvents: opacity > 0 ? 'auto' : 'none',
       }}
     >
-      {/* Logo principal do app */}
+      {/* A imagem do logo ja inclui o nome do app. */}
       <div style={{ textAlign: 'center', animation: opacity > 0 ? 'pulse 2s infinite' : 'none' }}>
         <img
           src={logoDecode}
-          alt="Logo da coruja"
+          alt="Decode Analytics Academy"
           style={{
-            width: '260px',
-            height: '260px',
+            width: 'min(260px, 68vw)',
+            height: 'min(260px, 68vw)',
             objectFit: 'contain',
-            marginBottom: '12px',
             display: 'block',
             filter: 'drop-shadow(0 0 24px rgba(0,240,255,0.55)) drop-shadow(0 0 60px rgba(168,85,247,0.3))',
           }}
         />
-        <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#ffffff', margin: '0 0 4px 0', letterSpacing: '-0.02em' }}>
-          DECODE ANALYTICS <span style={{ color: '#00f0ff' }}>Academy</span>
-        </h1>
       </div>
 
       <style>{`
