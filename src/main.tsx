@@ -2,6 +2,8 @@ import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 import ErrorBoundary from "./components/ErrorBoundary";
+import { installPerfMonitor } from "./lib/perf-monitor";
+import { installRuntimeLogger } from "./lib/runtime-logs";
 
 // Remove credenciais antigas que foram salvas em base64 pelo fluxo "lembrar-me".
 // O app pode lembrar apenas o identificador; senha deve ficar com o navegador/gerenciador de senhas.
@@ -18,6 +20,9 @@ import ErrorBoundary from "./components/ErrorBoundary";
     // Em modos privados ou ambientes restritos, localStorage pode falhar.
   }
 })();
+
+installRuntimeLogger();
+installPerfMonitor();
 
 // Global error handlers
 window.addEventListener('error', (event) => {
