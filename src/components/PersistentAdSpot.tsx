@@ -38,7 +38,7 @@ export function PersistentAdSpot() {
     <motion.aside
       initial={{ opacity: 0, x: 18 }}
       animate={{ opacity: 1, x: 0 }}
-      className="hidden 2xl:block fixed bottom-5 right-5 z-40 w-[260px] rounded-2xl border border-border/70 bg-card/90 p-3 shadow-xl backdrop-blur-xl"
+      className="hidden lg:block fixed bottom-5 right-5 z-40 w-[250px] rounded-xl border border-border/70 bg-card/92 p-3 shadow-xl backdrop-blur-xl"
       aria-label="Publicidade persistente"
     >
       <button type="button" onClick={openAd} className="group block w-full text-left">
@@ -50,7 +50,7 @@ export function PersistentAdSpot() {
         </div>
         <div className="flex gap-3">
           {current.image_url && (
-            <AdMediaPreview src={current.image_url} title={current.title} compact className="h-16 w-16 shrink-0 rounded-xl" />
+            <AdMediaPreview src={current.image_url} title={current.title} compact className="h-14 w-14 shrink-0 rounded-lg" />
           )}
           <div className="min-w-0 flex-1">
             <h3 className="line-clamp-2 text-sm font-bold leading-snug text-foreground group-hover:text-primary">
