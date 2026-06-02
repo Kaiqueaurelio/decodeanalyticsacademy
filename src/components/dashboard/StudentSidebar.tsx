@@ -68,6 +68,13 @@ const menuGroups = [
   },
 ];
 
+const adminMenuItems = [
+  { to: '/admin', icon: Users, label: 'Usuários' },
+  { to: '/admin', icon: TrendingUp, label: 'Financeiro' },
+  { to: '/admin', icon: BarChart3, label: 'Relatórios' },
+  { to: '/dashboard', icon: Globe, label: 'Site' },
+];
+
 const railItems = [
   { to: '/dashboard', icon: Bell, label: 'Notificações' },
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -159,7 +166,7 @@ export function SidebarContent({
   const location = useLocation();
   const { isAdmin } = useAuth();
   const { navigate, open } = useSidebarNavigation(onNavigate);
-  const visibleRailItems = railItems.filter((item) => !item.adminOnly || isAdmin);
+  const visibleRailItems = mode === 'rail' ? railItems.filter((item) => !item.adminOnly || isAdmin) : [];
   const isFull = mode === 'full';
 
   return (
@@ -177,7 +184,7 @@ export function SidebarContent({
         <button
           type="button"
           onClick={() => setMode(isFull ? 'rail' : 'full')}
-          className="mb-3 flex h-9 w-[84px] items-center justify-center gap-2 border border-[#ff22ff]/70 bg-[#5b006a] text-[10px] font-black uppercase tracking-wide text-white transition hover:bg-[#6d007f]"
+          className="mb-3 flex h-9 w-[84px] items-center justify-center gap-2 border border-[#dfff1f]/60 bg-[#5b006a] text-[10px] font-black uppercase tracking-wide text-[#dfff1f] transition hover:bg-[#6d007f]"
           aria-label={isFull ? 'Recolher menu principal' : 'Expandir menu principal'}
           title={isFull ? 'Recolher menu principal' : 'Expandir menu principal'}
         >
@@ -185,29 +192,39 @@ export function SidebarContent({
           {isFull ? 'Menor' : 'Abrir'}
         </button>
 
-        <div className="flex min-h-0 flex-1 flex-col items-stretch gap-1 overflow-y-auto px-2 pb-3">
-          {visibleRailItems.map((item) => {
-            const active = isRouteActive(location.pathname, location.hash, item.to);
-            const Icon = item.icon;
-            return (
-              <button
-                key={`${item.label}-${item.to}`}
-                type="button"
-                onClick={() => open(item.to)}
-                className={`group relative flex min-h-12 w-[88px] flex-col items-center justify-center gap-1 border px-1.5 text-center text-[10px] font-bold leading-tight transition
-                  ${active ? 'border-[#ff22ff] bg-[#8a0098] text-white shadow-[inset_3px_0_0_#ff22ff]' : 'border-transparent text-white/88 hover:border-[#ff22ff]/80 hover:bg-[#8a0098] hover:text-white'}`}
-                title={item.label}
-                aria-label={item.label}
-              >
-                {item.label === 'Notificações' && (
-                  <span className="absolute left-8 top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">1</span>
-                )}
-                <Icon className="h-5 w-5 shrink-0" strokeWidth={2.2} />
-                <span className="w-full truncate">{item.label}</span>
-              </button>
-            );
-          })}
-        </div>
+        {isFull ? (
+          <div className="flex min-h-0 flex-1 flex-col items-center justify-between pb-5 pt-3">
+            <div className="h-px w-10 bg-white/10" />
+            <span className="rotate-180 text-[10px] font-black uppercase tracking-[0.22em] text-white/45 [writing-mode:vertical-rl]">
+              Menu
+            </span>
+            <div className="h-px w-10 bg-white/10" />
+          </div>
+        ) : (
+          <div className="flex min-h-0 flex-1 flex-col items-stretch gap-1 overflow-y-auto px-2 pb-3">
+            {visibleRailItems.map((item) => {
+              const active = isRouteActive(location.pathname, location.hash, item.to);
+              const Icon = item.icon;
+              return (
+                <button
+                  key={`${item.label}-${item.to}`}
+                  type="button"
+                  onClick={() => open(item.to)}
+                  className={`group relative flex min-h-12 w-[88px] flex-col items-center justify-center gap-1 border px-1.5 text-center text-[10px] font-bold leading-tight transition
+                    ${active ? 'border-[#dfff1f] bg-[#08313a] text-white shadow-[inset_3px_0_0_#dfff1f]' : 'border-transparent text-white/78 hover:border-[#dfff1f]/45 hover:bg-[#07303a] hover:text-white'}`}
+                  title={item.label}
+                  aria-label={item.label}
+                >
+                  {item.label === 'Notificações' && (
+                    <span className="absolute left-8 top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">1</span>
+                  )}
+                  <Icon className="h-5 w-5 shrink-0" strokeWidth={2.2} />
+                  <span className="w-full truncate">{item.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {isFull && (
@@ -224,7 +241,7 @@ export function SidebarContent({
             <button
               type="button"
               onClick={() => setMode('hidden')}
-              className="flex h-9 w-9 shrink-0 items-center justify-center border border-[#dfff1f]/55 text-[#dfff1f] transition hover:bg-[#dfff1f] hover:text-black"
+              className="flex h-9 w-9 shrink-0 items-center justify-center border border-[#dfff1f]/45 text-[#dfff1f] transition hover:bg-[#dfff1f] hover:text-black"
               aria-label="Esconder menu lateral"
               title="Esconder menu lateral"
             >
@@ -235,7 +252,7 @@ export function SidebarContent({
           <nav className="flex-1 space-y-4 overflow-y-auto px-3 py-4">
             {menuGroups.map((group) => (
               <div key={group.label}>
-                <div className="px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.22em] text-white/55">
+                <div className="px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.22em] text-white/45">
                   {group.label}
                 </div>
                 <div className="space-y-1.5">
@@ -247,10 +264,10 @@ export function SidebarContent({
                         key={it.to}
                         type="button"
                         onClick={() => open(it.to)}
-                        className={`group flex w-full items-center gap-3 border-2 px-4 py-3 text-left text-sm font-semibold transition-all
+                        className={`group flex w-full items-center gap-3 border px-4 py-3 text-left text-sm font-semibold transition-all
                           ${active
-                            ? 'border-[#ff22ff] bg-[#5e006f] text-white shadow-[inset_4px_0_0_#ff22ff]'
-                            : 'border-transparent text-white/84 hover:border-[#ff22ff] hover:bg-[#520064] hover:text-white'}`}
+                            ? 'border-[#dfff1f] bg-[#08313a] text-white shadow-[inset_4px_0_0_#dfff1f]'
+                            : 'border-white/8 text-white/82 hover:border-[#dfff1f]/45 hover:bg-[#07303a] hover:text-white'}`}
                       >
                         <Icon strokeWidth={active ? 2.6 : 2.1} className="h-[19px] w-[19px] shrink-0" />
                         <span className="truncate">{it.label}</span>
@@ -262,33 +279,58 @@ export function SidebarContent({
             ))}
 
             {isAdmin && (
-              <button
-                type="button"
-                onClick={() => open('/admin')}
-                className={`group flex w-full items-center gap-3 border-2 px-4 py-3 text-left text-sm font-bold transition-all
-                  ${location.pathname.startsWith('/admin')
-                    ? 'border-[#54f7d2] bg-[#004c56] text-white shadow-[inset_4px_0_0_#54f7d2]'
-                    : 'border-transparent text-[#9af5df] hover:border-[#54f7d2] hover:bg-[#17405a]'}`}
-              >
-                <ShieldCheck strokeWidth={2.5} className="h-[19px] w-[19px] shrink-0" />
-                <span className="truncate">Painel Admin</span>
-              </button>
+              <div>
+                <div className="px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.22em] text-white/45">
+                  Administração
+                </div>
+                <div className="space-y-1.5">
+                  {adminMenuItems.map((it) => {
+                    const active = isRouteActive(location.pathname, location.hash, it.to);
+                    const Icon = it.icon;
+                    return (
+                      <button
+                        key={`${it.label}-${it.to}`}
+                        type="button"
+                        onClick={() => open(it.to)}
+                        className={`group flex w-full items-center gap-3 border px-4 py-3 text-left text-sm font-semibold transition-all
+                          ${active
+                            ? 'border-[#54f7d2] bg-[#062d34] text-white shadow-[inset_4px_0_0_#54f7d2]'
+                            : 'border-white/8 text-white/76 hover:border-[#54f7d2]/45 hover:bg-[#07303a] hover:text-white'}`}
+                      >
+                        <Icon strokeWidth={active ? 2.6 : 2.1} className="h-[19px] w-[19px] shrink-0" />
+                        <span className="truncate">{it.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => open('/admin')}
+                  className={`mt-3 group flex w-full items-center gap-3 border px-4 py-3 text-left text-sm font-bold transition-all
+                    ${location.pathname.startsWith('/admin')
+                      ? 'border-[#54f7d2] bg-[#004c56] text-white shadow-[inset_4px_0_0_#54f7d2]'
+                      : 'border-[#54f7d2]/25 text-[#9af5df] hover:border-[#54f7d2]/55 hover:bg-[#07303a]'}`}
+                >
+                  <ShieldCheck strokeWidth={2.5} className="h-[19px] w-[19px] shrink-0" />
+                  <span className="truncate">Painel Admin</span>
+                </button>
+              </div>
             )}
           </nav>
 
-          <div className="m-4 border border-[#dfff1f]/55 bg-[#20012f] p-4">
+          <div className="m-4 border border-[#dfff1f]/28 bg-[#07131b]/80 p-3">
             <div className="relative">
-              <h4 className="text-sm font-bold text-white">Mantenha o foco</h4>
-              <p className="mb-3 text-[11px] leading-snug text-white/68">Pequenas metas diárias, grandes conquistas.</p>
+              <h4 className="text-xs font-bold text-white">Mantenha o foco</h4>
               <Button
                 size="sm"
-                className="h-9 w-full rounded-none bg-[#dfff1f] text-[11px] font-black uppercase text-black hover:bg-[#edff55]"
+                className="mt-2 h-8 w-full rounded-none bg-[#dfff1f] text-[10px] font-black uppercase text-black hover:bg-[#edff55]"
                 onClick={() => {
                   scrollToDashboardSection('atividades', navigate);
                   onNavigate?.();
                 }}
               >
-                Ver minhas metas
+                Ver metas
               </Button>
             </div>
           </div>
@@ -332,7 +374,7 @@ export function StudentSidebar() {
         <button
           type="button"
           onClick={() => setMode('full')}
-          className="mt-4 flex h-11 w-11 items-center justify-center border border-[#ff22ff]/70 bg-[#5b006a] text-[#dfff1f] transition hover:bg-[#6d007f]"
+          className="mt-4 flex h-11 w-11 items-center justify-center border border-[#dfff1f]/60 bg-[#5b006a] text-[#dfff1f] transition hover:bg-[#6d007f]"
           aria-label="Abrir menu"
           title="Abrir menu"
         >
