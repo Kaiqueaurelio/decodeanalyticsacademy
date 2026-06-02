@@ -9,44 +9,48 @@
     <meta name="theme-color" content="#0A0A0B" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <link rel="manifest" href="/manifest.json" crossorigin="anonymous" />
-    <link rel="icon" type="image/png" sizes="256x256" href="/favicon.png?v=8" />
-    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png?v=8" />
-    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png?v=8" />
-    <link rel="shortcut icon" href="/favicon.ico?v=8" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=8" />
+    <link rel="icon" type="image/png" sizes="256x256" href="/favicon.png?v=9" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png?v=9" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png?v=9" />
+    <link rel="shortcut icon" href="/favicon.ico?v=9" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=9" />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta property="og:image" content="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/083ea83f-ee4d-4273-bab2-b0d0793c6d02/id-preview-c7ae6230--4dd1aec2-9175-4ae9-9401-8637f1ffe1a2.lovable.app-1776659235641.png">
     <meta name="twitter:image" content="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/083ea83f-ee4d-4273-bab2-b0d0793c6d02/id-preview-c7ae6230--4dd1aec2-9175-4ae9-9401-8637f1ffe1a2.lovable.app-1776659235641.png">
-    
-    
-    
-    
-    
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  <meta property="og:title" content="Decode Analytics Academy">
-  <meta name="twitter:title" content="Decode Analytics Academy">
-  <meta property="og:description" content="Plataforma de estudos premium com IA para organizar apostilas, exercícios e materiais acadêmicos automaticamente 100% gratos feita de Aluno para Aluno">
-  <meta name="twitter:description" content="Plataforma de estudos premium com IA para organizar apostilas, exercícios e materiais acadêmicos automaticamente 100% gratos feita de Aluno para Aluno">
-</head>
+    <meta property="og:title" content="Decode Analytics Academy">
+    <meta name="twitter:title" content="Decode Analytics Academy">
+    <meta property="og:description" content="Plataforma de estudos premium com IA para organizar apostilas, exercícios e materiais acadêmicos automaticamente 100% gratos feita de Aluno para Aluno">
+    <meta name="twitter:description" content="Plataforma de estudos premium com IA para organizar apostilas, exercícios e materiais acadêmicos automaticamente 100% gratos feita de Aluno para Aluno">
+    <script>
+      window.__decodeShellRecovery = window.setTimeout(function () {
+        var root = document.getElementById('root');
+        if (!root || root.childElementCount > 0 || root.textContent.trim().length > 0) return;
+
+        root.innerHTML = '<main style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#050508;color:#e5e7eb;font-family:system-ui,-apple-system,Segoe UI,sans-serif;padding:24px"><section style="max-width:420px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04);border-radius:18px;padding:24px;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.38)"><div style="margin:0 auto 14px;width:44px;height:44px;border-radius:14px;background:#e8ff47;color:#111827;display:flex;align-items:center;justify-content:center;font-weight:800">!</div><h1 style="font-size:20px;margin:0 0 8px;font-weight:800">Atualizando o app</h1><p style="font-size:14px;line-height:1.55;color:#a1a1aa;margin:0 0 18px">Seu navegador manteve uma versao antiga no cache. Clique abaixo para limpar os arquivos antigos e abrir a versao atual.</p><button id="decode-clean-cache" style="height:40px;border:0;border-radius:12px;background:#e8ff47;color:#111827;font-weight:800;padding:0 18px;cursor:pointer">Atualizar agora</button></section></main>';
+
+        document.getElementById('decode-clean-cache').onclick = async function () {
+          try {
+            if ('serviceWorker' in navigator) {
+              var registrations = await navigator.serviceWorker.getRegistrations();
+              await Promise.all(registrations.map(function (registration) { return registration.unregister(); }));
+            }
+          } catch (e) {}
+
+          try {
+            if ('caches' in window) {
+              var keys = await caches.keys();
+              await Promise.all(keys.map(function (key) { return caches.delete(key); }));
+            }
+          } catch (e) {}
+
+          var url = new URL(window.location.href);
+          url.searchParams.set('__decode_refresh', Date.now().toString());
+          window.location.replace(url.toString());
+        };
+      }, 7000);
+    </script>
+  </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
