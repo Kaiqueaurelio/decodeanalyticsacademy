@@ -155,12 +155,12 @@ function getInitialSidebarMode(): SidebarMode {
 }
 
 export function SidebarContent({
-  mode,
+  mode = 'full',
   setMode,
   onNavigate,
 }: {
-  mode: Exclude<SidebarMode, 'hidden'>;
-  setMode: (mode: SidebarMode) => void;
+  mode?: Exclude<SidebarMode, 'hidden'>;
+  setMode?: (mode: SidebarMode) => void;
   onNavigate?: () => void;
 }) {
   const location = useLocation();
@@ -168,6 +168,7 @@ export function SidebarContent({
   const { navigate, open } = useSidebarNavigation(onNavigate);
   const visibleRailItems = mode === 'rail' ? railItems.filter((item) => !item.adminOnly || isAdmin) : [];
   const isFull = mode === 'full';
+  const canToggle = typeof setMode === 'function';
 
   return (
     <div className="h-full flex overflow-hidden bg-[#240035] text-white shadow-2xl">
