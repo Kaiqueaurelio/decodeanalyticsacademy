@@ -404,13 +404,13 @@ export function StudentSidebar() {
   if (mode === 'hidden') {
     return (
       <aside
-        className="fixed bottom-0 left-0 top-0 z-40 hidden w-[72px] flex-col items-center border-r border-[#ff22ff]/35 bg-[#240035] py-4 shadow-2xl lg:flex"
+        className="fixed bottom-0 left-0 top-0 z-40 hidden w-[72px] flex-col items-center border-r border-border bg-card/60 py-4 shadow-2xl lg:flex"
         aria-label="Menu lateral recolhido"
       >
         <button
           type="button"
           onClick={() => setMode('full')}
-          className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#250039] shadow-[0_0_22px_rgba(223,255,31,0.24)] transition hover:bg-[#360052]"
+          className="flex h-12 w-12 items-center justify-center rounded-xl bg-background ring-1 ring-primary/30 shadow-[0_0_22px_hsl(var(--primary)/0.22)] transition hover:ring-primary/60"
           aria-label="Expandir menu lateral"
           title="Expandir menu lateral"
         >
@@ -420,15 +420,15 @@ export function StudentSidebar() {
         <button
           type="button"
           onClick={() => setMode('full')}
-          className="mt-4 flex h-11 w-11 items-center justify-center border border-[#dfff1f]/60 bg-[#5b006a] text-[#dfff1f] transition hover:bg-[#6d007f]"
+          className="mt-4 flex h-11 w-11 items-center justify-center rounded-md border border-primary/40 bg-primary/10 text-primary transition hover:bg-primary/20"
           aria-label="Abrir menu"
           title="Abrir menu"
         >
           <PanelLeftOpen className="h-5 w-5" />
         </button>
 
-        <div className="mt-5 h-px w-10 bg-white/10" />
-        <span className="mt-5 rotate-180 text-[10px] font-black uppercase tracking-[0.22em] text-white/60 [writing-mode:vertical-rl]">
+        <div className="mt-5 h-px w-10 bg-border" />
+        <span className="mt-5 rotate-180 text-[10px] font-black uppercase tracking-[0.22em] text-muted-foreground [writing-mode:vertical-rl]">
           Menu
         </span>
       </aside>
