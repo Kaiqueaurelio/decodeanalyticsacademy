@@ -172,63 +172,66 @@ export function SidebarContent({
 
   return (
     <div className="h-full flex overflow-hidden bg-[#240035] text-white shadow-2xl">
-      <div className="flex w-[104px] shrink-0 flex-col items-center bg-[#7a0086] py-3">
-        <button
-          type="button"
-          onClick={() => open('/dashboard')}
-          className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-[#250039] shadow-[0_0_22px_rgba(223,255,31,0.28)] transition hover:bg-[#360052]"
-          aria-label="Ir para o dashboard"
-        >
-          <img src={logoOwl} alt="Decode Analytics Academy" className="h-10 w-10 object-contain" />
-        </button>
-
-        {canToggle && (
+      {(canToggle || !isFull) && (
+        <div className="flex w-[104px] shrink-0 flex-col items-center bg-[#7a0086] py-3">
           <button
             type="button"
-            onClick={() => setMode!(isFull ? 'rail' : 'full')}
-            className="mb-3 flex h-9 w-[84px] items-center justify-center gap-2 border border-[#dfff1f]/60 bg-[#5b006a] text-[10px] font-black uppercase tracking-wide text-[#dfff1f] transition hover:bg-[#6d007f]"
-            aria-label={isFull ? 'Recolher menu principal' : 'Expandir menu principal'}
-            title={isFull ? 'Recolher menu principal' : 'Expandir menu principal'}
+            onClick={() => open('/dashboard')}
+            className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-[#250039] shadow-[0_0_22px_rgba(223,255,31,0.28)] transition hover:bg-[#360052]"
+            aria-label="Ir para o dashboard"
           >
-            {isFull ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeftOpen className="h-4 w-4" />}
-            {isFull ? 'Menor' : 'Abrir'}
+            <img src={logoOwl} alt="Decode Analytics Academy" className="h-10 w-10 object-contain" />
           </button>
-        )}
 
-        {isFull ? (
-          <div className="flex min-h-0 flex-1 flex-col items-center justify-between pb-5 pt-3">
-            <div className="h-px w-10 bg-white/10" />
-            <span className="rotate-180 text-[10px] font-black uppercase tracking-[0.22em] text-white/45 [writing-mode:vertical-rl]">
-              Menu
-            </span>
-            <div className="h-px w-10 bg-white/10" />
-          </div>
-        ) : (
-          <div className="flex min-h-0 flex-1 flex-col items-stretch gap-1 overflow-y-auto px-2 pb-3">
-            {visibleRailItems.map((item) => {
-              const active = isRouteActive(location.pathname, location.hash, item.to);
-              const Icon = item.icon;
-              return (
-                <button
-                  key={`${item.label}-${item.to}`}
-                  type="button"
-                  onClick={() => open(item.to)}
-                  className={`group relative flex min-h-12 w-[88px] flex-col items-center justify-center gap-1 border px-1.5 text-center text-[10px] font-bold leading-tight transition
-                    ${active ? 'border-[#dfff1f] bg-[#08313a] text-white shadow-[inset_3px_0_0_#dfff1f]' : 'border-transparent text-white/78 hover:border-[#dfff1f]/45 hover:bg-[#07303a] hover:text-white'}`}
-                  title={item.label}
-                  aria-label={item.label}
-                >
-                  {item.label === 'Notificações' && (
-                    <span className="absolute left-8 top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">1</span>
-                  )}
-                  <Icon className="h-5 w-5 shrink-0" strokeWidth={2.2} />
-                  <span className="w-full truncate">{item.label}</span>
-                </button>
-              );
-            })}
-          </div>
-        )}
-      </div>
+          {canToggle && (
+            <button
+              type="button"
+              onClick={() => setMode!(isFull ? 'rail' : 'full')}
+              className="mb-3 flex h-9 w-[84px] items-center justify-center gap-2 border border-[#dfff1f]/60 bg-[#5b006a] text-[10px] font-black uppercase tracking-wide text-[#dfff1f] transition hover:bg-[#6d007f]"
+              aria-label={isFull ? 'Recolher menu principal' : 'Expandir menu principal'}
+              title={isFull ? 'Recolher menu principal' : 'Expandir menu principal'}
+            >
+              {isFull ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeftOpen className="h-4 w-4" />}
+              {isFull ? 'Menor' : 'Abrir'}
+            </button>
+          )}
+
+          {isFull ? (
+            <div className="flex min-h-0 flex-1 flex-col items-center justify-between pb-5 pt-3">
+              <div className="h-px w-10 bg-white/10" />
+              <span className="rotate-180 text-[10px] font-black uppercase tracking-[0.22em] text-white/45 [writing-mode:vertical-rl]">
+                Menu
+              </span>
+              <div className="h-px w-10 bg-white/10" />
+            </div>
+          ) : (
+            <div className="flex min-h-0 flex-1 flex-col items-stretch gap-1 overflow-y-auto px-2 pb-3">
+              {visibleRailItems.map((item) => {
+                const active = isRouteActive(location.pathname, location.hash, item.to);
+                const Icon = item.icon;
+                return (
+                  <button
+                    key={`${item.label}-${item.to}`}
+                    type="button"
+                    onClick={() => open(item.to)}
+                    className={`group relative flex min-h-12 w-[88px] flex-col items-center justify-center gap-1 border px-1.5 text-center text-[10px] font-bold leading-tight transition
+                      ${active ? 'border-[#dfff1f] bg-[#08313a] text-white shadow-[inset_3px_0_0_#dfff1f]' : 'border-transparent text-white/78 hover:border-[#dfff1f]/45 hover:bg-[#07303a] hover:text-white'}`}
+                    title={item.label}
+                    aria-label={item.label}
+                  >
+                    {item.label === 'Notificações' && (
+                      <span className="absolute left-8 top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">1</span>
+                    )}
+                    <Icon className="h-5 w-5 shrink-0" strokeWidth={2.2} />
+                    <span className="w-full truncate">{item.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
 
       {isFull && (
         <div className="flex min-w-0 flex-1 flex-col bg-[#3b0056]">
