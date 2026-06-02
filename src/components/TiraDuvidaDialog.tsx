@@ -22,7 +22,7 @@ interface Props {
   onOpenChange: (open: boolean) => void;
 }
 
-async function fileToDataUrl(file: File): Promise<string> {
+async function fileToDataUrl(file: File | Blob): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(reader.result as string);
@@ -80,7 +80,7 @@ export function TiraDuvidaDialog({ open, onOpenChange }: Props) {
   const handlePick = async (file: File) => {
     if (!file) return;
     if (file.size > 20 * 1024 * 1024) {
-      toast.error("Imagem muito grande (máx 20MB)");
+      toast.error("Imagem muito grande (max 20MB)");
       return;
     }
     setSelectedFile(file);
@@ -94,22 +94,15 @@ export function TiraDuvidaDialog({ open, onOpenChange }: Props) {
     setLoading(true);
     try {
       const compressed = await compressImage(selectedFile);
-      const ext = "jpg";
-      const path = `${user.id}/${Date.now()}.${ext}`;
+      const dataUrl = await fileToDataUrl(compressed);
 
-      // Upload to storage (private)
-      const { error: upErr } = await supabase.storage.from("tira-duvida").upload(path, compressed, {
-        contentType: "image/jpeg",
-      });
-      if (upErr) throw upErr;
-
-      // Convert to data URL for vision call
-      const dataUrl = await fileToDataUrl(new File([compressed], "img.jpg", { type: "image/jpeg" }));
-
-      // invoke retorna error genérico em status >= 400, mas o body com a mensagem
-      // real ainda chega em `data` (parsed). Tratamos ambos os casos.
+      // Envia a imagem compactada direto para a Edge Function. O upload pelo
+      // navegador estava sendo bloqueado pela RLS do Storage em alguns usuarios.
       const { data, error } = await supabase.functions.invoke("tira-duvida-foto", {
-        body: { image: dataUrl, image_path: path },
+        body: {
+          image: dataUrl,
+          image_name: selectedFile.name || "duvida.jpg",
+        },
       });
 
       const serverMsg =
@@ -121,7 +114,7 @@ export function TiraDuvidaDialog({ open, onOpenChange }: Props) {
         const friendly =
           typeof serverMsg === "string" && serverMsg.length < 200
             ? serverMsg
-            : "Não consegui analisar a foto. Tente novamente em instantes.";
+            : "Nao consegui analisar a foto. Tente novamente em instantes.";
         toast.error(friendly);
         setLoading(false);
         return;
@@ -129,7 +122,7 @@ export function TiraDuvidaDialog({ open, onOpenChange }: Props) {
 
       setResult(data);
       toast.success("Resposta gerada!", {
-        description: data.remaining_today !== undefined ? `Restam ${data.remaining_today} dúvidas hoje.` : undefined,
+        description: data.remaining_today !== undefined ? `Restam ${data.remaining_today} duvidas hoje.` : undefined,
       });
     } catch (e: any) {
       console.error(e);
@@ -145,10 +138,10 @@ export function TiraDuvidaDialog({ open, onOpenChange }: Props) {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-primary" />
-            Tira-dúvida com foto
+            Tira-duvida com foto
           </DialogTitle>
           <DialogDescription>
-            Tire uma foto do exercício. A IA explica o conceito, dá uma dica e linka a apostila relacionada.
+            Tire uma foto do exercicio. A IA explica o conceito, da uma dica e linka a apostila relacionada.
           </DialogDescription>
         </DialogHeader>
 
@@ -191,7 +184,7 @@ export function TiraDuvidaDialog({ open, onOpenChange }: Props) {
             ) : (
               <div className="space-y-3">
                 <div className="relative rounded-lg overflow-hidden border border-border">
-                  <img src={preview} alt="Pré-visualização" className="w-full max-h-80 object-contain bg-muted" />
+                  <img src={preview} alt="Pre-visualizacao" className="w-full max-h-80 object-contain bg-muted" />
                   <Button
                     variant="secondary"
                     size="icon"
@@ -212,9 +205,9 @@ export function TiraDuvidaDialog({ open, onOpenChange }: Props) {
               </div>
             )}
             <div className="text-xs text-muted-foreground flex items-center justify-between pt-2">
-              <span>Limite diário: 10 dúvidas</span>
+              <span>Limite diario: 10 duvidas</span>
               <Button variant="ghost" size="sm" onClick={() => { handleClose(false); navigate("/tira-duvida"); }}>
-                <History className="mr-1.5 h-3 w-3" /> Histórico
+                <History className="mr-1.5 h-3 w-3" /> Historico
               </Button>
             </div>
           </div>
@@ -235,7 +228,7 @@ export function TiraDuvidaDialog({ open, onOpenChange }: Props) {
             </div>
 
             <div className="rounded-lg border border-accent/40 bg-accent/5 p-4 space-y-2">
-              <h3 className="font-semibold text-sm uppercase tracking-wider text-accent-foreground">💡 Dica de resolução</h3>
+              <h3 className="font-semibold text-sm uppercase tracking-wider text-accent-foreground">Dica de resolucao</h3>
               <div className="prose prose-sm dark:prose-invert max-w-none">
                 <ReactMarkdown>{result.hint}</ReactMarkdown>
               </div>
@@ -252,7 +245,7 @@ export function TiraDuvidaDialog({ open, onOpenChange }: Props) {
                     <div className="text-xs uppercase tracking-wider text-muted-foreground font-mono">Apostila relacionada</div>
                     <div className="font-semibold group-hover:text-primary transition-colors">{result.related_apostila.title}</div>
                     <div className="text-xs text-muted-foreground mt-1">
-                      {result.related_apostila.category} • {Math.round((result.related_apostila.similarity ?? 0) * 100)}% relevância
+                      {result.related_apostila.category} - {Math.round((result.related_apostila.similarity ?? 0) * 100)}% relevancia
                     </div>
                   </div>
                 </div>
@@ -261,7 +254,7 @@ export function TiraDuvidaDialog({ open, onOpenChange }: Props) {
 
             <div className="flex gap-2">
               <Button variant="outline" onClick={reset} className="flex-1">
-                Nova dúvida
+                Nova duvida
               </Button>
               <Button onClick={() => handleClose(false)} variant="ghost" className="flex-1">
                 Fechar
