@@ -6,6 +6,18 @@ import { useAds } from '@/hooks/useAds';
 import { AdMediaPreview } from '@/components/AdMediaPreview';
 
 const HIDDEN_ROUTES = ['/', '/login', '/reset-password'];
+const APP_CONTENT_PREFIXES = [
+  '/dashboard',
+  '/profile',
+  '/apostila',
+  '/biblioteca',
+  '/livros',
+  '/calculadora',
+  '/cursos',
+  '/messages',
+  '/community',
+  '/admin',
+];
 
 export function PersistentAdSpot() {
   const location = useLocation();
@@ -13,7 +25,9 @@ export function PersistentAdSpot() {
   const [idx, setIdx] = useState(0);
 
   const current = ads[idx];
-  const shouldHide = HIDDEN_ROUTES.includes(location.pathname) || location.pathname.startsWith('/admin');
+  const shouldHide =
+    HIDDEN_ROUTES.includes(location.pathname) ||
+    APP_CONTENT_PREFIXES.some((route) => location.pathname.startsWith(route));
 
   useEffect(() => {
     if (!current || shouldHide) return;
