@@ -241,15 +241,17 @@ export function SidebarContent({
                 Academy
               </div>
             </button>
-            <button
-              type="button"
-              onClick={() => setMode('hidden')}
-              className="flex h-9 w-9 shrink-0 items-center justify-center border border-[#dfff1f]/45 text-[#dfff1f] transition hover:bg-[#dfff1f] hover:text-black"
-              aria-label="Esconder menu lateral"
-              title="Esconder menu lateral"
-            >
-              <ChevronsLeft className="h-4 w-4" />
-            </button>
+            {canToggle && (
+              <button
+                type="button"
+                onClick={() => setMode!('hidden')}
+                className="flex h-9 w-9 shrink-0 items-center justify-center border border-[#dfff1f]/45 text-[#dfff1f] transition hover:bg-[#dfff1f] hover:text-black"
+                aria-label="Esconder menu lateral"
+                title="Esconder menu lateral"
+              >
+                <ChevronsLeft className="h-4 w-4" />
+              </button>
+            )}
           </div>
 
           <nav className="flex-1 space-y-4 overflow-y-auto px-3 py-4">
