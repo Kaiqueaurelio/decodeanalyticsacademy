@@ -28,18 +28,43 @@ export default defineConfig(({ mode }) => ({
         clientsClaim: true,
         cleanupOutdatedCaches: true,
         navigateFallbackDenylist: [/^\/~oauth/, /^\/api/],
-        globPatterns: ["**/*.{css,html,ico,svg,woff2,png}", "assets/*.js"],
-        globIgnores: ["**/sw.js", "**/workbox-*.js"],
+        // Nao precacheia index.html nem chunks JS hashados. Esses arquivos precisam
+        // vir da rede apos deploy para evitar tela preta por app shell antigo.
+        globPatterns: ["**/*.{css,ico,svg,woff2,png}", "registerSW.js"],
+        globIgnores: ["**/index.html", "**/*.js", "**/sw.js", "**/workbox-*.js"],
         maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
         runtimeCaching: [
+          {
+            urlPattern: ({ request }) => request.mode === "navigate",
+            handler: "NetworkFirst",
+            options: {
+              cacheName: "decode-pages-v3",
+              networkTimeoutSeconds: 3,
+              expiration: {
+                maxEntries: 20,
+                maxAgeSeconds: 5 * 60,
+              },
+            },
+          },
           {
             urlPattern: ({ request }) => request.destination === "script",
             handler: "NetworkFirst",
             options: {
-              cacheName: "decode-js-v2",
+              cacheName: "decode-js-v3",
               networkTimeoutSeconds: 4,
               expiration: {
-                maxEntries: 80,
+                maxEntries: 40,
+                maxAgeSeconds: 10 * 60,
+              },
+            },
+          },
+          {
+            urlPattern: ({ request }) => request.destination === "style",
+            handler: "StaleWhileRevalidate",
+            options: {
+              cacheName: "decode-css-v3",
+              expiration: {
+                maxEntries: 30,
                 maxAgeSeconds: 60 * 60,
               },
             },
@@ -48,7 +73,7 @@ export default defineConfig(({ mode }) => ({
             urlPattern: ({ request }) => request.destination === "image",
             handler: "CacheFirst",
             options: {
-              cacheName: "decode-images-v2",
+              cacheName: "decode-images-v3",
               expiration: {
                 maxEntries: 120,
                 maxAgeSeconds: 7 * 24 * 60 * 60,
