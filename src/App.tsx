@@ -16,6 +16,7 @@ import { AudioPlayerProvider } from "@/contexts/AudioPlayerContext";
 import { SplashScreen } from "@/components/SplashScreen";
 import { AdFooterMobile } from "@/components/AdFooterMobile";
 import { AdPopup } from "@/components/AdPopup";
+import { PersistentAdSpot } from "@/components/PersistentAdSpot";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 
 // Paginas criticas no bundle inicial
@@ -32,6 +33,7 @@ const AdminPage = lazy(() => import("./pages/AdminPage"));
 const ProfilePage = lazy(() => import("./pages/ProfilePage"));
 const MaterialsPage = lazy(() => import("./pages/MaterialsPage"));
 const BibliotecaPage = lazy(() => import("./pages/BibliotecaPage"));
+const CoursesPage = lazy(() => import("./pages/CoursesPage"));
 const VideoPlayerPage = lazy(() => import("./pages/VideoPlayerPage"));
 const AnnouncementDetailPage = lazy(() => import("./pages/AnnouncementDetailPage"));
 const CommunityPage = lazy(() => import("./pages/CommunityPage"));
@@ -115,6 +117,7 @@ function AnimatedRoutes() {
         <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
         <Route path="/materials" element={<ProtectedRoute><MaterialsPage /></ProtectedRoute>} />
         <Route path="/biblioteca" element={<ProtectedRoute><BibliotecaPage /></ProtectedRoute>} />
+        <Route path="/cursos" element={<ProtectedRoute><CoursesPage /></ProtectedRoute>} />
         <Route path="/video/:id" element={<ProtectedRoute><VideoPlayerPage /></ProtectedRoute>} />
         <Route path="/aviso/:id" element={<ProtectedRoute><AnnouncementDetailPage /></ProtectedRoute>} />
         <Route path="/comunidade" element={<ProtectedRoute><CommunityPage /></ProtectedRoute>} />
@@ -146,6 +149,7 @@ const App = () => (
               <MobileBottomNav />
               <RANamePrompt />
               <AdFooterMobile />
+              <PersistentAdSpot />
               <AdPopup trigger="onLoad" delay={2500} />
             </AudioPlayerProvider>
           </AuthProvider>
