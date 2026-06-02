@@ -1,6 +1,6 @@
 import { useState, type MouseEvent } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { BookOpen, Home, Library, Menu, PenLine } from 'lucide-react';
+import { BookOpen, GraduationCap, Home, Library, Menu, PenLine } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { SidebarContent } from '@/components/dashboard/StudentSidebar';
@@ -11,6 +11,7 @@ const mainItems = [
   { to: '/dashboard', icon: Home, label: 'Inicio' },
   { to: '/dashboard#apostilas', icon: BookOpen, label: 'Apostilas' },
   { to: '/exercicios', icon: PenLine, label: 'Exercicios' },
+  { to: '/cursos', icon: GraduationCap, label: 'Cursos' },
   { to: '/biblioteca', icon: Library, label: 'Biblioteca' },
 ];
 
@@ -48,7 +49,7 @@ export function MobileBottomNav() {
         className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background/95 px-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] pt-2 shadow-[0_-18px_45px_-30px_hsl(var(--foreground)/0.35)] backdrop-blur-xl md:hidden"
         aria-label="Navegacao principal mobile"
       >
-        <div className="mx-auto grid max-w-md grid-cols-5 gap-1">
+        <div className="mx-auto grid max-w-md grid-cols-6 gap-1">
           {mainItems.map((item) => {
             const active = isItemActive(location.pathname, location.hash, item.to);
             return (
