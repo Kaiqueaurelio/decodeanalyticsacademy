@@ -46,6 +46,8 @@ function writeJSON<T>(key: string, items: T[], max: number) {
 }
 
 export function recordRuntimeError(err: RuntimeError) {
+  if (isBenignRuntimeMessage(err.message)) return;
+
   const all = readJSON<RuntimeError>(ERR_KEY);
   all.push(err);
   writeJSON(ERR_KEY, all, MAX_ERRORS);
@@ -132,8 +134,7 @@ export function installRuntimeLogger() {
         .filter(Boolean)
         .join(' ')
         .slice(0, 300);
-      // Filtra ruído conhecido do React DevTools / HMR
-      if (msg && !/^Download the React DevTools|\[HMR\]|\[vite\]/i.test(msg)) {
+      if (msg && !isBenignRuntimeMessage(msg)) {
         recordRuntimeError({
           ts: Date.now(),
           route: window.location.pathname,
@@ -146,4 +147,18 @@ export function installRuntimeLogger() {
     }
     originalError(...args);
   };
+}
+
+function isBenignRuntimeMessage(message: string): boolean {
+  return [
+    /^Download the React DevTools/i,
+    /\[HMR\]|\[vite\]/i,
+    /Failed to load resource/i,
+    /net::ERR_ABORTED/i,
+    /AbortError/i,
+    /The user aborted a request/i,
+    /promo-media/i,
+    /ad_views/i,
+    /ad_clicks/i,
+  ].some((pattern) => pattern.test(message));
 }
