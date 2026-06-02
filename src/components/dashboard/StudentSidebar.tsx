@@ -437,7 +437,7 @@ export function StudentSidebar() {
 
   return (
     <aside
-      className="fixed bottom-0 left-0 top-0 z-40 hidden flex-col border-r border-[#ff22ff]/35 transition-[width] duration-300 ease-out lg:flex"
+      className="fixed bottom-0 left-0 top-0 z-40 hidden flex-col border-r border-border transition-[width] duration-300 ease-out lg:flex"
       style={{ width: SIDEBAR_WIDTHS[mode] }}
     >
       <SidebarContent mode={mode} setMode={setMode} />
