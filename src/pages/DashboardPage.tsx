@@ -14,6 +14,7 @@ import { Watermark } from '@/components/Watermark';
 import { Reveal } from '@/components/Reveal';
 import { ExamCalendarWidget } from '@/components/ExamCalendarWidget';
 import { OnboardingTour } from '@/components/OnboardingTour';
+import { TermsFooterLink } from '@/components/TermsFooterLink';
 import { useApostilasList, useExerciseCounts, useDashboardStats, type ApostilaSummary } from '@/hooks/queries/useDashboardData';
 import { useUserProfile } from '@/hooks/queries/useUserProfile';
 import { ArrowRight, BookOpen, ClipboardList, Layers3, Library, PenLine, Sparkles } from 'lucide-react';
@@ -341,8 +342,9 @@ export default function DashboardPage() {
             <EndlessHintSection />
           </Reveal>
 
-          <footer className="text-center text-[10px] text-muted-foreground/60 py-10 mt-6 border-t border-border/30">
-            Desenvolvido por: Kaique Aurelio &amp; Decode Analytics
+          <footer className="flex flex-col items-center justify-center gap-3 py-10 mt-6 border-t border-border/30 text-center text-[10px] text-muted-foreground/60">
+            <TermsFooterLink variant="inline" />
+            <span>Desenvolvido por: Kaique Aurelio &amp; Decode Analytics</span>
           </footer>
         </main>
       </div>
