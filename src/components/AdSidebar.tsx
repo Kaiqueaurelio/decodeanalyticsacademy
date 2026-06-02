@@ -21,7 +21,7 @@ export function AdSidebar({ className = '' }: { className?: string }) {
 
   return (
     <aside
-      className={`hidden xl:block lg:pl-[324px] px-4 sm:px-6 lg:px-8 pb-8 ${className}`}
+      className={`hidden xl:block px-4 sm:px-6 lg:px-8 pb-8 transition-[padding] duration-300 ease-out lg:pl-[var(--student-sidebar-width,356px)] ${className}`}
       aria-label="Publicidade"
     >
       <div className="mx-auto w-full max-w-[1400px]">
