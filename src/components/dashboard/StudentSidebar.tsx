@@ -182,16 +182,18 @@ export function SidebarContent({
           <img src={logoOwl} alt="Decode Analytics Academy" className="h-10 w-10 object-contain" />
         </button>
 
-        <button
-          type="button"
-          onClick={() => setMode(isFull ? 'rail' : 'full')}
-          className="mb-3 flex h-9 w-[84px] items-center justify-center gap-2 border border-[#dfff1f]/60 bg-[#5b006a] text-[10px] font-black uppercase tracking-wide text-[#dfff1f] transition hover:bg-[#6d007f]"
-          aria-label={isFull ? 'Recolher menu principal' : 'Expandir menu principal'}
-          title={isFull ? 'Recolher menu principal' : 'Expandir menu principal'}
-        >
-          {isFull ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeftOpen className="h-4 w-4" />}
-          {isFull ? 'Menor' : 'Abrir'}
-        </button>
+        {canToggle && (
+          <button
+            type="button"
+            onClick={() => setMode!(isFull ? 'rail' : 'full')}
+            className="mb-3 flex h-9 w-[84px] items-center justify-center gap-2 border border-[#dfff1f]/60 bg-[#5b006a] text-[10px] font-black uppercase tracking-wide text-[#dfff1f] transition hover:bg-[#6d007f]"
+            aria-label={isFull ? 'Recolher menu principal' : 'Expandir menu principal'}
+            title={isFull ? 'Recolher menu principal' : 'Expandir menu principal'}
+          >
+            {isFull ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeftOpen className="h-4 w-4" />}
+            {isFull ? 'Menor' : 'Abrir'}
+          </button>
+        )}
 
         {isFull ? (
           <div className="flex min-h-0 flex-1 flex-col items-center justify-between pb-5 pt-3">
