@@ -42,19 +42,13 @@ export function OnboardingTour({ onComplete }: Props) {
 
   useEffect(() => {
     setMounted(true);
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-
-    return () => {
-      document.body.style.overflow = originalOverflow;
-    };
   }, []);
 
   if (!mounted) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[120] flex min-h-dvh items-center justify-center bg-background/70 backdrop-blur-sm p-4">
-      <Card className="relative w-full max-w-sm border border-border/50 bg-card p-6 shadow-lg animate-scale-in">
+    <div className="pointer-events-none fixed inset-0 z-[120] flex min-h-dvh items-center justify-center bg-background/45 backdrop-blur-[2px] p-4">
+      <Card className="pointer-events-auto relative w-full max-w-sm border border-border/50 bg-card p-6 shadow-lg animate-scale-in">
         <button
           onClick={onComplete}
           className="absolute right-3 top-3 text-muted-foreground transition-colors hover:text-foreground"
