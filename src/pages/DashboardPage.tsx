@@ -62,7 +62,7 @@ export default function DashboardPage() {
 
       <StudentSidebar />
 
-      <div className="lg:pl-[324px] flex flex-col min-h-screen">
+      <div className="flex flex-col min-h-screen transition-[padding] duration-300 ease-out lg:pl-[var(--student-sidebar-width,356px)]">
         <DashboardTopbar />
 
         <main className="flex-1 px-4 sm:px-6 lg:px-8 py-6 space-y-6 max-w-[1400px] w-full mx-auto animate-content-show">
