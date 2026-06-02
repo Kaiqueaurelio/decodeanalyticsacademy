@@ -17,9 +17,41 @@ import { Progress } from '@/components/ui/progress';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   BookOpen, CheckCircle, XCircle, Camera, Save, ArrowLeft,
-  PenLine, Trophy, Target, Flame, Zap, Settings, AlertCircle, PencilLine
+  PenLine, Trophy, Target, Flame, Zap, Settings, AlertCircle, PencilLine, Loader2
 } from 'lucide-react';
 import { toast } from 'sonner';
+
+async function fileToCompactAvatarDataUrl(file: File): Promise<string> {
+  const source = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+
+  const img = new Image();
+  await new Promise<void>((resolve, reject) => {
+    img.onload = () => resolve();
+    img.onerror = reject;
+    img.src = source;
+  });
+
+  const size = 320;
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('Nao foi possivel preparar a imagem');
+
+  const scale = Math.max(size / img.width, size / img.height);
+  const width = img.width * scale;
+  const height = img.height * scale;
+  const x = (size - width) / 2;
+  const y = (size - height) / 2;
+  ctx.drawImage(img, x, y, width, height);
+
+  return canvas.toDataURL('image/jpeg', 0.78);
+}
 
 export default function ProfilePage() {
   const { user } = useAuth();
@@ -70,7 +102,7 @@ export default function ProfilePage() {
       const byApostila: Record<string, { hits: number; errors: number; title: string }> = {};
       answers.forEach((a: any) => {
         const apId = a.exercises?.apostila_id;
-        const apTitle = a.exercises?.apostilas?.title || 'Sem título';
+        const apTitle = a.exercises?.apostilas?.title || 'Sem titulo';
         if (!apId) return;
         if (!byApostila[apId]) byApostila[apId] = { hits: 0, errors: 0, title: apTitle };
         if (a.is_correct) byApostila[apId].hits++; else byApostila[apId].errors++;
@@ -83,39 +115,37 @@ export default function ProfilePage() {
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
+    if (!file.type.startsWith('image/')) {
+      toast.error('Envie uma imagem valida');
+      return;
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      toast.error('Imagem muito grande. Use uma foto de ate 8MB.');
+      return;
+    }
+
     setUploading(true);
     try {
-      const ext = file.name.split('.').pop();
-      const path = `${user.id}/avatar.${ext}`;
-      const { error: upErr } = await supabase.storage.from('materials').upload(path, file, { upsert: true });
-      if (upErr) throw upErr;
-      const { data: urlData } = supabase.storage.from('materials').getPublicUrl(path);
-      setAvatarUrl(urlData.publicUrl);
-      await supabase.from('profiles').update({ avatar_url: urlData.publicUrl }).eq('user_id', user.id);
+      const compactAvatar = await fileToCompactAvatarDataUrl(file);
+      setAvatarUrl(compactAvatar);
+      const { error } = await supabase
+        .from('profiles')
+        .update({ avatar_url: compactAvatar })
+        .eq('user_id', user.id);
+      if (error) throw error;
       toast.success('Foto atualizada!');
-    } catch (err: any) { toast.error('Erro ao enviar foto: ' + err.message); }
-    setUploading(false);
+    } catch (err: any) {
+      toast.error('Erro ao salvar foto: ' + (err?.message || 'tente novamente'));
+    } finally {
+      setUploading(false);
+      e.target.value = '';
+    }
   };
 
-  const handleWeeklyGoalChange = (val: number) => {
-    setWeeklyGoal(val);
-    localStorage.setItem('weeklyExerciseGoal', String(val));
-  };
-
-  const handlePomodoroFocusChange = (val: number) => {
-    setPomodoroFocus(val);
-    localStorage.setItem('pomodoroFocusMinutes', String(val));
-  };
-
-  const handlePomodoroBreakChange = (val: number) => {
-    setPomodoroBreak(val);
-    localStorage.setItem('pomodoroBreakMinutes', String(val));
-  };
-
-  const handleFlashcardsPerDayChange = (val: number) => {
-    setFlashcardsPerDay(val);
-    localStorage.setItem('flashcardsPerDay', String(val));
-  };
+  const handleWeeklyGoalChange = (val: number) => { setWeeklyGoal(val); localStorage.setItem('weeklyExerciseGoal', String(val)); };
+  const handlePomodoroFocusChange = (val: number) => { setPomodoroFocus(val); localStorage.setItem('pomodoroFocusMinutes', String(val)); };
+  const handlePomodoroBreakChange = (val: number) => { setPomodoroBreak(val); localStorage.setItem('pomodoroBreakMinutes', String(val)); };
+  const handleFlashcardsPerDayChange = (val: number) => { setFlashcardsPerDay(val); localStorage.setItem('flashcardsPerDay', String(val)); };
 
   const handleSave = async () => {
     if (!user) return;
@@ -141,7 +171,6 @@ export default function ProfilePage() {
           <ArrowLeft className="h-4 w-4" /> Voltar
         </button>
 
-        {/* Persistent banner: nome ainda no padrão "Aluno UNIP" */}
         {(() => {
           const trimmed = (fullName || '').trim();
           const isDefaultName = !trimmed || /^aluno\s+unip\b/i.test(trimmed);
@@ -155,7 +184,7 @@ export default function ProfilePage() {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-foreground">Personalize seu perfil</p>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Seu nome ainda está como <strong>"{trimmed || 'Aluno UNIP'}"</strong>. Adicione seu nome real
+                    Seu nome ainda esta como <strong>"{trimmed || 'Aluno UNIP'}"</strong>. Adicione seu nome real
                     para aparecer corretamente na comunidade e no ranking.
                   </p>
                   <Button
@@ -177,7 +206,6 @@ export default function ProfilePage() {
           );
         })()}
 
-        {/* Profile Card */}
         <Card className="p-6 bg-card border border-border/50 mb-6 animate-content-show">
           <div className="flex flex-col sm:flex-row items-center gap-5">
             <div className="relative group">
@@ -185,8 +213,8 @@ export default function ProfilePage() {
                 <AvatarImage src={avatarUrl} />
                 <AvatarFallback className="text-xl font-bold bg-primary/10 text-primary">{initials}</AvatarFallback>
               </Avatar>
-              <label className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 cursor-pointer smooth-all">
-                <Camera className="h-6 w-6 text-white" />
+              <label className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-100 sm:opacity-0 group-hover:opacity-100 cursor-pointer smooth-all">
+                {uploading ? <Loader2 className="h-6 w-6 text-white animate-spin" /> : <Camera className="h-6 w-6 text-white" />}
                 <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={uploading} />
               </label>
             </div>
@@ -209,77 +237,28 @@ export default function ProfilePage() {
           </div>
         </Card>
 
-        {/* Study Settings */}
         <Card className="p-5 bg-card border border-border/50 mb-6 animate-content-show delay-1">
           <h3 className="text-sm font-semibold mb-5 flex items-center gap-2">
-            <Settings className="h-4 w-4 text-primary" /> Configurações de Estudo
+            <Settings className="h-4 w-4 text-primary" /> Configuracoes de Estudo
           </h3>
           <div className="space-y-6">
-            <KawaiiSlider
-              value={weeklyGoal}
-              onChange={handleWeeklyGoalChange}
-              min={5}
-              max={100}
-              step={5}
-              label="Meta semanal de exercícios"
-            />
-            <div className="border-t border-border/30 pt-4">
-              <KawaiiSlider
-                value={pomodoroFocus}
-                onChange={handlePomodoroFocusChange}
-                min={10}
-                max={60}
-                step={5}
-                label="Pomodoro — foco (min)"
-                unit=" min"
-              />
-            </div>
-            <div className="border-t border-border/30 pt-4">
-              <KawaiiSlider
-                value={pomodoroBreak}
-                onChange={handlePomodoroBreakChange}
-                min={1}
-                max={15}
-                step={1}
-                label="Pomodoro — pausa (min)"
-                unit=" min"
-              />
-            </div>
-            <div className="border-t border-border/30 pt-4">
-              <KawaiiSlider
-                value={flashcardsPerDay}
-                onChange={handleFlashcardsPerDayChange}
-                min={3}
-                max={50}
-                step={1}
-                label="Flashcards por dia"
-              />
-            </div>
-            <div className="border-t border-border/30 pt-4">
-              <BiometricToggle />
-            </div>
+            <KawaiiSlider value={weeklyGoal} onChange={handleWeeklyGoalChange} min={5} max={100} step={5} label="Meta semanal de exercicios" />
+            <div className="border-t border-border/30 pt-4"><KawaiiSlider value={pomodoroFocus} onChange={handlePomodoroFocusChange} min={10} max={60} step={5} label="Pomodoro - foco (min)" unit=" min" /></div>
+            <div className="border-t border-border/30 pt-4"><KawaiiSlider value={pomodoroBreak} onChange={handlePomodoroBreakChange} min={1} max={15} step={1} label="Pomodoro - pausa (min)" unit=" min" /></div>
+            <div className="border-t border-border/30 pt-4"><KawaiiSlider value={flashcardsPerDay} onChange={handleFlashcardsPerDayChange} min={3} max={50} step={1} label="Flashcards por dia" /></div>
+            <div className="border-t border-border/30 pt-4"><BiometricToggle /></div>
           </div>
         </Card>
 
-        {/* XP & Streak */}
         <div className="grid grid-cols-2 gap-3 mb-6 animate-content-show delay-1">
-          <Card className="p-4 bg-card border border-border/50 text-center">
-            <Zap className="h-5 w-5 mx-auto mb-1 text-primary" />
-            <p className="text-xl font-bold">{gamification.xp.xp_points}</p>
-            <p className="text-[10px] text-muted-foreground">XP • Nível {gamification.xp.level}</p>
-          </Card>
-          <Card className="p-4 bg-card border border-border/50 text-center">
-            <Flame className={`h-5 w-5 mx-auto mb-1 ${gamification.streak.current_streak > 0 ? 'text-orange-500' : 'text-muted-foreground'}`} />
-            <p className="text-xl font-bold">{gamification.streak.current_streak}</p>
-            <p className="text-[10px] text-muted-foreground">Streak • Recorde: {gamification.streak.longest_streak}</p>
-          </Card>
+          <Card className="p-4 bg-card border border-border/50 text-center"><Zap className="h-5 w-5 mx-auto mb-1 text-primary" /><p className="text-xl font-bold">{gamification.xp.xp_points}</p><p className="text-[10px] text-muted-foreground">XP - Nivel {gamification.xp.level}</p></Card>
+          <Card className="p-4 bg-card border border-border/50 text-center"><Flame className={`h-5 w-5 mx-auto mb-1 ${gamification.streak.current_streak > 0 ? 'text-orange-500' : 'text-muted-foreground'}`} /><p className="text-xl font-bold">{gamification.streak.current_streak}</p><p className="text-[10px] text-muted-foreground">Streak - Recorde: {gamification.streak.longest_streak}</p></Card>
         </div>
 
-        {/* Stats Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6 animate-content-show delay-1">
           {[
             { icon: BookOpen, label: 'Apostilas', value: totalApostilas, color: 'text-primary' },
-            { icon: PenLine, label: 'Questões', value: totalExercises, color: 'text-primary' },
+            { icon: PenLine, label: 'Questoes', value: totalExercises, color: 'text-primary' },
             { icon: CheckCircle, label: 'Acertos', value: stats.hits, color: 'text-success' },
             { icon: Target, label: 'Aproveit.', value: `${pct}%`, color: levelColor },
           ].map(s => (
@@ -291,71 +270,41 @@ export default function ProfilePage() {
           ))}
         </div>
 
-        {/* Badges */}
         {earnedBadges.length > 0 && (
           <Card className="p-5 bg-card border border-border/50 mb-6 animate-content-show delay-2">
-            <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-              <Trophy className="h-4 w-4 text-primary" /> Conquistas ({earnedBadges.length}/{gamification.badges.length})
-            </h3>
+            <h3 className="text-sm font-semibold mb-3 flex items-center gap-2"><Trophy className="h-4 w-4 text-primary" /> Conquistas ({earnedBadges.length}/{gamification.badges.length})</h3>
             <div className="grid grid-cols-2 gap-2">
               {gamification.badges.map(b => {
                 const earned = gamification.earnedBadgeIds.includes(b.id);
-                return (
-                  <div key={b.id} className={`p-2.5 rounded-lg border text-center ${earned ? 'border-primary/30 bg-primary/5' : 'border-border/30 opacity-40'}`}>
-                    <span className="text-lg">{b.icon}</span>
-                    <p className="text-[10px] font-medium mt-0.5">{b.name}</p>
-                    <p className="text-[9px] text-muted-foreground">{b.description}</p>
-                  </div>
-                );
+                return <div key={b.id} className={`p-2.5 rounded-lg border text-center ${earned ? 'border-primary/30 bg-primary/5' : 'border-border/30 opacity-40'}`}><span className="text-lg">{b.icon}</span><p className="text-[10px] font-medium mt-0.5">{b.name}</p><p className="text-[9px] text-muted-foreground">{b.description}</p></div>;
               })}
             </div>
           </Card>
         )}
 
-        {/* Performance Level */}
         <Card className="p-5 bg-card border border-border/50 mb-6 animate-content-show delay-2">
           <div className="flex items-center gap-3 mb-3">
             <div className="rounded-full bg-primary/10 p-2.5"><Trophy className={`h-5 w-5 ${levelColor}`} /></div>
-            <div>
-              <p className="text-sm font-semibold">Nível de Desempenho</p>
-              <p className={`text-lg font-bold ${levelColor}`}>{level}</p>
-            </div>
+            <div><p className="text-sm font-semibold">Nivel de Desempenho</p><p className={`text-lg font-bold ${levelColor}`}>{level}</p></div>
           </div>
           <Progress value={pct} className="h-2.5 mb-2" />
-          <div className="flex justify-between text-[10px] text-muted-foreground">
-            <span>Iniciante</span><span>Regular</span><span>Bom</span><span>Excelente</span>
-          </div>
+          <div className="flex justify-between text-[10px] text-muted-foreground"><span>Iniciante</span><span>Regular</span><span>Bom</span><span>Excelente</span></div>
         </Card>
 
-        {/* Evolution Chart */}
-        <div className="mb-6 animate-content-show delay-3">
-          <EvolutionChart />
-        </div>
+        <div className="mb-6 animate-content-show delay-3"><EvolutionChart /></div>
 
-        {/* Per-apostila performance */}
         {Object.keys(stats.byApostila).length > 0 && (
           <Card className="p-5 bg-card border border-border/50 animate-content-show delay-3">
-            <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
-              <Flame className="h-4 w-4 text-primary" /> Desempenho por Apostila
-            </h3>
+            <h3 className="text-sm font-semibold mb-4 flex items-center gap-2"><Flame className="h-4 w-4 text-primary" /> Desempenho por Apostila</h3>
             <div className="space-y-4">
               {Object.entries(stats.byApostila).map(([id, s]) => {
                 const total = s.hits + s.errors;
                 const p = total > 0 ? Math.round((s.hits / total) * 100) : 0;
                 return (
                   <div key={id}>
-                    <div className="flex items-center justify-between mb-1">
-                      <p className="text-xs font-medium truncate flex-1">{s.title}</p>
-                      <div className="flex items-center gap-2 ml-2">
-                        <span className="text-[10px] text-muted-foreground">{total} questões</span>
-                        <span className="text-xs font-bold">{p}%</span>
-                      </div>
-                    </div>
+                    <div className="flex items-center justify-between mb-1"><p className="text-xs font-medium truncate flex-1">{s.title}</p><div className="flex items-center gap-2 ml-2"><span className="text-[10px] text-muted-foreground">{total} questoes</span><span className="text-xs font-bold">{p}%</span></div></div>
                     <Progress value={p} className="h-1.5" />
-                    <div className="flex gap-3 mt-1 text-[10px] text-muted-foreground">
-                      <span className="flex items-center gap-0.5"><CheckCircle className="h-3 w-3 text-success" /> {s.hits}</span>
-                      <span className="flex items-center gap-0.5"><XCircle className="h-3 w-3 text-destructive" /> {s.errors}</span>
-                    </div>
+                    <div className="flex gap-3 mt-1 text-[10px] text-muted-foreground"><span className="flex items-center gap-0.5"><CheckCircle className="h-3 w-3 text-success" /> {s.hits}</span><span className="flex items-center gap-0.5"><XCircle className="h-3 w-3 text-destructive" /> {s.errors}</span></div>
                   </div>
                 );
               })}
@@ -363,10 +312,7 @@ export default function ProfilePage() {
           </Card>
         )}
 
-        {/* Seção de Novas Funcionalidades */}
-        <div className="mt-12 pt-8 border-t border-border/50">
-          <NewFeaturesShowcase />
-        </div>
+        <div className="mt-12 pt-8 border-t border-border/50"><NewFeaturesShowcase /></div>
       </main>
     </div>
   );
