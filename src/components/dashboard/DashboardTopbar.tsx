@@ -41,7 +41,7 @@ export function DashboardTopbar() {
               <Menu strokeWidth={2.5} className="h-[18px] w-[18px]" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="p-0 w-72 border-r border-border">
+          <SheetContent side="left" className="p-0 w-[92vw] max-w-[360px] border-r border-border">
             <SidebarContent onNavigate={() => setNavOpen(false)} />
           </SheetContent>
         </Sheet>
