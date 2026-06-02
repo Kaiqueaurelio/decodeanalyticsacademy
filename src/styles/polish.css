@@ -125,6 +125,89 @@ main [class*="rounded-2xl"][class*="bg-card"]:hover {
   opacity: 0.55;
 }
 
+/* Apostila reader: make the lesson feel like a clean study surface, not a mixed dashboard. */
+#conteudo-principal {
+  position: relative;
+  max-width: 860px;
+  margin-inline: auto;
+}
+
+#conteudo-principal > .apostila-prose:first-child nav[aria-label="Sumário da apostila"] {
+  display: none;
+}
+
+#conteudo-principal section .apostila-prose nav[aria-label="Sumário da apostila"] {
+  display: none;
+}
+
+#conteudo-principal > section {
+  border-top: 1px solid hsl(var(--border) / 0.58);
+  padding-top: 2rem;
+}
+
+#conteudo-principal > section:first-of-type {
+  border-top: 0;
+  padding-top: 0;
+}
+
+#conteudo-principal > section > header {
+  border-radius: 1rem;
+  background: linear-gradient(180deg, hsl(var(--card) / 0.68), hsl(var(--muted) / 0.16));
+  border: 1px solid hsl(var(--border) / 0.68);
+  padding: 1rem;
+  box-shadow: 0 18px 55px -48px hsl(var(--foreground) / 0.35);
+}
+
+#conteudo-principal .apostila-prose {
+  max-width: 72ch;
+  font-size: 1rem;
+  line-height: 1.78;
+}
+
+#conteudo-principal .apostila-prose p {
+  margin-bottom: 1.15rem;
+}
+
+#conteudo-principal .apostila-prose h3,
+#conteudo-principal .apostila-prose h4,
+#conteudo-principal .apostila-prose h5 {
+  letter-spacing: 0;
+}
+
+#conteudo-principal .apostila-prose figure,
+#conteudo-principal .apostila-prose aside,
+#conteudo-principal .apostila-prose blockquote,
+#conteudo-principal .apostila-prose .shiki-wrapper,
+#conteudo-principal .apostila-prose pre {
+  max-width: 100%;
+}
+
+@media (min-width: 1024px) {
+  #conteudo-principal .apostila-prose {
+    font-size: 1.045rem;
+  }
+}
+
+@media (max-width: 640px) {
+  #conteudo-principal {
+    max-width: none;
+  }
+
+  #conteudo-principal > section {
+    padding-top: 1.35rem;
+  }
+
+  #conteudo-principal > section > header {
+    border-radius: 0.875rem;
+    padding: 0.875rem;
+  }
+
+  #conteudo-principal .apostila-prose {
+    font-size: 0.985rem;
+    line-height: 1.72;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .dashboard-focus-card,
   .dashboard-focus-card::before,
