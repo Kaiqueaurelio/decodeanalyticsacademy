@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
-import { useAds, type Ad } from '@/hooks/useAds';
+import { useAds } from '@/hooks/useAds';
 import { Button } from '@/components/ui/button';
-import { X, ExternalLink } from 'lucide-react';
+import { X, ExternalLink, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { AppImage } from '@/components/ui/app-image';
 
@@ -28,7 +28,7 @@ export function AdBanner({ position = 'inline', className = '' }: AdBannerProps)
   const handleClick = () => {
     if (currentAd) {
       recordAdClick(currentAd.id);
-      window.open(currentAd.link_url, '_blank');
+      window.open(currentAd.link_url, '_blank', 'noopener,noreferrer');
     }
   };
 
@@ -42,72 +42,60 @@ export function AdBanner({ position = 'inline', className = '' }: AdBannerProps)
   };
 
   return (
-    <motion.div
+    <motion.section
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
-      className={`rounded-lg border border-border/50 bg-gradient-to-r from-primary/5 via-primary/3 to-transparent p-4 flex items-center gap-4 ${className}`}
+      className={`rounded-2xl border border-primary/45 bg-card/75 p-3 shadow-sm backdrop-blur sm:p-4 ${className}`}
+      aria-label="Publicidade"
     >
-      {/* Imagem do Anúncio */}
-      {currentAd.image_url && (
-        <div className="shrink-0">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        {currentAd.image_url && (
           <AppImage
             src={currentAd.image_url}
             alt={currentAd.title}
             referrerPolicy="strict-origin-when-cross-origin"
-            className="h-16 w-24 object-cover rounded-md"
-            wrapperClassName="h-16 w-24 rounded-md"
+            loading="lazy"
+            className="h-24 w-full rounded-xl object-cover sm:h-20 sm:w-28"
+            wrapperClassName="h-24 w-full shrink-0 overflow-hidden rounded-xl bg-muted sm:h-20 sm:w-28"
             fallbackLabel=""
           />
+        )}
+
+        <div className="min-w-0 flex-1">
+          <div className="mb-1 flex items-center justify-between gap-2">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-primary">Publicidade</p>
+            <button
+              onClick={handleDismiss}
+              type="button"
+              className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition hover:bg-muted hover:text-foreground"
+              aria-label="Ocultar publicidade"
+            >
+              <X size={15} />
+            </button>
+          </div>
+          <h3 className="line-clamp-2 text-base font-bold leading-snug text-foreground sm:text-lg">
+            {currentAd.title}
+          </h3>
+          {currentAd.description && (
+            <p className="mt-1 line-clamp-2 text-sm leading-6 text-muted-foreground">
+              {currentAd.description}
+            </p>
+          )}
         </div>
-      )}
 
-      {/* Conteúdo do Anúncio */}
-      <div className="flex-1 min-w-0">
-        <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-1">
-          Publicidade
-        </p>
-        <h3 className="text-sm font-bold text-foreground mb-1 truncate">
-          {currentAd.title}
-        </h3>
-        {currentAd.description && (
-          <p className="text-xs text-muted-foreground line-clamp-2">
-            {currentAd.description}
-          </p>
-        )}
-      </div>
-
-      {/* Botões de Ação */}
-      <div className="flex items-center gap-2 shrink-0">
-        <Button
-          onClick={handleClick}
-          size="sm"
-          className="gap-1.5 bg-primary hover:bg-primary/90"
-        >
-          <ExternalLink size={14} />
-          <span className="hidden sm:inline">Saiba mais</span>
-        </Button>
-
-        {ads.length > 1 && (
-          <Button
-            onClick={handleNext}
-            variant="outline"
-            size="sm"
-            className="hidden sm:flex"
-          >
-            Próximo
+        <div className="flex shrink-0 items-center gap-2 sm:flex-col sm:items-stretch">
+          <Button onClick={handleClick} size="sm" className="h-10 gap-2 px-4 font-bold">
+            Saiba mais <ExternalLink size={14} />
           </Button>
-        )}
 
-        <Button
-          onClick={handleDismiss}
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8"
-        >
-          <X size={16} />
-        </Button>
+          {ads.length > 1 && (
+            <Button onClick={handleNext} variant="outline" size="sm" className="h-10 gap-1.5 px-3">
+              Próximo <ArrowRight size={14} />
+            </Button>
+          )}
+        </div>
       </div>
-    </motion.div>
+    </motion.section>
   );
 }
