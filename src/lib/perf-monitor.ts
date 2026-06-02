@@ -135,8 +135,8 @@ export function installPerfMonitor() {
       const response = await originalFetch(input, init);
       const duration = Math.round(performance.now() - start);
 
-      // Ignora chamadas para a própria telemetria/logs e assets de dev
-      const skip = /\/lovable-uploads\/|\.(?:png|jpg|jpeg|webp|svg|gif|css|js|woff2?)(?:\?|$)/i.test(url);
+      // Ignora chamadas para telemetria, assets e ruídos normais de navegação.
+      const skip = shouldSkipFetchTelemetry(url);
 
       if (!skip) {
         if (!response.ok && response.status >= 400) {
@@ -160,6 +160,10 @@ export function installPerfMonitor() {
       }
       return response;
     } catch (err: any) {
+      if (isBenignAbort(err) || shouldSkipFetchTelemetry(url)) {
+        throw err;
+      }
+
       recordEvent({
         kind: 'network-error',
         url: shortenUrl(url),
@@ -171,6 +175,21 @@ export function installPerfMonitor() {
       throw err;
     }
   };
+}
+
+function isBenignAbort(err: any): boolean {
+  const text = `${err?.name || ''} ${err?.message || ''}`.toLowerCase();
+  return text.includes('abort') || text.includes('cancelled') || text.includes('canceled');
+}
+
+function shouldSkipFetchTelemetry(url: string): boolean {
+  return [
+    /\/lovable-uploads\//i,
+    /\.(?:png|jpg|jpeg|webp|svg|gif|css|js|woff2?|mp4|webm|mov)(?:\?|$)/i,
+    /\/rest\/v1\/ad_views/i,
+    /\/rest\/v1\/ad_clicks/i,
+    /\/functions\/v1\/promo-media/i,
+  ].some((pattern) => pattern.test(url));
 }
 
 function shortenUrl(url: string): string {
