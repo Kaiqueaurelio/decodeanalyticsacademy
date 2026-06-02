@@ -40,6 +40,45 @@ function isAbortLikeError(error: unknown) {
   );
 }
 
+function sentenceCase(value: string) {
+  const lower = value.toLocaleLowerCase('pt-BR');
+  return lower.replace(/(^|[.!?]\s+)([a-záàâãéêíóôõúç])/g, (match) => match.toLocaleUpperCase('pt-BR'));
+}
+
+function cleanAdCopy(value: string | null | undefined, fallback = '') {
+  if (!value) return fallback;
+
+  let text = value
+    .replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, ' ')
+    .replace(/[🎓🔥🚀✨⭐💥✅❌👉⚡📚🎯💡🏆]/g, ' ')
+    .replace(/([a-záàâãéêíóôõúç])([A-ZÁÀÂÃÉÊÍÓÔÕÚÇ])/g, '$1 $2')
+    .replace(/\b(domine|imperdivel|imperdível|incrivel|incrível|top|sensacional|promoção|promocao)\b/gi, '')
+    .replace(/[!]{2,}/g, '.')
+    .replace(/[?]{2,}/g, '?')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  const letters = text.replace(/[^A-Za-zÁÀÂÃÉÊÍÓÔÕÚÇáàâãéêíóôõúç]/g, '');
+  const uppercaseLetters = letters.replace(/[^A-ZÁÀÂÃÉÊÍÓÔÕÚÇ]/g, '');
+  if (letters.length > 12 && uppercaseLetters.length / letters.length > 0.72) {
+    text = sentenceCase(text);
+  }
+
+  return text || fallback;
+}
+
+function professionalizeAd(ad: any): Ad {
+  const title = cleanAdCopy(ad.title, 'Oferta educacional');
+  const description = cleanAdCopy(ad.description, null as any);
+
+  return {
+    ...ad,
+    title,
+    description,
+    image_url: toPromoMediaUrl(ad.image_url),
+  };
+}
+
 export function useAds(adType?: 'banner' | 'popup' | 'inline' | 'sidebar' | 'footer', targetPage?: string) {
   const { user } = useAuth();
   const [ads, setAds] = useState<Ad[]>([]);
@@ -81,11 +120,7 @@ export function useAds(adType?: 'banner' | 'popup' | 'inline' | 'sidebar' | 'foo
         validAds = matching.length > 0 ? matching : baseValid;
       }
 
-      const withProxy = validAds.map((ad: any) => ({
-        ...ad,
-        image_url: toPromoMediaUrl(ad.image_url),
-      }));
-      setAds(withProxy);
+      setAds(validAds.map(professionalizeAd));
     } catch (error) {
       if (!isAbortLikeError(error)) {
         console.error('Erro ao carregar anuncios:', error);
