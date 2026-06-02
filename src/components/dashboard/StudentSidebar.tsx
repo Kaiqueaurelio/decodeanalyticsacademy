@@ -34,7 +34,7 @@ import { useAuth } from '@/hooks/useAuth';
 const SIDEBAR_WIDTHS = {
   full: '356px',
   rail: '104px',
-  hidden: '0px',
+  hidden: '72px',
 } as const;
 
 type SidebarMode = keyof typeof SIDEBAR_WIDTHS;
@@ -315,16 +315,35 @@ export function StudentSidebar() {
 
   if (mode === 'hidden') {
     return (
-      <button
-        type="button"
-        onClick={() => setMode('full')}
-        className="fixed left-3 top-24 z-50 hidden h-11 items-center gap-2 border border-[#ff22ff]/70 bg-[#3b0056] px-3 text-xs font-black uppercase tracking-wide text-white shadow-2xl shadow-black/30 transition hover:bg-[#5e006f] lg:flex"
-        aria-label="Expandir menu lateral"
-        title="Expandir menu lateral"
+      <aside
+        className="fixed bottom-0 left-0 top-0 z-40 hidden w-[72px] flex-col items-center border-r border-[#ff22ff]/35 bg-[#240035] py-4 shadow-2xl lg:flex"
+        aria-label="Menu lateral recolhido"
       >
-        <PanelLeftOpen className="h-4 w-4 text-[#dfff1f]" />
-        Menu
-      </button>
+        <button
+          type="button"
+          onClick={() => setMode('full')}
+          className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#250039] shadow-[0_0_22px_rgba(223,255,31,0.24)] transition hover:bg-[#360052]"
+          aria-label="Expandir menu lateral"
+          title="Expandir menu lateral"
+        >
+          <img src={logoOwl} alt="Decode Analytics Academy" className="h-9 w-9 object-contain" />
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setMode('full')}
+          className="mt-4 flex h-11 w-11 items-center justify-center border border-[#ff22ff]/70 bg-[#5b006a] text-[#dfff1f] transition hover:bg-[#6d007f]"
+          aria-label="Abrir menu"
+          title="Abrir menu"
+        >
+          <PanelLeftOpen className="h-5 w-5" />
+        </button>
+
+        <div className="mt-5 h-px w-10 bg-white/10" />
+        <span className="mt-5 rotate-180 text-[10px] font-black uppercase tracking-[0.22em] text-white/60 [writing-mode:vertical-rl]">
+          Menu
+        </span>
+      </aside>
     );
   }
 
