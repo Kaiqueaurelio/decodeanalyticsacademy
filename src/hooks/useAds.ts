@@ -31,7 +31,13 @@ function getSessionId() {
 
 function isAbortLikeError(error: unknown) {
   const text = `${(error as any)?.name || ''} ${(error as any)?.message || ''}`.toLowerCase();
-  return text.includes('abort') || text.includes('cancelled') || text.includes('canceled');
+  return (
+    text.includes('abort') ||
+    text.includes('cancelled') ||
+    text.includes('canceled') ||
+    text.includes('failed to fetch') ||
+    text.includes('networkerror')
+  );
 }
 
 export function useAds(adType?: 'banner' | 'popup' | 'inline' | 'sidebar' | 'footer', targetPage?: string) {
@@ -47,8 +53,8 @@ export function useAds(adType?: 'banner' | 'popup' | 'inline' | 'sidebar' | 'foo
     try {
       setLoading(true);
 
-      // Buscamos TODOS os anúncios ativos. O filtro por ad_type é aplicado
-      // depois no cliente — assim, se o admin só cadastrou anúncios "banner",
+      // Buscamos TODOS os anuncios ativos. O filtro por ad_type e aplicado
+      // depois no cliente; assim, se o admin so cadastrou anuncios "banner",
       // eles ainda servem como fallback para popup/sidebar/footer/inline.
       const { data, error } = await supabase
         .from('ads')
@@ -71,7 +77,7 @@ export function useAds(adType?: 'banner' | 'popup' | 'inline' | 'sidebar' | 'foo
       let validAds = baseValid;
       if (adType) {
         const matching = baseValid.filter((ad: any) => ad.ad_type === adType);
-        // Se não houver anúncio do tipo pedido, faz fallback para todos
+        // Se nao houver anuncio do tipo pedido, faz fallback para todos
         validAds = matching.length > 0 ? matching : baseValid;
       }
 
@@ -82,8 +88,9 @@ export function useAds(adType?: 'banner' | 'popup' | 'inline' | 'sidebar' | 'foo
       setAds(withProxy);
     } catch (error) {
       if (!isAbortLikeError(error)) {
-        console.error('Erro ao carregar anúncios:', error);
+        console.error('Erro ao carregar anuncios:', error);
       }
+      setAds([]);
     } finally {
       setLoading(false);
     }
@@ -103,7 +110,7 @@ export function useAds(adType?: 'banner' | 'popup' | 'inline' | 'sidebar' | 'foo
       });
     } catch (error) {
       if (!isAbortLikeError(error)) {
-        console.error('Erro ao registrar visualização de anúncio:', error);
+        console.error('Erro ao registrar visualizacao de anuncio:', error);
       }
     }
   };
@@ -122,7 +129,7 @@ export function useAds(adType?: 'banner' | 'popup' | 'inline' | 'sidebar' | 'foo
       });
     } catch (error) {
       if (!isAbortLikeError(error)) {
-        console.error('Erro ao registrar clique de anúncio:', error);
+        console.error('Erro ao registrar clique de anuncio:', error);
       }
     } finally {
       window.setTimeout(() => clickedInFlight.delete(clickKey), 2500);
