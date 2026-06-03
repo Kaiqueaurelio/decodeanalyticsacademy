@@ -11,7 +11,7 @@ export function TermsFooterLink({ variant = 'floating' }: TermsFooterLinkProps) 
   const location = useLocation();
 
   if (HIDDEN_ROUTES.includes(location.pathname) || location.pathname === '/termos') return null;
-  if (variant === 'floating' && location.pathname === '/dashboard') return null;
+  if (variant === 'floating' && location.pathname !== '/') return null;
 
   const linkClass =
     variant === 'inline'
@@ -27,7 +27,7 @@ export function TermsFooterLink({ variant = 'floating' }: TermsFooterLinkProps) 
   if (variant === 'inline') return link;
 
   return (
-    <div className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-[calc(var(--student-sidebar-width,0px)+1rem)] z-20 hidden transition-[left] duration-300 ease-out md:block">
+    <div className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-4 z-20 hidden md:block">
       {link}
     </div>
   );
