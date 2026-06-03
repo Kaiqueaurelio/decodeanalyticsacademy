@@ -10,6 +10,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { RANamePrompt } from "@/components/RANamePrompt";
 import { PageSkeleton } from "@/components/PageSkeleton";
 import "@/styles/polish.css";
+import "@/styles/landing-motion.css";
 // BUGFIX: AudioPlayerProvider NAO pode ser lazy-loaded pois e um Context Provider.
 // Lazy-loading um Provider causa crash/reset de contexto ao remontar.
 import { AudioPlayerProvider } from "@/contexts/AudioPlayerContext";
