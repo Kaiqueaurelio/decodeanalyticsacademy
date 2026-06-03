@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { Lightbulb, Sparkles, ArrowRight } from 'lucide-react';
+import { Lightbulb, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface HeroProps {
@@ -18,47 +18,43 @@ export function HeroGreetingCard({ name, overallProgress, totalApostilas, totalA
   const dash = (overallProgress / 100) * circ;
 
   return (
-    <div className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-card via-card/80 to-primary/5 p-6 sm:p-8">
-      {/* glow */}
-      <div className="absolute -top-20 -right-20 w-72 h-72 bg-primary/15 blur-3xl rounded-full pointer-events-none" />
-      <div className="absolute -bottom-24 left-1/3 w-64 h-64 bg-accent/15 blur-3xl rounded-full pointer-events-none" />
+    <div className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-card via-card/86 to-primary/5 p-5 sm:p-7">
+      <div className="absolute -top-24 -right-16 w-72 h-72 bg-primary/12 blur-3xl rounded-full pointer-events-none" />
+      <div className="absolute -bottom-28 left-1/3 w-64 h-64 bg-accent/10 blur-3xl rounded-full pointer-events-none" />
 
-      <div className="relative grid grid-cols-1 lg:grid-cols-[1.4fr_auto_1fr] gap-6 items-center">
-        {/* Greeting */}
+      <div className="relative grid grid-cols-1 gap-5 lg:grid-cols-[1.25fr_auto_1fr] lg:items-center">
         <div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight leading-tight">
-            Olá, {firstName}! <span className="inline-block animate-wave">👋</span>
+          <p className="mb-1 text-xs font-bold uppercase tracking-[0.18em] text-primary">Painel de estudos</p>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight leading-tight">
+            Olá, {firstName}
           </h1>
-          <p className="mt-2 text-sm sm:text-base text-muted-foreground max-w-md">
-            Continue seus estudos e alcance seus objetivos!
+          <p className="mt-2 max-w-md text-sm text-muted-foreground">
+            Acompanhe suas atividades, apostilas e revisões em um só lugar.
           </p>
           <Button
-            className="mt-5 h-11 px-5 font-bold gap-2 shadow-[0_8px_30px_hsl(var(--primary)/0.35)]"
+            className="mt-5 h-10 px-4 font-bold gap-2 shadow-[0_8px_30px_hsl(var(--primary)/0.24)]"
             onClick={() => {
               const el = document.getElementById('minhas-disciplinas');
               if (el) el.scrollIntoView({ behavior: 'smooth' });
               else navigate('/dashboard#minhas-disciplinas');
             }}
           >
-            Ver minhas disciplinas
+            Ver disciplinas
             <ArrowRight className="h-4 w-4" />
           </Button>
         </div>
 
-        {/* Illustration */}
         <div className="hidden lg:flex items-center justify-center relative">
           <div className="relative">
-            <div className="absolute inset-0 bg-warning/20 blur-2xl rounded-full" />
-            <div className="relative w-28 h-28 rounded-3xl bg-gradient-to-br from-warning/30 to-warning/10 border border-warning/30 flex items-center justify-center">
-              <Lightbulb className="h-14 w-14 text-warning drop-shadow-[0_0_12px_hsl(var(--warning)/0.6)]" strokeWidth={1.5} />
-              <Sparkles className="absolute -top-2 -right-2 h-5 w-5 text-warning animate-pulse" />
+            <div className="absolute inset-0 bg-warning/16 blur-2xl rounded-full" />
+            <div className="relative w-24 h-24 rounded-2xl bg-gradient-to-br from-warning/24 to-warning/8 border border-warning/24 flex items-center justify-center">
+              <Lightbulb className="h-12 w-12 text-warning drop-shadow-[0_0_12px_hsl(var(--warning)/0.45)]" strokeWidth={1.5} />
             </div>
           </div>
         </div>
 
-        {/* Progress circle */}
-        <div className="flex items-center gap-5 rounded-2xl border border-border bg-card/60 backdrop-blur p-5">
-          <div className="relative w-[140px] h-[140px] shrink-0">
+        <div className="flex items-center gap-4 rounded-2xl border border-border bg-card/60 backdrop-blur p-4">
+          <div className="relative w-[112px] h-[112px] shrink-0 sm:w-[128px] sm:h-[128px]">
             <svg className="w-full h-full -rotate-90" viewBox="0 0 140 140">
               <circle cx="70" cy="70" r={radius} fill="none" stroke="hsl(var(--muted))" strokeWidth="10" />
               <circle
@@ -80,7 +76,7 @@ export function HeroGreetingCard({ name, overallProgress, totalApostilas, totalA
               </defs>
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-3xl font-extrabold">{overallProgress}%</span>
+              <span className="text-2xl sm:text-3xl font-extrabold">{overallProgress}%</span>
               <span className="text-[10px] uppercase tracking-widest text-muted-foreground">geral</span>
             </div>
           </div>
@@ -88,8 +84,8 @@ export function HeroGreetingCard({ name, overallProgress, totalApostilas, totalA
             <p className="text-sm font-bold mb-0.5">Seu progresso</p>
             <p className="text-[11px] text-muted-foreground leading-snug">
               {totalAnswered > 0
-                ? `Você já resolveu ${totalAnswered} exercícios em ${totalApostilas} apostilas.`
-                : `Comece resolvendo exercícios para acompanhar sua evolução.`}
+                ? `${totalAnswered} exercícios respondidos em ${totalApostilas} apostilas.`
+                : 'Comece por uma apostila para registrar sua evolução.'}
             </p>
           </div>
         </div>
