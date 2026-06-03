@@ -16,12 +16,17 @@ import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
+const PUSH_HINT_DISMISSED_KEY = 'decode_push_hint_dismissed';
+
 export function NotificationBell() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { items, unreadCount, markAsRead, markAllAsRead, remove } =
     useNotifications();
   const [pushOn, setPushOn] = useState(false);
+  const [pushHintDismissed, setPushHintDismissed] = useState(
+    () => typeof window !== 'undefined' && window.localStorage.getItem(PUSH_HINT_DISMISSED_KEY) === '1',
+  );
 
   useEffect(() => {
     isPushEnabled().then(setPushOn);
@@ -39,15 +44,21 @@ export function NotificationBell() {
     }
   };
 
+  const dismissPushHint = () => {
+    try { window.localStorage.setItem(PUSH_HINT_DISMISSED_KEY, '1'); } catch {}
+    setPushHintDismissed(true);
+  };
+
   const handleClick = async (n: typeof items[0]) => {
     if (!n.read) await markAsRead(n.id);
     if (n.link) navigate(n.link);
   };
 
   const badge = unreadCount > 9 ? "9+" : String(unreadCount);
+  const showPushHint = unreadCount === 0 && pushSupported() && !pushOn && !pushHintDismissed;
 
   return (
-    <Popover>
+    <Popover onOpenChange={(open) => { if (open && showPushHint) dismissPushHint(); }}>
       <PopoverTrigger asChild>
         <Button variant="ghost" size="icon" className="relative h-9 w-9 shrink-0 rounded-md" aria-label="Notificações">
           <Bell className="h-4 w-4" />
@@ -56,7 +67,7 @@ export function NotificationBell() {
               {badge}
             </span>
           )}
-          {unreadCount === 0 && pushSupported() && !pushOn && (
+          {showPushHint && (
             <span
               className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-amber-400 ring-2 ring-background animate-pulse"
               title="Ative as notificações push"
