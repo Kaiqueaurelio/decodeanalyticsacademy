@@ -11,7 +11,9 @@ interface HeroProps {
 
 export function HeroGreetingCard({ name, overallProgress, totalApostilas, totalAnswered }: HeroProps) {
   const navigate = useNavigate();
-  const firstName = (name || 'Aluno').split(' ')[0];
+  // Remove prefixos do tipo "[TESTE BOT]" e pega só o primeiro nome real.
+  const cleanName = (name || '').replace(/\[[^\]]*\]/g, '').replace(/\s+/g, ' ').trim();
+  const firstName = (cleanName || 'Aluno').split(' ')[0];
 
   const radius = 60;
   const circ = 2 * Math.PI * radius;
