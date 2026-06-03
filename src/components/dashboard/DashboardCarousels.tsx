@@ -29,7 +29,7 @@ export function ApostilasReadingCarousel({ apostilas, exerciseCounts }: Props) {
           </div>
           <div>
             <h3 className="text-base font-bold leading-tight">Apostilas para leitura</h3>
-            <p className="mt-0.5 text-xs text-muted-foreground">Organizadas por disciplina para encontrar o conteudo sem confusao.</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">Organizadas por disciplina para encontrar o conteúdo com rapidez.</p>
           </div>
         </div>
         <Button variant="outline" size="sm" className="h-8 gap-1.5 self-start text-xs sm:self-auto" onClick={() => navigate('/biblioteca')}>
@@ -39,7 +39,7 @@ export function ApostilasReadingCarousel({ apostilas, exerciseCounts }: Props) {
 
       {entries.length === 0 ? (
         <p className="rounded-xl border border-dashed border-border py-8 text-center text-sm text-muted-foreground">
-          Nenhuma apostila disponivel.
+          Nenhuma apostila disponível.
         </p>
       ) : (
         <div className="space-y-4">
@@ -80,7 +80,7 @@ export function ApostilasReadingCarousel({ apostilas, exerciseCounts }: Props) {
                             {a.title}
                           </span>
                           <span className="mt-0.5 block text-[11px] text-muted-foreground">
-                            {exercises > 0 ? `${exercises} exercicios vinculados` : 'Leitura disponivel'}
+                            {exercises > 0 ? `${exercises} exercícios vinculados` : 'Leitura disponível'}
                           </span>
                         </span>
                         <span className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-primary px-3 text-[11px] font-bold text-primary-foreground">
@@ -107,18 +107,25 @@ interface SummaryProps {
 }
 
 export function ProgressSummaryRow({ disciplinas, atividades, exercicios, apostilas }: SummaryProps) {
+  const navigate = useNavigate();
   const items = [
     { label: 'Disciplinas', a: disciplinas.ativas, b: disciplinas.total, sub: 'disciplinas ativas', bar: 'bg-primary' },
-    { label: 'Atividades', a: atividades.concluidas, b: atividades.total, sub: 'concluidas', bar: 'bg-success' },
-    { label: 'Exercicios', a: exercicios.resolvidos, b: exercicios.total, sub: 'resolvidos', bar: 'bg-warning' },
+    { label: 'Atividades', a: atividades.concluidas, b: atividades.total, sub: 'concluídas', bar: 'bg-success' },
+    { label: 'Exercícios', a: exercicios.resolvidos, b: exercicios.total, sub: 'resolvidos', bar: 'bg-warning' },
     { label: 'Apostilas', a: apostilas.lidas, b: apostilas.total, sub: 'lidas', bar: 'bg-accent' },
   ];
 
   return (
     <div className="rounded-2xl border border-border bg-card p-5">
-      <header className="flex items-center justify-between mb-4">
+      <header className="flex items-center justify-between gap-3 mb-4">
         <h3 className="font-bold text-base">Resumo do seu progresso</h3>
-        <span className="text-xs font-semibold text-primary">Ver relatorio completo</span>
+        <button
+          type="button"
+          onClick={() => navigate('/desempenho')}
+          className="text-xs font-semibold text-primary hover:underline inline-flex items-center gap-1"
+        >
+          Ver desempenho <ChevronRight className="h-3 w-3" />
+        </button>
       </header>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {items.map((it) => {
