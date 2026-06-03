@@ -182,7 +182,8 @@ export function SidebarContent({
   const location = useLocation();
   const { isAdmin, signOut } = useAuth();
   const { navigate, open } = useSidebarNavigation(onNavigate);
-  const visibleRailItems = mode === 'rail' ? railItems.filter((item) => !item.adminOnly || isAdmin) : [];
+  const visibleRailItems = railItems.filter((item) => !item.adminOnly || isAdmin);
+  const railMenuItems = mode === 'full' ? visibleRailItems.slice(0, isAdmin ? 7 : 6) : visibleRailItems;
   const isFull = mode === 'full';
   const canToggle = typeof setMode === 'function';
   const showRail = canToggle;
@@ -213,37 +214,28 @@ export function SidebarContent({
             </button>
           )}
 
-          {isFull ? (
-            <div className="flex min-h-0 flex-1 flex-col items-center justify-between pb-5 pt-3">
-              <div className="h-px w-10 bg-border" />
-              <span className="rotate-180 text-[10px] font-black uppercase tracking-[0.22em] text-muted-foreground [writing-mode:vertical-rl]">
-                Menu
-              </span>
-              <div className="h-px w-10 bg-border" />
-            </div>
-          ) : (
-            <div className="flex min-h-0 flex-1 flex-col items-stretch gap-1.5 overflow-y-auto px-2 pb-3">
-              {visibleRailItems.map((item) => {
-                const active = isRouteActive(location.pathname, location.hash, item.to);
-                const Icon = item.icon;
-                return (
-                  <button
-                    key={`${item.label}-${item.to}`}
-                    type="button"
-                    onClick={() => open(item.to)}
-                    className={`group relative flex min-h-[54px] w-20 flex-col items-center justify-center gap-1 rounded-xl border px-1.5 text-center text-[10px] font-bold leading-tight transition
-                      ${active ? 'border-primary/70 bg-primary/12 text-foreground shadow-[inset_0_-2px_0_hsl(var(--primary))]' : 'border-transparent text-muted-foreground hover:border-primary/30 hover:bg-primary/8 hover:text-foreground'}`}
-                    title={item.label}
-                    aria-label={item.label}
-                  >
-                    {active && <span className="absolute left-1 top-1/2 h-6 w-0.5 -translate-y-1/2 rounded-full bg-primary" />}
-                    <Icon className={`h-5 w-5 shrink-0 ${active ? 'text-primary' : 'text-current'}`} strokeWidth={active ? 2.5 : 2.15} />
-                    <span className="w-full truncate">{item.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-          )}
+          <div className="mb-2 h-px w-10 bg-border" />
+          <div className="flex min-h-0 flex-1 flex-col items-stretch gap-1.5 overflow-y-auto px-2 pb-3 pt-1">
+            {railMenuItems.map((item) => {
+              const active = isRouteActive(location.pathname, location.hash, item.to);
+              const Icon = item.icon;
+              return (
+                <button
+                  key={`${item.label}-${item.to}`}
+                  type="button"
+                  onClick={() => open(item.to)}
+                  className={`group relative flex min-h-[52px] w-20 flex-col items-center justify-center gap-1 rounded-xl border px-1.5 text-center text-[10px] font-bold leading-tight transition
+                    ${active ? 'border-primary/70 bg-primary/12 text-foreground shadow-[inset_0_-2px_0_hsl(var(--primary))]' : 'border-transparent text-muted-foreground hover:border-primary/30 hover:bg-primary/8 hover:text-foreground'}`}
+                  title={item.label}
+                  aria-label={item.label}
+                >
+                  {active && <span className="absolute left-1 top-1/2 h-6 w-0.5 -translate-y-1/2 rounded-full bg-primary" />}
+                  <Icon className={`h-5 w-5 shrink-0 ${active ? 'text-primary' : 'text-current'}`} strokeWidth={active ? 2.5 : 2.15} />
+                  <span className="w-full truncate">{item.label}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       )}
 
