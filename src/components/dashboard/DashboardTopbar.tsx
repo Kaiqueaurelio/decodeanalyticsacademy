@@ -24,17 +24,16 @@ export function DashboardTopbar() {
     e.preventDefault();
     if (!query.trim()) return;
     const lower = query.toLowerCase();
-    const hit = apostilas.find((a: any) => a.title?.toLowerCase().includes(lower));
+    const hit = apostilas.find((a: any) => a.title?.toLowerCase().includes(lower) || a.category?.toLowerCase().includes(lower));
     if (hit) navigate(`/apostila/${hit.id}`);
   };
 
   const initials = (profile?.full_name || user?.email || 'A').slice(0, 2).toUpperCase();
-  const roleLabel = isAdmin ? 'Administrador' : 'Perfil do aluno';
+  const roleLabel = isAdmin ? 'Administrador' : 'Aluno';
 
   return (
-    <header className="sticky top-0 z-30 bg-background/80 backdrop-blur-xl border-b border-border">
-      <div className="flex items-center gap-3 px-4 sm:px-6 lg:px-8 h-16">
-        {/* Mobile menu */}
+    <header className="sticky top-0 z-30 bg-background/88 backdrop-blur-xl border-b border-border">
+      <div className="flex items-center gap-2 px-3 sm:px-6 lg:px-8 h-16">
         <Sheet open={navOpen} onOpenChange={setNavOpen}>
           <SheetTrigger asChild>
             <Button variant="ghost" size="icon" className="lg:hidden h-9 w-9 rounded-xl" aria-label="Abrir menu">
@@ -42,7 +41,7 @@ export function DashboardTopbar() {
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="p-0 w-[92vw] max-w-[360px] border-r border-border">
-            <SidebarContent onNavigate={() => setNavOpen(false)} />
+            <SidebarContent mode="full" setMode={() => setNavOpen(false)} onNavigate={() => setNavOpen(false)} />
           </SheetContent>
         </Sheet>
 
@@ -55,24 +54,23 @@ export function DashboardTopbar() {
             aria-label="Painel Admin"
           >
             <ShieldCheck strokeWidth={2.5} className="h-[16px] w-[16px]" />
-            <span className="text-[11px] font-bold">Admin</span>
+            <span className="hidden min-[390px]:inline text-[11px] font-bold">Admin</span>
           </Button>
         )}
 
-        {/* Search */}
         <form onSubmit={submit} className="flex-1 max-w-2xl relative">
-          <Search strokeWidth={2.5} className="absolute left-4 top-1/2 -translate-y-1/2 h-[16px] w-[16px] text-muted-foreground pointer-events-none" />
+          <Search strokeWidth={2.5} className="absolute left-3.5 top-1/2 -translate-y-1/2 h-[16px] w-[16px] text-muted-foreground pointer-events-none" />
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Buscar por disciplinas, atividades, apostilas..."
-            className="w-full h-11 pl-11 pr-4 rounded-2xl bg-card/60 border border-border text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 focus:bg-card transition-all"
+            placeholder="Buscar apostila ou disciplina"
+            className="w-full h-10 sm:h-11 pl-10 pr-3 sm:pr-4 rounded-xl sm:rounded-2xl bg-card/60 border border-border text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 focus:bg-card transition-all"
           />
         </form>
 
-        <div className="flex items-center gap-2 ml-auto">
-          <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-9 w-9 rounded-xl">
+        <div className="flex items-center gap-1.5 sm:gap-2 ml-auto">
+          <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-9 w-9 rounded-xl" aria-label="Alternar tema">
             {theme === 'dark' ? <Sun strokeWidth={2.5} className="h-[16px] w-[16px]" /> : <Moon strokeWidth={2.5} className="h-[16px] w-[16px]" />}
           </Button>
           {user && <NotificationBell />}
