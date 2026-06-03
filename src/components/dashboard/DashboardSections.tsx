@@ -43,9 +43,10 @@ export function ActivitiesToDoSection({ apostilas, exerciseCounts, examFocusSubj
       </header>
 
       {list.length === 0 ? (
-        <p className="text-sm text-muted-foreground py-6 text-center">
-          Nenhuma atividade pendente. Bom trabalho! 🎉
-        </p>
+        <div className="rounded-xl border border-dashed border-border bg-background/35 px-4 py-7 text-center">
+          <p className="text-sm font-semibold text-foreground">Nenhuma atividade pendente.</p>
+          <p className="mt-1 text-xs text-muted-foreground">Quando novas listas forem liberadas, elas aparecem aqui.</p>
+        </div>
       ) : (
         <div className="space-y-2">
           {list.map((a, i) => {
@@ -98,7 +99,6 @@ export function RecommendedExercisesSection({ apostilas, exerciseCounts }: RecPr
     .slice(0, 3);
 
   const icons = [FileText, Beaker, PenLine];
-  const tones = ['primary', 'accent', 'warning'] as const;
 
   return (
     <div className="rounded-2xl border border-border bg-card p-5">
@@ -113,9 +113,10 @@ export function RecommendedExercisesSection({ apostilas, exerciseCounts }: RecPr
       </header>
 
       {top3.length === 0 ? (
-        <p className="text-sm text-muted-foreground py-6 text-center">
-          Sem exercícios disponíveis ainda.
-        </p>
+        <div className="rounded-xl border border-dashed border-border bg-background/35 px-4 py-7 text-center">
+          <p className="text-sm font-semibold text-foreground">Sem exercícios disponíveis.</p>
+          <p className="mt-1 text-xs text-muted-foreground">Os exercícios vinculados às apostilas aparecem aqui.</p>
+        </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {top3.map((a, i) => {
