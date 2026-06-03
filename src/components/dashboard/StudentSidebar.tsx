@@ -88,7 +88,6 @@ const adminMenuItems = [
   { to: '/admin', icon: Users, label: 'Usuários' },
   { to: '/admin/financeiro', icon: TrendingUp, label: 'Financeiro' },
   { to: '/admin/relatorios', icon: BarChart3, label: 'Relatórios' },
-  { to: '/', icon: Globe, label: 'Site' },
 ];
 
 const railItems = [
@@ -97,7 +96,6 @@ const railItems = [
   { to: '/cursos', icon: Package, label: 'Cursos' },
   { to: '/admin', icon: Users, label: 'Usuários', adminOnly: true },
   { to: '/admin/financeiro', icon: TrendingUp, label: 'Finanças', adminOnly: true },
-  { to: '/', icon: Globe, label: 'Site' },
   { to: '/admin/relatorios', icon: BarChart3, label: 'Relatórios', adminOnly: true },
   { to: '/livros', icon: Store, label: 'Loja' },
   { to: '/dashboard#apostilas', icon: GraduationCap, label: 'Academy' },
