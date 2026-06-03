@@ -27,14 +27,11 @@ import {
   PanelLeftOpen,
   ChevronsLeft,
   Sparkles,
-  Timer,
   Activity,
   HelpCircle,
   Trophy,
   RotateCcw,
-  Megaphone,
   LogOut,
-  Settings,
 } from 'lucide-react';
 import logoOwl from '@/assets/owl-icon.png';
 import { Button } from '@/components/ui/button';
@@ -42,7 +39,7 @@ import { useAuth } from '@/hooks/useAuth';
 
 const SIDEBAR_WIDTHS = {
   full: '356px',
-  rail: '104px',
+  rail: '96px',
   hidden: '72px',
 } as const;
 
@@ -87,25 +84,24 @@ const menuGroups = [
   },
 ];
 
-
 const adminMenuItems = [
   { to: '/admin', icon: Users, label: 'Usuários' },
-  { to: '/admin', icon: TrendingUp, label: 'Financeiro' },
-  { to: '/admin', icon: BarChart3, label: 'Relatórios' },
-  { to: '/dashboard', icon: Globe, label: 'Site' },
+  { to: '/admin/financeiro', icon: TrendingUp, label: 'Financeiro' },
+  { to: '/admin/relatorios', icon: BarChart3, label: 'Relatórios' },
+  { to: '/', icon: Globe, label: 'Site' },
 ];
 
 const railItems = [
-  { to: '/dashboard', icon: Bell, label: 'Notificações' },
-  { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { to: '/dashboard#notificacoes', icon: Bell, label: 'Avisos' },
+  { to: '/dashboard', icon: LayoutDashboard, label: 'Painel' },
   { to: '/cursos', icon: Package, label: 'Cursos' },
   { to: '/admin', icon: Users, label: 'Usuários', adminOnly: true },
-  { to: '/admin', icon: TrendingUp, label: 'Financeiro', adminOnly: true },
-  { to: '/dashboard', icon: Globe, label: 'Site' },
-  { to: '/admin', icon: BarChart3, label: 'Relatórios', adminOnly: true },
-  { to: '/livros', icon: Store, label: 'Store' },
-  { to: '/cursos', icon: GraduationCap, label: 'Academy' },
-  { to: '/dashboard', icon: MoreHorizontal, label: 'Mais' },
+  { to: '/admin/financeiro', icon: TrendingUp, label: 'Finanças', adminOnly: true },
+  { to: '/', icon: Globe, label: 'Site' },
+  { to: '/admin/relatorios', icon: BarChart3, label: 'Relatórios', adminOnly: true },
+  { to: '/livros', icon: Store, label: 'Loja' },
+  { to: '/dashboard#apostilas', icon: GraduationCap, label: 'Academy' },
+  { to: '/dashboard#mais', icon: MoreHorizontal, label: 'Mais' },
   { to: '/comunidade', icon: LifeBuoy, label: 'Suporte' },
 ];
 
@@ -189,17 +185,16 @@ export function SidebarContent({
   const visibleRailItems = mode === 'rail' ? railItems.filter((item) => !item.adminOnly || isAdmin) : [];
   const isFull = mode === 'full';
   const canToggle = typeof setMode === 'function';
-  // Mobile drawer = sem rail decorativo, com header próprio incluindo logo
   const showRail = canToggle;
 
   return (
     <div className="h-full flex overflow-hidden bg-background text-foreground shadow-2xl">
       {showRail && (
-        <div className="flex w-[104px] shrink-0 flex-col items-center border-r border-border bg-card/60 py-3">
+        <div className="flex w-24 shrink-0 flex-col items-center border-r border-border bg-card/60 py-3">
           <button
             type="button"
             onClick={() => open('/dashboard')}
-            className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-background shadow-[0_0_22px_hsl(var(--primary)/0.25)] ring-1 ring-primary/30 transition hover:ring-primary/60"
+            className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-background shadow-[0_0_22px_hsl(var(--primary)/0.22)] ring-1 ring-primary/25 transition hover:ring-primary/60"
             aria-label="Ir para o dashboard"
           >
             <img src={logoOwl} alt="Decode Analytics Academy" className="h-10 w-10 object-contain" />
@@ -209,7 +204,7 @@ export function SidebarContent({
             <button
               type="button"
               onClick={() => setMode!(isFull ? 'rail' : 'full')}
-              className="mb-3 flex h-9 w-[84px] items-center justify-center gap-2 rounded-md border border-primary/40 bg-primary/10 text-[10px] font-black uppercase tracking-wide text-primary transition hover:bg-primary/20"
+              className="mb-3 flex h-9 w-[76px] items-center justify-center gap-1.5 rounded-lg border border-primary/35 bg-primary/10 text-[9px] font-black uppercase tracking-wide text-primary transition hover:bg-primary/20"
               aria-label={isFull ? 'Recolher menu principal' : 'Expandir menu principal'}
               title={isFull ? 'Recolher menu principal' : 'Expandir menu principal'}
             >
@@ -227,7 +222,7 @@ export function SidebarContent({
               <div className="h-px w-10 bg-border" />
             </div>
           ) : (
-            <div className="flex min-h-0 flex-1 flex-col items-stretch gap-1 overflow-y-auto px-2 pb-3">
+            <div className="flex min-h-0 flex-1 flex-col items-stretch gap-1.5 overflow-y-auto px-2 pb-3">
               {visibleRailItems.map((item) => {
                 const active = isRouteActive(location.pathname, location.hash, item.to);
                 const Icon = item.icon;
@@ -236,12 +231,13 @@ export function SidebarContent({
                     key={`${item.label}-${item.to}`}
                     type="button"
                     onClick={() => open(item.to)}
-                    className={`group relative flex min-h-12 w-[88px] flex-col items-center justify-center gap-1 rounded-md border px-1.5 text-center text-[10px] font-bold leading-tight transition
-                      ${active ? 'border-primary bg-primary/15 text-foreground' : 'border-transparent text-muted-foreground hover:border-primary/40 hover:bg-muted hover:text-foreground'}`}
+                    className={`group relative flex min-h-[54px] w-20 flex-col items-center justify-center gap-1 rounded-xl border px-1.5 text-center text-[10px] font-bold leading-tight transition
+                      ${active ? 'border-primary/70 bg-primary/12 text-foreground shadow-[inset_0_-2px_0_hsl(var(--primary))]' : 'border-transparent text-muted-foreground hover:border-primary/30 hover:bg-primary/8 hover:text-foreground'}`}
                     title={item.label}
                     aria-label={item.label}
                   >
-                    <Icon className="h-5 w-5 shrink-0" strokeWidth={2.2} />
+                    {active && <span className="absolute left-1 top-1/2 h-6 w-0.5 -translate-y-1/2 rounded-full bg-primary" />}
+                    <Icon className={`h-5 w-5 shrink-0 ${active ? 'text-primary' : 'text-current'}`} strokeWidth={active ? 2.5 : 2.15} />
                     <span className="w-full truncate">{item.label}</span>
                   </button>
                 );
