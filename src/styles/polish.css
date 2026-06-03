@@ -255,8 +255,8 @@ aside.fixed.bottom-0.left-0.top-0.z-40 nav button:hover {
   color: #ffffff !important;
 }
 
-aside.fixed.bottom-0.left-0.top-0.z-40 .text-[#dfff1f],
-aside.fixed.bottom-0.left-0.top-0.z-40 .text-[#9af5df] {
+aside.fixed.bottom-0.left-0.top-0.z-40 [class*="text-[#dfff1f]"],
+aside.fixed.bottom-0.left-0.top-0.z-40 [class*="text-[#9af5df]"] {
   color: #dfff1f !important;
 }
 
