@@ -67,11 +67,12 @@ const queryClient = new QueryClient({
 function useAdminCopyPatch() {
   React.useEffect(() => {
     const replacements = new Map([
-      ["Assistente de anuncios", "Copilot App"],
-      ["Assistente de anúncios", "Copilot App"],
-      ["Ads Chat Builder", "Copilot App"],
-      ["Copiloto do App", "Copilot App"],
-      ["Gere criativos de anúncios com IA", "Copiloto geral para acoes administrativas do app"],
+      ["Assistente de anuncios", "Ella Ribeiro"],
+      ["Assistente de anúncios", "Ella Ribeiro"],
+      ["Ads Chat Builder", "Ella Ribeiro"],
+      ["Copiloto do App", "Ella Ribeiro"],
+      ["Copilot App", "Ella Ribeiro"],
+      ["Gere criativos de anúncios com IA", "Assistente operacional para tarefas do app"],
     ]);
 
     const patchCopy = () => {
@@ -111,6 +112,7 @@ function AnimatedRoutes() {
         <Route path="/termos" element={<TermsPage />} />
         <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
         <Route path="/desempenho" element={<ProtectedRoute><PerformancePage /></ProtectedRoute>} />
+        <Route path="/performance" element={<Navigate to="/desempenho" replace />} />
         <Route path="/review" element={<ProtectedRoute><ReviewPage /></ProtectedRoute>} />
         <Route path="/simulado" element={<ProtectedRoute><SimuladoPage /></ProtectedRoute>} />
         <Route path="/revisao-prova/:eventId" element={<ProtectedRoute><PreExamReviewPage /></ProtectedRoute>} />
@@ -120,6 +122,7 @@ function AnimatedRoutes() {
         <Route path="/exercises" element={<Navigate to="/exercicios" replace />} />
         <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
         <Route path="/materials" element={<ProtectedRoute><MaterialsPage /></ProtectedRoute>} />
+        <Route path="/materiais" element={<Navigate to="/materials" replace />} />
         <Route path="/biblioteca" element={<ProtectedRoute><BibliotecaPage /></ProtectedRoute>} />
         <Route path="/cursos" element={<ProtectedRoute><CoursesPage /></ProtectedRoute>} />
         <Route path="/video/:id" element={<ProtectedRoute><VideoPlayerPage /></ProtectedRoute>} />
@@ -133,6 +136,7 @@ function AnimatedRoutes() {
         <Route path="/admin/biblioteca" element={<ProtectedRoute adminOnly><AdminBibliotecaPage /></ProtectedRoute>} />
         <Route path="/admin/apostilas/:id" element={<ProtectedRoute adminOnly><AdminApostilaWorkbench /></ProtectedRoute>} />
         <Route path="/admin" element={<ProtectedRoute adminOnly><AdminPage /></ProtectedRoute>} />
+        <Route path="/admin/*" element={<ProtectedRoute adminOnly><AdminPage /></ProtectedRoute>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Suspense>
