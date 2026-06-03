@@ -1,19 +1,21 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   BellRing,
-  Bot,
   CalendarPlus,
   Camera,
   Check,
   CheckCircle2,
   ClipboardList,
+  ExternalLink,
   FileText,
-  Image,
+  Image as ImageIcon,
   Loader2,
   Megaphone,
   Mic,
   MoreVertical,
+  Navigation,
   Paperclip,
   RotateCcw,
   Send,
@@ -35,9 +37,18 @@ import { AdImageUploadButton } from './AdImageUploadButton';
 
 const supabase = supabaseTyped as any;
 
+const ELLA_AVATAR = 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=320&q=85';
+
 type AdType = 'banner' | 'popup' | 'inline' | 'sidebar' | 'footer';
 type MediaKind = 'image' | 'video' | 'audio';
-type ActionType = 'create_ad' | 'create_reminder' | 'delete_reminder' | 'create_announcement' | 'create_apostila' | 'send_push';
+type ActionType =
+  | 'create_ad'
+  | 'create_reminder'
+  | 'delete_reminder'
+  | 'create_announcement'
+  | 'create_apostila'
+  | 'send_push'
+  | 'open_page';
 
 interface Msg {
   id: string;
@@ -61,19 +72,11 @@ interface AIPlan {
   needs_more_info?: boolean;
 }
 
-const AD_TYPES: { value: AdType; label: string; desc: string }[] = [
-  { value: 'banner', label: 'Banner', desc: 'Topo das paginas' },
-  { value: 'popup', label: 'Popup', desc: 'Modal de destaque' },
-  { value: 'inline', label: 'Inline', desc: 'Feed de conteudo' },
-  { value: 'sidebar', label: 'Sidebar', desc: 'Lateral desktop' },
-  { value: 'footer', label: 'Rodape', desc: 'Barra mobile' },
-];
-
 const AD_TYPE_LABELS: Record<AdType, string> = {
   banner: 'Banner',
-  popup: 'Popup',
+  popup: 'Pop-up',
   inline: 'Inline',
-  sidebar: 'Sidebar',
+  sidebar: 'Lateral',
   footer: 'Rodape',
 };
 
@@ -84,13 +87,35 @@ const ACTION_LABELS: Record<ActionType, string> = {
   create_announcement: 'Aviso no app',
   create_apostila: 'Apostila',
   send_push: 'Push para usuarios',
+  open_page: 'Abrir area do app',
 };
 
+const PAGE_TARGETS: { keys: string[]; label: string; path: string }[] = [
+  { keys: ['dashboard', 'painel', 'inicio', 'home'], label: 'Dashboard', path: '/dashboard' },
+  { keys: ['apostila', 'apostilas'], label: 'Apostilas', path: '/dashboard#apostilas' },
+  { keys: ['exercicio', 'exercicios', 'questoes'], label: 'Exercicios', path: '/exercicios' },
+  { keys: ['curso', 'cursos'], label: 'Cursos', path: '/cursos' },
+  { keys: ['biblioteca'], label: 'Biblioteca', path: '/biblioteca' },
+  { keys: ['livro', 'livros', 'playbook'], label: 'Livros', path: '/livros' },
+  { keys: ['flashcard', 'flashcards'], label: 'Flashcards', path: '/flashcards' },
+  { keys: ['revisao', 'revisar'], label: 'Revisao', path: '/review' },
+  { keys: ['simulado', 'prova'], label: 'Simulado', path: '/simulado' },
+  { keys: ['calculadora'], label: 'Calculadora', path: '/calculadora' },
+  { keys: ['desempenho', 'performance'], label: 'Desempenho', path: '/desempenho' },
+  { keys: ['perfil', 'profile'], label: 'Perfil', path: '/profile' },
+  { keys: ['materiais', 'material'], label: 'Materiais', path: '/materials' },
+  { keys: ['admin', 'usuarios'], label: 'Painel Admin', path: '/admin' },
+  { keys: ['anuncios', 'anuncio'], label: 'Anuncios', path: '/admin' },
+  { keys: ['ella', 'ia', 'copilot'], label: 'Ella Ribeiro', path: '/admin' },
+];
+
 const SUGGESTIONS = [
-  'Crie um anuncio popup para minha mentoria com link https://decodeanalyticsacademy.com',
+  'Ella, crie um aviso serio para os alunos sobre a aula ao vivo de hoje as 20h',
+  'Crie um anuncio persistente lateral para a mentoria com link https://decodeanalyticsacademy.com',
+  'Monte uma apostila sobre normalizacao de banco de dados com resumo, exemplos e exercicios',
   'Adicione um lembrete de prova de Estatistica para amanha as 19h',
-  'Crie uma apostila sobre regressao linear com resumo, exemplos e exercicios',
-  'Envie uma notificacao push: aula ao vivo comeca em 10 minutos',
+  'Envie um push: aula ao vivo comeca em 10 minutos',
+  'Abra a pagina de desempenho',
 ];
 
 function uid() {
@@ -123,7 +148,7 @@ function cleanUrl(value: string) {
 
 function extractAfter(value: string, words: string[]) {
   const escaped = words.map((word) => word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
-  const match = value.match(new RegExp(`(?:${escaped})\\s*(?:e|eh|:|-)?\\s*[\"']?([^\"'\n]{4,180})`, 'i'));
+  const match = value.match(new RegExp(`(?:${escaped})\\s*(?:e|eh|:|-)?\\s*[\"']?([^\"'\n]{4,220})`, 'i'));
   return match?.[1]?.trim().replace(/[.!?]+$/, '') || '';
 }
 
@@ -131,8 +156,8 @@ function parseDateText(value: string) {
   const normalized = normalizeText(value);
   const today = new Date();
   const date = new Date(today);
-  if (normalized.includes('amanha')) date.setDate(today.getDate() + 1);
-  else if (normalized.includes('depois de amanha')) date.setDate(today.getDate() + 2);
+  if (normalized.includes('depois de amanha')) date.setDate(today.getDate() + 2);
+  else if (normalized.includes('amanha')) date.setDate(today.getDate() + 1);
   else {
     const iso = value.match(/\b(20\d{2})-(\d{2})-(\d{2})\b/);
     if (iso) return `${iso[1]}-${iso[2]}-${iso[3]}`;
@@ -174,6 +199,7 @@ function actionIcon(type: ActionType) {
   if (type === 'delete_reminder') return Trash2;
   if (type === 'create_announcement') return ClipboardList;
   if (type === 'create_apostila') return FileText;
+  if (type === 'open_page') return Navigation;
   return BellRing;
 }
 
@@ -194,34 +220,55 @@ function makeApostilaContent(topic: string, requested: string) {
     `# ${topic}`,
     '',
     '## Objetivo',
-    `Entender ${topic} de forma pratica, com foco em aplicacao nos estudos da Decode Analytics Academy.`,
+    `Estudar ${topic} com explicacao clara, exemplos e revisao ativa.`,
     '',
-    '## Resumo guiado',
-    requested || `Explique os conceitos centrais de ${topic}, destaque termos importantes e conecte cada conceito com exemplos simples.`,
+    '## Resumo estruturado',
+    requested || `Apresente os conceitos essenciais de ${topic}, preservando o conteudo principal e organizando em blocos curtos.`,
     '',
-    '## Roteiro de estudo',
-    '1. Leia o resumo e marque os pontos que ainda parecem abstratos.',
-    '2. Refaça os exemplos sem olhar a resposta.',
-    '3. Transforme cada definicao em uma pergunta curta.',
-    '4. Revise os erros depois de 24 horas.',
+    '## Pontos importantes',
+    '- Conceitos principais e definicoes.',
+    '- Exemplos práticos conectados ao curso.',
+    '- Erros comuns que o aluno deve evitar.',
+    '',
+    '## Exemplo guiado',
+    `Crie um exemplo simples de ${topic} e resolva passo a passo.`,
     '',
     '## Exercicios sugeridos',
-    `1. Explique ${topic} com suas palavras em ate cinco linhas.`,
-    '2. Crie um exemplo real usando dados, negocio ou rotina de estudos.',
+    `1. Explique ${topic} com suas palavras.`,
+    '2. Crie um exemplo real usando dados ou rotina de estudos.',
     '3. Liste tres erros comuns e como evita-los.',
+    '',
+    '## Revisao final',
+    'Transforme cada subtitulo em uma pergunta e tente responder sem consultar o texto.',
   ].join('\n');
+}
+
+function findPageTarget(message: string) {
+  const normalized = normalizeText(message);
+  return PAGE_TARGETS.find((target) => target.keys.some((key) => normalized.includes(key)));
 }
 
 function localPlan(message: string, mediaUrl?: string): AIPlan {
   const normalized = normalizeText(message);
   const url = cleanUrl(message);
   const isDelete = /\b(remover|remove|apagar|excluir|deletar)\b/.test(normalized);
+  const isOpen = /\b(abrir|abra|ir para|mostrar|mostre|acessar|navegar)\b/.test(normalized);
+
+  if (isOpen) {
+    const target = findPageTarget(message);
+    if (target) {
+      return {
+        reply: `Posso abrir ${target.label} agora.`,
+        action: { type: 'open_page', title: `Abrir ${target.label}`, summary: target.path, payload: { path: target.path } },
+      };
+    }
+  }
 
   if ((normalized.includes('push') || normalized.includes('notificacao') || normalized.includes('notificar')) && !isDelete) {
     const title = extractAfter(message, ['titulo', 'titulo da notificacao']) || 'Aviso Decode Analytics';
     const body = extractAfter(message, ['mensagem', 'texto', 'notificacao', 'push']) || message.replace(/envie|manda|mandar|notificacao|push/gi, '').trim();
     return {
-      reply: 'Preparei uma notificacao para todos os usuarios cadastrados. Confirme para enviar.',
+      reply: 'Preparei a notificacao para os usuarios cadastrados. Confirme para enviar.',
       action: {
         type: 'send_push',
         title: 'Enviar notificacao push',
@@ -247,9 +294,7 @@ function localPlan(message: string, mediaUrl?: string): AIPlan {
   if (normalized.includes('lembrete') || normalized.includes('agenda') || normalized.includes('calendario') || normalized.includes('prova')) {
     const eventDate = parseDateText(message);
     const title = extractAfter(message, ['lembrete', 'evento', 'titulo']) || message.replace(/crie|criar|adicione|adicionar|um|uma|lembrete|evento|agenda/gi, '').trim().slice(0, 90) || 'Novo lembrete';
-    if (!eventDate) {
-      return { reply: 'Consigo criar esse lembrete. Qual data devo usar? Pode mandar como 30/05 ou amanha.', needs_more_info: true };
-    }
+    if (!eventDate) return { reply: 'Consigo criar esse lembrete. Qual data devo usar? Pode mandar como 30/05 ou amanha.', needs_more_info: true };
     return {
       reply: 'Montei o lembrete para a agenda. Confirme para salvar.',
       action: {
@@ -264,7 +309,7 @@ function localPlan(message: string, mediaUrl?: string): AIPlan {
   if (normalized.includes('apostila')) {
     const title = extractAfter(message, ['apostila sobre', 'apostila de', 'titulo']) || message.replace(/crie|criar|gere|gerar|uma|apostila|sobre|de/gi, '').trim().slice(0, 90) || 'Nova apostila';
     return {
-      reply: 'Preparei uma apostila inicial. Ela entra como rascunho para voce revisar antes de publicar.',
+      reply: 'Preparei uma apostila inicial. Ela entra como rascunho para revisao antes de publicar.',
       action: {
         type: 'create_apostila',
         title: 'Criar apostila',
@@ -288,11 +333,9 @@ function localPlan(message: string, mediaUrl?: string): AIPlan {
     };
   }
 
-  if (normalized.includes('anuncio') || normalized.includes('anuncio') || normalized.includes('banner') || normalized.includes('popup')) {
-    const title = extractAfter(message, ['titulo', 'chama', 'nome']) || message.replace(/crie|criar|faca|fazer|um|uma|anuncio|anuncio|banner|popup/gi, '').trim().slice(0, 90) || 'Novo anuncio';
-    if (!url) {
-      return { reply: 'Consigo criar o anuncio persistente. Me envie tambem o link de destino com https:// para eu salvar corretamente.', needs_more_info: true };
-    }
+  if (normalized.includes('anuncio') || normalized.includes('banner') || normalized.includes('popup')) {
+    const title = extractAfter(message, ['titulo', 'chama', 'nome']) || message.replace(/crie|criar|faca|fazer|um|uma|anuncio|banner|popup/gi, '').trim().slice(0, 90) || 'Novo anuncio';
+    if (!url) return { reply: 'Consigo criar o anuncio persistente. Envie tambem o link de destino com https:// para salvar corretamente.', needs_more_info: true };
     return {
       reply: 'Preparei um anuncio persistente para o app. Confirme para publicar.',
       action: {
@@ -304,11 +347,12 @@ function localPlan(message: string, mediaUrl?: string): AIPlan {
     };
   }
 
-  return { reply: 'Posso ajudar com anuncios, lembretes, avisos, apostilas e notificacoes push. Me diga a tarefa do jeito que voce falaria para um assistente.' };
+  return { reply: 'Posso criar avisos, anuncios, lembretes, apostilas, push e abrir areas do app. Para mudancas maiores de layout ou codigo, descreva a alteracao que eu organizo a tarefa de forma objetiva para aplicarmos com seguranca.' };
 }
 
 export function AdsChatBuilder() {
   const { user, isAdmin } = useAuth();
+  const navigate = useNavigate();
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState('');
   const [thinking, setThinking] = useState(false);
@@ -319,13 +363,13 @@ export function AdsChatBuilder() {
   const [pendingAction, setPendingAction] = useState<AppAction | null>(null);
   const [pushTitle, setPushTitle] = useState('Aviso Decode Analytics');
   const [pushBody, setPushBody] = useState('');
-  const [pushLink, setPushLink] = useState('/');
+  const [pushLink, setPushLink] = useState('/dashboard');
   const scrollRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
   const messagesRef = useRef<Msg[]>([]);
 
   useEffect(() => {
-    setMessages([{ id: uid(), role: 'bot', text: 'Oi. Eu sou o copiloto do app: posso criar anuncios persistentes, adicionar ou remover lembretes, montar apostilas, publicar avisos e preparar notificacoes push. Escreva o que voce precisa em linguagem normal.', ts: Date.now() }]);
+    setMessages([{ id: uid(), role: 'bot', text: 'Oi, eu sou a Ella Ribeiro. Posso criar avisos, anuncios persistentes, lembretes, apostilas, notificacoes push e abrir areas do app. Escreva como voce falaria com uma assistente de verdade.', ts: Date.now() }]);
   }, []);
 
   useEffect(() => { messagesRef.current = messages; }, [messages]);
@@ -357,14 +401,14 @@ export function AdsChatBuilder() {
         },
         body: JSON.stringify({
           systemPrompt: [
-            'Voce e o copiloto administrativo da Decode Analytics Academy.',
-            'O usuario fala em portugues e quer que voce execute tarefas do app.',
-            'Classifique a mensagem em uma action quando for possivel executar algo no banco.',
-            'Actions validas: create_ad, create_reminder, delete_reminder, create_announcement, create_apostila, send_push.',
-            'Para lembretes use event_date em YYYY-MM-DD e event_time HH:MM:SS quando houver horario.',
+            'Voce e Ella Ribeiro, assistente administrativa da Decode Analytics Academy.',
+            'O usuario fala em portugues e quer executar tarefas do app.',
+            'Classifique em uma action quando for possivel executar algo com seguranca.',
+            'Actions validas: create_ad, create_reminder, delete_reminder, create_announcement, create_apostila, send_push, open_page.',
+            'Para open_page use payload.path com rota interna como /dashboard, /desempenho, /cursos, /admin.',
+            'Para lembretes use event_date YYYY-MM-DD e event_time HH:MM:SS quando houver horario.',
             'Para anuncios use ad_type banner|popup|inline|sidebar|footer, title, link_url, description, image_url.',
             'Para apostila gere content em markdown e published false por padrao.',
-            'Para push use title, body, link e allUsers true quando for para todos.',
             'Se faltar informacao obrigatoria, retorne action null e faca uma unica pergunta objetiva.',
             'Responda SOMENTE JSON valido: {"reply":"texto curto","needs_more_info":false,"action":{"type":"create_ad","title":"...","summary":"...","payload":{}}}',
           ].join('\n'),
@@ -405,7 +449,7 @@ export function AdsChatBuilder() {
       }
       return extractJson(collected);
     } catch (error) {
-      console.warn('App copilot fallback:', error);
+      console.warn('Ella Ribeiro fallback:', error);
       return null;
     }
   }
@@ -418,7 +462,7 @@ export function AdsChatBuilder() {
 
   async function processMessage(value: string) {
     const media = latestMedia;
-    const confirmWords = ['sim', 'confirmar', 'confirma', 'executar', 'pode fazer', 'faça', 'faca'];
+    const confirmWords = ['sim', 'confirmar', 'confirma', 'executar', 'pode fazer', 'faca', 'faça'];
     const cancelWords = ['cancelar', 'cancela', 'nao', 'não', 'deixa pra la'];
     const normalized = normalizeText(value.trim());
 
@@ -442,7 +486,7 @@ export function AdsChatBuilder() {
 
       if (action) {
         setPendingAction(action);
-        pushBot(`${plan.reply || 'Preparei a acao.'}\n\nDigite "sim" para executar ou "cancelar" para descartar.`);
+        pushBot(`${plan.reply || 'Preparei a acao.'}\n\nRevise e clique em Executar, ou digite "sim" para confirmar.`);
       } else {
         pushBot(plan.reply || fallback.reply || 'Entendi. Me diga exatamente o que voce quer que eu faca no app.');
       }
@@ -465,7 +509,7 @@ export function AdsChatBuilder() {
     setAttachmentsOpen(false);
     setLatestMedia({ url, kind });
     pushUser(kind === 'image' ? 'Enviei uma imagem.' : kind === 'video' ? 'Enviei um video.' : 'Enviei um audio.', url, kind);
-    pushBot('Recebi a midia. Agora me diga o que quer fazer com ela: criar anuncio, aviso, apostila ou apenas analisar.');
+    pushBot('Recebi a midia. Agora me diga o que quer fazer com ela: criar anuncio, aviso, apostila ou usar como apoio em uma tarefa.');
   }
 
   function startVoiceInput() {
@@ -503,10 +547,18 @@ export function AdsChatBuilder() {
     setAttachmentsOpen(false);
     setLatestMedia(null);
     setPendingAction(null);
-    setMessages([{ id: uid(), role: 'bot', text: 'Novo atendimento iniciado. Pode mandar qualquer tarefa do app em linguagem normal.', ts: Date.now() }]);
+    setMessages([{ id: uid(), role: 'bot', text: 'Novo atendimento iniciado. Sou a Ella Ribeiro. Pode mandar qualquer tarefa do app em linguagem normal.', ts: Date.now() }]);
   }
 
   async function runAction(action: AppAction) {
+    if (action.type === 'open_page') {
+      const path = String(action.payload?.path || '/dashboard');
+      setPendingAction(null);
+      pushBot(`Abrindo ${path}.`);
+      navigate(path);
+      return;
+    }
+
     if (!isAdmin) {
       toast.error('Apenas admins podem executar acoes administrativas');
       return;
@@ -631,26 +683,26 @@ export function AdsChatBuilder() {
     });
   }
 
-  const placeholder = listening ? 'Ouvindo...' : thinking ? 'Pensando...' : 'Digite uma tarefa para o copiloto';
+  const placeholder = listening ? 'Ouvindo...' : thinking ? 'Ella esta pensando...' : 'Peca para Ella criar, abrir, publicar ou organizar algo no app';
 
   return (
-    <div className="app-command-shell grid h-[calc(100vh-132px)] min-h-[680px] overflow-hidden rounded-2xl border border-border bg-background shadow-sm lg:grid-cols-[minmax(0,1fr)_380px]">
-      <section className="flex min-h-0 flex-col bg-[radial-gradient(circle_at_top_left,hsl(var(--primary)/0.08),transparent_32%),hsl(var(--background))]">
-        <div className="flex h-16 shrink-0 items-center gap-3 border-b border-border/70 bg-card/85 px-4 backdrop-blur-xl">
-          <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-[0_10px_28px_hsl(var(--primary)/0.22)]">
-            <Bot className="h-5 w-5" />
-            <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-card bg-success" />
+    <div className="app-command-shell grid h-[calc(100vh-132px)] min-h-[680px] overflow-hidden rounded-2xl border border-border bg-background shadow-sm lg:grid-cols-[minmax(0,1fr)_390px]">
+      <section className="flex min-h-0 flex-col bg-[radial-gradient(circle_at_top_left,hsl(var(--primary)/0.09),transparent_34%),hsl(var(--background))]">
+        <div className="flex min-h-20 shrink-0 items-center gap-3 border-b border-border/70 bg-card/85 px-4 py-3 backdrop-blur-xl">
+          <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-2xl border border-primary/35 bg-muted shadow-[0_10px_28px_hsl(var(--primary)/0.18)]">
+            <img src={ELLA_AVATAR} alt="Ella Ribeiro" className="h-full w-full object-cover" />
+            <span className="absolute bottom-1 right-1 h-3 w-3 rounded-full border-2 border-card bg-success" />
           </div>
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2">
-              <h2 className="truncate text-sm font-bold">Copiloto do App</h2>
-              <Badge variant="outline" className="hidden h-5 px-1.5 text-[10px] sm:inline-flex">admin</Badge>
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="truncate text-base font-bold">Ella Ribeiro</h2>
+              <Badge variant="outline" className="h-5 px-1.5 text-[10px]">assistente do app</Badge>
             </div>
             <p className="truncate text-xs text-muted-foreground">
-              {listening ? 'ouvindo sua voz...' : thinking ? 'lendo contexto e preparando acao...' : pendingAction ? 'aguardando confirmacao' : 'converse livremente e peça tarefas completas'}
+              {listening ? 'ouvindo sua voz...' : thinking ? 'lendo o pedido e preparando a acao...' : pendingAction ? 'aguardando confirmacao' : 'peca tarefas completas em linguagem normal'}
             </p>
           </div>
-          <Button variant="ghost" size="icon" onClick={reset} className="h-9 w-9 rounded-xl" aria-label="Recomecar">
+          <Button variant="ghost" size="icon" onClick={reset} className="h-9 w-9 rounded-xl" aria-label="Recomecar conversa">
             <RotateCcw className="h-4 w-4" />
           </Button>
           <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl" aria-label="Mais opcoes">
@@ -670,7 +722,7 @@ export function AdsChatBuilder() {
                 transition={{ duration: 0.2 }}
                 className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
-                <div className={`max-w-[88%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm sm:max-w-[74%] ${m.role === 'user' ? 'rounded-br-md bg-primary text-primary-foreground' : 'rounded-bl-md border border-border/70 bg-card text-card-foreground'}`}>
+                <div className={`max-w-[92%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm sm:max-w-[76%] ${m.role === 'user' ? 'rounded-br-md bg-primary text-primary-foreground' : 'rounded-bl-md border border-border/70 bg-card text-card-foreground'}`}>
                   <p className="whitespace-pre-wrap">{m.text}</p>
                   {m.mediaUrl && m.mediaKind && renderMedia(m.mediaUrl, m.mediaKind)}
                   <div className={`mt-2 flex items-center justify-end gap-1 text-[10px] ${m.role === 'user' ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>
@@ -683,11 +735,11 @@ export function AdsChatBuilder() {
           </AnimatePresence>
 
           {messages.filter((message) => message.role === 'user').length === 0 && (
-            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="max-w-3xl space-y-3">
+            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="max-w-4xl space-y-3">
               <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
-                <Sparkles className="h-3.5 w-3.5 text-primary" /> Fale como se estivesse pedindo para um assistente de verdade
+                <Sparkles className="h-3.5 w-3.5 text-primary" /> Exemplos prontos para testar a Ella
               </div>
-              <div className="grid gap-2 sm:grid-cols-2">
+              <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
                 {SUGGESTIONS.map((suggestion) => (
                   <button
                     key={suggestion}
@@ -702,7 +754,7 @@ export function AdsChatBuilder() {
           )}
 
           {pendingAction && (
-            <div className="max-w-xl rounded-2xl border border-primary/35 bg-primary/5 p-4 shadow-sm">
+            <div className="max-w-2xl rounded-2xl border border-primary/35 bg-primary/5 p-4 shadow-sm">
               <div className="flex items-start gap-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
                   <PendingIcon className="h-5 w-5" />
@@ -728,6 +780,7 @@ export function AdsChatBuilder() {
               <div className="rounded-2xl rounded-bl-md border border-border/70 bg-card px-4 py-3 shadow-sm">
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <Wand2 className="h-3.5 w-3.5 text-primary" />
+                  <span>Ella preparando a resposta</span>
                   <span className="flex gap-1">
                     <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground" />
                     <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground [animation-delay:120ms]" />
@@ -749,15 +802,15 @@ export function AdsChatBuilder() {
                 className="absolute bottom-[76px] left-3 z-10 grid w-64 grid-cols-3 gap-2 rounded-2xl border border-border bg-popover p-3 shadow-xl"
               >
                 <div className="flex flex-col items-center gap-1 text-[11px] text-muted-foreground">
-                  <AdImageUploadButton mediaType="image" label="Foto" showPreview={false} size="icon" className="h-12 w-12 rounded-xl bg-[#6d5dfc] text-white hover:bg-[#5b4be0]" onImageUploaded={(url) => handleMediaUploaded(url, 'image')} />
+                  <AdImageUploadButton mediaType="image" label="Foto" showPreview={false} size="icon" className="h-12 w-12 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90" onImageUploaded={(url) => handleMediaUploaded(url, 'image')} />
                   Foto
                 </div>
                 <div className="flex flex-col items-center gap-1 text-[11px] text-muted-foreground">
-                  <AdImageUploadButton mediaType="video" label="Video" showPreview={false} size="icon" className="h-12 w-12 rounded-xl bg-[#ef476f] text-white hover:bg-[#d93d64]" onImageUploaded={(url) => handleMediaUploaded(url, 'video')} />
+                  <AdImageUploadButton mediaType="video" label="Video" showPreview={false} size="icon" className="h-12 w-12 rounded-xl bg-accent text-accent-foreground hover:bg-accent/90" onImageUploaded={(url) => handleMediaUploaded(url, 'video')} />
                   Video
                 </div>
                 <div className="flex flex-col items-center gap-1 text-[11px] text-muted-foreground">
-                  <AdImageUploadButton mediaType="audio" label="Audio" showPreview={false} size="icon" className="h-12 w-12 rounded-xl bg-[#0f9f7a] text-white hover:bg-[#0d8466]" onImageUploaded={(url) => handleMediaUploaded(url, 'audio')} />
+                  <AdImageUploadButton mediaType="audio" label="Audio" showPreview={false} size="icon" className="h-12 w-12 rounded-xl bg-success text-success-foreground hover:opacity-90" onImageUploaded={(url) => handleMediaUploaded(url, 'audio')} />
                   Audio
                 </div>
               </motion.div>
@@ -792,7 +845,7 @@ export function AdsChatBuilder() {
                 <Send className="h-5 w-5" />
               </Button>
             ) : (
-              <Button type="button" onClick={startVoiceInput} disabled={thinking || saving} size="icon" className={`mb-1 h-11 w-11 shrink-0 rounded-2xl ${listening ? 'bg-destructive hover:bg-destructive/90' : ''}`} aria-label={listening ? 'Parar voz' : 'Falar com a IA'}>
+              <Button type="button" onClick={startVoiceInput} disabled={thinking || saving} size="icon" className={`mb-1 h-11 w-11 shrink-0 rounded-2xl ${listening ? 'bg-destructive hover:bg-destructive/90' : ''}`} aria-label={listening ? 'Parar voz' : 'Falar com Ella'}>
                 {listening ? <Square className="h-4 w-4" /> : <Mic className="h-5 w-5" />}
               </Button>
             )}
@@ -801,17 +854,22 @@ export function AdsChatBuilder() {
       </section>
 
       <aside className="ops-panel hidden min-h-0 border-l border-border bg-card/60 p-4 backdrop-blur-xl lg:flex lg:flex-col">
-        <div className="mb-4">
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Operacoes</p>
-          <h3 className="text-base font-bold">O que o copiloto pode fazer</h3>
+        <div className="mb-4 flex items-center gap-3">
+          <img src={ELLA_AVATAR} alt="Ella Ribeiro" className="h-14 w-14 rounded-2xl object-cover ring-1 ring-primary/35" />
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Assistente operacional</p>
+            <h3 className="text-base font-bold">O que Ella pode fazer</h3>
+          </div>
         </div>
 
-        <div className="space-y-2">
+        <div className="grid gap-2">
           {[
-            { icon: Megaphone, title: 'Adicionar anuncios', text: 'Cria registros persistentes na tabela de anuncios.' },
-            { icon: CalendarPlus, title: 'Gerenciar lembretes', text: 'Adiciona ou remove eventos da agenda.' },
-            { icon: FileText, title: 'Gerar apostilas', text: 'Cria rascunhos em markdown para revisao.' },
-            { icon: BellRing, title: 'Enviar push', text: 'Dispara notificacoes para usuarios cadastrados.' },
+            { icon: Megaphone, title: 'Anuncios persistentes', text: 'Cria banners, pop-ups, laterais, rodape e itens inline.' },
+            { icon: ClipboardList, title: 'Avisos do app', text: 'Publica comunicados com texto, link e imagem.' },
+            { icon: CalendarPlus, title: 'Agenda e lembretes', text: 'Adiciona ou remove eventos e provas.' },
+            { icon: FileText, title: 'Apostilas', text: 'Gera rascunhos em markdown para revisao.' },
+            { icon: BellRing, title: 'Push rapido', text: 'Envia notificacoes para usuarios cadastrados.' },
+            { icon: Navigation, title: 'Navegacao', text: 'Abre telas do app quando voce pedir.' },
           ].map((item) => {
             const Icon = item.icon;
             return (
@@ -850,16 +908,20 @@ export function AdsChatBuilder() {
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <BellRing className="h-4 w-4" />}
               Enviar para usuarios
             </Button>
-            <p className="text-[11px] leading-relaxed text-muted-foreground">Usuarios precisam ter ativado notificacoes no app para receber push no navegador. Mesmo assim, o aviso tambem fica salvo na central de notificacoes.</p>
+            <p className="text-[11px] leading-relaxed text-muted-foreground">Usuarios precisam ter ativado notificacoes no app para receber push no navegador.</p>
           </div>
         </div>
 
         {latestMedia && (
           <div className="mt-4 rounded-2xl border border-border bg-background/75 p-4">
-            <div className="mb-2 flex items-center gap-2 text-sm font-semibold"><Image className="h-4 w-4 text-primary" /> Midia recente</div>
+            <div className="mb-2 flex items-center gap-2 text-sm font-semibold"><ImageIcon className="h-4 w-4 text-primary" /> Midia recente</div>
             {renderMedia(latestMedia.url, latestMedia.kind)}
           </div>
         )}
+
+        <Button variant="outline" className="mt-4 gap-2" onClick={() => window.open('https://decodeanalyticsacademydev.vercel.app', '_blank')}>
+          <ExternalLink className="h-4 w-4" /> Abrir app publicado
+        </Button>
       </aside>
     </div>
   );
