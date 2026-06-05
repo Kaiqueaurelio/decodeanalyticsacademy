@@ -1,24 +1,17 @@
-import { BookOpen, ChevronRight, FileText } from 'lucide-react';
+import { BookOpen, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
 import type { ApostilaSummary } from '@/hooks/queries/useDashboardData';
-import { getSubjectColor } from '@/lib/subject-colors';
+import { ApostilaCoverCard } from '@/components/dashboard/ApostilaCoverCard';
 
 interface Props {
   apostilas: ApostilaSummary[];
   exerciseCounts: Record<string, number>;
 }
 
-export function ApostilasReadingCarousel({ apostilas, exerciseCounts }: Props) {
+export function ApostilasReadingCarousel({ apostilas }: Props) {
   const navigate = useNavigate();
-  const grouped = apostilas.slice(0, 12).reduce((acc, apostila) => {
-    const category = apostila.category || 'Geral';
-    if (!acc[category]) acc[category] = [];
-    acc[category].push(apostila);
-    return acc;
-  }, {} as Record<string, ApostilaSummary[]>);
-  const entries = Object.entries(grouped).slice(0, 5);
+  const items = apostilas.slice(0, 15);
 
   return (
     <section id="apostilas" className="scroll-mt-24 rounded-2xl border border-border bg-card p-4 sm:p-5">
@@ -37,62 +30,15 @@ export function ApostilasReadingCarousel({ apostilas, exerciseCounts }: Props) {
         </Button>
       </header>
 
-      {entries.length === 0 ? (
+      {items.length === 0 ? (
         <p className="rounded-xl border border-dashed border-border py-8 text-center text-sm text-muted-foreground">
           Nenhuma apostila disponível.
         </p>
       ) : (
-        <div className="space-y-4">
-          {entries.map(([category, items]) => {
-            const tint = getSubjectColor(category);
-            return (
-              <section key={category} className="rounded-xl border border-border/60 bg-background/35 overflow-hidden">
-                <header className="flex items-center justify-between gap-3 border-b border-border/50 bg-muted/20 px-4 py-3">
-                  <div className="min-w-0">
-                    <div className="text-[10px] font-bold uppercase tracking-wider" style={{ color: tint }}>
-                      Disciplina
-                    </div>
-                    <h4 className="truncate text-sm font-bold text-foreground">{category}</h4>
-                  </div>
-                  <Badge variant="outline" className="h-6 rounded-full px-2.5 text-[10px]">
-                    {items.length} apostila{items.length > 1 ? 's' : ''}
-                  </Badge>
-                </header>
-
-                <div className="divide-y divide-border/45">
-                  {items.slice(0, 4).map((a) => {
-                    const exercises = exerciseCounts[a.id] || 0;
-                    return (
-                      <button
-                        key={a.id}
-                        type="button"
-                        onClick={() => navigate(`/apostila/${a.id}`)}
-                        className="group grid w-full grid-cols-[38px_1fr_auto] items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-muted/25"
-                      >
-                        <span
-                          className="flex h-9 w-9 items-center justify-center rounded-lg border"
-                          style={{ borderColor: `${tint}55`, backgroundColor: `${tint}16`, color: tint }}
-                        >
-                          <FileText className="h-4 w-4" />
-                        </span>
-                        <span className="min-w-0">
-                          <span className="block truncate text-sm font-semibold leading-snug text-foreground group-hover:text-primary">
-                            {a.title}
-                          </span>
-                          <span className="mt-0.5 block text-[11px] text-muted-foreground">
-                            {exercises > 0 ? `${exercises} exercícios vinculados` : 'Leitura disponível'}
-                          </span>
-                        </span>
-                        <span className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-primary px-3 text-[11px] font-bold text-primary-foreground">
-                          Ler <ChevronRight className="h-3.5 w-3.5" />
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </section>
-            );
-          })}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
+          {items.map((a) => (
+            <ApostilaCoverCard key={a.id} apostila={a} />
+          ))}
         </div>
       )}
     </section>
