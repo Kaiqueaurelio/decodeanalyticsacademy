@@ -52,25 +52,9 @@ function StudyFeedSection({ apostilas, exerciseCounts }: { apostilas: ApostilaSu
       {feedItems.length === 0 ? (
         <p className="rounded-xl border border-dashed border-border py-8 text-center text-sm text-muted-foreground">Nenhum material disponível no momento.</p>
       ) : (
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-          {feedItems.map((apostila, index) => (
-            <a
-              key={`${apostila.id}-${index}`}
-              href={`/apostila/${apostila.id}`}
-              className="group rounded-xl border border-border/60 bg-background/45 p-4 transition-all hover:border-primary/45 hover:bg-muted/20"
-            >
-              <div className="mb-3 flex items-center justify-between gap-2">
-                <span className="rounded-full border border-primary/25 bg-primary/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-primary">
-                  {apostila.category || 'Geral'}
-                </span>
-                <span className="text-[10px] font-semibold text-muted-foreground">#{index + 1}</span>
-              </div>
-              <h3 className="line-clamp-2 min-h-10 text-sm font-bold leading-snug group-hover:text-primary">{apostila.title}</h3>
-              <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
-                <span>{exerciseCounts[apostila.id] || 0} exercícios</span>
-                <ArrowRight className="h-4 w-4 text-primary" />
-              </div>
-            </a>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
+          {feedItems.map((apostila) => (
+            <ApostilaCoverCard key={apostila.id} apostila={apostila} />
           ))}
         </div>
       )}
