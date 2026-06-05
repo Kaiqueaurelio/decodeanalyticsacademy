@@ -8,6 +8,7 @@ import { DashboardTopbar } from '@/components/dashboard/DashboardTopbar';
 import { HeroGreetingCard } from '@/components/dashboard/HeroGreetingCard';
 import { ActivitiesToDoSection, RecommendedExercisesSection } from '@/components/dashboard/DashboardSections';
 import { ApostilasReadingCarousel, ProgressSummaryRow } from '@/components/dashboard/DashboardCarousels';
+import { ApostilaCoverCard } from '@/components/dashboard/ApostilaCoverCard';
 import { AdBanner } from '@/components/AdBanner';
 import { AdSidebar } from '@/components/AdSidebar';
 import { Watermark } from '@/components/Watermark';
@@ -298,29 +299,15 @@ export default function DashboardPage() {
               <h2 className="font-bold text-base">Minhas Disciplinas</h2>
             </header>
             {loading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {[0, 1, 2, 3].map((i) => <div key={i} className="h-28 rounded-xl bg-muted/30 animate-pulse" />)}
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
+                {[0, 1, 2, 3, 4, 5].map((i) => <div key={i} className="h-52 rounded-xl bg-muted/30 animate-pulse" />)}
               </div>
             ) : apostilas.length === 0 ? (
               <p className="text-sm text-muted-foreground py-8 text-center">Nenhuma apostila disponível.</p>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {apostilas.slice(0, 8).map((apostila) => (
-                  <a
-                    key={apostila.id}
-                    href={`/apostila/${apostila.id}`}
-                    className="text-left rounded-xl border border-border/60 bg-muted/10 hover:bg-muted/30 hover:border-primary/40 transition-all p-4 group"
-                  >
-                    <div className="text-[10px] uppercase tracking-widest font-bold mb-1 text-primary">
-                      {apostila.category || 'Geral'}
-                    </div>
-                    <div className="font-semibold text-sm leading-tight line-clamp-2 group-hover:text-primary transition-colors">
-                      {apostila.title}
-                    </div>
-                    <div className="mt-2 text-[11px] text-muted-foreground">
-                      {(exerciseCounts[apostila.id] || 0)} exercícios
-                    </div>
-                  </a>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
+                {apostilas.map((apostila) => (
+                  <ApostilaCoverCard key={apostila.id} apostila={apostila} />
                 ))}
               </div>
             )}
