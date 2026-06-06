@@ -56,6 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<AuthStatus>('loading');
   const [isSessionHydrated, setIsSessionHydrated] = useState(false);
   const [roleChecked, setRoleChecked] = useState(false);
+  const [isRefreshingToken, setIsRefreshingToken] = useState(false);
 
   const mountedRef = useRef(true);
   const bootstrappedRef = useRef(false);
