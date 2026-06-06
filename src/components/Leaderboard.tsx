@@ -6,6 +6,13 @@ import { Crown, Medal, Award } from 'lucide-react';
 
 type RankEntry = { user_id: string; xp_points: number; level: number; full_name: string };
 
+type LeaderboardRpcEntry = {
+  user_id: string;
+  xp_points: number;
+  level: number;
+  full_name: string | null;
+};
+
 export function Leaderboard() {
   const [ranking, setRanking] = useState<RankEntry[]>([]);
 
@@ -14,16 +21,14 @@ export function Leaderboard() {
   }, []);
 
   const loadRanking = async () => {
-    const { data: xpData } = await supabase.from('user_xp').select('user_id, xp_points, level').order('xp_points', { ascending: false }).limit(10);
-    if (!xpData || xpData.length === 0) return;
+    const { data } = await (supabase as any).rpc('get_public_leaderboard', { _limit: 10 });
+    if (!data || data.length === 0) return;
 
-    const userIds = xpData.map(x => x.user_id);
-    const { data: profiles } = await supabase.from('profiles').select('user_id, full_name').in('user_id', userIds);
-    const nameMap: Record<string, string> = {};
-    profiles?.forEach(p => { nameMap[p.user_id] = p.full_name || 'Anônimo'; });
-
-    setRanking(xpData.map(x => ({
-      ...x, full_name: nameMap[x.user_id] || 'Anônimo'
+    setRanking((data as LeaderboardRpcEntry[]).map(entry => ({
+      user_id: entry.user_id,
+      xp_points: entry.xp_points,
+      level: entry.level,
+      full_name: entry.full_name || 'Anonimo',
     })));
   };
 
