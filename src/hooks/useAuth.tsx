@@ -17,6 +17,7 @@ type AuthCtx = {
   status: AuthStatus;
   isSessionHydrated: boolean;
   roleChecked: boolean;
+  isRefreshingToken: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
