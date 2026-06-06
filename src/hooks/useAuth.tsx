@@ -181,7 +181,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     void supabase.auth.getSession()
-      .then(({ data, error }) => {
+      .then(async ({ data, error }) => {
         if (!mountedRef.current) return;
         bootstrappedRef.current = true;
 
@@ -196,7 +196,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return;
         }
 
-        applySession(data.session ?? null, 'bootstrap', 'INITIAL_SESSION');
+        // Boot refresh: se a sessão guardada está expirada ou prestes a expirar
+        // (<5min), tenta renovar imediatamente usando o refresh_token persistido.
+        // Isso mantém o usuário logado mesmo após dias/semanas sem abrir o app,
+        // contanto que o refresh_token ainda esteja dentro da janela do servidor.
+        let boot = data.session ?? null;
+        if (boot?.refresh_token) {
+          const expiresAt = boot.expires_at ? boot.expires_at * 1000 : 0;
+          const msLeft = expiresAt - Date.now();
+          if (msLeft < 5 * 60 * 1000) {
+            try {
+              const refreshed = await safeRefreshSession(boot.refresh_token);
+              if (refreshed) boot = refreshed;
+            } catch (err) {
+              logAuthFlow('bootstrap_refresh_error', {
+                message: err instanceof Error ? err.message : 'unknown',
+              });
+            }
+          }
+        }
+
+        applySession(boot, 'bootstrap', 'INITIAL_SESSION');
       })
       .catch((error) => {
         if (!mountedRef.current) return;
@@ -211,6 +231,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           message: error instanceof Error ? error.message : 'unknown error',
         });
       });
+
+    // Cross-tab sync: quando outra aba faz login/logout, o supabase-js grava
+    // no localStorage. Reagimos aqui para refletir imediatamente nesta aba
+    // sem precisar de F5.
+    const onStorage = (e: StorageEvent) => {
+      if (!e.key || !e.key.startsWith('sb-') || !e.key.endsWith('-auth-token')) return;
+      supabase.auth.getSession().then(({ data }) => {
+        if (!mountedRef.current) return;
+        applySession(data.session ?? null, 'storage_sync', 'TOKEN_REFRESHED');
+      }).catch(() => {});
+    };
+    window.addEventListener('storage', onStorage);
+
 
     return () => {
       mountedRef.current = false;
