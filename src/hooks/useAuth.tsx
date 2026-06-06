@@ -269,11 +269,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const expiresAt = session.expires_at ? session.expires_at * 1000 : 0;
         const msLeft = expiresAt - Date.now();
         if (msLeft > 10 * 60 * 1000) return;
+        setIsRefreshingToken(true);
         await safeRefreshSession(session.refresh_token);
       } catch (err) {
         logAuthFlow('keepalive_refresh_error', {
           message: err instanceof Error ? err.message : 'unknown',
         });
+      } finally {
+        setIsRefreshingToken(false);
       }
     };
 
