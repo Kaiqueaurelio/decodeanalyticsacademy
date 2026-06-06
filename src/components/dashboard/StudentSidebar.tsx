@@ -38,8 +38,8 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 
 const SIDEBAR_WIDTHS = {
-  full: '356px',
-  rail: '96px',
+  full: '260px',
+  rail: '260px',
   hidden: '72px',
 } as const;
 
@@ -182,9 +182,9 @@ export function SidebarContent({
   const { navigate, open } = useSidebarNavigation(onNavigate);
   const visibleRailItems = railItems.filter((item) => !item.adminOnly || isAdmin);
   const railMenuItems = mode === 'full' ? visibleRailItems.slice(0, isAdmin ? 7 : 6) : visibleRailItems;
-  const isFull = mode === 'full';
+  const isFull = true;
   const canToggle = typeof setMode === 'function';
-  const showRail = canToggle;
+  const showRail = false;
 
   return (
     <div className="h-full flex overflow-hidden bg-background text-foreground shadow-2xl">
