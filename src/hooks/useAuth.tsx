@@ -248,6 +248,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => {
       mountedRef.current = false;
       subscription.unsubscribe();
+      window.removeEventListener('storage', onStorage);
       logAuthFlow('provider_cleanup');
     };
   }, []);
