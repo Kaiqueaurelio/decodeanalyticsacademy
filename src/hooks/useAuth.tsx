@@ -329,7 +329,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       currentStatus: status,
       hasSession: Boolean(session),
     });
-    return safeRefreshSession();
+    setIsRefreshingToken(true);
+    try {
+      return await safeRefreshSession();
+    } finally {
+      setIsRefreshingToken(false);
+    }
   };
 
   return (
