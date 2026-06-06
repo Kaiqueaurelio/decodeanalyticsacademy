@@ -122,7 +122,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     //   localStorage.removeItem('decode_session_cache');
     // } catch {}
 
-    const applySession = (nextSession: Session | null, source: 'bootstrap' | 'listener', authEvent?: string) => {
+    const applySession = (nextSession: Session | null, source: 'bootstrap' | 'listener' | 'storage_sync', authEvent?: string) => {
       if (!mountedRef.current) return;
 
       const nextUser = nextSession?.user ?? null;
