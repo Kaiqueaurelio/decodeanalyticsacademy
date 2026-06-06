@@ -74,6 +74,7 @@ export function DashboardTopbar() {
           <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-9 w-9 rounded-xl" aria-label="Alternar tema">
             {theme === 'dark' ? <Sun strokeWidth={2.5} className="h-[16px] w-[16px]" /> : <Moon strokeWidth={2.5} className="h-[16px] w-[16px]" />}
           </Button>
+          {user && <AuthStatusIndicator />}
           {user && <NotificationBell />}
 
           <button
