@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
 import { NotificationBell } from '@/components/NotificationBell';
+import { AuthStatusIndicator } from '@/components/AuthStatusIndicator';
 import { Button } from '@/components/ui/button';
 import { Sun, Moon } from 'lucide-react';
 import { useUserProfile } from '@/hooks/queries/useUserProfile';
