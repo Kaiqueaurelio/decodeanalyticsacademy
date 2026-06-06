@@ -38,8 +38,8 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 
 const SIDEBAR_WIDTHS = {
-  full: '356px',
-  rail: '96px',
+  full: '260px',
+  rail: '260px',
   hidden: '72px',
 } as const;
 
