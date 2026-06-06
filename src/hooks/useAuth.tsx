@@ -17,6 +17,7 @@ type AuthCtx = {
   status: AuthStatus;
   isSessionHydrated: boolean;
   roleChecked: boolean;
+  isRefreshingToken: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
@@ -55,6 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<AuthStatus>('loading');
   const [isSessionHydrated, setIsSessionHydrated] = useState(false);
   const [roleChecked, setRoleChecked] = useState(false);
+  const [isRefreshingToken, setIsRefreshingToken] = useState(false);
 
   const mountedRef = useRef(true);
   const bootstrappedRef = useRef(false);
@@ -205,6 +207,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const expiresAt = boot.expires_at ? boot.expires_at * 1000 : 0;
           const msLeft = expiresAt - Date.now();
           if (msLeft < 5 * 60 * 1000) {
+            setIsRefreshingToken(true);
             try {
               const refreshed = await safeRefreshSession(boot.refresh_token);
               if (refreshed) boot = refreshed;
@@ -212,6 +215,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               logAuthFlow('bootstrap_refresh_error', {
                 message: err instanceof Error ? err.message : 'unknown',
               });
+            } finally {
+              setIsRefreshingToken(false);
             }
           }
         }
@@ -264,11 +269,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const expiresAt = session.expires_at ? session.expires_at * 1000 : 0;
         const msLeft = expiresAt - Date.now();
         if (msLeft > 10 * 60 * 1000) return;
+        setIsRefreshingToken(true);
         await safeRefreshSession(session.refresh_token);
       } catch (err) {
         logAuthFlow('keepalive_refresh_error', {
           message: err instanceof Error ? err.message : 'unknown',
         });
+      } finally {
+        setIsRefreshingToken(false);
       }
     };
 
@@ -321,7 +329,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       currentStatus: status,
       hasSession: Boolean(session),
     });
-    return safeRefreshSession();
+    setIsRefreshingToken(true);
+    try {
+      return await safeRefreshSession();
+    } finally {
+      setIsRefreshingToken(false);
+    }
   };
 
   return (
@@ -335,6 +348,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         status,
         isSessionHydrated,
         roleChecked,
+        isRefreshingToken,
         signIn,
         signUp,
         signOut,
