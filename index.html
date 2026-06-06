@@ -7,6 +7,7 @@
     <meta name="description" content="Plataforma de estudos premium com IA para organizar apostilas, exercícios e materiais acadêmicos automaticamente 100% gratos feita de Aluno para Aluno">
     <meta name="author" content="Kaique Aurelio" />
     <meta name="theme-color" content="#0A0A0B" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <link rel="manifest" href="/manifest.json" crossorigin="anonymous" />
     <link rel="icon" type="image/png" sizes="256x256" href="/favicon.png?v=9" />
@@ -49,6 +50,91 @@
           window.location.replace(url.toString());
         };
       }, 7000);
+    </script>
+    <script>
+      (function () {
+        var palette = ['#e8ff47', '#37f0c1', '#38bdf8', '#f59e0b', '#fb7185', '#a78bfa'];
+        var cache = new Map();
+
+        function hashText(value) {
+          var hash = 0;
+          for (var i = 0; i < value.length; i++) hash = ((hash * 31) + value.charCodeAt(i)) >>> 0;
+          return hash;
+        }
+
+        function escapeXml(value) {
+          return String(value || '').replace(/[&<>"]/g, function (char) {
+            return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[char];
+          });
+        }
+
+        function shortText(value, max) {
+          value = String(value || '').replace(/\s+/g, ' ').trim();
+          if (value.length <= max) return value;
+          return value.slice(0, max - 1).trim() + '…';
+        }
+
+        function makeCover(title, category, semester) {
+          var key = [title, category, semester].join('|');
+          if (cache.has(key)) return cache.get(key);
+          var hash = hashText(key);
+          var accent = palette[hash % palette.length];
+          var accent2 = palette[(hash + 2) % palette.length];
+          var titleText = escapeXml(shortText(title, 58));
+          var categoryText = escapeXml(shortText(category || 'Decode Analytics Academy', 34));
+          var semesterText = escapeXml(semester || 'ACADEMY');
+          var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675">'
+            + '<defs>'
+            + '<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#061216"/><stop offset="0.52" stop-color="#090a10"/><stop offset="1" stop-color="#111827"/></linearGradient>'
+            + '<radialGradient id="glow" cx="75%" cy="20%" r="70%"><stop offset="0" stop-color="' + accent + '" stop-opacity="0.35"/><stop offset="1" stop-color="' + accent + '" stop-opacity="0"/></radialGradient>'
+            + '<pattern id="grid" width="42" height="42" patternUnits="userSpaceOnUse"><path d="M42 0H0V42" fill="none" stroke="#ffffff" stroke-opacity="0.045" stroke-width="1"/></pattern>'
+            + '</defs>'
+            + '<rect width="1200" height="675" rx="34" fill="url(#bg)"/>'
+            + '<rect width="1200" height="675" rx="34" fill="url(#glow)"/>'
+            + '<rect width="1200" height="675" rx="34" fill="url(#grid)"/>'
+            + '<path d="M-20 520 C180 420 260 710 460 586 S820 420 1230 560" fill="none" stroke="' + accent + '" stroke-opacity="0.28" stroke-width="4"/>'
+            + '<path d="M760 110h250v250H760z" fill="none" stroke="' + accent2 + '" stroke-opacity="0.18" stroke-width="2"/>'
+            + '<circle cx="980" cy="190" r="118" fill="' + accent + '" fill-opacity="0.08" stroke="' + accent + '" stroke-opacity="0.28"/>'
+            + '<text x="62" y="92" fill="#e8ff47" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="800" letter-spacing="5">DECODE ANALYTICS</text>'
+            + '<text x="62" y="125" fill="#ffffff" fill-opacity="0.72" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" letter-spacing="7">ACADEMY</text>'
+            + '<rect x="62" y="205" width="620" height="46" rx="10" fill="' + accent + '" fill-opacity="0.18" stroke="' + accent + '" stroke-opacity="0.45"/>'
+            + '<text x="86" y="235" fill="#ffffff" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="900" letter-spacing="1">' + categoryText.toUpperCase() + '</text>'
+            + '<foreignObject x="62" y="282" width="760" height="190"><div xmlns="http://www.w3.org/1999/xhtml" style="font-family:Inter,Arial,sans-serif;color:white;font-size:54px;font-weight:950;line-height:1.05;letter-spacing:-1px;text-shadow:0 8px 24px rgba(0,0,0,.45)">' + titleText + '</div></foreignObject>'
+            + '<rect x="62" y="512" width="248" height="42" rx="21" fill="#000000" fill-opacity="0.35" stroke="#ffffff" stroke-opacity="0.16"/>'
+            + '<text x="86" y="540" fill="' + accent + '" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="900" letter-spacing="2">' + semesterText.toUpperCase() + '</text>'
+            + '<rect x="62" y="582" width="420" height="10" rx="5" fill="#ffffff" fill-opacity="0.16"/>'
+            + '<rect x="62" y="582" width="280" height="10" rx="5" fill="' + accent + '"/>'
+            + '<g transform="translate(910 395)"><rect x="0" y="0" width="190" height="122" rx="20" fill="#000" fill-opacity="0.24" stroke="#fff" stroke-opacity="0.14"/><path d="M48 84h94M48 62h94M48 40h94" stroke="' + accent + '" stroke-width="10" stroke-linecap="round"/><path d="M40 26h64c24 0 44 20 44 44v34" fill="none" stroke="#fff" stroke-opacity="0.5" stroke-width="6"/></g>'
+            + '</svg>';
+          var url = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+          cache.set(key, url);
+          return url;
+        }
+
+        function enhanceCovers() {
+          document.querySelectorAll('img[alt^="Capa de "]').forEach(function (img) {
+            if (img.dataset.decodeAutoCover === 'done') return;
+            var src = img.getAttribute('src') || '';
+            if (src && !/images\.unsplash\.com/i.test(src)) return;
+            var card = img.closest('article') || img.closest('[class*="rounded"]');
+            var title = (img.getAttribute('alt') || '').replace(/^Capa de\s+/i, '').trim();
+            var category = card && card.querySelector('h3') ? card.querySelector('h3').textContent.trim() : '';
+            var semesterNode = card && Array.from(card.querySelectorAll('span')).find(function (node) {
+              return /semestre|academy/i.test(node.textContent || '');
+            });
+            var semester = semesterNode ? semesterNode.textContent.trim() : '';
+            img.dataset.decodeAutoCover = 'done';
+            img.src = makeCover(title, category, semester);
+            img.style.objectFit = 'cover';
+            img.style.opacity = '1';
+          });
+        }
+
+        window.addEventListener('DOMContentLoaded', function () {
+          enhanceCovers();
+          new MutationObserver(enhanceCovers).observe(document.body, { childList: true, subtree: true });
+        });
+      })();
     </script>
   </head>
   <body>
