@@ -337,6 +337,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         status,
         isSessionHydrated,
         roleChecked,
+        isRefreshingToken,
         signIn,
         signUp,
         signOut,
