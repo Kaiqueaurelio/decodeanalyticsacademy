@@ -207,6 +207,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const expiresAt = boot.expires_at ? boot.expires_at * 1000 : 0;
           const msLeft = expiresAt - Date.now();
           if (msLeft < 5 * 60 * 1000) {
+            setIsRefreshingToken(true);
             try {
               const refreshed = await safeRefreshSession(boot.refresh_token);
               if (refreshed) boot = refreshed;
@@ -214,6 +215,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               logAuthFlow('bootstrap_refresh_error', {
                 message: err instanceof Error ? err.message : 'unknown',
               });
+            } finally {
+              setIsRefreshingToken(false);
             }
           }
         }
