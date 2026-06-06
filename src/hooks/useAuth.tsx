@@ -219,6 +219,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  // Keepalive: renova o token proativamente para manter o usuário logado
+  // mesmo após dias sem abrir o app. Dispara no retorno de visibilidade,
+  // foco da janela e a cada 10 min. Só refresca se o token está perto de expirar.
+  useEffect(() => {
+    if (!session?.refresh_token) return;
+
+    const maybeRefresh = async () => {
+      try {
+        const expiresAt = session.expires_at ? session.expires_at * 1000 : 0;
+        const msLeft = expiresAt - Date.now();
+        if (msLeft > 10 * 60 * 1000) return;
+        await safeRefreshSession(session.refresh_token);
+      } catch (err) {
+        logAuthFlow('keepalive_refresh_error', {
+          message: err instanceof Error ? err.message : 'unknown',
+        });
+      }
+    };
+
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') void maybeRefresh();
+    };
+    const onFocus = () => void maybeRefresh();
+
+    document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener('focus', onFocus);
+    const heartbeat = window.setInterval(() => void maybeRefresh(), 10 * 60 * 1000);
+
+    return () => {
+      document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('focus', onFocus);
+      window.clearInterval(heartbeat);
+    };
+  }, [session?.refresh_token, session?.expires_at]);
+
   const signIn = async (email: string, password: string) => {
     logAuthFlow('sign_in_attempt', { email });
     const { error } = await supabase.auth.signInWithPassword({ email, password });
