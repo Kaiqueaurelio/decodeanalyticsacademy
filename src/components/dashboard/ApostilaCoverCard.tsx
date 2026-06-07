@@ -15,7 +15,7 @@ interface Props {
  */
 export function ApostilaCoverCard({ apostila, status = 'em-progresso' }: Props) {
   const color = getSubjectColor(apostila.category || 'Geral');
-  const cover = getApostilaCover(apostila.category, apostila.id);
+  const cover = (apostila as any).cover_url || getApostilaCover(apostila.category, apostila.id);
   const semester = apostila.semester ? `${apostila.semester}º Semestre` : 'Extracurricular';
 
   const statusLabel =

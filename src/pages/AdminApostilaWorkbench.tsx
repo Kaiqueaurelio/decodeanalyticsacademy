@@ -39,8 +39,9 @@ import { ApostilaContentRenderer } from '@/components/ApostilaContentRenderer';
 import { guessSemesterFromCategory, SEMESTER_OPTIONS, COURSE_OPTIONS, type CourseCode } from '@/lib/subject-semester-map';
 import {
   ArrowLeft, Search, Save, Eye, Sparkles, Wand2, Loader2, Menu, FileText,
-  ListChecks, PanelRightClose, ExternalLink, GraduationCap,
+  ListChecks, PanelRightClose, ExternalLink, GraduationCap, ImageIcon,
 } from 'lucide-react';
+import { invokeFunction } from '@/lib/invoke-function';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -84,6 +85,8 @@ export default function AdminApostilaWorkbench() {
   const [pasteOpen, setPasteOpen] = useState(false);
   const [manualLinkOpen, setManualLinkOpen] = useState(false);
   const [autoLinking, setAutoLinking] = useState(false);
+  const [generatingCover, setGeneratingCover] = useState(false);
+  const [coverUrl, setCoverUrl] = useState<string | null>(null);
   const [rightTab, setRightTab] = useState<'materials' | 'preview' | 'exercises'>('materials');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [rightOpen, setRightOpen] = useState(false);
@@ -108,7 +111,7 @@ export default function AdminApostilaWorkbench() {
     setLoading(true);
     initialLoadRef.current = true;
     const [{ data: ap }, { data: links, error: linksErr }, { count }] = await Promise.all([
-      supabase.from('apostilas').select('id, title, category, content, published, semester, course').eq('id', apostilaId).maybeSingle(),
+      supabase.from('apostilas').select('id, title, category, content, published, semester, course, cover_url').eq('id', apostilaId).maybeSingle(),
       supabase.from('apostila_materials').select('id, sort_order, material_id').eq('apostila_id', apostilaId).order('sort_order'),
       supabase.from('exercises').select('id', { count: 'exact', head: true }).eq('apostila_id', apostilaId),
     ]);
@@ -124,6 +127,7 @@ export default function AdminApostilaWorkbench() {
     setPublished(!!ap.published);
     setSemester((ap as any).semester ?? null);
     setCourse(((ap as any).course as CourseCode[] | null) ?? []);
+    setCoverUrl(((ap as any).cover_url as string | null) ?? null);
     setExerciseCount(count || 0);
 
     // Hidrata títulos dos materiais
@@ -273,6 +277,24 @@ export default function AdminApostilaWorkbench() {
     setContent((prev) => mode === 'append' ? (prev ? prev + '\n\n' + text : text) : text);
     toast.success(mode === 'append' ? 'Conteúdo inserido' : 'Conteúdo substituído');
   };
+
+  // === Gerar capa com IA ===
+  const handleGenerateCover = async () => {
+    if (!id) return;
+    if (dirtyRef.current) await doSave();
+    setGeneratingCover(true);
+    const tId = toast.loading('Gerando capa com IA…');
+    const { data, error } = await invokeFunction<{ cover_url: string }>('generate-apostila-cover', {
+      body: { apostilaId: id },
+      errorTitle: 'Falha ao gerar capa',
+    });
+    setGeneratingCover(false);
+    toast.dismiss(tId);
+    if (error || !data?.cover_url) return;
+    setCoverUrl(data.cover_url);
+    toast.success('Capa gerada e salva!');
+  };
+
 
   // === Filtro lista ===
   const filtered = useMemo(() => {
@@ -483,6 +505,28 @@ export default function AdminApostilaWorkbench() {
         </div>
 
         <div className="ml-auto flex items-center gap-1.5">
+          {coverUrl && (
+            <a
+              href={coverUrl}
+              target="_blank"
+              rel="noreferrer"
+              title="Ver capa atual"
+              className="h-7 w-10 rounded border border-border overflow-hidden shrink-0 hover:ring-2 hover:ring-primary/40 transition"
+            >
+              <img src={coverUrl} alt="" className="h-full w-full object-cover" />
+            </a>
+          )}
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 gap-1.5 text-xs"
+            onClick={handleGenerateCover}
+            disabled={generatingCover}
+            title="Gerar capa com IA baseada no tema da apostila"
+          >
+            {generatingCover ? <Loader2 className="h-3 w-3 animate-spin" /> : <ImageIcon className="h-3 w-3 text-primary" />}
+            {coverUrl ? 'Regerar capa' : 'Gerar capa IA'}
+          </Button>
           <Button size="sm" variant="outline" className="h-7 gap-1.5 text-xs" onClick={() => setPasteOpen(true)}>
             <Sparkles className="h-3 w-3 text-primary" /> Colar inteligente
           </Button>
