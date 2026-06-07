@@ -278,6 +278,24 @@ export default function AdminApostilaWorkbench() {
     toast.success(mode === 'append' ? 'Conteúdo inserido' : 'Conteúdo substituído');
   };
 
+  // === Gerar capa com IA ===
+  const handleGenerateCover = async () => {
+    if (!id) return;
+    if (dirtyRef.current) await doSave();
+    setGeneratingCover(true);
+    const tId = toast.loading('Gerando capa com IA…');
+    const { data, error } = await invokeFunction<{ cover_url: string }>('generate-apostila-cover', {
+      body: { apostilaId: id },
+      errorTitle: 'Falha ao gerar capa',
+    });
+    setGeneratingCover(false);
+    toast.dismiss(tId);
+    if (error || !data?.cover_url) return;
+    setCoverUrl(data.cover_url);
+    toast.success('Capa gerada e salva!');
+  };
+
+
   // === Filtro lista ===
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
