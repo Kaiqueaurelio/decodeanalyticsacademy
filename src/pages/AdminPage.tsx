@@ -39,6 +39,7 @@ import { MergeApostilasDialog } from '@/components/MergeApostilasDialog';
 import { TestimonialsAdmin } from '@/components/TestimonialsAdmin';
 import { AIProviderSettings } from '@/components/AIProviderSettings';
 import { ShareLinkSettings } from '@/components/ShareLinkSettings';
+import { SplashDownloader } from '@/components/admin/SplashDownloader';
 import { exportApostilaToPDF } from '@/lib/apostila-pdf';
 import { parseApostilaContent } from '@/lib/apostila-parser';
 import { extractTextFromFile } from '@/lib/file-extract';
@@ -2900,6 +2901,7 @@ export default function AdminPage() {
               <div className="space-y-6">
                 <AIProviderSettings />
                 <ShareLinkSettings />
+                <SplashDownloader />
               </div>
             )}
 
