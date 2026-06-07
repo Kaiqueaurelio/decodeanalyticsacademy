@@ -566,6 +566,7 @@ export type Database = {
           content: string | null
           content_backup: string | null
           course: string[] | null
+          cover_url: string | null
           created_at: string
           created_by: string | null
           embedding: string | null
@@ -583,6 +584,7 @@ export type Database = {
           content?: string | null
           content_backup?: string | null
           course?: string[] | null
+          cover_url?: string | null
           created_at?: string
           created_by?: string | null
           embedding?: string | null
@@ -600,6 +602,7 @@ export type Database = {
           content?: string | null
           content_backup?: string | null
           course?: string[] | null
+          cover_url?: string | null
           created_at?: string
           created_by?: string | null
           embedding?: string | null
