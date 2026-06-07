@@ -11,7 +11,7 @@ type AppImageProps = Omit<React.ImgHTMLAttributes<HTMLImageElement>, 'src'> & {
   maxRetries?: number;
 };
 
-const PUBLIC_IMAGE_BUCKETS = ['materials', 'ads', 'announcements', 'apostilas', 'avatars'];
+const PUBLIC_IMAGE_BUCKETS = ['materials', 'ads', 'announcements', 'apostilas', 'apostila-covers', 'avatars'];
 
 function normalizeImageSrc(src?: string | null) {
   const value = src?.trim();
