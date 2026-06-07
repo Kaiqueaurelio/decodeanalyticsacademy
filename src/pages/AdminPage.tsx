@@ -2900,6 +2900,7 @@ export default function AdminPage() {
               <div className="space-y-6">
                 <AIProviderSettings />
                 <ShareLinkSettings />
+                <SplashDownloader />
               </div>
             )}
 
