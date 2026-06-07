@@ -127,6 +127,7 @@ export default function AdminApostilaWorkbench() {
     setPublished(!!ap.published);
     setSemester((ap as any).semester ?? null);
     setCourse(((ap as any).course as CourseCode[] | null) ?? []);
+    setCoverUrl(((ap as any).cover_url as string | null) ?? null);
     setExerciseCount(count || 0);
 
     // Hidrata títulos dos materiais
