@@ -505,6 +505,28 @@ export default function AdminApostilaWorkbench() {
         </div>
 
         <div className="ml-auto flex items-center gap-1.5">
+          {coverUrl && (
+            <a
+              href={coverUrl}
+              target="_blank"
+              rel="noreferrer"
+              title="Ver capa atual"
+              className="h-7 w-10 rounded border border-border overflow-hidden shrink-0 hover:ring-2 hover:ring-primary/40 transition"
+            >
+              <img src={coverUrl} alt="" className="h-full w-full object-cover" />
+            </a>
+          )}
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 gap-1.5 text-xs"
+            onClick={handleGenerateCover}
+            disabled={generatingCover}
+            title="Gerar capa com IA baseada no tema da apostila"
+          >
+            {generatingCover ? <Loader2 className="h-3 w-3 animate-spin" /> : <ImageIcon className="h-3 w-3 text-primary" />}
+            {coverUrl ? 'Regerar capa' : 'Gerar capa IA'}
+          </Button>
           <Button size="sm" variant="outline" className="h-7 gap-1.5 text-xs" onClick={() => setPasteOpen(true)}>
             <Sparkles className="h-3 w-3 text-primary" /> Colar inteligente
           </Button>
