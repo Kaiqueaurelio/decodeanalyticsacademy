@@ -85,6 +85,8 @@ export default function AdminApostilaWorkbench() {
   const [pasteOpen, setPasteOpen] = useState(false);
   const [manualLinkOpen, setManualLinkOpen] = useState(false);
   const [autoLinking, setAutoLinking] = useState(false);
+  const [generatingCover, setGeneratingCover] = useState(false);
+  const [coverUrl, setCoverUrl] = useState<string | null>(null);
   const [rightTab, setRightTab] = useState<'materials' | 'preview' | 'exercises'>('materials');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [rightOpen, setRightOpen] = useState(false);
