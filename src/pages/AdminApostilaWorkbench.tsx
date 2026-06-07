@@ -111,7 +111,7 @@ export default function AdminApostilaWorkbench() {
     setLoading(true);
     initialLoadRef.current = true;
     const [{ data: ap }, { data: links, error: linksErr }, { count }] = await Promise.all([
-      supabase.from('apostilas').select('id, title, category, content, published, semester, course').eq('id', apostilaId).maybeSingle(),
+      supabase.from('apostilas').select('id, title, category, content, published, semester, course, cover_url').eq('id', apostilaId).maybeSingle(),
       supabase.from('apostila_materials').select('id, sort_order, material_id').eq('apostila_id', apostilaId).order('sort_order'),
       supabase.from('exercises').select('id', { count: 'exact', head: true }).eq('apostila_id', apostilaId),
     ]);
