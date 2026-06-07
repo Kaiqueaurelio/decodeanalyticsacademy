@@ -5,6 +5,21 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { installPerfMonitor } from "./lib/perf-monitor";
 import { installRuntimeLogger } from "./lib/runtime-logs";
 
+const ELLA_RIBEIRO_AVATAR =
+  'https://gynguskgysompgcajunc.supabase.co/storage/v1/object/public/ads/ads/ella-ribeiro-avatar.jpg';
+
+(() => {
+  const applyEllaAvatarToImages = () => {
+    document.querySelectorAll<HTMLImageElement>('img[alt="Ella Ribeiro"]').forEach((img) => {
+      if (img.src !== ELLA_RIBEIRO_AVATAR) img.src = ELLA_RIBEIRO_AVATAR;
+    });
+  };
+
+  window.addEventListener('DOMContentLoaded', applyEllaAvatarToImages);
+  const observer = new MutationObserver(applyEllaAvatarToImages);
+  observer.observe(document.documentElement, { childList: true, subtree: true });
+})();
+
 // Remove credenciais antigas que foram salvas em base64 pelo fluxo "lembrar-me".
 // O app pode lembrar apenas o identificador; senha deve ficar com o navegador/gerenciador de senhas.
 (() => {
