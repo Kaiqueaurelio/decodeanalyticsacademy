@@ -39,8 +39,9 @@ import { ApostilaContentRenderer } from '@/components/ApostilaContentRenderer';
 import { guessSemesterFromCategory, SEMESTER_OPTIONS, COURSE_OPTIONS, type CourseCode } from '@/lib/subject-semester-map';
 import {
   ArrowLeft, Search, Save, Eye, Sparkles, Wand2, Loader2, Menu, FileText,
-  ListChecks, PanelRightClose, ExternalLink, GraduationCap,
+  ListChecks, PanelRightClose, ExternalLink, GraduationCap, ImageIcon,
 } from 'lucide-react';
+import { invokeFunction } from '@/lib/invoke-function';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
