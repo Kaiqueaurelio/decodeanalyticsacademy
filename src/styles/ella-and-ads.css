@@ -1,0 +1,260 @@
+.app-command-shell {
+  height: min(760px, calc(100vh - 132px));
+  min-height: 560px;
+  max-height: calc(100vh - 132px);
+  min-width: 0;
+}
+
+.app-command-shell [data-ad-chat-message].justify-start {
+  align-items: flex-end;
+  gap: 0.75rem;
+}
+
+.app-command-shell [data-ad-chat-message].justify-start::before {
+  content: '';
+  width: 46px;
+  height: 46px;
+  flex: 0 0 46px;
+  border-radius: 18px;
+  border: 1px solid hsl(var(--primary) / 0.48);
+  background-image: var(--ella-avatar-url, url('https://gynguskgysompgcajunc.supabase.co/storage/v1/object/public/ads/ads/ella-ribeiro-avatar.jpg'));
+  background-size: cover;
+  background-position: center;
+  box-shadow: 0 12px 30px hsl(var(--primary) / 0.18);
+}
+
+.app-command-shell [data-ad-chat-message].justify-start > div {
+  max-width: min(76%, 760px);
+}
+
+.app-command-shell [data-ad-chat-message].justify-end > div {
+  max-width: min(82%, 760px);
+}
+
+.app-command-shell [data-ad-chat-message] img,
+.app-command-shell [data-ad-chat-message] video {
+  object-fit: contain !important;
+  background: hsl(var(--background));
+}
+
+.app-command-shell > section {
+  min-width: 0;
+  min-height: 0;
+}
+
+.app-command-shell > section > div:first-child .relative.h-12.w-12 {
+  width: 56px;
+  height: 56px;
+  border-radius: 20px;
+}
+
+.app-command-shell > section > div:first-child {
+  min-height: 84px;
+}
+
+.app-command-shell .ops-panel {
+  min-height: 0;
+  max-height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
+.app-command-shell .ops-panel > * {
+  flex-shrink: 0;
+}
+
+.app-command-shell .ops-panel img[alt='Ella Ribeiro'] {
+  width: 58px;
+  height: 58px;
+  border-radius: 20px;
+  object-position: center;
+}
+
+.app-command-shell .ops-panel .rounded-xl,
+.app-command-shell .ops-panel .rounded-2xl {
+  max-width: 100%;
+}
+
+.ad-media-frame {
+  background:
+    radial-gradient(circle at 50% 10%, hsl(var(--primary) / 0.12), transparent 42%),
+    hsl(var(--background));
+}
+
+.ad-media-frame img,
+.ad-media-frame video,
+[aria-label='Publicidade'] img,
+[aria-label='Publicidade'] video,
+[aria-label='Publicidade persistente'] img,
+[aria-label='Publicidade persistente'] video {
+  object-fit: contain;
+}
+
+[aria-label='Publicidade'],
+[aria-label='Publicidade'] *,
+[aria-label='Publicidade persistente'],
+[aria-label='Publicidade persistente'] * {
+  min-width: 0;
+}
+
+[aria-label='Publicidade'] {
+  overflow: hidden;
+}
+
+[aria-label='Publicidade'] p,
+[aria-label='Publicidade'] h2,
+[aria-label='Publicidade'] h3,
+[aria-label='Publicidade persistente'] p,
+[aria-label='Publicidade persistente'] h3 {
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+[aria-label='Publicidade'] p:first-of-type,
+[aria-label='Publicidade persistente'] span:first-of-type {
+  white-space: nowrap;
+  width: max-content;
+  max-width: 100%;
+}
+
+[aria-label='Publicidade'] button {
+  white-space: nowrap;
+}
+
+/* Admin shell defensive responsiveness. Keeps tabs/cards from forcing horizontal scroll. */
+.h-screen.bg-background.flex.overflow-hidden,
+.h-screen.bg-background.flex.overflow-hidden > div,
+.h-screen.bg-background.flex.overflow-hidden main {
+  min-width: 0;
+}
+
+.h-screen.bg-background.flex.overflow-hidden main {
+  overflow-x: hidden;
+}
+
+.h-screen.bg-background.flex.overflow-hidden main input,
+.h-screen.bg-background.flex.overflow-hidden main textarea,
+.h-screen.bg-background.flex.overflow-hidden main button,
+.h-screen.bg-background.flex.overflow-hidden main [class*='rounded-'] {
+  max-width: 100%;
+}
+
+.h-screen.bg-background.flex.overflow-hidden header {
+  min-width: 0;
+}
+
+.h-screen.bg-background.flex.overflow-hidden .overflow-x-auto {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+@media (max-width: 1279px) {
+  .app-command-shell {
+    height: calc(100dvh - 112px);
+    max-height: calc(100dvh - 112px);
+    min-height: 540px;
+  }
+
+  [aria-label='Publicidade'] {
+    padding: 0.875rem;
+  }
+}
+
+@media (max-width: 1023px) {
+  .app-command-shell {
+    display: flex;
+    height: calc(100dvh - 96px);
+    min-height: 520px;
+    max-height: calc(100dvh - 96px);
+  }
+
+  .app-command-shell > section {
+    width: 100%;
+  }
+
+  .h-screen.bg-background.flex.overflow-hidden main {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 760px) {
+  .app-command-shell {
+    height: calc(100dvh - 146px);
+    max-height: calc(100dvh - 146px);
+    min-height: 0;
+  }
+
+  .app-command-shell > section > div:first-child {
+    gap: 0.625rem;
+  }
+
+  .app-command-shell > section > div:first-child h2 {
+    max-width: 44vw;
+  }
+
+  .app-command-shell [data-ad-chat-message].justify-start > div,
+  .app-command-shell [data-ad-chat-message].justify-end > div {
+    font-size: 0.875rem;
+    line-height: 1.55;
+  }
+
+  [aria-label='Publicidade'] {
+    border-radius: 16px;
+  }
+
+  [aria-label='Publicidade'] button {
+    min-height: 42px;
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .app-command-shell {
+    height: calc(100dvh - 132px);
+    min-height: 0;
+    max-height: calc(100dvh - 132px);
+    border-radius: 14px;
+  }
+
+  .app-command-shell > section > div:first-child {
+    min-height: 72px;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  .app-command-shell > section > div:first-child .relative.h-12.w-12 {
+    width: 44px;
+    height: 44px;
+    border-radius: 16px;
+  }
+
+  .app-command-shell [data-ad-chat-message].justify-start {
+    gap: 0.5rem;
+  }
+
+  .app-command-shell [data-ad-chat-message].justify-start::before {
+    width: 34px;
+    height: 34px;
+    flex-basis: 34px;
+    border-radius: 13px;
+  }
+
+  .app-command-shell [data-ad-chat-message].justify-start > div,
+  .app-command-shell [data-ad-chat-message].justify-end > div {
+    max-width: calc(100% - 44px);
+  }
+
+  .app-command-shell textarea {
+    font-size: 14px;
+  }
+
+  .h-screen.bg-background.flex.overflow-hidden main {
+    padding: 0.75rem;
+  }
+
+  .h-screen.bg-background.flex.overflow-hidden header {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+}
