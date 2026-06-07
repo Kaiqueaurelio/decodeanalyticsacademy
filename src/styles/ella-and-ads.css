@@ -1,6 +1,6 @@
 .app-command-shell {
   height: min(760px, calc(100vh - 132px));
-  min-height: 560px;
+  min-height: min(680px, calc(100vh - 132px));
   max-height: calc(100vh - 132px);
   min-width: 0;
 }
@@ -151,9 +151,23 @@
 
 @media (max-width: 1279px) {
   .app-command-shell {
-    height: calc(100dvh - 112px);
-    max-height: calc(100dvh - 112px);
-    min-height: 540px;
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    max-height: none;
+    min-height: 0;
+    overflow: visible;
+  }
+
+  .app-command-shell > section {
+    min-height: min(680px, calc(100dvh - 116px));
+    overflow: hidden;
+  }
+
+  .app-command-shell .ops-panel {
+    display: flex !important;
+    max-height: none;
+    overflow: visible;
   }
 
   [aria-label='Publicidade'] {
@@ -163,14 +177,14 @@
 
 @media (max-width: 1023px) {
   .app-command-shell {
-    display: flex;
-    height: calc(100dvh - 96px);
-    min-height: 520px;
-    max-height: calc(100dvh - 96px);
+    height: auto;
+    min-height: 0;
+    max-height: none;
   }
 
   .app-command-shell > section {
     width: 100%;
+    min-height: min(640px, calc(100dvh - 96px));
   }
 
   .h-screen.bg-background.flex.overflow-hidden main {
@@ -180,9 +194,13 @@
 
 @media (max-width: 760px) {
   .app-command-shell {
-    height: calc(100dvh - 146px);
-    max-height: calc(100dvh - 146px);
+    height: auto;
+    max-height: none;
     min-height: 0;
+  }
+
+  .app-command-shell > section {
+    min-height: calc(100dvh - 132px);
   }
 
   .app-command-shell > section > div:first-child {
@@ -211,9 +229,9 @@
 
 @media (max-width: 640px) {
   .app-command-shell {
-    height: calc(100dvh - 132px);
+    height: auto;
     min-height: 0;
-    max-height: calc(100dvh - 132px);
+    max-height: none;
     border-radius: 14px;
   }
 
