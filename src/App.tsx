@@ -21,6 +21,7 @@ import { AdPopup } from "@/components/AdPopup";
 import { PersistentAdSpot } from "@/components/PersistentAdSpot";
 import { TermsFooterLink } from "@/components/TermsFooterLink";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
+import { EllaSidebar } from "@/components/ella/EllaSidebar";
 
 // Paginas criticas no bundle inicial
 import LandingPage from "./pages/LandingPage";
@@ -53,6 +54,7 @@ const PlayBooksPage = lazy(() => import("./pages/PlayBooksPage"));
 const PerformancePage = lazy(() => import("./pages/PerformancePage"));
 const FlashcardsPage = lazy(() => import("./pages/FlashcardsPage"));
 const CalculadoraPage = lazy(() => import("./pages/CalculadoraPage"));
+const EllaPage = lazy(() => import("./pages/EllaPage"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -134,6 +136,7 @@ function AnimatedRoutes() {
         <Route path="/playbooks" element={<ProtectedRoute><PlayBooksPage /></ProtectedRoute>} />
         <Route path="/flashcards" element={<ProtectedRoute><FlashcardsPage /></ProtectedRoute>} />
         <Route path="/calculadora" element={<ProtectedRoute><CalculadoraPage /></ProtectedRoute>} />
+        <Route path="/ella" element={<ProtectedRoute adminOnly><EllaPage /></ProtectedRoute>} />
         <Route path="/admin/biblioteca" element={<ProtectedRoute adminOnly><AdminBibliotecaPage /></ProtectedRoute>} />
         <Route path="/admin/apostilas/:id" element={<ProtectedRoute adminOnly><AdminApostilaWorkbench /></ProtectedRoute>} />
         <Route path="/admin" element={<ProtectedRoute adminOnly><AdminPage /></ProtectedRoute>} />
@@ -156,6 +159,7 @@ const App = () => (
             <AudioPlayerProvider>
               <AnimatedRoutes />
               <MobileBottomNav />
+              <EllaSidebar />
               <RANamePrompt />
               <AdFooterMobile />
               <PersistentAdSpot />
