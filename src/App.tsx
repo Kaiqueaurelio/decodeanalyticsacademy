@@ -159,6 +159,7 @@ const App = () => (
             <AudioPlayerProvider>
               <AnimatedRoutes />
               <MobileBottomNav />
+              <EllaSidebar />
               <RANamePrompt />
               <AdFooterMobile />
               <PersistentAdSpot />
