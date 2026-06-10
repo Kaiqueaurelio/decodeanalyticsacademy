@@ -27,7 +27,10 @@ export function MobileBottomNav() {
   const location = useLocation();
   const [open, setOpen] = useState(false);
 
+  // Não exibir na landing, login, reset-password e termos (rotas públicas)
+  const hiddenRoutes = ['/', '/login', '/reset-password', '/termos'];
   if (!user) return null;
+  if (hiddenRoutes.includes(location.pathname)) return null;
 
   const handleNavigate = (to: string) => (event: MouseEvent<HTMLAnchorElement>) => {
     const [path, hash] = to.split('#');
