@@ -312,10 +312,10 @@ async function executeTool(name: string, args: any, admin: ReturnType<typeof cre
         const q = await admin.from("calendar_events").insert({
           title: args.title,
           event_date: args.event_date,
-          category: args.category ?? "prova",
+          event_type: args.category ?? "prova",
           description: args.description ?? null,
-          course: args.course ?? null,
-          semester: args.semester ?? null,
+          subject: args.course ?? null,
+          created_by: userId,
         }).select("id").single();
         if (q.error) return { ok: false, error: q.error.message };
         return { ok: true, id: q.data.id, summary: "Evento criado." };
@@ -330,7 +330,8 @@ async function executeTool(name: string, args: any, admin: ReturnType<typeof cre
         const q = await admin.from("announcements").insert({
           title: args.title,
           content: args.content,
-          priority: args.priority ?? "medium",
+          category: args.priority ?? "geral",
+          published: true,
           created_by: userId,
         }).select("id").single();
         if (q.error) return { ok: false, error: q.error.message };
@@ -343,14 +344,19 @@ async function executeTool(name: string, args: any, admin: ReturnType<typeof cre
         return { ok: true, summary: "Aviso excluído." };
       }
       case "add_material_link": {
-        const q = await admin.from("materials").insert({
-          apostila_id: args.apostila_id,
+        const matIns = await admin.from("materials").insert({
           title: args.title,
-          url: args.url,
-          kind: args.kind ?? "link",
+          file_url: args.url,
+          type: args.kind ?? "link",
+          created_by: userId,
         }).select("id").single();
-        if (q.error) return { ok: false, error: q.error.message };
-        return { ok: true, id: q.data.id, summary: "Material adicionado." };
+        if (matIns.error) return { ok: false, error: matIns.error.message };
+        const linkIns = await admin.from("apostila_materials").insert({
+          apostila_id: args.apostila_id,
+          material_id: matIns.data.id,
+        });
+        if (linkIns.error) return { ok: false, error: linkIns.error.message };
+        return { ok: true, id: matIns.data.id, summary: "Material vinculado à apostila." };
       }
       case "navigate_to": {
         return { ok: true, navigate: args.path, summary: `Abrindo ${args.path}` };
