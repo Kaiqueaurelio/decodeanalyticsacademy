@@ -21,6 +21,7 @@ import { AdPopup } from "@/components/AdPopup";
 import { PersistentAdSpot } from "@/components/PersistentAdSpot";
 import { TermsFooterLink } from "@/components/TermsFooterLink";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
+import { EllaSidebar } from "@/components/ella/EllaSidebar";
 
 // Paginas criticas no bundle inicial
 import LandingPage from "./pages/LandingPage";
