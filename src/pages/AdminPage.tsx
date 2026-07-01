@@ -1296,7 +1296,7 @@ export default function AdminPage() {
 
   return (
     <CategoriesCtx.Provider value={{ categories: dbCategories }}>
-      <div className="h-screen bg-background flex overflow-hidden">
+      <div className="h-dvh bg-background flex overflow-hidden">
         {/* Desktop sidebar only */}
         <div className="hidden lg:block">
           <AdminSidebar

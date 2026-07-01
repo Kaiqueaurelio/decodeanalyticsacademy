@@ -37,7 +37,7 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-background p-4">
+    <div className="flex min-h-dvh flex-col bg-background p-4">
       <div className="container pt-4">
         <button
           onClick={() => navigate('/login')}

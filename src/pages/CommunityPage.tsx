@@ -223,7 +223,7 @@ export default function CommunityPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       <AppHeader />
       <div className="container mx-auto px-3 sm:px-4 py-4 max-w-7xl">
         <div className="mb-4 flex items-center gap-2">

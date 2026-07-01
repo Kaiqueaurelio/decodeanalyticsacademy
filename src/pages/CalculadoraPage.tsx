@@ -361,7 +361,7 @@ export default function CalculadoraPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       <AppHeader />
       <main className="container mx-auto px-4 py-6 pb-24 max-w-3xl">
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">

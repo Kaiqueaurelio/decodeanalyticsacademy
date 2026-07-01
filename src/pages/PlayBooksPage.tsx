@@ -54,7 +54,7 @@ export default function PlayBooksPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       <AppHeader />
       <main className="w-full max-w-screen-xl mx-auto px-4 sm:px-6 py-6">
         <div className="mb-6 flex items-center gap-3">

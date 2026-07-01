@@ -98,7 +98,7 @@ export default function PreExamReviewPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-dvh bg-background">
         <AppHeader />
         <div className="container max-w-5xl mx-auto p-4 space-y-4">
           <Skeleton className="h-32 w-full" />
@@ -111,7 +111,7 @@ export default function PreExamReviewPage() {
 
   if (!bundle) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-dvh bg-background">
         <AppHeader />
         <div className="container max-w-5xl mx-auto p-8 text-center">
           <p className="text-muted-foreground">Não foi possível carregar a revisão.</p>
@@ -127,7 +127,7 @@ export default function PreExamReviewPage() {
   const currentFlash = due_flashcards[flashIndex];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       <AppHeader />
       <div className="container max-w-5xl mx-auto p-4 pb-24 space-y-5">
         {/* HERO */}

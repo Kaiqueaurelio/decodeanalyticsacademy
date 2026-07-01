@@ -71,7 +71,7 @@ export default function TiraDuvidaPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       <AppHeader />
 
       <main className="container max-w-3xl mx-auto px-4 py-6 pb-24">

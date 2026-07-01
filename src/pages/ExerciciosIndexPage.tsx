@@ -70,7 +70,7 @@ export default function ExerciciosIndexPage() {
   const total = rows.reduce((s, r) => s + r.count, 0);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       <AppHeader />
       <main className="mx-auto w-full max-w-screen-lg px-4 py-6 sm:py-10">
         <div className="mb-6 flex items-center gap-3">

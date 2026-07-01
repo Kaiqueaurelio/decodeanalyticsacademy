@@ -109,7 +109,7 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="dark min-h-screen font-cyber overflow-x-hidden selection:bg-primary/30" style={{ background: '#050508', color: '#e2e8f0' }}>
+    <div className="dark min-h-dvh font-cyber overflow-x-hidden selection:bg-primary/30" style={{ background: '#050508', color: '#e2e8f0' }}>
 
       {/* ═══ NAV ═══ */}
       <motion.header
@@ -147,7 +147,7 @@ export default function LandingPage() {
       </motion.header>
 
       {/* ═══ HERO ═══ */}
-      <section ref={heroRef} className="relative min-h-screen flex items-center pt-14">
+      <section ref={heroRef} className="relative min-h-dvh flex items-center pt-14">
         <CyberGrid />
         <GlowOrb className="w-[500px] h-[400px] top-1/4 left-0" style={{ background: 'rgba(0,240,255,0.06)' } as any} />
         <GlowOrb className="w-[400px] h-[300px] bottom-0 right-0" style={{ background: 'rgba(168,85,247,0.05)' } as any} />

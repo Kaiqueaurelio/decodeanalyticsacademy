@@ -48,7 +48,7 @@ export default function FlashcardsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-dvh bg-background flex flex-col">
       <AppHeader />
       
       <main className="flex-1 max-w-2xl mx-auto w-full px-4 py-8 flex flex-col">

@@ -20,7 +20,7 @@ export default function CoursesPage() {
   }, [selectedArea]);
 
   return (
-    <div className="min-h-screen bg-background relative selection:bg-primary/20">
+    <div className="min-h-dvh bg-background relative selection:bg-primary/20">
       <Watermark />
       <AppHeader />
 

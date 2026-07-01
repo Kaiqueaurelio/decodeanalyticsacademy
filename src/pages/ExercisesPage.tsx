@@ -214,7 +214,7 @@ export default function ExercisesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-dvh bg-background">
         <AppHeader />
         <main className="container py-12 px-4 max-w-2xl">
           <div className="space-y-4">
@@ -228,7 +228,7 @@ export default function ExercisesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
+    <div className="min-h-dvh bg-background relative overflow-hidden">
       <Watermark />
       {/* Confetti */}
       {showConfetti && (

@@ -108,7 +108,7 @@ export default function BibliotecaPage() {
     categories.find(c => c.id === id)?.name ?? 'Sem disciplina';
 
   return (
-    <div className="min-h-screen bg-background selection:bg-primary/20">
+    <div className="min-h-dvh bg-background selection:bg-primary/20">
       <AppHeader />
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 animate-content-show">
         {/* Header */}

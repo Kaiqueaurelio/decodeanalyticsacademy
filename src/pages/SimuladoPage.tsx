@@ -153,7 +153,7 @@ export default function SimuladoPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-dvh bg-background">
         <AppHeader />
         <div className="flex items-center justify-center pt-32">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -165,7 +165,7 @@ export default function SimuladoPage() {
   // Sem simulado → tela de início
   if (!simulado) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-dvh bg-background">
         <AppHeader />
         <div className="container max-w-2xl mx-auto px-4 pt-8 pb-16">
           <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')} className="mb-4 gap-1">
@@ -201,7 +201,7 @@ export default function SimuladoPage() {
   const subjectColor = getSubjectColor(current.subject || 'Geral');
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       <AppHeader />
       <div className="container max-w-2xl mx-auto px-4 pt-6 pb-32">
         {/* Header */}
@@ -298,7 +298,7 @@ function ResultView({ simulado, questions, onRestart, restarting, navigate }: {
   const weakest = diagnosis.filter(([, v]) => v.accuracy < 60);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       <AppHeader />
       <div className="container max-w-2xl mx-auto px-4 pt-6 pb-16">
         <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')} className="mb-4 gap-1">
