@@ -439,9 +439,9 @@ Deno.serve(async (req) => {
         body: JSON.stringify({ model: currentModel, messages, tools, tool_choice: "auto" }),
       });
 
-      // Se o modelo Pro estourar limite/quota, cai para o Flash preview no mesmo turno.
-      if ((res.status === 429 || res.status === 503) && currentModel !== FALLBACK_MODEL) {
-        currentModel = FALLBACK_MODEL;
+      // Fallback em cascata para manter velocidade em picos de quota.
+      if ((res.status === 429 || res.status === 503) && currentModel !== SECOND_FALLBACK_MODEL) {
+        currentModel = currentModel === MODEL ? FALLBACK_MODEL : SECOND_FALLBACK_MODEL;
         res = await fetch(GATEWAY_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${LOVABLE_API_KEY}` },
@@ -471,16 +471,24 @@ Deno.serve(async (req) => {
         );
       }
 
-      for (const tc of toolCalls) {
+      // Executa tool calls em paralelo — grande ganho de latência quando o modelo pede várias.
+      const parsedCalls = toolCalls.map((tc: any) => {
         let parsed: any = {};
         try { parsed = JSON.parse(tc.function.arguments || "{}"); } catch { parsed = {}; }
-        const result = await executeTool(tc.function.name, parsed, adminClient, { userId, authHeader });
+        return { tc, parsed };
+      });
+      const results = await Promise.all(
+        parsedCalls.map(({ tc, parsed }: any) => executeTool(tc.function.name, parsed, adminClient, { userId, authHeader })),
+      );
+      for (let i = 0; i < parsedCalls.length; i++) {
+        const { tc, parsed } = parsedCalls[i];
+        const result = results[i];
         executedTools.push({ name: tc.function.name, args: parsed, result });
         messages.push({
           role: "tool",
           tool_call_id: tc.id,
           name: tc.function.name,
-          content: JSON.stringify(result).slice(0, 4000),
+          content: JSON.stringify(result).slice(0, 2500),
         });
       }
     }
