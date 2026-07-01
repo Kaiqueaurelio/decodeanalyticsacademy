@@ -9,7 +9,7 @@ export function ProtectedRoute({ children, adminOnly = false }: { children: Reac
 
   if (loading || !isSessionHydrated || status === 'loading' || status === 'hydrating' || (user && !roleChecked)) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="flex min-h-dvh items-center justify-center bg-background">
         <GlitchLoader text="Carregando..." />
       </div>
     );
@@ -21,7 +21,7 @@ export function ProtectedRoute({ children, adminOnly = false }: { children: Reac
 
   if (!user || !session) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="flex min-h-dvh items-center justify-center bg-background">
         <GlitchLoader text="Sincronizando sessão..." />
       </div>
     );
@@ -29,7 +29,7 @@ export function ProtectedRoute({ children, adminOnly = false }: { children: Reac
 
   if (isBlocked) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background p-4">
+      <div className="flex min-h-dvh items-center justify-center bg-background p-4">
         <div className="text-center max-w-sm space-y-4">
           <div className="mx-auto rounded-full bg-destructive/15 p-4 w-fit">
             <ShieldBan className="h-10 w-10 text-destructive" />

@@ -1,7 +1,7 @@
 /** Skeleton elegante mostrado enquanto rotas lazy carregam. */
 export function PageSkeleton() {
   return (
-    <div className="min-h-screen bg-background px-4 py-8 sm:px-8 animate-pulse">
+    <div className="min-h-dvh bg-background px-4 py-8 sm:px-8 animate-pulse">
       <div className="mx-auto max-w-6xl space-y-8">
         <div className="space-y-3">
           <div className="h-10 w-64 rounded-2xl bg-muted/40" />
