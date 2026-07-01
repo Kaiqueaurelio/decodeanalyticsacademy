@@ -170,7 +170,7 @@ export function EpubReader({ fileUrl, initialLocation, onProgress }: EpubReaderP
         <Button variant="ghost" size="icon" onClick={next} className="h-8 w-8" title="Próxima página (→)">
           <ChevronRight className="h-4 w-4" />
         </Button>
-        <Button variant="ghost" size="icon" onClick={nextChapter} disabled={toc.length === 0 || currentChapterIndex  aria-label="Botão">= toc.length - 1} className="h-8 w-8" title="Próximo capítulo (Shift+→)">
+        <Button variant="ghost" size="icon" onClick={nextChapter} disabled={toc.length === 0 || currentChapterIndex >= toc.length - 1} className="h-8 w-8" title="Próximo capítulo (Shift+→)" aria-label="Próximo capítulo">
           <ChevronsRight className="h-4 w-4" />
         </Button>
       </div>
