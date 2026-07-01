@@ -88,13 +88,16 @@ export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps)
   return (
     <div className={cn("flex flex-col h-full bg-background", compact ? "" : "")}>
       <div className="flex items-center justify-between px-4 py-3 border-b border-border/50">
-        <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-            <Sparkles className="h-4 w-4 text-primary-foreground" />
-          </div>
+        <div className="flex items-center gap-3">
+          <Avatar className="h-10 w-10 ring-2 ring-primary/40">
+            <AvatarImage src={getEllaAvatarUrl()} alt="Ella Ribeiro" />
+            <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-primary-foreground">
+              <Sparkles className="h-4 w-4" />
+            </AvatarFallback>
+          </Avatar>
           <div>
-            <p className="text-sm font-semibold">Ella</p>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Copiloto admin</p>
+            <p className="text-sm font-semibold leading-tight">Ella Ribeiro</p>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Copiloto executiva</p>
           </div>
         </div>
         {messages.length > 0 && (
