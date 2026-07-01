@@ -1607,3 +1607,8 @@ html {
 @media (prefers-reduced-motion: reduce) {
   .apostila-heading-active { animation: none; }
 }
+
+#lovable-badge {
+  display: none !important;
+}
+
