@@ -133,9 +133,12 @@ export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps)
           {messages.map((m, i) => (
             <div key={i} className={cn("flex gap-3", m.role === "user" ? "justify-end" : "")}>
               {m.role === "assistant" && (
-                <div className="h-7 w-7 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center shrink-0">
-                  <Sparkles className="h-3.5 w-3.5 text-primary-foreground" />
-                </div>
+                <Avatar className="h-8 w-8 shrink-0 ring-1 ring-border/60">
+                  <AvatarImage src={getEllaAvatarUrl()} alt="Ella" />
+                  <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-primary-foreground">
+                    <Sparkles className="h-3.5 w-3.5" />
+                  </AvatarFallback>
+                </Avatar>
               )}
               <div className={cn(
                 "max-w-[85%] rounded-2xl px-4 py-2.5 text-sm",
