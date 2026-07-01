@@ -252,7 +252,7 @@ export default function ExercisesPage() {
       <main className="container py-6 px-4 relative z-10 max-w-2xl mx-auto">
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
-          <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0" onClick={() => navigate(-1)}>
+          <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0" onClick={() = aria-label="Voltar"> navigate(-1)}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div className="flex-1 min-w-0">

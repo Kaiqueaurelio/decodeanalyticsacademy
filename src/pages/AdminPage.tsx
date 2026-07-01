@@ -201,7 +201,7 @@ function AdminSidebar({ tab, setTab, stats, sidebarOpen, setSidebarOpen }: {
                 <p className="text-[10px] text-muted-foreground">Decode Analytics</p>
               </div>
             </div>
-            <Button size="icon" variant="ghost" className="lg:hidden h-8 w-8" onClick={() => setSidebarOpen(false)}>
+            <Button size="icon" variant="ghost" className="lg:hidden h-8 w-8" onClick={() = aria-label="Botão"> setSidebarOpen(false)}>
               <X className="h-4 w-4" />
             </Button>
           </div>
@@ -1310,7 +1310,7 @@ export default function AdminPage() {
         <div className="flex-1 flex flex-col min-w-0">
           {/* Top Bar */}
           <header className="sticky top-0 z-30 bg-card/95 backdrop-blur-xl border-b border-border h-14 flex items-center px-3 sm:px-4 lg:px-6 gap-2 sm:gap-3">
-            <Button size="icon" variant="ghost" className="h-9 w-9 shrink-0" onClick={() => navigate('/dashboard')}>
+            <Button size="icon" variant="ghost" className="h-9 w-9 shrink-0" onClick={() = aria-label="Voltar"> navigate('/dashboard')}>
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <div className="flex-1 min-w-0">
@@ -1330,7 +1330,7 @@ export default function AdminPage() {
               </div>
             )}
 
-            <Button size="icon" variant="ghost" className="h-9 w-9 shrink-0" onClick={loadAll} disabled={refreshing}>
+            <Button size="icon" variant="ghost" className="h-9 w-9 shrink-0" onClick={loadAll} disabled={refreshing} aria-label="Atualizar">
               <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
             </Button>
           </header>
@@ -1759,16 +1759,16 @@ export default function AdminPage() {
                                       </Button>
                                     }
                                   />
-                                  <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => setShowExerciseDialog(a.id)} title="Ver exercícios">
+                                  <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() = aria-label="Botão"> setShowExerciseDialog(a.id)} title="Ver exercícios">
                                     <PenLine className="h-3.5 w-3.5" />
                                   </Button>
                                 </div>
 
                                 {/* Primary actions — always visible */}
-                                <Button size="icon" variant="ghost" className="h-8 w-8 text-primary" onClick={() => downloadApostilaPdf(a)} title="Baixar apostila em PDF">
+                                <Button size="icon" variant="ghost" className="h-8 w-8 text-primary" onClick={() = aria-label="Botão"> downloadApostilaPdf(a)} title="Baixar apostila em PDF">
                                   <FileDown className="h-3.5 w-3.5" />
                                 </Button>
-                                <Button size="icon" variant="ghost" className={`h-8 w-8 ${a.published ? 'text-destructive' : 'text-[hsl(var(--success))]'}`} onClick={() => togglePublish(a.id, a.published)} title={a.published ? 'Ocultar' : 'Publicar'}>
+                                <Button size="icon" variant="ghost" className={`h-8 w-8 ${a.published ? 'text-destructive' : 'text-[hsl(var(--success))]'}`} onClick={() = aria-label="Ocultar"> togglePublish(a.id, a.published)} title={a.published ? 'Ocultar' : 'Publicar'}>
                                   {a.published ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
                                 </Button>
                                 <Button
@@ -1780,10 +1780,10 @@ export default function AdminPage() {
                                 >
                                   <Sparkles className="h-3.5 w-3.5" /> Workbench
                                 </Button>
-                                <Button size="icon" variant="ghost" className="hidden sm:inline-flex h-8 w-8" onClick={() => { setEditingApostila(a); setEditTitle(a.title); setEditContent(a.content || ''); setEditCategory(a.category); }} title="Editar (modal clássico)">
+                                <Button size="icon" variant="ghost" className="hidden sm:inline-flex h-8 w-8" onClick={() = aria-label="Editar"> { setEditingApostila(a); setEditTitle(a.title); setEditContent(a.content || ''); setEditCategory(a.category); }} title="Editar (modal clássico)">
                                   <Edit className="h-3.5 w-3.5" />
                                 </Button>
-                                <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => setConfirmDeleteId(a.id)} title="Excluir">
+                                <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() = aria-label="Excluir"> setConfirmDeleteId(a.id)} title="Excluir">
                                   <Trash2 className="h-3.5 w-3.5" />
                                 </Button>
 
@@ -2349,7 +2349,7 @@ export default function AdminPage() {
                           <CardContent className="p-4">
                             <div className="flex justify-between items-start">
                               <p className="font-medium text-sm flex-1">{i + 1}. {ex.question}</p>
-                              <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0" onClick={() => deleteExercise(ex.id)}>
+                              <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0" onClick={() = aria-label="Excluir"> deleteExercise(ex.id)}>
                                 <Trash2 className="h-3.5 w-3.5 text-destructive" />
                               </Button>
                             </div>
@@ -2565,7 +2565,7 @@ export default function AdminPage() {
                               <p className="text-sm font-medium truncate">{matFile.name}</p>
                               <p className="text-xs text-muted-foreground">{(matFile.size / 1024 / 1024).toFixed(2)} MB · {matType.toUpperCase()}</p>
                             </div>
-                            <Button size="icon" variant="ghost" className="h-8 w-8 shrink-0 text-destructive" onClick={e => { e.stopPropagation(); setMatFile(null); setMatTitle(''); }}>
+                            <Button size="icon" variant="ghost" className="h-8 w-8 shrink-0 text-destructive" onClick={e = aria-label="Excluir"> { e.stopPropagation(); setMatFile(null); setMatTitle(''); }}>
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           </div>
@@ -2682,17 +2682,17 @@ export default function AdminPage() {
                               </div>
                               <div className="flex items-center gap-1 shrink-0 justify-end pl-12 sm:pl-0">
                                 {/* Secundário: Editar (apenas desktop como botão direto) */}
-                                <Button size="icon" variant="ghost" className="hidden sm:inline-flex h-8 w-8" onClick={() => { setEditingMaterial(m); setEditMatTitle(m.title); setEditMatDesc(m.description || ''); }}>
+                                <Button size="icon" variant="ghost" className="hidden sm:inline-flex h-8 w-8" onClick={() = aria-label="Editar"> { setEditingMaterial(m); setEditMatTitle(m.title); setEditMatDesc(m.description || ''); }}>
                                   <Edit className="h-3.5 w-3.5" />
                                 </Button>
                                 {/* Primários: Download + Excluir */}
                                 {m.file_url && (
-                                  <Button size="icon" variant="ghost" className="h-8 w-8" asChild>
+                                  <Button size="icon" variant="ghost" className="h-8 w-8" asChild aria-label="Baixar">
                                     <a href={m.file_url} target="_blank" rel="noopener noreferrer"><Download className="h-3.5 w-3.5" /></a>
                                   </Button>
                                 )}
                                 <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive"
-                                  onClick={async () => {
+                                  onClick={async () = aria-label="Excluir"> {
                                     if (!confirm('Excluir este material?')) return;
                                     if (m.file_path) await supabase.storage.from('materials').remove([m.file_path]);
                                     await supabase.from('materials').delete().eq('id', m.id);
@@ -2703,7 +2703,7 @@ export default function AdminPage() {
                                 {/* Kebab mobile com ações secundárias */}
                                 <DropdownMenu>
                                   <DropdownMenuTrigger asChild>
-                                    <Button size="icon" variant="ghost" className="sm:hidden h-8 w-8">
+                                    <Button size="icon" variant="ghost" className="sm:hidden h-8 w-8" aria-label="Mais opções">
                                       <MoreHorizontal className="h-4 w-4" />
                                     </Button>
                                   </DropdownMenuTrigger>
@@ -2845,7 +2845,7 @@ export default function AdminPage() {
                             {/* Kebab mobile: agrupa ação secundária Remover */}
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
-                                <Button size="icon" variant="ghost" className="sm:hidden h-9 w-9">
+                                <Button size="icon" variant="ghost" className="sm:hidden h-9 w-9" aria-label="Mais opções">
                                   <MoreHorizontal className="h-4 w-4" />
                                 </Button>
                               </DropdownMenuTrigger>
@@ -3112,7 +3112,7 @@ function AdminPasswordResetMenu({ user }: { user: { user_id: string; email: stri
                 <Button
                   type="button" size="icon" variant="ghost"
                   className="absolute right-1 top-1 h-7 w-7"
-                  onClick={() => setShowPwd((s) => !s)}
+                  onClick={() = aria-label="Ocultar"> setShowPwd((s) => !s)}
                 >
                   {showPwd ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
                 </Button>

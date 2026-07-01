@@ -116,15 +116,15 @@ export function EpubReader({ fileUrl, initialLocation, onProgress }: EpubReaderP
   return (
     <div className="relative flex flex-col w-full h-full bg-background">
       <div className="absolute top-3 right-3 z-20 flex gap-1">
-        <Button variant="secondary" size="icon" className="h-8 w-8" onClick={() => setFontSize((s) => Math.max(70, s - 10))}>
+        <Button variant="secondary" size="icon" className="h-8 w-8" onClick={() = aria-label="Remover"> setFontSize((s) => Math.max(70, s - 10))}>
           <Minus className="h-4 w-4" />
         </Button>
-        <Button variant="secondary" size="icon" className="h-8 w-8" onClick={() => setFontSize((s) => Math.min(180, s + 10))}>
+        <Button variant="secondary" size="icon" className="h-8 w-8" onClick={() = aria-label="Adicionar"> setFontSize((s) => Math.min(180, s + 10))}>
           <Plus className="h-4 w-4" />
         </Button>
         <Sheet>
           <SheetTrigger asChild>
-            <Button variant="secondary" size="icon" className="h-8 w-8"><List className="h-4 w-4" /></Button>
+            <Button variant="secondary" size="icon" className="h-8 w-8" aria-label="Botão"><List className="h-4 w-4" /></Button>
           </SheetTrigger>
           <SheetContent side="right" className="w-72 overflow-y-auto">
             <SheetHeader><SheetTitle>Capítulos</SheetTitle></SheetHeader>
@@ -170,7 +170,7 @@ export function EpubReader({ fileUrl, initialLocation, onProgress }: EpubReaderP
         <Button variant="ghost" size="icon" onClick={next} className="h-8 w-8" title="Próxima página (→)">
           <ChevronRight className="h-4 w-4" />
         </Button>
-        <Button variant="ghost" size="icon" onClick={nextChapter} disabled={toc.length === 0 || currentChapterIndex >= toc.length - 1} className="h-8 w-8" title="Próximo capítulo (Shift+→)">
+        <Button variant="ghost" size="icon" onClick={nextChapter} disabled={toc.length === 0 || currentChapterIndex  aria-label="Botão">= toc.length - 1} className="h-8 w-8" title="Próximo capítulo (Shift+→)">
           <ChevronsRight className="h-4 w-4" />
         </Button>
       </div>

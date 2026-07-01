@@ -194,14 +194,14 @@ export function VideoPlayerPro({ src, title, poster }: VideoPlayerProProps) {
                 size="icon"
                 onClick={handlePlayPause}
                 className="h-8 w-8 text-white hover:bg-white/20"
-              >
+               aria-label="Pausar">
                 {isPlaying ? <Pause size={18} /> : <Play size={18} />}
               </Button>
 
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => handleSkip(-10)}
+                onClick={() = aria-label="Voltar"> handleSkip(-10)}
                 className="h-8 w-8 text-white hover:bg-white/20"
                 title="Voltar 10s"
               >
@@ -211,7 +211,7 @@ export function VideoPlayerPro({ src, title, poster }: VideoPlayerProProps) {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => handleSkip(10)}
+                onClick={() = aria-label="Avançar"> handleSkip(10)}
                 className="h-8 w-8 text-white hover:bg-white/20"
                 title="Avançar 10s"
               >
@@ -223,7 +223,7 @@ export function VideoPlayerPro({ src, title, poster }: VideoPlayerProProps) {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => setVolume(volume === 0 ? 1 : 0)}
+                  onClick={() = aria-label="Silenciar"> setVolume(volume === 0 ? 1 : 0)}
                   className="h-8 w-8 text-white hover:bg-white/20"
                 >
                   {volume === 0 ? <VolumeX size={16} /> : <Volume2 size={16} />}
@@ -255,7 +255,7 @@ export function VideoPlayerPro({ src, title, poster }: VideoPlayerProProps) {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => setShowSettings(!showSettings)}
+                  onClick={() = aria-label="Configurações"> setShowSettings(!showSettings)}
                   className="h-8 w-8 text-white hover:bg-white/20"
                 >
                   <Settings size={16} />
@@ -298,7 +298,7 @@ export function VideoPlayerPro({ src, title, poster }: VideoPlayerProProps) {
                 size="icon"
                 onClick={handleFullscreen}
                 className="h-8 w-8 text-white hover:bg-white/20"
-              >
+               aria-label="Sair da tela cheia">
                 {isFullscreen ? <Minimize size={16} /> : <Maximize size={16} />}
               </Button>
             </div>

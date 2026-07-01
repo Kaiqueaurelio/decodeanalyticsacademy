@@ -93,7 +93,7 @@ function GradeRow({ row, onChange, onRemove }: {
             placeholder="Nome da disciplina"
             className="bg-background/40 border-border/60 font-semibold flex-1"
           />
-          <Button size="icon" variant="ghost" onClick={onRemove} className="h-9 w-9 text-muted-foreground hover:text-destructive">
+          <Button size="icon" variant="ghost" onClick={onRemove} className="h-9 w-9 text-muted-foreground hover:text-destructive" aria-label="Excluir">
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>

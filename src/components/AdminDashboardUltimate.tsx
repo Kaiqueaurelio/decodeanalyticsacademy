@@ -168,7 +168,7 @@ export function AdminDashboardUltimate({ onNavigate }: { onNavigate: (tab: strin
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input placeholder="Pesquisar dados..." className="pl-10 w-[250px] bg-background/50 border-none shadow-inner" />
           </div>
-          <Button onClick={loadStats} variant="secondary" size="icon" className="rounded-full shadow-sm">
+          <Button onClick={loadStats} variant="secondary" size="icon" className="rounded-full shadow-sm" aria-label="Atualizar">
             <RefreshCw className="h-4 w-4" />
           </Button>
           <Button className="rounded-full shadow-lg shadow-primary/20 gap-2">

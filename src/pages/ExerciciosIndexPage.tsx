@@ -121,7 +121,7 @@ export default function ExerciciosIndexPage() {
                         <div className="truncate text-sm font-semibold">{r.title}</div>
                         <div className="text-[11px] text-muted-foreground">{r.count} {r.count === 1 ? 'questão' : 'questões'}</div>
                       </div>
-                      <Button size="icon" variant="ghost" className="h-8 w-8 shrink-0 group-hover:text-primary">
+                      <Button size="icon" variant="ghost" className="h-8 w-8 shrink-0 group-hover:text-primary" aria-label="Próximo">
                         <ChevronRight className="h-4 w-4" />
                       </Button>
                     </Card>
