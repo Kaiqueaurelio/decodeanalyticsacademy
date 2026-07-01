@@ -5,7 +5,9 @@ import { Send, Loader2, Sparkles, CheckCircle2, AlertCircle, Wand2 } from "lucid
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { invokeFunction } from "@/lib/invoke-function";
+import { getEllaAvatarUrl } from "@/lib/ellaAvatar";
 import { cn } from "@/lib/utils";
 
 type Msg = { role: "user" | "assistant"; content: string; actions?: any[] };
