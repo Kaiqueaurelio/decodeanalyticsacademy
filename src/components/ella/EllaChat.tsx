@@ -171,9 +171,12 @@ export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps)
 
           {loading && (
             <div className="flex gap-3">
-              <div className="h-7 w-7 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-                <Sparkles className="h-3.5 w-3.5 text-primary-foreground animate-pulse" />
-              </div>
+              <Avatar className="h-8 w-8 shrink-0 ring-1 ring-primary/40 animate-pulse">
+                <AvatarImage src={getEllaAvatarUrl()} alt="Ella" />
+                <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-primary-foreground">
+                  <Sparkles className="h-3.5 w-3.5" />
+                </AvatarFallback>
+              </Avatar>
               <div className="bg-muted/50 rounded-2xl px-4 py-2.5 flex items-center gap-2">
                 <Loader2 className="h-3 w-3 animate-spin" />
                 <span className="text-xs text-muted-foreground">Ella está pensando…</span>
