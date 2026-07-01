@@ -818,10 +818,10 @@ export function AdsChatBuilder() {
           </AnimatePresence>
 
           <div className="flex items-end gap-2">
-            <Button type="button" variant="ghost" size="icon" onClick={() => setAttachmentsOpen((open) => !open)} className="mb-1 h-10 w-10 shrink-0 rounded-xl" aria-label="Anexar midia">
+            <Button type="button" variant="ghost" size="icon" onClick={() = aria-label="Anexar"> setAttachmentsOpen((open) => !open)} className="mb-1 h-10 w-10 shrink-0 rounded-xl" aria-label="Anexar midia">
               <Paperclip className="h-5 w-5" />
             </Button>
-            <Button type="button" variant="ghost" size="icon" onClick={() => setAttachmentsOpen(true)} className="mb-1 hidden h-10 w-10 shrink-0 rounded-xl sm:inline-flex" aria-label="Abrir anexos">
+            <Button type="button" variant="ghost" size="icon" onClick={() = aria-label="Câmera"> setAttachmentsOpen(true)} className="mb-1 hidden h-10 w-10 shrink-0 rounded-xl sm:inline-flex" aria-label="Abrir anexos">
               <Camera className="h-5 w-5" />
             </Button>
             <div className="flex min-h-[46px] flex-1 items-end rounded-2xl border border-border bg-background px-3 py-1 focus-within:border-primary/50">

@@ -61,7 +61,7 @@ export default function TermsPage() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-background relative">
+    <div className="min-h-dvh bg-background relative">
       <Watermark />
       <AppHeader />
 

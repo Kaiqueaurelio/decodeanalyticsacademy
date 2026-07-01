@@ -238,7 +238,7 @@ export default function LoginPage() {
   ];
 
   return (
-    <div className="flex min-h-screen bg-background relative overflow-hidden selection:bg-primary/20">
+    <div className="flex min-h-dvh bg-background relative overflow-hidden selection:bg-primary/20">
       <div className="flex flex-1 flex-col">
         <div className="relative w-full h-[42vh] min-h-[280px] max-h-[420px] overflow-hidden">
           <img

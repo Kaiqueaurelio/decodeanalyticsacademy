@@ -104,7 +104,7 @@ export default function ReviewPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-dvh bg-background">
         <AppHeader />
         <main className="max-w-2xl mx-auto p-6">
           <div className="animate-pulse h-64 rounded-xl bg-muted/30" />
@@ -114,7 +114,7 @@ export default function ReviewPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       <AppHeader />
       <main className="max-w-2xl mx-auto p-4 sm:p-6 space-y-4">
         <div className="flex items-center justify-between">

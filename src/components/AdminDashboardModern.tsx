@@ -295,8 +295,8 @@ export function AdminDashboardModern({ onNavigate }: Props) {
           <p className="text-sm text-muted-foreground">Painel administrativo Decode Analytics</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" className="rounded-full"><Bell className="h-4 w-4" /></Button>
-          <Button variant="outline" size="icon" className="rounded-full" onClick={load}><RefreshCw className="h-4 w-4" /></Button>
+          <Button variant="outline" size="icon" className="rounded-full" aria-label="Notificações"><Bell className="h-4 w-4" /></Button>
+          <Button variant="outline" size="icon" className="rounded-full" onClick={load} aria-label="Atualizar"><RefreshCw className="h-4 w-4" /></Button>
         </div>
       </div>
 

@@ -219,11 +219,11 @@ export default function AdminBibliotecaPage() {
   };
 
   if (!isAdmin) {
-    return <div className="min-h-screen flex items-center justify-center"><p className="text-sm">Acesso restrito.</p></div>;
+    return <div className="min-h-dvh flex items-center justify-center"><p className="text-sm">Acesso restrito.</p></div>;
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       <AppHeader />
       <main className="w-full max-w-screen-lg mx-auto px-4 sm:px-6 py-8">
         <Button variant="ghost" size="sm" onClick={() => navigate('/admin')} className="mb-4">
@@ -327,7 +327,7 @@ export default function AdminBibliotecaPage() {
                 <div className="flex items-center gap-1.5" title={b.published ? 'Despublicar' : 'Publicar'}>
                   <Switch checked={!!b.published} onCheckedChange={() => togglePublished(b)} />
                 </div>
-                <Button variant="ghost" size="icon" onClick={() => remove(b.id)} className="h-8 w-8 text-destructive">
+                <Button variant="ghost" size="icon" onClick={() = aria-label="Excluir"> remove(b.id)} className="h-8 w-8 text-destructive">
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>

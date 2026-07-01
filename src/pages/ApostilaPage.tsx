@@ -225,7 +225,7 @@ export default function ApostilaPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-dvh bg-background">
         <AppHeader />
         <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 py-12">
           <div className="skeleton-shimmer h-8 w-48 rounded-lg mb-4" />
@@ -270,7 +270,7 @@ export default function ApostilaPage() {
   );
 
   return (
-    <div className={`min-h-screen bg-background relative ${focusMode ? 'focus-mode' : ''}`}>
+    <div className={`min-h-dvh bg-background relative ${focusMode ? 'focus-mode' : ''}`}>
       {!focusMode && <Watermark />}
       {!focusMode && <AppHeader />}
       {!focusMode && <AdSidebar />}

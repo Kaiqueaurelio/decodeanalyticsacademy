@@ -79,10 +79,10 @@ export function PomodoroTimer({ onComplete }: Props) {
         </span>
       </div>
       <div className="flex justify-center gap-2">
-        <Button size="icon" variant={isRunning ? 'default' : 'outline'} className="h-9 w-9 rounded-xl" onClick={toggle}>
+        <Button size="icon" variant={isRunning ? 'default' : 'outline'} className="h-9 w-9 rounded-xl" onClick={toggle} aria-label="Pausar">
           {isRunning ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
         </Button>
-        <Button size="icon" variant="ghost" className="h-9 w-9 rounded-xl" onClick={reset}>
+        <Button size="icon" variant="ghost" className="h-9 w-9 rounded-xl" onClick={reset} aria-label="Reiniciar">
           <RotateCcw className="h-4 w-4" />
         </Button>
       </div>

@@ -193,7 +193,7 @@ export default function VideoPlayerPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-dvh bg-background">
         <AppHeader />
         <div className="container max-w-5xl px-4 py-8">
           <div className="skeleton-shimmer h-8 w-48 rounded-lg mb-4" />
@@ -206,7 +206,7 @@ export default function VideoPlayerPage() {
 
   if (!material) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-dvh bg-background">
         <AppHeader />
         <div className="container max-w-5xl px-4 py-16 text-center text-muted-foreground">
           <AlertCircle className="h-10 w-10 mx-auto mb-3 opacity-30" />
@@ -220,7 +220,7 @@ export default function VideoPlayerPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       <AppHeader />
 
       <main className="container max-w-5xl px-4 py-4 sm:py-6">

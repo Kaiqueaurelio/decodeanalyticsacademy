@@ -108,12 +108,12 @@ export default function BibliotecaPage() {
     categories.find(c => c.id === id)?.name ?? 'Sem disciplina';
 
   return (
-    <div className="min-h-screen bg-background selection:bg-primary/20">
+    <div className="min-h-dvh bg-background selection:bg-primary/20">
       <AppHeader />
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 animate-content-show">
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')} aria-label="Voltar">
+          <Button variant="ghost" size="icon" onClick={() = aria-label="Voltar"> navigate('/dashboard')} aria-label="Voltar">
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex items-center gap-3">

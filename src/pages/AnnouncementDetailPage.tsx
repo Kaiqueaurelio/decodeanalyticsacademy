@@ -88,7 +88,7 @@ export default function AnnouncementDetailPage() {
 
   if (loading || !announcement) {
     return (
-      <div className="min-h-screen bg-background p-4 space-y-4">
+      <div className="min-h-dvh bg-background p-4 space-y-4">
         <Skeleton className="h-8 w-32" />
         <Skeleton className="h-48 w-full rounded-xl" />
         <Skeleton className="h-6 w-3/4" />
@@ -104,15 +104,15 @@ export default function AnnouncementDetailPage() {
   const timeAgo = getTimeAgo(announcement.created_at);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       {/* Header */}
       <div className="sticky top-0 z-30 bg-background/80 backdrop-blur-xl border-b border-border">
         <div className="flex items-center justify-between px-4 py-3 max-w-2xl mx-auto">
-          <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => navigate(-1)}>
+          <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() = aria-label="Voltar"> navigate(-1)}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <span className="text-sm font-medium">{cfg.label}</span>
-          <Button variant="ghost" size="icon" className="h-9 w-9" onClick={handleShare}>
+          <Button variant="ghost" size="icon" className="h-9 w-9" onClick={handleShare} aria-label="Compartilhar">
             <Share2 className="h-4 w-4" />
           </Button>
         </div>

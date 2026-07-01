@@ -132,7 +132,7 @@ class ErrorBoundary extends Component<Props, State> {
       const buttonLabel = this.state.isRecovering ? 'Atualizando...' : 'Atualizar agora';
 
       return (
-        <main className="min-h-screen bg-background text-foreground flex items-center justify-center p-6">
+        <main className="min-h-dvh bg-background text-foreground flex items-center justify-center p-6">
           <section className="w-full max-w-md rounded-2xl border border-border bg-card p-6 text-center shadow-xl">
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
               !

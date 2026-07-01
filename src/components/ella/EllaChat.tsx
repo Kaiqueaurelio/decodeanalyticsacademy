@@ -187,7 +187,7 @@ export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps)
             className="min-h-[44px] max-h-32 resize-none pr-12"
             disabled={loading}
           />
-          <Button size="icon" onClick={send} disabled={!input.trim() || loading} className="shrink-0 h-11 w-11">
+          <Button size="icon" onClick={send} disabled={!input.trim() || loading} className="shrink-0 h-11 w-11" aria-label="Botão">
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
           </Button>
         </div>

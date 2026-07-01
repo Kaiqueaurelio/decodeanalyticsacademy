@@ -391,7 +391,7 @@ export function PdfReader({ fileUrl, initialPage = 1, onProgress, onRequestReloa
           variant="ghost"
           size="icon"
           className="h-9 w-9 rounded-full"
-          onClick={() => setScale((s) => Math.max(0.5, s - 0.1))}
+          onClick={() = aria-label="Diminuir zoom"> setScale((s) => Math.max(0.5, s - 0.1))}
           title="Diminuir zoom"
         >
           <ZoomOut className="h-4 w-4" />
@@ -401,7 +401,7 @@ export function PdfReader({ fileUrl, initialPage = 1, onProgress, onRequestReloa
           variant="ghost"
           size="icon"
           className="h-9 w-9 rounded-full"
-          onClick={() => setScale((s) => Math.min(2.5, s + 0.1))}
+          onClick={() = aria-label="Aumentar zoom"> setScale((s) => Math.min(2.5, s + 0.1))}
           title="Aumentar zoom"
         >
           <ZoomIn className="h-4 w-4" />

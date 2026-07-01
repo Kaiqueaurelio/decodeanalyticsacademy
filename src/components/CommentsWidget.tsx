@@ -214,7 +214,7 @@ export function CommentsWidget({ contextType, contextId, compact = false }: Comm
               />
               <Button size="icon" className="h-[44px] w-[44px] shrink-0 gradient-primary text-primary-foreground"
                 disabled={submitting || !newComment.trim()}
-                onClick={handleSubmit}>
+                onClick={handleSubmit} aria-label="Botão">
                 {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
               </Button>
             </div>

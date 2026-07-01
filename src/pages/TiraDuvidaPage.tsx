@@ -71,7 +71,7 @@ export default function TiraDuvidaPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       <AppHeader />
 
       <main className="container max-w-3xl mx-auto px-4 py-6 pb-24">
@@ -131,7 +131,7 @@ export default function TiraDuvidaPage() {
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8 text-muted-foreground hover:text-destructive shrink-0"
-                      onClick={() => handleDelete(item)}
+                      onClick={() = aria-label="Excluir"> handleDelete(item)}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>

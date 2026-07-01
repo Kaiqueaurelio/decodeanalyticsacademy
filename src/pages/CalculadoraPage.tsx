@@ -93,7 +93,7 @@ function GradeRow({ row, onChange, onRemove }: {
             placeholder="Nome da disciplina"
             className="bg-background/40 border-border/60 font-semibold flex-1"
           />
-          <Button size="icon" variant="ghost" onClick={onRemove} className="h-9 w-9 text-muted-foreground hover:text-destructive">
+          <Button size="icon" variant="ghost" onClick={onRemove} className="h-9 w-9 text-muted-foreground hover:text-destructive" aria-label="Excluir">
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>
@@ -361,7 +361,7 @@ export default function CalculadoraPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       <AppHeader />
       <main className="container mx-auto px-4 py-6 pb-24 max-w-3xl">
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">

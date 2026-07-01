@@ -533,7 +533,7 @@ function PdfEngine(props: {
           className={`absolute inset-x-3 z-30 transition-opacity ${chrome ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} style={{ bottom: 'calc(60px + env(safe-area-inset-bottom))' }}
         >
           <div className="bg-background/90 backdrop-blur rounded-full px-3 py-2 flex items-center gap-2 border border-border/40 shadow-lg">
-            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setPage(Math.max(1, page - 1))}><ChevronLeft className="h-3.5 w-3.5" /></Button>
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() = aria-label="Anterior"> setPage(Math.max(1, page - 1))}><ChevronLeft className="h-3.5 w-3.5" /></Button>
             <Slider
               value={[page]}
               min={1}
@@ -542,7 +542,7 @@ function PdfEngine(props: {
               onValueChange={(v) => setPage(v[0])}
               className="flex-1"
             />
-            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setPage(Math.min(numPages, page + 1))}><ChevronRight className="h-3.5 w-3.5" /></Button>
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() = aria-label="Próximo"> setPage(Math.min(numPages, page + 1))}><ChevronRight className="h-3.5 w-3.5" /></Button>
             <span className="text-[10px] tabular-nums text-muted-foreground whitespace-nowrap">{page}/{numPages}</span>
           </div>
         </div>
@@ -679,11 +679,11 @@ function EpubEngine(props: {
 
       <div className={`absolute inset-x-3 z-30 transition-opacity ${chrome ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} style={{ bottom: 'calc(60px + env(safe-area-inset-bottom))' }}>
         <div className="bg-background/90 backdrop-blur rounded-full px-3 py-2 flex items-center gap-2 border border-border/40 shadow-lg">
-          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => renditionRef.current?.prev()}><ChevronLeft className="h-3.5 w-3.5" /></Button>
+          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() = aria-label="Anterior"> renditionRef.current?.prev()}><ChevronLeft className="h-3.5 w-3.5" /></Button>
           <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
             <div className="h-full bg-primary transition-all" style={{ width: `${pct}%` }} />
           </div>
-          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => renditionRef.current?.next()}><ChevronRight className="h-3.5 w-3.5" /></Button>
+          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() = aria-label="Próximo"> renditionRef.current?.next()}><ChevronRight className="h-3.5 w-3.5" /></Button>
           <span className="text-[10px] tabular-nums text-muted-foreground">{Math.round(pct)}%</span>
         </div>
       </div>
@@ -776,9 +776,9 @@ function TypographySheet(props: {
               </Section>
               <Section title={`Tamanho (${props.fontSize}%)`}>
                 <div className="flex items-center gap-2">
-                  <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => props.setFontSize(Math.max(70, props.fontSize - 10))}><Minus className="h-3 w-3" /></Button>
+                  <Button variant="outline" size="icon" className="h-8 w-8" onClick={() = aria-label="Remover"> props.setFontSize(Math.max(70, props.fontSize - 10))}><Minus className="h-3 w-3" /></Button>
                   <Slider value={[props.fontSize]} min={70} max={200} step={10} onValueChange={(v) => props.setFontSize(v[0])} />
-                  <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => props.setFontSize(Math.min(200, props.fontSize + 10))}><Plus className="h-3 w-3" /></Button>
+                  <Button variant="outline" size="icon" className="h-8 w-8" onClick={() = aria-label="Adicionar"> props.setFontSize(Math.min(200, props.fontSize + 10))}><Plus className="h-3 w-3" /></Button>
                 </div>
               </Section>
               <Section title={`Espaçamento (${props.lineHeight.toFixed(1)})`}>
@@ -873,7 +873,7 @@ function SearchSheet({ query, setQuery, results, onPickResult }: {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full"><Search className="h-4 w-4" /></Button>
+        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full" aria-label="Buscar"><Search className="h-4 w-4" /></Button>
       </SheetTrigger>
       <SheetContent side="right" className="w-[90vw] sm:w-80">
         <SheetHeader><SheetTitle>Buscar no livro</SheetTitle></SheetHeader>

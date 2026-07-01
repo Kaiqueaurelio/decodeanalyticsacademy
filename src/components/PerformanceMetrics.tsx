@@ -67,7 +67,7 @@ export function PerformanceMetrics() {
           </div>
           <div className="flex items-center gap-2">
             {healthBadge()}
-            <Button size="icon" variant="ghost" onClick={refresh} className="h-8 w-8">
+            <Button size="icon" variant="ghost" onClick={refresh} className="h-8 w-8" aria-label="Atualizar">
               <RefreshCw className="h-3.5 w-3.5" />
             </Button>
           </div>

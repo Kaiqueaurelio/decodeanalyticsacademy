@@ -223,7 +223,7 @@ export default function CommunityPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       <AppHeader />
       <div className="container mx-auto px-3 sm:px-4 py-4 max-w-7xl">
         <div className="mb-4 flex items-center gap-2">
@@ -388,7 +388,7 @@ export default function CommunityPage() {
                                   onSubmitShortcut={() => handleReply(post.id)}
                                 />
                               </div>
-                              <Button size="icon" className="h-9 w-9" onClick={() => handleReply(post.id)}>
+                              <Button size="icon" className="h-9 w-9" onClick={() = aria-label="Enviar"> handleReply(post.id)}>
                                 <Send className="h-3 w-3" />
                               </Button>
                             </div>

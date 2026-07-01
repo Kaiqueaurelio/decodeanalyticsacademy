@@ -90,7 +90,7 @@ export function GlobalAudioPlayer() {
                 size="icon"
                 onClick={skipPrevious}
                 className="h-8 w-8"
-              >
+               aria-label="Voltar">
                 <SkipBack size={16} />
               </Button>
 
@@ -99,7 +99,7 @@ export function GlobalAudioPlayer() {
                 size="icon"
                 onClick={isPlaying ? pause : resume}
                 className="h-8 w-8"
-              >
+               aria-label="Pausar">
                 {isPlaying ? <Pause size={16} /> : <Play size={16} />}
               </Button>
 
@@ -108,14 +108,14 @@ export function GlobalAudioPlayer() {
                 size="icon"
                 onClick={skipNext}
                 className="h-8 w-8"
-              >
+               aria-label="Avançar">
                 <SkipForward size={16} />
               </Button>
 
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => setShowExpanded(true)}
+                onClick={() = aria-label="Recolher"> setShowExpanded(true)}
                 className="h-8 w-8"
               >
                 <ChevronUp size={16} />
@@ -126,7 +126,7 @@ export function GlobalAudioPlayer() {
                 size="icon"
                 onClick={stop}
                 className="h-8 w-8"
-              >
+               aria-label="Botão">
                 <X size={16} />
               </Button>
             </div>
@@ -152,7 +152,7 @@ export function GlobalAudioPlayer() {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => setShowExpanded(false)}
+              onClick={() = aria-label="Recolher"> setShowExpanded(false)}
               className="h-8 w-8"
             >
               <ChevronUp size={20} />
@@ -163,7 +163,7 @@ export function GlobalAudioPlayer() {
               size="icon"
               onClick={stop}
               className="h-8 w-8"
-            >
+             aria-label="Botão">
               <X size={20} />
             </Button>
           </div>
@@ -203,7 +203,7 @@ export function GlobalAudioPlayer() {
                 size="icon"
                 onClick={skipPrevious}
                 className="h-10 w-10"
-              >
+               aria-label="Voltar">
                 <SkipBack size={24} />
               </Button>
 
@@ -212,7 +212,7 @@ export function GlobalAudioPlayer() {
                 size="icon"
                 onClick={isPlaying ? pause : resume}
                 className="h-14 w-14"
-              >
+               aria-label="Pausar">
                 {isPlaying ? <Pause size={28} /> : <Play size={28} />}
               </Button>
 
@@ -221,7 +221,7 @@ export function GlobalAudioPlayer() {
                 size="icon"
                 onClick={skipNext}
                 className="h-10 w-10"
-              >
+               aria-label="Avançar">
                 <SkipForward size={24} />
               </Button>
             </div>

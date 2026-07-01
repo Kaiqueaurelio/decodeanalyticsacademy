@@ -164,7 +164,7 @@ export default function ProfilePage() {
   const earnedBadges = gamification.badges.filter(b => gamification.earnedBadgeIds.includes(b.id));
 
   return (
-    <div className="min-h-screen bg-background selection:bg-primary/20">
+    <div className="min-h-dvh bg-background selection:bg-primary/20">
       <AppHeader />
       <main className="container py-6 px-4 max-w-2xl animate-content-show">
         <button onClick={() => navigate('/dashboard')} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground smooth-all mb-4">

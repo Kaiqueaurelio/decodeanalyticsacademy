@@ -18,7 +18,7 @@ export default function OfflinePage() {
   }, []);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-6 py-12">
+    <div className="min-h-dvh flex items-center justify-center bg-background px-6 py-12">
       <div className="max-w-md w-full text-center space-y-8 animate-fade-in">
         <img
           src={logoDecode}
