@@ -429,12 +429,23 @@ Deno.serve(async (req) => {
     const executedTools: any[] = [];
     const MAX_STEPS = 8;
 
+    let currentModel = MODEL;
     for (let step = 0; step < MAX_STEPS; step++) {
-      const res = await fetch(GATEWAY_URL, {
+      let res = await fetch(GATEWAY_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${LOVABLE_API_KEY}` },
-        body: JSON.stringify({ model: MODEL, messages, tools, tool_choice: "auto" }),
+        body: JSON.stringify({ model: currentModel, messages, tools, tool_choice: "auto" }),
       });
+
+      // Se o modelo Pro estourar limite/quota, cai para o Flash preview no mesmo turno.
+      if ((res.status === 429 || res.status === 503) && currentModel !== FALLBACK_MODEL) {
+        currentModel = FALLBACK_MODEL;
+        res = await fetch(GATEWAY_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${LOVABLE_API_KEY}` },
+          body: JSON.stringify({ model: currentModel, messages, tools, tool_choice: "auto" }),
+        });
+      }
 
       if (res.status === 429) return new Response(JSON.stringify({ error: "Limite de requisições, tente em instantes." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       if (res.status === 402) return new Response(JSON.stringify({ error: "Créditos de IA esgotados — adicione créditos no workspace." }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
