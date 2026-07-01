@@ -327,7 +327,7 @@ export default function AdminBibliotecaPage() {
                 <div className="flex items-center gap-1.5" title={b.published ? 'Despublicar' : 'Publicar'}>
                   <Switch checked={!!b.published} onCheckedChange={() => togglePublished(b)} />
                 </div>
-                <Button variant="ghost" size="icon" onClick={() = aria-label="Excluir"> remove(b.id)} className="h-8 w-8 text-destructive">
+                <Button variant="ghost" size="icon" onClick={() => remove(b.id)} className="h-8 w-8 text-destructive">
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>

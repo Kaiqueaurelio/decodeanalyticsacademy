@@ -56,7 +56,7 @@ export function EditorTopbar({ words, zoom, setZoom, status = 'idle', onToggleFo
             size="icon"
             variant="ghost"
             className="h-6 w-6"
-            onClick={() = aria-label="Remover"> {
+            onClick={() => {
               const idx = ZOOMS.indexOf(zoom);
               if (idx > 0) setZoom(ZOOMS[idx - 1]);
               else setZoom(Math.max(0.5, zoom - 0.1));
@@ -71,7 +71,7 @@ export function EditorTopbar({ words, zoom, setZoom, status = 'idle', onToggleFo
             size="icon"
             variant="ghost"
             className="h-6 w-6"
-            onClick={() = aria-label="Adicionar"> {
+            onClick={() => {
               const idx = ZOOMS.indexOf(zoom);
               if (idx >= 0 && idx < ZOOMS.length - 1) setZoom(ZOOMS[idx + 1]);
               else setZoom(Math.min(2, zoom + 0.1));
@@ -98,7 +98,7 @@ export function EditorTopbar({ words, zoom, setZoom, status = 'idle', onToggleFo
           size="icon"
           variant="ghost"
           className="h-6 w-6"
-          onClick={() = aria-label="Botão"> window.print()}
+          onClick={() => window.print()}
           title="Imprimir"
         >
           <Printer className="h-3 w-3" />

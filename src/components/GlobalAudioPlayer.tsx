@@ -115,7 +115,7 @@ export function GlobalAudioPlayer() {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() = aria-label="Recolher"> setShowExpanded(true)}
+                onClick={() => setShowExpanded(true)}
                 className="h-8 w-8"
               >
                 <ChevronUp size={16} />
@@ -152,7 +152,7 @@ export function GlobalAudioPlayer() {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() = aria-label="Recolher"> setShowExpanded(false)}
+              onClick={() => setShowExpanded(false)}
               className="h-8 w-8"
             >
               <ChevronUp size={20} />

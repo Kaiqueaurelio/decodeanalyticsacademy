@@ -226,7 +226,7 @@ export function ApostilaSocialSection({ apostilaId, apostilaTitle }: ApostilaSoc
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() = aria-label="Excluir"> deleteComment(comment.id)}
+                          onClick={() => deleteComment(comment.id)}
                           className="h-6 w-6 text-destructive hover:bg-destructive/10"
                         >
                           <Trash2 size={14} />

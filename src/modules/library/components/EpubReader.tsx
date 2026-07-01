@@ -116,10 +116,10 @@ export function EpubReader({ fileUrl, initialLocation, onProgress }: EpubReaderP
   return (
     <div className="relative flex flex-col w-full h-full bg-background">
       <div className="absolute top-3 right-3 z-20 flex gap-1">
-        <Button variant="secondary" size="icon" className="h-8 w-8" onClick={() = aria-label="Remover"> setFontSize((s) => Math.max(70, s - 10))}>
+        <Button variant="secondary" size="icon" className="h-8 w-8" onClick={() => setFontSize((s) => Math.max(70, s - 10))}>
           <Minus className="h-4 w-4" />
         </Button>
-        <Button variant="secondary" size="icon" className="h-8 w-8" onClick={() = aria-label="Adicionar"> setFontSize((s) => Math.min(180, s + 10))}>
+        <Button variant="secondary" size="icon" className="h-8 w-8" onClick={() => setFontSize((s) => Math.min(180, s + 10))}>
           <Plus className="h-4 w-4" />
         </Button>
         <Sheet>

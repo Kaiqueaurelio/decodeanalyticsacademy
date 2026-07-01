@@ -219,7 +219,7 @@ export function ApostilaMaterialsManager({ apostilaId, apostilaTitle, open: open
                       <Icon className="h-3.5 w-3.5 text-primary shrink-0" />
                       <span className="text-xs flex-1 truncate">{l.material.title}</span>
                       <span className="text-[9px] text-muted-foreground uppercase">{l.material.type}</span>
-                      <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive shrink-0" onClick={() = aria-label="Excluir"> removeMaterial(l.id)}>
+                      <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive shrink-0" onClick={() => removeMaterial(l.id)}>
                         <Trash2 className="h-3 w-3" />
                       </Button>
                     </div>

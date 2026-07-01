@@ -388,7 +388,7 @@ export default function CommunityPage() {
                                   onSubmitShortcut={() => handleReply(post.id)}
                                 />
                               </div>
-                              <Button size="icon" className="h-9 w-9" onClick={() = aria-label="Enviar"> handleReply(post.id)}>
+                              <Button size="icon" className="h-9 w-9" onClick={() => handleReply(post.id)}>
                                 <Send className="h-3 w-3" />
                               </Button>
                             </div>

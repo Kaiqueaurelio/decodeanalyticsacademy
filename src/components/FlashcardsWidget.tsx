@@ -96,7 +96,7 @@ export function FlashcardsWidget({ apostilaId }: Props) {
               <Brain className="h-3.5 w-3.5 text-primary" />
             </Button>
           )}
-          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() = aria-label="Adicionar"> setShowForm(!showForm)}>
+          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setShowForm(!showForm)}>
             <Plus className="h-3.5 w-3.5" />
           </Button>
         </div>

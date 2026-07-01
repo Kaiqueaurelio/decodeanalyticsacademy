@@ -189,7 +189,7 @@ export function TiraDuvidaDialog({ open, onOpenChange }: Props) {
                     variant="secondary"
                     size="icon"
                     className="absolute top-2 right-2 h-8 w-8"
-                    onClick={() = aria-label="Botão"> { setPreview(null); setSelectedFile(null); }}
+                    onClick={() => { setPreview(null); setSelectedFile(null); }}
                     disabled={loading}
                   >
                     <X className="h-4 w-4" />
