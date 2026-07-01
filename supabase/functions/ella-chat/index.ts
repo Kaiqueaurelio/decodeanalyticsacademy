@@ -10,9 +10,11 @@ const corsHeaders = {
 };
 
 const GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
-// Modelo mais potente do Gemini para raciocínio agentic (tool-calling profundo).
-const MODEL = "google/gemini-2.5-pro";
+// Prioriza velocidade: Gemini 3.5 Flash (agentic, tool-calling forte, baixa latência).
+// Fallback para o Flash preview em caso de quota.
+const MODEL = "google/gemini-3.5-flash";
 const FALLBACK_MODEL = "google/gemini-3-flash-preview";
+const SECOND_FALLBACK_MODEL = "google/gemini-2.5-flash";
 
 type ChatMsg = {
   role: "system" | "user" | "assistant" | "tool";
