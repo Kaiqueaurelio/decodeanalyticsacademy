@@ -1,5 +1,6 @@
 // Edge function: Ella — assistente admin com poder de criar/editar/excluir
 // no app via tool calling no Lovable AI Gateway.
+// redeploy trigger
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
