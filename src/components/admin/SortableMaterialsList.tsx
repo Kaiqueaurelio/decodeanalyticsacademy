@@ -95,7 +95,7 @@ export function SortableMaterialsList({ items, onReorder, onRemove }: Props) {
             <span className="text-[9px] text-muted-foreground uppercase">{item.material.type}</span>
             <Button
               size="icon" variant="ghost" className="h-7 w-7 text-destructive shrink-0"
-              onClick={() = aria-label="Excluir"> onRemove(item.id)}
+              onClick={() => onRemove(item.id)}
               title="Remover"
             >
               <Trash2 className="h-3 w-3" />

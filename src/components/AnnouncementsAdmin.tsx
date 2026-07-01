@@ -318,13 +318,13 @@ export function AnnouncementsAdmin() {
                       </p>
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
-                      <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() = aria-label="Visualizar"> togglePublished(a)}>
+                      <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => togglePublished(a)}>
                         {a.published ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
                       </Button>
-                      <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() = aria-label="Editar"> openEdit(a)}>
+                      <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => openEdit(a)}>
                         <Edit className="h-3.5 w-3.5" />
                       </Button>
-                      <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() = aria-label="Excluir"> handleDelete(a.id)}>
+                      <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => handleDelete(a.id)}>
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>
                     </div>
@@ -437,7 +437,7 @@ export function AnnouncementsAdmin() {
                       variant="ghost" 
                       size="icon" 
                       className="h-10 w-10 text-destructive hover:bg-destructive/10"
-                      onClick={() = aria-label="Botão"> setImageUrl('')}
+                      onClick={() => setImageUrl('')}
                     >
                       <X className="h-4 w-4" />
                     </Button>

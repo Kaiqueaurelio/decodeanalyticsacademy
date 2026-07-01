@@ -156,7 +156,7 @@ export function NotificationBell() {
                         variant="ghost"
                         size="icon"
                         className="h-6 w-6"
-                        onClick={(e) = aria-label="Excluir"> {
+                        onClick={(e) => {
                           e.stopPropagation();
                           remove(n.id);
                         }}

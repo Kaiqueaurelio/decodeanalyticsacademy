@@ -201,7 +201,7 @@ export function VideoPlayerPro({ src, title, poster }: VideoPlayerProProps) {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() = aria-label="Voltar"> handleSkip(-10)}
+                onClick={() => handleSkip(-10)}
                 className="h-8 w-8 text-white hover:bg-white/20"
                 title="Voltar 10s"
               >
@@ -211,7 +211,7 @@ export function VideoPlayerPro({ src, title, poster }: VideoPlayerProProps) {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() = aria-label="Avançar"> handleSkip(10)}
+                onClick={() => handleSkip(10)}
                 className="h-8 w-8 text-white hover:bg-white/20"
                 title="Avançar 10s"
               >
@@ -223,7 +223,7 @@ export function VideoPlayerPro({ src, title, poster }: VideoPlayerProProps) {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() = aria-label="Silenciar"> setVolume(volume === 0 ? 1 : 0)}
+                  onClick={() => setVolume(volume === 0 ? 1 : 0)}
                   className="h-8 w-8 text-white hover:bg-white/20"
                 >
                   {volume === 0 ? <VolumeX size={16} /> : <Volume2 size={16} />}
@@ -255,7 +255,7 @@ export function VideoPlayerPro({ src, title, poster }: VideoPlayerProProps) {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() = aria-label="Configurações"> setShowSettings(!showSettings)}
+                  onClick={() => setShowSettings(!showSettings)}
                   className="h-8 w-8 text-white hover:bg-white/20"
                 >
                   <Settings size={16} />
