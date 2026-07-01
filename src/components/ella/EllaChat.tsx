@@ -5,7 +5,9 @@ import { Send, Loader2, Sparkles, CheckCircle2, AlertCircle, Wand2 } from "lucid
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { invokeFunction } from "@/lib/invoke-function";
+import { getEllaAvatarUrl } from "@/lib/ellaAvatar";
 import { cn } from "@/lib/utils";
 
 type Msg = { role: "user" | "assistant"; content: string; actions?: any[] };
@@ -86,13 +88,16 @@ export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps)
   return (
     <div className={cn("flex flex-col h-full bg-background", compact ? "" : "")}>
       <div className="flex items-center justify-between px-4 py-3 border-b border-border/50">
-        <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-            <Sparkles className="h-4 w-4 text-primary-foreground" />
-          </div>
+        <div className="flex items-center gap-3">
+          <Avatar className="h-10 w-10 ring-2 ring-primary/40">
+            <AvatarImage src={getEllaAvatarUrl()} alt="Ella Ribeiro" />
+            <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-primary-foreground">
+              <Sparkles className="h-4 w-4" />
+            </AvatarFallback>
+          </Avatar>
           <div>
-            <p className="text-sm font-semibold">Ella</p>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Copiloto admin</p>
+            <p className="text-sm font-semibold leading-tight">Ella Ribeiro</p>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Copiloto executiva</p>
           </div>
         </div>
         {messages.length > 0 && (
@@ -128,9 +133,12 @@ export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps)
           {messages.map((m, i) => (
             <div key={i} className={cn("flex gap-3", m.role === "user" ? "justify-end" : "")}>
               {m.role === "assistant" && (
-                <div className="h-7 w-7 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center shrink-0">
-                  <Sparkles className="h-3.5 w-3.5 text-primary-foreground" />
-                </div>
+                <Avatar className="h-8 w-8 shrink-0 ring-1 ring-border/60">
+                  <AvatarImage src={getEllaAvatarUrl()} alt="Ella" />
+                  <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-primary-foreground">
+                    <Sparkles className="h-3.5 w-3.5" />
+                  </AvatarFallback>
+                </Avatar>
               )}
               <div className={cn(
                 "max-w-[85%] rounded-2xl px-4 py-2.5 text-sm",
@@ -163,9 +171,12 @@ export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps)
 
           {loading && (
             <div className="flex gap-3">
-              <div className="h-7 w-7 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-                <Sparkles className="h-3.5 w-3.5 text-primary-foreground animate-pulse" />
-              </div>
+              <Avatar className="h-8 w-8 shrink-0 ring-1 ring-primary/40 animate-pulse">
+                <AvatarImage src={getEllaAvatarUrl()} alt="Ella" />
+                <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-primary-foreground">
+                  <Sparkles className="h-3.5 w-3.5" />
+                </AvatarFallback>
+              </Avatar>
               <div className="bg-muted/50 rounded-2xl px-4 py-2.5 flex items-center gap-2">
                 <Loader2 className="h-3 w-3 animate-spin" />
                 <span className="text-xs text-muted-foreground">Ella está pensando…</span>

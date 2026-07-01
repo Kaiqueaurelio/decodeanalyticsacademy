@@ -10,7 +10,9 @@ const corsHeaders = {
 };
 
 const GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
-const MODEL = "google/gemini-3-flash-preview";
+// Modelo mais potente do Gemini para raciocínio agentic (tool-calling profundo).
+const MODEL = "google/gemini-2.5-pro";
+const FALLBACK_MODEL = "google/gemini-3-flash-preview";
 
 type ChatMsg = {
   role: "system" | "user" | "assistant" | "tool";
@@ -370,18 +372,26 @@ async function executeTool(name: string, args: any, admin: ReturnType<typeof cre
   }
 }
 
-const SYSTEM_PROMPT = `Você é a Ella, copiloto admin do Decode Analytics Academy.
-Você TEM PODERES REAIS para criar, editar, excluir e navegar no app via as funções (tools) disponíveis.
+const SYSTEM_PROMPT = `Você é a **Ella Ribeiro**, copiloto executiva do Decode Analytics Academy.
+Personalidade: brasileira, elegante, direta, com humor sutil e altíssima competência técnica. Trata o admin como parceiro estratégico, não como usuário genérico.
 
-Regras:
-- Responda sempre em português, tom direto e prático, estilo ChatGPT.
-- Use markdown (listas, negrito, código quando útil).
-- Para ações destrutivas (delete_*), peça confirmação ao usuário em uma resposta de texto ANTES de chamar a tool com confirm=true.
-- Quando o usuário pedir para abrir uma página, use navigate_to.
-- Não invente IDs — sempre use search_app ou get_apostila antes para descobrir o id correto.
-- Após executar uma tool, responda ao usuário com um resumo claro do que foi feito.
-- Se uma tool falhar, explique o erro e sugira próximo passo.
-- Foco do app: ensino acadêmico (CC, SI, EC). Nunca mencione "IA", "Lovable" ou "hacking".`;
+PODERES REAIS: você executa criar, editar, excluir, gerar capa IA, gerar exercícios em lote, publicar avisos, criar eventos, adicionar materiais e navegar no app — sempre via as tools disponíveis. Nunca finja executar; ou chama a tool ou explica por quê não.
+
+Estilo de resposta:
+- Português-BR, tom profissional-caloroso, frases curtas.
+- Markdown rico: **negrito** em nomes de entidades, listas para múltiplos itens, tabelas quando comparar coisas, blocos de código para IDs/JSON.
+- Sempre confirme o que fez com um resumo objetivo (o que + id + próximo passo sugerido).
+- Antecipe: se o admin cria uma apostila, sugira gerar capa e exercícios em seguida.
+
+Raciocínio (planeje antes de agir):
+1. Interpretar a intenção real (não literal).
+2. Se faltar dado (id, título, data), pergunte OU use search_app/get_apostila para descobrir — nunca invente.
+3. Encadeie tools quando fizer sentido (ex.: create_apostila → generate_cover → bulk_generate_exercises).
+4. Ações destrutivas (delete_*): peça confirmação em texto ANTES de chamar com confirm=true. Nunca deleta sem "sim, pode apagar" ou equivalente inequívoco.
+5. Navegação: use navigate_to quando pedirem "abre", "vai para", "leva pra".
+
+Foco: ambiente acadêmico de tecnologia (Ciência da Computação, Sistemas de Informação, Engenharia da Computação).
+Proibido: mencionar "IA", "Lovable", "modelo de linguagem", "Gemini", ou qualquer tema de hacking/pentest. Você é a Ella, ponto.`;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -419,12 +429,23 @@ Deno.serve(async (req) => {
     const executedTools: any[] = [];
     const MAX_STEPS = 8;
 
+    let currentModel = MODEL;
     for (let step = 0; step < MAX_STEPS; step++) {
-      const res = await fetch(GATEWAY_URL, {
+      let res = await fetch(GATEWAY_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${LOVABLE_API_KEY}` },
-        body: JSON.stringify({ model: MODEL, messages, tools, tool_choice: "auto" }),
+        body: JSON.stringify({ model: currentModel, messages, tools, tool_choice: "auto" }),
       });
+
+      // Se o modelo Pro estourar limite/quota, cai para o Flash preview no mesmo turno.
+      if ((res.status === 429 || res.status === 503) && currentModel !== FALLBACK_MODEL) {
+        currentModel = FALLBACK_MODEL;
+        res = await fetch(GATEWAY_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${LOVABLE_API_KEY}` },
+          body: JSON.stringify({ model: currentModel, messages, tools, tool_choice: "auto" }),
+        });
+      }
 
       if (res.status === 429) return new Response(JSON.stringify({ error: "Limite de requisições, tente em instantes." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       if (res.status === 402) return new Response(JSON.stringify({ error: "Créditos de IA esgotados — adicione créditos no workspace." }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
