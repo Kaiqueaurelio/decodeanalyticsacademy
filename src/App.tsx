@@ -117,6 +117,7 @@ function AnimatedRoutes() {
         <Route path="/desempenho" element={<ProtectedRoute><PerformancePage /></ProtectedRoute>} />
         <Route path="/performance" element={<Navigate to="/desempenho" replace />} />
         <Route path="/review" element={<ProtectedRoute><ReviewPage /></ProtectedRoute>} />
+        <Route path="/revisao" element={<Navigate to="/review" replace />} />
         <Route path="/simulado" element={<ProtectedRoute><SimuladoPage /></ProtectedRoute>} />
         <Route path="/revisao-prova/:eventId" element={<ProtectedRoute><PreExamReviewPage /></ProtectedRoute>} />
         <Route path="/apostila/:id" element={<ProtectedRoute><ApostilaPage /></ProtectedRoute>} />
@@ -124,6 +125,7 @@ function AnimatedRoutes() {
         <Route path="/exercicios" element={<ProtectedRoute><ExerciciosIndexPage /></ProtectedRoute>} />
         <Route path="/exercises" element={<Navigate to="/exercicios" replace />} />
         <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+        <Route path="/perfil" element={<Navigate to="/profile" replace />} />
         <Route path="/materials" element={<ProtectedRoute><MaterialsPage /></ProtectedRoute>} />
         <Route path="/materiais" element={<Navigate to="/materials" replace />} />
         <Route path="/biblioteca" element={<ProtectedRoute><BibliotecaPage /></ProtectedRoute>} />

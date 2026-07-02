@@ -8,7 +8,7 @@ export type Flashcard = {
   id: string;
   question: string;
   answer: string;
-  next_review_at: string;
+  next_review: string;
 };
 
 export const useFlashcards = () => {
@@ -23,7 +23,7 @@ export const useFlashcards = () => {
       .from('flashcards')
       .select('*')
       .eq('user_id', user.id)
-      .lte('next_review_at', new Date().toISOString())
+      .lte('next_review', new Date().toISOString())
       .order('created_at', { ascending: true });
 
     if (error) {
@@ -46,9 +46,9 @@ export const useFlashcards = () => {
     const { error } = await supabase
       .from('flashcards')
       .update({ 
-        next_review_at: nextReview.toISOString(),
+        next_review: nextReview.toISOString(),
         last_reviewed_at: new Date().toISOString(),
-        difficulty
+        difficulty,
       })
       .eq('id', cardId);
 
