@@ -35,7 +35,7 @@ export default function DashboardPage() {
   const stats = statsData || { total: 0, hits: 0, errors: 0, byApostila: {} };
   const loading = loadingApostilas || loadingStats;
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const categoryGroups = useMemo(() => buildCategoryGroups(apostilas), [apostilas]);
+  
 
   useEffect(() => {
     if (!user) return;
