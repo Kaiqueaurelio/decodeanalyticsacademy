@@ -27,8 +27,7 @@ export function MobileBottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
-  const { items: notifItems } = useNotifications();
-  const unreadCount = notifItems.filter((n) => !n.read).length;
+  const { unreadCount } = useNotifications();
 
   // Não exibir na landing, login, reset-password e termos (rotas públicas)
   const hiddenRoutes = ['/', '/login', '/reset-password', '/termos'];
