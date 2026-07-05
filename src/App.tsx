@@ -22,6 +22,7 @@ import { PersistentAdSpot } from "@/components/PersistentAdSpot";
 import { TermsFooterLink } from "@/components/TermsFooterLink";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { EllaSidebar } from "@/components/ella/EllaSidebar";
+import { PageTransition } from "@/components/PageTransition";
 
 // Paginas criticas no bundle inicial
 import LandingPage from "./pages/LandingPage";
@@ -106,6 +107,7 @@ function AnimatedRoutes() {
     <>
       {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} />}
       <Suspense fallback={<PageSkeleton />}>
+      <PageTransition>
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
@@ -143,6 +145,7 @@ function AnimatedRoutes() {
         <Route path="/admin/*" element={<ProtectedRoute adminOnly><AdminPage /></ProtectedRoute>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
+      </PageTransition>
     </Suspense>
     </>
   );
