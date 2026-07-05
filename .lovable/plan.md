@@ -1,66 +1,71 @@
-## Objetivo
+# Melhorias sugeridas para o Decode Analytics Academy
 
-Transformar a Ella em uma assistente tipo ChatGPT focada no app, com poder de **criar, editar e excluir** conteúdo via chat (apenas para admins).
+Baseado na análise do app (dashboard, Ella, biblioteca, gamificação, admin), aqui está um roadmap priorizado. Cada item indica **impacto** (🔥 alto / ⚡ médio / ✨ polish) e **esforço** (S/M/L).
 
-## Escopo confirmado
-- **Permissão:** somente admins (`has_role(uid, 'admin')`). Alunos continuam usando os chats existentes.
-- **Ações:** Apostilas, Exercícios/Flashcards, Calendário/Avisos, Navegação/Materiais.
-- **Interface:** página dedicada `/ella` + painel lateral global (FAB que abre Sheet em qualquer tela).
+## 1. Performance & Estabilidade
 
-## Arquitetura
+- 🔥 **S — Lazy load de rotas pesadas**: `AdminApostilaWorkbench`, `EllaPage`, `BibliotecaPage`, `PlayBooksPage`, `SimuladoPage` via `React.lazy` + `Suspense`. Reduz o bundle inicial e acelera o TTI no mobile (viewport atual 414px).
+- 🔥 **S — Prefetch de dados no hover** dos cards de apostila (usar `queryClient.prefetchQuery`), tornando a abertura quase instantânea.
+- ⚡ **M — Virtualização** da grade "Minhas Disciplinas" e do `StudyFeedSection` quando houver >30 itens (`@tanstack/react-virtual`).
+- ⚡ **S — Skeletons consistentes**: hoje há mistura de `animate-pulse` cru e `PageSkeleton`. Padronizar em todas as seções do dashboard.
+- ✨ **S — Web Vitals no `DiagnosticsPanel`** (LCP, INP, CLS) para monitorar regressões.
 
-```text
-[UI Ella]  ──► [edge fn: ella-chat]  ──► [Lovable AI Gateway]
-   ▲                  │                    (gemini-3-flash-preview)
-   │                  │
-   │                  ├─ valida admin (has_role)
-   │                  ├─ streamText + tools (AI SDK)
-   │                  └─ executa tools via supabase service_role
-   │
-   └─ renderiza markdown + cards de tool result
-```
+## 2. Ella Copilot
 
-### Edge function `ella-chat`
-- Recebe `{ messages: UIMessage[] }`.
-- Valida JWT, busca user_id, verifica `has_role(uid,'admin')`. Se não admin → 403.
-- `streamText` com `stopWhen: stepCountIs(50)` e tools:
-  - **Apostilas:** `list_apostilas`, `get_apostila`, `create_apostila`, `update_apostila`, `delete_apostila`, `publish_apostila`, `generate_cover` (chama fn existente).
-  - **Exercícios:** `list_exercises`, `create_exercise`, `update_exercise`, `delete_exercise`, `bulk_generate_exercises` (chama fn existente `generate-exercises`).
-  - **Flashcards:** `create_flashcard`, `delete_flashcard`.
-  - **Calendário/Avisos:** `create_calendar_event`, `update_calendar_event`, `delete_calendar_event`, `create_announcement`, `delete_announcement`.
-  - **Materiais:** `add_material_link`, `delete_material`.
-  - **Navegação/busca:** `search_app` (apostilas/exerc), `navigate_to` (devolve intent que cliente executa).
-- Tools que mutam dados retornam `{ ok, id, summary }` curto.
-- Resposta `toUIMessageStreamResponse`.
+- 🔥 **M — Streaming de resposta** (SSE) na edge `ella-chat` em vez de aguardar payload completo — reduz percepção de latência drasticamente.
+- 🔥 **S — Indicador "Ella está pensando/consultando X"** durante tool calls, com o nome da ferramenta em execução.
+- ⚡ **M — Memória de conversa curta** (últimas 5 threads) persistida em `ella_threads` para continuidade entre sessões.
+- ⚡ **S — Sugestões contextuais** na tela (chips "resumir esta apostila", "gerar flashcards daqui") quando a Ella é aberta dentro de `/apostila/:id`.
+- ✨ **S — Atalho global** `Ctrl/Cmd+K` já existe no `CommandPalette`; adicionar `Ctrl/Cmd+J` para abrir a Ella.
 
-### Frontend
-- **`src/pages/EllaPage.tsx`** (rota `/ella`, admin-only): chat fullscreen com AI Elements (Conversation, Message, MessageResponse, PromptInput, Tool).
-- **`src/components/ella/EllaSidebar.tsx`**: FAB (canto inferior direito, oculto em landing/login) que abre um Sheet com o mesmo chat; injeta contexto da rota atual no system prompt.
-- **`src/components/ella/EllaChat.tsx`**: componente compartilhado (useChat com `DefaultChatTransport` apontando para `ella-chat`).
-- Mensagens persistidas em `localStorage` por sessão (sem threads).
-- Tool calls renderizadas com `<Tool defaultOpen={false}>`; navegação executada via `useNavigate`.
+## 3. Dashboard & UX
 
-### Rota & rede
-- Add `/ella` em `App.tsx` com `<ProtectedRoute adminOnly>`.
-- `EllaSidebar` montado em `App.tsx` ao lado do `MobileBottomNav`; oculto em `['/', '/login', '/reset-password', '/termos']` e quando user não é admin.
+- 🔥 **S — Consolidar seções redundantes**: `StudyFeedSection`, `DisciplineFlowSection`, `QuickPracticeSection` e `EndlessHintSection` repetem materiais/exercícios já mostrados acima. Recomendo colapsar em **uma** seção "Continuar estudando" (feed único) + "Revisão rápida". Reduz altura da página em ~40% e melhora foco.
+- ⚡ **S — Card "Retomar de onde parou"** promovido para logo abaixo do `HeroGreetingCard` no mobile (hoje `ContinueWhereLeftCard` existe mas fica escondido).
+- ⚡ **M — Filtros persistentes** (semestre, disciplina, status) na grade de disciplinas, salvos em `localStorage`.
+- ✨ **S — Densidade do mobile**: no viewport 414px, `grid-cols-2` fica apertado; usar `grid-cols-1` até 380px e ajustar padding.
 
-## Segurança
-- Toda mutação roda no edge fn com `service_role` **depois** de validar admin.
-- Tools destrutivas (delete) exigem confirmação textual no payload (ex.: `confirm: true`) e a Ella só passa `confirm: true` após o usuário confirmar no chat.
-- Rate limit simples (10 tool calls/min por user) via memória de função.
+## 4. Estudo & Aprendizado
 
-## Fluidez landing page
-- Bottom nav já corrigido (não aparece mais em `/`).
-- Pequenos ajustes: garantir que `AdFooterMobile`, `PersistentAdSpot`, `AdPopup` também respeitem rotas públicas (apenas verificação rápida).
+- 🔥 **M — Modo Foco**: fullscreen na apostila com Pomodoro embutido, oculta sidebar/ads, marca sessão de estudo automaticamente para gamificação.
+- 🔥 **M — Revisão SRS unificada**: hoje flashcards e "Caderno de erros" (`MistakesNotebookCard`) são separados. Unir em uma fila diária "Revisar hoje" já existente (`ReviewTodayCard`) com contador no sidebar.
+- ⚡ **M — Highlight + anotação inline** na apostila com salvamento automático (parcialmente em `AnnotationsPanel`, falta o gesto de selecionar texto).
+- ⚡ **S — Progresso de leitura por scroll** já existe; expor barra fina no topo do `ApostilaPage` (estilo Medium).
 
-## Out of scope
-- Threads/histórico em DB (usar localStorage por enquanto).
-- Voz/áudio.
-- Permissões granulares para alunos.
+## 5. Gamificação & Engajamento
 
-## Entregáveis
-1. `supabase/functions/ella-chat/index.ts` + deploy.
-2. `src/components/ella/EllaChat.tsx`, `EllaSidebar.tsx`.
-3. `src/pages/EllaPage.tsx` + rota.
-4. Fix bottom nav (já aplicado) + checagem nos demais overlays.
-5. Memória atualizada com o novo padrão da Ella.
+- ⚡ **S — Streak em risco**: notificação/toast quando faltar <4h para perder o streak do dia.
+- ⚡ **S — Badges visuais no perfil** com progresso ("faltam 3 apostilas para desbloquear Maratonista").
+- ✨ **S — Comparativo semanal** no `WeeklyGoalWidget`: "você estudou +18% vs semana passada".
+
+## 6. Admin
+
+- ⚡ **M — Bulk actions** na lista de apostilas (publicar/arquivar/mover categoria em lote).
+- ⚡ **S — Diff visual** ao reimportar apostila existente, para evitar sobrescrever manualmente.
+- ✨ **S — Atalho de teclado** para salvar no `AdminApostilaWorkbench` (`Ctrl+S`).
+
+## 7. Mobile / PWA
+
+- 🔥 **S — Bottom nav com badge** de notificações e revisões pendentes (`MobileBottomNav` hoje sem badges).
+- ⚡ **M — Offline real para apostilas favoritas**: service worker faz cache do HTML da apostila + imagens.
+- ✨ **S — Haptics** nos gestos de swipe (`SwipeableRow`).
+
+## 8. Acessibilidade & Polish
+
+- ⚡ **S — `aria-label` faltantes** em botões-ícone (varredura no `src/components`).
+- ⚡ **S — Foco visível** consistente em cards clicáveis do dashboard.
+- ✨ **S — Modo alto contraste** como toggle no perfil.
+
+---
+
+## Como quer prosseguir?
+
+Sugiro começar por **um bloco pequeno e de alto impacto**:
+
+**Sprint 1 recomendado (rápido, alto impacto):**
+1. Lazy load de rotas pesadas (1)
+2. Streaming da Ella + indicador de tool call (2)
+3. Consolidar seções redundantes do dashboard (3)
+4. Bottom nav com badges (7)
+
+Me diga qual bloco (ou combinação) você quer que eu implemente e eu volto com um plano detalhado com arquivos e mudanças específicas.

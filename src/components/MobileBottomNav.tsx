@@ -5,6 +5,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { SidebarContent } from '@/components/dashboard/StudentSidebar';
 import { useAuth } from '@/hooks/useAuth';
+import { useNotifications } from '@/hooks/useNotifications';
 import { cn } from '@/lib/utils';
 
 const mainItems = [
@@ -26,6 +27,7 @@ export function MobileBottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
+  const { unreadCount } = useNotifications();
 
   // Não exibir na landing, login, reset-password e termos (rotas públicas)
   const hiddenRoutes = ['/', '/login', '/reset-password', '/termos'];
@@ -77,10 +79,17 @@ export function MobileBottomNav() {
             <SheetTrigger asChild>
               <Button
                 variant="ghost"
-                className="flex min-h-[54px] h-auto flex-col items-center justify-center gap-1 rounded-xl px-1 text-[10px] font-semibold leading-none text-muted-foreground hover:bg-muted/60 hover:text-foreground touch-manipulation"
-                aria-label="Abrir menu completo"
+                className="relative flex min-h-[54px] h-auto flex-col items-center justify-center gap-1 rounded-xl px-1 text-[10px] font-semibold leading-none text-muted-foreground hover:bg-muted/60 hover:text-foreground touch-manipulation"
+                aria-label={unreadCount > 0 ? `Abrir menu completo — ${unreadCount} notificações não lidas` : 'Abrir menu completo'}
               >
-                <Menu className="h-[19px] w-[19px]" strokeWidth={2.2} />
+                <div className="relative">
+                  <Menu className="h-[19px] w-[19px]" strokeWidth={2.2} />
+                  {unreadCount > 0 && (
+                    <span className="absolute -right-1.5 -top-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold text-primary-foreground shadow-sm ring-2 ring-background">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  )}
+                </div>
                 <span>Menu</span>
               </Button>
             </SheetTrigger>
