@@ -144,20 +144,9 @@ export default function DashboardPage() {
           </section>
 
           <Reveal from="bottom" delay={60}>
-            <StudyFeedSection apostilas={apostilas} exerciseCounts={exerciseCounts} />
+            <ContinueWhereLeftCard />
           </Reveal>
 
-          <Reveal from="bottom" delay={70}>
-            <DisciplineFlowSection groups={categoryGroups} />
-          </Reveal>
-
-          <Reveal from="bottom" delay={80}>
-            <QuickPracticeSection apostilas={apostilas} exerciseCounts={exerciseCounts} />
-          </Reveal>
-
-          <Reveal from="bottom" delay={90}>
-            <EndlessHintSection />
-          </Reveal>
 
           <footer className="flex flex-col items-center justify-center gap-3 py-10 mt-6 border-t border-border/30 text-center text-[10px] text-muted-foreground/60">
             <TermsFooterLink variant="inline" />
