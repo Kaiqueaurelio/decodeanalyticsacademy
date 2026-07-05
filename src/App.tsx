@@ -107,6 +107,7 @@ function AnimatedRoutes() {
     <>
       {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} />}
       <Suspense fallback={<PageSkeleton />}>
+      <PageTransition>
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
@@ -144,6 +145,7 @@ function AnimatedRoutes() {
         <Route path="/admin/*" element={<ProtectedRoute adminOnly><AdminPage /></ProtectedRoute>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
+      </PageTransition>
     </Suspense>
     </>
   );
