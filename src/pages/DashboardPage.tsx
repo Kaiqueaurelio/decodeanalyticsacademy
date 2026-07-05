@@ -16,9 +16,10 @@ import { Reveal } from '@/components/Reveal';
 import { ExamCalendarWidget } from '@/components/ExamCalendarWidget';
 import { OnboardingTour } from '@/components/OnboardingTour';
 import { TermsFooterLink } from '@/components/TermsFooterLink';
+import { ContinueWhereLeftCard } from '@/components/ContinueWhereLeftCard';
 import { useApostilasList, useExerciseCounts, useDashboardStats, type ApostilaSummary } from '@/hooks/queries/useDashboardData';
 import { useUserProfile } from '@/hooks/queries/useUserProfile';
-import { ArrowRight, BookOpen, ClipboardList, Layers3, Library, PenLine, Sparkles } from 'lucide-react';
+import { BookOpen } from 'lucide-react';
 
 function buildCategoryGroups(apostilas: ApostilaSummary[]) {
   return apostilas.reduce((acc, apostila) => {
