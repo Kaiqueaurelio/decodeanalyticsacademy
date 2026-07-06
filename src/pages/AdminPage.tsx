@@ -2930,6 +2930,9 @@ export default function AdminPage() {
             {tab === 'ads-chat' && (
               <AdsChatBuilder />
             )}
+            {tab === 'rss' && (
+              <RssFeedsManager />
+            )}
             </div>
           </main>
         </div>
