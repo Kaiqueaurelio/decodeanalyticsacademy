@@ -1,8 +1,9 @@
 // Edge function: agrega feeds RSS de tecnologia e devolve JSON unificado.
 // Isolado — não altera nenhuma função/rota existente.
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
+import { createClient } from 'npm:@supabase/supabase-js@2';
 
-const FEEDS: { url: string; source: string }[] = [
+const DEFAULT_FEEDS: { url: string; source: string }[] = [
   { url: 'https://feeds.feedburner.com/canaltechbr', source: 'Canaltech' },
   { url: 'https://tecnoblog.net/feed/', source: 'Tecnoblog' },
   { url: 'https://openrss.org/https://olhardigital.com.br', source: 'Olhar Digital' },
@@ -12,6 +13,24 @@ const FEEDS: { url: string; source: string }[] = [
   { url: 'https://www.hardware.com.br/feed/', source: 'Hardware.com.br' },
   { url: 'https://www.baguete.com.br/rss', source: 'Baguete' },
 ];
+
+async function loadFeeds(): Promise<{ url: string; source: string }[]> {
+  try {
+    const url = Deno.env.get('SUPABASE_URL');
+    const key = Deno.env.get('SUPABASE_ANON_KEY') || Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    if (!url || !key) return DEFAULT_FEEDS;
+    const client = createClient(url, key);
+    const { data } = await client
+      .from('rss_feeds')
+      .select('url, source, enabled, sort_order')
+      .eq('enabled', true)
+      .order('sort_order', { ascending: true });
+    if (data && data.length > 0) return data.map((r: any) => ({ url: r.url, source: r.source }));
+    return DEFAULT_FEEDS;
+  } catch {
+    return DEFAULT_FEEDS;
+  }
+}
 
 interface NewsItem {
   id: string;
@@ -124,6 +143,7 @@ async function fetchFeed(url: string, source: string): Promise<NewsItem[]> {
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
   try {
+    const FEEDS = await loadFeeds();
     const results = await Promise.all(FEEDS.map((f) => fetchFeed(f.url, f.source)));
     const errors = results.map((r, i) => (r.length === 0 ? FEEDS[i].source : null)).filter(Boolean);
     const all = results.flat();

@@ -1568,6 +1568,36 @@ export type Database = {
           },
         ]
       }
+      rss_feeds: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          id: string
+          sort_order: number
+          source: string
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          sort_order?: number
+          source: string
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          sort_order?: number
+          source?: string
+          updated_at?: string
+          url?: string
+        }
+        Relationships: []
+      }
       security_alerts: {
         Row: {
           alert_type: string

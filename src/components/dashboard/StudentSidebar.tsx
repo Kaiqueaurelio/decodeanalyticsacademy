@@ -32,6 +32,7 @@ import {
   Trophy,
   RotateCcw,
   LogOut,
+  Newspaper,
 } from 'lucide-react';
 import logoOwl from '@/assets/owl-icon.png';
 import { Button } from '@/components/ui/button';
@@ -70,6 +71,7 @@ const menuGroups = [
   {
     label: 'Ferramentas',
     items: [
+      { to: '/noticias', icon: Newspaper, label: 'Notícias Tech' },
       { to: '/calculadora', icon: Calculator, label: 'Calculadora' },
       { to: '/performance', icon: Activity, label: 'Desempenho' },
       { to: '/tira-duvida', icon: HelpCircle, label: 'Tira-dúvidas' },
@@ -172,16 +174,31 @@ export function SidebarContent({
   mode = 'full',
   setMode,
   onNavigate,
+  hideBottomNavDuplicates = false,
 }: {
   mode?: Exclude<SidebarMode, 'hidden'>;
   setMode?: (mode: SidebarMode) => void;
   onNavigate?: () => void;
+  hideBottomNavDuplicates?: boolean;
 }) {
   const location = useLocation();
   const { isAdmin, signOut } = useAuth();
   const { navigate, open } = useSidebarNavigation(onNavigate);
   const visibleRailItems = railItems.filter((item) => !item.adminOnly || isAdmin);
   const railMenuItems = mode === 'full' ? visibleRailItems.slice(0, isAdmin ? 7 : 6) : visibleRailItems;
+  // Rotas já presentes na bottom nav mobile — quando aberta como Sheet, evitar duplicar
+  const BOTTOM_NAV_ROUTES = new Set([
+    '/dashboard',
+    '/dashboard#apostilas',
+    '/exercicios',
+    '/cursos',
+    '/biblioteca',
+  ]);
+  const filteredGroups = hideBottomNavDuplicates
+    ? menuGroups
+        .map((g) => ({ ...g, items: g.items.filter((it) => !BOTTOM_NAV_ROUTES.has(it.to)) }))
+        .filter((g) => g.items.length > 0)
+    : menuGroups;
   const isFull = true;
   const canToggle = typeof setMode === 'function';
   const showRail = false;
@@ -269,7 +286,7 @@ export function SidebarContent({
           </div>
 
           <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-4">
-            {menuGroups.map((group) => (
+            {filteredGroups.map((group) => (
               <div key={group.label}>
                 <div className="px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.22em] text-muted-foreground">
                   {group.label}
