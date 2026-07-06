@@ -286,7 +286,7 @@ export function SidebarContent({
           </div>
 
           <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-4">
-            {menuGroups.map((group) => (
+            {filteredGroups.map((group) => (
               <div key={group.label}>
                 <div className="px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.22em] text-muted-foreground">
                   {group.label}
