@@ -94,7 +94,7 @@ export function MobileBottomNav() {
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="w-[92vw] max-w-[360px] p-0 border-r border-border">
-              <SidebarContent onNavigate={() => setOpen(false)} />
+              <SidebarContent onNavigate={() => setOpen(false)} hideBottomNavDuplicates />
             </SheetContent>
           </Sheet>
         </div>
