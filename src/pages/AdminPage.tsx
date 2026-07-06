@@ -180,6 +180,7 @@ function AdminSidebar({ tab, setTab, stats, sidebarOpen, setSidebarOpen }: {
     { id: 'smoke' as Tab, label: 'Testes', icon: CheckCircle, count: undefined },
     { id: 'diagnostics' as Tab, label: 'Diagnóstico', icon: AlertCircle, count: undefined },
     { id: 'ads-chat' as Tab, label: 'Assistente de anúncios', icon: Sparkles, count: undefined },
+    { id: 'rss' as Tab, label: 'Feeds RSS', icon: Megaphone, count: undefined },
   ];
 
   return (
