@@ -32,6 +32,7 @@ import {
   Trophy,
   RotateCcw,
   LogOut,
+  Newspaper,
 } from 'lucide-react';
 import logoOwl from '@/assets/owl-icon.png';
 import { Button } from '@/components/ui/button';
