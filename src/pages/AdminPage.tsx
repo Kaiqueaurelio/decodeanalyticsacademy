@@ -55,6 +55,7 @@ import { ImportPreviewPanel } from '@/components/ImportPreviewPanel';
 import { AdminAdsManager } from '@/components/AdminAdsManager';
 import { AdsChatBuilder } from '@/components/AdsChatBuilder';
 import { AdminDashboardModern } from '@/components/AdminDashboardModern';
+import { RssFeedsManager } from '@/components/admin/RssFeedsManager';
 
 type Apostila = Tables<'apostilas'>;
 type Exercise = Tables<'exercises'>;
