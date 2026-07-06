@@ -174,16 +174,31 @@ export function SidebarContent({
   mode = 'full',
   setMode,
   onNavigate,
+  hideBottomNavDuplicates = false,
 }: {
   mode?: Exclude<SidebarMode, 'hidden'>;
   setMode?: (mode: SidebarMode) => void;
   onNavigate?: () => void;
+  hideBottomNavDuplicates?: boolean;
 }) {
   const location = useLocation();
   const { isAdmin, signOut } = useAuth();
   const { navigate, open } = useSidebarNavigation(onNavigate);
   const visibleRailItems = railItems.filter((item) => !item.adminOnly || isAdmin);
   const railMenuItems = mode === 'full' ? visibleRailItems.slice(0, isAdmin ? 7 : 6) : visibleRailItems;
+  // Rotas já presentes na bottom nav mobile — quando aberta como Sheet, evitar duplicar
+  const BOTTOM_NAV_ROUTES = new Set([
+    '/dashboard',
+    '/dashboard#apostilas',
+    '/exercicios',
+    '/cursos',
+    '/biblioteca',
+  ]);
+  const filteredGroups = hideBottomNavDuplicates
+    ? menuGroups
+        .map((g) => ({ ...g, items: g.items.filter((it) => !BOTTOM_NAV_ROUTES.has(it.to)) }))
+        .filter((g) => g.items.length > 0)
+    : menuGroups;
   const isFull = true;
   const canToggle = typeof setMode === 'function';
   const showRail = false;
