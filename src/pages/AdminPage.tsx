@@ -1355,6 +1355,7 @@ export default function AdminPage() {
                 { id: 'smoke', label: 'Testes', icon: <CheckCircle className="h-3.5 w-3.5" /> },
                 { id: 'diagnostics', label: 'Diag', icon: <AlertCircle className="h-3.5 w-3.5" /> },
                 { id: 'ads', label: 'Anúncios', icon: <Megaphone className="h-3.5 w-3.5" /> },
+                { id: 'rss', label: 'RSS', icon: <Rss className="h-3.5 w-3.5" /> },
               ]}
               activeTab={tab}
               onTabChange={(id) => setTab(id as Tab)}
