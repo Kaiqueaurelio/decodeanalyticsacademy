@@ -56,6 +56,7 @@ const PerformancePage = lazy(() => import("./pages/PerformancePage"));
 const FlashcardsPage = lazy(() => import("./pages/FlashcardsPage"));
 const CalculadoraPage = lazy(() => import("./pages/CalculadoraPage"));
 const EllaPage = lazy(() => import("./pages/EllaPage"));
+const NewsPage = lazy(() => import("./pages/NewsPage"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -139,6 +140,7 @@ function AnimatedRoutes() {
         <Route path="/flashcards" element={<ProtectedRoute><FlashcardsPage /></ProtectedRoute>} />
         <Route path="/calculadora" element={<ProtectedRoute><CalculadoraPage /></ProtectedRoute>} />
         <Route path="/ella" element={<ProtectedRoute adminOnly><EllaPage /></ProtectedRoute>} />
+        <Route path="/noticias" element={<ProtectedRoute><NewsPage /></ProtectedRoute>} />
         <Route path="/admin/biblioteca" element={<ProtectedRoute adminOnly><AdminBibliotecaPage /></ProtectedRoute>} />
         <Route path="/admin/apostilas/:id" element={<ProtectedRoute adminOnly><AdminApostilaWorkbench /></ProtectedRoute>} />
         <Route path="/admin" element={<ProtectedRoute adminOnly><AdminPage /></ProtectedRoute>} />
