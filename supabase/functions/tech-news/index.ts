@@ -143,6 +143,7 @@ async function fetchFeed(url: string, source: string): Promise<NewsItem[]> {
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
   try {
+    const FEEDS = await loadFeeds();
     const results = await Promise.all(FEEDS.map((f) => fetchFeed(f.url, f.source)));
     const errors = results.map((r, i) => (r.length === 0 ? FEEDS[i].source : null)).filter(Boolean);
     const all = results.flat();
