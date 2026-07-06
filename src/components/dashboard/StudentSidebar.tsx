@@ -71,6 +71,7 @@ const menuGroups = [
   {
     label: 'Ferramentas',
     items: [
+      { to: '/noticias', icon: Newspaper, label: 'Notícias Tech' },
       { to: '/calculadora', icon: Calculator, label: 'Calculadora' },
       { to: '/performance', icon: Activity, label: 'Desempenho' },
       { to: '/tira-duvida', icon: HelpCircle, label: 'Tira-dúvidas' },
