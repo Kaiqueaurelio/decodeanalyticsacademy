@@ -256,7 +256,7 @@ export function SidebarContent({
 
       {isFull && (
         <div className="flex min-w-0 flex-1 flex-col bg-card/40">
-          <div className="flex items-center justify-between border-b border-border px-4 py-3">
+          <div className="flex items-center justify-between border-b border-border px-4 py-4">
             <button type="button" onClick={() => open('/dashboard')} className="flex min-w-0 items-center gap-3 text-left transition hover:opacity-85">
               {!showRail && (
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-background ring-1 ring-primary/40 shadow-[0_0_18px_hsl(var(--primary)/0.25)]">
@@ -285,10 +285,10 @@ export function SidebarContent({
             )}
           </div>
 
-          <nav className="flex-1 space-y-4 overflow-y-auto px-3 py-4">
+          <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-4">
             {filteredGroups.map((group) => (
               <div key={group.label}>
-                <div className="px-3 pb-2.5 text-[10px] font-bold uppercase tracking-[0.22em] text-muted-foreground">
+                <div className="px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.22em] text-muted-foreground">
                   {group.label}
                 </div>
                 <div className="space-y-1">
@@ -300,13 +300,13 @@ export function SidebarContent({
                         key={it.to}
                         type="button"
                         onClick={() => open(it.to)}
-                        className={`group flex w-full items-center gap-3 rounded-lg border px-3 py-2 text-left text-sm font-semibold transition-all
+                        className={`group flex w-full items-center gap-3 rounded-lg border px-3.5 py-2.5 text-left text-sm font-semibold transition-all
                           ${active
-                            ? 'border-primary/60 bg-primary/15 text-foreground shadow-[inset_3px_0_0_hsl(var(--primary))]'
+                            ? 'border-primary/70 bg-primary/20 text-foreground shadow-[0_0_12px_hsl(var(--primary)/0.2)]'
                             : 'border-transparent text-muted-foreground hover:border-border hover:bg-muted hover:text-foreground'}`}
                       >
-                        <Icon strokeWidth={active ? 2.6 : 2.1} className={`h-[18px] w-[18px] shrink-0 flex-shrink-0 ${active ? 'text-primary' : ''}`} />
-                        <span className="truncate text-sm">{it.label}</span>
+                        <Icon strokeWidth={active ? 2.6 : 2.1} className={`h-[18px] w-[18px] shrink-0 ${active ? 'text-primary' : ''}`} />
+                        <span className="truncate">{it.label}</span>
                       </button>
                     );
                   })}
@@ -316,7 +316,7 @@ export function SidebarContent({
 
             {isAdmin && (
               <div>
-                <div className="px-3 pb-2.5 text-[10px] font-bold uppercase tracking-[0.22em] text-muted-foreground">
+                <div className="px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.22em] text-muted-foreground">
                   Administração
                 </div>
                 <div className="space-y-1">
@@ -328,13 +328,13 @@ export function SidebarContent({
                         key={`${it.label}-${it.to}`}
                         type="button"
                         onClick={() => open(it.to)}
-                        className={`group flex w-full items-center gap-3 rounded-lg border px-3 py-2 text-left text-sm font-semibold transition-all
+                        className={`group flex w-full items-center gap-3 rounded-lg border px-3.5 py-2.5 text-left text-sm font-semibold transition-all
                           ${active
-                            ? 'border-accent/60 bg-accent/15 text-foreground shadow-[inset_3px_0_0_hsl(var(--accent))]'
+                            ? 'border-accent/70 bg-accent/20 text-foreground shadow-[0_0_12px_hsl(var(--accent)/0.2)]'
                             : 'border-transparent text-muted-foreground hover:border-border hover:bg-muted hover:text-foreground'}`}
                       >
-                        <Icon strokeWidth={active ? 2.6 : 2.1} className={`h-[18px] w-[18px] shrink-0 flex-shrink-0 ${active ? 'text-accent' : ''}`} />
-                        <span className="truncate text-sm">{it.label}</span>
+                        <Icon strokeWidth={active ? 2.6 : 2.1} className={`h-[18px] w-[18px] shrink-0 ${active ? 'text-accent' : ''}`} />
+                        <span className="truncate">{it.label}</span>
                       </button>
                     );
                   })}
@@ -343,13 +343,13 @@ export function SidebarContent({
                 <button
                   type="button"
                   onClick={() => open('/admin')}
-                  className={`mt-2 group flex w-full items-center gap-3 rounded-lg border px-3 py-2 text-left text-sm font-bold transition-all
+                  className={`mt-2 group flex w-full items-center gap-3 rounded-lg border px-3.5 py-2.5 text-left text-sm font-bold transition-all
                     ${location.pathname.startsWith('/admin')
-                      ? 'border-accent bg-accent/20 text-foreground shadow-[inset_3px_0_0_hsl(var(--accent))]'
+                      ? 'border-accent/70 bg-accent/20 text-foreground shadow-[0_0_12px_hsl(var(--accent)/0.2)]'
                       : 'border-accent/35 text-accent hover:border-accent/70 hover:bg-accent/10'}`}
                 >
-                  <ShieldCheck strokeWidth={2.5} className="h-[18px] w-[18px] shrink-0 flex-shrink-0" />
-                  <span className="truncate text-sm">Painel Admin</span>
+                  <ShieldCheck strokeWidth={2.5} className="h-[18px] w-[18px] shrink-0" />
+                  <span className="truncate">Painel Admin</span>
                 </button>
               </div>
             )}
@@ -361,20 +361,20 @@ export function SidebarContent({
                   signOut();
                   onNavigate?.();
                 }}
-                className="group flex w-full items-center gap-3 rounded-lg border border-transparent px-3 py-2 text-left text-sm font-semibold text-muted-foreground transition-all hover:border-destructive/30 hover:bg-destructive/8 hover:text-destructive"
+                className="group flex w-full items-center gap-3 rounded-lg border border-transparent px-3.5 py-2.5 text-left text-sm font-semibold text-muted-foreground transition-all hover:border-destructive/30 hover:bg-destructive/8 hover:text-destructive"
               >
-                <LogOut strokeWidth={2.1} className="h-[18px] w-[18px] shrink-0 flex-shrink-0" />
+                <LogOut strokeWidth={2.1} className="h-[18px] w-[18px] shrink-0" />
                 <span className="truncate">Sair da conta</span>
               </button>
             </div>
           </nav>
 
-          <div className="m-3 rounded-xl border border-primary/30 bg-primary/5 p-3">
+          <div className="m-3 rounded-xl border border-lime/40 bg-lime/10 p-4">
             <h4 className="text-xs font-bold text-foreground">Mantenha o foco</h4>
             <p className="mt-0.5 text-[11px] text-muted-foreground">Acompanhe suas metas e atividades pendentes.</p>
             <Button
               size="sm"
-              className="mt-2 h-8 w-full rounded-md bg-primary text-[11px] font-black uppercase text-primary-foreground hover:bg-primary/90"
+              className="mt-3 h-9 w-full rounded-lg bg-lime text-[12px] font-black uppercase text-slate-900 hover:bg-lime/90 transition-all"
               onClick={() => {
                 scrollToDashboardSection('atividades', navigate);
                 onNavigate?.();
