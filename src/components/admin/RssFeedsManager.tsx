@@ -5,8 +5,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Trash2, Plus, RefreshCw, Rss, Loader2 } from 'lucide-react';
+import { Trash2, Plus, RefreshCw, Rss, Loader2, CheckCircle2, XCircle, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 interface RssFeed {
   id: string;
@@ -16,12 +17,23 @@ interface RssFeed {
   sort_order: number;
 }
 
+interface ValidateResult {
+  ok: boolean;
+  itemCount: number;
+  source: string | null;
+  error?: string;
+}
+
 export function RssFeedsManager() {
   const [feeds, setFeeds] = useState<RssFeed[]>([]);
   const [loading, setLoading] = useState(true);
   const [url, setUrl] = useState('');
   const [source, setSource] = useState('');
   const [saving, setSaving] = useState(false);
+  const [validating, setValidating] = useState(false);
+  const [validation, setValidation] = useState<ValidateResult | null>(null);
+  const [revalidating, setRevalidating] = useState(false);
+  const [feedStatus, setFeedStatus] = useState<Record<string, ValidateResult>>({});
 
   const load = async () => {
     setLoading(true);
@@ -38,11 +50,46 @@ export function RssFeedsManager() {
     load();
   }, []);
 
+  const validateUrl = async (targetUrl: string): Promise<ValidateResult | null> => {
+    if (!/^https?:\/\//i.test(targetUrl)) {
+      const res = { ok: false, itemCount: 0, source: null, error: 'URL inválida' };
+      setValidation(res);
+      return res;
+    }
+    setValidating(true);
+    setValidation(null);
+    try {
+      const { data, error } = await supabase.functions.invoke<ValidateResult>('validate-rss', {
+        body: { url: targetUrl },
+      });
+      if (error) throw error;
+      setValidation(data || null);
+      if (data?.ok && data.source && !source.trim()) {
+        setSource(data.source.slice(0, 60));
+      }
+      return data || null;
+    } catch (e: any) {
+      const res = { ok: false, itemCount: 0, source: null, error: e?.message || 'Falha ao validar' };
+      setValidation(res);
+      return res;
+    } finally {
+      setValidating(false);
+    }
+  };
+
   const add = async () => {
     const u = url.trim();
     const s = source.trim();
     if (!u || !s) return toast.error('Informe URL e nome do portal');
     if (!/^https?:\/\//i.test(u)) return toast.error('URL inválida');
+
+    // Sempre revalida na hora de adicionar
+    const check = validation?.ok ? validation : await validateUrl(u);
+    if (!check?.ok) {
+      toast.error(`Feed indisponível: ${check?.error || 'não retorna itens'}`);
+      return;
+    }
+
     setSaving(true);
     const maxOrder = feeds.reduce((m, f) => Math.max(m, f.sort_order), 0);
     const { error } = await supabase
@@ -50,9 +97,10 @@ export function RssFeedsManager() {
       .insert({ url: u, source: s, enabled: true, sort_order: maxOrder + 10 } as any);
     setSaving(false);
     if (error) return toast.error(error.message.includes('duplicate') ? 'Este feed já existe' : 'Erro ao adicionar');
-    toast.success('Feed adicionado');
+    toast.success(`Feed "${s}" adicionado — ${check.itemCount} notícias detectadas`);
     setUrl('');
     setSource('');
+    setValidation(null);
     load();
   };
 
@@ -73,6 +121,41 @@ export function RssFeedsManager() {
     toast.success('Feed removido');
   };
 
+  const revalidateAll = async () => {
+    if (feeds.length === 0) return;
+    setRevalidating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke<{ results: (ValidateResult & { url: string })[] }>(
+        'validate-rss',
+        { body: { urls: feeds.map((f) => f.url) } },
+      );
+      if (error) throw error;
+      const map: Record<string, ValidateResult> = {};
+      const byUrl = new Map(data?.results?.map((r) => [r.url, r]) || []);
+      for (const f of feeds) {
+        const r = byUrl.get(f.url);
+        if (r) map[f.id] = r;
+      }
+      setFeedStatus(map);
+      const broken = Object.values(map).filter((r) => !r.ok).length;
+      toast.success(broken === 0 ? 'Todos os feeds estão funcionando' : `${broken} feed(s) fora do ar`);
+    } catch {
+      toast.error('Falha ao revalidar');
+    } finally {
+      setRevalidating(false);
+    }
+  };
+
+  const disableBroken = async () => {
+    const brokenIds = Object.entries(feedStatus).filter(([, r]) => !r.ok).map(([id]) => id);
+    if (brokenIds.length === 0) return toast('Nenhum feed quebrado detectado');
+    if (!confirm(`Pausar ${brokenIds.length} feed(s) fora do ar?`)) return;
+    const { error } = await supabase.from('rss_feeds' as any).update({ enabled: false } as any).in('id', brokenIds);
+    if (error) return toast.error('Erro ao pausar');
+    toast.success('Feeds quebrados pausados');
+    load();
+  };
+
   return (
     <div className="space-y-6">
       <Card>
@@ -82,7 +165,7 @@ export function RssFeedsManager() {
             Feeds RSS de Notícias
           </CardTitle>
           <CardDescription>
-            Gerencie as fontes usadas na página <b>/noticias</b>. Alterações refletem em até 15 minutos (cache do cliente).
+            Gerencie as fontes usadas na página <b>/noticias</b>. Cada link é validado ao vivo antes de ser salvo.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -91,7 +174,11 @@ export function RssFeedsManager() {
               <Label className="text-xs">URL do feed</Label>
               <Input
                 value={url}
-                onChange={(e) => setUrl(e.target.value)}
+                onChange={(e) => {
+                  setUrl(e.target.value);
+                  setValidation(null);
+                }}
+                onBlur={() => url.trim() && validateUrl(url.trim())}
                 placeholder="https://site.com/feed"
                 className="text-xs font-mono"
               />
@@ -105,15 +192,82 @@ export function RssFeedsManager() {
                 className="text-xs"
               />
             </div>
-            <Button onClick={add} disabled={saving} className="gap-1.5">
-              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-              Adicionar
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => validateUrl(url.trim())}
+                disabled={!url.trim() || validating}
+                className="gap-1.5"
+              >
+                {validating ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />}
+                Validar
+              </Button>
+              <Button onClick={add} disabled={saving || !validation?.ok} className="gap-1.5">
+                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+                Adicionar
+              </Button>
+            </div>
           </div>
-          <div className="flex justify-end">
+
+          {/* Feedback de validação em tempo real */}
+          {validating && (
+            <div className="rounded-lg border border-border bg-muted/50 px-3 py-2 flex items-center gap-2 text-xs">
+              <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
+              Verificando se o feed responde…
+            </div>
+          )}
+          {!validating && validation && (
+            <div
+              className={cn(
+                'rounded-lg border px-3 py-2 flex items-start gap-2 text-xs',
+                validation.ok
+                  ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-200'
+                  : 'border-red-500/40 bg-red-500/10 text-red-200',
+              )}
+            >
+              {validation.ok ? (
+                <>
+                  <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-semibold">Feed válido — {validation.itemCount} notícias detectadas.</p>
+                    {validation.source && (
+                      <p className="opacity-80 text-[11px] mt-0.5">Portal detectado: {validation.source}</p>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <XCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-semibold">Feed indisponível.</p>
+                    <p className="opacity-80 text-[11px] mt-0.5">{validation.error || 'Não retornou itens válidos.'}</p>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          <div className="flex justify-between items-center gap-2 flex-wrap">
             <Button size="sm" variant="ghost" onClick={load} className="gap-1.5 text-xs">
-              <RefreshCw className="h-3.5 w-3.5" /> Recarregar
+              <RefreshCw className="h-3.5 w-3.5" /> Recarregar lista
             </Button>
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={revalidateAll}
+                disabled={revalidating || feeds.length === 0}
+                className="gap-1.5 text-xs"
+              >
+                {revalidating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ShieldCheck className="h-3.5 w-3.5" />}
+                Revalidar todos
+              </Button>
+              {Object.values(feedStatus).some((r) => !r.ok) && (
+                <Button size="sm" variant="destructive" onClick={disableBroken} className="gap-1.5 text-xs">
+                  Pausar quebrados
+                </Button>
+              )}
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -128,25 +282,42 @@ export function RssFeedsManager() {
             <div className="p-10 text-center text-sm text-muted-foreground">Nenhum feed cadastrado.</div>
           ) : (
             <div className="divide-y divide-border">
-              {feeds.map((feed) => (
-                <div key={feed.id} className="flex items-center gap-3 px-4 py-3">
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold truncate">{feed.source}</p>
-                    <p className="text-[11px] text-muted-foreground truncate font-mono">{feed.url}</p>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <div className="flex items-center gap-1.5">
-                      <Switch checked={feed.enabled} onCheckedChange={() => toggle(feed)} />
-                      <span className="text-[10px] text-muted-foreground w-10">
-                        {feed.enabled ? 'Ativo' : 'Pausado'}
-                      </span>
+              {feeds.map((feed) => {
+                const status = feedStatus[feed.id];
+                return (
+                  <div key={feed.id} className="flex items-center gap-3 px-4 py-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-semibold truncate">{feed.source}</p>
+                        {status && (
+                          <span
+                            className={cn(
+                              'text-[10px] font-bold px-1.5 py-0.5 rounded-full',
+                              status.ok
+                                ? 'bg-emerald-500/20 text-emerald-300'
+                                : 'bg-red-500/20 text-red-300',
+                            )}
+                          >
+                            {status.ok ? `✓ ${status.itemCount} itens` : `✗ ${status.error || 'fora do ar'}`}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-muted-foreground truncate font-mono">{feed.url}</p>
                     </div>
-                    <Button size="icon" variant="ghost" onClick={() => remove(feed)} className="h-8 w-8 text-destructive">
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <div className="flex items-center gap-1.5">
+                        <Switch checked={feed.enabled} onCheckedChange={() => toggle(feed)} />
+                        <span className="text-[10px] text-muted-foreground w-10">
+                          {feed.enabled ? 'Ativo' : 'Pausado'}
+                        </span>
+                      </div>
+                      <Button size="icon" variant="ghost" onClick={() => remove(feed)} className="h-8 w-8 text-destructive">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </CardContent>

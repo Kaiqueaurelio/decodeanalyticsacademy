@@ -6,12 +6,10 @@ import { createClient } from 'npm:@supabase/supabase-js@2';
 const DEFAULT_FEEDS: { url: string; source: string }[] = [
   { url: 'https://feeds.feedburner.com/canaltechbr', source: 'Canaltech' },
   { url: 'https://tecnoblog.net/feed/', source: 'Tecnoblog' },
-  { url: 'https://openrss.org/https://olhardigital.com.br', source: 'Olhar Digital' },
   { url: 'https://www.tudocelular.com/feed', source: 'TudoCelular' },
   { url: 'https://diolinux.com.br/feed', source: 'Diolinux' },
   { url: 'https://sempreupdate.com.br/feed/', source: 'SempreUpdate' },
   { url: 'https://www.hardware.com.br/feed/', source: 'Hardware.com.br' },
-  { url: 'https://www.baguete.com.br/rss', source: 'Baguete' },
 ];
 
 async function loadFeeds(): Promise<{ url: string; source: string }[]> {
@@ -145,7 +143,7 @@ Deno.serve(async (req) => {
   try {
     const FEEDS = await loadFeeds();
     const results = await Promise.all(FEEDS.map((f) => fetchFeed(f.url, f.source)));
-    const errors = results.map((r, i) => (r.length === 0 ? FEEDS[i].source : null)).filter(Boolean);
+    // Feeds vazios/quebrados são silenciosamente ignorados — sem banner de erro na UI.
     const all = results.flat();
     const seen = new Map<string, NewsItem>();
     for (const item of all) {
@@ -155,7 +153,7 @@ Deno.serve(async (req) => {
     const items = Array.from(seen.values()).sort(
       (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime(),
     );
-    return new Response(JSON.stringify({ items, errors, fetchedAt: new Date().toISOString() }), {
+    return new Response(JSON.stringify({ items, errors: [], fetchedAt: new Date().toISOString() }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=300' },
     });
   } catch (e) {

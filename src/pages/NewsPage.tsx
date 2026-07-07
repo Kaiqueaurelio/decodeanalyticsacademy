@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, ExternalLink, RefreshCw, X, Newspaper, WifiOff, AlertCircle } from 'lucide-react';
+import { ArrowLeft, RefreshCw, Newspaper, WifiOff } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
+import { InAppNewsReader } from '@/components/news/InAppNewsReader';
 
 interface NewsItem {
   id: string;
@@ -70,13 +71,12 @@ function saveCache(data: NewsResponse) {
 export default function NewsPage() {
   const cached = useMemo(() => loadCache(), []);
   const [items, setItems] = useState<NewsItem[]>(cached?.items ?? []);
-  const [errors, setErrors] = useState<string[]>([]);
+  const [, setErrors] = useState<string[]>([]);
   const [fetchedAt, setFetchedAt] = useState<string | null>(cached?.fetchedAt ?? null);
   const [loading, setLoading] = useState(!cached);
   const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState<string>('Todos');
   const [viewer, setViewer] = useState<NewsItem | null>(null);
-  const [viewerFailed, setViewerFailed] = useState(false);
   const [pullY, setPullY] = useState(0);
   const startY = useRef<number | null>(null);
   const dragging = useRef(false);
@@ -143,21 +143,9 @@ export default function NewsPage() {
   );
 
   const openViewer = (item: NewsItem) => {
-    setViewerFailed(false);
     setViewer(item);
   };
 
-  // fallback: se o iframe não carregar em 3.5s, abre no navegador
-  useEffect(() => {
-    if (!viewer) return;
-    const timeout = setTimeout(() => {
-      if (viewerFailed) return;
-      // Sites que bloqueiam iframe geralmente não disparam onLoad — deixamos o botão "Abrir no navegador".
-    }, 3500);
-    return () => clearTimeout(timeout);
-  }, [viewer, viewerFailed]);
-
-  const openExternal = (url: string) => window.open(url, '_blank', 'noopener,noreferrer');
 
   return (
     <div className="min-h-dvh bg-background text-foreground">
@@ -230,14 +218,8 @@ export default function NewsPage() {
       </header>
 
       <main className="max-w-5xl mx-auto px-4 py-5">
-        {errors.length > 0 && !loading && items.length > 0 && (
-          <div className="mb-4 flex items-start gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-200">
-            <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
-            <span>
-              Alguns portais estão indisponíveis: <b>{errors.join(', ')}</b>. Mostrando o restante.
-            </span>
-          </div>
-        )}
+        {/* Erros de feeds são silenciados — banner removido */}
+
 
         {loading && items.length === 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -276,60 +258,12 @@ export default function NewsPage() {
         </p>
       </main>
 
-      {/* WebView modal */}
-      {viewer && (
-        <div className="fixed inset-0 z-[80] bg-background/95 backdrop-blur flex flex-col animate-in fade-in duration-200">
-          <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
-            <button
-              onClick={() => setViewer(null)}
-              className="p-2 rounded-lg hover:bg-muted"
-              aria-label="Fechar"
-            >
-              <X className="h-5 w-5" />
-            </button>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold truncate">{viewer.source}</p>
-              <p className="text-[11px] text-muted-foreground truncate">{viewer.title}</p>
-            </div>
-            <button
-              onClick={() => openExternal(viewer.link)}
-              className="p-2 rounded-lg hover:bg-muted"
-              aria-label="Abrir no navegador"
-              title="Abrir no navegador"
-            >
-              <ExternalLink className="h-5 w-5" />
-            </button>
-          </div>
-          <div className="flex-1 relative bg-white">
-            {!viewerFailed ? (
-              <iframe
-                key={viewer.id}
-                src={viewer.link}
-                title={viewer.title}
-                className="absolute inset-0 w-full h-full border-0"
-                referrerPolicy="no-referrer"
-                sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-                onError={() => setViewerFailed(true)}
-              />
-            ) : (
-              <FallbackOpen url={viewer.link} onOpen={() => openExternal(viewer.link)} />
-            )}
-            {/* Bloqueio de X-Frame-Options: oferecer sempre abrir no navegador */}
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
-              <button
-                onClick={() => openExternal(viewer.link)}
-                className="rounded-full bg-primary text-primary-foreground text-xs font-semibold px-4 py-2 shadow-lg flex items-center gap-2"
-              >
-                <ExternalLink className="h-3.5 w-3.5" />
-                Não carregou? Abrir no navegador
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Leitor in-app — nunca sai da plataforma */}
+      {viewer && <InAppNewsReader item={viewer} onClose={() => setViewer(null)} />}
     </div>
   );
 }
+
 
 function NewsCard({ item, onOpen }: { item: NewsItem; onOpen: () => void }) {
   const [imgOk, setImgOk] = useState(!!item.image);
@@ -374,18 +308,3 @@ function NewsCard({ item, onOpen }: { item: NewsItem; onOpen: () => void }) {
   );
 }
 
-function FallbackOpen({ url, onOpen }: { url: string; onOpen: () => void }) {
-  return (
-    <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-8 text-center bg-background">
-      <ExternalLink className="h-10 w-10 text-primary" />
-      <p className="text-sm font-semibold">Este site não permite pré-visualização.</p>
-      <p className="text-xs text-muted-foreground break-all">{url}</p>
-      <button
-        onClick={onOpen}
-        className="mt-2 rounded-full bg-primary text-primary-foreground text-sm font-semibold px-5 py-2"
-      >
-        Abrir no navegador
-      </button>
-    </div>
-  );
-}
