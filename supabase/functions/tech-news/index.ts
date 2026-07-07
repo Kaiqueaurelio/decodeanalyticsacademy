@@ -155,7 +155,7 @@ Deno.serve(async (req) => {
     const items = Array.from(seen.values()).sort(
       (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime(),
     );
-    return new Response(JSON.stringify({ items, errors, fetchedAt: new Date().toISOString() }), {
+    return new Response(JSON.stringify({ items, errors: [], fetchedAt: new Date().toISOString() }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=300' },
     });
   } catch (e) {
