@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, ExternalLink, RefreshCw, X, Newspaper, WifiOff, AlertCircle } from 'lucide-react';
+import { ArrowLeft, RefreshCw, Newspaper, WifiOff } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
+import { InAppNewsReader } from '@/components/news/InAppNewsReader';
 
 interface NewsItem {
   id: string;
