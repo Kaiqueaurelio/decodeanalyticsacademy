@@ -219,14 +219,8 @@ export default function NewsPage() {
       </header>
 
       <main className="max-w-5xl mx-auto px-4 py-5">
-        {errors.length > 0 && !loading && items.length > 0 && (
-          <div className="mb-4 flex items-start gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-200">
-            <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
-            <span>
-              Alguns portais estão indisponíveis: <b>{errors.join(', ')}</b>. Mostrando o restante.
-            </span>
-          </div>
-        )}
+        {/* Erros de feeds são silenciados — banner removido */}
+
 
         {loading && items.length === 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -265,60 +259,12 @@ export default function NewsPage() {
         </p>
       </main>
 
-      {/* WebView modal */}
-      {viewer && (
-        <div className="fixed inset-0 z-[80] bg-background/95 backdrop-blur flex flex-col animate-in fade-in duration-200">
-          <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
-            <button
-              onClick={() => setViewer(null)}
-              className="p-2 rounded-lg hover:bg-muted"
-              aria-label="Fechar"
-            >
-              <X className="h-5 w-5" />
-            </button>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold truncate">{viewer.source}</p>
-              <p className="text-[11px] text-muted-foreground truncate">{viewer.title}</p>
-            </div>
-            <button
-              onClick={() => openExternal(viewer.link)}
-              className="p-2 rounded-lg hover:bg-muted"
-              aria-label="Abrir no navegador"
-              title="Abrir no navegador"
-            >
-              <ExternalLink className="h-5 w-5" />
-            </button>
-          </div>
-          <div className="flex-1 relative bg-white">
-            {!viewerFailed ? (
-              <iframe
-                key={viewer.id}
-                src={viewer.link}
-                title={viewer.title}
-                className="absolute inset-0 w-full h-full border-0"
-                referrerPolicy="no-referrer"
-                sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-                onError={() => setViewerFailed(true)}
-              />
-            ) : (
-              <FallbackOpen url={viewer.link} onOpen={() => openExternal(viewer.link)} />
-            )}
-            {/* Bloqueio de X-Frame-Options: oferecer sempre abrir no navegador */}
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
-              <button
-                onClick={() => openExternal(viewer.link)}
-                className="rounded-full bg-primary text-primary-foreground text-xs font-semibold px-4 py-2 shadow-lg flex items-center gap-2"
-              >
-                <ExternalLink className="h-3.5 w-3.5" />
-                Não carregou? Abrir no navegador
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Leitor in-app — nunca sai da plataforma */}
+      {viewer && <InAppNewsReader item={viewer} onClose={() => setViewer(null)} />}
     </div>
   );
 }
+
 
 function NewsCard({ item, onOpen }: { item: NewsItem; onOpen: () => void }) {
   const [imgOk, setImgOk] = useState(!!item.image);
