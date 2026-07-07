@@ -287,7 +287,7 @@ export default function ApostilaPage() {
       {focusMode && (
         <div className="fixed top-0.5 left-0 right-0 z-50 h-12 bg-card/95 backdrop-blur-md flex items-center justify-between px-4 animate-fade-in border-b border-border/50">
           <span className="font-mono-label text-xs text-muted-foreground uppercase tracking-wider truncate max-w-[50%]">
-            {apostila?.title}
+            {apostila.title}
           </span>
           <Button variant="ghost" size="sm" onClick={() => setFocusMode(false)} className="text-xs gap-1.5 hover-lift">
             <X className="h-3.5 w-3.5" /> Sair do foco
@@ -505,7 +505,7 @@ export default function ApostilaPage() {
                     </span>
                   )}
                   <span className="flex items-center gap-1.5 text-primary/70">
-                    ~{Math.max(1, Math.round((apostila?.content?.length || 0) / 1200))} min de leitura
+                    ~{Math.max(1, Math.round((apostila.content?.length || 0) / 1200))} min de leitura
                   </span>
                 </div>
 
@@ -514,9 +514,9 @@ export default function ApostilaPage() {
                   <SpeakButton
                     size="lg"
                     label="Ouvir apostila"
-                    getText={() => `${apostila?.title || ''}. ${apostila?.content || ''}`}
+                    getText={() => `${apostila.title}. ${apostila.content || ''}`}
                   />
-                  <ApostilaSummaryDialog apostilaId={id!} apostilaTitle={apostila?.title || ''} />
+                  <ApostilaSummaryDialog apostilaId={id!} apostilaTitle={apostila.title} />
                 </div>
                 <p className="text-[10px] text-muted-foreground mt-1.5">
                   Leitura em PT-BR · resumo de 1 página + mapa mental gerado por IA
@@ -577,7 +577,7 @@ export default function ApostilaPage() {
               {/* Unit tiles - estilo AVA */}
               <UnitTilesGrid
                 unitNumber="I"
-                unitTitle={apostila?.title || ''}
+                unitTitle={apostila.title}
                 resources={buildUnitResources({
                   onOpenContent: () => {
                     document.getElementById('conteudo-principal')?.scrollIntoView({ behavior: 'smooth' });
@@ -597,8 +597,8 @@ export default function ApostilaPage() {
               {/* Rendered sections — editorial layout */}
               <div id="conteudo-principal" className="space-y-10 scroll-mt-24">
                 <ApostilaPreview
-                  content={apostila?.content || ''}
-                  apostilaTitle={apostila?.title || ''}
+                  content={apostila.content || ''}
+                  apostilaTitle={apostila.title}
                   apostilaId={id!}
                   isLoggedIn={!!user}
                 />
@@ -677,7 +677,7 @@ export default function ApostilaPage() {
 
               {/* Social Section — Likes, Comments, Shares */}
               {user && (
-                <ApostilaSocialSection apostilaId={id!} apostilaTitle={apostila?.title || ''} />
+                <ApostilaSocialSection apostilaId={id!} apostilaTitle={apostila.title} />
               )}
 
               {/* Comments section */}
@@ -721,7 +721,7 @@ export default function ApostilaPage() {
         <Sheet open={chatOpen} onOpenChange={setChatOpen}>
           <SheetContent side="right" className="w-full sm:max-w-lg lg:max-w-xl p-0 flex flex-col gap-0 border-l border-primary/20">
             <div className="flex-1 overflow-hidden">
-                <ApostilaChat apostilaId={id!} apostilaTitle={apostila?.title || ''} />
+              <ApostilaChat apostilaId={id!} apostilaTitle={apostila.title} />
             </div>
           </SheetContent>
         </Sheet>

@@ -49,7 +49,7 @@ export function AdFooterMobile() {
         aria-label="Anuncio"
       >
         <div className="flex items-center gap-2 px-3 py-2">
-          {current?.image_url && (
+          {current.image_url && (
             <AdMediaPreview
               src={current.image_url}
               title={current.title}
@@ -60,26 +60,24 @@ export function AdFooterMobile() {
           <button
             type="button"
             onClick={() => {
-              if (current) {
-                recordAdClick(current.id);
-                window.open(current.link_url, '_blank', 'noopener,noreferrer');
-              }
+              recordAdClick(current.id);
+              window.open(current.link_url, '_blank', 'noopener,noreferrer');
             }}
             className="flex-1 min-w-0 text-left"
           >
             <p className="text-[10px] font-semibold uppercase tracking-wider text-primary leading-none mb-0.5">
               Publicidade
             </p>
-            <p className="text-xs font-semibold truncate text-foreground">{current?.title}</p>
-            {current?.description && (
+            <p className="text-xs font-semibold truncate text-foreground">{current.title}</p>
+            {current.description && (
               <p className="text-[11px] text-muted-foreground truncate">{current.description}</p>
             )}
           </button>
           <a
-            href={current?.link_url}
+            href={current.link_url}
             target="_blank"
             rel="noopener noreferrer"
-            onClick={() => current && recordAdClick(current.id)}
+            onClick={() => recordAdClick(current.id)}
             className="shrink-0 inline-flex items-center gap-1 rounded-full bg-primary text-primary-foreground text-[11px] font-semibold px-3 py-1.5"
           >
             <ExternalLink size={11} /> Ver
