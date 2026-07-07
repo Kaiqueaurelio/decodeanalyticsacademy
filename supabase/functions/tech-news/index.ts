@@ -6,12 +6,10 @@ import { createClient } from 'npm:@supabase/supabase-js@2';
 const DEFAULT_FEEDS: { url: string; source: string }[] = [
   { url: 'https://feeds.feedburner.com/canaltechbr', source: 'Canaltech' },
   { url: 'https://tecnoblog.net/feed/', source: 'Tecnoblog' },
-  { url: 'https://openrss.org/https://olhardigital.com.br', source: 'Olhar Digital' },
   { url: 'https://www.tudocelular.com/feed', source: 'TudoCelular' },
   { url: 'https://diolinux.com.br/feed', source: 'Diolinux' },
   { url: 'https://sempreupdate.com.br/feed/', source: 'SempreUpdate' },
   { url: 'https://www.hardware.com.br/feed/', source: 'Hardware.com.br' },
-  { url: 'https://www.baguete.com.br/rss', source: 'Baguete' },
 ];
 
 async function loadFeeds(): Promise<{ url: string; source: string }[]> {
