@@ -55,7 +55,7 @@ import { ImportPreviewPanel } from '@/components/ImportPreviewPanel';
 import { AdminAdsManager } from '@/components/AdminAdsManager';
 import { AdsChatBuilder } from '@/components/AdsChatBuilder';
 import { AdminDashboardModern } from '@/components/AdminDashboardModern';
-import { RssFeedsManager } from '@/components/admin/RssFeedsManager';
+import { RssFeedsManagerEnhanced } from '@/components/admin/RssFeedsManagerEnhanced';
 
 type Apostila = Tables<'apostilas'>;
 type Exercise = Tables<'exercises'>;
@@ -2932,7 +2932,7 @@ export default function AdminPage() {
               <AdsChatBuilder />
             )}
             {tab === 'rss' && (
-              <RssFeedsManager />
+              <RssFeedsManagerEnhanced />
             )}
             </div>
           </main>

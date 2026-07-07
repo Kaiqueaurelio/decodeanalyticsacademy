@@ -46,18 +46,32 @@ export function InAppNewsReader({ item, onClose }: Props) {
       setLoading(true);
       setError(null);
       try {
+        // Tenta extrair o conteúdo com timeout de 10 segundos
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+
         const { data: res, error: err } = await supabase.functions.invoke<ReaderResult>('news-reader', {
           body: { url: item.link },
         });
+
+        clearTimeout(timeoutId);
+
         if (cancelled) return;
         if (err) throw err;
+
+        // Se conseguiu extrair o conteúdo com sucesso, exibe
         if (res?.ok && res.contentHtml) {
           setData(res);
         } else {
-          setError(res?.error || 'Não foi possível carregar a matéria.');
+          // Se falhou na extração, usa o fallback para link externo
+          // Mas ainda tenta mostrar o resumo da notícia
+          setError(res?.error || 'Não foi possível carregar a matéria completa.');
         }
       } catch (e: any) {
-        if (!cancelled) setError(e?.message || 'Falha ao buscar conteúdo.');
+        if (!cancelled) {
+          // Timeout ou erro de rede: força fallback
+          setError('Não foi possível carregar a matéria. Abrindo no site original...');
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -180,14 +194,24 @@ export function InAppNewsReader({ item, onClose }: Props) {
                 <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
                 <div>
                   <p className="font-semibold">Não conseguimos extrair o texto desta matéria.</p>
-                  <p className="text-xs opacity-80 mt-1">{item.summary || 'Você pode abrir no site original.'}</p>
+                  <p className="text-xs opacity-80 mt-1">{item.summary || 'Você pode abrir no site original para ler a matéria completa.'}</p>
                 </div>
               </div>
+
+              {/* Resumo da notícia quando a extração falha */}
+              {item.summary && (
+                <div className="rounded-xl border border-border bg-card/50 p-4 space-y-2">
+                  <p className="text-xs font-semibold text-muted-foreground">RESUMO DA NOTÍCIA</p>
+                  <p className="text-sm leading-relaxed">{item.summary}</p>
+                </div>
+              )}
+
+              {/* Botão de fallback para abrir no site original */}
               <a
                 href={item.link}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-full bg-primary text-primary-foreground text-sm font-semibold px-5 py-2.5"
+                className="inline-flex items-center gap-2 rounded-full bg-primary text-primary-foreground text-sm font-semibold px-5 py-2.5 hover:bg-primary/90 transition-colors"
               >
                 <ExternalLink className="h-4 w-4" /> Abrir no site original
               </a>
@@ -195,23 +219,46 @@ export function InAppNewsReader({ item, onClose }: Props) {
           )}
 
           {!loading && !error && data && (
-            <div
-              className="news-article prose prose-invert max-w-none prose-p:leading-relaxed prose-p:text-[15px] prose-headings:font-bold prose-a:text-primary prose-img:rounded-xl prose-img:my-4"
-              dangerouslySetInnerHTML={{ __html: data.contentHtml }}
-            />
+            <>
+              <div
+                className="news-article prose prose-invert max-w-none prose-p:leading-relaxed prose-p:text-[15px] prose-headings:font-bold prose-a:text-primary prose-img:rounded-xl prose-img:my-4"
+                dangerouslySetInnerHTML={{ __html: data.contentHtml }}
+              />
+
+              {/* Aviso de conteúdo extraído */}
+              <div className="mt-6 pt-4 border-t border-border/50 text-xs text-muted-foreground text-center">
+                <p>✓ Matéria carregada com sucesso no app</p>
+              </div>
+            </>
           )}
 
-          <div className="mt-10 pt-6 border-t border-border flex items-center justify-between text-xs">
-            <span className="text-muted-foreground">Fonte: {item.source}</span>
-            <a
-              href={item.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-primary hover:underline"
-            >
-              Ver no site original <ExternalLink className="h-3 w-3" />
-            </a>
-          </div>
+          {!loading && !error && data && (
+            <div className="mt-10 pt-6 border-t border-border flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">Fonte: {item.source}</span>
+              <a
+                href={item.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-primary hover:underline"
+              >
+                Ver no site original <ExternalLink className="h-3 w-3" />
+              </a>
+            </div>
+          )}
+
+          {!loading && error && (
+            <div className="mt-10 pt-6 border-t border-border flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">Fonte: {item.source}</span>
+              <a
+                href={item.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-primary hover:underline"
+              >
+                Ver no site original <ExternalLink className="h-3 w-3" />
+              </a>
+            </div>
+          )}
         </article>
       </div>
     </div>

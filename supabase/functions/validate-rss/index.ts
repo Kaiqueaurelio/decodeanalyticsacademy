@@ -1,11 +1,15 @@
 // Valida um feed RSS/Atom: verifica se o endpoint responde e contém itens parseáveis.
+// Agora também registra o histórico de validações para auditoria.
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
+import { createClient } from 'npm:@supabase/supabase-js@2';
 
 interface ValidateResult {
   ok: boolean;
   itemCount: number;
   source: string | null;
   error?: string;
+  statusCode?: number;
+  responseTime?: number;
 }
 
 function pick(block: string, tag: string): string {
@@ -14,10 +18,11 @@ function pick(block: string, tag: string): string {
 }
 
 async function validate(url: string): Promise<ValidateResult> {
-  if (!/^https?:\/\//i.test(url)) return { ok: false, itemCount: 0, source: null, error: 'URL inválida' };
+  if (!/^https?:\/\//i.test(url)) return { ok: false, itemCount: 0, source: null, error: 'URL inválida', statusCode: 0, responseTime: 0 };
   try {
     const ac = new AbortController();
     const t = setTimeout(() => ac.abort(), 7000);
+    const startTime = Date.now();
     const res = await fetch(url, {
       signal: ac.signal,
       redirect: 'follow',
@@ -26,23 +31,24 @@ async function validate(url: string): Promise<ValidateResult> {
         Accept: 'application/rss+xml, application/atom+xml, application/xml, text/xml, */*',
       },
     });
+    const responseTime = Date.now() - startTime;
     clearTimeout(t);
-    if (!res.ok) return { ok: false, itemCount: 0, source: null, error: `HTTP ${res.status}` };
+    if (!res.ok) return { ok: false, itemCount: 0, source: null, error: `HTTP ${res.status}`, statusCode: res.status, responseTime };
     const xml = await res.text();
-    if (!xml || xml.length < 40) return { ok: false, itemCount: 0, source: null, error: 'Resposta vazia' };
+    if (!xml || xml.length < 40) return { ok: false, itemCount: 0, source: null, error: 'Resposta vazia', statusCode: 200, responseTime };
     if (!/<(rss|feed|channel)\b/i.test(xml)) {
-      return { ok: false, itemCount: 0, source: null, error: 'Conteúdo não é RSS/Atom' };
+      return { ok: false, itemCount: 0, source: null, error: 'Conteúdo não é RSS/Atom', statusCode: 200, responseTime };
     }
     const isAtom = /<feed[\s>]/i.test(xml);
     const blocks = xml.match(isAtom ? /<entry[\s>][\s\S]*?<\/entry>/gi : /<item[\s>][\s\S]*?<\/item>/gi) || [];
     const valid = blocks.filter((b) => pick(b, 'title').length > 0);
-    if (valid.length === 0) return { ok: false, itemCount: 0, source: null, error: 'Nenhum item encontrado' };
+    if (valid.length === 0) return { ok: false, itemCount: 0, source: null, error: 'Nenhum item encontrado', statusCode: 200, responseTime };
     const channel = xml.match(/<channel[\s>]([\s\S]*?)<\/channel>/i)?.[1] || xml;
-    const source = pick(channel, 'title').replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1').trim() || null;
-    return { ok: true, itemCount: valid.length, source };
+    const source = pick(channel, 'title').replace(/<![\[CDATA\[([\s\S]*?)\]\]>/g, '$1').trim() || null;
+    return { ok: true, itemCount: valid.length, source, statusCode: 200, responseTime };
   } catch (e) {
     const msg = String(e?.message || e);
-    if (/aborted/i.test(msg)) return { ok: false, itemCount: 0, source: null, error: 'Timeout ao acessar o feed' };
+    if (/aborted/i.test(msg)) return { ok: false, itemCount: 0, source: null, error: 'Timeout ao acessar o feed', responseTime: 7000 };
     return { ok: false, itemCount: 0, source: null, error: 'Falha de rede' };
   }
 }
@@ -50,12 +56,19 @@ async function validate(url: string): Promise<ValidateResult> {
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
   try {
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    const supabase = createClient(supabaseUrl!, supabaseKey!);
+
     let url: string | null = null;
     let urls: string[] | null = null;
+    let feedId: string | null = null;
+
     if (req.method === 'POST') {
       const body = await req.json().catch(() => ({}));
       url = typeof body.url === 'string' ? body.url : null;
       urls = Array.isArray(body.urls) ? body.urls : null;
+      feedId = typeof body.feedId === 'string' ? body.feedId : null;
     } else {
       url = new URL(req.url).searchParams.get('url');
     }
@@ -72,6 +85,24 @@ Deno.serve(async (req) => {
       });
     }
     const result = await validate(url);
+
+    // Registra o histórico de validação se feedId foi fornecido
+    if (feedId) {
+      try {
+        await supabase.from('rss_validation_history').insert({
+          feed_id: feedId,
+          is_valid: result.ok,
+          error_reason: result.error || null,
+          item_count: result.itemCount,
+          response_time_ms: result.responseTime || null,
+          status_code: result.statusCode || null,
+        });
+      } catch (e) {
+        console.error('Erro ao registrar histórico:', e);
+        // Não falha a validação se o histórico não for registrado
+      }
+    }
+
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
@@ -82,3 +113,4 @@ Deno.serve(async (req) => {
     });
   }
 });
+
