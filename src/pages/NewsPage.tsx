@@ -144,21 +144,9 @@ export default function NewsPage() {
   );
 
   const openViewer = (item: NewsItem) => {
-    setViewerFailed(false);
     setViewer(item);
   };
 
-  // fallback: se o iframe não carregar em 3.5s, abre no navegador
-  useEffect(() => {
-    if (!viewer) return;
-    const timeout = setTimeout(() => {
-      if (viewerFailed) return;
-      // Sites que bloqueiam iframe geralmente não disparam onLoad — deixamos o botão "Abrir no navegador".
-    }, 3500);
-    return () => clearTimeout(timeout);
-  }, [viewer, viewerFailed]);
-
-  const openExternal = (url: string) => window.open(url, '_blank', 'noopener,noreferrer');
 
   return (
     <div className="min-h-dvh bg-background text-foreground">
