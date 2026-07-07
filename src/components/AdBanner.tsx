@@ -23,7 +23,7 @@ export function AdBanner({ position = 'inline', className = '' }: AdBannerProps)
     }
   }, [currentAd, dismissed]);
 
-  if (loading || ads.length === 0 || dismissed) return null;
+  if (loading || ads.length === 0 || dismissed || !currentAd) return null;
 
   const handleClick = () => {
     if (currentAd) {

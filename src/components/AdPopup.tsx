@@ -118,7 +118,7 @@ export function AdPopup({ trigger = 'onLoad', delay = 2000 }: AdPopupProps) {
 
             {/* Area scrollavel (midia + texto) */}
             <div className="flex-1 overflow-y-auto overscroll-contain">
-              {currentAd.image_url && (
+              {currentAd?.image_url && (
                 <div className="relative h-40 sm:h-48 overflow-hidden bg-gradient-to-br from-primary/20 to-primary/5">
                   <AdMediaPreview src={currentAd.image_url} title={currentAd.title} />
                 </div>
@@ -130,9 +130,9 @@ export function AdPopup({ trigger = 'onLoad', delay = 2000 }: AdPopupProps) {
                     Publicidade Patrocinada
                   </p>
                   <h2 className="text-lg sm:text-xl font-bold text-foreground mb-2">
-                    {currentAd.title}
+                    {currentAd?.title}
                   </h2>
-                  {currentAd.description && (
+                  {currentAd?.description && (
                     <p className="text-sm text-muted-foreground">
                       {currentAd.description}
                     </p>
