@@ -309,18 +309,3 @@ function NewsCard({ item, onOpen }: { item: NewsItem; onOpen: () => void }) {
   );
 }
 
-function FallbackOpen({ url, onOpen }: { url: string; onOpen: () => void }) {
-  return (
-    <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-8 text-center bg-background">
-      <ExternalLink className="h-10 w-10 text-primary" />
-      <p className="text-sm font-semibold">Este site não permite pré-visualização.</p>
-      <p className="text-xs text-muted-foreground break-all">{url}</p>
-      <button
-        onClick={onOpen}
-        className="mt-2 rounded-full bg-primary text-primary-foreground text-sm font-semibold px-5 py-2"
-      >
-        Abrir no navegador
-      </button>
-    </div>
-  );
-}
