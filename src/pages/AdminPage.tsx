@@ -95,7 +95,7 @@ function CategorySelect({ value, onValueChange, placeholder }: { value: string; 
   );
 }
 
-type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements' | 'calendar' | 'testimonials' | 'ai' | 'performance' | 'smoke' | 'diagnostics' | 'ads' | 'ads-chat' | 'social' | 'rss';
+type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements' | 'calendar' | 'testimonials' | 'ai' | 'performance' | 'smoke' | 'diagnostics' | 'ads' | 'ads-chat' | 'social' | 'rss' | 'courses';
 
 const ACCEPT_MAP: Record<string, string> = {
   pdf: '.pdf', image: 'image/*', gif: '.gif,image/gif',
@@ -171,6 +171,7 @@ function AdminSidebar({ tab, setTab, stats, sidebarOpen, setSidebarOpen }: {
     { id: 'apostilas' as Tab, label: 'Apostilas', icon: BookOpen, count: stats.apostilas },
     { id: 'exercises' as Tab, label: 'Exercícios', icon: PenLine, count: stats.exercises },
     { id: 'materials' as Tab, label: 'Materiais', icon: FolderOpen, count: stats.materials },
+    { id: 'courses' as Tab, label: 'Cursos', icon: GraduationCap, count: undefined },
     { id: 'users' as Tab, label: 'Usuários', icon: Users, count: stats.users },
     { id: 'announcements' as Tab, label: 'Avisos', icon: Megaphone, count: undefined },
     { id: 'ads' as Tab, label: 'Anúncios', icon: Megaphone, count: undefined },
@@ -1346,6 +1347,7 @@ export default function AdminPage() {
                 { id: 'apostilas', label: 'Apostilas', icon: <BookOpen className="h-3.5 w-3.5" />, count: apostilas.length },
                 { id: 'exercises', label: 'Exercícios', icon: <PenLine className="h-3.5 w-3.5" />, count: totalExercises },
                 { id: 'materials', label: 'Materiais', icon: <FolderOpen className="h-3.5 w-3.5" />, count: materials.length },
+                { id: 'courses', label: 'Cursos', icon: <GraduationCap className="h-3.5 w-3.5" /> },
                 { id: 'users', label: 'Usuários', icon: <Users className="h-3.5 w-3.5" />, count: users.length },
                 { id: 'announcements', label: 'Avisos', icon: <Megaphone className="h-3.5 w-3.5" /> },
                 { id: 'calendar', label: 'Calendário', icon: <CalIcon className="h-3.5 w-3.5" /> },
@@ -2933,6 +2935,84 @@ export default function AdminPage() {
             )}
             {tab === 'rss' && (
               <RssFeedsManagerEnhanced />
+            )}
+
+            {/* COURSES */}
+            {tab === 'courses' && (
+              <div className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <GraduationCap className="h-5 w-5" /> Gerenciar Cursos Gratuitos
+                    </CardTitle>
+                    <CardDescription>
+                      Adicione, edite e gerencie os cursos gratuitos disponíveis para os alunos. Estes cursos são válidos para horas complementares e reforço acadêmico.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="rounded-lg border border-border bg-muted/30 p-4">
+                        <p className="text-sm text-muted-foreground">
+                          Os cursos são gerenciados no arquivo <span className="font-mono text-xs bg-muted px-2 py-1 rounded">src/data/free-courses.ts</span>. Cada curso possui:
+                        </p>
+                        <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+                          <li className="flex items-start gap-2">
+                            <span className="text-primary font-bold mt-0.5">•</span>
+                            <span><strong>Título</strong>: Nome do curso</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <span className="text-primary font-bold mt-0.5">•</span>
+                            <span><strong>Área</strong>: Categoria (Programação, Dados, IA, etc)</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <span className="text-primary font-bold mt-0.5">•</span>
+                            <span><strong>Descrição</strong>: Detalhes do curso</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <span className="text-primary font-bold mt-0.5">•</span>
+                            <span><strong>Carga horária</strong>: Ex: 20h, 15h</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <span className="text-primary font-bold mt-0.5">•</span>
+                            <span><strong>Link</strong>: URL do curso (use '#' se ainda não disponível)</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <span className="text-primary font-bold mt-0.5">•</span>
+                            <span><strong>Status</strong>: 'available' ou 'soon'</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <span className="text-primary font-bold mt-0.5">•</span>
+                            <span><strong>Featured</strong>: Marcar como destaque (opcional)</span>
+                          </li>
+                        </ul>
+                      </div>
+
+                      <div className="mt-6 p-4 rounded-lg border-2 border-primary/20 bg-primary/5">
+                        <div className="flex items-start gap-3">
+                          <div className="rounded-lg bg-primary/10 p-2 shrink-0">
+                            <Info className="h-4 w-4 text-primary" />
+                          </div>
+                          <div>
+                            <p className="font-semibold text-sm text-foreground">Como adicionar novos cursos:</p>
+                            <ol className="mt-2 space-y-1 text-sm text-muted-foreground list-decimal list-inside">
+                              <li>Abra o arquivo <span className="font-mono text-xs bg-muted px-1.5 py-0.5 rounded">src/data/free-courses.ts</span></li>
+                              <li>Adicione um novo objeto ao array <span className="font-mono text-xs bg-muted px-1.5 py-0.5 rounded">FREE_COURSES</span></li>
+                              <li>Preencha todos os campos obrigatórios</li>
+                              <li>Salve e faça deploy</li>
+                            </ol>
+                          </div>
+                        </div>
+                      </div>
+
+                      <Button className="w-full gap-2" onClick={() => {
+                        window.open('https://github.com/Kaiqueaurelio/decodeanalyticsacademy/blob/main/src/data/free-courses.ts', '_blank');
+                      }}>
+                        <ExternalLink className="h-4 w-4" /> Editar Cursos no GitHub
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             )}
             </div>
           </main>
