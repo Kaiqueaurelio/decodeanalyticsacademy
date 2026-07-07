@@ -71,13 +71,12 @@ function saveCache(data: NewsResponse) {
 export default function NewsPage() {
   const cached = useMemo(() => loadCache(), []);
   const [items, setItems] = useState<NewsItem[]>(cached?.items ?? []);
-  const [errors, setErrors] = useState<string[]>([]);
+  const [, setErrors] = useState<string[]>([]);
   const [fetchedAt, setFetchedAt] = useState<string | null>(cached?.fetchedAt ?? null);
   const [loading, setLoading] = useState(!cached);
   const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState<string>('Todos');
   const [viewer, setViewer] = useState<NewsItem | null>(null);
-  const [viewerFailed, setViewerFailed] = useState(false);
   const [pullY, setPullY] = useState(0);
   const startY = useRef<number | null>(null);
   const dragging = useRef(false);

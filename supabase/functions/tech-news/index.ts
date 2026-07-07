@@ -145,7 +145,7 @@ Deno.serve(async (req) => {
   try {
     const FEEDS = await loadFeeds();
     const results = await Promise.all(FEEDS.map((f) => fetchFeed(f.url, f.source)));
-    const errors = results.map((r, i) => (r.length === 0 ? FEEDS[i].source : null)).filter(Boolean);
+    // Feeds vazios/quebrados são silenciosamente ignorados — sem banner de erro na UI.
     const all = results.flat();
     const seen = new Map<string, NewsItem>();
     for (const item of all) {
