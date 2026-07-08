@@ -1296,6 +1296,7 @@ export default function AdminPage() {
     diagnostics: { title: 'Diagnóstico', desc: 'Logs de runtime, falhas de carregamento e desempenho por rota' },
     'ads-chat': { title: 'Ads Chat Builder', desc: 'Gere criativos de anúncios com IA' },
     rss: { title: 'Feeds RSS de Notícias', desc: 'Gerencie as fontes de notícias exibidas em /noticias' },
+    courses: { title: 'Cursos Gratuitos', desc: 'Gerencie os cursos gratuitos exibidos aos alunos' },
   };
 
   return (
