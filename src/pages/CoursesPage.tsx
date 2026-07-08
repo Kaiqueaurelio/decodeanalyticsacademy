@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppHeader } from '@/components/AppHeader';
 import { Watermark } from '@/components/Watermark';
@@ -6,18 +6,52 @@ import { AdBanner } from '@/components/AdBanner';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { COURSE_AREAS, COURSES_PAGE_STATS, FREE_COURSES } from '@/data/free-courses';
 import { cn } from '@/lib/utils';
-import { ArrowLeft, CheckCircle2, ExternalLink, GraduationCap, Info, PlusCircle } from 'lucide-react';
+import { ArrowLeft, BarChart3, CheckCircle2, ExternalLink, GraduationCap, Info, Loader2, PlusCircle, Sparkles } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { iconFor } from '@/lib/free-course-icons';
+
+type Course = {
+  id: string;
+  title: string;
+  provider: string;
+  area: string;
+  description: string;
+  workload: string;
+  validity_note: string;
+  link_url: string;
+  status: 'available' | 'soon';
+  featured: boolean;
+  tags: string[];
+  icon_key: string;
+};
 
 export default function CoursesPage() {
   const navigate = useNavigate();
   const [selectedArea, setSelectedArea] = useState('Todos');
+  const [rows, setRows] = useState<Course[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const courses = useMemo(() => {
-    if (selectedArea === 'Todos') return FREE_COURSES;
-    return FREE_COURSES.filter((course) => course.area === selectedArea);
-  }, [selectedArea]);
+  useEffect(() => {
+    (async () => {
+      const { data } = await (supabase as any)
+        .from('free_courses')
+        .select('id,title,provider,area,description,workload,validity_note,link_url,status,featured,tags,icon_key')
+        .eq('is_active', true)
+        .order('sort_order', { ascending: true })
+        .order('created_at', { ascending: false });
+      setRows((data as Course[]) || []);
+      setLoading(false);
+    })();
+  }, []);
+
+  const areas = useMemo(() => ['Todos', ...Array.from(new Set(rows.map((r) => r.area)))], [rows]);
+  const courses = useMemo(() => selectedArea === 'Todos' ? rows : rows.filter((c) => c.area === selectedArea), [rows, selectedArea]);
+  const stats = [
+    { label: 'Cursos gratuitos', value: rows.length, icon: GraduationCap },
+    { label: 'Trilhas em destaque', value: rows.filter((c) => c.featured).length, icon: Sparkles },
+    { label: 'Áreas cobertas', value: Math.max(0, areas.length - 1), icon: BarChart3 },
+  ];
 
   return (
     <div className="min-h-dvh bg-background relative selection:bg-primary/20">
@@ -38,23 +72,20 @@ export default function CoursesPage() {
           <div className="grid gap-5 lg:grid-cols-[1fr_320px] lg:items-end">
             <div className="space-y-4">
               <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-primary">
-                <GraduationCap className="h-3.5 w-3.5" /> Cursos validos pela faculdade
+                <GraduationCap className="h-3.5 w-3.5" /> Cursos válidos pela faculdade
               </div>
-              <div className="space-y-2">
-                <h1 className="font-display text-2xl font-bold leading-tight tracking-tight text-foreground sm:text-3xl">
-                  Cursos gratuitos para horas complementares e reforco academico
-                </h1>
-                <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
-                  Uma area separada para publicar cursos gratuitos, links oficiais e observacoes de validade antes do aluno enviar certificado para a faculdade.
-                </p>
-              </div>
+              <h1 className="font-display text-2xl font-bold leading-tight tracking-tight text-foreground sm:text-3xl">
+                Cursos gratuitos para horas complementares e reforço acadêmico
+              </h1>
+              <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
+                Trilhas gratuitas com links oficiais e observações de validade antes do aluno enviar o certificado.
+              </p>
             </div>
-
             <div className="rounded-xl border border-border/70 bg-muted/25 p-4">
               <div className="flex items-start gap-3">
                 <Info className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                 <p className="text-xs leading-5 text-muted-foreground">
-                  Antes de divulgar como valido, confirme carga horaria, certificado e regra atual da faculdade. A tela ja deixa essa observacao visivel para evitar confusao.
+                  Antes de divulgar como válido, confirme carga horária, certificado e regra atual da faculdade.
                 </p>
               </div>
             </div>
@@ -62,7 +93,7 @@ export default function CoursesPage() {
         </section>
 
         <div className="mb-6 grid gap-3 sm:grid-cols-3">
-          {COURSES_PAGE_STATS.map((stat) => (
+          {stats.map((stat) => (
             <Card key={stat.label} className="rounded-xl border-border/70 bg-card/70 p-4">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
@@ -78,7 +109,7 @@ export default function CoursesPage() {
         </div>
 
         <div className="mb-5 flex gap-2 overflow-x-auto pb-1">
-          {COURSE_AREAS.map((area) => (
+          {areas.map((area) => (
             <Button
               key={area}
               type="button"
@@ -92,76 +123,78 @@ export default function CoursesPage() {
           ))}
         </div>
 
-        <section className="grid gap-3 sm:gap-4 lg:grid-cols-2">
-          {courses.map((course) => {
-            const isReady = course.status === 'available' && course.linkUrl !== '#';
-            return (
-              <article key={course.id} className="rounded-2xl border border-border bg-card/80 p-3 shadow-sm transition-colors hover:border-primary/30 sm:p-5">
-                <div className="flex gap-3 sm:gap-4">
-                  <div className="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                    <course.icon className="h-4 w-4 sm:h-5 sm:w-5" />
-                  </div>
-                  <div className="min-w-0 flex-1 space-y-2.5 sm:space-y-3">
-                    <div className="space-y-1">
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        <Badge variant="outline" className="h-5 rounded-full px-2 text-[10px]">
-                          {course.area}
-                        </Badge>
-                        {course.featured && (
-                          <Badge className="h-5 rounded-full px-2 text-[10px]">Destaque</Badge>
-                        )}
-                        <Badge variant={isReady ? 'secondary' : 'outline'} className={cn('h-5 rounded-full px-2 text-[10px]', !isReady && 'text-muted-foreground')}>
-                          {isReady ? 'Disponivel' : 'Aguardando link'}
-                        </Badge>
+        {loading ? (
+          <div className="flex items-center justify-center gap-2 py-16 text-muted-foreground text-sm">
+            <Loader2 className="h-4 w-4 animate-spin" /> Carregando cursos...
+          </div>
+        ) : courses.length === 0 ? (
+          <p className="py-16 text-center text-sm text-muted-foreground">Nenhum curso disponível no momento.</p>
+        ) : (
+          <section className="grid gap-3 sm:gap-4 lg:grid-cols-2">
+            {courses.map((course) => {
+              const Icon = iconFor(course.icon_key);
+              const isReady = course.status === 'available' && !!course.link_url && course.link_url !== '#';
+              return (
+                <article key={course.id} className="rounded-2xl border border-border bg-card/80 p-3 shadow-sm transition-colors hover:border-primary/30 sm:p-5">
+                  <div className="flex gap-3 sm:gap-4">
+                    <div className="flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                      <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
+                    </div>
+                    <div className="min-w-0 flex-1 space-y-2.5 sm:space-y-3">
+                      <div className="space-y-1">
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <Badge variant="outline" className="h-5 rounded-full px-2 text-[10px]">{course.area}</Badge>
+                          {course.featured && <Badge className="h-5 rounded-full px-2 text-[10px]">Destaque</Badge>}
+                          <Badge variant={isReady ? 'secondary' : 'outline'} className={cn('h-5 rounded-full px-2 text-[10px]', !isReady && 'text-muted-foreground')}>
+                            {isReady ? 'Disponível' : 'Aguardando link'}
+                          </Badge>
+                        </div>
+                        <h2 className="text-sm font-bold leading-snug text-foreground sm:text-lg">{course.title}</h2>
+                        <p className="text-[11px] sm:text-xs font-medium text-primary/90">{course.provider}</p>
                       </div>
-                      <h2 className="text-sm font-bold leading-snug text-foreground sm:text-lg">{course.title}</h2>
-                      <p className="text-[11px] sm:text-xs font-medium text-primary/90">{course.provider}</p>
-                    </div>
-
-                    <p className="text-xs sm:text-sm leading-5 sm:leading-6 text-muted-foreground line-clamp-3 sm:line-clamp-none">{course.description}</p>
-
-                    <div className="grid grid-cols-2 gap-2 text-[11px] sm:text-xs text-muted-foreground">
-                      <div className="rounded-lg bg-muted/30 px-2.5 py-1.5">
-                        <span className="font-semibold text-foreground">Carga:</span> {course.workload}
+                      <p className="text-xs sm:text-sm leading-5 sm:leading-6 text-muted-foreground line-clamp-3 sm:line-clamp-none">{course.description}</p>
+                      <div className="grid grid-cols-2 gap-2 text-[11px] sm:text-xs text-muted-foreground">
+                        <div className="rounded-lg bg-muted/30 px-2.5 py-1.5">
+                          <span className="font-semibold text-foreground">Carga:</span> {course.workload || '—'}
+                        </div>
+                        <div className="rounded-lg bg-muted/30 px-2.5 py-1.5">
+                          <span className="font-semibold text-foreground">Cert.:</span> sim
+                        </div>
                       </div>
-                      <div className="rounded-lg bg-muted/30 px-2.5 py-1.5">
-                        <span className="font-semibold text-foreground">Cert.:</span> sim
-                      </div>
-                    </div>
-
-                    <div className="hidden sm:block rounded-lg border border-border/70 bg-muted/20 px-3 py-2 text-xs leading-5 text-muted-foreground">
-                      {course.validityNote}
-                    </div>
-
-                    <div className="flex flex-wrap gap-1">
-                      {course.tags.slice(0, 3).map((tag) => (
-                        <span key={tag} className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold text-muted-foreground">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-
-                    <div className="flex flex-wrap gap-2 pt-0.5">
-                      <Button
-                        size="sm"
-                        disabled={!isReady}
-                        className="h-8 gap-1.5 text-xs flex-1 sm:flex-none"
-                        onClick={() => window.open(course.linkUrl, '_blank', 'noopener,noreferrer')}
-                      >
-                        <ExternalLink className="h-3.5 w-3.5" /> Abrir
-                      </Button>
-                      {!isReady && (
-                        <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs flex-1 sm:flex-none" disabled>
-                          <PlusCircle className="h-3.5 w-3.5" /> Aguardando link
-                        </Button>
+                      {course.validity_note && (
+                        <div className="hidden sm:block rounded-lg border border-border/70 bg-muted/20 px-3 py-2 text-xs leading-5 text-muted-foreground">
+                          {course.validity_note}
+                        </div>
                       )}
+                      {course.tags?.length > 0 && (
+                        <div className="flex flex-wrap gap-1">
+                          {course.tags.slice(0, 3).map((tag) => (
+                            <span key={tag} className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold text-muted-foreground">{tag}</span>
+                          ))}
+                        </div>
+                      )}
+                      <div className="flex flex-wrap gap-2 pt-0.5">
+                        <Button
+                          size="sm"
+                          disabled={!isReady}
+                          className="h-8 gap-1.5 text-xs flex-1 sm:flex-none"
+                          onClick={() => window.open(course.link_url, '_blank', 'noopener,noreferrer')}
+                        >
+                          <ExternalLink className="h-3.5 w-3.5" /> Abrir
+                        </Button>
+                        {!isReady && (
+                          <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs flex-1 sm:flex-none" disabled>
+                            <PlusCircle className="h-3.5 w-3.5" /> Aguardando link
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              </article>
-            );
-          })}
-        </section>
+                </article>
+              );
+            })}
+          </section>
+        )}
 
         <div className="mt-8">
           <AdBanner position="inline" />
