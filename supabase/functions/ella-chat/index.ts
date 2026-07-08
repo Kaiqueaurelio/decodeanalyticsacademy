@@ -336,7 +336,9 @@ const tools = [
       description: "Lista todos os cursos gratuitos cadastrados.",
       parameters: { type: "object", properties: {} },
     },
-  },
+] as const;
+
+
 
 // ---------- Tool executor (server-side, com service role) ----------
 async function executeTool(name: string, args: any, admin: ReturnType<typeof createClient>, ctx: { userId: string; authHeader: string }) {
