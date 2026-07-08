@@ -1118,6 +1118,66 @@ export type Database = {
           },
         ]
       }
+      free_courses: {
+        Row: {
+          area: string
+          certificate: string
+          created_at: string
+          description: string
+          featured: boolean
+          icon_key: string
+          id: string
+          is_active: boolean
+          link_url: string
+          provider: string
+          sort_order: number
+          status: string
+          tags: string[]
+          title: string
+          updated_at: string
+          validity_note: string
+          workload: string
+        }
+        Insert: {
+          area?: string
+          certificate?: string
+          created_at?: string
+          description?: string
+          featured?: boolean
+          icon_key?: string
+          id?: string
+          is_active?: boolean
+          link_url?: string
+          provider?: string
+          sort_order?: number
+          status?: string
+          tags?: string[]
+          title: string
+          updated_at?: string
+          validity_note?: string
+          workload?: string
+        }
+        Update: {
+          area?: string
+          certificate?: string
+          created_at?: string
+          description?: string
+          featured?: boolean
+          icon_key?: string
+          id?: string
+          is_active?: boolean
+          link_url?: string
+          provider?: string
+          sort_order?: number
+          status?: string
+          tags?: string[]
+          title?: string
+          updated_at?: string
+          validity_note?: string
+          workload?: string
+        }
+        Relationships: []
+      }
       material_favorites: {
         Row: {
           created_at: string
