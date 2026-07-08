@@ -471,6 +471,61 @@ async function executeTool(name: string, args: any, admin: ReturnType<typeof cre
       case "navigate_to": {
         return { ok: true, navigate: args.path, summary: `Abrindo ${args.path}` };
       }
+      case "add_rss_feed": {
+        if (!args.url || typeof args.url !== "string") return { ok: false, error: "URL obrigatória" };
+        const q = await admin.from("rss_feeds").insert({
+          url: args.url,
+          name: args.name ?? args.url,
+          category: args.category ?? "tech",
+          is_active: true,
+        }).select("id, name, url").single();
+        if (q.error) return { ok: false, error: q.error.message };
+        return { ok: true, id: q.data.id, summary: `Feed **${q.data.name}** adicionado.` };
+      }
+      case "delete_rss_feed": {
+        if (!args.confirm) return { ok: false, error: "Precisa confirm=true." };
+        const q = await admin.from("rss_feeds").delete().eq("id", args.id);
+        if (q.error) return { ok: false, error: q.error.message };
+        return { ok: true, summary: "Feed removido." };
+      }
+      case "list_rss_feeds": {
+        const q = await admin.from("rss_feeds").select("id, name, url, category, is_active").order("name");
+        if (q.error) return { ok: false, error: q.error.message };
+        return { ok: true, feeds: q.data };
+      }
+      case "create_free_course": {
+        const q = await admin.from("free_courses").insert({
+          title: args.title,
+          area: args.area ?? "Outros",
+          description: args.description ?? "",
+          workload: args.workload ?? "",
+          link_url: args.link_url ?? "#",
+          validity_note: args.validity_note ?? "",
+          status: args.status ?? "available",
+          featured: args.featured ?? false,
+          tags: args.tags ?? [],
+          icon_key: args.icon_key ?? "graduation",
+        }).select("id, title").single();
+        if (q.error) return { ok: false, error: q.error.message };
+        return { ok: true, id: q.data.id, summary: `Curso **${q.data.title}** criado.` };
+      }
+      case "update_free_course": {
+        const { id, ...patch } = args;
+        const q = await admin.from("free_courses").update(patch).eq("id", id).select("id, title").single();
+        if (q.error) return { ok: false, error: q.error.message };
+        return { ok: true, summary: `Curso **${q.data.title}** atualizado.` };
+      }
+      case "delete_free_course": {
+        if (!args.confirm) return { ok: false, error: "Precisa confirm=true." };
+        const q = await admin.from("free_courses").delete().eq("id", args.id);
+        if (q.error) return { ok: false, error: q.error.message };
+        return { ok: true, summary: "Curso excluído." };
+      }
+      case "list_free_courses": {
+        const q = await admin.from("free_courses").select("id, title, area, status, link_url, is_active").order("sort_order");
+        if (q.error) return { ok: false, error: q.error.message };
+        return { ok: true, courses: q.data };
+      }
       default:
         return { ok: false, error: `Tool desconhecida: ${name}` };
     }
