@@ -233,7 +233,110 @@ const tools = [
       parameters: { type: "object", properties: { path: { type: "string" } }, required: ["path"] },
     },
   },
-] as const;
+  {
+    type: "function",
+    function: {
+      name: "add_rss_feed",
+      description: "Adiciona um feed RSS/Atom de notícias tech ao app. Use quando o admin pedir para incluir/plugar/adicionar um link no feed RSS.",
+      parameters: {
+        type: "object",
+        properties: {
+          url: { type: "string", description: "URL do feed RSS/Atom" },
+          name: { type: "string", description: "Nome amigável do feed" },
+          category: { type: "string", description: "Categoria (tech, ia, dados, etc)" },
+        },
+        required: ["url"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "delete_rss_feed",
+      description: "Remove um feed RSS. Exige confirm=true.",
+      parameters: {
+        type: "object",
+        properties: { id: { type: "string" }, confirm: { type: "boolean" } },
+        required: ["id", "confirm"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "list_rss_feeds",
+      description: "Lista todos os feeds RSS cadastrados (id, nome, url, ativo).",
+      parameters: { type: "object", properties: {} },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "create_free_course",
+      description: "Cria um curso gratuito no catálogo (horas complementares). Se link_url estiver preenchido e status=available, aparece direto para os alunos.",
+      parameters: {
+        type: "object",
+        properties: {
+          title: { type: "string" },
+          area: { type: "string" },
+          description: { type: "string" },
+          workload: { type: "string", description: "Ex.: 20h" },
+          link_url: { type: "string" },
+          validity_note: { type: "string" },
+          status: { type: "string", enum: ["available", "soon"] },
+          featured: { type: "boolean" },
+          tags: { type: "array", items: { type: "string" } },
+          icon_key: { type: "string", enum: ["graduation","chart","database","brain","code","network","shield","sparkles"] },
+        },
+        required: ["title"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "update_free_course",
+      description: "Atualiza um curso gratuito existente por id.",
+      parameters: {
+        type: "object",
+        properties: {
+          id: { type: "string" },
+          title: { type: "string" },
+          area: { type: "string" },
+          description: { type: "string" },
+          workload: { type: "string" },
+          link_url: { type: "string" },
+          validity_note: { type: "string" },
+          status: { type: "string", enum: ["available","soon"] },
+          featured: { type: "boolean" },
+          is_active: { type: "boolean" },
+          tags: { type: "array", items: { type: "string" } },
+          icon_key: { type: "string" },
+        },
+        required: ["id"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "delete_free_course",
+      description: "Exclui um curso gratuito. Exige confirm=true.",
+      parameters: {
+        type: "object",
+        properties: { id: { type: "string" }, confirm: { type: "boolean" } },
+        required: ["id", "confirm"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "list_free_courses",
+      description: "Lista todos os cursos gratuitos cadastrados.",
+      parameters: { type: "object", properties: {} },
+    },
+  },
 
 // ---------- Tool executor (server-side, com service role) ----------
 async function executeTool(name: string, args: any, admin: ReturnType<typeof createClient>, ctx: { userId: string; authHeader: string }) {
