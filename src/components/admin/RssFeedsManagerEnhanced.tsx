@@ -178,7 +178,7 @@ export function RssFeedsManagerEnhanced() {
     setSelectedFeed(feed);
     setHistoryLoading(true);
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('rss_validation_history')
         .select('*')
         .eq('feed_id', feed.id)
