@@ -149,7 +149,7 @@ export function CinematicHero() {
                 </button>
                 <button
                   onClick={() => navigate('/login')}
-                  className="liquid-glass rounded-full px-6 py-2 text-white text-sm font-medium hover:bg-white/5 transition-colors"
+                  className="liquid-glass rounded-full px-6 py-2 text-white text-sm font-medium hover:scale-105 active:scale-95 transition-transform"
                 >
                   Acessar
                 </button>
