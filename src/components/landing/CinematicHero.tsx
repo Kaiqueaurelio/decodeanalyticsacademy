@@ -125,7 +125,7 @@ export function CinematicHero() {
         <div className="relative z-10 min-h-screen flex flex-col">
           {/* Nav */}
           <nav className="relative z-20 pl-6 pr-6 py-6">
-            <div className="liquid-glass rounded-full px-6 py-3 flex items-center justify-between max-w-5xl mx-auto">
+            <div className="liquid-glass-strong rounded-full px-6 py-3 flex items-center justify-between max-w-5xl mx-auto hover:scale-[1.005] transition-transform">
               <div className="flex items-center gap-8">
                 <button
                   onClick={() => navigate('/')}
