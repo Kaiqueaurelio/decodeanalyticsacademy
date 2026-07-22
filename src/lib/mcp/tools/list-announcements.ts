@@ -21,7 +21,8 @@ export default defineTool({
     if (!ctx.isAuthenticated()) return { content: [{ type: "text", text: "Não autenticado" }], isError: true };
     const { data, error } = await sb(ctx)
       .from("announcements")
-      .select("id,title,category,body,created_at")
+      .select("id,title,category,content,created_at")
+      .eq("published", true)
       .order("created_at", { ascending: false })
       .limit(limit ?? 10);
     if (error) return { content: [{ type: "text", text: error.message }], isError: true };

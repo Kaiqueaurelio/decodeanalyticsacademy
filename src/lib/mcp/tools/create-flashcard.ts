@@ -16,14 +16,14 @@ export default defineTool({
   inputSchema: {
     front: z.string().trim().min(1),
     back: z.string().trim().min(1),
-    subject: z.string().trim().optional(),
+    apostila_id: z.string().uuid().optional(),
   },
   annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
-  handler: async ({ front, back, subject }, ctx) => {
+  handler: async ({ front, back, apostila_id }, ctx) => {
     if (!ctx.isAuthenticated()) return { content: [{ type: "text", text: "Não autenticado" }], isError: true };
     const { data, error } = await sb(ctx)
       .from("flashcards")
-      .insert({ user_id: ctx.getUserId(), front, back, subject: subject ?? null })
+      .insert({ user_id: ctx.getUserId(), front, back, apostila_id: apostila_id ?? null })
       .select()
       .maybeSingle();
     if (error) return { content: [{ type: "text", text: error.message }], isError: true };

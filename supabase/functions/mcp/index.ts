@@ -27,7 +27,7 @@ var list_apostilas_default = defineTool({
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: async ({ search, category, limit }, ctx) => {
     if (!ctx.isAuthenticated()) return { content: [{ type: "text", text: "N\xE3o autenticado" }], isError: true };
-    let q = sb(ctx).from("apostilas").select("id,title,category,subject,status,updated_at").order("updated_at", { ascending: false }).limit(limit ?? 20);
+    let q = sb(ctx).from("apostilas").select("id,title,category,course,semester,published,updated_at").eq("published", true).order("updated_at", { ascending: false }).limit(limit ?? 20);
     if (search) q = q.ilike("title", `%${search}%`);
     if (category) q = q.eq("category", category);
     const { data, error } = await q;
@@ -65,7 +65,7 @@ var get_apostila_default = defineTool2({
     return {
       content: [{ type: "text", text: `# ${data.title}
 
-${data.content ?? data.body ?? ""}` }],
+${data.content ?? ""}` }],
       structuredContent: { apostila: data }
     };
   }
@@ -122,7 +122,7 @@ var list_announcements_default = defineTool4({
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: async ({ limit }, ctx) => {
     if (!ctx.isAuthenticated()) return { content: [{ type: "text", text: "N\xE3o autenticado" }], isError: true };
-    const { data, error } = await sb4(ctx).from("announcements").select("id,title,category,body,created_at").order("created_at", { ascending: false }).limit(limit ?? 10);
+    const { data, error } = await sb4(ctx).from("announcements").select("id,title,category,content,created_at").eq("published", true).order("created_at", { ascending: false }).limit(limit ?? 10);
     if (error) return { content: [{ type: "text", text: error.message }], isError: true };
     return {
       content: [{ type: "text", text: JSON.stringify(data ?? [], null, 2) }],
@@ -148,7 +148,7 @@ var list_free_courses_default = defineTool5({
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: async (_input, ctx) => {
     if (!ctx.isAuthenticated()) return { content: [{ type: "text", text: "N\xE3o autenticado" }], isError: true };
-    const { data, error } = await sb5(ctx).from("free_courses").select("id,title,provider,url,hours,category,description").eq("is_active", true).order("order_index", { ascending: true }).limit(100);
+    const { data, error } = await sb5(ctx).from("free_courses").select("id,title,provider,link_url,workload,area,description,certificate").eq("is_active", true).order("sort_order", { ascending: true }).limit(100);
     if (error) return { content: [{ type: "text", text: error.message }], isError: true };
     return {
       content: [{ type: "text", text: JSON.stringify(data ?? [], null, 2) }],
@@ -172,14 +172,14 @@ var list_my_flashcards_default = defineTool6({
   title: "Meus flashcards",
   description: "Lista os flashcards do usu\xE1rio autenticado, opcionalmente filtrando por disciplina.",
   inputSchema: {
-    subject: z5.string().optional(),
+    apostila_id: z5.string().uuid().optional(),
     limit: z5.number().int().min(1).max(100).optional()
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
-  handler: async ({ subject, limit }, ctx) => {
+  handler: async ({ apostila_id, limit }, ctx) => {
     if (!ctx.isAuthenticated()) return { content: [{ type: "text", text: "N\xE3o autenticado" }], isError: true };
-    let q = sb6(ctx).from("flashcards").select("id,front,back,subject,difficulty,next_review,created_at").eq("user_id", ctx.getUserId()).order("created_at", { ascending: false }).limit(limit ?? 30);
-    if (subject) q = q.eq("subject", subject);
+    let q = sb6(ctx).from("flashcards").select("id,front,back,apostila_id,difficulty,next_review,created_at").eq("user_id", ctx.getUserId()).order("created_at", { ascending: false }).limit(limit ?? 30);
+    if (apostila_id) q = q.eq("apostila_id", apostila_id);
     const { data, error } = await q;
     if (error) return { content: [{ type: "text", text: error.message }], isError: true };
     return {
@@ -206,12 +206,12 @@ var create_flashcard_default = defineTool7({
   inputSchema: {
     front: z6.string().trim().min(1),
     back: z6.string().trim().min(1),
-    subject: z6.string().trim().optional()
+    apostila_id: z6.string().uuid().optional()
   },
   annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
-  handler: async ({ front, back, subject }, ctx) => {
+  handler: async ({ front, back, apostila_id }, ctx) => {
     if (!ctx.isAuthenticated()) return { content: [{ type: "text", text: "N\xE3o autenticado" }], isError: true };
-    const { data, error } = await sb7(ctx).from("flashcards").insert({ user_id: ctx.getUserId(), front, back, subject: subject ?? null }).select().maybeSingle();
+    const { data, error } = await sb7(ctx).from("flashcards").insert({ user_id: ctx.getUserId(), front, back, apostila_id: apostila_id ?? null }).select().maybeSingle();
     if (error) return { content: [{ type: "text", text: error.message }], isError: true };
     return {
       content: [{ type: "text", text: `Flashcard criado (${data?.id}).` }],

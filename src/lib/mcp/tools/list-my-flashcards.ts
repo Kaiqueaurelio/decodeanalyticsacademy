@@ -14,17 +14,17 @@ export default defineTool({
   title: "Meus flashcards",
   description: "Lista os flashcards do usuário autenticado, opcionalmente filtrando por disciplina.",
   inputSchema: {
-    subject: z.string().optional(),
+    apostila_id: z.string().uuid().optional(),
     limit: z.number().int().min(1).max(100).optional(),
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
-  handler: async ({ subject, limit }, ctx) => {
+  handler: async ({ apostila_id, limit }, ctx) => {
     if (!ctx.isAuthenticated()) return { content: [{ type: "text", text: "Não autenticado" }], isError: true };
-    let q = sb(ctx).from("flashcards").select("id,front,back,subject,difficulty,next_review,created_at")
+    let q = sb(ctx).from("flashcards").select("id,front,back,apostila_id,difficulty,next_review,created_at")
       .eq("user_id", ctx.getUserId())
       .order("created_at", { ascending: false })
       .limit(limit ?? 30);
-    if (subject) q = q.eq("subject", subject);
+    if (apostila_id) q = q.eq("apostila_id", apostila_id);
     const { data, error } = await q;
     if (error) return { content: [{ type: "text", text: error.message }], isError: true };
     return {

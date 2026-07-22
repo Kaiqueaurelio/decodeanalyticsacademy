@@ -19,9 +19,9 @@ export default defineTool({
     if (!ctx.isAuthenticated()) return { content: [{ type: "text", text: "Não autenticado" }], isError: true };
     const { data, error } = await sb(ctx)
       .from("free_courses")
-      .select("id,title,provider,url,hours,category,description")
+      .select("id,title,provider,link_url,workload,area,description,certificate")
       .eq("is_active", true)
-      .order("order_index", { ascending: true })
+      .order("sort_order", { ascending: true })
       .limit(100);
     if (error) return { content: [{ type: "text", text: error.message }], isError: true };
     return {

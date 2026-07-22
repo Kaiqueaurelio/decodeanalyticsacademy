@@ -23,7 +23,7 @@ export default defineTool({
     if (error) return { content: [{ type: "text", text: error.message }], isError: true };
     if (!data) return { content: [{ type: "text", text: "Apostila não encontrada" }], isError: true };
     return {
-      content: [{ type: "text", text: `# ${data.title}\n\n${data.content ?? data.body ?? ""}` }],
+      content: [{ type: "text", text: `# ${data.title}\n\n${data.content ?? ""}` }],
       structuredContent: { apostila: data },
     };
   },

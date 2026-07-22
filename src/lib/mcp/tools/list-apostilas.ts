@@ -21,7 +21,7 @@ export default defineTool({
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
   handler: async ({ search, category, limit }, ctx) => {
     if (!ctx.isAuthenticated()) return { content: [{ type: "text", text: "Não autenticado" }], isError: true };
-    let q = sb(ctx).from("apostilas").select("id,title,category,subject,status,updated_at").order("updated_at", { ascending: false }).limit(limit ?? 20);
+    let q = sb(ctx).from("apostilas").select("id,title,category,course,semester,published,updated_at").eq("published", true).order("updated_at", { ascending: false }).limit(limit ?? 20);
     if (search) q = q.ilike("title", `%${search}%`);
     if (category) q = q.eq("category", category);
     const { data, error } = await q;
