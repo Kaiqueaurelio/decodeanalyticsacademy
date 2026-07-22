@@ -12,7 +12,6 @@ import { PageSkeleton } from "@/components/PageSkeleton";
 import "@/styles/polish.css";
 import "@/styles/landing-motion.css";
 import "@/styles/ella-and-ads.css";
-import "@/styles/liquid-glass.css";
 // BUGFIX: AudioPlayerProvider NAO pode ser lazy-loaded pois e um Context Provider.
 // Lazy-loading um Provider causa crash/reset de contexto ao remontar.
 import { AudioPlayerProvider } from "@/contexts/AudioPlayerContext";
