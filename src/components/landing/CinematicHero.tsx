@@ -163,7 +163,7 @@ export function CinematicHero() {
                   className="flex items-center gap-2 text-white font-semibold text-lg"
                 >
                   <Globe size={24} />
-                  <span>Decode</span>
+                  <span>Decode Analytics</span>
                 </button>
                 <div className="hidden md:flex items-center gap-8">
                   <a href="#recursos" className="text-white/80 hover:text-white transition-colors text-sm font-medium">Recursos</a>
@@ -182,7 +182,7 @@ export function CinematicHero() {
                   onClick={() => navigate('/login')}
                   className="liquid-glass rounded-full px-6 py-2 text-white text-sm font-medium hover:bg-white/5 transition-colors"
                 >
-                  Entrar
+                  Acessar
                 </button>
               </div>
             </div>
@@ -194,7 +194,7 @@ export function CinematicHero() {
               className="text-5xl md:text-6xl lg:text-7xl text-white mb-8 tracking-tight whitespace-nowrap"
               style={{ fontFamily: "'Instrument Serif', serif" }}
             >
-              Feito para os curiosos
+              Sua plataforma de estudos
             </h1>
 
             <div className="max-w-xl w-full space-y-4">
@@ -219,9 +219,10 @@ export function CinematicHero() {
               </form>
 
               <p className="text-white text-sm leading-relaxed px-4">
-                Apostilas, exercícios, flashcards e um dashboard que acompanha sua evolução —
-                tudo em um só lugar para você dominar sua graduação.
+                Apostilas, exercícios, flashcards e acompanhamento de progresso.
+                Tudo que você precisa para dominar suas disciplinas.
               </p>
+
 
               <div className="flex justify-center">
                 <button
