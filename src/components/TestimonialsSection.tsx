@@ -27,6 +27,14 @@ const displayName = (name: string, email: string) => {
   return email?.split('@')[0] || 'Aluno';
 };
 
+// Cores estilo "Ana Silva = ciano, Carlos Santos = roxo" — alterna por hash
+const AVATAR_BG = ['#00f0ff', '#a855f7', '#22d3ee', '#c084fc', '#06b6d4', '#d946ef'];
+const colorFor = (id: string) => {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+  return AVATAR_BG[h % AVATAR_BG.length];
+};
+
 const formatRole = (course: string | null, semester: number | null) => {
   if (!course && !semester) return 'Aluno · Decode Analytics';
   const c = course === 'OUTRO' ? 'Aluno' : `Aluno de ${course || ''}`.trim();
@@ -62,20 +70,17 @@ export function TestimonialsSection() {
   if (loading || items.length === 0) return null;
 
   return (
-    <section className="py-20 px-4 relative overflow-hidden bg-black">
-      <div className="absolute -top-40 right-0 w-[500px] h-[500px] rounded-full blur-[140px] opacity-[0.05] pointer-events-none" style={{ background: '#ffffff' }} />
+    <section className="py-20 px-4 relative overflow-hidden">
+      <div className="absolute inset-0 grid-lines-bg opacity-30 pointer-events-none" />
       <div className="container mx-auto max-w-6xl relative">
         <div className="text-center mb-12">
-          <p className="text-xs uppercase tracking-[0.2em] text-white/60 mb-3">
+          <p className="text-xs font-mono-label uppercase tracking-[0.2em] text-primary mb-3">
             // Depoimentos
           </p>
-          <h2
-            className="text-3xl md:text-5xl mb-3 text-white"
-            style={{ fontFamily: "'Instrument Serif', serif" }}
-          >
-            O que dizem os alunos
+          <h2 className="font-display text-3xl md:text-5xl mb-3">
+            O que dizem os <span className="text-primary">alunos</span>
           </h2>
-          <p className="text-sm text-white/60 max-w-xl mx-auto">
+          <p className="text-sm text-muted-foreground max-w-xl mx-auto">
             Histórias reais de quem está transformando a forma de estudar com a Decode Analytics.
           </p>
         </div>
@@ -84,38 +89,51 @@ export function TestimonialsSection() {
           {items.map(t => {
             const name = displayName(t.profile?.full_name || '', t.profile?.email || '');
             const initials = getInitials(t.profile?.full_name || '', t.profile?.email || '');
+            const bg = colorFor(t.user_id);
             return (
               <div
                 key={t.id}
-                className="liquid-glass rounded-2xl p-6 hover:scale-[1.02] transition-transform"
+                className="rounded-2xl p-6 transition-all hover:-translate-y-1 duration-300"
+                style={{
+                  background: '#0a0a12',
+                  border: '1px solid rgba(255,255,255,0.06)',
+                }}
               >
+                {/* Header: avatar + nome + curso */}
                 <div className="flex items-center gap-3 mb-5">
-                  <div className="liquid-glass h-12 w-12 rounded-full flex items-center justify-center font-bold text-base shrink-0 text-white">
+                  <div
+                    className="h-12 w-12 rounded-full flex items-center justify-center font-display font-bold text-base shrink-0"
+                    style={{ background: bg, color: '#050508' }}
+                  >
                     {initials}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-base font-semibold truncate text-white">
+                    <p className="text-base font-semibold truncate" style={{ color: '#f1f5f9' }}>
                       {name}
                     </p>
-                    <p className="text-[11px] tracking-wider truncate text-white/50">
+                    <p className="text-[11px] font-mono tracking-wider truncate" style={{ color: '#64748b' }}>
                       {formatRole(t.course, t.semester)}
                     </p>
                   </div>
                 </div>
 
-                <p className="text-[15px] italic leading-relaxed mb-5 text-white/80">
+                {/* Quote */}
+                <p
+                  className="text-[15px] italic leading-relaxed mb-5"
+                  style={{ color: '#cbd5e1' }}
+                >
                   "{t.content}"
                 </p>
 
+                {/* Stars */}
                 <div className="flex gap-1">
                   {[1,2,3,4,5].map(n => (
                     <Star
                       key={n}
                       className="h-4 w-4"
-                      strokeWidth={1.5}
                       style={{
-                        fill: n <= t.rating ? '#ffffff' : 'transparent',
-                        color: n <= t.rating ? '#ffffff' : 'rgba(255,255,255,0.25)',
+                        fill: n <= t.rating ? '#00f0ff' : 'transparent',
+                        color: n <= t.rating ? '#00f0ff' : '#334155',
                       }}
                     />
                   ))}
