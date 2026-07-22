@@ -90,11 +90,6 @@ export default function LandingPage() {
   const [showInstallGuide, setShowInstallGuide] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
-  const heroRef = useRef(null);
-  const { scrollYProgress: heroScroll } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
-  const heroOpacity = useTransform(heroScroll, [0, 0.5], [1, 0]);
-  const heroY = useTransform(heroScroll, [0, 0.5], [0, -80]);
-  const heroScale = useTransform(heroScroll, [0, 0.5], [1, 0.95]);
 
   const handleInstallPWA = async () => {
     try {
