@@ -169,7 +169,7 @@ export function CinematicHero() {
             <div className="max-w-xl w-full space-y-4">
               <form
                 onSubmit={handleSubmit}
-                className="liquid-glass rounded-full pl-6 pr-2 py-2 flex items-center gap-3"
+                className="liquid-glass-strong rounded-full pl-6 pr-2 py-2 flex items-center gap-3"
               >
                 <input
                   type="email"
@@ -181,7 +181,7 @@ export function CinematicHero() {
                 <button
                   type="submit"
                   aria-label="Enviar"
-                  className="bg-white rounded-full p-3 text-black hover:bg-white/90 transition-colors"
+                  className="bg-white rounded-full p-3 text-black hover:scale-105 active:scale-95 transition-transform"
                 >
                   <ArrowRight size={20} />
                 </button>
