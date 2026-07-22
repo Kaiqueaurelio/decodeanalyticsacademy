@@ -1,101 +1,51 @@
 ## Objetivo
 
-Três entregas isoladas, sem quebrar nada do que já existe:
+Aplicar o sistema **liquid glass em duas camadas** (`.liquid-glass` e `.liquid-glass-strong`) em toda a landing — hero + Recursos + Trilha + Depoimentos + Redes/Projetos + rodapé — preservando 100% da copy, dos links, das rotas e da lógica. Só camada visual muda.
 
-1. Deixar o projeto pronto para gerar um **Android App Bundle (.aab)** com Capacitor, mantendo o PWA funcionando.
-2. Validar os feeds RSS em tempo real (backend + admin) e manter só os que funcionam.
-3. Fazer o clique numa notícia abrir **dentro do app** (sem sair para outro app/navegador).
+## Decisões confirmadas
 
----
+- **Vídeo do hero:** `https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260315_073750_51473149-4350-4920-ae24-c8214286f323.mp4`. Sistema de fade em JS mantido (rAF, 500ms in/out, dispara out 0.55s antes do fim, `fadingOutRef` evita duplicata, cancela rAF anterior, reset em `ended` com currentTime = 0).
+- **Paleta:** neutralização 100%. Todo ciano/roxo/verde-WhatsApp/gradiente-Instagram/estrelas coloridas viram branco/cinza sobre vidro. Links continuam funcionais — perdem só a cor de marca.
+- **Fundo fora do hero:** preto sólido com glows brancos/cinza sutis atrás dos cards.
 
-## 1. Capacitor Android pronto para .aab
+## Arquivos editados (só visual)
 
-O `capacitor.config.ts` e as dependências (`@capacitor/core`, `cli`, `android`, `ios`) já existem. Falta preparar o projeto para build de produção Android.
+```text
+src/index.css                                   → @layer components: .liquid-glass e .liquid-glass-strong; --radius: 1rem
+src/components/landing/CinematicHero.tsx        → nova VIDEO_SRC + remove <style> local (classes vêm do CSS global)
+src/components/landing/AppShowcaseSection.tsx   → chips, frame do vídeo e glows em glass neutro
+src/components/TechStackSection.tsx             → Timeline / Stack / Features em .liquid-glass, ícones brancos
+src/components/LiveAppSection.tsx               → painel em .liquid-glass-strong, 4 pilares em .liquid-glass
+src/components/CreatorSection.tsx               → card em .liquid-glass-strong, quote/pilares em .liquid-glass, botões neutros
+src/components/TestimonialsSection.tsx          → cards em .liquid-glass, avatares cinza, stars brancas
+src/components/SocialAndProjectsSection.tsx     → cards sociais, painel share e card WriteLab em glass neutro
+src/pages/LandingPage.tsx                       → mantém bg-black; adiciona glows sutis brancos atrás das seções
+```
 
-**O que será feito:**
+Nenhum outro arquivo é tocado. Nenhuma rota, hook, fetch ou integração muda.
 
-- Ajustar `capacitor.config.ts` com um modo de produção: manter o `server.url` atual (hot-reload no sandbox Lovable) apenas em dev; em build de produção o app carrega os assets locais de `dist/` (obrigatório para publicar na Play Store — Google não aceita apps que só carregam URL remota).
-- Adicionar script `build:android` no `package.json` que roda `vite build` + `cap sync android`.
-- Criar um guia passo-a-passo em `ANDROID_BUILD.md` na raiz explicando o fluxo completo:
-  1. Exportar o projeto para GitHub e clonar localmente
-  2. `npm install`
-  3. `npx cap add android`
-  4. `npm run build && npx cap sync android`
-  5. Abrir `npx cap open android` no Android Studio
-  6. Configurar keystore de assinatura
-  7. Build → Generate Signed Bundle → `.aab` para Google Play
-- Documentar o `appId` (`app.lovable.4dd1aec291754ae994018637f1ffe1a2`) e nome (`decodeanalyticsacademy`) já configurados.
-- Manter o PWA 100% intacto: nenhuma alteração em `vite.config.ts` (VitePWA), `manifest.json`, `sw-push.js`, `src/lib/pwa.ts`.
+## Diretrizes técnicas
 
-**Nota importante:** o build final do `.aab` precisa ser feito na máquina do usuário (Android Studio + JDK + keystore). O sandbox Lovable não gera `.aab` — deixamos tudo configurado para que baste seguir o guia.
+1. **CSS base** — adiciona ao fim de `src/index.css`:
+  - `:root { --radius: 1rem; }` (append, não sobrescreve o resto).
+  - `@layer components { .liquid-glass { … } .liquid-glass-strong { … } }` com os valores exatos da spec: blur 4px vs 50px, `background-blend-mode: luminosity`, `::before` com `mask-composite: exclude`, gradiente 180deg (0.45→0.15→0→0→0.15→0.45 no fraco; 0.5→0.2→0→0→0.2→0.5 no forte), `box-shadow` diferenciado, `pointer-events: none` no `::before`.
+  - Remove o bloco `<style>` inline do `CinematicHero` (usa a classe global).
+2. **Regra "sem `border-*`"** — remove classes/inline `border` de todos os componentes editados; contorno passa a vir só do `::before`.
+3. **Cor:** substituições sistemáticas `#00f0ff` / `#a855f7` / verde WhatsApp / gradiente Instagram → `text-white`, `text-white/70`, `text-white/50`, `bg-white/10`. Ícones sociais e stars ficam brancos.
+4. **Ícones-ação secundários:** `w-8 h-8 rounded-full bg-white/10 flex items-center justify-center`.
+5. **Interações:** clicáveis com `hover:scale-105 transition-transform`; botões primários `active:scale-95`.
+6. **Tipografia:** títulos de seção passam a `fontFamily: "'Instrument Serif', serif"` inline (mesma fonte já importada no hero). Corpo continua na sans-serif atual — `tailwind.config.ts` não muda.
 
----
+## Guardrails
 
-## 2. Validação de RSS (só feeds que funcionam)
+- Toda copy existente permanece byte a byte (Timeline, Stack, Features, quote do Kaique, WriteLab, depoimentos do banco, share text).
+- Links intactos: WhatsApp, e-mail, Instagram, Twitter, WriteLab, Termos, âncoras `#recursos`/`#roadmap`/`#depoimentos`, form → `/login`.
+- Créditos do rodapé permanecem.
 
-**Backend — nova edge function `validate-rss`:**
+## Ordem de execução
 
-- Recebe uma URL, faz `fetch` com timeout de 6s.
-- Verifica: status HTTP 200, content-type XML/RSS/Atom, e se o corpo contém `<item>` ou `<entry>` com pelo menos 1 título parseável.
-- Retorna `{ ok, source: string|null, itemCount: number, error?: string }`.
-
-**Admin — `RssFeedsManager.tsx`:**
-
-- Ao digitar a URL e sair do campo (blur) ou clicar em "Validar", chama `validate-rss` e mostra:
-  - ✓ verde: "Feed válido — X notícias detectadas"
-  - ✗ vermelho: "Feed indisponível: {motivo}"
-- Botão "Adicionar" só habilita se a validação passou (com opção "Adicionar mesmo assim" escondida atrás de um link discreto).
-- Adiciona botão "Revalidar todos" na lista existente: roda `validate-rss` em cada feed cadastrado e marca visualmente os quebrados (badge vermelha "Fora do ar") + botão para desativar em 1 clique.
-
-**Edge function `tech-news`:**
-
-- Continua com a lógica atual de fallback, mas agora ignora silenciosamente feeds que retornaram 0 itens (sem devolver `errors` para a UI).
-- Remove a exibição do banner "alguns feeds indisponíveis" do `NewsPage.tsx`.
-
-**Limpeza inicial dos feeds default:** dos 8 defaults atuais (Canaltech, Tecnoblog, Olhar Digital, TudoCelular, Diolinux, SempreUpdate, Hardware.com.br, Baguete), manter na lista default apenas os que a `validate-rss` confirmar como ativos no momento da implementação. Os quebrados saem do array `DEFAULT_FEEDS`.
-
----
-
-## 3. Leitor de notícias in-app (sem sair da plataforma)
-
-Hoje o `NewsPage` abre um iframe modal, mas quando o site bloqueia iframe (`X-Frame-Options: DENY`) mostra um botão que leva o usuário para fora. Vamos resolver isso.
-
-**Nova edge function `news-reader`:**
-
-- Recebe `?url=...`, faz fetch do HTML da notícia.
-- Usa um extrator de conteúdo principal (Readability-like: pega `<article>`, `<main>`, ou o maior bloco de `<p>`) e retorna HTML limpo com título, imagem principal, autor, data e corpo — sem scripts, sem iframes de anúncio, sem trackers.
-- Retorna JSON: `{ title, byline, siteName, image, contentHtml, url }`.
-- Cache de 1h em memória por URL.
-
-**`NewsPage.tsx` — novo componente `InAppNewsReader`:**
-
-- Ao clicar numa notícia, abre uma tela cheia (drawer/modal) dentro do próprio app, chama `news-reader` e renderiza o conteúdo com a tipografia da plataforma (Space Grotesk, cores do tema high-tech).
-- Loading skeleton enquanto busca.
-- Se a extração falhar, mostra o resumo + botão "Abrir no site original" (fallback controlado, mas raro).
-- Header com: voltar, fonte (badge com portal), tempo de leitura estimado, botão compartilhar (Web Share API quando disponível).
-- Nenhum iframe. Nenhum `window.open`. Nenhum redirecionamento externo por padrão.
-
-**Impacto:** o usuário lê a matéria completa sem sair do Decode Analytics Academy, com visual consistente e sem ads de terceiros.
-
----
-
-## Detalhes técnicos
-
-**Arquivos novos:**
-- `ANDROID_BUILD.md`
-- `supabase/functions/validate-rss/index.ts`
-- `supabase/functions/news-reader/index.ts`
-- `src/components/news/InAppNewsReader.tsx`
-
-**Arquivos editados (sem quebrar comportamento):**
-- `capacitor.config.ts` — server.url só em dev
-- `package.json` — script `build:android`
-- `src/components/admin/RssFeedsManager.tsx` — validação inline + revalidar todos
-- `src/pages/NewsPage.tsx` — trocar iframe modal pelo `InAppNewsReader`, remover banner de erros
-- `supabase/functions/tech-news/index.ts` — silenciar erros de feeds, filtrar vazios
-
-**Nada é tocado em:** rotas existentes, MobileBottomNav, StudentSidebar (já tem "Notícias Tech"), banco de dados (tabela `rss_feeds` continua igual), PWA, autenticação, dashboard.
-
-**Riscos e mitigação:**
-- Alguns portais podem quebrar a extração de conteúdo → fallback para resumo + link externo em último caso.
-- Build Android exige ferramentas locais → documentado no `ANDROID_BUILD.md`; não há como gerar `.aab` no sandbox.
+1. `src/index.css` — sistema de vidro + `--radius`.
+2. `CinematicHero.tsx` — nova `VIDEO_SRC`, remove `<style>` local.
+3. Seis componentes de seção — passam para glass neutro na mesma leva.
+4. `LandingPage.tsx` — glows brancos sutis atrás das seções.  
+[https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260315_073750_51473149-4350-4920-ae24-c8214286f323.mp4](https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260315_073750_51473149-4350-4920-ae24-c8214286f323.mp4)

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Globe, Instagram, Twitter } from 'lucide-react';
 
 const VIDEO_SRC =
-  'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260328_115001_bcdaa3b4-03de-47e7-ad63-ae3e392c32d4.mp4';
+  'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260315_073750_51473149-4350-4920-ae24-c8214286f323.mp4';
 
 const FADE_MS = 500;
 const FADE_OUT_BEFORE_END = 0.55; // seconds
@@ -105,38 +105,7 @@ export function CinematicHero() {
 
   return (
     <>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap');
-
-        .liquid-glass {
-          background: rgba(255, 255, 255, 0.01);
-          background-blend-mode: luminosity;
-          backdrop-filter: blur(4px);
-          -webkit-backdrop-filter: blur(4px);
-          border: none;
-          box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
-          position: relative;
-          overflow: hidden;
-        }
-        .liquid-glass::before {
-          content: '';
-          position: absolute;
-          inset: 0;
-          border-radius: inherit;
-          padding: 1.4px;
-          background: linear-gradient(180deg,
-            rgba(255,255,255,0.45) 0%,
-            rgba(255,255,255,0.15) 20%,
-            rgba(255,255,255,0) 40%,
-            rgba(255,255,255,0) 60%,
-            rgba(255,255,255,0.15) 80%,
-            rgba(255,255,255,0.45) 100%);
-          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-          -webkit-mask-composite: xor;
-                  mask-composite: exclude;
-          pointer-events: none;
-        }
-      `}</style>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap');`}</style>
 
       <div className="relative min-h-screen bg-black overflow-hidden">
         {/* Background video */}
@@ -156,7 +125,7 @@ export function CinematicHero() {
         <div className="relative z-10 min-h-screen flex flex-col">
           {/* Nav */}
           <nav className="relative z-20 pl-6 pr-6 py-6">
-            <div className="liquid-glass rounded-full px-6 py-3 flex items-center justify-between max-w-5xl mx-auto">
+            <div className="liquid-glass-strong rounded-full px-6 py-3 flex items-center justify-between max-w-5xl mx-auto hover:scale-[1.005] transition-transform">
               <div className="flex items-center gap-8">
                 <button
                   onClick={() => navigate('/')}
@@ -180,7 +149,7 @@ export function CinematicHero() {
                 </button>
                 <button
                   onClick={() => navigate('/login')}
-                  className="liquid-glass rounded-full px-6 py-2 text-white text-sm font-medium hover:bg-white/5 transition-colors"
+                  className="liquid-glass rounded-full px-6 py-2 text-white text-sm font-medium hover:scale-105 active:scale-95 transition-transform"
                 >
                   Acessar
                 </button>
@@ -200,7 +169,7 @@ export function CinematicHero() {
             <div className="max-w-xl w-full space-y-4">
               <form
                 onSubmit={handleSubmit}
-                className="liquid-glass rounded-full pl-6 pr-2 py-2 flex items-center gap-3"
+                className="liquid-glass-strong rounded-full pl-6 pr-2 py-2 flex items-center gap-3"
               >
                 <input
                   type="email"
@@ -212,7 +181,7 @@ export function CinematicHero() {
                 <button
                   type="submit"
                   aria-label="Enviar"
-                  className="bg-white rounded-full p-3 text-black hover:bg-white/90 transition-colors"
+                  className="bg-white rounded-full p-3 text-black hover:scale-105 active:scale-95 transition-transform"
                 >
                   <ArrowRight size={20} />
                 </button>
@@ -227,7 +196,7 @@ export function CinematicHero() {
               <div className="flex justify-center">
                 <button
                   onClick={scrollToLearn}
-                  className="liquid-glass rounded-full px-8 py-3 text-white text-sm font-medium hover:bg-white/5 transition-colors"
+                  className="liquid-glass rounded-full px-8 py-3 text-white text-sm font-medium hover:scale-105 active:scale-95 transition-transform"
                 >
                   Ver o manifesto
                 </button>
@@ -242,7 +211,7 @@ export function CinematicHero() {
               target="_blank"
               rel="noreferrer"
               aria-label="Instagram"
-              className="liquid-glass rounded-full p-4 text-white/80 hover:text-white hover:bg-white/5 transition-all"
+              className="liquid-glass rounded-full p-4 text-white/80 hover:text-white hover:scale-105 transition-transform"
             >
               <Instagram size={20} />
             </a>
@@ -251,14 +220,14 @@ export function CinematicHero() {
               target="_blank"
               rel="noreferrer"
               aria-label="Twitter"
-              className="liquid-glass rounded-full p-4 text-white/80 hover:text-white hover:bg-white/5 transition-all"
+              className="liquid-glass rounded-full p-4 text-white/80 hover:text-white hover:scale-105 transition-transform"
             >
               <Twitter size={20} />
             </a>
             <a
               href="/"
               aria-label="Site"
-              className="liquid-glass rounded-full p-4 text-white/80 hover:text-white hover:bg-white/5 transition-all"
+              className="liquid-glass rounded-full p-4 text-white/80 hover:text-white hover:scale-105 transition-transform"
             >
               <Globe size={20} />
             </a>
