@@ -1,0 +1,216 @@
+{
+  "version": 1,
+  "sdk_version": "0.24.0",
+  "path": "/functions/v1/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://gynguskgysompgcajunc.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "decode-analytics-mcp",
+      "version": "0.1.0",
+      "title": "Decode Analytics Academy"
+    },
+    "tools": [
+      {
+        "name": "list_apostilas",
+        "title": "Listar apostilas",
+        "description": "Lista apostilas publicadas visíveis para o usuário autenticado, opcionalmente filtradas por disciplina/categoria ou busca textual no título.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "search": {
+              "description": "Filtro textual no título.",
+              "type": "string"
+            },
+            "category": {
+              "description": "Categoria/disciplina.",
+              "type": "string"
+            },
+            "limit": {
+              "description": "Máximo de itens (padrão 20).",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_apostila",
+        "title": "Ler apostila",
+        "description": "Retorna o conteúdo completo (markdown/HTML) e metadados de uma apostila pelo id.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "description": "UUID da apostila."
+            }
+          },
+          "required": [
+            "id"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_upcoming_exams",
+        "title": "Próximas provas e eventos",
+        "description": "Lista os próximos eventos do calendário acadêmico (provas, entregas, avisos com data) a partir de hoje.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "days": {
+              "description": "Janela em dias a partir de hoje (padrão 30).",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 180
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_announcements",
+        "title": "Avisos recentes",
+        "description": "Lista os avisos/comunicados mais recentes da plataforma.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 30
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_free_courses",
+        "title": "Cursos gratuitos com horas complementares",
+        "description": "Lista cursos gratuitos ativos cadastrados pelo administrador (com link e carga horária).",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_my_flashcards",
+        "title": "Meus flashcards",
+        "description": "Lista os flashcards do usuário autenticado, opcionalmente filtrando por disciplina.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "apostila_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "create_flashcard",
+        "title": "Criar flashcard",
+        "description": "Cria um novo flashcard (frente/verso) para o usuário autenticado.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "front": {
+              "type": "string",
+              "minLength": 1
+            },
+            "back": {
+              "type": "string",
+              "minLength": 1
+            },
+            "apostila_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          },
+          "required": [
+            "front",
+            "back"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "my_progress",
+        "title": "Meu progresso",
+        "description": "Retorna o resumo de gamificação do usuário: XP, nível, streak e apostilas concluídas.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
