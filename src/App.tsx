@@ -57,6 +57,7 @@ const FlashcardsPage = lazy(() => import("./pages/FlashcardsPage"));
 const CalculadoraPage = lazy(() => import("./pages/CalculadoraPage"));
 const EllaPage = lazy(() => import("./pages/EllaPage"));
 const NewsPage = lazy(() => import("./pages/NewsPage"));
+const OAuthConsentPage = lazy(() => import("./pages/OAuthConsentPage"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -116,6 +117,7 @@ function AnimatedRoutes() {
         <Route path="/auth/*" element={<Navigate to="/login" replace />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/termos" element={<TermsPage />} />
+        <Route path="/.lovable/oauth/consent" element={<OAuthConsentPage />} />
         <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
         <Route path="/desempenho" element={<ProtectedRoute><PerformancePage /></ProtectedRoute>} />
         <Route path="/performance" element={<Navigate to="/desempenho" replace />} />

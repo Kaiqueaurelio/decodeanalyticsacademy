@@ -65,6 +65,14 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (authSettling || status !== 'authenticated' || !user) return;
+    // Preserve OAuth consent (or other) return URL when present.
+    const params = new URLSearchParams(window.location.search);
+    const nextParam = params.get('next');
+    const isSafeNext = nextParam && nextParam.startsWith('/') && !nextParam.startsWith('//');
+    if (isSafeNext) {
+      navigate(nextParam!, { replace: true });
+      return;
+    }
     const lastRoute = localStorage.getItem('decode_last_route');
     navigate(lastRoute && lastRoute !== '/' && lastRoute !== '/login' ? lastRoute : '/dashboard', { replace: true });
   }, [authSettling, status, user, navigate]);
