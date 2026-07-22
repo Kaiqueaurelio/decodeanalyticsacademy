@@ -196,7 +196,7 @@ export function CinematicHero() {
               <div className="flex justify-center">
                 <button
                   onClick={scrollToLearn}
-                  className="liquid-glass rounded-full px-8 py-3 text-white text-sm font-medium hover:bg-white/5 transition-colors"
+                  className="liquid-glass rounded-full px-8 py-3 text-white text-sm font-medium hover:scale-105 active:scale-95 transition-transform"
                 >
                   Ver o manifesto
                 </button>
@@ -211,7 +211,7 @@ export function CinematicHero() {
               target="_blank"
               rel="noreferrer"
               aria-label="Instagram"
-              className="liquid-glass rounded-full p-4 text-white/80 hover:text-white hover:bg-white/5 transition-all"
+              className="liquid-glass rounded-full p-4 text-white/80 hover:text-white hover:scale-105 transition-transform"
             >
               <Instagram size={20} />
             </a>
@@ -220,14 +220,14 @@ export function CinematicHero() {
               target="_blank"
               rel="noreferrer"
               aria-label="Twitter"
-              className="liquid-glass rounded-full p-4 text-white/80 hover:text-white hover:bg-white/5 transition-all"
+              className="liquid-glass rounded-full p-4 text-white/80 hover:text-white hover:scale-105 transition-transform"
             >
               <Twitter size={20} />
             </a>
             <a
               href="/"
               aria-label="Site"
-              className="liquid-glass rounded-full p-4 text-white/80 hover:text-white hover:bg-white/5 transition-all"
+              className="liquid-glass rounded-full p-4 text-white/80 hover:text-white hover:scale-105 transition-transform"
             >
               <Globe size={20} />
             </a>
