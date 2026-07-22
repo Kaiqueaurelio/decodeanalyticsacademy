@@ -17,6 +17,7 @@ import { LiveAppSection } from '@/components/LiveAppSection';
 import { SocialAndProjectsSection } from '@/components/SocialAndProjectsSection';
 import { Reveal } from '@/components/Reveal';
 import { AppShowcaseSection } from '@/components/landing/AppShowcaseSection';
+import { HeroCinematic } from '@/components/landing/HeroCinematic';
 
 /* ─── SECTION WRAPPER: usa o Reveal compartilhado (IntersectionObserver + reduced-motion) ─── */
 function ScrollReveal({ children, className = '', delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
