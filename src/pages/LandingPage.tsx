@@ -71,11 +71,6 @@ const roadmap = [
   { phase: '04', title: 'Prática & Projetos', desc: 'Projetos integradores, estágio supervisionado e TCC.', icon: Target },
 ];
 
-const testimonials = [
-  { name: 'Ana Silva', role: 'Aluna de CC - 4º Sem.', text: 'As apostilas e exercícios me ajudaram muito nas provas. Consegui aumentar minha média de 6 para 9!', initials: 'AS', color: '#00f0ff' },
-  { name: 'Carlos Santos', role: 'Aluno de SI - 6º Sem.', text: 'O sistema de flashcards é incrível para revisar antes das provas. Melhor plataforma de estudos.', initials: 'CS', color: '#a855f7' },
-  { name: 'Juliana Costa', role: 'Aluna de EC - 3º Sem.', text: 'A gamificação me motiva a estudar todos os dias. Já tenho um streak de 30 dias!', initials: 'JC', color: '#22c55e' },
-];
 
 const faqs = [
   { q: 'Para quais cursos a plataforma é voltada?', a: 'Ciência da Computação, Sistemas de Informação e Engenharia da Computação — do 1º ao 8º semestre.' },
@@ -580,48 +575,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ═══ TESTIMONIALS ═══ */}
-      <section id="depoimentos" className="relative py-28 md:py-36" style={{ background: 'linear-gradient(180deg, #050508, #0a0a14, #050508)' }}>
-        <div className="max-w-7xl mx-auto px-5">
-          <ScrollReveal className="text-center mb-16">
-            <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: '#00f0ff' }}>
-              <MessageCircle className="h-3 w-3 inline mr-2" />Depoimentos
-            </span>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mt-3">
-              Quem usa a
-              <br />
-              <span style={{ color: '#00f0ff' }}>plataforma.</span>
-            </h2>
-          </ScrollReveal>
-
-          <div className="grid md:grid-cols-3 gap-4 max-w-5xl mx-auto">
-            {testimonials.map((t, i) => (
-              <ScrollReveal key={t.name} delay={i * 0.1}>
-                <div
-                  className="rounded-xl p-6 h-full transition-all duration-500 hover:translate-y-[-4px]"
-                  style={{ background: '#0a0a12', border: '1px solid rgba(255,255,255,0.06)' }}
-                >
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: t.color, color: '#050508' }}>
-                      {t.initials}
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold">{t.name}</p>
-                      <p className="text-[10px] uppercase tracking-wider" style={{ color: '#64748b' }}>{t.role}</p>
-                    </div>
-                  </div>
-                  <p className="text-xs leading-relaxed italic" style={{ color: '#94a3b8' }}>"{t.text}"</p>
-                  <div className="flex gap-0.5 mt-4">
-                    {Array.from({ length: 5 }).map((_, j) => (
-                      <Star key={j} className="h-3 w-3" style={{ color: '#00f0ff', fill: '#00f0ff' }} />
-                    ))}
-                  </div>
-                </div>
-              </ScrollReveal>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* ═══ FAQ ═══ */}
       <section className="relative py-28 md:py-36">
@@ -693,7 +646,7 @@ export default function LandingPage() {
       </section>
 
       {/* ═══ TESTIMONIALS ═══ */}
-      <TestimonialsSection />
+      <div id="depoimentos"><TestimonialsSection /></div>
 
       {/* ═══ CREATOR / DE ALUNO PARA ALUNO ═══ */}
       <CreatorSection />
@@ -749,9 +702,16 @@ export default function LandingPage() {
             </p>
             <div className="p-3 rounded-lg" style={{ background: 'rgba(0,240,255,0.06)', border: '1px solid rgba(0,240,255,0.12)' }}>
               <p className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: '#00f0ff' }}>Link:</p>
-              <a href="https://decodeanalyticsacademy.vercel.app" target="_blank" rel="noopener noreferrer"
-                className="text-sm font-semibold underline break-all" style={{ color: '#00f0ff' }}>
-                decodeanalyticsacademy.vercel.app
+              <a
+                href={typeof window !== 'undefined' ? window.location.origin : 'https://decodeanalyticsacademy.lovable.app'}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm font-semibold underline break-all"
+                style={{ color: '#00f0ff' }}
+              >
+                {typeof window !== 'undefined'
+                  ? window.location.origin.replace(/^https?:\/\//, '')
+                  : 'decodeanalyticsacademy.lovable.app'}
               </a>
             </div>
             <div className="space-y-3 text-sm" style={{ color: '#94a3b8' }}>

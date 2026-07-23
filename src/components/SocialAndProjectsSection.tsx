@@ -3,7 +3,13 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
-const DEFAULT_APP_URL = 'https://decodeanalyticsacademydev.vercel.app/';
+const FALLBACK_APP_URL = 'https://decodeanalyticsacademy.lovable.app';
+const getDefaultAppUrl = () => {
+  if (typeof window !== 'undefined' && window.location?.origin?.startsWith('http')) {
+    return window.location.origin;
+  }
+  return FALLBACK_APP_URL;
+};
 const SHARE_TEXT = 'Conheça a Decode Analytics Academy — plataforma de estudos para alunos de Tecnologia 🚀';
 const WRITELAB_URL = 'https://writelab-one.vercel.app';
 
@@ -56,7 +62,7 @@ function buildShareTargets(appUrl: string) {
 
 export function SocialAndProjectsSection() {
   const [copied, setCopied] = useState(false);
-  const [appUrl, setAppUrl] = useState<string>(DEFAULT_APP_URL);
+  const [appUrl, setAppUrl] = useState<string>(getDefaultAppUrl());
 
   useEffect(() => {
     let cancelled = false;
@@ -67,8 +73,12 @@ export function SocialAndProjectsSection() {
         .eq('key', 'share_app_url')
         .maybeSingle();
       const raw = data?.value as unknown;
-      if (!cancelled && typeof raw === 'string' && raw.trim()) {
-        setAppUrl(raw.trim());
+      if (!cancelled && typeof raw === 'string') {
+        const candidate = raw.trim();
+        try {
+          const parsed = new URL(candidate);
+          if (parsed.protocol === 'https:') setAppUrl(parsed.toString().replace(/\/$/, ''));
+        } catch { /* ignora URL inválida */ }
       }
     })();
     return () => { cancelled = true; };

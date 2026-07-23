@@ -10,21 +10,20 @@ interface Testimonial {
   course: string | null;
   semester: number | null;
   created_at: string;
-  profile?: { full_name: string; email: string };
+  profile?: { full_name: string };
 }
 
-const getInitials = (name: string, email: string) => {
-  if (name) {
-    const parts = name.trim().split(/\s+/);
-    if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-    return parts[0].slice(0, 2).toUpperCase();
-  }
-  return email?.slice(0, 2)?.toUpperCase() || '??';
+const getInitials = (name: string) => {
+  const trimmed = (name || '').trim();
+  if (!trimmed) return 'AL';
+  const parts = trimmed.split(/\s+/);
+  if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  return parts[0].slice(0, 2).toUpperCase();
 };
 
-const displayName = (name: string, email: string) => {
-  if (name && name.trim()) return name.trim();
-  return email?.split('@')[0] || 'Aluno';
+const displayName = (name: string) => {
+  const trimmed = (name || '').trim();
+  return trimmed || 'Aluno';
 };
 
 // Cores estilo "Ana Silva = ciano, Carlos Santos = roxo" — alterna por hash
@@ -59,9 +58,9 @@ export function TestimonialsSection() {
       if (list.length) {
         const userIds = [...new Set(list.map(t => t.user_id))];
         const { data: profiles } = await supabase
-          .from('profiles').select('user_id, full_name, email').in('user_id', userIds);
+          .from('profiles').select('user_id, full_name').in('user_id', userIds);
         const map = new Map((profiles || []).map(p => [p.user_id, p]));
-        setItems(list.map(t => ({ ...t, profile: map.get(t.user_id) || { full_name: '', email: '' } })));
+        setItems(list.map(t => ({ ...t, profile: map.get(t.user_id) || { full_name: '' } })));
       }
       setLoading(false);
     })();
@@ -87,8 +86,8 @@ export function TestimonialsSection() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {items.map(t => {
-            const name = displayName(t.profile?.full_name || '', t.profile?.email || '');
-            const initials = getInitials(t.profile?.full_name || '', t.profile?.email || '');
+            const name = displayName(t.profile?.full_name || '');
+            const initials = getInitials(t.profile?.full_name || '');
             const bg = colorFor(t.user_id);
             return (
               <div
