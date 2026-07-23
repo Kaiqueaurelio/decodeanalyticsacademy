@@ -4,12 +4,7 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
 const FALLBACK_APP_URL = 'https://decodeanalyticsacademy.lovable.app';
-const getDefaultAppUrl = () => {
-  if (typeof window !== 'undefined' && window.location?.origin?.startsWith('http')) {
-    return window.location.origin;
-  }
-  return FALLBACK_APP_URL;
-};
+
 const SHARE_TEXT = 'Conheça a Decode Analytics Academy — plataforma de estudos para alunos de Tecnologia 🚀';
 const WRITELAB_URL = 'https://writelab-one.vercel.app';
 
@@ -62,7 +57,14 @@ function buildShareTargets(appUrl: string) {
 
 export function SocialAndProjectsSection() {
   const [copied, setCopied] = useState(false);
-  const [appUrl, setAppUrl] = useState<string>(getDefaultAppUrl());
+  const [appUrl, setAppUrl] = useState<string>(FALLBACK_APP_URL);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.location?.origin?.startsWith('http')) {
+      setAppUrl(window.location.origin);
+    }
+  }, []);
+
 
   useEffect(() => {
     let cancelled = false;

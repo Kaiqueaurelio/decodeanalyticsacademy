@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, useScroll, useTransform, useInView } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -83,6 +83,14 @@ export default function LandingPage() {
   const navigate = useNavigate();
   const [showInstallGuide, setShowInstallGuide] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [appOrigin, setAppOrigin] = useState<string>('https://decodeanalyticsacademy.lovable.app');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.location?.origin?.startsWith('http')) {
+      setAppOrigin(window.location.origin);
+    }
+  }, []);
+
 
   const heroRef = useRef(null);
   const { scrollYProgress: heroScroll } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
@@ -703,16 +711,15 @@ export default function LandingPage() {
             <div className="p-3 rounded-lg" style={{ background: 'rgba(0,240,255,0.06)', border: '1px solid rgba(0,240,255,0.12)' }}>
               <p className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: '#00f0ff' }}>Link:</p>
               <a
-                href={typeof window !== 'undefined' ? window.location.origin : 'https://decodeanalyticsacademy.lovable.app'}
+                href={appOrigin}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-sm font-semibold underline break-all"
                 style={{ color: '#00f0ff' }}
               >
-                {typeof window !== 'undefined'
-                  ? window.location.origin.replace(/^https?:\/\//, '')
-                  : 'decodeanalyticsacademy.lovable.app'}
+                {appOrigin.replace(/^https?:\/\//, '')}
               </a>
+
             </div>
             <div className="space-y-3 text-sm" style={{ color: '#94a3b8' }}>
               <div className="p-3 rounded-lg" style={{ background: 'rgba(255,255,255,0.03)' }}>
