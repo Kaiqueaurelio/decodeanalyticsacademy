@@ -10,21 +10,20 @@ interface Testimonial {
   course: string | null;
   semester: number | null;
   created_at: string;
-  profile?: { full_name: string; email: string };
+  profile?: { full_name: string };
 }
 
-const getInitials = (name: string, email: string) => {
-  if (name) {
-    const parts = name.trim().split(/\s+/);
-    if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-    return parts[0].slice(0, 2).toUpperCase();
-  }
-  return email?.slice(0, 2)?.toUpperCase() || '??';
+const getInitials = (name: string) => {
+  const trimmed = (name || '').trim();
+  if (!trimmed) return 'AL';
+  const parts = trimmed.split(/\s+/);
+  if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  return parts[0].slice(0, 2).toUpperCase();
 };
 
-const displayName = (name: string, email: string) => {
-  if (name && name.trim()) return name.trim();
-  return email?.split('@')[0] || 'Aluno';
+const displayName = (name: string) => {
+  const trimmed = (name || '').trim();
+  return trimmed || 'Aluno';
 };
 
 // Cores estilo "Ana Silva = ciano, Carlos Santos = roxo" — alterna por hash
