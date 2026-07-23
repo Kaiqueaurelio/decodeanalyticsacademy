@@ -4,12 +4,7 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
 const FALLBACK_APP_URL = 'https://decodeanalyticsacademy.lovable.app';
-const getDefaultAppUrl = () => {
-  if (typeof window !== 'undefined' && window.location?.origin?.startsWith('http')) {
-    return window.location.origin;
-  }
-  return FALLBACK_APP_URL;
-};
+
 const SHARE_TEXT = 'Conheça a Decode Analytics Academy — plataforma de estudos para alunos de Tecnologia 🚀';
 const WRITELAB_URL = 'https://writelab-one.vercel.app';
 
