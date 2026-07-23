@@ -702,9 +702,16 @@ export default function LandingPage() {
             </p>
             <div className="p-3 rounded-lg" style={{ background: 'rgba(0,240,255,0.06)', border: '1px solid rgba(0,240,255,0.12)' }}>
               <p className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: '#00f0ff' }}>Link:</p>
-              <a href="https://decodeanalyticsacademy.vercel.app" target="_blank" rel="noopener noreferrer"
-                className="text-sm font-semibold underline break-all" style={{ color: '#00f0ff' }}>
-                decodeanalyticsacademy.vercel.app
+              <a
+                href={typeof window !== 'undefined' ? window.location.origin : 'https://decodeanalyticsacademy.lovable.app'}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm font-semibold underline break-all"
+                style={{ color: '#00f0ff' }}
+              >
+                {typeof window !== 'undefined'
+                  ? window.location.origin.replace(/^https?:\/\//, '')
+                  : 'decodeanalyticsacademy.lovable.app'}
               </a>
             </div>
             <div className="space-y-3 text-sm" style={{ color: '#94a3b8' }}>
