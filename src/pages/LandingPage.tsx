@@ -83,6 +83,14 @@ export default function LandingPage() {
   const navigate = useNavigate();
   const [showInstallGuide, setShowInstallGuide] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [appOrigin, setAppOrigin] = useState<string>('https://decodeanalyticsacademy.lovable.app');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.location?.origin?.startsWith('http')) {
+      setAppOrigin(window.location.origin);
+    }
+  }, []);
+
 
   const heroRef = useRef(null);
   const { scrollYProgress: heroScroll } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
