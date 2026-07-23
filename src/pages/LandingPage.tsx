@@ -646,7 +646,7 @@ export default function LandingPage() {
       </section>
 
       {/* ═══ TESTIMONIALS ═══ */}
-      <TestimonialsSection />
+      <div id="depoimentos"><TestimonialsSection /></div>
 
       {/* ═══ CREATOR / DE ALUNO PARA ALUNO ═══ */}
       <CreatorSection />
