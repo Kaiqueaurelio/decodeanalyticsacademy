@@ -575,48 +575,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ═══ TESTIMONIALS ═══ */}
-      <section id="depoimentos" className="relative py-28 md:py-36" style={{ background: 'linear-gradient(180deg, #050508, #0a0a14, #050508)' }}>
-        <div className="max-w-7xl mx-auto px-5">
-          <ScrollReveal className="text-center mb-16">
-            <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: '#00f0ff' }}>
-              <MessageCircle className="h-3 w-3 inline mr-2" />Depoimentos
-            </span>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mt-3">
-              Quem usa a
-              <br />
-              <span style={{ color: '#00f0ff' }}>plataforma.</span>
-            </h2>
-          </ScrollReveal>
-
-          <div className="grid md:grid-cols-3 gap-4 max-w-5xl mx-auto">
-            {testimonials.map((t, i) => (
-              <ScrollReveal key={t.name} delay={i * 0.1}>
-                <div
-                  className="rounded-xl p-6 h-full transition-all duration-500 hover:translate-y-[-4px]"
-                  style={{ background: '#0a0a12', border: '1px solid rgba(255,255,255,0.06)' }}
-                >
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: t.color, color: '#050508' }}>
-                      {t.initials}
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold">{t.name}</p>
-                      <p className="text-[10px] uppercase tracking-wider" style={{ color: '#64748b' }}>{t.role}</p>
-                    </div>
-                  </div>
-                  <p className="text-xs leading-relaxed italic" style={{ color: '#94a3b8' }}>"{t.text}"</p>
-                  <div className="flex gap-0.5 mt-4">
-                    {Array.from({ length: 5 }).map((_, j) => (
-                      <Star key={j} className="h-3 w-3" style={{ color: '#00f0ff', fill: '#00f0ff' }} />
-                    ))}
-                  </div>
-                </div>
-              </ScrollReveal>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* ═══ FAQ ═══ */}
       <section className="relative py-28 md:py-36">
