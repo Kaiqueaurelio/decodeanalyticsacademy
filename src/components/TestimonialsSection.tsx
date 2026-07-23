@@ -58,9 +58,9 @@ export function TestimonialsSection() {
       if (list.length) {
         const userIds = [...new Set(list.map(t => t.user_id))];
         const { data: profiles } = await supabase
-          .from('profiles').select('user_id, full_name, email').in('user_id', userIds);
+          .from('profiles').select('user_id, full_name').in('user_id', userIds);
         const map = new Map((profiles || []).map(p => [p.user_id, p]));
-        setItems(list.map(t => ({ ...t, profile: map.get(t.user_id) || { full_name: '', email: '' } })));
+        setItems(list.map(t => ({ ...t, profile: map.get(t.user_id) || { full_name: '' } })));
       }
       setLoading(false);
     })();
