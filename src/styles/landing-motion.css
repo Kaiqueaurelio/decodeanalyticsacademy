@@ -95,3 +95,41 @@
 @media (prefers-reduced-motion: reduce) {
   .hero-marquee { animation: none; }
 }
+
+
+/* Decode hero polish */
+.hero-video-vignette {
+  background:
+    radial-gradient(ellipse 70% 62% at 50% 50%, rgba(5, 5, 8, 0.16) 0%, rgba(5, 5, 8, 0.52) 78%, rgba(5, 5, 8, 0.84) 100%),
+    linear-gradient(180deg, rgba(5, 5, 8, 0.36) 0%, transparent 34%, rgba(5, 5, 8, 0.56) 100%);
+}
+
+.hero-entrance {
+  animation: decode-hero-content-in 760ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.hero-stat-card {
+  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1), border-color 260ms ease, background-color 260ms ease;
+}
+
+.hero-stat-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(0, 240, 255, 0.32);
+  background-color: rgba(9, 17, 27, 0.58);
+}
+
+.hero-marquee-shell {
+  -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+  mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+}
+
+@keyframes decode-hero-content-in {
+  from { opacity: 0; transform: translate3d(0, 18px, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-entrance { animation: none; }
+  .hero-stat-card { transition: none; }
+  .hero-stat-card:hover { transform: none; }
+}

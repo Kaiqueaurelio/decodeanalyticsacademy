@@ -111,7 +111,7 @@ export default function LandingPage() {
       {/* ═══ HERO / NAVEGAÇÃO ═══ */}
       <section className="relative isolate min-h-screen overflow-hidden bg-[#050508]">
         <video
-          className="absolute inset-0 -z-20 h-full w-full object-cover opacity-55"
+          className="absolute inset-0 -z-20 h-full w-full scale-[1.03] object-cover opacity-60"
           autoPlay
           loop
           muted
@@ -122,6 +122,7 @@ export default function LandingPage() {
           <source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260328_065045_c44942da-53c6-4804-b734-f9e07fc22e08.mp4" type="video/mp4" />
         </video>
         <CyberGrid />
+        <div className="hero-video-vignette pointer-events-none absolute inset-0 -z-10" aria-hidden="true" />
         <div
           className="pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[527px] w-[min(984px,90vw)] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#050508]/90 blur-[82px]"
           aria-hidden="true"
@@ -154,13 +155,13 @@ export default function LandingPage() {
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-              className="mx-auto max-w-5xl"
+              className="hero-entrance mx-auto max-w-5xl"
             >
               <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-white/[0.06] px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-cyan-100 backdrop-blur-sm">
                 <GraduationCap className="h-3.5 w-3.5 text-[#00f0ff]" />
                 Plataforma de estudos
               </div>
-              <h1 className="text-5xl font-bold leading-[0.98] tracking-[-0.045em] text-white sm:text-7xl md:text-8xl">
+              <h1 className="max-w-4xl text-5xl font-bold leading-[0.94] tracking-[-0.05em] text-white sm:text-7xl md:text-8xl">
                 Estude com
                 <span className="mt-2 block bg-gradient-to-r from-[#00f0ff] via-[#a855f7] to-[#c084fc] bg-clip-text text-transparent">
                   inteligência.
@@ -181,7 +182,7 @@ export default function LandingPage() {
                 </a>
               </div>
               <div className="mx-auto mt-12 grid max-w-3xl grid-cols-1 gap-3 text-left sm:grid-cols-3">
-                <div className="rounded-2xl border border-white/10 bg-black/20 p-4 backdrop-blur-sm">
+                <div className="hero-stat-card rounded-2xl border border-white/10 bg-black/20 p-4 backdrop-blur-sm">
                   <p className="text-2xl font-bold text-[#00f0ff]">48</p>
                   <p className="mt-1 text-xs uppercase tracking-[0.14em] text-white/65">Disciplinas</p>
                 </div>
@@ -197,7 +198,7 @@ export default function LandingPage() {
             </motion.div>
           </main>
 
-          <div className="overflow-hidden border-t border-white/10 py-5" aria-label="Recursos da plataforma">
+          <div className="hero-marquee-shell overflow-hidden border-t border-white/10 py-5" aria-label="Recursos da plataforma">
             <div className="hero-marquee flex w-max items-center gap-10 whitespace-nowrap text-sm font-semibold text-white/75 motion-reduce:animate-none">
               <span>Apostilas</span><span className="text-[#00f0ff]">✦</span><span>Exercícios</span><span className="text-[#00f0ff]">✦</span><span>Flashcards</span><span className="text-[#00f0ff]">✦</span><span>Simulados</span><span className="text-[#00f0ff]">✦</span><span>Progresso</span><span className="text-[#00f0ff]">✦</span><span>Calendário</span><span className="text-[#00f0ff]">✦</span>
               <span>Apostilas</span><span className="text-[#00f0ff]">✦</span><span>Exercícios</span><span className="text-[#00f0ff]">✦</span><span>Flashcards</span><span className="text-[#00f0ff]">✦</span><span>Simulados</span><span className="text-[#00f0ff]">✦</span><span>Progresso</span><span className="text-[#00f0ff]">✦</span><span>Calendário</span><span className="text-[#00f0ff]">✦</span>
