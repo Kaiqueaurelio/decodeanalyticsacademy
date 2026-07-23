@@ -80,3 +80,18 @@
     animation: none !important;
   }
 }
+
+
+@keyframes decode-hero-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+.hero-marquee {
+  animation: decode-hero-marquee 28s linear infinite;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-marquee { animation: none; }
+}

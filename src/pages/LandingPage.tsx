@@ -1,13 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, useScroll, useTransform, useInView } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
-  ArrowRight, BookOpen, GraduationCap, Cpu, Brain, Award,
-  ChevronRight, Download, Smartphone, Star, MessageCircle,
-  Layers, Zap, Target, BarChart3, FileText, Users, PenLine,
-  Flame, TrendingUp, Clock, CheckCircle,
+  ArrowRight, BookOpen, GraduationCap, Cpu, Brain,
+  ChevronRight, Download, Smartphone, Layers, Zap, Target,
+  BarChart3, PenLine, Flame, TrendingUp, CheckCircle,
 } from 'lucide-react';
 import logoDark from '@/assets/owl-icon.png';
 import { TestimonialsSection } from '@/components/TestimonialsSection';
@@ -92,11 +91,6 @@ export default function LandingPage() {
   }, []);
 
 
-  const heroRef = useRef(null);
-  const { scrollYProgress: heroScroll } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
-  const heroOpacity = useTransform(heroScroll, [0, 0.5], [1, 0]);
-  const heroY = useTransform(heroScroll, [0, 0.5], [0, -80]);
-  const heroScale = useTransform(heroScroll, [0, 0.5], [1, 0.95]);
 
   const handleInstallPWA = async () => {
     try {
@@ -114,201 +108,102 @@ export default function LandingPage() {
   return (
     <div className="dark min-h-dvh font-cyber overflow-x-hidden selection:bg-primary/30" style={{ background: '#050508', color: '#e2e8f0' }}>
 
-      {/* ═══ NAV ═══ */}
-      <motion.header
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl"
-        style={{ background: 'rgba(5,5,8,0.85)', borderBottom: '1px solid rgba(0,240,255,0.08)' }}
-      >
-        <div className="max-w-7xl mx-auto flex h-16 items-center justify-between px-5">
-          <div className="flex items-center gap-3">
-            <div className="relative h-10 w-10 flex-shrink-0">
-              <img src={logoDark} alt="Decode Analytics" className="relative h-full w-full object-contain drop-shadow-[0_0_12px_rgba(0,240,255,0.5)]" />
-            </div>
-            <span className="text-sm font-semibold uppercase tracking-[0.2em]" style={{ color: '#00f0ff' }}>
-              Decode Analytics
-            </span>
-          </div>
-          <nav className="hidden sm:flex items-center gap-6">
-            <a href="#recursos" className="text-xs uppercase tracking-wider text-gray-400 hover:text-white transition-colors no-underline">Recursos</a>
-            <a href="#roadmap" className="text-xs uppercase tracking-wider text-gray-400 hover:text-white transition-colors no-underline">Trilha</a>
-            <a href="#depoimentos" className="text-xs uppercase tracking-wider text-gray-400 hover:text-white transition-colors no-underline">Depoimentos</a>
-          </nav>
-          <div className="flex items-center gap-2">
-            <Button
-              size="sm"
-              onClick={() => navigate('/login')}
-              className="h-8 px-4 text-[11px] font-semibold uppercase tracking-wider border-0 rounded-md"
-              style={{ background: '#00f0ff', color: '#050508' }}
-            >
-              Acessar <ArrowRight className="ml-1.5 h-3 w-3" />
-            </Button>
-          </div>
-        </div>
-      </motion.header>
-
-      {/* ═══ HERO ═══ */}
-      <section ref={heroRef} className="relative min-h-dvh flex items-center pt-14">
-        <CyberGrid />
-        <GlowOrb className="w-[500px] h-[400px] top-1/4 left-0" style={{ background: 'rgba(0,240,255,0.06)' } as any} />
-        <GlowOrb className="w-[400px] h-[300px] bottom-0 right-0" style={{ background: 'rgba(168,85,247,0.05)' } as any} />
-
-        <motion.div
-          style={{ opacity: heroOpacity, y: heroY, scale: heroScale }}
-          className="max-w-7xl mx-auto px-5 py-24 md:py-0 w-full"
+      {/* ═══ HERO / NAVEGAÇÃO ═══ */}
+      <section className="relative isolate min-h-screen overflow-hidden bg-[#050508]">
+        <video
+          className="absolute inset-0 -z-20 h-full w-full object-cover opacity-55"
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="metadata"
+          aria-hidden="true"
         >
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-            {/* Left — Text */}
-            <div className="space-y-6">
-              <motion.div
-                initial={{ opacity: 0, x: -30 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.7, delay: 0.2 }}
-                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-semibold uppercase tracking-[0.15em]"
-                style={{ background: 'rgba(0,240,255,0.08)', border: '1px solid rgba(0,240,255,0.15)', color: '#00f0ff' }}
+          <source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260328_065045_c44942da-53c6-4804-b734-f9e07fc22e08.mp4" type="video/mp4" />
+        </video>
+        <CyberGrid />
+        <div
+          className="pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[527px] w-[min(984px,90vw)] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#050508]/90 blur-[82px]"
+          aria-hidden="true"
+        />
+        <div className="relative z-10 flex min-h-screen flex-col">
+          <header className="px-5 py-5 sm:px-8">
+            <div className="mx-auto flex max-w-7xl items-center justify-between">
+              <a href="/" className="flex items-center gap-3" aria-label="Decode Analytics Academy">
+                <img src={logoDark} alt="" className="h-9 w-9 object-contain drop-shadow-[0_0_12px_rgba(0,240,255,0.5)]" />
+                <span className="text-sm font-semibold uppercase tracking-[0.18em] text-[#00f0ff]">Decode Analytics</span>
+              </a>
+              <nav aria-label="Navegação principal" className="hidden items-center gap-7 md:flex">
+                <a href="#recursos" className="text-sm text-white/80 transition-colors hover:text-white">Recursos</a>
+                <a href="#roadmap" className="text-sm text-white/80 transition-colors hover:text-white">Trilha</a>
+                <a href="#depoimentos" className="text-sm text-white/80 transition-colors hover:text-white">Depoimentos</a>
+              </nav>
+              <Button
+                size="sm"
+                onClick={() => navigate('/login')}
+                className="rounded-full border border-white/15 bg-white/10 px-5 text-xs font-semibold uppercase tracking-wider text-white backdrop-blur-sm hover:bg-white/20"
               >
-                <GraduationCap className="h-3 w-3" /> Plataforma de Estudos
-              </motion.div>
-
-              <motion.h1
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                className="text-4xl sm:text-5xl md:text-6xl lg:text-[3.8rem] font-bold leading-[1.05] tracking-tight"
-              >
-                Sua plataforma
-                <br />
-                <span style={{ color: '#00f0ff' }}>de estudos</span>
-                <br />
-                <span className="text-gray-500">completa.</span>
-              </motion.h1>
-
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: 0.5 }}
-                className="text-base md:text-lg leading-relaxed max-w-lg"
-                style={{ color: '#94a3b8' }}
-              >
-                Apostilas, exercícios, flashcards e acompanhamento de progresso.
-                Tudo que você precisa para dominar suas disciplinas.
-              </motion.p>
-
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: 0.6 }}
-              >
-                <button
-                  onClick={() => navigate('/login')}
-                  className="group inline-flex items-center gap-3 px-7 py-3.5 rounded-lg text-sm font-bold uppercase tracking-wider transition-all duration-300 hover:shadow-[0_0_30px_rgba(0,240,255,0.25)]"
-                  style={{ background: '#00f0ff', color: '#050508' }}
-                >
-                  Começar agora
-                  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                </button>
-              </motion.div>
-
-              {/* Stats */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.7, delay: 0.8 }}
-                className="flex items-center gap-8 pt-4"
-              >
-                {[
-                  { val: '48', label: 'Disciplinas' },
-                  { val: '+100', label: 'Alunos Ativos' },
-                  { val: '24/7', label: 'Acesso Total' },
-                ].map((s) => (
-                  <div key={s.label}>
-                    <p className="text-2xl font-bold" style={{ color: '#00f0ff' }}>{s.val}</p>
-                    <p className="text-[10px] uppercase tracking-[0.15em] mt-0.5" style={{ color: '#64748b' }}>{s.label}</p>
-                  </div>
-                ))}
-              </motion.div>
+                Entrar <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+              </Button>
             </div>
+            <div className="mx-auto mt-4 h-px max-w-7xl bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+          </header>
 
-            {/* Right — Dashboard preview mockup */}
+          <main className="flex flex-1 items-center justify-center px-5 pb-20 pt-10 text-center">
             <motion.div
-              initial={{ opacity: 0, x: 40, rotateY: -5 }}
-              animate={{ opacity: 1, x: 0, rotateY: 0 }}
-              transition={{ duration: 1, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
-              className="hidden lg:block"
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+              className="mx-auto max-w-5xl"
             >
-              <div className="rounded-xl overflow-hidden" style={{ background: '#0a0a0f', border: '1px solid rgba(0,240,255,0.12)', boxShadow: '0 0 60px rgba(0,240,255,0.08)' }}>
-                {/* Title bar */}
-                <div className="flex items-center gap-2 px-4 py-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                  <div className="flex gap-1.5">
-                    <div className="w-2.5 h-2.5 rounded-full bg-red-500/80" />
-                    <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/80" />
-                    <div className="w-2.5 h-2.5 rounded-full bg-green-500/80" />
-                  </div>
-                  <span className="text-[10px] ml-2 uppercase tracking-wider" style={{ color: '#475569' }}>Decode Analytics Dashboard</span>
+              <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-white/[0.06] px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-cyan-100 backdrop-blur-sm">
+                <GraduationCap className="h-3.5 w-3.5 text-[#00f0ff]" />
+                Plataforma de estudos
+              </div>
+              <h1 className="text-5xl font-bold leading-[0.98] tracking-[-0.045em] text-white sm:text-7xl md:text-8xl">
+                Estude com
+                <span className="mt-2 block bg-gradient-to-r from-[#00f0ff] via-[#a855f7] to-[#c084fc] bg-clip-text text-transparent">
+                  inteligência.
+                </span>
+              </h1>
+              <p className="mx-auto mt-7 max-w-2xl text-base leading-7 text-white/80 sm:text-lg">
+                Apostilas, exercícios, flashcards e acompanhamento de progresso para você dominar cada disciplina.
+              </p>
+              <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+                <Button
+                  onClick={() => navigate('/login')}
+                  className="h-12 rounded-full bg-[#00f0ff] px-7 text-sm font-bold text-[#050508] shadow-[0_0_35px_rgba(0,240,255,0.28)] hover:bg-[#75f6ff]"
+                >
+                  Começar a estudar <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+                <a href="#recursos" className="inline-flex h-12 items-center justify-center rounded-full border border-white/20 bg-white/[0.05] px-7 text-sm font-semibold text-white backdrop-blur-sm transition-colors hover:bg-white/10">
+                  Conheça os recursos
+                </a>
+              </div>
+              <div className="mx-auto mt-12 grid max-w-3xl grid-cols-1 gap-3 text-left sm:grid-cols-3">
+                <div className="rounded-2xl border border-white/10 bg-black/20 p-4 backdrop-blur-sm">
+                  <p className="text-2xl font-bold text-[#00f0ff]">48</p>
+                  <p className="mt-1 text-xs uppercase tracking-[0.14em] text-white/65">Disciplinas</p>
                 </div>
-                {/* Dashboard content */}
-                <div className="p-5 space-y-4">
-                  <div className="grid grid-cols-3 gap-3">
-                    {[
-                      { label: 'Apostilas', value: '12', icon: '📚' },
-                      { label: 'XP Total', value: '2,450', icon: '⚡' },
-                      { label: 'Streak', value: '7 dias', icon: '🔥' },
-                    ].map((m) => (
-                      <div key={m.label} className="rounded-lg p-3" style={{ background: 'rgba(0,240,255,0.03)', border: '1px solid rgba(0,240,255,0.06)' }}>
-                        <p className="text-[10px] uppercase tracking-wider mb-1" style={{ color: '#64748b' }}>{m.icon} {m.label}</p>
-                        <p className="text-lg font-bold" style={{ color: '#00f0ff' }}>{m.value}</p>
-                      </div>
-                    ))}
-                  </div>
-                  {/* Progress bars */}
-                  <div className="rounded-lg p-4 space-y-3" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}>
-                    <p className="text-[10px] uppercase tracking-wider font-semibold" style={{ color: '#64748b' }}>Progresso por Disciplina</p>
-                    {[
-                      { name: 'Estrutura de Dados', pct: 85 },
-                      { name: 'Banco de Dados', pct: 60 },
-                      { name: 'Redes de Computadores', pct: 40 },
-                    ].map(d => (
-                      <div key={d.name} className="space-y-1">
-                        <div className="flex justify-between text-[10px]">
-                          <span style={{ color: '#94a3b8' }}>{d.name}</span>
-                          <span style={{ color: '#00f0ff' }}>{d.pct}%</span>
-                        </div>
-                        <div className="h-1.5 rounded-full" style={{ background: 'rgba(0,240,255,0.1)' }}>
-                          <motion.div
-                            initial={{ width: 0 }}
-                            whileInView={{ width: `${d.pct}%` }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 1, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                            className="h-full rounded-full"
-                            style={{ background: 'linear-gradient(to right, rgba(0,240,255,0.5), rgba(0,240,255,0.9))' }}
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                <div className="rounded-2xl border border-white/10 bg-black/20 p-4 backdrop-blur-sm">
+                  <p className="text-sm font-bold text-white">Exercícios</p>
+                  <p className="mt-1 text-xs uppercase tracking-[0.14em] text-white/65">Práticos e comentados</p>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-black/20 p-4 backdrop-blur-sm">
+                  <p className="text-sm font-bold text-white">Acesse onde estiver</p>
+                  <p className="mt-1 text-xs uppercase tracking-[0.14em] text-white/65">Computador e celular</p>
                 </div>
               </div>
             </motion.div>
-          </div>
-        </motion.div>
+          </main>
 
-        {/* Scroll indicator */}
-        <motion.div
-          animate={{ y: [0, 8, 0] }}
-          transition={{ duration: 2, repeat: Infinity }}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2"
-        >
-          <div className="w-5 h-8 rounded-full flex items-start justify-center pt-1.5" style={{ border: '1px solid rgba(0,240,255,0.3)' }}>
-            <motion.div
-              animate={{ y: [0, 10, 0], opacity: [1, 0.3, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
-              className="w-1 h-1.5 rounded-full"
-              style={{ background: '#00f0ff' }}
-            />
+          <div className="overflow-hidden border-t border-white/10 py-5" aria-label="Recursos da plataforma">
+            <div className="hero-marquee flex w-max items-center gap-10 whitespace-nowrap text-sm font-semibold text-white/75 motion-reduce:animate-none">
+              <span>Apostilas</span><span className="text-[#00f0ff]">✦</span><span>Exercícios</span><span className="text-[#00f0ff]">✦</span><span>Flashcards</span><span className="text-[#00f0ff]">✦</span><span>Simulados</span><span className="text-[#00f0ff]">✦</span><span>Progresso</span><span className="text-[#00f0ff]">✦</span><span>Calendário</span><span className="text-[#00f0ff]">✦</span>
+              <span>Apostilas</span><span className="text-[#00f0ff]">✦</span><span>Exercícios</span><span className="text-[#00f0ff]">✦</span><span>Flashcards</span><span className="text-[#00f0ff]">✦</span><span>Simulados</span><span className="text-[#00f0ff]">✦</span><span>Progresso</span><span className="text-[#00f0ff]">✦</span><span>Calendário</span><span className="text-[#00f0ff]">✦</span>
+            </div>
           </div>
-        </motion.div>
+        </div>
       </section>
 
       {/* ═══ APP SHOWCASE (Veja por dentro) ═══ */}
