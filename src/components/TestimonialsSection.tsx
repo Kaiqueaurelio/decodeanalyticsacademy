@@ -86,8 +86,8 @@ export function TestimonialsSection() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {items.map(t => {
-            const name = displayName(t.profile?.full_name || '', t.profile?.email || '');
-            const initials = getInitials(t.profile?.full_name || '', t.profile?.email || '');
+            const name = displayName(t.profile?.full_name || '');
+            const initials = getInitials(t.profile?.full_name || '');
             const bg = colorFor(t.user_id);
             return (
               <div
