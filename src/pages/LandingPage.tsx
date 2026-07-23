@@ -71,11 +71,6 @@ const roadmap = [
   { phase: '04', title: 'Prática & Projetos', desc: 'Projetos integradores, estágio supervisionado e TCC.', icon: Target },
 ];
 
-const testimonials = [
-  { name: 'Ana Silva', role: 'Aluna de CC - 4º Sem.', text: 'As apostilas e exercícios me ajudaram muito nas provas. Consegui aumentar minha média de 6 para 9!', initials: 'AS', color: '#00f0ff' },
-  { name: 'Carlos Santos', role: 'Aluno de SI - 6º Sem.', text: 'O sistema de flashcards é incrível para revisar antes das provas. Melhor plataforma de estudos.', initials: 'CS', color: '#a855f7' },
-  { name: 'Juliana Costa', role: 'Aluna de EC - 3º Sem.', text: 'A gamificação me motiva a estudar todos os dias. Já tenho um streak de 30 dias!', initials: 'JC', color: '#22c55e' },
-];
 
 const faqs = [
   { q: 'Para quais cursos a plataforma é voltada?', a: 'Ciência da Computação, Sistemas de Informação e Engenharia da Computação — do 1º ao 8º semestre.' },
