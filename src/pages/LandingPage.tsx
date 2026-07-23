@@ -83,11 +83,26 @@ export default function LandingPage() {
   const [showInstallGuide, setShowInstallGuide] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [appOrigin, setAppOrigin] = useState<string>('https://decodeanalyticsacademy.lovable.app');
+  const heroVideoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.location?.origin?.startsWith('http')) {
       setAppOrigin(window.location.origin);
     }
+  }, []);
+
+  useEffect(() => {
+    const video = heroVideoRef.current;
+    if (!video) return;
+
+    const startPlayback = () => {
+      void video.play().catch(() => {
+        // O fundo visual permanece legível quando o navegador bloqueia autoplay.
+      });
+    };
+
+    video.addEventListener('canplay', startPlayback, { once: true });
+    return () => video.removeEventListener('canplay', startPlayback);
   }, []);
 
 
@@ -111,7 +126,8 @@ export default function LandingPage() {
       {/* ═══ HERO / NAVEGAÇÃO ═══ */}
       <section className="relative isolate min-h-screen overflow-hidden bg-[#050508]">
         <video
-          className="absolute inset-0 -z-20 h-full w-full scale-[1.03] object-cover opacity-60"
+          ref={heroVideoRef}
+          className="hero-background-video absolute inset-0 -z-20 h-full w-full scale-[1.03] object-cover opacity-60"
           autoPlay
           loop
           muted
@@ -195,6 +211,14 @@ export default function LandingPage() {
                   <p className="mt-1 text-xs uppercase tracking-[0.14em] text-white/65">Computador e celular</p>
                 </div>
               </div>
+              <div className="hero-signal mx-auto mt-7 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs text-white/70 backdrop-blur-sm">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#00f0ff]" />
+                Conteúdo organizado por semestre e disciplina
+              </div>
+              <a href="#recursos" className="hero-scroll-cue mx-auto mt-7 flex w-fit flex-col items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/55 transition-colors hover:text-white">
+                Explore os recursos
+                <span className="h-7 w-px bg-gradient-to-b from-[#00f0ff] to-transparent" aria-hidden="true" />
+              </a>
             </motion.div>
           </main>
 

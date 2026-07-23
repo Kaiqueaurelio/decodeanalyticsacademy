@@ -133,3 +133,51 @@
   .hero-stat-card { transition: none; }
   .hero-stat-card:hover { transform: none; }
 }
+
+
+.hero-background-video {
+  animation: decode-video-fade-in 900ms ease-out both;
+}
+
+.hero-signal {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.11);
+}
+
+.hero-signal > span {
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.9);
+  animation: decode-signal-pulse 2.4s ease-in-out infinite;
+}
+
+.hero-scroll-cue span {
+  animation: decode-scroll-cue 1.8s ease-in-out infinite;
+}
+
+@keyframes decode-video-fade-in {
+  from { opacity: 0; }
+  to { opacity: 0.6; }
+}
+
+@keyframes decode-signal-pulse {
+  0%, 100% { opacity: 0.45; transform: scale(0.9); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes decode-scroll-cue {
+  0%, 100% { opacity: 0.25; transform: scaleY(0.65); transform-origin: top; }
+  50% { opacity: 1; transform: scaleY(1); transform-origin: top; }
+}
+
+@media (max-width: 640px) {
+  .hero-background-video { opacity: 0.44 !important; }
+  .hero-video-vignette {
+    background:
+      radial-gradient(ellipse 105% 58% at 50% 44%, rgba(5, 5, 8, 0.28) 0%, rgba(5, 5, 8, 0.7) 86%),
+      linear-gradient(180deg, rgba(5, 5, 8, 0.45), rgba(5, 5, 8, 0.72));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-background-video,
+  .hero-signal > span,
+  .hero-scroll-cue span { animation: none; }
+}
