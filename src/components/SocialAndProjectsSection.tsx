@@ -57,7 +57,14 @@ function buildShareTargets(appUrl: string) {
 
 export function SocialAndProjectsSection() {
   const [copied, setCopied] = useState(false);
-  const [appUrl, setAppUrl] = useState<string>(getDefaultAppUrl());
+  const [appUrl, setAppUrl] = useState<string>(FALLBACK_APP_URL);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.location?.origin?.startsWith('http')) {
+      setAppUrl(window.location.origin);
+    }
+  }, []);
+
 
   useEffect(() => {
     let cancelled = false;
