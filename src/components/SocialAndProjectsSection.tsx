@@ -73,8 +73,12 @@ export function SocialAndProjectsSection() {
         .eq('key', 'share_app_url')
         .maybeSingle();
       const raw = data?.value as unknown;
-      if (!cancelled && typeof raw === 'string' && raw.trim()) {
-        setAppUrl(raw.trim());
+      if (!cancelled && typeof raw === 'string') {
+        const candidate = raw.trim();
+        try {
+          const parsed = new URL(candidate);
+          if (parsed.protocol === 'https:') setAppUrl(parsed.toString().replace(/\/$/, ''));
+        } catch { /* ignora URL inválida */ }
       }
     })();
     return () => { cancelled = true; };
