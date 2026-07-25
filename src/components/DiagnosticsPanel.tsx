@@ -34,6 +34,7 @@ function useLiveData() {
   const [perfEvents, setPerfEvents] = useState<PerfEvent[]>(() => getEvents());
   const [errors, setErrors] = useState<RuntimeError[]>(() => getRuntimeErrors());
   const [timings, setTimings] = useState<RouteTiming[]>(() => getRouteTimings());
+  const [authEvents, setAuthEvents] = useState<AuthLogEntry[]>(() => getAuthEvents());
   const [safeMode, setSafeMode] = useState({
     enabled: isSafeModeEnabled(),
     manual: isSafeModeManual(),
@@ -45,6 +46,7 @@ function useLiveData() {
       setPerfEvents(getEvents());
       setErrors(getRuntimeErrors());
       setTimings(getRouteTimings());
+      setAuthEvents(getAuthEvents());
       setSafeMode({
         enabled: isSafeModeEnabled(),
         manual: isSafeModeManual(),
@@ -53,17 +55,19 @@ function useLiveData() {
     };
     window.addEventListener('decode:perf-update', refresh);
     window.addEventListener('decode:runtime-update', refresh);
+    window.addEventListener('decode:auth-log-update', refresh);
     window.addEventListener('decode:safe-mode-change', refresh);
     const interval = setInterval(refresh, 5000);
     return () => {
       window.removeEventListener('decode:perf-update', refresh);
       window.removeEventListener('decode:runtime-update', refresh);
+      window.removeEventListener('decode:auth-log-update', refresh);
       window.removeEventListener('decode:safe-mode-change', refresh);
       clearInterval(interval);
     };
   }, []);
 
-  return { perfEvents, errors, timings, safeMode };
+  return { perfEvents, errors, timings, authEvents, safeMode };
 }
 
 /** Estatísticas agregadas por bucket de rota. */
