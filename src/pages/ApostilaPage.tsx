@@ -366,13 +366,13 @@ export default function ApostilaPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={handleExportPdf}
+                  onClick={handleExportDocx}
                   disabled={exportingPdf}
                   className="text-xs gap-1.5 hover-lift border-accent/40 text-accent-foreground hover:bg-accent/10"
-                  title="Baixar apostila em PDF (admin)"
+                  title="Baixar apostila em DOCX (admin)"
                 >
                   {exportingPdf ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <FileDown className="h-3.5 w-3.5" />}
-                  <span className="hidden sm:inline">{exportingPdf ? 'Gerando…' : 'Baixar PDF'}</span>
+                  <span className="hidden sm:inline">DOCX</span>
                 </Button>
               )}
               {/* Bottom sheet de ações rápidas (mobile-first) */}
