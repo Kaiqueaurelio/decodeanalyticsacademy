@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
 import type { CourseCode } from '@/lib/subject-semester-map';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserProfile } from '@/hooks/queries/useUserProfile';
 
 export type ApostilaSummary = Pick<
   Tables<'apostilas'>,
@@ -39,28 +40,28 @@ export interface ApostilasListOptions {
  */
 export function useApostilasList(options: ApostilasListOptions = {}) {
   const { semester = null, course = null, enabled = true } = options;
-  const { isAdmin, isSessionHydrated, roleChecked } = useAuth();
+  const { user, isAdmin, isSessionHydrated, roleChecked } = useAuth();
+  const { data: profile } = useUserProfile(user?.id);
+  const scope = profile?.content_scope ?? 'full';
   const canLoadApostilas = enabled && isSessionHydrated && roleChecked;
-  
+
   return useQuery({
-    queryKey: ['apostilas', 'list', semester, course, canLoadApostilas, isAdmin],
+    queryKey: ['apostilas', 'list', semester, course, canLoadApostilas, isAdmin, scope],
     enabled: canLoadApostilas,
     queryFn: async () => {
       let q = supabase
         .from('apostilas')
         .select(APOSTILA_LIST_COLUMNS);
-      
-      // Se não for admin, mostra apenas as publicadas
+
+      // Alunos comuns só veem publicadas
       if (!isAdmin) {
         q = q.eq('published', true);
       }
 
-      // CORREÇÃO: Removida a lógica de filtro por semestre/curso
-      // Isso causava que apostilas desaparecessem quando o perfil do aluno
-      // não tinha semestre/curso preenchido ou não combinava com as apostilas
-      // 
-      // Agora o dashboard mostra TODAS as apostilas publicadas,
-      // e o aluno pode filtrar manualmente se desejar
+      // Perfil restrito: só matérias ENEM
+      if (!isAdmin && scope === 'enem_only') {
+        q = q.in('category', ['ENEM', 'Simulados ENEM']);
+      }
 
       const { data, error } = await q
         .order('category')
