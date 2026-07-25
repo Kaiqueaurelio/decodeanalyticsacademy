@@ -471,6 +471,21 @@ function EmptyState({ message, success }: { message: string; success?: boolean }
   );
 }
 
+function InfoTile({ label, value, tone = 'neutral' }: { label: string; value: string; tone?: 'ok' | 'warn' | 'danger' | 'neutral' }) {
+  const toneClass = {
+    ok: 'text-[hsl(var(--success))]',
+    warn: 'text-primary',
+    danger: 'text-destructive',
+    neutral: 'text-foreground',
+  }[tone];
+  return (
+    <div className="border border-border/60 rounded-lg p-2">
+      <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{label}</p>
+      <p className={cn('text-sm font-mono font-medium mt-0.5', toneClass)}>{value}</p>
+    </div>
+  );
+}
+
 function formatDuration(ms: number): string {
   if (ms < 1000) return `${ms}ms`;
   return `${(ms / 1000).toFixed(1)}s`;
@@ -478,4 +493,15 @@ function formatDuration(ms: number): string {
 
 function formatTime(ts: number): string {
   return new Date(ts).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}
+
+function formatExpiry(expiresAt: number | undefined): string {
+  if (!expiresAt) return '—';
+  const ms = expiresAt * 1000 - Date.now();
+  if (ms <= 0) return 'expirado';
+  const min = Math.floor(ms / 60000);
+  if (min < 60) return `${min} min`;
+  const h = Math.floor(min / 60);
+  return `${h}h ${min % 60}min`;
+}
 }
