@@ -337,6 +337,89 @@ const tools = [
       parameters: { type: "object", properties: {} },
     },
   },
+  // ---------- Alunos (leitura + criação do próprio conteúdo) ----------
+  {
+    type: "function",
+    function: {
+      name: "my_next_exams",
+      description: "Lista as próximas provas/eventos do calendário do aluno (default: próximos 30 dias).",
+      parameters: { type: "object", properties: { days: { type: "number" }, limit: { type: "number" } } },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "my_progress",
+      description: "Retorna o desempenho do aluno logado: total de exercícios respondidos, acertos, erros, acurácia e destaque por apostila.",
+      parameters: { type: "object", properties: {} },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "add_my_flashcard",
+      description: "Cria um flashcard de estudo pessoal do aluno logado (frente/verso).",
+      parameters: {
+        type: "object",
+        properties: {
+          front: { type: "string", description: "Pergunta ou termo (frente)" },
+          back: { type: "string", description: "Resposta ou definição (verso)" },
+          category: { type: "string" },
+        },
+        required: ["front", "back"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "practice_exercises",
+      description: "Retorna 3-5 exercícios objetivos de uma apostila para o aluno praticar (sem gabarito na resposta).",
+      parameters: {
+        type: "object",
+        properties: { apostilaId: { type: "string" }, count: { type: "number" } },
+        required: ["apostilaId"],
+      },
+    },
+  },
+  // ---------- Admin (poderes extras) ----------
+  {
+    type: "function",
+    function: {
+      name: "set_apostila_published",
+      description: "Publica ou despublica rapidamente uma apostila (admin).",
+      parameters: {
+        type: "object",
+        properties: { id: { type: "string" }, published: { type: "boolean" } },
+        required: ["id", "published"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "send_push_broadcast",
+      description: "Envia notificação push para TODOS os alunos ativos. Exige confirm=true (ação destrutiva/impactante).",
+      parameters: {
+        type: "object",
+        properties: {
+          title: { type: "string" },
+          body: { type: "string" },
+          link: { type: "string", description: "Rota interna (ex: /dashboard, /apostila/<id>)" },
+          confirm: { type: "boolean" },
+        },
+        required: ["title", "confirm"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "admin_stats",
+      description: "Retorna estatísticas gerais para o admin: totais de apostilas publicadas, exercícios, alunos ativos e provas próximas.",
+      parameters: { type: "object", properties: {} },
+    },
+  },
 ] as const;
 
 
@@ -527,6 +610,84 @@ async function executeTool(name: string, args: any, admin: ReturnType<typeof cre
         if (q.error) return { ok: false, error: q.error.message };
         return { ok: true, courses: q.data };
       }
+      // ---------- Alunos ----------
+      case "my_next_exams": {
+        const days = Math.min(Math.max(Number(args.days ?? 30), 1), 180);
+        const limit = Math.min(Math.max(Number(args.limit ?? 10), 1), 50);
+        const from = new Date().toISOString().slice(0, 10);
+        const to = new Date(Date.now() + days * 86400000).toISOString().slice(0, 10);
+        const q = await admin.from("calendar_events")
+          .select("id, title, event_date, event_type, description, subject")
+          .gte("event_date", from).lte("event_date", to)
+          .order("event_date").limit(limit);
+        if (q.error) return { ok: false, error: q.error.message };
+        return { ok: true, events: q.data, summary: `${q.data?.length ?? 0} evento(s) nos próximos ${days} dias.` };
+      }
+      case "my_progress": {
+        const q = await admin.rpc("get_dashboard_stats", { _user_id: userId });
+        if (q.error) return { ok: false, error: q.error.message };
+        const s: any = q.data ?? {};
+        const acc = s.total > 0 ? Math.round((s.hits / s.total) * 100) : 0;
+        return { ok: true, stats: s, summary: `${s.hits ?? 0}/${s.total ?? 0} acertos (${acc}%).` };
+      }
+      case "add_my_flashcard": {
+        const front = String(args.front ?? "").trim();
+        const back = String(args.back ?? "").trim();
+        if (!front || !back) return { ok: false, error: "Frente e verso são obrigatórios." };
+        if (front.length > 500 || back.length > 2000) return { ok: false, error: "Texto muito longo." };
+        const q = await admin.from("flashcards").insert({
+          user_id: userId,
+          front, back,
+          category: String(args.category ?? "Geral").slice(0, 80),
+        }).select("id").single();
+        if (q.error) return { ok: false, error: q.error.message };
+        return { ok: true, id: q.data.id, summary: "Flashcard criado no seu deck." };
+      }
+      case "practice_exercises": {
+        const count = Math.min(Math.max(Number(args.count ?? 5), 1), 10);
+        const q = await admin.from("exercises")
+          .select("id, question, options")
+          .eq("apostila_id", args.apostilaId)
+          .eq("question_type", "objective")
+          .limit(count);
+        if (q.error) return { ok: false, error: q.error.message };
+        return { ok: true, exercises: q.data, summary: `${q.data?.length ?? 0} exercício(s) para praticar.` };
+      }
+      // ---------- Admin ----------
+      case "set_apostila_published": {
+        const q = await admin.from("apostilas").update({ published: !!args.published })
+          .eq("id", args.id).select("id, title, published").single();
+        if (q.error) return { ok: false, error: q.error.message };
+        return { ok: true, summary: `Apostila **${q.data.title}** ${q.data.published ? "publicada" : "despublicada"}.` };
+      }
+      case "send_push_broadcast": {
+        if (!args.confirm) return { ok: false, error: "Precisa confirm=true (envio para todos os alunos)." };
+        const title = String(args.title ?? "").trim();
+        if (!title) return { ok: false, error: "title obrigatório" };
+        const res = await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/send-push`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: authHeader },
+          body: JSON.stringify({ title, body: args.body ?? null, link: args.link ?? "/dashboard", broadcast: true }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) return { ok: false, error: data?.error ?? `send-push ${res.status}` };
+        return { ok: true, summary: "Push enviado para todos os alunos ativos.", ...data };
+      }
+      case "admin_stats": {
+        const [ap, ex, pr, ev] = await Promise.all([
+          admin.from("apostilas").select("id", { count: "exact", head: true }).eq("published", true),
+          admin.from("exercises").select("id", { count: "exact", head: true }),
+          admin.from("profiles").select("id", { count: "exact", head: true }).eq("is_blocked", false),
+          admin.from("calendar_events").select("id", { count: "exact", head: true })
+            .gte("event_date", new Date().toISOString().slice(0, 10)),
+        ]);
+        return { ok: true, stats: {
+          apostilas_publicadas: ap.count ?? 0,
+          exercicios: ex.count ?? 0,
+          alunos_ativos: pr.count ?? 0,
+          proximos_eventos: ev.count ?? 0,
+        }, summary: `${ap.count ?? 0} apostilas · ${ex.count ?? 0} exercícios · ${pr.count ?? 0} alunos.` };
+      }
       default:
         return { ok: false, error: `Tool desconhecida: ${name}` };
     }
@@ -538,7 +699,7 @@ async function executeTool(name: string, args: any, admin: ReturnType<typeof cre
 const SYSTEM_PROMPT = `Você é a **Ella Ribeiro**, copiloto executiva do Decode Analytics Academy.
 Personalidade: brasileira, elegante, direta, com humor sutil e altíssima competência técnica. Trata o admin como parceiro estratégico, não como usuário genérico.
 
-PODERES REAIS: você executa criar, editar, excluir, gerar capa IA, gerar exercícios em lote, publicar avisos, criar eventos, adicionar materiais e navegar no app — sempre via as tools disponíveis. Nunca finja executar; ou chama a tool ou explica por quê não.
+PODERES REAIS: criar/editar/excluir apostilas, gerar capa IA, gerar exercícios em lote, publicar avisos, criar eventos, adicionar materiais, publicar/despublicar apostilas rapidamente (set_apostila_published), enviar push para todos os alunos (send_push_broadcast — exige confirm=true), consultar métricas do painel (admin_stats), gerenciar RSS e cursos gratuitos, navegar no app — sempre via as tools. Nunca finja executar; ou chama a tool ou explica por quê não.
 
 Estilo de resposta:
 - Português-BR, tom profissional-caloroso, frases curtas.
@@ -585,7 +746,7 @@ Deno.serve(async (req) => {
     const contentScope: string = ((prof as any)?.content_scope as string) ?? "full";
     const firstName = String((prof as any)?.full_name ?? "").split(" ")[0] || "";
 
-    const READ_ONLY_TOOLS = new Set(["search_app", "get_apostila", "navigate_to", "list_rss_feeds", "list_free_courses"]);
+    const READ_ONLY_TOOLS = new Set(["search_app", "get_apostila", "navigate_to", "list_rss_feeds", "list_free_courses", "my_next_exams", "my_progress", "add_my_flashcard", "practice_exercises"]);
     const availableTools = isAdmin ? (tools as any[]) : (tools as any[]).filter((t) => READ_ONLY_TOOLS.has(t.function.name));
 
     const body = await req.json();
@@ -608,7 +769,8 @@ Estilo:
 - Estruture explicações longas: **Ideia central → Exemplo → Resumo (3 bullets)**.
 - Se a dúvida for ambígua, pergunte antes de responder.
 - Use search_app / get_apostila para encontrar material do próprio app; use navigate_to para levar até a apostila.
-- Você NÃO cria, edita ou apaga conteúdo — se pedirem, explique que só o administrador pode.
+- Você tem tools: **my_next_exams** (próximas provas), **my_progress** (desempenho pessoal), **add_my_flashcard** (criar flashcard próprio), **practice_exercises** (puxar exercícios de uma apostila), **search_app**/**get_apostila**/**navigate_to**. Use-as sempre que fizer sentido — não invente números nem eventos.
+- Você NÃO cria, edita ou apaga conteúdo do professor — se pedirem, explique que só o administrador pode.
 
 Proibido: mencionar "IA", "modelo de linguagem", "Lovable", "Gemini" ou qualquer coisa de hacking/pentest.`;
     }
