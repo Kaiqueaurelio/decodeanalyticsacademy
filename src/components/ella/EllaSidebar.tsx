@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLocation } from "react-router-dom";
-import { Sparkles } from "lucide-react";
+import { Wand2 } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -37,7 +37,7 @@ export function EllaSidebar() {
           <Avatar className="h-full w-full">
             <AvatarImage src={getEllaAvatarUrl()} alt="Ella Ribeiro" className="object-cover" />
             <AvatarFallback className="bg-gradient-to-br from-primary to-accent">
-              <Sparkles className="h-6 w-6 text-primary-foreground" />
+              <Wand2 className="h-6 w-6 text-primary-foreground" />
             </AvatarFallback>
           </Avatar>
         </Button>

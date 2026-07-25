@@ -30,7 +30,7 @@ import { exportApostilaToPDF } from '@/lib/apostila-pdf';
 import { exportApostilaToDOCX } from '@/lib/apostila-docx';
 import {
   ArrowLeft, BookOpen, PenLine, Eye, List, X, MoreHorizontal,
-  ChevronUp, StickyNote, Layers, Sparkles, MessageSquare, Share2, CheckCircle2, Copy, Volume2,
+  ChevronUp, StickyNote, Layers, Wand2, MessageSquare, Share2, CheckCircle2, Copy, Volume2,
   FileDown, Loader2, Brain
 } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
@@ -349,7 +349,7 @@ export default function ApostilaPage() {
                 onClick={() => setChatOpen(true)}
                 className="text-xs gap-1.5 hover-lift border-primary/40 text-primary hover:bg-primary/10"
               >
-                <Sparkles className="h-3.5 w-3.5" />
+                <Wand2 className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">Conversar com a apostila</span>
                 <span className="sm:hidden">Chat</span>
               </Button>
@@ -426,7 +426,7 @@ export default function ApostilaPage() {
                     id: 'chat',
                     label: 'Conversar com a apostila',
                     description: 'Tirar dúvidas com IA',
-                    icon: Sparkles,
+                    icon: Wand2,
                     onSelect: () => setChatOpen(true),
                   },
                   {

@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus, RotateCcw, Check, X, Layers, Sparkles, Brain } from 'lucide-react';
+import { Plus, RotateCcw, Check, X, Layers, Wand2, Brain } from 'lucide-react';
 import { toast } from 'sonner';
 import { sm2, formatNextReview, type SRSQuality } from '@/lib/srs';
 import { useNavigate } from 'react-router-dom';
@@ -134,7 +134,7 @@ export function FlashcardsWidget({ apostilaId }: Props) {
                 <Check className="h-3 w-3" />
               </Button>
               <Button size="sm" variant="outline" className="text-[10px] h-7 px-1 border-success/30 text-success" onClick={() => handleAnswer(5)}>
-                <Sparkles className="h-3 w-3" />
+                <Wand2 className="h-3 w-3" />
               </Button>
             </div>
           )}

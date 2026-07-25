@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { Send, Sparkles, Trash2, Loader2, BookOpen, Volume2, Square } from 'lucide-react';
+import { Send, Wand2, Trash2, Loader2, BookOpen, Volume2, Square } from 'lucide-react';
 import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
 
@@ -244,7 +244,7 @@ export function ApostilaChat({ apostilaId, apostilaTitle, variant = 'panel' }: P
       <div className="flex items-center justify-between p-4 border-b border-border/60 shrink-0 bg-gradient-to-r from-primary/5 to-transparent">
         <div className="flex items-center gap-3 min-w-0">
           <div className="h-10 w-10 rounded-xl gradient-primary text-primary-foreground flex items-center justify-center shrink-0 shadow-md">
-            <Sparkles className="h-5 w-5" />
+            <Wand2 className="h-5 w-5" />
           </div>
           <div className="min-w-0">
             <p className="text-sm font-bold truncate">Chat com IA</p>
@@ -264,7 +264,7 @@ export function ApostilaChat({ apostilaId, apostilaTitle, variant = 'panel' }: P
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-3 space-y-3">
         {messages.length === 0 && !loading && (
           <div className="text-center py-6 px-2">
-            <Sparkles className="h-8 w-8 text-primary/40 mx-auto mb-3" />
+            <Wand2 className="h-8 w-8 text-primary/40 mx-auto mb-3" />
             <p className="text-xs text-muted-foreground mb-4">
               Faça perguntas sobre o conteúdo desta apostila. Eu uso apenas o que está aqui dentro para te responder.
             </p>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Fingerprint, Loader2, ShieldCheck, Zap, Lock } from 'lucide-react';
+import { Fingerprint, Loader2, ShieldCheck, Rocket, Lock } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { enableBiometric, useBiometricStatus } from '@/hooks/useBiometricAuth';
@@ -122,7 +122,7 @@ export function BiometricOnboarding() {
         {/* Benefícios */}
         <div className="px-6 pb-2 space-y-2.5">
           {[
-            { icon: Zap, title: 'Acesso instantâneo', desc: 'Reabra o app em 1 segundo' },
+            { icon: Rocket, title: 'Acesso instantâneo', desc: 'Reabra o app em 1 segundo' },
             { icon: ShieldCheck, title: 'Mais seguro', desc: 'Ninguém entra sem ser você' },
             { icon: Lock, title: 'Senha protegida', desc: 'Salva criptografada neste dispositivo' },
           ].map(({ icon: Icon, title, desc }) => (

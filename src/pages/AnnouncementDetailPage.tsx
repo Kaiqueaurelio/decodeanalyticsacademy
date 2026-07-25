@@ -8,7 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { AppImage } from '@/components/ui/app-image';
 import {
   ArrowLeft, ExternalLink, Megaphone, GraduationCap, Calendar,
-  Briefcase, Sparkles, Clock, Share2
+  Briefcase, Wand2, Clock, Share2
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -28,7 +28,7 @@ const CATEGORY_CONFIG: Record<string, { label: string; icon: any; color: string;
   cursos: { label: 'Cursos', icon: GraduationCap, color: 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]', accent: 'from-[hsl(var(--success))]/20 to-[hsl(var(--success))]/5' },
   provas: { label: 'Provas', icon: Calendar, color: 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))]', accent: 'from-[hsl(var(--warning))]/20 to-[hsl(var(--warning))]/5' },
   empregos: { label: 'Empregos', icon: Briefcase, color: 'bg-accent text-accent-foreground', accent: 'from-accent/20 to-accent/5' },
-  eventos: { label: 'Eventos', icon: Sparkles, color: 'bg-primary/10 text-primary', accent: 'from-primary/20 to-primary/5' },
+  eventos: { label: 'Eventos', icon: Wand2, color: 'bg-primary/10 text-primary', accent: 'from-primary/20 to-primary/5' },
 };
 
 const CATEGORY_LABELS: Record<string, string> = {

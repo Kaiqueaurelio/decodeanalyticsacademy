@@ -10,7 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
 import {
   AlertTriangle, BookOpen, Brain, Calendar, ChevronRight, Flame,
-  GraduationCap, Lightbulb, RotateCcw, Sparkles, Target,
+  GraduationCap, Lightbulb, RotateCcw, Wand2, Target,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';

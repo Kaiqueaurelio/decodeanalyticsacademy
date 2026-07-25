@@ -8,7 +8,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
-import { Sparkles, FileText, ArrowRight } from 'lucide-react';
+import { Wand2, FileText, ArrowRight } from 'lucide-react';
 import type { DuplicateMatch } from '@/lib/duplicate-detector';
 
 interface Props {
@@ -35,7 +35,7 @@ export function DuplicateApostilaDialog({
       <AlertDialogContent className="max-w-lg">
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-primary" />
+            <Wand2 className="h-4 w-4 text-primary" />
             Conteúdo parecido detectado
           </AlertDialogTitle>
           <AlertDialogDescription className="space-y-3 text-sm">

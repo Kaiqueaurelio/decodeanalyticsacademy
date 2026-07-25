@@ -17,7 +17,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  Activity, AlertTriangle, Trash2, RefreshCw, Zap, ShieldAlert, Clock,
+  Activity, AlertTriangle, Trash2, RefreshCw, Rocket, ShieldAlert, Clock,
   Bug, Network, ChevronRight, CheckCircle2,
 } from 'lucide-react';
 import { getEvents, clearEvents, summarizeEvents, PERF_THRESHOLDS, type PerfEvent } from '@/lib/perf-monitor';
@@ -140,7 +140,7 @@ export function DiagnosticsPanel() {
           tone={slowLoads.length > 0 ? 'warn' : 'ok'}
         />
         <StatCard
-          icon={<Zap className="h-4 w-4" />}
+          icon={<Rocket className="h-4 w-4" />}
           label="Carregamento médio"
           value={`${summary.avgLoad}ms`}
           tone={summary.avgLoad > PERF_THRESHOLDS.pageLoad ? 'warn' : 'ok'}

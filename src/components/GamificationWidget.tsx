@@ -1,5 +1,5 @@
 import { Card } from '@/components/ui/card';
-import { Flame, Zap, Trophy, Star } from 'lucide-react';
+import { Flame, Rocket, Trophy, Star } from 'lucide-react';
 
 interface Props {
   xpPoints: number;
@@ -19,7 +19,7 @@ export function GamificationWidget({ xpPoints, level, currentStreak, longestStre
       <Card className="p-5 hover-lift">
         <div className="flex items-center gap-3 mb-3">
           <div className="rounded-xl bg-primary/10 p-2.5">
-            <Zap className="h-5 w-5 text-primary" />
+            <Rocket className="h-5 w-5 text-primary" />
           </div>
           <div className="flex-1">
             <div className="flex items-center justify-between">

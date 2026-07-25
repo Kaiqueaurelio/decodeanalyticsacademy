@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Sparkles, ClipboardPaste, FileText, Wand2 } from 'lucide-react';
+import { PenTool, ClipboardPaste, FileText, Wand2 } from 'lucide-react';
 import { cleanPastedContent } from '@/lib/paste-cleaner';
 import { cn } from '@/lib/utils';
 
@@ -51,7 +51,7 @@ export function SmartPasteDialog({ open, onOpenChange, onApply }: Props) {
       <DialogContent className="flex max-h-[92dvh] w-[calc(100vw-1rem)] max-w-4xl flex-col gap-3 overflow-hidden p-3 sm:p-6">
         <DialogHeader className="space-y-1 pr-8">
           <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
-            <Sparkles className="h-4 w-4 text-primary" />
+            <PenTool className="h-4 w-4 text-primary" />
             Colar apostila
           </DialogTitle>
           <p className="text-xs text-muted-foreground">

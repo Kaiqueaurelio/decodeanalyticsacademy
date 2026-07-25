@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
-  BookOpen, Clock, TrendingUp, Zap, Heart, MessageCircle,
+  BookOpen, Clock, TrendingUp, Rocket, Heart, MessageCircle,
   ChevronRight, BarChart3, Target, Flame, Award, ArrowRight
 } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -217,7 +217,7 @@ export function DashboardMinimalist({
               <div className="space-y-3">
                 <div className="flex items-center justify-between p-3 rounded-lg bg-orange-50 dark:bg-orange-950/20">
                   <div className="flex items-center gap-2">
-                    <Zap className="h-4 w-4 text-orange-500" />
+                    <Rocket className="h-4 w-4 text-orange-500" />
                     <span className="text-sm font-medium">XP</span>
                   </div>
                   <span className="text-lg font-bold text-orange-600">{totalXP}</span>

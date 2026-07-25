@@ -13,8 +13,8 @@ import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import {
   ArrowLeft, ArrowRight, CheckCircle, XCircle, Trophy, RotateCcw, Timer,
-  BookOpen, Sparkles, ChevronLeft, ChevronRight, Eye, EyeOff, PenLine,
-  BarChart3, Clock, Target, Zap, Award, Send, ListChecks, Filter
+  BookOpen, Wand2, ChevronLeft, ChevronRight, Eye, EyeOff, PenLine,
+  BarChart3, Clock, Target, Rocket, Award, Send, ListChecks, Filter
 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { Tables } from '@/integrations/supabase/types';
@@ -311,7 +311,7 @@ export default function ExercisesPage() {
               </span>
               {answeredCount > 0 && (
                 <span className="flex items-center gap-1 font-semibold text-primary">
-                  <Zap className="h-3 w-3" />
+                  <Rocket className="h-3 w-3" />
                   {pct}% acertos
                 </span>
               )}
@@ -361,7 +361,7 @@ export default function ExercisesPage() {
                     <p className="text-[10px] text-muted-foreground">Incorretas</p>
                   </div>
                   <div className="p-3 rounded-xl bg-primary/10">
-                    <Sparkles className="h-4 w-4 text-primary mx-auto mb-1" />
+                    <Wand2 className="h-4 w-4 text-primary mx-auto mb-1" />
                     <p className="text-lg font-bold text-primary">{correctCount * 10 + (mcAnswered - correctCount) * 3 + essayExercises.filter(e => answers[e.id]).length * 15}</p>
                     <p className="text-[10px] text-muted-foreground">XP Ganho</p>
                   </div>
@@ -516,7 +516,7 @@ export default function ExercisesPage() {
                       {ans && ex.explanation && (
                         <div className="mt-3 p-3 rounded-lg bg-accent/10 border border-accent/20">
                           <p className="font-semibold text-[10px] text-accent mb-1 flex items-center gap-1">
-                            <Sparkles className="h-3 w-3" /> {type === 'essay' ? 'Resposta Modelo' : 'Explicação'}
+                            <Wand2 className="h-3 w-3" /> {type === 'essay' ? 'Resposta Modelo' : 'Explicação'}
                           </p>
                           <p className="text-muted-foreground text-xs leading-relaxed whitespace-pre-line">{ex.explanation}</p>
                         </div>
@@ -690,7 +690,7 @@ export default function ExercisesPage() {
                       {answered && currentExercise.explanation && (type === 'multiple_choice' || essay.showModel) && (
                         <div className="mt-4 p-4 rounded-xl bg-accent/10 border border-accent/20 animate-fade-in">
                           <p className="font-semibold text-xs text-accent mb-1.5 flex items-center gap-1">
-                            <Sparkles className="h-3 w-3" />
+                            <Wand2 className="h-3 w-3" />
                             {type === 'essay' ? 'Resposta Modelo' : 'Explicação'}
                           </p>
                           <p className="text-muted-foreground text-xs leading-relaxed whitespace-pre-line">{currentExercise.explanation}</p>

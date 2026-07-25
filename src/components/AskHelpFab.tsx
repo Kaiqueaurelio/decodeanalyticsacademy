@@ -6,7 +6,7 @@
  */
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { HelpCircle, Camera, Sparkles, Users, X } from 'lucide-react';
+import { HelpCircle, Camera, Wand2, Users, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface Props {
@@ -55,7 +55,7 @@ export function AskHelpFab({ onOpenChat }: Props) {
         {/* Sub-itens */}
         <div className="flex flex-col items-start gap-2 mb-1">
           <Item
-            icon={Sparkles}
+            icon={Wand2}
             label="Chat com a IA"
             color="bg-primary"
             onClick={onOpenChat}

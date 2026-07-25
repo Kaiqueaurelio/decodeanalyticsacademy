@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
   BarChart3, BookOpen, PenLine, Users, TrendingUp, Eye, Heart, MessageCircle,
-  Share2, Zap, AlertCircle, CheckCircle2, Clock, Activity, DollarSign, Megaphone,
+  Share2, Rocket, AlertCircle, CheckCircle2, Clock, Activity, DollarSign, Megaphone,
   Brain, Music, Video, Settings, RefreshCw, ArrowUpRight, ArrowDownRight
 } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -160,7 +160,7 @@ export function AdminDashboardPro({ onNavigate }: { onNavigate: (tab: string) =>
       label: 'Cliques em Ads',
       value: stats.adClicks,
       change: 31,
-      icon: <Zap className="h-5 w-5" />,
+      icon: <Rocket className="h-5 w-5" />,
       color: 'from-orange-500 to-orange-600',
     },
   ];

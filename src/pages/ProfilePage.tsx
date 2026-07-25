@@ -17,7 +17,7 @@ import { Progress } from '@/components/ui/progress';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   BookOpen, CheckCircle, XCircle, Camera, Save, ArrowLeft,
-  PenLine, Trophy, Target, Flame, Zap, Settings, AlertCircle, PencilLine, Loader2
+  PenLine, Trophy, Target, Flame, Rocket, Settings, AlertCircle, PencilLine, Loader2
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -251,7 +251,7 @@ export default function ProfilePage() {
         </Card>
 
         <div className="grid grid-cols-2 gap-3 mb-6 animate-content-show delay-1">
-          <Card className="p-4 bg-card border border-border/50 text-center"><Zap className="h-5 w-5 mx-auto mb-1 text-primary" /><p className="text-xl font-bold">{gamification.xp.xp_points}</p><p className="text-[10px] text-muted-foreground">XP - Nivel {gamification.xp.level}</p></Card>
+          <Card className="p-4 bg-card border border-border/50 text-center"><Rocket className="h-5 w-5 mx-auto mb-1 text-primary" /><p className="text-xl font-bold">{gamification.xp.xp_points}</p><p className="text-[10px] text-muted-foreground">XP - Nivel {gamification.xp.level}</p></Card>
           <Card className="p-4 bg-card border border-border/50 text-center"><Flame className={`h-5 w-5 mx-auto mb-1 ${gamification.streak.current_streak > 0 ? 'text-orange-500' : 'text-muted-foreground'}`} /><p className="text-xl font-bold">{gamification.streak.current_streak}</p><p className="text-[10px] text-muted-foreground">Streak - Recorde: {gamification.streak.longest_streak}</p></Card>
         </div>
 

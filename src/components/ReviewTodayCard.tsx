@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Brain, Sparkles, ArrowRight } from 'lucide-react';
+import { Brain, Wand2, ArrowRight } from 'lucide-react';
 
 export function ReviewTodayCard() {
   const { user } = useAuth();
@@ -43,7 +43,7 @@ export function ReviewTodayCard() {
               {dueCount} {dueCount === 1 ? 'cartão pendente' : 'cartões pendentes'}
             </p>
             <p className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5">
-              <Sparkles className="h-3 w-3" /> Revisão espaçada (SM-2) • +2 XP por acerto
+              <Wand2 className="h-3 w-3" /> Revisão espaçada (SM-2) • +2 XP por acerto
             </p>
           </div>
         </div>

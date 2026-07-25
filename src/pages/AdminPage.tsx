@@ -20,7 +20,7 @@ import {
   LayoutDashboard, CheckCircle, TrendingUp, Upload, BarChart3, Clock,
   Link as LinkIcon, Loader2, AlertCircle, Edit, Download, File, Image, Video, Music, FileSpreadsheet, Presentation,
   Users, ShieldBan, ShieldCheck, Search, Menu, X, Activity, GraduationCap, FolderOpen, Settings, RefreshCw,
-  Sun, Moon, FileUp, Sparkles, Wand2, Megaphone, Combine, Calendar as CalIcon, MessageSquare, MessageSquareQuote, Link2, FileDown, MoreHorizontal, Paperclip, Rss, Info, ExternalLink, ChevronRight
+  Sun, Moon, FileUp, PenTool, Wand2, Megaphone, Combine, Calendar as CalIcon, MessageSquare, MessageSquareQuote, Link2, FileDown, MoreHorizontal, Paperclip, Rss, Info, ExternalLink, ChevronRight
 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -1684,7 +1684,7 @@ export default function AdminPage() {
                         }}
                         title="Gera embeddings das apostilas para o Tira-dúvida com foto"
                       >
-                        <Sparkles className="h-3.5 w-3.5 mr-1" /> Indexar p/ Tira-dúvida
+                        <PenTool className="h-3.5 w-3.5 mr-1" /> Indexar p/ Tira-dúvida
                       </Button>
                     </div>
                   </div>
@@ -1841,7 +1841,7 @@ export default function AdminPage() {
                                   onClick={() => navigate(`/admin/apostilas/${a.id}`)}
                                   title="Abrir no Workbench (editor completo)"
                                 >
-                                  <Sparkles className="h-3.5 w-3.5" /> Workbench
+                                  <PenTool className="h-3.5 w-3.5" /> Workbench
                                 </Button>
                                 <Button size="icon" variant="ghost" className="hidden sm:inline-flex h-8 w-8" onClick={() => { setEditingApostila(a); setEditTitle(a.title); setEditContent(a.content || ''); setEditCategory(a.category); }} title="Editar (modal clássico)">
                                   <Edit className="h-3.5 w-3.5" />
@@ -1871,7 +1871,7 @@ export default function AdminPage() {
                                     </DropdownMenuItem>
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem onClick={() => navigate(`/admin/apostilas/${a.id}`)}>
-                                      <Sparkles className="h-3.5 w-3.5 mr-2 text-primary" /> Abrir no Workbench
+                                      <PenTool className="h-3.5 w-3.5 mr-2 text-primary" /> Abrir no Workbench
                                     </DropdownMenuItem>
                                     <DropdownMenuItem onClick={() => { setEditingApostila(a); setEditTitle(a.title); setEditContent(a.content || ''); setEditCategory(a.category); }}>
                                       <Edit className="h-3.5 w-3.5 mr-2" /> Editar (modal clássico)
@@ -2048,7 +2048,7 @@ export default function AdminPage() {
                       {/* AI Mode */}
                       {exerciseDialogMode === 'ai' && (
                         <div className="space-y-3 pt-2">
-                          <p className="font-semibold text-sm flex items-center gap-2"><Sparkles className="h-4 w-4 text-primary" /> Gerar com IA</p>
+                          <p className="font-semibold text-sm flex items-center gap-2"><PenTool className="h-4 w-4 text-primary" /> Gerar com IA</p>
                           {!a.content?.trim() ? (
                             <div className="text-center py-6 text-muted-foreground">
                               <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-30" />
@@ -2480,7 +2480,7 @@ export default function AdminPage() {
                       <Card>
                         <CardContent className="p-5 space-y-3">
                           <h3 className="font-semibold text-sm flex items-center gap-2">
-                            <Sparkles className="h-4 w-4 text-primary" /> Gerar com IA
+                            <PenTool className="h-4 w-4 text-primary" /> Gerar com IA
                           </h3>
                           {(() => {
                             const apt = apostilas.find(a => a.id === selectedApostila);
@@ -3234,7 +3234,7 @@ function AdminPasswordResetMenu({ user }: { user: { user_id: string; email: stri
             </div>
             <div className="flex items-center justify-between gap-2 pt-1">
               <Button type="button" size="sm" variant="ghost" className="text-xs" onClick={generateSuggested}>
-                <Sparkles className="h-3.5 w-3.5 mr-1.5" /> Gerar senha forte
+                <PenTool className="h-3.5 w-3.5 mr-1.5" /> Gerar senha forte
               </Button>
               <div className="flex gap-2">
                 <Button type="button" size="sm" variant="outline" onClick={() => setOpen(false)} disabled={saving}>

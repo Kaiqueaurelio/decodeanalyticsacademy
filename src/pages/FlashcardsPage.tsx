@@ -5,7 +5,7 @@ import { Flashcard } from '@/components/Flashcard';
 import { useFlashcards } from '@/hooks/useFlashcards';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { ArrowLeft, Brain, Trophy, Loader2, Sparkles } from 'lucide-react';
+import { ArrowLeft, Brain, Trophy, Loader2, Wand2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 
@@ -69,7 +69,7 @@ export default function FlashcardsPage() {
               disabled={isGenerating || loading}
               className="h-8 gap-1.5 border-primary/20 text-primary hover:bg-primary/10"
             >
-              {isGenerating ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
+              {isGenerating ? <Loader2 size={12} className="animate-spin" /> : <Wand2 size={12} />}
               <span className="hidden sm:inline text-[10px] uppercase font-bold tracking-wider">Gerar com IA</span>
             </Button>
             <div className="text-sm font-mono text-muted-foreground ml-2">

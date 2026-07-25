@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { AppImage } from '@/components/ui/app-image';
-import { ChevronRight, Megaphone, GraduationCap, Calendar, Briefcase, Sparkles } from 'lucide-react';
+import { ChevronRight, Megaphone, GraduationCap, Calendar, Briefcase, Wand2 } from 'lucide-react';
 import { UpcomingExamsBoard } from './UpcomingExamsBoard';
 
 interface Announcement {
@@ -23,7 +23,7 @@ const CATEGORY_CONFIG: Record<string, { label: string; icon: any; color: string 
   cursos: { label: 'Cursos', icon: GraduationCap, color: 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]' },
   provas: { label: 'Provas', icon: Calendar, color: 'bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))]' },
   empregos: { label: 'Empregos', icon: Briefcase, color: 'bg-accent text-accent-foreground' },
-  eventos: { label: 'Eventos', icon: Sparkles, color: 'bg-primary/10 text-primary' },
+  eventos: { label: 'Eventos', icon: Wand2, color: 'bg-primary/10 text-primary' },
 };
 
 export function AnnouncementsBoard() {

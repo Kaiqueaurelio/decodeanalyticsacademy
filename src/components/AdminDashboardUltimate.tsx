@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import {
   BookOpen, PenLine, Users, Heart, MessageCircle, Megaphone,
-  Eye, Zap, Settings, RefreshCw, Search, Bell, ChevronRight,
+  Eye, Rocket, Settings, RefreshCw, Search, Bell, ChevronRight,
   BarChart3, TrendingUp, Activity, DollarSign, Brain, LayoutDashboard,
   Calendar, FileText, Share2, ShieldCheck, ArrowUpRight, ArrowDownRight,
   Plus
@@ -208,7 +208,7 @@ export function AdminDashboardUltimate({ onNavigate }: { onNavigate: (tab: strin
           title="Cliques em Ads"
           value={stats.adClicks}
           change={-2.4}
-          icon={<Zap className="h-5 w-5" />}
+          icon={<Rocket className="h-5 w-5" />}
           data={sparkData.map(d => ({ value: d.value * 0.5 }))}
           color="#f59e0b"
         />

@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
   Brain, Music, Video, Heart, MessageCircle, Share2, Megaphone,
-  Zap, ArrowRight, CheckCircle2, Sparkles
+  Rocket, ArrowRight, CheckCircle2, Wand2
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -89,7 +89,7 @@ export function NewFeaturesShowcase() {
       id: 'ai-features',
       title: 'Mais Funcionalidades de IA',
       description: 'Resumos automáticos, mapas mentais e sugestões personalizadas de estudo.',
-      icon: <Sparkles className="h-6 w-6" />,
+      icon: <Wand2 className="h-6 w-6" />,
       color: 'from-cyan-500 to-blue-500',
       badge: 'NOVO',
       action: 'Descobrir',
