@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
 import type { CourseCode } from '@/lib/subject-semester-map';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserProfile } from '@/hooks/queries/useUserProfile';
 
 export type ApostilaSummary = Pick<
   Tables<'apostilas'>,
