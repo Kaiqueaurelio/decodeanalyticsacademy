@@ -240,7 +240,7 @@ export default function LandingPage() {
               key={videoTier}
               data-testid="landing-background-video"
               ref={heroVideoRef}
-              className={`landing-bg-media landing-bg-video absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${videoReady ? 'opacity-40 sm:opacity-50' : 'opacity-0'}`}
+              className={`landing-bg-media landing-bg-video absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${videoReady ? 'opacity-100' : 'opacity-0'}`}
               autoPlay
               loop
               muted
