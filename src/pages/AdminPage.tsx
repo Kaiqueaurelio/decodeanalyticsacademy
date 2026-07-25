@@ -490,7 +490,12 @@ function OverviewTab({ apostilas, exercises, allAnswers, materials, users, setTa
                   </Badge>
                 </motion.div>
               ))}
-              {apostilas.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">Nenhuma apostila criada.</p>}
+              {apostilas.length === 0 && (
+                <div className="text-center py-6 text-muted-foreground">
+                  <BookOpen className="h-8 w-8 mx-auto mb-2 opacity-30" strokeWidth={1.5} />
+                  <p className="text-sm">Nenhuma apostila criada.</p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </motion.div>
@@ -1935,7 +1940,7 @@ export default function AdminPage() {
                       {/* Existing exercises */}
                       {exercises[a.id]?.length === 0 && (
                         <div className="text-center py-4 text-muted-foreground text-sm">
-                          <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-30" /> Nenhum exercício.
+                          <PenTool className="h-8 w-8 mx-auto mb-2 opacity-30" strokeWidth={1.5} /> Nenhum exercício.
                         </div>
                       )}
                       {exercises[a.id]?.map((ex, i) => (
@@ -2409,8 +2414,9 @@ export default function AdminPage() {
                   <>
                     {(exercises[selectedApostila]?.length || 0) === 0 && !bulkExerciseMode && (
                       <div className="text-center py-10 text-muted-foreground">
-                        <AlertCircle className="h-10 w-10 mx-auto mb-3 opacity-20" />
+                        <PenTool className="h-10 w-10 mx-auto mb-3 opacity-25" strokeWidth={1.5} />
                         <p className="text-sm">Nenhum exercício para esta apostila.</p>
+                        <p className="text-xs text-muted-foreground/70 mt-1">Gere com IA ou importe em lote.</p>
                       </div>
                     )}
                     <div className="space-y-2">
