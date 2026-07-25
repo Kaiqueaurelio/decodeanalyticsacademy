@@ -166,9 +166,8 @@ export default function LandingPage() {
             muted
             playsInline
             preload="auto"
-          >
-            <source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260328_065045_c44942da-53c6-4804-b734-f9e07fc22e08.mp4" type="video/mp4" />
-          </video>
+            src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260328_065045_c44942da-53c6-4804-b734-f9e07fc22e08.mp4"
+          />
           <div
             className="absolute inset-0"
             style={{
@@ -179,6 +178,7 @@ export default function LandingPage() {
         </div>,
         document.body,
       )}
+
 
       {/* ═══ HERO / NAVEGAÇÃO ═══ */}
       <section className="relative isolate min-h-screen overflow-hidden">
