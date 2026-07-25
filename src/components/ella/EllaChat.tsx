@@ -23,6 +23,36 @@ interface EllaChatProps {
 }
 
 export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps) {
+  const { user, isAdmin } = useAuth();
+  const [contentScope, setContentScope] = useState<string>("full");
+
+  useEffect(() => {
+    if (!user) return;
+    supabase.from("profiles").select("content_scope").eq("user_id", user.id).maybeSingle()
+      .then(({ data }) => { if (data?.content_scope) setContentScope(data.content_scope); });
+  }, [user]);
+
+  const suggestions = useMemo(() => {
+    if (isAdmin) return [
+      "Crie uma apostila sobre Estruturas de Dados",
+      "Liste minhas últimas apostilas",
+      "Publique um aviso de prova amanhã",
+      "Abra a tela de admin",
+    ];
+    if (contentScope === "enem_only") return [
+      "Me explique função de 2º grau com exemplo",
+      "Como estruturar uma redação nota 1000 do ENEM?",
+      "Resuma a Revolução Industrial em 5 pontos",
+      "Me dê 3 exercícios de interpretação de texto",
+    ];
+    return [
+      "Me explique herança em POO com exemplo",
+      "Como funciona um algoritmo de ordenação Merge Sort?",
+      "Resuma normalização de banco de dados",
+      "Me dê 3 exercícios sobre listas encadeadas",
+    ];
+  }, [isAdmin, contentScope]);
+
   const [messages, setMessages] = useState<Msg[]>(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
