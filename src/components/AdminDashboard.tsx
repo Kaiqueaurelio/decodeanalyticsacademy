@@ -20,9 +20,10 @@ import {
   BookOpen, PenLine, Users, Megaphone, RefreshCw, Search, ChevronRight, Wand2,
   GraduationCap, Bell, Link as LinkIcon, FileText, FileUp,
   Eye, EyeOff, Edit, Trash2, Trophy, Medal, Award, Filter, X, Check,
-  CheckCircle2, XCircle, CalendarDays, ArrowDownUp,
+  CheckCircle2, XCircle, CalendarDays, ArrowDownUp, FolderOpen, ChevronDown,
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { getSubjectColor } from '@/lib/subject-colors';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from 'recharts';
@@ -65,6 +66,8 @@ export function AdminDashboard({ onNavigate }: Props) {
 
   // Paginação
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  // Pasta aberta no grid por categoria
+  const [openCategory, setOpenCategory] = useState<string | null>(null);
 
   // Seleção em lote
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -589,71 +592,180 @@ export function AdminDashboard({ onNavigate }: Props) {
             </div>
           )}
 
-          <div className="space-y-2">
+          <div className="space-y-4">
             {filtered.length === 0 && (
               <div className="text-center py-8 text-muted-foreground">
                 <BookOpen className="h-9 w-9 mx-auto mb-2 opacity-30" strokeWidth={1.5} />
                 <p className="text-sm">Nenhuma apostila encontrada.</p>
               </div>
             )}
-            {visibleItems.map((item) => {
-              const isSel = selected.has(item.id);
-              return (
-                <div
-                  key={item.id}
-                  className={`flex items-center gap-3 p-3 rounded-xl border transition-colors ${
-                    isSel ? 'border-primary/40 bg-primary/5' : 'border-border/50 hover:bg-muted/30'
-                  }`}
-                >
-                  <Checkbox
-                    checked={isSel}
-                    onCheckedChange={() => toggleSelectOne(item.id)}
-                    aria-label={`Selecionar ${item.title}`}
-                  />
-                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white shrink-0">
-                    <BookOpen className="h-5 w-5" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium truncate">{item.title}</p>
-                    <p className="text-xs text-muted-foreground truncate">
-                      {item.category || 'Sem categoria'} · criada {new Date(item.created_at).toLocaleDateString('pt-BR')}
-                      {item.updated_at && item.updated_at !== item.created_at && (
-                        <> · atualizada {new Date(item.updated_at).toLocaleDateString('pt-BR')}</>
-                      )}
-                    </p>
-                  </div>
-                  <Badge
-                    variant="outline"
-                    className={item.published
-                      ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30'
-                      : 'bg-amber-500/10 text-amber-600 border-amber-500/30'}
-                  >
-                    {item.published ? 'Publicada' : 'Rascunho'}
-                  </Badge>
-                  <div className="flex items-center gap-1">
-                    <Button
-                      size="icon" variant="ghost"
-                      title={item.published ? 'Despublicar' : 'Publicar'}
-                      disabled={busyId === item.id}
-                      onClick={() => handleTogglePublish(item)}
-                    >
-                      {item.published ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </Button>
-                    <Button size="icon" variant="ghost" title="Editar" onClick={() => handleEdit(item)}>
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      size="icon" variant="ghost" title="Excluir"
-                      className="text-destructive hover:text-destructive"
-                      onClick={() => setDeleteTarget(item)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
+
+            {(() => {
+              // Agrupa por categoria mantendo ordem alfabetica
+              const groupsMap = new Map<string, ApostilaRow[]>();
+              for (const it of visibleItems) {
+                const key = (it.category?.trim() || 'Sem categoria');
+                const arr = groupsMap.get(key) ?? [];
+                arr.push(it);
+                groupsMap.set(key, arr);
+              }
+              const groups = Array.from(groupsMap.entries()).sort(([a], [b]) =>
+                a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }),
               );
-            })}
+
+              return (
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {groups.map(([category, items]) => {
+                      const color = getSubjectColor(category);
+                      const published = items.filter((i) => i.published).length;
+                      const isOpen = openCategory === category;
+                      return (
+                        <button
+                          key={category}
+                          type="button"
+                          onClick={() => setOpenCategory(isOpen ? null : category)}
+                          aria-expanded={isOpen}
+                          className={`group relative text-left rounded-2xl border bg-card p-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg ${
+                            isOpen
+                              ? 'border-primary/60 shadow-lg ring-1 ring-primary/30'
+                              : 'border-border/60 hover:border-primary/40'
+                          }`}
+                          style={{ boxShadow: isOpen ? `0 8px 32px -12px ${color}55` : undefined }}
+                        >
+                          <div
+                            className="absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl"
+                            style={{ backgroundColor: color }}
+                            aria-hidden
+                          />
+                          <div className="flex items-start justify-between mb-3">
+                            <div
+                              className="rounded-xl p-2.5 shrink-0"
+                              style={{ backgroundColor: `${color}22`, color }}
+                            >
+                              <FolderOpen className="h-5 w-5" strokeWidth={1.75} />
+                            </div>
+                            <ChevronDown
+                              className={`h-4 w-4 text-muted-foreground transition-transform duration-300 ${
+                                isOpen ? 'rotate-180 text-primary' : ''
+                              }`}
+                            />
+                          </div>
+                          <h3 className="font-semibold text-sm leading-snug line-clamp-2 mb-2">
+                            {category}
+                          </h3>
+                          <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                            <Badge variant="outline" className="rounded-full px-2 py-0 text-[10px]">
+                              {items.length} {items.length === 1 ? 'apostila' : 'apostilas'}
+                            </Badge>
+                            <span className="tabular-nums">
+                              {published}/{items.length} publicadas
+                            </span>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <AnimatePresence initial={false}>
+                    {openCategory && (
+                      <motion.div
+                        key={openCategory}
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.25, ease: 'easeOut' }}
+                        className="overflow-hidden"
+                      >
+                        {(() => {
+                          const items = groups.find(([c]) => c === openCategory)?.[1] ?? [];
+                          const color = getSubjectColor(openCategory);
+                          return (
+                            <div
+                              className="rounded-2xl border border-border/60 bg-muted/30 p-3 sm:p-4"
+                              style={{ borderTopColor: color, borderTopWidth: 2 }}
+                            >
+                              <div className="flex items-baseline justify-between mb-3 px-1">
+                                <h4 className="font-semibold text-sm" style={{ color }}>
+                                  {openCategory}
+                                </h4>
+                                <span className="text-[11px] text-muted-foreground tabular-nums">
+                                  {items.length} {items.length === 1 ? 'item' : 'itens'}
+                                </span>
+                              </div>
+                              <div className="space-y-2">
+                                {items.map((item) => {
+                                  const isSel = selected.has(item.id);
+                                  return (
+                                    <div
+                                      key={item.id}
+                                      className={`flex items-center gap-3 p-3 rounded-xl border transition-colors ${
+                                        isSel ? 'border-primary/40 bg-primary/5' : 'border-border/50 bg-card hover:bg-muted/40'
+                                      }`}
+                                    >
+                                      <Checkbox
+                                        checked={isSel}
+                                        onCheckedChange={() => toggleSelectOne(item.id)}
+                                        aria-label={`Selecionar ${item.title}`}
+                                      />
+                                      <div
+                                        className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+                                        style={{ backgroundColor: `${color}22`, color }}
+                                      >
+                                        <BookOpen className="h-5 w-5" strokeWidth={1.75} />
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <p className="font-medium truncate">{item.title}</p>
+                                        <p className="text-xs text-muted-foreground truncate">
+                                          criada {new Date(item.created_at).toLocaleDateString('pt-BR')}
+                                          {item.updated_at && item.updated_at !== item.created_at && (
+                                            <> · atualizada {new Date(item.updated_at).toLocaleDateString('pt-BR')}</>
+                                          )}
+                                        </p>
+                                      </div>
+                                      <Badge
+                                        variant="outline"
+                                        className={item.published
+                                          ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30'
+                                          : 'bg-amber-500/10 text-amber-600 border-amber-500/30'}
+                                      >
+                                        {item.published ? 'Publicada' : 'Rascunho'}
+                                      </Badge>
+                                      <div className="flex items-center gap-1">
+                                        <Button
+                                          size="icon" variant="ghost"
+                                          title={item.published ? 'Despublicar' : 'Publicar'}
+                                          disabled={busyId === item.id}
+                                          onClick={() => handleTogglePublish(item)}
+                                        >
+                                          {item.published ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                        </Button>
+                                        <Button size="icon" variant="ghost" title="Editar" onClick={() => handleEdit(item)}>
+                                          <Edit className="h-4 w-4" />
+                                        </Button>
+                                        <Button
+                                          size="icon" variant="ghost" title="Excluir"
+                                          className="text-destructive hover:text-destructive"
+                                          onClick={() => setDeleteTarget(item)}
+                                        >
+                                          <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          );
+                        })()}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </>
+              );
+            })()}
           </div>
+
 
           {/* Paginação - Carregar mais */}
           {hasMore && (
