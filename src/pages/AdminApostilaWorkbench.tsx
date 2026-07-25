@@ -536,7 +536,7 @@ export default function AdminApostilaWorkbench() {
               const tId = toast.loading('Estruturando em módulos e lições…');
               const { data, error } = await invokeFunction<{ modules: number; chapters: number; lessons: number }>(
                 'parse-apostila-lessons',
-                { apostila_id: id, replace: true },
+                { body: { apostila_id: id, replace: true } },
               );
               toast.dismiss(tId);
               if (error) return toast.error(`Falha: ${error.message}`);
