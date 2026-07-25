@@ -634,7 +634,7 @@ Proibido: mencionar "IA", "modelo de linguagem", "Lovable", "Gemini" ou qualquer
         res = await fetch(GATEWAY_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${LOVABLE_API_KEY}` },
-          body: JSON.stringify({ model: currentModel, messages, tools, tool_choice: "auto" }),
+          body: JSON.stringify({ model: currentModel, messages, tools: availableTools, tool_choice: "auto" }),
         });
       }
 
