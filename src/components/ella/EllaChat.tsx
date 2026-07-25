@@ -224,7 +224,7 @@ export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps)
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={onKeyDown}
-            placeholder="Peça para a Ella criar, editar, navegar…"
+            placeholder={isAdmin ? "Peça para a Ella criar, editar, navegar…" : "Tire uma dúvida ou peça um exemplo…"}
             rows={1}
             className="min-h-[44px] max-h-32 resize-none pr-12"
             disabled={loading}
