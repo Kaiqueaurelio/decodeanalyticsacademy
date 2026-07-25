@@ -41,10 +41,6 @@ export interface ApostilasListOptions {
 export function useApostilasList(options: ApostilasListOptions = {}) {
   const { semester = null, course = null, enabled = true } = options;
   const { user, isAdmin, isSessionHydrated, roleChecked } = useAuth();
-  // Escopo restrito (ex: aluno G350776 → apenas ENEM). Só filtramos se
-  // a resposta chegou; enquanto carrega o perfil, tratamos como 'full'.
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const { useUserProfile } = require('@/hooks/queries/useUserProfile') as typeof import('@/hooks/queries/useUserProfile');
   const { data: profile } = useUserProfile(user?.id);
   const scope = profile?.content_scope ?? 'full';
   const canLoadApostilas = enabled && isSessionHydrated && roleChecked;
