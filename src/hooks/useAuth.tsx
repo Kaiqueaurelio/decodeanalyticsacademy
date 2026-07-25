@@ -295,11 +295,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const msLeft = expiresAt - Date.now();
         if (msLeft > 10 * 60 * 1000) return;
         setIsRefreshingToken(true);
-        await safeRefreshSession(session.refresh_token);
+        const refreshed = await safeRefreshSession(session.refresh_token);
+        if (!refreshed) throw new Error('refresh_returned_null');
       } catch (err) {
         logAuthFlow('keepalive_refresh_error', {
           message: err instanceof Error ? err.message : 'unknown',
         });
+        // Fallback: sessão não pôde ser renovada — força signOut limpo e avisa.
+        try { localStorage.removeItem(LAST_SESSION_MARKER); } catch {}
+        toast.error('Sua sessão expirou', {
+          description: 'Faça login novamente para continuar.',
+        });
+        await supabase.auth.signOut().catch(() => {});
       } finally {
         setIsRefreshingToken(false);
       }
