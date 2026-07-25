@@ -288,6 +288,47 @@ export type Database = {
           },
         ]
       }
+      apostila_chapters: {
+        Row: {
+          created_at: string
+          estimated_minutes: number | null
+          id: string
+          module_id: string
+          order_index: number
+          summary: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          estimated_minutes?: number | null
+          id?: string
+          module_id: string
+          order_index?: number
+          summary?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          estimated_minutes?: number | null
+          id?: string
+          module_id?: string
+          order_index?: number
+          summary?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "apostila_chapters_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "apostila_modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       apostila_chats: {
         Row: {
           apostila_id: string
@@ -395,6 +436,164 @@ export type Database = {
         }
         Relationships: []
       }
+      apostila_lesson_bookmarks: {
+        Row: {
+          created_at: string
+          id: string
+          label: string | null
+          lesson_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          label?: string | null
+          lesson_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          label?: string | null
+          lesson_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "apostila_lesson_bookmarks_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "apostila_lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      apostila_lesson_notes: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          lesson_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          body?: string
+          created_at?: string
+          id?: string
+          lesson_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          lesson_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "apostila_lesson_notes_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "apostila_lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      apostila_lesson_progress: {
+        Row: {
+          completed_at: string | null
+          id: string
+          last_position: number | null
+          lesson_id: string
+          seconds_spent: number | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          id?: string
+          last_position?: number | null
+          lesson_id: string
+          seconds_spent?: number | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          id?: string
+          last_position?: number | null
+          lesson_id?: string
+          seconds_spent?: number | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "apostila_lesson_progress_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "apostila_lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      apostila_lessons: {
+        Row: {
+          chapter_id: string
+          content_md: string
+          content_status: string
+          created_at: string
+          difficulty: string | null
+          estimated_minutes: number | null
+          id: string
+          objectives: string[] | null
+          order_index: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          chapter_id: string
+          content_md?: string
+          content_status?: string
+          created_at?: string
+          difficulty?: string | null
+          estimated_minutes?: number | null
+          id?: string
+          objectives?: string[] | null
+          order_index?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          chapter_id?: string
+          content_md?: string
+          content_status?: string
+          created_at?: string
+          difficulty?: string | null
+          estimated_minutes?: number | null
+          id?: string
+          objectives?: string[] | null
+          order_index?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "apostila_lessons_chapter_id_fkey"
+            columns: ["chapter_id"]
+            isOneToOne: false
+            referencedRelation: "apostila_chapters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       apostila_likes: {
         Row: {
           apostila_id: string
@@ -459,6 +658,47 @@ export type Database = {
             columns: ["material_id"]
             isOneToOne: false
             referencedRelation: "materials"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      apostila_modules: {
+        Row: {
+          apostila_id: string
+          created_at: string
+          description: string | null
+          estimated_minutes: number | null
+          id: string
+          order_index: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          apostila_id: string
+          created_at?: string
+          description?: string | null
+          estimated_minutes?: number | null
+          id?: string
+          order_index?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          apostila_id?: string
+          created_at?: string
+          description?: string | null
+          estimated_minutes?: number | null
+          id?: string
+          order_index?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "apostila_modules_apostila_id_fkey"
+            columns: ["apostila_id"]
+            isOneToOne: false
+            referencedRelation: "apostilas"
             referencedColumns: ["id"]
           },
         ]
@@ -2056,6 +2296,10 @@ export type Database = {
       delete_user_completely: {
         Args: { _target_user_id: string }
         Returns: undefined
+      }
+      get_apostila_reader_tree: {
+        Args: { _apostila_id: string }
+        Returns: Json
       }
       get_content_scope: { Args: { _user_id: string }; Returns: string }
       get_dashboard_stats: { Args: { _user_id: string }; Returns: Json }
