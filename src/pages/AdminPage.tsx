@@ -597,6 +597,14 @@ export default function AdminPage() {
   const [filterSemester, setFilterSemester] = useState<string>('all');
   const [filterCourse, setFilterCourse] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<'all' | 'published' | 'draft'>('all');
+  const [expandedCats, setExpandedCats] = useState<Set<string>>(new Set());
+  const toggleCat = useCallback((cat: string) => {
+    setExpandedCats(prev => {
+      const next = new Set(prev);
+      if (next.has(cat)) next.delete(cat); else next.add(cat);
+      return next;
+    });
+  }, []);
 
   // Apostila dialogs
   const [showExerciseDialog, setShowExerciseDialog] = useState<string | null>(null);
