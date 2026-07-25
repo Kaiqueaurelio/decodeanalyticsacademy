@@ -691,7 +691,7 @@ export function AdsChatBuilder() {
       <section className="flex min-h-0 flex-col bg-[radial-gradient(circle_at_top_left,hsl(var(--primary)/0.09),transparent_34%),hsl(var(--background))]">
         <div className="flex min-h-20 shrink-0 items-center gap-3 border-b border-border/70 bg-card/85 px-4 py-3 backdrop-blur-xl">
           <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-2xl border border-primary/35 bg-muted shadow-[0_10px_28px_hsl(var(--primary)/0.18)]">
-            <img src={ELLA_AVATAR} alt="Ella Ribeiro" className="h-full w-full object-cover" />
+            <EllaAvatar size={48} rounded="2xl" />
             <span className="absolute bottom-1 right-1 h-3 w-3 rounded-full border-2 border-card bg-success" />
           </div>
           <div className="min-w-0 flex-1">
