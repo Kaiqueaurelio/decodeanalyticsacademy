@@ -209,7 +209,7 @@
 }
 
 @media (max-width: 640px) {
-  .landing-bg-video { opacity: 0.34 !important; }
+  .landing-bg-video { opacity: 1 !important; }
 }
 @media (prefers-reduced-motion: reduce) {
   .landing-bg-video { animation: none; }

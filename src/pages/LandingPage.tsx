@@ -230,7 +230,7 @@ export default function LandingPage() {
           aria-hidden="true"
           decoding="async"
           {...({ fetchpriority: 'high' } as any)}
-          className={`landing-bg-media absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${videoReady && !videoFailed ? 'opacity-0' : 'opacity-45'}`}
+          className={`landing-bg-media absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${videoReady && !videoFailed ? 'opacity-0' : 'opacity-90'}`}
         />
         {shouldLoadVideo && !skipVideo && !videoFailed && (() => {
           const webm = bgAssets[`${videoTier}-webm` as const].url;
@@ -240,7 +240,7 @@ export default function LandingPage() {
               key={videoTier}
               data-testid="landing-background-video"
               ref={heroVideoRef}
-              className={`landing-bg-media landing-bg-video absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${videoReady ? 'opacity-40 sm:opacity-50' : 'opacity-0'}`}
+              className={`landing-bg-media landing-bg-video absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${videoReady ? 'opacity-100' : 'opacity-0'}`}
               autoPlay
               loop
               muted
@@ -263,7 +263,7 @@ export default function LandingPage() {
           className="absolute inset-0"
           style={{
             background:
-              'radial-gradient(ellipse 78% 70% at 50% 42%, rgba(5,5,8,0.64) 0%, rgba(5,5,8,0.82) 60%, rgba(5,5,8,0.96) 100%), linear-gradient(180deg, rgba(5,5,8,0.74) 0%, rgba(5,5,8,0.62) 38%, rgba(5,5,8,0.9) 100%)',
+              'radial-gradient(ellipse 90% 80% at 50% 45%, rgba(5,5,8,0.25) 0%, rgba(5,5,8,0.45) 60%, rgba(5,5,8,0.7) 100%), linear-gradient(180deg, rgba(5,5,8,0.35) 0%, rgba(5,5,8,0.25) 40%, rgba(5,5,8,0.6) 100%)',
           }}
         />
       </div>
