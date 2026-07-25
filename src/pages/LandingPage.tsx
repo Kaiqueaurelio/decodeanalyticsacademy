@@ -108,6 +108,20 @@ export default function LandingPage() {
     return () => video.removeEventListener('canplay', startPlayback);
   }, []);
 
+  // Deixa body/html transparentes enquanto a landing estiver montada, para o vídeo de fundo (portal z:-1) aparecer.
+  useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    const prevHtmlBg = html.style.background;
+    const prevBodyBg = body.style.background;
+    html.style.background = '#050508';
+    body.style.background = 'transparent';
+    return () => {
+      html.style.background = prevHtmlBg;
+      body.style.background = prevBodyBg;
+    };
+  }, []);
+
 
 
   const handleInstallPWA = async () => {
