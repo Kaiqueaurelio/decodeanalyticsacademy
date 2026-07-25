@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { invokeFunction } from '@/lib/invoke-function';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -34,13 +33,23 @@ export default function LoginPage() {
   const normalizeRa = (raValue: string) => raValue.trim().toUpperCase();
   const buildRaEmail = (raValue: string) => `${normalizeRa(raValue).toLowerCase()}@${RA_DOMAIN}`;
   const isValidRa = (raValue: string) => /^[A-Z0-9]{6,13}$/.test(normalizeRa(raValue));
+  const resolveEmailForIdentifier = async (rawIdentifier: string, allowPseudoEmail = false) => {
+    const id = rawIdentifier.trim();
+    if (!id) return { email: '', usedPseudoEmail: false };
+    if (looksLikeEmail(id)) return { email: id.toLowerCase(), usedPseudoEmail: false };
+    if (!isValidRa(id)) throw new Error('Use um e-mail valido ou seu RA com 6 a 13 letras/numeros.');
 
-  type RaAuthResponse = {
-    ok?: boolean;
-    session?: {
-      access_token?: string;
-      refresh_token?: string;
-    };
+    const pseudoEmail = buildRaEmail(id);
+    const { data: realEmail, error } = await supabase.rpc('get_email_for_ra' as any, { _ra: id });
+
+    if (realEmail && typeof realEmail === 'string') {
+      return { email: realEmail, usedPseudoEmail: realEmail.toLowerCase() === pseudoEmail };
+    }
+
+    if (allowPseudoEmail) return { email: pseudoEmail, usedPseudoEmail: true };
+
+    if (error) throw new Error('Nao consegui validar esse RA agora. Tente novamente em instantes.');
+    throw new Error('Este RA nao tem e-mail de recuperacao cadastrado. Entre em contato com o suporte.');
   };
 
   /** Detecta se o identificador atual esta no formato de e-mail apos o usuario digitar. */
@@ -145,34 +154,15 @@ export default function LoginPage() {
     let usedPseudoEmail = !isEmail;
 
     if (!isEmail && !isSignUp) {
-      const { data, error } = await invokeFunction<RaAuthResponse>('ra-auth', {
-        body: { action: 'login', ra: id, password },
-        showToast: false,
-      });
-
-      const accessToken = data?.session?.access_token;
-      const refreshToken = data?.session?.refresh_token;
-
-      if (error || !accessToken || !refreshToken) {
+      try {
+        const resolved = await resolveEmailForIdentifier(id, true);
+        effectiveEmail = resolved.email;
+        usedPseudoEmail = resolved.usedPseudoEmail;
+      } catch (err) {
         setLoading(false);
-        registerLoginFailure(false);
+        toast.error(err instanceof Error ? err.message : 'Nao consegui validar seu RA agora.');
         return;
       }
-
-      const { error: sessionError } = await supabase.auth.setSession({
-        access_token: accessToken,
-        refresh_token: refreshToken,
-      });
-
-      setLoading(false);
-
-      if (sessionError) {
-        registerLoginFailure(false);
-        return;
-      }
-
-      persistSuccessfulLogin(id);
-      return;
     }
 
     if (isSignUp) {
@@ -233,40 +223,17 @@ export default function LoginPage() {
     e.preventDefault();
     if (!email.trim()) { toast.error('Digite seu RA ou e-mail'); return; }
     setLoading(true);
-    const resetIdentifier = email.trim();
-    const isResetByEmail = looksLikeEmail(resetIdentifier);
-
-    if (!isResetByEmail) {
-      if (!isValidRa(resetIdentifier)) {
-        setLoading(false);
-        toast.error('Use um e-mail valido ou seu RA com 6 a 13 letras/numeros.');
-        return;
-      }
-
-      const { error } = await invokeFunction('ra-auth', {
-        body: {
-          action: 'reset',
-          ra: resetIdentifier,
-          redirectTo: `${window.location.origin}/reset-password`,
-        },
-        showToast: false,
-      });
-
+    let resetEmail = '';
+    try {
+      const resolved = await resolveEmailForIdentifier(email, false);
+      resetEmail = resolved.email;
+    } catch (err) {
       setLoading(false);
-      if (error) {
-        toast.error(error.message || 'Nao foi possivel enviar a recuperacao agora.');
-        return;
-      }
-
-      toast.success('Se houver e-mail de recuperacao cadastrado, enviaremos as instrucoes.');
-      setIsReset(false);
-      setIsLocked(false);
-      setLoginAttempts(0);
-      setShowLockModal(false);
+      toast.error(err instanceof Error ? err.message : 'Nao consegui validar esse RA ou e-mail.');
       return;
     }
 
-    const { error } = await supabase.auth.resetPasswordForEmail(resetIdentifier.toLowerCase(), {
+    const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
       redirectTo: `${window.location.origin}/reset-password`,
     });
     setLoading(false);
