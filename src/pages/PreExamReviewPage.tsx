@@ -91,7 +91,7 @@ export default function PreExamReviewPage() {
     if (flashIndex + 1 < bundle.due_flashcards.length) {
       setFlashIndex(flashIndex + 1);
     } else {
-      toast.success('Todos os flashcards revisados! 🎉');
+      toast.success('Todos os flashcards revisados!');
       setBundle({ ...bundle, due_flashcards: [] });
     }
   };

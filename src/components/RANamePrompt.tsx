@@ -115,7 +115,7 @@ export function RANamePrompt() {
       toast.error("Não foi possível salvar. Tente novamente.");
       return;
     }
-    toast.success("Perfil completo! Bons estudos 🦉");
+    toast.success("Perfil completo! Bons estudos.");
     sessionStorage.setItem(DISMISS_KEY, "1");
     setOpen(false);
   };

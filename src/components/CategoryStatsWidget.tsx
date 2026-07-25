@@ -146,12 +146,12 @@ export function CategoryStatsWidget({ apostilas, byApostila, exerciseCounts }: C
       {categoriesWithData.length >= 2 && (
         <div className="mt-4 pt-3 border-t border-border/50 grid grid-cols-2 gap-3">
           <div className="text-center">
-            <p className="text-[10px] text-muted-foreground mb-1">🏆 Melhor</p>
+            <p className="text-[10px] text-muted-foreground mb-1">Melhor</p>
             <p className="text-xs font-semibold truncate">{best.name}</p>
             <p className="text-sm font-bold text-success">{best.pct}%</p>
           </div>
           <div className="text-center">
-            <p className="text-[10px] text-muted-foreground mb-1">📚 Revisar</p>
+            <p className="text-[10px] text-muted-foreground mb-1">Revisar</p>
             <p className="text-xs font-semibold truncate">{worst.name}</p>
             <p className="text-sm font-bold text-destructive">{worst.pct}%</p>
           </div>

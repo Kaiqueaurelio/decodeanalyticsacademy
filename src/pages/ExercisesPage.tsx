@@ -149,7 +149,7 @@ export default function ExercisesPage() {
     if (totalAnswers >= 100) gamification.checkAndAwardBadge('answers_100');
 
     if (result.is_correct) {
-      toast.success('✨ Correto! +10 XP', { duration: 2000 });
+      toast.success('Correto! +10 XP', { duration: 2000 });
     } else {
       toast.error('Incorreto +3 XP', { duration: 2000 });
     }
@@ -165,7 +165,7 @@ export default function ExercisesPage() {
     setAnswers(prev => ({ ...prev, [exerciseId]: { selected: essay.text, correct: true } }));
     gamification.addXP(15);
     gamification.updateStreak();
-    toast.success('📝 Dissertativa enviada! +15 XP');
+    toast.success('Dissertativa enviada. +15 XP');
   };
 
   const toggleModelAnswer = (exerciseId: string) => {
@@ -210,7 +210,7 @@ export default function ExercisesPage() {
 
   const getGradeColor = (p: number) => p >= 70 ? 'text-[hsl(var(--success))]' : p >= 50 ? 'text-[hsl(var(--warning))]' : 'text-destructive';
   const getGradeLabel = (p: number) => p >= 90 ? 'Extraordinário!' : p >= 70 ? 'Excelente!' : p >= 50 ? 'Bom trabalho!' : 'Continue estudando!';
-  const getGradeEmoji = (p: number) => p >= 90 ? '🏆' : p >= 70 ? '🎯' : p >= 50 ? '💪' : '📖';
+  const getGradeEmoji = (_p: number) => '';
 
   if (loading) {
     return (

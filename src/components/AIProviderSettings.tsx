@@ -164,8 +164,8 @@ export function AIProviderSettings() {
               </Label>
               <p className="text-xs text-muted-foreground">
                 {preferGoogle
-                  ? '✅ ATIVO: as respostas do assistente usam sua chave própria. Sem consumo do provedor padrão.'
-                  : '⚠️ INATIVO: o app está usando o provedor padrão. Ative para usar sua chave própria.'}
+                  ? 'ATIVO: as respostas do assistente usam sua chave própria. Sem consumo do provedor padrão.'
+                  : 'INATIVO: o app está usando o provedor padrão. Ative para usar sua chave própria.'}
               </p>
             </div>
             <Switch checked={preferGoogle} onCheckedChange={save} disabled={saving} />

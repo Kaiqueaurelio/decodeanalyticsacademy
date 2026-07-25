@@ -196,7 +196,7 @@ export function StudyPlanWidget() {
 
           {allDone && (
             <div className="mt-3 p-3 rounded-lg bg-primary/10 border border-primary/30 text-center">
-              <p className="text-sm font-semibold text-primary">🎉 Plano de hoje concluído!</p>
+              <p className="text-sm font-semibold text-primary">Plano de hoje concluído.</p>
               <p className="text-[11px] text-muted-foreground mt-0.5">Volte amanhã para a próxima rodada.</p>
             </div>
           )}

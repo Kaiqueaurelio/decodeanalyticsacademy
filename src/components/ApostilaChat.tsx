@@ -275,7 +275,7 @@ export function ApostilaChat({ apostilaId, apostilaTitle, variant = 'panel' }: P
                   onClick={() => send(s)}
                   className="block w-full text-left text-xs px-3 py-2 rounded-lg border border-border/50 bg-card hover:bg-muted/50 hover:border-primary/30 transition-all"
                 >
-                  💡 {s}
+                  {s}
                 </button>
               ))}
             </div>

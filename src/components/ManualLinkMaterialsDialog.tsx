@@ -78,7 +78,7 @@ export function ManualLinkMaterialsDialog({ open, onOpenChange, apostilaId, onLi
             {suggestions.length > 0 && (
               <div className="space-y-1.5 mb-4">
                 <p className="text-[10px] font-semibold text-primary uppercase tracking-wider">
-                  ✨ Sugeridos ({suggestions.length})
+                  Sugeridos ({suggestions.length})
                 </p>
                 {suggestions.map(s => (
                   <label key={s.id} className="flex items-start gap-2 p-2 rounded-lg bg-primary/5 cursor-pointer hover:bg-primary/10">

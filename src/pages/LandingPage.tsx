@@ -615,7 +615,7 @@ export default function LandingPage() {
               color: '#00f0ff',
             }}
           >
-            <span>🎓</span>
+            
             Feito por aluno · para alunos
           </div>
 

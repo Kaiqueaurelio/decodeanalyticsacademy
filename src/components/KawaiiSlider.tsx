@@ -15,7 +15,7 @@ export function KawaiiSlider({ value, onChange, min = 5, max = 100, step = 5, la
   const pct = ((value - min) / (max - min)) * 100;
 
   // Kawaii face based on value range
-  const face = pct < 25 ? '😴' : pct < 50 ? '🙂' : pct < 75 ? '😊' : '🔥';
+  const face = '';
 
   return (
     <div className="space-y-2">

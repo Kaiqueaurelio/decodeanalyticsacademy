@@ -306,7 +306,7 @@ export default function CommunityPage() {
             {user && activeChannel && (
               <Card className="p-3 mb-4 border-primary/30 bg-primary/5">
                 <p className="text-[10px] font-mono-label uppercase text-primary mb-2 tracking-wider">
-                  ✍️ Escreva sua mensagem
+                  Escreva sua mensagem
                 </p>
                 <MentionTextarea
                   value={newPost}

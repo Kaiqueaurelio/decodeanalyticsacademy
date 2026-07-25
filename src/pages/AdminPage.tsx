@@ -718,7 +718,7 @@ export default function AdminPage() {
         (payload) => {
           const newUser = payload.new as any;
           const name = newUser.full_name || newUser.email || 'Novo usuário';
-          toast.info(`🎉 Novo cadastro: ${name}`, {
+          toast.info(`Novo cadastro: ${name}`, {
             description: newUser.email || undefined,
             duration: 8000,
           });
@@ -815,7 +815,7 @@ export default function AdminPage() {
       setImportExercises(data.exercises || []);
       setExtractionMethod(data.extraction_method || '');
       setImportStep('review');
-      const methodLabel = data.extraction_method === 'firecrawl' ? ' (via Firecrawl 🔥)' : data.extraction_method === 'firecrawl-fallback' ? ' (Firecrawl fallback 🔥)' : '';
+      const methodLabel = data.extraction_method === 'firecrawl' ? ' (via Firecrawl)' : data.extraction_method === 'firecrawl-fallback' ? ' (Firecrawl fallback)' : '';
       toast.success(data.exercises?.length > 0 ? `Conteúdo estruturado com ${data.exercises.length} exercícios!${methodLabel}` : `Conteúdo estruturado!${methodLabel}`);
     } catch (err: any) {
       const msg = err?.message || 'Tente novamente';
@@ -1214,7 +1214,7 @@ export default function AdminPage() {
         parsed.push({ question, options, correct, explanation, type: 'multiple_choice' });
       } else if (question && options.length >= 2 && !correct) {
         // Sem gabarito explícito: assume primeira como correta e marca para o admin revisar
-        parsed.push({ question, options, correct: 'A', explanation: explanation || '⚠️ Gabarito não detectado — revise.', type: 'multiple_choice' });
+        parsed.push({ question, options, correct: 'A', explanation: explanation || 'Gabarito não detectado — revise.', type: 'multiple_choice' });
       }
     }
     return parsed;
@@ -1411,13 +1411,13 @@ export default function AdminPage() {
                               onClick={() => setImportMode('url')}
                               className={`text-[10px] font-medium px-3 py-1 rounded-full transition-colors ${importMode === 'url' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}
                             >
-                              🔗 URL
+                              URL
                             </button>
                             <button
                               onClick={() => setImportMode('text')}
                               className={`text-[10px] font-medium px-3 py-1 rounded-full transition-colors ${importMode === 'text' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}
                             >
-                              📝 Texto
+                              Texto
                             </button>
                           </div>
                         )}
@@ -1425,7 +1425,7 @@ export default function AdminPage() {
                           onClick={() => { setBatchMode(!batchMode); resetImportForm(); }}
                           className={`text-[10px] font-medium px-3 py-1 rounded-full transition-colors ${batchMode ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:text-foreground'}`}
                         >
-                          {batchMode ? '📦 Lote' : 'Modo Lote'}
+                          {batchMode ? 'Lote' : 'Modo Lote'}
                         </button>
                       </div>
                     </div>
@@ -1475,7 +1475,7 @@ export default function AdminPage() {
                                   <Input id="import-url" value={importUrl} onChange={e => setImportUrl(e.target.value)} placeholder="Ex: https://youtu.be/… ou https://notion.site/…"
                                     className={importUrl.includes('notion') ? 'pr-20' : ''} />
                                   {importUrl.includes('notion') && (
-                                    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-semibold bg-primary/10 text-primary px-2 py-0.5 rounded-full">📝 Notion</span>
+                                    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-semibold bg-primary/10 text-primary px-2 py-0.5 rounded-full">Notion</span>
                                   )}
                                 </div>
                                 <Button onClick={handleExtract} disabled={cloning || !importUrl.trim()} className="gradient-primary text-primary-foreground shrink-0">
@@ -1576,7 +1576,7 @@ export default function AdminPage() {
                             </p>
                             <div className="grid gap-2 sm:grid-cols-2">
                               <Button onClick={handleExtract} disabled={cloning || !importRawText.trim()} className="w-full gradient-primary text-primary-foreground">
-                                {cloning ? <><Loader2 className="h-4 w-4 animate-spin mr-1.5" /> Estruturando...</> : '✨ Estruturar como Apostila'}
+                                {cloning ? <><Loader2 className="h-4 w-4 animate-spin mr-1.5" /> Estruturando...</> : 'Estruturar como Apostila'}
                               </Button>
                               <Button onClick={handleSaveReadyText} disabled={cloning || !importRawText.trim() || !importTitle.trim()} variant="outline" className="w-full">
                                 {cloning ? <><Loader2 className="h-4 w-4 animate-spin mr-1.5" /> Salvando...</> : 'Salvar texto já formatado'}
@@ -1600,7 +1600,7 @@ export default function AdminPage() {
                                   ? 'bg-blue-500/20 text-blue-400'
                                   : 'bg-emerald-500/20 text-emerald-400'
                             }`}>
-                              {extractionMethod.includes('firecrawl') ? '🔥 Firecrawl' : extractionMethod === 'text' ? '📝 Texto' : '🌐 Fetch'}
+                              {extractionMethod.includes('firecrawl') ? 'Firecrawl' : extractionMethod === 'text' ? 'Texto' : 'Fetch'}
                             </span>
                           )}
                         </div>
@@ -1959,7 +1959,7 @@ export default function AdminPage() {
                       {/* Mode Toggle */}
                       <div className="flex items-center gap-2">
                         <div className="inline-flex bg-muted rounded-full p-0.5 w-full">
-                          {([['individual', '✏️ Individual'], ['bulk', '📋 Lote'], ['ai', '✨ IA']] as const).map(([mode, label]) => (
+                          {([['individual', 'Individual'], ['bulk', 'Lote'], ['ai', 'Assistente']] as const).map(([mode, label]) => (
                             <button key={mode} onClick={() => setExerciseDialogMode(mode)}
                               className={`flex-1 text-[10px] font-medium px-3 py-1.5 rounded-full transition-colors ${exerciseDialogMode === mode ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
                               {label}
@@ -2117,7 +2117,7 @@ export default function AdminPage() {
                                         ))}
                                       </div>
                                     )}
-                                    {ex.explanation && <p className="mt-1 text-[10px] text-muted-foreground italic">💡 {ex.type === 'essay' ? 'Resposta modelo: ' : ''}{ex.explanation}</p>}
+                                    {ex.explanation && <p className="mt-1 text-[10px] text-muted-foreground italic">{ex.type === 'essay' ? 'Resposta modelo: ' : ''}{ex.explanation}</p>}
                                   </div>
                                 ))}
                               </div>
@@ -2222,7 +2222,7 @@ export default function AdminPage() {
 
                           {/* Mode Toggle */}
                           <div className="inline-flex bg-muted rounded-full p-0.5 w-full">
-                            {([['individual', '✏️ Individual'], ['bulk', '📋 Lote'], ['ai', '✨ IA']] as const).map(([mode, label]) => (
+                            {([['individual', 'Individual'], ['bulk', 'Lote'], ['ai', 'Assistente']] as const).map(([mode, label]) => (
                               <button key={mode} onClick={() => setEditExerciseMode(mode)}
                                 className={`flex-1 text-[10px] font-medium px-3 py-1.5 rounded-full transition-colors ${editExerciseMode === mode ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
                                 {label}
@@ -2352,7 +2352,7 @@ export default function AdminPage() {
                                         {ex.type !== 'essay' && ex.options.length > 0 && ex.options.map((opt, oi) => (
                                           <p key={oi} className={`text-[11px] mt-0.5 ${String.fromCharCode(65 + oi) === ex.correct_answer ? 'text-[hsl(var(--success))] font-medium' : 'text-muted-foreground'}`}>{String.fromCharCode(65 + oi)}) {opt}</p>
                                         ))}
-                                        {ex.explanation && <p className="mt-1 text-[10px] text-muted-foreground italic">💡 {ex.type === 'essay' ? 'Resposta modelo: ' : ''}{ex.explanation}</p>}
+                                        {ex.explanation && <p className="mt-1 text-[10px] text-muted-foreground italic">{ex.type === 'essay' ? 'Resposta modelo: ' : ''}{ex.explanation}</p>}
                                       </div>
                                     ))}
                                   </div>
@@ -2436,7 +2436,7 @@ export default function AdminPage() {
                     {/* Toggle between modes */}
                     <div className="flex items-center gap-2">
                       <div className="inline-flex bg-muted rounded-full p-0.5">
-                        {([['individual', '✏️ Individual'], ['bulk', '📋 Lote'], ['ai', '✨ IA']] as [string, string][]).map(([mode, label]) => (
+                        {([['individual', 'Individual'], ['bulk', 'Lote'], ['ai', 'Assistente']] as [string, string][]).map(([mode, label]) => (
                           <button key={mode} onClick={() => { setBulkExerciseMode(mode === 'bulk'); if (mode === 'ai') setBulkExerciseMode(false); setExerciseDialogMode(mode as any); }}
                             className={`text-[10px] font-medium px-3 py-1 rounded-full transition-colors ${
                               (mode === 'individual' && !bulkExerciseMode && exerciseDialogMode !== 'ai') ||
@@ -2532,7 +2532,7 @@ export default function AdminPage() {
                                           <p key={oi} className={String.fromCharCode(65 + oi) === ex.correct_answer ? 'text-[hsl(var(--success))] font-medium' : ''}>{String.fromCharCode(65 + oi)}) {opt}</p>
                                         ))}
                                       </div>
-                                      {ex.explanation && <p className="mt-1 text-[10px] text-muted-foreground italic">💡 {ex.explanation}</p>}
+                                      {ex.explanation && <p className="mt-1 text-[10px] text-muted-foreground italic">{ex.explanation}</p>}
                                     </div>
                                   ))}
                                 </div>
@@ -2853,7 +2853,7 @@ export default function AdminPage() {
                             <div className="flex-1 min-w-0">
                               <div className="flex flex-wrap items-center gap-1.5 mb-1">
                                 <p className="text-sm font-medium break-words">{u.full_name || 'Sem nome'}</p>
-                                {isTestBot && <Badge className="text-[10px] bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-500/30 hover:bg-amber-500/20">🤖 TESTE BOT</Badge>}
+                                {isTestBot && <Badge className="text-[10px] bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-500/30 hover:bg-amber-500/20">TESTE BOT</Badge>}
                                 {u.is_blocked && <Badge variant="destructive" className="text-[10px]">Bloqueado</Badge>}
                                 {isRA && <Badge variant="outline" className="text-[10px]">RA UNIP</Badge>}
                                 {(u as any).content_scope === 'enem_only' && (
@@ -3247,7 +3247,7 @@ function AdminPasswordResetMenu({ user }: { user: { user_id: string; email: stri
               </div>
             </div>
             <p className="text-[11px] text-muted-foreground pt-1">
-              ⚠️ Informe a nova senha ao usuário por um canal seguro. O acesso anterior continuará válido até o usuário sair em outros dispositivos.
+              Informe a nova senha ao usuário por um canal seguro. O acesso anterior continuará válido até o usuário sair em outros dispositivos.
             </p>
           </div>
         </DialogContent>

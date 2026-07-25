@@ -99,7 +99,7 @@ export function NewFeaturesShowcase() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold mb-2">🎉 Novas Funcionalidades</h2>
+        <h2 className="text-2xl font-bold mb-2">Novas Funcionalidades</h2>
         <p className="text-muted-foreground">
           Seu app foi totalmente transformado! Confira todas as novidades que vão turbinar seus estudos.
         </p>

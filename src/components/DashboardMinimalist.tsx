@@ -89,7 +89,7 @@ export function DashboardMinimalist({
     <div className="space-y-8">
       {/* Header com Saudação */}
       <div className="space-y-2">
-        <h1 className="text-4xl font-light tracking-tight">Olá, {userName}! 👋</h1>
+        <h1 className="text-4xl font-light tracking-tight">Olá, {userName}.</h1>
         <p className="text-muted-foreground text-lg">Vamos continuar sua jornada de aprendizado</p>
       </div>
 

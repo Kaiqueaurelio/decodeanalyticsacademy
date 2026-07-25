@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { Lock } from 'lucide-react';
 
 let lastCopyToast = 0;
 const notifyBlocked = () => {
@@ -125,7 +126,7 @@ export function ScreenshotGuard() {
       onClick={() => setHidden(false)}
       onTouchStart={() => setHidden(false)}
     >
-      <div className="text-4xl mb-4">🔒</div>
+      <Lock className="h-10 w-10 mb-4 text-primary" strokeWidth={1.5} />
       <h2 className="font-display text-xl mb-2 text-foreground">Conteúdo protegido</h2>
       <p className="text-sm text-muted-foreground max-w-sm">
         Toque na tela para voltar ao conteúdo.

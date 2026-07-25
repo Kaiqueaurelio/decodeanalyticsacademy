@@ -94,7 +94,7 @@ export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps)
     });
 
     if (error || !data) {
-      setMessages((m) => [...m, { role: "assistant", content: `⚠️ ${error?.message ?? "Erro desconhecido"}` }]);
+      setMessages((m) => [...m, { role: "assistant", content: `${error?.message ?? "Erro desconhecido"}` }]);
     } else {
       setMessages((m) => [...m, { role: "assistant", content: data.reply || "(sem resposta)", actions: data.actions }]);
       // Execute navigation intents
