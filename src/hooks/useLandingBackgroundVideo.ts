@@ -17,6 +17,7 @@ export function useLandingBackgroundVideo() {
   const [skipVideo, setSkipVideo] = useState(false);
   const [shouldMount, setShouldMount] = useState(false);
   const [tier, setTier] = useState<VideoTier>('720');
+  const [preferDirectSource, setPreferDirectSource] = useState(false);
 
   // Viewport + connection observer.
   useEffect(() => {
@@ -29,7 +30,10 @@ export function useLandingBackgroundVideo() {
       const saveData = !!conn?.saveData;
       const effective = conn?.effectiveType ?? '';
       const slow = /(^|-)2g$/.test(effective);
+      const host = window.location.hostname;
+      const servesHostedAssets = /(^|\.)lovable\.app$/i.test(host) || /(^|\.)lovableproject\.com$/i.test(host);
       setSkipVideo(saveData || slow || reduced.matches);
+      setPreferDirectSource(!servesHostedAssets);
 
       const width = window.innerWidth * (window.devicePixelRatio || 1);
       if (saveData || effective === '3g' || width <= 900) setTier('480');
@@ -72,5 +76,5 @@ export function useLandingBackgroundVideo() {
     return () => io.disconnect();
   }, [skipVideo]);
 
-  return { sentinelRef, skipVideo, shouldMount, tier };
+  return { sentinelRef, skipVideo, shouldMount, tier, preferDirectSource };
 }

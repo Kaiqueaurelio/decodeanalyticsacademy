@@ -4,21 +4,18 @@ import type { LucideIcon } from 'lucide-react';
 import bg1080Mp4 from '@/assets/landing-bg/bg-1080.mp4.asset.json';
 import bg720Mp4 from '@/assets/landing-bg/bg-720.mp4.asset.json';
 import bg480Mp4 from '@/assets/landing-bg/bg-480.mp4.asset.json';
-import bg1080Webm from '@/assets/landing-bg/bg-1080.webm.asset.json';
-import bg720Webm from '@/assets/landing-bg/bg-720.webm.asset.json';
-import bg480Webm from '@/assets/landing-bg/bg-480.webm.asset.json';
 
 export type VideoTier = '480' | '720' | '1080';
 
 type Asset = { url: string };
 
-export const bgAssets: Record<`${VideoTier}-${'mp4' | 'webm'}`, Asset> = {
+export const directLandingBackgroundVideoUrl =
+  'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260328_065045_c44942da-53c6-4804-b734-f9e07fc22e08.mp4';
+
+export const bgAssets: Record<`${VideoTier}-mp4`, Asset> = {
   '1080-mp4': bg1080Mp4 as Asset,
   '720-mp4': bg720Mp4 as Asset,
   '480-mp4': bg480Mp4 as Asset,
-  '1080-webm': bg1080Webm as Asset,
-  '720-webm': bg720Webm as Asset,
-  '480-webm': bg480Webm as Asset,
 };
 
 export interface Feature {

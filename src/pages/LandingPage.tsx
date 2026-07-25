@@ -80,11 +80,12 @@ export default function LandingPage() {
       <section className="relative isolate min-h-screen overflow-hidden">
         <CyberGrid />
         <div
+          data-landing-hero-overlay="true"
           className="pointer-events-none absolute inset-0 z-0"
           aria-hidden="true"
           style={{
             background:
-              'radial-gradient(ellipse 78% 70% at 50% 45%, rgba(5,5,8,0.72) 0%, rgba(5,5,8,0.85) 60%, rgba(5,5,8,0.96) 100%), linear-gradient(180deg, rgba(5,5,8,0.7) 0%, rgba(5,5,8,0.55) 30%, rgba(5,5,8,0.9) 100%)',
+              'radial-gradient(ellipse 78% 70% at 50% 45%, rgba(5,5,8,0.32) 0%, rgba(5,5,8,0.48) 60%, rgba(5,5,8,0.76) 100%), linear-gradient(180deg, rgba(5,5,8,0.42) 0%, rgba(5,5,8,0.3) 30%, rgba(5,5,8,0.68) 100%)',
           }}
         />
         <div className="relative z-10 flex min-h-screen flex-col">
