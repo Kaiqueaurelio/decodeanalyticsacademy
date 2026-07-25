@@ -20,7 +20,7 @@ import {
   LayoutDashboard, CheckCircle, TrendingUp, Upload, BarChart3, Clock,
   Link as LinkIcon, Loader2, AlertCircle, Edit, Download, File, Image, Video, Music, FileSpreadsheet, Presentation,
   Users, ShieldBan, ShieldCheck, Search, Menu, X, Activity, GraduationCap, FolderOpen, Settings, RefreshCw,
-  Sun, Moon, FileUp, Sparkles, Wand2, Megaphone, Combine, Calendar as CalIcon, MessageSquareQuote, Link2, FileDown, MoreHorizontal, Paperclip, Rss, Info, ExternalLink
+  Sun, Moon, FileUp, Sparkles, Wand2, Megaphone, Combine, Calendar as CalIcon, MessageSquareQuote, Link2, FileDown, MoreHorizontal, Paperclip, Rss, Info, ExternalLink, ChevronRight
 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -1775,12 +1775,6 @@ export default function AdminPage() {
                     return (
                       <Card key={a.id} className="hover-lift card-alternate">
 
-                    {filteredApostilas.map(a => {
-                      const exCount = exercises[a.id]?.length || 0;
-                      const semBadge = a.semester ? `${a.semester}º sem` : null;
-                      const courseList = (a.course || []) as string[];
-                      return (
-                        <Card key={a.id} className="hover-lift card-alternate">
                           <CardContent className="p-3 sm:p-5">
                             <div className="flex flex-col sm:flex-row sm:items-center gap-3 min-w-0">
                               <div className="flex items-start sm:items-center gap-3 min-w-0 flex-1">
