@@ -98,15 +98,26 @@ export default function LandingPage() {
     const video = heroVideoRef.current;
     if (!video) return;
 
-    const startPlayback = () => {
-      void video.play().catch(() => {
-        // O fundo visual permanece legível quando o navegador bloqueia autoplay.
-      });
-    };
+    video.muted = true;
+    video.setAttribute('muted', '');
+    video.setAttribute('playsinline', '');
+    try { video.load(); } catch {}
 
-    video.addEventListener('canplay', startPlayback, { once: true });
-    return () => video.removeEventListener('canplay', startPlayback);
+    const startPlayback = () => {
+      void video.play().catch(() => {});
+    };
+    startPlayback();
+    video.addEventListener('canplay', startPlayback);
+    video.addEventListener('loadeddata', startPlayback);
+    const onVisible = () => { if (document.visibilityState === 'visible') startPlayback(); };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      video.removeEventListener('canplay', startPlayback);
+      video.removeEventListener('loadeddata', startPlayback);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
   }, []);
+
 
   // Deixa body/html transparentes enquanto a landing estiver montada, para o vídeo de fundo (portal z:-1) aparecer.
   useEffect(() => {
