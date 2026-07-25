@@ -123,13 +123,13 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="dark min-h-dvh font-cyber overflow-x-hidden selection:bg-primary/30 relative" style={{ background: '#050508', color: '#e2e8f0' }}>
+    <div className="dark min-h-dvh font-cyber overflow-x-hidden selection:bg-primary/30" style={{ color: '#e2e8f0' }}>
 
       {/* ═══ FUNDO GLOBAL: vídeo de ondas fixo cobrindo toda a landing ═══ */}
       <div
-        className="landing-bg-shell pointer-events-none fixed inset-0 z-0 overflow-hidden"
+        className="landing-bg-shell pointer-events-none fixed inset-0 -z-10 overflow-hidden"
         aria-hidden="true"
-        style={{ transform: 'translateZ(0)', willChange: 'transform' }}
+        style={{ background: '#050508', transform: 'translateZ(0)', willChange: 'transform' }}
       >
         <video
           ref={heroVideoRef}
@@ -145,6 +145,7 @@ export default function LandingPage() {
         </video>
         <div className="landing-bg-vignette absolute inset-0" />
       </div>
+
 
       {/* ═══ HERO / NAVEGAÇÃO ═══ */}
       <section className="relative isolate min-h-screen overflow-hidden">
