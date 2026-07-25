@@ -2,8 +2,10 @@ import { createContext, useContext, useEffect, useRef, useState, type ReactNode 
 import { supabase } from '@/integrations/supabase/client';
 import type { Session, User } from '@supabase/supabase-js';
 import { safeRefreshSession, setCurrentSession } from '@/lib/auth-session';
+import { toast } from 'sonner';
 
 const ROLE_CACHE_KEY = 'decode_role_cache';
+const LAST_SESSION_MARKER = 'decode_last_session_user';
 
 type RoleCache = { userId: string; isAdmin: boolean };
 export type AuthStatus = 'loading' | 'hydrating' | 'authenticated' | 'unauthenticated';
@@ -203,6 +205,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Isso mantém o usuário logado mesmo após dias/semanas sem abrir o app,
         // contanto que o refresh_token ainda esteja dentro da janela do servidor.
         let boot = data.session ?? null;
+        const hadPreviousSession = (() => {
+          try { return Boolean(localStorage.getItem(LAST_SESSION_MARKER)); } catch { return false; }
+        })();
         if (boot?.refresh_token) {
           const expiresAt = boot.expires_at ? boot.expires_at * 1000 : 0;
           const msLeft = expiresAt - Date.now();
@@ -215,9 +220,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               logAuthFlow('bootstrap_refresh_error', {
                 message: err instanceof Error ? err.message : 'unknown',
               });
+              boot = null;
+              try { localStorage.removeItem(LAST_SESSION_MARKER); } catch {}
+              if (hadPreviousSession) {
+                toast.error('Sua sessão expirou', {
+                  description: 'Por segurança, faça login novamente para continuar.',
+                });
+              }
             } finally {
               setIsRefreshingToken(false);
             }
+          }
+        }
+
+        if (boot?.user) {
+          try { localStorage.setItem(LAST_SESSION_MARKER, boot.user.id); } catch {}
+          if (hadPreviousSession) {
+            // Sessão restaurada silenciosamente após fechar/reabrir o navegador.
+            setTimeout(() => {
+              toast.success('Sessão restaurada', {
+                description: 'Você continua conectado — bem-vindo(a) de volta.',
+                duration: 2500,
+              });
+            }, 400);
           }
         }
 
@@ -270,11 +295,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const msLeft = expiresAt - Date.now();
         if (msLeft > 10 * 60 * 1000) return;
         setIsRefreshingToken(true);
-        await safeRefreshSession(session.refresh_token);
+        const refreshed = await safeRefreshSession(session.refresh_token);
+        if (!refreshed) throw new Error('refresh_returned_null');
       } catch (err) {
         logAuthFlow('keepalive_refresh_error', {
           message: err instanceof Error ? err.message : 'unknown',
         });
+        // Fallback: sessão não pôde ser renovada — força signOut limpo e avisa.
+        try { localStorage.removeItem(LAST_SESSION_MARKER); } catch {}
+        toast.error('Sua sessão expirou', {
+          description: 'Faça login novamente para continuar.',
+        });
+        await supabase.auth.signOut().catch(() => {});
       } finally {
         setIsRefreshingToken(false);
       }
@@ -298,7 +330,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     logAuthFlow('sign_in_attempt', { email });
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (!error && data?.user) {
+      try { localStorage.setItem(LAST_SESSION_MARKER, data.user.id); } catch {}
+    }
     logAuthFlow(error ? 'sign_in_error' : 'sign_in_success', {
       email,
       message: error?.message ?? null,
@@ -319,6 +354,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = async () => {
     logAuthFlow('explicit_sign_out_start');
     writeRoleCache(null, false);
+    try { localStorage.removeItem(LAST_SESSION_MARKER); } catch {}
     lastRoleUserIdRef.current = null;
     await supabase.auth.signOut();
     logAuthFlow('explicit_sign_out_done');
