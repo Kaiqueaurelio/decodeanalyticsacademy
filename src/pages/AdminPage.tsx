@@ -1775,12 +1775,6 @@ export default function AdminPage() {
                     return (
                       <Card key={a.id} className="hover-lift card-alternate">
 
-                    {filteredApostilas.map(a => {
-                      const exCount = exercises[a.id]?.length || 0;
-                      const semBadge = a.semester ? `${a.semester}º sem` : null;
-                      const courseList = (a.course || []) as string[];
-                      return (
-                        <Card key={a.id} className="hover-lift card-alternate">
                           <CardContent className="p-3 sm:p-5">
                             <div className="flex flex-col sm:flex-row sm:items-center gap-3 min-w-0">
                               <div className="flex items-start sm:items-center gap-3 min-w-0 flex-1">
