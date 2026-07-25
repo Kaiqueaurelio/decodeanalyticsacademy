@@ -44,7 +44,7 @@ export function LandingBackground() {
     } catch {
       /* noop */
     }
-    void video.play().catch(() => {});
+    void video.play()?.catch?.(() => {});
     logVideoTelemetry('loadstart', video, { tier });
 
     return () => {
@@ -59,7 +59,7 @@ export function LandingBackground() {
   useEffect(() => {
     if (!canShowVideo) return;
     const onVisible = () => {
-      if (document.visibilityState === 'visible') void videoRef.current?.play().catch(() => {});
+      if (document.visibilityState === 'visible') void videoRef.current?.play()?.catch?.(() => {});
     };
     document.addEventListener('visibilitychange', onVisible);
     return () => document.removeEventListener('visibilitychange', onVisible);
