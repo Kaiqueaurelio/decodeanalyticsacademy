@@ -89,6 +89,9 @@ export default function LandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [appOrigin, setAppOrigin] = useState<string>('https://decodeanalyticsacademy.com.br');
   const heroVideoRef = useRef<HTMLVideoElement>(null);
+  const bgSentinelRef = useRef<HTMLDivElement>(null);
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
+  const [shouldLoadVideo, setShouldLoadVideo] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.location?.origin?.startsWith('http')) {
@@ -96,7 +99,42 @@ export default function LandingPage() {
     }
   }, []);
 
+  // Detecta mobile / save-data → mantém apenas o poster estático (sem vídeo).
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const mq = window.matchMedia('(max-width: 640px)');
+    const conn: any = (navigator as any).connection;
+    const saveData = !!conn?.saveData;
+    const slow = conn?.effectiveType && /(^|-)2g$/.test(conn.effectiveType);
+    const update = () => setIsSmallScreen(mq.matches || saveData || slow);
+    update();
+    mq.addEventListener?.('change', update);
+    return () => mq.removeEventListener?.('change', update);
+  }, []);
+
+  // Lazy-load: só monta o <video> quando o topo da landing está perto do viewport.
+  useEffect(() => {
+    if (isSmallScreen) { setShouldLoadVideo(false); return; }
+    const el = bgSentinelRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') {
+      const id = window.setTimeout(() => setShouldLoadVideo(true), 800);
+      return () => window.clearTimeout(id);
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setShouldLoadVideo(true);
+          io.disconnect();
+        }
+      },
+      { rootMargin: '400px 0px' },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [isSmallScreen]);
+
+  useEffect(() => {
+    if (!shouldLoadVideo) return;
     const video = heroVideoRef.current;
     if (!video) return;
 
@@ -118,7 +156,8 @@ export default function LandingPage() {
       video.removeEventListener('loadeddata', startPlayback);
       document.removeEventListener('visibilitychange', onVisible);
     };
-  }, []);
+  }, [shouldLoadVideo]);
+
 
 
   // Deixa body/html transparentes enquanto a landing estiver montada, para o vídeo de fundo (portal z:-1) aparecer.
