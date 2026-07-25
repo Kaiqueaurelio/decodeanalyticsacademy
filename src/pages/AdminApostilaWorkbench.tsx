@@ -556,7 +556,7 @@ export default function AdminApostilaWorkbench() {
               const tId = toast.loading(`Gerando ${n} questão(ões) estilo ENEM…`);
               const { data, error } = await invokeFunction<{ inserted: number }>(
                 'generate-enem-exercises',
-                { apostila_id: id, count: n },
+                { body: { apostila_id: id, count: n } },
               );
               toast.dismiss(tId);
               if (error) return toast.error(`Falha: ${error.message}`);
