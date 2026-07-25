@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useScroll, useTransform, motion } from 'framer-motion';
 import type { CSSProperties, ReactNode } from 'react';
 import { Reveal } from '@/components/Reveal';
@@ -104,9 +104,9 @@ export function useAutoplayBackgroundVideo(
 export function useVideoReadiness() {
   const [videoReady, setVideoReady] = useState(false);
   const [videoFailed, setVideoFailed] = useState(false);
-  const markReady = () => {
+  const markReady = useCallback(() => {
     setVideoReady(true);
     setVideoFailed(false);
-  };
+  }, []);
   return { videoReady, videoFailed, markReady, setVideoFailed };
 }

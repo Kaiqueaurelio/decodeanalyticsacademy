@@ -65,12 +65,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loading = status === 'loading' || status === 'hydrating';
 
   const logAuthFlow = (event: string, extra: Record<string, unknown> = {}) => {
-    if (!import.meta.env.DEV) return;
-    console.log('[AUTH FLOW]', {
-      event,
-      timestamp: Date.now(),
-      ...extra,
-    });
+    void event;
+    void extra;
   };
 
   const checkRoles = async (userId: string, attempt = 0): Promise<boolean> => {

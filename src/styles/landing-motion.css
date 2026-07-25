@@ -183,7 +183,17 @@
 }
 
 /* Video de fundo global da landing */
+.landing-background-layer {
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+}
+
 .landing-bg-media {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
   transform: scale(1.03) translate3d(0, 0, 0);
   transform-origin: center center;
   will-change: transform, filter;
