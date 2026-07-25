@@ -1,55 +1,92 @@
-import { useEffect, useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
-  ArrowRight, BookOpen, GraduationCap, Brain,
-  ChevronRight, Download, Layers, Rocket,
-  BarChart3, TrendingUp, CheckCircle,
+  ArrowRight, BookOpen, GraduationCap, Cpu, Brain,
+  ChevronRight, Download, Smartphone, Layers, Rocket, Target,
+  BarChart3, PenLine, Flame, TrendingUp, CheckCircle,
 } from 'lucide-react';
 import logoDark from '@/assets/owl-icon.png';
-
 import { TestimonialsSection } from '@/components/TestimonialsSection';
 import { CreatorSection } from '@/components/CreatorSection';
 import { TechStackSection } from '@/components/TechStackSection';
 import { LiveAppSection } from '@/components/LiveAppSection';
 import { SocialAndProjectsSection } from '@/components/SocialAndProjectsSection';
+import { Reveal } from '@/components/Reveal';
 import { AppShowcaseSection } from '@/components/landing/AppShowcaseSection';
 import { HowItWorksSection } from '@/components/landing/HowItWorksSection';
 import { FaqSection } from '@/components/landing/FaqSection';
-import { LandingBackground } from '@/components/landing/LandingBackground';
-import { InstallGuideDialog } from '@/components/landing/InstallGuideDialog';
-import { CyberGrid, GlowOrb, ParallaxBlock, ScrollReveal } from '@/components/landing/primitives';
-import { faqs, features, roadmap } from '@/data/landing-content';
 
-const DEFAULT_APP_ORIGIN = 'https://decodeanalyticsacademy.com.br';
-
-interface DeferredInstallPrompt {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+/* ─── SECTION WRAPPER: usa o Reveal compartilhado (IntersectionObserver + reduced-motion) ─── */
+function ScrollReveal({ children, className = '', delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
+  return (
+    <Reveal from="bottom" distance={48} delay={delay * 1000} className={className}>
+      {children}
+    </Reveal>
+  );
 }
 
-/** Triggers the PWA install prompt if the browser cached one; falls back to the manual guide. */
-async function tryNativePwaInstall(): Promise<boolean> {
-  const deferred = (window as unknown as { __pwaInstallPrompt?: DeferredInstallPrompt | null }).__pwaInstallPrompt;
-  if (!deferred || typeof deferred.prompt !== 'function') return false;
-  try {
-    await deferred.prompt();
-    const choice = await deferred.userChoice;
-    if (choice.outcome === 'accepted') {
-      (window as unknown as { __pwaInstallPrompt: null }).__pwaInstallPrompt = null;
-    }
-    return true;
-  } catch {
-    return false;
-  }
+/* ─── PARALLAX IMAGE ─── */
+function ParallaxBlock({ children, speed = 0.3, className = '' }: { children: React.ReactNode; speed?: number; className?: string }) {
+  const ref = useRef(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
+  const y = useTransform(scrollYProgress, [0, 1], [speed * -100, speed * 100]);
+  return (
+    <motion.div ref={ref} style={{ y }} className={className}>
+      {children}
+    </motion.div>
+  );
 }
+
+/* ─── GLOW ORB ─── */
+function GlowOrb({ className, style }: { className: string; style?: React.CSSProperties }) {
+  return <div className={`absolute rounded-full blur-[120px] pointer-events-none ${className}`} style={style} />;
+}
+
+/* ─── GRID BG ─── */
+function CyberGrid() {
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      <div className="absolute inset-0" style={{
+        backgroundImage: `linear-gradient(rgba(0,240,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,240,255,0.03) 1px, transparent 1px)`,
+        backgroundSize: '60px 60px',
+      }} />
+    </div>
+  );
+}
+
+/* ─── DATA ─── */
+const features = [
+  { icon: BookOpen, name: 'Apostilas Interativas', desc: 'Conteúdo estruturado por disciplina com anotações', color: '#00f0ff' },
+  { icon: PenLine, name: 'Exercícios de Fixação', desc: 'Questões com gabarito e explicação detalhada', color: '#a855f7' },
+  { icon: Brain, name: 'Flashcards Inteligentes', desc: 'Revisão espaçada para memorização eficiente', color: '#22c55e' },
+  { icon: Flame, name: 'Gamificação & XP', desc: 'Pontos, badges, streaks e ranking entre alunos', color: '#f59e0b' },
+];
+
+const roadmap = [
+  { phase: '01', title: 'Fundamentos', desc: 'Lógica de programação, matemática discreta e introdução à computação.', icon: Cpu },
+  { phase: '02', title: 'Desenvolvimento', desc: 'Estrutura de dados, algoritmos, banco de dados e engenharia de software.', icon: Layers },
+  { phase: '03', title: 'Especialização', desc: 'Redes, segurança, inteligência artificial e computação em nuvem.', icon: Brain },
+  { phase: '04', title: 'Prática & Projetos', desc: 'Projetos integradores, estágio supervisionado e TCC.', icon: Target },
+];
+
+
+const faqs = [
+  { q: 'Para quais cursos a plataforma é voltada?', a: 'Ciência da Computação, Sistemas de Informação e Engenharia da Computação — do 1º ao 8º semestre.' },
+  { q: 'Como funcionam os exercícios?', a: 'Questões de múltipla escolha com gabarito comentado e explicação detalhada para cada alternativa.' },
+  { q: 'Posso acessar pelo celular?', a: 'Sim! A plataforma é um PWA — funciona no navegador e pode ser instalada como app no celular.' },
+  { q: 'O conteúdo é gratuito?', a: 'Todo o conteúdo disponível na plataforma é acessível para alunos cadastrados.' },
+];
 
 export default function LandingPage() {
   const navigate = useNavigate();
   const [showInstallGuide, setShowInstallGuide] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const [appOrigin, setAppOrigin] = useState<string>(DEFAULT_APP_ORIGIN);
+  const [appOrigin, setAppOrigin] = useState<string>('https://decodeanalyticsacademy.com.br');
+  const heroVideoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.location?.origin?.startsWith('http')) {
@@ -57,36 +94,99 @@ export default function LandingPage() {
     }
   }, []);
 
+  useEffect(() => {
+    const video = heroVideoRef.current;
+    if (!video) return;
+
+    video.muted = true;
+    video.setAttribute('muted', '');
+    video.setAttribute('playsinline', '');
+    try { video.load(); } catch {}
+
+    const startPlayback = () => {
+      void video.play().catch(() => {});
+    };
+    startPlayback();
+    video.addEventListener('canplay', startPlayback);
+    video.addEventListener('loadeddata', startPlayback);
+    const onVisible = () => { if (document.visibilityState === 'visible') startPlayback(); };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      video.removeEventListener('canplay', startPlayback);
+      video.removeEventListener('loadeddata', startPlayback);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
+  }, []);
+
+
+  // Deixa body/html transparentes enquanto a landing estiver montada, para o vídeo de fundo (portal z:-1) aparecer.
+  useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    const prevHtmlBg = html.style.background;
+    const prevBodyBg = body.style.background;
+    html.style.background = '#050508';
+    body.style.background = 'transparent';
+    return () => {
+      html.style.background = prevHtmlBg;
+      body.style.background = prevBodyBg;
+    };
+  }, []);
+
+
+
   const handleInstallPWA = async () => {
-    const nativeShown = await tryNativePwaInstall();
-    if (!nativeShown) setShowInstallGuide(true);
+    try {
+      const deferredPrompt = (window as any).__pwaInstallPrompt;
+      if (deferredPrompt && typeof deferredPrompt.prompt === 'function') {
+        await deferredPrompt.prompt();
+        const choice = await deferredPrompt.userChoice;
+        if (choice.outcome === 'accepted') (window as any).__pwaInstallPrompt = null;
+        return;
+      }
+    } catch (e) { console.warn('PWA prompt failed:', e); }
+    setShowInstallGuide(true);
   };
 
   return (
-    <div
-      data-testid="landing-root"
-      className="dark relative isolate min-h-dvh overflow-x-hidden bg-[#050508] font-cyber selection:bg-primary/30"
-      style={{ color: '#e2e8f0' }}
-    >
-      <LandingBackground />
+    <div className="dark min-h-dvh font-cyber overflow-x-hidden selection:bg-primary/30 relative" style={{ color: '#e2e8f0' }}>
 
-
-      <div data-testid="landing-content" className="relative z-10">
-
-
+      {/* ═══ VIDEO DE FUNDO GLOBAL (portal em document.body para escapar de transforms de ancestrais) ═══ */}
+      {typeof document !== 'undefined' && createPortal(
+        <div
+          aria-hidden="true"
+          className="pointer-events-none fixed inset-0 overflow-hidden"
+          style={{ zIndex: -1 }}
+        >
+          <video
+            ref={heroVideoRef}
+            className="landing-bg-video h-full w-full scale-[1.03] object-cover opacity-60"
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="auto"
+            src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260328_065045_c44942da-53c6-4804-b734-f9e07fc22e08.mp4"
+          />
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                'linear-gradient(180deg, rgba(5,5,8,0.7) 0%, rgba(5,5,8,0.5) 40%, rgba(5,5,8,0.65) 70%, rgba(5,5,8,0.85) 100%)',
+            }}
+          />
+        </div>,
+        document.body,
+      )}
 
 
       {/* ═══ HERO / NAVEGAÇÃO ═══ */}
       <section className="relative isolate min-h-screen overflow-hidden">
         <CyberGrid />
+        <div className="hero-video-vignette pointer-events-none absolute inset-0 -z-10" aria-hidden="true" />
         <div
-          data-landing-hero-overlay="true"
-          className="pointer-events-none absolute inset-0 z-0"
+          className="pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[527px] w-[min(984px,90vw)] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#050508]/90 blur-[82px]"
           aria-hidden="true"
-          style={{
-            background:
-              'radial-gradient(ellipse 78% 70% at 50% 45%, rgba(5,5,8,0.32) 0%, rgba(5,5,8,0.48) 60%, rgba(5,5,8,0.76) 100%), linear-gradient(180deg, rgba(5,5,8,0.42) 0%, rgba(5,5,8,0.3) 30%, rgba(5,5,8,0.68) 100%)',
-          }}
         />
         <div className="relative z-10 flex min-h-screen flex-col">
           <header className="px-5 py-5 sm:px-8">
@@ -122,19 +222,13 @@ export default function LandingPage() {
                 <GraduationCap className="h-3.5 w-3.5 text-[#00f0ff]" />
                 Plataforma de estudos
               </div>
-              <h1
-                className="max-w-4xl text-5xl font-bold leading-[0.94] tracking-[-0.05em] text-white sm:text-7xl md:text-8xl"
-                style={{ textShadow: '0 2px 24px rgba(5,5,8,0.85), 0 0 40px rgba(5,5,8,0.6)' }}
-              >
+              <h1 className="max-w-4xl text-5xl font-bold leading-[0.94] tracking-[-0.05em] text-white sm:text-7xl md:text-8xl">
                 Estude com
                 <span className="mt-2 block bg-gradient-to-r from-[#00f0ff] via-[#a855f7] to-[#c084fc] bg-clip-text text-transparent">
                   inteligência.
                 </span>
               </h1>
-              <p
-                className="mx-auto mt-7 max-w-2xl text-base leading-7 text-white/85 sm:text-lg"
-                style={{ textShadow: '0 1px 12px rgba(5,5,8,0.85)' }}
-              >
+              <p className="mx-auto mt-7 max-w-2xl text-base leading-7 text-white/80 sm:text-lg">
                 Apostilas, exercícios, flashcards e acompanhamento de progresso para você dominar cada disciplina.
               </p>
               <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -149,17 +243,17 @@ export default function LandingPage() {
                 </a>
               </div>
               <div className="mx-auto mt-12 grid max-w-3xl grid-cols-1 gap-3 text-left sm:grid-cols-3">
-                <div className="hero-stat-card rounded-2xl border border-white/12 bg-black/55 p-4 backdrop-blur-md">
+                <div className="hero-stat-card rounded-2xl border border-white/10 bg-black/20 p-4 backdrop-blur-sm">
                   <p className="text-2xl font-bold text-[#00f0ff]">48</p>
-                  <p className="mt-1 text-xs uppercase tracking-[0.14em] text-white/75">Disciplinas</p>
+                  <p className="mt-1 text-xs uppercase tracking-[0.14em] text-white/65">Disciplinas</p>
                 </div>
-                <div className="rounded-2xl border border-white/12 bg-black/55 p-4 backdrop-blur-md">
+                <div className="rounded-2xl border border-white/10 bg-black/20 p-4 backdrop-blur-sm">
                   <p className="text-sm font-bold text-white">Exercícios</p>
-                  <p className="mt-1 text-xs uppercase tracking-[0.14em] text-white/75">Práticos e comentados</p>
+                  <p className="mt-1 text-xs uppercase tracking-[0.14em] text-white/65">Práticos e comentados</p>
                 </div>
-                <div className="rounded-2xl border border-white/12 bg-black/55 p-4 backdrop-blur-md">
+                <div className="rounded-2xl border border-white/10 bg-black/20 p-4 backdrop-blur-sm">
                   <p className="text-sm font-bold text-white">Acesse onde estiver</p>
-                  <p className="mt-1 text-xs uppercase tracking-[0.14em] text-white/75">Computador e celular</p>
+                  <p className="mt-1 text-xs uppercase tracking-[0.14em] text-white/65">Computador e celular</p>
                 </div>
               </div>
               <div className="hero-signal mx-auto mt-7 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs text-white/70 backdrop-blur-sm">
@@ -574,10 +668,52 @@ export default function LandingPage() {
         </div>
       </footer>
 
-      </div>
+      {/* Install Guide Modal */}
+      <Dialog open={showInstallGuide} onOpenChange={setShowInstallGuide}>
+        <DialogContent className="max-w-sm" style={{ background: '#0a0a12', border: '1px solid rgba(0,240,255,0.1)', color: '#e2e8f0' }}>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-base">
+              <Smartphone className="w-5 h-5" style={{ color: '#00f0ff' }} />
+              Instalar o App
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm" style={{ color: '#94a3b8' }}>
+              Para instalar, abra o site publicado no navegador do seu celular:
+            </p>
+            <div className="p-3 rounded-lg" style={{ background: 'rgba(0,240,255,0.06)', border: '1px solid rgba(0,240,255,0.12)' }}>
+              <p className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: '#00f0ff' }}>Link:</p>
+              <a
+                href={appOrigin}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm font-semibold underline break-all"
+                style={{ color: '#00f0ff' }}
+              >
+                {appOrigin.replace(/^https?:\/\//, '')}
+              </a>
 
-      <InstallGuideDialog open={showInstallGuide} onOpenChange={setShowInstallGuide} appOrigin={appOrigin} />
-
+            </div>
+            <div className="space-y-3 text-sm" style={{ color: '#94a3b8' }}>
+              <div className="p-3 rounded-lg" style={{ background: 'rgba(255,255,255,0.03)' }}>
+                <p className="font-semibold mb-1" style={{ color: '#e2e8f0' }}>iPhone / iPad (Safari)</p>
+                <p>1. Abra no <strong>Safari</strong> → 2. <strong>Compartilhar ↑</strong> → 3. <strong>Adicionar à Tela</strong></p>
+              </div>
+              <div className="p-3 rounded-lg" style={{ background: 'rgba(255,255,255,0.03)' }}>
+                <p className="font-semibold mb-1" style={{ color: '#e2e8f0' }}>Android (Chrome)</p>
+                <p>1. Abra no <strong>Chrome</strong> → 2. <strong>Menu ⋮</strong> → 3. <strong>Instalar app</strong></p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowInstallGuide(false)}
+              className="w-full py-2.5 rounded-lg text-sm font-semibold"
+              style={{ background: '#00f0ff', color: '#050508' }}
+            >
+              Entendi
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

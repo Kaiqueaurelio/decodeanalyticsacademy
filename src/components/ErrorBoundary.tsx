@@ -125,40 +125,29 @@ class ErrorBoundary extends Component<Props, State> {
 
   render() {
     if (this.state.hasError) {
-      const isCache = this.state.isCacheError;
-      const isRecovering = this.state.isRecovering;
-      const title = isCache ? 'Preparando a nova versão' : 'Algo deu errado';
-      const description = isCache
-        ? 'Detectamos arquivos antigos no cache do navegador. Toque no botão para carregar a versão mais recente.'
-        : 'O app encontrou um erro inesperado. Atualize a página; se persistir, verifique os diagnósticos do admin.';
-      const buttonLabel = isRecovering ? 'Atualizando…' : 'Atualizar agora';
+      const title = this.state.isCacheError ? 'Atualizando o app' : 'Algo deu errado';
+      const description = this.state.isCacheError
+        ? 'Uma versao antiga ficou presa no cache do navegador. O app vai limpar esses arquivos e abrir a versao nova.'
+        : 'O app encontrou um erro inesperado. Atualize a pagina; se continuar, verifique os diagnosticos do admin.';
+      const buttonLabel = this.state.isRecovering ? 'Atualizando...' : 'Atualizar agora';
 
       return (
-        <main
-          role="alert"
-          aria-live="polite"
-          className="min-h-dvh flex items-center justify-center p-6 bg-background text-foreground [background:radial-gradient(1200px_600px_at_20%_-10%,hsl(var(--primary)/0.10),transparent_60%),radial-gradient(900px_500px_at_110%_110%,hsl(var(--accent)/0.12),transparent_60%),hsl(var(--background))]"
-        >
-          <section className="w-full max-w-md rounded-2xl border border-border/60 bg-card/60 backdrop-blur-md p-7 text-center shadow-[0_30px_80px_-20px_hsl(0_0%_0%/0.6)]">
-            <div
-              aria-hidden="true"
-              className="relative mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-primary/30 bg-[linear-gradient(135deg,hsl(var(--primary)/0.14),hsl(var(--accent)/0.14))]"
-            >
-              <span className="pointer-events-none absolute -inset-px rounded-2xl border-[1.5px] border-transparent border-t-primary border-r-accent animate-spin [animation-duration:1.1s] motion-reduce:animate-none" />
-              <span className="h-2 w-2 rounded-full bg-primary shadow-[0_0_12px_hsl(var(--primary)/0.6)] motion-safe:animate-pulse" />
+        <main className="min-h-dvh bg-background text-foreground flex items-center justify-center p-6">
+          <section className="w-full max-w-md rounded-2xl border border-border bg-card p-6 text-center shadow-xl">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              !
             </div>
-            <h1 className="text-xl font-bold leading-tight tracking-tight text-foreground">{title}</h1>
-            <p className="mt-2 mx-auto max-w-[34ch] text-sm leading-relaxed text-muted-foreground">{description}</p>
+            <h1 className="text-xl font-bold">{title}</h1>
+            <p className="mt-2 text-sm text-muted-foreground">{description}</p>
             <button
               type="button"
               onClick={this.handleReload}
-              disabled={isRecovering}
-              className="mt-6 inline-flex h-11 items-center justify-center rounded-xl px-6 text-sm font-semibold text-primary-foreground bg-[linear-gradient(135deg,hsl(var(--primary)),hsl(var(--accent)))] shadow-[0_8px_24px_-8px_hsl(var(--primary)/0.55)] transition-[transform,box-shadow,filter] duration-200 ease-out hover:-translate-y-px hover:brightness-105 hover:shadow-[0_12px_28px_-8px_hsl(var(--accent)/0.55)] active:translate-y-0 active:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-progress disabled:opacity-70"
+              disabled={this.state.isRecovering}
+              className="mt-5 inline-flex h-10 items-center justify-center rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-70"
             >
               {buttonLabel}
             </button>
-            <p className="mt-4 text-[11px] tracking-wide text-muted-foreground/70">Isso leva apenas alguns segundos.</p>
-            {this.state.message && !isRecovering && !isCache && (
+            {this.state.message && !this.state.isRecovering && (
               <p className="mt-4 break-words text-[11px] text-muted-foreground/70">{this.state.message}</p>
             )}
           </section>

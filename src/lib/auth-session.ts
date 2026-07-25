@@ -31,8 +31,16 @@ export function getCurrentAccessToken(): string | null {
 
 export async function safeRefreshSession(refreshToken?: string | null): Promise<Session | null> {
   if (refreshPromise) {
+    console.log('[AUTH FLOW]', { event: 'refresh_join', timestamp: Date.now(), hasSession: Boolean(current) });
     return refreshPromise;
   }
+
+  console.log('[AUTH FLOW]', {
+    event: 'refresh_start',
+    timestamp: Date.now(),
+    hasRefreshToken: Boolean(refreshToken),
+    hasSession: Boolean(current),
+  });
 
   refreshPromise = (async () => {
     const { data, error } = refreshToken
@@ -40,13 +48,25 @@ export async function safeRefreshSession(refreshToken?: string | null): Promise<
       : await supabase.auth.refreshSession();
 
     if (error) {
+      console.log('[AUTH FLOW]', {
+        event: 'refresh_error',
+        timestamp: Date.now(),
+        message: error.message,
+      });
       throw error;
     }
 
     const nextSession = data.session ?? null;
     setCurrentSession(nextSession);
+    console.log('[AUTH FLOW]', {
+      event: 'refresh_success',
+      timestamp: Date.now(),
+      hasSession: Boolean(nextSession),
+      userId: nextSession?.user?.id ?? null,
+    });
     return nextSession;
   })().finally(() => {
+    console.log('[AUTH FLOW]', { event: 'refresh_settled', timestamp: Date.now(), hasSession: Boolean(current) });
     refreshPromise = null;
   });
 

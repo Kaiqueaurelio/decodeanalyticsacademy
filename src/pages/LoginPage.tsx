@@ -33,16 +33,19 @@ export default function LoginPage() {
   const normalizeRa = (raValue: string) => raValue.trim().toUpperCase();
   const buildRaEmail = (raValue: string) => `${normalizeRa(raValue).toLowerCase()}@${RA_DOMAIN}`;
   const isValidRa = (raValue: string) => /^[A-Z0-9]{6,13}$/.test(normalizeRa(raValue));
-  // Não chama mais RPC get_email_for_ra (fechada por segurança).
-  // Para RA, usamos pseudo-email; a edge function `ra-login` resolve o e-mail real server-side no fluxo de login.
-  const resolveEmailForIdentifier = (rawIdentifier: string) => {
+  const resolveEmailForIdentifier = async (rawIdentifier: string, allowPseudoEmail = false) => {
     const id = rawIdentifier.trim();
     if (!id) return { email: '', usedPseudoEmail: false };
     if (looksLikeEmail(id)) return { email: id.toLowerCase(), usedPseudoEmail: false };
     if (!isValidRa(id)) throw new Error('Use um e-mail valido ou seu RA com 6 a 13 letras/numeros.');
-    return { email: buildRaEmail(id), usedPseudoEmail: true };
-  };
 
+    const { data: realEmail, error } = await supabase.rpc('get_email_for_ra' as any, { _ra: id });
+    if (error) throw new Error('Nao consegui validar seu RA agora. Tente entrar pelo e-mail cadastrado.');
+    if (realEmail && typeof realEmail === 'string') return { email: realEmail, usedPseudoEmail: false };
+    if (allowPseudoEmail) return { email: buildRaEmail(id), usedPseudoEmail: true };
+
+    throw new Error('Este RA nao tem e-mail de recuperacao cadastrado. Entre em contato com o suporte.');
+  };
 
   /** Detecta se o identificador atual esta no formato de e-mail apos o usuario digitar. */
   const usingEmail = looksLikeEmail(identifier);
@@ -110,7 +113,7 @@ export default function LoginPage() {
 
     if (!isEmail && !isSignUp) {
       try {
-        const resolved = resolveEmailForIdentifier(id);
+        const resolved = await resolveEmailForIdentifier(id, true);
         effectiveEmail = resolved.email;
         usedPseudoEmail = resolved.usedPseudoEmail;
       } catch (err) {
@@ -157,30 +160,7 @@ export default function LoginPage() {
       return;
     }
 
-    // Fluxo de login: para RA, roteia pela edge function `ra-login` (rate-limited,
-    // resolve o e-mail real server-side sem vazar PII e faz signInWithPassword).
-    let error: any = null;
-    if (!isEmail) {
-      try {
-        const { data, error: fnErr } = await supabase.functions.invoke('ra-login', {
-          body: { ra: id.toUpperCase(), password },
-        });
-        if (fnErr || !data?.success || !data?.session) {
-          error = { message: 'invalid_credentials' };
-        } else {
-          const { error: setErr } = await supabase.auth.setSession({
-            access_token: data.session.access_token,
-            refresh_token: data.session.refresh_token,
-          });
-          error = setErr;
-        }
-      } catch (e: any) {
-        error = { message: e?.message || 'invalid_credentials' };
-      }
-    } else {
-      const res = await signIn(effectiveEmail, password);
-      error = res.error;
-    }
+    const { error } = await signIn(effectiveEmail, password);
     setLoading(false);
 
     if (error) {
@@ -226,26 +206,19 @@ export default function LoginPage() {
     }
   };
 
-
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim()) { toast.error('Digite seu RA ou e-mail'); return; }
     setLoading(true);
     let resetEmail = '';
     try {
-      const resolved = resolveEmailForIdentifier(email);
+      const resolved = await resolveEmailForIdentifier(email, false);
       resetEmail = resolved.email;
-      if (resolved.usedPseudoEmail) {
-        setLoading(false);
-        toast.error('Para recuperar a senha, informe o e-mail cadastrado (nao o RA).');
-        return;
-      }
     } catch (err) {
       setLoading(false);
-      toast.error(err instanceof Error ? err.message : 'Nao consegui validar esse e-mail.');
+      toast.error(err instanceof Error ? err.message : 'Nao consegui validar esse RA ou e-mail.');
       return;
     }
-
 
     const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
       redirectTo: `${window.location.origin}/reset-password`,

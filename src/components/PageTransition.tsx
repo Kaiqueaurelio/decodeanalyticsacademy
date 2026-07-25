@@ -14,13 +14,9 @@ export function PageTransition({ children }: { children: ReactNode }) {
     if (location.pathname === displayKey) return;
     setStage('enter');
     setDisplayKey(location.pathname);
-  }, [location.pathname, displayKey]);
-
-  useEffect(() => {
-    if (stage !== 'enter') return;
-    const t = window.setTimeout(() => setStage('idle'), 420);
+    const t = window.setTimeout(() => setStage('idle'), 320);
     return () => window.clearTimeout(t);
-  }, [displayKey, stage]);
+  }, [location.pathname, displayKey]);
 
   return (
     <div

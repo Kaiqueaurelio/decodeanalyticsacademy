@@ -157,7 +157,7 @@ export default function AdminBibliotecaPage() {
           token,
           onProgress: (p) => setCoverPct(p),
         });
-        coverUrl = cPath; // path no bucket privado — resolvido via signed URL ao ler
+        coverUrl = supabase.storage.from('books').getPublicUrl(cPath).data.publicUrl;
       }
 
       setPhase('book');
@@ -172,16 +172,16 @@ export default function AdminBibliotecaPage() {
         token,
         onProgress: (p) => setBookPct(p),
       });
+      const { data: { publicUrl } } = supabase.storage.from('books').getPublicUrl(path);
 
       setPhase('saving');
       setStatusMsg('Registrando livro no acervo…');
       const { error } = await supabase.from('books').insert({
         title, author: author || null, description: description || null,
-        cover_url: coverUrl, file_url: path, file_type: fileType, created_by: user.id,
+        cover_url: coverUrl, file_url: publicUrl, file_type: fileType, created_by: user.id,
         published: false,
       });
       if (error) throw error;
-
 
       setPhase('done');
       setStatusMsg('Livro adicionado como rascunho.');

@@ -38,7 +38,6 @@ import { AdImageUploadButton } from './AdImageUploadButton';
 const supabase = supabaseTyped as any;
 
 import { getEllaAvatarUrl } from '@/lib/ellaAvatar';
-import { EllaAvatar } from '@/components/ella/EllaAvatar';
 const ELLA_AVATAR = getEllaAvatarUrl();
 
 type AdType = 'banner' | 'popup' | 'inline' | 'sidebar' | 'footer';
@@ -692,7 +691,7 @@ export function AdsChatBuilder() {
       <section className="flex min-h-0 flex-col bg-[radial-gradient(circle_at_top_left,hsl(var(--primary)/0.09),transparent_34%),hsl(var(--background))]">
         <div className="flex min-h-20 shrink-0 items-center gap-3 border-b border-border/70 bg-card/85 px-4 py-3 backdrop-blur-xl">
           <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-2xl border border-primary/35 bg-muted shadow-[0_10px_28px_hsl(var(--primary)/0.18)]">
-            <EllaAvatar size={48} rounded="2xl" />
+            <img src={ELLA_AVATAR} alt="Ella Ribeiro" className="h-full w-full object-cover" />
             <span className="absolute bottom-1 right-1 h-3 w-3 rounded-full border-2 border-card bg-success" />
           </div>
           <div className="min-w-0 flex-1">
@@ -857,7 +856,7 @@ export function AdsChatBuilder() {
 
       <aside className="ops-panel hidden min-h-0 border-l border-border bg-card/60 p-4 backdrop-blur-xl lg:flex lg:flex-col">
         <div className="mb-4 flex items-center gap-3">
-          <EllaAvatar size={56} rounded="2xl" ring />
+          <img src={ELLA_AVATAR} alt="Ella Ribeiro" className="h-14 w-14 rounded-2xl object-cover ring-1 ring-primary/35" />
           <div>
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Assistente operacional</p>
             <h3 className="text-base font-bold">O que Ella pode fazer</h3>

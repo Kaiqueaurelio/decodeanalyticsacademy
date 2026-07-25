@@ -28,51 +28,9 @@
         var root = document.getElementById('root');
         if (!root || root.childElementCount > 0 || root.textContent.trim().length > 0) return;
 
-        var css = ''
-          + '@keyframes decodeSpin{to{transform:rotate(360deg)}}'
-          + '@keyframes decodeFade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}'
-          + '@keyframes decodePulse{0%,100%{opacity:.55}50%{opacity:1}}'
-          + '.decode-recover{min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:24px;'
-          + 'background:radial-gradient(1200px 600px at 20% -10%,rgba(0,240,255,.10),transparent 60%),radial-gradient(900px 500px at 110% 110%,rgba(168,85,247,.12),transparent 60%),#050508;'
-          + 'color:hsl(210 20% 92%);font-family:"Space Grotesk","Inter",system-ui,-apple-system,Segoe UI,sans-serif;-webkit-font-smoothing:antialiased}'
-          + '.decode-recover__card{width:100%;max-width:420px;border-radius:20px;padding:28px 24px;text-align:center;'
-          + 'background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.02));'
-          + 'border:1px solid rgba(255,255,255,.08);box-shadow:0 30px 80px -20px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.06);'
-          + 'backdrop-filter:blur(12px);animation:decodeFade .35s ease-out both}'
-          + '.decode-recover__badge{margin:0 auto 20px;width:56px;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;position:relative;'
-          + 'background:linear-gradient(135deg,rgba(0,240,255,.14),rgba(168,85,247,.14));border:1px solid rgba(0,240,255,.28)}'
-          + '.decode-recover__spinner{position:absolute;inset:-1px;border-radius:16px;border:1.5px solid transparent;border-top-color:#00f0ff;border-right-color:#a855f7;animation:decodeSpin 1.1s linear infinite}'
-          + '.decode-recover__dot{width:8px;height:8px;border-radius:999px;background:#00f0ff;box-shadow:0 0 12px rgba(0,240,255,.6);animation:decodePulse 1.4s ease-in-out infinite}'
-          + '.decode-recover__title{font-size:20px;line-height:1.25;margin:0 0 8px;font-weight:700;letter-spacing:-.01em;color:hsl(210 20% 98%)}'
-          + '.decode-recover__desc{font-size:14px;line-height:1.6;color:hsl(215 15% 65%);margin:0 auto 24px;max-width:34ch}'
-          + '.decode-recover__btn{appearance:none;border:0;cursor:pointer;height:44px;padding:0 22px;border-radius:12px;font:inherit;font-weight:600;font-size:14px;letter-spacing:.01em;'
-          + 'color:#050508;background:linear-gradient(135deg,#00f0ff,#a855f7);box-shadow:0 8px 24px -8px rgba(0,240,255,.55),0 0 0 1px rgba(255,255,255,.08) inset;'
-          + 'transition:transform .18s ease,box-shadow .18s ease,filter .18s ease}'
-          + '.decode-recover__btn:hover{transform:translateY(-1px);box-shadow:0 12px 28px -8px rgba(168,85,247,.55),0 0 0 1px rgba(255,255,255,.12) inset;filter:brightness(1.05)}'
-          + '.decode-recover__btn:active{transform:translateY(0);filter:brightness(.96)}'
-          + '.decode-recover__btn:focus-visible{outline:2px solid #00f0ff;outline-offset:3px}'
-          + '.decode-recover__btn[disabled]{opacity:.7;cursor:progress;filter:grayscale(.15)}'
-          + '.decode-recover__hint{margin:16px 0 0;font-size:12px;color:hsl(215 12% 50%);letter-spacing:.02em}'
-          + '@media(prefers-reduced-motion:reduce){.decode-recover__spinner,.decode-recover__dot,.decode-recover__card{animation:none}}';
+        root.innerHTML = '<main style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#050508;color:#e5e7eb;font-family:system-ui,-apple-system,Segoe UI,sans-serif;padding:24px"><section style="max-width:420px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04);border-radius:18px;padding:24px;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.38)"><div style="margin:0 auto 14px;width:44px;height:44px;border-radius:14px;background:#e8ff47;color:#111827;display:flex;align-items:center;justify-content:center;font-weight:800">!</div><h1 style="font-size:20px;margin:0 0 8px;font-weight:800">Atualizando o app</h1><p style="font-size:14px;line-height:1.55;color:#a1a1aa;margin:0 0 18px">Seu navegador manteve uma versao antiga no cache. Clique abaixo para limpar os arquivos antigos e abrir a versao atual.</p><button id="decode-clean-cache" style="height:40px;border:0;border-radius:12px;background:#e8ff47;color:#111827;font-weight:800;padding:0 18px;cursor:pointer">Atualizar agora</button></section></main>';
 
-        var style = document.createElement('style');
-        style.textContent = css;
-        document.head.appendChild(style);
-
-        root.innerHTML = ''
-          + '<main class="decode-recover" role="alert" aria-live="polite">'
-          + '<section class="decode-recover__card">'
-          + '<div class="decode-recover__badge" aria-hidden="true"><span class="decode-recover__spinner"></span><span class="decode-recover__dot"></span></div>'
-          + '<h1 class="decode-recover__title">Preparando a nova versão</h1>'
-          + '<p class="decode-recover__desc">Detectamos arquivos antigos no cache do navegador. Toque no botão para carregar a versão mais recente.</p>'
-          + '<button id="decode-clean-cache" class="decode-recover__btn" type="button">Atualizar agora</button>'
-          + '<p class="decode-recover__hint">Isso leva apenas alguns segundos.</p>'
-          + '</section></main>';
-
-        var btn = document.getElementById('decode-clean-cache');
-        btn.onclick = async function () {
-          btn.disabled = true;
-          btn.textContent = 'Atualizando…';
+        document.getElementById('decode-clean-cache').onclick = async function () {
           try {
             if ('serviceWorker' in navigator) {
               var registrations = await navigator.serviceWorker.getRegistrations();
@@ -91,7 +49,7 @@
           url.searchParams.set('__decode_refresh', Date.now().toString());
           window.location.replace(url.toString());
         };
-      }, 15000);
+      }, 7000);
     </script>
     <script>
       (function () {
