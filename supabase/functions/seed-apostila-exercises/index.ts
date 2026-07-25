@@ -105,59 +105,91 @@ Deno.serve(async (req) => {
     }
 
     const system = `Você é um examinador brasileiro estilo ENEM/vestibular. Gere EXATAMENTE ${count} questões objetivas de múltipla escolha (4 alternativas A-D), baseadas RIGOROSAMENTE no conteúdo. Distratores plausíveis, sem pegadinhas baratas. Explicação com 2-3 frases justificando pela apostila. Português-BR.`;
-    const user = `Título: ${apostila.title}\nCategoria: ${apostila.category}\n\nConteúdo:\n${content}\n\nGere ${count} questões objetivas.`;
+    const userPrompt = `Título: ${apostila.title}\nCategoria: ${apostila.category}\n\nConteúdo:\n${content}\n\nGere ${count} questões objetivas.`;
 
-    const resp = await fetch(GATEWAY, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${LOVABLE_API_KEY}` },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [ { role: "system", content: system }, { role: "user", content: user } ],
-        temperature: 0.4,
-        tools: [{
-          type: "function",
-          function: {
-            name: "return_exercises",
-            description: "Retorna as questões geradas",
-            parameters: {
-              type: "object",
-              properties: {
-                exercises: {
-                  type: "array",
-                  items: {
-                    type: "object",
-                    properties: {
-                      question: { type: "string" },
-                      options: { type: "array", items: { type: "string" }, minItems: 4, maxItems: 4 },
-                      correct_answer: { type: "string", description: "Letra A-D" },
-                      explanation: { type: "string" },
+    const GOOGLE_KEY = Deno.env.get("GOOGLE_AI_API_KEY");
+
+    // Tenta Lovable Gateway; se 402/429/5xx, cai pro Google AI direto.
+    async function callLovable(): Promise<{ items: any[] } | { err: string; status: number }> {
+      const resp = await fetch(GATEWAY, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${LOVABLE_API_KEY}` },
+        body: JSON.stringify({
+          model: "google/gemini-3-flash-preview",
+          messages: [{ role: "system", content: system }, { role: "user", content: userPrompt }],
+          temperature: 0.4,
+          tools: [{
+            type: "function",
+            function: {
+              name: "return_exercises",
+              description: "Retorna as questões geradas",
+              parameters: {
+                type: "object",
+                properties: {
+                  exercises: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        question: { type: "string" },
+                        options: { type: "array", items: { type: "string" }, minItems: 4, maxItems: 4 },
+                        correct_answer: { type: "string" },
+                        explanation: { type: "string" },
+                      },
+                      required: ["question", "options", "correct_answer", "explanation"],
+                      additionalProperties: false,
                     },
-                    required: ["question", "options", "correct_answer", "explanation"],
-                    additionalProperties: false,
                   },
                 },
+                required: ["exercises"],
+                additionalProperties: false,
               },
-              required: ["exercises"],
-              additionalProperties: false,
             },
-          },
-        }],
-        tool_choice: { type: "function", function: { name: "return_exercises" } },
-      }),
-    });
+          }],
+          tool_choice: { type: "function", function: { name: "return_exercises" } },
+        }),
+      });
+      if (!resp.ok) return { err: (await resp.text()).slice(0, 300), status: resp.status };
+      const j = await resp.json();
+      const argsStr = j?.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;
+      try { const p = JSON.parse(argsStr || "{}"); return { items: Array.isArray(p.exercises) ? p.exercises : [] }; }
+      catch { return { items: [] }; }
+    }
 
-    if (!resp.ok) {
-      const t = await resp.text();
-      return new Response(JSON.stringify({ error: `AI ${resp.status}`, detail: t.slice(0, 300) }), {
-        status: resp.status === 402 ? 402 : 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+    async function callGoogle(): Promise<{ items: any[] } | { err: string; status: number }> {
+      if (!GOOGLE_KEY) return { err: "no google key", status: 500 };
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(GOOGLE_KEY)}`;
+      const resp = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ role: "user", parts: [{ text: userPrompt }] }],
+          systemInstruction: { parts: [{ text: system + '\n\nResponda SOMENTE JSON puro no formato {"exercises":[{"question":"...","options":["...","...","...","..."],"correct_answer":"A","explanation":"..."}]}.' }] },
+          generationConfig: { temperature: 0.4, maxOutputTokens: 8000, responseMimeType: "application/json" },
+        }),
+      });
+      if (!resp.ok) return { err: (await resp.text()).slice(0, 300), status: resp.status };
+      const j = await resp.json();
+      const text = j?.candidates?.[0]?.content?.parts?.map((p: any) => p.text).join("") ?? "";
+      const cleaned = text.trim().replace(/^```(?:json)?/i, "").replace(/```$/i, "").trim();
+      try { const p = JSON.parse(cleaned); return { items: Array.isArray(p.exercises) ? p.exercises : [] }; }
+      catch { return { items: [] }; }
+    }
+
+    let result = await callLovable();
+    if ("err" in result && (result.status === 402 || result.status === 429 || result.status >= 500)) {
+      const g = await callGoogle();
+      if (!("err" in g)) result = g;
+      else return new Response(JSON.stringify({ error: `AI ${result.status}/${g.status}`, detail: result.err + " | " + g.err }), {
+        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    const j = await resp.json();
-    const argsStr = j?.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;
-    let parsed: any = null;
-    try { parsed = JSON.parse(argsStr || "{}"); } catch { parsed = null; }
-    const items: any[] = Array.isArray(parsed?.exercises) ? parsed.exercises : [];
+    if ("err" in result) {
+      return new Response(JSON.stringify({ error: `AI ${result.status}`, detail: result.err }), {
+        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const items = result.items;
     if (!items.length) {
       return new Response(JSON.stringify({ error: "IA não retornou questões" }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
