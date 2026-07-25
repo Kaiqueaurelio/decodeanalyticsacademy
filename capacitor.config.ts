@@ -1,6 +1,6 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
-// Hot-reload no sandbox Lovable só em dev.
+// Hot-reload no sandbox de preview só em dev.
 // Para gerar o .aab de produção, mantenha CAPACITOR_ENV != 'dev' (padrão).
 // Veja ANDROID_BUILD.md para o passo-a-passo completo.
 const isDev = process.env.CAPACITOR_ENV === 'dev';
