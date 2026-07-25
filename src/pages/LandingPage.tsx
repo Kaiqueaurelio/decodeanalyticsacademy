@@ -123,7 +123,7 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="dark min-h-dvh font-cyber overflow-x-hidden selection:bg-primary/30 relative" style={{ background: '#050508', color: '#e2e8f0' }}>
+    <div className="dark min-h-dvh font-cyber overflow-x-hidden selection:bg-primary/30 relative" style={{ color: '#e2e8f0' }}>
 
       {/* ═══ VIDEO DE FUNDO GLOBAL (fixo, cobre toda a landing) ═══ */}
       <div
