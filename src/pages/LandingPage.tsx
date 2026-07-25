@@ -232,7 +232,7 @@ export default function LandingPage() {
           {...({ fetchpriority: 'high' } as any)}
           className={`landing-bg-media absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${videoReady && !videoFailed ? 'opacity-0' : 'opacity-90'}`}
         />
-        {shouldLoadVideo && !skipVideo && !videoFailed && (() => {
+        {shouldLoadVideo && !skipVideo && (() => {
           const webm = bgAssets[`${videoTier}-webm` as const].url;
           const mp4 = bgAssets[`${videoTier}-mp4` as const].url;
           return (
@@ -240,18 +240,20 @@ export default function LandingPage() {
               key={videoTier}
               data-testid="landing-background-video"
               ref={heroVideoRef}
-              className={`landing-bg-media landing-bg-video absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${videoReady ? 'opacity-100' : 'opacity-0'}`}
+              className={`landing-bg-media landing-bg-video absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${videoReady && !videoFailed ? 'opacity-100' : 'opacity-0'}`}
               autoPlay
               loop
               muted
               playsInline
-              preload="metadata"
+              preload="auto"
               poster={landingBgPoster}
-              onLoadedData={() => setVideoReady(true)}
-              onCanPlay={() => setVideoReady(true)}
-              onError={() => {
-                setVideoReady(false);
-                setVideoFailed(true);
+              onLoadedData={() => { setVideoReady(true); setVideoFailed(false); }}
+              onCanPlay={() => { setVideoReady(true); setVideoFailed(false); }}
+              onError={(e) => {
+                // Só marca falha real (MEDIA_ERR_SRC_NOT_SUPPORTED ou DECODE),
+                // ignora aborts/network transitórios do próprio Chrome.
+                const code = e.currentTarget.error?.code;
+                if (code === 3 || code === 4) setVideoFailed(true);
               }}
             >
               <source src={webm} type="video/webm" />
