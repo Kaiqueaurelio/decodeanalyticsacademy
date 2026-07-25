@@ -221,7 +221,7 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="dark min-h-dvh font-cyber overflow-x-hidden selection:bg-primary/30 relative z-10" style={{ color: '#e2e8f0' }}>
+    <div className="dark min-h-dvh font-cyber overflow-x-hidden selection:bg-primary/30 relative isolate" style={{ color: '#e2e8f0', zIndex: 1 }}>
 
       {/* Sentinela para IntersectionObserver decidir quando carregar o vídeo. */}
       <div ref={bgSentinelRef} aria-hidden="true" className="absolute left-0 top-0 h-1 w-1 opacity-0" />
