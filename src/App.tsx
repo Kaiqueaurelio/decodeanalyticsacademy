@@ -169,6 +169,7 @@ const App = () => (
               <MobileBottomNav />
               <EllaSidebar />
               <RANamePrompt />
+              <ForcePasswordChangeGate />
               <AdFooterMobile />
               <PersistentAdSpot />
               <TermsFooterLink />
