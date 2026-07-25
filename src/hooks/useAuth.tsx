@@ -68,6 +68,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loading = status === 'loading' || status === 'hydrating';
 
   const logAuthFlow = (event: string, extra: Record<string, unknown> = {}) => {
+    // Sempre grava no buffer (usado pelo painel de diagnóstico do admin).
+    recordAuthEvent(event, extra);
     if (!import.meta.env.DEV) return;
     console.log('[AUTH FLOW]', {
       event,
