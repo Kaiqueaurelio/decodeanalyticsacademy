@@ -86,7 +86,7 @@ export default function SimuladoPage() {
       const { data, error } = await supabase.functions.invoke('generate-weekly-simulado', { body: { force: true } });
       if (error) throw error;
       if ((data as any)?.error) throw new Error((data as any).error);
-      toast.success('Simulado pronto! Boa sorte 🎯');
+      toast.success('Simulado pronto! Boa sorte.');
       await loadLatest();
     } catch (e: any) {
       toast.error(e?.message || 'Falha ao gerar simulado');
