@@ -130,20 +130,20 @@ function AnimatedRoutes() {
         <Route path="/exercicios" element={<ProtectedRoute><ExerciciosIndexPage /></ProtectedRoute>} />
         <Route path="/exercises" element={<Navigate to="/exercicios" replace />} />
         <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-        <Route path="/materials" element={<ProtectedRoute><MaterialsPage /></ProtectedRoute>} />
+        <Route path="/materials" element={<ProtectedRoute blockForEnem><MaterialsPage /></ProtectedRoute>} />
         <Route path="/materiais" element={<Navigate to="/materials" replace />} />
-        <Route path="/biblioteca" element={<ProtectedRoute><BibliotecaPage /></ProtectedRoute>} />
-        <Route path="/cursos" element={<ProtectedRoute><CoursesPage /></ProtectedRoute>} />
-        <Route path="/video/:id" element={<ProtectedRoute><VideoPlayerPage /></ProtectedRoute>} />
+        <Route path="/biblioteca" element={<ProtectedRoute blockForEnem><BibliotecaPage /></ProtectedRoute>} />
+        <Route path="/cursos" element={<ProtectedRoute blockForEnem><CoursesPage /></ProtectedRoute>} />
+        <Route path="/video/:id" element={<ProtectedRoute blockForEnem><VideoPlayerPage /></ProtectedRoute>} />
         <Route path="/aviso/:id" element={<ProtectedRoute><AnnouncementDetailPage /></ProtectedRoute>} />
-        <Route path="/comunidade" element={<ProtectedRoute><CommunityPage /></ProtectedRoute>} />
-        <Route path="/tira-duvida" element={<ProtectedRoute><TiraDuvidaPage /></ProtectedRoute>} />
-        <Route path="/livros" element={<ProtectedRoute><PlayBooksPage /></ProtectedRoute>} />
-        <Route path="/playbooks" element={<ProtectedRoute><PlayBooksPage /></ProtectedRoute>} />
-        <Route path="/flashcards" element={<ProtectedRoute><FlashcardsPage /></ProtectedRoute>} />
-        <Route path="/calculadora" element={<ProtectedRoute><CalculadoraPage /></ProtectedRoute>} />
+        <Route path="/comunidade" element={<ProtectedRoute blockForEnem><CommunityPage /></ProtectedRoute>} />
+        <Route path="/tira-duvida" element={<ProtectedRoute blockForEnem><TiraDuvidaPage /></ProtectedRoute>} />
+        <Route path="/livros" element={<ProtectedRoute blockForEnem><PlayBooksPage /></ProtectedRoute>} />
+        <Route path="/playbooks" element={<ProtectedRoute blockForEnem><PlayBooksPage /></ProtectedRoute>} />
+        <Route path="/flashcards" element={<ProtectedRoute blockForEnem><FlashcardsPage /></ProtectedRoute>} />
+        <Route path="/calculadora" element={<ProtectedRoute blockForEnem><CalculadoraPage /></ProtectedRoute>} />
         <Route path="/ella" element={<ProtectedRoute><EllaPage /></ProtectedRoute>} />
-        <Route path="/noticias" element={<ProtectedRoute><NewsPage /></ProtectedRoute>} />
+        <Route path="/noticias" element={<ProtectedRoute blockForEnem><NewsPage /></ProtectedRoute>} />
         <Route path="/admin/biblioteca" element={<ProtectedRoute adminOnly><AdminBibliotecaPage /></ProtectedRoute>} />
         <Route path="/admin/apostilas/:id" element={<ProtectedRoute adminOnly><AdminApostilaWorkbench /></ProtectedRoute>} />
         <Route path="/admin" element={<ProtectedRoute adminOnly><AdminPage /></ProtectedRoute>} />
