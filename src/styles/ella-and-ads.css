@@ -6,7 +6,6 @@
 }
 
 .app-command-shell img[alt='Ella Ribeiro'] {
-  content: url('https://gynguskgysompgcajunc.supabase.co/storage/v1/object/public/ads/ads/ella-ribeiro-avatar.jpg');
   object-fit: cover;
   object-position: center;
 }
