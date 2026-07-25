@@ -57,6 +57,11 @@ async function fileToCompactAvatarDataUrl(file: File): Promise<string> {
 
 export default function ProfilePage() {
   const { user } = useAuth();
+  const { data: profileLite } = useUserProfile(user?.id);
+  const scope = profileLite?.content_scope ?? 'full';
+  const allowedAreas = scope === 'enem_only'
+    ? ['Dashboard', 'Apostilas ENEM', 'Simulados ENEM', 'Exercícios', 'Revisão', 'Desempenho', 'Perfil', 'Ella (Tutora ENEM)']
+    : ['Dashboard', 'Todas as apostilas', 'Exercícios', 'Simulados', 'Flashcards', 'Biblioteca', 'Livros', 'Cursos', 'Calculadora', 'Comunidade', 'Tira-dúvidas', 'Notícias', 'Ella', 'Perfil'];
   const navigate = useNavigate();
   const gamification = useGamification();
   const [fullName, setFullName] = useState('');
