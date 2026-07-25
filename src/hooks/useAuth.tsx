@@ -205,6 +205,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Isso mantém o usuário logado mesmo após dias/semanas sem abrir o app,
         // contanto que o refresh_token ainda esteja dentro da janela do servidor.
         let boot = data.session ?? null;
+        const hadPreviousSession = (() => {
+          try { return Boolean(localStorage.getItem(LAST_SESSION_MARKER)); } catch { return false; }
+        })();
         if (boot?.refresh_token) {
           const expiresAt = boot.expires_at ? boot.expires_at * 1000 : 0;
           const msLeft = expiresAt - Date.now();
@@ -217,9 +220,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               logAuthFlow('bootstrap_refresh_error', {
                 message: err instanceof Error ? err.message : 'unknown',
               });
+              boot = null;
+              try { localStorage.removeItem(LAST_SESSION_MARKER); } catch {}
+              if (hadPreviousSession) {
+                toast.error('Sua sessão expirou', {
+                  description: 'Por segurança, faça login novamente para continuar.',
+                });
+              }
             } finally {
               setIsRefreshingToken(false);
             }
+          }
+        }
+
+        if (boot?.user) {
+          try { localStorage.setItem(LAST_SESSION_MARKER, boot.user.id); } catch {}
+          if (hadPreviousSession) {
+            // Sessão restaurada silenciosamente após fechar/reabrir o navegador.
+            setTimeout(() => {
+              toast.success('Sessão restaurada', {
+                description: 'Você continua conectado — bem-vindo(a) de volta.',
+                duration: 2500,
+              });
+            }, 400);
           }
         }
 
