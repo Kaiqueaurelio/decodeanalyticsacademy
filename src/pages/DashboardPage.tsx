@@ -39,7 +39,8 @@ export default function DashboardPage() {
   const loading = loadingApostilas || loadingStats;
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [query, setQuery] = useState('');
-  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [, setActiveCategory] = useState<string | null>(null);
+  void setActiveCategory;
   
   
 
