@@ -76,6 +76,9 @@ async function validate(url: string): Promise<ValidateResult> {
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
   try {
+    const auth = await requireUser(req, corsHeaders, { requireAdmin: true });
+    if (!auth.ok) return auth.response;
+
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     const supabase = createClient(supabaseUrl!, supabaseKey!);
