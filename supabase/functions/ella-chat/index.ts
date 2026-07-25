@@ -610,6 +610,84 @@ async function executeTool(name: string, args: any, admin: ReturnType<typeof cre
         if (q.error) return { ok: false, error: q.error.message };
         return { ok: true, courses: q.data };
       }
+      // ---------- Alunos ----------
+      case "my_next_exams": {
+        const days = Math.min(Math.max(Number(args.days ?? 30), 1), 180);
+        const limit = Math.min(Math.max(Number(args.limit ?? 10), 1), 50);
+        const from = new Date().toISOString().slice(0, 10);
+        const to = new Date(Date.now() + days * 86400000).toISOString().slice(0, 10);
+        const q = await admin.from("calendar_events")
+          .select("id, title, event_date, event_type, description, subject")
+          .gte("event_date", from).lte("event_date", to)
+          .order("event_date").limit(limit);
+        if (q.error) return { ok: false, error: q.error.message };
+        return { ok: true, events: q.data, summary: `${q.data?.length ?? 0} evento(s) nos próximos ${days} dias.` };
+      }
+      case "my_progress": {
+        const q = await admin.rpc("get_dashboard_stats", { _user_id: userId });
+        if (q.error) return { ok: false, error: q.error.message };
+        const s: any = q.data ?? {};
+        const acc = s.total > 0 ? Math.round((s.hits / s.total) * 100) : 0;
+        return { ok: true, stats: s, summary: `${s.hits ?? 0}/${s.total ?? 0} acertos (${acc}%).` };
+      }
+      case "add_my_flashcard": {
+        const front = String(args.front ?? "").trim();
+        const back = String(args.back ?? "").trim();
+        if (!front || !back) return { ok: false, error: "Frente e verso são obrigatórios." };
+        if (front.length > 500 || back.length > 2000) return { ok: false, error: "Texto muito longo." };
+        const q = await admin.from("flashcards").insert({
+          user_id: userId,
+          front, back,
+          category: String(args.category ?? "Geral").slice(0, 80),
+        }).select("id").single();
+        if (q.error) return { ok: false, error: q.error.message };
+        return { ok: true, id: q.data.id, summary: "Flashcard criado no seu deck." };
+      }
+      case "practice_exercises": {
+        const count = Math.min(Math.max(Number(args.count ?? 5), 1), 10);
+        const q = await admin.from("exercises")
+          .select("id, question, options")
+          .eq("apostila_id", args.apostilaId)
+          .eq("question_type", "objective")
+          .limit(count);
+        if (q.error) return { ok: false, error: q.error.message };
+        return { ok: true, exercises: q.data, summary: `${q.data?.length ?? 0} exercício(s) para praticar.` };
+      }
+      // ---------- Admin ----------
+      case "set_apostila_published": {
+        const q = await admin.from("apostilas").update({ published: !!args.published })
+          .eq("id", args.id).select("id, title, published").single();
+        if (q.error) return { ok: false, error: q.error.message };
+        return { ok: true, summary: `Apostila **${q.data.title}** ${q.data.published ? "publicada" : "despublicada"}.` };
+      }
+      case "send_push_broadcast": {
+        if (!args.confirm) return { ok: false, error: "Precisa confirm=true (envio para todos os alunos)." };
+        const title = String(args.title ?? "").trim();
+        if (!title) return { ok: false, error: "title obrigatório" };
+        const res = await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/send-push`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: authHeader },
+          body: JSON.stringify({ title, body: args.body ?? null, link: args.link ?? "/dashboard", broadcast: true }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) return { ok: false, error: data?.error ?? `send-push ${res.status}` };
+        return { ok: true, summary: "Push enviado para todos os alunos ativos.", ...data };
+      }
+      case "admin_stats": {
+        const [ap, ex, pr, ev] = await Promise.all([
+          admin.from("apostilas").select("id", { count: "exact", head: true }).eq("published", true),
+          admin.from("exercises").select("id", { count: "exact", head: true }),
+          admin.from("profiles").select("id", { count: "exact", head: true }).eq("is_blocked", false),
+          admin.from("calendar_events").select("id", { count: "exact", head: true })
+            .gte("event_date", new Date().toISOString().slice(0, 10)),
+        ]);
+        return { ok: true, stats: {
+          apostilas_publicadas: ap.count ?? 0,
+          exercicios: ex.count ?? 0,
+          alunos_ativos: pr.count ?? 0,
+          proximos_eventos: ev.count ?? 0,
+        }, summary: `${ap.count ?? 0} apostilas · ${ex.count ?? 0} exercícios · ${pr.count ?? 0} alunos.` };
+      }
       default:
         return { ok: false, error: `Tool desconhecida: ${name}` };
     }
