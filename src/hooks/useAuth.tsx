@@ -330,7 +330,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     logAuthFlow('sign_in_attempt', { email });
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (!error && data?.user) {
+      try { localStorage.setItem(LAST_SESSION_MARKER, data.user.id); } catch {}
+    }
     logAuthFlow(error ? 'sign_in_error' : 'sign_in_success', {
       email,
       message: error?.message ?? null,
@@ -351,6 +354,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = async () => {
     logAuthFlow('explicit_sign_out_start');
     writeRoleCache(null, false);
+    try { localStorage.removeItem(LAST_SESSION_MARKER); } catch {}
     lastRoleUserIdRef.current = null;
     await supabase.auth.signOut();
     logAuthFlow('explicit_sign_out_done');
