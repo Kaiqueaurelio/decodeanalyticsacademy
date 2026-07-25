@@ -20,14 +20,18 @@ export function ApostilaPreview({
   const navigate = useNavigate();
   const [showBlocker, setShowBlocker] = useState(!isLoggedIn);
 
-  // Limita o conteúdo a 500 caracteres para o preview
-  const previewContent = content.substring(0, 500);
+  // Preview em TEXTO PURO (sem HTML) — evita XSS em visitantes deslogados
+  // caso o conteúdo salvo contenha markup malicioso.
+  const textPreview = content
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .substring(0, 500);
   const hasMoreContent = content.length > 500;
 
   // Quando o aluno está logado, o conteúdo formatado é renderizado pelas
   // seções abaixo (ApostilaContentBoundary). Esse preview só serve para o
-  // estado deslogado (paywall com blur). Renderizar `content` cru aqui via
-  // dangerouslySetInnerHTML transformava o markdown em um paredão de texto.
+  // estado deslogado (paywall com blur).
   if (isLoggedIn) {
     return null;
   }
@@ -39,10 +43,9 @@ export function ApostilaPreview({
         animate={{ opacity: showBlocker ? 0.5 : 1 }}
         className={`${showBlocker ? 'blur-sm' : ''} transition-all`}
       >
-        <div
-          dangerouslySetInnerHTML={{ __html: previewContent }}
-          className="prose prose-sm max-w-none"
-        />
+        <p className="prose prose-sm max-w-none whitespace-pre-wrap">
+          {textPreview}
+        </p>
         {hasMoreContent && (
           <p className="text-muted-foreground italic mt-4">
             ... [conteúdo limitado ao preview]
