@@ -3100,6 +3100,12 @@ export default function AdminPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <ApostilaExportDialog
+        apostila={exportingApostila}
+        open={!!exportingApostila}
+        onOpenChange={(v) => { if (!v) setExportingApostila(null); }}
+      />
     </CategoriesCtx.Provider>
   );
 }
