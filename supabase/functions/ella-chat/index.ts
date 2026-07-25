@@ -336,6 +336,88 @@ const tools = [
       description: "Lista todos os cursos gratuitos cadastrados.",
       parameters: { type: "object", properties: {} },
     },
+  // ---------- Alunos (leitura + criação do próprio conteúdo) ----------
+  {
+    type: "function",
+    function: {
+      name: "my_next_exams",
+      description: "Lista as próximas provas/eventos do calendário do aluno (default: próximos 30 dias).",
+      parameters: { type: "object", properties: { days: { type: "number" }, limit: { type: "number" } } },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "my_progress",
+      description: "Retorna o desempenho do aluno logado: total de exercícios respondidos, acertos, erros, acurácia e destaque por apostila.",
+      parameters: { type: "object", properties: {} },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "add_my_flashcard",
+      description: "Cria um flashcard de estudo pessoal do aluno logado (frente/verso).",
+      parameters: {
+        type: "object",
+        properties: {
+          front: { type: "string", description: "Pergunta ou termo (frente)" },
+          back: { type: "string", description: "Resposta ou definição (verso)" },
+          category: { type: "string" },
+        },
+        required: ["front", "back"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "practice_exercises",
+      description: "Retorna 3-5 exercícios objetivos de uma apostila para o aluno praticar (sem gabarito na resposta).",
+      parameters: {
+        type: "object",
+        properties: { apostilaId: { type: "string" }, count: { type: "number" } },
+        required: ["apostilaId"],
+      },
+    },
+  },
+  // ---------- Admin (poderes extras) ----------
+  {
+    type: "function",
+    function: {
+      name: "set_apostila_published",
+      description: "Publica ou despublica rapidamente uma apostila (admin).",
+      parameters: {
+        type: "object",
+        properties: { id: { type: "string" }, published: { type: "boolean" } },
+        required: ["id", "published"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "send_push_broadcast",
+      description: "Envia notificação push para TODOS os alunos ativos. Exige confirm=true (ação destrutiva/impactante).",
+      parameters: {
+        type: "object",
+        properties: {
+          title: { type: "string" },
+          body: { type: "string" },
+          link: { type: "string", description: "Rota interna (ex: /dashboard, /apostila/<id>)" },
+          confirm: { type: "boolean" },
+        },
+        required: ["title", "confirm"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "admin_stats",
+      description: "Retorna estatísticas gerais para o admin: totais de apostilas publicadas, exercícios, alunos ativos e provas próximas.",
+      parameters: { type: "object", properties: {} },
+    },
   },
 ] as const;
 
