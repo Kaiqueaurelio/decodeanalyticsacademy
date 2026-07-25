@@ -119,8 +119,12 @@ export function AdPopup({ trigger = 'onLoad', delay = 2000 }: AdPopupProps) {
             {/* Area scrollavel (midia + texto) */}
             <div className="flex-1 overflow-y-auto overscroll-contain">
               {currentAd.image_url && (
-                <div className="relative h-40 sm:h-48 overflow-hidden bg-gradient-to-br from-primary/20 to-primary/5">
-                  <AdMediaPreview src={currentAd.image_url} title={currentAd.title} />
+                <div className="relative w-full max-h-[55vh] flex items-center justify-center bg-gradient-to-br from-primary/10 to-background">
+                  <AdMediaPreview
+                    src={currentAd.image_url}
+                    title={currentAd.title}
+                    className="max-h-[55vh] w-full h-auto object-contain"
+                  />
                 </div>
               )}
 
