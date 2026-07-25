@@ -33,7 +33,9 @@ Deno.serve(async (req) => {
     }
 
     const authHeader = req.headers.get("Authorization") ?? "";
-    const isServiceRole = authHeader === `Bearer ${SERVICE}`;
+    const seedKey = req.headers.get("x-seed-key") ?? "";
+    const INTERNAL_SEED_KEY = Deno.env.get("INTERNAL_SEED_KEY") ?? "";
+    const isServiceRole = authHeader === `Bearer ${SERVICE}` || (INTERNAL_SEED_KEY.length > 8 && seedKey === INTERNAL_SEED_KEY);
 
     const admin = createClient(SUPABASE_URL, SERVICE);
 
