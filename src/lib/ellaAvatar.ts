@@ -1,22 +1,20 @@
-import ellaAvatarAsset from "@/assets/ella-ribeiro-avatar.jpg.asset.json";
+import ellaAvatarBundled from "@/assets/ella-avatar.jpg";
 
-// v2: bumped to invalidate stale/broken overrides saved during earlier iterations.
-export const ELLA_AVATAR_STORAGE_KEY = 'decode_ella_avatar_url_v2';
-const LEGACY_KEY = 'decode_ella_avatar_url';
+// v3: usa asset empacotado pelo Vite (funciona em web, PWA e Capacitor).
+export const ELLA_AVATAR_STORAGE_KEY = 'decode_ella_avatar_url_v3';
+const LEGACY_KEYS = ['decode_ella_avatar_url', 'decode_ella_avatar_url_v2'];
 
-export const DEFAULT_ELLA_AVATAR = ellaAvatarAsset.url;
+export const DEFAULT_ELLA_AVATAR = ellaAvatarBundled as string;
 
-const isValidHttpOrAsset = (u: string) =>
-  /^https?:\/\//i.test(u) || u.startsWith('/__l5e/') || u.startsWith('/');
+const isValidHttp = (u: string) => /^https?:\/\//i.test(u);
 
 export const getEllaAvatarUrl = () => {
   try {
-    // Clean legacy key (may hold stale/broken URL)
-    if (localStorage.getItem(LEGACY_KEY)) {
-      localStorage.removeItem(LEGACY_KEY);
-    }
+    LEGACY_KEYS.forEach((k) => localStorage.getItem(k) && localStorage.removeItem(k));
     const stored = localStorage.getItem(ELLA_AVATAR_STORAGE_KEY);
-    if (stored && isValidHttpOrAsset(stored)) return stored;
+    // Só aceita URLs http(s) absolutas em storage; caminhos relativos /__l5e/
+    // quebram em Capacitor/PWA, então caímos no bundle.
+    if (stored && isValidHttp(stored)) return stored;
     return DEFAULT_ELLA_AVATAR;
   } catch {
     return DEFAULT_ELLA_AVATAR;

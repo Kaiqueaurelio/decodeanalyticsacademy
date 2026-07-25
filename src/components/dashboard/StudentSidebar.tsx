@@ -37,6 +37,7 @@ import {
 import logoOwl from '@/assets/owl-icon.png';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserProfile } from '@/hooks/queries/useUserProfile';
 
 const SIDEBAR_WIDTHS = {
   full: '260px',
@@ -46,23 +47,27 @@ const SIDEBAR_WIDTHS = {
 
 type SidebarMode = keyof typeof SIDEBAR_WIDTHS;
 
-const menuGroups = [
+// unipOnly = item pensado para alunos UNIP (currículo, turma, materiais da faculdade);
+// escondido para usuários com content_scope = 'enem_only'.
+type MenuItem = { to: string; icon: any; label: string; unipOnly?: boolean };
+
+const menuGroups: { label: string; items: MenuItem[] }[] = [
   {
     label: 'Principal',
     items: [
       { to: '/dashboard', icon: Home, label: 'Início' },
-      { to: '/dashboard#minhas-disciplinas', icon: BookOpen, label: 'Minhas Disciplinas' },
-      { to: '/dashboard#atividades', icon: ClipboardList, label: 'Atividades' },
+      { to: '/dashboard#minhas-disciplinas', icon: BookOpen, label: 'Minhas Disciplinas', unipOnly: true },
+      { to: '/dashboard#atividades', icon: ClipboardList, label: 'Atividades', unipOnly: true },
     ],
   },
   {
     label: 'Estudos',
     items: [
       { to: '/dashboard#apostilas', icon: FileText, label: 'Apostilas' },
-      { to: '/cursos', icon: GraduationCap, label: 'Cursos' },
+      { to: '/cursos', icon: GraduationCap, label: 'Cursos', unipOnly: true },
       { to: '/exercicios', icon: PenLine, label: 'Exercícios' },
-      { to: '/biblioteca', icon: Library, label: 'Biblioteca' },
-      { to: '/livros', icon: SheetIcon, label: 'Livros' },
+      { to: '/biblioteca', icon: Library, label: 'Biblioteca', unipOnly: true },
+      { to: '/livros', icon: SheetIcon, label: 'Livros', unipOnly: true },
       { to: '/flashcards', icon: Sparkles, label: 'Flashcards' },
       { to: '/review', icon: RotateCcw, label: 'Revisão' },
       { to: '/simulado', icon: Trophy, label: 'Simulado' },
@@ -71,11 +76,11 @@ const menuGroups = [
   {
     label: 'Ferramentas',
     items: [
-      { to: '/noticias', icon: Newspaper, label: 'Notícias Tech' },
+      { to: '/noticias', icon: Newspaper, label: 'Notícias Tech', unipOnly: true },
       { to: '/calculadora', icon: Calculator, label: 'Calculadora' },
       { to: '/performance', icon: Activity, label: 'Desempenho' },
       { to: '/tira-duvida', icon: HelpCircle, label: 'Tira-dúvidas' },
-      { to: '/comunidade', icon: MessagesSquare, label: 'Comunidade' },
+      { to: '/comunidade', icon: MessagesSquare, label: 'Comunidade', unipOnly: true },
     ],
   },
   {
@@ -182,7 +187,9 @@ export function SidebarContent({
   hideBottomNavDuplicates?: boolean;
 }) {
   const location = useLocation();
-  const { isAdmin, signOut } = useAuth();
+  const { isAdmin, signOut, user } = useAuth();
+  const { data: profile } = useUserProfile(user?.id);
+  const isEnemOnly = profile?.content_scope === 'enem_only';
   const { navigate, open } = useSidebarNavigation(onNavigate);
   const visibleRailItems = railItems.filter((item) => !item.adminOnly || isAdmin);
   const railMenuItems = mode === 'full' ? visibleRailItems.slice(0, isAdmin ? 7 : 6) : visibleRailItems;
@@ -194,11 +201,16 @@ export function SidebarContent({
     '/cursos',
     '/biblioteca',
   ]);
-  const filteredGroups = hideBottomNavDuplicates
-    ? menuGroups
-        .map((g) => ({ ...g, items: g.items.filter((it) => !BOTTOM_NAV_ROUTES.has(it.to)) }))
-        .filter((g) => g.items.length > 0)
-    : menuGroups;
+  const filteredGroups = menuGroups
+    .map((g) => ({
+      ...g,
+      items: g.items.filter((it) => {
+        if (isEnemOnly && it.unipOnly) return false;
+        if (hideBottomNavDuplicates && BOTTOM_NAV_ROUTES.has(it.to)) return false;
+        return true;
+      }),
+    }))
+    .filter((g) => g.items.length > 0);
   const isFull = true;
   const canToggle = typeof setMode === 'function';
   const showRail = false;
