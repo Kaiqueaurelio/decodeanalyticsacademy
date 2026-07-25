@@ -100,8 +100,9 @@ export default function ExerciciosIndexPage() {
             <Loader2 className="h-5 w-5 animate-spin" />
           </div>
         ) : grouped.length === 0 ? (
-          <Card className="p-10 text-center text-sm text-muted-foreground">
-            Nenhum exercício disponível ainda.
+          <Card className="p-10 text-center text-muted-foreground">
+            <PenLine className="h-10 w-10 mx-auto mb-3 opacity-30" strokeWidth={1.5} />
+            <p className="text-sm">Nenhum exercício disponível ainda.</p>
           </Card>
         ) : (
           <div className="space-y-8">
