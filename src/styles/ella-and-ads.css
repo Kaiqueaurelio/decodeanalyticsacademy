@@ -22,7 +22,7 @@
   flex: 0 0 46px;
   border-radius: 18px;
   border: 1px solid hsl(var(--primary) / 0.48);
-  background-image: var(--ella-avatar-url, url('https://gynguskgysompgcajunc.supabase.co/storage/v1/object/public/ads/ads/ella-ribeiro-avatar.jpg'));
+  background-image: var(--ella-avatar-url);
   background-size: cover;
   background-position: center;
   box-shadow: 0 12px 30px hsl(var(--primary) / 0.18);
