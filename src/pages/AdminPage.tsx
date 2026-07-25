@@ -57,6 +57,7 @@ import { AdsChatBuilder } from '@/components/AdsChatBuilder';
 import { AdminDashboardModern } from '@/components/AdminDashboardModern';
 import { RssFeedsManagerEnhanced } from '@/components/admin/RssFeedsManagerEnhanced';
 import { FreeCoursesManager } from '@/components/admin/FreeCoursesManager';
+import { ApostilaExportDialog } from '@/components/admin/ApostilaExportDialog';
 
 type Apostila = Tables<'apostilas'>;
 type Exercise = Tables<'exercises'>;
