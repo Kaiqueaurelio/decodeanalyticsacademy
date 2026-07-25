@@ -242,7 +242,7 @@ export default function LandingPage() {
             fetchPriority="high"
             className="landing-bg-video absolute inset-0 h-full w-full scale-[1.03] object-cover opacity-60"
           />
-          {shouldLoadVideo && !isSmallScreen && (() => {
+          {shouldLoadVideo && !skipVideo && (() => {
             const webm = bgAssets[`${videoTier}-webm` as const].url;
             const mp4 = bgAssets[`${videoTier}-mp4` as const].url;
             return (
