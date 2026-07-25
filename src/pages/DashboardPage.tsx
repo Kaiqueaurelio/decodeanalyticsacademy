@@ -7,8 +7,7 @@ import { StudentSidebar } from '@/components/dashboard/StudentSidebar';
 import { DashboardTopbar } from '@/components/dashboard/DashboardTopbar';
 import { HeroGreetingCard } from '@/components/dashboard/HeroGreetingCard';
 import { ActivitiesToDoSection, RecommendedExercisesSection } from '@/components/dashboard/DashboardSections';
-import { ApostilasReadingCarousel, ProgressSummaryRow } from '@/components/dashboard/DashboardCarousels';
-import { ApostilaCoverCard } from '@/components/dashboard/ApostilaCoverCard';
+import { ProgressSummaryRow } from '@/components/dashboard/DashboardCarousels';
 import { SubjectFolderGrid } from '@/components/dashboard/SubjectFolderGrid';
 import { AdBanner } from '@/components/AdBanner';
 import { AdSidebar } from '@/components/AdSidebar';
@@ -114,10 +113,6 @@ export default function DashboardPage() {
               </Reveal>
             </div>
           </div>
-
-          <Reveal from="bottom" delay={40}>
-            <ApostilasReadingCarousel apostilas={apostilas} exerciseCounts={exerciseCounts} />
-          </Reveal>
 
           <Reveal from="bottom" delay={50}>
             <ProgressSummaryRow
