@@ -2,6 +2,24 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { PBBook, PBHighlight, PBNote, PBBookmark, HighlightColor, PBFormat } from './types';
 import { pbCache, syncQueue } from './storage';
+import { signBooksUrl } from '@/lib/books-storage';
+
+async function hydrateBook(b: any): Promise<PBBook> {
+  const [fileUrl, cover] = await Promise.all([
+    signBooksUrl(b.file_url),
+    signBooksUrl(b.cover_url),
+  ]);
+  return {
+    id: b.id,
+    title: b.title,
+    author: b.author,
+    cover: cover ?? undefined,
+    format: (b.file_type as PBFormat) || 'pdf',
+    fileUrl: fileUrl || '',
+    pageCount: b.total_pages,
+    description: b.description,
+  };
+}
 
 export async function fetchBooks(): Promise<PBBook[]> {
   const { data, error } = await supabase
@@ -10,16 +28,7 @@ export async function fetchBooks(): Promise<PBBook[]> {
     .eq('published', true)
     .order('created_at', { ascending: false });
   if (error) throw error;
-  const books: PBBook[] = (data || []).map((b: any) => ({
-    id: b.id,
-    title: b.title,
-    author: b.author,
-    cover: b.cover_url,
-    format: (b.file_type as PBFormat) || 'pdf',
-    fileUrl: b.file_url,
-    pageCount: b.total_pages,
-    description: b.description,
-  }));
+  const books: PBBook[] = await Promise.all((data || []).map(hydrateBook));
   pbCache.setBooks(books);
   return books;
 }
@@ -27,17 +36,9 @@ export async function fetchBooks(): Promise<PBBook[]> {
 export async function fetchBook(id: string): Promise<PBBook | null> {
   const { data } = await supabase.from('books').select('*').eq('id', id).maybeSingle();
   if (!data) return null;
-  return {
-    id: data.id,
-    title: data.title,
-    author: data.author,
-    cover: data.cover_url,
-    format: (data.file_type as PBFormat) || 'pdf',
-    fileUrl: data.file_url,
-    pageCount: data.total_pages,
-    description: data.description,
-  };
+  return hydrateBook(data);
 }
+
 
 // ── Reading progress ────────────────────────────────────────────────────────
 export async function fetchAllProgress(userId: string) {
