@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from 'react';
-import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -107,6 +106,8 @@ export default function LandingPage() {
   const [isSmallScreen, setIsSmallScreen] = useState(false);
   const [skipVideo, setSkipVideo] = useState(false);
   const [shouldLoadVideo, setShouldLoadVideo] = useState(false);
+  const [videoReady, setVideoReady] = useState(false);
+  const [videoFailed, setVideoFailed] = useState(false);
   const [videoTier, setVideoTier] = useState<'480' | '720' | '1080'>('720');
 
   useEffect(() => {
@@ -165,7 +166,7 @@ export default function LandingPage() {
   }, [skipVideo]);
 
   useEffect(() => {
-    if (!shouldLoadVideo) return;
+    if (!shouldLoadVideo || skipVideo || videoFailed) return;
     const video = heroVideoRef.current;
     if (!video) return;
 
@@ -175,6 +176,7 @@ export default function LandingPage() {
     try { video.load(); } catch {}
 
     const startPlayback = () => {
+      setVideoReady(true);
       void video.play().catch(() => {});
     };
     startPlayback();
@@ -187,23 +189,7 @@ export default function LandingPage() {
       video.removeEventListener('loadeddata', startPlayback);
       document.removeEventListener('visibilitychange', onVisible);
     };
-  }, [shouldLoadVideo]);
-
-
-
-  // Deixa body/html transparentes enquanto a landing estiver montada, para o vídeo de fundo (portal z:-1) aparecer.
-  useEffect(() => {
-    const html = document.documentElement;
-    const body = document.body;
-    const prevHtmlBg = html.style.background;
-    const prevBodyBg = body.style.background;
-    html.style.background = '#050508';
-    body.style.background = 'transparent';
-    return () => {
-      html.style.background = prevHtmlBg;
-      body.style.background = prevBodyBg;
-    };
-  }, []);
+  }, [shouldLoadVideo, skipVideo, videoFailed]);
 
 
 
@@ -221,57 +207,68 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="dark min-h-dvh font-cyber overflow-x-hidden selection:bg-primary/30 relative isolate" style={{ color: '#e2e8f0', zIndex: 1 }}>
+    <div
+      data-testid="landing-root"
+      className="dark relative isolate min-h-dvh overflow-x-hidden bg-[#050508] font-cyber selection:bg-primary/30"
+      style={{ color: '#e2e8f0' }}
+    >
 
       {/* Sentinela para IntersectionObserver decidir quando carregar o vídeo. */}
       <div ref={bgSentinelRef} aria-hidden="true" className="absolute left-0 top-0 h-1 w-1 opacity-0" />
 
-      {/* ═══ VIDEO DE FUNDO GLOBAL (portal em document.body para escapar de transforms de ancestrais) ═══ */}
-      {typeof document !== 'undefined' && createPortal(
-        <div
+      {/* ═══ VIDEO DE FUNDO GLOBAL: uma única camada fixa atrás de todo conteúdo ═══ */}
+      <div
+        data-testid="landing-background"
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-0 z-0 overflow-hidden"
+        style={{ contain: 'paint' }}
+      >
+        {/* Poster aparece só até o vídeo ficar pronto; evita efeito duplicado/poster + vídeo. */}
+        <img
+          src={landingBgPoster}
+          alt=""
           aria-hidden="true"
-          className="pointer-events-none fixed inset-0 overflow-hidden"
-          style={{ zIndex: -1 }}
-        >
-          {/* Poster sempre presente: LCP rápido no mobile e placeholder no desktop até o vídeo carregar. */}
-          <img
-            src={landingBgPoster}
-            alt=""
-            aria-hidden="true"
-            decoding="async"
-            {...({ fetchpriority: 'high' } as any)}
-            className="landing-bg-video absolute inset-0 h-full w-full scale-[1.03] object-cover opacity-60"
-          />
-          {shouldLoadVideo && !skipVideo && (() => {
-            const webm = bgAssets[`${videoTier}-webm` as const].url;
-            const mp4 = bgAssets[`${videoTier}-mp4` as const].url;
-            return (
-              <video
-                key={videoTier}
-                ref={heroVideoRef}
-                className="landing-bg-video absolute inset-0 h-full w-full scale-[1.03] object-cover opacity-60"
-                autoPlay
-                loop
-                muted
-                playsInline
-                preload="metadata"
-                poster={landingBgPoster}
-              >
-                <source src={webm} type="video/webm" />
-                <source src={mp4} type="video/mp4" />
-              </video>
-            );
-          })()}
-          <div
-            className="absolute inset-0"
-            style={{
-              background:
-                'linear-gradient(180deg, rgba(5,5,8,0.7) 0%, rgba(5,5,8,0.5) 40%, rgba(5,5,8,0.65) 70%, rgba(5,5,8,0.85) 100%)',
-            }}
-          />
-        </div>,
-        document.body,
-      )}
+          decoding="async"
+          {...({ fetchpriority: 'high' } as any)}
+          className={`landing-bg-media absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${videoReady && !videoFailed ? 'opacity-0' : 'opacity-45'}`}
+        />
+        {shouldLoadVideo && !skipVideo && !videoFailed && (() => {
+          const webm = bgAssets[`${videoTier}-webm` as const].url;
+          const mp4 = bgAssets[`${videoTier}-mp4` as const].url;
+          return (
+            <video
+              key={videoTier}
+              data-testid="landing-background-video"
+              ref={heroVideoRef}
+              className={`landing-bg-media landing-bg-video absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${videoReady ? 'opacity-40 sm:opacity-50' : 'opacity-0'}`}
+              autoPlay
+              loop
+              muted
+              playsInline
+              preload="metadata"
+              poster={landingBgPoster}
+              onLoadedData={() => setVideoReady(true)}
+              onCanPlay={() => setVideoReady(true)}
+              onError={() => {
+                setVideoReady(false);
+                setVideoFailed(true);
+              }}
+            >
+              <source src={webm} type="video/webm" />
+              <source src={mp4} type="video/mp4" />
+            </video>
+          );
+        })()}
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              'radial-gradient(ellipse 78% 70% at 50% 42%, rgba(5,5,8,0.64) 0%, rgba(5,5,8,0.82) 60%, rgba(5,5,8,0.96) 100%), linear-gradient(180deg, rgba(5,5,8,0.74) 0%, rgba(5,5,8,0.62) 38%, rgba(5,5,8,0.9) 100%)',
+          }}
+        />
+      </div>
+
+      <div data-testid="landing-content" className="relative z-10">
 
 
 
@@ -772,6 +769,8 @@ export default function LandingPage() {
           </p>
         </div>
       </footer>
+
+      </div>
 
       {/* Install Guide Modal */}
       <Dialog open={showInstallGuide} onOpenChange={setShowInstallGuide}>
