@@ -16,6 +16,8 @@ import { LiveAppSection } from '@/components/LiveAppSection';
 import { SocialAndProjectsSection } from '@/components/SocialAndProjectsSection';
 import { Reveal } from '@/components/Reveal';
 import { AppShowcaseSection } from '@/components/landing/AppShowcaseSection';
+import { HowItWorksSection } from '@/components/landing/HowItWorksSection';
+import { FaqSection } from '@/components/landing/FaqSection';
 
 /* ─── SECTION WRAPPER: usa o Reveal compartilhado (IntersectionObserver + reduced-motion) ─── */
 function ScrollReveal({ children, className = '', delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
@@ -233,6 +235,10 @@ export default function LandingPage() {
 
       {/* ═══ APP SHOWCASE (Veja por dentro) ═══ */}
       <AppShowcaseSection />
+
+      {/* ═══ COMO FUNCIONA + NÚMEROS ═══ */}
+      <HowItWorksSection />
+
 
       {/* ═══ RECURSOS ═══ */}
       <section id="recursos" className="relative py-28 md:py-36">
@@ -578,6 +584,10 @@ export default function LandingPage() {
 
       {/* ═══ CREATOR / DE ALUNO PARA ALUNO ═══ */}
       <CreatorSection />
+
+      {/* ═══ FAQ ═══ */}
+      <FaqSection />
+
 
       {/* ═══ HOW IT WAS BUILT ═══ */}
       <TechStackSection />
