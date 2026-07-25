@@ -110,7 +110,8 @@ function aggregateByRoute(timings: RouteTiming[], perfEvents: PerfEvent[], error
 }
 
 export function DiagnosticsPanel() {
-  const { perfEvents, errors, timings, safeMode } = useLiveData();
+  const { perfEvents, errors, timings, authEvents, safeMode } = useLiveData();
+  const auth = useAuth();
   const summary = useMemo(() => summarizeEvents(perfEvents), [perfEvents]);
   const routeStats = useMemo(() => aggregateByRoute(timings, perfEvents, errors), [timings, perfEvents, errors]);
 
@@ -118,9 +119,15 @@ export function DiagnosticsPanel() {
   const slowFetches = perfEvents.filter((e): e is Extract<PerfEvent, { kind: 'slow-fetch' }> => e.kind === 'slow-fetch');
   const slowLoads = perfEvents.filter((e): e is Extract<PerfEvent, { kind: 'page-load' }> => e.kind === 'page-load' && e.slow);
 
+  const lastRefresh = useMemo(
+    () => [...authEvents].reverse().find((e) => e.event === 'refresh_success' || e.event === 'refresh_settled'),
+    [authEvents],
+  );
+
   const clearAll = () => {
     clearEvents();
     clearRuntimeLogs();
+    clearAuthEvents();
   };
 
   return (
