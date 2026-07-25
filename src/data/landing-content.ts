@@ -1,7 +1,10 @@
 import { BookOpen, Brain, Cpu, Flame, Layers, PenLine, Target } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
-export const landingBackgroundVideoUrl = '/media/landing-background.mp4';
+export const landingBackgroundVideoSources = {
+  webm: '/media/landing-background.webm',
+  mp4: '/media/landing-background.mp4',
+} as const;
 
 export interface Feature {
   icon: LucideIcon;

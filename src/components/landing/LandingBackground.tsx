@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import landingBgPoster from '@/assets/landing-bg-poster.jpg';
-import { landingBackgroundVideoUrl } from '@/data/landing-content';
+import { landingBackgroundVideoSources } from '@/data/landing-content';
 import { useLandingBackgroundVideo } from '@/hooks/useLandingBackgroundVideo';
 import { useAutoplayBackgroundVideo, useVideoReadiness } from './primitives';
 
@@ -62,8 +62,10 @@ export function LandingBackground() {
               const code = event.currentTarget.error?.code;
               if (code === 3 || code === 4) setVideoFailed(true);
             }}
-            src={landingBackgroundVideoUrl}
-          />
+          >
+            <source src={landingBackgroundVideoSources.webm} type="video/webm" />
+            <source src={landingBackgroundVideoSources.mp4} type="video/mp4" />
+          </video>
         )}
 
         <div
