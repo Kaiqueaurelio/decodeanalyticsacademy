@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Sparkles, ShieldCheck, AlertTriangle, Cloud, KeyRound, PlayCircle } from 'lucide-react';
+import { Loader2, Sparkles, ShieldCheck, AlertTriangle, Cloud, KeyRound, PlayCircle, Zap } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 
 const SETTING_KEY = 'ai_provider';
