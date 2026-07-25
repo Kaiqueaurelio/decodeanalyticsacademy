@@ -101,10 +101,15 @@ function googleToOpenAIStream(googleBody: ReadableStream<Uint8Array>): ReadableS
   });
 }
 
+import { requireUser } from "../_shared/auth-guard.ts";
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
+
+  const auth = await requireUser(req, corsHeaders);
+  if (!auth.ok) return auth.response;
 
   try {
     const GOOGLE_AI_API_KEY = Deno.env.get("GOOGLE_AI_API_KEY");
