@@ -1,11 +1,13 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserProfile } from '@/hooks/queries/useUserProfile';
 import { ShieldBan } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { GlitchLoader } from '@/components/GlitchLoader';
 
-export function ProtectedRoute({ children, adminOnly = false }: { children: React.ReactNode; adminOnly?: boolean }) {
+export function ProtectedRoute({ children, adminOnly = false, blockForEnem = false }: { children: React.ReactNode; adminOnly?: boolean; blockForEnem?: boolean }) {
   const { user, session, status, isSessionHydrated, isAdmin, isBlocked, loading, roleChecked, signOut } = useAuth();
+  const { data: profile } = useUserProfile(user?.id);
 
   if (loading || !isSessionHydrated || status === 'loading' || status === 'hydrating' || (user && !roleChecked)) {
     return (
