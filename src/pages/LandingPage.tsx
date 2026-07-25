@@ -1,114 +1,55 @@
-import { useState, useRef, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
-  ArrowRight, BookOpen, GraduationCap, Cpu, Brain,
-  ChevronRight, Download, Smartphone, Layers, Rocket, Target,
-  BarChart3, PenLine, Flame, TrendingUp, CheckCircle,
+  ArrowRight, BookOpen, GraduationCap, Brain,
+  ChevronRight, Download, Layers, Rocket,
+  BarChart3, TrendingUp, CheckCircle,
 } from 'lucide-react';
 import logoDark from '@/assets/owl-icon.png';
-import landingBgPoster from '@/assets/landing-bg-poster.jpg';
-import bg1080Mp4 from '@/assets/landing-bg/bg-1080.mp4.asset.json';
-import bg720Mp4 from '@/assets/landing-bg/bg-720.mp4.asset.json';
-import bg480Mp4 from '@/assets/landing-bg/bg-480.mp4.asset.json';
-import bg1080Webm from '@/assets/landing-bg/bg-1080.webm.asset.json';
-import bg720Webm from '@/assets/landing-bg/bg-720.webm.asset.json';
-import bg480Webm from '@/assets/landing-bg/bg-480.webm.asset.json';
-const bgAssets = {
-  '1080-mp4': bg1080Mp4 as { url: string },
-  '720-mp4': bg720Mp4 as { url: string },
-  '480-mp4': bg480Mp4 as { url: string },
-  '1080-webm': bg1080Webm as { url: string },
-  '720-webm': bg720Webm as { url: string },
-  '480-webm': bg480Webm as { url: string },
-};
 
 import { TestimonialsSection } from '@/components/TestimonialsSection';
 import { CreatorSection } from '@/components/CreatorSection';
 import { TechStackSection } from '@/components/TechStackSection';
 import { LiveAppSection } from '@/components/LiveAppSection';
 import { SocialAndProjectsSection } from '@/components/SocialAndProjectsSection';
-import { Reveal } from '@/components/Reveal';
 import { AppShowcaseSection } from '@/components/landing/AppShowcaseSection';
 import { HowItWorksSection } from '@/components/landing/HowItWorksSection';
 import { FaqSection } from '@/components/landing/FaqSection';
+import { LandingBackground } from '@/components/landing/LandingBackground';
+import { InstallGuideDialog } from '@/components/landing/InstallGuideDialog';
+import { CyberGrid, GlowOrb, ParallaxBlock, ScrollReveal } from '@/components/landing/primitives';
+import { faqs, features, roadmap } from '@/data/landing-content';
 
-/* ─── SECTION WRAPPER: usa o Reveal compartilhado (IntersectionObserver + reduced-motion) ─── */
-function ScrollReveal({ children, className = '', delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
-  return (
-    <Reveal from="bottom" distance={48} delay={delay * 1000} className={className}>
-      {children}
-    </Reveal>
-  );
+const DEFAULT_APP_ORIGIN = 'https://decodeanalyticsacademy.com.br';
+
+interface DeferredInstallPrompt {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
 }
 
-/* ─── PARALLAX IMAGE ─── */
-function ParallaxBlock({ children, speed = 0.3, className = '' }: { children: React.ReactNode; speed?: number; className?: string }) {
-  const ref = useRef(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
-  const y = useTransform(scrollYProgress, [0, 1], [speed * -100, speed * 100]);
-  return (
-    <motion.div ref={ref} style={{ y }} className={className}>
-      {children}
-    </motion.div>
-  );
+/** Triggers the PWA install prompt if the browser cached one; falls back to the manual guide. */
+async function tryNativePwaInstall(): Promise<boolean> {
+  const deferred = (window as unknown as { __pwaInstallPrompt?: DeferredInstallPrompt | null }).__pwaInstallPrompt;
+  if (!deferred || typeof deferred.prompt !== 'function') return false;
+  try {
+    await deferred.prompt();
+    const choice = await deferred.userChoice;
+    if (choice.outcome === 'accepted') {
+      (window as unknown as { __pwaInstallPrompt: null }).__pwaInstallPrompt = null;
+    }
+    return true;
+  } catch {
+    return false;
+  }
 }
-
-/* ─── GLOW ORB ─── */
-function GlowOrb({ className, style }: { className: string; style?: React.CSSProperties }) {
-  return <div className={`absolute rounded-full blur-[120px] pointer-events-none ${className}`} style={style} />;
-}
-
-/* ─── GRID BG ─── */
-function CyberGrid() {
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      <div className="absolute inset-0" style={{
-        backgroundImage: `linear-gradient(rgba(0,240,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,240,255,0.03) 1px, transparent 1px)`,
-        backgroundSize: '60px 60px',
-      }} />
-    </div>
-  );
-}
-
-/* ─── DATA ─── */
-const features = [
-  { icon: BookOpen, name: 'Apostilas Interativas', desc: 'Conteúdo estruturado por disciplina com anotações', color: '#00f0ff' },
-  { icon: PenLine, name: 'Exercícios de Fixação', desc: 'Questões com gabarito e explicação detalhada', color: '#a855f7' },
-  { icon: Brain, name: 'Flashcards Inteligentes', desc: 'Revisão espaçada para memorização eficiente', color: '#22c55e' },
-  { icon: Flame, name: 'Gamificação & XP', desc: 'Pontos, badges, streaks e ranking entre alunos', color: '#f59e0b' },
-];
-
-const roadmap = [
-  { phase: '01', title: 'Fundamentos', desc: 'Lógica de programação, matemática discreta e introdução à computação.', icon: Cpu },
-  { phase: '02', title: 'Desenvolvimento', desc: 'Estrutura de dados, algoritmos, banco de dados e engenharia de software.', icon: Layers },
-  { phase: '03', title: 'Especialização', desc: 'Redes, segurança, inteligência artificial e computação em nuvem.', icon: Brain },
-  { phase: '04', title: 'Prática & Projetos', desc: 'Projetos integradores, estágio supervisionado e TCC.', icon: Target },
-];
-
-
-const faqs = [
-  { q: 'Para quais cursos a plataforma é voltada?', a: 'Ciência da Computação, Sistemas de Informação e Engenharia da Computação — do 1º ao 8º semestre.' },
-  { q: 'Como funcionam os exercícios?', a: 'Questões de múltipla escolha com gabarito comentado e explicação detalhada para cada alternativa.' },
-  { q: 'Posso acessar pelo celular?', a: 'Sim! A plataforma é um PWA — funciona no navegador e pode ser instalada como app no celular.' },
-  { q: 'O conteúdo é gratuito?', a: 'Todo o conteúdo disponível na plataforma é acessível para alunos cadastrados.' },
-];
 
 export default function LandingPage() {
   const navigate = useNavigate();
   const [showInstallGuide, setShowInstallGuide] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const [appOrigin, setAppOrigin] = useState<string>('https://decodeanalyticsacademy.com.br');
-  const heroVideoRef = useRef<HTMLVideoElement>(null);
-  const bgSentinelRef = useRef<HTMLDivElement>(null);
-  const [isSmallScreen, setIsSmallScreen] = useState(false);
-  const [skipVideo, setSkipVideo] = useState(false);
-  const [shouldLoadVideo, setShouldLoadVideo] = useState(false);
-  const [videoReady, setVideoReady] = useState(false);
-  const [videoFailed, setVideoFailed] = useState(false);
-  const [videoTier, setVideoTier] = useState<'480' | '720' | '1080'>('720');
+  const [appOrigin, setAppOrigin] = useState<string>(DEFAULT_APP_ORIGIN);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.location?.origin?.startsWith('http')) {
@@ -116,94 +57,9 @@ export default function LandingPage() {
     }
   }, []);
 
-  // Detecta viewport e rede. Só pula o vídeo em save-data ou 2G — mobile toca em 480p.
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const mq = window.matchMedia('(max-width: 640px)');
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const conn: any = (navigator as any).connection;
-    const update = () => {
-      const saveData = !!conn?.saveData;
-      const et: string = conn?.effectiveType || '';
-      const slow = /(^|-)2g$/.test(et);
-      setIsSmallScreen(mq.matches);
-      setSkipVideo(saveData || slow || reduced.matches);
-      const w = window.innerWidth * (window.devicePixelRatio || 1);
-      if (saveData || et === '3g' || w <= 900) setVideoTier('480');
-      else if (w <= 1500) setVideoTier('720');
-      else setVideoTier('1080');
-    };
-    update();
-    mq.addEventListener?.('change', update);
-    reduced.addEventListener?.('change', update);
-    conn?.addEventListener?.('change', update);
-    return () => {
-      mq.removeEventListener?.('change', update);
-      reduced.removeEventListener?.('change', update);
-      conn?.removeEventListener?.('change', update);
-    };
-  }, []);
-
-  // Lazy-load: só monta o <video> quando o topo da landing está perto do viewport.
-  useEffect(() => {
-    if (skipVideo) { setShouldLoadVideo(false); return; }
-    const el = bgSentinelRef.current;
-    if (!el || typeof IntersectionObserver === 'undefined') {
-      const id = window.setTimeout(() => setShouldLoadVideo(true), 800);
-      return () => window.clearTimeout(id);
-    }
-    const io = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((e) => e.isIntersecting)) {
-          setShouldLoadVideo(true);
-          io.disconnect();
-        }
-      },
-      { rootMargin: '400px 0px' },
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, [skipVideo]);
-
-  useEffect(() => {
-    if (!shouldLoadVideo || skipVideo || videoFailed) return;
-    const video = heroVideoRef.current;
-    if (!video) return;
-
-    video.muted = true;
-    video.setAttribute('muted', '');
-    video.setAttribute('playsinline', '');
-    try { video.load(); } catch {}
-
-    const startPlayback = () => {
-      setVideoReady(true);
-      void video.play().catch(() => {});
-    };
-    startPlayback();
-    video.addEventListener('canplay', startPlayback);
-    video.addEventListener('loadeddata', startPlayback);
-    const onVisible = () => { if (document.visibilityState === 'visible') startPlayback(); };
-    document.addEventListener('visibilitychange', onVisible);
-    return () => {
-      video.removeEventListener('canplay', startPlayback);
-      video.removeEventListener('loadeddata', startPlayback);
-      document.removeEventListener('visibilitychange', onVisible);
-    };
-  }, [shouldLoadVideo, skipVideo, videoFailed]);
-
-
-
   const handleInstallPWA = async () => {
-    try {
-      const deferredPrompt = (window as any).__pwaInstallPrompt;
-      if (deferredPrompt && typeof deferredPrompt.prompt === 'function') {
-        await deferredPrompt.prompt();
-        const choice = await deferredPrompt.userChoice;
-        if (choice.outcome === 'accepted') (window as any).__pwaInstallPrompt = null;
-        return;
-      }
-    } catch (e) { console.warn('PWA prompt failed:', e); }
-    setShowInstallGuide(true);
+    const nativeShown = await tryNativePwaInstall();
+    if (!nativeShown) setShowInstallGuide(true);
   };
 
   return (
@@ -212,63 +68,8 @@ export default function LandingPage() {
       className="dark relative isolate min-h-dvh overflow-x-hidden bg-[#050508] font-cyber selection:bg-primary/30"
       style={{ color: '#e2e8f0' }}
     >
+      <LandingBackground />
 
-      {/* Sentinela para IntersectionObserver decidir quando carregar o vídeo. */}
-      <div ref={bgSentinelRef} aria-hidden="true" className="absolute left-0 top-0 h-1 w-1 opacity-0" />
-
-      {/* ═══ VIDEO DE FUNDO GLOBAL: uma única camada fixa atrás de todo conteúdo ═══ */}
-      <div
-        data-testid="landing-background"
-        aria-hidden="true"
-        className="pointer-events-none fixed inset-0 z-0 overflow-hidden"
-        style={{ contain: 'paint' }}
-      >
-        {/* Poster aparece só até o vídeo ficar pronto; evita efeito duplicado/poster + vídeo. */}
-        <img
-          src={landingBgPoster}
-          alt=""
-          aria-hidden="true"
-          decoding="async"
-          {...({ fetchpriority: 'high' } as any)}
-          className={`landing-bg-media absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${videoReady && !videoFailed ? 'opacity-0' : 'opacity-90'}`}
-        />
-        {shouldLoadVideo && !skipVideo && (() => {
-          const webm = bgAssets[`${videoTier}-webm` as const].url;
-          const mp4 = bgAssets[`${videoTier}-mp4` as const].url;
-          return (
-            <video
-              key={videoTier}
-              data-testid="landing-background-video"
-              ref={heroVideoRef}
-              className={`landing-bg-media landing-bg-video absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${videoReady && !videoFailed ? 'opacity-100' : 'opacity-0'}`}
-              autoPlay
-              loop
-              muted
-              playsInline
-              preload="auto"
-              poster={landingBgPoster}
-              onLoadedData={() => { setVideoReady(true); setVideoFailed(false); }}
-              onCanPlay={() => { setVideoReady(true); setVideoFailed(false); }}
-              onError={(e) => {
-                // Só marca falha real (MEDIA_ERR_SRC_NOT_SUPPORTED ou DECODE),
-                // ignora aborts/network transitórios do próprio Chrome.
-                const code = e.currentTarget.error?.code;
-                if (code === 3 || code === 4) setVideoFailed(true);
-              }}
-            >
-              <source src={webm} type="video/webm" />
-              <source src={mp4} type="video/mp4" />
-            </video>
-          );
-        })()}
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              'radial-gradient(ellipse 90% 80% at 50% 45%, rgba(5,5,8,0.25) 0%, rgba(5,5,8,0.45) 60%, rgba(5,5,8,0.7) 100%), linear-gradient(180deg, rgba(5,5,8,0.35) 0%, rgba(5,5,8,0.25) 40%, rgba(5,5,8,0.6) 100%)',
-          }}
-        />
-      </div>
 
       <div data-testid="landing-content" className="relative z-10">
 
@@ -774,52 +575,8 @@ export default function LandingPage() {
 
       </div>
 
-      {/* Install Guide Modal */}
-      <Dialog open={showInstallGuide} onOpenChange={setShowInstallGuide}>
-        <DialogContent className="max-w-sm" style={{ background: '#0a0a12', border: '1px solid rgba(0,240,255,0.1)', color: '#e2e8f0' }}>
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-base">
-              <Smartphone className="w-5 h-5" style={{ color: '#00f0ff' }} />
-              Instalar o App
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <p className="text-sm" style={{ color: '#94a3b8' }}>
-              Para instalar, abra o site publicado no navegador do seu celular:
-            </p>
-            <div className="p-3 rounded-lg" style={{ background: 'rgba(0,240,255,0.06)', border: '1px solid rgba(0,240,255,0.12)' }}>
-              <p className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: '#00f0ff' }}>Link:</p>
-              <a
-                href={appOrigin}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm font-semibold underline break-all"
-                style={{ color: '#00f0ff' }}
-              >
-                {appOrigin.replace(/^https?:\/\//, '')}
-              </a>
+      <InstallGuideDialog open={showInstallGuide} onOpenChange={setShowInstallGuide} appOrigin={appOrigin} />
 
-            </div>
-            <div className="space-y-3 text-sm" style={{ color: '#94a3b8' }}>
-              <div className="p-3 rounded-lg" style={{ background: 'rgba(255,255,255,0.03)' }}>
-                <p className="font-semibold mb-1" style={{ color: '#e2e8f0' }}>iPhone / iPad (Safari)</p>
-                <p>1. Abra no <strong>Safari</strong> → 2. <strong>Compartilhar ↑</strong> → 3. <strong>Adicionar à Tela</strong></p>
-              </div>
-              <div className="p-3 rounded-lg" style={{ background: 'rgba(255,255,255,0.03)' }}>
-                <p className="font-semibold mb-1" style={{ color: '#e2e8f0' }}>Android (Chrome)</p>
-                <p>1. Abra no <strong>Chrome</strong> → 2. <strong>Menu ⋮</strong> → 3. <strong>Instalar app</strong></p>
-              </div>
-            </div>
-            <button
-              onClick={() => setShowInstallGuide(false)}
-              className="w-full py-2.5 rounded-lg text-sm font-semibold"
-              style={{ background: '#00f0ff', color: '#050508' }}
-            >
-              Entendi
-            </button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
