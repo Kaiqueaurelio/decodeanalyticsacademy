@@ -527,6 +527,45 @@ export default function AdminApostilaWorkbench() {
             {generatingCover ? <Loader2 className="h-3 w-3 animate-spin" /> : <ImageIcon className="h-3 w-3 text-primary" />}
             {coverUrl ? 'Regerar capa' : 'Gerar capa IA'}
           </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 gap-1.5 text-xs"
+            onClick={async () => {
+              if (dirtyRef.current) await doSave();
+              const tId = toast.loading('Estruturando em módulos e lições…');
+              const { data, error } = await invokeFunction<{ modules: number; chapters: number; lessons: number }>(
+                'parse-apostila-lessons',
+                { apostila_id: id, replace: true },
+              );
+              toast.dismiss(tId);
+              if (error) return toast.error(`Falha: ${error.message}`);
+              toast.success(`Estrutura pronta: ${data?.modules} módulos · ${data?.chapters} capítulos · ${data?.lessons} lições`);
+            }}
+            title="Divide o conteúdo em módulos → capítulos → lições para o modo de estudo"
+          >
+            <FileText className="h-3 w-3 text-primary" /> Estruturar em lições
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 gap-1.5 text-xs"
+            onClick={async () => {
+              const n = Number(window.prompt('Quantas questões ENEM gerar? (1-20)', '10') || '0');
+              if (!n || n < 1) return;
+              const tId = toast.loading(`Gerando ${n} questão(ões) estilo ENEM…`);
+              const { data, error } = await invokeFunction<{ inserted: number }>(
+                'generate-enem-exercises',
+                { apostila_id: id, count: n },
+              );
+              toast.dismiss(tId);
+              if (error) return toast.error(`Falha: ${error.message}`);
+              toast.success(`${data?.inserted ?? n} questão(ões) ENEM adicionada(s)`);
+            }}
+            title="Gera questões autênticas estilo ENEM (5 alternativas, contextualização, explicação dos distratores)"
+          >
+            <Wand2 className="h-3 w-3 text-primary" /> Questões ENEM
+          </Button>
           <Button size="sm" variant="outline" className="h-7 gap-1.5 text-xs" onClick={() => setPasteOpen(true)}>
             <PenTool className="h-3 w-3 text-primary" /> Colar inteligente
           </Button>
