@@ -6,6 +6,13 @@ const LEGACY_KEYS = ['decode_ella_avatar_url', 'decode_ella_avatar_url_v2', 'dec
 
 export const DEFAULT_ELLA_AVATAR = ellaAvatarBundled as string;
 
+// Expõe a URL do avatar como CSS var para pseudo-elementos (::before em AdsChatBuilder).
+if (typeof document !== 'undefined') {
+  try {
+    document.documentElement.style.setProperty('--ella-avatar-url', `url('${DEFAULT_ELLA_AVATAR}')`);
+  } catch {}
+}
+
 const isValidHttp = (u: string) => /^https?:\/\//i.test(u);
 
 export const getEllaAvatarUrl = () => {
