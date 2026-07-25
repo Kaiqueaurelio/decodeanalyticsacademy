@@ -123,22 +123,37 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="dark min-h-dvh font-cyber overflow-x-hidden selection:bg-primary/30" style={{ background: '#050508', color: '#e2e8f0' }}>
+    <div className="dark min-h-dvh font-cyber overflow-x-hidden selection:bg-primary/30 relative" style={{ background: '#050508', color: '#e2e8f0' }}>
 
-      {/* ═══ HERO / NAVEGAÇÃO ═══ */}
-      <section className="relative isolate min-h-screen overflow-hidden bg-[#050508]">
+      {/* ═══ VIDEO DE FUNDO GLOBAL (fixo, cobre toda a landing) ═══ */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-0 -z-30 overflow-hidden"
+        style={{ transform: 'translateZ(0)', willChange: 'transform' }}
+      >
         <video
           ref={heroVideoRef}
-          className="hero-background-video absolute inset-0 -z-20 h-full w-full scale-[1.03] object-cover opacity-60"
+          className="landing-bg-video h-full w-full scale-[1.03] object-cover opacity-50"
           autoPlay
           loop
           muted
           playsInline
           preload="metadata"
-          aria-hidden="true"
         >
           <source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260328_065045_c44942da-53c6-4804-b734-f9e07fc22e08.mp4" type="video/mp4" />
         </video>
+        {/* Gradiente vertical para garantir legibilidade em qualquer seção */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              'linear-gradient(180deg, rgba(5,5,8,0.72) 0%, rgba(5,5,8,0.55) 40%, rgba(5,5,8,0.7) 70%, rgba(5,5,8,0.9) 100%)',
+          }}
+        />
+      </div>
+
+      {/* ═══ HERO / NAVEGAÇÃO ═══ */}
+      <section className="relative isolate min-h-screen overflow-hidden">
         <CyberGrid />
         <div className="hero-video-vignette pointer-events-none absolute inset-0 -z-10" aria-hidden="true" />
         <div
@@ -318,7 +333,7 @@ export default function LandingPage() {
       </section>
 
       {/* ═══ ROADMAP / TRILHA ACADÊMICA ═══ */}
-      <section id="roadmap" className="relative py-28 md:py-36" style={{ background: 'linear-gradient(180deg, #050508 0%, #0a0a14 50%, #050508 100%)' }}>
+      <section id="roadmap" className="relative py-28 md:py-36" style={{ background: 'linear-gradient(180deg, rgba(5,5,8,0.4) 0%, rgba(10,10,20,0.55) 50%, rgba(5,5,8,0.4) 100%)' }}>
         <div className="max-w-7xl mx-auto px-5">
           <div className="grid lg:grid-cols-2 gap-16 items-start">
             {/* Left — sticky text */}
@@ -443,7 +458,7 @@ export default function LandingPage() {
       </section>
 
       {/* ═══ POR QUE DECODE ═══ */}
-      <section className="relative py-28 md:py-36" style={{ background: 'linear-gradient(180deg, #050508 0%, #0d0d16 50%, #050508 100%)' }}>
+      <section className="relative py-28 md:py-36" style={{ background: 'linear-gradient(180deg, rgba(5,5,8,0.4) 0%, rgba(13,13,22,0.55) 50%, rgba(5,5,8,0.4) 100%)' }}>
         <div className="max-w-7xl mx-auto px-5">
           <ScrollReveal className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold">

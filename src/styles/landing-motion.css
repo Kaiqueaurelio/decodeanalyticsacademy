@@ -181,3 +181,14 @@
   .hero-signal > span,
   .hero-scroll-cue span { animation: none; }
 }
+
+/* Video de fundo global da landing */
+.landing-bg-video {
+  animation: decode-video-fade-in 900ms ease-out both;
+}
+@media (max-width: 640px) {
+  .landing-bg-video { opacity: 0.32 !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .landing-bg-video { animation: none; }
+}
