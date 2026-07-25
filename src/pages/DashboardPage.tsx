@@ -19,7 +19,9 @@ import { TermsFooterLink } from '@/components/TermsFooterLink';
 import { ContinueWhereLeftCard } from '@/components/ContinueWhereLeftCard';
 import { useApostilasList, useExerciseCounts, useDashboardStats, type ApostilaSummary } from '@/hooks/queries/useDashboardData';
 import { useUserProfile } from '@/hooks/queries/useUserProfile';
-import { BookOpen } from 'lucide-react';
+import { BookOpen, Search, X } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 
 
