@@ -20,9 +20,10 @@ import {
   BookOpen, PenLine, Users, Megaphone, RefreshCw, Search, ChevronRight, Wand2,
   GraduationCap, Bell, Link as LinkIcon, FileText, FileUp,
   Eye, EyeOff, Edit, Trash2, Trophy, Medal, Award, Filter, X, Check,
-  CheckCircle2, XCircle, CalendarDays, ArrowDownUp,
+  CheckCircle2, XCircle, CalendarDays, ArrowDownUp, FolderOpen, ChevronDown,
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { getSubjectColor } from '@/lib/subject-colors';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from 'recharts';
