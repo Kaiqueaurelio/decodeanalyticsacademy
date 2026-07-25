@@ -239,7 +239,7 @@ export default function LandingPage() {
             alt=""
             aria-hidden="true"
             decoding="async"
-            fetchPriority="high"
+            fetchpriority="high"
             className="landing-bg-video absolute inset-0 h-full w-full scale-[1.03] object-cover opacity-60"
           />
           {shouldLoadVideo && !skipVideo && (() => {
