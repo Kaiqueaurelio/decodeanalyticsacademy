@@ -490,7 +490,12 @@ function OverviewTab({ apostilas, exercises, allAnswers, materials, users, setTa
                   </Badge>
                 </motion.div>
               ))}
-              {apostilas.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">Nenhuma apostila criada.</p>}
+              {apostilas.length === 0 && (
+                <div className="text-center py-6 text-muted-foreground">
+                  <BookOpen className="h-8 w-8 mx-auto mb-2 opacity-30" strokeWidth={1.5} />
+                  <p className="text-sm">Nenhuma apostila criada.</p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </motion.div>
