@@ -92,35 +92,59 @@ export function useAds(adType?: 'banner' | 'popup' | 'inline' | 'sidebar' | 'foo
     try {
       setLoading(true);
 
-      // Buscamos TODOS os anuncios ativos. O filtro por ad_type e aplicado
-      // depois no cliente; assim, se o admin so cadastrou anuncios "banner",
-      // eles ainda servem como fallback para popup/sidebar/footer/inline.
-      const { data, error } = await supabase
-        .from('ads')
-        .select('*')
-        .eq('is_active', true)
-        .order('position', { ascending: true });
+      // Passa por edge function que valida content_scope no servidor.
+      // A função devolve [] para usuários sem escopo `full` (ou não autenticados),
+      // então nem chega a expor payload de anúncio no cliente.
+      const qs = new URLSearchParams();
+      if (adType) qs.set('ad_type', adType);
+      if (targetPage) qs.set('target_page', targetPage);
 
-      if (error) throw error;
+      const { data: sess } = await supabase.auth.getSession();
+      const token = sess?.session?.access_token;
 
-      const now = new Date();
-      const baseValid = (data || []).filter((ad: any) => {
-        if (ad.start_date && new Date(ad.start_date) > now) return false;
-        if (ad.end_date && new Date(ad.end_date) < now) return false;
-        if (targetPage && Array.isArray(ad.target_pages) && ad.target_pages.length > 0) {
-          if (!ad.target_pages.includes('all') && !ad.target_pages.includes(targetPage)) return false;
-        }
-        return true;
+      const fnUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/list-ads${qs.toString() ? `?${qs}` : ''}`;
+      const res = await fetch(fnUrl, {
+        method: 'GET',
+        headers: {
+          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
       });
+      const payload = await res.json().catch(() => ({}));
+      const error = !res.ok ? new Error(payload?.error || `HTTP ${res.status}`) : null;
+      const data = res.ok ? payload : null;
 
-      let validAds = baseValid;
-      if (adType) {
-        const matching = baseValid.filter((ad: any) => ad.ad_type === adType);
-        // Se nao houver anuncio do tipo pedido, faz fallback para todos
-        validAds = matching.length > 0 ? matching : baseValid;
+      // Fallback: quando a edge função não estiver disponível, cai para a query direta
+      // (RLS já impede escopo enem_only de enxergar anúncios).
+      let list: any[] = [];
+      if (error) {
+        if (!isAbortLikeError(error)) console.warn('list-ads indisponível, usando fallback RLS:', error);
+        const { data: rows, error: fbErr } = await supabase
+          .from('ads')
+          .select('*')
+          .eq('is_active', true)
+          .order('position', { ascending: true });
+        if (fbErr) throw fbErr;
+
+        const now = new Date();
+        const baseValid = (rows || []).filter((ad: any) => {
+          if (ad.start_date && new Date(ad.start_date) > now) return false;
+          if (ad.end_date && new Date(ad.end_date) < now) return false;
+          if (targetPage && Array.isArray(ad.target_pages) && ad.target_pages.length > 0) {
+            if (!ad.target_pages.includes('all') && !ad.target_pages.includes(targetPage)) return false;
+          }
+          return true;
+        });
+        list = baseValid;
+        if (adType) {
+          const matching = baseValid.filter((ad: any) => ad.ad_type === adType);
+          list = matching.length > 0 ? matching : baseValid;
+        }
+      } else {
+        list = Array.isArray(data?.ads) ? data.ads : [];
       }
 
-      setAds(validAds.map(professionalizeAd));
+      setAds(list.map(professionalizeAd));
     } catch (error) {
       if (!isAbortLikeError(error)) {
         console.error('Erro ao carregar anuncios:', error);
