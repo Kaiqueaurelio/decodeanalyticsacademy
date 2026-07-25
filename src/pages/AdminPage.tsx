@@ -2854,12 +2854,31 @@ export default function AdminPage() {
                                 {isTestBot && <Badge className="text-[10px] bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-500/30 hover:bg-amber-500/20">🤖 TESTE BOT</Badge>}
                                 {u.is_blocked && <Badge variant="destructive" className="text-[10px]">Bloqueado</Badge>}
                                 {isRA && <Badge variant="outline" className="text-[10px]">RA UNIP</Badge>}
+                                {(u as any).content_scope === 'enem_only' && (
+                                  <Badge className="text-[10px] bg-primary/15 text-primary border-primary/30 hover:bg-primary/15">Apenas ENEM</Badge>
+                                )}
                               </div>
                               <p className="text-xs text-foreground/80 break-all leading-snug font-mono">{u.email}</p>
                               <p className="text-[11px] text-muted-foreground mt-0.5">Desde {new Date(u.created_at).toLocaleDateString('pt-BR')}</p>
                             </div>
                           </div>
                           <div className="flex gap-1.5 shrink-0 sm:ml-auto items-center justify-end flex-wrap">
+                            {/* Escopo de conteúdo (ENEM/Completo) */}
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-xs h-9 gap-1.5"
+                              onClick={async () => {
+                                const current = (u as any).content_scope === 'enem_only' ? 'enem_only' : 'full';
+                                const next = current === 'enem_only' ? 'full' : 'enem_only';
+                                const { error } = await supabase.from('profiles').update({ content_scope: next } as any).eq('user_id', u.user_id);
+                                if (error) { toast.error('Erro ao atualizar escopo'); return; }
+                                toast.success(next === 'enem_only' ? 'Acesso restrito a ENEM' : 'Acesso completo liberado');
+                                loadAll();
+                              }}
+                            >
+                              {(u as any).content_scope === 'enem_only' ? 'Liberar tudo' : 'Restringir a ENEM'}
+                            </Button>
                             {/* Primário: Bloquear/Desbloquear */}
                             <Button
                               size="sm"
