@@ -221,10 +221,8 @@ export function InAppNewsReader({ item, onClose }: Props) {
 
           {!loading && !error && data && (
             <>
-              <div
-                className="news-article prose prose-invert max-w-none prose-p:leading-relaxed prose-p:text-[15px] prose-headings:font-bold prose-a:text-primary prose-img:rounded-xl prose-img:my-4"
-                dangerouslySetInnerHTML={{ __html: data.contentHtml }}
-              />
+              <SanitizedArticle html={data.contentHtml} />
+
 
               {/* Aviso de conteúdo extraído */}
               <div className="mt-6 pt-4 border-t border-border/50 text-xs text-muted-foreground text-center">
