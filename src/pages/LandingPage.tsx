@@ -126,32 +126,34 @@ export default function LandingPage() {
   return (
     <div className="dark min-h-dvh font-cyber overflow-x-hidden selection:bg-primary/30 relative" style={{ color: '#e2e8f0' }}>
 
-      {/* ═══ VIDEO DE FUNDO GLOBAL (fixo, cobre toda a landing) ═══ */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none fixed inset-0 -z-30 overflow-hidden"
-        style={{ transform: 'translateZ(0)', willChange: 'transform' }}
-      >
-        <video
-          ref={heroVideoRef}
-          className="landing-bg-video h-full w-full scale-[1.03] object-cover opacity-50"
-          autoPlay
-          loop
-          muted
-          playsInline
-          preload="metadata"
-        >
-          <source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260328_065045_c44942da-53c6-4804-b734-f9e07fc22e08.mp4" type="video/mp4" />
-        </video>
-        {/* Gradiente vertical para garantir legibilidade em qualquer seção */}
+      {/* ═══ VIDEO DE FUNDO GLOBAL (portal em document.body para escapar de transforms de ancestrais) ═══ */}
+      {typeof document !== 'undefined' && createPortal(
         <div
-          className="absolute inset-0"
-          style={{
-            background:
-              'linear-gradient(180deg, rgba(5,5,8,0.72) 0%, rgba(5,5,8,0.55) 40%, rgba(5,5,8,0.7) 70%, rgba(5,5,8,0.9) 100%)',
-          }}
-        />
-      </div>
+          aria-hidden="true"
+          className="pointer-events-none fixed inset-0 overflow-hidden"
+          style={{ zIndex: -1 }}
+        >
+          <video
+            ref={heroVideoRef}
+            className="landing-bg-video h-full w-full scale-[1.03] object-cover opacity-60"
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="auto"
+          >
+            <source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260328_065045_c44942da-53c6-4804-b734-f9e07fc22e08.mp4" type="video/mp4" />
+          </video>
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                'linear-gradient(180deg, rgba(5,5,8,0.7) 0%, rgba(5,5,8,0.5) 40%, rgba(5,5,8,0.65) 70%, rgba(5,5,8,0.85) 100%)',
+            }}
+          />
+        </div>,
+        document.body,
+      )}
 
       {/* ═══ HERO / NAVEGAÇÃO ═══ */}
       <section className="relative isolate min-h-screen overflow-hidden">
