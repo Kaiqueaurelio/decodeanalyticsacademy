@@ -18,13 +18,15 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Activity, AlertTriangle, Trash2, RefreshCw, Rocket, ShieldAlert, Clock,
-  Bug, Network, ChevronRight, CheckCircle2,
+  Bug, Network, ChevronRight, CheckCircle2, ShieldCheck, KeyRound,
 } from 'lucide-react';
 import { getEvents, clearEvents, summarizeEvents, PERF_THRESHOLDS, type PerfEvent } from '@/lib/perf-monitor';
 import {
   getRuntimeErrors, getRouteTimings, clearRuntimeLogs, bucketRoute,
   type RuntimeError, type RouteTiming,
 } from '@/lib/runtime-logs';
+import { getAuthEvents, clearAuthEvents, type AuthLogEntry } from '@/lib/auth-log';
+import { useAuth } from '@/hooks/useAuth';
 import { isSafeModeEnabled, isSafeModeManual, disableSafeMode, getRecentFailures } from '@/lib/safe-mode';
 import { cn } from '@/lib/utils';
 
