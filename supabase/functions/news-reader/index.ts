@@ -205,6 +205,9 @@ async function readArticle(url: string): Promise<ReaderResult> {
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
   try {
+    const auth = await requireUser(req, corsHeaders);
+    if (!auth.ok) return auth.response;
+
     let url: string | null = null;
     if (req.method === 'POST') {
       const body = await req.json().catch(() => ({}));
@@ -212,7 +215,7 @@ Deno.serve(async (req) => {
     } else {
       url = new URL(req.url).searchParams.get('url');
     }
-    if (!url || !/^https?:\/\//i.test(url)) {
+    if (!url || !isSafePublicUrl(url)) {
       return new Response(JSON.stringify({ ok: false, error: 'URL inválida' }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
