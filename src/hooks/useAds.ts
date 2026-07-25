@@ -92,35 +92,50 @@ export function useAds(adType?: 'banner' | 'popup' | 'inline' | 'sidebar' | 'foo
     try {
       setLoading(true);
 
-      // Buscamos TODOS os anuncios ativos. O filtro por ad_type e aplicado
-      // depois no cliente; assim, se o admin so cadastrou anuncios "banner",
-      // eles ainda servem como fallback para popup/sidebar/footer/inline.
-      const { data, error } = await supabase
-        .from('ads')
-        .select('*')
-        .eq('is_active', true)
-        .order('position', { ascending: true });
+      // Passa por edge function que valida content_scope no servidor.
+      // A função devolve [] para usuários sem escopo `full` (ou não autenticados),
+      // então nem chega a expor payload de anúncio no cliente.
+      const params: Record<string, string> = {};
+      if (adType) params.ad_type = adType;
+      if (targetPage) params.target_page = targetPage;
 
-      if (error) throw error;
+      const { data, error } = await supabase.functions.invoke('list-ads', {
+        method: 'GET',
+        // supabase-js serializa como query string quando `body` é undefined em GET
+        headers: params,
+      } as any);
 
-      const now = new Date();
-      const baseValid = (data || []).filter((ad: any) => {
-        if (ad.start_date && new Date(ad.start_date) > now) return false;
-        if (ad.end_date && new Date(ad.end_date) < now) return false;
-        if (targetPage && Array.isArray(ad.target_pages) && ad.target_pages.length > 0) {
-          if (!ad.target_pages.includes('all') && !ad.target_pages.includes(targetPage)) return false;
+      // Fallback: quando a edge função não estiver disponível, cai para a query direta
+      // (RLS já impede escopo enem_only de enxergar anúncios).
+      let list: any[] = [];
+      if (error) {
+        if (!isAbortLikeError(error)) console.warn('list-ads indisponível, usando fallback RLS:', error);
+        const { data: rows, error: fbErr } = await supabase
+          .from('ads')
+          .select('*')
+          .eq('is_active', true)
+          .order('position', { ascending: true });
+        if (fbErr) throw fbErr;
+
+        const now = new Date();
+        const baseValid = (rows || []).filter((ad: any) => {
+          if (ad.start_date && new Date(ad.start_date) > now) return false;
+          if (ad.end_date && new Date(ad.end_date) < now) return false;
+          if (targetPage && Array.isArray(ad.target_pages) && ad.target_pages.length > 0) {
+            if (!ad.target_pages.includes('all') && !ad.target_pages.includes(targetPage)) return false;
+          }
+          return true;
+        });
+        list = baseValid;
+        if (adType) {
+          const matching = baseValid.filter((ad: any) => ad.ad_type === adType);
+          list = matching.length > 0 ? matching : baseValid;
         }
-        return true;
-      });
-
-      let validAds = baseValid;
-      if (adType) {
-        const matching = baseValid.filter((ad: any) => ad.ad_type === adType);
-        // Se nao houver anuncio do tipo pedido, faz fallback para todos
-        validAds = matching.length > 0 ? matching : baseValid;
+      } else {
+        list = Array.isArray(data?.ads) ? data.ads : [];
       }
 
-      setAds(validAds.map(professionalizeAd));
+      setAds(list.map(professionalizeAd));
     } catch (error) {
       if (!isAbortLikeError(error)) {
         console.error('Erro ao carregar anuncios:', error);
