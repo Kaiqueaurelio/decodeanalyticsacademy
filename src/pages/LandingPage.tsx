@@ -123,13 +123,17 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="dark min-h-dvh font-cyber overflow-x-hidden selection:bg-primary/30" style={{ background: '#050508', color: '#e2e8f0' }}>
+    <div className="dark min-h-dvh font-cyber overflow-x-hidden selection:bg-primary/30 relative" style={{ background: '#050508', color: '#e2e8f0' }}>
 
-      {/* ═══ HERO / NAVEGAÇÃO ═══ */}
-      <section className="relative isolate min-h-screen overflow-hidden bg-[#050508]">
+      {/* ═══ FUNDO GLOBAL: vídeo de ondas fixo cobrindo toda a landing ═══ */}
+      <div
+        className="landing-bg-shell pointer-events-none fixed inset-0 z-0 overflow-hidden"
+        aria-hidden="true"
+        style={{ transform: 'translateZ(0)', willChange: 'transform' }}
+      >
         <video
           ref={heroVideoRef}
-          className="hero-background-video absolute inset-0 -z-20 h-full w-full scale-[1.03] object-cover opacity-60"
+          className="hero-background-video absolute inset-0 h-full w-full scale-[1.06] object-cover opacity-55"
           autoPlay
           loop
           muted
@@ -139,12 +143,17 @@ export default function LandingPage() {
         >
           <source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260328_065045_c44942da-53c6-4804-b734-f9e07fc22e08.mp4" type="video/mp4" />
         </video>
+        <div className="landing-bg-vignette absolute inset-0" />
+      </div>
+
+      {/* ═══ HERO / NAVEGAÇÃO ═══ */}
+      <section className="relative isolate min-h-screen overflow-hidden">
         <CyberGrid />
-        <div className="hero-video-vignette pointer-events-none absolute inset-0 -z-10" aria-hidden="true" />
         <div
-          className="pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[527px] w-[min(984px,90vw)] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#050508]/90 blur-[82px]"
+          className="pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[527px] w-[min(984px,90vw)] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#050508]/70 blur-[82px]"
           aria-hidden="true"
         />
+
         <div className="relative z-10 flex min-h-screen flex-col">
           <header className="px-5 py-5 sm:px-8">
             <div className="mx-auto flex max-w-7xl items-center justify-between">
