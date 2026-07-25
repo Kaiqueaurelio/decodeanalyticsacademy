@@ -235,8 +235,8 @@ export default function LandingPage() {
             className="landing-bg-video absolute inset-0 h-full w-full scale-[1.03] object-cover opacity-60"
           />
           {shouldLoadVideo && !isSmallScreen && (() => {
-            const webm = videoTier === '1080' ? bg1080Webm.url : videoTier === '720' ? bg720Webm.url : bg480Webm.url;
-            const mp4 = videoTier === '1080' ? bg1080Mp4.url : videoTier === '720' ? bg720Mp4.url : bg480Mp4.url;
+            const webm = bgAssets[`${videoTier}-webm` as const].url;
+            const mp4 = bgAssets[`${videoTier}-mp4` as const].url;
             return (
               <video
                 key={videoTier}
