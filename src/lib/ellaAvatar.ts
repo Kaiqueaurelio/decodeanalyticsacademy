@@ -1,8 +1,8 @@
 import ellaAvatarBundled from "@/assets/ella-avatar.jpg";
 
-// v3: usa asset empacotado pelo Vite (funciona em web, PWA e Capacitor).
-export const ELLA_AVATAR_STORAGE_KEY = 'decode_ella_avatar_url_v3';
-const LEGACY_KEYS = ['decode_ella_avatar_url', 'decode_ella_avatar_url_v2'];
+// v4: novo retrato oficial da Ella empacotado pelo Vite (web, PWA e Capacitor).
+export const ELLA_AVATAR_STORAGE_KEY = 'decode_ella_avatar_url_v4';
+const LEGACY_KEYS = ['decode_ella_avatar_url', 'decode_ella_avatar_url_v2', 'decode_ella_avatar_url_v3'];
 
 export const DEFAULT_ELLA_AVATAR = ellaAvatarBundled as string;
 
