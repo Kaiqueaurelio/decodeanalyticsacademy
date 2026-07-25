@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
-import { Send, Loader2, Sparkles, CheckCircle2, AlertCircle, Wand2 } from "lucide-react";
+import { Send, Loader2, MessageCircle, CheckCircle2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -121,10 +121,10 @@ export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps)
     <div className={cn("flex flex-col h-full bg-background", compact ? "" : "")}>
       <div className="flex items-center justify-between px-4 py-3 border-b border-border/50">
         <div className="flex items-center gap-3">
-          <Avatar className="h-10 w-10 ring-2 ring-primary/40">
+          <Avatar className="h-10 w-10 ring-1 ring-border">
             <AvatarImage src={getEllaAvatarUrl()} alt="Ella Ribeiro" />
-            <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-primary-foreground">
-              <Sparkles className="h-4 w-4" />
+            <AvatarFallback className="bg-muted text-foreground">
+              <MessageCircle className="h-4 w-4" />
             </AvatarFallback>
           </Avatar>
           <div>
@@ -141,13 +141,13 @@ export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps)
         <div className="p-4 space-y-4">
           {messages.length === 0 && (
             <div className="text-center py-8 space-y-3">
-              <Wand2 className="h-10 w-10 mx-auto text-primary opacity-60" />
+              <MessageCircle className="h-8 w-8 mx-auto text-muted-foreground" strokeWidth={1.5} />
               <p className="text-sm text-muted-foreground max-w-xs mx-auto">
                 {isAdmin
-                  ? "Sou sua copiloto. Posso criar apostilas, gerar exercícios, publicar avisos, abrir páginas e mais."
+                  ? "Posso criar apostilas, gerar exercícios, publicar avisos e abrir páginas."
                   : contentScope === "enem_only"
-                    ? "Sou sua tutora de ENEM. Me pergunte sobre qualquer matéria — resumo, exemplos, exercícios e redação."
-                    : "Sou sua tutora de estudos. Me pergunte sobre qualquer conteúdo — resumo, exemplos e exercícios."}
+                    ? "Pergunte sobre qualquer matéria do ENEM — resumo, exemplos, exercícios e redação."
+                    : "Pergunte sobre qualquer conteúdo — resumo, exemplos e exercícios."}
               </p>
               <div className="flex flex-wrap gap-2 justify-center pt-2">
                 {suggestions.map((s) => (
@@ -166,8 +166,8 @@ export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps)
               {m.role === "assistant" && (
                 <Avatar className="h-8 w-8 shrink-0 ring-1 ring-border/60">
                   <AvatarImage src={getEllaAvatarUrl()} alt="Ella" />
-                  <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-primary-foreground">
-                    <Sparkles className="h-3.5 w-3.5" />
+                  <AvatarFallback className="bg-muted text-foreground">
+                    <MessageCircle className="h-3.5 w-3.5" />
                   </AvatarFallback>
                 </Avatar>
               )}
@@ -202,15 +202,15 @@ export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps)
 
           {loading && (
             <div className="flex gap-3">
-              <Avatar className="h-8 w-8 shrink-0 ring-1 ring-primary/40 animate-pulse">
+              <Avatar className="h-8 w-8 shrink-0 ring-1 ring-border/60">
                 <AvatarImage src={getEllaAvatarUrl()} alt="Ella" />
-                <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-primary-foreground">
-                  <Sparkles className="h-3.5 w-3.5" />
+                <AvatarFallback className="bg-muted text-foreground">
+                  <MessageCircle className="h-3.5 w-3.5" />
                 </AvatarFallback>
               </Avatar>
               <div className="bg-muted/50 rounded-2xl px-4 py-2.5 flex items-center gap-2">
-                <Loader2 className="h-3 w-3 animate-spin" />
-                <span className="text-xs text-muted-foreground">Ella está pensando…</span>
+                <Loader2 className="h-3 w-3 animate-spin keep-pulse" />
+                <span className="text-xs text-muted-foreground">Pensando…</span>
               </div>
             </div>
           )}

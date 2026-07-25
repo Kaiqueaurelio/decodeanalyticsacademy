@@ -26,7 +26,8 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   ChevronsLeft,
-  Sparkles,
+  Layers,
+  Target,
   Activity,
   HelpCircle,
   Trophy,
@@ -69,7 +70,7 @@ const menuGroups: { label: string; items: MenuItem[] }[] = [
       { to: '/exercicios', icon: PenLine, label: 'Exercícios' },
       { to: '/biblioteca', icon: Library, label: 'Biblioteca', unipOnly: true },
       { to: '/livros', icon: SheetIcon, label: 'Livros', unipOnly: true },
-      { to: '/flashcards', icon: Sparkles, label: 'Flashcards', hideForEnem: true },
+      { to: '/flashcards', icon: Layers, label: 'Flashcards', hideForEnem: true },
       { to: '/review', icon: RotateCcw, label: 'Revisão' },
       { to: '/simulado', icon: Trophy, label: 'Simulado' },
     ],
@@ -243,9 +244,9 @@ export function SidebarContent({
               </span>
               <span className="min-w-0">
                 <span className="block font-display text-[13px] font-extrabold tracking-tight text-foreground">
-                  DECODE <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">ANALYTICS</span>
+                  DECODE <span className="text-primary">ANALYTICS</span>
                 </span>
-                <span className="block font-mono text-[9px] font-semibold uppercase tracking-[0.32em] text-primary/80">
+                <span className="block font-mono text-[9px] font-semibold uppercase tracking-[0.32em] text-muted-foreground">
                   Academy
                 </span>
               </span>
@@ -379,17 +380,17 @@ export function SidebarContent({
           </nav>
 
           {/* Focus card */}
-          <div className="relative m-3 overflow-hidden rounded-xl border border-primary/25 bg-gradient-to-br from-primary/10 via-background to-accent/10 p-4">
-            <div className="pointer-events-none absolute -top-8 -right-8 h-24 w-24 rounded-full bg-primary/20 blur-2xl" />
+          <div className="relative m-3 rounded-lg border border-border bg-card p-4">
             <div className="relative">
               <div className="mb-1 flex items-center gap-1.5">
-                <Sparkles className="h-3.5 w-3.5 text-primary" />
+                <Target className="h-3.5 w-3.5 text-primary" strokeWidth={2} />
                 <h4 className="text-xs font-bold tracking-tight text-foreground">Mantenha o foco</h4>
               </div>
               <p className="text-[11px] leading-relaxed text-muted-foreground">Acompanhe metas e atividades pendentes do dia.</p>
               <Button
                 size="sm"
-                className="mt-3 h-9 w-full rounded-lg bg-gradient-to-r from-primary to-accent text-[11px] font-bold uppercase tracking-wider text-primary-foreground hover:opacity-90 transition-all shadow-[0_4px_20px_-4px_hsl(var(--primary)/0.5)]"
+                variant="secondary"
+                className="mt-3 h-9 w-full rounded-md text-[11px] font-semibold"
                 onClick={() => {
                   scrollToDashboardSection('atividades', navigate);
                   onNavigate?.();
