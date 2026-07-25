@@ -36,6 +36,25 @@ function estimateReadTime(chars: number): number {
   return Math.max(1, Math.round(words / 220));
 }
 
+function SanitizedArticle({ html }: { html: string }) {
+  const clean = useMemo(
+    () =>
+      DOMPurify.sanitize(html, {
+        USE_PROFILES: { html: true },
+        FORBID_TAGS: ['script', 'style', 'iframe', 'object', 'embed', 'form', 'input', 'link', 'meta'],
+        FORBID_ATTR: ['style', 'onerror', 'onload', 'onclick', 'onmouseover', 'onfocus', 'onblur'],
+        ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
+      }),
+    [html],
+  );
+  return (
+    <div
+      className="news-article prose prose-invert max-w-none prose-p:leading-relaxed prose-p:text-[15px] prose-headings:font-bold prose-a:text-primary prose-img:rounded-xl prose-img:my-4"
+      dangerouslySetInnerHTML={{ __html: clean }}
+    />
+  );
+}
+
 export function InAppNewsReader({ item, onClose }: Props) {
   const [data, setData] = useState<ReaderResult | null>(null);
   const [loading, setLoading] = useState(true);
