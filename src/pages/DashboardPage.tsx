@@ -135,13 +135,40 @@ export default function DashboardPage() {
             ) : apostilas.length === 0 ? (
               <p className="text-sm text-muted-foreground py-8 text-center">Nenhuma apostila disponível.</p>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
-                {apostilas.map((apostila) => (
-                  <ApostilaCoverCard key={apostila.id} apostila={apostila} />
-                ))}
-              </div>
+              (() => {
+                const groups = new Map<string, typeof apostilas>();
+                for (const a of apostilas) {
+                  const key = (a.category?.trim() || 'Geral');
+                  const arr = groups.get(key) ?? [];
+                  arr.push(a);
+                  groups.set(key, arr);
+                }
+                const sorted = Array.from(groups.entries()).sort(([a], [b]) =>
+                  a.localeCompare(b, 'pt-BR', { sensitivity: 'base' })
+                );
+                return (
+                  <div className="space-y-8">
+                    {sorted.map(([category, items]) => (
+                      <div key={category}>
+                        <div className="flex items-baseline justify-between mb-3 pb-2 border-b border-border/50">
+                          <h3 className="font-semibold text-sm text-foreground/90">{category}</h3>
+                          <span className="text-[11px] text-muted-foreground tabular-nums">
+                            {items.length} {items.length === 1 ? 'apostila' : 'apostilas'}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
+                          {items.map((apostila) => (
+                            <ApostilaCoverCard key={apostila.id} apostila={apostila} />
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()
             )}
           </section>
+
 
           <Reveal from="bottom" delay={60}>
             <ContinueWhereLeftCard />
