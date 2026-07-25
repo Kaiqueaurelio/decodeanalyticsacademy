@@ -27,6 +27,7 @@ import {
 } from '@/lib/runtime-logs';
 import { getAuthEvents, clearAuthEvents, type AuthLogEntry } from '@/lib/auth-log';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserProfile } from '@/hooks/queries/useUserProfile';
 import { isSafeModeEnabled, isSafeModeManual, disableSafeMode, getRecentFailures } from '@/lib/safe-mode';
 import { cn } from '@/lib/utils';
 
