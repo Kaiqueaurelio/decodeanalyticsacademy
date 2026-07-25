@@ -29,7 +29,7 @@ const STACK = [
 
 const JOURNEY = [
   { year: '2018', icon: Rocket, title: 'Fundou a Decode Analytics', desc: 'Início da jornada como criador de soluções digitais.' },
-  { year: '2020', icon: Package, title: 'Operações & Varejo', desc: 'Experiência prática em Correios, Mercado Livre e varejo.' },
+  { year: '2020', icon: Package, title: 'Correios & Mercado Livre', desc: 'Experiência prática em Correios e Mercado Livre.' },
   { year: '2023', icon: BookOpen, title: 'Ciências da Computação', desc: 'Ingresso na graduação — hoje no 5º semestre.' },
   { year: '2024', icon: Cpu, title: 'IC em Realidade Aumentada', desc: 'Merge Cube aplicado à educação de crianças com TDAH (orient. Dr. Alexandre Bozolan).' },
   { year: '2025', icon: Gamepad2, title: 'Liderança & Games Educativos', desc: 'Liderou equipe de 6 pessoas em 4 jogos sobre sustentabilidade.' },
@@ -150,12 +150,12 @@ export function CreatorSection() {
               {/* Bio profissional */}
               <p className="text-[13px] sm:text-sm text-foreground/80 leading-relaxed mb-5 text-left">
                 Estudante do 5º semestre de Ciência da Computação, com trajetória que combina
-                formação acadêmica e experiência profissional diversificada em{' '}
-                <span className="text-primary/90">operações logísticas</span> (Correios, Mercado Livre)
-                e <span className="text-primary/90">varejo</span>. Na faculdade, venho desenvolvendo
-                conhecimento em Python, JavaScript, TypeScript, C++, Java e React. Busco integrar
-                habilidades técnicas com visão crítica, focando em soluções que gerem{' '}
-                <span className="text-accent font-semibold">impacto social e educacional</span>.
+                formação acadêmica e experiência profissional em{' '}
+                <span className="text-primary/90">Correios</span> e{' '}
+                <span className="text-primary/90">Mercado Livre</span>. Na faculdade, venho
+                desenvolvendo conhecimento em Python, JavaScript, TypeScript, C++, Java e React.
+                Busco integrar habilidades técnicas com visão crítica, focando em soluções que
+                gerem <span className="text-accent font-semibold">impacto social e educacional</span>.
               </p>
 
               {/* Pilares */}
