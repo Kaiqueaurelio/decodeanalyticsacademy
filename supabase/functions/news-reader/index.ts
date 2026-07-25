@@ -1,5 +1,28 @@
 // Extrai o conteúdo principal de uma URL de notícia para leitura in-app.
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
+import { requireUser } from '../_shared/auth-guard.ts';
+
+// Bloqueia SSRF: só http(s) público, sem IPs privados/link-local/loopback.
+function isSafePublicUrl(raw: string): boolean {
+  let u: URL;
+  try { u = new URL(raw); } catch { return false; }
+  if (u.protocol !== 'http:' && u.protocol !== 'https:') return false;
+  const host = u.hostname.toLowerCase();
+  if (!host || host === 'localhost' || host.endsWith('.localhost') || host.endsWith('.internal')) return false;
+  // IPv6 literais
+  if (host.startsWith('[')) return false;
+  // IPv4 numérico
+  const m = host.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+  if (m) {
+    const [a, b] = [parseInt(m[1], 10), parseInt(m[2], 10)];
+    if (a === 10 || a === 127 || a === 0) return false;
+    if (a === 169 && b === 254) return false; // link-local / metadata
+    if (a === 172 && b >= 16 && b <= 31) return false;
+    if (a === 192 && b === 168) return false;
+    if (a >= 224) return false;
+  }
+  return true;
+}
 
 interface ReaderResult {
   ok: boolean;
