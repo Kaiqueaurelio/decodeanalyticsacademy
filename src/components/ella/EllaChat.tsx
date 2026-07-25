@@ -129,7 +129,7 @@ export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps)
           </Avatar>
           <div>
             <p className="text-sm font-semibold leading-tight">Ella Ribeiro</p>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Copiloto executiva</p>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{isAdmin ? "Copiloto executiva" : contentScope === "enem_only" ? "Tutora ENEM" : "Tutora de estudos"}</p>
           </div>
         </div>
         {messages.length > 0 && (
