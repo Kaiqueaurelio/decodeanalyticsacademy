@@ -36,7 +36,7 @@ export function AdSidebar({ className = '' }: { className?: string }) {
               recordAdClick(ad.id);
               window.open(ad.link_url, '_blank', 'noopener,noreferrer');
             }}
-            className="group grid w-full max-w-md grid-cols-[92px_1fr] gap-4 rounded-2xl border border-primary/50 bg-card/70 p-4 text-left shadow-sm backdrop-blur transition-all hover:border-primary hover:bg-card"
+            className="group flex w-full max-w-md flex-col gap-3 rounded-2xl border border-primary/50 bg-card/70 p-4 text-left shadow-sm backdrop-blur transition-all hover:border-primary hover:bg-card"
           >
             {ad.image_url ? (
               <AppImage
@@ -44,13 +44,12 @@ export function AdSidebar({ className = '' }: { className?: string }) {
                 alt={ad.title}
                 referrerPolicy="strict-origin-when-cross-origin"
                 loading="lazy"
-                className="h-24 w-24 rounded-xl object-cover transition-transform duration-500 group-hover:scale-105"
-                wrapperClassName="h-24 w-24 rounded-xl overflow-hidden bg-muted"
+                className="mx-auto h-auto max-h-72 w-auto max-w-full rounded-xl object-contain transition-transform duration-500 group-hover:scale-[1.02]"
+                wrapperClassName="flex w-full items-center justify-center overflow-hidden rounded-xl bg-muted/40"
                 fallbackLabel="Imagem indisponível"
               />
-            ) : (
-              <div className="h-24 w-24 rounded-xl bg-primary/10" />
-            )}
+            ) : null}
+
 
             <div className="min-w-0 space-y-2">
               <div className="flex items-center justify-between gap-2">

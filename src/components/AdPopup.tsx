@@ -105,7 +105,7 @@ export function AdPopup({ trigger = 'onLoad', delay = 2000 }: AdPopupProps) {
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-md max-h-[90vh] my-auto rounded-2xl bg-white dark:bg-card shadow-2xl flex flex-col overflow-hidden"
+            className="relative w-full max-w-2xl max-h-[92vh] my-auto rounded-2xl bg-white dark:bg-card shadow-2xl flex flex-col overflow-hidden"
           >
             {/* Botao de Fechar (X) sempre visivel, acima de tudo */}
             <button
@@ -119,14 +119,15 @@ export function AdPopup({ trigger = 'onLoad', delay = 2000 }: AdPopupProps) {
             {/* Area scrollavel (midia + texto) */}
             <div className="flex-1 overflow-y-auto overscroll-contain">
               {currentAd.image_url && (
-                <div className="relative w-full max-h-[55vh] flex items-center justify-center bg-gradient-to-br from-primary/10 to-background">
+                <div className="relative w-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-background p-3">
                   <AdMediaPreview
                     src={currentAd.image_url}
                     title={currentAd.title}
-                    className="max-h-[55vh] w-full h-auto object-contain"
+                    className="max-h-[70vh] w-auto max-w-full h-auto object-contain mx-auto"
                   />
                 </div>
               )}
+
 
               <div className="p-5 sm:p-6 space-y-3">
                 <div>
