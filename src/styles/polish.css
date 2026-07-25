@@ -463,3 +463,82 @@ nav[aria-label="Navegacao principal mobile"] .relative > span[class*="bg-primary
     animation: none !important;
   }
 }
+
+/* ============================================================
+   GLOBAL SMOOTH MOTION — applied app-wide
+   ============================================================ */
+html { scroll-behavior: smooth; }
+
+/* Universal micro-transitions for interactive elements */
+a, button, [role="button"], [role="link"], [role="tab"], [role="menuitem"],
+input, textarea, select, summary,
+.card, [class*="rounded-"] > svg,
+[data-radix-collection-item] {
+  transition:
+    color 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 260ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 260ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 220ms ease;
+}
+
+/* Subtle lift on hover for cards & clickable tiles */
+[class*="rounded-2xl"][class*="border"]:not([data-no-lift]):hover,
+[class*="rounded-xl"][class*="border"]:not([data-no-lift]):hover {
+  transform: translateY(-2px);
+}
+
+/* Buttons: press feedback + hover lift */
+button:not(:disabled):active,
+[role="button"]:not([aria-disabled="true"]):active {
+  transform: translateY(0) scale(0.985);
+}
+
+/* Icons breathe slightly on hover of their parent link/button */
+a:hover > svg, button:hover > svg, [role="button"]:hover > svg {
+  transform: translateY(-1px);
+}
+a > svg, button > svg, [role="button"] > svg {
+  transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Images: gentle zoom-in on hover when inside a rounded container */
+[class*="overflow-hidden"] > img,
+[class*="overflow-hidden"] > video {
+  transition: transform 600ms cubic-bezier(0.22, 1, 0.36, 1), filter 400ms ease;
+}
+[class*="overflow-hidden"]:hover > img,
+[class*="overflow-hidden"]:hover > video {
+  transform: scale(1.03);
+}
+
+/* Route change: fade + rise (works with PageTransition) */
+[data-page-stage="enter"] {
+  animation: decode-page-in 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes decode-page-in {
+  from { opacity: 0; transform: translate3d(0, 10px, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+/* Focus ring softening */
+:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(var(--primary) / 0.55);
+  transition: box-shadow 180ms ease;
+  border-radius: inherit;
+}
+
+/* Reduced-motion override */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  a, button, [role="button"], input, textarea, select,
+  [data-page-stage="enter"],
+  [class*="overflow-hidden"] > img,
+  [class*="overflow-hidden"] > video {
+    transition: none !important;
+    animation: none !important;
+    transform: none !important;
+  }
+}
