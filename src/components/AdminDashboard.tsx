@@ -66,6 +66,8 @@ export function AdminDashboard({ onNavigate }: Props) {
 
   // Paginação
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  // Pasta aberta no grid por categoria
+  const [openCategory, setOpenCategory] = useState<string | null>(null);
 
   // Seleção em lote
   const [selected, setSelected] = useState<Set<string>>(new Set());
