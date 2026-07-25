@@ -38,6 +38,7 @@ import { AdImageUploadButton } from './AdImageUploadButton';
 const supabase = supabaseTyped as any;
 
 import { getEllaAvatarUrl } from '@/lib/ellaAvatar';
+import { EllaAvatar } from '@/components/ella/EllaAvatar';
 const ELLA_AVATAR = getEllaAvatarUrl();
 
 type AdType = 'banner' | 'popup' | 'inline' | 'sidebar' | 'footer';
