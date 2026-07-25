@@ -112,8 +112,16 @@ export default function LandingPage() {
     const mq = window.matchMedia('(max-width: 640px)');
     const conn: any = (navigator as any).connection;
     const saveData = !!conn?.saveData;
-    const slow = conn?.effectiveType && /(^|-)2g$/.test(conn.effectiveType);
-    const update = () => setIsSmallScreen(mq.matches || saveData || slow);
+    const et: string = conn?.effectiveType || '';
+    const slow = /(^|-)2g$/.test(et);
+    const update = () => {
+      setIsSmallScreen(mq.matches || saveData || slow);
+      // Escolhe a variante mais leve compatível com a viewport e a rede.
+      const w = window.innerWidth * (window.devicePixelRatio || 1);
+      if (saveData || et === '3g' || w <= 900) setVideoTier('480');
+      else if (w <= 1500) setVideoTier('720');
+      else setVideoTier('1080');
+    };
     update();
     mq.addEventListener?.('change', update);
     return () => mq.removeEventListener?.('change', update);
