@@ -193,41 +193,60 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
                 }`}
               >
                 <div className="overflow-hidden">
-                  <ul className="flex flex-col border-t border-border/50 px-2 py-1.5">
+                  <ul className="flex flex-col gap-1.5 border-t border-border/50 px-2 py-2">
                     {items.map((apostila) => {
                       const exCount = exerciseCounts[apostila.id] || 0;
                       const st = stats.byApostila[apostila.id];
                       const started = !!st;
+                      const itemCover = apostila.cover_url;
                       return (
                         <li key={apostila.id}>
                           <a
                             href={`/apostila/${apostila.id}`}
-                            className="group/item flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-muted/50 transition-colors"
+                            className="group/item flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm hover:bg-muted/50 transition-colors"
                           >
                             <ChevronRight
                               className="h-3.5 w-3.5 shrink-0 text-muted-foreground/70"
                               strokeWidth={2.2}
                             />
-                            <FileText
-                              className="h-3.5 w-3.5 shrink-0 text-muted-foreground group-hover/item:text-primary transition-colors"
-                              strokeWidth={1.75}
-                            />
-                            <span className="truncate text-[13px] text-foreground/90 group-hover/item:text-primary transition-colors">
-                              {apostila.title}
+                            <span
+                              className="relative flex h-10 w-14 shrink-0 items-center justify-center overflow-hidden rounded-md ring-1 ring-border/60"
+                              style={{
+                                backgroundImage: itemCover
+                                  ? `linear-gradient(135deg, ${color}55 0%, #0b122099 100%), url("${itemCover}")`
+                                  : `linear-gradient(135deg, ${color}dd 0%, ${color}44 60%, #0b1220 100%)`,
+                                backgroundSize: 'cover',
+                                backgroundPosition: 'center',
+                              }}
+                              aria-hidden
+                            >
+                              {!itemCover && (
+                                <FileText className="h-4 w-4 text-white/85" strokeWidth={1.75} />
+                              )}
                             </span>
-                            {started && (
-                              <span
-                                className="ml-auto shrink-0 rounded-full px-1.5 py-px text-[9px] font-semibold"
-                                style={{ backgroundColor: `${color}22`, color }}
-                              >
-                                em progresso
+                            <span className="min-w-0 flex-1">
+                              <span className="block truncate text-[13px] font-medium text-foreground/90 group-hover/item:text-primary transition-colors">
+                                {apostila.title}
                               </span>
-                            )}
-                            {!started && exCount > 0 && (
-                              <span className="ml-auto shrink-0 text-[10px] tabular-nums text-muted-foreground">
-                                {exCount} ex.
+                              <span className="mt-0.5 flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                                {started ? (
+                                  <span
+                                    className="rounded-full px-1.5 py-px text-[9px] font-semibold"
+                                    style={{ backgroundColor: `${color}22`, color }}
+                                  >
+                                    em progresso
+                                  </span>
+                                ) : (
+                                  <span className="text-muted-foreground/70">não iniciado</span>
+                                )}
+                                {exCount > 0 && (
+                                  <>
+                                    <span aria-hidden>·</span>
+                                    <span className="tabular-nums">{exCount} ex.</span>
+                                  </>
+                                )}
                               </span>
-                            )}
+                            </span>
                           </a>
                         </li>
                       );
