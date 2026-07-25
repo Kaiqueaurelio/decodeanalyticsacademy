@@ -9,6 +9,15 @@ const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 const ALLOWED_TYPES = new Set(["banner", "popup", "inline", "sidebar", "footer"]);
+const ALLOWED_ORDER = new Set(["position", "created_at"]);
+const DEFAULT_LIMIT = 20;
+const MAX_LIMIT = 50;
+
+function clampInt(raw: string | null, def: number, min: number, max: number) {
+  const n = Number.parseInt(raw ?? "", 10);
+  if (!Number.isFinite(n)) return def;
+  return Math.min(max, Math.max(min, n));
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -18,6 +27,13 @@ Deno.serve(async (req) => {
     const adTypeRaw = url.searchParams.get("ad_type");
     const targetPage = url.searchParams.get("target_page");
     const adType = adTypeRaw && ALLOWED_TYPES.has(adTypeRaw) ? adTypeRaw : null;
+
+    const orderRaw = url.searchParams.get("order");
+    const orderBy = orderRaw && ALLOWED_ORDER.has(orderRaw) ? orderRaw : "position";
+    const dir = url.searchParams.get("dir") === "desc" ? "desc" : "asc";
+    const limit = clampInt(url.searchParams.get("limit"), DEFAULT_LIMIT, 1, MAX_LIMIT);
+    const offset = clampInt(url.searchParams.get("offset"), 0, 0, 10_000);
+
 
     const authHeader = req.headers.get("Authorization") || "";
     if (!authHeader.startsWith("Bearer ")) {
