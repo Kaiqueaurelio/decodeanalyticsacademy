@@ -37,7 +37,8 @@ import { AdImageUploadButton } from './AdImageUploadButton';
 
 const supabase = supabaseTyped as any;
 
-const ELLA_AVATAR = 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=320&q=85';
+import { getEllaAvatarUrl } from '@/lib/ellaAvatar';
+const ELLA_AVATAR = getEllaAvatarUrl();
 
 type AdType = 'banner' | 'popup' | 'inline' | 'sidebar' | 'footer';
 type MediaKind = 'image' | 'video' | 'audio';
