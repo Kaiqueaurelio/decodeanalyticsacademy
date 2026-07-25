@@ -71,8 +71,8 @@ export function AIProviderSettings() {
           apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
         },
         body: JSON.stringify({
-          systemPrompt: 'Responda em uma frase curta em português.',
-          messages: [{ role: 'user', content: 'Diga olá e mencione qual modelo você é.' }],
+          systemPrompt: 'Você é um assistente de teste. Responda de forma curta.',
+          messages: [{ role: 'user', content: testPrompt || 'ping' }],
         }),
       });
 
