@@ -263,8 +263,13 @@ const apostilaTool = {
   },
 };
 
+import { requireUser } from "../_shared/auth-guard.ts";
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  const auth = await requireUser(req, corsHeaders, { requireAdmin: true });
+  if (!auth.ok) return auth.response;
 
   try {
     const body = await req.json();
