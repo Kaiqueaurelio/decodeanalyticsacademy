@@ -197,6 +197,25 @@ export default function ApostilaPage() {
     }
   }, [apostila, sections]);
 
+  const handleExportDocx = useCallback(async () => {
+    if (!apostila) return;
+    setExportingPdf(true);
+    const t = toast.loading('Gerando DOCX da apostila…');
+    try {
+      await exportApostilaToDOCX({
+        title: apostila.title,
+        category: apostila.category,
+        sections: sections.map((s) => ({ id: s.id, title: s.title, level: s.level, content: s.content })),
+      });
+      toast.success('DOCX gerado com sucesso', { id: t });
+    } catch (e: any) {
+      console.error('DOCX export error', e);
+      toast.error(e?.message || 'Falha ao gerar DOCX', { id: t });
+    } finally {
+      setExportingPdf(false);
+    }
+  }, [apostila, sections]);
+
   useEffect(() => {
     if (!contentRef.current) return;
     const observer = new IntersectionObserver(
