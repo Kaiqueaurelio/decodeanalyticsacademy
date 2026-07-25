@@ -33,13 +33,33 @@ vi.mock('@/components/landing/FaqSection', () => ({ FaqSection: () => <section /
 
 describe('LandingPage background video layering', () => {
   beforeEach(() => {
-    vi.useFakeTimers();
+    class ImmediateIntersectionObserver {
+      private callback: IntersectionObserverCallback;
+
+      constructor(callback: IntersectionObserverCallback) {
+        this.callback = callback;
+      }
+
+      observe(target: Element) {
+        this.callback([{ isIntersecting: true, target } as IntersectionObserverEntry], this as unknown as IntersectionObserver);
+      }
+
+      disconnect() {}
+      unobserve() {}
+      takeRecords() { return []; }
+    }
+
+    Object.defineProperty(window, 'IntersectionObserver', {
+      configurable: true,
+      writable: true,
+      value: ImmediateIntersectionObserver,
+    });
     Object.defineProperty(HTMLMediaElement.prototype, 'load', { configurable: true, value: vi.fn() });
     Object.defineProperty(HTMLMediaElement.prototype, 'play', { configurable: true, value: vi.fn().mockResolvedValue(undefined) });
   });
 
   afterEach(() => {
-    vi.useRealTimers();
+    vi.restoreAllMocks();
   });
 
   it('keeps the video in a single fixed background layer behind landing content', async () => {
@@ -48,8 +68,6 @@ describe('LandingPage background video layering', () => {
         <LandingPage />
       </MemoryRouter>,
     );
-
-    vi.advanceTimersByTime(900);
 
     const background = await screen.findByTestId('landing-background');
     const content = screen.getByTestId('landing-content');
