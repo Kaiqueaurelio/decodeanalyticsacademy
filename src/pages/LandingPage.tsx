@@ -10,6 +10,8 @@ import {
   BarChart3, PenLine, Flame, TrendingUp, CheckCircle,
 } from 'lucide-react';
 import logoDark from '@/assets/owl-icon.png';
+import landingBgPoster from '@/assets/landing-bg-poster.jpg';
+
 import { TestimonialsSection } from '@/components/TestimonialsSection';
 import { CreatorSection } from '@/components/CreatorSection';
 import { TechStackSection } from '@/components/TechStackSection';
@@ -87,6 +89,9 @@ export default function LandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [appOrigin, setAppOrigin] = useState<string>('https://decodeanalyticsacademy.com.br');
   const heroVideoRef = useRef<HTMLVideoElement>(null);
+  const bgSentinelRef = useRef<HTMLDivElement>(null);
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
+  const [shouldLoadVideo, setShouldLoadVideo] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.location?.origin?.startsWith('http')) {
@@ -94,7 +99,42 @@ export default function LandingPage() {
     }
   }, []);
 
+  // Detecta mobile / save-data → mantém apenas o poster estático (sem vídeo).
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const mq = window.matchMedia('(max-width: 640px)');
+    const conn: any = (navigator as any).connection;
+    const saveData = !!conn?.saveData;
+    const slow = conn?.effectiveType && /(^|-)2g$/.test(conn.effectiveType);
+    const update = () => setIsSmallScreen(mq.matches || saveData || slow);
+    update();
+    mq.addEventListener?.('change', update);
+    return () => mq.removeEventListener?.('change', update);
+  }, []);
+
+  // Lazy-load: só monta o <video> quando o topo da landing está perto do viewport.
+  useEffect(() => {
+    if (isSmallScreen) { setShouldLoadVideo(false); return; }
+    const el = bgSentinelRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') {
+      const id = window.setTimeout(() => setShouldLoadVideo(true), 800);
+      return () => window.clearTimeout(id);
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setShouldLoadVideo(true);
+          io.disconnect();
+        }
+      },
+      { rootMargin: '400px 0px' },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [isSmallScreen]);
+
+  useEffect(() => {
+    if (!shouldLoadVideo) return;
     const video = heroVideoRef.current;
     if (!video) return;
 
@@ -116,7 +156,8 @@ export default function LandingPage() {
       video.removeEventListener('loadeddata', startPlayback);
       document.removeEventListener('visibilitychange', onVisible);
     };
-  }, []);
+  }, [shouldLoadVideo]);
+
 
 
   // Deixa body/html transparentes enquanto a landing estiver montada, para o vídeo de fundo (portal z:-1) aparecer.
@@ -151,6 +192,9 @@ export default function LandingPage() {
   return (
     <div className="dark min-h-dvh font-cyber overflow-x-hidden selection:bg-primary/30 relative" style={{ color: '#e2e8f0' }}>
 
+      {/* Sentinela para IntersectionObserver decidir quando carregar o vídeo. */}
+      <div ref={bgSentinelRef} aria-hidden="true" className="absolute left-0 top-0 h-1 w-1 opacity-0" />
+
       {/* ═══ VIDEO DE FUNDO GLOBAL (portal em document.body para escapar de transforms de ancestrais) ═══ */}
       {typeof document !== 'undefined' && createPortal(
         <div
@@ -158,16 +202,28 @@ export default function LandingPage() {
           className="pointer-events-none fixed inset-0 overflow-hidden"
           style={{ zIndex: -1 }}
         >
-          <video
-            ref={heroVideoRef}
-            className="landing-bg-video h-full w-full scale-[1.03] object-cover opacity-60"
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="auto"
-            src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260328_065045_c44942da-53c6-4804-b734-f9e07fc22e08.mp4"
+          {/* Poster sempre presente: LCP rápido no mobile e placeholder no desktop até o vídeo carregar. */}
+          <img
+            src={landingBgPoster}
+            alt=""
+            aria-hidden="true"
+            decoding="async"
+            fetchPriority="high"
+            className="landing-bg-video absolute inset-0 h-full w-full scale-[1.03] object-cover opacity-60"
           />
+          {shouldLoadVideo && !isSmallScreen && (
+            <video
+              ref={heroVideoRef}
+              className="landing-bg-video absolute inset-0 h-full w-full scale-[1.03] object-cover opacity-60"
+              autoPlay
+              loop
+              muted
+              playsInline
+              preload="metadata"
+              poster={landingBgPoster}
+              src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260328_065045_c44942da-53c6-4804-b734-f9e07fc22e08.mp4"
+            />
+          )}
           <div
             className="absolute inset-0"
             style={{
@@ -178,6 +234,8 @@ export default function LandingPage() {
         </div>,
         document.body,
       )}
+
+
 
 
       {/* ═══ HERO / NAVEGAÇÃO ═══ */}
