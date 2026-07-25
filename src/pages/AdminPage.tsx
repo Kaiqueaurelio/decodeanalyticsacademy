@@ -179,11 +179,11 @@ function AdminSidebar({ tab, setTab, stats, sidebarOpen, setSidebarOpen }: {
     { id: 'ads' as Tab, label: 'Anúncios', icon: Megaphone, count: undefined },
     { id: 'calendar' as Tab, label: 'Calendário', icon: CalIcon, count: undefined },
     { id: 'testimonials' as Tab, label: 'Depoimentos', icon: MessageSquareQuote, count: undefined },
-    { id: 'ai' as Tab, label: 'Assistente', icon: Sparkles, count: undefined },
+    { id: 'ai' as Tab, label: 'Assistente', icon: MessageSquare, count: undefined },
     { id: 'performance' as Tab, label: 'Performance', icon: Activity, count: undefined },
     { id: 'smoke' as Tab, label: 'Testes', icon: CheckCircle, count: undefined },
     { id: 'diagnostics' as Tab, label: 'Diagnóstico', icon: AlertCircle, count: undefined },
-    { id: 'ads-chat' as Tab, label: 'Assistente de anúncios', icon: Sparkles, count: undefined },
+    { id: 'ads-chat' as Tab, label: 'Assistente de anúncios', icon: MessageSquare, count: undefined },
     { id: 'rss' as Tab, label: 'Feeds RSS', icon: Megaphone, count: undefined },
   ];
 
@@ -1364,7 +1364,7 @@ export default function AdminPage() {
                 { id: 'announcements', label: 'Avisos', icon: <Megaphone className="h-3.5 w-3.5" /> },
                 { id: 'calendar', label: 'Calendário', icon: <CalIcon className="h-3.5 w-3.5" /> },
                 { id: 'testimonials', label: 'Depoimentos', icon: <MessageSquareQuote className="h-3.5 w-3.5" /> },
-                { id: 'ai', label: 'Assistente', icon: <Sparkles className="h-3.5 w-3.5" /> },
+                { id: 'ai', label: 'Assistente', icon: <MessageSquare className="h-3.5 w-3.5" /> },
                 { id: 'performance', label: 'Perf', icon: <Activity className="h-3.5 w-3.5" /> },
                 { id: 'smoke', label: 'Testes', icon: <CheckCircle className="h-3.5 w-3.5" /> },
                 { id: 'diagnostics', label: 'Diag', icon: <AlertCircle className="h-3.5 w-3.5" /> },
