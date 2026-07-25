@@ -224,13 +224,27 @@ export function DiagnosticsPanel() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                 <InfoTile label="Status" value={auth.status} tone={auth.status === 'authenticated' ? 'ok' : auth.status === 'unauthenticated' ? 'danger' : 'warn'} />
                 <InfoTile label="Papel" value={auth.isAdmin ? 'admin' : auth.user ? 'aluno' : '—'} />
+                <InfoTile label="Escopo" value={scope} tone={scope === 'enem_only' ? 'warn' : 'ok'} />
                 <InfoTile label="Bloqueado" value={auth.isBlocked ? 'sim' : 'não'} tone={auth.isBlocked ? 'danger' : 'ok'} />
-                <InfoTile label="Renovando" value={auth.isRefreshingToken ? 'sim' : 'não'} tone={auth.isRefreshingToken ? 'warn' : 'ok'} />
+              </div>
+
+              <div className="border border-border/60 rounded-lg p-3 space-y-2">
+                <div className="flex items-center justify-between gap-2 text-xs">
+                  <span className="text-muted-foreground uppercase tracking-wider text-[10px]">Áreas acessíveis ({allowedAreas.length})</span>
+                  <Badge variant="outline" className="text-[10px] font-mono">{scope === 'enem_only' ? 'restrito ao ENEM' : 'acesso completo'}</Badge>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {allowedAreas.map((area) => (
+                    <Badge key={area} variant="outline" className="text-[10px] font-normal">{area}</Badge>
+                  ))}
+                </div>
               </div>
 
               <div className="border border-border/60 rounded-lg p-3 space-y-1.5 text-xs">
                 <div className="flex justify-between gap-2"><span className="text-muted-foreground">Usuário</span><span className="font-mono truncate max-w-[60%] text-right">{auth.user?.email ?? '—'}</span></div>
+                <div className="flex justify-between gap-2"><span className="text-muted-foreground">RA</span><span className="font-mono truncate max-w-[60%] text-right">{profile?.ra ?? '—'}</span></div>
                 <div className="flex justify-between gap-2"><span className="text-muted-foreground">User ID</span><span className="font-mono truncate max-w-[60%] text-right">{auth.user?.id ?? '—'}</span></div>
+                <div className="flex justify-between gap-2"><span className="text-muted-foreground">Renovando</span><span className="font-mono">{auth.isRefreshingToken ? 'sim' : 'não'}</span></div>
                 <div className="flex justify-between gap-2"><span className="text-muted-foreground">Token expira em</span><span className="font-mono">{formatExpiry(auth.session?.expires_at)}</span></div>
                 <div className="flex justify-between gap-2"><span className="text-muted-foreground">Última renovação</span><span className="font-mono">{lastRefresh ? formatTime(lastRefresh.ts) : '—'}</span></div>
                 <div className="flex justify-between gap-2"><span className="text-muted-foreground">Sessão hidratada</span><span className="font-mono">{auth.isSessionHydrated ? 'sim' : 'não'}</span></div>
