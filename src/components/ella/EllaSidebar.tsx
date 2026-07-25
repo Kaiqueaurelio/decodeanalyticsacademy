@@ -32,16 +32,7 @@ export function EllaSidebar() {
           )}
           size="icon"
         >
-          <img
-            src={getEllaAvatarUrl()}
-            alt="Ella Ribeiro"
-            className="h-full w-full object-cover rounded-full"
-            onError={(e) => {
-              try { localStorage.removeItem('decode_ella_avatar_url_v5'); } catch {}
-              const img = e.currentTarget as HTMLImageElement;
-              if (img.src !== DEFAULT_ELLA_AVATAR) img.src = DEFAULT_ELLA_AVATAR;
-            }}
-          />
+          <EllaAvatar size={56} rounded="full" className="ring-0" />
         </Button>
       </SheetTrigger>
       <SheetContent side="right" className="w-full sm:max-w-md p-0 flex flex-col">
