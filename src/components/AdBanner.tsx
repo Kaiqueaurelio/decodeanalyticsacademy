@@ -56,11 +56,12 @@ export function AdBanner({ position = 'inline', className = '' }: AdBannerProps)
             alt={currentAd.title}
             referrerPolicy="strict-origin-when-cross-origin"
             loading="lazy"
-            className="h-24 w-full rounded-xl object-cover sm:h-20 sm:w-28"
-            wrapperClassName="h-24 w-full shrink-0 overflow-hidden rounded-xl bg-muted sm:h-20 sm:w-28"
+            className="mx-auto h-auto max-h-64 w-auto max-w-full rounded-xl object-contain sm:max-h-32 sm:max-w-[220px]"
+            wrapperClassName="flex w-full shrink-0 items-center justify-center overflow-hidden rounded-xl bg-muted/40 sm:w-auto"
             fallbackLabel=""
           />
         )}
+
 
         <div className="min-w-0 flex-1">
           <div className="mb-1 flex items-center justify-between gap-2">
