@@ -339,17 +339,17 @@ export default function LandingPage() {
                 </a>
               </div>
               <div className="mx-auto mt-12 grid max-w-3xl grid-cols-1 gap-3 text-left sm:grid-cols-3">
-                <div className="hero-stat-card rounded-2xl border border-white/10 bg-black/20 p-4 backdrop-blur-sm">
+                <div className="hero-stat-card rounded-2xl border border-white/12 bg-black/55 p-4 backdrop-blur-md">
                   <p className="text-2xl font-bold text-[#00f0ff]">48</p>
-                  <p className="mt-1 text-xs uppercase tracking-[0.14em] text-white/65">Disciplinas</p>
+                  <p className="mt-1 text-xs uppercase tracking-[0.14em] text-white/75">Disciplinas</p>
                 </div>
-                <div className="rounded-2xl border border-white/10 bg-black/20 p-4 backdrop-blur-sm">
+                <div className="rounded-2xl border border-white/12 bg-black/55 p-4 backdrop-blur-md">
                   <p className="text-sm font-bold text-white">Exercícios</p>
-                  <p className="mt-1 text-xs uppercase tracking-[0.14em] text-white/65">Práticos e comentados</p>
+                  <p className="mt-1 text-xs uppercase tracking-[0.14em] text-white/75">Práticos e comentados</p>
                 </div>
-                <div className="rounded-2xl border border-white/10 bg-black/20 p-4 backdrop-blur-sm">
+                <div className="rounded-2xl border border-white/12 bg-black/55 p-4 backdrop-blur-md">
                   <p className="text-sm font-bold text-white">Acesse onde estiver</p>
-                  <p className="mt-1 text-xs uppercase tracking-[0.14em] text-white/65">Computador e celular</p>
+                  <p className="mt-1 text-xs uppercase tracking-[0.14em] text-white/75">Computador e celular</p>
                 </div>
               </div>
               <div className="hero-signal mx-auto mt-7 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs text-white/70 backdrop-blur-sm">
