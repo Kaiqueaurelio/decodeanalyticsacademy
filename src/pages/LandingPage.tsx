@@ -585,6 +585,10 @@ export default function LandingPage() {
       {/* ═══ CREATOR / DE ALUNO PARA ALUNO ═══ */}
       <CreatorSection />
 
+      {/* ═══ FAQ ═══ */}
+      <FaqSection />
+
+
       {/* ═══ HOW IT WAS BUILT ═══ */}
       <TechStackSection />
 
