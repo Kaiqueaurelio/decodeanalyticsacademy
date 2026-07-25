@@ -49,7 +49,7 @@ export function AIProviderSettings() {
       setPreferGoogle(!next);
     } else {
       try { localStorage.setItem('ai_prefer_google_hint', next ? '1' : '0'); } catch {}
-      toast.success(next ? 'Usando sua chave Google AI Studio' : 'Usando Lovable AI');
+      toast.success(next ? 'Usando chave própria (Google)' : 'Usando provedor padrão');
     }
   };
 
@@ -147,10 +147,10 @@ export function AIProviderSettings() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-primary" />
-            Provedor de IA
+            Provedor do Assistente
           </CardTitle>
           <CardDescription>
-            Escolha entre o Lovable AI (padrão, sem configuração) ou sua chave própria do Google AI Studio.
+            Escolha entre o provedor padrão (sem configuração) ou usar sua própria chave (Google).
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -158,12 +158,12 @@ export function AIProviderSettings() {
             <div className="space-y-1">
               <Label className="text-base font-medium flex items-center gap-2">
                 <KeyRound className="h-4 w-4" />
-                Usar minha chave Google AI Studio
+                Usar minha chave própria (Google)
               </Label>
               <p className="text-xs text-muted-foreground">
                 {preferGoogle
-                  ? '✅ ATIVO: todas as respostas do chat vêm da sua chave Google. Não consome créditos do Lovable AI.'
-                  : '⚠️ INATIVO: o app está usando Lovable AI. Se os créditos acabarem, o chat falhará. Ative para usar sua chave própria.'}
+                  ? '✅ ATIVO: as respostas do assistente usam sua chave própria. Sem consumo do provedor padrão.'
+                  : '⚠️ INATIVO: o app está usando o provedor padrão. Ative para usar sua chave própria.'}
               </p>
             </div>
             <Switch checked={preferGoogle} onCheckedChange={save} disabled={saving} />
@@ -173,7 +173,7 @@ export function AIProviderSettings() {
             <div className="flex items-start gap-2 p-3 rounded-lg border border-amber-500/40 bg-amber-500/10">
               <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
               <p className="text-xs">
-                <strong>Toggle desligado.</strong> Mesmo com sua chave configurada, o app continua usando Lovable AI até você ligar o switch acima.
+                <strong>Toggle desligado.</strong> Mesmo com sua chave configurada, o app continua usando o provedor padrão até você ligar o switch acima.
               </p>
             </div>
           )}
@@ -185,7 +185,7 @@ export function AIProviderSettings() {
                 Status atual
               </div>
               <Badge variant={preferGoogle ? 'default' : 'secondary'}>
-                {preferGoogle ? 'Google AI Studio (sua chave)' : 'Lovable AI (padrão)'}
+                {preferGoogle ? 'Chave própria (Google)' : 'Provedor padrão'}
               </Badge>
             </div>
             <div className="p-3 rounded-lg border bg-card">
@@ -202,7 +202,7 @@ export function AIProviderSettings() {
           <div className="space-y-3">
             <Button onClick={test} disabled={testing} className="gap-2">
               {testing ? <Loader2 className="h-4 w-4 animate-spin" /> : <PlayCircle className="h-4 w-4" />}
-              Testar chamada de IA
+              Testar assistente
             </Button>
             {(testOutput || usedProvider) && (
               <div className="p-3 rounded-lg border bg-muted/30 text-xs space-y-2">
