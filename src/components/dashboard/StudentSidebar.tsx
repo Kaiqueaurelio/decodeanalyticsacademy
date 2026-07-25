@@ -187,7 +187,9 @@ export function SidebarContent({
   hideBottomNavDuplicates?: boolean;
 }) {
   const location = useLocation();
-  const { isAdmin, signOut } = useAuth();
+  const { isAdmin, signOut, user } = useAuth();
+  const { data: profile } = useUserProfile(user?.id);
+  const isEnemOnly = profile?.content_scope === 'enem_only';
   const { navigate, open } = useSidebarNavigation(onNavigate);
   const visibleRailItems = railItems.filter((item) => !item.adminOnly || isAdmin);
   const railMenuItems = mode === 'full' ? visibleRailItems.slice(0, isAdmin ? 7 : 6) : visibleRailItems;
@@ -199,11 +201,16 @@ export function SidebarContent({
     '/cursos',
     '/biblioteca',
   ]);
-  const filteredGroups = hideBottomNavDuplicates
-    ? menuGroups
-        .map((g) => ({ ...g, items: g.items.filter((it) => !BOTTOM_NAV_ROUTES.has(it.to)) }))
-        .filter((g) => g.items.length > 0)
-    : menuGroups;
+  const filteredGroups = menuGroups
+    .map((g) => ({
+      ...g,
+      items: g.items.filter((it) => {
+        if (isEnemOnly && it.unipOnly) return false;
+        if (hideBottomNavDuplicates && BOTTOM_NAV_ROUTES.has(it.to)) return false;
+        return true;
+      }),
+    }))
+    .filter((g) => g.items.length > 0);
   const isFull = true;
   const canToggle = typeof setMode === 'function';
   const showRail = false;
