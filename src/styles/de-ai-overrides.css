@@ -1,0 +1,76 @@
+/* =============================================================
+   De-AI overrides — tone down clichê "AI SaaS 2024" aesthetic.
+   Loaded LAST so it wins the cascade. Non-destructive: opt-out
+   via .ai-hero / .keep-glow / .keep-gradient markers.
+   ============================================================= */
+
+/* 1. Kill decorative pulse on non-critical elements
+      (keeps .animate-pulse where semantic: skeletons, loaders). */
+[class*="animate-pulse"]:not(.skeleton):not([data-loading]):not(.loader):not(.keep-pulse) {
+  animation: none !important;
+}
+
+/* 2. Reduce gigantic glow shadows in generic surfaces.
+      Hero CTAs and buttons can opt-in via .keep-glow. */
+:not(.keep-glow) > [class*="shadow-[0_0_"],
+:not(.keep-glow)[class*="shadow-[0_0_"] {
+  box-shadow: 0 1px 2px 0 hsl(var(--foreground) / 0.04),
+              0 1px 3px 0 hsl(var(--foreground) / 0.06) !important;
+}
+
+/* 3. Neutralize gradient text on internal headings (h2/h3/h4).
+      Landing hero H1 keeps it. */
+main h2 [class*="bg-clip-text"],
+main h3 [class*="bg-clip-text"],
+main h4 [class*="bg-clip-text"],
+aside [class*="bg-clip-text"]:not(.keep-gradient),
+nav [class*="bg-clip-text"]:not(.keep-gradient) {
+  background: none !important;
+  -webkit-background-clip: initial !important;
+  background-clip: initial !important;
+  -webkit-text-fill-color: currentColor !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+/* 4. Rounded-3xl on generic cards → xl (12px). Hero cards opt-in. */
+main .rounded-3xl:not(.keep-radius),
+aside .rounded-3xl:not(.keep-radius) {
+  border-radius: 0.75rem !important;
+}
+
+/* 5. Backdrop-blur on generic surfaces → subtle. Overlays keep it. */
+main [class*="backdrop-blur-xl"]:not([role="dialog"]):not(.keep-blur),
+main [class*="backdrop-blur-2xl"]:not([role="dialog"]):not(.keep-blur),
+main [class*="backdrop-blur-3xl"]:not([role="dialog"]):not(.keep-blur) {
+  backdrop-filter: blur(4px) !important;
+  -webkit-backdrop-filter: blur(4px) !important;
+}
+
+/* 6. Kill decorative floating blob backgrounds inside internal pages. */
+main [class*="blur-3xl"]:not(.keep-blob) {
+  display: none !important;
+}
+
+/* 7. Tighten hover-scale that pops every card. */
+main .hover\:scale-105:hover {
+  transform: none !important;
+}
+
+/* 8. Remove animated conic-gradient rings. */
+[class*="animate-spin"][class*="conic"],
+[style*="conic-gradient"][class*="animate-"] {
+  animation: none !important;
+}
+
+/* 9. Focus-visible: keep it, but no glow shadow. */
+:focus-visible {
+  box-shadow: 0 0 0 2px hsl(var(--ring)) !important;
+}
+
+/* Reduced motion respect */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}

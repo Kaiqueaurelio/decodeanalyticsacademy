@@ -4,6 +4,8 @@
 @tailwind components;
 @tailwind utilities;
 
+@import './styles/de-ai-overrides.css';
+
 /* Global selection / copy block — protects content. Inputs remain editable. */
 html, body, #root {
   -webkit-user-select: none;
