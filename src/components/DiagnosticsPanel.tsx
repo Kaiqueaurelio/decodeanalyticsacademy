@@ -504,4 +504,3 @@ function formatExpiry(expiresAt: number | undefined): string {
   const h = Math.floor(min / 60);
   return `${h}h ${min % 60}min`;
 }
-}
