@@ -13,7 +13,7 @@ const chips = [
 
 export function AppShowcaseSection() {
   return (
-    <section className="relative py-28 md:py-36" style={{ background: 'linear-gradient(180deg, rgba(5,5,8,0.55) 0%, rgba(10,10,20,0.72) 50%, rgba(5,5,8,0.55) 100%)' }}>
+    <section className="relative py-28 md:py-36" style={{ background: 'linear-gradient(180deg, #050508 0%, #0a0a14 50%, #050508 100%)' }}>
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[800px] h-[800px] rounded-full blur-[140px] opacity-20" style={{ background: 'radial-gradient(circle, #00f0ff, transparent 60%)' }} />
         <div className="absolute -bottom-40 right-0 w-[600px] h-[600px] rounded-full blur-[140px] opacity-20" style={{ background: 'radial-gradient(circle, #a855f7, transparent 60%)' }} />
