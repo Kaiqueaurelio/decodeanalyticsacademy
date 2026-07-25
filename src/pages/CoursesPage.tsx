@@ -128,7 +128,10 @@ export default function CoursesPage() {
             <Loader2 className="h-4 w-4 animate-spin" /> Carregando cursos...
           </div>
         ) : courses.length === 0 ? (
-          <p className="py-16 text-center text-sm text-muted-foreground">Nenhum curso disponível no momento.</p>
+          <div className="py-16 text-center text-muted-foreground">
+            <GraduationCap className="h-10 w-10 mx-auto mb-3 opacity-30" strokeWidth={1.5} />
+            <p className="text-sm">Nenhum curso disponível no momento.</p>
+          </div>
         ) : (
           <section className="grid gap-3 sm:gap-4 lg:grid-cols-2">
             {courses.map((course) => {
