@@ -19,6 +19,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import {
+  AlertTriangle,
   Clock3,
   ExternalLink,
   Eye,
@@ -28,6 +29,7 @@ import {
   MousePointerClick,
   PencilLine,
   Plus,
+  RefreshCw,
   Search,
   Trash2,
 } from 'lucide-react';
@@ -102,6 +104,7 @@ export function AdminAdsManager() {
   const { user, isAdmin } = useAuth();
   const [ads, setAds] = useState<Ad[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -144,12 +147,15 @@ export function AdminAdsManager() {
   const loadAds = async () => {
     try {
       setLoading(true);
+      setLoadError(null);
       const { data, error } = await supabase.from('ads').select('*').order('created_at', { ascending: false });
       if (error) throw error;
       setAds(sortAds(data || []));
     } catch (error) {
       console.error('Erro ao carregar anúncios:', error);
-      toast.error(formatErrorMessage(error, 'Não foi possível carregar os anúncios'));
+      const message = formatErrorMessage(error, 'Não foi possível carregar os anúncios');
+      setLoadError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -367,12 +373,31 @@ export function AdminAdsManager() {
                 <div className="flex items-center justify-center py-16 text-muted-foreground">
                   <Loader2 className="mr-2 h-5 w-5 animate-spin" /> Carregando anúncios...
                 </div>
+              ) : loadError ? (
+                <div className="rounded-lg border border-destructive/40 bg-destructive/5 px-4 py-10 text-center">
+                  <AlertTriangle className="mx-auto mb-3 h-6 w-6 text-destructive" />
+                  <p className="font-medium text-destructive">Falha ao carregar anúncios</p>
+                  <p className="mt-1 text-sm text-muted-foreground">{loadError}</p>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="mt-4 gap-1.5"
+                    onClick={() => void loadAds()}
+                  >
+                    <RefreshCw className="h-4 w-4" /> Tentar novamente
+                  </Button>
+                </div>
               ) : filteredAds.length === 0 ? (
                 <div className="rounded-lg border border-dashed border-border px-4 py-12 text-center">
                   <Megaphone className="mx-auto mb-3 h-6 w-6 text-muted-foreground" />
-                  <p className="font-medium">Nenhum anúncio encontrado</p>
+                  <p className="font-medium">
+                    {ads.length === 0 ? 'Nenhum anúncio cadastrado' : 'Nenhum resultado para essa busca'}
+                  </p>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Ajuste a busca ou clique em <strong>Novo</strong> para começar.
+                    {ads.length === 0
+                      ? 'Clique em Novo para criar o primeiro anúncio.'
+                      : 'Ajuste os termos ou limpe a busca para ver todos os anúncios.'}
                   </p>
                 </div>
               ) : (
