@@ -18,8 +18,9 @@ import { Progress } from '@/components/ui/progress';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   BookOpen, CheckCircle, XCircle, Camera, Save, ArrowLeft,
-  PenLine, Trophy, Target, Flame, Rocket, Settings, AlertCircle, PencilLine, Loader2
+  PenLine, Trophy, Target, Flame, Rocket, Settings, AlertCircle, PencilLine, Loader2, ShieldCheck
 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 
 async function fileToCompactAvatarDataUrl(file: File): Promise<string> {
