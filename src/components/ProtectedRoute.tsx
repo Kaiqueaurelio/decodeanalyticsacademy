@@ -62,5 +62,10 @@ export function ProtectedRoute({ children, adminOnly = false, blockForEnem = fal
     if (!isAdmin) return <Navigate to="/dashboard" replace />;
   }
 
+  // Escopo restrito: usuários com content_scope='enem_only' só acessam rotas focadas em ENEM.
+  if (blockForEnem && !isAdmin && profile?.content_scope === 'enem_only') {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   return <>{children}</>;
 }
