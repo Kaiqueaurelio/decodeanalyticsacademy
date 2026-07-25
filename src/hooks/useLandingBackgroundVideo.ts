@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import type { VideoTier } from '@/data/landing-content';
 
 interface NetworkInformation extends EventTarget {
   saveData?: boolean;
@@ -16,8 +15,6 @@ export function useLandingBackgroundVideo() {
   const sentinelRef = useRef<HTMLDivElement>(null);
   const [skipVideo, setSkipVideo] = useState(false);
   const [shouldMount, setShouldMount] = useState(false);
-  const [tier, setTier] = useState<VideoTier>('720');
-  const [preferDirectSource, setPreferDirectSource] = useState(false);
 
   // Viewport + connection observer.
   useEffect(() => {
@@ -30,15 +27,7 @@ export function useLandingBackgroundVideo() {
       const saveData = !!conn?.saveData;
       const effective = conn?.effectiveType ?? '';
       const slow = /(^|-)2g$/.test(effective);
-      const host = window.location.hostname;
-      const servesHostedAssets = /(^|\.)lovable\.app$/i.test(host) || /(^|\.)lovableproject\.com$/i.test(host);
       setSkipVideo(saveData || slow || reduced.matches);
-      setPreferDirectSource(!servesHostedAssets);
-
-      const width = window.innerWidth * (window.devicePixelRatio || 1);
-      if (saveData || effective === '3g' || width <= 900) setTier('480');
-      else if (width <= 1500) setTier('720');
-      else setTier('1080');
     };
 
     update();
@@ -76,5 +65,5 @@ export function useLandingBackgroundVideo() {
     return () => io.disconnect();
   }, [skipVideo]);
 
-  return { sentinelRef, skipVideo, shouldMount, tier, preferDirectSource };
+  return { sentinelRef, skipVideo, shouldMount };
 }

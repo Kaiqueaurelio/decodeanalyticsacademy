@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef } from 'react';
 import landingBgPoster from '@/assets/landing-bg-poster.jpg';
-import { bgAssets, directLandingBackgroundVideoUrl } from '@/data/landing-content';
+import { landingBackgroundVideoUrl } from '@/data/landing-content';
 import { useLandingBackgroundVideo } from '@/hooks/useLandingBackgroundVideo';
 import { useAutoplayBackgroundVideo, useVideoReadiness } from './primitives';
 
@@ -11,19 +11,13 @@ import { useAutoplayBackgroundVideo, useVideoReadiness } from './primitives';
  */
 export function LandingBackground() {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const { sentinelRef, skipVideo, shouldMount, tier, preferDirectSource } = useLandingBackgroundVideo();
-  const [useDirectSource, setUseDirectSource] = useState(preferDirectSource);
+  const { sentinelRef, skipVideo, shouldMount } = useLandingBackgroundVideo();
   const { videoReady, videoFailed, markReady, setVideoFailed } = useVideoReadiness();
-
-  useEffect(() => {
-    setUseDirectSource(preferDirectSource);
-  }, [preferDirectSource]);
 
   const canShowVideo = shouldMount && !skipVideo;
   useAutoplayBackgroundVideo(videoRef, { enabled: canShowVideo && !videoFailed, onReady: markReady });
 
   const posterVisible = !videoReady || videoFailed;
-  const videoSource = useDirectSource ? directLandingBackgroundVideoUrl : bgAssets[`${tier}-mp4` as const].url;
 
   return (
     <>
@@ -49,7 +43,6 @@ export function LandingBackground() {
 
         {canShowVideo && (
           <video
-            key={`${tier}-${useDirectSource ? 'direct' : 'hosted'}`}
             data-testid="landing-background-video"
             ref={videoRef}
             className={`landing-bg-media landing-bg-video absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${
@@ -67,13 +60,9 @@ export function LandingBackground() {
               // Only flag true failures (unsupported source / decode error).
               // Ignore transient network aborts fired by Chrome during range requests.
               const code = event.currentTarget.error?.code;
-              if (!useDirectSource && (code === 3 || code === 4)) {
-                setUseDirectSource(true);
-                return;
-              }
               if (code === 3 || code === 4) setVideoFailed(true);
             }}
-            src={videoSource}
+            src={landingBackgroundVideoUrl}
           />
         )}
 
