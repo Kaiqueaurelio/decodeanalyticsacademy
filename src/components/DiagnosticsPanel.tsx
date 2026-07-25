@@ -196,13 +196,78 @@ export function DiagnosticsPanel() {
       </div>
 
       {/* Conteúdo em abas */}
-      <Tabs defaultValue="routes" className="w-full">
-        <TabsList className="grid grid-cols-4 w-full">
+      <Tabs defaultValue="auth" className="w-full">
+        <TabsList className="grid grid-cols-5 w-full">
+          <TabsTrigger value="auth" className="gap-1.5 text-xs"><ShieldCheck className="h-3.5 w-3.5" />Auth</TabsTrigger>
           <TabsTrigger value="routes" className="gap-1.5 text-xs"><Activity className="h-3.5 w-3.5" />Rotas</TabsTrigger>
           <TabsTrigger value="errors" className="gap-1.5 text-xs"><Bug className="h-3.5 w-3.5" />Erros ({errors.length})</TabsTrigger>
           <TabsTrigger value="network" className="gap-1.5 text-xs"><Network className="h-3.5 w-3.5" />Rede ({networkErrors.length + slowFetches.length})</TabsTrigger>
           <TabsTrigger value="loads" className="gap-1.5 text-xs"><Clock className="h-3.5 w-3.5" />Loads ({summary.pageLoads})</TabsTrigger>
         </TabsList>
+
+        {/* Auth */}
+        <TabsContent value="auth" className="mt-3">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <KeyRound className="h-4 w-4 text-primary" /> Estado de autenticação
+              </CardTitle>
+              <CardDescription className="text-xs">Sessão atual, expiração do token e histórico do fluxo de auth.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                <InfoTile label="Status" value={auth.status} tone={auth.status === 'authenticated' ? 'ok' : auth.status === 'unauthenticated' ? 'danger' : 'warn'} />
+                <InfoTile label="Papel" value={auth.isAdmin ? 'admin' : auth.user ? 'aluno' : '—'} />
+                <InfoTile label="Bloqueado" value={auth.isBlocked ? 'sim' : 'não'} tone={auth.isBlocked ? 'danger' : 'ok'} />
+                <InfoTile label="Renovando" value={auth.isRefreshingToken ? 'sim' : 'não'} tone={auth.isRefreshingToken ? 'warn' : 'ok'} />
+              </div>
+
+              <div className="border border-border/60 rounded-lg p-3 space-y-1.5 text-xs">
+                <div className="flex justify-between gap-2"><span className="text-muted-foreground">Usuário</span><span className="font-mono truncate max-w-[60%] text-right">{auth.user?.email ?? '—'}</span></div>
+                <div className="flex justify-between gap-2"><span className="text-muted-foreground">User ID</span><span className="font-mono truncate max-w-[60%] text-right">{auth.user?.id ?? '—'}</span></div>
+                <div className="flex justify-between gap-2"><span className="text-muted-foreground">Token expira em</span><span className="font-mono">{formatExpiry(auth.session?.expires_at)}</span></div>
+                <div className="flex justify-between gap-2"><span className="text-muted-foreground">Última renovação</span><span className="font-mono">{lastRefresh ? formatTime(lastRefresh.ts) : '—'}</span></div>
+                <div className="flex justify-between gap-2"><span className="text-muted-foreground">Sessão hidratada</span><span className="font-mono">{auth.isSessionHydrated ? 'sim' : 'não'}</span></div>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-medium">Histórico do fluxo ({authEvents.length})</p>
+                <Button size="sm" variant="ghost" onClick={() => void auth.refreshSession()}>
+                  <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Renovar agora
+                </Button>
+              </div>
+
+              {authEvents.length === 0 ? (
+                <EmptyState message="Nenhum evento de auth capturado nesta sessão." />
+              ) : (
+                <ScrollArea className="h-[280px] pr-2">
+                  <div className="space-y-1">
+                    {[...authEvents].reverse().map((e, i) => (
+                      <div key={i} className="border border-border/60 rounded p-2 text-xs">
+                        <div className="flex items-center justify-between gap-2">
+                          <Badge variant="outline" className={cn(
+                            'text-[10px] font-mono',
+                            e.event.includes('error') && 'text-destructive border-destructive/40',
+                            e.event.includes('success') && 'text-[hsl(var(--success))] border-[hsl(var(--success))]/40',
+                          )}>
+                            {e.event}
+                          </Badge>
+                          <span className="text-[10px] text-muted-foreground">{formatTime(e.ts)}</span>
+                        </div>
+                        {e.data && Object.keys(e.data).length > 0 && (
+                          <pre className="mt-1 text-[10px] text-muted-foreground overflow-x-auto font-mono">
+                            {JSON.stringify(e.data, null, 0)}
+                          </pre>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
 
         {/* Rotas */}
         <TabsContent value="routes" className="mt-3">
