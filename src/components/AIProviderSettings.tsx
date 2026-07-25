@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Sparkles, ShieldCheck, AlertTriangle, Cloud, KeyRound, PlayCircle } from 'lucide-react';
+import { Loader2, Sparkles, ShieldCheck, AlertTriangle, Cloud, KeyRound, PlayCircle, Zap } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 
 const SETTING_KEY = 'ai_provider';
@@ -21,6 +22,7 @@ export function AIProviderSettings() {
   const [preferGoogle, setPreferGoogle] = useState(false);
   const [testOutput, setTestOutput] = useState<string>('');
   const [usedProvider, setUsedProvider] = useState<string>('');
+  const [testPrompt, setTestPrompt] = useState<string>('Diga olá em português e mencione qual modelo Gemini você é.');
 
   useEffect(() => {
     (async () => {
@@ -69,8 +71,8 @@ export function AIProviderSettings() {
           apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
         },
         body: JSON.stringify({
-          systemPrompt: 'Responda em uma frase curta em português.',
-          messages: [{ role: 'user', content: 'Diga olá e mencione qual modelo você é.' }],
+          systemPrompt: 'Você é um assistente de teste. Responda de forma curta.',
+          messages: [{ role: 'user', content: testPrompt || 'ping' }],
         }),
       });
 
@@ -199,23 +201,45 @@ export function AIProviderSettings() {
             </div>
           </div>
 
-          <div className="space-y-3">
-            <Button onClick={test} disabled={testing} className="gap-2">
+          <div className="space-y-3 p-4 rounded-lg border-2 border-primary/40 bg-primary/5">
+            <div className="flex items-center gap-2">
+              <Zap className="h-4 w-4 text-primary" />
+              <Label className="text-sm font-semibold">Testar conexão com Gemini</Label>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Envia uma requisição real usando sua <code>GOOGLE_AI_API_KEY</code> via edge function <code>gemini-direct</code>.
+            </p>
+            <Textarea
+              value={testPrompt}
+              onChange={(e) => setTestPrompt(e.target.value)}
+              rows={2}
+              placeholder="Digite um prompt de teste..."
+              className="text-sm"
+            />
+            <Button onClick={test} disabled={testing || !testPrompt.trim()} className="gap-2 w-full sm:w-auto">
               {testing ? <Loader2 className="h-4 w-4 animate-spin" /> : <PlayCircle className="h-4 w-4" />}
-              Testar assistente
+              {testing ? 'Testando...' : 'Testar Gemini agora'}
             </Button>
             {(testOutput || usedProvider) && (
-              <div className="p-3 rounded-lg border bg-muted/30 text-xs space-y-2">
+              <div className="p-3 rounded-lg border bg-background text-xs space-y-2">
                 {usedProvider && (
-                  <div>
-                    <span className="font-semibold">Provedor usado:</span>{' '}
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold">Provedor usado:</span>
                     <Badge variant={usedProvider === 'google-direct' ? 'default' : 'secondary'}>
                       {usedProvider}
                     </Badge>
+                    {usedProvider === 'google-direct' && (
+                      <Badge variant="outline" className="border-emerald-500/40 text-emerald-600 dark:text-emerald-400">
+                        ✓ chave própria OK
+                      </Badge>
+                    )}
                   </div>
                 )}
                 {testOutput && (
-                  <div className="whitespace-pre-wrap text-foreground">{testOutput}</div>
+                  <div>
+                    <div className="font-semibold mb-1">Resposta:</div>
+                    <div className="whitespace-pre-wrap text-foreground p-2 rounded bg-muted/40">{testOutput}</div>
+                  </div>
                 )}
               </div>
             )}
