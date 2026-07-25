@@ -230,7 +230,7 @@ export default function LandingPage() {
           aria-hidden="true"
           decoding="async"
           {...({ fetchpriority: 'high' } as any)}
-          className={`landing-bg-media absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${videoReady && !videoFailed ? 'opacity-0' : 'opacity-45'}`}
+          className={`landing-bg-media absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${videoReady && !videoFailed ? 'opacity-0' : 'opacity-90'}`}
         />
         {shouldLoadVideo && !skipVideo && !videoFailed && (() => {
           const webm = bgAssets[`${videoTier}-webm` as const].url;
