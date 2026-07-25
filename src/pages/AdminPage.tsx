@@ -597,6 +597,14 @@ export default function AdminPage() {
   const [filterSemester, setFilterSemester] = useState<string>('all');
   const [filterCourse, setFilterCourse] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<'all' | 'published' | 'draft'>('all');
+  const [expandedCats, setExpandedCats] = useState<Set<string>>(new Set());
+  const toggleCat = useCallback((cat: string) => {
+    setExpandedCats(prev => {
+      const next = new Set(prev);
+      if (next.has(cat)) next.delete(cat); else next.add(cat);
+      return next;
+    });
+  }, []);
 
   // Apostila dialogs
   const [showExerciseDialog, setShowExerciseDialog] = useState<string | null>(null);
@@ -1715,7 +1723,58 @@ export default function AdminPage() {
                     )}
                   </div>
 
-                  <div className="space-y-3">
+                  {(() => {
+                    // Agrupa por disciplina (category). Auto-expande quando há busca ativa
+                    // para não esconder resultados.
+                    const groups = new Map<string, typeof filteredApostilas>();
+                    filteredApostilas.forEach(a => {
+                      const key = (a.category || 'Sem disciplina').trim() || 'Sem disciplina';
+                      if (!groups.has(key)) groups.set(key, [] as any);
+                      (groups.get(key) as any).push(a);
+                    });
+                    const sortedGroups = Array.from(groups.entries()).sort((a, b) =>
+                      a[0].localeCompare(b[0], 'pt-BR', { sensitivity: 'base' })
+                    );
+                    const searching = searchQuery.trim().length > 0;
+                    return (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {sortedGroups.map(([cat, items]) => {
+                          const open = searching || expandedCats.has(cat);
+                          const publishedCount = items.filter(x => x.published).length;
+                          const totalEx = items.reduce((s, x) => s + (exercises[x.id]?.length || 0), 0);
+                          return (
+                            <Card key={cat} className={`col-span-1 ${open ? 'sm:col-span-2 lg:col-span-3' : ''} border-border/70 hover:border-primary/40 transition-colors`}>
+                              <button
+                                type="button"
+                                onClick={() => toggleCat(cat)}
+                                className="w-full text-left p-4 flex items-center gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-t-xl"
+                                aria-expanded={open}
+                              >
+                                <div className="h-10 w-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                                  <FolderOpen className="h-5 w-5" />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <h4 className="font-semibold text-sm truncate">{cat}</h4>
+                                    <Badge variant="secondary" className="text-[10px]">{items.length} {items.length === 1 ? 'apostila' : 'apostilas'}</Badge>
+                                  </div>
+                                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                                    {publishedCount} publicada{publishedCount === 1 ? '' : 's'} · {totalEx} exercícios
+                                  </p>
+                                </div>
+                                <div className={`text-muted-foreground transition-transform ${open ? 'rotate-90' : ''}`}>
+                                  <ChevronRight className="h-4 w-4" />
+                                </div>
+                              </button>
+                              {open && (
+                                <div className="px-3 pb-3 space-y-2 border-t border-border/60 pt-3">
+                                  {items.map(a => {
+                    const exCount = exercises[a.id]?.length || 0;
+                    const semBadge = a.semester ? `${a.semester}º sem` : null;
+                    const courseList = (a.course || []) as string[];
+                    return (
+                      <Card key={a.id} className="hover-lift card-alternate">
+
                     {filteredApostilas.map(a => {
                       const exCount = exercises[a.id]?.length || 0;
                       const semBadge = a.semester ? `${a.semester}º sem` : null;
@@ -1829,13 +1888,20 @@ export default function AdminPage() {
                         </Card>
                       );
                     })}
-                    {filteredApostilas.length === 0 && (
-                      <div className="text-center py-12 text-muted-foreground">
-                        <BookOpen className="h-10 w-10 mx-auto mb-3 opacity-20" />
-                        <p className="text-sm">{searchQuery ? 'Nenhuma apostila encontrada.' : 'Nenhuma apostila criada.'}</p>
+                                </div>
+                              )}
+                            </Card>
+                          );
+                        })}
+                        {sortedGroups.length === 0 && (
+                          <div className="col-span-full text-center py-12 text-muted-foreground">
+                            <BookOpen className="h-10 w-10 mx-auto mb-3 opacity-20" />
+                            <p className="text-sm">{searchQuery ? 'Nenhuma apostila encontrada.' : 'Nenhuma apostila criada.'}</p>
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
+                    );
+                  })()}
                 </div>
 
                 {/* Mobile-controlled secondary dialogs (triggered by kebab menu) */}
