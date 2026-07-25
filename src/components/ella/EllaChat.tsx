@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import { Send, Loader2, Sparkles, CheckCircle2, AlertCircle, Wand2 } from "lucide-react";
@@ -8,6 +8,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { invokeFunction } from "@/lib/invoke-function";
 import { getEllaAvatarUrl } from "@/lib/ellaAvatar";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
 type Msg = { role: "user" | "assistant"; content: string; actions?: any[] };
@@ -21,6 +23,36 @@ interface EllaChatProps {
 }
 
 export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps) {
+  const { user, isAdmin } = useAuth();
+  const [contentScope, setContentScope] = useState<string>("full");
+
+  useEffect(() => {
+    if (!user) return;
+    supabase.from("profiles").select("content_scope").eq("user_id", user.id).maybeSingle()
+      .then(({ data }) => { if (data?.content_scope) setContentScope(data.content_scope); });
+  }, [user]);
+
+  const suggestions = useMemo(() => {
+    if (isAdmin) return [
+      "Crie uma apostila sobre Estruturas de Dados",
+      "Liste minhas últimas apostilas",
+      "Publique um aviso de prova amanhã",
+      "Abra a tela de admin",
+    ];
+    if (contentScope === "enem_only") return [
+      "Me explique função de 2º grau com exemplo",
+      "Como estruturar uma redação nota 1000 do ENEM?",
+      "Resuma a Revolução Industrial em 5 pontos",
+      "Me dê 3 exercícios de interpretação de texto",
+    ];
+    return [
+      "Me explique herança em POO com exemplo",
+      "Como funciona um algoritmo de ordenação Merge Sort?",
+      "Resuma normalização de banco de dados",
+      "Me dê 3 exercícios sobre listas encadeadas",
+    ];
+  }, [isAdmin, contentScope]);
+
   const [messages, setMessages] = useState<Msg[]>(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -97,7 +129,7 @@ export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps)
           </Avatar>
           <div>
             <p className="text-sm font-semibold leading-tight">Ella Ribeiro</p>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Copiloto executiva</p>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{isAdmin ? "Copiloto executiva" : contentScope === "enem_only" ? "Tutora ENEM" : "Tutora de estudos"}</p>
           </div>
         </div>
         {messages.length > 0 && (
@@ -111,15 +143,14 @@ export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps)
             <div className="text-center py-8 space-y-3">
               <Wand2 className="h-10 w-10 mx-auto text-primary opacity-60" />
               <p className="text-sm text-muted-foreground max-w-xs mx-auto">
-                Sou sua copiloto. Posso criar apostilas, gerar exercícios, publicar avisos, abrir páginas e mais.
+                {isAdmin
+                  ? "Sou sua copiloto. Posso criar apostilas, gerar exercícios, publicar avisos, abrir páginas e mais."
+                  : contentScope === "enem_only"
+                    ? "Sou sua tutora de ENEM. Me pergunte sobre qualquer matéria — resumo, exemplos, exercícios e redação."
+                    : "Sou sua tutora de estudos. Me pergunte sobre qualquer conteúdo — resumo, exemplos e exercícios."}
               </p>
               <div className="flex flex-wrap gap-2 justify-center pt-2">
-                {[
-                  "Crie uma apostila sobre Estruturas de Dados",
-                  "Liste minhas últimas apostilas",
-                  "Publique um aviso de prova amanhã",
-                  "Abra a tela de admin",
-                ].map((s) => (
+                {suggestions.map((s) => (
                   <button
                     key={s}
                     onClick={() => setInput(s)}
@@ -193,7 +224,7 @@ export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps)
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={onKeyDown}
-            placeholder="Peça para a Ella criar, editar, navegar…"
+            placeholder={isAdmin ? "Peça para a Ella criar, editar, navegar…" : "Tire uma dúvida ou peça um exemplo…"}
             rows={1}
             className="min-h-[44px] max-h-32 resize-none pr-12"
             disabled={loading}

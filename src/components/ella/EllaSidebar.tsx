@@ -12,11 +12,11 @@ import { cn } from "@/lib/utils";
 const HIDDEN_ROUTES = ["/", "/login", "/reset-password", "/termos"];
 
 export function EllaSidebar() {
-  const { isAdmin } = useAuth();
+  const { user } = useAuth();
   const location = useLocation();
   const [open, setOpen] = useState(false);
 
-  if (!isAdmin) return null;
+  if (!user) return null;
   if (HIDDEN_ROUTES.includes(location.pathname)) return null;
   if (location.pathname === "/ella") return null;
 

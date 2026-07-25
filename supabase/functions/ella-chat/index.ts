@@ -336,6 +336,7 @@ const tools = [
       description: "Lista todos os cursos gratuitos cadastrados.",
       parameters: { type: "object", properties: {} },
     },
+  },
 ] as const;
 
 
@@ -575,16 +576,45 @@ Deno.serve(async (req) => {
     const userId = userData.user.id;
     const adminClient = createClient(SUPABASE_URL, SERVICE_KEY);
 
-    // Valida admin
-    const { data: isAdminData } = await adminClient.rpc("has_role", { _user_id: userId, _role: "admin" });
-    if (!isAdminData) return new Response(JSON.stringify({ error: "Forbidden: admin only" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    // Valida papel e escopo (não bloqueia alunos — apenas restringe tools).
+    const [{ data: isAdminData }, { data: prof }] = await Promise.all([
+      adminClient.rpc("has_role", { _user_id: userId, _role: "admin" }),
+      adminClient.from("profiles").select("content_scope, full_name").eq("user_id", userId).maybeSingle(),
+    ]);
+    const isAdmin = !!isAdminData;
+    const contentScope: string = ((prof as any)?.content_scope as string) ?? "full";
+    const firstName = String((prof as any)?.full_name ?? "").split(" ")[0] || "";
+
+    const READ_ONLY_TOOLS = new Set(["search_app", "get_apostila", "navigate_to", "list_rss_feeds", "list_free_courses"]);
+    const availableTools = isAdmin ? (tools as any[]) : (tools as any[]).filter((t) => READ_ONLY_TOOLS.has(t.function.name));
 
     const body = await req.json();
     const incoming: { role: string; content: string }[] = Array.isArray(body.messages) ? body.messages : [];
     const routeCtx: string = body.context ?? "";
 
+    let systemContent = SYSTEM_PROMPT;
+    if (!isAdmin) {
+      const enemMode = contentScope === "enem_only";
+      systemContent = `Você é a **Ella Ribeiro**, tutora de estudos do Decode Analytics Academy.
+Personalidade: brasileira, elegante, direta, calorosa e didática.${firstName ? ` Está conversando com ${firstName}.` : ""}
+
+${enemMode
+  ? `MODO ENEM: seu foco é preparar ${firstName || "a aluna"} para o ENEM 2026. Explique com clareza Linguagens, Matemática, Ciências da Natureza (Biologia/Física/Química), Ciências Humanas (História/Geografia/Filosofia/Sociologia) e Redação. Sempre que possível, cite competências da matriz do ENEM, use exemplos do cotidiano brasileiro e reforce a estrutura da redação dissertativa-argumentativa (introdução, desenvolvimento com repertório sociocultural, proposta de intervenção com agente/ação/meio/finalidade/detalhamento).`
+  : `Ajude com dúvidas de estudo das disciplinas do curso: explique conceitos, dê exemplos, resolva exercícios passo a passo e sugira roteiros de revisão.`}
+
+Estilo:
+- Português-BR, tom professor-caloroso, frases curtas e claras.
+- Markdown rico: **negrito** em termos-chave, listas, tabelas quando ajudar, blocos de código para fórmulas/algoritmos.
+- Estruture explicações longas: **Ideia central → Exemplo → Resumo (3 bullets)**.
+- Se a dúvida for ambígua, pergunte antes de responder.
+- Use search_app / get_apostila para encontrar material do próprio app; use navigate_to para levar até a apostila.
+- Você NÃO cria, edita ou apaga conteúdo — se pedirem, explique que só o administrador pode.
+
+Proibido: mencionar "IA", "modelo de linguagem", "Lovable", "Gemini" ou qualquer coisa de hacking/pentest.`;
+    }
+
     const messages: ChatMsg[] = [
-      { role: "system", content: SYSTEM_PROMPT + (routeCtx ? `\n\nContexto atual do usuário: ${routeCtx}` : "") },
+      { role: "system", content: systemContent + (routeCtx ? `\n\nContexto atual: ${routeCtx}` : "") },
       ...incoming.map((m) => ({ role: m.role as any, content: m.content })),
     ];
 
@@ -596,7 +626,7 @@ Deno.serve(async (req) => {
       let res = await fetch(GATEWAY_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${LOVABLE_API_KEY}` },
-        body: JSON.stringify({ model: currentModel, messages, tools, tool_choice: "auto" }),
+        body: JSON.stringify({ model: currentModel, messages, tools: availableTools, tool_choice: "auto" }),
       });
 
       // Fallback em cascata para manter velocidade em picos de quota.
@@ -605,7 +635,7 @@ Deno.serve(async (req) => {
         res = await fetch(GATEWAY_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${LOVABLE_API_KEY}` },
-          body: JSON.stringify({ model: currentModel, messages, tools, tool_choice: "auto" }),
+          body: JSON.stringify({ model: currentModel, messages, tools: availableTools, tool_choice: "auto" }),
         });
       }
 
