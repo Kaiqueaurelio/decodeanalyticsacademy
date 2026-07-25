@@ -109,10 +109,16 @@ export function ManualLinkMaterialsDialog({ open, onOpenChange, apostilaId, onLi
                 </label>
               ))}
               {filteredOthers.length === 0 && others.length > 0 && (
-                <p className="text-xs text-muted-foreground text-center py-3">Nenhum resultado.</p>
+                <div className="text-center py-3 text-muted-foreground">
+                  <FileSearch className="h-6 w-6 mx-auto mb-1 opacity-30" strokeWidth={1.5} />
+                  <p className="text-xs">Nenhum resultado.</p>
+                </div>
               )}
               {others.length === 0 && suggestions.length === 0 && (
-                <p className="text-xs text-muted-foreground text-center py-6">Nenhum material disponível.</p>
+                <div className="text-center py-6 text-muted-foreground">
+                  <BookOpen className="h-7 w-7 mx-auto mb-2 opacity-30" strokeWidth={1.5} />
+                  <p className="text-xs">Nenhum material disponível.</p>
+                </div>
               )}
             </div>
           </ScrollArea>
