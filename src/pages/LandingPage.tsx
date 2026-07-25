@@ -323,12 +323,21 @@ export default function LandingPage() {
               </div>
               <h1 className="max-w-4xl text-5xl font-bold leading-[0.94] tracking-[-0.05em] text-white sm:text-7xl md:text-8xl">
                 Estude com
+              <h1
+                className="max-w-4xl text-5xl font-bold leading-[0.94] tracking-[-0.05em] text-white sm:text-7xl md:text-8xl"
+                style={{ textShadow: '0 2px 24px rgba(5,5,8,0.85), 0 0 40px rgba(5,5,8,0.6)' }}
+              >
+                Estude com
                 <span className="mt-2 block bg-gradient-to-r from-[#00f0ff] via-[#a855f7] to-[#c084fc] bg-clip-text text-transparent">
                   inteligência.
                 </span>
               </h1>
-              <p className="mx-auto mt-7 max-w-2xl text-base leading-7 text-white/80 sm:text-lg">
+              <p
+                className="mx-auto mt-7 max-w-2xl text-base leading-7 text-white/85 sm:text-lg"
+                style={{ textShadow: '0 1px 12px rgba(5,5,8,0.85)' }}
+              >
                 Apostilas, exercícios, flashcards e acompanhamento de progresso para você dominar cada disciplina.
+              </p>
               </p>
               <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
                 <Button
