@@ -22,6 +22,7 @@ export function AIProviderSettings() {
   const [preferGoogle, setPreferGoogle] = useState(false);
   const [testOutput, setTestOutput] = useState<string>('');
   const [usedProvider, setUsedProvider] = useState<string>('');
+  const [testPrompt, setTestPrompt] = useState<string>('Diga olá em português e mencione qual modelo Gemini você é.');
 
   useEffect(() => {
     (async () => {
