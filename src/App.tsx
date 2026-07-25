@@ -33,6 +33,7 @@ import LoginPage from "./pages/LoginPage";
 const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
 const DashboardPage = lazy(() => import("./pages/DashboardPage"));
 const ApostilaPage = lazy(() => import("./pages/ApostilaPage"));
+const ApostilaReaderPage = lazy(() => import("./pages/ApostilaReaderPage"));
 const ExercisesPage = lazy(() => import("./pages/ExercisesPage"));
 const ExerciciosIndexPage = lazy(() => import("./pages/ExerciciosIndexPage"));
 const AdminPage = lazy(() => import("./pages/AdminPage"));
