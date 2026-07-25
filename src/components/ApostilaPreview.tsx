@@ -103,12 +103,12 @@ export function ApostilaPreview({
               </p>
               <ul className="text-sm space-y-1.5">
                 {[
-                  '📚 Todas as apostilas completas',
-                  '🎧 Áudios das aulas',
-                  '🎬 Vídeos explicativos',
-                  '✏️ Exercícios e simulados',
-                  '⭐ Flashcards inteligentes',
-                  '🏆 Gamificação e ranking',
+                  'Todas as apostilas completas',
+                  'Áudios das aulas',
+                  'Vídeos explicativos',
+                  'Exercícios e simulados',
+                  'Flashcards inteligentes',
+                  'Gamificação e ranking',
                 ].map((benefit, i) => (
                   <li key={i} className="flex items-center gap-2">
                     <ArrowRight size={12} className="text-primary" />

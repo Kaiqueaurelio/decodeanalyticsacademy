@@ -125,7 +125,7 @@ export function ScreenshotGuard() {
       onClick={() => setHidden(false)}
       onTouchStart={() => setHidden(false)}
     >
-      <div className="text-4xl mb-4">🔒</div>
+      <div className="text-4xl mb-4" aria-hidden="true">•</div>
       <h2 className="font-display text-xl mb-2 text-foreground">Conteúdo protegido</h2>
       <p className="text-sm text-muted-foreground max-w-sm">
         Toque na tela para voltar ao conteúdo.
