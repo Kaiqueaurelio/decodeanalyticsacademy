@@ -100,8 +100,8 @@
 /* Decode hero polish */
 .hero-video-vignette {
   background:
-    radial-gradient(ellipse 70% 62% at 50% 50%, rgba(5, 5, 8, 0.16) 0%, rgba(5, 5, 8, 0.52) 78%, rgba(5, 5, 8, 0.84) 100%),
-    linear-gradient(180deg, rgba(5, 5, 8, 0.36) 0%, transparent 34%, rgba(5, 5, 8, 0.56) 100%);
+    radial-gradient(ellipse 75% 68% at 50% 50%, rgba(5, 5, 8, 0.58) 0%, rgba(5, 5, 8, 0.74) 62%, rgba(5, 5, 8, 0.92) 100%),
+    linear-gradient(180deg, rgba(5, 5, 8, 0.55) 0%, rgba(5, 5, 8, 0.35) 34%, rgba(5, 5, 8, 0.78) 100%);
 }
 
 .hero-entrance {
