@@ -116,7 +116,7 @@ export function DiagnosticsPanel() {
   const { data: profile } = useUserProfile(auth.user?.id);
   const scope = profile?.content_scope ?? 'full';
   const allowedAreas = scope === 'enem_only'
-    ? ['Dashboard', 'Apostilas ENEM', 'Simulados ENEM', 'Exercícios', 'Revisão', 'Desempenho', 'Perfil', 'Ella (Tutora ENEM)']
+    ? ['Dashboard', 'Apostilas ENEM', 'Exercícios', 'Revisão', 'Desempenho', 'Perfil', 'Ella (Tutora ENEM)']
     : ['Dashboard', 'Todas as apostilas', 'Exercícios', 'Simulados', 'Flashcards', 'Biblioteca', 'Livros', 'Cursos', 'Calculadora', 'Comunidade', 'Tira-dúvidas', 'Notícias', 'Ella', 'Perfil'];
   const summary = useMemo(() => summarizeEvents(perfEvents), [perfEvents]);
   const routeStats = useMemo(() => aggregateByRoute(timings, perfEvents, errors), [timings, perfEvents, errors]);

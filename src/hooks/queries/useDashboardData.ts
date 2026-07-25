@@ -60,7 +60,7 @@ export function useApostilasList(options: ApostilasListOptions = {}) {
 
       // Perfil restrito: só matérias ENEM
       if (!isAdmin && scope === 'enem_only') {
-        q = q.in('category', ['ENEM', 'Simulados ENEM']);
+        q = q.in('category', ['ENEM']);
       }
 
       const { data, error } = await q
