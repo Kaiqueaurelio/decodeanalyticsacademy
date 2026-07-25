@@ -48,8 +48,9 @@ const SIDEBAR_WIDTHS = {
 type SidebarMode = keyof typeof SIDEBAR_WIDTHS;
 
 // unipOnly = item pensado para alunos UNIP (currículo, turma, materiais da faculdade);
-// escondido para usuários com content_scope = 'enem_only'.
-type MenuItem = { to: string; icon: any; label: string; unipOnly?: boolean };
+// hideForEnem = ferramenta extra que não pertence ao foco ENEM (calculadora de médias, etc);
+// ambos são escondidos para usuários com content_scope = 'enem_only'.
+type MenuItem = { to: string; icon: any; label: string; unipOnly?: boolean; hideForEnem?: boolean };
 
 const menuGroups: { label: string; items: MenuItem[] }[] = [
   {
@@ -68,7 +69,7 @@ const menuGroups: { label: string; items: MenuItem[] }[] = [
       { to: '/exercicios', icon: PenLine, label: 'Exercícios' },
       { to: '/biblioteca', icon: Library, label: 'Biblioteca', unipOnly: true },
       { to: '/livros', icon: SheetIcon, label: 'Livros', unipOnly: true },
-      { to: '/flashcards', icon: Sparkles, label: 'Flashcards' },
+      { to: '/flashcards', icon: Sparkles, label: 'Flashcards', hideForEnem: true },
       { to: '/review', icon: RotateCcw, label: 'Revisão' },
       { to: '/simulado', icon: Trophy, label: 'Simulado' },
     ],
@@ -77,9 +78,9 @@ const menuGroups: { label: string; items: MenuItem[] }[] = [
     label: 'Ferramentas',
     items: [
       { to: '/noticias', icon: Newspaper, label: 'Notícias Tech', unipOnly: true },
-      { to: '/calculadora', icon: Calculator, label: 'Calculadora' },
+      { to: '/calculadora', icon: Calculator, label: 'Calculadora', hideForEnem: true },
       { to: '/performance', icon: Activity, label: 'Desempenho' },
-      { to: '/tira-duvida', icon: HelpCircle, label: 'Tira-dúvidas' },
+      { to: '/tira-duvida', icon: HelpCircle, label: 'Tira-dúvidas', hideForEnem: true },
       { to: '/comunidade', icon: MessagesSquare, label: 'Comunidade', unipOnly: true },
     ],
   },
@@ -90,6 +91,7 @@ const menuGroups: { label: string; items: MenuItem[] }[] = [
     ],
   },
 ];
+
 
 const adminMenuItems = [
   { to: '/admin', icon: Users, label: 'Usuários' },
