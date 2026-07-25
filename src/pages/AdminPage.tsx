@@ -748,7 +748,7 @@ export default function AdminPage() {
     setExercises(map);
     setAllAnswers(ans || []);
     setMaterials(mats || []);
-    setUsers((profs || []).map(p => ({ id: p.id, user_id: p.user_id, full_name: p.full_name, email: p.email, is_blocked: (p as any).is_blocked ?? false, created_at: p.created_at })));
+    setUsers((profs || []).map(p => ({ id: p.id, user_id: p.user_id, full_name: p.full_name, email: p.email, is_blocked: (p as any).is_blocked ?? false, created_at: p.created_at, content_scope: (p as any).content_scope ?? 'full', account_type: (p as any).account_type } as any)));
     setDbCategories((cats || []).map(c => ({ id: c.id, name: c.name, sort_order: c.sort_order })));
     setRefreshing(false);
   };
