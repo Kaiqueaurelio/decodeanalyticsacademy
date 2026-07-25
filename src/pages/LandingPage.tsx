@@ -327,7 +327,7 @@ export default function LandingPage() {
       </section>
 
       {/* ═══ ROADMAP / TRILHA ACADÊMICA ═══ */}
-      <section id="roadmap" className="relative py-28 md:py-36" style={{ background: 'linear-gradient(180deg, #050508 0%, #0a0a14 50%, #050508 100%)' }}>
+      <section id="roadmap" className="relative py-28 md:py-36" style={{ background: 'linear-gradient(180deg, rgba(5,5,8,0.55) 0%, rgba(10,10,20,0.72) 50%, rgba(5,5,8,0.55) 100%)' }}>
         <div className="max-w-7xl mx-auto px-5">
           <div className="grid lg:grid-cols-2 gap-16 items-start">
             {/* Left — sticky text */}
