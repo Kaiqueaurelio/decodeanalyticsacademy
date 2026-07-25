@@ -147,12 +147,15 @@ export function AdminAdsManager() {
   const loadAds = async () => {
     try {
       setLoading(true);
+      setLoadError(null);
       const { data, error } = await supabase.from('ads').select('*').order('created_at', { ascending: false });
       if (error) throw error;
       setAds(sortAds(data || []));
     } catch (error) {
       console.error('Erro ao carregar anúncios:', error);
-      toast.error(formatErrorMessage(error, 'Não foi possível carregar os anúncios'));
+      const message = formatErrorMessage(error, 'Não foi possível carregar os anúncios');
+      setLoadError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
