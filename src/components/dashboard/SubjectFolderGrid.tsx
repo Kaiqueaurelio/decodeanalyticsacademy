@@ -131,58 +131,51 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
                   backgroundPosition: 'center',
                 }}
               >
-                <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
-                <span
-                  className="absolute left-4 right-4 bottom-3 font-display font-semibold text-white text-lg leading-tight drop-shadow-[0_2px_6px_rgba(0,0,0,0.6)] line-clamp-2"
-                >
-                  {category}
-                </span>
+                <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent" />
                 {source && (
                   <span
-                    className="absolute left-4 bottom-1 inline-block rounded-sm px-2 py-[2px] text-[10px] font-semibold uppercase tracking-wider text-white"
-                    style={{ backgroundColor: '#c96a2e' }}
+                    className="absolute right-3 top-3 inline-block rounded-md bg-black/55 backdrop-blur-sm px-2 py-[3px] text-[10px] font-semibold uppercase tracking-wider text-white/95 ring-1 ring-white/10"
                   >
                     {source === 'ava' ? 'Ava' : source === 'presencial' ? 'Presencial' : source}
                   </span>
                 )}
+                <span
+                  className="absolute left-4 right-4 bottom-3 font-display font-semibold text-white text-lg leading-tight drop-shadow-[0_2px_6px_rgba(0,0,0,0.7)] line-clamp-2"
+                >
+                  {category}
+                </span>
               </button>
 
-              {/* Body */}
+              {/* Body — metadata only (title lives on the cover) */}
               <button
                 type="button"
                 onClick={() => toggle(category)}
-                className="flex w-full items-start gap-2.5 px-4 pt-3 pb-3 text-left"
+                className="flex w-full items-center gap-2 px-4 py-2.5 text-left"
               >
-                <FileText className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" strokeWidth={1.75} />
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-medium text-[15px] leading-snug text-foreground line-clamp-2">
-                    {category}
-                  </h3>
-                  <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                    {inProgress ? (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-sky-500/15 px-2 py-[3px] text-[10px] font-medium text-sky-300">
-                        <span className="h-1.5 w-1.5 rounded-full bg-sky-400" />
-                        Em progresso
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-[3px] text-[10px] font-medium text-muted-foreground">
-                        <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60" />
-                        Não iniciado
-                      </span>
-                    )}
-                    {semester && (
-                      <span
-                        className="inline-flex items-center rounded-md px-2 py-[3px] text-[10px] font-medium text-white"
-                        style={{ backgroundColor: '#a55a2b' }}
-                      >
-                        {semester}º Semestre
-                      </span>
-                    )}
-                    <span className="ml-auto text-[10px] tabular-nums text-muted-foreground">
-                      {items.length} {items.length === 1 ? 'apostila' : 'apostilas'}
+                <div className="flex flex-1 flex-wrap items-center gap-1.5 min-w-0">
+                  {inProgress ? (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-sky-500/15 px-2 py-[3px] text-[10px] font-medium text-sky-300">
+                      <span className="h-1.5 w-1.5 rounded-full bg-sky-400" />
+                      Em progresso
                     </span>
-                  </div>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-[3px] text-[10px] font-medium text-muted-foreground">
+                      <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60" />
+                      Não iniciado
+                    </span>
+                  )}
+                  {semester && (
+                    <span
+                      className="inline-flex items-center rounded-md px-2 py-[3px] text-[10px] font-medium text-white/90"
+                      style={{ backgroundColor: `${color}55` }}
+                    >
+                      {semester}º Sem.
+                    </span>
+                  )}
                 </div>
+                <span className="text-[10px] tabular-nums text-muted-foreground shrink-0">
+                  {items.length} {items.length === 1 ? 'apostila' : 'apostilas'}
+                </span>
               </button>
 
               {/* Expand list (Notion sub-pages) */}
