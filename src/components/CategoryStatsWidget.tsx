@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { getSubjectColor } from '@/lib/subject-colors';
-import { BarChart3, CheckCircle, XCircle, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { BarChart3, CheckCircle, XCircle, TrendingUp, TrendingDown, Minus, Trophy, RefreshCw } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 interface ApostilaStat {
@@ -146,12 +146,18 @@ export function CategoryStatsWidget({ apostilas, byApostila, exerciseCounts }: C
       {categoriesWithData.length >= 2 && (
         <div className="mt-4 pt-3 border-t border-border/50 grid grid-cols-2 gap-3">
           <div className="text-center">
-            <p className="text-[10px] text-muted-foreground mb-1">Melhor</p>
+            <div className="flex items-center justify-center gap-1 mb-1 text-[10px] text-muted-foreground">
+              <Trophy className="h-3 w-3 text-success" strokeWidth={1.75} />
+              <span>Melhor</span>
+            </div>
             <p className="text-xs font-semibold truncate">{best.name}</p>
             <p className="text-sm font-bold text-success">{best.pct}%</p>
           </div>
           <div className="text-center">
-            <p className="text-[10px] text-muted-foreground mb-1">Revisar</p>
+            <div className="flex items-center justify-center gap-1 mb-1 text-[10px] text-muted-foreground">
+              <RefreshCw className="h-3 w-3 text-destructive" strokeWidth={1.75} />
+              <span>Revisar</span>
+            </div>
             <p className="text-xs font-semibold truncate">{worst.name}</p>
             <p className="text-sm font-bold text-destructive">{worst.pct}%</p>
           </div>

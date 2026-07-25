@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Card } from '@/components/ui/card';
 import {
-  Send, Heart, MessageCircle, Trash2, Loader2, Users, Pin, Share2, Copy, Reply, Link2, Flag,
+  Send, Heart, MessageCircle, Trash2, Loader2, Users, Pin, Share2, Copy, Reply, Link2, Flag, PenLine,
 } from 'lucide-react';
 import { ActionSheet, type ActionItem } from '@/components/ActionSheet';
 import { toast } from 'sonner';
@@ -305,7 +305,8 @@ export default function CommunityPage() {
             {/* New post */}
             {user && activeChannel && (
               <Card className="p-3 mb-4 border-primary/30 bg-primary/5">
-                <p className="text-[10px] font-mono-label uppercase text-primary mb-2 tracking-wider">
+                <p className="text-[10px] font-mono-label uppercase text-primary mb-2 tracking-wider flex items-center gap-1.5">
+                  <PenLine className="h-3 w-3" strokeWidth={1.75} />
                   Escreva sua mensagem
                 </p>
                 <MentionTextarea
