@@ -33,19 +33,16 @@ export default function LoginPage() {
   const normalizeRa = (raValue: string) => raValue.trim().toUpperCase();
   const buildRaEmail = (raValue: string) => `${normalizeRa(raValue).toLowerCase()}@${RA_DOMAIN}`;
   const isValidRa = (raValue: string) => /^[A-Z0-9]{6,13}$/.test(normalizeRa(raValue));
-  const resolveEmailForIdentifier = async (rawIdentifier: string, allowPseudoEmail = false) => {
+  // Não chama mais RPC get_email_for_ra (fechada por segurança).
+  // Para RA, usamos pseudo-email; a edge function `ra-login` resolve o e-mail real server-side no fluxo de login.
+  const resolveEmailForIdentifier = (rawIdentifier: string) => {
     const id = rawIdentifier.trim();
     if (!id) return { email: '', usedPseudoEmail: false };
     if (looksLikeEmail(id)) return { email: id.toLowerCase(), usedPseudoEmail: false };
     if (!isValidRa(id)) throw new Error('Use um e-mail valido ou seu RA com 6 a 13 letras/numeros.');
-
-    const { data: realEmail, error } = await supabase.rpc('get_email_for_ra' as any, { _ra: id });
-    if (error) throw new Error('Nao consegui validar seu RA agora. Tente entrar pelo e-mail cadastrado.');
-    if (realEmail && typeof realEmail === 'string') return { email: realEmail, usedPseudoEmail: false };
-    if (allowPseudoEmail) return { email: buildRaEmail(id), usedPseudoEmail: true };
-
-    throw new Error('Este RA nao tem e-mail de recuperacao cadastrado. Entre em contato com o suporte.');
+    return { email: buildRaEmail(id), usedPseudoEmail: true };
   };
+
 
   /** Detecta se o identificador atual esta no formato de e-mail apos o usuario digitar. */
   const usingEmail = looksLikeEmail(identifier);
