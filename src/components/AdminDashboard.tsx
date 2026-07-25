@@ -591,7 +591,10 @@ export function AdminDashboard({ onNavigate }: Props) {
 
           <div className="space-y-2">
             {filtered.length === 0 && (
-              <p className="text-sm text-muted-foreground text-center py-8">Nenhuma apostila encontrada.</p>
+              <div className="text-center py-8 text-muted-foreground">
+                <BookOpen className="h-9 w-9 mx-auto mb-2 opacity-30" strokeWidth={1.5} />
+                <p className="text-sm">Nenhuma apostila encontrada.</p>
+              </div>
             )}
             {visibleItems.map((item) => {
               const isSel = selected.has(item.id);
