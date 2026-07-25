@@ -192,6 +192,9 @@ export default function LandingPage() {
   return (
     <div className="dark min-h-dvh font-cyber overflow-x-hidden selection:bg-primary/30 relative" style={{ color: '#e2e8f0' }}>
 
+      {/* Sentinela para IntersectionObserver decidir quando carregar o vídeo. */}
+      <div ref={bgSentinelRef} aria-hidden="true" className="absolute left-0 top-0 h-1 w-1 opacity-0" />
+
       {/* ═══ VIDEO DE FUNDO GLOBAL (portal em document.body para escapar de transforms de ancestrais) ═══ */}
       {typeof document !== 'undefined' && createPortal(
         <div
@@ -199,16 +202,28 @@ export default function LandingPage() {
           className="pointer-events-none fixed inset-0 overflow-hidden"
           style={{ zIndex: -1 }}
         >
-          <video
-            ref={heroVideoRef}
-            className="landing-bg-video h-full w-full scale-[1.03] object-cover opacity-60"
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="auto"
-            src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260328_065045_c44942da-53c6-4804-b734-f9e07fc22e08.mp4"
+          {/* Poster sempre presente: LCP rápido no mobile e placeholder no desktop até o vídeo carregar. */}
+          <img
+            src={landingBgPoster}
+            alt=""
+            aria-hidden="true"
+            decoding="async"
+            fetchPriority="high"
+            className="landing-bg-video absolute inset-0 h-full w-full scale-[1.03] object-cover opacity-60"
           />
+          {shouldLoadVideo && !isSmallScreen && (
+            <video
+              ref={heroVideoRef}
+              className="landing-bg-video absolute inset-0 h-full w-full scale-[1.03] object-cover opacity-60"
+              autoPlay
+              loop
+              muted
+              playsInline
+              preload="metadata"
+              poster={landingBgPoster}
+              src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260328_065045_c44942da-53c6-4804-b734-f9e07fc22e08.mp4"
+            />
+          )}
           <div
             className="absolute inset-0"
             style={{
@@ -219,6 +234,8 @@ export default function LandingPage() {
         </div>,
         document.body,
       )}
+
+
 
 
       {/* ═══ HERO / NAVEGAÇÃO ═══ */}
