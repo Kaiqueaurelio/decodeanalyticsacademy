@@ -279,10 +279,13 @@ export default function LandingPage() {
       {/* ═══ HERO / NAVEGAÇÃO ═══ */}
       <section className="relative isolate min-h-screen overflow-hidden">
         <CyberGrid />
-        <div className="hero-video-vignette pointer-events-none absolute inset-0 -z-10" aria-hidden="true" />
         <div
-          className="pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[527px] w-[min(984px,90vw)] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#050508]/90 blur-[82px]"
+          className="pointer-events-none absolute inset-0 z-0"
           aria-hidden="true"
+          style={{
+            background:
+              'radial-gradient(ellipse 78% 70% at 50% 45%, rgba(5,5,8,0.72) 0%, rgba(5,5,8,0.85) 60%, rgba(5,5,8,0.96) 100%), linear-gradient(180deg, rgba(5,5,8,0.7) 0%, rgba(5,5,8,0.55) 30%, rgba(5,5,8,0.9) 100%)',
+          }}
         />
         <div className="relative z-10 flex min-h-screen flex-col">
           <header className="px-5 py-5 sm:px-8">
@@ -318,13 +321,19 @@ export default function LandingPage() {
                 <GraduationCap className="h-3.5 w-3.5 text-[#00f0ff]" />
                 Plataforma de estudos
               </div>
-              <h1 className="max-w-4xl text-5xl font-bold leading-[0.94] tracking-[-0.05em] text-white sm:text-7xl md:text-8xl">
+              <h1
+                className="max-w-4xl text-5xl font-bold leading-[0.94] tracking-[-0.05em] text-white sm:text-7xl md:text-8xl"
+                style={{ textShadow: '0 2px 24px rgba(5,5,8,0.85), 0 0 40px rgba(5,5,8,0.6)' }}
+              >
                 Estude com
                 <span className="mt-2 block bg-gradient-to-r from-[#00f0ff] via-[#a855f7] to-[#c084fc] bg-clip-text text-transparent">
                   inteligência.
                 </span>
               </h1>
-              <p className="mx-auto mt-7 max-w-2xl text-base leading-7 text-white/80 sm:text-lg">
+              <p
+                className="mx-auto mt-7 max-w-2xl text-base leading-7 text-white/85 sm:text-lg"
+                style={{ textShadow: '0 1px 12px rgba(5,5,8,0.85)' }}
+              >
                 Apostilas, exercícios, flashcards e acompanhamento de progresso para você dominar cada disciplina.
               </p>
               <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -339,17 +348,17 @@ export default function LandingPage() {
                 </a>
               </div>
               <div className="mx-auto mt-12 grid max-w-3xl grid-cols-1 gap-3 text-left sm:grid-cols-3">
-                <div className="hero-stat-card rounded-2xl border border-white/10 bg-black/20 p-4 backdrop-blur-sm">
+                <div className="hero-stat-card rounded-2xl border border-white/12 bg-black/55 p-4 backdrop-blur-md">
                   <p className="text-2xl font-bold text-[#00f0ff]">48</p>
-                  <p className="mt-1 text-xs uppercase tracking-[0.14em] text-white/65">Disciplinas</p>
+                  <p className="mt-1 text-xs uppercase tracking-[0.14em] text-white/75">Disciplinas</p>
                 </div>
-                <div className="rounded-2xl border border-white/10 bg-black/20 p-4 backdrop-blur-sm">
+                <div className="rounded-2xl border border-white/12 bg-black/55 p-4 backdrop-blur-md">
                   <p className="text-sm font-bold text-white">Exercícios</p>
-                  <p className="mt-1 text-xs uppercase tracking-[0.14em] text-white/65">Práticos e comentados</p>
+                  <p className="mt-1 text-xs uppercase tracking-[0.14em] text-white/75">Práticos e comentados</p>
                 </div>
-                <div className="rounded-2xl border border-white/10 bg-black/20 p-4 backdrop-blur-sm">
+                <div className="rounded-2xl border border-white/12 bg-black/55 p-4 backdrop-blur-md">
                   <p className="text-sm font-bold text-white">Acesse onde estiver</p>
-                  <p className="mt-1 text-xs uppercase tracking-[0.14em] text-white/65">Computador e celular</p>
+                  <p className="mt-1 text-xs uppercase tracking-[0.14em] text-white/75">Computador e celular</p>
                 </div>
               </div>
               <div className="hero-signal mx-auto mt-7 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs text-white/70 backdrop-blur-sm">
