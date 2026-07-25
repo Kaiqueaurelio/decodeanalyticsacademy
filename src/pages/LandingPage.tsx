@@ -105,6 +105,7 @@ export default function LandingPage() {
   const heroVideoRef = useRef<HTMLVideoElement>(null);
   const bgSentinelRef = useRef<HTMLDivElement>(null);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
+  const [skipVideo, setSkipVideo] = useState(false);
   const [shouldLoadVideo, setShouldLoadVideo] = useState(false);
   const [videoTier, setVideoTier] = useState<'480' | '720' | '1080'>('720');
 
@@ -114,17 +115,18 @@ export default function LandingPage() {
     }
   }, []);
 
-  // Detecta mobile / save-data → mantém apenas o poster estático (sem vídeo).
+  // Detecta viewport e rede. Só pula o vídeo em save-data ou 2G — mobile toca em 480p.
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const mq = window.matchMedia('(max-width: 640px)');
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
     const conn: any = (navigator as any).connection;
-    const saveData = !!conn?.saveData;
-    const et: string = conn?.effectiveType || '';
-    const slow = /(^|-)2g$/.test(et);
     const update = () => {
-      setIsSmallScreen(mq.matches || saveData || slow);
-      // Escolhe a variante mais leve compatível com a viewport e a rede.
+      const saveData = !!conn?.saveData;
+      const et: string = conn?.effectiveType || '';
+      const slow = /(^|-)2g$/.test(et);
+      setIsSmallScreen(mq.matches);
+      setSkipVideo(saveData || slow || reduced.matches);
       const w = window.innerWidth * (window.devicePixelRatio || 1);
       if (saveData || et === '3g' || w <= 900) setVideoTier('480');
       else if (w <= 1500) setVideoTier('720');
@@ -132,12 +134,18 @@ export default function LandingPage() {
     };
     update();
     mq.addEventListener?.('change', update);
-    return () => mq.removeEventListener?.('change', update);
+    reduced.addEventListener?.('change', update);
+    conn?.addEventListener?.('change', update);
+    return () => {
+      mq.removeEventListener?.('change', update);
+      reduced.removeEventListener?.('change', update);
+      conn?.removeEventListener?.('change', update);
+    };
   }, []);
 
   // Lazy-load: só monta o <video> quando o topo da landing está perto do viewport.
   useEffect(() => {
-    if (isSmallScreen) { setShouldLoadVideo(false); return; }
+    if (skipVideo) { setShouldLoadVideo(false); return; }
     const el = bgSentinelRef.current;
     if (!el || typeof IntersectionObserver === 'undefined') {
       const id = window.setTimeout(() => setShouldLoadVideo(true), 800);
@@ -154,7 +162,7 @@ export default function LandingPage() {
     );
     io.observe(el);
     return () => io.disconnect();
-  }, [isSmallScreen]);
+  }, [skipVideo]);
 
   useEffect(() => {
     if (!shouldLoadVideo) return;
@@ -234,7 +242,7 @@ export default function LandingPage() {
             fetchPriority="high"
             className="landing-bg-video absolute inset-0 h-full w-full scale-[1.03] object-cover opacity-60"
           />
-          {shouldLoadVideo && !isSmallScreen && (() => {
+          {shouldLoadVideo && !skipVideo && (() => {
             const webm = bgAssets[`${videoTier}-webm` as const].url;
             const mp4 = bgAssets[`${videoTier}-mp4` as const].url;
             return (

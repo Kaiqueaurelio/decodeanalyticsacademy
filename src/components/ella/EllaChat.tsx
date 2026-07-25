@@ -8,6 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { invokeFunction } from "@/lib/invoke-function";
 import { getEllaAvatarUrl } from "@/lib/ellaAvatar";
+import { EllaAvatar } from "@/components/ella/EllaAvatar";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -121,12 +122,7 @@ export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps)
     <div className={cn("flex flex-col h-full bg-background", compact ? "" : "")}>
       <div className="flex items-center justify-between px-4 py-3 border-b border-border/50">
         <div className="flex items-center gap-3">
-          <Avatar className="h-10 w-10 ring-1 ring-border">
-            <AvatarImage src={getEllaAvatarUrl()} alt="Ella Ribeiro" />
-            <AvatarFallback className="bg-muted text-foreground">
-              <MessageCircle className="h-4 w-4" />
-            </AvatarFallback>
-          </Avatar>
+          <EllaAvatar size={40} rounded="full" ring />
           <div>
             <p className="text-sm font-semibold leading-tight">Ella Ribeiro</p>
             <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{isAdmin ? "Copiloto executiva" : contentScope === "enem_only" ? "Tutora ENEM" : "Tutora de estudos"}</p>
@@ -164,12 +160,7 @@ export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps)
           {messages.map((m, i) => (
             <div key={i} className={cn("flex gap-3", m.role === "user" ? "justify-end" : "")}>
               {m.role === "assistant" && (
-                <Avatar className="h-8 w-8 shrink-0 ring-1 ring-border/60">
-                  <AvatarImage src={getEllaAvatarUrl()} alt="Ella" />
-                  <AvatarFallback className="bg-muted text-foreground">
-                    <MessageCircle className="h-3.5 w-3.5" />
-                  </AvatarFallback>
-                </Avatar>
+                <EllaAvatar size={32} rounded="full" className="shrink-0 ring-1 ring-border/60" />
               )}
               <div className={cn(
                 "max-w-[85%] rounded-2xl px-4 py-2.5 text-sm",
@@ -202,12 +193,7 @@ export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps)
 
           {loading && (
             <div className="flex gap-3">
-              <Avatar className="h-8 w-8 shrink-0 ring-1 ring-border/60">
-                <AvatarImage src={getEllaAvatarUrl()} alt="Ella" />
-                <AvatarFallback className="bg-muted text-foreground">
-                  <MessageCircle className="h-3.5 w-3.5" />
-                </AvatarFallback>
-              </Avatar>
+              <EllaAvatar size={32} rounded="full" className="shrink-0 ring-1 ring-border/60" />
               <div className="bg-muted/50 rounded-2xl px-4 py-2.5 flex items-center gap-2">
                 <Loader2 className="h-3 w-3 animate-spin keep-pulse" />
                 <span className="text-xs text-muted-foreground">Pensando…</span>
