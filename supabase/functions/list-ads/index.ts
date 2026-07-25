@@ -69,7 +69,7 @@ Deno.serve(async (req) => {
       return json({ ads: [] });
     }
 
-    // Busca anúncios ativos e válidos por janela
+    // Busca anúncios ativos e válidos por janela, com ordenação + paginação server-side
     const nowIso = new Date().toISOString();
     let query = admin
       .from("ads")
@@ -77,30 +77,27 @@ Deno.serve(async (req) => {
         "id, title, description, image_url, link_url, ad_type, position, display_duration, view_count, click_count, start_date, end_date, target_pages",
       )
       .eq("is_active", true)
-      .order("position", { ascending: true });
+      .or(`start_date.is.null,start_date.lte.${nowIso}`)
+      .or(`end_date.is.null,end_date.gte.${nowIso}`)
+      .order(orderBy, { ascending: dir === "asc" })
+      .range(offset, offset + limit - 1);
+
+    if (adType) query = query.eq("ad_type", adType);
 
     const { data: rows, error: rowsErr } = await query;
     if (rowsErr) throw rowsErr;
 
-    const now = new Date();
-    const baseValid = (rows || []).filter((ad: any) => {
-      if (ad.start_date && new Date(ad.start_date) > now) return false;
-      if (ad.end_date && new Date(ad.end_date) < now) return false;
+    // target_pages ainda é filtrado em memória (array com "all" ou página específica)
+    const finalAds = (rows || []).filter((ad: any) => {
       if (targetPage && Array.isArray(ad.target_pages) && ad.target_pages.length > 0) {
         if (!ad.target_pages.includes("all") && !ad.target_pages.includes(targetPage)) return false;
       }
       return true;
     });
 
-    let finalAds = baseValid;
-    if (adType) {
-      const matching = baseValid.filter((ad: any) => ad.ad_type === adType);
-      finalAds = matching.length > 0 ? matching : baseValid;
-    }
-
     // Remove campos internos antes de devolver
     const stripped = finalAds.map(({ start_date, end_date, target_pages, ...rest }: any) => rest);
-    return json({ ads: stripped });
+    return json({ ads: stripped, limit, offset, order: orderBy, dir });
   } catch (e) {
     console.error("list-ads error", e);
     return json({ ads: [], error: "Falha ao carregar anúncios" }, 500);
