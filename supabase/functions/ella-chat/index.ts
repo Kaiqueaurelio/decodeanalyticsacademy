@@ -336,6 +336,7 @@ const tools = [
       description: "Lista todos os cursos gratuitos cadastrados.",
       parameters: { type: "object", properties: {} },
     },
+  },
 ] as const;
 
 
