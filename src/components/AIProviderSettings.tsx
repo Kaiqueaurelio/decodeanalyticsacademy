@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Sparkles, ShieldCheck, AlertTriangle, Cloud, KeyRound, PlayCircle, Zap } from 'lucide-react';
+import { Loader2, Wand2, ShieldCheck, AlertTriangle, Cloud, KeyRound, PlayCircle, Rocket } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 
@@ -148,7 +148,7 @@ export function AIProviderSettings() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-primary" />
+            <Wand2 className="h-5 w-5 text-primary" />
             Provedor do Assistente
           </CardTitle>
           <CardDescription>
@@ -203,7 +203,7 @@ export function AIProviderSettings() {
 
           <div className="space-y-3 p-4 rounded-lg border-2 border-primary/40 bg-primary/5">
             <div className="flex items-center gap-2">
-              <Zap className="h-4 w-4 text-primary" />
+              <Rocket className="h-4 w-4 text-primary" />
               <Label className="text-sm font-semibold">Testar conexão com Gemini</Label>
             </div>
             <p className="text-xs text-muted-foreground">

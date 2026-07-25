@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Target, Sparkles, ArrowRight, Trophy } from 'lucide-react';
+import { Target, Wand2, ArrowRight, Trophy } from 'lucide-react';
 
 export function WeeklySimuladoCard() {
   const { user } = useAuth();
@@ -66,7 +66,7 @@ export function WeeklySimuladoCard() {
               {state.kind === 'none' && '20 questões — diagnóstico de fraquezas'}
             </p>
             <p className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5 truncate">
-              <Sparkles className="h-3 w-3" />
+              <Wand2 className="h-3 w-3" />
               {isFinished ? 'Veja seu diagnóstico por disciplina' : 'Várias matérias • +5 XP a cada acerto'}
             </p>
           </div>

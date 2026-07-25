@@ -1,4 +1,4 @@
-import { Instagram, MessageCircle, Share2, ExternalLink, PenLine, Sparkles, CheckCircle, Copy } from 'lucide-react';
+import { Instagram, MessageCircle, Share2, ExternalLink, PenLine, Wand2, CheckCircle, Copy } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -271,7 +271,7 @@ export function SocialAndProjectsSection() {
                       border: '1px solid rgba(168,85,247,0.3)',
                     }}
                   >
-                    <Sparkles className="h-2.5 w-2.5 inline mr-1" />
+                    <Wand2 className="h-2.5 w-2.5 inline mr-1" />
                     Beta
                   </span>
                   <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">

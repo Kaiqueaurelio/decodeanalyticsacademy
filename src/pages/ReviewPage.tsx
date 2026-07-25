@@ -7,7 +7,7 @@ import { AppHeader } from '@/components/AppHeader';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Brain, ArrowLeft, RotateCcw, Check, X, Sparkles, CheckCircle2 } from 'lucide-react';
+import { Brain, ArrowLeft, RotateCcw, Check, X, Wand2, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { sm2, formatNextReview, type SRSQuality } from '@/lib/srs';
 
@@ -151,7 +151,7 @@ export default function ReviewPage() {
                 : `Você revisou ${reviewedCount} cartão(ões). Volte amanhã para a próxima rodada.`}
             </p>
             <Button onClick={() => navigate('/dashboard')} className="gap-1.5 gradient-primary text-primary-foreground">
-              <Sparkles className="h-4 w-4" /> Voltar ao Dashboard
+              <Wand2 className="h-4 w-4" /> Voltar ao Dashboard
             </Button>
           </Card>
         ) : current ? (
@@ -216,7 +216,7 @@ export default function ReviewPage() {
                   onClick={() => handleAnswer(5)}
                   className="border-success/40 text-success hover:bg-success/5 flex-col h-auto py-2"
                 >
-                  <Sparkles className="h-4 w-4" />
+                  <Wand2 className="h-4 w-4" />
                   <span className="text-[11px] font-semibold mt-1">Fácil</span>
                   <span className="text-[9px] text-muted-foreground">+2 XP</span>
                 </Button>

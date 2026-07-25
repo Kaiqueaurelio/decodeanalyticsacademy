@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { ArrowLeft, BarChart3, CheckCircle2, ExternalLink, GraduationCap, Info, Loader2, PlusCircle, Sparkles } from 'lucide-react';
+import { ArrowLeft, BarChart3, CheckCircle2, ExternalLink, GraduationCap, Info, Loader2, PlusCircle, Wand2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { iconFor } from '@/lib/free-course-icons';
 
@@ -49,7 +49,7 @@ export default function CoursesPage() {
   const courses = useMemo(() => selectedArea === 'Todos' ? rows : rows.filter((c) => c.area === selectedArea), [rows, selectedArea]);
   const stats = [
     { label: 'Cursos gratuitos', value: rows.length, icon: GraduationCap },
-    { label: 'Trilhas em destaque', value: rows.filter((c) => c.featured).length, icon: Sparkles },
+    { label: 'Trilhas em destaque', value: rows.filter((c) => c.featured).length, icon: Wand2 },
     { label: 'Áreas cobertas', value: Math.max(0, areas.length - 1), icon: BarChart3 },
   ];
 

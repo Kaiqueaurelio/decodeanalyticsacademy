@@ -9,7 +9,7 @@ import {
   Cpu,
   Gamepad2,
   Bot,
-  Sparkles,
+  Wand2,
   Rocket,
   Building2,
   Package,
@@ -39,7 +39,7 @@ const JOURNEY = [
 const PROJECTS = [
   { icon: Bot, title: 'Assistentes Virtuais', desc: 'Copilotos de estudo com contexto e ferramentas.' },
   { icon: Gamepad2, title: 'Jogos Educativos', desc: '4 jogos multiplayer focados em sustentabilidade.' },
-  { icon: Sparkles, title: 'Realidade Aumentada', desc: 'Iniciação científica com Merge Cube para TDAH.' },
+  { icon: Wand2, title: 'Realidade Aumentada', desc: 'Iniciação científica com Merge Cube para TDAH.' },
   { icon: Cpu, title: 'Robótica com Arduino', desc: 'Protótipos e projetos acadêmicos aplicados.' },
 ];
 

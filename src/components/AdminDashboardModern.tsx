@@ -17,7 +17,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import {
-  BookOpen, PenLine, Users, Megaphone, RefreshCw, Search, ChevronRight, Sparkles,
+  BookOpen, PenLine, Users, Megaphone, RefreshCw, Search, ChevronRight, Wand2,
   GraduationCap, Bell, Link as LinkIcon, FileText, FileUp,
   Eye, EyeOff, Edit, Trash2, Trophy, Medal, Award, Filter, X, Check,
   CheckCircle2, XCircle, CalendarDays, ArrowDownUp,
@@ -332,7 +332,7 @@ export function AdminDashboardModern({ onNavigate }: Props) {
         <div className="hidden md:block absolute right-8 top-1/2 -translate-y-1/2 opacity-90">
           <div className="relative">
             <GraduationCap className="w-32 h-32 text-white/90" strokeWidth={1.2} />
-            <Sparkles className="absolute -top-2 -right-2 w-6 h-6 text-amber-200" />
+            <Wand2 className="absolute -top-2 -right-2 w-6 h-6 text-amber-200" />
           </div>
         </div>
       </motion.div>

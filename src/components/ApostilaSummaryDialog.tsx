@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { FileText, Network, Sparkles, RefreshCw, Download } from 'lucide-react';
+import { FileText, Network, Wand2, RefreshCw, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
 import { MermaidDiagram } from './MermaidDiagram';
@@ -65,21 +65,21 @@ export function ApostilaSummaryDialog({ apostilaId, apostilaTitle }: Props) {
     <Dialog open={open} onOpenChange={handleOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="gap-1.5">
-          <Sparkles className="h-3.5 w-3.5" />
+          <Wand2 className="h-3.5 w-3.5" />
           Resumo + Mapa
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-base">
-            <Sparkles className="h-4 w-4 text-primary" />
+            <Wand2 className="h-4 w-4 text-primary" />
             <span className="line-clamp-1">{apostilaTitle}</span>
           </DialogTitle>
         </DialogHeader>
 
         {loading && !data && (
           <div className="flex flex-col items-center justify-center py-12">
-            <Sparkles className="h-10 w-10 text-primary animate-pulse mb-3" />
+            <Wand2 className="h-10 w-10 text-primary animate-pulse mb-3" />
             <p className="text-sm font-medium">Gerando resumo e mapa mental...</p>
             <p className="text-xs text-muted-foreground mt-1">Pode levar 10-20 segundos</p>
           </div>

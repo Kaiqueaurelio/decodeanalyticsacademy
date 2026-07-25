@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Flame, Sparkles, ChevronRight } from 'lucide-react';
+import { Flame, Wand2, ChevronRight } from 'lucide-react';
 import { getSubjectColor } from '@/lib/subject-colors';
 
 interface UpcomingExam {
@@ -71,7 +71,7 @@ export function PreExamReviewBanner() {
           className="h-12 w-12 rounded-xl flex items-center justify-center flex-shrink-0"
           style={{ background: `${color}25` }}
         >
-          {urgent ? <Flame className="h-6 w-6" style={{ color }} /> : <Sparkles className="h-6 w-6" style={{ color }} />}
+          {urgent ? <Flame className="h-6 w-6" style={{ color }} /> : <Wand2 className="h-6 w-6" style={{ color }} />}
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 mb-0.5">

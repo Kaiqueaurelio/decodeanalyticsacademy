@@ -1,5 +1,5 @@
 import {
-  Code2, Atom, Type, Wind, Database, Zap, Smartphone, GitBranch,
+  Code2, Atom, Type, Wind, Database, Activity, Smartphone, GitBranch,
   BookOpen, Brain, Trophy, Users, Calendar, Lock, Bell, Timer,
   Lightbulb, Hammer, Rocket,
 } from 'lucide-react';
@@ -34,7 +34,7 @@ const STACK = [
   { icon: Atom, name: 'React 18', desc: 'Interface' },
   { icon: Type, name: 'TypeScript', desc: 'Tipagem' },
   { icon: Wind, name: 'Tailwind CSS', desc: 'Estilo' },
-  { icon: Zap, name: 'Vite', desc: 'Build' },
+  { icon: Activity, name: 'Vite', desc: 'Build' },
   { icon: Database, name: 'PostgreSQL', desc: 'Banco' },
   { icon: Lock, name: 'Auth + RLS', desc: 'Segurança' },
   { icon: Smartphone, name: 'PWA', desc: 'App mobile' },

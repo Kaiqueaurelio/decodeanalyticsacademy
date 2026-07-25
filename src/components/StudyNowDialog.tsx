@@ -24,7 +24,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
-  Sparkles,
+  Wand2,
   Timer,
   Layers,
   BookOpen,
@@ -121,7 +121,7 @@ export function StudyNowDialog({ trigger }: Props) {
 
   const defaultTrigger = (
     <Button size="lg" className="gap-2 gradient-primary shadow-lg hover:shadow-primary/40">
-      <Sparkles className="h-4 w-4" />
+      <Wand2 className="h-4 w-4" />
       Estudar agora
     </Button>
   );
@@ -132,7 +132,7 @@ export function StudyNowDialog({ trigger }: Props) {
       <DialogContent className="max-w-lg p-0 gap-0 overflow-hidden">
         <DialogHeader className="p-5 pb-3 border-b">
           <DialogTitle className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-primary" />
+            <Wand2 className="h-5 w-5 text-primary" />
             Modo Estudar Agora
           </DialogTitle>
           <p className="text-xs text-muted-foreground">

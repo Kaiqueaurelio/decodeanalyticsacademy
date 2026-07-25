@@ -8,7 +8,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, ArrowRight, Target, Trophy, Sparkles, RefreshCw, Loader2, CheckCircle2, XCircle, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Target, Trophy, Wand2, RefreshCw, Loader2, CheckCircle2, XCircle, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { getSubjectColor } from '@/lib/subject-colors';
 
@@ -181,7 +181,7 @@ export default function SimuladoPage() {
               de fraquezas por matéria — para saber exatamente o que estudar.
             </p>
             <Button onClick={startNew} disabled={generating} size="lg" className="bg-purple-500 hover:bg-purple-600 text-white gap-2">
-              {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+              {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
               {generating ? 'Montando seu simulado...' : 'Começar agora'}
             </Button>
           </Card>

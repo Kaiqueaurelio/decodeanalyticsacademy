@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Camera, Upload, Loader2, BookOpen, Sparkles, X, History } from "lucide-react";
+import { Camera, Upload, Loader2, BookOpen, Wand2, X, History } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -137,7 +137,7 @@ export function TiraDuvidaDialog({ open, onOpenChange }: Props) {
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-primary" />
+            <Wand2 className="h-5 w-5 text-primary" />
             Tira-duvida com foto
           </DialogTitle>
           <DialogDescription>
@@ -199,7 +199,7 @@ export function TiraDuvidaDialog({ open, onOpenChange }: Props) {
                   {loading ? (
                     <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Analisando...</>
                   ) : (
-                    <><Sparkles className="mr-2 h-4 w-4" /> Pedir ajuda</>
+                    <><Wand2 className="mr-2 h-4 w-4" /> Pedir ajuda</>
                   )}
                 </Button>
               </div>

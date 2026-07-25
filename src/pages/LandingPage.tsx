@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   ArrowRight, BookOpen, GraduationCap, Cpu, Brain,
-  ChevronRight, Download, Smartphone, Layers, Zap, Target,
+  ChevronRight, Download, Smartphone, Layers, Rocket, Target,
   BarChart3, PenLine, Flame, TrendingUp, CheckCircle,
 } from 'lucide-react';
 import logoDark from '@/assets/owl-icon.png';
@@ -248,7 +248,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-5 relative">
           <ScrollReveal>
             <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: '#00f0ff' }}>
-              <Zap className="h-3 w-3 inline mr-2" />Recursos da Plataforma
+              <Rocket className="h-3 w-3 inline mr-2" />Recursos da Plataforma
             </span>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mt-3 leading-tight">
               Tudo para você

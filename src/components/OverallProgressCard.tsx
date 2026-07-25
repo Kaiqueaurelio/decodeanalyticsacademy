@@ -12,7 +12,7 @@
  */
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { TrendingUp, Target, Sparkles, ArrowRight } from 'lucide-react';
+import { TrendingUp, Target, Wand2, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import {
   CANONICAL_GROUPS,
@@ -153,7 +153,7 @@ export function OverallProgressCard({
           <div className="mt-4 pt-3 border-t border-border/50 flex flex-wrap gap-2">
             {strongest && (
               <Badge variant="outline" className={cn('gap-1 text-[10px] py-1 border-success/40 text-success bg-success/5')}>
-                <Sparkles className="h-3 w-3" />
+                <Wand2 className="h-3 w-3" />
                 Mandando bem em <strong className="ml-0.5">{strongest}</strong>
               </Badge>
             )}

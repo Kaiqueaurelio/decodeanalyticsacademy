@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { FileUp, Sparkles, Trash2, Plus, Loader2, Calendar as CalIcon, Edit2, Image as ImageIcon, FileText } from 'lucide-react';
+import { FileUp, Wand2, Trash2, Plus, Loader2, Calendar as CalIcon, Edit2, Image as ImageIcon, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -188,7 +188,7 @@ export function CalendarEventsAdmin() {
     <div className="space-y-6">
       <Card className="p-5">
         <div className="flex items-center gap-2 mb-4">
-          <Sparkles className="h-5 w-5 text-primary" />
+          <Wand2 className="h-5 w-5 text-primary" />
           <h3 className="font-semibold">Importar cronograma</h3>
         </div>
         <div className="grid sm:grid-cols-[1fr_auto_auto_auto_auto] gap-3 items-end">
@@ -386,7 +386,7 @@ export function CalendarEventsAdmin() {
                 onClick={extractFromText}
                 disabled={extracting || !rawText.trim()}
               >
-                {extracting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Analisando…</> : <><Sparkles className="h-4 w-4 mr-2" /> Estruturar com IA</>}
+                {extracting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Analisando…</> : <><Wand2 className="h-4 w-4 mr-2" /> Estruturar com IA</>}
               </Button>
             </div>
           </div>

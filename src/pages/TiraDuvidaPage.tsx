@@ -4,7 +4,7 @@ import { AppHeader } from "@/components/AppHeader";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Sparkles, BookOpen, Trash2, Camera, History as HistoryIcon } from "lucide-react";
+import { Wand2, BookOpen, Trash2, Camera, History as HistoryIcon } from "lucide-react";
 import { TiraDuvidaDialog } from "@/components/TiraDuvidaDialog";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
@@ -92,7 +92,7 @@ export default function TiraDuvidaPage() {
           <div className="text-center py-12 text-muted-foreground">Carregando...</div>
         ) : items.length === 0 ? (
           <div className="text-center py-16 border border-dashed border-border rounded-xl">
-            <Sparkles className="h-10 w-10 mx-auto text-muted-foreground/50 mb-3" />
+            <Wand2 className="h-10 w-10 mx-auto text-muted-foreground/50 mb-3" />
             <p className="text-muted-foreground mb-4">Nenhuma dúvida ainda</p>
             <Button onClick={() => setDialogOpen(true)}>
               <Camera className="mr-2 h-4 w-4" /> Tirar primeira foto

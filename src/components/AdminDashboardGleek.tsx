@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
   BookOpen, PenLine, Users, Heart, MessageCircle, Megaphone,
-  Eye, Zap, Settings, RefreshCw, Plus, Search, MoreVertical,
+  Eye, Rocket, Settings, RefreshCw, Plus, Search, MoreVertical,
   TrendingUp, Clock, Activity, DollarSign, Brain, Music
 } from 'lucide-react';
 import { motion } from 'framer-motion';

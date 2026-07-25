@@ -1,4 +1,4 @@
-import { BarChart3, Brain, Code2, Database, GraduationCap, Network, ShieldCheck, Sparkles } from 'lucide-react';
+import { BarChart3, Brain, Code2, Database, GraduationCap, Network, ShieldCheck, Wand2 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 export type FreeCourseStatus = 'available' | 'soon';
@@ -112,6 +112,6 @@ export const COURSE_AREAS = ['Todos', ...Array.from(new Set(FREE_COURSES.map((co
 
 export const COURSES_PAGE_STATS = [
   { label: 'Cursos gratuitos', value: FREE_COURSES.length, icon: GraduationCap },
-  { label: 'Trilhas em destaque', value: FREE_COURSES.filter((course) => course.featured).length, icon: Sparkles },
+  { label: 'Trilhas em destaque', value: FREE_COURSES.filter((course) => course.featured).length, icon: Wand2 },
   { label: 'Areas cobertas', value: COURSE_AREAS.length - 1, icon: BarChart3 },
 ];

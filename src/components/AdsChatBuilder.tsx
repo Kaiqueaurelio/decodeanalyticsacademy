@@ -20,7 +20,7 @@ import {
   RotateCcw,
   Send,
   ShieldCheck,
-  Sparkles,
+  PenTool,
   Square,
   Trash2,
   Wand2,
@@ -738,7 +738,7 @@ export function AdsChatBuilder() {
           {messages.filter((message) => message.role === 'user').length === 0 && (
             <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="max-w-4xl space-y-3">
               <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
-                <Sparkles className="h-3.5 w-3.5 text-primary" /> Exemplos prontos para testar a Ella
+                <PenTool className="h-3.5 w-3.5 text-primary" /> Exemplos prontos para testar a Ella
               </div>
               <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
                 {SUGGESTIONS.map((suggestion) => (

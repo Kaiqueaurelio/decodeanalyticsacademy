@@ -1,4 +1,4 @@
-import { BarChart3, Brain, Code2, Database, GraduationCap, Network, ShieldCheck, Sparkles, type LucideIcon } from 'lucide-react';
+import { BarChart3, Brain, Code2, Database, GraduationCap, Network, ShieldCheck, Wand2, type LucideIcon } from 'lucide-react';
 
 export const ICON_MAP: Record<string, LucideIcon> = {
   chart: BarChart3,
@@ -8,7 +8,7 @@ export const ICON_MAP: Record<string, LucideIcon> = {
   graduation: GraduationCap,
   network: Network,
   shield: ShieldCheck,
-  sparkles: Sparkles,
+  sparkles: Wand2,
 };
 
 export const ICON_OPTIONS: { key: string; label: string }[] = [

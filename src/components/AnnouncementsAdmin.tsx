@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Switch } from '@/components/ui/switch';
 import { AppImage } from '@/components/ui/app-image';
 import {
-  Plus, Trash2, Edit, Megaphone, GraduationCap, Calendar, Briefcase, Sparkles, Eye, EyeOff, Image as ImageIcon, X
+  Plus, Trash2, Edit, Megaphone, GraduationCap, Calendar, Briefcase, PenTool, Eye, EyeOff, Image as ImageIcon, X
 } from 'lucide-react';
 import { Upload, Loader2, Link2, Wand2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -34,7 +34,7 @@ const CATEGORIES = [
   { value: 'cursos', label: 'Cursos', icon: GraduationCap },
   { value: 'provas', label: 'Provas', icon: Calendar },
   { value: 'empregos', label: 'Empregos', icon: Briefcase },
-  { value: 'eventos', label: 'Eventos', icon: Sparkles },
+  { value: 'eventos', label: 'Eventos', icon: PenTool },
 ];
 
 function isValidUrl(str: string): boolean {
@@ -374,7 +374,7 @@ export function AnnouncementsAdmin() {
             {/* Clean raw text via AI */}
             <div className="p-3 rounded-lg border border-dashed border-accent/40 bg-accent/5">
               <Label className="text-xs font-medium flex items-center gap-1.5 mb-2">
-                <Sparkles className="h-3.5 w-3.5 text-accent-foreground" />
+                <PenTool className="h-3.5 w-3.5 text-accent-foreground" />
                 Colar texto bruto e organizar com IA
               </Label>
               <Textarea

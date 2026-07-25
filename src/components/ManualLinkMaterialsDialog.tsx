@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
-import { Loader2, Search, Sparkles } from 'lucide-react';
+import { Loader2, Search, Wand2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { getSuggestedMaterials, linkMaterials } from '@/lib/auto-link-materials';
 
@@ -64,7 +64,7 @@ export function ManualLinkMaterialsDialog({ open, onOpenChange, apostilaId, onLi
       <DialogContent className="max-w-lg max-h-[85vh] flex flex-col overflow-hidden">
         <DialogHeader>
           <DialogTitle className="text-base truncate">
-            <Sparkles className="inline h-4 w-4 mr-1.5 text-primary" />
+            <Wand2 className="inline h-4 w-4 mr-1.5 text-primary" />
             Vincular materiais: {apostilaTitle}
           </DialogTitle>
         </DialogHeader>

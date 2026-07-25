@@ -38,7 +38,7 @@ import { autoLinkApostila } from '@/lib/auto-link-materials';
 import { ApostilaContentRenderer } from '@/components/ApostilaContentRenderer';
 import { guessSemesterFromCategory, SEMESTER_OPTIONS, COURSE_OPTIONS, type CourseCode } from '@/lib/subject-semester-map';
 import {
-  ArrowLeft, Search, Save, Eye, Sparkles, Wand2, Loader2, Menu, FileText,
+  ArrowLeft, Search, Save, Eye, PenTool, Wand2, Loader2, Menu, FileText,
   ListChecks, PanelRightClose, ExternalLink, GraduationCap, ImageIcon,
 } from 'lucide-react';
 import { invokeFunction } from '@/lib/invoke-function';
@@ -528,7 +528,7 @@ export default function AdminApostilaWorkbench() {
             {coverUrl ? 'Regerar capa' : 'Gerar capa IA'}
           </Button>
           <Button size="sm" variant="outline" className="h-7 gap-1.5 text-xs" onClick={() => setPasteOpen(true)}>
-            <Sparkles className="h-3 w-3 text-primary" /> Colar inteligente
+            <PenTool className="h-3 w-3 text-primary" /> Colar inteligente
           </Button>
           <Button size="sm" variant="outline" className="h-7 gap-1.5 text-xs" onClick={() => window.open(`/apostila/${id}`, '_blank')}>
             <Eye className="h-3 w-3" /> Ver como aluno

@@ -40,7 +40,7 @@ import {
 } from '@/lib/subjectGroups';
 import {
   CheckCircle, XCircle, Percent, Flame, Trophy, Target,
-  TrendingUp, BookOpen, ArrowLeft, Award, Zap, ChevronRight,
+  TrendingUp, BookOpen, ArrowLeft, Award, Rocket, ChevronRight,
 } from 'lucide-react';
 
 interface ApostilaStat {
@@ -177,7 +177,7 @@ export default function PerformancePage() {
     { icon: XCircle, label: 'Erros', value: stats.errors, color: 'text-destructive', bg: 'bg-destructive/10' },
     { icon: Percent, label: 'Aproveitamento', value: overallAccuracy, suffix: '%', color: 'text-warning', bg: 'bg-warning/10' },
     { icon: Flame, label: 'Sequência', value: gamification.streak?.current_streak || 0, suffix: 'd', color: 'text-orange-500', bg: 'bg-orange-500/10' },
-    { icon: Zap, label: 'XP total', value: gamification.xp?.xp_points || 0, color: 'text-primary', bg: 'bg-primary/10' },
+    { icon: Rocket, label: 'XP total', value: gamification.xp?.xp_points || 0, color: 'text-primary', bg: 'bg-primary/10' },
     { icon: Award, label: 'Nível', value: gamification.xp?.level || 1, color: 'text-accent', bg: 'bg-accent/10' },
   ];
 

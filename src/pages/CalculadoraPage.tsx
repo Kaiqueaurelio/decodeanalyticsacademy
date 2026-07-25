@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calculator, Plus, Trash2, Save, Trophy, AlertTriangle, Target, Sparkles, Download, BookOpen, Loader2, CheckCircle2, XCircle } from "lucide-react";
+import { Calculator, Plus, Trash2, Save, Trophy, AlertTriangle, Target, Wand2, Download, BookOpen, Loader2, CheckCircle2, XCircle } from "lucide-react";
 import { AppHeader } from "@/components/AppHeader";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -400,7 +400,7 @@ export default function CalculadoraPage() {
             <Card className="p-8 text-center text-muted-foreground">Carregando…</Card>
           ) : rows.length === 0 ? (
             <Card className="p-8 text-center bg-card/40 backdrop-blur">
-              <Sparkles className="h-8 w-8 mx-auto text-primary mb-3" />
+              <Wand2 className="h-8 w-8 mx-auto text-primary mb-3" />
               <p className="text-sm text-muted-foreground mb-4">
                 {profile?.semester
                   ? `Puxar as ${"matérias"} do seu ${profile.semester}º semestre ou adicionar manualmente.`

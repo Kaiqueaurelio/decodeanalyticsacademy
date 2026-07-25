@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { Sparkles, Calendar, Clock, RefreshCw, ChevronRight, BookOpen, AlertTriangle } from 'lucide-react';
+import { Wand2, Calendar, Clock, RefreshCw, ChevronRight, BookOpen, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -94,7 +94,7 @@ export function StudyPlanWidget() {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <div className="h-8 w-8 rounded-lg bg-primary/15 flex items-center justify-center">
-            <Sparkles className="h-4 w-4 text-primary" />
+            <Wand2 className="h-4 w-4 text-primary" />
           </div>
           <div>
             <h3 className="text-sm font-semibold leading-tight">Plano de Estudos de Hoje</h3>
@@ -127,7 +127,7 @@ export function StudyPlanWidget() {
             A IA vai analisar suas provas e apostilas para montar seu cronograma.
           </p>
           <Button size="sm" onClick={generate} disabled={generating} className="gap-1.5">
-            <Sparkles className="h-3.5 w-3.5" />
+            <Wand2 className="h-3.5 w-3.5" />
             {generating ? 'Gerando...' : 'Gerar meu plano'}
           </Button>
         </div>

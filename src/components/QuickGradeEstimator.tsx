@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Zap, Target, AlertTriangle, Trophy } from "lucide-react";
+import { Rocket, Target, AlertTriangle, Trophy } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -68,7 +68,7 @@ export function QuickGradeEstimator() {
       <Card className="p-5 bg-gradient-to-br from-primary/15 via-card/40 to-purple-500/15 border-primary/40 backdrop-blur">
         <div className="flex items-center gap-2 mb-4">
           <div className="h-9 w-9 rounded-lg bg-primary/20 border border-primary/40 flex items-center justify-center">
-            <Zap className="h-4 w-4 text-primary" />
+            <Rocket className="h-4 w-4 text-primary" />
           </div>
           <div>
             <h2 className="font-bold text-base">Estimador Rápido</h2>
