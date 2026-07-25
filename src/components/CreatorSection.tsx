@@ -19,7 +19,7 @@ import {
 import kaiqueAvatar from '@/assets/kaique-creator.jpeg';
 
 const WHATSAPP_NUMBER = '5511939222885';
-const WHATSAPP_MSG = encodeURIComponent('Olá Kaique! Vim pela Decode Analytics Academy 👋');
+const WHATSAPP_MSG = encodeURIComponent('Olá Kaique! Vim pela Decode Analytics Academy.');
 const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_MSG}`;
 const EMAIL_URL = 'mailto:decodeanalytics@outlook.com.br?subject=Contato%20Decode%20Analytics%20Academy';
 

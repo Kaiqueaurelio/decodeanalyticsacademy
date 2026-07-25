@@ -103,7 +103,7 @@ export function TodayExamBanner() {
             isToday ? 'text-destructive' : 'text-warning'
           }`}>
             {isToday
-              ? `🚨 Você tem ${totalCount === 1 ? 'avaliação' : `${totalCount} avaliações`} HOJE`
+              ? `Você tem ${totalCount === 1 ? 'avaliação' : `${totalCount} avaliações`} HOJE`
               : `⏰ Avaliação AMANHÃ — hora de focar`}
           </p>
           <ul className="space-y-1 mb-3">

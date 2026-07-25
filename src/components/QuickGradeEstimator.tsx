@@ -170,7 +170,7 @@ export function QuickGradeEstimator() {
               <Trophy className="h-5 w-5 text-emerald-300 flex-shrink-0 mt-0.5" />
               <div>
                 <div className="text-sm font-semibold text-emerald-200 mb-1">
-                  Aprovado direto! 🎉
+                  Aprovado direto!
                 </div>
                 <div className="text-emerald-100 text-sm">
                   Sua média é{" "}

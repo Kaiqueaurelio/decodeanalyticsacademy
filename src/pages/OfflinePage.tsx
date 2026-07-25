@@ -94,7 +94,7 @@ export default function OfflinePage() {
 
         {/* Dica */}
         <p className="text-[11px] text-muted-foreground/70 pt-4 border-t border-border/50">
-          💡 As apostilas que você já abriu ficam salvas automaticamente para leitura sem internet.
+          As apostilas que você já abriu ficam salvas automaticamente para leitura sem internet.
         </p>
       </div>
     </div>

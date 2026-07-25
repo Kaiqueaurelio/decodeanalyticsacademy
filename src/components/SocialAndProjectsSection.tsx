@@ -7,7 +7,7 @@ const FALLBACK_APP_URL = typeof window !== 'undefined' && window.location?.origi
   ? window.location.origin
   : 'https://decodeanalyticsacademy.com.br';
 
-const SHARE_TEXT = 'Conheça a Decode Analytics Academy — plataforma de estudos para alunos de Tecnologia 🚀';
+const SHARE_TEXT = 'Conheça a Decode Analytics Academy — plataforma de estudos para alunos de Tecnologia.';
 const WRITELAB_URL = 'https://writelab-one.vercel.app';
 
 const SOCIALS = [
@@ -29,7 +29,7 @@ const SOCIALS = [
     name: '+55 11 93922-2885',
     label: 'WhatsApp',
     icon: MessageCircle,
-    url: 'https://wa.me/5511939222885?text=' + encodeURIComponent('Olá! Vim pela Decode Analytics 👋'),
+    url: 'https://wa.me/5511939222885?text=' + encodeURIComponent('Olá! Vim pela Decode Analytics.'),
     bg: 'linear-gradient(135deg, #25D366, #128C7E)',
   },
 ];

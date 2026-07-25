@@ -149,7 +149,7 @@ export function StudyNowDialog({ trigger }: Props) {
           <div className="p-8 text-center text-sm text-muted-foreground flex flex-col items-center gap-3">
             <CheckCircle2 className="h-10 w-10 text-primary/50" />
             <p>
-              <strong className="block text-foreground">Tudo em dia! 🎉</strong>
+              <strong className="block text-foreground">Tudo em dia.</strong>
               Você concluiu todas as apostilas disponíveis.
             </p>
           </div>

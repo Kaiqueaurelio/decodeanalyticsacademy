@@ -72,7 +72,7 @@ export function BiometricOnboarding() {
         email: user.email || '',
         refreshToken: session.refresh_token,
       });
-      toast.success('Biometria ativada! 🎉');
+      toast.success('Biometria ativada!');
       refresh();
       markSeen();
       setOpen(false);

@@ -67,8 +67,8 @@ export function DuplicateApostilaDialog({
 
             <span className="block rounded bg-primary/10 border border-primary/30 p-2 text-xs">
               {recommendReplace
-                ? <>✨ Recomendação: a <strong>versão nova</strong> está melhor formatada — vamos atualizar a existente.</>
-                : <>👍 Recomendação: a <strong>versão existente</strong> já está melhor formatada — mantenha-a.</>}
+                ? <>Recomendação: a <strong>versão nova</strong> está melhor formatada — vamos atualizar a existente.</>
+                : <>Recomendação: a <strong>versão existente</strong> já está melhor formatada — mantenha-a.</>}
             </span>
           </AlertDialogDescription>
         </AlertDialogHeader>
