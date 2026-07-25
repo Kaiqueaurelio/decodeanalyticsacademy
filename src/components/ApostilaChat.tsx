@@ -152,11 +152,11 @@ export function ApostilaChat({ apostilaId, apostilaTitle, variant = 'panel' }: P
         }
       }
 
-      // Aviso quando o admin esperava Google mas caiu no Lovable
+      // Aviso quando o admin esperava a chave própria mas caiu no provedor padrão
       const usedProvider = resp.headers.get('X-AI-Provider') || '';
       if (usedProvider && usedProvider !== 'google-direct' && localStorage.getItem('ai_prefer_google_hint') === '1') {
-        toast.message('Resposta veio do Lovable AI', {
-          description: 'O toggle no Admin → IA pode estar desligado.',
+        toast.message('Resposta veio do provedor padrão', {
+          description: 'O toggle em Admin → Provedor do Assistente pode estar desligado.',
         });
       }
 
