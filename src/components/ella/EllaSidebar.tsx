@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/useAuth";
 import { EllaChat } from "./EllaChat";
-import { getEllaAvatarUrl } from "@/lib/ellaAvatar";
+import { getEllaAvatarUrl, DEFAULT_ELLA_AVATAR } from "@/lib/ellaAvatar";
 import { cn } from "@/lib/utils";
 
 const HIDDEN_ROUTES = ["/", "/login", "/reset-password", "/termos"];
