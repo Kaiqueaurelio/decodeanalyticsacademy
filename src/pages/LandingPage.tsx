@@ -279,10 +279,13 @@ export default function LandingPage() {
       {/* ═══ HERO / NAVEGAÇÃO ═══ */}
       <section className="relative isolate min-h-screen overflow-hidden">
         <CyberGrid />
-        <div className="hero-video-vignette pointer-events-none absolute inset-0 z-0" aria-hidden="true" />
         <div
-          className="pointer-events-none absolute left-1/2 top-1/2 z-0 h-[560px] w-[min(1000px,94vw)] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#050508]/70 blur-[90px]"
+          className="pointer-events-none absolute inset-0 z-0"
           aria-hidden="true"
+          style={{
+            background:
+              'radial-gradient(ellipse 78% 70% at 50% 45%, rgba(5,5,8,0.72) 0%, rgba(5,5,8,0.85) 60%, rgba(5,5,8,0.96) 100%), linear-gradient(180deg, rgba(5,5,8,0.7) 0%, rgba(5,5,8,0.55) 30%, rgba(5,5,8,0.9) 100%)',
+          }}
         />
         <div className="relative z-10 flex min-h-screen flex-col">
           <header className="px-5 py-5 sm:px-8">
