@@ -95,15 +95,24 @@ export function useAds(adType?: 'banner' | 'popup' | 'inline' | 'sidebar' | 'foo
       // Passa por edge function que valida content_scope no servidor.
       // A função devolve [] para usuários sem escopo `full` (ou não autenticados),
       // então nem chega a expor payload de anúncio no cliente.
-      const params: Record<string, string> = {};
-      if (adType) params.ad_type = adType;
-      if (targetPage) params.target_page = targetPage;
+      const qs = new URLSearchParams();
+      if (adType) qs.set('ad_type', adType);
+      if (targetPage) qs.set('target_page', targetPage);
 
-      const { data, error } = await supabase.functions.invoke('list-ads', {
+      const { data: sess } = await supabase.auth.getSession();
+      const token = sess?.session?.access_token;
+
+      const fnUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/list-ads${qs.toString() ? `?${qs}` : ''}`;
+      const res = await fetch(fnUrl, {
         method: 'GET',
-        // supabase-js serializa como query string quando `body` é undefined em GET
-        headers: params,
-      } as any);
+        headers: {
+          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+      const payload = await res.json().catch(() => ({}));
+      const error = !res.ok ? new Error(payload?.error || `HTTP ${res.status}`) : null;
+      const data = res.ok ? payload : null;
 
       // Fallback: quando a edge função não estiver disponível, cai para a query direta
       // (RLS já impede escopo enem_only de enxergar anúncios).
