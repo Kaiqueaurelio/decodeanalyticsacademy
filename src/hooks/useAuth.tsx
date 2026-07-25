@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import type { Session, User } from '@supabase/supabase-js';
 import { safeRefreshSession, setCurrentSession } from '@/lib/auth-session';
 import { toast } from 'sonner';
+import { recordAuthEvent } from '@/lib/auth-log';
 
 const ROLE_CACHE_KEY = 'decode_role_cache';
 const LAST_SESSION_MARKER = 'decode_last_session_user';
