@@ -98,6 +98,7 @@ export default function LandingPage() {
   const bgSentinelRef = useRef<HTMLDivElement>(null);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
   const [shouldLoadVideo, setShouldLoadVideo] = useState(false);
+  const [videoTier, setVideoTier] = useState<'480' | '720' | '1080'>('720');
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.location?.origin?.startsWith('http')) {
