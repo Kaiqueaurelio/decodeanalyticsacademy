@@ -5,11 +5,41 @@ interface NetworkInformation extends EventTarget {
   effectiveType?: string;
 }
 
+export type LandingBgTestMode = 'slow' | '2g' | 'reduced' | null;
+
+const TEST_STORAGE_KEY = 'landing-bg-test';
+
+/**
+ * Reads `?bgtest=slow|2g|reduced|off` from the URL (or sessionStorage) so QA
+ * can force a specific network / motion path without DevTools throttling.
+ * Zero cost when no flag is present.
+ */
+export function getLandingBgTestMode(): LandingBgTestMode {
+  if (typeof window === 'undefined') return null;
+  try {
+    const fromUrl = new URLSearchParams(window.location.search).get('bgtest');
+    if (fromUrl === 'off') {
+      window.sessionStorage.removeItem(TEST_STORAGE_KEY);
+      return null;
+    }
+    if (fromUrl === 'slow' || fromUrl === '2g' || fromUrl === 'reduced') {
+      window.sessionStorage.setItem(TEST_STORAGE_KEY, fromUrl);
+      return fromUrl;
+    }
+    const stored = window.sessionStorage.getItem(TEST_STORAGE_KEY);
+    if (stored === 'slow' || stored === '2g' || stored === 'reduced') return stored;
+  } catch {
+    /* sessionStorage may be blocked — safe to ignore */
+  }
+  return null;
+}
+
 /**
  * Reactive descriptor for the landing-page background video.
  * - Picks a resolution tier from the viewport width and network quality.
  * - Skips the video for `save-data`, `2g` connections and `prefers-reduced-motion`.
  * - Lazy-mounts the `<video>` when a sentinel element enters the viewport.
+ * - Honors the `?bgtest=…` QA override.
  */
 export function useLandingBackgroundVideo() {
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -24,6 +54,12 @@ export function useLandingBackgroundVideo() {
     const conn = (navigator as { connection?: NetworkInformation }).connection;
 
     const update = () => {
+      const testMode = getLandingBgTestMode();
+      if (testMode === '2g' || testMode === 'reduced') {
+        setSkipVideo(true);
+        return;
+      }
+      // `slow` keeps the video mounted but caps quality (handled downstream).
       const saveData = !!conn?.saveData;
       const effective = conn?.effectiveType ?? '';
       const slow = /(^|-)2g$/.test(effective);
