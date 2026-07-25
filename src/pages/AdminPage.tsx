@@ -54,7 +54,7 @@ import { findDuplicateApostila, type DuplicateMatch } from '@/lib/duplicate-dete
 import { ImportPreviewPanel } from '@/components/ImportPreviewPanel';
 import { AdminAdsManager } from '@/components/AdminAdsManager';
 import { AdsChatBuilder } from '@/components/AdsChatBuilder';
-import { AdminDashboardModern } from '@/components/AdminDashboardModern';
+import { AdminDashboard } from '@/components/AdminDashboard';
 import { RssFeedsManagerEnhanced } from '@/components/admin/RssFeedsManagerEnhanced';
 import { FreeCoursesManager } from '@/components/admin/FreeCoursesManager';
 import { ApostilaExportDialog } from '@/components/admin/ApostilaExportDialog';
@@ -1389,7 +1389,7 @@ export default function AdminPage() {
             <div key={tab} className="animate-fade-in">
             {/* OVERVIEW */}
             {tab === 'overview' && (
-              <AdminDashboardModern onNavigate={(newTab) => setTab(newTab as Tab)} />
+              <AdminDashboard onNavigate={(newTab) => setTab(newTab as Tab)} />
             )}
 
             {/* APOSTILAS */}

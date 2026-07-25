@@ -45,7 +45,7 @@ type SortKey = 'created_desc' | 'created_asc' | 'updated_desc' | 'updated_asc';
 
 const PAGE_SIZE = 12;
 
-export function AdminDashboardModern({ onNavigate }: Props) {
+export function AdminDashboard({ onNavigate }: Props) {
   const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
