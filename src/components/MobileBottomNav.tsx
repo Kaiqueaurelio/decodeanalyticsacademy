@@ -40,6 +40,9 @@ export function MobileBottomNav() {
   const location = useLocation();
   const [open, setOpen] = useState(false);
   const { unreadCount } = useNotifications();
+  const { data: profile } = useUserProfile(user?.id);
+  const isEnemOnly = profile?.content_scope === 'enem_only';
+  const mainItems = isEnemOnly ? enemItems : fullItems;
 
   // Não exibir na landing, login, reset-password e termos (rotas públicas)
   const hiddenRoutes = ['/', '/login', '/reset-password', '/termos'];
