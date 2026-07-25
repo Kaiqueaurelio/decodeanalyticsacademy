@@ -279,9 +279,9 @@ export default function LandingPage() {
       {/* ═══ HERO / NAVEGAÇÃO ═══ */}
       <section className="relative isolate min-h-screen overflow-hidden">
         <CyberGrid />
-        <div className="hero-video-vignette pointer-events-none absolute inset-0 -z-10" aria-hidden="true" />
+        <div className="hero-video-vignette pointer-events-none absolute inset-0 z-0" aria-hidden="true" />
         <div
-          className="pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[527px] w-[min(984px,90vw)] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#050508]/90 blur-[82px]"
+          className="pointer-events-none absolute left-1/2 top-1/2 z-0 h-[560px] w-[min(1000px,94vw)] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#050508]/70 blur-[90px]"
           aria-hidden="true"
         />
         <div className="relative z-10 flex min-h-screen flex-col">
