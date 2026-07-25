@@ -1463,6 +1463,7 @@ export type Database = {
         Row: {
           account_type: string
           avatar_url: string | null
+          content_scope: string
           course: string | null
           created_at: string
           email: string
@@ -1471,6 +1472,7 @@ export type Database = {
           is_blocked: boolean
           locked_at: string | null
           login_attempts: number
+          must_change_password: boolean
           ra: string | null
           semester: number | null
           user_id: string
@@ -1478,6 +1480,7 @@ export type Database = {
         Insert: {
           account_type?: string
           avatar_url?: string | null
+          content_scope?: string
           course?: string | null
           created_at?: string
           email?: string
@@ -1486,6 +1489,7 @@ export type Database = {
           is_blocked?: boolean
           locked_at?: string | null
           login_attempts?: number
+          must_change_password?: boolean
           ra?: string | null
           semester?: number | null
           user_id: string
@@ -1493,6 +1497,7 @@ export type Database = {
         Update: {
           account_type?: string
           avatar_url?: string | null
+          content_scope?: string
           course?: string | null
           created_at?: string
           email?: string
@@ -1501,6 +1506,7 @@ export type Database = {
           is_blocked?: boolean
           locked_at?: string | null
           login_attempts?: number
+          must_change_password?: boolean
           ra?: string | null
           semester?: number | null
           user_id?: string
