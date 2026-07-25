@@ -33,9 +33,9 @@ window.addEventListener("unhandledrejection", (event) => {
 });
 
 // Sanitiza warnings de postMessage do script do editor (preview iframe).
-// O lovable.js publica mensagens de tipos que evoluem entre versoes; quando
+// O script do editor publica mensagens de tipos que evoluem entre versões; quando
 // rodando em sandbox de preview, ignoramos silenciosamente esses tipos
-// desconhecidos para nao poluir o console do app real.
+// desconhecidos para não poluir o console do app real.
 (() => {
   const IGNORED_PATTERNS = [
     /Unknown message type:/i,
