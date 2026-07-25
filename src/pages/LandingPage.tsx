@@ -221,7 +221,7 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="dark min-h-dvh font-cyber overflow-x-hidden selection:bg-primary/30 relative" style={{ color: '#e2e8f0' }}>
+    <div className="dark min-h-dvh font-cyber overflow-x-hidden selection:bg-primary/30 relative z-10" style={{ color: '#e2e8f0' }}>
 
       {/* Sentinela para IntersectionObserver decidir quando carregar o vídeo. */}
       <div ref={bgSentinelRef} aria-hidden="true" className="absolute left-0 top-0 h-1 w-1 opacity-0" />
@@ -231,7 +231,7 @@ export default function LandingPage() {
         <div
           aria-hidden="true"
           className="pointer-events-none fixed inset-0 overflow-hidden"
-          style={{ zIndex: -1 }}
+          style={{ zIndex: 0 }}
         >
           {/* Poster sempre presente: LCP rápido no mobile e placeholder no desktop até o vídeo carregar. */}
           <img
@@ -239,7 +239,7 @@ export default function LandingPage() {
             alt=""
             aria-hidden="true"
             decoding="async"
-            fetchPriority="high"
+            {...({ fetchpriority: 'high' } as any)}
             className="landing-bg-video absolute inset-0 h-full w-full scale-[1.03] object-cover opacity-60"
           />
           {shouldLoadVideo && !skipVideo && (() => {
