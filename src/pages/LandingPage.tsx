@@ -84,7 +84,7 @@ export default function LandingPage() {
   const navigate = useNavigate();
   const [showInstallGuide, setShowInstallGuide] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const [appOrigin, setAppOrigin] = useState<string>('https://decodeanalyticsacademy.lovable.app');
+  const [appOrigin, setAppOrigin] = useState<string>('https://decodeanalyticsacademy.com.br');
   const heroVideoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
