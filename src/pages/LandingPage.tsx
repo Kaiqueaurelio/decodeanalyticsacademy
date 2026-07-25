@@ -68,63 +68,8 @@ export default function LandingPage() {
       className="dark relative isolate min-h-dvh overflow-x-hidden bg-[#050508] font-cyber selection:bg-primary/30"
       style={{ color: '#e2e8f0' }}
     >
+      <LandingBackground />
 
-      {/* Sentinela para IntersectionObserver decidir quando carregar o vídeo. */}
-      <div ref={bgSentinelRef} aria-hidden="true" className="absolute left-0 top-0 h-1 w-1 opacity-0" />
-
-      {/* ═══ VIDEO DE FUNDO GLOBAL: uma única camada fixa atrás de todo conteúdo ═══ */}
-      <div
-        data-testid="landing-background"
-        aria-hidden="true"
-        className="pointer-events-none fixed inset-0 z-0 overflow-hidden"
-        style={{ contain: 'paint' }}
-      >
-        {/* Poster aparece só até o vídeo ficar pronto; evita efeito duplicado/poster + vídeo. */}
-        <img
-          src={landingBgPoster}
-          alt=""
-          aria-hidden="true"
-          decoding="async"
-          {...({ fetchpriority: 'high' } as any)}
-          className={`landing-bg-media absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${videoReady && !videoFailed ? 'opacity-0' : 'opacity-90'}`}
-        />
-        {shouldLoadVideo && !skipVideo && (() => {
-          const webm = bgAssets[`${videoTier}-webm` as const].url;
-          const mp4 = bgAssets[`${videoTier}-mp4` as const].url;
-          return (
-            <video
-              key={videoTier}
-              data-testid="landing-background-video"
-              ref={heroVideoRef}
-              className={`landing-bg-media landing-bg-video absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${videoReady && !videoFailed ? 'opacity-100' : 'opacity-0'}`}
-              autoPlay
-              loop
-              muted
-              playsInline
-              preload="auto"
-              poster={landingBgPoster}
-              onLoadedData={() => { setVideoReady(true); setVideoFailed(false); }}
-              onCanPlay={() => { setVideoReady(true); setVideoFailed(false); }}
-              onError={(e) => {
-                // Só marca falha real (MEDIA_ERR_SRC_NOT_SUPPORTED ou DECODE),
-                // ignora aborts/network transitórios do próprio Chrome.
-                const code = e.currentTarget.error?.code;
-                if (code === 3 || code === 4) setVideoFailed(true);
-              }}
-            >
-              <source src={webm} type="video/webm" />
-              <source src={mp4} type="video/mp4" />
-            </video>
-          );
-        })()}
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              'radial-gradient(ellipse 90% 80% at 50% 45%, rgba(5,5,8,0.25) 0%, rgba(5,5,8,0.45) 60%, rgba(5,5,8,0.7) 100%), linear-gradient(180deg, rgba(5,5,8,0.35) 0%, rgba(5,5,8,0.25) 40%, rgba(5,5,8,0.6) 100%)',
-          }}
-        />
-      </div>
 
       <div data-testid="landing-content" className="relative z-10">
 
