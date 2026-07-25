@@ -57,6 +57,7 @@ import { AdsChatBuilder } from '@/components/AdsChatBuilder';
 import { AdminDashboardModern } from '@/components/AdminDashboardModern';
 import { RssFeedsManagerEnhanced } from '@/components/admin/RssFeedsManagerEnhanced';
 import { FreeCoursesManager } from '@/components/admin/FreeCoursesManager';
+import { ApostilaExportDialog } from '@/components/admin/ApostilaExportDialog';
 
 type Apostila = Tables<'apostilas'>;
 type Exercise = Tables<'exercises'>;
@@ -614,6 +615,7 @@ export default function AdminPage() {
   const [selectedApostila, setSelectedApostila] = useState('');
   const [showManualForm, setShowManualForm] = useState(false);
   const [editingApostila, setEditingApostila] = useState<Apostila | null>(null);
+  const [exportingApostila, setExportingApostila] = useState<Apostila | null>(null);
   const [editTitle, setEditTitle] = useState('');
   const [editContent, setEditContent] = useState('');
   const [editCategory, setEditCategory] = useState('');
@@ -1826,7 +1828,7 @@ export default function AdminPage() {
                                 </div>
 
                                 {/* Primary actions — always visible */}
-                                <Button size="icon" variant="ghost" className="h-8 w-8 text-primary" onClick={() => downloadApostilaPdf(a)} title="Baixar apostila em PDF">
+                                <Button size="icon" variant="ghost" className="h-8 w-8 text-primary" onClick={() => setExportingApostila(a)} title="Exportar apostila (PDF/DOCX)">
                                   <FileDown className="h-3.5 w-3.5" />
                                 </Button>
                                 <Button size="icon" variant="ghost" className={`h-8 w-8 ${a.published ? 'text-destructive' : 'text-[hsl(var(--success))]'}`} onClick={() => togglePublish(a.id, a.published)} title={a.published ? 'Ocultar' : 'Publicar'}>
@@ -3098,6 +3100,12 @@ export default function AdminPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <ApostilaExportDialog
+        apostila={exportingApostila}
+        open={!!exportingApostila}
+        onOpenChange={(v) => { if (!v) setExportingApostila(null); }}
+      />
     </CategoriesCtx.Provider>
   );
 }

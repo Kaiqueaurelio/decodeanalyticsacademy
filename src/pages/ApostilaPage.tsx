@@ -27,6 +27,7 @@ import { ActionSheet, type ActionItem } from '@/components/ActionSheet';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { exportApostilaToPDF } from '@/lib/apostila-pdf';
+import { exportApostilaToDOCX } from '@/lib/apostila-docx';
 import {
   ArrowLeft, BookOpen, PenLine, Eye, List, X, MoreHorizontal,
   ChevronUp, StickyNote, Layers, Sparkles, MessageSquare, Share2, CheckCircle2, Copy, Volume2,
@@ -196,6 +197,25 @@ export default function ApostilaPage() {
     }
   }, [apostila, sections]);
 
+  const handleExportDocx = useCallback(async () => {
+    if (!apostila) return;
+    setExportingPdf(true);
+    const t = toast.loading('Gerando DOCX da apostila…');
+    try {
+      await exportApostilaToDOCX({
+        title: apostila.title,
+        category: apostila.category,
+        sections: sections.map((s) => ({ id: s.id, title: s.title, level: s.level, content: s.content })),
+      });
+      toast.success('DOCX gerado com sucesso', { id: t });
+    } catch (e: any) {
+      console.error('DOCX export error', e);
+      toast.error(e?.message || 'Falha ao gerar DOCX', { id: t });
+    } finally {
+      setExportingPdf(false);
+    }
+  }, [apostila, sections]);
+
   useEffect(() => {
     if (!contentRef.current) return;
     const observer = new IntersectionObserver(
@@ -343,17 +363,30 @@ export default function ApostilaPage() {
               </Button>
 
               {isAdmin && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleExportPdf}
-                  disabled={exportingPdf}
-                  className="text-xs gap-1.5 hover-lift border-accent/40 text-accent-foreground hover:bg-accent/10"
-                  title="Baixar apostila em PDF (admin)"
-                >
-                  {exportingPdf ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <FileDown className="h-3.5 w-3.5" />}
-                  <span className="hidden sm:inline">{exportingPdf ? 'Gerando…' : 'Baixar PDF'}</span>
-                </Button>
+                <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleExportPdf}
+                    disabled={exportingPdf}
+                    className="text-xs gap-1.5 hover-lift border-accent/40 text-accent-foreground hover:bg-accent/10"
+                    title="Baixar apostila em PDF (admin)"
+                  >
+                    {exportingPdf ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <FileDown className="h-3.5 w-3.5" />}
+                    <span className="hidden sm:inline">PDF</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleExportDocx}
+                    disabled={exportingPdf}
+                    className="text-xs gap-1.5 hover-lift border-accent/40 text-accent-foreground hover:bg-accent/10"
+                    title="Baixar apostila em DOCX (admin)"
+                  >
+                    {exportingPdf ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <FileDown className="h-3.5 w-3.5" />}
+                    <span className="hidden sm:inline">DOCX</span>
+                  </Button>
+                </>
               )}
               {/* Bottom sheet de ações rápidas (mobile-first) */}
               <ActionSheet
