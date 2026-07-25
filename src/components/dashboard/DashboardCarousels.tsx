@@ -10,7 +10,7 @@ interface Props {
   exerciseCounts: Record<string, number>;
 }
 
-export function ApostilasReadingCarousel({ apostilas }: Props) {
+export function ApostilasReadingCarousel({ apostilas, exerciseCounts }: Props) {
   const navigate = useNavigate();
   const [openMap, setOpenMap] = useState<Record<string, boolean>>({});
 
