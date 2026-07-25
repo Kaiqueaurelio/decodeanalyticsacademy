@@ -184,11 +184,35 @@
 
 /* Video de fundo global da landing */
 .landing-bg-video {
-  animation: decode-video-fade-in 900ms ease-out both;
+  animation:
+    decode-video-fade-in 900ms ease-out both,
+    landing-bg-breathe 18s ease-in-out 900ms infinite;
+  transform-origin: center center;
+  will-change: transform, opacity, filter;
 }
+
+@keyframes landing-bg-breathe {
+  0% {
+    transform: scale(1.03) translate3d(0, 0, 0);
+    opacity: 0.55;
+    filter: saturate(1) brightness(0.98);
+  }
+  50% {
+    transform: scale(1.09) translate3d(-0.6%, -0.8%, 0);
+    opacity: 0.72;
+    filter: saturate(1.08) brightness(1.05);
+  }
+  100% {
+    transform: scale(1.03) translate3d(0, 0, 0);
+    opacity: 0.55;
+    filter: saturate(1) brightness(0.98);
+  }
+}
+
 @media (max-width: 640px) {
   .landing-bg-video { opacity: 0.32 !important; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .landing-bg-video { animation: none; }
+  .landing-bg-video { animation: decode-video-fade-in 900ms ease-out both; }
 }
+
