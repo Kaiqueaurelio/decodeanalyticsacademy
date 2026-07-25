@@ -11,6 +11,20 @@ import {
 } from 'lucide-react';
 import logoDark from '@/assets/owl-icon.png';
 import landingBgPoster from '@/assets/landing-bg-poster.jpg';
+import bg1080Mp4 from '@/assets/landing-bg/bg-1080.mp4.asset.json';
+import bg720Mp4 from '@/assets/landing-bg/bg-720.mp4.asset.json';
+import bg480Mp4 from '@/assets/landing-bg/bg-480.mp4.asset.json';
+import bg1080Webm from '@/assets/landing-bg/bg-1080.webm.asset.json';
+import bg720Webm from '@/assets/landing-bg/bg-720.webm.asset.json';
+import bg480Webm from '@/assets/landing-bg/bg-480.webm.asset.json';
+const bgAssets = {
+  '1080-mp4': bg1080Mp4 as { url: string },
+  '720-mp4': bg720Mp4 as { url: string },
+  '480-mp4': bg480Mp4 as { url: string },
+  '1080-webm': bg1080Webm as { url: string },
+  '720-webm': bg720Webm as { url: string },
+  '480-webm': bg480Webm as { url: string },
+};
 
 import { TestimonialsSection } from '@/components/TestimonialsSection';
 import { CreatorSection } from '@/components/CreatorSection';
@@ -92,6 +106,7 @@ export default function LandingPage() {
   const bgSentinelRef = useRef<HTMLDivElement>(null);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
   const [shouldLoadVideo, setShouldLoadVideo] = useState(false);
+  const [videoTier, setVideoTier] = useState<'480' | '720' | '1080'>('720');
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.location?.origin?.startsWith('http')) {
@@ -105,8 +120,16 @@ export default function LandingPage() {
     const mq = window.matchMedia('(max-width: 640px)');
     const conn: any = (navigator as any).connection;
     const saveData = !!conn?.saveData;
-    const slow = conn?.effectiveType && /(^|-)2g$/.test(conn.effectiveType);
-    const update = () => setIsSmallScreen(mq.matches || saveData || slow);
+    const et: string = conn?.effectiveType || '';
+    const slow = /(^|-)2g$/.test(et);
+    const update = () => {
+      setIsSmallScreen(mq.matches || saveData || slow);
+      // Escolhe a variante mais leve compatível com a viewport e a rede.
+      const w = window.innerWidth * (window.devicePixelRatio || 1);
+      if (saveData || et === '3g' || w <= 900) setVideoTier('480');
+      else if (w <= 1500) setVideoTier('720');
+      else setVideoTier('1080');
+    };
     update();
     mq.addEventListener?.('change', update);
     return () => mq.removeEventListener?.('change', update);
@@ -211,19 +234,26 @@ export default function LandingPage() {
             fetchPriority="high"
             className="landing-bg-video absolute inset-0 h-full w-full scale-[1.03] object-cover opacity-60"
           />
-          {shouldLoadVideo && !isSmallScreen && (
-            <video
-              ref={heroVideoRef}
-              className="landing-bg-video absolute inset-0 h-full w-full scale-[1.03] object-cover opacity-60"
-              autoPlay
-              loop
-              muted
-              playsInline
-              preload="metadata"
-              poster={landingBgPoster}
-              src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260328_065045_c44942da-53c6-4804-b734-f9e07fc22e08.mp4"
-            />
-          )}
+          {shouldLoadVideo && !isSmallScreen && (() => {
+            const webm = bgAssets[`${videoTier}-webm` as const].url;
+            const mp4 = bgAssets[`${videoTier}-mp4` as const].url;
+            return (
+              <video
+                key={videoTier}
+                ref={heroVideoRef}
+                className="landing-bg-video absolute inset-0 h-full w-full scale-[1.03] object-cover opacity-60"
+                autoPlay
+                loop
+                muted
+                playsInline
+                preload="metadata"
+                poster={landingBgPoster}
+              >
+                <source src={webm} type="video/webm" />
+                <source src={mp4} type="video/mp4" />
+              </video>
+            );
+          })()}
           <div
             className="absolute inset-0"
             style={{
