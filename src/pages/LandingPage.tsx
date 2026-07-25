@@ -458,7 +458,7 @@ export default function LandingPage() {
       </section>
 
       {/* ═══ POR QUE DECODE ═══ */}
-      <section className="relative py-28 md:py-36" style={{ background: 'linear-gradient(180deg, #050508 0%, #0d0d16 50%, #050508 100%)' }}>
+      <section className="relative py-28 md:py-36" style={{ background: 'linear-gradient(180deg, rgba(5,5,8,0.4) 0%, rgba(13,13,22,0.55) 50%, rgba(5,5,8,0.4) 100%)' }}>
         <div className="max-w-7xl mx-auto px-5">
           <ScrollReveal className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold">
