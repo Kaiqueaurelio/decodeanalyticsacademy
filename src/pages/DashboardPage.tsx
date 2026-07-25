@@ -9,6 +9,7 @@ import { HeroGreetingCard } from '@/components/dashboard/HeroGreetingCard';
 import { ActivitiesToDoSection, RecommendedExercisesSection } from '@/components/dashboard/DashboardSections';
 import { ApostilasReadingCarousel, ProgressSummaryRow } from '@/components/dashboard/DashboardCarousels';
 import { ApostilaCoverCard } from '@/components/dashboard/ApostilaCoverCard';
+import { SubjectFolderGrid } from '@/components/dashboard/SubjectFolderGrid';
 import { AdBanner } from '@/components/AdBanner';
 import { AdSidebar } from '@/components/AdSidebar';
 import { Watermark } from '@/components/Watermark';
