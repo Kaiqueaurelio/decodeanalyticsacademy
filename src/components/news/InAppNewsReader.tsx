@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { X, ExternalLink, Share2, Loader2, AlertCircle, Clock } from 'lucide-react';
+import DOMPurify from 'dompurify';
 import { supabase } from '@/integrations/supabase/client';
 
 interface NewsItem {
