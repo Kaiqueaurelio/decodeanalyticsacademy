@@ -1,20 +1,32 @@
 import { useState, type MouseEvent } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { BookOpen, GraduationCap, Home, Library, Menu, PenLine } from 'lucide-react';
+import { Activity, BookOpen, GraduationCap, Home, Library, Menu, PenLine, Trophy } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { SidebarContent } from '@/components/dashboard/StudentSidebar';
 import { useAuth } from '@/hooks/useAuth';
 import { useNotifications } from '@/hooks/useNotifications';
+import { useUserProfile } from '@/hooks/queries/useUserProfile';
 import { cn } from '@/lib/utils';
 
-const mainItems = [
+type NavItem = { to: string; icon: any; label: string };
+
+const fullItems: NavItem[] = [
   { to: '/dashboard', icon: Home, label: 'Inicio' },
   { to: '/dashboard#apostilas', icon: BookOpen, label: 'Apostilas' },
   { to: '/exercicios', icon: PenLine, label: 'Exercicios' },
   { to: '/cursos', icon: GraduationCap, label: 'Cursos' },
   { to: '/biblioteca', icon: Library, label: 'Biblioteca' },
 ];
+
+const enemItems: NavItem[] = [
+  { to: '/dashboard', icon: Home, label: 'Inicio' },
+  { to: '/dashboard#apostilas', icon: BookOpen, label: 'Apostilas' },
+  { to: '/exercicios', icon: PenLine, label: 'Exercicios' },
+  { to: '/simulado', icon: Trophy, label: 'Simulado' },
+  { to: '/performance', icon: Activity, label: 'Desempenho' },
+];
+
 
 function isItemActive(pathname: string, hash: string, to: string) {
   const [path, targetHash] = to.split('#');
