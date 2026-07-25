@@ -60,12 +60,20 @@ Deno.serve(async (req) => {
       .maybeSingle();
 
     if (profileErr) throw profileErr;
-    if (!profile || profile.is_blocked) return json({ ads: [] });
+    if (!profile) {
+      console.info(JSON.stringify({ evt: "ads_blocked", reason: "no_profile", uid: userId }));
+      return json({ ads: [] });
+    }
+    if (profile.is_blocked) {
+      console.info(JSON.stringify({ evt: "ads_blocked", reason: "user_blocked", uid: userId }));
+      return json({ ads: [] });
+    }
 
     const scope = profile.content_scope || "full";
     // Admin ignora o escopo (mesma regra da RLS)
     const { data: isAdminData } = await admin.rpc("has_role", { _user_id: userId, _role: "admin" });
     if (scope !== "full" && !isAdminData) {
+      console.info(JSON.stringify({ evt: "ads_blocked", reason: "scope_restricted", scope, uid: userId }));
       return json({ ads: [] });
     }
 
