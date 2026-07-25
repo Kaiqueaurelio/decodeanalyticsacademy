@@ -101,7 +101,7 @@ export default function ApostilaReaderPage() {
       ]);
       if (cancelled) return;
       setApostilaTitle((ap?.title as string) || "Apostila");
-      const t = (rpcData as Tree) || { apostila_id: id, modules: [] };
+      const t = (rpcData as unknown as Tree) || { apostila_id: id, modules: [] };
       setTree(t);
       const flat = flatten(t);
       // Retomar de onde parou: primeira in_progress ou primeira sem progresso
