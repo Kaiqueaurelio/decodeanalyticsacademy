@@ -231,7 +231,7 @@ export default function LandingPage() {
         <div
           aria-hidden="true"
           className="pointer-events-none fixed inset-0 overflow-hidden"
-          style={{ zIndex: 0 }}
+          style={{ zIndex: -1 }}
         >
           {/* Poster sempre presente: LCP rápido no mobile e placeholder no desktop até o vídeo carregar. */}
           <img
