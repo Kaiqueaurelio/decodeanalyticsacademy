@@ -10,6 +10,8 @@ import {
   BarChart3, PenLine, Flame, TrendingUp, CheckCircle,
 } from 'lucide-react';
 import logoDark from '@/assets/owl-icon.png';
+import landingBgPoster from '@/assets/landing-bg-poster.jpg';
+
 import { TestimonialsSection } from '@/components/TestimonialsSection';
 import { CreatorSection } from '@/components/CreatorSection';
 import { TechStackSection } from '@/components/TechStackSection';
