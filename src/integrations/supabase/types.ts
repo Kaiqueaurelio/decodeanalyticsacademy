@@ -2057,6 +2057,7 @@ export type Database = {
         Args: { _target_user_id: string }
         Returns: undefined
       }
+      get_content_scope: { Args: { _user_id: string }; Returns: string }
       get_dashboard_stats: { Args: { _user_id: string }; Returns: Json }
       get_email_for_ra: { Args: { _ra: string }; Returns: string }
       get_exercise_counts: { Args: never; Returns: Json }
