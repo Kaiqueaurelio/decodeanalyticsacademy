@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { invokeFunction } from '@/lib/invoke-function';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -33,18 +34,13 @@ export default function LoginPage() {
   const normalizeRa = (raValue: string) => raValue.trim().toUpperCase();
   const buildRaEmail = (raValue: string) => `${normalizeRa(raValue).toLowerCase()}@${RA_DOMAIN}`;
   const isValidRa = (raValue: string) => /^[A-Z0-9]{6,13}$/.test(normalizeRa(raValue));
-  const resolveEmailForIdentifier = async (rawIdentifier: string, allowPseudoEmail = false) => {
-    const id = rawIdentifier.trim();
-    if (!id) return { email: '', usedPseudoEmail: false };
-    if (looksLikeEmail(id)) return { email: id.toLowerCase(), usedPseudoEmail: false };
-    if (!isValidRa(id)) throw new Error('Use um e-mail valido ou seu RA com 6 a 13 letras/numeros.');
 
-    const { data: realEmail, error } = await supabase.rpc('get_email_for_ra' as any, { _ra: id });
-    if (error) throw new Error('Nao consegui validar seu RA agora. Tente entrar pelo e-mail cadastrado.');
-    if (realEmail && typeof realEmail === 'string') return { email: realEmail, usedPseudoEmail: false };
-    if (allowPseudoEmail) return { email: buildRaEmail(id), usedPseudoEmail: true };
-
-    throw new Error('Este RA nao tem e-mail de recuperacao cadastrado. Entre em contato com o suporte.');
+  type RaAuthResponse = {
+    ok?: boolean;
+    session?: {
+      access_token?: string;
+      refresh_token?: string;
+    };
   };
 
   /** Detecta se o identificador atual esta no formato de e-mail apos o usuario digitar. */
@@ -90,6 +86,43 @@ export default function LoginPage() {
     setTimeout(() => setShaking(false), 500);
   };
 
+  const persistSuccessfulLogin = (id: string) => {
+    setLoginAttempts(0);
+    if (rememberMe) {
+      localStorage.setItem('decode_remember_identifier', id);
+    } else {
+      localStorage.removeItem('decode_remember_identifier');
+    }
+    localStorage.removeItem('decode_remember_password');
+    localStorage.removeItem('decode_remember_email');
+    localStorage.removeItem('decode_remember_ra');
+    localStorage.removeItem('decode_auth_method');
+
+    toast.success('Login realizado.');
+    setAwaitingSession(true);
+  };
+
+  const registerLoginFailure = (usedPseudoEmail: boolean) => {
+    setAwaitingSession(false);
+    const newAttempts = loginAttempts + 1;
+    setLoginAttempts(newAttempts);
+    triggerShake();
+
+    if (newAttempts >= 3) {
+      toast.error('Nao foi possivel entrar. Confira o RA/e-mail e a senha, ou use Recuperar senha.');
+    } else {
+      toast.error(
+        usedPseudoEmail
+          ? `RA nao encontrado ou senha incorreta. Tentativa ${newAttempts} de 3.`
+          : `RA/e-mail ou senha incorretos. Tentativa ${newAttempts} de 3.`,
+        {
+          icon: <AlertTriangle className="h-4 w-4 text-warning" />,
+          duration: 5000,
+        }
+      );
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isLocked) {
@@ -112,15 +145,34 @@ export default function LoginPage() {
     let usedPseudoEmail = !isEmail;
 
     if (!isEmail && !isSignUp) {
-      try {
-        const resolved = await resolveEmailForIdentifier(id, true);
-        effectiveEmail = resolved.email;
-        usedPseudoEmail = resolved.usedPseudoEmail;
-      } catch (err) {
+      const { data, error } = await invokeFunction<RaAuthResponse>('ra-auth', {
+        body: { action: 'login', ra: id, password },
+        showToast: false,
+      });
+
+      const accessToken = data?.session?.access_token;
+      const refreshToken = data?.session?.refresh_token;
+
+      if (error || !accessToken || !refreshToken) {
         setLoading(false);
-        toast.error(err instanceof Error ? err.message : 'Nao consegui validar seu RA agora.');
+        registerLoginFailure(false);
         return;
       }
+
+      const { error: sessionError } = await supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken,
+      });
+
+      setLoading(false);
+
+      if (sessionError) {
+        registerLoginFailure(false);
+        return;
+      }
+
+      persistSuccessfulLogin(id);
+      return;
     }
 
     if (isSignUp) {
@@ -164,45 +216,16 @@ export default function LoginPage() {
     setLoading(false);
 
     if (error) {
-      setAwaitingSession(false);
       if (error.message?.includes('Email not confirmed')) {
+        setAwaitingSession(false);
         setUnverifiedEmail(true);
         setEmail(effectiveEmail);
         toast.error('Verifique seu e-mail antes de acessar.');
         return;
       }
-
-      const newAttempts = loginAttempts + 1;
-      setLoginAttempts(newAttempts);
-      triggerShake();
-
-      if (newAttempts >= 3) {
-        toast.error('Nao foi possivel entrar. Confira o RA/e-mail e a senha, ou use Recuperar senha.');
-      } else {
-        toast.error(
-          usedPseudoEmail
-            ? `RA nao encontrado ou senha incorreta. Tentativa ${newAttempts} de 3.`
-            : `RA/e-mail ou senha incorretos. Tentativa ${newAttempts} de 3.`,
-          {
-            icon: <AlertTriangle className="h-4 w-4 text-warning" />,
-            duration: 5000,
-          }
-        );
-      }
+      registerLoginFailure(usedPseudoEmail);
     } else {
-      setLoginAttempts(0);
-      if (rememberMe) {
-        localStorage.setItem('decode_remember_identifier', id);
-      } else {
-        localStorage.removeItem('decode_remember_identifier');
-      }
-      localStorage.removeItem('decode_remember_password');
-      localStorage.removeItem('decode_remember_email');
-      localStorage.removeItem('decode_remember_ra');
-      localStorage.removeItem('decode_auth_method');
-
-      toast.success('Login realizado.');
-      setAwaitingSession(true);
+      persistSuccessfulLogin(id);
     }
   };
 
@@ -210,17 +233,40 @@ export default function LoginPage() {
     e.preventDefault();
     if (!email.trim()) { toast.error('Digite seu RA ou e-mail'); return; }
     setLoading(true);
-    let resetEmail = '';
-    try {
-      const resolved = await resolveEmailForIdentifier(email, false);
-      resetEmail = resolved.email;
-    } catch (err) {
+    const resetIdentifier = email.trim();
+    const isResetByEmail = looksLikeEmail(resetIdentifier);
+
+    if (!isResetByEmail) {
+      if (!isValidRa(resetIdentifier)) {
+        setLoading(false);
+        toast.error('Use um e-mail valido ou seu RA com 6 a 13 letras/numeros.');
+        return;
+      }
+
+      const { error } = await invokeFunction('ra-auth', {
+        body: {
+          action: 'reset',
+          ra: resetIdentifier,
+          redirectTo: `${window.location.origin}/reset-password`,
+        },
+        showToast: false,
+      });
+
       setLoading(false);
-      toast.error(err instanceof Error ? err.message : 'Nao consegui validar esse RA ou e-mail.');
+      if (error) {
+        toast.error(error.message || 'Nao foi possivel enviar a recuperacao agora.');
+        return;
+      }
+
+      toast.success('Se houver e-mail de recuperacao cadastrado, enviaremos as instrucoes.');
+      setIsReset(false);
+      setIsLocked(false);
+      setLoginAttempts(0);
+      setShowLockModal(false);
       return;
     }
 
-    const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+    const { error } = await supabase.auth.resetPasswordForEmail(resetIdentifier.toLowerCase(), {
       redirectTo: `${window.location.origin}/reset-password`,
     });
     setLoading(false);
