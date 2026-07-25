@@ -321,8 +321,6 @@ export default function LandingPage() {
                 <GraduationCap className="h-3.5 w-3.5 text-[#00f0ff]" />
                 Plataforma de estudos
               </div>
-              <h1 className="max-w-4xl text-5xl font-bold leading-[0.94] tracking-[-0.05em] text-white sm:text-7xl md:text-8xl">
-                Estude com
               <h1
                 className="max-w-4xl text-5xl font-bold leading-[0.94] tracking-[-0.05em] text-white sm:text-7xl md:text-8xl"
                 style={{ textShadow: '0 2px 24px rgba(5,5,8,0.85), 0 0 40px rgba(5,5,8,0.6)' }}
@@ -337,7 +335,6 @@ export default function LandingPage() {
                 style={{ textShadow: '0 1px 12px rgba(5,5,8,0.85)' }}
               >
                 Apostilas, exercícios, flashcards e acompanhamento de progresso para você dominar cada disciplina.
-              </p>
               </p>
               <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
                 <Button
