@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { X, ExternalLink, Share2, Loader2, AlertCircle, Clock } from 'lucide-react';
+import DOMPurify from 'dompurify';
 import { supabase } from '@/integrations/supabase/client';
 
 interface NewsItem {
@@ -33,6 +34,25 @@ interface Props {
 function estimateReadTime(chars: number): number {
   const words = chars / 5;
   return Math.max(1, Math.round(words / 220));
+}
+
+function SanitizedArticle({ html }: { html: string }) {
+  const clean = useMemo(
+    () =>
+      DOMPurify.sanitize(html, {
+        USE_PROFILES: { html: true },
+        FORBID_TAGS: ['script', 'style', 'iframe', 'object', 'embed', 'form', 'input', 'link', 'meta'],
+        FORBID_ATTR: ['style', 'onerror', 'onload', 'onclick', 'onmouseover', 'onfocus', 'onblur'],
+        ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
+      }),
+    [html],
+  );
+  return (
+    <div
+      className="news-article prose prose-invert max-w-none prose-p:leading-relaxed prose-p:text-[15px] prose-headings:font-bold prose-a:text-primary prose-img:rounded-xl prose-img:my-4"
+      dangerouslySetInnerHTML={{ __html: clean }}
+    />
+  );
 }
 
 export function InAppNewsReader({ item, onClose }: Props) {
@@ -220,10 +240,8 @@ export function InAppNewsReader({ item, onClose }: Props) {
 
           {!loading && !error && data && (
             <>
-              <div
-                className="news-article prose prose-invert max-w-none prose-p:leading-relaxed prose-p:text-[15px] prose-headings:font-bold prose-a:text-primary prose-img:rounded-xl prose-img:my-4"
-                dangerouslySetInnerHTML={{ __html: data.contentHtml }}
-              />
+              <SanitizedArticle html={data.contentHtml} />
+
 
               {/* Aviso de conteúdo extraído */}
               <div className="mt-6 pt-4 border-t border-border/50 text-xs text-muted-foreground text-center">

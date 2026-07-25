@@ -2,6 +2,26 @@
 // Agora também registra o histórico de validações para auditoria.
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
 import { createClient } from 'npm:@supabase/supabase-js@2';
+import { requireUser } from '../_shared/auth-guard.ts';
+
+function isSafePublicUrl(raw: string): boolean {
+  let u: URL;
+  try { u = new URL(raw); } catch { return false; }
+  if (u.protocol !== 'http:' && u.protocol !== 'https:') return false;
+  const host = u.hostname.toLowerCase();
+  if (!host || host === 'localhost' || host.endsWith('.localhost') || host.endsWith('.internal')) return false;
+  if (host.startsWith('[')) return false;
+  const m = host.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+  if (m) {
+    const [a, b] = [parseInt(m[1], 10), parseInt(m[2], 10)];
+    if (a === 10 || a === 127 || a === 0) return false;
+    if (a === 169 && b === 254) return false;
+    if (a === 172 && b >= 16 && b <= 31) return false;
+    if (a === 192 && b === 168) return false;
+    if (a >= 224) return false;
+  }
+  return true;
+}
 
 interface ValidateResult {
   ok: boolean;
@@ -18,7 +38,7 @@ function pick(block: string, tag: string): string {
 }
 
 async function validate(url: string): Promise<ValidateResult> {
-  if (!/^https?:\/\//i.test(url)) return { ok: false, itemCount: 0, source: null, error: 'URL inválida', statusCode: 0, responseTime: 0 };
+  if (!isSafePublicUrl(url)) return { ok: false, itemCount: 0, source: null, error: 'URL inválida', statusCode: 0, responseTime: 0 };
   try {
     const ac = new AbortController();
     const t = setTimeout(() => ac.abort(), 7000);
@@ -56,6 +76,9 @@ async function validate(url: string): Promise<ValidateResult> {
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
   try {
+    const auth = await requireUser(req, corsHeaders, { requireAdmin: true });
+    if (!auth.ok) return auth.response;
+
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     const supabase = createClient(supabaseUrl!, supabaseKey!);
