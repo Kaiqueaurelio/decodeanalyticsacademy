@@ -4,7 +4,10 @@ import type { LucideIcon } from 'lucide-react';
 export const landingBackgroundVideoSources = {
   webm: '/media/landing-background.webm',
   mp4: '/media/landing-background.mp4',
+  low: '/media/landing-background-480.mp4',
 } as const;
+
+export type LandingVideoTier = 'low' | 'high';
 
 export interface Feature {
   icon: LucideIcon;
