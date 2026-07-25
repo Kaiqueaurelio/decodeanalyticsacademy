@@ -13,17 +13,23 @@ Deno.serve(async (req) => {
     });
 
   try {
-    const body = await req.json().catch(() => ({}));
-    const key = (body as { key?: string }).key ?? "";
-    if (!key || key !== Deno.env.get("INTERNAL_SEED_KEY")) {
-      return json({ error: "unauthorized" }, 401);
-    }
-
     const admin = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
       { auth: { persistSession: false } },
     );
+
+    // Somente administradores autenticados podem re-assinar capas
+    const token = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "");
+    if (!token) return json({ error: "unauthorized" }, 401);
+    const { data: userData, error: userError } = await admin.auth.getUser(token);
+    if (userError || !userData?.user) return json({ error: "unauthorized" }, 401);
+    const { data: isAdmin } = await admin.rpc("has_role", {
+      _user_id: userData.user.id,
+      _role: "admin",
+    });
+    if (!isAdmin) return json({ error: "forbidden" }, 403);
+
 
     const results: Array<{ id: string; ok: boolean; error?: string }> = [];
 
