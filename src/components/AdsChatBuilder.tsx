@@ -857,7 +857,7 @@ export function AdsChatBuilder() {
 
       <aside className="ops-panel hidden min-h-0 border-l border-border bg-card/60 p-4 backdrop-blur-xl lg:flex lg:flex-col">
         <div className="mb-4 flex items-center gap-3">
-          <img src={ELLA_AVATAR} alt="Ella Ribeiro" className="h-14 w-14 rounded-2xl object-cover ring-1 ring-primary/35" />
+          <EllaAvatar size={56} rounded="2xl" ring />
           <div>
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Assistente operacional</p>
             <h3 className="text-base font-bold">O que Ella pode fazer</h3>
