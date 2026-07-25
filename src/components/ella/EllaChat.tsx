@@ -143,15 +143,14 @@ export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps)
             <div className="text-center py-8 space-y-3">
               <Wand2 className="h-10 w-10 mx-auto text-primary opacity-60" />
               <p className="text-sm text-muted-foreground max-w-xs mx-auto">
-                Sou sua copiloto. Posso criar apostilas, gerar exercícios, publicar avisos, abrir páginas e mais.
+                {isAdmin
+                  ? "Sou sua copiloto. Posso criar apostilas, gerar exercícios, publicar avisos, abrir páginas e mais."
+                  : contentScope === "enem_only"
+                    ? "Sou sua tutora de ENEM. Me pergunte sobre qualquer matéria — resumo, exemplos, exercícios e redação."
+                    : "Sou sua tutora de estudos. Me pergunte sobre qualquer conteúdo — resumo, exemplos e exercícios."}
               </p>
               <div className="flex flex-wrap gap-2 justify-center pt-2">
-                {[
-                  "Crie uma apostila sobre Estruturas de Dados",
-                  "Liste minhas últimas apostilas",
-                  "Publique um aviso de prova amanhã",
-                  "Abra a tela de admin",
-                ].map((s) => (
+                {suggestions.map((s) => (
                   <button
                     key={s}
                     onClick={() => setInput(s)}
