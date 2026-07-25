@@ -38,7 +38,7 @@ function pick(block: string, tag: string): string {
 }
 
 async function validate(url: string): Promise<ValidateResult> {
-  if (!/^https?:\/\//i.test(url)) return { ok: false, itemCount: 0, source: null, error: 'URL inválida', statusCode: 0, responseTime: 0 };
+  if (!isSafePublicUrl(url)) return { ok: false, itemCount: 0, source: null, error: 'URL inválida', statusCode: 0, responseTime: 0 };
   try {
     const ac = new AbortController();
     const t = setTimeout(() => ac.abort(), 7000);
