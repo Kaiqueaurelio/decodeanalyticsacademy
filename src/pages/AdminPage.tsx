@@ -1888,13 +1888,20 @@ export default function AdminPage() {
                         </Card>
                       );
                     })}
-                    {filteredApostilas.length === 0 && (
-                      <div className="text-center py-12 text-muted-foreground">
-                        <BookOpen className="h-10 w-10 mx-auto mb-3 opacity-20" />
-                        <p className="text-sm">{searchQuery ? 'Nenhuma apostila encontrada.' : 'Nenhuma apostila criada.'}</p>
+                                </div>
+                              )}
+                            </Card>
+                          );
+                        })}
+                        {sortedGroups.length === 0 && (
+                          <div className="col-span-full text-center py-12 text-muted-foreground">
+                            <BookOpen className="h-10 w-10 mx-auto mb-3 opacity-20" />
+                            <p className="text-sm">{searchQuery ? 'Nenhuma apostila encontrada.' : 'Nenhuma apostila criada.'}</p>
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
+                    );
+                  })()}
                 </div>
 
                 {/* Mobile-controlled secondary dialogs (triggered by kebab menu) */}
