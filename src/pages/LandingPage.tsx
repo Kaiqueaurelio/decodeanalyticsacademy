@@ -226,19 +226,26 @@ export default function LandingPage() {
             fetchPriority="high"
             className="landing-bg-video absolute inset-0 h-full w-full scale-[1.03] object-cover opacity-60"
           />
-          {shouldLoadVideo && !isSmallScreen && (
-            <video
-              ref={heroVideoRef}
-              className="landing-bg-video absolute inset-0 h-full w-full scale-[1.03] object-cover opacity-60"
-              autoPlay
-              loop
-              muted
-              playsInline
-              preload="metadata"
-              poster={landingBgPoster}
-              src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260328_065045_c44942da-53c6-4804-b734-f9e07fc22e08.mp4"
-            />
-          )}
+          {shouldLoadVideo && !isSmallScreen && (() => {
+            const webm = videoTier === '1080' ? bg1080Webm.url : videoTier === '720' ? bg720Webm.url : bg480Webm.url;
+            const mp4 = videoTier === '1080' ? bg1080Mp4.url : videoTier === '720' ? bg720Mp4.url : bg480Mp4.url;
+            return (
+              <video
+                key={videoTier}
+                ref={heroVideoRef}
+                className="landing-bg-video absolute inset-0 h-full w-full scale-[1.03] object-cover opacity-60"
+                autoPlay
+                loop
+                muted
+                playsInline
+                preload="metadata"
+                poster={landingBgPoster}
+              >
+                <source src={webm} type="video/webm" />
+                <source src={mp4} type="video/mp4" />
+              </video>
+            );
+          })()}
           <div
             className="absolute inset-0"
             style={{
