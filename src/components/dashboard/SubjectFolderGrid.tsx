@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
-import { ChevronRight, FileText } from 'lucide-react';
+import { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowUpRight } from 'lucide-react';
 import { getSubjectColor } from '@/lib/subject-colors';
 import type { ApostilaSummary } from '@/hooks/queries/useDashboardData';
 
@@ -10,37 +11,14 @@ interface Props {
   query?: string;
 }
 
-const STORAGE_KEY = 'decode_subject_folders_open_v2';
-
 /**
- * Notion-style subject cards (inspirado no "Caderno Unip - Central de páginas").
- * Cada matéria é um card com capa colorida + título + pills. Clique expande
- * uma lista de apostilas em estilo sub-página do Notion.
+ * Grid de matérias no estilo Notion: cada card representa uma matéria e ao ser
+ * clicado abre a página da matéria com a lista de apostilas. Sem expansão inline
+ * — a navegação vai direto para /materia/:slug, onde o aluno abre as apostilas
+ * uma a uma.
  */
 export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = '' }: Props) {
-  const [openMap, setOpenMap] = useState<Record<string, boolean>>({});
-
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) setOpenMap(JSON.parse(raw));
-    } catch {
-      // ignore
-    }
-  }, []);
-
-  const persist = (next: Record<string, boolean>) => {
-    setOpenMap(next);
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-    } catch {
-      // ignore
-    }
-  };
-
-  const toggle = (key: string) => {
-    persist({ ...openMap, [key]: !openMap[key] });
-  };
+  const navigate = useNavigate();
 
   const groups = useMemo(() => {
     const normalize = (s: string) =>
@@ -62,19 +40,6 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
     );
   }, [apostilas, query]);
 
-  const isSearching = query.trim().length > 0;
-
-  const allOpen = groups.length > 0 && groups.every(([c]) => openMap[c]);
-  const toggleAll = () => {
-    if (allOpen) {
-      persist({});
-    } else {
-      const next: Record<string, boolean> = {};
-      for (const [c] of groups) next[c] = true;
-      persist(next);
-    }
-  };
-
   if (groups.length === 0) {
     return (
       <div className="py-10 text-center text-sm text-muted-foreground">
@@ -83,174 +48,91 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
     );
   }
 
+  const openSubject = (category: string) => {
+    navigate(`/materia/${encodeURIComponent(category)}`);
+  };
+
   return (
-    <div className="space-y-3">
-      <div className="flex justify-end">
-        <button
-          type="button"
-          onClick={toggleAll}
-          className="text-[11px] font-medium text-muted-foreground hover:text-primary transition-colors"
-        >
-          {allOpen ? 'Recolher tudo' : 'Expandir tudo'}
-        </button>
-      </div>
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+      {groups.map(([category, items]) => {
+        const color = getSubjectColor(category);
+        const started = items.filter((a) => stats.byApostila[a.id]).length;
+        const inProgress = started > 0;
+        const semester = items.find((a) => (a as any).semester)?.['semester' as keyof ApostilaSummary] as
+          | number
+          | null
+          | undefined;
+        const source = items.find((a) => (a as any).source_type)?.['source_type' as keyof ApostilaSummary] as
+          | string
+          | null
+          | undefined;
+        const cover = items.find((a) => a.cover_url)?.cover_url;
+        const totalEx = items.reduce((acc, a) => acc + (exerciseCounts[a.id] || 0), 0);
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-        {groups.map(([category, items]) => {
-          const color = getSubjectColor(category);
-          const started = items.filter((a) => stats.byApostila[a.id]).length;
-          const inProgress = started > 0;
-          const semester = items.find((a) => (a as any).semester)?.['semester' as keyof ApostilaSummary] as
-            | number
-            | null
-            | undefined;
-          const source = items.find((a) => (a as any).source_type)?.['source_type' as keyof ApostilaSummary] as
-            | string
-            | null
-            | undefined;
-          const cover = items.find((a) => a.cover_url)?.cover_url;
-          const isOpen = isSearching || !!openMap[category];
-
-          return (
-            <article
-              key={category}
-              className="group relative flex flex-col rounded-2xl border border-border/60 bg-card overflow-hidden transition-all duration-300 hover:border-primary/40 hover:shadow-xl hover:-translate-y-0.5"
+        return (
+          <button
+            key={category}
+            type="button"
+            onClick={() => openSubject(category)}
+            className="group relative flex flex-col rounded-2xl border border-border/60 bg-card overflow-hidden text-left transition-all duration-300 hover:border-primary/50 hover:shadow-xl hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-primary/50"
+            aria-label={`Abrir matéria ${category}`}
+          >
+            {/* Cover */}
+            <div
+              className="relative block h-32 w-full overflow-hidden"
+              style={{
+                backgroundImage: cover
+                  ? `linear-gradient(135deg, ${color}66 0%, #0b1220cc 100%), url("${cover}")`
+                  : `linear-gradient(135deg, ${color}dd 0%, ${color}33 55%, #0b1220 100%)`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              }}
             >
-              {/* Cover / capa Notion-style */}
-              <button
-                type="button"
-                onClick={() => toggle(category)}
-                aria-expanded={isOpen}
-                aria-controls={`folder-${category}`}
-                className="relative block h-32 w-full overflow-hidden text-left"
-                style={{
-                  backgroundImage: cover
-                    ? `linear-gradient(135deg, ${color}66 0%, #0b1220cc 100%), url("${cover}")`
-                    : `linear-gradient(135deg, ${color}dd 0%, ${color}33 55%, #0b1220 100%)`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                }}
-              >
-                <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent" />
-                {source && (
-                  <span
-                    className="absolute right-3 top-3 inline-block rounded-md bg-black/55 backdrop-blur-sm px-2 py-[3px] text-[10px] font-semibold uppercase tracking-wider text-white/95 ring-1 ring-white/10"
-                  >
-                    {source === 'ava' ? 'Ava' : source === 'presencial' ? 'Presencial' : source}
+              <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent" />
+              {source && (
+                <span className="absolute right-3 top-3 inline-block rounded-md bg-black/55 backdrop-blur-sm px-2 py-[3px] text-[10px] font-semibold uppercase tracking-wider text-white/95 ring-1 ring-white/10">
+                  {source === 'ava' ? 'Ava' : source === 'presencial' ? 'Presencial' : source}
+                </span>
+              )}
+              <span className="absolute right-3 bottom-3 inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-white ring-1 ring-white/20 backdrop-blur-sm transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5">
+                <ArrowUpRight className="h-3.5 w-3.5" strokeWidth={2.2} />
+              </span>
+              <span className="absolute left-4 right-12 bottom-3 font-display font-semibold text-white text-lg leading-tight drop-shadow-[0_2px_6px_rgba(0,0,0,0.7)] line-clamp-2">
+                {category}
+              </span>
+            </div>
+
+            {/* Meta */}
+            <div className="flex w-full items-center gap-2 px-4 py-2.5">
+              <div className="flex flex-1 flex-wrap items-center gap-1.5 min-w-0">
+                {inProgress ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-sky-500/15 px-2 py-[3px] text-[10px] font-medium text-sky-300">
+                    <span className="h-1.5 w-1.5 rounded-full bg-sky-400" />
+                    Em progresso
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-[3px] text-[10px] font-medium text-muted-foreground">
+                    <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60" />
+                    Não iniciado
                   </span>
                 )}
-                <span
-                  className="absolute left-4 right-4 bottom-3 font-display font-semibold text-white text-lg leading-tight drop-shadow-[0_2px_6px_rgba(0,0,0,0.7)] line-clamp-2"
-                >
-                  {category}
-                </span>
-              </button>
-
-              {/* Body — metadata only (title lives on the cover) */}
-              <button
-                type="button"
-                onClick={() => toggle(category)}
-                className="flex w-full items-center gap-2 px-4 py-2.5 text-left"
-              >
-                <div className="flex flex-1 flex-wrap items-center gap-1.5 min-w-0">
-                  {inProgress ? (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-sky-500/15 px-2 py-[3px] text-[10px] font-medium text-sky-300">
-                      <span className="h-1.5 w-1.5 rounded-full bg-sky-400" />
-                      Em progresso
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-[3px] text-[10px] font-medium text-muted-foreground">
-                      <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60" />
-                      Não iniciado
-                    </span>
-                  )}
-                  {semester && (
-                    <span
-                      className="inline-flex items-center rounded-md px-2 py-[3px] text-[10px] font-medium text-white/90"
-                      style={{ backgroundColor: `${color}55` }}
-                    >
-                      {semester}º Sem.
-                    </span>
-                  )}
-                </div>
-                <span className="text-[10px] tabular-nums text-muted-foreground shrink-0">
-                  {items.length} {items.length === 1 ? 'apostila' : 'apostilas'}
-                </span>
-              </button>
-
-              {/* Expand list (Notion sub-pages) */}
-              <div
-                id={`folder-${category}`}
-                className={`grid transition-all duration-300 ease-out ${
-                  isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
-                }`}
-              >
-                <div className="overflow-hidden">
-                  <ul className="flex flex-col gap-1.5 border-t border-border/50 px-2 py-2">
-                    {items.map((apostila) => {
-                      const exCount = exerciseCounts[apostila.id] || 0;
-                      const st = stats.byApostila[apostila.id];
-                      const started = !!st;
-                      const itemCover = apostila.cover_url;
-                      return (
-                        <li key={apostila.id}>
-                          <a
-                            href={`/apostila/${apostila.id}`}
-                            className="group/item flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm hover:bg-muted/50 transition-colors"
-                          >
-                            <ChevronRight
-                              className="h-3.5 w-3.5 shrink-0 text-muted-foreground/70"
-                              strokeWidth={2.2}
-                            />
-                            <span
-                              className="relative flex h-10 w-14 shrink-0 items-center justify-center overflow-hidden rounded-md ring-1 ring-border/60"
-                              style={{
-                                backgroundImage: itemCover
-                                  ? `linear-gradient(135deg, ${color}55 0%, #0b122099 100%), url("${itemCover}")`
-                                  : `linear-gradient(135deg, ${color}dd 0%, ${color}44 60%, #0b1220 100%)`,
-                                backgroundSize: 'cover',
-                                backgroundPosition: 'center',
-                              }}
-                              aria-hidden
-                            >
-                              {!itemCover && (
-                                <FileText className="h-4 w-4 text-white/85" strokeWidth={1.75} />
-                              )}
-                            </span>
-                            <span className="min-w-0 flex-1">
-                              <span className="block truncate text-[13px] font-medium text-foreground/90 group-hover/item:text-primary transition-colors">
-                                {apostila.title}
-                              </span>
-                              <span className="mt-0.5 flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                                {started ? (
-                                  <span
-                                    className="rounded-full px-1.5 py-px text-[9px] font-semibold"
-                                    style={{ backgroundColor: `${color}22`, color }}
-                                  >
-                                    em progresso
-                                  </span>
-                                ) : (
-                                  <span className="text-muted-foreground/70">não iniciado</span>
-                                )}
-                                {exCount > 0 && (
-                                  <>
-                                    <span aria-hidden>·</span>
-                                    <span className="tabular-nums">{exCount} ex.</span>
-                                  </>
-                                )}
-                              </span>
-                            </span>
-                          </a>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
+                {semester && (
+                  <span
+                    className="inline-flex items-center rounded-md px-2 py-[3px] text-[10px] font-medium text-white/90"
+                    style={{ backgroundColor: `${color}55` }}
+                  >
+                    {semester}º Sem.
+                  </span>
+                )}
               </div>
-            </article>
-          );
-        })}
-      </div>
+              <span className="text-[10px] tabular-nums text-muted-foreground shrink-0">
+                {items.length} {items.length === 1 ? 'apostila' : 'apostilas'}
+                {totalEx > 0 ? ` · ${totalEx} ex.` : ''}
+              </span>
+            </div>
+          </button>
+        );
+      })}
     </div>
   );
 }
