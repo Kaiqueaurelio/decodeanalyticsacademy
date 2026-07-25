@@ -8,6 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { invokeFunction } from "@/lib/invoke-function";
 import { getEllaAvatarUrl } from "@/lib/ellaAvatar";
+import { EllaAvatar } from "@/components/ella/EllaAvatar";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
