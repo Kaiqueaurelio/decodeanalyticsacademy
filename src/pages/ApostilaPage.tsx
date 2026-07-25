@@ -322,6 +322,15 @@ export default function ApostilaPage() {
             <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')} className="text-xs gap-1.5 hover-lift">
               <ArrowLeft className="h-3.5 w-3.5" /> Voltar ao Dashboard
             </Button>
+            <Button
+              variant="default"
+              size="sm"
+              onClick={() => navigate(`/apostila/${apostila?.id}/read`)}
+              className="text-xs gap-1.5 hover-lift"
+              title="Abrir no leitor estruturado (módulos, lições, progresso)"
+            >
+              <BookOpen className="h-3.5 w-3.5" /> Modo estudo
+            </Button>
             <div className="flex items-center gap-2">
               {isMobile && sections.length > 1 && (
                 <Button

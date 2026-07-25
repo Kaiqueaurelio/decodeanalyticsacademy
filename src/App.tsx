@@ -12,6 +12,7 @@ import { PageSkeleton } from "@/components/PageSkeleton";
 import "@/styles/polish.css";
 import "@/styles/landing-motion.css";
 import "@/styles/ella-and-ads.css";
+import "@/styles/reader.css";
 // BUGFIX: AudioPlayerProvider NAO pode ser lazy-loaded pois e um Context Provider.
 // Lazy-loading um Provider causa crash/reset de contexto ao remontar.
 import { AudioPlayerProvider } from "@/contexts/AudioPlayerContext";
@@ -33,6 +34,7 @@ import LoginPage from "./pages/LoginPage";
 const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
 const DashboardPage = lazy(() => import("./pages/DashboardPage"));
 const ApostilaPage = lazy(() => import("./pages/ApostilaPage"));
+const ApostilaReaderPage = lazy(() => import("./pages/ApostilaReaderPage"));
 const ExercisesPage = lazy(() => import("./pages/ExercisesPage"));
 const ExerciciosIndexPage = lazy(() => import("./pages/ExerciciosIndexPage"));
 const AdminPage = lazy(() => import("./pages/AdminPage"));
@@ -126,6 +128,7 @@ function AnimatedRoutes() {
         <Route path="/simulado" element={<ProtectedRoute><SimuladoPage /></ProtectedRoute>} />
         <Route path="/revisao-prova/:eventId" element={<ProtectedRoute><PreExamReviewPage /></ProtectedRoute>} />
         <Route path="/apostila/:id" element={<ProtectedRoute><ApostilaPage /></ProtectedRoute>} />
+        <Route path="/apostila/:id/read" element={<ProtectedRoute><ApostilaReaderPage /></ProtectedRoute>} />
         <Route path="/exercises/:id" element={<ProtectedRoute><ExercisesPage /></ProtectedRoute>} />
         <Route path="/exercicios" element={<ProtectedRoute><ExerciciosIndexPage /></ProtectedRoute>} />
         <Route path="/exercises" element={<Navigate to="/exercicios" replace />} />
