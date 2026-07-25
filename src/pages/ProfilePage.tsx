@@ -245,6 +245,35 @@ export default function ProfilePage() {
         </Card>
 
         <Card className="p-5 bg-card border border-border/50 mb-6 animate-content-show delay-1">
+          <div className="flex items-start gap-3 mb-3">
+            <div className={`rounded-full p-2.5 shrink-0 ${scope === 'enem_only' ? 'bg-warning/15' : 'bg-primary/10'}`}>
+              <ShieldCheck className={`h-5 w-5 ${scope === 'enem_only' ? 'text-warning' : 'text-primary'}`} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className="text-sm font-semibold">Acesso da conta</p>
+                <Badge variant="outline" className="text-[10px] font-mono uppercase">{scope}</Badge>
+              </div>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {scope === 'enem_only'
+                  ? 'Sua conta está configurada para foco no ENEM: você vê apenas conteúdos, exercícios e a tutora Ella voltados para o ENEM.'
+                  : 'Você tem acesso completo a todas as disciplinas, ferramentas e módulos do app.'}
+              </p>
+            </div>
+          </div>
+          <div>
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">
+              Áreas disponíveis para você ({allowedAreas.length})
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {allowedAreas.map((area) => (
+                <Badge key={area} variant="secondary" className="text-[10px] font-normal">{area}</Badge>
+              ))}
+            </div>
+          </div>
+        </Card>
+
+        <Card className="p-5 bg-card border border-border/50 mb-6 animate-content-show delay-1">
           <h3 className="text-sm font-semibold mb-5 flex items-center gap-2">
             <Settings className="h-4 w-4 text-primary" /> Configuracoes de Estudo
           </h3>
