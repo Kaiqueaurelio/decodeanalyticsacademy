@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
-import { Loader2, Search, Wand2 } from 'lucide-react';
+import { BookOpen, FileSearch, Loader2, Search, Wand2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { getSuggestedMaterials, linkMaterials } from '@/lib/auto-link-materials';
 
