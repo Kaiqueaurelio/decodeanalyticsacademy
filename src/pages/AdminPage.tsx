@@ -1940,7 +1940,7 @@ export default function AdminPage() {
                       {/* Existing exercises */}
                       {exercises[a.id]?.length === 0 && (
                         <div className="text-center py-4 text-muted-foreground text-sm">
-                          <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-30" /> Nenhum exercício.
+                          <PenTool className="h-8 w-8 mx-auto mb-2 opacity-30" strokeWidth={1.5} /> Nenhum exercício.
                         </div>
                       )}
                       {exercises[a.id]?.map((ex, i) => (
