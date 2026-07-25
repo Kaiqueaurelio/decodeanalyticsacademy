@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import landingBgPoster from '@/assets/landing-bg-poster.jpg';
 import { landingBackgroundVideoSources, type LandingVideoTier } from '@/data/landing-content';
-import { useLandingBackgroundVideo } from '@/hooks/useLandingBackgroundVideo';
+import { getLandingBgTestMode, useLandingBackgroundVideo } from '@/hooks/useLandingBackgroundVideo';
 import { logVideoTelemetry } from '@/lib/landing-video-telemetry';
 import { useVideoReadiness } from './primitives';
 
@@ -69,6 +69,7 @@ export function LandingBackground() {
     if (tier !== 'low' || triedHigh) return;
     if (upgradeTimerRef.current) return;
 
+    if (getLandingBgTestMode() === 'slow') return; // QA override: stay on low tier
     const conn = (navigator as { connection?: { effectiveType?: string; saveData?: boolean } }).connection;
     const effective = conn?.effectiveType ?? '';
     const okNetwork = !conn || (!conn.saveData && (effective === '' || effective === '4g'));
