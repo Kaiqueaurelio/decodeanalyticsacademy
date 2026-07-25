@@ -207,7 +207,7 @@ export function SidebarContent({
     .map((g) => ({
       ...g,
       items: g.items.filter((it) => {
-        if (isEnemOnly && it.unipOnly) return false;
+        if (isEnemOnly && (it.unipOnly || it.hideForEnem)) return false;
         if (hideBottomNavDuplicates && BOTTOM_NAV_ROUTES.has(it.to)) return false;
         return true;
       }),
