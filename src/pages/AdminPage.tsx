@@ -614,6 +614,7 @@ export default function AdminPage() {
   const [selectedApostila, setSelectedApostila] = useState('');
   const [showManualForm, setShowManualForm] = useState(false);
   const [editingApostila, setEditingApostila] = useState<Apostila | null>(null);
+  const [exportingApostila, setExportingApostila] = useState<Apostila | null>(null);
   const [editTitle, setEditTitle] = useState('');
   const [editContent, setEditContent] = useState('');
   const [editCategory, setEditCategory] = useState('');
