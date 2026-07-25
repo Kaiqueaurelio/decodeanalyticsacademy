@@ -9,6 +9,7 @@ import { HeroGreetingCard } from '@/components/dashboard/HeroGreetingCard';
 import { ActivitiesToDoSection, RecommendedExercisesSection } from '@/components/dashboard/DashboardSections';
 import { ApostilasReadingCarousel, ProgressSummaryRow } from '@/components/dashboard/DashboardCarousels';
 import { ApostilaCoverCard } from '@/components/dashboard/ApostilaCoverCard';
+import { SubjectFolderGrid } from '@/components/dashboard/SubjectFolderGrid';
 import { AdBanner } from '@/components/AdBanner';
 import { AdSidebar } from '@/components/AdSidebar';
 import { Watermark } from '@/components/Watermark';
@@ -38,7 +39,6 @@ export default function DashboardPage() {
   const loading = loadingApostilas || loadingStats;
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [query, setQuery] = useState('');
-  const [activeCategory, setActiveCategory] = useState<string | null>(null);
   
   
 
@@ -158,108 +158,18 @@ export default function DashboardPage() {
             </header>
 
             {loading ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
-                {[0, 1, 2, 3, 4, 5].map((i) => <div key={i} className="h-52 rounded-xl bg-muted/30 animate-pulse" />)}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+                {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => <div key={i} className="h-36 rounded-2xl bg-muted/30 animate-pulse" />)}
               </div>
             ) : apostilas.length === 0 ? (
               <p className="text-sm text-muted-foreground py-8 text-center">Nenhuma apostila disponível.</p>
             ) : (
-              (() => {
-                const normalize = (s: string) =>
-                  s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-                const q = normalize(query.trim());
-                const allCategories = Array.from(
-                  new Set(apostilas.map((a) => a.category?.trim() || 'Geral')),
-                ).sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }));
-
-                const filtered = apostilas.filter((a) => {
-                  const cat = a.category?.trim() || 'Geral';
-                  if (activeCategory && cat !== activeCategory) return false;
-                  if (!q) return true;
-                  return (
-                    normalize(a.title || '').includes(q) ||
-                    normalize(cat).includes(q)
-                  );
-                });
-
-                const groups = new Map<string, typeof apostilas>();
-                for (const a of filtered) {
-                  const key = a.category?.trim() || 'Geral';
-                  const arr = groups.get(key) ?? [];
-                  arr.push(a);
-                  groups.set(key, arr);
-                }
-                const sorted = Array.from(groups.entries()).sort(([a], [b]) =>
-                  a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }),
-                );
-
-                return (
-                  <>
-                    <div className="mb-5 flex flex-wrap gap-2">
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant={activeCategory === null ? 'default' : 'outline'}
-                        onClick={() => setActiveCategory(null)}
-                        className="h-7 rounded-full px-3 text-[11px]"
-                      >
-                        Todas
-                      </Button>
-                      {allCategories.map((cat) => (
-                        <Button
-                          key={cat}
-                          type="button"
-                          size="sm"
-                          variant={activeCategory === cat ? 'default' : 'outline'}
-                          onClick={() => setActiveCategory(activeCategory === cat ? null : cat)}
-                          className="h-7 rounded-full px-3 text-[11px]"
-                        >
-                          {cat}
-                        </Button>
-                      ))}
-                    </div>
-
-                    {filtered.length === 0 ? (
-                      <div className="py-10 text-center">
-                        <p className="text-sm text-muted-foreground">
-                          Nenhum resultado para{' '}
-                          <span className="font-medium text-foreground">
-                            "{query || activeCategory}"
-                          </span>
-                          .
-                        </p>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="ghost"
-                          className="mt-2 h-7 text-xs"
-                          onClick={() => { setQuery(''); setActiveCategory(null); }}
-                        >
-                          Limpar filtros
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="space-y-8">
-                        {sorted.map(([category, items]) => (
-                          <div key={category}>
-                            <div className="flex items-baseline justify-between mb-3 pb-2 border-b border-border/50">
-                              <h3 className="font-semibold text-sm text-foreground/90">{category}</h3>
-                              <span className="text-[11px] text-muted-foreground tabular-nums">
-                                {items.length} {items.length === 1 ? 'apostila' : 'apostilas'}
-                              </span>
-                            </div>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
-                              {items.map((apostila) => (
-                                <ApostilaCoverCard key={apostila.id} apostila={apostila} />
-                              ))}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </>
-                );
-              })()
+              <SubjectFolderGrid
+                apostilas={apostilas}
+                exerciseCounts={exerciseCounts}
+                stats={stats}
+                query={query}
+              />
             )}
           </section>
 
