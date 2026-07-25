@@ -204,70 +204,34 @@ export function SidebarContent({
   const showRail = false;
 
   return (
-    <div className="h-full flex overflow-hidden bg-background text-foreground shadow-2xl">
-      {showRail && (
-        <div className="flex w-24 shrink-0 flex-col items-center border-r border-border bg-card/60 py-3">
-          <button
-            type="button"
-            onClick={() => open('/dashboard')}
-            className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-background shadow-[0_0_22px_hsl(var(--primary)/0.22)] ring-1 ring-primary/25 transition hover:ring-primary/60"
-            aria-label="Ir para o dashboard"
-          >
-            <img src={logoOwl} alt="Decode Analytics Academy" className="h-10 w-10 object-contain" />
-          </button>
-
-          {canToggle && (
-            <button
-              type="button"
-              onClick={() => setMode!(isFull ? 'rail' : 'full')}
-              className="mb-3 flex h-9 w-[76px] items-center justify-center gap-1.5 rounded-lg border border-primary/35 bg-primary/10 text-[9px] font-black uppercase tracking-wide text-primary transition hover:bg-primary/20"
-              aria-label={isFull ? 'Recolher menu principal' : 'Expandir menu principal'}
-              title={isFull ? 'Recolher menu principal' : 'Expandir menu principal'}
-            >
-              {isFull ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeftOpen className="h-4 w-4" />}
-              {isFull ? 'Menor' : 'Abrir'}
-            </button>
-          )}
-
-          <div className="mb-2 h-px w-10 bg-border" />
-          <div className="flex min-h-0 flex-1 flex-col items-stretch gap-1.5 overflow-y-auto px-2 pb-3 pt-1">
-            {railMenuItems.map((item) => {
-              const active = isRouteActive(location.pathname, location.hash, item.to);
-              const Icon = item.icon;
-              return (
-                <button
-                  key={`${item.label}-${item.to}`}
-                  type="button"
-                  onClick={() => open(item.to)}
-                  className={`group relative flex min-h-[52px] w-20 flex-col items-center justify-center gap-1 rounded-xl border px-1.5 text-center text-[10px] font-bold leading-tight transition
-                    ${active ? 'border-primary/70 bg-primary/12 text-foreground shadow-[inset_0_-2px_0_hsl(var(--primary))]' : 'border-transparent text-muted-foreground hover:border-primary/30 hover:bg-primary/8 hover:text-foreground'}`}
-                  title={item.label}
-                  aria-label={item.label}
-                >
-                  {active && <span className="absolute left-1 top-1/2 h-6 w-0.5 -translate-y-1/2 rounded-full bg-primary" />}
-                  <Icon className={`h-5 w-5 shrink-0 ${active ? 'text-primary' : 'text-current'}`} strokeWidth={active ? 2.5 : 2.15} />
-                  <span className="w-full truncate">{item.label}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
+    <div className="relative h-full flex overflow-hidden bg-gradient-to-b from-background via-background to-card/60 text-foreground">
+      {/* Ambient glow */}
+      <div className="pointer-events-none absolute inset-0 opacity-60">
+        <div className="absolute -top-20 -left-16 h-64 w-64 rounded-full bg-primary/15 blur-3xl" />
+        <div className="absolute bottom-0 -right-16 h-64 w-64 rounded-full bg-accent/12 blur-3xl" />
+      </div>
+      {/* Right divider */}
+      <div className="pointer-events-none absolute inset-y-0 right-0 w-px bg-gradient-to-b from-transparent via-primary/25 to-transparent" />
 
       {isFull && (
-        <div className="flex min-w-0 flex-1 flex-col bg-card/40">
-          <div className="flex items-center justify-between border-b border-border px-4 py-4">
-            <button type="button" onClick={() => open('/dashboard')} className="flex min-w-0 items-center gap-3 text-left transition hover:opacity-85">
-              {!showRail && (
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-background ring-2 ring-lime shadow-[0_0_16px_#E8FF47_/_0.4)]">
-                  <img src={logoOwl} alt="Decode Analytics Academy" className="h-8 w-8 object-contain" />
-                </span>
-              )}
+        <div className="relative flex min-w-0 flex-1 flex-col">
+          {/* Header / Brand */}
+          <div className="flex items-center justify-between border-b border-border/60 px-4 py-4">
+            <button
+              type="button"
+              onClick={() => open('/dashboard')}
+              className="group flex min-w-0 items-center gap-3 text-left transition"
+              aria-label="Ir para o dashboard"
+            >
+              <span className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-background ring-1 ring-primary/40 transition-all duration-300 group-hover:ring-primary/70 group-hover:shadow-[0_0_24px_hsl(var(--primary)/0.35)]">
+                <img src={logoOwl} alt="Decode Analytics Academy" className="h-8 w-8 object-contain" />
+                <span className="absolute -inset-px rounded-xl bg-gradient-to-br from-primary/0 via-primary/0 to-accent/20 opacity-0 transition-opacity group-hover:opacity-100" />
+              </span>
               <span className="min-w-0">
                 <span className="block font-display text-[13px] font-extrabold tracking-tight text-foreground">
-                  DECODE <span className="text-lime">ANALYTICS</span>
+                  DECODE <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">ANALYTICS</span>
                 </span>
-                <span className="block font-mono text-[9px] font-medium uppercase tracking-[0.3em] text-lime">
+                <span className="block font-mono text-[9px] font-semibold uppercase tracking-[0.32em] text-primary/80">
                   Academy
                 </span>
               </span>
@@ -276,7 +240,7 @@ export function SidebarContent({
               <button
                 type="button"
                 onClick={() => setMode!('hidden')}
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border-2 border-lime text-lime transition hover:bg-lime hover:text-slate-900"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border text-muted-foreground transition hover:border-primary/50 hover:text-primary hover:bg-primary/5"
                 aria-label="Esconder menu lateral"
                 title="Esconder menu lateral"
               >
@@ -285,13 +249,18 @@ export function SidebarContent({
             )}
           </div>
 
-          <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-4">
+          {/* Nav groups */}
+          <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-5 [scrollbar-width:thin]">
             {filteredGroups.map((group) => (
               <div key={group.label}>
-                <div className="px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.22em] text-muted-foreground">
-                  {group.label}
+                <div className="flex items-center gap-2 px-3 pb-2">
+                  <span className="h-px flex-1 bg-gradient-to-r from-border to-transparent" />
+                  <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.28em] text-muted-foreground/70">
+                    {group.label}
+                  </span>
+                  <span className="h-px flex-[3] bg-gradient-to-l from-border to-transparent" />
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-0.5">
                   {group.items.map((it) => {
                     const active = isRouteActive(location.pathname, location.hash, it.to);
                     const Icon = it.icon;
@@ -300,12 +269,21 @@ export function SidebarContent({
                         key={it.to}
                         type="button"
                         onClick={() => open(it.to)}
-                        className={`group flex w-full items-center gap-3 rounded-lg border-2 px-3 py-2.5 text-left text-sm font-semibold transition-all
+                        className={`group relative flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-[13px] font-medium transition-all duration-200
                           ${active
-                            ? 'border-lime bg-slate-900/50 text-foreground shadow-[0_0_16px_#E8FF47_/_0.25)]'
-                            : 'border-transparent text-muted-foreground hover:border-border hover:bg-muted/50 hover:text-foreground'}`}
+                            ? 'bg-primary/10 text-foreground'
+                            : 'text-muted-foreground hover:bg-muted/40 hover:text-foreground'}`}
                       >
-                        <Icon strokeWidth={active ? 2.6 : 2.1} className={`h-[18px] w-[18px] shrink-0 ${active ? 'text-lime' : ''}`} />
+                        {active && (
+                          <span className="absolute left-0 top-1/2 h-6 w-[3px] -translate-y-1/2 rounded-r-full bg-gradient-to-b from-primary to-accent shadow-[0_0_10px_hsl(var(--primary)/0.6)]" />
+                        )}
+                        <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-all
+                          ${active
+                            ? 'bg-primary/15 text-primary ring-1 ring-primary/30'
+                            : 'text-muted-foreground/80 group-hover:bg-muted/60 group-hover:text-foreground'}`}
+                        >
+                          <Icon strokeWidth={active ? 2.4 : 1.9} className="h-[15px] w-[15px]" />
+                        </span>
                         <span className="truncate">{it.label}</span>
                       </button>
                     );
@@ -316,10 +294,14 @@ export function SidebarContent({
 
             {isAdmin && (
               <div>
-                <div className="px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.22em] text-muted-foreground">
-                  Administração
+                <div className="flex items-center gap-2 px-3 pb-2">
+                  <span className="h-px flex-1 bg-gradient-to-r from-accent/40 to-transparent" />
+                  <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.28em] text-accent/80">
+                    Administração
+                  </span>
+                  <span className="h-px flex-[3] bg-gradient-to-l from-accent/40 to-transparent" />
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-0.5">
                   {adminMenuItems.map((it) => {
                     const active = isRouteActive(location.pathname, location.hash, it.to);
                     const Icon = it.icon;
@@ -328,12 +310,21 @@ export function SidebarContent({
                         key={`${it.label}-${it.to}`}
                         type="button"
                         onClick={() => open(it.to)}
-                        className={`group flex w-full items-center gap-3 rounded-lg border-2 px-3 py-2.5 text-left text-sm font-semibold transition-all
+                        className={`group relative flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-[13px] font-medium transition-all
                           ${active
-                            ? 'border-accent bg-slate-900/50 text-foreground shadow-[0_0_16px_hsl(var(--accent)_/_0.25)]'
-                            : 'border-transparent text-muted-foreground hover:border-border hover:bg-muted/50 hover:text-foreground'}`}
+                            ? 'bg-accent/10 text-foreground'
+                            : 'text-muted-foreground hover:bg-muted/40 hover:text-foreground'}`}
                       >
-                        <Icon strokeWidth={active ? 2.6 : 2.1} className={`h-[18px] w-[18px] shrink-0 ${active ? 'text-accent' : ''}`} />
+                        {active && (
+                          <span className="absolute left-0 top-1/2 h-6 w-[3px] -translate-y-1/2 rounded-r-full bg-accent shadow-[0_0_10px_hsl(var(--accent)/0.6)]" />
+                        )}
+                        <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-all
+                          ${active
+                            ? 'bg-accent/15 text-accent ring-1 ring-accent/30'
+                            : 'text-muted-foreground/80 group-hover:bg-muted/60 group-hover:text-foreground'}`}
+                        >
+                          <Icon strokeWidth={active ? 2.4 : 1.9} className="h-[15px] w-[15px]" />
+                        </span>
                         <span className="truncate">{it.label}</span>
                       </button>
                     );
@@ -343,45 +334,56 @@ export function SidebarContent({
                 <button
                   type="button"
                   onClick={() => open('/admin')}
-                  className={`mt-2 group flex w-full items-center gap-3 rounded-lg border-2 px-3 py-2.5 text-left text-sm font-bold transition-all
+                  className={`mt-2 group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-[13px] font-semibold transition-all
                     ${location.pathname.startsWith('/admin')
-                      ? 'border-accent bg-slate-900/50 text-foreground shadow-[0_0_16px_hsl(var(--accent)_/_0.25)]'
-                      : 'border-accent/40 text-accent hover:border-accent/70 hover:bg-accent/10'}`}
+                      ? 'bg-gradient-to-r from-accent/20 to-accent/5 text-foreground ring-1 ring-accent/40'
+                      : 'text-accent hover:bg-accent/10'}`}
                 >
-                  <ShieldCheck strokeWidth={2.5} className="h-[18px] w-[18px] shrink-0" />
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent/15 text-accent ring-1 ring-accent/30">
+                    <ShieldCheck strokeWidth={2.4} className="h-[15px] w-[15px]" />
+                  </span>
                   <span className="truncate">Painel Admin</span>
                 </button>
               </div>
             )}
 
-            <div className="pt-2">
+            <div className="pt-1">
               <button
                 type="button"
                 onClick={() => {
                   signOut();
                   onNavigate?.();
                 }}
-                className="group flex w-full items-center gap-3 rounded-lg border border-transparent px-3 py-2.5 text-left text-sm font-semibold text-muted-foreground transition-all hover:border-destructive/30 hover:bg-destructive/8 hover:text-destructive"
+                className="group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-[13px] font-medium text-muted-foreground transition-all hover:bg-destructive/10 hover:text-destructive"
               >
-                <LogOut strokeWidth={2.1} className="h-[18px] w-[18px] shrink-0" />
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground/80 group-hover:bg-destructive/15 group-hover:text-destructive">
+                  <LogOut strokeWidth={1.9} className="h-[15px] w-[15px]" />
+                </span>
                 <span className="truncate">Sair da conta</span>
               </button>
             </div>
           </nav>
 
-          <div className="m-3 rounded-xl border-2 border-lime bg-slate-900/40 p-4">
-            <h4 className="text-xs font-bold text-foreground">Mantenha o foco</h4>
-            <p className="mt-0.5 text-[11px] text-muted-foreground">Acompanhe suas metas e atividades pendentes.</p>
-            <Button
-              size="sm"
-              className="mt-3 h-9 w-full rounded-lg bg-lime text-[12px] font-black uppercase text-slate-900 hover:bg-lime/90 transition-all shadow-[0_0_12px_#E8FF47_/_0.3)]"
-              onClick={() => {
-                scrollToDashboardSection('atividades', navigate);
-                onNavigate?.();
-              }}
-            >
-              Ver metas
-            </Button>
+          {/* Focus card */}
+          <div className="relative m-3 overflow-hidden rounded-xl border border-primary/25 bg-gradient-to-br from-primary/10 via-background to-accent/10 p-4">
+            <div className="pointer-events-none absolute -top-8 -right-8 h-24 w-24 rounded-full bg-primary/20 blur-2xl" />
+            <div className="relative">
+              <div className="mb-1 flex items-center gap-1.5">
+                <Sparkles className="h-3.5 w-3.5 text-primary" />
+                <h4 className="text-xs font-bold tracking-tight text-foreground">Mantenha o foco</h4>
+              </div>
+              <p className="text-[11px] leading-relaxed text-muted-foreground">Acompanhe metas e atividades pendentes do dia.</p>
+              <Button
+                size="sm"
+                className="mt-3 h-9 w-full rounded-lg bg-gradient-to-r from-primary to-accent text-[11px] font-bold uppercase tracking-wider text-primary-foreground hover:opacity-90 transition-all shadow-[0_4px_20px_-4px_hsl(var(--primary)/0.5)]"
+                onClick={() => {
+                  scrollToDashboardSection('atividades', navigate);
+                  onNavigate?.();
+                }}
+              >
+                Ver metas
+              </Button>
+            </div>
           </div>
         </div>
       )}
