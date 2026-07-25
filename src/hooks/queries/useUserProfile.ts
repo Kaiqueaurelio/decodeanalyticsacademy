@@ -5,11 +5,15 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { CourseCode } from '@/lib/subject-semester-map';
 
+export type ContentScope = 'full' | 'enem_only';
+
 export interface UserProfileLite {
   semester: number | null;
   course: CourseCode | null;
   full_name: string;
   ra: string | null;
+  content_scope: ContentScope;
+  must_change_password: boolean;
 }
 
 export function useUserProfile(userId: string | undefined) {
@@ -20,16 +24,20 @@ export function useUserProfile(userId: string | undefined) {
     queryFn: async (): Promise<UserProfileLite | null> => {
       const { data, error } = await supabase
         .from('profiles')
-        .select('semester, course, full_name, ra')
+        .select('semester, course, full_name, ra, content_scope, must_change_password' as any)
         .eq('user_id', userId!)
         .maybeSingle();
       if (error || !data) return null;
-      const course = (data.course as CourseCode | null) ?? null;
+      const row = data as any;
+      const course = (row.course as CourseCode | null) ?? null;
+      const scope: ContentScope = row.content_scope === 'enem_only' ? 'enem_only' : 'full';
       return {
-        semester: data.semester ?? null,
+        semester: row.semester ?? null,
         course: course && ['CC', 'SI', 'EC'].includes(course) ? course : null,
-        full_name: data.full_name || '',
-        ra: data.ra ?? null,
+        full_name: row.full_name || '',
+        ra: row.ra ?? null,
+        content_scope: scope,
+        must_change_password: Boolean(row.must_change_password),
       };
     },
   });
