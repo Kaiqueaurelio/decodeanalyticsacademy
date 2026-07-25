@@ -1,0 +1,86 @@
+/* Structured reader typography — like a real textbook. */
+.reader-prose {
+  font-family: var(--font-serif, Georgia, "Source Serif Pro", serif);
+  font-size: 18px;
+  line-height: 1.75;
+  color: hsl(var(--foreground) / 0.92);
+}
+.reader-prose p { margin: 0 0 1.1em; }
+.reader-prose h1,
+.reader-prose h2,
+.reader-prose h3,
+.reader-prose h4 {
+  font-family: var(--font-display, "Space Grotesk", sans-serif);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: hsl(var(--foreground));
+  margin: 2em 0 0.6em;
+  line-height: 1.25;
+}
+.reader-prose h1 { font-size: 1.85rem; }
+.reader-prose h2 { font-size: 1.5rem; }
+.reader-prose h3 { font-size: 1.2rem; }
+.reader-prose h4 { font-size: 1.05rem; text-transform: uppercase; letter-spacing: 0.06em; color: hsl(var(--muted-foreground)); }
+.reader-prose ul, .reader-prose ol { padding-left: 1.4em; margin: 0 0 1.1em; }
+.reader-prose li { margin: 0.25em 0; }
+.reader-prose li::marker { color: hsl(var(--primary) / 0.7); }
+.reader-prose strong { color: hsl(var(--foreground)); font-weight: 600; }
+.reader-prose em { color: hsl(var(--foreground) / 0.85); }
+.reader-prose a {
+  color: hsl(var(--primary));
+  text-decoration: underline;
+  text-decoration-color: hsl(var(--primary) / 0.4);
+  text-underline-offset: 3px;
+}
+.reader-prose blockquote {
+  border-left: 3px solid hsl(var(--primary) / 0.6);
+  background: hsl(var(--muted) / 0.4);
+  padding: 0.9em 1.1em;
+  margin: 1.4em 0;
+  border-radius: 0 8px 8px 0;
+  font-style: normal;
+  color: hsl(var(--foreground) / 0.85);
+}
+.reader-prose code {
+  font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-size: 0.92em;
+  background: hsl(var(--muted) / 0.6);
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+}
+.reader-prose pre {
+  background: hsl(var(--muted) / 0.5);
+  padding: 1em;
+  border-radius: 10px;
+  overflow-x: auto;
+  margin: 1.2em 0;
+  font-size: 0.9em;
+}
+.reader-prose pre code { background: transparent; padding: 0; }
+.reader-prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.4em 0;
+  font-size: 0.95em;
+  font-family: var(--font-display, sans-serif);
+}
+.reader-prose th, .reader-prose td {
+  border: 1px solid hsl(var(--border));
+  padding: 0.55em 0.8em;
+  text-align: left;
+}
+.reader-prose th {
+  background: hsl(var(--muted) / 0.6);
+  font-weight: 600;
+}
+.reader-prose img {
+  max-width: 100%;
+  border-radius: 10px;
+  margin: 1.4em auto;
+  display: block;
+}
+.reader-prose hr {
+  border: 0;
+  border-top: 1px solid hsl(var(--border));
+  margin: 2.4em 0;
+}
