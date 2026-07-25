@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { WifiOff, RefreshCw, BookOpen, Home } from "lucide-react";
+import { WifiOff, RefreshCw, BookOpen, Home, Info } from "lucide-react";
 import logoDecode from "@/assets/owl-icon.png";
 
 export default function OfflinePage() {
@@ -93,8 +93,9 @@ export default function OfflinePage() {
         </div>
 
         {/* Dica */}
-        <p className="text-[11px] text-muted-foreground/70 pt-4 border-t border-border/50">
-          As apostilas que você já abriu ficam salvas automaticamente para leitura sem internet.
+        <p className="text-[11px] text-muted-foreground/70 pt-4 border-t border-border/50 flex items-start gap-1.5">
+          <Info className="h-3 w-3 mt-0.5 shrink-0" strokeWidth={1.75} />
+          <span>As apostilas que você já abriu ficam salvas automaticamente para leitura sem internet.</span>
         </p>
       </div>
     </div>

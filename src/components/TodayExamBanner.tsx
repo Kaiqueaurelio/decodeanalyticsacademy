@@ -104,7 +104,7 @@ export function TodayExamBanner() {
           }`}>
             {isToday
               ? `Você tem ${totalCount === 1 ? 'avaliação' : `${totalCount} avaliações`} HOJE`
-              : `⏰ Avaliação AMANHÃ — hora de focar`}
+              : `Avaliação AMANHÃ — hora de focar`}
           </p>
           <ul className="space-y-1 mb-3">
             {[...todayEvents, ...tomorrowEvents].map(ev => (
