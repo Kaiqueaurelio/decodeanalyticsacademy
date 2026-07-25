@@ -1,12 +1,10 @@
 import { useState } from "react";
 import { useLocation } from "react-router-dom";
-import { Wand2 } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/useAuth";
 import { EllaChat } from "./EllaChat";
-import { getEllaAvatarUrl, DEFAULT_ELLA_AVATAR } from "@/lib/ellaAvatar";
+import { EllaAvatar } from "./EllaAvatar";
 import { cn } from "@/lib/utils";
 
 const HIDDEN_ROUTES = ["/", "/login", "/reset-password", "/termos"];
