@@ -27,6 +27,7 @@ import { ActionSheet, type ActionItem } from '@/components/ActionSheet';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { exportApostilaToPDF } from '@/lib/apostila-pdf';
+import { exportApostilaToDOCX } from '@/lib/apostila-docx';
 import {
   ArrowLeft, BookOpen, PenLine, Eye, List, X, MoreHorizontal,
   ChevronUp, StickyNote, Layers, Sparkles, MessageSquare, Share2, CheckCircle2, Copy, Volume2,
