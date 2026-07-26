@@ -38,6 +38,8 @@ export function AdFooterMobile() {
 
   if (shouldHide || dismissed || !current) return null;
 
+  const hasLink = Boolean(current.link_url);
+
   return (
     <AnimatePresence>
       <motion.div
@@ -61,9 +63,10 @@ export function AdFooterMobile() {
             type="button"
             onClick={() => {
               recordAdClick(current.id);
-              if (current.link_url) window.open(current.link_url, '_blank', 'noopener,noreferrer');
+              if (hasLink) window.open(current.link_url, '_blank', 'noopener,noreferrer');
             }}
-            className="flex-1 min-w-0 text-left"
+            disabled={!hasLink}
+            className="flex-1 min-w-0 text-left disabled:cursor-default"
           >
             <p className="text-[10px] font-semibold uppercase tracking-wider text-primary leading-none mb-0.5">
               Publicidade
@@ -73,13 +76,13 @@ export function AdFooterMobile() {
               <p className="text-[11px] text-muted-foreground truncate">{current.description}</p>
             )}
           </button>
-          {current.link_url && (
+          {hasLink && (
             <a
               href={current.link_url}
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => recordAdClick(current.id)}
-              className="shrink-0 inline-flex items-center gap-1 rounded-full bg-primary text-primary-foreground text-[11px] font-semibold px-3 py-1.5"
+              className="shrink-0 inline-flex items-center gap-1 rounded-full bg-primary text-primary-foreground text-[11px] font-semibold px-3 py-1.5 transition hover:bg-primary/90"
             >
               <ExternalLink size={11} /> Ver
             </a>
@@ -90,7 +93,7 @@ export function AdFooterMobile() {
               sessionStorage.setItem('ad_footer_dismissed', '1');
               setDismissed(true);
             }}
-            className="shrink-0 h-7 w-7 inline-flex items-center justify-center rounded-full text-muted-foreground hover:bg-muted"
+            className="shrink-0 h-7 w-7 inline-flex items-center justify-center rounded-full text-muted-foreground hover:bg-muted transition"
             aria-label="Fechar anuncio"
           >
             <X size={14} />
