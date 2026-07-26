@@ -37,7 +37,7 @@ export function PersistentAdSpot() {
 
   useEffect(() => {
     if (ads.length < 2) return;
-    const timer = window.setInterval(() => setIdx((value) => (value + 1) % ads.length), 45_000);
+    const timer = window.setInterval(() => setIdx((value) => (value + 1) % ads.length), 120_000);
     return () => window.clearInterval(timer);
   }, [ads.length]);
 

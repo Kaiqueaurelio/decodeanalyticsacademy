@@ -29,7 +29,7 @@ export function AdSidebar({ className = '' }: { className?: string }) {
   // Rotaciona anúncios
   useEffect(() => {
     if (ads.length < 2) return;
-    const t = setInterval(() => setIdx((i) => (i + 1) % ads.length), 20_000);
+    const t = setInterval(() => setIdx((i) => (i + 1) % ads.length), 60_000);
     return () => clearInterval(t);
   }, [ads.length]);
 
