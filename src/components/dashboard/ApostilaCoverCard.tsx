@@ -1,6 +1,8 @@
 import { FileText } from 'lucide-react';
 import { getSubjectColor } from '@/lib/subject-colors';
 import { getApostilaCover } from '@/lib/apostila-covers';
+import { useCoverTheme } from '@/lib/cover-theme';
+import { buildCoverDataUri } from '@/lib/cover-render';
 import type { ApostilaSummary } from '@/hooks/queries/useDashboardData';
 
 interface Props {
@@ -15,8 +17,21 @@ interface Props {
  */
 export function ApostilaCoverCard({ apostila, status = 'em-progresso' }: Props) {
   const color = getSubjectColor(apostila.category || 'Geral');
-  const cover = (apostila as any).cover_url || getApostilaCover(apostila.category, apostila.id);
+  const theme = useCoverTheme();
+  const uploaded = (apostila as any).cover_url as string | undefined;
+  const cover =
+    theme.preferUploaded && uploaded
+      ? uploaded
+      : buildCoverDataUri(
+          {
+            title: apostila.title,
+            category: apostila.category,
+            semester: (apostila as any).semester ?? null,
+          },
+          theme,
+        ) || getApostilaCover(apostila.category, apostila.id);
   const semester = apostila.semester ? `${apostila.semester}º Semestre` : 'Extracurricular';
+
 
   const statusLabel =
     status === 'concluida' ? 'Concluída' : status === 'novo' ? 'Novo' : 'Em progresso';
