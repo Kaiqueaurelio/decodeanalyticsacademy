@@ -50,6 +50,7 @@ import { validateApostilaStructure, type ValidationReport } from '@/lib/apostila
 import { PerformanceMetrics } from '@/components/PerformanceMetrics';
 import { SmokeTestsPanel } from '@/components/SmokeTestsPanel';
 import { DiagnosticsPanel } from '@/components/DiagnosticsPanel';
+import { VersionHistoryPanel } from '@/components/admin/VersionHistoryPanel';
 import { DuplicateApostilaDialog } from '@/components/DuplicateApostilaDialog';
 import { findDuplicateApostila, type DuplicateMatch } from '@/lib/duplicate-detector';
 import { ImportPreviewPanel } from '@/components/ImportPreviewPanel';
