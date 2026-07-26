@@ -28,6 +28,10 @@ type Lead = {
   source: string;
   status: string;
   created_at: string;
+  cta_id?: string | null;
+  utm_source?: string | null;
+  utm_medium?: string | null;
+  utm_campaign?: string | null;
 };
 
 type LeadEvent = {
