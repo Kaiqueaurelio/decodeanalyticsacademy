@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, lazy, Suspense } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { motion, useScroll, useTransform } from 'framer-motion';
@@ -10,18 +10,29 @@ import {
   BarChart3, PenLine, Flame, TrendingUp, CheckCircle,
 } from 'lucide-react';
 import logoDark from '@/assets/owl-icon.png';
-import { TestimonialsSection } from '@/components/TestimonialsSection';
-import { CreatorSection } from '@/components/CreatorSection';
-import { TechStackSection } from '@/components/TechStackSection';
-import { LiveAppSection } from '@/components/LiveAppSection';
-import { SocialAndProjectsSection } from '@/components/SocialAndProjectsSection';
 import { Reveal } from '@/components/Reveal';
-import { AppShowcaseSection } from '@/components/landing/AppShowcaseSection';
-import { HowItWorksSection } from '@/components/landing/HowItWorksSection';
-import { EllaFeatureSection } from '@/components/landing/EllaFeatureSection';
-import { PlatformEngineSection } from '@/components/landing/PlatformEngineSection';
-import { FaqSection } from '@/components/landing/FaqSection';
-import { SponsorsSection } from '@/components/landing/SponsorsSection';
+
+/* ─── SEÇÕES ABAIXO DA DOBRA: carregadas sob demanda (menor bundle inicial / LCP) ─── */
+const TestimonialsSection = lazy(() => import('@/components/TestimonialsSection').then(m => ({ default: m.TestimonialsSection })));
+const CreatorSection = lazy(() => import('@/components/CreatorSection').then(m => ({ default: m.CreatorSection })));
+const LiveAppSection = lazy(() => import('@/components/LiveAppSection').then(m => ({ default: m.LiveAppSection })));
+const SocialAndProjectsSection = lazy(() => import('@/components/SocialAndProjectsSection').then(m => ({ default: m.SocialAndProjectsSection })));
+const AppShowcaseSection = lazy(() => import('@/components/landing/AppShowcaseSection').then(m => ({ default: m.AppShowcaseSection })));
+const HowItWorksSection = lazy(() => import('@/components/landing/HowItWorksSection').then(m => ({ default: m.HowItWorksSection })));
+const EllaFeatureSection = lazy(() => import('@/components/landing/EllaFeatureSection').then(m => ({ default: m.EllaFeatureSection })));
+const PlatformEngineSection = lazy(() => import('@/components/landing/PlatformEngineSection').then(m => ({ default: m.PlatformEngineSection })));
+const FaqSection = lazy(() => import('@/components/landing/FaqSection').then(m => ({ default: m.FaqSection })));
+const SponsorsSection = lazy(() => import('@/components/landing/SponsorsSection').then(m => ({ default: m.SponsorsSection })));
+
+/* Placeholder de altura estável enquanto o chunk carrega (evita salto de layout) */
+function SectionFallback() {
+  return <div className="min-h-[40vh]" aria-hidden="true" />;
+}
+
+function LazySection({ children }: { children: React.ReactNode }) {
+  return <Suspense fallback={<SectionFallback />}>{children}</Suspense>;
+}
+
 
 
 /* ─── SECTION WRAPPER: usa o Reveal compartilhado (IntersectionObserver + reduced-motion) ─── */
