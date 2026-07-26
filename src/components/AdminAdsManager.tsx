@@ -665,7 +665,26 @@ export function AdminAdsManager() {
                       ? 'Altere os campos abaixo e salve quando terminar.'
                       : 'Preencha os dados ao lado e publique quando estiver pronto.'}
                   </CardDescription>
+                  {draftSavedAt && (
+                    <p className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                      <span>
+                        Rascunho salvo automaticamente às{' '}
+                        {new Date(draftSavedAt).toLocaleTimeString('pt-BR', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </span>
+                      <button
+                        type="button"
+                        className="font-medium text-primary underline-offset-2 hover:underline"
+                        onClick={resetEditor}
+                      >
+                        Descartar rascunho
+                      </button>
+                    </p>
+                  )}
                 </div>
+
 
                 {selectedAd && (
                   <div className="flex flex-wrap gap-2">
