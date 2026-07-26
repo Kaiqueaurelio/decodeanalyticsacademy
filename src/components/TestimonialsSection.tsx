@@ -14,7 +14,6 @@ import {
   BookOpen,
   TrendingUp,
   Users,
-  School,
   GraduationCap,
   Play,
   Volume2,
