@@ -27,6 +27,15 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '3.6.3',
+    date: '2026-07-26',
+    title: 'Imagens do topo em AVIF/WebP',
+    changes: [
+      { kind: 'improvement', text: 'A logo do topo da landing agora é servida em AVIF/WebP no tamanho exato exibido, com versão de alta resolução só para telas retina.' },
+      { kind: 'improvement', text: 'Redução de mais de 1,4 MB no carregamento inicial da página inicial, acelerando o primeiro desenho da tela.' },
+    ],
+  },
+  {
     version: '3.6.2',
     date: '2026-07-26',
     title: 'Hero da landing pinta quase instantâneo (LCP menor)',
