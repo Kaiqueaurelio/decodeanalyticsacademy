@@ -1,5 +1,6 @@
 import { Handshake, Target, BarChart3, ShieldCheck, MessageCircle, Mail, Check } from 'lucide-react';
-import { recordSponsorLead } from '@/lib/sponsor-leads';
+import { useEffect } from 'react';
+import { captureCampaign, recordSponsorLead } from '@/lib/sponsor-leads';
 
 const WHATSAPP_NUMBER = '5511939222885';
 const EMAIL_ADDRESS = 'decodeanalytics@outlook.com.br';
@@ -153,7 +154,12 @@ export function SponsorsSection() {
                 </ul>
                 <a
                   href={whatsappUrl(plan.name)}
-                  onClick={() => void recordSponsorLead({ plan: plan.name, channel: 'whatsapp', source: 'cta-plano' })}
+                  onClick={() => void recordSponsorLead({
+                      plan: plan.name,
+                      channel: 'whatsapp',
+                      source: 'cta-plano',
+                      ctaId: `landing-plano-${plan.name.toLowerCase().replace(/\s+/g, '-')}-whatsapp`,
+                    })}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={`Enviar briefing do pacote ${plan.name} no WhatsApp`}
@@ -187,7 +193,7 @@ export function SponsorsSection() {
           <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <a
               href={WHATSAPP_URL}
-              onClick={() => void recordSponsorLead({ plan: 'Não definido', channel: 'whatsapp', source: 'cta-geral' })}
+              onClick={() => void recordSponsorLead({ plan: 'Não definido', channel: 'whatsapp', source: 'cta-geral', ctaId: 'landing-geral-whatsapp' })}
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Falar sobre patrocínio no WhatsApp"
@@ -198,7 +204,7 @@ export function SponsorsSection() {
             </a>
             <a
               href={EMAIL_URL}
-              onClick={() => void recordSponsorLead({ plan: 'Não definido', channel: 'email', source: 'cta-geral' })}
+              onClick={() => void recordSponsorLead({ plan: 'Não definido', channel: 'email', source: 'cta-geral', ctaId: 'landing-geral-email' })}
               aria-label="Enviar e-mail sobre patrocínio"
               className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-border/60 px-5 py-3 text-sm font-medium transition-colors hover:bg-muted/40 sm:w-auto"
             >
