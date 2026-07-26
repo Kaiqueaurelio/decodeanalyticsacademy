@@ -752,7 +752,11 @@ export default function LandingPage() {
       <footer className="py-10 px-5" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
         <div className="max-w-7xl mx-auto flex flex-col items-center gap-4">
           <div className="flex items-center gap-2.5">
-            <img src={logoDark} alt="Decode Analytics" className="h-8 w-8 object-contain drop-shadow-[0_0_10px_rgba(0,240,255,0.45)]" />
+            <picture>
+              <source type="image/avif" srcSet={`${logoAvif1x} 1x, ${logoAvif2x} 2x`} />
+              <source type="image/webp" srcSet={`${logoWebp1x} 1x, ${logoWebp2x} 2x`} />
+              <img src={logoPng1x} srcSet={`${logoPng1x} 1x, ${logoPng2x} 2x`} alt="Decode Analytics" width={32} height={32} loading="lazy" decoding="async" className="h-8 w-8 object-contain drop-shadow-[0_0_10px_rgba(0,240,255,0.45)]" />
+            </picture>
             <span className="text-[11px] font-semibold uppercase tracking-[0.2em]" style={{ color: '#00f0ff' }}>Decode Analytics</span>
           </div>
 
