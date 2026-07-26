@@ -278,12 +278,10 @@ export default function LandingPage() {
           </header>
 
           <main className="flex flex-1 items-center justify-center px-5 pb-20 pt-10 text-center">
-            <motion.div
-              initial={{ opacity: 0, y: 24 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-              className="hero-entrance mx-auto max-w-5xl"
-            >
+            {/* Sem gate de JS/framer-motion: o texto do hero (elemento LCP) pinta
+                no primeiro frame e a entrada é feita só por CSS. */}
+            <div className="hero-entrance mx-auto max-w-5xl">
+
               <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-white/[0.06] px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-cyan-100 backdrop-blur-sm">
                 <GraduationCap className="h-3.5 w-3.5 text-[#00f0ff]" />
                 Plataforma de estudos
