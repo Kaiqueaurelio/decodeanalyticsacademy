@@ -62,17 +62,34 @@ interface AdFormState {
   image_url: string;
   link_url: string;
   ad_type: AdType;
+  position: number;
   display_duration: number;
   is_active: boolean;
 }
 
-const AD_TYPE_OPTIONS: { value: AdType; label: string; hint: string }[] = [
-  { value: 'banner', label: 'Banner', hint: 'Topo e áreas de destaque' },
-  { value: 'popup', label: 'Pop-up', hint: 'Aparece por alguns segundos' },
-  { value: 'inline', label: 'Inline', hint: 'No meio do conteúdo' },
-  { value: 'sidebar', label: 'Lateral', hint: 'Coluna desktop' },
-  { value: 'footer', label: 'Rodapé', hint: 'Faixa fixa no mobile' },
+const AD_TYPE_OPTIONS: { value: AdType; label: string; hint: string; where: string }[] = [
+  { value: 'banner', label: 'Topo', hint: 'Banner de destaque', where: 'Aparece no topo das páginas, acima do conteúdo.' },
+  { value: 'inline', label: 'Entre seções', hint: 'No meio do conteúdo', where: 'Inserido entre blocos de conteúdo durante a navegação.' },
+  { value: 'sidebar', label: 'Lateral', hint: 'Coluna fixa (desktop)', where: 'Painel fixo à direita, sempre visível na rolagem.' },
+  { value: 'footer', label: 'Rodapé', hint: 'Faixa fixa (mobile)', where: 'Barra fina fixa na parte inferior no celular.' },
+  { value: 'popup', label: 'Pop-up', hint: 'Sobreposto', where: 'Janela central sobre a tela, fecha automaticamente.' },
 ];
+
+// Mini-wireframe indicando onde o anúncio cai no layout.
+function PlacementDiagram({ type }: { type: AdType }) {
+  const block = 'absolute rounded-[2px] bg-primary';
+  return (
+    <div className="relative h-12 w-full overflow-hidden rounded-md border border-border/70 bg-muted/40">
+      <div className="absolute inset-x-1 top-1 h-1.5 rounded-[2px] bg-muted-foreground/25" />
+      <div className="absolute inset-x-1 top-4 bottom-1 rounded-[2px] bg-muted-foreground/15" />
+      {type === 'banner' && <span className={cn(block, 'inset-x-1 top-1 h-1.5')} />}
+      {type === 'inline' && <span className={cn(block, 'inset-x-3 top-1/2 h-2 -translate-y-1/2')} />}
+      {type === 'sidebar' && <span className={cn(block, 'right-1 top-4 bottom-1 w-3')} />}
+      {type === 'footer' && <span className={cn(block, 'inset-x-1 bottom-1 h-2')} />}
+      {type === 'popup' && <span className={cn(block, 'left-1/2 top-1/2 h-6 w-10 -translate-x-1/2 -translate-y-1/2')} />}
+    </div>
+  );
+}
 
 const createEmptyForm = (): AdFormState => ({
   title: '',
@@ -80,6 +97,7 @@ const createEmptyForm = (): AdFormState => ({
   image_url: '',
   link_url: '',
   ad_type: 'banner',
+  position: 0,
   display_duration: 5,
   is_active: true,
 });
@@ -93,9 +111,11 @@ const mapAdToForm = (ad: Ad): AdFormState => ({
   image_url: ad.image_url || '',
   link_url: ad.link_url || '',
   ad_type: ad.ad_type,
+  position: ad.position ?? 0,
   display_duration: ad.display_duration || 5,
   is_active: ad.is_active,
 });
+
 
 const formatErrorMessage = (error: any, fallback: string) =>
   error?.message || error?.details || error?.hint || fallback;
