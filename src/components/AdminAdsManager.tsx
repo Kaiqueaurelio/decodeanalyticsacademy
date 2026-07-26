@@ -49,6 +49,8 @@ interface Ad {
   image_url: string | null;
   link_url: string | null;
   ad_type: AdType;
+  position?: number;
+
   is_active: boolean;
   display_duration: number;
   view_count: number;
