@@ -33,10 +33,18 @@ Deno.serve(async (req) => {
 
     const results: Array<{ id: string; ok: boolean; error?: string }> = [];
 
-    // 1) Novas capas v3: nome do arquivo = id da apostila
+    // 1) Capas atuais (pasta versionada): nome do arquivo = id da apostila
+    let prefix = "v4";
+    try {
+      const body = await req.json();
+      if (body && typeof body.prefix === "string" && /^[a-z0-9]+$/.test(body.prefix)) {
+        prefix = body.prefix;
+      }
+    } catch { /* corpo vazio: usa padrão */ }
+
     const { data: files, error: listError } = await admin.storage
       .from("apostila-covers")
-      .list("v3", { limit: 200 });
+      .list(prefix, { limit: 200 });
     if (listError) return json({ error: listError.message }, 500);
 
     for (const file of files ?? []) {
@@ -44,7 +52,8 @@ Deno.serve(async (req) => {
       const id = file.name.replace(/\.jpg$/, "");
       const { data: signed, error: signError } = await admin.storage
         .from("apostila-covers")
-        .createSignedUrl(`v3/${file.name}`, TEN_YEARS);
+        .createSignedUrl(`${prefix}/${file.name}`, TEN_YEARS);
+
       if (signError || !signed?.signedUrl) {
         results.push({ id, ok: false, error: signError?.message });
         continue;
