@@ -184,6 +184,8 @@ const App = () => (
               <PersistentAdSpot />
               <TermsFooterLink />
               <AdPopup trigger="onLoad" delay={2500} />
+              <AdDraftPreviewOverlay />
+
             </AudioPlayerProvider>
           </AuthProvider>
         </BrowserRouter>
