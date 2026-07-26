@@ -1,4 +1,4 @@
-import { GraduationCap, MessageCircle, Mail, Quote } from 'lucide-react';
+import { GraduationCap, MessageCircle, Mail, Quote, FlaskConical, Users, Cpu, Code2 } from 'lucide-react';
 import kaiqueAvatar from '@/assets/kaique-creator.jpeg';
 
 const WHATSAPP_NUMBER = '5511939222885';
