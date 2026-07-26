@@ -46,21 +46,6 @@ interface CaseStudy {
 
 const CASE_STUDIES: CaseStudy[] = [
   {
-    id: 'case-escola',
-    icon: School,
-    category: 'Escola parceira',
-    title: 'Conteúdo multimídia no ensino médio',
-    result: 'Aulas mais dinâmicas e retenção de atenção maior',
-    description:
-      'Uma escola parceira integrou as apostilas em formato de slides e vídeos curtos nas revisões de Matemática e Ciências. Os alunos passaram a revisar o conteúdo fora da sala, liberando tempo para debates em aula.',
-    tags: [
-      { label: 'Slides', icon: Presentation },
-      { label: 'Vídeos', icon: Video },
-    ],
-    stat: '+34%',
-    statLabel: 'engajamento nas revisões',
-  },
-  {
     id: 'case-aluno-cc',
     icon: GraduationCap,
     category: 'Aluno de CC',
@@ -344,7 +329,7 @@ export function TestimonialsSection() {
             Quem usa, <span className="text-primary">aprende mais</span>
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground">
-            Estudos de caso e depoimentos de alunos e escolas que transformaram a rotina de estudos
+            Estudos de caso e depoimentos de alunos que transformaram a rotina de estudos
             com apostilas, slides, audiocast e vídeos.
           </p>
         </Reveal>
