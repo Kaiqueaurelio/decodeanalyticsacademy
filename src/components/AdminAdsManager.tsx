@@ -97,6 +97,34 @@ function PlacementDiagram({ type }: { type: AdType }) {
   );
 }
 
+// Converte ISO -> valor aceito por <input type="datetime-local"> (horário local).
+const toLocalInput = (iso?: string | null) => {
+  if (!iso) return '';
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return '';
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+};
+
+const toIso = (local: string) => {
+  const value = local.trim();
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date.toISOString();
+};
+
+const scheduleState = (ad: Pick<Ad, 'is_active' | 'start_date' | 'end_date'>) => {
+  if (!ad.is_active) return { label: 'Pausado', variant: 'secondary' as const };
+  const now = Date.now();
+  if (ad.start_date && new Date(ad.start_date).getTime() > now) {
+    return { label: 'Agendado', variant: 'outline' as const };
+  }
+  if (ad.end_date && new Date(ad.end_date).getTime() < now) {
+    return { label: 'Expirado', variant: 'destructive' as const };
+  }
+  return { label: 'No ar', variant: 'default' as const };
+};
+
 const createEmptyForm = (): AdFormState => ({
   title: '',
   description: '',
@@ -106,6 +134,8 @@ const createEmptyForm = (): AdFormState => ({
   position: 0,
   display_duration: 5,
   is_active: true,
+  start_date: '',
+  end_date: '',
 });
 
 const sortAds = (items: Ad[]) =>
@@ -120,6 +150,8 @@ const mapAdToForm = (ad: Ad): AdFormState => ({
   position: ad.position ?? 0,
   display_duration: ad.display_duration || 5,
   is_active: ad.is_active,
+  start_date: toLocalInput(ad.start_date),
+  end_date: toLocalInput(ad.end_date),
 });
 
 
