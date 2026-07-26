@@ -35,47 +35,10 @@ Deno.serve(async (req) => {
     const offset = clampInt(url.searchParams.get("offset"), 0, 0, 10_000);
 
 
-    const authHeader = req.headers.get("Authorization") || "";
-    if (!authHeader.startsWith("Bearer ")) {
-      return json({ ads: [] });
-    }
-
-    // Valida JWT
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      global: { headers: { Authorization: authHeader } },
-    });
-    const token = authHeader.slice(7);
-    const { data: claims, error: authErr } = await supabase.auth.getClaims(token);
-    if (authErr || !claims?.claims?.sub) {
-      return json({ ads: [] });
-    }
-    const userId = claims.claims.sub as string;
-
-    // Verifica escopo com service role (não confia em RLS repetido)
+    // Anúncios são visíveis para todos: logados ou não, em qualquer escopo de conteúdo.
     const admin = createClient(SUPABASE_URL, SERVICE_ROLE);
-    const { data: profile, error: profileErr } = await admin
-      .from("profiles")
-      .select("content_scope, is_blocked")
-      .eq("user_id", userId)
-      .maybeSingle();
 
-    if (profileErr) throw profileErr;
-    if (!profile) {
-      console.info(JSON.stringify({ evt: "ads_blocked", reason: "no_profile", uid: userId }));
-      return json({ ads: [] });
-    }
-    if (profile.is_blocked) {
-      console.info(JSON.stringify({ evt: "ads_blocked", reason: "user_blocked", uid: userId }));
-      return json({ ads: [] });
-    }
 
-    const scope = profile.content_scope || "full";
-    // Admin ignora o escopo (mesma regra da RLS)
-    const { data: isAdminData } = await admin.rpc("has_role", { _user_id: userId, _role: "admin" });
-    if (scope !== "full" && !isAdminData) {
-      console.info(JSON.stringify({ evt: "ads_blocked", reason: "scope_restricted", scope, uid: userId }));
-      return json({ ads: [] });
-    }
 
     // Busca anúncios ativos e válidos por janela, com ordenação + paginação server-side
     const nowIso = new Date().toISOString();
