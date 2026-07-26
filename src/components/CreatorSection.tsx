@@ -31,7 +31,7 @@ const JOURNEY = [
   { year: '2018', icon: Rocket, title: 'Fundou a Decode Analytics', desc: 'Início da jornada como criador de soluções digitais.' },
   { year: '2020', icon: Package, title: 'Correios & Mercado Livre', desc: 'Experiência prática em Correios e Mercado Livre.' },
   { year: '2023', icon: BookOpen, title: 'Ciências da Computação', desc: 'Ingresso na graduação — hoje no 5º semestre.' },
-  { year: '2024', icon: Cpu, title: 'IC em Realidade Aumentada', desc: 'Merge Cube aplicado à educação de crianças com TDAH (orient. Dr. Alexandre Bozolan).' },
+  { year: '2024', icon: Cpu, title: 'IC em Realidade Aumentada', desc: 'Merge Cube aplicado à educação de crianças com TDAH.' },
   { year: '2025', icon: Gamepad2, title: 'Liderança & Games Educativos', desc: 'Liderou equipe de 6 pessoas em 4 jogos sobre sustentabilidade.' },
   { year: '2026', icon: Bot, title: 'Decode Analytics Academy', desc: 'Plataforma acadêmica com assistente virtual e gamificação para colegas de curso.' },
 ];
