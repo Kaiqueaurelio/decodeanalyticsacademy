@@ -18,7 +18,12 @@ export function ProtectedRoute({ children, adminOnly = false, blockForEnem = fal
   }
 
   if (status === 'unauthenticated') {
-    return <Navigate to="/login" replace />;
+    // Preserva a rota pedida (deep link / refresh direto) para voltar após o login.
+    const intended = typeof window !== 'undefined'
+      ? `${window.location.pathname}${window.location.search}${window.location.hash}`
+      : '/dashboard';
+    const next = intended && intended !== '/login' ? `?next=${encodeURIComponent(intended)}` : '';
+    return <Navigate to={`/login${next}`} replace />;
   }
 
   if (!user || !session) {
