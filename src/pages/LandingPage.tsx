@@ -102,6 +102,8 @@ export default function LandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [appOrigin, setAppOrigin] = useState<string>('https://decodeanalyticsacademy.com.br');
   const heroVideoRef = useRef<HTMLVideoElement>(null);
+  const [bgVideoEnabled, setBgVideoEnabled] = useState(true);
+
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.location?.origin?.startsWith('http')) {
