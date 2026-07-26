@@ -51,8 +51,9 @@ export function CreatorSection() {
                 <p>
                   Estudante do 5º semestre de Ciência da Computação, com trajetória que combina
                   formação acadêmica e experiência prática em tecnologia. Desde 2018 é fundador da
-                  Decode Analytics.
+                  Decode Analytics, e já atuou em empresas como Correios e Mercado Livre.
                 </p>
+
                 <p>
                   Na área acadêmica, desenvolveu projeto de Iniciação Científica em Realidade
                   Aumentada aplicada à educação de crianças com TDAH, utilizando Merge Cube. Também
