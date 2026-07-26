@@ -881,6 +881,15 @@ export function AdminAdsManager() {
                   </div>
                 </div>
 
+                <AdStudentPreview
+                  title={formData.title}
+                  description={formData.description}
+                  imageUrl={formData.image_url}
+                  linkUrl={formData.link_url}
+                  adType={formData.ad_type}
+                />
+
+
                 <div className="flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="text-xs text-muted-foreground">
                     {editingId ? 'As alterações serão aplicadas neste anúncio.' : 'Ao salvar, o anúncio já fica disponível no painel.'}
