@@ -202,7 +202,7 @@ export function PlatformEngineSection() {
               role="tabpanel"
               id="engine-panel-ia"
               aria-labelledby="engine-tab-ia"
-              className="grid gap-3 md:grid-cols-3"
+              className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3"
             >
               {IA.map(({ icon: Icon, name, role, desc }) => (
                 <Panel key={name} className="hover:border-primary/40">
