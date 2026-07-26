@@ -2,7 +2,7 @@ import { useState } from 'react';
 import {
   Atom, Type, Wind, Gauge, Database, Server, Cloud, ShieldCheck,
   Cpu, Sparkle, Layers, Headphones, Video, Presentation, BookOpen,
-  KeyRound, Lock, RefreshCw, Fingerprint,
+  KeyRound, Lock, RefreshCw, Fingerprint, MessageSquare, Wand2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
