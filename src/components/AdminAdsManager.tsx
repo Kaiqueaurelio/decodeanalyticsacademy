@@ -91,7 +91,7 @@ const mapAdToForm = (ad: Ad): AdFormState => ({
   title: ad.title,
   description: ad.description || '',
   image_url: ad.image_url || '',
-  link_url: ad.link_url,
+  link_url: ad.link_url || '',
   ad_type: ad.ad_type,
   display_duration: ad.display_duration || 5,
   is_active: ad.is_active,
