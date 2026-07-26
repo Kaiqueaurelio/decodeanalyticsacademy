@@ -2,7 +2,7 @@ import { useState } from 'react';
 import {
   Atom, Type, Wind, Gauge, Database, Server, Cloud, ShieldCheck,
   Cpu, Sparkle, Layers, Headphones, Video, Presentation, BookOpen,
-  KeyRound, Lock, RefreshCw, Fingerprint,
+  KeyRound, Lock, RefreshCw, Fingerprint, MessageSquare, Wand2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -42,6 +42,18 @@ const IA = [
     name: 'Gemini (versão de alta capacidade)',
     role: 'Assistente em tempo real',
     desc: 'Responde dúvidas dentro da apostila, gera exercícios e explica passo a passo o que você não entendeu.',
+  },
+  {
+    icon: MessageSquare,
+    name: 'Claude',
+    role: 'Revisão didática',
+    desc: 'Revisa estrutura, clareza e segurança dos conteúdos antes deles chegarem às suas mãos.',
+  },
+  {
+    icon: Wand2,
+    name: 'Fable Max',
+    role: 'Criação contextual',
+    desc: 'Gera exemplos, narrativas e variações de exercícios que conectam a teoria com situações do dia a dia.',
   },
   {
     icon: Cloud,
@@ -190,7 +202,7 @@ export function PlatformEngineSection() {
               role="tabpanel"
               id="engine-panel-ia"
               aria-labelledby="engine-tab-ia"
-              className="grid gap-3 md:grid-cols-3"
+              className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3"
             >
               {IA.map(({ icon: Icon, name, role, desc }) => (
                 <Panel key={name} className="hover:border-primary/40">
