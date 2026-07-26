@@ -113,6 +113,15 @@ export default function LandingPage() {
     const video = heroVideoRef.current;
     if (!video) return;
 
+    // Respeita reduced-motion e economia de dados: não baixa o vídeo nesses casos.
+    const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+    const conn = (navigator as any)?.connection;
+    const saveData = Boolean(conn?.saveData) || /2g/.test(String(conn?.effectiveType || ''));
+    if (reducedMotion || saveData) {
+      setBgVideoEnabled(false);
+      return;
+    }
+
     video.muted = true;
     video.setAttribute('muted', '');
     video.setAttribute('playsinline', '');
@@ -124,7 +133,11 @@ export default function LandingPage() {
     startPlayback();
     video.addEventListener('canplay', startPlayback);
     video.addEventListener('loadeddata', startPlayback);
-    const onVisible = () => { if (document.visibilityState === 'visible') startPlayback(); };
+    // Pausa quando a aba não está visível (economiza CPU/bateria).
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') startPlayback();
+      else video.pause();
+    };
     document.addEventListener('visibilitychange', onVisible);
     return () => {
       video.removeEventListener('canplay', startPlayback);
@@ -132,6 +145,7 @@ export default function LandingPage() {
       document.removeEventListener('visibilitychange', onVisible);
     };
   }, []);
+
 
 
   // Deixa body/html transparentes enquanto a landing estiver montada, para o vídeo de fundo (portal z:-1) aparecer.
