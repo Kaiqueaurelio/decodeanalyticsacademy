@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, lazy, Suspense } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { motion, useScroll, useTransform } from 'framer-motion';
@@ -10,18 +10,29 @@ import {
   BarChart3, PenLine, Flame, TrendingUp, CheckCircle,
 } from 'lucide-react';
 import logoDark from '@/assets/owl-icon.png';
-import { TestimonialsSection } from '@/components/TestimonialsSection';
-import { CreatorSection } from '@/components/CreatorSection';
-import { TechStackSection } from '@/components/TechStackSection';
-import { LiveAppSection } from '@/components/LiveAppSection';
-import { SocialAndProjectsSection } from '@/components/SocialAndProjectsSection';
 import { Reveal } from '@/components/Reveal';
-import { AppShowcaseSection } from '@/components/landing/AppShowcaseSection';
-import { HowItWorksSection } from '@/components/landing/HowItWorksSection';
-import { EllaFeatureSection } from '@/components/landing/EllaFeatureSection';
-import { PlatformEngineSection } from '@/components/landing/PlatformEngineSection';
-import { FaqSection } from '@/components/landing/FaqSection';
-import { SponsorsSection } from '@/components/landing/SponsorsSection';
+
+/* ─── SEÇÕES ABAIXO DA DOBRA: carregadas sob demanda (menor bundle inicial / LCP) ─── */
+const TestimonialsSection = lazy(() => import('@/components/TestimonialsSection').then(m => ({ default: m.TestimonialsSection })));
+const CreatorSection = lazy(() => import('@/components/CreatorSection').then(m => ({ default: m.CreatorSection })));
+const LiveAppSection = lazy(() => import('@/components/LiveAppSection').then(m => ({ default: m.LiveAppSection })));
+const SocialAndProjectsSection = lazy(() => import('@/components/SocialAndProjectsSection').then(m => ({ default: m.SocialAndProjectsSection })));
+const AppShowcaseSection = lazy(() => import('@/components/landing/AppShowcaseSection').then(m => ({ default: m.AppShowcaseSection })));
+const HowItWorksSection = lazy(() => import('@/components/landing/HowItWorksSection').then(m => ({ default: m.HowItWorksSection })));
+const EllaFeatureSection = lazy(() => import('@/components/landing/EllaFeatureSection').then(m => ({ default: m.EllaFeatureSection })));
+const PlatformEngineSection = lazy(() => import('@/components/landing/PlatformEngineSection').then(m => ({ default: m.PlatformEngineSection })));
+const FaqSection = lazy(() => import('@/components/landing/FaqSection').then(m => ({ default: m.FaqSection })));
+const SponsorsSection = lazy(() => import('@/components/landing/SponsorsSection').then(m => ({ default: m.SponsorsSection })));
+
+/* Placeholder de altura estável enquanto o chunk carrega (evita salto de layout) */
+function SectionFallback() {
+  return <div className="min-h-[40vh]" aria-hidden="true" />;
+}
+
+function LazySection({ children }: { children: React.ReactNode }) {
+  return <Suspense fallback={<SectionFallback />}>{children}</Suspense>;
+}
+
 
 
 /* ─── SECTION WRAPPER: usa o Reveal compartilhado (IntersectionObserver + reduced-motion) ─── */
@@ -91,6 +102,17 @@ export default function LandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [appOrigin, setAppOrigin] = useState<string>('https://decodeanalyticsacademy.com.br');
   const heroVideoRef = useRef<HTMLVideoElement>(null);
+  const [bgVideoEnabled, setBgVideoEnabled] = useState(true);
+  const [showStickyCta, setShowStickyCta] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setShowStickyCta(window.scrollY > 640);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.location?.origin?.startsWith('http')) {
@@ -101,6 +123,15 @@ export default function LandingPage() {
   useEffect(() => {
     const video = heroVideoRef.current;
     if (!video) return;
+
+    // Respeita reduced-motion e economia de dados: não baixa o vídeo nesses casos.
+    const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+    const conn = (navigator as any)?.connection;
+    const saveData = Boolean(conn?.saveData) || /2g/.test(String(conn?.effectiveType || ''));
+    if (reducedMotion || saveData) {
+      setBgVideoEnabled(false);
+      return;
+    }
 
     video.muted = true;
     video.setAttribute('muted', '');
@@ -113,7 +144,11 @@ export default function LandingPage() {
     startPlayback();
     video.addEventListener('canplay', startPlayback);
     video.addEventListener('loadeddata', startPlayback);
-    const onVisible = () => { if (document.visibilityState === 'visible') startPlayback(); };
+    // Pausa quando a aba não está visível (economiza CPU/bateria).
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') startPlayback();
+      else video.pause();
+    };
     document.addEventListener('visibilitychange', onVisible);
     return () => {
       video.removeEventListener('canplay', startPlayback);
@@ -121,6 +156,7 @@ export default function LandingPage() {
       document.removeEventListener('visibilitychange', onVisible);
     };
   }, []);
+
 
 
   // Deixa body/html transparentes enquanto a landing estiver montada, para o vídeo de fundo (portal z:-1) aparecer.
@@ -162,17 +198,20 @@ export default function LandingPage() {
           className="pointer-events-none fixed inset-0 overflow-hidden"
           style={{ zIndex: -1 }}
         >
-          <video
-            ref={heroVideoRef}
-            className="landing-bg-video h-full w-full scale-[1.03] object-cover opacity-60"
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="auto"
-            src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260328_065045_c44942da-53c6-4804-b734-f9e07fc22e08.mp4"
-          />
+          {bgVideoEnabled && (
+            <video
+              ref={heroVideoRef}
+              className="landing-bg-video h-full w-full scale-[1.03] object-cover opacity-60"
+              autoPlay
+              loop
+              muted
+              playsInline
+              preload="metadata"
+              src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260328_065045_c44942da-53c6-4804-b734-f9e07fc22e08.mp4"
+            />
+          )}
           <div className="landing-bg-scrim absolute inset-0" />
+
         </div>,
         document.body,
       )}
@@ -276,16 +315,17 @@ export default function LandingPage() {
       </section>
 
       {/* ═══ APP SHOWCASE (Veja por dentro) ═══ */}
-      <AppShowcaseSection />
+      <LazySection><AppShowcaseSection /></LazySection>
 
       {/* ═══ COMO FUNCIONA + NÚMEROS ═══ */}
-      <HowItWorksSection />
+      <LazySection><HowItWorksSection /></LazySection>
 
-      {/* ═══ ELLA RIBEIRO — IA PRÓPRIA ═══ */}
-      <EllaFeatureSection />
+      {/* ═══ ELLA RIBEIRO — ASSISTENTE DE ESTUDOS ═══ */}
+      <LazySection><EllaFeatureSection /></LazySection>
 
       {/* ═══ SOB O CAPÔ: ENGENHARIA + BENEFÍCIOS ═══ */}
-      <PlatformEngineSection />
+      <LazySection><PlatformEngineSection /></LazySection>
+
 
 
       {/* ═══ RECURSOS ═══ */}
@@ -627,30 +667,52 @@ export default function LandingPage() {
         </ScrollReveal>
       </section>
 
-      {/* ═══ TESTIMONIALS ═══ */}
-      <div id="depoimentos"><TestimonialsSection /></div>
+      {/* ═══ PROVA SOCIAL ═══ */}
+      <LazySection><div id="depoimentos"><TestimonialsSection /></div></LazySection>
+
+      {/* ═══ OBJEÇÕES: FAQ ═══ */}
+      <LazySection><FaqSection /></LazySection>
+
+      {/* ═══ APP AO VIVO / INSTALAÇÃO ═══ */}
+      <LazySection><LiveAppSection /></LazySection>
 
       {/* ═══ CREATOR / DE ALUNO PARA ALUNO ═══ */}
-      <CreatorSection />
+      <LazySection><CreatorSection /></LazySection>
 
       {/* ═══ ANUNCIANTES / PATROCINADORES ═══ */}
-      <SponsorsSection />
-
-
-      {/* ═══ FAQ ═══ */}
-      <FaqSection />
-
-
-      {/* ═══ HOW IT WAS BUILT ═══ */}
-      <TechStackSection />
-
-      {/* ═══ LIVE APP / SHARE LINK ═══ */}
-      <LiveAppSection />
+      <LazySection><SponsorsSection /></LazySection>
 
       {/* ═══ REDES SOCIAIS + WRITELAB ═══ */}
-      <SocialAndProjectsSection />
+      <LazySection><SocialAndProjectsSection /></LazySection>
+
+      {/* ═══ CTA FIXO (mobile) — em portal para escapar de transforms de ancestrais ═══ */}
+      {typeof document !== 'undefined' && createPortal(
+        <div
+          className={`fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#050508]/92 px-4 py-3 backdrop-blur-md transition-transform duration-300 md:hidden ${showStickyCta ? 'translate-y-0' : 'translate-y-full'}`}
+          style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}
+        >
+          <div className="flex items-center gap-3">
+            <Button
+              onClick={() => navigate('/login')}
+              className="h-11 flex-1 rounded-full bg-[#00f0ff] text-sm font-bold text-[#050508] hover:bg-[#75f6ff]"
+            >
+              Começar a estudar <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+            <button
+              onClick={handleInstallPWA}
+              aria-label="Instalar aplicativo"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-white/5 text-white"
+            >
+              <Download className="h-4 w-4" />
+            </button>
+          </div>
+        </div>,
+        document.body,
+      )}
+
 
       {/* ═══ FOOTER ═══ */}
+
       <footer className="py-10 px-5" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
         <div className="max-w-7xl mx-auto flex flex-col items-center gap-4">
           <div className="flex items-center gap-2.5">
