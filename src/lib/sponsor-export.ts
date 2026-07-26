@@ -147,7 +147,7 @@ export function exportSponsorPdf(
     doc.text(`${i + 1}. ${s.label}`, margin, y);
     doc.text(`${s.count} (${Math.round(ratio * 100)}%)`, width - margin, y, { align: 'right' });
     y += 6;
-    doc.setFillColor(235);
+    doc.setFillColor(235, 235, 235);
     doc.rect(margin, y, width - margin * 2, 6, 'F');
     doc.setFillColor(30, 110, 160);
     doc.rect(margin, y, Math.max((width - margin * 2) * ratio, 2), 6, 'F');
