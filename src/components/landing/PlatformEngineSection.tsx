@@ -44,6 +44,18 @@ const IA = [
     desc: 'Responde dúvidas dentro da apostila, gera exercícios e explica passo a passo o que você não entendeu.',
   },
   {
+    icon: MessageSquare,
+    name: 'Claude',
+    role: 'Revisão didática',
+    desc: 'Revisa estrutura, clareza e segurança dos conteúdos antes deles chegarem às suas mãos.',
+  },
+  {
+    icon: Wand2,
+    name: 'Fable Max',
+    role: 'Criação contextual',
+    desc: 'Gera exemplos, narrativas e variações de exercícios que conectam a teoria com situações do dia a dia.',
+  },
+  {
     icon: Cloud,
     name: 'Processamento em nuvem',
     role: 'Escala sob demanda',
