@@ -344,7 +344,8 @@ export function TestimonialsSection() {
             </div>
           </Reveal>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mx-auto grid max-w-4xl grid-cols-1 gap-4 sm:grid-cols-2">
+
             {CASE_STUDIES.map((study, i) => (
               <CaseStudyCard key={study.id} study={study} index={i} />
             ))}
