@@ -48,6 +48,7 @@ const VideoPlayerPage = lazy(() => import("./pages/VideoPlayerPage"));
 const AnnouncementDetailPage = lazy(() => import("./pages/AnnouncementDetailPage"));
 const CommunityPage = lazy(() => import("./pages/CommunityPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const CoverCardVisualPage = lazy(() => import("./pages/visual/CoverCardVisualPage"));
 const OfflinePage = lazy(() => import("./pages/OfflinePage"));
 const ReviewPage = lazy(() => import("./pages/ReviewPage"));
 const SimuladoPage = lazy(() => import("./pages/SimuladoPage"));
