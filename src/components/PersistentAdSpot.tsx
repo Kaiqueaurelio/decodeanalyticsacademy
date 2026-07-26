@@ -45,7 +45,7 @@ export function PersistentAdSpot() {
 
   const openAd = () => {
     recordAdClick(current.id);
-    window.open(current.link_url, '_blank', 'noopener,noreferrer');
+    if (current.link_url) window.open(current.link_url, '_blank', 'noopener,noreferrer');
   };
 
   return (

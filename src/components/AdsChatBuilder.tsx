@@ -343,7 +343,7 @@ function localPlan(message: string, mediaUrl?: string): AIPlan {
         type: 'create_ad',
         title: 'Criar anuncio',
         summary: `${title} (${AD_TYPE_LABELS[parseAdType(message)]})`,
-        payload: { title, description: extractAfter(message, ['texto', 'copy', 'descricao']) || null, link_url: url, image_url: mediaUrl || null, ad_type: parseAdType(message), display_duration: 5, is_active: true },
+        payload: { title, description: extractAfter(message, ['texto', 'copy', 'descricao']) || null, link_url: url || null, image_url: mediaUrl || null, ad_type: parseAdType(message), display_duration: 5, is_active: true },
       },
     };
   }
@@ -408,7 +408,7 @@ export function AdsChatBuilder() {
             'Actions validas: create_ad, create_reminder, delete_reminder, create_announcement, create_apostila, send_push, open_page.',
             'Para open_page use payload.path com rota interna como /dashboard, /desempenho, /cursos, /admin.',
             'Para lembretes use event_date YYYY-MM-DD e event_time HH:MM:SS quando houver horario.',
-            'Para anuncios use ad_type banner|popup|inline|sidebar|footer, title, link_url, description, image_url.',
+            'Para anuncios use ad_type banner|popup|inline|sidebar|footer, title, link_url (opcional), description, image_url.',
             'Para apostila gere content em markdown e published false por padrao.',
             'Se faltar informacao obrigatoria, retorne action null e faca uma unica pergunta objetiva.',
             'Responda SOMENTE JSON valido: {"reply":"texto curto","needs_more_info":false,"action":{"type":"create_ad","title":"...","summary":"...","payload":{}}}',
@@ -569,12 +569,12 @@ export function AdsChatBuilder() {
       const payload = action.payload || {};
 
       if (action.type === 'create_ad') {
-        if (!payload.title || !payload.link_url) throw new Error('O anuncio precisa de titulo e link de destino.');
+        if (!payload.title) throw new Error('O anuncio precisa de um titulo.');
         const { error } = await supabase.from('ads').insert({
           title: payload.title,
           description: payload.description || null,
           image_url: payload.image_url || latestMedia?.url || null,
-          link_url: payload.link_url,
+          link_url: payload.link_url || null,
           ad_type: payload.ad_type || 'banner',
           display_duration: payload.display_duration || 5,
           is_active: payload.is_active ?? true,

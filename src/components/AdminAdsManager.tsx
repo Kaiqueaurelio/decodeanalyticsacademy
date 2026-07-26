@@ -47,7 +47,7 @@ interface Ad {
   title: string;
   description: string | null;
   image_url: string | null;
-  link_url: string;
+  link_url: string | null;
   ad_type: AdType;
   is_active: boolean;
   display_duration: number;
@@ -91,7 +91,7 @@ const mapAdToForm = (ad: Ad): AdFormState => ({
   title: ad.title,
   description: ad.description || '',
   image_url: ad.image_url || '',
-  link_url: ad.link_url,
+  link_url: ad.link_url || '',
   ad_type: ad.ad_type,
   display_duration: ad.display_duration || 5,
   is_active: ad.is_active,
@@ -126,7 +126,7 @@ export function AdminAdsManager() {
     const query = search.trim().toLowerCase();
     if (!query) return ads;
     return ads.filter((ad) =>
-      [ad.title, ad.description || '', ad.link_url, ad.ad_type]
+      [ad.title, ad.description || '', ad.link_url || '', ad.ad_type]
         .join(' ')
         .toLowerCase()
         .includes(query),
@@ -175,16 +175,18 @@ export function AdminAdsManager() {
     const title = formData.title.trim();
     const linkUrl = formData.link_url.trim();
 
-    if (!title || !linkUrl) {
-      toast.error('Título e URL de destino são obrigatórios');
+    if (!title) {
+      toast.error('Informe o título do anúncio');
       return false;
     }
 
-    try {
-      new URL(linkUrl);
-    } catch {
-      toast.error('Use uma URL válida, com https://');
-      return false;
+    if (linkUrl) {
+      try {
+        new URL(linkUrl);
+      } catch {
+        toast.error('Use uma URL válida, com https://');
+        return false;
+      }
     }
 
     if (formData.image_url.trim()) {
@@ -203,11 +205,12 @@ export function AdminAdsManager() {
     title: formData.title.trim(),
     description: formData.description.trim() || null,
     image_url: formData.image_url.trim() || null,
-    link_url: formData.link_url.trim(),
+    link_url: formData.link_url.trim() || null,
     ad_type: formData.ad_type,
     display_duration: Math.min(30, Math.max(1, Number(formData.display_duration) || 5)),
     is_active: formData.is_active,
   });
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -532,14 +535,20 @@ export function AdminAdsManager() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">URL de destino</label>
+                    <label className="text-sm font-medium">
+                      URL de destino <span className="text-muted-foreground">(opcional)</span>
+                    </label>
                     <Input
                       type="url"
                       value={formData.link_url}
                       onChange={(e) => setFormData((current) => ({ ...current, link_url: e.target.value }))}
-                      placeholder="https://exemplo.com"
+                      placeholder="Deixe em branco para anúncio apenas informativo"
                     />
+                    <p className="text-xs text-muted-foreground">
+                      Sem link, o anúncio é exibido apenas como aviso e não abre nada ao ser clicado.
+                    </p>
                   </div>
+
 
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Formato</label>

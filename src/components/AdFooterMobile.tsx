@@ -61,7 +61,7 @@ export function AdFooterMobile() {
             type="button"
             onClick={() => {
               recordAdClick(current.id);
-              window.open(current.link_url, '_blank', 'noopener,noreferrer');
+              if (current.link_url) window.open(current.link_url, '_blank', 'noopener,noreferrer');
             }}
             className="flex-1 min-w-0 text-left"
           >
@@ -73,15 +73,18 @@ export function AdFooterMobile() {
               <p className="text-[11px] text-muted-foreground truncate">{current.description}</p>
             )}
           </button>
-          <a
-            href={current.link_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={() => recordAdClick(current.id)}
-            className="shrink-0 inline-flex items-center gap-1 rounded-full bg-primary text-primary-foreground text-[11px] font-semibold px-3 py-1.5"
-          >
-            <ExternalLink size={11} /> Ver
-          </a>
+          {current.link_url && (
+            <a
+              href={current.link_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => recordAdClick(current.id)}
+              className="shrink-0 inline-flex items-center gap-1 rounded-full bg-primary text-primary-foreground text-[11px] font-semibold px-3 py-1.5"
+            >
+              <ExternalLink size={11} /> Ver
+            </a>
+          )}
+
           <button
             onClick={() => {
               sessionStorage.setItem('ad_footer_dismissed', '1');

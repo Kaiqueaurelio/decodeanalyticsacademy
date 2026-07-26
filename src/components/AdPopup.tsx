@@ -81,7 +81,7 @@ export function AdPopup({ trigger = 'onLoad', delay = 2000 }: AdPopupProps) {
   const handleClick = () => {
     if (currentAd) {
       recordAdClick(currentAd.id);
-      window.open(currentAd.link_url, '_blank');
+      if (currentAd.link_url) window.open(currentAd.link_url, '_blank');
     }
     setIsVisible(false);
   };

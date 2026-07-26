@@ -9,7 +9,7 @@ export interface Ad {
   title: string;
   description: string | null;
   image_url: string | null;
-  link_url: string;
+  link_url: string | null;
   ad_type: 'banner' | 'popup' | 'inline' | 'sidebar' | 'footer';
   position: number;
   display_duration: number;
