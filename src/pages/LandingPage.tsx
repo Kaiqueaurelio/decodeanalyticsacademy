@@ -631,6 +631,10 @@ export default function LandingPage() {
       {/* ═══ CREATOR / DE ALUNO PARA ALUNO ═══ */}
       <CreatorSection />
 
+      {/* ═══ ANUNCIANTES / PATROCINADORES ═══ */}
+      <SponsorsSection />
+
+
       {/* ═══ FAQ ═══ */}
       <FaqSection />
 
