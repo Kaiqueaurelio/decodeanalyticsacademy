@@ -152,19 +152,18 @@ export function CreatorSection() {
                 Estudante do 5º semestre de Ciências da Computação, com trajetória que combina
                 formação acadêmica e experiência profissional diversificada. Desde 2018 é
                 fundador da <span className="text-primary/90">Decode Analytics</span> e possui
-                experiência prática em operações logísticas
-                (<span className="text-primary/90">Correios</span>,{' '}
-                <span className="text-primary/90">Mercado Livre</span>) e varejo. Na faculdade,
+                experiência prática nos <span className="text-primary/90">Correios</span> e no{' '}
+                <span className="text-primary/90">Mercado Livre</span>. Na faculdade,
                 vem desenvolvendo conhecimentos básicos e intermediários em linguagens como
                 Python, JavaScript, TypeScript, C++ e Java, além de frameworks como React.
               </p>
               <p className="text-[13px] sm:text-sm text-foreground/80 leading-relaxed mb-3 text-left">
                 Na área acadêmica, desenvolveu projeto de Iniciação Científica em Realidade
-                Aumentada aplicado à educação de crianças com TDAH utilizando Merge Cube, sob
-                orientação do Dr. Alexandre Bozolan dos Santos. Também liderou equipe
-                multidisciplinar de 6 pessoas na criação de 4 jogos digitais educativos focados
-                em sustentabilidade.
+                Aumentada aplicado à educação de crianças com TDAH utilizando Merge Cube.
+                Também liderou equipe multidisciplinar de 6 pessoas na criação de 4 jogos
+                digitais educativos focados em sustentabilidade.
               </p>
+
               <p className="text-[13px] sm:text-sm text-foreground/80 leading-relaxed mb-3 text-left">
                 Tem experiência prática em robótica educacional com Arduino e desenvolvimento de
                 projetos acadêmicos que abrangem desde dashboards interativos até assistentes
