@@ -574,23 +574,57 @@ export function AdminAdsManager() {
                   </div>
 
 
+                  <div className="space-y-3 sm:col-span-2">
+                    <div>
+                      <label className="text-sm font-medium">Posição no layout</label>
+                      <p className="text-xs text-muted-foreground">
+                        Escolha onde este anúncio será exibido para o aluno.
+                      </p>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+                      {AD_TYPE_OPTIONS.map((item) => {
+                        const active = formData.ad_type === item.value;
+                        return (
+                          <button
+                            key={item.value}
+                            type="button"
+                            aria-pressed={active}
+                            onClick={() => setFormData((current) => ({ ...current, ad_type: item.value }))}
+                            className={cn(
+                              'rounded-lg border p-2 text-left transition',
+                              active
+                                ? 'border-primary bg-primary/10 ring-1 ring-primary'
+                                : 'border-border bg-card hover:border-primary/50',
+                            )}
+                          >
+                            <PlacementDiagram type={item.value} />
+                            <p className="mt-2 text-sm font-semibold text-foreground">{item.label}</p>
+                            <p className="text-[11px] leading-4 text-muted-foreground">{item.hint}</p>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {AD_TYPE_OPTIONS.find((item) => item.value === formData.ad_type)?.where}
+                    </p>
+                  </div>
+
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Formato</label>
-                    <Select
-                      value={formData.ad_type}
-                      onValueChange={(value: AdType) => setFormData((current) => ({ ...current, ad_type: value }))}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {AD_TYPE_OPTIONS.map((item) => (
-                          <SelectItem key={item.value} value={item.value}>
-                            {item.label} · {item.hint}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <label className="text-sm font-medium">Ordem na posição</label>
+                    <Input
+                      type="number"
+                      min="0"
+                      value={formData.position}
+                      onChange={(e) =>
+                        setFormData((current) => ({
+                          ...current,
+                          position: Math.max(0, Number(e.target.value) || 0),
+                        }))
+                      }
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Menor número aparece primeiro quando há vários anúncios no mesmo lugar.
+                    </p>
                   </div>
 
                   <div className="space-y-2">
@@ -608,6 +642,7 @@ export function AdminAdsManager() {
                       }
                     />
                   </div>
+
                 </div>
 
                 <div className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-3">
