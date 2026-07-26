@@ -168,13 +168,7 @@ export default function LandingPage() {
             preload="auto"
             src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260328_065045_c44942da-53c6-4804-b734-f9e07fc22e08.mp4"
           />
-          <div
-            className="absolute inset-0"
-            style={{
-              background:
-                'linear-gradient(180deg, rgba(5,5,8,0.7) 0%, rgba(5,5,8,0.5) 40%, rgba(5,5,8,0.65) 70%, rgba(5,5,8,0.85) 100%)',
-            }}
-          />
+          <div className="landing-bg-scrim absolute inset-0" />
         </div>,
         document.body,
       )}
@@ -185,9 +179,10 @@ export default function LandingPage() {
         <CyberGrid />
         <div className="hero-video-vignette pointer-events-none absolute inset-0 -z-10" aria-hidden="true" />
         <div
-          className="pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[527px] w-[min(984px,90vw)] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#050508]/90 blur-[82px]"
+          className="pointer-events-none absolute left-1/2 top-1/2 -z-10 hidden h-[527px] w-[min(984px,90vw)] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#050508]/90 blur-[82px] sm:block"
           aria-hidden="true"
         />
+
         <div className="relative z-10 flex min-h-screen flex-col">
           <header className="px-5 py-5 sm:px-8">
             <div className="mx-auto flex max-w-7xl items-center justify-between">

@@ -171,8 +171,8 @@
   .hero-background-video { opacity: 0.44 !important; }
   .hero-video-vignette {
     background:
-      radial-gradient(ellipse 105% 58% at 50% 44%, rgba(5, 5, 8, 0.28) 0%, rgba(5, 5, 8, 0.7) 86%),
-      linear-gradient(180deg, rgba(5, 5, 8, 0.45), rgba(5, 5, 8, 0.72));
+      radial-gradient(ellipse 120% 62% at 50% 42%, rgba(5, 5, 8, 0.05) 0%, rgba(5, 5, 8, 0.34) 88%),
+      linear-gradient(180deg, rgba(5, 5, 8, 0.2), rgba(5, 5, 8, 0.5));
   }
 }
 
@@ -186,9 +186,31 @@
 .landing-bg-video {
   animation: decode-video-fade-in 900ms ease-out both;
 }
+
+/* Scrim sobre o vídeo — mantém contraste do texto sem apagar a imagem */
+.landing-bg-scrim {
+  background: linear-gradient(
+    180deg,
+    hsl(240 24% 3% / 0.7) 0%,
+    hsl(240 24% 3% / 0.5) 40%,
+    hsl(240 24% 3% / 0.65) 70%,
+    hsl(240 24% 3% / 0.85) 100%
+  );
+}
+
 @media (max-width: 640px) {
-  .landing-bg-video { opacity: 0.32 !important; }
+  .landing-bg-video { opacity: 0.62 !important; }
+  .landing-bg-scrim {
+    background: linear-gradient(
+      180deg,
+      hsl(240 24% 3% / 0.42) 0%,
+      hsl(240 24% 3% / 0.28) 38%,
+      hsl(240 24% 3% / 0.6) 72%,
+      hsl(240 24% 3% / 0.88) 100%
+    );
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   .landing-bg-video { animation: none; }
 }
+
