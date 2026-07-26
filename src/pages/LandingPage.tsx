@@ -217,7 +217,7 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="dark min-h-dvh font-cyber overflow-x-hidden selection:bg-primary/30 relative" style={{ color: '#e2e8f0' }}>
+    <div className="landing-shell dark min-h-dvh font-cyber overflow-x-hidden selection:bg-primary/30 relative" style={{ color: '#e2e8f0' }}>
 
       {/* ═══ VIDEO DE FUNDO GLOBAL (portal em document.body para escapar de transforms de ancestrais) ═══ */}
       {typeof document !== 'undefined' && createPortal(
