@@ -502,9 +502,14 @@ export function AdminAdsManager() {
                             <div className="flex flex-wrap items-center gap-2">
                               <p className="truncate font-semibold">{ad.title}</p>
                               <Badge variant="outline">{AD_TYPE_OPTIONS.find((item) => item.value === ad.ad_type)?.label}</Badge>
-                              <Badge variant={ad.is_active ? 'default' : 'secondary'}>
-                                {ad.is_active ? 'Ativo' : 'Pausado'}
-                              </Badge>
+                              <Badge variant={scheduleState(ad).variant}>{scheduleState(ad).label}</Badge>
+                              {(ad.start_date || ad.end_date) && (
+                                <span className="text-[11px] text-muted-foreground">
+                                  {ad.start_date ? new Date(ad.start_date).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : 'agora'}
+                                  {' → '}
+                                  {ad.end_date ? new Date(ad.end_date).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : 'sem fim'}
+                                </span>
+                              )}
                             </div>
                             {ad.description && (
                               <p className="line-clamp-2 text-sm text-muted-foreground">{ad.description}</p>
