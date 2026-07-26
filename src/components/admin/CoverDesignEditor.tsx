@@ -221,17 +221,28 @@ export function CoverDesignEditor() {
         </Tabs>
 
         <div className="space-y-3">
-          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Pré-visualização</p>
-          <div className="grid grid-cols-3 gap-3">
-            {previews.map(({ s, uri }) => (
-              <img
-                key={s.title}
-                src={uri}
-                alt={`Prévia da capa: ${s.title}`}
-                className="w-full rounded-lg border border-border/60 shadow-sm"
-              />
-            ))}
-          </div>
+          <Tabs defaultValue="amostras">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="amostras">Amostras</TabsTrigger>
+              <TabsTrigger value="tamanhos">Tamanhos reais</TabsTrigger>
+            </TabsList>
+            <TabsContent value="amostras" className="pt-4">
+              <div className="grid grid-cols-3 gap-3">
+                {previews.map(({ s, uri }) => (
+                  <img
+                    key={s.title}
+                    src={uri}
+                    alt={`Prévia da capa: ${s.title}`}
+                    className="w-full rounded-lg border border-border/60 shadow-sm"
+                  />
+                ))}
+              </div>
+            </TabsContent>
+            <TabsContent value="tamanhos" className="pt-4">
+              <CoverPreviewSizes samples={SAMPLES} theme={theme} />
+            </TabsContent>
+          </Tabs>
+
           <div className="flex flex-wrap gap-2 pt-2">
             <Button onClick={save} disabled={saving}>
               {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
