@@ -150,7 +150,22 @@ export function SponsorsSection() {
                     </li>
                   ))}
                 </ul>
+                <a
+                  href={whatsappUrl(plan.name)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`Enviar briefing do pacote ${plan.name} no WhatsApp`}
+                  className={`mt-5 inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-opacity hover:opacity-90 ${
+                    plan.featured
+                      ? 'bg-primary text-primary-foreground'
+                      : 'border border-border/60 hover:bg-muted/40'
+                  }`}
+                >
+                  <MessageCircle className="h-4 w-4" strokeWidth={1.75} />
+                  Enviar briefing
+                </a>
               </div>
+
             ))}
           </div>
           <p className="mt-4 text-center text-xs text-muted-foreground">
