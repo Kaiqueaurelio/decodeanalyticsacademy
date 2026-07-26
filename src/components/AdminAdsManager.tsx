@@ -175,16 +175,18 @@ export function AdminAdsManager() {
     const title = formData.title.trim();
     const linkUrl = formData.link_url.trim();
 
-    if (!title || !linkUrl) {
-      toast.error('Título e URL de destino são obrigatórios');
+    if (!title) {
+      toast.error('Informe o título do anúncio');
       return false;
     }
 
-    try {
-      new URL(linkUrl);
-    } catch {
-      toast.error('Use uma URL válida, com https://');
-      return false;
+    if (linkUrl) {
+      try {
+        new URL(linkUrl);
+      } catch {
+        toast.error('Use uma URL válida, com https://');
+        return false;
+      }
     }
 
     if (formData.image_url.trim()) {
@@ -203,11 +205,12 @@ export function AdminAdsManager() {
     title: formData.title.trim(),
     description: formData.description.trim() || null,
     image_url: formData.image_url.trim() || null,
-    link_url: formData.link_url.trim(),
+    link_url: formData.link_url.trim() || null,
     ad_type: formData.ad_type,
     display_duration: Math.min(30, Math.max(1, Number(formData.display_duration) || 5)),
     is_active: formData.is_active,
   });
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
