@@ -52,7 +52,7 @@ export default function SubjectPage() {
   return (
     <div className="min-h-screen bg-background">
       <AppHeader />
-      <main className="mx-auto w-full max-w-6xl px-3 sm:px-4 pb-16">
+      <main className="mx-auto w-full max-w-6xl px-2 sm:px-4 pb-16">
         <div className="pt-4">
           <Button
             variant="ghost"
@@ -94,9 +94,9 @@ export default function SubjectPage() {
         {/* Grid de apostilas */}
         <section className="mt-6">
           {loading ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-2.5 sm:gap-4">
               {[0, 1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="h-44 rounded-2xl bg-muted/30 animate-pulse" />
+                <div key={i} className="aspect-[2/3] sm:aspect-[3/4] rounded-2xl bg-muted/30 animate-pulse" />
               ))}
             </div>
           ) : rows.length === 0 ? (
@@ -104,7 +104,7 @@ export default function SubjectPage() {
               Nenhuma apostila cadastrada nesta matéria ainda.
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
               {rows.map((a) => {
                 const exCount = exerciseCounts[a.id] || 0;
                 const words = (a.content || '').split(/\s+/).filter(Boolean).length;
@@ -116,7 +116,7 @@ export default function SubjectPage() {
                     className="group relative flex flex-col rounded-2xl border border-border/60 bg-card overflow-hidden transition-all duration-300 hover:border-primary/50 hover:shadow-xl hover:-translate-y-0.5"
                   >
                     <div
-                      className="relative aspect-[3/4] w-full"
+                      className="relative aspect-[2/3] sm:aspect-[3/4] w-full"
                       style={{
                         backgroundImage: a.cover_url
                           ? `url("${a.cover_url}")`
