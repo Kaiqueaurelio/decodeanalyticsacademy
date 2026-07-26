@@ -37,6 +37,8 @@ import { toast } from 'sonner';
 import { AdImageUploadButton } from './AdImageUploadButton';
 import { AppImage } from '@/components/ui/app-image';
 import { cn } from '@/lib/utils';
+import { AdStudentPreview } from '@/components/admin/AdStudentPreview';
+
 
 const supabase = supabaseTyped as any;
 
