@@ -90,6 +90,10 @@ const PLANS = [
 ];
 
 export function SponsorsSection() {
+  useEffect(() => {
+    captureCampaign();
+  }, []);
+
   return (
     <section id="anuncie" className="relative overflow-hidden px-4 py-16 sm:py-24">
       <div className="grid-lines-bg pointer-events-none absolute inset-0 opacity-10" />
