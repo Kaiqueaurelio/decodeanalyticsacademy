@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useAds } from '@/hooks/useAds';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, ExternalLink, X, Megaphone, Info } from 'lucide-react';
+import { ChevronRight, ExternalLink, X, Megaphone, Info, ZoomIn } from 'lucide-react';
 import { AppImage } from '@/components/ui/app-image';
+import { AdImageLightbox } from '@/components/AdImageLightbox';
 
 /**
  * Painel de publicidade FIXO na lateral direita (desktop xl+).
@@ -34,6 +35,7 @@ export function AdSidebar({ className = '' }: { className?: string }) {
   const portalContainer = useAdPortalContainer();
   const { ads, recordAdView, recordAdClick } = useAds('sidebar');
   const [idx, setIdx] = useState(0);
+  const [zoomOpen, setZoomOpen] = useState(false);
 
   const [dismissed, setDismissed] = useState(() => {
     if (typeof window === 'undefined') return false;
@@ -123,6 +125,16 @@ export function AdSidebar({ className = '' }: { className?: string }) {
             <Megaphone size={13} /> Publicidade
           </span>
           <div className="flex items-center gap-1">
+            {current.image_url && (
+              <button
+                type="button"
+                onClick={() => setZoomOpen(true)}
+                aria-label="Ampliar imagem do anúncio"
+                className="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors duration-200 hover:bg-muted hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <ZoomIn size={14} />
+              </button>
+            )}
             <button
               type="button"
               onClick={toggleCollapsed}
@@ -155,7 +167,7 @@ export function AdSidebar({ className = '' }: { className?: string }) {
                 alt={current.title}
                 referrerPolicy="strict-origin-when-cross-origin"
                 loading="lazy"
-                className="mx-auto h-auto max-h-[45vh] w-auto max-w-full rounded-xl object-contain transition-transform duration-500 group-hover:scale-[1.02]"
+                className="mx-auto h-auto max-h-[52vh] w-auto max-w-full rounded-xl object-contain transition-transform duration-500 group-hover:scale-[1.02]"
                 wrapperClassName="flex w-full items-center justify-center overflow-hidden rounded-xl bg-muted/40"
                 fallbackLabel="Imagem indisponível"
               />
@@ -195,6 +207,15 @@ export function AdSidebar({ className = '' }: { className?: string }) {
               />
             ))}
           </footer>
+        )}
+        {current.image_url && (
+          <AdImageLightbox
+            open={zoomOpen}
+            onClose={() => setZoomOpen(false)}
+            src={current.image_url}
+            title={current.title}
+            description={current.description}
+          />
         )}
       </motion.aside>
     </AnimatePresence>

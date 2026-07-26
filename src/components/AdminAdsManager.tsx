@@ -548,6 +548,48 @@ export function AdminAdsManager() {
 
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="rounded-xl border border-border/70 bg-muted/25 p-4">
+                  <p className="text-sm font-medium text-foreground">Modelos rápidos</p>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                    Comece por um formato pronto. Você pode ajustar tudo depois.
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="gap-2 transition-colors duration-200 hover:border-primary/60 hover:text-primary"
+                      onClick={() =>
+                        setFormData((current) => ({
+                          ...current,
+                          ad_type: 'popup',
+                          image_url: '',
+                          link_url: '',
+                        }))
+                      }
+                    >
+                      <LayoutTemplate className="h-3.5 w-3.5" />
+                      Pop-up somente texto
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="gap-2 transition-colors duration-200 hover:border-primary/60 hover:text-primary"
+                      onClick={() => setFormData((current) => ({ ...current, ad_type: 'sidebar' }))}
+                    >
+                      <LayoutTemplate className="h-3.5 w-3.5" />
+                      Lateral com imagem
+                    </Button>
+                  </div>
+                  {formData.ad_type === 'popup' && !formData.image_url.trim() && (
+                    <p className="mt-3 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 text-xs leading-5 text-foreground">
+                      Modo aviso ativo: sem imagem e sem link, o aluno verá apenas o título e o texto
+                      em um pop-up limpo e centralizado.
+                    </p>
+                  )}
+                </div>
+
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Título</label>

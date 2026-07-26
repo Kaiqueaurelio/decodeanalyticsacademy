@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, ExternalLink } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 import { AdMediaPreview } from '@/components/AdMediaPreview';
+import { AdImageLightbox } from '@/components/AdImageLightbox';
 
 /**
  * Barra fina de anuncio fixa no rodape (apenas mobile).
@@ -15,6 +16,7 @@ export function AdFooterMobile() {
   const location = useLocation();
   const { ads, recordAdView, recordAdClick } = useAds('footer');
   const [idx, setIdx] = useState(0);
+  const [zoomOpen, setZoomOpen] = useState(false);
   const [dismissed, setDismissed] = useState(() =>
     typeof window !== 'undefined' && sessionStorage.getItem('ad_footer_dismissed') === '1'
   );
@@ -52,12 +54,19 @@ export function AdFooterMobile() {
       >
         <div className="flex items-center gap-2 px-3 py-2">
           {current.image_url && (
-            <AdMediaPreview
-              src={current.image_url}
-              title={current.title}
-              compact
-              className="h-10 w-10 shrink-0"
-            />
+            <button
+              type="button"
+              onClick={() => setZoomOpen(true)}
+              aria-label="Ampliar imagem do anúncio"
+              className="shrink-0 rounded-md transition-transform duration-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <AdMediaPreview
+                src={current.image_url}
+                title={current.title}
+                compact
+                className="h-10 w-10 shrink-0"
+              />
+            </button>
           )}
           <button
             type="button"
@@ -99,6 +108,16 @@ export function AdFooterMobile() {
             <X size={14} />
           </button>
         </div>
+
+        {current.image_url && (
+          <AdImageLightbox
+            open={zoomOpen}
+            onClose={() => setZoomOpen(false)}
+            src={current.image_url}
+            title={current.title}
+            description={current.description}
+          />
+        )}
       </motion.div>
     </AnimatePresence>
   );
