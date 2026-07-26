@@ -1319,7 +1319,9 @@ export default function AdminPage() {
     rss: { title: 'Feeds RSS de Notícias', desc: 'Gerencie as fontes de notícias exibidas em /noticias' },
     courses: { title: 'Cursos Gratuitos', desc: 'Gerencie os cursos gratuitos exibidos aos alunos' },
     changelog: { title: 'Histórico de Versões', desc: 'Tudo que foi criado, alterado e corrigido na plataforma' },
+    leads: { title: 'Interessados em Patrocínio', desc: 'Briefings recebidos, situação e histórico de contato' },
   };
+
 
   return (
     <CategoriesCtx.Provider value={{ categories: dbCategories }}>
