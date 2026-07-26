@@ -1,12 +1,40 @@
 import { Handshake, Target, BarChart3, ShieldCheck, MessageCircle, Mail, Check } from 'lucide-react';
 
 const WHATSAPP_NUMBER = '5511939222885';
-const WHATSAPP_MSG = encodeURIComponent(
-  'Olá Kaique! Tenho interesse em anunciar/patrocinar a Decode Analytics Academy. Pode me enviar os pacotes?',
-);
-const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_MSG}`;
-const EMAIL_URL =
-  'mailto:decodeanalytics@outlook.com.br?subject=Quero%20anunciar%20na%20Decode%20Analytics%20Academy&body=Ol%C3%A1%20Kaique%2C%20tenho%20interesse%20em%20patrocinar%20a%20plataforma.%20Segue%20meu%20contato%3A';
+const EMAIL_ADDRESS = 'decodeanalytics@outlook.com.br';
+
+/** Briefing pré-preenchido que o anunciante só precisa completar e enviar. */
+function briefingLines(plan?: string) {
+  return [
+    'Olá Kaique! Tenho interesse em anunciar/patrocinar a Decode Analytics Academy.',
+    '',
+    'BRIEFING DO ANUNCIANTE',
+    `Formato de interesse: ${plan ?? '(Apoiador / Patrocinador de matéria / Master)'}`,
+    'Empresa:',
+    'Responsável:',
+    'Telefone / WhatsApp:',
+    'E-mail:',
+    'Site ou rede social:',
+    'Objetivo da campanha: (marca, vagas, curso, produto)',
+    'Público que quer alcançar: (ENEM, tecnologia, ambos)',
+    'Período desejado:',
+    'Investimento previsto:',
+    'Material pronto? (imagem/legenda) sim ou não',
+    'Observações:',
+  ];
+}
+
+const whatsappUrl = (plan?: string) =>
+  `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(briefingLines(plan).join('\n'))}`;
+
+const emailUrl = (plan?: string) =>
+  `mailto:${EMAIL_ADDRESS}?subject=${encodeURIComponent(
+    `Quero anunciar na Decode Analytics Academy${plan ? ` — ${plan}` : ''}`,
+  )}&body=${encodeURIComponent(briefingLines(plan).join('\r\n'))}`;
+
+const WHATSAPP_URL = whatsappUrl();
+const EMAIL_URL = emailUrl();
+
 
 const WHY = [
   {
@@ -122,7 +150,22 @@ export function SponsorsSection() {
                     </li>
                   ))}
                 </ul>
+                <a
+                  href={whatsappUrl(plan.name)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`Enviar briefing do pacote ${plan.name} no WhatsApp`}
+                  className={`mt-5 inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-opacity hover:opacity-90 ${
+                    plan.featured
+                      ? 'bg-primary text-primary-foreground'
+                      : 'border border-border/60 hover:bg-muted/40'
+                  }`}
+                >
+                  <MessageCircle className="h-4 w-4" strokeWidth={1.75} />
+                  Enviar briefing
+                </a>
               </div>
+
             ))}
           </div>
           <p className="mt-4 text-center text-xs text-muted-foreground">
