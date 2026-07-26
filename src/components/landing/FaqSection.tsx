@@ -12,7 +12,7 @@ const FAQS = [
   },
   {
     q: 'Como funciona o módulo ENEM?',
-    a: 'Existe um perfil dedicado só a apostilas, exercícios e simulados do ENEM. A tutora virtual Ella também adapta o tom quando detecta que você está nesse modo.',
+    a: 'Existe um perfil dedicado só a apostilas, exercícios e simulados do ENEM. A tutora virtual Ella Ribeiro também adapta o tom quando detecta que você está nesse modo.'
   },
   {
     q: 'Meus dados estão seguros?',

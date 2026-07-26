@@ -18,6 +18,7 @@ import { SocialAndProjectsSection } from '@/components/SocialAndProjectsSection'
 import { Reveal } from '@/components/Reveal';
 import { AppShowcaseSection } from '@/components/landing/AppShowcaseSection';
 import { HowItWorksSection } from '@/components/landing/HowItWorksSection';
+import { EllaFeatureSection } from '@/components/landing/EllaFeatureSection';
 import { PlatformEngineSection } from '@/components/landing/PlatformEngineSection';
 import { FaqSection } from '@/components/landing/FaqSection';
 
@@ -277,6 +278,9 @@ export default function LandingPage() {
 
       {/* ═══ COMO FUNCIONA + NÚMEROS ═══ */}
       <HowItWorksSection />
+
+      {/* ═══ ELLA RIBEIRO — IA PRÓPRIA ═══ */}
+      <EllaFeatureSection />
 
       {/* ═══ SOB O CAPÔ: ENGENHARIA + BENEFÍCIOS ═══ */}
       <PlatformEngineSection />

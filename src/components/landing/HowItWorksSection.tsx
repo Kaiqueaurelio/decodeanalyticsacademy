@@ -12,7 +12,7 @@ const STEPS = [
     n: '02',
     icon: BookOpenCheck,
     title: 'Estude com o que importa',
-    desc: 'Apostilas por disciplina, exercícios resolvidos, flashcards, resumos e Ella — sua tutora virtual.',
+    desc: 'Apostilas por disciplina, exercícios resolvidos, flashcards, resumos e Ella Ribeiro — sua tutora de IA.',
   },
   {
     n: '03',
