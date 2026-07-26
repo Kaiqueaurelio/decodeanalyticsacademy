@@ -24,10 +24,14 @@ export function ApostilaCoverCard({ apostila, status = 'em-progresso' }: Props) 
   return (
     <a
       href={`/apostila/${apostila.id}`}
+      data-testid="apostila-cover-card"
       className="group flex flex-col rounded-xl overflow-hidden border border-border/60 bg-card hover:border-primary/50 hover:-translate-y-0.5 transition-all duration-300 shadow-sm hover:shadow-lg"
     >
       {/* Cover editorial (a própria capa já traz título/tipografia) */}
-      <div className="relative aspect-[3/4] w-full overflow-hidden bg-muted">
+      <div
+        data-testid="apostila-cover-media"
+        className="relative w-full overflow-hidden bg-muted aspect-[2/3] sm:aspect-[3/4]"
+      >
         <img
           src={cover}
           alt={apostila.title}
@@ -44,7 +48,10 @@ export function ApostilaCoverCard({ apostila, status = 'em-progresso' }: Props) 
 
 
       {/* Body */}
-      <div className="p-3 sm:p-3.5 flex flex-col gap-2 bg-card">
+      <div
+        data-testid="apostila-cover-body"
+        className="p-2 sm:p-3.5 flex flex-col gap-1.5 sm:gap-2 bg-card"
+      >
         <div className="flex items-start gap-2">
           <FileText className="h-3.5 w-3.5 mt-0.5 text-muted-foreground shrink-0" />
           <h3 className="text-[13px] sm:text-sm font-semibold leading-snug line-clamp-2 group-hover:text-primary transition-colors">
@@ -60,6 +67,7 @@ export function ApostilaCoverCard({ apostila, status = 'em-progresso' }: Props) 
           </span>
         </div>
       </div>
+
     </a>
   );
 }
