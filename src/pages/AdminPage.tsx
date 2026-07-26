@@ -1377,6 +1377,7 @@ export default function AdminPage() {
                 { id: 'performance', label: 'Perf', icon: <Activity className="h-3.5 w-3.5" /> },
                 { id: 'smoke', label: 'Testes', icon: <CheckCircle className="h-3.5 w-3.5" /> },
                 { id: 'diagnostics', label: 'Diag', icon: <AlertCircle className="h-3.5 w-3.5" /> },
+                { id: 'changelog', label: 'Histórico', icon: <History className="h-3.5 w-3.5" /> },
                 { id: 'ads', label: 'Anúncios', icon: <Megaphone className="h-3.5 w-3.5" /> },
                 { id: 'rss', label: 'RSS', icon: <Rss className="h-3.5 w-3.5" /> },
               ]}
