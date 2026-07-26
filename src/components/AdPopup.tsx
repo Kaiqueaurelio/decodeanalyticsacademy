@@ -5,6 +5,8 @@ import { X, ExternalLink } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AdMediaPreview } from '@/components/AdMediaPreview';
 
+const AUTO_CLOSE_SECONDS = 25;
+
 interface AdPopupProps {
   trigger?: 'onLoad' | 'onScroll' | 'onExit';
   delay?: number; // em ms
@@ -13,7 +15,7 @@ interface AdPopupProps {
 export function AdPopup({ trigger = 'onLoad', delay = 2000 }: AdPopupProps) {
   const { ads, loading, recordAdView, recordAdClick } = useAds('popup');
   const [isVisible, setIsVisible] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(8);
+  const [timeLeft, setTimeLeft] = useState(AUTO_CLOSE_SECONDS);
   const [currentAdIndex, setCurrentAdIndex] = useState(0);
 
   const COOLDOWN_MS = 3 * 60 * 1000; // 3 min entre popups
@@ -43,7 +45,7 @@ export function AdPopup({ trigger = 'onLoad', delay = 2000 }: AdPopupProps) {
         if (ad) recordAdView(ad.id);
         return next;
       });
-      setTimeLeft(8);
+      setTimeLeft(AUTO_CLOSE_SECONDS);
       setIsVisible(true);
       try {
         localStorage.setItem(STORAGE_KEY, String(Date.now()));
@@ -69,7 +71,7 @@ export function AdPopup({ trigger = 'onLoad', delay = 2000 }: AdPopupProps) {
       setTimeLeft((prev) => {
         if (prev <= 1) {
           setIsVisible(false);
-          return 8;
+          return AUTO_CLOSE_SECONDS;
         }
         return prev - 1;
       });
@@ -174,7 +176,7 @@ export function AdPopup({ trigger = 'onLoad', delay = 2000 }: AdPopupProps) {
             <div className="absolute bottom-0 left-0 right-0 h-1 bg-muted">
               <motion.div
                 initial={{ width: '100%' }}
-                animate={{ width: `${(timeLeft / 8) * 100}%` }}
+                animate={{ width: `${(timeLeft / AUTO_CLOSE_SECONDS) * 100}%` }}
                 className="h-full bg-primary"
               />
             </div>

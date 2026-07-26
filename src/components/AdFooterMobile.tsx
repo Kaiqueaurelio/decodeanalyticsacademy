@@ -32,7 +32,7 @@ export function AdFooterMobile() {
 
   useEffect(() => {
     if (ads.length < 2) return;
-    const t = setInterval(() => setIdx((i) => (i + 1) % ads.length), 30_000);
+    const t = setInterval(() => setIdx((i) => (i + 1) % ads.length), 90_000);
     return () => clearInterval(t);
   }, [ads.length]);
 
