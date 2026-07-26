@@ -70,7 +70,14 @@ function CapabilityCard({
 
 export function EllaFeatureSection() {
   return (
-    <section id="ella" className="relative py-24 md:py-32 px-5 overflow-hidden">
+    <section
+      id="ella"
+      className="relative overflow-hidden px-5 py-24 md:py-32"
+      style={{
+        background:
+          'linear-gradient(180deg, hsl(var(--background) / 0.45) 0%, hsl(var(--card) / 0.25) 50%, hsl(var(--background) / 0.45) 100%)',
+      }}
+    >
       {/* Ambient glow — usando primary/accent do tema, sem cores hardcoded */}
       <div
         className="pointer-events-none absolute -left-32 top-1/2 h-[420px] w-[420px] -translate-y-1/2 rounded-full blur-[140px] opacity-20"
