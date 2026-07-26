@@ -126,7 +126,7 @@ export function AdminAdsManager() {
     const query = search.trim().toLowerCase();
     if (!query) return ads;
     return ads.filter((ad) =>
-      [ad.title, ad.description || '', ad.link_url, ad.ad_type]
+      [ad.title, ad.description || '', ad.link_url || '', ad.ad_type]
         .join(' ')
         .toLowerCase()
         .includes(query),
