@@ -27,6 +27,17 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '3.0.0',
+    date: '2026-07-26',
+    title: 'Seção comercial para anunciantes e patrocinadores',
+    changes: [
+      { kind: 'feature', text: 'Nova seção "Anuncie / Patrocine" na landing page com proposta de valor, três formatos de patrocínio (Apoiador, Patrocinador de matéria e Master) e chamada para ação.' },
+      { kind: 'feature', text: 'Contato comercial direto por WhatsApp e e-mail, com mensagem pré-preenchida sobre patrocínio.' },
+      { kind: 'content', text: 'Reforço da política: o aluno nunca paga — a plataforma se mantém por patrocínio.' },
+    ],
+  },
+  {
+
     version: '2.9.0',
     date: '2026-07-26',
     title: 'Histórico de versões e verificação geral',

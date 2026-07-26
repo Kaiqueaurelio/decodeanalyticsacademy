@@ -21,6 +21,8 @@ import { HowItWorksSection } from '@/components/landing/HowItWorksSection';
 import { EllaFeatureSection } from '@/components/landing/EllaFeatureSection';
 import { PlatformEngineSection } from '@/components/landing/PlatformEngineSection';
 import { FaqSection } from '@/components/landing/FaqSection';
+import { SponsorsSection } from '@/components/landing/SponsorsSection';
+
 
 /* ─── SECTION WRAPPER: usa o Reveal compartilhado (IntersectionObserver + reduced-motion) ─── */
 function ScrollReveal({ children, className = '', delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
@@ -630,6 +632,10 @@ export default function LandingPage() {
 
       {/* ═══ CREATOR / DE ALUNO PARA ALUNO ═══ */}
       <CreatorSection />
+
+      {/* ═══ ANUNCIANTES / PATROCINADORES ═══ */}
+      <SponsorsSection />
+
 
       {/* ═══ FAQ ═══ */}
       <FaqSection />
