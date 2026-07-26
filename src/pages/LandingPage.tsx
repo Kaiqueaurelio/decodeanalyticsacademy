@@ -24,13 +24,12 @@ const PlatformEngineSection = lazy(() => import('@/components/landing/PlatformEn
 const FaqSection = lazy(() => import('@/components/landing/FaqSection').then(m => ({ default: m.FaqSection })));
 const SponsorsSection = lazy(() => import('@/components/landing/SponsorsSection').then(m => ({ default: m.SponsorsSection })));
 
-/* Placeholder de altura estável enquanto o chunk carrega (evita salto de layout) */
-function SectionFallback() {
-  return <div className="min-h-[40vh]" aria-hidden="true" />;
-}
-
+/**
+ * Só monta a seção (e baixa o chunk) quando ela chega perto do viewport.
+ * Antes todos os chunks eram baixados logo no mount, anulando o lazy.
+ */
 function LazySection({ children }: { children: React.ReactNode }) {
-  return <Suspense fallback={<SectionFallback />}>{children}</Suspense>;
+  return <DeferredSection minHeight="55vh">{children}</DeferredSection>;
 }
 
 
