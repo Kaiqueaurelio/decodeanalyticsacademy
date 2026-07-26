@@ -1931,6 +1931,36 @@ export type Database = {
         }
         Relationships: []
       }
+      sponsor_funnel_thresholds: {
+        Row: {
+          created_at: string
+          dimension: string
+          id: string
+          key: string
+          min_rate: number
+          stage: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          dimension?: string
+          id?: string
+          key: string
+          min_rate?: number
+          stage?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          dimension?: string
+          id?: string
+          key?: string
+          min_rate?: number
+          stage?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       sponsor_lead_events: {
         Row: {
           created_at: string
@@ -1973,6 +2003,7 @@ export type Database = {
           company: string
           contact_name: string
           created_at: string
+          cta_id: string | null
           email: string
           goal: string | null
           id: string
@@ -1984,6 +2015,11 @@ export type Database = {
           source: string
           status: string
           updated_at: string
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
         }
         Insert: {
           budget?: string | null
@@ -1991,6 +2027,7 @@ export type Database = {
           company: string
           contact_name: string
           created_at?: string
+          cta_id?: string | null
           email: string
           goal?: string | null
           id?: string
@@ -2002,6 +2039,11 @@ export type Database = {
           source?: string
           status?: string
           updated_at?: string
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
         }
         Update: {
           budget?: string | null
@@ -2009,6 +2051,7 @@ export type Database = {
           company?: string
           contact_name?: string
           created_at?: string
+          cta_id?: string | null
           email?: string
           goal?: string | null
           id?: string
@@ -2020,6 +2063,11 @@ export type Database = {
           source?: string
           status?: string
           updated_at?: string
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
         }
         Relationships: []
       }

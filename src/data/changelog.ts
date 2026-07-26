@@ -27,6 +27,29 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '3.5.0',
+    date: '2026-07-26',
+    title: 'Alertas, drill-down e exportação do funil comercial',
+    changes: [
+      {
+        kind: 'feature',
+        text: 'Alertas automáticos quando a conversão clique → negociação fica abaixo do limite configurável por pacote ou origem.',
+      },
+      {
+        kind: 'feature',
+        text: 'Drill-down no funil: cada etapa e cada célula da tabela abre a lista detalhada de leads com pacote, origem, CTA e campanha.',
+      },
+      {
+        kind: 'feature',
+        text: 'Exportação do funil e das métricas do período em CSV e PDF para compartilhar com o time.',
+      },
+      {
+        kind: 'improvement',
+        text: 'Rastreio ampliado: cada clique guarda o botão exato (CTA) e os UTMs da campanha de origem.',
+      },
+    ],
+  },
+  {
     version: '3.4.0',
     date: '2026-07-26',
     title: 'Funil de conversão comercial',

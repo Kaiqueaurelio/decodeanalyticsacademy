@@ -28,6 +28,10 @@ type Lead = {
   source: string;
   status: string;
   created_at: string;
+  cta_id?: string | null;
+  utm_source?: string | null;
+  utm_medium?: string | null;
+  utm_campaign?: string | null;
 };
 
 type LeadEvent = {
@@ -170,11 +174,18 @@ export function SponsorLeadsPanel() {
           <SponsorFunnel
             leads={leads.map((l) => ({
               id: l.id,
+              company: l.company,
+              contact_name: l.contact_name,
+              email: l.email,
               plan: l.plan,
               channel: l.channel,
               source: l.source,
               status: l.status,
               created_at: l.created_at,
+              cta_id: l.cta_id,
+              utm_source: l.utm_source,
+              utm_medium: l.utm_medium,
+              utm_campaign: l.utm_campaign,
             }))}
             events={events.map((e) => ({ lead_id: e.lead_id, kind: e.kind }))}
           />
