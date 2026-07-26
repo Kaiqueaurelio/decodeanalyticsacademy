@@ -746,6 +746,56 @@ export function AdminAdsManager() {
                   </div>
                 </div>
 
+                <div className="space-y-3 rounded-lg border border-border bg-muted/20 p-4">
+                  <div className="flex items-center gap-2 text-sm font-medium">
+                    <Clock3 className="h-4 w-4 text-primary" />
+                    Janela de exibição (opcional)
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Defina quando o anúncio começa e para de aparecer. Deixe em branco para exibir sempre
+                    enquanto estiver ativo.
+                  </p>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium" htmlFor="ad-start-date">
+                        Início
+                      </label>
+                      <Input
+                        id="ad-start-date"
+                        type="datetime-local"
+                        value={formData.start_date}
+                        onChange={(e) => setFormData((current) => ({ ...current, start_date: e.target.value }))}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium" htmlFor="ad-end-date">
+                        Fim
+                      </label>
+                      <Input
+                        id="ad-end-date"
+                        type="datetime-local"
+                        value={formData.end_date}
+                        onChange={(e) => setFormData((current) => ({ ...current, end_date: e.target.value }))}
+                      />
+                    </div>
+                  </div>
+                  {(formData.start_date || formData.end_date) && (
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Badge variant={scheduleState({ is_active: formData.is_active, start_date: toIso(formData.start_date), end_date: toIso(formData.end_date) }).variant}>
+                        {scheduleState({ is_active: formData.is_active, start_date: toIso(formData.start_date), end_date: toIso(formData.end_date) }).label}
+                      </Badge>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setFormData((current) => ({ ...current, start_date: '', end_date: '' }))}
+                      >
+                        Limpar agendamento
+                      </Button>
+                    </div>
+                  )}
+                </div>
+
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Descrição</label>
                   <Textarea
