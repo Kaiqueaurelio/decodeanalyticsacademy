@@ -56,6 +56,8 @@ interface Ad {
   view_count: number;
   click_count: number;
   created_at?: string;
+  start_date?: string | null;
+  end_date?: string | null;
 }
 
 interface AdFormState {
@@ -67,6 +69,8 @@ interface AdFormState {
   position: number;
   display_duration: number;
   is_active: boolean;
+  start_date: string;
+  end_date: string;
 }
 
 const AD_TYPE_OPTIONS: { value: AdType; label: string; hint: string; where: string }[] = [
