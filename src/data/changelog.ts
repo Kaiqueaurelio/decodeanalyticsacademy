@@ -27,6 +27,17 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '3.3.0',
+    date: '2026-07-26',
+    title: 'Métricas de cliques nos contatos de patrocínio',
+    changes: [
+      { kind: 'feature', text: 'Painel de métricas na aba Patrocínio: total de interações, divisão WhatsApp x e-mail, taxa de negociação e filtro por 7 dias, 30 dias ou tudo.' },
+      { kind: 'feature', text: 'Comparativo por pacote (Apoiador, Patrocinador de matéria, Master) com barra de canais e resumo por origem do clique.' },
+      { kind: 'improvement', text: 'Cada CTA da landing passa a registrar o canal correto (WhatsApp ou e-mail) e o pacote clicado.' },
+    ],
+  },
+  {
+
     version: '3.2.0',
     date: '2026-07-26',
     title: 'Registro de interessados em patrocínio no painel admin',
