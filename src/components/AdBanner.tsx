@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { X, ExternalLink, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { AppImage } from '@/components/ui/app-image';
+import { AdImageLightbox, AdZoomButton } from '@/components/AdImageLightbox';
 
 interface AdBannerProps {
   position?: 'top' | 'bottom' | 'inline';
@@ -14,6 +15,7 @@ export function AdBanner({ position = 'inline', className = '' }: AdBannerProps)
   const { ads, loading, recordAdView, recordAdClick } = useAds('banner');
   const [currentAdIndex, setCurrentAdIndex] = React.useState(0);
   const [dismissed, setDismissed] = React.useState(false);
+  const [zoomOpen, setZoomOpen] = React.useState(false);
 
   const currentAd = ads[currentAdIndex];
 
@@ -53,6 +55,7 @@ export function AdBanner({ position = 'inline', className = '' }: AdBannerProps)
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         {currentAd.image_url && (
+          <div className="flex w-full shrink-0 flex-col items-center gap-2 sm:w-auto">
           <AppImage
             src={currentAd.image_url}
             alt={currentAd.title}
@@ -62,6 +65,8 @@ export function AdBanner({ position = 'inline', className = '' }: AdBannerProps)
             wrapperClassName="flex w-full shrink-0 items-center justify-center overflow-hidden rounded-xl bg-muted/40 sm:w-auto"
             fallbackLabel=""
           />
+          <AdZoomButton onClick={() => setZoomOpen(true)} />
+          </div>
         )}
 
 
@@ -101,6 +106,15 @@ export function AdBanner({ position = 'inline', className = '' }: AdBannerProps)
           )}
         </div>
       </div>
+      {currentAd.image_url && (
+        <AdImageLightbox
+          open={zoomOpen}
+          onClose={() => setZoomOpen(false)}
+          src={currentAd.image_url}
+          title={currentAd.title}
+          description={currentAd.description}
+        />
+      )}
     </motion.section>
   );
 }
