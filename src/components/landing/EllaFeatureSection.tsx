@@ -161,7 +161,7 @@ export function EllaFeatureSection() {
               <p className="text-[11px] font-mono-label uppercase tracking-[0.22em] text-primary">
                 Inteligência própria
               </p>
-              <h2 className="font-display mt-3 text-3xl leading-[1.1] text-foreground sm:text-4xl md:text-5xl">
+              <h2 className="font-display mt-3 text-3xl leading-[1.1] text-foreground sm:text-4xl md:text-5xl text-balance">
                 Uma tutora que{' '}
                 <span
                   className="text-gradient"
@@ -173,7 +173,7 @@ export function EllaFeatureSection() {
                   pensa com você
                 </span>
               </h2>
-              <p className="mt-4 max-w-xl text-base leading-relaxed text-muted-foreground">
+              <p className="mt-4 max-w-xl text-base leading-relaxed text-muted-foreground text-balance">
                 Dentro do app, a Ella Ribeiro está presente em cada etapa do estudo: ela explica a
                 matéria, cria exercícios extras, ajuda na revisão e mantém o aluno no ritmo. Tudo
                 feito sob medida para a realidade de quem estuda com a gente.
