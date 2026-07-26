@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useAds } from '@/hooks/useAds';
 import { Button } from '@/components/ui/button';
-import { X, ExternalLink } from 'lucide-react';
+import { X, ExternalLink, Megaphone } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AdMediaPreview } from '@/components/AdMediaPreview';
+import { AdImageLightbox, AdZoomButton } from '@/components/AdImageLightbox';
 
 const AUTO_CLOSE_SECONDS = 25;
 
@@ -17,6 +18,7 @@ export function AdPopup({ trigger = 'onLoad', delay = 2000 }: AdPopupProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [timeLeft, setTimeLeft] = useState(AUTO_CLOSE_SECONDS);
   const [currentAdIndex, setCurrentAdIndex] = useState(0);
+  const [zoomOpen, setZoomOpen] = useState(false);
 
   const COOLDOWN_MS = 3 * 60 * 1000; // 3 min entre popups
   const STORAGE_KEY = 'popup_ad_last_shown';
@@ -93,6 +95,7 @@ export function AdPopup({ trigger = 'onLoad', delay = 2000 }: AdPopupProps) {
   };
 
   const hasLink = Boolean(currentAd?.link_url);
+  const isTextOnly = Boolean(currentAd) && !currentAd?.image_url;
 
   return (
     <AnimatePresence>
@@ -123,31 +126,47 @@ export function AdPopup({ trigger = 'onLoad', delay = 2000 }: AdPopupProps) {
             {/* Area scrollavel (midia + texto) */}
             <div className="flex-1 overflow-y-auto overscroll-contain">
               {currentAd.image_url && (
-                <div className="relative w-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-background p-3">
+                <div className="relative w-full flex items-center justify-center bg-muted/30 p-3">
                   <AdMediaPreview
                     src={currentAd.image_url}
                     title={currentAd.title}
-                    className="max-h-[70vh] w-auto max-w-full h-auto object-contain mx-auto"
+                    className="max-h-[62vh] w-auto max-w-full h-auto object-contain mx-auto"
                   />
+                  <AdZoomButton onClick={() => setZoomOpen(true)} className="absolute bottom-4 left-4" />
                 </div>
               )}
 
-
-              <div className="p-5 sm:p-6 space-y-3">
-                <div>
-                  <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-2">
-                    Publicidade Patrocinada
-                  </p>
-                  <h2 className="text-lg sm:text-xl font-bold text-foreground mb-2">
+              {isTextOnly ? (
+                <div className="px-6 py-8 sm:px-8 sm:py-10">
+                  <span className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">
+                    <Megaphone size={12} aria-hidden="true" /> Aviso
+                  </span>
+                  <h2 className="mt-5 text-2xl font-bold leading-tight text-foreground sm:text-3xl">
                     {currentAd.title}
                   </h2>
                   {currentAd.description && (
-                    <p className="text-sm text-muted-foreground">
+                    <p className="mt-4 whitespace-pre-line text-base leading-7 text-muted-foreground">
                       {currentAd.description}
                     </p>
                   )}
                 </div>
-              </div>
+              ) : (
+                <div className="p-5 sm:p-6 space-y-3">
+                  <div>
+                    <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-2">
+                      Publicidade
+                    </p>
+                    <h2 className="text-lg sm:text-xl font-bold text-foreground mb-2">
+                      {currentAd.title}
+                    </h2>
+                    {currentAd.description && (
+                      <p className="whitespace-pre-line text-sm leading-6 text-muted-foreground">
+                        {currentAd.description}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Footer fixo com botoes sempre visiveis */}
@@ -184,6 +203,15 @@ export function AdPopup({ trigger = 'onLoad', delay = 2000 }: AdPopupProps) {
                 className="h-full bg-primary"
               />
             </div>
+            {currentAd.image_url && (
+              <AdImageLightbox
+                open={zoomOpen}
+                onClose={() => setZoomOpen(false)}
+                src={currentAd.image_url}
+                title={currentAd.title}
+                description={currentAd.description}
+              />
+            )}
           </motion.div>
         </motion.div>
       )}
