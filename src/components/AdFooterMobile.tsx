@@ -61,7 +61,7 @@ export function AdFooterMobile() {
             type="button"
             onClick={() => {
               recordAdClick(current.id);
-              window.open(current.link_url, '_blank', 'noopener,noreferrer');
+              if (current.link_url) window.open(current.link_url, '_blank', 'noopener,noreferrer');
             }}
             className="flex-1 min-w-0 text-left"
           >

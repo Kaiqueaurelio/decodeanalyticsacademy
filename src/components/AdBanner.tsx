@@ -28,7 +28,7 @@ export function AdBanner({ position = 'inline', className = '' }: AdBannerProps)
   const handleClick = () => {
     if (currentAd) {
       recordAdClick(currentAd.id);
-      window.open(currentAd.link_url, '_blank', 'noopener,noreferrer');
+      if (currentAd.link_url) window.open(currentAd.link_url, '_blank', 'noopener,noreferrer');
     }
   };
 
