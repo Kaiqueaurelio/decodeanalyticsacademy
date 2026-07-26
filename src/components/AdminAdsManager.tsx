@@ -299,7 +299,10 @@ export function AdminAdsManager() {
   const resetEditor = () => {
     setEditingId(null);
     setFormData(createEmptyForm());
+    clearAutosave();
+    setDraftSavedAt(null);
   };
+
 
   const startEditing = (ad: Ad) => {
     setEditingId(ad.id);
