@@ -214,3 +214,10 @@
   .landing-bg-video { animation: none; }
 }
 
+
+/* Perf: pula pintura/layout de seções fora da viewport na landing. */
+.landing-shell > section,
+.landing-shell > div[style*="min-height"] {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 640px;
+}
