@@ -256,6 +256,13 @@ export function AdminAdsManager() {
       }
     }
 
+    const startIso = toIso(formData.start_date);
+    const endIso = toIso(formData.end_date);
+    if (startIso && endIso && new Date(endIso) <= new Date(startIso)) {
+      toast.error('O fim da exibição precisa ser depois do início');
+      return false;
+    }
+
     return true;
   };
 
@@ -268,6 +275,8 @@ export function AdminAdsManager() {
     position: Math.max(0, Number(formData.position) || 0),
     display_duration: Math.min(30, Math.max(1, Number(formData.display_duration) || 5)),
     is_active: formData.is_active,
+    start_date: toIso(formData.start_date),
+    end_date: toIso(formData.end_date),
   });
 
 
