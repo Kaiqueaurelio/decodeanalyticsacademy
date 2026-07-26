@@ -48,6 +48,7 @@ const VideoPlayerPage = lazy(() => import("./pages/VideoPlayerPage"));
 const AnnouncementDetailPage = lazy(() => import("./pages/AnnouncementDetailPage"));
 const CommunityPage = lazy(() => import("./pages/CommunityPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const CoverCardVisualPage = lazy(() => import("./pages/visual/CoverCardVisualPage"));
 const OfflinePage = lazy(() => import("./pages/OfflinePage"));
 const ReviewPage = lazy(() => import("./pages/ReviewPage"));
 const SimuladoPage = lazy(() => import("./pages/SimuladoPage"));
@@ -153,7 +154,11 @@ function AnimatedRoutes() {
         <Route path="/admin/apostilas/:id" element={<ProtectedRoute adminOnly><AdminApostilaWorkbench /></ProtectedRoute>} />
         <Route path="/admin" element={<ProtectedRoute adminOnly><AdminPage /></ProtectedRoute>} />
         <Route path="/admin/*" element={<ProtectedRoute adminOnly><AdminPage /></ProtectedRoute>} />
+        {import.meta.env.DEV && (
+          <Route path="/__visual/cover-card" element={<CoverCardVisualPage />} />
+        )}
         <Route path="*" element={<NotFound />} />
+
       </Routes>
       </PageTransition>
     </Suspense>
