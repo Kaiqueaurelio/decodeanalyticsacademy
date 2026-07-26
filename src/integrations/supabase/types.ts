@@ -125,7 +125,7 @@ export type Database = {
           id: string
           image_url: string | null
           is_active: boolean
-          link_url: string
+          link_url: string | null
           position: number
           start_date: string | null
           target_pages: string[]
@@ -144,7 +144,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_active?: boolean
-          link_url: string
+          link_url?: string | null
           position?: number
           start_date?: string | null
           target_pages?: string[]
@@ -163,7 +163,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_active?: boolean
-          link_url?: string
+          link_url?: string | null
           position?: number
           start_date?: string | null
           target_pages?: string[]

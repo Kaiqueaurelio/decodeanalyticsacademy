@@ -1,0 +1,1 @@
+ALTER TABLE public.ads ALTER COLUMN link_url DROP NOT NULL;
