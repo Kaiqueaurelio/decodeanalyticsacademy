@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Handshake, RefreshCw, Search, Trash2, Clock, Mail, Phone, Globe } from 'lucide-react';
 import { SponsorLeadsMetrics } from '@/components/admin/SponsorLeadsMetrics';
+import { SponsorFunnel } from '@/components/admin/SponsorFunnel';
 import { SPONSOR_LEAD_STATUS, SPONSOR_LEAD_CHANNEL_LABEL } from '@/lib/sponsor-leads';
 
 type Lead = {
