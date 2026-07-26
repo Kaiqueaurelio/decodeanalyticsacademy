@@ -1,5 +1,18 @@
 import { motion } from 'framer-motion';
-import { MessageSquare, Brain, BookOpen, Target, Sparkles, Bot } from 'lucide-react';
+import {
+  MessageSquare,
+  Brain,
+  BookOpen,
+  Target,
+  Bot,
+  GraduationCap,
+  ListChecks,
+  Highlighter,
+  CalendarClock,
+  ShieldCheck,
+  MousePointerClick,
+  Quote,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import ellaAvatar from '@/assets/ella-avatar.jpg';
 
@@ -23,6 +36,60 @@ const CAPABILITIES = [
     icon: Target,
     title: 'Modo ENEM',
     desc: 'Adapta o tom e o foco quando você estuda para o vestibular.',
+  },
+  {
+    icon: Highlighter,
+    title: 'Resume e destaca',
+    desc: 'Transforma um capítulo longo em resumo objetivo e lista o que mais cai na prova.',
+  },
+  {
+    icon: CalendarClock,
+    title: 'Organiza a revisão',
+    desc: 'Sugere o que revisar hoje com base no seu progresso, flashcards e provas próximas.',
+  },
+];
+
+const HOW_IT_WORKS = [
+  {
+    step: '01',
+    title: 'Abra a apostila',
+    desc: 'A Ella lê o mesmo capítulo que você está lendo — ela já entra na conversa com contexto.',
+  },
+  {
+    step: '02',
+    title: 'Pergunte do seu jeito',
+    desc: 'Texto, dúvida solta, foto do exercício ou "explica de novo mais simples". Ela entende.',
+  },
+  {
+    step: '03',
+    title: 'Pratique na hora',
+    desc: 'Peça exercícios, flashcards ou um mini-simulado do tópico e resolva sem trocar de tela.',
+  },
+];
+
+const EXAMPLE_PROMPTS = [
+  'Explica esse conceito como se eu tivesse 15 anos',
+  'Faz 5 questões estilo ENEM sobre esse capítulo',
+  'Resume esse capítulo em 10 tópicos',
+  'Onde eu errei nessa resolução?',
+  'Monta um plano de revisão até a prova',
+];
+
+const TRUST_POINTS = [
+  {
+    icon: BookOpen,
+    title: 'Responde com base no material',
+    desc: 'A resposta parte da apostila da plataforma, não de um palpite genérico da internet.',
+  },
+  {
+    icon: ListChecks,
+    title: 'Mostra o raciocínio',
+    desc: 'Passo a passo visível, para você conferir a lógica em vez de decorar o resultado.',
+  },
+  {
+    icon: ShieldCheck,
+    title: 'Sem custo para o aluno',
+    desc: 'Ilimitada e gratuita dentro do app — faz parte da plataforma, não é um extra pago.',
   },
 ];
 
@@ -122,7 +189,7 @@ export function EllaFeatureSection() {
                   />
                 </div>
                 <div className="absolute -bottom-1 -right-1 flex h-10 w-10 items-center justify-center rounded-full border border-primary/30 bg-card shadow-sm">
-                  <Sparkles className="h-4 w-4 text-primary" aria-hidden="true" />
+                  <GraduationCap className="h-4 w-4 text-primary" aria-hidden="true" />
                 </div>
               </div>
 
@@ -134,8 +201,9 @@ export function EllaFeatureSection() {
                   Ella Ribeiro
                 </h3>
                 <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                  Nossa própria inteligência artificial de aprendizado. Ela acompanha o aluno dentro
-                  das apostilas, tira dúvidas e adapta a didática para cada momento.
+                  A assistente de estudos da plataforma. Ela acompanha o aluno dentro das
+                  apostilas, tira dúvidas, cobra prática e adapta a didática para cada momento —
+                  disponível a qualquer hora, inclusive na madrugada antes da prova.
                 </p>
               </div>
 
@@ -174,9 +242,10 @@ export function EllaFeatureSection() {
                 </span>
               </h2>
               <p className="mt-4 max-w-xl text-base leading-relaxed text-muted-foreground text-balance">
-                Dentro do app, a Ella Ribeiro está presente em cada etapa do estudo: ela explica a
-                matéria, cria exercícios extras, ajuda na revisão e mantém o aluno no ritmo. Tudo
-                feito sob medida para a realidade de quem estuda com a gente.
+                A Ella não é um chat solto colado no canto da tela. Ela vive dentro do conteúdo:
+                sabe qual capítulo você abriu, o que você já concluiu e quais provas estão
+                chegando. A partir disso ela explica a matéria, cria exercícios extras, corrige seu
+                raciocínio e organiza a revisão — do primeiro parágrafo até a véspera da prova.
               </p>
             </motion.div>
 
@@ -187,6 +256,77 @@ export function EllaFeatureSection() {
               ))}
             </div>
 
+            {/* Como funciona */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-40px' }}
+              transition={{ duration: 0.5, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+              className="mt-8"
+            >
+              <p className="text-[11px] font-mono-label uppercase tracking-[0.22em] text-muted-foreground">
+                Como funciona na prática
+              </p>
+              <ol className="mt-4 space-y-3">
+                {HOW_IT_WORKS.map((s) => (
+                  <li
+                    key={s.step}
+                    className="flex gap-4 rounded-xl border border-border/50 bg-card/40 p-4 backdrop-blur-sm"
+                  >
+                    <span className="font-mono-label text-sm font-semibold text-primary">{s.step}</span>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold leading-tight text-foreground">{s.title}</p>
+                      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{s.desc}</p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </motion.div>
+
+            {/* Exemplos de pergunta */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-40px' }}
+              transition={{ duration: 0.5, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
+              className="mt-8"
+            >
+              <p className="flex items-center gap-2 text-[11px] font-mono-label uppercase tracking-[0.22em] text-muted-foreground">
+                <MousePointerClick className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+                O que os alunos costumam pedir
+              </p>
+              <ul className="mt-3 flex flex-wrap gap-2">
+                {EXAMPLE_PROMPTS.map((q) => (
+                  <li
+                    key={q}
+                    className="rounded-full border border-border/60 bg-secondary/40 px-3.5 py-1.5 text-xs leading-snug text-secondary-foreground"
+                  >
+                    “{q}”
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+
+            {/* Por que confiar */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-40px' }}
+              transition={{ duration: 0.5, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              className="mt-8 grid gap-3 sm:grid-cols-3"
+            >
+              {TRUST_POINTS.map((t) => (
+                <div
+                  key={t.title}
+                  className="rounded-xl border border-border/50 bg-card/40 p-4 backdrop-blur-sm"
+                >
+                  <t.icon className="h-4 w-4 text-primary" aria-hidden="true" />
+                  <p className="mt-2.5 text-sm font-semibold leading-tight text-foreground">{t.title}</p>
+                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{t.desc}</p>
+                </div>
+              ))}
+            </motion.div>
+
             {/* Highlight quote */}
             <motion.div
               initial={{ opacity: 0, y: 16 }}
@@ -195,7 +335,8 @@ export function EllaFeatureSection() {
               transition={{ duration: 0.5, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
               className="mt-8 rounded-xl border-l-2 border-primary bg-card/40 p-5 backdrop-blur-sm"
             >
-              <p className="text-sm leading-relaxed text-foreground">
+              <Quote className="h-4 w-4 text-primary/70" aria-hidden="true" />
+              <p className="mt-2 text-sm leading-relaxed text-foreground">
                 “A Ella não substitui o professor — ela amplia o estudo fora da sala de aula, com
                 paciência infinita e sempre no contexto do que você está lendo.”
               </p>
