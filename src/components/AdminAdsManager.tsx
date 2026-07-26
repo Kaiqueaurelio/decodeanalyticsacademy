@@ -56,6 +56,8 @@ interface Ad {
   view_count: number;
   click_count: number;
   created_at?: string;
+  start_date?: string | null;
+  end_date?: string | null;
 }
 
 interface AdFormState {
@@ -67,6 +69,8 @@ interface AdFormState {
   position: number;
   display_duration: number;
   is_active: boolean;
+  start_date: string;
+  end_date: string;
 }
 
 const AD_TYPE_OPTIONS: { value: AdType; label: string; hint: string; where: string }[] = [
@@ -93,6 +97,34 @@ function PlacementDiagram({ type }: { type: AdType }) {
   );
 }
 
+// Converte ISO -> valor aceito por <input type="datetime-local"> (horário local).
+const toLocalInput = (iso?: string | null) => {
+  if (!iso) return '';
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return '';
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+};
+
+const toIso = (local: string) => {
+  const value = local.trim();
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date.toISOString();
+};
+
+const scheduleState = (ad: Pick<Ad, 'is_active' | 'start_date' | 'end_date'>) => {
+  if (!ad.is_active) return { label: 'Pausado', variant: 'secondary' as const };
+  const now = Date.now();
+  if (ad.start_date && new Date(ad.start_date).getTime() > now) {
+    return { label: 'Agendado', variant: 'outline' as const };
+  }
+  if (ad.end_date && new Date(ad.end_date).getTime() < now) {
+    return { label: 'Expirado', variant: 'destructive' as const };
+  }
+  return { label: 'No ar', variant: 'default' as const };
+};
+
 const createEmptyForm = (): AdFormState => ({
   title: '',
   description: '',
@@ -102,6 +134,8 @@ const createEmptyForm = (): AdFormState => ({
   position: 0,
   display_duration: 5,
   is_active: true,
+  start_date: '',
+  end_date: '',
 });
 
 const sortAds = (items: Ad[]) =>
@@ -116,6 +150,8 @@ const mapAdToForm = (ad: Ad): AdFormState => ({
   position: ad.position ?? 0,
   display_duration: ad.display_duration || 5,
   is_active: ad.is_active,
+  start_date: toLocalInput(ad.start_date),
+  end_date: toLocalInput(ad.end_date),
 });
 
 
@@ -220,6 +256,13 @@ export function AdminAdsManager() {
       }
     }
 
+    const startIso = toIso(formData.start_date);
+    const endIso = toIso(formData.end_date);
+    if (startIso && endIso && new Date(endIso) <= new Date(startIso)) {
+      toast.error('O fim da exibição precisa ser depois do início');
+      return false;
+    }
+
     return true;
   };
 
@@ -232,6 +275,8 @@ export function AdminAdsManager() {
     position: Math.max(0, Number(formData.position) || 0),
     display_duration: Math.min(30, Math.max(1, Number(formData.display_duration) || 5)),
     is_active: formData.is_active,
+    start_date: toIso(formData.start_date),
+    end_date: toIso(formData.end_date),
   });
 
 
@@ -457,9 +502,14 @@ export function AdminAdsManager() {
                             <div className="flex flex-wrap items-center gap-2">
                               <p className="truncate font-semibold">{ad.title}</p>
                               <Badge variant="outline">{AD_TYPE_OPTIONS.find((item) => item.value === ad.ad_type)?.label}</Badge>
-                              <Badge variant={ad.is_active ? 'default' : 'secondary'}>
-                                {ad.is_active ? 'Ativo' : 'Pausado'}
-                              </Badge>
+                              <Badge variant={scheduleState(ad).variant}>{scheduleState(ad).label}</Badge>
+                              {(ad.start_date || ad.end_date) && (
+                                <span className="text-[11px] text-muted-foreground">
+                                  {ad.start_date ? new Date(ad.start_date).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : 'agora'}
+                                  {' → '}
+                                  {ad.end_date ? new Date(ad.end_date).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : 'sem fim'}
+                                </span>
+                              )}
                             </div>
                             {ad.description && (
                               <p className="line-clamp-2 text-sm text-muted-foreground">{ad.description}</p>
@@ -699,6 +749,56 @@ export function AdminAdsManager() {
                       onCheckedChange={(checked) => setFormData((current) => ({ ...current, is_active: checked }))}
                     />
                   </div>
+                </div>
+
+                <div className="space-y-3 rounded-lg border border-border bg-muted/20 p-4">
+                  <div className="flex items-center gap-2 text-sm font-medium">
+                    <Clock3 className="h-4 w-4 text-primary" />
+                    Janela de exibição (opcional)
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Defina quando o anúncio começa e para de aparecer. Deixe em branco para exibir sempre
+                    enquanto estiver ativo.
+                  </p>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium" htmlFor="ad-start-date">
+                        Início
+                      </label>
+                      <Input
+                        id="ad-start-date"
+                        type="datetime-local"
+                        value={formData.start_date}
+                        onChange={(e) => setFormData((current) => ({ ...current, start_date: e.target.value }))}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium" htmlFor="ad-end-date">
+                        Fim
+                      </label>
+                      <Input
+                        id="ad-end-date"
+                        type="datetime-local"
+                        value={formData.end_date}
+                        onChange={(e) => setFormData((current) => ({ ...current, end_date: e.target.value }))}
+                      />
+                    </div>
+                  </div>
+                  {(formData.start_date || formData.end_date) && (
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Badge variant={scheduleState({ is_active: formData.is_active, start_date: toIso(formData.start_date), end_date: toIso(formData.end_date) }).variant}>
+                        {scheduleState({ is_active: formData.is_active, start_date: toIso(formData.start_date), end_date: toIso(formData.end_date) }).label}
+                      </Badge>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setFormData((current) => ({ ...current, start_date: '', end_date: '' }))}
+                      >
+                        Limpar agendamento
+                      </Button>
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-2">
