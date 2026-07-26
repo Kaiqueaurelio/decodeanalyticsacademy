@@ -27,6 +27,17 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '3.1.0',
+    date: '2026-07-26',
+    title: 'Página dedicada "Anuncie / Patrocine" com media kit e briefing',
+    changes: [
+      { kind: 'feature', text: 'Nova página pública em /anuncie (e /patrocine) com media kit, formatos disponíveis e especificações de arte.' },
+      { kind: 'feature', text: 'Formulário de briefing com validação que monta a mensagem e envia por WhatsApp, e-mail ou copia para a área de transferência.' },
+      { kind: 'improvement', text: 'CTAs de patrocínio na landing page agora abrem WhatsApp e e-mail com o briefing pré-preenchido, inclusive por pacote.' },
+    ],
+  },
+  {
+
     version: '3.0.0',
     date: '2026-07-26',
     title: 'Seção comercial para anunciantes e patrocinadores',

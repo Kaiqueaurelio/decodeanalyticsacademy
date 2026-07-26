@@ -30,6 +30,7 @@ import { ForcePasswordChangeGate } from "@/components/ForcePasswordChangeGate";
 
 // Paginas criticas no bundle inicial
 import LandingPage from "./pages/LandingPage";
+import AnunciePage from "./pages/AnunciePage";
 import LoginPage from "./pages/LoginPage";
 
 // Lazy: paginas internas (code-splitting)
@@ -124,6 +125,8 @@ function AnimatedRoutes() {
         <Route path="/auth/*" element={<Navigate to="/login" replace />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/termos" element={<TermsPage />} />
+        <Route path="/anuncie" element={<AnunciePage />} />
+        <Route path="/patrocine" element={<Navigate to="/anuncie" replace />} />
         <Route path="/.lovable/oauth/consent" element={<OAuthConsentPage />} />
         <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
         <Route path="/desempenho" element={<ProtectedRoute><PerformancePage /></ProtectedRoute>} />

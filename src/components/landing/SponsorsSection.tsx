@@ -202,7 +202,15 @@ export function SponsorsSection() {
               decodeanalytics@outlook.com.br
             </a>
           </div>
+          <a
+            href="/anuncie"
+            className="mt-4 inline-flex items-center justify-center text-sm font-medium text-primary underline-offset-4 hover:underline"
+            aria-label="Abrir a página completa de patrocínio com media kit e formulário"
+          >
+            Ver media kit completo e enviar briefing
+          </a>
         </div>
+
       </div>
     </section>
   );
