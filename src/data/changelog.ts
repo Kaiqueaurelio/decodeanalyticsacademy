@@ -27,6 +27,17 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '3.6.2',
+    date: '2026-07-26',
+    title: 'Hero da landing pinta quase instantâneo (LCP menor)',
+    changes: [
+      { kind: 'improvement', text: 'Título e chamada do topo deixaram de depender de JavaScript para aparecer — a entrada agora é só CSS e o texto já nasce visível.' },
+      { kind: 'improvement', text: 'Fontes movidas do CSS para o <head>, com preconnect e preload da fonte usada no título; as demais famílias carregam sem bloquear a página.' },
+      { kind: 'improvement', text: 'Logo do topo com dimensões declaradas e prioridade alta de download, evitando salto de layout.' },
+    ],
+  },
+
+  {
     version: '3.6.1',
     date: '2026-07-26',
     title: 'Landing page: renderização muito mais rápida',
