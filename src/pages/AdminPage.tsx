@@ -20,7 +20,7 @@ import {
   LayoutDashboard, CheckCircle, TrendingUp, Upload, BarChart3, Clock,
   Link as LinkIcon, Loader2, AlertCircle, Edit, Download, File, Image, Video, Music, FileSpreadsheet, Presentation,
   Users, ShieldBan, ShieldCheck, Search, Menu, X, Activity, GraduationCap, FolderOpen, Settings, RefreshCw,
-  Sun, Moon, FileUp, PenTool, Wand2, Megaphone, Combine, Calendar as CalIcon, MessageSquare, MessageSquareQuote, Link2, FileDown, MoreHorizontal, Paperclip, Rss, Info, ExternalLink, ChevronRight
+  Sun, Moon, FileUp, PenTool, Wand2, Megaphone, Combine, Calendar as CalIcon, MessageSquare, MessageSquareQuote, Link2, FileDown, MoreHorizontal, Paperclip, Rss, Info, ExternalLink, ChevronRight, History
 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -50,6 +50,7 @@ import { validateApostilaStructure, type ValidationReport } from '@/lib/apostila
 import { PerformanceMetrics } from '@/components/PerformanceMetrics';
 import { SmokeTestsPanel } from '@/components/SmokeTestsPanel';
 import { DiagnosticsPanel } from '@/components/DiagnosticsPanel';
+import { VersionHistoryPanel } from '@/components/admin/VersionHistoryPanel';
 import { DuplicateApostilaDialog } from '@/components/DuplicateApostilaDialog';
 import { findDuplicateApostila, type DuplicateMatch } from '@/lib/duplicate-detector';
 import { ImportPreviewPanel } from '@/components/ImportPreviewPanel';
@@ -98,7 +99,7 @@ function CategorySelect({ value, onValueChange, placeholder }: { value: string; 
   );
 }
 
-type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements' | 'calendar' | 'testimonials' | 'ai' | 'performance' | 'smoke' | 'diagnostics' | 'ads' | 'ads-chat' | 'social' | 'rss' | 'courses';
+type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements' | 'calendar' | 'testimonials' | 'ai' | 'performance' | 'smoke' | 'diagnostics' | 'ads' | 'ads-chat' | 'social' | 'rss' | 'courses' | 'changelog';
 
 const ACCEPT_MAP: Record<string, string> = {
   pdf: '.pdf', image: 'image/*', gif: '.gif,image/gif',
@@ -184,6 +185,7 @@ function AdminSidebar({ tab, setTab, stats, sidebarOpen, setSidebarOpen }: {
     { id: 'performance' as Tab, label: 'Performance', icon: Activity, count: undefined },
     { id: 'smoke' as Tab, label: 'Testes', icon: CheckCircle, count: undefined },
     { id: 'diagnostics' as Tab, label: 'Diagnóstico', icon: AlertCircle, count: undefined },
+    { id: 'changelog' as Tab, label: 'Histórico', icon: History, count: undefined },
     { id: 'ads-chat' as Tab, label: 'Assistente de anúncios', icon: MessageSquare, count: undefined },
     { id: 'rss' as Tab, label: 'Feeds RSS', icon: Megaphone, count: undefined },
   ];
@@ -1314,6 +1316,7 @@ export default function AdminPage() {
     'ads-chat': { title: 'Ads Chat Builder', desc: 'Gere criativos de anúncios com IA' },
     rss: { title: 'Feeds RSS de Notícias', desc: 'Gerencie as fontes de notícias exibidas em /noticias' },
     courses: { title: 'Cursos Gratuitos', desc: 'Gerencie os cursos gratuitos exibidos aos alunos' },
+    changelog: { title: 'Histórico de Versões', desc: 'Tudo que foi criado, alterado e corrigido na plataforma' },
   };
 
   return (
@@ -1374,6 +1377,7 @@ export default function AdminPage() {
                 { id: 'performance', label: 'Perf', icon: <Activity className="h-3.5 w-3.5" /> },
                 { id: 'smoke', label: 'Testes', icon: <CheckCircle className="h-3.5 w-3.5" /> },
                 { id: 'diagnostics', label: 'Diag', icon: <AlertCircle className="h-3.5 w-3.5" /> },
+                { id: 'changelog', label: 'Histórico', icon: <History className="h-3.5 w-3.5" /> },
                 { id: 'ads', label: 'Anúncios', icon: <Megaphone className="h-3.5 w-3.5" /> },
                 { id: 'rss', label: 'RSS', icon: <Rss className="h-3.5 w-3.5" /> },
               ]}
@@ -3016,6 +3020,13 @@ export default function AdminPage() {
             {tab === 'diagnostics' && (
               <DiagnosticsPanel />
             )}
+
+            {/* CHANGELOG */}
+            {tab === 'changelog' && (
+              <VersionHistoryPanel />
+            )}
+
+
 
             {/* ADS */}
             {tab === 'ads' && (

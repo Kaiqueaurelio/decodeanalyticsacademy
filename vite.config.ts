@@ -87,6 +87,18 @@ export default defineConfig(({ mode }) => ({
       },
     }),
   ].filter(Boolean),
+  define: {
+    __APP_BUILD_TIME__: JSON.stringify(new Date().toISOString()),
+    __APP_COMMIT__: JSON.stringify(
+      process.env.VERCEL_GIT_COMMIT_SHA || process.env.COMMIT_SHA || "local",
+    ),
+    __APP_COMMIT_MESSAGE__: JSON.stringify(
+      process.env.VERCEL_GIT_COMMIT_MESSAGE || "",
+    ),
+    __APP_ENVIRONMENT__: JSON.stringify(
+      process.env.VERCEL_ENV || (mode === "production" ? "production" : "development"),
+    ),
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
