@@ -189,17 +189,20 @@ export default function LandingPage() {
           className="pointer-events-none fixed inset-0 overflow-hidden"
           style={{ zIndex: -1 }}
         >
-          <video
-            ref={heroVideoRef}
-            className="landing-bg-video h-full w-full scale-[1.03] object-cover opacity-60"
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="auto"
-            src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260328_065045_c44942da-53c6-4804-b734-f9e07fc22e08.mp4"
-          />
+          {bgVideoEnabled && (
+            <video
+              ref={heroVideoRef}
+              className="landing-bg-video h-full w-full scale-[1.03] object-cover opacity-60"
+              autoPlay
+              loop
+              muted
+              playsInline
+              preload="metadata"
+              src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260328_065045_c44942da-53c6-4804-b734-f9e07fc22e08.mp4"
+            />
+          )}
           <div className="landing-bg-scrim absolute inset-0" />
+
         </div>,
         document.body,
       )}
