@@ -38,6 +38,8 @@ import { AdImageUploadButton } from './AdImageUploadButton';
 import { AppImage } from '@/components/ui/app-image';
 import { cn } from '@/lib/utils';
 import { AdStudentPreview } from '@/components/admin/AdStudentPreview';
+import { AD_DRAFT_PREVIEW_KEY, AD_DRAFT_PREVIEW_PARAM } from '@/components/admin/AdDraftPreviewOverlay';
+
 
 
 const supabase = supabaseTyped as any;
