@@ -94,7 +94,7 @@ export default function SubjectPage() {
         {/* Grid de apostilas */}
         <section className="mt-6">
           {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4">
               {[0, 1, 2, 3, 4, 5].map((i) => (
                 <div key={i} className="h-44 rounded-2xl bg-muted/30 animate-pulse" />
               ))}
@@ -104,7 +104,7 @@ export default function SubjectPage() {
               Nenhuma apostila cadastrada nesta matéria ainda.
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
               {rows.map((a) => {
                 const exCount = exerciseCounts[a.id] || 0;
                 const words = (a.content || '').split(/\s+/).filter(Boolean).length;
