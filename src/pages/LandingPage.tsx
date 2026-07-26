@@ -328,7 +328,8 @@ export default function LandingPage() {
                 Explore os recursos
                 <span className="h-7 w-px bg-gradient-to-b from-[#00f0ff] to-transparent" aria-hidden="true" />
               </a>
-            </motion.div>
+            </div>
+
           </main>
 
           <div className="hero-marquee-shell overflow-hidden border-t border-white/10 py-5" aria-label="Recursos da plataforma">
