@@ -395,6 +395,9 @@ export function AdminAdsManager() {
         setFormData(mapAdToForm(data));
         toast.success('Anúncio criado com sucesso');
       }
+      clearAutosave();
+      setDraftSavedAt(null);
+
     } catch (error) {
       console.error('Erro ao salvar anúncio:', error);
       toast.error(formatErrorMessage(error, 'Não foi possível salvar este anúncio'));
