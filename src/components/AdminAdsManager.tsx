@@ -257,6 +257,14 @@ export function AdminAdsManager() {
     [ads, editingId],
   );
 
+  // Se o rascunho restaurado apontava para um anúncio já removido, volta a ser
+  // um rascunho novo em vez de tentar salvar em um registro inexistente.
+  useEffect(() => {
+    if (loading || !editingId || selectedAd) return;
+    setEditingId(null);
+  }, [loading, editingId, selectedAd]);
+
+
   const filteredAds = useMemo(() => {
     const query = search.trim().toLowerCase();
     if (!query) return ads;
