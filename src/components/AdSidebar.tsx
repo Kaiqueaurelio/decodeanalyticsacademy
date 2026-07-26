@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useAds } from '@/hooks/useAds';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, ExternalLink, X, Megaphone } from 'lucide-react';
+import { ChevronRight, ExternalLink, X, Megaphone, Info } from 'lucide-react';
 import { AppImage } from '@/components/ui/app-image';
 
 /**
@@ -11,7 +12,26 @@ import { AppImage } from '@/components/ui/app-image';
  * - Rotaciona anúncios a cada 20s quando há mais de um
  * - Pode ser recolhido (mini-tab) ou fechado por sessão
  */
+function useAdPortalContainer() {
+  const [container, setContainer] = useState<HTMLElement | null>(null);
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    let el = document.getElementById('decode-ad-sidebar-portal');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'decode-ad-sidebar-portal';
+      document.body.appendChild(el);
+    }
+    setContainer(el);
+    return () => {
+      // Não removemos o container para evitar perda de estado entre renders.
+    };
+  }, []);
+  return container;
+}
+
 export function AdSidebar({ className = '' }: { className?: string }) {
+  const portalContainer = useAdPortalContainer();
   const { ads, recordAdView, recordAdClick } = useAds('sidebar');
   const [idx, setIdx] = useState(0);
 
@@ -86,6 +106,8 @@ export function AdSidebar({ className = '' }: { className?: string }) {
     );
   }
 
+  const hasLink = Boolean(current.link_url);
+
   return (
     <AnimatePresence>
       <motion.aside
@@ -124,7 +146,8 @@ export function AdSidebar({ className = '' }: { className?: string }) {
           <button
             type="button"
             onClick={handleClick}
-            className="group flex w-full flex-col gap-3 p-3 text-left"
+            disabled={!hasLink}
+            className="group flex w-full flex-col gap-3 p-3 text-left disabled:cursor-default"
           >
             {current.image_url ? (
               <AppImage
@@ -149,9 +172,15 @@ export function AdSidebar({ className = '' }: { className?: string }) {
               )}
             </div>
 
-            <span className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-primary px-3 text-xs font-bold text-primary-foreground transition group-hover:bg-primary/90">
-              Saiba mais <ExternalLink size={13} />
-            </span>
+            {hasLink ? (
+              <span className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-primary px-3 text-xs font-bold text-primary-foreground transition hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card">
+                Saiba mais <ExternalLink size={13} />
+              </span>
+            ) : (
+              <span className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-border bg-muted/50 px-3 text-xs font-semibold text-muted-foreground">
+                <Info size={13} /> Anúncio informativo
+              </span>
+            )}
           </button>
         </div>
 

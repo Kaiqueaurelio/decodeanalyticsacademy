@@ -92,6 +92,8 @@ export function AdPopup({ trigger = 'onLoad', delay = 2000 }: AdPopupProps) {
     setIsVisible(false);
   };
 
+  const hasLink = Boolean(currentAd?.link_url);
+
   return (
     <AnimatePresence>
       {isVisible && currentAd && (
@@ -107,7 +109,7 @@ export function AdPopup({ trigger = 'onLoad', delay = 2000 }: AdPopupProps) {
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-2xl max-h-[92vh] my-auto rounded-2xl bg-white dark:bg-card shadow-2xl flex flex-col overflow-hidden"
+            className="relative w-full max-w-2xl max-h-[92vh] my-auto rounded-2xl bg-card shadow-2xl flex flex-col overflow-hidden border border-border/60"
           >
             {/* Botao de Fechar (X) sempre visivel, acima de tudo */}
             <button
@@ -151,17 +153,19 @@ export function AdPopup({ trigger = 'onLoad', delay = 2000 }: AdPopupProps) {
             {/* Footer fixo com botoes sempre visiveis */}
             <div className="shrink-0 border-t border-border/60 bg-card/95 backdrop-blur p-4 space-y-2">
               <div className="flex gap-3">
-                <Button
-                  onClick={handleClick}
-                  className="flex-1 gap-2 bg-primary hover:bg-primary/90"
-                >
-                  <ExternalLink size={16} />
-                  Saiba Mais
-                </Button>
+                {hasLink ? (
+                  <Button
+                    onClick={handleClick}
+                    className="flex-1 gap-2 bg-primary hover:bg-primary/90"
+                  >
+                    <ExternalLink size={16} />
+                    Saiba Mais
+                  </Button>
+                ) : null}
                 <Button
                   onClick={handleClose}
-                  variant="outline"
-                  className="flex-1"
+                  variant={hasLink ? 'outline' : 'default'}
+                  className={hasLink ? 'flex-1' : 'w-full'}
                 >
                   Fechar
                 </Button>

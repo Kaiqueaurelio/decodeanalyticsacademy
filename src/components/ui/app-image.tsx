@@ -170,28 +170,9 @@ export const AppImage = React.forwardRef<HTMLImageElement, AppImageProps>(functi
     }
   }, [activeCandidate]);
 
-  if (!activeCandidate || failed) {
-    return (
-      <div
-        className={cn(
-          'flex items-center justify-center rounded-lg border border-dashed border-border bg-muted/30 text-muted-foreground',
-          wrapperClassName,
-          fallbackClassName,
-        )}
-        role="img"
-        aria-label={alt || fallbackLabel}
-      >
-        <span className="inline-flex items-center gap-2 text-xs sm:text-sm">
-          <ImageOff className="h-4 w-4" />
-          {fallbackLabel}
-        </span>
-      </div>
-    );
-  }
-
   const finalSrc = withRetryParam(activeCandidate, retryKey);
 
-  return (
+  const renderImage = () => (
     <img
       ref={ref}
       key={`${candidateIndex}-${retryKey}-${blobFallbackUrl ? 'blob' : 'url'}`}
@@ -230,4 +211,33 @@ export const AppImage = React.forwardRef<HTMLImageElement, AppImageProps>(functi
       {...props}
     />
   );
+
+  if (!activeCandidate || failed) {
+    return (
+      <div
+        className={cn(
+          'flex items-center justify-center rounded-lg border border-dashed border-border bg-muted/30 text-muted-foreground',
+          wrapperClassName,
+          fallbackClassName,
+        )}
+        role="img"
+        aria-label={alt || fallbackLabel}
+      >
+        <span className="inline-flex items-center gap-2 text-xs sm:text-sm">
+          <ImageOff className="h-4 w-4" />
+          {fallbackLabel}
+        </span>
+      </div>
+    );
+  }
+
+  if (wrapperClassName) {
+    return (
+      <div className={wrapperClassName}>
+        {renderImage()}
+      </div>
+    );
+  }
+
+  return renderImage();
 });

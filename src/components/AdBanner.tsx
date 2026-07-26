@@ -25,6 +25,8 @@ export function AdBanner({ position = 'inline', className = '' }: AdBannerProps)
 
   if (loading || ads.length === 0 || dismissed) return null;
 
+  const hasLink = Boolean(currentAd?.link_url);
+
   const handleClick = () => {
     if (currentAd) {
       recordAdClick(currentAd.id);
@@ -86,9 +88,11 @@ export function AdBanner({ position = 'inline', className = '' }: AdBannerProps)
         </div>
 
         <div className="flex shrink-0 items-center gap-2 sm:flex-col sm:items-stretch">
-          <Button onClick={handleClick} size="sm" className="h-10 gap-2 px-4 font-bold">
-            Saiba mais <ExternalLink size={14} />
-          </Button>
+          {hasLink && (
+            <Button onClick={handleClick} size="sm" className="h-10 gap-2 px-4 font-bold">
+              Saiba mais <ExternalLink size={14} />
+            </Button>
+          )}
 
           {ads.length > 1 && (
             <Button onClick={handleNext} variant="outline" size="sm" className="h-10 gap-1.5 px-3">
