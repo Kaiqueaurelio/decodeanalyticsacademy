@@ -18,6 +18,7 @@ import { SocialAndProjectsSection } from '@/components/SocialAndProjectsSection'
 import { Reveal } from '@/components/Reveal';
 import { AppShowcaseSection } from '@/components/landing/AppShowcaseSection';
 import { HowItWorksSection } from '@/components/landing/HowItWorksSection';
+import { PlatformEngineSection } from '@/components/landing/PlatformEngineSection';
 import { FaqSection } from '@/components/landing/FaqSection';
 
 /* ─── SECTION WRAPPER: usa o Reveal compartilhado (IntersectionObserver + reduced-motion) ─── */
@@ -276,6 +277,9 @@ export default function LandingPage() {
 
       {/* ═══ COMO FUNCIONA + NÚMEROS ═══ */}
       <HowItWorksSection />
+
+      {/* ═══ SOB O CAPÔ: ENGENHARIA + BENEFÍCIOS ═══ */}
+      <PlatformEngineSection />
 
 
       {/* ═══ RECURSOS ═══ */}
