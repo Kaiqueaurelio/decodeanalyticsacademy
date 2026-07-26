@@ -154,7 +154,11 @@ function AnimatedRoutes() {
         <Route path="/admin/apostilas/:id" element={<ProtectedRoute adminOnly><AdminApostilaWorkbench /></ProtectedRoute>} />
         <Route path="/admin" element={<ProtectedRoute adminOnly><AdminPage /></ProtectedRoute>} />
         <Route path="/admin/*" element={<ProtectedRoute adminOnly><AdminPage /></ProtectedRoute>} />
+        {import.meta.env.DEV && (
+          <Route path="/__visual/cover-card" element={<CoverCardVisualPage />} />
+        )}
         <Route path="*" element={<NotFound />} />
+
       </Routes>
       </PageTransition>
     </Suspense>
