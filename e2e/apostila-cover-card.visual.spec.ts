@@ -17,6 +17,8 @@ for (const bp of BREAKPOINTS) {
   test(`capa legível e completa em ${bp.name}`, async ({ page }) => {
     await page.setViewportSize({ width: bp.width, height: bp.height });
     await page.goto("/__visual/cover-card");
+    // aguarda a splash inicial desaparecer antes de capturar
+    await page.waitForTimeout(3200);
 
     const card = page.getByTestId("apostila-cover-card").first();
     const media = page.getByTestId("apostila-cover-media").first();
