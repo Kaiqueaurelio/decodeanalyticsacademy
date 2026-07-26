@@ -229,9 +229,11 @@ export function AdminAdsManager() {
     image_url: formData.image_url.trim() || null,
     link_url: formData.link_url.trim() || null,
     ad_type: formData.ad_type,
+    position: Math.max(0, Number(formData.position) || 0),
     display_duration: Math.min(30, Math.max(1, Number(formData.display_duration) || 5)),
     is_active: formData.is_active,
   });
+
 
 
   const handleSubmit = async (e: React.FormEvent) => {
