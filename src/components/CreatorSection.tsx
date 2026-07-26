@@ -47,6 +47,49 @@ export function CreatorSection() {
                 </p>
               </div>
 
+              <div className="mt-5 space-y-3 text-left text-sm leading-relaxed text-muted-foreground sm:text-[15px]">
+                <p>
+                  Estudante do 5º semestre de Ciência da Computação, com trajetória que combina
+                  formação acadêmica e experiência profissional diversificada. Desde 2018 é fundador
+                  da Decode Analytics, com vivência prática em operações logísticas (Correios e
+                  Mercado Livre) e varejo.
+                </p>
+                <p>
+                  Na área acadêmica, desenvolveu projeto de Iniciação Científica em Realidade
+                  Aumentada aplicada à educação de crianças com TDAH, utilizando Merge Cube, sob
+                  orientação do Dr. Alexandre Bozolan dos Santos. Também liderou uma equipe
+                  multidisciplinar de 6 pessoas na criação de 4 jogos digitais educativos focados em
+                  sustentabilidade.
+                </p>
+                <p>
+                  Tem experiência prática em robótica educacional com Arduino e em projetos que vão
+                  de dashboards interativos a assistentes virtuais e plataformas multiplayer
+                  gamificadas. Com liderança de equipes de até 8 pessoas, busca unir habilidade
+                  técnica e visão crítica em soluções de impacto social e educacional.
+                </p>
+              </div>
+
+              <ul className="mt-5 grid gap-3 sm:grid-cols-2">
+                {[
+                  { icon: FlaskConical, title: 'Iniciação Científica', text: 'Realidade Aumentada aplicada à educação de crianças com TDAH' },
+                  { icon: Users, title: 'Liderança', text: 'Equipes de até 8 pessoas em projetos acadêmicos' },
+                  { icon: Cpu, title: 'Robótica educacional', text: 'Projetos com Arduino e sistemas embarcados' },
+                  { icon: Code2, title: 'Stack', text: 'Python, JavaScript, TypeScript, C++, Java e React' },
+                ].map((item) => (
+                  <li
+                    key={item.title}
+                    className="flex gap-3 rounded-xl border border-border/50 bg-background/40 p-3 text-left"
+                  >
+                    <item.icon className="mt-0.5 h-4 w-4 shrink-0 text-primary" strokeWidth={1.75} />
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold leading-tight">{item.title}</p>
+                      <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{item.text}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+
+
               <div className="mt-5 flex flex-col gap-2 sm:flex-row">
                 <a
                   href={WHATSAPP_URL}
