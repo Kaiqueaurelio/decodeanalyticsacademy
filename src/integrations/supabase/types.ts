@@ -1931,6 +1931,98 @@ export type Database = {
         }
         Relationships: []
       }
+      sponsor_lead_events: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          kind: string
+          lead_id: string
+          note: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kind?: string
+          lead_id: string
+          note: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kind?: string
+          lead_id?: string
+          note?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sponsor_lead_events_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "sponsor_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sponsor_leads: {
+        Row: {
+          budget: string | null
+          channel: string
+          company: string
+          contact_name: string
+          created_at: string
+          email: string
+          goal: string | null
+          id: string
+          notes: string | null
+          period: string | null
+          phone: string | null
+          plan: string | null
+          site: string | null
+          source: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          budget?: string | null
+          channel?: string
+          company: string
+          contact_name: string
+          created_at?: string
+          email: string
+          goal?: string | null
+          id?: string
+          notes?: string | null
+          period?: string | null
+          phone?: string | null
+          plan?: string | null
+          site?: string | null
+          source?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          budget?: string | null
+          channel?: string
+          company?: string
+          contact_name?: string
+          created_at?: string
+          email?: string
+          goal?: string | null
+          id?: string
+          notes?: string | null
+          period?: string | null
+          phone?: string | null
+          plan?: string | null
+          site?: string | null
+          source?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       study_plans: {
         Row: {
           apostila_id: string

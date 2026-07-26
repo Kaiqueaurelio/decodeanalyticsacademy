@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
+import { recordSponsorLead } from '@/lib/sponsor-leads';
 import { AppHeader } from '@/components/AppHeader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -162,6 +163,7 @@ export default function AnunciePage() {
   const sendWhatsapp = () => {
     const data = validate();
     if (!data) return;
+    void recordSponsorLead({ ...data, channel: 'whatsapp' });
     const text = encodeURIComponent(buildBriefing(data).join('\n'));
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${text}`, '_blank', 'noopener,noreferrer');
   };
@@ -169,6 +171,7 @@ export default function AnunciePage() {
   const sendEmail = () => {
     const data = validate();
     if (!data) return;
+    void recordSponsorLead({ ...data, channel: 'email' });
     const subject = encodeURIComponent(
       `Briefing de anúncio — ${data.company} (${data.plan})`,
     );
@@ -179,6 +182,7 @@ export default function AnunciePage() {
   const copyBriefing = async () => {
     const data = validate();
     if (!data) return;
+    void recordSponsorLead({ ...data, channel: 'copia' });
     await navigator.clipboard.writeText(buildBriefing(data).join('\n'));
     toast.success('Briefing copiado.');
   };
