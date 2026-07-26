@@ -279,6 +279,9 @@ export default function LandingPage() {
       {/* ═══ COMO FUNCIONA + NÚMEROS ═══ */}
       <HowItWorksSection />
 
+      {/* ═══ ELLA RIBEIRO — IA PRÓPRIA ═══ */}
+      <EllaFeatureSection />
+
       {/* ═══ SOB O CAPÔ: ENGENHARIA + BENEFÍCIOS ═══ */}
       <PlatformEngineSection />
 
