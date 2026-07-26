@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect, lazy, Suspense } from 'react';
+import { useState, useRef, useEffect, lazy } from 'react';
+import { DeferredSection } from '@/components/DeferredSection';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { motion, useScroll, useTransform } from 'framer-motion';
@@ -24,13 +25,12 @@ const PlatformEngineSection = lazy(() => import('@/components/landing/PlatformEn
 const FaqSection = lazy(() => import('@/components/landing/FaqSection').then(m => ({ default: m.FaqSection })));
 const SponsorsSection = lazy(() => import('@/components/landing/SponsorsSection').then(m => ({ default: m.SponsorsSection })));
 
-/* Placeholder de altura estável enquanto o chunk carrega (evita salto de layout) */
-function SectionFallback() {
-  return <div className="min-h-[40vh]" aria-hidden="true" />;
-}
-
+/**
+ * Só monta a seção (e baixa o chunk) quando ela chega perto do viewport.
+ * Antes todos os chunks eram baixados logo no mount, anulando o lazy.
+ */
 function LazySection({ children }: { children: React.ReactNode }) {
-  return <Suspense fallback={<SectionFallback />}>{children}</Suspense>;
+  return <DeferredSection minHeight="55vh">{children}</DeferredSection>;
 }
 
 
@@ -102,17 +102,29 @@ export default function LandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [appOrigin, setAppOrigin] = useState<string>('https://decodeanalyticsacademy.com.br');
   const heroVideoRef = useRef<HTMLVideoElement>(null);
-  const [bgVideoEnabled, setBgVideoEnabled] = useState(true);
+  // O vídeo de fundo é pesado: só entra depois do primeiro paint e nunca em
+  // mobile, reduced-motion ou economia de dados.
+  const [bgVideoEnabled, setBgVideoEnabled] = useState(false);
   const [showStickyCta, setShowStickyCta] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setShowStickyCta(window.scrollY > 640);
+    let raf = 0;
+    let ticking = false;
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      raf = window.requestAnimationFrame(() => {
+        setShowStickyCta(window.scrollY > 640);
+        ticking = false;
+      });
+    };
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.cancelAnimationFrame(raf);
+    };
   }, []);
-
-
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.location?.origin?.startsWith('http')) {
@@ -120,42 +132,58 @@ export default function LandingPage() {
     }
   }, []);
 
+  // Decide (fora do caminho crítico) se o vídeo de fundo deve carregar.
   useEffect(() => {
-    const video = heroVideoRef.current;
-    if (!video) return;
-
-    // Respeita reduced-motion e economia de dados: não baixa o vídeo nesses casos.
     const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
     const conn = (navigator as any)?.connection;
-    const saveData = Boolean(conn?.saveData) || /2g/.test(String(conn?.effectiveType || ''));
-    if (reducedMotion || saveData) {
-      setBgVideoEnabled(false);
-      return;
-    }
+    const saveData = Boolean(conn?.saveData) || /2g|3g/.test(String(conn?.effectiveType || ''));
+    const smallScreen = window.matchMedia?.('(max-width: 1023px)')?.matches;
+    if (reducedMotion || saveData || smallScreen) return;
+
+    const idle: (cb: () => void) => number =
+      (window as any).requestIdleCallback ?? ((cb: () => void) => window.setTimeout(cb, 1200));
+    const id = idle(() => setBgVideoEnabled(true));
+    return () => {
+      try {
+        ((window as any).cancelIdleCallback ?? window.clearTimeout)(id);
+      } catch {
+        /* noop */
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!bgVideoEnabled) return;
+    const video = heroVideoRef.current;
+    if (!video) return;
 
     video.muted = true;
     video.setAttribute('muted', '');
     video.setAttribute('playsinline', '');
-    try { video.load(); } catch {}
 
     const startPlayback = () => {
       void video.play().catch(() => {});
     };
     startPlayback();
     video.addEventListener('canplay', startPlayback);
-    video.addEventListener('loadeddata', startPlayback);
-    // Pausa quando a aba não está visível (economiza CPU/bateria).
+
+    // Pausa quando a aba não está visível ou quando o usuário já rolou muito.
     const onVisible = () => {
       if (document.visibilityState === 'visible') startPlayback();
       else video.pause();
     };
+    const onScroll = () => {
+      if (window.scrollY > window.innerHeight * 1.6) video.pause();
+      else if (document.visibilityState === 'visible') startPlayback();
+    };
     document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener('scroll', onScroll, { passive: true });
     return () => {
       video.removeEventListener('canplay', startPlayback);
-      video.removeEventListener('loadeddata', startPlayback);
       document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('scroll', onScroll);
     };
-  }, []);
+  }, [bgVideoEnabled]);
 
 
 
@@ -189,7 +217,7 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="dark min-h-dvh font-cyber overflow-x-hidden selection:bg-primary/30 relative" style={{ color: '#e2e8f0' }}>
+    <div className="landing-shell dark min-h-dvh font-cyber overflow-x-hidden selection:bg-primary/30 relative" style={{ color: '#e2e8f0' }}>
 
       {/* ═══ VIDEO DE FUNDO GLOBAL (portal em document.body para escapar de transforms de ancestrais) ═══ */}
       {typeof document !== 'undefined' && createPortal(

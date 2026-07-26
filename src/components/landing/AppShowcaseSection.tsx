@@ -56,14 +56,10 @@ export function AppShowcaseSection() {
                 loop
                 muted
                 playsInline
-                preload="metadata"
+                preload="none"
                 className="block w-full h-auto"
-              >
-                <source src="/showcase/decode-app-tour.webm" type="video/webm" />
-                <source src="/showcase/decode-app-tour.mp4" type="video/mp4" />
-                {/* Fallback GIF para navegadores sem suporte a vídeo */}
-                <img src="/showcase/decode-app-tour.gif" alt="Tour pelo Decode Analytics Academy" className="block w-full h-auto" />
-              </video>
+              />
+
             </div>
 
             {/* bottom shadow */}
