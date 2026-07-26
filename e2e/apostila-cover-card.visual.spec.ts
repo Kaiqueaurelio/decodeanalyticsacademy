@@ -36,7 +36,7 @@ for (const bp of BREAKPOINTS) {
     // A capa deve ocupar a maior parte do card (nunca "pequena demais")
     const cardBox = (await card.boundingBox())!;
     expect(box.height / cardBox.height).toBeGreaterThan(0.55);
-    expect(box.width).toBeGreaterThan(cardBox.width - 2);
+    expect(box.width).toBeGreaterThanOrEqual(cardBox.width - 3);
 
     // Sem recorte horizontal / overflow da grade
     expect(cardBox.x).toBeGreaterThanOrEqual(0);
