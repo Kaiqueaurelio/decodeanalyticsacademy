@@ -535,14 +535,20 @@ export function AdminAdsManager() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">URL de destino</label>
+                    <label className="text-sm font-medium">
+                      URL de destino <span className="text-muted-foreground">(opcional)</span>
+                    </label>
                     <Input
                       type="url"
                       value={formData.link_url}
                       onChange={(e) => setFormData((current) => ({ ...current, link_url: e.target.value }))}
-                      placeholder="https://exemplo.com"
+                      placeholder="Deixe em branco para anúncio apenas informativo"
                     />
+                    <p className="text-xs text-muted-foreground">
+                      Sem link, o anúncio é exibido apenas como aviso e não abre nada ao ser clicado.
+                    </p>
                   </div>
+
 
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Formato</label>
