@@ -185,6 +185,7 @@ function AdminSidebar({ tab, setTab, stats, sidebarOpen, setSidebarOpen }: {
     { id: 'performance' as Tab, label: 'Performance', icon: Activity, count: undefined },
     { id: 'smoke' as Tab, label: 'Testes', icon: CheckCircle, count: undefined },
     { id: 'diagnostics' as Tab, label: 'Diagnóstico', icon: AlertCircle, count: undefined },
+    { id: 'changelog' as Tab, label: 'Histórico', icon: History, count: undefined },
     { id: 'ads-chat' as Tab, label: 'Assistente de anúncios', icon: MessageSquare, count: undefined },
     { id: 'rss' as Tab, label: 'Feeds RSS', icon: Megaphone, count: undefined },
   ];
