@@ -3021,6 +3021,13 @@ export default function AdminPage() {
               <DiagnosticsPanel />
             )}
 
+            {/* CHANGELOG */}
+            {tab === 'changelog' && (
+              <VersionHistoryPanel />
+            )}
+
+
+
             {/* ADS */}
             {tab === 'ads' && (
               <AdminAdsManager />
