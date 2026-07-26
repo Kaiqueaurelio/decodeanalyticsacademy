@@ -37,6 +37,8 @@ import { toast } from 'sonner';
 import { AdImageUploadButton } from './AdImageUploadButton';
 import { AppImage } from '@/components/ui/app-image';
 import { cn } from '@/lib/utils';
+import { AdStudentPreview } from '@/components/admin/AdStudentPreview';
+
 
 const supabase = supabaseTyped as any;
 
@@ -880,6 +882,15 @@ export function AdminAdsManager() {
                     </div>
                   </div>
                 </div>
+
+                <AdStudentPreview
+                  title={formData.title}
+                  description={formData.description}
+                  imageUrl={formData.image_url}
+                  linkUrl={formData.link_url}
+                  adType={formData.ad_type}
+                />
+
 
                 <div className="flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="text-xs text-muted-foreground">
