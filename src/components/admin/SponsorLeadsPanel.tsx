@@ -166,6 +166,20 @@ export function SponsorLeadsPanel() {
 
       <CardContent className="space-y-5">
         {!loading && !error && <SponsorLeadsMetrics leads={leads} />}
+        {!loading && !error && leads.length > 0 && (
+          <SponsorFunnel
+            leads={leads.map((l) => ({
+              id: l.id,
+              plan: l.plan,
+              channel: l.channel,
+              source: l.source,
+              status: l.status,
+              created_at: l.created_at,
+            }))}
+            events={events.map((e) => ({ lead_id: e.lead_id, kind: e.kind }))}
+          />
+        )}
+
 
         <div className="flex flex-wrap gap-2 text-xs">
           <Badge variant="outline">Total: {counters.total}</Badge>
