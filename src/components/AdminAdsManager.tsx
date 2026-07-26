@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
@@ -49,6 +49,8 @@ interface Ad {
   image_url: string | null;
   link_url: string | null;
   ad_type: AdType;
+  position?: number;
+
   is_active: boolean;
   display_duration: number;
   view_count: number;
@@ -62,17 +64,34 @@ interface AdFormState {
   image_url: string;
   link_url: string;
   ad_type: AdType;
+  position: number;
   display_duration: number;
   is_active: boolean;
 }
 
-const AD_TYPE_OPTIONS: { value: AdType; label: string; hint: string }[] = [
-  { value: 'banner', label: 'Banner', hint: 'Topo e áreas de destaque' },
-  { value: 'popup', label: 'Pop-up', hint: 'Aparece por alguns segundos' },
-  { value: 'inline', label: 'Inline', hint: 'No meio do conteúdo' },
-  { value: 'sidebar', label: 'Lateral', hint: 'Coluna desktop' },
-  { value: 'footer', label: 'Rodapé', hint: 'Faixa fixa no mobile' },
+const AD_TYPE_OPTIONS: { value: AdType; label: string; hint: string; where: string }[] = [
+  { value: 'banner', label: 'Topo', hint: 'Banner de destaque', where: 'Aparece no topo das páginas, acima do conteúdo.' },
+  { value: 'inline', label: 'Entre seções', hint: 'No meio do conteúdo', where: 'Inserido entre blocos de conteúdo durante a navegação.' },
+  { value: 'sidebar', label: 'Lateral', hint: 'Coluna fixa (desktop)', where: 'Painel fixo à direita, sempre visível na rolagem.' },
+  { value: 'footer', label: 'Rodapé', hint: 'Faixa fixa (mobile)', where: 'Barra fina fixa na parte inferior no celular.' },
+  { value: 'popup', label: 'Pop-up', hint: 'Sobreposto', where: 'Janela central sobre a tela, fecha automaticamente.' },
 ];
+
+// Mini-wireframe indicando onde o anúncio cai no layout.
+function PlacementDiagram({ type }: { type: AdType }) {
+  const block = 'absolute rounded-[2px] bg-primary';
+  return (
+    <div className="relative h-12 w-full overflow-hidden rounded-md border border-border/70 bg-muted/40">
+      <div className="absolute inset-x-1 top-1 h-1.5 rounded-[2px] bg-muted-foreground/25" />
+      <div className="absolute inset-x-1 top-4 bottom-1 rounded-[2px] bg-muted-foreground/15" />
+      {type === 'banner' && <span className={cn(block, 'inset-x-1 top-1 h-1.5')} />}
+      {type === 'inline' && <span className={cn(block, 'inset-x-3 top-1/2 h-2 -translate-y-1/2')} />}
+      {type === 'sidebar' && <span className={cn(block, 'right-1 top-4 bottom-1 w-3')} />}
+      {type === 'footer' && <span className={cn(block, 'inset-x-1 bottom-1 h-2')} />}
+      {type === 'popup' && <span className={cn(block, 'left-1/2 top-1/2 h-6 w-10 -translate-x-1/2 -translate-y-1/2')} />}
+    </div>
+  );
+}
 
 const createEmptyForm = (): AdFormState => ({
   title: '',
@@ -80,6 +99,7 @@ const createEmptyForm = (): AdFormState => ({
   image_url: '',
   link_url: '',
   ad_type: 'banner',
+  position: 0,
   display_duration: 5,
   is_active: true,
 });
@@ -93,9 +113,11 @@ const mapAdToForm = (ad: Ad): AdFormState => ({
   image_url: ad.image_url || '',
   link_url: ad.link_url || '',
   ad_type: ad.ad_type,
+  position: ad.position ?? 0,
   display_duration: ad.display_duration || 5,
   is_active: ad.is_active,
 });
+
 
 const formatErrorMessage = (error: any, fallback: string) =>
   error?.message || error?.details || error?.hint || fallback;
@@ -207,9 +229,11 @@ export function AdminAdsManager() {
     image_url: formData.image_url.trim() || null,
     link_url: formData.link_url.trim() || null,
     ad_type: formData.ad_type,
+    position: Math.max(0, Number(formData.position) || 0),
     display_duration: Math.min(30, Math.max(1, Number(formData.display_duration) || 5)),
     is_active: formData.is_active,
   });
+
 
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -550,23 +574,57 @@ export function AdminAdsManager() {
                   </div>
 
 
+                  <div className="space-y-3 sm:col-span-2">
+                    <div>
+                      <label className="text-sm font-medium">Posição no layout</label>
+                      <p className="text-xs text-muted-foreground">
+                        Escolha onde este anúncio será exibido para o aluno.
+                      </p>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+                      {AD_TYPE_OPTIONS.map((item) => {
+                        const active = formData.ad_type === item.value;
+                        return (
+                          <button
+                            key={item.value}
+                            type="button"
+                            aria-pressed={active}
+                            onClick={() => setFormData((current) => ({ ...current, ad_type: item.value }))}
+                            className={cn(
+                              'rounded-lg border p-2 text-left transition',
+                              active
+                                ? 'border-primary bg-primary/10 ring-1 ring-primary'
+                                : 'border-border bg-card hover:border-primary/50',
+                            )}
+                          >
+                            <PlacementDiagram type={item.value} />
+                            <p className="mt-2 text-sm font-semibold text-foreground">{item.label}</p>
+                            <p className="text-[11px] leading-4 text-muted-foreground">{item.hint}</p>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {AD_TYPE_OPTIONS.find((item) => item.value === formData.ad_type)?.where}
+                    </p>
+                  </div>
+
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Formato</label>
-                    <Select
-                      value={formData.ad_type}
-                      onValueChange={(value: AdType) => setFormData((current) => ({ ...current, ad_type: value }))}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {AD_TYPE_OPTIONS.map((item) => (
-                          <SelectItem key={item.value} value={item.value}>
-                            {item.label} · {item.hint}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <label className="text-sm font-medium">Ordem na posição</label>
+                    <Input
+                      type="number"
+                      min="0"
+                      value={formData.position}
+                      onChange={(e) =>
+                        setFormData((current) => ({
+                          ...current,
+                          position: Math.max(0, Number(e.target.value) || 0),
+                        }))
+                      }
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Menor número aparece primeiro quando há vários anúncios no mesmo lugar.
+                    </p>
                   </div>
 
                   <div className="space-y-2">
@@ -584,6 +642,7 @@ export function AdminAdsManager() {
                       }
                     />
                   </div>
+
                 </div>
 
                 <div className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-3">
