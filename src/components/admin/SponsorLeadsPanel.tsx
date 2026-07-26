@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Handshake, RefreshCw, Search, Trash2, Clock, Mail, Phone, Globe } from 'lucide-react';
 import { SponsorLeadsMetrics } from '@/components/admin/SponsorLeadsMetrics';
+import { SponsorFunnel } from '@/components/admin/SponsorFunnel';
 import { SPONSOR_LEAD_STATUS, SPONSOR_LEAD_CHANNEL_LABEL } from '@/lib/sponsor-leads';
 
 type Lead = {
@@ -165,6 +166,20 @@ export function SponsorLeadsPanel() {
 
       <CardContent className="space-y-5">
         {!loading && !error && <SponsorLeadsMetrics leads={leads} />}
+        {!loading && !error && leads.length > 0 && (
+          <SponsorFunnel
+            leads={leads.map((l) => ({
+              id: l.id,
+              plan: l.plan,
+              channel: l.channel,
+              source: l.source,
+              status: l.status,
+              created_at: l.created_at,
+            }))}
+            events={events.map((e) => ({ lead_id: e.lead_id, kind: e.kind }))}
+          />
+        )}
+
 
         <div className="flex flex-wrap gap-2 text-xs">
           <Badge variant="outline">Total: {counters.total}</Badge>

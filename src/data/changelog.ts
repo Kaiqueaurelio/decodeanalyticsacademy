@@ -27,6 +27,21 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '3.4.0',
+    date: '2026-07-26',
+    title: 'Funil de conversão comercial',
+    changes: [
+      {
+        kind: 'feature',
+        text: 'Nova visão de funil na aba Patrocínio: clique no CTA → lead registrado → contato enviado → negociação avançada, com perda por etapa.',
+      },
+      {
+        kind: 'feature',
+        text: 'Detalhamento do funil por pacote e por origem do clique, com filtro de 7 dias, 30 dias ou todo o período.',
+      },
+    ],
+  },
+  {
     version: '3.3.0',
     date: '2026-07-26',
     title: 'Métricas de cliques nos contatos de patrocínio',
