@@ -51,6 +51,7 @@ import { PerformanceMetrics } from '@/components/PerformanceMetrics';
 import { SmokeTestsPanel } from '@/components/SmokeTestsPanel';
 import { DiagnosticsPanel } from '@/components/DiagnosticsPanel';
 import { VersionHistoryPanel } from '@/components/admin/VersionHistoryPanel';
+import { SponsorLeadsPanel } from '@/components/admin/SponsorLeadsPanel';
 import { DuplicateApostilaDialog } from '@/components/DuplicateApostilaDialog';
 import { findDuplicateApostila, type DuplicateMatch } from '@/lib/duplicate-detector';
 import { ImportPreviewPanel } from '@/components/ImportPreviewPanel';
@@ -99,7 +100,7 @@ function CategorySelect({ value, onValueChange, placeholder }: { value: string; 
   );
 }
 
-type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements' | 'calendar' | 'testimonials' | 'ai' | 'performance' | 'smoke' | 'diagnostics' | 'ads' | 'ads-chat' | 'social' | 'rss' | 'courses' | 'changelog';
+type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements' | 'calendar' | 'testimonials' | 'ai' | 'performance' | 'smoke' | 'diagnostics' | 'ads' | 'ads-chat' | 'social' | 'rss' | 'courses' | 'changelog' | 'leads';
 
 const ACCEPT_MAP: Record<string, string> = {
   pdf: '.pdf', image: 'image/*', gif: '.gif,image/gif',
@@ -188,6 +189,7 @@ function AdminSidebar({ tab, setTab, stats, sidebarOpen, setSidebarOpen }: {
     { id: 'changelog' as Tab, label: 'Histórico', icon: History, count: undefined },
     { id: 'ads-chat' as Tab, label: 'Assistente de anúncios', icon: MessageSquare, count: undefined },
     { id: 'rss' as Tab, label: 'Feeds RSS', icon: Megaphone, count: undefined },
+    { id: 'leads' as Tab, label: 'Patrocínio', icon: Megaphone, count: undefined },
   ];
 
   return (
@@ -1380,6 +1382,7 @@ export default function AdminPage() {
                 { id: 'changelog', label: 'Histórico', icon: <History className="h-3.5 w-3.5" /> },
                 { id: 'ads', label: 'Anúncios', icon: <Megaphone className="h-3.5 w-3.5" /> },
                 { id: 'rss', label: 'RSS', icon: <Rss className="h-3.5 w-3.5" /> },
+                { id: 'leads', label: 'Patrocínio', icon: <Megaphone className="h-3.5 w-3.5" /> },
               ]}
               activeTab={tab}
               onTabChange={(id) => setTab(id as Tab)}
@@ -3025,6 +3028,8 @@ export default function AdminPage() {
             {tab === 'changelog' && (
               <VersionHistoryPanel />
             )}
+
+            {tab === 'leads' && <SponsorLeadsPanel />}
 
 
 
