@@ -159,6 +159,39 @@ const mapAdToForm = (ad: Ad): AdFormState => ({
 });
 
 
+const AD_DRAFT_AUTOSAVE_KEY = 'decode:ad-draft-autosave';
+
+type AdDraftAutosave = {
+  editingId: string | null;
+  formData: AdFormState;
+  savedAt: string;
+};
+
+const isFormDirty = (form: AdFormState) => {
+  const empty = createEmptyForm();
+  return (Object.keys(empty) as (keyof AdFormState)[]).some((key) => form[key] !== empty[key]);
+};
+
+const readAutosave = (): AdDraftAutosave | null => {
+  try {
+    const raw = localStorage.getItem(AD_DRAFT_AUTOSAVE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as AdDraftAutosave;
+    if (!parsed?.formData) return null;
+    return { ...parsed, formData: { ...createEmptyForm(), ...parsed.formData } };
+  } catch {
+    return null;
+  }
+};
+
+const clearAutosave = () => {
+  try {
+    localStorage.removeItem(AD_DRAFT_AUTOSAVE_KEY);
+  } catch {
+    /* storage indisponível */
+  }
+};
+
 const formatErrorMessage = (error: any, fallback: string) =>
   error?.message || error?.details || error?.hint || fallback;
 
@@ -173,6 +206,46 @@ export function AdminAdsManager() {
   const [deleteTarget, setDeleteTarget] = useState<Ad | null>(null);
   const [search, setSearch] = useState('');
   const [formData, setFormData] = useState<AdFormState>(createEmptyForm());
+  const [draftSavedAt, setDraftSavedAt] = useState<string | null>(null);
+  const restoredDraftRef = React.useRef(false);
+
+  // Restaura o rascunho salvo automaticamente após recarregar a página.
+  useEffect(() => {
+    const draft = readAutosave();
+    restoredDraftRef.current = true;
+    if (!draft || !isFormDirty(draft.formData)) return;
+    setFormData(draft.formData);
+    setEditingId(draft.editingId);
+    setDraftSavedAt(draft.savedAt);
+    toast.info('Rascunho do anúncio restaurado automaticamente');
+  }, []);
+
+  // Salva o rascunho enquanto o admin digita (debounce curto).
+  useEffect(() => {
+    if (!restoredDraftRef.current) return;
+
+    if (!isFormDirty(formData) && !editingId) {
+      clearAutosave();
+      setDraftSavedAt(null);
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      const savedAt = new Date().toISOString();
+      try {
+        localStorage.setItem(
+          AD_DRAFT_AUTOSAVE_KEY,
+          JSON.stringify({ editingId, formData, savedAt } satisfies AdDraftAutosave),
+        );
+        setDraftSavedAt(savedAt);
+      } catch {
+        /* storage indisponível */
+      }
+    }, 700);
+
+    return () => window.clearTimeout(timer);
+  }, [formData, editingId]);
+
 
   useEffect(() => {
     if (!isAdmin) return;
