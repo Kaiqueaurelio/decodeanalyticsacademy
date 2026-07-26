@@ -27,6 +27,20 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '3.6.0',
+    date: '2026-07-26',
+    title: 'Landing page mais rápida e focada em conversão',
+    changes: [
+      { kind: 'improvement', text: 'Seções abaixo da dobra passaram a carregar sob demanda, reduzindo o bundle inicial e acelerando o primeiro carregamento.' },
+      { kind: 'improvement', text: 'Vídeo de fundo agora usa pré-carregamento leve, pausa com a aba oculta e é desativado em modo de economia de dados ou movimento reduzido.' },
+      { kind: 'improvement', text: 'Ordem das seções reorganizada: prova social, dúvidas frequentes, app ao vivo, criador e patrocínio.' },
+      { kind: 'improvement', text: 'Removida a seção de stack técnica duplicada (o conteúdo já aparece em "Sob o capô").' },
+      { kind: 'feature', text: 'Barra fixa de ação no celular com "Começar a estudar" e atalho de instalação.' },
+      { kind: 'improvement', text: 'SEO: título e descrição mais específicos, canonical e dados estruturados (organização educacional e perguntas frequentes).' },
+    ],
+  },
+
+  {
     version: '3.5.0',
     date: '2026-07-26',
     title: 'Alertas, drill-down e exportação do funil comercial',
