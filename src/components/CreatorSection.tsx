@@ -11,7 +11,7 @@ export function CreatorSection() {
     <section id="criador" className="relative overflow-hidden px-4 py-16 sm:py-24">
       <div className="grid-lines-bg pointer-events-none absolute inset-0 opacity-10" />
 
-      <div className="container relative mx-auto max-w-3xl">
+      <div className="container relative mx-auto max-w-4xl">
         <div className="mb-8 text-center sm:mb-12">
           <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.2em] text-primary sm:text-xs">
             // quem mantém a plataforma
