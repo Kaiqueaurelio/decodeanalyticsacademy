@@ -38,6 +38,8 @@ import { AdImageUploadButton } from './AdImageUploadButton';
 import { AppImage } from '@/components/ui/app-image';
 import { cn } from '@/lib/utils';
 import { AdStudentPreview } from '@/components/admin/AdStudentPreview';
+import { AD_DRAFT_PREVIEW_KEY, AD_DRAFT_PREVIEW_PARAM } from '@/components/admin/AdDraftPreviewOverlay';
+
 
 
 const supabase = supabaseTyped as any;
@@ -898,6 +900,27 @@ export function AdminAdsManager() {
                   </div>
 
                   <div className="flex flex-wrap gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="gap-2"
+                      onClick={() => {
+                        sessionStorage.setItem(
+                          AD_DRAFT_PREVIEW_KEY,
+                          JSON.stringify({
+                            title: formData.title,
+                            description: formData.description,
+                            image_url: formData.image_url,
+                            link_url: formData.link_url,
+                            ad_type: formData.ad_type,
+                          }),
+                        );
+                        window.open(`/dashboard?${AD_DRAFT_PREVIEW_PARAM}=1`, '_blank', 'noopener');
+                      }}
+                    >
+                      <Eye className="h-4 w-4" /> Ver na página do aluno
+                    </Button>
+
                     {editingId && (
                       <Button type="button" variant="outline" onClick={resetEditor}>
                         Novo anúncio

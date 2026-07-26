@@ -20,6 +20,8 @@ import { SplashScreen } from "@/components/SplashScreen";
 import { AdFooterMobile } from "@/components/AdFooterMobile";
 import { AdPopup } from "@/components/AdPopup";
 import { PersistentAdSpot } from "@/components/PersistentAdSpot";
+import { AdDraftPreviewOverlay } from "@/components/admin/AdDraftPreviewOverlay";
+
 import { TermsFooterLink } from "@/components/TermsFooterLink";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { EllaSidebar } from "@/components/ella/EllaSidebar";
@@ -184,6 +186,8 @@ const App = () => (
               <PersistentAdSpot />
               <TermsFooterLink />
               <AdPopup trigger="onLoad" delay={2500} />
+              <AdDraftPreviewOverlay />
+
             </AudioPlayerProvider>
           </AuthProvider>
         </BrowserRouter>
