@@ -685,27 +685,31 @@ export default function LandingPage() {
       {/* ═══ REDES SOCIAIS + WRITELAB ═══ */}
       <LazySection><SocialAndProjectsSection /></LazySection>
 
-      {/* ═══ CTA FIXO (mobile) ═══ */}
-      <div
-        className={`fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#050508]/92 px-4 py-3 backdrop-blur-md transition-transform duration-300 md:hidden ${showStickyCta ? 'translate-y-0' : 'translate-y-full'}`}
-        style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}
-      >
-        <div className="flex items-center gap-3">
-          <Button
-            onClick={() => navigate('/login')}
-            className="h-11 flex-1 rounded-full bg-[#00f0ff] text-sm font-bold text-[#050508] hover:bg-[#75f6ff]"
-          >
-            Começar a estudar <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
-          <button
-            onClick={handleInstallPWA}
-            aria-label="Instalar aplicativo"
-            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-white/5 text-white"
-          >
-            <Download className="h-4 w-4" />
-          </button>
-        </div>
-      </div>
+      {/* ═══ CTA FIXO (mobile) — em portal para escapar de transforms de ancestrais ═══ */}
+      {typeof document !== 'undefined' && createPortal(
+        <div
+          className={`fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#050508]/92 px-4 py-3 backdrop-blur-md transition-transform duration-300 md:hidden ${showStickyCta ? 'translate-y-0' : 'translate-y-full'}`}
+          style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}
+        >
+          <div className="flex items-center gap-3">
+            <Button
+              onClick={() => navigate('/login')}
+              className="h-11 flex-1 rounded-full bg-[#00f0ff] text-sm font-bold text-[#050508] hover:bg-[#75f6ff]"
+            >
+              Começar a estudar <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+            <button
+              onClick={handleInstallPWA}
+              aria-label="Instalar aplicativo"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-white/5 text-white"
+            >
+              <Download className="h-4 w-4" />
+            </button>
+          </div>
+        </div>,
+        document.body,
+      )}
+
 
       {/* ═══ FOOTER ═══ */}
 
