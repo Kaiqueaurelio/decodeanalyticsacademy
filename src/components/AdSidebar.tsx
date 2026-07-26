@@ -108,7 +108,7 @@ export function AdSidebar({ className = '' }: { className?: string }) {
 
   const hasLink = Boolean(current.link_url);
 
-  return (
+  const sidebar = (
     <AnimatePresence>
       <motion.aside
         initial={{ opacity: 0, x: 24 }}
@@ -199,4 +199,6 @@ export function AdSidebar({ className = '' }: { className?: string }) {
       </motion.aside>
     </AnimatePresence>
   );
+
+  return portalContainer ? createPortal(sidebar, portalContainer) : null;
 }
