@@ -27,6 +27,18 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '3.6.1',
+    date: '2026-07-26',
+    title: 'Landing page: renderização muito mais rápida',
+    changes: [
+      { kind: 'improvement', text: 'Seções agora só são montadas quando chegam perto da tela — antes todos os blocos eram baixados de uma vez no carregamento.' },
+      { kind: 'improvement', text: 'Vídeo de fundo só carrega em telas grandes, depois do primeiro desenho da página, e pausa quando o usuário rola para longe do topo.' },
+      { kind: 'improvement', text: 'Vídeo do tour deixou de baixar antecipadamente; carrega apenas quando a seção aparece.' },
+      { kind: 'improvement', text: 'Rolagem otimizada com requestAnimationFrame e pintura adiada de seções fora da viewport.' },
+    ],
+  },
+
+  {
     version: '3.6.0',
     date: '2026-07-26',
     title: 'Landing page mais rápida e focada em conversão',
