@@ -50,17 +50,16 @@ export function CreatorSection() {
               <div className="mt-5 space-y-3 text-left text-sm leading-relaxed text-muted-foreground sm:text-[15px]">
                 <p>
                   Estudante do 5º semestre de Ciência da Computação, com trajetória que combina
-                  formação acadêmica e experiência profissional diversificada. Desde 2018 é fundador
-                  da Decode Analytics, com vivência prática em operações logísticas (Correios e
-                  Mercado Livre) e varejo.
+                  formação acadêmica e experiência prática em tecnologia. Desde 2018 é fundador da
+                  Decode Analytics.
                 </p>
                 <p>
                   Na área acadêmica, desenvolveu projeto de Iniciação Científica em Realidade
-                  Aumentada aplicada à educação de crianças com TDAH, utilizando Merge Cube, sob
-                  orientação do Dr. Alexandre Bozolan dos Santos. Também liderou uma equipe
-                  multidisciplinar de 6 pessoas na criação de 4 jogos digitais educativos focados em
-                  sustentabilidade.
+                  Aumentada aplicada à educação de crianças com TDAH, utilizando Merge Cube. Também
+                  liderou uma equipe multidisciplinar de 6 pessoas na criação de 4 jogos digitais
+                  educativos focados em sustentabilidade.
                 </p>
+
                 <p>
                   Tem experiência prática em robótica educacional com Arduino e em projetos que vão
                   de dashboards interativos a assistentes virtuais e plataformas multiplayer
