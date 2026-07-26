@@ -10,7 +10,12 @@ import {
   ChevronRight, Download, Smartphone, Layers, Rocket, Target,
   BarChart3, PenLine, Flame, TrendingUp, CheckCircle,
 } from 'lucide-react';
-import logoDark from '@/assets/owl-icon.png';
+import logoAvif1x from '@/assets/owl-icon-72.avif';
+import logoAvif2x from '@/assets/owl-icon-144.avif';
+import logoWebp1x from '@/assets/owl-icon-72.webp';
+import logoWebp2x from '@/assets/owl-icon-144.webp';
+import logoPng1x from '@/assets/owl-icon-72.png';
+import logoPng2x from '@/assets/owl-icon-144.png';
 import { Reveal } from '@/components/Reveal';
 
 /* ─── SEÇÕES ABAIXO DA DOBRA: carregadas sob demanda (menor bundle inicial / LCP) ─── */
@@ -258,7 +263,11 @@ export default function LandingPage() {
           <header className="px-5 py-5 sm:px-8">
             <div className="mx-auto flex max-w-7xl items-center justify-between">
               <a href="/" className="flex items-center gap-3" aria-label="Decode Analytics Academy">
-                <img src={logoDark} alt="" width={36} height={36} decoding="async" {...{ fetchpriority: 'high' }} className="h-9 w-9 object-contain drop-shadow-[0_0_12px_rgba(0,240,255,0.5)]" />
+                <picture>
+                  <source type="image/avif" srcSet={`${logoAvif1x} 1x, ${logoAvif2x} 2x`} />
+                  <source type="image/webp" srcSet={`${logoWebp1x} 1x, ${logoWebp2x} 2x`} />
+                  <img src={logoPng1x} srcSet={`${logoPng1x} 1x, ${logoPng2x} 2x`} alt="" width={36} height={36} decoding="async" {...{ fetchpriority: 'high' }} className="h-9 w-9 object-contain drop-shadow-[0_0_12px_rgba(0,240,255,0.5)]" />
+                </picture>
                 <span className="text-sm font-semibold uppercase tracking-[0.18em] text-[#00f0ff]">Decode Analytics</span>
               </a>
               <nav aria-label="Navegação principal" className="hidden items-center gap-7 md:flex">
@@ -743,7 +752,11 @@ export default function LandingPage() {
       <footer className="py-10 px-5" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
         <div className="max-w-7xl mx-auto flex flex-col items-center gap-4">
           <div className="flex items-center gap-2.5">
-            <img src={logoDark} alt="Decode Analytics" className="h-8 w-8 object-contain drop-shadow-[0_0_10px_rgba(0,240,255,0.45)]" />
+            <picture>
+              <source type="image/avif" srcSet={`${logoAvif1x} 1x, ${logoAvif2x} 2x`} />
+              <source type="image/webp" srcSet={`${logoWebp1x} 1x, ${logoWebp2x} 2x`} />
+              <img src={logoPng1x} srcSet={`${logoPng1x} 1x, ${logoPng2x} 2x`} alt="Decode Analytics" width={32} height={32} loading="lazy" decoding="async" className="h-8 w-8 object-contain drop-shadow-[0_0_10px_rgba(0,240,255,0.45)]" />
+            </picture>
             <span className="text-[11px] font-semibold uppercase tracking-[0.2em]" style={{ color: '#00f0ff' }}>Decode Analytics</span>
           </div>
 
