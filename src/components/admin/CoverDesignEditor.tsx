@@ -16,6 +16,7 @@ import {
   type CoverTheme,
 } from '@/lib/cover-theme';
 import { buildCoverDataUri } from '@/lib/cover-render';
+import { CoverPreviewSizes } from '@/components/admin/CoverPreviewSizes';
 
 const FONTS = [
   { label: 'Instrument Serif', value: "'Instrument Serif', Georgia, serif" },
