@@ -287,16 +287,17 @@ export default function LandingPage() {
       </section>
 
       {/* ═══ APP SHOWCASE (Veja por dentro) ═══ */}
-      <AppShowcaseSection />
+      <LazySection><AppShowcaseSection /></LazySection>
 
       {/* ═══ COMO FUNCIONA + NÚMEROS ═══ */}
-      <HowItWorksSection />
+      <LazySection><HowItWorksSection /></LazySection>
 
-      {/* ═══ ELLA RIBEIRO — IA PRÓPRIA ═══ */}
-      <EllaFeatureSection />
+      {/* ═══ ELLA RIBEIRO — ASSISTENTE DE ESTUDOS ═══ */}
+      <LazySection><EllaFeatureSection /></LazySection>
 
       {/* ═══ SOB O CAPÔ: ENGENHARIA + BENEFÍCIOS ═══ */}
-      <PlatformEngineSection />
+      <LazySection><PlatformEngineSection /></LazySection>
+
 
 
       {/* ═══ RECURSOS ═══ */}
