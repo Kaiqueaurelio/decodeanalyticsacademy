@@ -94,7 +94,7 @@ export default function SubjectPage() {
         {/* Grid de apostilas */}
         <section className="mt-6">
           {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4">
               {[0, 1, 2, 3, 4, 5].map((i) => (
                 <div key={i} className="h-44 rounded-2xl bg-muted/30 animate-pulse" />
               ))}
@@ -104,7 +104,7 @@ export default function SubjectPage() {
               Nenhuma apostila cadastrada nesta matéria ainda.
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
               {rows.map((a) => {
                 const exCount = exerciseCounts[a.id] || 0;
                 const words = (a.content || '').split(/\s+/).filter(Boolean).length;
@@ -116,20 +116,24 @@ export default function SubjectPage() {
                     className="group relative flex flex-col rounded-2xl border border-border/60 bg-card overflow-hidden transition-all duration-300 hover:border-primary/50 hover:shadow-xl hover:-translate-y-0.5"
                   >
                     <div
-                      className="relative h-28 w-full"
+                      className="relative aspect-[3/4] w-full"
                       style={{
                         backgroundImage: a.cover_url
-                          ? `linear-gradient(135deg, ${color}55 0%, #0b1220cc 100%), url("${a.cover_url}")`
+                          ? `url("${a.cover_url}")`
                           : `linear-gradient(135deg, ${color}dd 0%, ${color}44 60%, #0b1220 100%)`,
                         backgroundSize: 'cover',
                         backgroundPosition: 'center',
                       }}
                     >
-                      <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-transparent" />
                       {!a.cover_url && (
                         <FileText className="absolute right-3 top-3 h-4 w-4 text-white/70" strokeWidth={1.6} />
                       )}
+                      <span
+                        className="pointer-events-none absolute inset-x-0 bottom-0 h-1.5"
+                        style={{ background: `linear-gradient(90deg, ${color}, ${color}55)` }}
+                      />
                     </div>
+
                     <div className="flex flex-col gap-1.5 p-3">
                       <h3 className="font-display font-semibold text-sm leading-tight line-clamp-2 group-hover:text-primary transition-colors">
                         {a.title}
