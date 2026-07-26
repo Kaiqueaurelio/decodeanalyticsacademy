@@ -153,7 +153,7 @@ export function SponsorsSection() {
                 </ul>
                 <a
                   href={whatsappUrl(plan.name)}
-                  onClick={() => void recordSponsorLead({ plan: plan.name, channel: 'clique', source: 'landing-plano' })}
+                  onClick={() => void recordSponsorLead({ plan: plan.name, channel: 'whatsapp', source: 'cta-plano' })}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={`Enviar briefing do pacote ${plan.name} no WhatsApp`}
@@ -187,7 +187,7 @@ export function SponsorsSection() {
           <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <a
               href={WHATSAPP_URL}
-              onClick={() => void recordSponsorLead({ channel: 'clique', source: 'landing-whatsapp' })}
+              onClick={() => void recordSponsorLead({ plan: 'Não definido', channel: 'whatsapp', source: 'cta-geral' })}
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Falar sobre patrocínio no WhatsApp"
@@ -198,7 +198,7 @@ export function SponsorsSection() {
             </a>
             <a
               href={EMAIL_URL}
-              onClick={() => void recordSponsorLead({ channel: 'clique', source: 'landing-email' })}
+              onClick={() => void recordSponsorLead({ plan: 'Não definido', channel: 'email', source: 'cta-geral' })}
               aria-label="Enviar e-mail sobre patrocínio"
               className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-border/60 px-5 py-3 text-sm font-medium transition-colors hover:bg-muted/40 sm:w-auto"
             >
