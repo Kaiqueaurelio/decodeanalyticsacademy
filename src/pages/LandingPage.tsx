@@ -638,28 +638,24 @@ export default function LandingPage() {
         </ScrollReveal>
       </section>
 
-      {/* ═══ TESTIMONIALS ═══ */}
-      <div id="depoimentos"><TestimonialsSection /></div>
+      {/* ═══ PROVA SOCIAL ═══ */}
+      <LazySection><div id="depoimentos"><TestimonialsSection /></div></LazySection>
+
+      {/* ═══ OBJEÇÕES: FAQ ═══ */}
+      <LazySection><FaqSection /></LazySection>
+
+      {/* ═══ APP AO VIVO / INSTALAÇÃO ═══ */}
+      <LazySection><LiveAppSection /></LazySection>
 
       {/* ═══ CREATOR / DE ALUNO PARA ALUNO ═══ */}
-      <CreatorSection />
+      <LazySection><CreatorSection /></LazySection>
 
       {/* ═══ ANUNCIANTES / PATROCINADORES ═══ */}
-      <SponsorsSection />
-
-
-      {/* ═══ FAQ ═══ */}
-      <FaqSection />
-
-
-      {/* ═══ HOW IT WAS BUILT ═══ */}
-      <TechStackSection />
-
-      {/* ═══ LIVE APP / SHARE LINK ═══ */}
-      <LiveAppSection />
+      <LazySection><SponsorsSection /></LazySection>
 
       {/* ═══ REDES SOCIAIS + WRITELAB ═══ */}
-      <SocialAndProjectsSection />
+      <LazySection><SocialAndProjectsSection /></LazySection>
+
 
       {/* ═══ FOOTER ═══ */}
       <footer className="py-10 px-5" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
