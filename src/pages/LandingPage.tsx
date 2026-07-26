@@ -258,7 +258,7 @@ export default function LandingPage() {
           <header className="px-5 py-5 sm:px-8">
             <div className="mx-auto flex max-w-7xl items-center justify-between">
               <a href="/" className="flex items-center gap-3" aria-label="Decode Analytics Academy">
-                <img src={logoDark} alt="" width={36} height={36} fetchPriority="high" decoding="async" className="h-9 w-9 object-contain drop-shadow-[0_0_12px_rgba(0,240,255,0.5)]" />
+                <img src={logoDark} alt="" width={36} height={36} decoding="async" {...{ fetchpriority: 'high' }} className="h-9 w-9 object-contain drop-shadow-[0_0_12px_rgba(0,240,255,0.5)]" />
                 <span className="text-sm font-semibold uppercase tracking-[0.18em] text-[#00f0ff]">Decode Analytics</span>
               </a>
               <nav aria-label="Navegação principal" className="hidden items-center gap-7 md:flex">
