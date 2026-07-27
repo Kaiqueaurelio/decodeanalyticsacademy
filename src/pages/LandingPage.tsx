@@ -138,17 +138,20 @@ export default function LandingPage() {
   }, []);
 
   // Decide (fora do caminho crítico) se o vídeo de fundo deve carregar.
+  // Roda em qualquer tamanho de tela; só é dispensado quando o usuário pede
+  // menos movimento ou está em modo de economia de dados.
   useEffect(() => {
     const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
     const conn = (navigator as any)?.connection;
-    const saveData = Boolean(conn?.saveData) || /2g|3g/.test(String(conn?.effectiveType || ''));
-    const smallScreen = window.matchMedia?.('(max-width: 1023px)')?.matches;
-    if (reducedMotion || saveData || smallScreen) return;
+    const saveData = Boolean(conn?.saveData) || /(^|[^4])2g|3g/.test(String(conn?.effectiveType || ''));
+    if (reducedMotion || saveData) return;
 
     const idle: (cb: () => void) => number =
-      (window as any).requestIdleCallback ?? ((cb: () => void) => window.setTimeout(cb, 1200));
+      (window as any).requestIdleCallback ?? ((cb: () => void) => window.setTimeout(cb, 400));
     const id = idle(() => setBgVideoEnabled(true));
+    const fallback = window.setTimeout(() => setBgVideoEnabled(true), 1500);
     return () => {
+      window.clearTimeout(fallback);
       try {
         ((window as any).cancelIdleCallback ?? window.clearTimeout)(id);
       } catch {
