@@ -27,6 +27,15 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '3.6.5',
+    date: '2026-07-26',
+    title: 'Vídeo da página inicial sempre em movimento',
+    changes: [
+      { kind: 'improvement', text: 'O vídeo de fundo não pausa mais ao rolar a página e não é desativado por economia de dados — fica em movimento contínuo em todos os dispositivos.' },
+      { kind: 'fix', text: 'Retomada automática caso o navegador interrompa a reprodução ao voltar para a aba.' },
+    ],
+  },
+  {
     version: '3.6.4',
     date: '2026-07-26',
     title: 'Vídeo de fundo da página inicial de volta',
