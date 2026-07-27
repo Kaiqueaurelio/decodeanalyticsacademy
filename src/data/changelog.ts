@@ -27,6 +27,15 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '3.6.4',
+    date: '2026-07-26',
+    title: 'Vídeo de fundo da página inicial de volta',
+    changes: [
+      { kind: 'fix', text: 'O vídeo de fundo voltou a aparecer também em celulares e tablets — antes ele era desligado em telas menores.' },
+      { kind: 'improvement', text: 'A entrada do vídeo ficou mais rápida, com garantia de exibição mesmo em navegadores sem tempo ocioso.' },
+    ],
+  },
+  {
     version: '3.6.3',
     date: '2026-07-26',
     title: 'Imagens do topo em AVIF/WebP',
