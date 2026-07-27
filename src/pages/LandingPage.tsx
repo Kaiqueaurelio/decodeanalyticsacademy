@@ -149,23 +149,75 @@ export default function LandingPage() {
     const video = heroVideoRef.current;
     if (!video) return;
 
+    // iOS/Safari exige muted + playsinline definidos no elemento ANTES do play().
     video.muted = true;
+    video.defaultMuted = true;
+    video.volume = 0;
+    video.loop = true;
     video.setAttribute('muted', '');
     video.setAttribute('playsinline', '');
+    video.setAttribute('webkit-playsinline', 'true');
+    video.setAttribute('x5-playsinline', 'true');
+    video.setAttribute('disableRemotePlayback', 'true');
+
+    let disposed = false;
 
     const startPlayback = () => {
+      if (disposed) return;
+      const attempt = video.play();
+      if (attempt && typeof attempt.catch === 'function') {
+        attempt.catch(() => {
+          // Safari em Modo de Baixo Consumo bloqueia o autoplay:
+          // liberamos na primeira interação do usuário.
+          armGestureUnlock();
+        });
+      }
+    };
+
+    let gestureArmed = false;
+    const gestureEvents: Array<keyof DocumentEventMap> = ['touchstart', 'touchend', 'pointerdown', 'click', 'keydown', 'scroll'];
+    const onGesture = () => {
+      disarmGestureUnlock();
       void video.play().catch(() => {});
     };
+    function armGestureUnlock() {
+      if (gestureArmed || disposed) return;
+      gestureArmed = true;
+      gestureEvents.forEach((evt) =>
+        document.addEventListener(evt, onGesture, { once: true, passive: true } as AddEventListenerOptions),
+      );
+    }
+    function disarmGestureUnlock() {
+      if (!gestureArmed) return;
+      gestureArmed = false;
+      gestureEvents.forEach((evt) => document.removeEventListener(evt, onGesture));
+    }
+
+    // Loop manual: alguns builds do Safari ignoram o atributo `loop` quando o
+    // vídeo é retomado após ficar em background.
+    const onEnded = () => {
+      try {
+        video.currentTime = 0;
+      } catch { /* noop */ }
+      startPlayback();
+    };
+
     startPlayback();
     video.addEventListener('canplay', startPlayback);
+    video.addEventListener('loadedmetadata', startPlayback);
     video.addEventListener('loadeddata', startPlayback);
+    video.addEventListener('stalled', startPlayback);
+    video.addEventListener('suspend', startPlayback);
     video.addEventListener('pause', startPlayback);
+    video.addEventListener('ended', onEnded);
 
-    // Mantém o movimento sempre que a aba volta a ficar visível.
+    // Mantém o movimento sempre que a aba/app volta a ficar visível (iOS dispara pagehide/pageshow).
     const onVisible = () => {
       if (document.visibilityState === 'visible') startPlayback();
     };
     document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener('pageshow', startPlayback);
+    window.addEventListener('focus', startPlayback);
 
     // Rede de segurança: se por algum motivo o vídeo travar, retoma sozinho.
     const keepAlive = window.setInterval(() => {
@@ -173,13 +225,22 @@ export default function LandingPage() {
     }, 3000);
 
     return () => {
+      disposed = true;
+      disarmGestureUnlock();
       video.removeEventListener('canplay', startPlayback);
+      video.removeEventListener('loadedmetadata', startPlayback);
       video.removeEventListener('loadeddata', startPlayback);
+      video.removeEventListener('stalled', startPlayback);
+      video.removeEventListener('suspend', startPlayback);
       video.removeEventListener('pause', startPlayback);
+      video.removeEventListener('ended', onEnded);
       document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('pageshow', startPlayback);
+      window.removeEventListener('focus', startPlayback);
       window.clearInterval(keepAlive);
     };
   }, [bgVideoEnabled]);
+
 
 
 
