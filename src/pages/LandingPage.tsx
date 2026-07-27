@@ -107,8 +107,8 @@ export default function LandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [appOrigin, setAppOrigin] = useState<string>('https://decodeanalyticsacademy.com.br');
   const heroVideoRef = useRef<HTMLVideoElement>(null);
-  // O vídeo de fundo é pesado: só entra depois do primeiro paint e nunca em
-  // mobile, reduced-motion ou economia de dados.
+  // O vídeo de fundo roda sempre, em qualquer dispositivo; só é montado logo
+  // após o primeiro paint para não atrasar o hero.
   const [bgVideoEnabled, setBgVideoEnabled] = useState(false);
   const [showStickyCta, setShowStickyCta] = useState(false);
 
