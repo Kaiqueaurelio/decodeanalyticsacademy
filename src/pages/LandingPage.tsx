@@ -107,8 +107,8 @@ export default function LandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [appOrigin, setAppOrigin] = useState<string>('https://decodeanalyticsacademy.com.br');
   const heroVideoRef = useRef<HTMLVideoElement>(null);
-  // O vídeo de fundo é pesado: só entra depois do primeiro paint e nunca em
-  // mobile, reduced-motion ou economia de dados.
+  // O vídeo de fundo roda sempre, em qualquer dispositivo; só é montado logo
+  // após o primeiro paint para não atrasar o hero.
   const [bgVideoEnabled, setBgVideoEnabled] = useState(false);
   const [showStickyCta, setShowStickyCta] = useState(false);
 
@@ -137,27 +137,11 @@ export default function LandingPage() {
     }
   }, []);
 
-  // Decide (fora do caminho crítico) se o vídeo de fundo deve carregar.
-  // Roda em qualquer tamanho de tela; só é dispensado quando o usuário pede
-  // menos movimento ou está em modo de economia de dados.
+  // O vídeo de fundo sempre roda: sem cortes por tamanho de tela, economia de
+  // dados ou rolagem. Ele é apenas montado logo após o primeiro paint.
   useEffect(() => {
-    const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
-    const conn = (navigator as any)?.connection;
-    const saveData = Boolean(conn?.saveData) || /(^|[^4])2g|3g/.test(String(conn?.effectiveType || ''));
-    if (reducedMotion || saveData) return;
-
-    const idle: (cb: () => void) => number =
-      (window as any).requestIdleCallback ?? ((cb: () => void) => window.setTimeout(cb, 400));
-    const id = idle(() => setBgVideoEnabled(true));
-    const fallback = window.setTimeout(() => setBgVideoEnabled(true), 1500);
-    return () => {
-      window.clearTimeout(fallback);
-      try {
-        ((window as any).cancelIdleCallback ?? window.clearTimeout)(id);
-      } catch {
-        /* noop */
-      }
-    };
+    const id = window.setTimeout(() => setBgVideoEnabled(true), 0);
+    return () => window.clearTimeout(id);
   }, []);
 
   useEffect(() => {
@@ -174,22 +158,26 @@ export default function LandingPage() {
     };
     startPlayback();
     video.addEventListener('canplay', startPlayback);
+    video.addEventListener('loadeddata', startPlayback);
+    video.addEventListener('pause', startPlayback);
 
-    // Pausa quando a aba não está visível ou quando o usuário já rolou muito.
+    // Mantém o movimento sempre que a aba volta a ficar visível.
     const onVisible = () => {
       if (document.visibilityState === 'visible') startPlayback();
-      else video.pause();
-    };
-    const onScroll = () => {
-      if (window.scrollY > window.innerHeight * 1.6) video.pause();
-      else if (document.visibilityState === 'visible') startPlayback();
     };
     document.addEventListener('visibilitychange', onVisible);
-    window.addEventListener('scroll', onScroll, { passive: true });
+
+    // Rede de segurança: se por algum motivo o vídeo travar, retoma sozinho.
+    const keepAlive = window.setInterval(() => {
+      if (video.paused && document.visibilityState === 'visible') startPlayback();
+    }, 3000);
+
     return () => {
       video.removeEventListener('canplay', startPlayback);
+      video.removeEventListener('loadeddata', startPlayback);
+      video.removeEventListener('pause', startPlayback);
       document.removeEventListener('visibilitychange', onVisible);
-      window.removeEventListener('scroll', onScroll);
+      window.clearInterval(keepAlive);
     };
   }, [bgVideoEnabled]);
 
@@ -242,7 +230,7 @@ export default function LandingPage() {
               loop
               muted
               playsInline
-              preload="metadata"
+              preload="auto"
               src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260328_065045_c44942da-53c6-4804-b734-f9e07fc22e08.mp4"
             />
           )}
