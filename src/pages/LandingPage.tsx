@@ -291,9 +291,16 @@ export default function LandingPage() {
               loop
               muted
               playsInline
+              controls={false}
+              disablePictureInPicture
               preload="auto"
+              // @ts-expect-error atributos legados necessários no Safari iOS
+              webkit-playsinline="true"
+              x5-playsinline="true"
+              disableRemotePlayback
               src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260328_065045_c44942da-53c6-4804-b734-f9e07fc22e08.mp4"
             />
+
           )}
           <div className="landing-bg-scrim absolute inset-0" />
 
