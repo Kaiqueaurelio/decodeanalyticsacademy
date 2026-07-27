@@ -294,7 +294,7 @@ export default function LandingPage() {
               controls={false}
               disablePictureInPicture
               preload="auto"
-              // @ts-expect-error atributos legados necessários no Safari iOS
+              // atributos legados necessários no Safari iOS
               webkit-playsinline="true"
               x5-playsinline="true"
               disableRemotePlayback
