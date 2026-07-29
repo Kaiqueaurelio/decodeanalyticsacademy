@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
-import { Send, Loader2, MessageCircle, CheckCircle2, AlertCircle } from "lucide-react";
+import { Send, Loader2, MessageCircle, CheckCircle2, AlertCircle, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -77,8 +77,8 @@ export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps)
 
   useEffect(() => { taRef.current?.focus(); }, []);
 
-  const send = useCallback(async () => {
-    const text = input.trim();
+  const send = useCallback(async (override?: string) => {
+    const text = (override ?? input).trim();
     if (!text || loading) return;
     const newUserMsg: Msg = { role: "user", content: text };
     const history = [...messages, newUserMsg];
@@ -165,6 +165,11 @@ export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps)
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
   };
 
+  const STUDY_PLAN_PROMPT =
+    "Transforme a sua última resposta em um plano de estudos completo: cronograma em tabela, pontos-chave, 5 a 8 exercícios de dificuldade crescente e gabarito comentado explicando cada resposta.";
+
+  const askStudyPlan = () => { if (!loading) send(STUDY_PLAN_PROMPT); };
+
   const clearChat = () => {
     setMessages([]);
     try { localStorage.removeItem(STORAGE_KEY); } catch {}
@@ -236,6 +241,20 @@ export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps)
                   </div>
                 ) : (
                   <p className="whitespace-pre-wrap">{m.content}</p>
+                )}
+                {m.role === "assistant" && !!m.content && i === messages.length - 1 && !loading && (
+                  <div className="mt-3 pt-2 border-t border-border/40">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={askStudyPlan}
+                      className="h-9 gap-2 text-xs"
+                    >
+                      <ClipboardList className="h-3.5 w-3.5" strokeWidth={1.75} />
+                      Virar plano de estudos
+                    </Button>
+                  </div>
                 )}
                 {m.actions && m.actions.length > 0 && (
                   <div className="mt-2 space-y-1">
