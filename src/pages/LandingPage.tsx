@@ -111,6 +111,7 @@ export default function LandingPage() {
   // O vídeo de fundo roda sempre, em qualquer dispositivo; só é montado logo
   // após o primeiro paint para não atrasar o hero.
   const [bgVideoEnabled, setBgVideoEnabled] = useState(false);
+  const [videoBlocked, setVideoBlocked] = useState(false);
   const [showStickyCta, setShowStickyCta] = useState(false);
 
   useEffect(() => {
