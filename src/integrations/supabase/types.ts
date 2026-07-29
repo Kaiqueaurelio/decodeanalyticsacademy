@@ -2445,6 +2445,15 @@ export type Database = {
       get_dashboard_stats: { Args: { _user_id: string }; Returns: Json }
       get_email_for_ra: { Args: { _ra: string }; Returns: string }
       get_exercise_counts: { Args: never; Returns: Json }
+      get_public_leaderboard: {
+        Args: { _limit?: number }
+        Returns: {
+          full_name: string
+          level: number
+          user_id: string
+          xp_points: number
+        }[]
+      }
       get_student_detail: { Args: { _user_id: string }; Returns: Json }
       get_student_rankings: {
         Args: { _limit?: number }
