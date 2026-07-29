@@ -253,7 +253,7 @@ export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps)
             </div>
           ))}
 
-          {loading && (
+          {loading && !messages[messages.length - 1]?.content && (
             <div className="flex gap-3">
               <Avatar className="h-8 w-8 shrink-0 ring-1 ring-border/60">
                 <AvatarImage src={getEllaAvatarUrl()} alt="Ella" />
@@ -263,7 +263,8 @@ export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps)
               </Avatar>
               <div className="bg-muted/50 rounded-2xl px-4 py-2.5 flex items-center gap-2">
                 <Loader2 className="h-3 w-3 animate-spin keep-pulse" />
-                <span className="text-xs text-muted-foreground">Pensando…</span>
+                <span className="text-xs text-muted-foreground">{statusHint ?? "Pensando…"}</span>
+
               </div>
             </div>
           )}
