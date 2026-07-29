@@ -437,12 +437,125 @@ const tools = [
   },
 ] as const;
 
+// ---------- Camada de autorização (Zero Trust / RBAC / least privilege) ----------
+// A assistente NÃO possui privilégios próprios: toda ferramenta é autorizada aqui,
+// no servidor, a partir do papel real do usuário autenticado (lido do banco).
+// A conversa, o prompt e o cliente jamais influenciam esta decisão.
 
+// Ferramentas liberadas para qualquer usuário autenticado (leitura/próprio usuário).
+const STUDENT_TOOLS = new Set<string>([
+  "search_app",
+  "get_apostila",
+  "navigate_to",
+  "list_rss_feeds",
+  "list_free_courses",
+  "my_next_exams",
+  "my_progress",
+  "add_my_flashcard",
+  "practice_exercises",
+  "web_search",
+]);
+
+// Ferramentas exclusivas do papel administrador.
+const ADMIN_TOOLS = new Set<string>([
+  "create_apostila",
+  "update_apostila",
+  "delete_apostila",
+  "generate_cover",
+  "create_exercise",
+  "delete_exercise",
+  "bulk_generate_exercises",
+  "create_calendar_event",
+  "delete_calendar_event",
+  "create_announcement",
+  "delete_announcement",
+  "add_material_link",
+  "add_rss_feed",
+  "delete_rss_feed",
+  "create_free_course",
+  "update_free_course",
+  "delete_free_course",
+  "set_apostila_published",
+  "send_push_broadcast",
+  "admin_stats",
+]);
+
+// Recursos que não existem para o escopo restrito ENEM.
+const ENEM_BLOCKED_TOOLS = new Set<string>(["list_rss_feeds", "list_free_courses"]);
+
+type AuthzCtx = {
+  userId: string;
+  authHeader: string;
+  isAdmin: boolean;
+  contentScope: string;
+  requestId: string;
+};
+
+function authorizeTool(name: string, ctx: AuthzCtx): { allowed: boolean; reason?: string } {
+  // Default deny: ferramenta desconhecida nunca executa.
+  if (!STUDENT_TOOLS.has(name) && !ADMIN_TOOLS.has(name)) {
+    return { allowed: false, reason: "Ferramenta não registrada (negado por padrão)." };
+  }
+  if (ADMIN_TOOLS.has(name) && !ctx.isAdmin) {
+    return { allowed: false, reason: "Ação administrativa negada: o usuário autenticado não é administrador." };
+  }
+  if (!ctx.isAdmin && ctx.contentScope === "enem_only" && ENEM_BLOCKED_TOOLS.has(name)) {
+    return { allowed: false, reason: "Recurso fora do escopo de conteúdo do usuário." };
+  }
+  return { allowed: true };
+}
+
+// Parâmetros nunca são gravados em bruto: cortamos strings longas para não vazar conteúdo.
+function sanitizeParams(args: any) {
+  try {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(args ?? {})) {
+      out[k] = typeof v === "string" ? v.slice(0, 300) : Array.isArray(v) ? `array(${v.length})` : v;
+    }
+    return out;
+  } catch {
+    return {};
+  }
+}
+
+async function auditTool(
+  admin: ReturnType<typeof createClient>,
+  ctx: AuthzCtx,
+  entry: { tool: string; args: any; allowed: boolean; reason?: string; result?: any },
+) {
+  try {
+    await admin.from("ella_audit_log").insert({
+      request_id: ctx.requestId,
+      user_id: ctx.userId,
+      user_role: ctx.isAdmin ? "admin" : "user",
+      content_scope: ctx.contentScope,
+      tool_name: entry.tool,
+      params: sanitizeParams(entry.args),
+      allowed: entry.allowed,
+      denial_reason: entry.reason ?? null,
+      outcome: !entry.allowed ? "denied" : entry.result?.ok ? "success" : "error",
+      result_summary: String(entry.result?.summary ?? entry.result?.error ?? "").slice(0, 500) || null,
+    });
+  } catch (_e) {
+    // Auditoria nunca pode derrubar a resposta ao usuário.
+    console.error("[ella-chat] falha ao registrar auditoria");
+  }
+}
 
 // ---------- Tool executor (server-side, com service role) ----------
-async function executeTool(name: string, args: any, admin: ReturnType<typeof createClient>, ctx: { userId: string; authHeader: string }) {
+async function executeTool(name: string, args: any, admin: ReturnType<typeof createClient>, ctx: AuthzCtx) {
   const { userId, authHeader } = ctx;
+
+  // Gate obrigatório: nada é executado sem autorização do backend.
+  const decision = authorizeTool(name, ctx);
+  if (!decision.allowed) {
+    await auditTool(admin, ctx, { tool: name, args, allowed: false, reason: decision.reason });
+    console.warn(`[ella-chat] tool negada: ${name} (req ${ctx.requestId})`);
+    return { ok: false, error: decision.reason };
+  }
+
   try {
+
     switch (name) {
       case "search_app": {
         const table = args.entity;
