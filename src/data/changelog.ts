@@ -27,6 +27,16 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '3.8.0',
+    date: '2026-07-29',
+    title: 'Ella com pesquisa na internet e respostas mais rápidas',
+    changes: [
+      { kind: 'feature', text: 'A Ella agora pesquisa na internet em tempo real e cita as fontes com link para apoiar os estudos.' },
+      { kind: 'improvement', text: 'Respostas muito mais rápidas: histórico enxuto e processamento otimizado no provedor.' },
+      { kind: 'improvement', text: 'A Ella passa a usar exclusivamente a chave própria do Google, sem depender de créditos externos.' },
+    ],
+  },
+  {
     version: '3.7.2',
     date: '2026-07-29',
     title: 'Navegação por teclado no menu mobile',
