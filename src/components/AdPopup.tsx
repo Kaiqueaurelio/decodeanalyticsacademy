@@ -19,11 +19,20 @@ interface AdPopupProps {
 }
 
 export function AdPopup({ trigger = 'onLoad', delay = 2000 }: AdPopupProps) {
+  const location = useLocation();
+  const isPublicRoute = PUBLIC_ROUTES.includes(location.pathname);
   const { ads, loading, recordAdView, recordAdClick } = useAds('popup');
   const [isVisible, setIsVisible] = useState(false);
   const [timeLeft, setTimeLeft] = useState(AUTO_CLOSE_SECONDS);
   const [currentAdIndex, setCurrentAdIndex] = useState(0);
   const [zoomOpen, setZoomOpen] = useState(false);
+
+  // Fecha imediatamente se o usuario navegar para uma rota publica
+  useEffect(() => {
+    if (isPublicRoute) setIsVisible(false);
+  }, [isPublicRoute]);
+
+
 
   const COOLDOWN_MS = 3 * 60 * 1000; // 3 min entre popups
   const STORAGE_KEY = 'popup_ad_last_shown';
