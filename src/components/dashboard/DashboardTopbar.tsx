@@ -42,7 +42,7 @@ export function DashboardTopbar() {
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="p-0 w-[92vw] max-w-[360px] border-r border-border">
-            <SidebarContent mode="full" setMode={() => setNavOpen(false)} onNavigate={() => setNavOpen(false)} />
+            <SidebarContent mode="full" onNavigate={() => setNavOpen(false)} />
           </SheetContent>
         </Sheet>
 
