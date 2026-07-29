@@ -791,6 +791,7 @@ Proibido: mencionar "IA", "modelo de linguagem", "Lovable", "Gemini" ou qualquer
     // Prefere a chave própria (Google) quando existir; gateway vira reserva.
     const useGoogle = !!GOOGLE_AI_API_KEY;
     let currentModel = useGoogle ? GOOGLE_MODEL : MODEL;
+    console.log(`[ella-chat] provider=${useGoogle ? "google-direct" : "gateway"} model=${currentModel}`);
 
     const callModel = (model: string, viaGoogle: boolean) =>
       fetch(viaGoogle ? GOOGLE_URL : GATEWAY_URL, {
