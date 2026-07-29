@@ -541,4 +541,26 @@ a > svg, button > svg, [role="button"] > svg {
     animation: none !important;
     transform: none !important;
   }
+
+  /* Drawer/sheet, dialog e popovers (Radix): sem slide, apenas fade curto */
+  [data-radix-popper-content-wrapper],
+  [data-state="open"][class*="fixed"],
+  [data-state="closed"][class*="fixed"],
+  [role="dialog"] {
+    animation-duration: 120ms !important;
+    animation-name: none !important;
+    transition: opacity 120ms linear !important;
+    transform: none !important;
+  }
+
+  /* Transição de rota: mantém o fade, remove o deslocamento e o stagger */
+  .page-transition-wrapper {
+    animation: none !important;
+  }
+  .page-transition-wrapper main > * {
+    animation: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+  }
 }
+
