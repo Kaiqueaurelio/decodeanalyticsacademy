@@ -27,6 +27,17 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '3.11.0',
+    date: '2026-07-29',
+    title: 'Segurança da assistente: permissões por perfil e auditoria',
+    changes: [
+      { kind: 'security', text: 'A Ella passou a executar ações apenas com as permissões reais do usuário autenticado: ações administrativas são bloqueadas no servidor para alunos, mesmo se pedidas no chat.' },
+      { kind: 'security', text: 'Proteção contra manipulação por texto: mensagens, contextos e conteúdos colados são tratados como dados, nunca como instruções, e o prompt interno nunca é revelado.' },
+      { kind: 'feature', text: 'Nova aba "Auditoria" no painel administrativo com o registro de cada ação da assistente — usuário, perfil, ferramenta, permissão e resultado.' },
+    ],
+  },
+  {
+
     version: '3.10.0',
     date: '2026-07-29',
     title: 'Plano de estudos com exercícios e gabarito comentado',
