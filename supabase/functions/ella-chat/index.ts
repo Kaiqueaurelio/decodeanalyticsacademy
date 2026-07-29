@@ -386,6 +386,22 @@ const tools = [
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "web_search",
+      description:
+        "Pesquisa atualizada na internet. Use quando a resposta depender de fatos atuais, notícias, datas de vestibular/ENEM, estatísticas, artigos ou quando o app não tiver o conteúdo. Retorna resumo + fontes com links.",
+      parameters: {
+        type: "object",
+        properties: {
+          query: { type: "string", description: "O que pesquisar, em português, específico e completo." },
+        },
+        required: ["query"],
+      },
+    },
+  },
+
   // ---------- Admin (poderes extras) ----------
   {
     type: "function",
