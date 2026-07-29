@@ -808,7 +808,8 @@ Proibido: mencionar "IA", "modelo de linguagem", "Lovable", "Gemini" ou qualquer
       let res = await callModel(currentModel, viaGoogle);
 
       // Fallback em cascata para manter velocidade em picos de quota.
-      if (res.status === 429 || res.status === 503 || res.status === 402) {
+      if (!res.ok) {
+        console.log(`[ella-chat] falha ${res.status} em ${viaGoogle ? "google" : "gateway"}/${currentModel}`);
         if (viaGoogle) {
           if (currentModel !== GOOGLE_FALLBACK_MODEL) {
             currentModel = GOOGLE_FALLBACK_MODEL;
@@ -820,11 +821,14 @@ Proibido: mencionar "IA", "modelo de linguagem", "Lovable", "Gemini" ou qualquer
             currentModel = MODEL;
             res = await callModel(currentModel, false);
           }
-        } else if (currentModel !== SECOND_FALLBACK_MODEL) {
-          currentModel = currentModel === MODEL ? FALLBACK_MODEL : SECOND_FALLBACK_MODEL;
-          res = await callModel(currentModel, false);
+        } else if (res.status === 429 || res.status === 503 || res.status === 402) {
+          if (currentModel !== SECOND_FALLBACK_MODEL) {
+            currentModel = currentModel === MODEL ? FALLBACK_MODEL : SECOND_FALLBACK_MODEL;
+            res = await callModel(currentModel, false);
+          }
         }
       }
+
 
       if (res.status === 429) return new Response(JSON.stringify({ error: "Limite de requisições, tente em instantes." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       if (res.status === 402) return new Response(JSON.stringify({ error: "Créditos do assistente esgotados. Verifique a chave própria em Admin → Provedor do Assistente ou adicione créditos." }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
