@@ -77,8 +77,9 @@ export function MobileBottomNav() {
                 key={item.to}
                 to={item.to}
                 onClick={handleNavigate(item.to)}
+                aria-current={active ? 'page' : undefined}
                 className={cn(
-                  'flex min-h-[54px] flex-col items-center justify-center gap-1 rounded-xl px-1 text-[10px] font-semibold leading-none transition-colors touch-manipulation',
+                  'flex min-h-[54px] flex-col items-center justify-center gap-1 rounded-xl px-1 text-[10px] font-semibold leading-none transition-colors touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
                   active
                     ? 'bg-primary/12 text-primary'
                     : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
@@ -87,6 +88,7 @@ export function MobileBottomNav() {
                 <item.icon className="h-[19px] w-[19px]" strokeWidth={active ? 2.6 : 2.2} />
                 <span className="max-w-full truncate">{item.label}</span>
               </NavLink>
+
             );
           })}
 
