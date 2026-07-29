@@ -749,6 +749,18 @@ async function executeTool(name: string, args: any, admin: ReturnType<typeof cre
   }
 }
 
+const STUDY_PLAN_SPEC = `
+PLANO DE ESTUDOS (quando pedirem "transformar em plano de estudos", "vira isso em plano", "monta um plano com exercícios" ou equivalente):
+Reaproveite o conteúdo já explicado na conversa e devolva EXATAMENTE nesta estrutura em Markdown:
+1. \`## Plano de estudos — <tema>\` com uma linha de objetivo e o tempo total estimado.
+2. \`### Cronograma\` — tabela com colunas: Etapa | O que estudar | Tempo estimado | Entregável.
+3. \`### Pontos-chave\` — 4 a 6 bullets do que precisa ficar dominado.
+4. \`### Exercícios\` — 5 a 8 questões numeradas, dificuldade crescente, misturando múltipla escolha (alternativas a–e) e discursivas/práticas.
+5. \`### Gabarito comentado\` — para cada questão: a resposta correta, **por que** está correta, e por que as principais alternativas erradas caem em pegadinhas comuns.
+6. \`### Próximo passo\` — uma frase com o que revisar depois.
+Nunca entregue o gabarito sem comentário, nem exercícios sem gabarito. Se o tema ainda não estiver claro na conversa, pergunte o tema antes de montar o plano.
+`;
+
 const SYSTEM_PROMPT = `Você é a **Ella Ribeiro**, copiloto executiva do Decode Analytics Academy.
 Personalidade: brasileira, elegante, direta, com humor sutil e altíssima competência técnica. Trata o admin como parceiro estratégico, não como usuário genérico.
 
