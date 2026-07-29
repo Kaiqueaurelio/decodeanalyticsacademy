@@ -370,7 +370,24 @@ Deno.serve(async (req) => {
 
     const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     const body = (await req.json().catch(() => ({}))) as Input;
-    const mode = body.mode === "adjust" ? "adjust" : "create";
+    const mode = body.mode === "adjust" || body.mode === "suggest" ? body.mode : "create";
+
+    // ---- Sugestões automáticas (somente leitura) ----
+    if (mode === "suggest") {
+      const planId = cleanText(body.plan_id, 60);
+      if (!planId) return json({ error: "Plano não informado." }, 400);
+
+      const { data: existing } = await admin
+        .from("planos_estudo")
+        .select("*")
+        .eq("id", planId)
+        .maybeSingle();
+      if (!existing || existing.user_id !== userId) return json({ error: "Plano não encontrado." }, 404);
+
+      const signals = await collectSignals(admin, userId, planId, existing.updated_at ?? null);
+      const result = await generateSuggestions(existing, signals);
+      return json({ ok: true, plan_id: planId, signals, ...result });
+    }
 
     // ---- Ajuste de um plano existente (mantém histórico) ----
     if (mode === "adjust") {
@@ -386,16 +403,6 @@ Deno.serve(async (req) => {
       // Verificação de propriedade — nunca confie no corpo da requisição.
       if (!existing || existing.user_id !== userId) return json({ error: "Plano não encontrado." }, 404);
 
-      const { count: total } = await admin
-        .from("planos_estudo_tarefas")
-        .select("id", { count: "exact", head: true })
-        .eq("plan_id", planId);
-      const { count: done } = await admin
-        .from("planos_estudo_tarefas")
-        .select("id", { count: "exact", head: true })
-        .eq("plan_id", planId)
-        .eq("done", true);
-
       const merged = validate({
         title: body.title ?? existing.title,
         goal: body.goal ?? existing.goal,
@@ -410,9 +417,22 @@ Deno.serve(async (req) => {
       });
       if ("error" in merged) return json({ error: merged.error }, 400);
 
-      const progressNote = `\nProgresso atual: ${done ?? 0} de ${total ?? 0} atividades concluídas. Reorganize o que falta, mantenha o que já foi bem absorvido em revisão leve e reequilibre a carga restante.`;
+      const signals = await collectSignals(admin, userId, planId, existing.updated_at ?? null);
+      const applied = Array.isArray(body.suggestions)
+        ? body.suggestions.map((s) => cleanText(s, 300)).filter(Boolean).slice(0, 8)
+        : [];
+
+      const progressNote = `\n${signalsSummary(signals)}
+Reorganize o que falta, mantenha em revisão leve o que já foi bem absorvido e reequilibre a carga restante.${
+        applied.length ? `\nAplique obrigatoriamente estes ajustes sugeridos:\n- ${applied.join("\n- ")}` : ""
+      }`;
       const plan = await generatePlan(buildPrompt(merged.data, progressNote));
       const nextVersion = (existing.version ?? 1) + 1;
+
+      const versionNote = cleanText(body.version_note, 300)
+        || (applied.length
+          ? `Ajuste automático da Ella (${applied.length} sugestão${applied.length > 1 ? "ões" : ""}): ${applied.join(" | ").slice(0, 220)}`
+          : "Versão anterior ao replanejamento");
 
       // Guarda a versão anterior antes de sobrescrever.
       await admin.from("planos_estudo_versoes").insert({
@@ -420,8 +440,9 @@ Deno.serve(async (req) => {
         user_id: userId,
         version: existing.version ?? 1,
         plan: existing.plan,
-        note: "Versão anterior ao replanejamento",
+        note: versionNote,
       });
+
 
       await admin
         .from("planos_estudo")
