@@ -37,14 +37,14 @@ export default function ExerciciosIndexPage() {
       (exData ?? []).forEach((e: any) => counts.set(e.apostila_id, (counts.get(e.apostila_id) ?? 0) + 1));
       const { data: aps } = await supabase
         .from('apostilas')
-        .select('id, title, subject, hidden')
+        .select('id, title, category, published')
         .in('id', ids);
       const out: Row[] = (aps ?? [])
-        .filter((a: any) => !a.hidden)
+        .filter((a: any) => a.published !== false)
         .map((a: any) => ({
           apostila_id: a.id,
           title: a.title,
-          subject: a.subject ?? null,
+          subject: a.category ?? null,
           count: counts.get(a.id) ?? 0,
         }))
         .sort((a, b) => (a.subject || '').localeCompare(b.subject || '') || a.title.localeCompare(b.title));
