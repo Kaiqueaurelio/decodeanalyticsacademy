@@ -168,11 +168,14 @@ export default function LandingPage() {
       if (disposed) return;
       const attempt = video.play();
       if (attempt && typeof attempt.catch === 'function') {
-        attempt.catch(() => {
-          // Safari em Modo de Baixo Consumo bloqueia o autoplay:
-          // liberamos na primeira interação do usuário.
-          armGestureUnlock();
-        });
+        attempt
+          .then(() => setVideoBlocked(false))
+          .catch(() => {
+            // Safari em Modo de Baixo Consumo bloqueia o autoplay:
+            // liberamos na primeira interação do usuário (ou no botão de play).
+            setVideoBlocked(true);
+            armGestureUnlock();
+          });
       }
     };
 
