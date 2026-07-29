@@ -9,7 +9,7 @@ import { Sun, Moon } from 'lucide-react';
 import { useUserProfile } from '@/hooks/queries/useUserProfile';
 import { useState } from 'react';
 import { useApostilasList } from '@/hooks/queries/useDashboardData';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { SidebarContent } from './StudentSidebar';
 
 export function DashboardTopbar() {
@@ -37,14 +37,30 @@ export function DashboardTopbar() {
       <div className="flex items-center gap-2 px-3 sm:px-6 lg:px-8 h-16">
         <Sheet open={navOpen} onOpenChange={setNavOpen}>
           <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="lg:hidden h-9 w-9 rounded-xl" aria-label="Abrir menu">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="lg:hidden h-11 w-11 rounded-xl focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              aria-label="Abrir menu de navegação"
+              aria-haspopup="dialog"
+              aria-expanded={navOpen}
+            >
               <Menu strokeWidth={2.5} className="h-[18px] w-[18px]" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="p-0 w-[92vw] max-w-[360px] border-r border-border">
+          <SheetContent
+            side="left"
+            aria-label="Menu de navegação"
+            className="p-0 w-[92vw] max-w-[360px] border-r border-border"
+          >
+            <SheetHeader className="sr-only">
+              <SheetTitle>Menu de navegação</SheetTitle>
+              <SheetDescription>Use Tab para navegar e Esc para fechar.</SheetDescription>
+            </SheetHeader>
             <SidebarContent mode="full" onNavigate={() => setNavOpen(false)} />
           </SheetContent>
         </Sheet>
+
 
         {isAdmin && (
           <Button
