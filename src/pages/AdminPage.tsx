@@ -19,7 +19,7 @@ import {
   Plus, Trash2, Eye, EyeOff, BookOpen, FileText, PenLine, ArrowLeft,
   LayoutDashboard, CheckCircle, TrendingUp, Upload, BarChart3, Clock,
   Link as LinkIcon, Loader2, AlertCircle, Edit, Download, File, Image, Video, Music, FileSpreadsheet, Presentation,
-  Users, ShieldBan, ShieldCheck, Search, Menu, X, Activity, GraduationCap, FolderOpen, Settings, RefreshCw,
+  Users, ShieldBan, ShieldCheck, ShieldAlert, Search, Menu, X, Activity, GraduationCap, FolderOpen, Settings, RefreshCw,
   Sun, Moon, FileUp, PenTool, Wand2, Megaphone, Combine, Calendar as CalIcon, MessageSquare, MessageSquareQuote, Link2, FileDown, MoreHorizontal, Paperclip, Rss, Info, ExternalLink, ChevronRight, History
 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
@@ -174,6 +174,8 @@ function AdminSidebar({ tab, setTab, stats, sidebarOpen, setSidebarOpen }: {
   sidebarOpen: boolean; setSidebarOpen: (v: boolean) => void;
 }) {
   const navigate = useNavigate();
+  // Contador ao vivo de alertas de segurança em aberto (visível só para admin).
+  const { openCount: securityOpenCount } = useSecurityAlerts({ enabled: true });
   const navItems = [
     { id: 'overview' as Tab, label: 'Visão Geral', icon: BarChart3, count: undefined },
     { id: 'apostilas' as Tab, label: 'Apostilas', icon: BookOpen, count: stats.apostilas },
