@@ -54,6 +54,7 @@ const CoverCardVisualPage = lazy(() => import("./pages/visual/CoverCardVisualPag
 const OfflinePage = lazy(() => import("./pages/OfflinePage"));
 const ReviewPage = lazy(() => import("./pages/ReviewPage"));
 const SimuladoPage = lazy(() => import("./pages/SimuladoPage"));
+const PlanoEstudosPage = lazy(() => import("./pages/PlanoEstudosPage"));
 const PreExamReviewPage = lazy(() => import("./pages/PreExamReviewPage"));
 const TiraDuvidaPage = lazy(() => import("./pages/TiraDuvidaPage"));
 const AdminBibliotecaPage = lazy(() => import("./pages/AdminBibliotecaPage"));
