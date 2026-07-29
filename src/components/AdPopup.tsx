@@ -50,7 +50,8 @@ export function AdPopup({ trigger = 'onLoad', delay = 2000 }: AdPopupProps) {
 
   // Mostra na carga + reagenda a cada cooldown
   useEffect(() => {
-    if (loading || ads.length === 0 || trigger !== 'onLoad') return;
+    if (isPublicRoute || loading || ads.length === 0 || trigger !== 'onLoad') return;
+
 
     const showAd = () => {
       if (!canShowNow() || document.hidden) return;
