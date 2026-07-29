@@ -326,7 +326,8 @@ export function SidebarContent({
                         key={`${it.label}-${it.to}`}
                         type="button"
                         onClick={() => open(it.to)}
-                        className={`group relative flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-[13px] font-medium transition-all
+                        aria-current={active ? 'page' : undefined}
+                        className={`group relative flex min-h-[44px] w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-[13px] font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background
                           ${active
                             ? 'bg-accent/10 text-foreground'
                             : 'text-muted-foreground hover:bg-muted/40 hover:text-foreground'}`}
