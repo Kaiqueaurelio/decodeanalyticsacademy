@@ -44,12 +44,14 @@ export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps)
       "Como estruturar uma redação nota 1000 do ENEM?",
       "Resuma a Revolução Industrial em 5 pontos",
       "Me dê 3 exercícios de interpretação de texto",
+      "Vire isso em um plano de estudos com gabarito comentado",
     ];
     return [
       "Me explique herança em POO com exemplo",
       "Como funciona um algoritmo de ordenação Merge Sort?",
       "Resuma normalização de banco de dados",
       "Me dê 3 exercícios sobre listas encadeadas",
+      "Vire isso em um plano de estudos com gabarito comentado",
     ];
   }, [isAdmin, contentScope]);
 
@@ -84,7 +86,7 @@ export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps)
     const history = [...messages, newUserMsg];
     // Já cria a bolha da assistente vazia — o texto entra token a token.
     setMessages([...history, { role: "assistant", content: "" }]);
-    setInput("");
+    if (override === undefined) setInput("");
     setLoading(true);
 
     const assistantIndex = history.length;
