@@ -106,6 +106,7 @@ export default function ExerciciosIndexPage() {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Buscar disciplina ou apostila…"
+            aria-label="Buscar disciplina ou apostila"
             className="pl-9"
           />
         </div>
