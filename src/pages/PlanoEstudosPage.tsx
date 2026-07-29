@@ -398,6 +398,12 @@ function PlanDetail({ plan, onBack, onChanged }: {
           })}
         </TabsContent>
 
+        <TabsContent value="sugestoes" className="mt-4">
+          <EllaPlanSuggestions plan={plan} onApplied={() => { reload(); onChanged(); }} />
+        </TabsContent>
+
+
+
         <TabsContent value="metas" className="mt-4 space-y-4">
           {([
             ['Curto prazo', content.metas?.curto_prazo],
