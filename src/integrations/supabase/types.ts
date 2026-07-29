@@ -1602,6 +1602,157 @@ export type Database = {
         }
         Relationships: []
       }
+      planos_estudo: {
+        Row: {
+          area: string | null
+          created_at: string
+          days_per_week: number
+          deadline: string | null
+          goal: string
+          hours_per_day: number
+          id: string
+          level: string
+          plan: Json
+          priorities: Json
+          status: string
+          subjects: string[]
+          title: string
+          updated_at: string
+          user_id: string
+          version: number
+        }
+        Insert: {
+          area?: string | null
+          created_at?: string
+          days_per_week?: number
+          deadline?: string | null
+          goal?: string
+          hours_per_day?: number
+          id?: string
+          level?: string
+          plan?: Json
+          priorities?: Json
+          status?: string
+          subjects?: string[]
+          title: string
+          updated_at?: string
+          user_id: string
+          version?: number
+        }
+        Update: {
+          area?: string | null
+          created_at?: string
+          days_per_week?: number
+          deadline?: string | null
+          goal?: string
+          hours_per_day?: number
+          id?: string
+          level?: string
+          plan?: Json
+          priorities?: Json
+          status?: string
+          subjects?: string[]
+          title?: string
+          updated_at?: string
+          user_id?: string
+          version?: number
+        }
+        Relationships: []
+      }
+      planos_estudo_tarefas: {
+        Row: {
+          created_at: string
+          day_label: string
+          done: boolean
+          done_at: string | null
+          duration_minutes: number
+          id: string
+          kind: string
+          plan_id: string
+          sort_order: number
+          subject: string | null
+          title: string
+          user_id: string
+          week_index: number
+        }
+        Insert: {
+          created_at?: string
+          day_label?: string
+          done?: boolean
+          done_at?: string | null
+          duration_minutes?: number
+          id?: string
+          kind?: string
+          plan_id: string
+          sort_order?: number
+          subject?: string | null
+          title: string
+          user_id: string
+          week_index?: number
+        }
+        Update: {
+          created_at?: string
+          day_label?: string
+          done?: boolean
+          done_at?: string | null
+          duration_minutes?: number
+          id?: string
+          kind?: string
+          plan_id?: string
+          sort_order?: number
+          subject?: string | null
+          title?: string
+          user_id?: string
+          week_index?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "planos_estudo_tarefas_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "planos_estudo"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      planos_estudo_versoes: {
+        Row: {
+          created_at: string
+          id: string
+          note: string | null
+          plan: Json
+          plan_id: string
+          user_id: string
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          note?: string | null
+          plan: Json
+          plan_id: string
+          user_id: string
+          version: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          note?: string | null
+          plan?: Json
+          plan_id?: string
+          user_id?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "planos_estudo_versoes_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "planos_estudo"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       playbooks_bookmarks: {
         Row: {
           book_id: string
