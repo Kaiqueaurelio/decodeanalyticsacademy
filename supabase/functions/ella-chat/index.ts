@@ -931,8 +931,13 @@ Deno.serve(async (req) => {
     const contentScope: string = ((prof as any)?.content_scope as string) ?? "full";
     const firstName = String((prof as any)?.full_name ?? "").split(" ")[0] || "";
 
-    const READ_ONLY_TOOLS = new Set(["search_app", "get_apostila", "navigate_to", "list_rss_feeds", "list_free_courses", "my_next_exams", "my_progress", "add_my_flashcard", "practice_exercises", "web_search"]);
-    const availableTools = isAdmin ? (tools as any[]) : (tools as any[]).filter((t) => READ_ONLY_TOOLS.has(t.function.name));
+    // Identificador da requisição — usado na auditoria e nos logs.
+    const requestId = crypto.randomUUID();
+    const authzCtx: AuthzCtx = { userId, authHeader, isAdmin, contentScope, requestId };
+
+    // O catálogo exposto ao modelo já é filtrado pela mesma matriz do backend.
+    // Mesmo assim, cada execução passa novamente pelo gate em executeTool.
+    const availableTools = (tools as any[]).filter((t) => authorizeTool(t.function.name, authzCtx).allowed);
 
     const body = await req.json();
     const incoming: { role: string; content: string }[] = Array.isArray(body.messages) ? body.messages : [];
@@ -1067,7 +1072,7 @@ Proibido: mencionar "IA", "modelo de linguagem", "Lovable", "Gemini" ou qualquer
         return { tc, parsed };
       });
       const results = await Promise.all(
-        parsedCalls.map(({ tc, parsed }: any) => executeTool(tc.function.name, parsed, adminClient, { userId, authHeader })),
+        parsedCalls.map(({ tc, parsed }: any) => executeTool(tc.function.name, parsed, adminClient, authzCtx)),
       );
       for (let i = 0; i < parsedCalls.length; i++) {
         const { tc, parsed } = parsedCalls[i];
