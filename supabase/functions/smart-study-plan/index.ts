@@ -192,6 +192,164 @@ function planToTasks(plan: any, planId: string, userId: string) {
   return tasks.slice(0, 400);
 }
 
+// ---------------------------------------------------------------------------
+// Sinais de histórico do aluno (conclusão e progresso) usados pelas sugestões.
+// Todas as leituras são filtradas pelo user_id derivado do token.
+// ---------------------------------------------------------------------------
+type PlanSignals = {
+  totalTasks: number;
+  doneTasks: number;
+  pct: number;
+  bySubject: { subject: string; total: number; done: number; pct: number }[];
+  staleDays: number;
+  apostilasConcluidas: number;
+  exerciciosRespondidos: number;
+  acertos: number;
+  precisao: number;
+  streakAtual: number;
+  ultimaAtividade: string | null;
+};
+
+async function collectSignals(
+  admin: ReturnType<typeof createClient>,
+  userId: string,
+  planId: string,
+  planUpdatedAt: string | null,
+): Promise<PlanSignals> {
+  const [tasksRes, completionsRes, answersRes, streakRes] = await Promise.all([
+    admin
+      .from("planos_estudo_tarefas")
+      .select("subject, done, done_at, duration_minutes")
+      .eq("plan_id", planId)
+      .eq("user_id", userId)
+      .limit(400),
+    admin
+      .from("apostila_completions")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId),
+    admin
+      .from("answers")
+      .select("is_correct")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(300),
+    admin
+      .from("study_streaks")
+      .select("current_streak")
+      .eq("user_id", userId)
+      .maybeSingle(),
+  ]);
+
+  const tasks = (tasksRes.data ?? []) as { subject: string | null; done: boolean; done_at: string | null }[];
+  const map = new Map<string, { total: number; done: number }>();
+  let lastDone: string | null = null;
+
+  for (const t of tasks) {
+    const key = t.subject || "Geral";
+    const cur = map.get(key) ?? { total: 0, done: 0 };
+    cur.total += 1;
+    if (t.done) {
+      cur.done += 1;
+      if (t.done_at && (!lastDone || t.done_at > lastDone)) lastDone = t.done_at;
+    }
+    map.set(key, cur);
+  }
+
+  const doneTasks = tasks.filter((t) => t.done).length;
+  const answers = (answersRes.data ?? []) as { is_correct: boolean }[];
+  const acertos = answers.filter((a) => a.is_correct).length;
+  const reference = lastDone ?? planUpdatedAt;
+  const staleDays = reference
+    ? Math.max(0, Math.floor((Date.now() - new Date(reference).getTime()) / 86400000))
+    : 0;
+
+  return {
+    totalTasks: tasks.length,
+    doneTasks,
+    pct: tasks.length ? Math.round((doneTasks / tasks.length) * 100) : 0,
+    bySubject: [...map.entries()]
+      .map(([subject, v]) => ({
+        subject,
+        total: v.total,
+        done: v.done,
+        pct: v.total ? Math.round((v.done / v.total) * 100) : 0,
+      }))
+      .sort((a, b) => a.pct - b.pct)
+      .slice(0, 15),
+    staleDays,
+    apostilasConcluidas: completionsRes.count ?? 0,
+    exerciciosRespondidos: answers.length,
+    acertos,
+    precisao: answers.length ? Math.round((acertos / answers.length) * 100) : 0,
+    streakAtual: (streakRes.data as { current_streak?: number } | null)?.current_streak ?? 0,
+    ultimaAtividade: lastDone,
+  };
+}
+
+function signalsSummary(s: PlanSignals) {
+  const bySubject = s.bySubject
+    .map((x) => `${x.subject}: ${x.done}/${x.total} (${x.pct}%)`)
+    .join("; ") || "sem atividades registradas";
+  return `Histórico real do aluno:
+- Progresso do plano: ${s.doneTasks}/${s.totalTasks} atividades (${s.pct}%).
+- Progresso por disciplina: ${bySubject}.
+- Dias desde a última atividade concluída: ${s.staleDays}.
+- Apostilas concluídas na plataforma: ${s.apostilasConcluidas}.
+- Exercícios respondidos (últimos 300): ${s.exerciciosRespondidos}, com ${s.precisao}% de acerto.
+- Sequência de estudo atual: ${s.streakAtual} dia(s).`;
+}
+
+const SUGGESTION_SHAPE = `{
+  "resumo": string,
+  "sugestoes": [{
+    "titulo": string,
+    "motivo": string,
+    "acao": "reforcar"|"reduzir"|"reordenar"|"revisar"|"ritmo",
+    "disciplina": string,
+    "impacto": "alto"|"medio"|"baixo",
+    "instrucao": string
+  }]
+}`;
+
+async function generateSuggestions(plan: any, s: PlanSignals) {
+  const prompt = `Você é a Ella, tutora de estudos da plataforma. Analise o desempenho abaixo e proponha de 3 a 5 ajustes objetivos no plano de estudos do aluno.
+
+Plano atual:
+- Título: ${plan.title}
+- Objetivo: ${plan.goal}
+- Disciplinas: ${(plan.subjects ?? []).join(", ")}
+- Nível: ${plan.level}
+- Rotina: ${plan.hours_per_day}h/dia, ${plan.days_per_week} dias/semana
+- Data limite: ${plan.deadline ?? "sem data definida"}
+
+${signalsSummary(s)}
+
+Regras:
+- Cada sugestão precisa citar o dado que a justifica (percentual, disciplina ou dias parados).
+- "instrucao" deve ser uma ordem curta e aplicável ao replanejamento do cronograma.
+- Priorize disciplinas com menor percentual de conclusão e retome o ritmo se o aluno estiver parado.
+- Português do Brasil, sem emojis, sem markdown.
+
+Responda SOMENTE com JSON válido nesta forma:
+${SUGGESTION_SHAPE}`;
+
+  const raw = await generatePlan(prompt);
+  const list = Array.isArray(raw?.sugestoes) ? raw.sugestoes : [];
+  return {
+    resumo: cleanText(raw?.resumo, 400),
+    sugestoes: list.slice(0, 6).map((x: any) => ({
+      titulo: cleanText(x?.titulo, 120) || "Ajuste sugerido",
+      motivo: cleanText(x?.motivo, 300),
+      acao: ["reforcar", "reduzir", "reordenar", "revisar", "ritmo"].includes(x?.acao) ? x.acao : "reforcar",
+      disciplina: cleanText(x?.disciplina, 80),
+      impacto: ["alto", "medio", "baixo"].includes(x?.impacto) ? x.impacto : "medio",
+      instrucao: cleanText(x?.instrucao, 300),
+    })),
+  };
+}
+
+
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
