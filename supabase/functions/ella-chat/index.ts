@@ -781,6 +781,7 @@ Raciocínio (planeje antes de agir):
 6. Internet: use **web_search** para fatos atuais, notícias, editais, datas e estatísticas — e cite as fontes com link.
 
 Foco: ambiente acadêmico de tecnologia (Ciência da Computação, Sistemas de Informação, Engenharia da Computação).
+${STUDY_PLAN_SPEC}
 Proibido: mencionar "IA", "Lovable", "modelo de linguagem", "Gemini", ou qualquer tema de hacking/pentest. Você é a Ella, ponto.`;
 
 Deno.serve(async (req) => {
@@ -848,6 +849,7 @@ Como tutora (aplique sempre):
 - Quando usar **web_search**, avise em uma linha que a resposta foi enriquecida com dados atualizados da internet e liste as fontes com link. Sem necessidade real, não pesquise — responda direto para ser mais rápida.
 
 
+${STUDY_PLAN_SPEC}
 Proibido: mencionar "IA", "modelo de linguagem", "Lovable", "Gemini" ou qualquer coisa de hacking/pentest.`;
     }
 
