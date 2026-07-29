@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, lazy } from 'react';
+import { useState, useRef, useEffect, useCallback, lazy } from 'react';
 import { DeferredSection } from '@/components/DeferredSection';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import {
   ArrowRight, BookOpen, GraduationCap, Cpu, Brain,
   ChevronRight, Download, Smartphone, Layers, Rocket, Target,
-  BarChart3, PenLine, Flame, TrendingUp, CheckCircle,
+  BarChart3, PenLine, Flame, TrendingUp, CheckCircle, Play,
 } from 'lucide-react';
 import logoAvif1x from '@/assets/owl-icon-72.avif';
 import logoAvif2x from '@/assets/owl-icon-144.avif';
@@ -111,6 +111,7 @@ export default function LandingPage() {
   // O vídeo de fundo roda sempre, em qualquer dispositivo; só é montado logo
   // após o primeiro paint para não atrasar o hero.
   const [bgVideoEnabled, setBgVideoEnabled] = useState(false);
+  const [videoBlocked, setVideoBlocked] = useState(false);
   const [showStickyCta, setShowStickyCta] = useState(false);
 
   useEffect(() => {
@@ -167,11 +168,14 @@ export default function LandingPage() {
       if (disposed) return;
       const attempt = video.play();
       if (attempt && typeof attempt.catch === 'function') {
-        attempt.catch(() => {
-          // Safari em Modo de Baixo Consumo bloqueia o autoplay:
-          // liberamos na primeira interação do usuário.
-          armGestureUnlock();
-        });
+        attempt
+          .then(() => setVideoBlocked(false))
+          .catch(() => {
+            // Safari em Modo de Baixo Consumo bloqueia o autoplay:
+            // liberamos na primeira interação do usuário (ou no botão de play).
+            setVideoBlocked(true);
+            armGestureUnlock();
+          });
       }
     };
 
@@ -203,7 +207,10 @@ export default function LandingPage() {
       startPlayback();
     };
 
+    const onPlaying = () => setVideoBlocked(false);
+
     startPlayback();
+    video.addEventListener('playing', onPlaying);
     video.addEventListener('canplay', startPlayback);
     video.addEventListener('loadedmetadata', startPlayback);
     video.addEventListener('loadeddata', startPlayback);
@@ -228,6 +235,7 @@ export default function LandingPage() {
     return () => {
       disposed = true;
       disarmGestureUnlock();
+      video.removeEventListener('playing', onPlaying);
       video.removeEventListener('canplay', startPlayback);
       video.removeEventListener('loadedmetadata', startPlayback);
       video.removeEventListener('loadeddata', startPlayback);
@@ -259,6 +267,13 @@ export default function LandingPage() {
     };
   }, []);
 
+
+  const handleManualPlay = useCallback(() => {
+    const video = heroVideoRef.current;
+    if (!video) return;
+    video.muted = true;
+    void video.play().then(() => setVideoBlocked(false)).catch(() => setVideoBlocked(true));
+  }, []);
 
 
   const handleInstallPWA = async () => {
@@ -320,6 +335,20 @@ export default function LandingPage() {
         </div>,
         document.body,
       )}
+
+      {/* Autoplay bloqueado (iOS/Safari): botão para iniciar o vídeo manualmente */}
+      {videoBlocked && (
+        <button
+          type="button"
+          onClick={handleManualPlay}
+          aria-label="Reproduzir vídeo de fundo"
+          className="fixed bottom-5 right-4 z-40 flex h-11 w-11 items-center justify-center rounded-full border border-primary/40 bg-background/80 text-primary backdrop-blur-sm transition-colors hover:bg-primary/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <Play className="h-5 w-5" fill="currentColor" />
+        </button>
+      )}
+
+
 
 
       {/* ═══ HERO / NAVEGAÇÃO ═══ */}
