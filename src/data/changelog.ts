@@ -35,6 +35,7 @@ export const CHANGELOG: ChangelogEntry[] = [
       { kind: 'feature', text: 'Aviso em tempo real: sempre que o servidor recusa uma ação, o administrador é notificado na hora, com contador ao vivo no menu lateral.' },
       { kind: 'security', text: 'Três tipos de alerta: tentativa de agir como administrador (crítico), ação fora do catálogo autorizado e acesso a conteúdo fora do escopo da conta.' },
       { kind: 'security', text: 'Tentativas repetidas do mesmo usuário são agrupadas e viram alerta crítico a partir da terceira ocorrência, revelando padrões de sondagem.' },
+      { kind: 'feature', text: 'Auditoria com filtros avançados (usuário, papel, período, tipo de ação e resultado) e exportação em CSV e PDF.' },
       { kind: 'security', text: 'Os alertas só podem ser criados pelo servidor e só são visíveis para administradores; o conteúdo original não pode ser editado, apenas marcado como tratado.' },
     ],
   },
