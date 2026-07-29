@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+
 import {
   ArrowLeft, CalendarClock, CheckCircle2, Circle, Download, Loader2, NotebookPen,
   Plus, RefreshCw, Sparkles, Target, Trash2, TrendingUp, History,
@@ -495,7 +495,7 @@ function PlanDetail({ plan, onBack, onChanged }: {
 
 // ---------------------------------------------------------------- Página
 export default function PlanoEstudosPage() {
-  const navigate = useNavigate();
+
   const { plans, loading, error, reload } = useStudyPlans();
   const [wizardOpen, setWizardOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
