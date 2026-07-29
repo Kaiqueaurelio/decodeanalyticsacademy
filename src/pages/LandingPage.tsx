@@ -268,6 +268,13 @@ export default function LandingPage() {
   }, []);
 
 
+  const handleManualPlay = useCallback(() => {
+    const video = heroVideoRef.current;
+    if (!video) return;
+    video.muted = true;
+    void video.play().then(() => setVideoBlocked(false)).catch(() => setVideoBlocked(true));
+  }, []);
+
 
   const handleInstallPWA = async () => {
     try {
