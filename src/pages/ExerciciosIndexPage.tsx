@@ -130,18 +130,22 @@ export default function ExerciciosIndexPage() {
                   {items.map(r => (
                     <Card
                       key={r.apostila_id}
-                      className="group flex items-center justify-between gap-3 p-4 cursor-pointer transition-all hover:border-primary/40 hover:shadow-[0_0_24px_-12px_hsl(var(--primary)/0.5)]"
-                      onClick={() => navigate(`/exercises/${r.apostila_id}`)}
+                      className="group p-0 transition-all hover:border-primary/40 hover:shadow-[0_0_24px_-12px_hsl(var(--primary)/0.5)] focus-within:border-primary/60"
                     >
-                      <div className="min-w-0">
-                        <div className="truncate text-sm font-semibold">{r.title}</div>
-                        <div className="text-[11px] text-muted-foreground">{r.count} {r.count === 1 ? 'questão' : 'questões'}</div>
-                      </div>
-                      <Button size="icon" variant="ghost" className="h-8 w-8 shrink-0 group-hover:text-primary" aria-label="Próximo">
-                        <ChevronRight className="h-4 w-4" />
-                      </Button>
+                      <button
+                        type="button"
+                        onClick={() => navigate(`/exercises/${r.apostila_id}`)}
+                        className="flex w-full items-center justify-between gap-3 rounded-lg p-4 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                      >
+                        <span className="min-w-0">
+                          <span className="block truncate text-sm font-semibold">{r.title}</span>
+                          <span className="block text-[11px] text-muted-foreground">{r.count} {r.count === 1 ? 'questão' : 'questões'}</span>
+                        </span>
+                        <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground group-hover:text-primary" aria-hidden="true" />
+                      </button>
                     </Card>
                   ))}
+
                 </div>
               </section>
             ))}
