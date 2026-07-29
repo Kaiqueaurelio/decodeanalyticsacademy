@@ -54,6 +54,7 @@ const CoverCardVisualPage = lazy(() => import("./pages/visual/CoverCardVisualPag
 const OfflinePage = lazy(() => import("./pages/OfflinePage"));
 const ReviewPage = lazy(() => import("./pages/ReviewPage"));
 const SimuladoPage = lazy(() => import("./pages/SimuladoPage"));
+const PlanoEstudosPage = lazy(() => import("./pages/PlanoEstudosPage"));
 const PreExamReviewPage = lazy(() => import("./pages/PreExamReviewPage"));
 const TiraDuvidaPage = lazy(() => import("./pages/TiraDuvidaPage"));
 const AdminBibliotecaPage = lazy(() => import("./pages/AdminBibliotecaPage"));
@@ -132,6 +133,7 @@ function AnimatedRoutes() {
         <Route path="/performance" element={<Navigate to="/desempenho" replace />} />
         <Route path="/review" element={<ProtectedRoute><ReviewPage /></ProtectedRoute>} />
         <Route path="/simulado" element={<ProtectedRoute><SimuladoPage /></ProtectedRoute>} />
+        <Route path="/plano-de-estudos" element={<ProtectedRoute><PlanoEstudosPage /></ProtectedRoute>} />
         <Route path="/revisao-prova/:eventId" element={<ProtectedRoute><PreExamReviewPage /></ProtectedRoute>} />
         <Route path="/apostila/:id" element={<ProtectedRoute><ApostilaPage /></ProtectedRoute>} />
         <Route path="/apostila/:id/read" element={<ProtectedRoute><ApostilaReaderPage /></ProtectedRoute>} />

@@ -31,6 +31,7 @@ import {
   Activity,
   HelpCircle,
   Trophy,
+  NotebookPen,
   RotateCcw,
   LogOut,
   Newspaper,
@@ -73,6 +74,7 @@ const menuGroups: { label: string; items: MenuItem[] }[] = [
       { to: '/flashcards', icon: Layers, label: 'Flashcards', hideForEnem: true },
       { to: '/review', icon: RotateCcw, label: 'Revisão' },
       { to: '/simulado', icon: Trophy, label: 'Simulado' },
+      { to: '/plano-de-estudos', icon: NotebookPen, label: 'Plano de Estudos' },
     ],
   },
   {

@@ -27,6 +27,18 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '3.12.0',
+    date: '2026-07-29',
+    title: 'Plano de Estudos Inteligente',
+    changes: [
+      { kind: 'feature', text: 'Nova página "Plano de Estudos": a Ella monta um cronograma semanal completo a partir do objetivo, das matérias, do nível e da rotina do aluno.' },
+      { kind: 'feature', text: 'Acompanhamento de evolução com atividades marcáveis, percentual concluído, sequência de estudos e disciplinas pendentes.' },
+      { kind: 'feature', text: 'Replanejamento assistido: ao ajustar o plano, a versão anterior fica guardada no histórico.' },
+      { kind: 'feature', text: 'Exportação do plano em PDF profissional com logo, cores e rodapé oficiais da plataforma.' },
+      { kind: 'security', text: 'Cada plano, tarefa e versão é privado do aluno, com validação de propriedade no servidor.' },
+    ],
+  },
+  {
     version: '3.11.0',
     date: '2026-07-29',
     title: 'Segurança da assistente: permissões por perfil e auditoria',
