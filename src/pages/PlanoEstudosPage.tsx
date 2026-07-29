@@ -343,9 +343,11 @@ function PlanDetail({ plan, onBack, onChanged }: {
       <Tabs defaultValue="cronograma">
         <TabsList className="w-full justify-start overflow-x-auto">
           <TabsTrigger value="cronograma">Cronograma</TabsTrigger>
+          <TabsTrigger value="sugestoes">Sugestões</TabsTrigger>
           <TabsTrigger value="metas">Metas</TabsTrigger>
           <TabsTrigger value="evolucao">Evolução</TabsTrigger>
           <TabsTrigger value="versoes">Histórico</TabsTrigger>
+
         </TabsList>
 
         <TabsContent value="cronograma" className="mt-4 space-y-4">
