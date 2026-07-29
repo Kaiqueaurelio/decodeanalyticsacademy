@@ -27,6 +27,17 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '3.12.1',
+    date: '2026-07-29',
+    title: 'Testes automatizados de segurança da Ella',
+    changes: [
+      { kind: 'security', text: 'Suíte automatizada com 15 cenários de ataque: tentativas de manipulação de contexto, jailbreak e escalada de privilégios são bloqueadas em todas as ações protegidas.' },
+      { kind: 'security', text: 'Regra "negar por padrão" testada em nomes de ação desconhecidos, variações de maiúsculas, espaços e caracteres parecidos (homoglifos).' },
+      { kind: 'security', text: 'Verificação de que o papel do usuário só vem do servidor: qualquer tentativa de se declarar administrador pela conversa ou pelo corpo da requisição é ignorada.' },
+      { kind: 'improvement', text: 'Camada de autorização da Ella isolada em módulo próprio, o que facilita auditoria e manutenção sem alterar o comportamento.' },
+    ],
+  },
+  {
     version: '3.12.0',
     date: '2026-07-29',
     title: 'Plano de Estudos Inteligente',
