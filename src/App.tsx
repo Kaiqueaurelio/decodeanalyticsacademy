@@ -139,6 +139,8 @@ function AnimatedRoutes() {
         <Route path="/exercises/:id" element={<ProtectedRoute><ExercisesPage /></ProtectedRoute>} />
         <Route path="/exercicios" element={<ProtectedRoute><ExerciciosIndexPage /></ProtectedRoute>} />
         <Route path="/exercises" element={<Navigate to="/exercicios" replace />} />
+        <Route path="/apostilas" element={<Navigate to="/dashboard" replace />} />
+
         <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
         <Route path="/materials" element={<ProtectedRoute blockForEnem><MaterialsPage /></ProtectedRoute>} />
         <Route path="/materiais" element={<Navigate to="/materials" replace />} />

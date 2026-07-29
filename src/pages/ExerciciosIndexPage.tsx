@@ -6,6 +6,8 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { PenLine, Search, ChevronRight, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
+
 
 type Row = {
   apostila_id: string;
@@ -24,34 +26,47 @@ export default function ExerciciosIndexPage() {
     let cancelled = false;
     (async () => {
       setLoading(true);
-      const { data: exData } = await supabase
-        .from('exercises')
-        .select('apostila_id')
-        .limit(5000);
-      const ids = Array.from(new Set((exData ?? []).map((e: any) => e.apostila_id).filter(Boolean)));
-      if (ids.length === 0) {
-        if (!cancelled) { setRows([]); setLoading(false); }
-        return;
+      try {
+        const { data: exData, error: exError } = await supabase
+          .from('exercises')
+          .select('apostila_id')
+          .limit(5000);
+        if (exError) throw exError;
+        const ids = Array.from(new Set((exData ?? []).map((e: any) => e.apostila_id).filter(Boolean)));
+        if (ids.length === 0) {
+          if (!cancelled) setRows([]);
+          return;
+        }
+        const counts = new Map<string, number>();
+        (exData ?? []).forEach((e: any) => counts.set(e.apostila_id, (counts.get(e.apostila_id) ?? 0) + 1));
+        const { data: aps, error: apError } = await supabase
+          .from('apostilas')
+          .select('id, title, category, published')
+          .in('id', ids);
+        if (apError) throw apError;
+        const out: Row[] = (aps ?? [])
+          .filter((a: any) => a.published !== false)
+          .map((a: any) => ({
+            apostila_id: a.id,
+            title: a.title,
+            subject: a.category ?? null,
+            count: counts.get(a.id) ?? 0,
+          }))
+          .sort((a, b) => (a.subject || '').localeCompare(b.subject || '') || a.title.localeCompare(b.title));
+        if (!cancelled) setRows(out);
+      } catch (error) {
+        console.error('Erro ao carregar exercícios:', error);
+        if (!cancelled) {
+          setRows([]);
+          toast.error('Não foi possível carregar os exercícios. Tente novamente.');
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-      const counts = new Map<string, number>();
-      (exData ?? []).forEach((e: any) => counts.set(e.apostila_id, (counts.get(e.apostila_id) ?? 0) + 1));
-      const { data: aps } = await supabase
-        .from('apostilas')
-        .select('id, title, subject, hidden')
-        .in('id', ids);
-      const out: Row[] = (aps ?? [])
-        .filter((a: any) => !a.hidden)
-        .map((a: any) => ({
-          apostila_id: a.id,
-          title: a.title,
-          subject: a.subject ?? null,
-          count: counts.get(a.id) ?? 0,
-        }))
-        .sort((a, b) => (a.subject || '').localeCompare(b.subject || '') || a.title.localeCompare(b.title));
-      if (!cancelled) { setRows(out); setLoading(false); }
     })();
     return () => { cancelled = true; };
   }, []);
+
 
   const grouped = useMemo(() => {
     const filter = q.trim().toLowerCase();
