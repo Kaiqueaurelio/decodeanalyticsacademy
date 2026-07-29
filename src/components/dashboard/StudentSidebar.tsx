@@ -379,13 +379,12 @@ export function SidebarContent({
                 <span className="truncate">Sair da conta</span>
               </button>
             </div>
-          </nav>
 
-          {/* Focus card */}
-          <div className="relative m-3 rounded-lg border border-border bg-card p-4">
-            <div className="relative">
+            {/* Focus card — dentro da área rolável para que o menu seja idêntico
+                no sidebar fixo e no drawer (sem cortar itens em telas menores) */}
+            <div className="relative rounded-lg border border-border bg-card p-4">
               <div className="mb-1 flex items-center gap-1.5">
-                <Target className="h-3.5 w-3.5 text-primary" strokeWidth={2} />
+                <Target className="h-3.5 w-3.5 text-primary" strokeWidth={2} aria-hidden="true" />
                 <h4 className="text-xs font-bold tracking-tight text-foreground">Mantenha o foco</h4>
               </div>
               <p className="text-[11px] leading-relaxed text-muted-foreground">Acompanhe metas e atividades pendentes do dia.</p>
@@ -401,9 +400,10 @@ export function SidebarContent({
                 Ver metas
               </Button>
             </div>
-          </div>
+          </nav>
         </div>
       )}
+
     </div>
   );
 }
