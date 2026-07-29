@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import {
   ArrowRight, BookOpen, GraduationCap, Cpu, Brain,
   ChevronRight, Download, Smartphone, Layers, Rocket, Target,
-  BarChart3, PenLine, Flame, TrendingUp, CheckCircle,
+  BarChart3, PenLine, Flame, TrendingUp, CheckCircle, Play,
 } from 'lucide-react';
 import logoAvif1x from '@/assets/owl-icon-72.avif';
 import logoAvif2x from '@/assets/owl-icon-144.avif';
