@@ -121,7 +121,7 @@ export function MobileBottomNav() {
                 <SheetTitle>Menu completo</SheetTitle>
                 <SheetDescription>Use Tab para navegar e Esc para fechar.</SheetDescription>
               </SheetHeader>
-              <SidebarContent onNavigate={() => setOpen(false)} hideBottomNavDuplicates />
+              <SidebarContent mode="full" onNavigate={() => setOpen(false)} />
             </SheetContent>
           </Sheet>
 
