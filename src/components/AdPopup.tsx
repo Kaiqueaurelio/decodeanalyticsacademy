@@ -3,8 +3,13 @@ import { useAds } from '@/hooks/useAds';
 import { Button } from '@/components/ui/button';
 import { X, ExternalLink, Megaphone } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useLocation } from 'react-router-dom';
 import { AdMediaPreview } from '@/components/AdMediaPreview';
 import { AdImageLightbox, AdZoomButton } from '@/components/AdImageLightbox';
+
+// Rotas publicas onde o popup nunca deve aparecer (bloqueia login/landing)
+const PUBLIC_ROUTES = ['/', '/login', '/reset-password', '/termos', '/anuncie', '/patrocine'];
+
 
 const AUTO_CLOSE_SECONDS = 25;
 
