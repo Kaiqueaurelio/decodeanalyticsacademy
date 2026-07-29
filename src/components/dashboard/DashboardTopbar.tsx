@@ -9,7 +9,7 @@ import { Sun, Moon } from 'lucide-react';
 import { useUserProfile } from '@/hooks/queries/useUserProfile';
 import { useState } from 'react';
 import { useApostilasList } from '@/hooks/queries/useDashboardData';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { SidebarContent } from './StudentSidebar';
 
 export function DashboardTopbar() {
