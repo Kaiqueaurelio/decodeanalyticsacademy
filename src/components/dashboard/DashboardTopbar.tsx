@@ -1,4 +1,4 @@
-import { Search, ChevronDown, Menu, ShieldCheck } from 'lucide-react';
+import { Search, ChevronDown, ShieldCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
@@ -9,8 +9,6 @@ import { Sun, Moon } from 'lucide-react';
 import { useUserProfile } from '@/hooks/queries/useUserProfile';
 import { useState } from 'react';
 import { useApostilasList } from '@/hooks/queries/useDashboardData';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { SidebarContent } from './StudentSidebar';
 
 export function DashboardTopbar() {
   const navigate = useNavigate();
@@ -18,7 +16,6 @@ export function DashboardTopbar() {
   const { theme, toggleTheme } = useTheme();
   const { data: profile } = useUserProfile(user?.id);
   const [query, setQuery] = useState('');
-  const [navOpen, setNavOpen] = useState(false);
   const { data: apostilas = [] } = useApostilasList();
 
   const submit = (e: React.FormEvent) => {
@@ -35,17 +32,6 @@ export function DashboardTopbar() {
   return (
     <header className="sticky top-0 z-30 bg-background/88 backdrop-blur-xl border-b border-border">
       <div className="flex items-center gap-2 px-3 sm:px-6 lg:px-8 h-16">
-        <Sheet open={navOpen} onOpenChange={setNavOpen}>
-          <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="lg:hidden h-9 w-9 rounded-xl" aria-label="Abrir menu">
-              <Menu strokeWidth={2.5} className="h-[18px] w-[18px]" />
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="p-0 w-[92vw] max-w-[360px] border-r border-border">
-            <SidebarContent mode="full" setMode={() => setNavOpen(false)} onNavigate={() => setNavOpen(false)} />
-          </SheetContent>
-        </Sheet>
-
         {isAdmin && (
           <Button
             variant="outline"
