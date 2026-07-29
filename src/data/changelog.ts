@@ -27,6 +27,16 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '3.7.2',
+    date: '2026-07-29',
+    title: 'Navegação por teclado no menu mobile',
+    changes: [
+      { kind: 'improvement', text: 'Ao abrir o menu, o foco vai direto para o botão de fechar e segue a ordem visual dos itens.' },
+      { kind: 'improvement', text: 'O foco fica preso dentro do menu enquanto ele está aberto e volta para o botão que abriu ao fechar (Esc ou botão).' },
+      { kind: 'improvement', text: 'Suíte de testes automatizados cobrindo abertura por teclado, ordem de tabulação, trap de foco e retorno do foco.' },
+    ],
+  },
+  {
     version: '3.7.0',
     date: '2026-07-29',
     title: 'Menu mobile acessível',
