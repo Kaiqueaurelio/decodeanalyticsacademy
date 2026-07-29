@@ -673,6 +673,44 @@ async function executeTool(name: string, args: any, admin: ReturnType<typeof cre
         if (q.error) return { ok: false, error: q.error.message };
         return { ok: true, exercises: q.data, summary: `${q.data?.length ?? 0} exercício(s) para praticar.` };
       }
+      case "web_search": {
+        const query = String(args.query ?? "").trim().slice(0, 400);
+        if (!query) return { ok: false, error: "Informe o que pesquisar." };
+        const key = Deno.env.get("GOOGLE_AI_API_KEY");
+        if (!key) return { ok: false, error: "Pesquisa indisponível: chave do provedor não configurada." };
+        const res = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              contents: [{
+                role: "user",
+                parts: [{
+                  text: `Pesquise na web e responda em português-BR de forma objetiva (máx. 8 linhas), com dados atuais e citando o que encontrou: ${query}`,
+                }],
+              }],
+              tools: [{ google_search: {} }],
+              generationConfig: { temperature: 0.2, maxOutputTokens: 900 },
+            }),
+          },
+        );
+        if (!res.ok) {
+          const t = await res.text();
+          return { ok: false, error: `Pesquisa falhou (${res.status}): ${t.slice(0, 180)}` };
+        }
+        const data = await res.json();
+        const cand = data?.candidates?.[0];
+        const text = (cand?.content?.parts ?? []).map((p: any) => p?.text ?? "").join("").trim();
+        const chunks = cand?.groundingMetadata?.groundingChunks ?? [];
+        const sources = chunks
+          .map((c: any) => ({ title: c?.web?.title ?? "", url: c?.web?.uri ?? "" }))
+          .filter((s: any) => s.url)
+          .slice(0, 5);
+        if (!text) return { ok: false, error: "Nenhum resultado encontrado para essa pesquisa." };
+        return { ok: true, query, answer: text.slice(0, 2200), sources, summary: "Pesquisa web concluída." };
+      }
+
       // ---------- Admin ----------
       case "set_apostila_published": {
         const q = await admin.from("apostilas").update({ published: !!args.published })
