@@ -63,6 +63,7 @@ export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps)
   });
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [statusHint, setStatusHint] = useState<string | null>(null);
   const navigate = useNavigate();
   const taRef = useRef<HTMLTextAreaElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
