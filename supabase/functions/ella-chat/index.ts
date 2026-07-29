@@ -544,8 +544,6 @@ async function auditTool(
 
 // ---------- Tool executor (server-side, com service role) ----------
 async function executeTool(name: string, args: any, admin: ReturnType<typeof createClient>, ctx: AuthzCtx) {
-  const { userId, authHeader } = ctx;
-
   // Gate obrigatório: nada é executado sem autorização do backend.
   const decision = authorizeTool(name, ctx);
   if (!decision.allowed) {
@@ -554,6 +552,13 @@ async function executeTool(name: string, args: any, admin: ReturnType<typeof cre
     return { ok: false, error: decision.reason };
   }
 
+  const result = await runToolBody(name, args, admin, ctx);
+  await auditTool(admin, ctx, { tool: name, args, allowed: true, result });
+  return result;
+}
+
+async function runToolBody(name: string, args: any, admin: ReturnType<typeof createClient>, ctx: AuthzCtx) {
+  const { userId, authHeader } = ctx;
   try {
 
     switch (name) {
