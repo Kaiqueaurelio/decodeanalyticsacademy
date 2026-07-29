@@ -21,7 +21,7 @@ const json = (body: unknown, status = 200) =>
 const LEVELS = ["iniciante", "intermediario", "avancado"] as const;
 
 type Input = {
-  mode?: "create" | "adjust";
+  mode?: "create" | "adjust" | "suggest";
   plan_id?: string;
   title?: string;
   goal?: string;
@@ -33,7 +33,10 @@ type Input = {
   days_per_week?: unknown;
   deadline?: string | null;
   notes?: string;
+  suggestions?: unknown;
+  version_note?: string;
 };
+
 
 function clampNumber(value: unknown, min: number, max: number, fallback: number) {
   const n = Number(value);
