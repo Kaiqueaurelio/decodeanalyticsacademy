@@ -94,8 +94,10 @@ export function MobileBottomNav() {
             <SheetTrigger asChild>
               <Button
                 variant="ghost"
-                className="relative flex min-h-[54px] h-auto flex-col items-center justify-center gap-1 rounded-xl px-1 text-[10px] font-semibold leading-none text-muted-foreground hover:bg-muted/60 hover:text-foreground touch-manipulation"
+                className="relative flex min-h-[54px] h-auto flex-col items-center justify-center gap-1 rounded-xl px-1 text-[10px] font-semibold leading-none text-muted-foreground hover:bg-muted/60 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background touch-manipulation"
                 aria-label={unreadCount > 0 ? `Abrir menu completo — ${unreadCount} notificações não lidas` : 'Abrir menu completo'}
+                aria-haspopup="dialog"
+                aria-expanded={open}
               >
                 <div className="relative">
                   <Menu className="h-[19px] w-[19px]" strokeWidth={2.2} />
@@ -108,10 +110,19 @@ export function MobileBottomNav() {
                 <span>Menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-[92vw] max-w-[360px] p-0 border-r border-border">
+            <SheetContent
+              side="left"
+              aria-label="Menu completo"
+              className="w-[92vw] max-w-[360px] p-0 border-r border-border"
+            >
+              <SheetHeader className="sr-only">
+                <SheetTitle>Menu completo</SheetTitle>
+                <SheetDescription>Use Tab para navegar e Esc para fechar.</SheetDescription>
+              </SheetHeader>
               <SidebarContent onNavigate={() => setOpen(false)} hideBottomNavDuplicates />
             </SheetContent>
           </Sheet>
+
         </div>
       </nav>
     </>
