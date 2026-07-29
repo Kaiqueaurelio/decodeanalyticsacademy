@@ -1,7 +1,30 @@
 /**
- * Registra o service worker apenas em produção e fora de iframes/preview.
- * Em preview/iframe, REMOVE qualquer SW existente para evitar cache "preso".
+ * Registra o service worker apenas no site publicado real.
+ * Em preview/iframe/dev, REMOVE qualquer SW e cache para que o preview
+ * sempre renderize exatamente o build atual (sem assets antigos em cache).
  */
+const PREVIEW_HOST_PATTERNS = [
+  "id-preview--",
+  "preview--",
+  "lovableproject.com",
+  "lovableproject-dev.com",
+  "beta.lovable.dev",
+  "localhost",
+];
+
+async function unregisterEverything() {
+  try {
+    const regs = await navigator.serviceWorker.getRegistrations();
+    await Promise.all(regs.map((r) => r.unregister()));
+    if ("caches" in window) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map((k) => caches.delete(k)));
+    }
+  } catch {
+    /* ignore */
+  }
+}
+
 export async function registerServiceWorker() {
   if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
 
@@ -13,26 +36,16 @@ export async function registerServiceWorker() {
     }
   })();
 
-  const isPreviewHost =
-    window.location.hostname.includes("id-preview--") ||
-    window.location.hostname.includes("lovableproject.com");
+  const host = window.location.hostname;
+  const isPreviewHost = PREVIEW_HOST_PATTERNS.some((p) => host.includes(p));
+  // Kill switch manual: abrir o site com ?sw=off limpa cache e SW.
+  const killSwitch = new URLSearchParams(window.location.search).get("sw") === "off";
 
-  // Em preview ou iframe: limpa qualquer SW e cache existente
-  if (isInIframe || isPreviewHost) {
-    try {
-      const regs = await navigator.serviceWorker.getRegistrations();
-      await Promise.all(regs.map((r) => r.unregister()));
-      if ("caches" in window) {
-        const keys = await caches.keys();
-        await Promise.all(keys.map((k) => caches.delete(k)));
-      }
-    } catch {
-      /* ignore */
-    }
+  if (!import.meta.env.PROD || isInIframe || isPreviewHost || killSwitch) {
+    await unregisterEverything();
     return;
   }
 
-  // Produção real: registra o SW gerado pelo vite-plugin-pwa
   try {
     const { Workbox } = await import("workbox-window");
     const wb = new Workbox("/sw.js");
@@ -46,7 +59,15 @@ export async function registerServiceWorker() {
       window.location.reload();
     });
 
-    await wb.register();
+    const registration = await wb.register();
+
+    // Garante que o site publicado busque o build mais recente ao abrir
+    // e sempre que a aba volta a ficar visível — evita divergência com o preview.
+    const checkForUpdate = () => {
+      if (document.visibilityState === "visible") registration?.update().catch(() => {});
+    };
+    checkForUpdate();
+    document.addEventListener("visibilitychange", checkForUpdate);
   } catch (err) {
     console.warn("[PWA] Service worker registration failed:", err);
   }
