@@ -27,6 +27,18 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '3.14.0',
+    date: '2026-07-29',
+    title: 'Sugestões automáticas no Plano de Estudos',
+    changes: [
+      { kind: 'feature', text: 'Nova aba "Sugestões" no Plano de Estudos: a Ella analisa conclusão de atividades por disciplina, apostilas concluídas, acerto em exercícios e dias parados para propor ajustes.' },
+      { kind: 'feature', text: 'O aluno escolhe quais sugestões aplicar e o cronograma é reorganizado automaticamente.' },
+      { kind: 'improvement', text: 'Cada ajuste guarda a versão anterior no histórico com a nota das sugestões aplicadas.' },
+      { kind: 'security', text: 'A análise roda no servidor com verificação de propriedade do plano; nenhum dado de outro aluno é acessível.' },
+    ],
+  },
+  {
+
     version: '3.13.0',
     date: '2026-07-29',
     title: 'Alertas de segurança para o administrador',

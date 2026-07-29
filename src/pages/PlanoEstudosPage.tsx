@@ -30,7 +30,9 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 
+import { EllaPlanSuggestions } from '@/components/study-plan/EllaPlanSuggestions';
 import { exportStudyPlanPdf } from '@/lib/study-plan-pdf';
+
 import {
   KIND_LABEL, LEVEL_LABEL, planProgress, pendingSubjects, studyStreak,
   type StudyPlan, type StudyPlanTask,
@@ -343,9 +345,11 @@ function PlanDetail({ plan, onBack, onChanged }: {
       <Tabs defaultValue="cronograma">
         <TabsList className="w-full justify-start overflow-x-auto">
           <TabsTrigger value="cronograma">Cronograma</TabsTrigger>
+          <TabsTrigger value="sugestoes">Sugestões</TabsTrigger>
           <TabsTrigger value="metas">Metas</TabsTrigger>
           <TabsTrigger value="evolucao">Evolução</TabsTrigger>
           <TabsTrigger value="versoes">Histórico</TabsTrigger>
+
         </TabsList>
 
         <TabsContent value="cronograma" className="mt-4 space-y-4">
@@ -395,6 +399,12 @@ function PlanDetail({ plan, onBack, onChanged }: {
             );
           })}
         </TabsContent>
+
+        <TabsContent value="sugestoes" className="mt-4">
+          <EllaPlanSuggestions plan={plan} onApplied={() => { reload(); onChanged(); }} />
+        </TabsContent>
+
+
 
         <TabsContent value="metas" className="mt-4 space-y-4">
           {([
