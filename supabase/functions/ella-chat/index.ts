@@ -10,11 +10,15 @@ const corsHeaders = {
 };
 
 const GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
-// Prioriza velocidade: Gemini 3.5 Flash (agentic, tool-calling forte, baixa latência).
-// Fallback para o Flash preview em caso de quota.
+// Endpoint OpenAI-compatível do Google (suporta tool calling) — usado quando
+// a chave própria (GOOGLE_AI_API_KEY) está configurada.
+const GOOGLE_URL = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
+// Prioriza velocidade: Gemini Flash (agentic, tool-calling forte, baixa latência).
 const MODEL = "google/gemini-3.5-flash";
 const FALLBACK_MODEL = "google/gemini-3-flash-preview";
 const SECOND_FALLBACK_MODEL = "google/gemini-2.5-flash";
+const GOOGLE_MODEL = "gemini-2.5-flash";
+const GOOGLE_FALLBACK_MODEL = "gemini-2.0-flash";
 
 type ChatMsg = {
   role: "system" | "user" | "assistant" | "tool";
@@ -722,10 +726,11 @@ Deno.serve(async (req) => {
 
   try {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const GOOGLE_AI_API_KEY = Deno.env.get("GOOGLE_AI_API_KEY");
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
     const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY ausente");
+    if (!LOVABLE_API_KEY && !GOOGLE_AI_API_KEY) throw new Error("Nenhuma chave de assistente configurada");
 
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
@@ -783,29 +788,48 @@ Proibido: mencionar "IA", "modelo de linguagem", "Lovable", "Gemini" ou qualquer
     const executedTools: any[] = [];
     const MAX_STEPS = 8;
 
-    let currentModel = MODEL;
-    for (let step = 0; step < MAX_STEPS; step++) {
-      let res = await fetch(GATEWAY_URL, {
+    // Prefere a chave própria (Google) quando existir; gateway vira reserva.
+    const useGoogle = !!GOOGLE_AI_API_KEY;
+    let currentModel = useGoogle ? GOOGLE_MODEL : MODEL;
+
+    const callModel = (model: string, viaGoogle: boolean) =>
+      fetch(viaGoogle ? GOOGLE_URL : GATEWAY_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${LOVABLE_API_KEY}` },
-        body: JSON.stringify({ model: currentModel, messages, tools: availableTools, tool_choice: "auto" }),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${viaGoogle ? GOOGLE_AI_API_KEY : LOVABLE_API_KEY}`,
+        },
+        body: JSON.stringify({ model, messages, tools: availableTools, tool_choice: "auto" }),
       });
 
+    for (let step = 0; step < MAX_STEPS; step++) {
+      let viaGoogle = useGoogle;
+      let res = await callModel(currentModel, viaGoogle);
+
       // Fallback em cascata para manter velocidade em picos de quota.
-      if ((res.status === 429 || res.status === 503) && currentModel !== SECOND_FALLBACK_MODEL) {
-        currentModel = currentModel === MODEL ? FALLBACK_MODEL : SECOND_FALLBACK_MODEL;
-        res = await fetch(GATEWAY_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${LOVABLE_API_KEY}` },
-          body: JSON.stringify({ model: currentModel, messages, tools: availableTools, tool_choice: "auto" }),
-        });
+      if (res.status === 429 || res.status === 503 || res.status === 402) {
+        if (viaGoogle) {
+          if (currentModel !== GOOGLE_FALLBACK_MODEL) {
+            currentModel = GOOGLE_FALLBACK_MODEL;
+            res = await callModel(currentModel, true);
+          }
+          // Última tentativa: gateway padrão, se disponível.
+          if (!res.ok && LOVABLE_API_KEY) {
+            viaGoogle = false;
+            currentModel = MODEL;
+            res = await callModel(currentModel, false);
+          }
+        } else if (currentModel !== SECOND_FALLBACK_MODEL) {
+          currentModel = currentModel === MODEL ? FALLBACK_MODEL : SECOND_FALLBACK_MODEL;
+          res = await callModel(currentModel, false);
+        }
       }
 
       if (res.status === 429) return new Response(JSON.stringify({ error: "Limite de requisições, tente em instantes." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-      if (res.status === 402) return new Response(JSON.stringify({ error: "Créditos de IA esgotados — adicione créditos no workspace." }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      if (res.status === 402) return new Response(JSON.stringify({ error: "Créditos do assistente esgotados. Verifique a chave própria em Admin → Provedor do Assistente ou adicione créditos." }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       if (!res.ok) {
         const text = await res.text();
-        return new Response(JSON.stringify({ error: `Gateway ${res.status}: ${text.slice(0, 300)}` }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        return new Response(JSON.stringify({ error: `Assistente ${res.status}: ${text.slice(0, 300)}` }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
       const data = await res.json();
