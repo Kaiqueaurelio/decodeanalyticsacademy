@@ -27,6 +27,18 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '3.9.0',
+    date: '2026-07-29',
+    title: 'Ella em tempo real: resposta instantânea e tutoria mais profunda',
+    changes: [
+      { kind: 'feature', text: 'As respostas da Ella agora aparecem palavra por palavra, começando quase que instantaneamente.' },
+      { kind: 'feature', text: 'Pesquisa online sob demanda: quando a resposta depende de dados atuais, a Ella avisa e cita as fontes.' },
+      { kind: 'improvement', text: 'Tutoria mais inteligente: explicações passo a passo, exemplos práticos e adaptação ao nível do aluno.' },
+      { kind: 'improvement', text: 'Indicador de status mostra quando ela está pesquisando na internet ou consultando o app.' },
+      { kind: 'improvement', text: 'Toda a inteligência do app passa exclusivamente pela API oficial do Google, sem provedores intermediários.' },
+    ],
+  },
+  {
     version: '3.8.0',
     date: '2026-07-29',
     title: 'Ella com pesquisa na internet e respostas mais rápidas',
@@ -36,6 +48,7 @@ export const CHANGELOG: ChangelogEntry[] = [
       { kind: 'improvement', text: 'A Ella passa a usar exclusivamente a chave própria do Google, sem depender de créditos externos.' },
     ],
   },
+
   {
     version: '3.7.2',
     date: '2026-07-29',

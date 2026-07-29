@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { invokeFunction } from "@/lib/invoke-function";
+import { streamFunction } from "@/lib/stream-function";
 import { getEllaAvatarUrl } from "@/lib/ellaAvatar";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -63,6 +63,7 @@ export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps)
   });
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [statusHint, setStatusHint] = useState<string | null>(null);
   const navigate = useNavigate();
   const taRef = useRef<HTMLTextAreaElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -81,32 +82,84 @@ export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps)
     if (!text || loading) return;
     const newUserMsg: Msg = { role: "user", content: text };
     const history = [...messages, newUserMsg];
-    setMessages(history);
+    // Já cria a bolha da assistente vazia — o texto entra token a token.
+    setMessages([...history, { role: "assistant", content: "" }]);
     setInput("");
     setLoading(true);
 
-    const { data, error } = await invokeFunction<{ reply: string; actions: any[] }>("ella-chat", {
-      body: {
+    const assistantIndex = history.length;
+    let streamed = "";
+    let pending = "";
+    let flushing = false;
+
+    // Agrupa os tokens por frame para não re-renderizar a cada caractere
+    // (mantém fluidez em celulares mais simples).
+    const flush = () => {
+      if (!pending) { flushing = false; return; }
+      streamed += pending;
+      pending = "";
+      const snapshot = streamed;
+      setMessages((m) => {
+        const next = [...m];
+        if (next[assistantIndex]) next[assistantIndex] = { ...next[assistantIndex], content: snapshot };
+        return next;
+      });
+      requestAnimationFrame(flush);
+    };
+
+    const { error } = await streamFunction(
+      "ella-chat",
+      {
         messages: history.map((m) => ({ role: m.role, content: m.content })),
         context: contextHint,
+        stream: true,
       },
-      errorTitle: "Ella não respondeu",
-    });
+      {
+        onDelta: (chunk) => {
+          pending += chunk;
+          if (!flushing) { flushing = true; requestAnimationFrame(flush); }
+        },
+        onTool: (name) => {
+          if (name === "web_search") setStatusHint("Pesquisando na internet…");
+          else setStatusHint("Consultando o app…");
+        },
+        onDone: (actions) => {
+          setStatusHint(null);
+          const finalText = streamed + pending;
+          pending = "";
+          setMessages((m) => {
+            const next = [...m];
+            if (next[assistantIndex]) {
+              next[assistantIndex] = {
+                role: "assistant",
+                content: finalText || "(sem resposta)",
+                actions,
+              };
+            }
+            return next;
+          });
+          const nav = actions?.find((a: any) => a.name === "navigate_to" && a.result?.navigate);
+          if (nav) setTimeout(() => navigate(nav.result.navigate), 400);
+          if (actions?.some((a: any) => a.result?.ok && a.name !== "search_app" && a.name !== "get_apostila")) {
+            onAfterAction?.();
+          }
+        },
+      },
+    );
 
-    if (error || !data) {
-      setMessages((m) => [...m, { role: "assistant", content: `${error?.message ?? "Erro desconhecido"}` }]);
-    } else {
-      setMessages((m) => [...m, { role: "assistant", content: data.reply || "(sem resposta)", actions: data.actions }]);
-      // Execute navigation intents
-      const nav = data.actions?.find((a) => a.name === "navigate_to" && a.result?.navigate);
-      if (nav) setTimeout(() => navigate(nav.result.navigate), 400);
-      if (data.actions?.some((a) => a.result?.ok && a.name !== "search_app" && a.name !== "get_apostila")) {
-        onAfterAction?.();
-      }
+    if (error) {
+      setStatusHint(null);
+      setMessages((m) => {
+        const next = [...m];
+        if (next[assistantIndex]) next[assistantIndex] = { role: "assistant", content: error };
+        return next;
+      });
     }
+
     setLoading(false);
     setTimeout(() => taRef.current?.focus(), 50);
   }, [input, loading, messages, contextHint, navigate, onAfterAction]);
+
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
@@ -200,7 +253,7 @@ export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps)
             </div>
           ))}
 
-          {loading && (
+          {loading && !messages[messages.length - 1]?.content && (
             <div className="flex gap-3">
               <Avatar className="h-8 w-8 shrink-0 ring-1 ring-border/60">
                 <AvatarImage src={getEllaAvatarUrl()} alt="Ella" />
@@ -210,7 +263,8 @@ export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps)
               </Avatar>
               <div className="bg-muted/50 rounded-2xl px-4 py-2.5 flex items-center gap-2">
                 <Loader2 className="h-3 w-3 animate-spin keep-pulse" />
-                <span className="text-xs text-muted-foreground">Pensando…</span>
+                <span className="text-xs text-muted-foreground">{statusHint ?? "Pensando…"}</span>
+
               </div>
             </div>
           )}

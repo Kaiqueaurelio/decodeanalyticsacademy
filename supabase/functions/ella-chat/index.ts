@@ -9,14 +9,9 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-const GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
-// Endpoint OpenAI-compatível do Google (suporta tool calling) — usado quando
-// a chave própria (GOOGLE_AI_API_KEY) está configurada.
+// Provedor único e obrigatório: API oficial do Google (endpoint OpenAI-compatível,
+// com suporte a tool calling e streaming). Nenhum outro provedor é usado.
 const GOOGLE_URL = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
-// Prioriza velocidade: Gemini Flash (agentic, tool-calling forte, baixa latência).
-const MODEL = "google/gemini-3.5-flash";
-const FALLBACK_MODEL = "google/gemini-3-flash-preview";
-const SECOND_FALLBACK_MODEL = "google/gemini-2.5-flash";
 const GOOGLE_MODEL = "gemini-2.5-flash";
 const GOOGLE_FALLBACK_MODEL = "gemini-2.0-flash";
 
@@ -832,6 +827,15 @@ Estilo:
 - Pesquisa na internet: use **web_search** quando a pergunta envolver fatos atuais, notícias, datas de vestibular/ENEM, estatísticas, leis, artigos científicos ou algo que o app não tenha. Depois explique com suas palavras e liste as fontes em bullets com link.
 - Você NÃO cria, edita ou apaga conteúdo do professor — se pedirem, explique que só o administrador pode.
 
+Como tutora (aplique sempre):
+- Diagnostique o nível pela pergunta e ajuste a profundidade: se for iniciante, comece pela intuição; se for avançado, vá direto ao formalismo.
+- Explique **passo a passo**, numerando as etapas de raciocínio em problemas de matemática, lógica, algoritmos, banco de dados, redes, segurança da informação e programação.
+- Sempre traga pelo menos **um exemplo prático** (código comentado, cálculo resolvido ou caso real) e, quando útil, um contraexemplo do erro mais comum.
+- Mantenha o fio da conversa: retome o que já foi combinado nas mensagens anteriores em vez de recomeçar do zero.
+- Feche com um convite curto: um exercício para praticar ou o próximo passo de estudo.
+- Quando usar **web_search**, avise em uma linha que a resposta foi enriquecida com dados atualizados da internet e liste as fontes com link. Sem necessidade real, não pesquise — responda direto para ser mais rápida.
+
+
 Proibido: mencionar "IA", "modelo de linguagem", "Lovable", "Gemini" ou qualquer coisa de hacking/pentest.`;
     }
 
@@ -843,15 +847,14 @@ Proibido: mencionar "IA", "modelo de linguagem", "Lovable", "Gemini" ou qualquer
     ];
 
 
-    const executedTools: any[] = [];
-    const MAX_STEPS = 8;
+    const wantsStream = body.stream !== false;
 
-    // Provedor EXCLUSIVO: chave própria do Google. Sem gateway, em hipótese alguma.
+    // Provedor EXCLUSIVO: chave própria do Google (Gemini). Sem gateway, sem proxy, sem fallback externo.
     let currentModel = GOOGLE_MODEL;
-    let noThinking = true;
-    console.log(`[ella-chat] provider=google-direct model=${currentModel}`);
+    let effort: string | null = "low";
+    console.log(`[ella-chat] provider=google-direct model=${currentModel} stream=${wantsStream}`);
 
-    const callModel = (model: string) =>
+    const callModel = (model: string, stream: boolean) =>
       fetch(GOOGLE_URL, {
         method: "POST",
         headers: {
@@ -863,56 +866,72 @@ Proibido: mencionar "IA", "modelo de linguagem", "Lovable", "Gemini" ou qualquer
           messages,
           tools: availableTools,
           tool_choice: "auto",
-          // Latência: desliga o "thinking" — respostas quase instantâneas.
-          ...(noThinking ? { reasoning_effort: "none" } : {}),
+          stream,
+          ...(stream ? { stream_options: { include_usage: false } } : {}),
+          ...(effort ? { reasoning_effort: effort } : {}),
         }),
       });
 
-    for (let step = 0; step < MAX_STEPS; step++) {
-      let res = await callModel(currentModel);
-
-      // 400 pode ser o parâmetro de latência não suportado: repete sem ele.
-      if (res.status === 400 && noThinking) {
-        noThinking = false;
-        res = await callModel(currentModel);
+    // Chamada resiliente: tenta o modelo principal, cai para o secundário do Google
+    // e remove o parâmetro de raciocínio se o endpoint reclamar (400).
+    const requestModel = async (stream: boolean): Promise<Response | { errorStatus: number; errorText: string }> => {
+      let res = await callModel(currentModel, stream);
+      if (res.status === 400 && effort) {
+        effort = null;
+        res = await callModel(currentModel, stream);
       }
-
-      // Fallback apenas entre modelos do Google (quota/indisponibilidade).
+      if (!res.ok && currentModel !== GOOGLE_FALLBACK_MODEL) {
+        console.log(`[ella-chat] falha ${res.status} em ${currentModel}, tentando ${GOOGLE_FALLBACK_MODEL}`);
+        currentModel = GOOGLE_FALLBACK_MODEL;
+        res = await callModel(currentModel, stream);
+      }
       if (!res.ok) {
-        console.log(`[ella-chat] falha ${res.status} em google/${currentModel}`);
-        if (currentModel !== GOOGLE_FALLBACK_MODEL) {
-          currentModel = GOOGLE_FALLBACK_MODEL;
-          res = await callModel(currentModel);
+        const errorText = await res.text();
+        return { errorStatus: res.status, errorText };
+      }
+      return res;
+    };
+
+    const friendlyError = (status: number, text: string) => {
+      if (status === 429) return "Muitas solicitações agora há pouco. Tente novamente em alguns segundos.";
+      if (status === 401 || status === 403) return "Chave do provedor inválida ou sem permissão. Atualize em Admin → Provedor do Assistente.";
+      return `Assistente indisponível (${status}): ${text.slice(0, 200)}`;
+    };
+
+    const executedTools: any[] = [];
+    const MAX_STEPS = 8;
+
+    // ---------- Modo não-streaming (compatibilidade) ----------
+    if (!wantsStream) {
+      for (let step = 0; step < MAX_STEPS; step++) {
+        const r = await requestModel(false);
+        if ("errorStatus" in r) {
+          return new Response(JSON.stringify({ error: friendlyError(r.errorStatus, r.errorText) }), {
+            status: r.errorStatus === 429 ? 429 : 500,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
         }
+        const data = await r.json();
+        const msg = data.choices?.[0]?.message;
+        if (!msg) break;
+        messages.push({ role: "assistant", content: msg.content ?? null, tool_calls: msg.tool_calls });
+        const toolCalls = msg.tool_calls ?? [];
+        if (!toolCalls.length) {
+          return new Response(JSON.stringify({ reply: msg.content ?? "", actions: executedTools }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        await runToolCalls(toolCalls);
       }
+      return new Response(JSON.stringify({ reply: "Limite de passos atingido. Tente reformular.", actions: executedTools }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
-      if (res.status === 429) return new Response(JSON.stringify({ error: "Limite de requisições da chave Google atingido. Tente em instantes." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-      if (res.status === 401 || res.status === 403) return new Response(JSON.stringify({ error: "Chave do Google inválida ou sem permissão. Atualize em Admin → Provedor do Assistente." }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-      if (!res.ok) {
-        const text = await res.text();
-        return new Response(JSON.stringify({ error: `Assistente ${res.status}: ${text.slice(0, 300)}` }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-      }
-
-
-      const data = await res.json();
-      const choice = data.choices?.[0];
-      const msg = choice?.message;
-      if (!msg) break;
-
-      messages.push({ role: "assistant", content: msg.content ?? null, tool_calls: msg.tool_calls });
-
-      const toolCalls = msg.tool_calls ?? [];
-      if (!toolCalls.length) {
-        return new Response(
-          JSON.stringify({ reply: msg.content ?? "", actions: executedTools }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } },
-        );
-      }
-
-      // Executa tool calls em paralelo — grande ganho de latência quando o modelo pede várias.
+    async function runToolCalls(toolCalls: any[]) {
       const parsedCalls = toolCalls.map((tc: any) => {
         let parsed: any = {};
-        try { parsed = JSON.parse(tc.function.arguments || "{}"); } catch { parsed = {}; }
+        try { parsed = JSON.parse(tc.function?.arguments || "{}"); } catch { parsed = {}; }
         return { tc, parsed };
       });
       const results = await Promise.all(
@@ -920,21 +939,102 @@ Proibido: mencionar "IA", "modelo de linguagem", "Lovable", "Gemini" ou qualquer
       );
       for (let i = 0; i < parsedCalls.length; i++) {
         const { tc, parsed } = parsedCalls[i];
-        const result = results[i];
-        executedTools.push({ name: tc.function.name, args: parsed, result });
+        executedTools.push({ name: tc.function.name, args: parsed, result: results[i] });
         messages.push({
           role: "tool",
           tool_call_id: tc.id,
           name: tc.function.name,
-          content: JSON.stringify(result).slice(0, 2500),
+          content: JSON.stringify(results[i]).slice(0, 2500),
         });
       }
     }
 
-    return new Response(
-      JSON.stringify({ reply: "Limite de passos atingido. Tente reformular.", actions: executedTools }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
-    );
+    // ---------- Streaming SSE (token a token) ----------
+    const encoder = new TextEncoder();
+    const stream = new ReadableStream({
+      async start(controller) {
+        const emit = (obj: unknown) => {
+          try { controller.enqueue(encoder.encode(`data: ${JSON.stringify(obj)}\n\n`)); } catch { /* fechado */ }
+        };
+
+        try {
+          for (let step = 0; step < MAX_STEPS; step++) {
+            const r = await requestModel(true);
+            if ("errorStatus" in r) {
+              emit({ type: "error", error: friendlyError(r.errorStatus, r.errorText) });
+              break;
+            }
+
+            const reader = (r as Response).body!.getReader();
+            const decoder = new TextDecoder();
+            let buffer = "";
+            let textOut = "";
+            const toolAcc: Record<number, any> = {};
+
+            let finished = false;
+            while (!finished) {
+              const { done, value } = await reader.read();
+              if (done) break;
+              buffer += decoder.decode(value, { stream: true });
+              let nl: number;
+              while ((nl = buffer.indexOf("\n")) !== -1) {
+                const rawLine = buffer.slice(0, nl).trim();
+                buffer = buffer.slice(nl + 1);
+                if (!rawLine.startsWith("data:")) continue;
+                const payload = rawLine.slice(5).trim();
+                if (payload === "[DONE]") { finished = true; break; }
+                let chunk: any;
+                try { chunk = JSON.parse(payload); } catch { continue; }
+                const delta = chunk?.choices?.[0]?.delta;
+                if (!delta) continue;
+                if (typeof delta.content === "string" && delta.content) {
+                  textOut += delta.content;
+                  emit({ type: "delta", text: delta.content });
+                }
+                for (const tc of delta.tool_calls ?? []) {
+                  const idx = tc.index ?? 0;
+                  toolAcc[idx] ??= { id: tc.id, type: "function", function: { name: "", arguments: "" } };
+                  if (tc.id) toolAcc[idx].id = tc.id;
+                  if (tc.function?.name) toolAcc[idx].function.name = tc.function.name;
+                  if (tc.function?.arguments) toolAcc[idx].function.arguments += tc.function.arguments;
+                }
+              }
+            }
+
+            const toolCalls = Object.values(toolAcc);
+            messages.push({ role: "assistant", content: textOut || null, tool_calls: toolCalls.length ? toolCalls : undefined });
+
+            if (!toolCalls.length) {
+              emit({ type: "done", actions: executedTools });
+              break;
+            }
+
+            for (const tc of toolCalls as any[]) {
+              emit({ type: "tool", name: tc.function?.name });
+            }
+            await runToolCalls(toolCalls as any[]);
+
+            if (step === MAX_STEPS - 1) {
+              emit({ type: "done", actions: executedTools });
+            }
+          }
+        } catch (e: any) {
+          emit({ type: "error", error: e?.message ?? "Erro inesperado na conversa." });
+        } finally {
+          try { controller.close(); } catch { /* já fechado */ }
+        }
+      },
+    });
+
+    return new Response(stream, {
+      headers: {
+        ...corsHeaders,
+        "Content-Type": "text/event-stream; charset=utf-8",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
+      },
+    });
+
   } catch (e: any) {
     return new Response(JSON.stringify({ error: e?.message ?? "Erro interno" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
