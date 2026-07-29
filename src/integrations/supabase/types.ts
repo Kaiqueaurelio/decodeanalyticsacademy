@@ -1246,6 +1246,51 @@ export type Database = {
           },
         ]
       }
+      ella_audit_log: {
+        Row: {
+          allowed: boolean
+          content_scope: string
+          created_at: string
+          denial_reason: string | null
+          id: string
+          outcome: string
+          params: Json
+          request_id: string
+          result_summary: string | null
+          tool_name: string
+          user_id: string
+          user_role: string
+        }
+        Insert: {
+          allowed: boolean
+          content_scope?: string
+          created_at?: string
+          denial_reason?: string | null
+          id?: string
+          outcome?: string
+          params?: Json
+          request_id: string
+          result_summary?: string | null
+          tool_name: string
+          user_id: string
+          user_role: string
+        }
+        Update: {
+          allowed?: boolean
+          content_scope?: string
+          created_at?: string
+          denial_reason?: string | null
+          id?: string
+          outcome?: string
+          params?: Json
+          request_id?: string
+          result_summary?: string | null
+          tool_name?: string
+          user_id?: string
+          user_role?: string
+        }
+        Relationships: []
+      }
       exercises: {
         Row: {
           allow_image_upload: boolean
