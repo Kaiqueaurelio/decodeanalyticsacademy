@@ -30,7 +30,9 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 
+import { EllaPlanSuggestions } from '@/components/study-plan/EllaPlanSuggestions';
 import { exportStudyPlanPdf } from '@/lib/study-plan-pdf';
+
 import {
   KIND_LABEL, LEVEL_LABEL, planProgress, pendingSubjects, studyStreak,
   type StudyPlan, type StudyPlanTask,
