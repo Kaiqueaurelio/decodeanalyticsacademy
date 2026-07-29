@@ -18,6 +18,8 @@ import {
   sanitizeIncomingMessages,
   sanitizeParams,
   sanitizeRouteContext,
+  classifyDenial,
+  shouldNotifyAdmin,
   SECURITY_GUARD,
   STUDENT_TOOLS,
   type AuthzCtx,
