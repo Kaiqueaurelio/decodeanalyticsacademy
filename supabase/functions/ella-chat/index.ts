@@ -1021,6 +1021,24 @@ Deno.serve(async (req) => {
     const isAdmin = authzCtx.isAdmin;
     const contentScope = authzCtx.contentScope;
 
+    // Proteção contra abuso: cota por usuário, verificada no servidor antes de
+    // qualquer chamada ao provedor. Bloqueios temporários também caem aqui.
+    const rate = await checkRate(adminClient, userId);
+    if (!rate.allowed) {
+      console.warn(`[ella-chat] limite atingido (${rate.kind}) user ${userId.slice(0, 8)}`);
+      return new Response(
+        JSON.stringify({ error: rateMessage(rate), rate_limited: true, kind: rate.kind, retry_after_seconds: rate.retry_after_seconds }),
+        {
+          status: 429,
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "application/json",
+            "Retry-After": String(Math.max(Number(rate.retry_after_seconds ?? 60), 1)),
+          },
+        },
+      );
+    }
+
     // O catálogo exposto ao modelo já é filtrado pela mesma matriz do backend.
     // Mesmo assim, cada execução passa novamente pelo gate em executeTool.
     const availableTools = filterToolCatalog(tools as any[], authzCtx);
