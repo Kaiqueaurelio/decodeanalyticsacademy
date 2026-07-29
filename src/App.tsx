@@ -23,7 +23,6 @@ import { PersistentAdSpot } from "@/components/PersistentAdSpot";
 import { AdDraftPreviewOverlay } from "@/components/admin/AdDraftPreviewOverlay";
 
 import { TermsFooterLink } from "@/components/TermsFooterLink";
-import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { EllaSidebar } from "@/components/ella/EllaSidebar";
 import { PageTransition } from "@/components/PageTransition";
 import { ForcePasswordChangeGate } from "@/components/ForcePasswordChangeGate";
@@ -181,7 +180,6 @@ const App = () => (
           <AuthProvider>
             <AudioPlayerProvider>
               <AnimatedRoutes />
-              <MobileBottomNav />
               <EllaSidebar />
               <RANamePrompt />
               <ForcePasswordChangeGate />
