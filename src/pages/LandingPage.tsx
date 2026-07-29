@@ -235,6 +235,7 @@ export default function LandingPage() {
     return () => {
       disposed = true;
       disarmGestureUnlock();
+      video.removeEventListener('playing', onPlaying);
       video.removeEventListener('canplay', startPlayback);
       video.removeEventListener('loadedmetadata', startPlayback);
       video.removeEventListener('loadeddata', startPlayback);
