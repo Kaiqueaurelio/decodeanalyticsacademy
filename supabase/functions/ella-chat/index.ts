@@ -386,6 +386,22 @@ const tools = [
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "web_search",
+      description:
+        "Pesquisa atualizada na internet. Use quando a resposta depender de fatos atuais, notícias, datas de vestibular/ENEM, estatísticas, artigos ou quando o app não tiver o conteúdo. Retorna resumo + fontes com links.",
+      parameters: {
+        type: "object",
+        properties: {
+          query: { type: "string", description: "O que pesquisar, em português, específico e completo." },
+        },
+        required: ["query"],
+      },
+    },
+  },
+
   // ---------- Admin (poderes extras) ----------
   {
     type: "function",
@@ -657,6 +673,44 @@ async function executeTool(name: string, args: any, admin: ReturnType<typeof cre
         if (q.error) return { ok: false, error: q.error.message };
         return { ok: true, exercises: q.data, summary: `${q.data?.length ?? 0} exercício(s) para praticar.` };
       }
+      case "web_search": {
+        const query = String(args.query ?? "").trim().slice(0, 400);
+        if (!query) return { ok: false, error: "Informe o que pesquisar." };
+        const key = Deno.env.get("GOOGLE_AI_API_KEY");
+        if (!key) return { ok: false, error: "Pesquisa indisponível: chave do provedor não configurada." };
+        const res = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              contents: [{
+                role: "user",
+                parts: [{
+                  text: `Pesquise na web e responda em português-BR de forma objetiva (máx. 8 linhas), com dados atuais e citando o que encontrou: ${query}`,
+                }],
+              }],
+              tools: [{ google_search: {} }],
+              generationConfig: { temperature: 0.2, maxOutputTokens: 900 },
+            }),
+          },
+        );
+        if (!res.ok) {
+          const t = await res.text();
+          return { ok: false, error: `Pesquisa falhou (${res.status}): ${t.slice(0, 180)}` };
+        }
+        const data = await res.json();
+        const cand = data?.candidates?.[0];
+        const text = (cand?.content?.parts ?? []).map((p: any) => p?.text ?? "").join("").trim();
+        const chunks = cand?.groundingMetadata?.groundingChunks ?? [];
+        const sources = chunks
+          .map((c: any) => ({ title: c?.web?.title ?? "", url: c?.web?.uri ?? "" }))
+          .filter((s: any) => s.url)
+          .slice(0, 5);
+        if (!text) return { ok: false, error: "Nenhum resultado encontrado para essa pesquisa." };
+        return { ok: true, query, answer: text.slice(0, 2200), sources, summary: "Pesquisa web concluída." };
+      }
+
       // ---------- Admin ----------
       case "set_apostila_published": {
         const q = await admin.from("apostilas").update({ published: !!args.published })
@@ -717,6 +771,7 @@ Raciocínio (planeje antes de agir):
 3. Encadeie tools quando fizer sentido (ex.: create_apostila → generate_cover → bulk_generate_exercises).
 4. Ações destrutivas (delete_*): peça confirmação em texto ANTES de chamar com confirm=true. Nunca deleta sem "sim, pode apagar" ou equivalente inequívoco.
 5. Navegação: use navigate_to quando pedirem "abre", "vai para", "leva pra".
+6. Internet: use **web_search** para fatos atuais, notícias, editais, datas e estatísticas — e cite as fontes com link.
 
 Foco: ambiente acadêmico de tecnologia (Ciência da Computação, Sistemas de Informação, Engenharia da Computação).
 Proibido: mencionar "IA", "Lovable", "modelo de linguagem", "Gemini", ou qualquer tema de hacking/pentest. Você é a Ella, ponto.`;
@@ -725,12 +780,11 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     const GOOGLE_AI_API_KEY = Deno.env.get("GOOGLE_AI_API_KEY");
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
     const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    if (!LOVABLE_API_KEY && !GOOGLE_AI_API_KEY) throw new Error("Nenhuma chave de assistente configurada");
+    if (!GOOGLE_AI_API_KEY) throw new Error("Chave do provedor Google não configurada em Admin → Provedor do Assistente.");
 
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
@@ -751,7 +805,7 @@ Deno.serve(async (req) => {
     const contentScope: string = ((prof as any)?.content_scope as string) ?? "full";
     const firstName = String((prof as any)?.full_name ?? "").split(" ")[0] || "";
 
-    const READ_ONLY_TOOLS = new Set(["search_app", "get_apostila", "navigate_to", "list_rss_feeds", "list_free_courses", "my_next_exams", "my_progress", "add_my_flashcard", "practice_exercises"]);
+    const READ_ONLY_TOOLS = new Set(["search_app", "get_apostila", "navigate_to", "list_rss_feeds", "list_free_courses", "my_next_exams", "my_progress", "add_my_flashcard", "practice_exercises", "web_search"]);
     const availableTools = isAdmin ? (tools as any[]) : (tools as any[]).filter((t) => READ_ONLY_TOOLS.has(t.function.name));
 
     const body = await req.json();
@@ -774,68 +828,71 @@ Estilo:
 - Estruture explicações longas: **Ideia central → Exemplo → Resumo (3 bullets)**.
 - Se a dúvida for ambígua, pergunte antes de responder.
 - Use search_app / get_apostila para encontrar material do próprio app; use navigate_to para levar até a apostila.
-- Você tem tools: **my_next_exams** (próximas provas), **my_progress** (desempenho pessoal), **add_my_flashcard** (criar flashcard próprio), **practice_exercises** (puxar exercícios de uma apostila), **search_app**/**get_apostila**/**navigate_to**. Use-as sempre que fizer sentido — não invente números nem eventos.
+- Você tem tools: **my_next_exams** (próximas provas), **my_progress** (desempenho pessoal), **add_my_flashcard** (criar flashcard próprio), **practice_exercises** (puxar exercícios de uma apostila), **web_search** (pesquisa atualizada na internet), **search_app**/**get_apostila**/**navigate_to**. Use-as sempre que fizer sentido — não invente números nem eventos.
+- Pesquisa na internet: use **web_search** quando a pergunta envolver fatos atuais, notícias, datas de vestibular/ENEM, estatísticas, leis, artigos científicos ou algo que o app não tenha. Depois explique com suas palavras e liste as fontes em bullets com link.
 - Você NÃO cria, edita ou apaga conteúdo do professor — se pedirem, explique que só o administrador pode.
 
 Proibido: mencionar "IA", "modelo de linguagem", "Lovable", "Gemini" ou qualquer coisa de hacking/pentest.`;
     }
 
+    // Latência: mantém só as últimas trocas — contexto suficiente, resposta bem mais rápida.
+    const trimmed = incoming.slice(-14);
     const messages: ChatMsg[] = [
       { role: "system", content: systemContent + (routeCtx ? `\n\nContexto atual: ${routeCtx}` : "") },
-      ...incoming.map((m) => ({ role: m.role as any, content: m.content })),
+      ...trimmed.map((m) => ({ role: m.role as any, content: m.content })),
     ];
+
 
     const executedTools: any[] = [];
     const MAX_STEPS = 8;
 
-    // Prefere a chave própria (Google) quando existir; gateway vira reserva.
-    const useGoogle = !!GOOGLE_AI_API_KEY;
-    let currentModel = useGoogle ? GOOGLE_MODEL : MODEL;
-    console.log(`[ella-chat] provider=${useGoogle ? "google-direct" : "gateway"} model=${currentModel}`);
+    // Provedor EXCLUSIVO: chave própria do Google. Sem gateway, em hipótese alguma.
+    let currentModel = GOOGLE_MODEL;
+    let noThinking = true;
+    console.log(`[ella-chat] provider=google-direct model=${currentModel}`);
 
-    const callModel = (model: string, viaGoogle: boolean) =>
-      fetch(viaGoogle ? GOOGLE_URL : GATEWAY_URL, {
+    const callModel = (model: string) =>
+      fetch(GOOGLE_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${viaGoogle ? GOOGLE_AI_API_KEY : LOVABLE_API_KEY}`,
+          Authorization: `Bearer ${GOOGLE_AI_API_KEY}`,
         },
-        body: JSON.stringify({ model, messages, tools: availableTools, tool_choice: "auto" }),
+        body: JSON.stringify({
+          model,
+          messages,
+          tools: availableTools,
+          tool_choice: "auto",
+          // Latência: desliga o "thinking" — respostas quase instantâneas.
+          ...(noThinking ? { reasoning_effort: "none" } : {}),
+        }),
       });
 
     for (let step = 0; step < MAX_STEPS; step++) {
-      let viaGoogle = useGoogle;
-      let res = await callModel(currentModel, viaGoogle);
+      let res = await callModel(currentModel);
 
-      // Fallback em cascata para manter velocidade em picos de quota.
+      // 400 pode ser o parâmetro de latência não suportado: repete sem ele.
+      if (res.status === 400 && noThinking) {
+        noThinking = false;
+        res = await callModel(currentModel);
+      }
+
+      // Fallback apenas entre modelos do Google (quota/indisponibilidade).
       if (!res.ok) {
-        console.log(`[ella-chat] falha ${res.status} em ${viaGoogle ? "google" : "gateway"}/${currentModel}`);
-        if (viaGoogle) {
-          if (currentModel !== GOOGLE_FALLBACK_MODEL) {
-            currentModel = GOOGLE_FALLBACK_MODEL;
-            res = await callModel(currentModel, true);
-          }
-          // Última tentativa: gateway padrão, se disponível.
-          if (!res.ok && LOVABLE_API_KEY) {
-            viaGoogle = false;
-            currentModel = MODEL;
-            res = await callModel(currentModel, false);
-          }
-        } else if (res.status === 429 || res.status === 503 || res.status === 402) {
-          if (currentModel !== SECOND_FALLBACK_MODEL) {
-            currentModel = currentModel === MODEL ? FALLBACK_MODEL : SECOND_FALLBACK_MODEL;
-            res = await callModel(currentModel, false);
-          }
+        console.log(`[ella-chat] falha ${res.status} em google/${currentModel}`);
+        if (currentModel !== GOOGLE_FALLBACK_MODEL) {
+          currentModel = GOOGLE_FALLBACK_MODEL;
+          res = await callModel(currentModel);
         }
       }
 
-
-      if (res.status === 429) return new Response(JSON.stringify({ error: "Limite de requisições, tente em instantes." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-      if (res.status === 402) return new Response(JSON.stringify({ error: "Créditos do assistente esgotados. Verifique a chave própria em Admin → Provedor do Assistente ou adicione créditos." }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      if (res.status === 429) return new Response(JSON.stringify({ error: "Limite de requisições da chave Google atingido. Tente em instantes." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      if (res.status === 401 || res.status === 403) return new Response(JSON.stringify({ error: "Chave do Google inválida ou sem permissão. Atualize em Admin → Provedor do Assistente." }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       if (!res.ok) {
         const text = await res.text();
         return new Response(JSON.stringify({ error: `Assistente ${res.status}: ${text.slice(0, 300)}` }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
+
 
       const data = await res.json();
       const choice = data.choices?.[0];
