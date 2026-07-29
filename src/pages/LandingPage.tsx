@@ -284,10 +284,20 @@ export default function LandingPage() {
           className="pointer-events-none fixed inset-0 overflow-hidden"
           style={{ zIndex: -1 }}
         >
+          {/* Fallback estático: aparece se o autoplay for bloqueado (iOS/Safari) ou o vídeo não carregar */}
+          <div
+            className="absolute inset-0 opacity-60"
+            style={{
+              backgroundImage: `url(${heroPoster.url})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            }}
+          />
+
           {bgVideoEnabled && (
             <video
               ref={heroVideoRef}
-              className="landing-bg-video h-full w-full scale-[1.03] object-cover opacity-60"
+              className="landing-bg-video relative h-full w-full scale-[1.03] object-cover opacity-60"
               autoPlay
               loop
               muted
@@ -295,6 +305,7 @@ export default function LandingPage() {
               controls={false}
               disablePictureInPicture
               preload="auto"
+              poster={heroPoster.url}
               // atributos legados necessários no Safari iOS
               webkit-playsinline="true"
               x5-playsinline="true"
@@ -304,6 +315,7 @@ export default function LandingPage() {
 
           )}
           <div className="landing-bg-scrim absolute inset-0" />
+
 
         </div>,
         document.body,
