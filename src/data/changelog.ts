@@ -27,6 +27,15 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '3.10.0',
+    date: '2026-07-29',
+    title: 'Plano de estudos com exercícios e gabarito comentado',
+    changes: [
+      { kind: 'feature', text: 'Botão "Virar plano de estudos" nas respostas da Ella: transforma a explicação em cronograma, pontos-chave, exercícios e gabarito comentado.' },
+      { kind: 'improvement', text: 'A Ella passa a seguir um formato padronizado de plano de estudos, com dificuldade crescente e comentário de cada alternativa.' },
+    ],
+  },
+  {
     version: '3.9.0',
     date: '2026-07-29',
     title: 'Ella em tempo real: resposta instantânea e tutoria mais profunda',
