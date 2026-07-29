@@ -31,6 +31,7 @@ import {
   Activity,
   HelpCircle,
   Trophy,
+  NotebookPen,
   RotateCcw,
   LogOut,
   Newspaper,
