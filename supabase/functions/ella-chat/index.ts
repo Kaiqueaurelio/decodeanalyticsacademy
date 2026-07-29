@@ -866,17 +866,24 @@ Deno.serve(async (req) => {
       adminClient.rpc("has_role", { _user_id: userId, _role: "admin" }),
       adminClient.from("profiles").select("content_scope, full_name").eq("user_id", userId).maybeSingle(),
     ]);
-    const isAdmin = !!isAdminData;
-    const contentScope: string = ((prof as any)?.content_scope as string) ?? "full";
     const firstName = String((prof as any)?.full_name ?? "").split(" ")[0] || "";
 
     // Identificador da requisição — usado na auditoria e nos logs.
     const requestId = crypto.randomUUID();
-    const authzCtx: AuthzCtx = { userId, authHeader, isAdmin, contentScope, requestId };
+    // Contexto de autorização derivado apenas de fontes confiáveis (token + banco).
+    const authzCtx: AuthzCtx = buildAuthzCtx({
+      userId,
+      authHeader,
+      isAdminFromDb: isAdminData === true,
+      profile: prof as { content_scope?: unknown } | null,
+      requestId,
+    });
+    const isAdmin = authzCtx.isAdmin;
+    const contentScope = authzCtx.contentScope;
 
     // O catálogo exposto ao modelo já é filtrado pela mesma matriz do backend.
     // Mesmo assim, cada execução passa novamente pelo gate em executeTool.
-    const availableTools = (tools as any[]).filter((t) => authorizeTool(t.function.name, authzCtx).allowed);
+    const availableTools = filterToolCatalog(tools as any[], authzCtx);
 
     const body = await req.json();
     const incoming: { role: string; content: string }[] = Array.isArray(body.messages) ? body.messages : [];
