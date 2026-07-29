@@ -842,54 +842,53 @@ Proibido: mencionar "IA", "modelo de linguagem", "Lovable", "Gemini" ou qualquer
     const executedTools: any[] = [];
     const MAX_STEPS = 8;
 
-    // Prefere a chave própria (Google) quando existir; gateway vira reserva.
-    const useGoogle = !!GOOGLE_AI_API_KEY;
-    let currentModel = useGoogle ? GOOGLE_MODEL : MODEL;
-    console.log(`[ella-chat] provider=${useGoogle ? "google-direct" : "gateway"} model=${currentModel}`);
+    // Provedor EXCLUSIVO: chave própria do Google. Sem gateway, em hipótese alguma.
+    let currentModel = GOOGLE_MODEL;
+    let noThinking = true;
+    console.log(`[ella-chat] provider=google-direct model=${currentModel}`);
 
-    const callModel = (model: string, viaGoogle: boolean) =>
-      fetch(viaGoogle ? GOOGLE_URL : GATEWAY_URL, {
+    const callModel = (model: string) =>
+      fetch(GOOGLE_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${viaGoogle ? GOOGLE_AI_API_KEY : LOVABLE_API_KEY}`,
+          Authorization: `Bearer ${GOOGLE_AI_API_KEY}`,
         },
-        body: JSON.stringify({ model, messages, tools: availableTools, tool_choice: "auto" }),
+        body: JSON.stringify({
+          model,
+          messages,
+          tools: availableTools,
+          tool_choice: "auto",
+          // Latência: desliga o "thinking" — respostas quase instantâneas.
+          ...(noThinking ? { reasoning_effort: "none" } : {}),
+        }),
       });
 
     for (let step = 0; step < MAX_STEPS; step++) {
-      let viaGoogle = useGoogle;
-      let res = await callModel(currentModel, viaGoogle);
+      let res = await callModel(currentModel);
 
-      // Fallback em cascata para manter velocidade em picos de quota.
+      // 400 pode ser o parâmetro de latência não suportado: repete sem ele.
+      if (res.status === 400 && noThinking) {
+        noThinking = false;
+        res = await callModel(currentModel);
+      }
+
+      // Fallback apenas entre modelos do Google (quota/indisponibilidade).
       if (!res.ok) {
-        console.log(`[ella-chat] falha ${res.status} em ${viaGoogle ? "google" : "gateway"}/${currentModel}`);
-        if (viaGoogle) {
-          if (currentModel !== GOOGLE_FALLBACK_MODEL) {
-            currentModel = GOOGLE_FALLBACK_MODEL;
-            res = await callModel(currentModel, true);
-          }
-          // Última tentativa: gateway padrão, se disponível.
-          if (!res.ok && LOVABLE_API_KEY) {
-            viaGoogle = false;
-            currentModel = MODEL;
-            res = await callModel(currentModel, false);
-          }
-        } else if (res.status === 429 || res.status === 503 || res.status === 402) {
-          if (currentModel !== SECOND_FALLBACK_MODEL) {
-            currentModel = currentModel === MODEL ? FALLBACK_MODEL : SECOND_FALLBACK_MODEL;
-            res = await callModel(currentModel, false);
-          }
+        console.log(`[ella-chat] falha ${res.status} em google/${currentModel}`);
+        if (currentModel !== GOOGLE_FALLBACK_MODEL) {
+          currentModel = GOOGLE_FALLBACK_MODEL;
+          res = await callModel(currentModel);
         }
       }
 
-
-      if (res.status === 429) return new Response(JSON.stringify({ error: "Limite de requisições, tente em instantes." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-      if (res.status === 402) return new Response(JSON.stringify({ error: "Créditos do assistente esgotados. Verifique a chave própria em Admin → Provedor do Assistente ou adicione créditos." }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      if (res.status === 429) return new Response(JSON.stringify({ error: "Limite de requisições da chave Google atingido. Tente em instantes." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      if (res.status === 401 || res.status === 403) return new Response(JSON.stringify({ error: "Chave do Google inválida ou sem permissão. Atualize em Admin → Provedor do Assistente." }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       if (!res.ok) {
         const text = await res.text();
         return new Response(JSON.stringify({ error: `Assistente ${res.status}: ${text.slice(0, 300)}` }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
+
 
       const data = await res.json();
       const choice = data.choices?.[0];
