@@ -336,6 +336,20 @@ export default function LandingPage() {
         document.body,
       )}
 
+      {/* Autoplay bloqueado (iOS/Safari): botão para iniciar o vídeo manualmente */}
+      {videoBlocked && (
+        <button
+          type="button"
+          onClick={handleManualPlay}
+          aria-label="Reproduzir vídeo de fundo"
+          className="fixed bottom-5 right-4 z-40 flex h-11 w-11 items-center justify-center rounded-full border border-primary/40 bg-background/80 text-primary backdrop-blur-sm transition-colors hover:bg-primary/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <Play className="h-5 w-5" fill="currentColor" />
+        </button>
+      )}
+
+
+
 
       {/* ═══ HERO / NAVEGAÇÃO ═══ */}
       <section className="relative isolate min-h-screen overflow-hidden">
