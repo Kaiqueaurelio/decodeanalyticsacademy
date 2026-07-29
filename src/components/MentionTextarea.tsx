@@ -157,6 +157,7 @@ export const MentionTextarea = forwardRef<MentionTextareaHandle, MentionTextarea
         onChange={handleChange}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
+        aria-label={placeholder}
         className={className}
         maxLength={maxLength}
         rows={rows}

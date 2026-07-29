@@ -91,6 +91,7 @@ function GradeRow({ row, onChange, onRemove }: {
             value={row.subject}
             onChange={(e) => onChange({ subject: e.target.value })}
             placeholder="Nome da disciplina"
+            aria-label="Nome da disciplina"
             className="bg-background/40 border-border/60 font-semibold flex-1"
           />
           <Button size="icon" variant="ghost" onClick={onRemove} className="h-9 w-9 text-muted-foreground hover:text-destructive" aria-label="Excluir">
@@ -104,6 +105,7 @@ function GradeRow({ row, onChange, onRemove }: {
             <Input
               type="number" inputMode="decimal" step="0.1" min="0" max="10"
               value={row.np1 ?? ""}
+              aria-label={`Nota NP1 de ${row.subject || "disciplina"}`}
               onChange={(e) => onChange({ np1: parse(e.target.value) })}
               placeholder="—"
               className="bg-background/40 border-border/60 mt-1 text-center font-mono h-11 text-base"
@@ -114,6 +116,7 @@ function GradeRow({ row, onChange, onRemove }: {
             <Input
               type="number" inputMode="decimal" step="0.1" min="0" max="10"
               value={row.np2 ?? ""}
+              aria-label={`Nota NP2 de ${row.subject || "disciplina"}`}
               onChange={(e) => onChange({ np2: parse(e.target.value) })}
               placeholder="—"
               className="bg-background/40 border-border/60 mt-1 text-center font-mono h-11 text-base"
@@ -125,6 +128,7 @@ function GradeRow({ row, onChange, onRemove }: {
               <Input
                 type="number" inputMode="decimal" step="0.1" min="0" max="10"
                 value={row.exam ?? ""}
+                aria-label={`Nota do exame de ${row.subject || "disciplina"}`}
                 onChange={(e) => onChange({ exam: parse(e.target.value) })}
                 placeholder="—"
                 className="bg-background/40 border-amber-500/40 mt-1 text-center font-mono h-11 text-base"

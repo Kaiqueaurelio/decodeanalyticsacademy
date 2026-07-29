@@ -3,8 +3,13 @@ import { useAds } from '@/hooks/useAds';
 import { Button } from '@/components/ui/button';
 import { X, ExternalLink, Megaphone } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useLocation } from 'react-router-dom';
 import { AdMediaPreview } from '@/components/AdMediaPreview';
 import { AdImageLightbox, AdZoomButton } from '@/components/AdImageLightbox';
+
+// Rotas publicas onde o popup nunca deve aparecer (bloqueia login/landing)
+const PUBLIC_ROUTES = ['/', '/login', '/reset-password', '/termos', '/anuncie', '/patrocine'];
+
 
 const AUTO_CLOSE_SECONDS = 25;
 
@@ -14,11 +19,20 @@ interface AdPopupProps {
 }
 
 export function AdPopup({ trigger = 'onLoad', delay = 2000 }: AdPopupProps) {
+  const location = useLocation();
+  const isPublicRoute = PUBLIC_ROUTES.includes(location.pathname);
   const { ads, loading, recordAdView, recordAdClick } = useAds('popup');
   const [isVisible, setIsVisible] = useState(false);
   const [timeLeft, setTimeLeft] = useState(AUTO_CLOSE_SECONDS);
   const [currentAdIndex, setCurrentAdIndex] = useState(0);
   const [zoomOpen, setZoomOpen] = useState(false);
+
+  // Fecha imediatamente se o usuario navegar para uma rota publica
+  useEffect(() => {
+    if (isPublicRoute) setIsVisible(false);
+  }, [isPublicRoute]);
+
+
 
   const COOLDOWN_MS = 3 * 60 * 1000; // 3 min entre popups
   const STORAGE_KEY = 'popup_ad_last_shown';
@@ -36,7 +50,8 @@ export function AdPopup({ trigger = 'onLoad', delay = 2000 }: AdPopupProps) {
 
   // Mostra na carga + reagenda a cada cooldown
   useEffect(() => {
-    if (loading || ads.length === 0 || trigger !== 'onLoad') return;
+    if (isPublicRoute || loading || ads.length === 0 || trigger !== 'onLoad') return;
+
 
     const showAd = () => {
       if (!canShowNow() || document.hidden) return;
@@ -63,7 +78,7 @@ export function AdPopup({ trigger = 'onLoad', delay = 2000 }: AdPopupProps) {
       clearInterval(interval);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading, ads.length, trigger, delay]);
+  }, [isPublicRoute, loading, ads.length, trigger, delay]);
 
   // Countdown do pop-up
   useEffect(() => {
@@ -99,7 +114,7 @@ export function AdPopup({ trigger = 'onLoad', delay = 2000 }: AdPopupProps) {
 
   return (
     <AnimatePresence>
-      {isVisible && currentAd && (
+      {isVisible && !isPublicRoute && currentAd && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

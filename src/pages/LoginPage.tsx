@@ -426,7 +426,7 @@ export default function LoginPage() {
                         Entrar
                       </EvasiveButton>
                     ) : (
-                      <Button type="submit" className="w-full" disabled={loading || awaitingSession || isLocked}>
+                      <Button type="submit" className="w-full min-h-11" disabled={loading || awaitingSession || isLocked}>
                         {(loading || awaitingSession) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         {isLocked ? (
                           <><Lock className="mr-2 h-4 w-4" /> Conta Bloqueada</>

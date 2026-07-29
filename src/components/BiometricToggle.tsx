@@ -78,7 +78,9 @@ export function BiometricToggle() {
               checked={enabled}
               onCheckedChange={handleToggle}
               disabled={!available || busy}
+              aria-label="Ativar desbloqueio biométrico"
             />
+
           )}
         </div>
         {!available && (

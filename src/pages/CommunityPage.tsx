@@ -256,7 +256,7 @@ export default function CommunityPage() {
                         : "hover:bg-secondary/60 text-foreground/80"
                     )}
                   >
-                    <span className="text-base">{ch.icon}</span>
+                    <span aria-hidden="true" className="text-base">{ch.icon}</span>
                     <span className="truncate">{ch.name}</span>
                     {ch.is_general && (
                       <span className="ml-auto text-[9px] bg-primary/20 text-primary px-1.5 rounded">GERAL</span>
@@ -283,7 +283,7 @@ export default function CommunityPage() {
                         : "bg-secondary/40 border-border/40 text-foreground/80 hover:bg-secondary"
                     )}
                   >
-                    <span>{ch.icon}</span>
+                    <span aria-hidden="true">{ch.icon}</span>
                     <span>{ch.name}</span>
                   </button>
                 ))}
@@ -293,7 +293,7 @@ export default function CommunityPage() {
             {activeChannel && (
               <Card className="p-4 mb-4">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-xl">{activeChannel.icon}</span>
+                  <span aria-hidden="true" className="text-xl">{activeChannel.icon}</span>
                   <h2 className="font-display text-lg">{activeChannel.name}</h2>
                 </div>
                 {activeChannel.description && (

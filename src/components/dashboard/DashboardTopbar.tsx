@@ -82,6 +82,7 @@ export function DashboardTopbar() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Buscar apostila ou disciplina"
+            aria-label="Buscar apostila ou disciplina"
             className="w-full h-10 sm:h-11 pl-10 pr-3 sm:pr-4 rounded-xl sm:rounded-2xl bg-card/60 border border-border text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 focus:bg-card transition-all"
           />
         </form>

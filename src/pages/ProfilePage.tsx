@@ -222,17 +222,18 @@ export default function ProfilePage() {
               </Avatar>
               <label className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-100 sm:opacity-0 group-hover:opacity-100 cursor-pointer smooth-all">
                 {uploading ? <Loader2 className="h-6 w-6 text-white animate-spin" /> : <Camera className="h-6 w-6 text-white" />}
-                <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={uploading} />
+                <span className="sr-only">Alterar foto de perfil</span>
+                <input type="file" accept="image/*" aria-label="Alterar foto de perfil" className="hidden" onChange={handleAvatarUpload} disabled={uploading} />
               </label>
             </div>
             <div className="flex-1 space-y-3 w-full">
               <div>
-                <Label className="text-xs text-muted-foreground">Nome completo</Label>
+                <Label htmlFor="profile-fullname-input" className="text-xs text-muted-foreground">Nome completo</Label>
                 <Input id="profile-fullname-input" value={fullName} onChange={e => setFullName(e.target.value)} className="mt-1" placeholder="Seu nome" />
               </div>
               <div>
-                <Label className="text-xs text-muted-foreground">Email</Label>
-                <Input value={user?.email || ''} disabled className="mt-1 opacity-60" />
+                <Label htmlFor="profile-email-input" className="text-xs text-muted-foreground">Email</Label>
+                <Input id="profile-email-input" value={user?.email || ''} disabled className="mt-1 opacity-60" />
               </div>
               <div className="flex flex-wrap gap-2">
                 <Button onClick={handleSave} disabled={saving} size="sm" className="gradient-primary text-primary-foreground">
