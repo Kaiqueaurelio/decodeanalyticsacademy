@@ -540,6 +540,81 @@ async function notifySecurity(
   }
 }
 
+// ---------- Proteção contra abuso (rate limiting por usuário) ----------
+// Limites: 30 mensagens por 5 minutos e 300 por dia, por usuário autenticado.
+// Ações negadas repetidas (5 em 15 min) suspendem o acesso por 15 minutos.
+const RATE_WINDOW_LIMIT = 30;
+const RATE_WINDOW_SECONDS = 300;
+const RATE_DAILY_LIMIT = 300;
+const DENIAL_THRESHOLD = 5;
+const DENIAL_WINDOW_SECONDS = 900;
+const BLOCK_SECONDS = 900;
+
+type RateVerdict = {
+  allowed: boolean;
+  kind?: string;
+  reason?: string;
+  retry_after_seconds?: number;
+};
+
+/** Consulta e consome a cota do usuário. Falha "aberta" se o banco não responder. */
+async function checkRate(admin: ReturnType<typeof createClient>, userId: string): Promise<RateVerdict> {
+  try {
+    const { data, error } = await admin.rpc("ella_rate_check", {
+      _user_id: userId,
+      _window_limit: RATE_WINDOW_LIMIT,
+      _window_seconds: RATE_WINDOW_SECONDS,
+      _daily_limit: RATE_DAILY_LIMIT,
+    });
+    if (error) throw error;
+    return (data ?? { allowed: true }) as RateVerdict;
+  } catch (_e) {
+    console.error("[ella-chat] falha ao verificar limite de uso");
+    return { allowed: true };
+  }
+}
+
+/** Mensagem amigável para o aluno, sem expor detalhes de infraestrutura. */
+function rateMessage(v: RateVerdict) {
+  const secs = Math.max(Number(v.retry_after_seconds ?? 60), 1);
+  const mins = Math.ceil(secs / 60);
+  if (v.kind === "blocked") {
+    return `Seu acesso à Ella está temporariamente suspenso por segurança. Tente novamente em ${mins} minuto(s).`;
+  }
+  if (v.kind === "rate_daily") {
+    return "Você atingiu o limite de mensagens de hoje. A Ella volta a responder em algumas horas.";
+  }
+  return `Calma aí! Muitas mensagens em pouco tempo. Aguarde ${secs < 60 ? `${secs} segundo(s)` : `${mins} minuto(s)`} e tente de novo.`;
+}
+
+/** Registra uma recusa e, ao atingir o limiar, suspende o usuário por 15 minutos. */
+async function registerDenial(admin: ReturnType<typeof createClient>, ctx: AuthzCtx) {
+  try {
+    const { data } = await admin.rpc("ella_register_denial", {
+      _user_id: ctx.userId,
+      _threshold: DENIAL_THRESHOLD,
+      _window_seconds: DENIAL_WINDOW_SECONDS,
+      _block_seconds: BLOCK_SECONDS,
+    });
+    if ((data as any)?.blocked) {
+      await admin.from("security_notifications").insert({
+        kind: "privilege_escalation",
+        severity: "critical",
+        user_id: ctx.userId,
+        user_role: ctx.isAdmin ? "admin" : "user",
+        content_scope: ctx.contentScope,
+        tool_name: "(bloqueio automático)",
+        reason: `Acesso à assistente suspenso por 15 minutos após ${DENIAL_THRESHOLD} ações negadas.`,
+        request_id: ctx.requestId,
+        source: "ella-chat",
+        metadata: { title: "Bloqueio temporário aplicado", blocked_until: (data as any).blocked_until },
+      });
+    }
+  } catch (_e) {
+    console.error("[ella-chat] falha ao registrar recusa");
+  }
+}
+
 // ---------- Tool executor (server-side, com service role) ----------
 async function executeTool(name: string, args: any, admin: ReturnType<typeof createClient>, ctx: AuthzCtx) {
   // Gate obrigatório: nada é executado sem autorização do backend.
@@ -548,6 +623,7 @@ async function executeTool(name: string, args: any, admin: ReturnType<typeof cre
     await auditTool(admin, ctx, { tool: name, args, allowed: false, reason: decision.reason });
     if (shouldNotifyAdmin(decision)) {
       await notifySecurity(admin, ctx, { tool: name, args, reason: decision.reason });
+      await registerDenial(admin, ctx);
     }
     console.warn(`[ella-chat] tool negada: ${name} (req ${ctx.requestId})`);
     return { ok: false, error: decision.reason };
@@ -944,6 +1020,24 @@ Deno.serve(async (req) => {
     });
     const isAdmin = authzCtx.isAdmin;
     const contentScope = authzCtx.contentScope;
+
+    // Proteção contra abuso: cota por usuário, verificada no servidor antes de
+    // qualquer chamada ao provedor. Bloqueios temporários também caem aqui.
+    const rate = await checkRate(adminClient, userId);
+    if (!rate.allowed) {
+      console.warn(`[ella-chat] limite atingido (${rate.kind}) user ${userId.slice(0, 8)}`);
+      return new Response(
+        JSON.stringify({ error: rateMessage(rate), rate_limited: true, kind: rate.kind, retry_after_seconds: rate.retry_after_seconds }),
+        {
+          status: 429,
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "application/json",
+            "Retry-After": String(Math.max(Number(rate.retry_after_seconds ?? 60), 1)),
+          },
+        },
+      );
+    }
 
     // O catálogo exposto ao modelo já é filtrado pela mesma matriz do backend.
     // Mesmo assim, cada execução passa novamente pelo gate em executeTool.

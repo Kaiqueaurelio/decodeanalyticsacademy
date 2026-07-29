@@ -1291,6 +1291,54 @@ export type Database = {
         }
         Relationships: []
       }
+      ella_usage_events: {
+        Row: {
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ella_user_blocks: {
+        Row: {
+          blocked_until: string | null
+          created_at: string
+          denial_count: number
+          denial_window_start: string | null
+          reason: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          blocked_until?: string | null
+          created_at?: string
+          denial_count?: number
+          denial_window_start?: string | null
+          reason?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          blocked_until?: string | null
+          created_at?: string
+          denial_count?: number
+          denial_window_start?: string | null
+          reason?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       exercises: {
         Row: {
           allow_image_upload: boolean
@@ -2693,6 +2741,24 @@ export type Database = {
       delete_user_completely: {
         Args: { _target_user_id: string }
         Returns: undefined
+      }
+      ella_rate_check: {
+        Args: {
+          _daily_limit?: number
+          _user_id: string
+          _window_limit?: number
+          _window_seconds?: number
+        }
+        Returns: Json
+      }
+      ella_register_denial: {
+        Args: {
+          _block_seconds?: number
+          _threshold?: number
+          _user_id: string
+          _window_seconds?: number
+        }
+        Returns: Json
       }
       get_apostila_reader_tree: {
         Args: { _apostila_id: string }
