@@ -804,7 +804,7 @@ Deno.serve(async (req) => {
     const contentScope: string = ((prof as any)?.content_scope as string) ?? "full";
     const firstName = String((prof as any)?.full_name ?? "").split(" ")[0] || "";
 
-    const READ_ONLY_TOOLS = new Set(["search_app", "get_apostila", "navigate_to", "list_rss_feeds", "list_free_courses", "my_next_exams", "my_progress", "add_my_flashcard", "practice_exercises"]);
+    const READ_ONLY_TOOLS = new Set(["search_app", "get_apostila", "navigate_to", "list_rss_feeds", "list_free_courses", "my_next_exams", "my_progress", "add_my_flashcard", "practice_exercises", "web_search"]);
     const availableTools = isAdmin ? (tools as any[]) : (tools as any[]).filter((t) => READ_ONLY_TOOLS.has(t.function.name));
 
     const body = await req.json();
