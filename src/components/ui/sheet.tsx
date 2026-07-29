@@ -56,7 +56,7 @@ const SheetContent = React.forwardRef<React.ElementRef<typeof SheetPrimitive.Con
     <SheetPortal>
       <SheetOverlay />
       <SheetPrimitive.Content ref={ref} className={cn(sheetVariants({ side }), className)} {...props}>
-        {children}
+        {/* Primeiro no DOM: ao abrir, o foco cai no botão fechar e o Tab segue a ordem visual */}
         <SheetPrimitive.Close
           aria-label="Fechar menu"
           className="absolute right-3 top-3 z-10 flex h-11 w-11 items-center justify-center rounded-xl border border-border/60 bg-background/80 text-muted-foreground opacity-90 ring-offset-background transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none"
@@ -64,7 +64,7 @@ const SheetContent = React.forwardRef<React.ElementRef<typeof SheetPrimitive.Con
           <X className="h-5 w-5" />
           <span className="sr-only">Fechar</span>
         </SheetPrimitive.Close>
-
+        {children}
       </SheetPrimitive.Content>
     </SheetPortal>
   ),
