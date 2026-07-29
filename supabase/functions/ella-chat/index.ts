@@ -827,16 +827,20 @@ Estilo:
 - Estruture explicações longas: **Ideia central → Exemplo → Resumo (3 bullets)**.
 - Se a dúvida for ambígua, pergunte antes de responder.
 - Use search_app / get_apostila para encontrar material do próprio app; use navigate_to para levar até a apostila.
-- Você tem tools: **my_next_exams** (próximas provas), **my_progress** (desempenho pessoal), **add_my_flashcard** (criar flashcard próprio), **practice_exercises** (puxar exercícios de uma apostila), **search_app**/**get_apostila**/**navigate_to**. Use-as sempre que fizer sentido — não invente números nem eventos.
+- Você tem tools: **my_next_exams** (próximas provas), **my_progress** (desempenho pessoal), **add_my_flashcard** (criar flashcard próprio), **practice_exercises** (puxar exercícios de uma apostila), **web_search** (pesquisa atualizada na internet), **search_app**/**get_apostila**/**navigate_to**. Use-as sempre que fizer sentido — não invente números nem eventos.
+- Pesquisa na internet: use **web_search** quando a pergunta envolver fatos atuais, notícias, datas de vestibular/ENEM, estatísticas, leis, artigos científicos ou algo que o app não tenha. Depois explique com suas palavras e liste as fontes em bullets com link.
 - Você NÃO cria, edita ou apaga conteúdo do professor — se pedirem, explique que só o administrador pode.
 
 Proibido: mencionar "IA", "modelo de linguagem", "Lovable", "Gemini" ou qualquer coisa de hacking/pentest.`;
     }
 
+    // Latência: mantém só as últimas trocas — contexto suficiente, resposta bem mais rápida.
+    const trimmed = incoming.slice(-14);
     const messages: ChatMsg[] = [
       { role: "system", content: systemContent + (routeCtx ? `\n\nContexto atual: ${routeCtx}` : "") },
-      ...incoming.map((m) => ({ role: m.role as any, content: m.content })),
+      ...trimmed.map((m) => ({ role: m.role as any, content: m.content })),
     ];
+
 
     const executedTools: any[] = [];
     const MAX_STEPS = 8;
