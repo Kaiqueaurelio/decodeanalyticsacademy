@@ -207,7 +207,10 @@ export default function LandingPage() {
       startPlayback();
     };
 
+    const onPlaying = () => setVideoBlocked(false);
+
     startPlayback();
+    video.addEventListener('playing', onPlaying);
     video.addEventListener('canplay', startPlayback);
     video.addEventListener('loadedmetadata', startPlayback);
     video.addEventListener('loadeddata', startPlayback);
