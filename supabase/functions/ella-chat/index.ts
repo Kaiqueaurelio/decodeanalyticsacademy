@@ -10,11 +10,15 @@ const corsHeaders = {
 };
 
 const GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
-// Prioriza velocidade: Gemini 3.5 Flash (agentic, tool-calling forte, baixa latência).
-// Fallback para o Flash preview em caso de quota.
+// Endpoint OpenAI-compatível do Google (suporta tool calling) — usado quando
+// a chave própria (GOOGLE_AI_API_KEY) está configurada.
+const GOOGLE_URL = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
+// Prioriza velocidade: Gemini Flash (agentic, tool-calling forte, baixa latência).
 const MODEL = "google/gemini-3.5-flash";
 const FALLBACK_MODEL = "google/gemini-3-flash-preview";
 const SECOND_FALLBACK_MODEL = "google/gemini-2.5-flash";
+const GOOGLE_MODEL = "gemini-2.5-flash";
+const GOOGLE_FALLBACK_MODEL = "gemini-2.0-flash";
 
 type ChatMsg = {
   role: "system" | "user" | "assistant" | "tool";
