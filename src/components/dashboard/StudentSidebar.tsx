@@ -351,7 +351,7 @@ export function SidebarContent({
                 <button
                   type="button"
                   onClick={() => open('/admin')}
-                  className={`mt-2 group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-[13px] font-semibold transition-all
+                  className={`mt-2 group flex min-h-[44px] w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-[13px] font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background
                     ${location.pathname.startsWith('/admin')
                       ? 'bg-gradient-to-r from-accent/20 to-accent/5 text-foreground ring-1 ring-accent/40'
                       : 'text-accent hover:bg-accent/10'}`}
@@ -371,7 +371,7 @@ export function SidebarContent({
                   signOut();
                   onNavigate?.();
                 }}
-                className="group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-[13px] font-medium text-muted-foreground transition-all hover:bg-destructive/10 hover:text-destructive"
+                className="group flex min-h-[44px] w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-[13px] font-medium text-muted-foreground transition-all hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               >
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground/80 group-hover:bg-destructive/15 group-hover:text-destructive">
                   <LogOut strokeWidth={1.9} className="h-[15px] w-[15px]" />
