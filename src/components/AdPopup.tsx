@@ -78,7 +78,7 @@ export function AdPopup({ trigger = 'onLoad', delay = 2000 }: AdPopupProps) {
       clearInterval(interval);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading, ads.length, trigger, delay]);
+  }, [isPublicRoute, loading, ads.length, trigger, delay]);
 
   // Countdown do pop-up
   useEffect(() => {
@@ -114,7 +114,7 @@ export function AdPopup({ trigger = 'onLoad', delay = 2000 }: AdPopupProps) {
 
   return (
     <AnimatePresence>
-      {isVisible && currentAd && (
+      {isVisible && !isPublicRoute && currentAd && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
