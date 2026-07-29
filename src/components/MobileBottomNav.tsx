@@ -1,7 +1,7 @@
 import { useState, type MouseEvent } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { Activity, BookOpen, GraduationCap, Home, Library, Menu, PenLine, Trophy } from 'lucide-react';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { SidebarContent } from '@/components/dashboard/StudentSidebar';
 import { useAuth } from '@/hooks/useAuth';
