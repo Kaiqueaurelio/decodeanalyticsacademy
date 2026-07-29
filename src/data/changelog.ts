@@ -27,6 +27,18 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '3.13.0',
+    date: '2026-07-29',
+    title: 'Alertas de segurança para o administrador',
+    changes: [
+      { kind: 'feature', text: 'Nova aba "Alertas de segurança" no painel do administrador, com filtros (em aberto, críticos, todos), busca e opção de marcar como tratado.' },
+      { kind: 'feature', text: 'Aviso em tempo real: sempre que o servidor recusa uma ação, o administrador é notificado na hora, com contador ao vivo no menu lateral.' },
+      { kind: 'security', text: 'Três tipos de alerta: tentativa de agir como administrador (crítico), ação fora do catálogo autorizado e acesso a conteúdo fora do escopo da conta.' },
+      { kind: 'security', text: 'Tentativas repetidas do mesmo usuário são agrupadas e viram alerta crítico a partir da terceira ocorrência, revelando padrões de sondagem.' },
+      { kind: 'security', text: 'Os alertas só podem ser criados pelo servidor e só são visíveis para administradores; o conteúdo original não pode ser editado, apenas marcado como tratado.' },
+    ],
+  },
+  {
     version: '3.12.1',
     date: '2026-07-29',
     title: 'Testes automatizados de segurança da Ella',

@@ -6,11 +6,13 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import {
   authorizeTool,
   buildAuthzCtx,
+  classifyDenial,
   filterToolCatalog,
   sanitizeIncomingMessages,
   sanitizeParams,
   sanitizeRouteContext,
   SECURITY_GUARD,
+  shouldNotifyAdmin,
   type AuthzCtx,
 } from "./security.ts";
 
@@ -479,12 +481,74 @@ async function auditTool(
   }
 }
 
+/**
+ * Alerta o administrador sobre uma recusa do gate.
+ * Tentativas repetidas do mesmo usuário na mesma ação (janela de 10 min, alerta
+ * ainda não tratado) são agrupadas: sobe o contador em vez de poluir o painel.
+ * A partir da 3ª repetição o alerta é elevado a crítico (padrão de sondagem).
+ */
+async function notifySecurity(
+  admin: ReturnType<typeof createClient>,
+  ctx: AuthzCtx,
+  entry: { tool: string; args: any; reason?: string },
+) {
+  try {
+    const alert = classifyDenial(entry.tool, ctx, entry.reason);
+    const since = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+
+    const { data: existing } = await admin
+      .from("security_notifications")
+      .select("id, occurrences")
+      .eq("user_id", ctx.userId)
+      .eq("tool_name", alert.tool)
+      .eq("kind", alert.kind)
+      .eq("acknowledged", false)
+      .gte("created_at", since)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (existing?.id) {
+      const occurrences = Number(existing.occurrences ?? 1) + 1;
+      await admin
+        .from("security_notifications")
+        .update({
+          occurrences,
+          severity: occurrences >= 3 ? "critical" : alert.severity,
+          reason: alert.reason,
+          request_id: ctx.requestId,
+        })
+        .eq("id", existing.id);
+      return;
+    }
+
+    await admin.from("security_notifications").insert({
+      kind: alert.kind,
+      severity: alert.severity,
+      user_id: ctx.userId,
+      user_role: ctx.isAdmin ? "admin" : "user",
+      content_scope: ctx.contentScope,
+      tool_name: alert.tool,
+      reason: alert.reason,
+      request_id: ctx.requestId,
+      source: "ella-chat",
+      metadata: { title: alert.title, params: sanitizeParams(entry.args) },
+    });
+  } catch (_e) {
+    // Um alerta que falha jamais pode derrubar a resposta ao usuário.
+    console.error("[ella-chat] falha ao registrar alerta de segurança");
+  }
+}
+
 // ---------- Tool executor (server-side, com service role) ----------
 async function executeTool(name: string, args: any, admin: ReturnType<typeof createClient>, ctx: AuthzCtx) {
   // Gate obrigatório: nada é executado sem autorização do backend.
   const decision = authorizeTool(name, ctx);
   if (!decision.allowed) {
     await auditTool(admin, ctx, { tool: name, args, allowed: false, reason: decision.reason });
+    if (shouldNotifyAdmin(decision)) {
+      await notifySecurity(admin, ctx, { tool: name, args, reason: decision.reason });
+    }
     console.warn(`[ella-chat] tool negada: ${name} (req ${ctx.requestId})`);
     return { ok: false, error: decision.reason };
   }

@@ -2127,6 +2127,66 @@ export type Database = {
         }
         Relationships: []
       }
+      security_notifications: {
+        Row: {
+          acknowledged: boolean
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          content_scope: string | null
+          created_at: string
+          id: string
+          kind: string
+          metadata: Json
+          occurrences: number
+          reason: string | null
+          request_id: string | null
+          severity: string
+          source: string
+          tool_name: string | null
+          updated_at: string
+          user_id: string | null
+          user_role: string | null
+        }
+        Insert: {
+          acknowledged?: boolean
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          content_scope?: string | null
+          created_at?: string
+          id?: string
+          kind: string
+          metadata?: Json
+          occurrences?: number
+          reason?: string | null
+          request_id?: string | null
+          severity?: string
+          source?: string
+          tool_name?: string | null
+          updated_at?: string
+          user_id?: string | null
+          user_role?: string | null
+        }
+        Update: {
+          acknowledged?: boolean
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          content_scope?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          metadata?: Json
+          occurrences?: number
+          reason?: string | null
+          request_id?: string | null
+          severity?: string
+          source?: string
+          tool_name?: string | null
+          updated_at?: string
+          user_id?: string | null
+          user_role?: string | null
+        }
+        Relationships: []
+      }
       sponsor_funnel_thresholds: {
         Row: {
           created_at: string
@@ -2628,6 +2688,7 @@ export type Database = {
         Args: { _exercise_id: string; _selected_answer: string }
         Returns: Json
       }
+      count_open_security_notifications: { Args: never; Returns: Json }
       count_tira_duvidas_today: { Args: { _user_id: string }; Returns: number }
       delete_user_completely: {
         Args: { _target_user_id: string }

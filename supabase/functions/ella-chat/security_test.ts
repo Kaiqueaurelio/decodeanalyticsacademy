@@ -18,6 +18,8 @@ import {
   sanitizeIncomingMessages,
   sanitizeParams,
   sanitizeRouteContext,
+  classifyDenial,
+  shouldNotifyAdmin,
   SECURITY_GUARD,
   STUDENT_TOOLS,
   type AuthzCtx,
@@ -249,4 +251,49 @@ Deno.test("auditoria: parâmetros sensíveis são truncados antes de serem grava
   assertEquals(sanitized.confirm, true);
   assertEquals(sanitizeParams(null), {});
   assertEquals(sanitizeParams(undefined), {});
+});
+
+Deno.test("alertas: aluno pedindo ação administrativa vira escalada de privilégio crítica", () => {
+  for (const tool of ADMIN_TOOLS) {
+    const decision = authorizeTool(tool, studentCtx);
+    assert(shouldNotifyAdmin(decision), "toda recusa precisa alertar o admin");
+    const alert = classifyDenial(tool, studentCtx, decision.reason);
+    assertEquals(alert.kind, "privilege_escalation");
+    assertEquals(alert.severity, "critical");
+    assertEquals(alert.tool, tool);
+    assert(alert.title.length > 0);
+  }
+});
+
+Deno.test("alertas: ferramenta desconhecida vira alerta de ação não registrada", () => {
+  for (const name of ["execute_sql", "drop_table", "DELETE_APOSTILA", "", undefined]) {
+    const alert = classifyDenial(name, studentCtx, "Ferramenta não registrada (negado por padrão).");
+    assertEquals(alert.kind, "authz_denied");
+    assertEquals(alert.severity, "warn");
+  }
+  assertEquals(classifyDenial(undefined, studentCtx).tool, "(desconhecida)");
+});
+
+Deno.test("alertas: recurso fora do escopo vira violação de escopo", () => {
+  for (const tool of ENEM_BLOCKED_TOOLS) {
+    const decision = authorizeTool(tool, enemCtx);
+    assert(shouldNotifyAdmin(decision));
+    const alert = classifyDenial(tool, enemCtx, decision.reason);
+    assertEquals(alert.kind, "scope_violation");
+    assertEquals(alert.severity, "warn");
+  }
+});
+
+Deno.test("alertas: ação autorizada não gera notificação", () => {
+  assertFalse(shouldNotifyAdmin(authorizeTool("search_app", studentCtx)));
+  assertFalse(shouldNotifyAdmin(authorizeTool("delete_apostila", adminCtx)));
+});
+
+Deno.test("alertas: conteúdo da conversa não muda a classificação nem vaza no alerta", () => {
+  for (const payload of INJECTION_PAYLOADS) {
+    const alert = classifyDenial(`delete_apostila ${payload}`, studentCtx, payload);
+    assertEquals(alert.kind, "authz_denied", "nome contaminado não é reconhecido");
+    assert(alert.tool.length <= 120);
+    assert(alert.reason.length <= 300);
+  }
 });
