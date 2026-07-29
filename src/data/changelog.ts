@@ -27,6 +27,16 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '3.7.0',
+    date: '2026-07-29',
+    title: 'Menu mobile acessível',
+    changes: [
+      { kind: 'improvement', text: 'O menu lateral no celular agora fecha pelo botão de fechar (maior e mais fácil de tocar) ou pela tecla Esc.' },
+      { kind: 'improvement', text: 'Foco visível em todos os itens de navegação, com leitura correta por leitores de tela e destaque da página atual sem depender de passar o mouse.' },
+    ],
+  },
+  {
+
     version: '3.6.5',
     date: '2026-07-26',
     title: 'Vídeo da página inicial sempre em movimento',
