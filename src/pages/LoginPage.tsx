@@ -155,20 +155,7 @@ export default function LoginPage() {
     }
 
     setLoading(true);
-    let effectiveEmail = isEmail ? id.toLowerCase() : buildRaEmail(id);
-    let usedPseudoEmail = !isEmail;
-
-    if (!isEmail && !isSignUp) {
-      try {
-        const resolved = await resolveEmailForIdentifier(id, true);
-        effectiveEmail = resolved.email;
-        usedPseudoEmail = resolved.usedPseudoEmail;
-      } catch (err) {
-        setLoading(false);
-        toast.error(err instanceof Error ? err.message : 'Nao consegui validar seu RA agora.');
-        return;
-      }
-    }
+    const effectiveEmail = isEmail ? id.toLowerCase() : buildRaEmail(id);
 
     if (isSignUp) {
       if (!isEmail) {
@@ -207,6 +194,35 @@ export default function LoginPage() {
       return;
     }
 
+    // --- Login por RA: autenticado no servidor, sem expor o e-mail do aluno ---
+    if (!isEmail) {
+      const { data, message, code } = await callRaAuth({ mode: 'signin', ra: id, password });
+      if (!data?.session) {
+        setLoading(false);
+        if (code === 'email_not_confirmed') {
+          setAwaitingSession(false);
+          setUnverifiedEmail(true);
+          toast.error('Verifique seu e-mail antes de acessar.');
+          return;
+        }
+        registerLoginFailure(true);
+        if (message) toast.error(message);
+        return;
+      }
+      const { error: sessionError } = await supabase.auth.setSession({
+        access_token: data.session.access_token,
+        refresh_token: data.session.refresh_token,
+      });
+      setLoading(false);
+      if (sessionError) {
+        setAwaitingSession(false);
+        toast.error('Não consegui iniciar sua sessão. Tente novamente.');
+        return;
+      }
+      persistSuccessfulLogin(id);
+      return;
+    }
+
     const { error } = await signIn(effectiveEmail, password);
     setLoading(false);
 
@@ -218,11 +234,12 @@ export default function LoginPage() {
         toast.error('Verifique seu e-mail antes de acessar.');
         return;
       }
-      registerLoginFailure(usedPseudoEmail);
+      registerLoginFailure(false);
     } else {
       persistSuccessfulLogin(id);
     }
   };
+
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
