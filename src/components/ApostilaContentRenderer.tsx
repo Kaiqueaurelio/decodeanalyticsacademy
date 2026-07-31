@@ -120,7 +120,9 @@ function renderInline(input: string): { __html: string } {
   safe = safe.replace(/\u0000HTML(\d+)\u0000/g, (_m, i) => placeholders[Number(i)] || '');
   // 3. Markdown inline → HTML
   safe = safe
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener" class="text-primary underline">$1</a>')
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_m, text: string, href: string) =>
+      `<a href="${safeUrl(href).replace(/"/g, '&quot;')}" target="_blank" rel="noopener noreferrer" class="text-primary underline">${text}</a>`)
+
     .replace(/\*{3}([^*\n]+)\*{3}/g, '<strong><em>$1</em></strong>')
     .replace(/\*{2}([^*\n]+)\*{2}/g, '<strong>$1</strong>')
     .replace(/(?<![*\w])\*(?!\s)([^*\n]+?)\*(?!\w)/g, '<em>$1</em>')
