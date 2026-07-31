@@ -1,101 +1,56 @@
-## Objetivo
+# Auditoria Completa de Segurança — Plano
 
-Três entregas isoladas, sem quebrar nada do que já existe:
+Nada será alterado agora. Este plano descreve as fases da auditoria; correções só entram depois da sua aprovação (e as críticas primeiro).
 
-1. Deixar o projeto pronto para gerar um **Android App Bundle (.aab)** com Capacitor, mantendo o PWA funcionando.
-2. Validar os feeds RSS em tempo real (backend + admin) e manter só os que funcionam.
-3. Fazer o clique numa notícia abrir **dentro do app** (sem sair para outro app/navegador).
+## Fase 0 — Preparação (sem mudanças)
+- Rodar o scanner de segurança da plataforma + linter do banco + scan de dependências (npm audit).
+- Levantar inventário: tabelas e políticas RLS, edge functions e seus modos de autenticação, segredos configurados, rotas do frontend.
+- Definir contas de teste: admin, aluno comum e aluno com escopo restrito (ENEM).
 
----
+## Fase 1 — Banco de dados e isolamento de usuários
+- Para cada tabela pública: conferir RLS habilitado, GRANTs coerentes com as políticas e ausência de políticas permissivas (`using (true)`) indevidas.
+- Verificar funções `security definer` (has_role, get_email_for_ra, get_student_detail, delete_user_completely, etc.): `search_path` fixo e checagem de papel dentro da função.
+- Teste prático: com o token de um aluno, tentar ler/alterar linhas de outro usuário nas tabelas sensíveis (profiles, planos_estudo, flashcards, respostas_foto, tira_duvidas, notifications, user_roles).
+- Confirmar que `user_roles` não é gravável pelo próprio usuário (escalada de privilégio via banco).
 
-## 1. Capacitor Android pronto para .aab
+## Fase 2 — Autenticação e sessão
+- Fluxo RA/e-mail: checar enumeração de usuários (mensagens de erro distintas, timing), bloqueio por tentativas, e se `get_email_for_ra` vaza e-mails.
+- Sessão: persistência, refresh, logout multi-aba, expiração, e se algum dado sensível fica em localStorage.
+- Reset de senha e `admin-set-password`: confirmar exigência de papel admin no servidor.
 
-O `capacitor.config.ts` e as dependências (`@capacitor/core`, `cli`, `android`, `ios`) já existem. Falta preparar o projeto para build de produção Android.
+## Fase 3 — Edge functions / APIs
+- Para cada função em `supabase/functions/`: exige JWT? valida papel? valida entrada (schema/limites)? retorna erro genérico sem stack trace? CORS restrito ao necessário?
+- Foco em funções que gravam ou usam service role: `admin-set-password`, `admin-upload-ad-image`, `send-push`, `promo-media`, `list-ads`, `mcp`, geradores de conteúdo.
+- Testes de manipulação de parâmetro: IDs de outro usuário, campos extras (`user_id`, `role`, `is_admin`), payloads gigantes, tipos errados, URLs internas em funções que fazem fetch (SSRF em `news-reader`, `validate-rss`, `firecrawl-scrape`).
+- Rate limiting: verificar quais funções caras estão sem limite (geradores de IA, upload, tira-dúvidas).
 
-**O que será feito:**
+## Fase 4 — Assistente Ella (riscos de IA)
+- Revisar o gate de autorização (`security.ts`) e confirmar que a decisão vem só do servidor.
+- Bateria de ataques contra a função real: prompt injection direta e indireta (conteúdo de apostila/RSS/PDF), jailbreak, extração do system prompt, role override, tool injection e chamada de ferramentas de admin por aluno, chaining, exfiltração de dados de outros usuários, bypass de escopo ENEM.
+- Confirmar que cada tentativa é negada, auditada em `ella_audit_log` e gera alerta em `security_notifications`, e que o rate limit / bloqueio temporário funciona.
+- Ampliar `security_test.ts` com os cenários que faltarem.
 
-- Ajustar `capacitor.config.ts` com um modo de produção: manter o `server.url` atual (hot-reload no sandbox Lovable) apenas em dev; em build de produção o app carrega os assets locais de `dist/` (obrigatório para publicar na Play Store — Google não aceita apps que só carregam URL remota).
-- Adicionar script `build:android` no `package.json` que roda `vite build` + `cap sync android`.
-- Criar um guia passo-a-passo em `ANDROID_BUILD.md` na raiz explicando o fluxo completo:
-  1. Exportar o projeto para GitHub e clonar localmente
-  2. `npm install`
-  3. `npx cap add android`
-  4. `npm run build && npx cap sync android`
-  5. Abrir `npx cap open android` no Android Studio
-  6. Configurar keystore de assinatura
-  7. Build → Generate Signed Bundle → `.aab` para Google Play
-- Documentar o `appId` (`app.lovable.4dd1aec291754ae994018637f1ffe1a2`) e nome (`decodeanalyticsacademy`) já configurados.
-- Manter o PWA 100% intacto: nenhuma alteração em `vite.config.ts` (VitePWA), `manifest.json`, `sw-push.js`, `src/lib/pwa.ts`.
+## Fase 5 — Frontend e uploads
+- Buscar segredos/chaves no bundle (só a publishable key deve aparecer), `dangerouslySetInnerHTML` sem sanitização, XSS em markdown/comentários/menções.
+- Verificar se alguma decisão de permissão existe só no cliente (esconder botão ≠ proteger ação) e confirmar o equivalente no backend.
+- Upload de arquivos e geração de PDF: validação de tipo/tamanho, políticas de storage, URLs assinadas com expiração.
+- Conferir os 4 estados (carregando, vazio, erro, sucesso) e tratamento de erro com toast nas telas tocadas por correções.
 
-**Nota importante:** o build final do `.aab` precisa ser feito na máquina do usuário (Android Studio + JDK + keystore). O sandbox Lovable não gera `.aab` — deixamos tudo configurado para que baste seguir o guia.
+## Fase 6 — Segredos, dependências e resiliência
+- Confirmar que nenhuma chave privada está em código ou versionada; todas em segredos de backend.
+- Dependências com vulnerabilidade alta/crítica: listar e propor atualização.
+- Resiliência: entradas malformadas, rede caindo, requisições em rajada, dados duplicados — sistema deve falhar de forma controlada e sem vazar detalhes internos.
 
----
+## Fase 7 — Relatório e correções
+- Entregar `SECURITY_AUDIT.md` na raiz com: vulnerabilidade, criticidade (Crítico/Alto/Médio/Baixo), evidência técnica, impacto no negócio, recomendação.
+- Aplicar as correções em ordem de criticidade, uma frente por vez, sem quebrar comportamento existente (checando dependências antes de cada mudança).
+- Reexecutar os testes que falharam e marcar cada item como corrigido/aceito.
+- Registrar a entrega no `src/data/changelog.ts`.
 
-## 2. Validação de RSS (só feeds que funcionam)
+## Critério de aprovação
+Sem vulnerabilidades críticas em aberto; impossível obter privilégio de admin indevidamente; Ella resistente a injection/jailbreak/escalada; permissões validadas só no backend; dados isolados por usuário; APIs autenticadas e limitadas; segredos protegidos.
 
-**Backend — nova edge function `validate-rss`:**
-
-- Recebe uma URL, faz `fetch` com timeout de 6s.
-- Verifica: status HTTP 200, content-type XML/RSS/Atom, e se o corpo contém `<item>` ou `<entry>` com pelo menos 1 título parseável.
-- Retorna `{ ok, source: string|null, itemCount: number, error?: string }`.
-
-**Admin — `RssFeedsManager.tsx`:**
-
-- Ao digitar a URL e sair do campo (blur) ou clicar em "Validar", chama `validate-rss` e mostra:
-  - ✓ verde: "Feed válido — X notícias detectadas"
-  - ✗ vermelho: "Feed indisponível: {motivo}"
-- Botão "Adicionar" só habilita se a validação passou (com opção "Adicionar mesmo assim" escondida atrás de um link discreto).
-- Adiciona botão "Revalidar todos" na lista existente: roda `validate-rss` em cada feed cadastrado e marca visualmente os quebrados (badge vermelha "Fora do ar") + botão para desativar em 1 clique.
-
-**Edge function `tech-news`:**
-
-- Continua com a lógica atual de fallback, mas agora ignora silenciosamente feeds que retornaram 0 itens (sem devolver `errors` para a UI).
-- Remove a exibição do banner "alguns feeds indisponíveis" do `NewsPage.tsx`.
-
-**Limpeza inicial dos feeds default:** dos 8 defaults atuais (Canaltech, Tecnoblog, Olhar Digital, TudoCelular, Diolinux, SempreUpdate, Hardware.com.br, Baguete), manter na lista default apenas os que a `validate-rss` confirmar como ativos no momento da implementação. Os quebrados saem do array `DEFAULT_FEEDS`.
-
----
-
-## 3. Leitor de notícias in-app (sem sair da plataforma)
-
-Hoje o `NewsPage` abre um iframe modal, mas quando o site bloqueia iframe (`X-Frame-Options: DENY`) mostra um botão que leva o usuário para fora. Vamos resolver isso.
-
-**Nova edge function `news-reader`:**
-
-- Recebe `?url=...`, faz fetch do HTML da notícia.
-- Usa um extrator de conteúdo principal (Readability-like: pega `<article>`, `<main>`, ou o maior bloco de `<p>`) e retorna HTML limpo com título, imagem principal, autor, data e corpo — sem scripts, sem iframes de anúncio, sem trackers.
-- Retorna JSON: `{ title, byline, siteName, image, contentHtml, url }`.
-- Cache de 1h em memória por URL.
-
-**`NewsPage.tsx` — novo componente `InAppNewsReader`:**
-
-- Ao clicar numa notícia, abre uma tela cheia (drawer/modal) dentro do próprio app, chama `news-reader` e renderiza o conteúdo com a tipografia da plataforma (Space Grotesk, cores do tema high-tech).
-- Loading skeleton enquanto busca.
-- Se a extração falhar, mostra o resumo + botão "Abrir no site original" (fallback controlado, mas raro).
-- Header com: voltar, fonte (badge com portal), tempo de leitura estimado, botão compartilhar (Web Share API quando disponível).
-- Nenhum iframe. Nenhum `window.open`. Nenhum redirecionamento externo por padrão.
-
-**Impacto:** o usuário lê a matéria completa sem sair do Decode Analytics Academy, com visual consistente e sem ads de terceiros.
-
----
-
-## Detalhes técnicos
-
-**Arquivos novos:**
-- `ANDROID_BUILD.md`
-- `supabase/functions/validate-rss/index.ts`
-- `supabase/functions/news-reader/index.ts`
-- `src/components/news/InAppNewsReader.tsx`
-
-**Arquivos editados (sem quebrar comportamento):**
-- `capacitor.config.ts` — server.url só em dev
-- `package.json` — script `build:android`
-- `src/components/admin/RssFeedsManager.tsx` — validação inline + revalidar todos
-- `src/pages/NewsPage.tsx` — trocar iframe modal pelo `InAppNewsReader`, remover banner de erros
-- `supabase/functions/tech-news/index.ts` — silenciar erros de feeds, filtrar vazios
-
-**Nada é tocado em:** rotas existentes, MobileBottomNav, StudentSidebar (já tem "Notícias Tech"), banco de dados (tabela `rss_feeds` continua igual), PWA, autenticação, dashboard.
-
-**Riscos e mitigação:**
-- Alguns portais podem quebrar a extração de conteúdo → fallback para resumo + link externo em último caso.
-- Build Android exige ferramentas locais → documentado no `ANDROID_BUILD.md`; não há como gerar `.aab` no sandbox.
+## Observações
+- Fases 0–6 são leitura e teste: nada muda no app.
+- Correções que exigirem migração de banco virão como migração separada, com aprovação sua.
+- Se algum teste depender de credenciais reais de aluno em produção, uso as contas de teste já existentes.
