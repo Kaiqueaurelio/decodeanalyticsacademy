@@ -9,8 +9,12 @@ function isSafePublicUrl(raw: string): boolean {
   if (u.protocol !== 'http:' && u.protocol !== 'https:') return false;
   const host = u.hostname.toLowerCase();
   if (!host || host === 'localhost' || host.endsWith('.localhost') || host.endsWith('.internal')) return false;
+  if (host.endsWith('.local') || host.endsWith('.home.arpa') || host === 'metadata.google.internal') return false;
   // IPv6 literais
-  if (host.startsWith('[')) return false;
+  if (host.startsWith('[') || host.includes(':')) return false;
+  // Formas numéricas ofuscadas (decimal, octal, hexadecimal) → sempre bloqueadas
+  if (/^(0x[0-9a-f]+|\d+)$/i.test(host)) return false;
+  if (/^0\d/.test(host)) return false;
   // IPv4 numérico
   const m = host.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
   if (m) {
@@ -18,11 +22,14 @@ function isSafePublicUrl(raw: string): boolean {
     if (a === 10 || a === 127 || a === 0) return false;
     if (a === 169 && b === 254) return false; // link-local / metadata
     if (a === 172 && b >= 16 && b <= 31) return false;
-    if (a === 192 && b === 168) return false;
+    if (a === 192 && (b === 168 || b === 0)) return false;
+    if (a === 100 && b >= 64 && b <= 127) return false; // CGNAT
+    if (a === 198 && (b === 18 || b === 19)) return false;
     if (a >= 224) return false;
   }
   return true;
 }
+
 
 interface ReaderResult {
   ok: boolean;
