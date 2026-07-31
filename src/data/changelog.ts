@@ -27,6 +27,20 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '3.15.0',
+    date: '2026-07-31',
+    title: 'Auditoria de segurança: correções críticas',
+    changes: [
+      { kind: 'security', text: 'Login e recuperação por RA passaram a ser processados no servidor: o e-mail do aluno nunca mais é devolvido ao navegador, encerrando a enumeração de RAs que qualquer visitante podia fazer.' },
+      { kind: 'security', text: 'Ranking de alunos, árvore de leitura das apostilas e contador de alertas deixaram de ser consultáveis por visitantes sem login.' },
+      { kind: 'security', text: 'Lista de feeds RSS restrita a usuários autenticados.' },
+      { kind: 'security', text: 'Conteúdo das apostilas: links maliciosos (javascript:, data:) e atributos de evento agora são neutralizados na renderização.' },
+      { kind: 'security', text: 'Leitor de notícias e validador de RSS: filtro anti-SSRF reforçado contra endereços internos disfarçados (decimal, octal, hexadecimal, IPv6 e CGNAT).' },
+      { kind: 'improvement', text: 'Mensagens de erro no login e na recuperação de senha ficaram genéricas e claras, sem revelar se um cadastro existe.' },
+    ],
+  },
+  {
+
     version: '3.14.0',
     date: '2026-07-29',
     title: 'Sugestões automáticas no Plano de Estudos',

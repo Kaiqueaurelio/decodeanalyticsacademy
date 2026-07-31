@@ -3,5 +3,9 @@ project_id = "gynguskgysompgcajunc"
 [functions.promo-media]
 verify_jwt = false
 
+[functions.ra-auth]
+verify_jwt = false
+
+
 [functions.send-push]
 verify_jwt = true
