@@ -34,25 +34,43 @@ function cleanInlineText(input: string): string {
  * Sanitização: removemos tags perigosas (script, iframe, on*) e atributos de
  * evento; permitimos apenas style com `color`, `background`, `font-size`.
  */
+/**
+ * Aceita apenas URLs com esquema seguro. Bloqueia `javascript:`, `data:` e
+ * `vbscript:` (inclusive ofuscados com espaços/entidades/maiúsculas).
+ */
+export function safeUrl(raw: string): string {
+  const url = String(raw || '')
+    .trim()
+    .replace(/[\u0000-\u001f\u007f]/g, '')
+    .replace(/&#(\d+);?/g, (_m, d) => String.fromCharCode(Number(d)));
+  if (/^\s*(javascript|data|vbscript|file)\s*:/i.test(url)) return '#';
+  if (/^(https?:|mailto:|tel:|\/|#|\.)/i.test(url)) return url;
+  if (/^[\w.-]+\.[a-z]{2,}(\/|$)/i.test(url)) return `https://${url}`;
+  return '#';
+}
+
 function sanitizeInlineHtml(html: string): string {
   return html
     // Remove tags perigosas inteiras
-    .replace(/<\/?(script|style|iframe|object|embed|link|meta|form|input|button|svg)\b[^>]*>/gi, '')
-    // Remove handlers on*="..."
+    .replace(/<\/?(script|style|iframe|object|embed|link|meta|form|input|button|svg|a)\b[^>]*>/gi, '')
+    // Remove handlers on* (com aspas duplas, simples ou sem aspas)
     .replace(/\son[a-z]+\s*=\s*"[^"]*"/gi, '')
     .replace(/\son[a-z]+\s*=\s*'[^']*'/gi, '')
-    // Remove javascript: em href/src
-    .replace(/\s(href|src)\s*=\s*"javascript:[^"]*"/gi, '')
+    .replace(/\son[a-z]+\s*=\s*[^\s>]+/gi, '')
+    // Remove href/src inteiros: tags inline permitidas não precisam deles
+    .replace(/\s(href|src|xlink:href|formaction)\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, '')
     // Filtra atributos style: mantém só color/background/font-size/text-align
     .replace(/\sstyle\s*=\s*"([^"]*)"/gi, (_m, css: string) => {
       const safe = css
         .split(';')
         .map((d) => d.trim())
         .filter((d) => /^(color|background(-color)?|font-size|text-align)\s*:/i.test(d))
+        .filter((d) => !/(expression|url\s*\(|javascript:)/i.test(d))
         .join('; ');
       return safe ? ` style="${safe}"` : '';
     });
 }
+
 
 function renderInline(input: string): { __html: string } {
   if (!input) return { __html: '' };
