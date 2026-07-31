@@ -243,36 +243,56 @@ export default function LoginPage() {
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim()) { toast.error('Digite seu RA ou e-mail'); return; }
-    setLoading(true);
-    let resetEmail = '';
-    try {
-      const resolved = await resolveEmailForIdentifier(email, false);
-      resetEmail = resolved.email;
-    } catch (err) {
-      setLoading(false);
-      toast.error(err instanceof Error ? err.message : 'Nao consegui validar esse RA ou e-mail.');
+    const id = email.trim();
+    if (!id) { toast.error('Digite seu RA ou e-mail'); return; }
+
+    const isEmail = looksLikeEmail(id);
+    if (!isEmail && !isValidRa(id)) {
+      toast.error('Use um e-mail válido ou seu RA (6 a 13 letras/números).');
       return;
     }
 
-    const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    });
-    setLoading(false);
-    if (error) {
-      const message = error.message?.toLowerCase().includes('api')
-        ? 'Nao foi possivel enviar o e-mail agora. Verifique se o endereco esta correto e tente novamente.'
-        : error.message;
-      toast.error(message);
-    }
-    else {
-      toast.success('Email de recuperacao enviado.');
+    setLoading(true);
+    const finish = () => {
+      toast.success('Se o cadastro existir, enviamos o e-mail de recuperação.');
       setIsReset(false);
       setIsLocked(false);
       setLoginAttempts(0);
       setShowLockModal(false);
+    };
+
+    // RA: o e-mail é resolvido no servidor e nunca volta para o cliente.
+    if (!isEmail) {
+      const { data, message } = await callRaAuth({
+        mode: 'reset',
+        ra: id,
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      setLoading(false);
+      if (!data) {
+        toast.error(message ?? 'Não consegui enviar a recuperação agora. Tente novamente.');
+        return;
+      }
+      finish();
+      return;
+    }
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(id.toLowerCase(), {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      setLoading(false);
+      if (error) {
+        toast.error('Não foi possível enviar o e-mail agora. Tente novamente em instantes.');
+        return;
+      }
+      finish();
+    } catch {
+      setLoading(false);
+      toast.error('Falha de rede ao enviar a recuperação. Verifique sua conexão.');
     }
   };
+
 
   const highlights = [
     { icon: BookOpen, text: 'Apostilas estruturadas por IA' },
