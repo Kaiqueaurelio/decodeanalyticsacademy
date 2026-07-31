@@ -33,24 +33,29 @@ export default function LoginPage() {
   const normalizeRa = (raValue: string) => raValue.trim().toUpperCase();
   const buildRaEmail = (raValue: string) => `${normalizeRa(raValue).toLowerCase()}@${RA_DOMAIN}`;
   const isValidRa = (raValue: string) => /^[A-Z0-9]{6,13}$/.test(normalizeRa(raValue));
-  const resolveEmailForIdentifier = async (rawIdentifier: string, allowPseudoEmail = false) => {
-    const id = rawIdentifier.trim();
-    if (!id) return { email: '', usedPseudoEmail: false };
-    if (looksLikeEmail(id)) return { email: id.toLowerCase(), usedPseudoEmail: false };
-    if (!isValidRa(id)) throw new Error('Use um e-mail valido ou seu RA com 6 a 13 letras/numeros.');
-
-    const pseudoEmail = buildRaEmail(id);
-    const { data: realEmail, error } = await supabase.rpc('get_email_for_ra' as any, { _ra: id });
-
-    if (realEmail && typeof realEmail === 'string') {
-      return { email: realEmail, usedPseudoEmail: realEmail.toLowerCase() === pseudoEmail };
+  /**
+   * Login/recuperação por RA são resolvidos no backend (edge function `ra-auth`).
+   * O e-mail do aluno nunca trafega para o cliente — isso evita enumeração de RA
+   * e vazamento de dado pessoal para visitantes não autenticados.
+   */
+  const callRaAuth = async (payload: Record<string, unknown>) => {
+    const { data, error } = await supabase.functions.invoke('ra-auth', { body: payload });
+    if (error) {
+      // O SDK devolve FunctionsHttpError sem o corpo; tentamos ler a mensagem real.
+      let message = 'Não consegui validar seu RA agora. Tente novamente.';
+      const res = (error as any)?.context as Response | undefined;
+      if (res && typeof res.json === 'function') {
+        try {
+          const body = await res.clone().json();
+          if (body?.error) message = body.error;
+          return { data: null, message, code: body?.code as string | undefined };
+        } catch { /* mantém mensagem padrão */ }
+      }
+      return { data: null, message, code: undefined };
     }
-
-    if (allowPseudoEmail) return { email: pseudoEmail, usedPseudoEmail: true };
-
-    if (error) throw new Error('Nao consegui validar esse RA agora. Tente novamente em instantes.');
-    throw new Error('Este RA nao tem e-mail de recuperacao cadastrado. Entre em contato com o suporte.');
+    return { data, message: null as string | null, code: undefined };
   };
+
 
   /** Detecta se o identificador atual esta no formato de e-mail apos o usuario digitar. */
   const usingEmail = looksLikeEmail(identifier);
