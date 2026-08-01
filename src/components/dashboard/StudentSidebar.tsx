@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Home,
@@ -24,7 +24,6 @@ import {
   Store,
   LifeBuoy,
   PanelLeftClose,
-  PanelLeftOpen,
   ChevronsLeft,
   Layers,
   Target,
@@ -172,12 +171,6 @@ function useSidebarNavigation(onNavigate?: () => void) {
   };
 
   return { navigate, open };
-}
-
-function getInitialSidebarMode(): SidebarMode {
-  if (typeof window === 'undefined') return 'full';
-  const saved = window.localStorage.getItem('decode_student_sidebar_mode');
-  return saved === 'rail' || saved === 'hidden' || saved === 'full' ? saved : 'full';
 }
 
 export function SidebarContent({
@@ -410,61 +403,18 @@ export function SidebarContent({
   );
 }
 
+/**
+ * Menu unificado: em qualquer largura de tela o menu é o mesmo drawer
+ * (aberto pelo botão do topo ou pela barra inferior no celular).
+ * Não existe mais uma sidebar fixa diferente no desktop.
+ */
 export function StudentSidebar() {
-  const [mode, setModeState] = useState<SidebarMode>(getInitialSidebarMode);
-
-  const setMode = (nextMode: SidebarMode) => {
-    setModeState(nextMode);
-    window.localStorage.setItem('decode_student_sidebar_mode', nextMode);
-  };
-
   useEffect(() => {
-    document.documentElement.style.setProperty('--student-sidebar-width', SIDEBAR_WIDTHS[mode]);
+    document.documentElement.style.setProperty('--student-sidebar-width', '0px');
     return () => {
       document.documentElement.style.removeProperty('--student-sidebar-width');
     };
-  }, [mode]);
+  }, []);
 
-  if (mode === 'hidden') {
-    return (
-      <aside
-        className="fixed bottom-0 left-0 top-0 z-40 hidden w-[72px] flex-col items-center border-r border-border/60 bg-card/50 backdrop-blur-xl py-4 lg:flex"
-        aria-label="Menu lateral recolhido"
-      >
-        <button
-          type="button"
-          onClick={() => setMode('full')}
-          className="flex h-11 w-11 items-center justify-center rounded-xl bg-background ring-1 ring-primary/30 transition hover:ring-primary/70 hover:shadow-[0_0_20px_hsl(var(--primary)/0.35)]"
-          aria-label="Expandir menu lateral"
-          title="Expandir menu lateral"
-        >
-          <img src={logoOwl} alt="Decode Analytics Academy" className="h-8 w-8 object-contain" />
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setMode('full')}
-          className="mt-4 flex h-10 w-10 items-center justify-center rounded-lg border border-primary/30 bg-primary/8 text-primary transition hover:bg-primary/15 hover:border-primary/60"
-          aria-label="Abrir menu"
-          title="Abrir menu"
-        >
-          <PanelLeftOpen className="h-4 w-4" />
-        </button>
-
-        <div className="mt-5 h-px w-8 bg-border/60" />
-        <span className="mt-5 rotate-180 font-mono text-[9px] font-semibold uppercase tracking-[0.32em] text-muted-foreground/60 [writing-mode:vertical-rl]">
-          Menu
-        </span>
-      </aside>
-    );
-  }
-
-  return (
-    <aside
-      className="fixed bottom-0 left-0 top-0 z-40 hidden flex-col border-r border-border transition-[width] duration-300 ease-out lg:flex"
-      style={{ width: SIDEBAR_WIDTHS[mode] }}
-    >
-      <SidebarContent mode={mode} setMode={setMode} />
-    </aside>
-  );
+  return null;
 }
