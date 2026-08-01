@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Home,
@@ -24,7 +24,6 @@ import {
   Store,
   LifeBuoy,
   PanelLeftClose,
-  PanelLeftOpen,
   ChevronsLeft,
   Layers,
   Target,
@@ -172,12 +171,6 @@ function useSidebarNavigation(onNavigate?: () => void) {
   };
 
   return { navigate, open };
-}
-
-function getInitialSidebarMode(): SidebarMode {
-  if (typeof window === 'undefined') return 'full';
-  const saved = window.localStorage.getItem('decode_student_sidebar_mode');
-  return saved === 'rail' || saved === 'hidden' || saved === 'full' ? saved : 'full';
 }
 
 export function SidebarContent({
