@@ -214,7 +214,7 @@ export function SidebarContent({
   const showRail = false;
 
   return (
-    <div className="relative h-full flex overflow-hidden bg-gradient-to-b from-background via-background to-card/60 text-foreground">
+    <div className="relative flex h-full min-h-0 w-full overflow-hidden bg-gradient-to-b from-background via-background to-card/60 text-foreground">
       {/* Ambient glow */}
       <div className="pointer-events-none absolute inset-0 opacity-60">
         <div className="absolute -top-20 -left-16 h-64 w-64 rounded-full bg-primary/15 blur-3xl" />
