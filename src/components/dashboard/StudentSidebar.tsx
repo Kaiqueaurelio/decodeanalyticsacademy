@@ -214,7 +214,7 @@ export function SidebarContent({
   const showRail = false;
 
   return (
-    <div className="relative h-full flex overflow-hidden bg-gradient-to-b from-background via-background to-card/60 text-foreground">
+    <div className="relative flex h-full min-h-0 w-full overflow-hidden bg-gradient-to-b from-background via-background to-card/60 text-foreground">
       {/* Ambient glow */}
       <div className="pointer-events-none absolute inset-0 opacity-60">
         <div className="absolute -top-20 -left-16 h-64 w-64 rounded-full bg-primary/15 blur-3xl" />
@@ -224,7 +224,7 @@ export function SidebarContent({
       <div className="pointer-events-none absolute inset-y-0 right-0 w-px bg-gradient-to-b from-transparent via-primary/25 to-transparent" />
 
       {isFull && (
-        <div className="relative flex min-w-0 flex-1 flex-col">
+        <div className="relative flex min-h-0 min-w-0 flex-1 flex-col">
           {/* Header / Brand */}
           <div className="flex items-center justify-between border-b border-border/60 px-4 py-4">
             <button
@@ -260,7 +260,7 @@ export function SidebarContent({
           </div>
 
           {/* Nav groups */}
-          <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-5 [scrollbar-width:thin]">
+          <nav className="flex-1 min-h-0 space-y-6 overflow-y-auto overscroll-contain px-3 pt-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] [scrollbar-width:thin]">
             {filteredGroups.map((group) => (
               <div key={group.label}>
                 <div className="flex items-center gap-2 px-3 pb-2">
