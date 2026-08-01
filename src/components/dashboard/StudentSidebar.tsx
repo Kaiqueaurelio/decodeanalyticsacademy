@@ -224,7 +224,7 @@ export function SidebarContent({
       <div className="pointer-events-none absolute inset-y-0 right-0 w-px bg-gradient-to-b from-transparent via-primary/25 to-transparent" />
 
       {isFull && (
-        <div className="relative flex min-w-0 flex-1 flex-col">
+        <div className="relative flex min-h-0 min-w-0 flex-1 flex-col">
           {/* Header / Brand */}
           <div className="flex items-center justify-between border-b border-border/60 px-4 py-4">
             <button
