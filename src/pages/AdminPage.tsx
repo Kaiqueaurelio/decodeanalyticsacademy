@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { AdminNavPanel } from '@/components/admin/AdminNavPanel';
-import { ADMIN_NAV_BY_ID, ADMIN_MOBILE_QUICK } from '@/config/adminNav';
+import { ADMIN_NAV_BY_ID } from '@/config/adminNav';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -1399,41 +1399,8 @@ export default function AdminPage() {
             </SheetContent>
           </Sheet>
 
-          {/* Barra inferior de navegação (celular) — alcance do polegar */}
-          <nav
-            aria-label="Atalhos do painel"
-            className="lg:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-card/95 backdrop-blur-xl pb-[env(safe-area-inset-bottom)]"
-          >
-            <div className="grid grid-cols-5">
-              {ADMIN_MOBILE_QUICK.map(id => {
-                const item = ADMIN_NAV_BY_ID[id];
-                const active = tab === id;
-                return (
-                  <button
-                    key={id}
-                    onClick={() => setTab(id as Tab)}
-                    aria-current={active ? 'page' : undefined}
-                    className={`flex flex-col items-center justify-center gap-1 py-2.5 text-[10px] font-semibold transition-colors ${
-                      active ? 'text-primary' : 'text-muted-foreground'
-                    }`}
-                  >
-                    <item.icon className="h-5 w-5" />
-                    <span className="truncate px-1">{item.short}</span>
-                  </button>
-                );
-              })}
-              <button
-                onClick={() => setSidebarOpen(true)}
-                className="flex flex-col items-center justify-center gap-1 py-2.5 text-[10px] font-semibold text-muted-foreground"
-              >
-                <Menu className="h-5 w-5" />
-                <span>Menu</span>
-              </button>
-            </div>
-          </nav>
-
           {/* Content */}
-          <main className="flex-1 p-4 pb-24 sm:p-6 lg:p-8 lg:pb-8 overflow-auto min-w-0 bg-muted/30">
+          <main className="flex-1 p-4 pb-8 sm:p-6 lg:p-8 overflow-auto min-w-0 bg-muted/30">
 
             {/* Mobile search */}
             {tab !== 'overview' && (
