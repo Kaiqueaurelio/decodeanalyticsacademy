@@ -328,7 +328,7 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp }: Props) {
         <div className="relative z-10 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div className="flex items-center gap-4 min-w-0">
             <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-background ring-1 ring-primary/40 shadow-[0_0_20px_hsl(var(--primary)/0.15)]">
-              <img src="/assets/owl-icon.png" alt="Decode Logo" className="h-10 w-10 object-contain" />
+              <img src={owlLogo} alt="Decode Logo" className="h-10 w-10 object-contain" />
             </div>
             <div className="min-w-0">
               <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-primary">
