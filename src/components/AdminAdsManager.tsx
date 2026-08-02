@@ -849,6 +849,8 @@ export function AdminAdsManager() {
                       </div>
                     </div>
                   </div>
+                </div>
+
                 <div className="space-y-6">
                   <div className="space-y-4 rounded-lg border border-border bg-muted/20 p-4">
                     <div>
