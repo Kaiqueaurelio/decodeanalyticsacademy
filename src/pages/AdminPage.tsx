@@ -3,7 +3,10 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { GliderTabs } from '@/components/GliderTabs';
+import { AdminNavPanel } from '@/components/admin/AdminNavPanel';
+import { ADMIN_NAV_BY_ID, ADMIN_MOBILE_QUICK } from '@/config/adminNav';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
