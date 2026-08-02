@@ -107,8 +107,19 @@ function PlacementDiagram({ type }: { type: AdType }) {
       {type === 'inline' && <span className={cn(block, 'left-6 right-2 top-6 h-2 z-10')} />}
       {type === 'sidebar' && <span className={cn(block, 'right-1.5 top-4 bottom-1.5 w-3 z-10')} />}
       {type === 'footer' && <span className={cn(block, 'inset-x-1.5 bottom-1.5 h-2 z-10')} />}
-      {type === 'popup' && <span className={cn(block, 'left-1/2 top-1/2 h-6 w-10 -translate-x-1/2 -translate-y-1/2 z-20 shadow-xl border border-background')} />}
-      {type === 'sponsor' && <div className="absolute inset-0 flex items-center justify-center"><Megaphone className="h-4 w-4 text-primary opacity-40" /></div>}
+      {type === 'popup' && (
+        <span
+          className={cn(
+            block,
+            'left-1/2 top-1/2 h-6 w-10 -translate-x-1/2 -translate-y-1/2 z-20 shadow-xl border border-background'
+          )}
+        />
+      )}
+      {type === 'sponsor' && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <Megaphone className="h-4 w-4 text-primary opacity-40" />
+        </div>
+      )}
     </div>
   );
 }
