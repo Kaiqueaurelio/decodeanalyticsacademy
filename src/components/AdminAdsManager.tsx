@@ -32,6 +32,7 @@ import {
   RefreshCw,
   Search,
   Trash2,
+  LayoutDashboard,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { AdImageUploadButton } from './AdImageUploadButton';
