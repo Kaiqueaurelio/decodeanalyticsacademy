@@ -8,52 +8,52 @@ const sections = [
   {
     title: '1. Finalidade da plataforma',
     content:
-      'A Decode Analytics Academy e uma plataforma educacional criada para apoiar estudantes com apostilas, exercicios, materiais de estudo, cursos gratuitos indicados, ferramentas de revisao e recursos de acompanhamento de progresso.',
+      'A Decode Analytics Academy é uma plataforma educacional dedicada ao apoio acadêmico. Oferecemos um ecossistema completo com apostilas estruturadas, banco de exercícios, materiais complementares, curadoria de cursos gratuitos, ferramentas de revisão (Flashcards) e sistemas de monitoramento de progresso para estudantes de Tecnologia da Informação e áreas correlatas.',
   },
   {
-    title: '2. Uso educacional',
+    title: '2. Uso educacional e conduta',
     content:
-      'O conteudo disponibilizado tem finalidade exclusivamente academica e informativa. A plataforma nao substitui aulas, orientacoes oficiais da faculdade, editais, regulamentos ou comunicados institucionais.',
+      'O conteúdo disponibilizado tem finalidade estritamente acadêmica e informativa. A plataforma não substitui aulas presenciais ou remotas, orientações oficiais da instituição de ensino, editais, regulamentos ou comunicados formais. O usuário compromete-se a utilizar os recursos de forma ética, respeitando a propriedade intelectual e as normas de convivência da comunidade.',
   },
   {
-    title: '3. Cursos e certificados',
+    title: '3. Cursos e certificados complementares',
     content:
-      'Cursos gratuitos divulgados no app podem ser usados como apoio ou horas complementares apenas quando estiverem de acordo com as regras vigentes da faculdade. O aluno deve confirmar carga horaria, certificado, validade e criterios de aceite antes de enviar qualquer comprovante.',
+      'As indicações de cursos gratuitos no aplicativo servem como sugestão de aprimoramento. A aceitação destes certificados para fins de horas complementares (AC/APS) é de responsabilidade exclusiva do aluno junto à sua coordenação de curso. Recomendamos a verificação prévia da carga horária, validade do certificado e aderência à grade curricular antes da realização dos mesmos.',
   },
   {
-    title: '4. Responsabilidade do usuario',
+    title: '4. Segurança da conta e responsabilidades',
     content:
-      'O usuario deve utilizar a plataforma de forma etica, nao compartilhar credenciais, nao tentar acessar areas restritas indevidamente e nao publicar conteudo ofensivo, ilegal, enganoso ou que viole direitos de terceiros.',
+      'O usuário é o único responsável pela guarda e confidencialidade de suas credenciais de acesso (e-mail/RA e senha). É expressamente proibido o compartilhamento de contas, a tentativa de engenharia reversa, o acesso a áreas administrativas sem autorização ou qualquer ação que comprometa a integridade dos sistemas. Violações de segurança podem resultar em suspensão imediata da conta.',
   },
   {
-    title: '5. Conteudo e disponibilidade',
+    title: '5. Conteúdo, disponibilidade e manutenção',
     content:
-      'A plataforma pode receber atualizacoes, ajustes de conteudo, manutencoes e melhorias sem aviso previo. Podem ocorrer indisponibilidades temporarias por atualizacao, servicos externos, navegadores, cache local ou provedores de infraestrutura.',
+      'A Decode reserva-se o direito de atualizar, modificar ou remover conteúdos, funcionalidades e interfaces sem aviso prévio, visando a melhoria contínua da experiência. Manutenções preventivas ou corretivas podem causar indisponibilidades temporárias. Não nos responsabilizamos por falhas decorrentes de conexões de internet, navegadores desatualizados ou incompatibilidades de hardware do usuário.',
   },
   {
-    title: '6. Anuncios e links externos',
+    title: '6. Sistema de anúncios e monetização',
     content:
-      'O app pode exibir anuncios, indicacoes e links externos. Ao acessar um site externo, o usuario passa a seguir os termos, politicas e responsabilidades daquele terceiro. A Decode Analytics Academy busca manter os anuncios discretos e relevantes ao contexto educacional.',
+      'Para manter a gratuidade de diversos recursos, a plataforma exibe anúncios e links de parceiros. Buscamos garantir que tais comunicações sejam discretas e contextuais. Ao clicar em links externos, o usuário reconhece que estará sujeito aos termos de privacidade e uso de terceiros, sobre os quais a Decode não exerce controle ou responsabilidade.',
   },
   {
-    title: '7. Privacidade e dados',
+    title: '7. Tratamento de dados e privacidade',
     content:
-      'Dados de conta, progresso, respostas, interacoes e registros tecnicos podem ser usados para funcionamento, seguranca, melhoria da experiencia e diagnostico de erros. Senhas nao devem ser compartilhadas e devem ser protegidas pelo usuario.',
+      'Coletamos dados de interação, progresso acadêmico, logs de segurança e informações de perfil para personalizar a experiência de aprendizado e garantir a proteção do ambiente. Seus dados são tratados com base nos princípios de transparência e necessidade. Para mais detalhes, consulte nossa Política de Privacidade integrada.',
   },
   {
-    title: '8. Limites de garantia',
+    title: '8. Propriedade Intelectual',
     content:
-      'Embora haja cuidado com qualidade e organizacao, a plataforma e fornecida no estado em que se encontra, sem garantia de ausencia total de erros, disponibilidade continua ou adequacao a todos os objetivos individuais do usuario.',
+      'Todo o design, interface, logotipos, animações (incluindo a assistente Ella) e textos originais da Decode Analytics Academy são protegidos por direitos autorais. A reprodução, distribuição ou venda não autorizada de qualquer parte da plataforma é estritamente proibida.',
   },
   {
-    title: '9. Alteracoes dos termos',
+    title: '9. Limitação de Garantia e Indenização',
     content:
-      'Estes termos podem ser atualizados quando houver mudancas no app, nos recursos ou nas regras de uso. A versao publicada nesta pagina sera considerada a versao vigente.',
+      'A plataforma é fornecida "como está". Não garantimos que os resultados obtidos nos simulados e exercícios assegurem aprovação em exames oficiais. O sucesso acadêmico depende do empenho individual do estudante. A Decode não se responsabiliza por decisões tomadas com base nas informações aqui contidas.',
   },
   {
-    title: '10. Contato',
+    title: '10. Disposições Finais',
     content:
-      'Duvidas, solicitacoes ou comunicacoes sobre estes termos podem ser enviadas pelos canais oficiais informados na plataforma.',
+      'Estes termos são regidos pelas leis brasileiras. Qualquer controvérsia será resolvida no foro da comarca da sede da Decode Analytics. Dúvidas podem ser esclarecidas através do suporte integrado no menu "Comunidade" ou pelos canais oficiais de atendimento.',
   },
 ];
 
