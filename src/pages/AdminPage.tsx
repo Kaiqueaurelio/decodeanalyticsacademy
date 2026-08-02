@@ -1332,10 +1332,16 @@ export default function AdminPage() {
             <Button size="icon" variant="ghost" className="h-9 w-9 shrink-0 hidden lg:inline-flex" onClick={() => navigate('/dashboard')} aria-label="Voltar ao dashboard">
               <ArrowLeft className="h-4 w-4" />
             </Button>
-            <div className="flex-1 min-w-0">
+            <button
+              type="button"
+              onClick={() => setSidebarOpen(true)}
+              className="flex-1 min-w-0 text-left lg:pointer-events-none"
+              aria-label="Trocar de seção"
+            >
               <h2 className="text-base font-bold text-foreground truncate">{tabTitles[tab].title}</h2>
               <p className="text-[10px] text-muted-foreground hidden sm:block truncate">{tabTitles[tab].desc}</p>
-            </div>
+            </button>
+
 
             {tab !== 'overview' && (
               <div className="relative max-w-xs w-full hidden sm:block">
