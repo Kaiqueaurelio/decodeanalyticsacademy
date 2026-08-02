@@ -27,6 +27,18 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.17.0",
+    date: "2026-08-02",
+    title: "Painel administrativo reorganizado (celular e computador)",
+    changes: [
+      { kind: 'improvement', text: 'Todas as seções do admin agora ficam agrupadas por área: Conteúdo, Alunos e Comunidade, Monetização, Assistente e Sistema.' },
+      { kind: 'feature', text: 'Busca de seções dentro do menu: digite "anúncio", "prova" ou "RSS" e o painel filtra na hora.' },
+      { kind: 'improvement', text: 'No celular, a fileira de abas apertadas virou um menu deslizante com a mesma organização do computador, mais atalhos rápidos para Geral, Apostilas, Exercícios e Materiais.' },
+      { kind: 'improvement', text: 'Cada seção mostra uma descrição curta do que faz, evitando cliques às cegas.' },
+    ],
+  },
+
+  {
     version: "3.16.0",
     date: "2026-08-01",
     title: "Upgrade de Inteligência e Gestão de Anunciantes",

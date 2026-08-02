@@ -3,7 +3,10 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { GliderTabs } from '@/components/GliderTabs';
+import { AdminNavPanel } from '@/components/admin/AdminNavPanel';
+import { ADMIN_NAV_BY_ID, ADMIN_MOBILE_QUICK } from '@/config/adminNav';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -177,29 +180,6 @@ function AdminSidebar({ tab, setTab, stats, sidebarOpen, setSidebarOpen }: {
   const navigate = useNavigate();
   // Contador ao vivo de alertas de segurança em aberto (visível só para admin).
   const { openCount: securityOpenCount } = useSecurityAlerts({ enabled: true });
-  const navItems = [
-    { id: 'overview' as Tab, label: 'Visão Geral', icon: BarChart3, count: undefined },
-    { id: 'apostilas' as Tab, label: 'Apostilas', icon: BookOpen, count: stats.apostilas },
-    { id: 'exercises' as Tab, label: 'Exercícios', icon: PenLine, count: stats.exercises },
-    { id: 'materials' as Tab, label: 'Materiais', icon: FolderOpen, count: stats.materials },
-    { id: 'courses' as Tab, label: 'Cursos', icon: GraduationCap, count: undefined },
-    { id: 'users' as Tab, label: 'Usuários', icon: Users, count: stats.users },
-    { id: 'announcements' as Tab, label: 'Avisos', icon: Megaphone, count: undefined },
-    { id: 'ads' as Tab, label: 'Anúncios', icon: Megaphone, count: undefined },
-    { id: 'calendar' as Tab, label: 'Calendário', icon: CalIcon, count: undefined },
-    { id: 'testimonials' as Tab, label: 'Depoimentos', icon: MessageSquareQuote, count: undefined },
-    { id: 'ai' as Tab, label: 'Assistente', icon: MessageSquare, count: undefined },
-    { id: 'performance' as Tab, label: 'Performance', icon: Activity, count: undefined },
-    { id: 'smoke' as Tab, label: 'Testes', icon: CheckCircle, count: undefined },
-    { id: 'diagnostics' as Tab, label: 'Diagnóstico', icon: AlertCircle, count: undefined },
-    { id: 'changelog' as Tab, label: 'Histórico', icon: History, count: undefined },
-    { id: 'ella-audit' as Tab, label: 'Auditoria da Ella', icon: ShieldCheck, count: undefined },
-    { id: 'security-alerts' as Tab, label: 'Alertas de segurança', icon: ShieldAlert, count: securityOpenCount || undefined },
-    { id: 'ads-chat' as Tab, label: 'Assistente de anúncios', icon: MessageSquare, count: undefined },
-    { id: 'rss' as Tab, label: 'Feeds RSS', icon: Megaphone, count: undefined },
-    { id: 'leads' as Tab, label: 'Leads de Patrocínio', icon: Megaphone, count: undefined },
-    { id: 'sponsors' as Tab, label: 'Anunciantes', icon: Store, count: undefined },
-  ];
 
   return (
     <>
@@ -227,42 +207,30 @@ function AdminSidebar({ tab, setTab, stats, sidebarOpen, setSidebarOpen }: {
         </div>
 
         {/* Navigation */}
-        <ScrollArea className="flex-1 py-3">
-          <div className="px-3 space-y-1">
-            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider px-3 mb-2">Menu</p>
-            {navItems.map(item => (
+        <AdminNavPanel
+          tab={tab}
+          onSelect={(id) => { setTab(id as Tab); setSidebarOpen(false); }}
+          counts={{
+            apostilas: stats.apostilas,
+            exercises: stats.exercises,
+            materials: stats.materials,
+            users: stats.users,
+            securityAlerts: securityOpenCount,
+          }}
+          footerSlot={
+            <div className="space-y-1">
+              <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Acervos</p>
               <button
-                key={item.id}
-                onClick={() => { setTab(item.id); setSidebarOpen(false); }}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group ${
-                  tab === item.id
-                    ? 'bg-primary/10 text-primary shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-                }`}
+                onClick={() => { navigate('/admin/biblioteca'); setSidebarOpen(false); }}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors bg-primary/5 text-primary hover:bg-primary/10 border border-primary/20"
               >
-                <item.icon className={`h-4 w-4 shrink-0 ${tab === item.id ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`} />
-                <span className="flex-1 text-left">{item.label}</span>
-                {item.count !== undefined && (
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                    tab === item.id ? 'bg-primary/20 text-primary' : 'bg-muted text-muted-foreground'
-                  }`}>
-                    {item.count}
-                  </span>
-                )}
+                <BookOpen className="h-4 w-4 shrink-0 text-primary" />
+                <span className="flex-1 text-left">Biblioteca de Livros</span>
+                <Badge variant="secondary" className="text-[9px] h-4 px-1.5">PDF/EPUB</Badge>
               </button>
-            ))}
-
-            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider px-3 mt-4 mb-2">Acervos</p>
-            <button
-              onClick={() => { navigate('/admin/biblioteca'); setSidebarOpen(false); }}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group bg-primary/5 text-primary hover:bg-primary/10 border border-primary/20"
-            >
-              <BookOpen className="h-4 w-4 shrink-0 text-primary" />
-              <span className="flex-1 text-left">Biblioteca de Livros</span>
-              <Badge variant="secondary" className="text-[9px] h-4 px-1.5">PDF/EPUB</Badge>
-            </button>
-          </div>
-        </ScrollArea>
+            </div>
+          }
+        />
 
         {/* Footer */}
         <div className="p-4 border-t border-border space-y-2">
@@ -275,6 +243,7 @@ function AdminSidebar({ tab, setTab, stats, sidebarOpen, setSidebarOpen }: {
     </>
   );
 }
+
 
 // ─── Overview Tab ───────────────────────────────────────────────
 function OverviewTab({ apostilas, exercises, allAnswers, materials, users, setTab, loading }: {
@@ -1351,12 +1320,21 @@ export default function AdminPage() {
         <div className="flex-1 flex flex-col min-w-0">
           {/* Top Bar */}
           <header className="sticky top-0 z-30 bg-card/95 backdrop-blur-xl border-b border-border h-14 flex items-center px-3 sm:px-4 lg:px-6 gap-2 sm:gap-3">
-            <Button size="icon" variant="ghost" className="h-9 w-9 shrink-0" onClick={() => navigate('/dashboard')}>
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-9 w-9 shrink-0 lg:hidden"
+              onClick={() => setSidebarOpen(true)}
+              aria-label="Abrir menu do painel"
+            >
+              <Menu className="h-4 w-4" />
+            </Button>
+            <Button size="icon" variant="ghost" className="h-9 w-9 shrink-0 hidden lg:inline-flex" onClick={() => navigate('/dashboard')} aria-label="Voltar ao dashboard">
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <div className="flex-1 min-w-0">
               <h2 className="text-base font-bold text-foreground truncate">{tabTitles[tab].title}</h2>
-              <p className="text-[10px] text-muted-foreground hidden sm:block">{tabTitles[tab].desc}</p>
+              <p className="text-[10px] text-muted-foreground hidden sm:block truncate">{tabTitles[tab].desc}</p>
             </div>
 
             {tab !== 'overview' && (
@@ -1376,34 +1354,72 @@ export default function AdminPage() {
             </Button>
           </header>
 
-          {/* Mobile GliderTabs */}
-          <div className="lg:hidden sticky top-14 z-20 bg-card/95 backdrop-blur-xl border-b border-border/40 px-2 py-2 overflow-x-auto">
-            <GliderTabs
-              tabs={[
-                { id: 'overview', label: 'Geral', icon: <BarChart3 className="h-3.5 w-3.5" /> },
-                { id: 'apostilas', label: 'Apostilas', icon: <BookOpen className="h-3.5 w-3.5" />, count: apostilas.length },
-                { id: 'exercises', label: 'Exercícios', icon: <PenLine className="h-3.5 w-3.5" />, count: totalExercises },
-                { id: 'materials', label: 'Materiais', icon: <FolderOpen className="h-3.5 w-3.5" />, count: materials.length },
-                { id: 'courses', label: 'Cursos', icon: <GraduationCap className="h-3.5 w-3.5" /> },
-                { id: 'users', label: 'Usuários', icon: <Users className="h-3.5 w-3.5" />, count: users.length },
-                { id: 'announcements', label: 'Avisos', icon: <Megaphone className="h-3.5 w-3.5" /> },
-                { id: 'calendar', label: 'Calendário', icon: <CalIcon className="h-3.5 w-3.5" /> },
-                { id: 'testimonials', label: 'Depoimentos', icon: <MessageSquareQuote className="h-3.5 w-3.5" /> },
-                { id: 'ai', label: 'Assistente', icon: <MessageSquare className="h-3.5 w-3.5" /> },
-                { id: 'performance', label: 'Perf', icon: <Activity className="h-3.5 w-3.5" /> },
-                { id: 'smoke', label: 'Testes', icon: <CheckCircle className="h-3.5 w-3.5" /> },
-                { id: 'diagnostics', label: 'Diag', icon: <AlertCircle className="h-3.5 w-3.5" /> },
-                { id: 'changelog', label: 'Histórico', icon: <History className="h-3.5 w-3.5" /> },
-                { id: 'ella-audit', label: 'Auditoria', icon: <ShieldCheck className="h-3.5 w-3.5" /> },
-                { id: 'security-alerts', label: 'Segurança', icon: <ShieldAlert className="h-3.5 w-3.5" /> },
-                { id: 'ads', label: 'Anúncios', icon: <Megaphone className="h-3.5 w-3.5" /> },
-                { id: 'rss', label: 'RSS', icon: <Rss className="h-3.5 w-3.5" /> },
-                { id: 'leads', label: 'Patrocínio', icon: <Megaphone className="h-3.5 w-3.5" /> },
-              ]}
-              activeTab={tab}
-              onTabChange={(id) => setTab(id as Tab)}
-            />
+          {/* Menu deslizante (celular/tablet) — mesma organização da sidebar */}
+          <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+            <SheetContent side="left" className="w-[320px] max-w-[90vw] p-0 flex flex-col lg:hidden">
+              <SheetHeader className="px-4 py-4 border-b border-border text-left">
+                <SheetTitle className="text-sm">Painel Administrativo</SheetTitle>
+                <p className="text-[10px] text-muted-foreground">Decode Analytics</p>
+              </SheetHeader>
+              <div className="min-h-0 flex-1">
+                <AdminNavPanel
+                  tab={tab}
+                  onSelect={(id) => { setTab(id as Tab); setSidebarOpen(false); }}
+                  counts={{
+                    apostilas: apostilas.length,
+                    exercises: totalExercises,
+                    materials: materials.length,
+                    users: users.length,
+                  }}
+                  footerSlot={
+                    <div className="space-y-1">
+                      <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Acervos</p>
+                      <button
+                        onClick={() => { setSidebarOpen(false); navigate('/admin/biblioteca'); }}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium bg-primary/5 text-primary border border-primary/20"
+                      >
+                        <BookOpen className="h-4 w-4 shrink-0" />
+                        <span className="flex-1 text-left">Biblioteca de Livros</span>
+                      </button>
+                    </div>
+                  }
+                />
+              </div>
+              <div className="border-t border-border p-3">
+                <Button variant="outline" size="sm" className="w-full text-xs gap-2" onClick={() => { setSidebarOpen(false); navigate('/dashboard'); }}>
+                  <ArrowLeft className="h-3.5 w-3.5" /> Voltar ao Dashboard
+                </Button>
+              </div>
+            </SheetContent>
+          </Sheet>
+
+          {/* Atalhos rápidos no celular */}
+          <div className="lg:hidden sticky top-14 z-20 bg-card/95 backdrop-blur-xl border-b border-border/40 px-2 py-2 flex gap-2 overflow-x-auto no-scrollbar">
+            {ADMIN_MOBILE_QUICK.map(id => {
+              const item = ADMIN_NAV_BY_ID[id];
+              const active = tab === id;
+              return (
+                <button
+                  key={id}
+                  onClick={() => setTab(id as Tab)}
+                  aria-current={active ? 'page' : undefined}
+                  className={`shrink-0 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                    active ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+                  }`}
+                >
+                  <item.icon className="h-3.5 w-3.5" />
+                  {item.short}
+                </button>
+              );
+            })}
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="shrink-0 inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground"
+            >
+              <Menu className="h-3.5 w-3.5" /> Todas as seções
+            </button>
           </div>
+
 
           {/* Content */}
           <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-auto min-w-0 bg-muted/30">
