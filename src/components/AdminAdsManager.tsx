@@ -91,14 +91,19 @@ const AD_TYPE_OPTIONS: { value: AdType; label: string; hint: string; where: stri
 function PlacementDiagram({ type }: { type: AdType }) {
   const block = 'absolute rounded-[2px] bg-primary';
   return (
-    <div className="relative h-12 w-full overflow-hidden rounded-md border border-border/70 bg-muted/40">
-      <div className="absolute inset-x-1 top-1 h-1.5 rounded-[2px] bg-muted-foreground/25" />
-      <div className="absolute inset-x-1 top-4 bottom-1 rounded-[2px] bg-muted-foreground/15" />
-      {type === 'banner' && <span className={cn(block, 'inset-x-1 top-1 h-1.5')} />}
-      {type === 'inline' && <span className={cn(block, 'inset-x-3 top-1/2 h-2 -translate-y-1/2')} />}
-      {type === 'sidebar' && <span className={cn(block, 'right-1 top-4 bottom-1 w-3')} />}
-      {type === 'footer' && <span className={cn(block, 'inset-x-1 bottom-1 h-2')} />}
-      {type === 'popup' && <span className={cn(block, 'left-1/2 top-1/2 h-6 w-10 -translate-x-1/2 -translate-y-1/2')} />}
+    <div className="relative h-14 w-full overflow-hidden rounded-md border border-border/70 bg-muted/20">
+      {/* Shell mockup */}
+      <div className="absolute inset-x-1.5 top-1.5 h-1.5 rounded-[1px] bg-muted-foreground/30" />
+      <div className="absolute inset-x-1.5 top-4 bottom-1.5 rounded-[1px] bg-muted-foreground/10" />
+      <div className="absolute left-1.5 top-4 bottom-1.5 w-3 rounded-[1px] bg-muted-foreground/20" />
+      
+      {/* Ad position indicator */}
+      {type === 'banner' && <span className={cn(block, 'inset-x-1.5 top-1.5 h-1.5 z-10')} />}
+      {type === 'inline' && <span className={cn(block, 'left-6 right-2 top-6 h-2 z-10')} />}
+      {type === 'sidebar' && <span className={cn(block, 'right-1.5 top-4 bottom-1.5 w-3 z-10')} />}
+      {type === 'footer' && <span className={cn(block, 'inset-x-1.5 bottom-1.5 h-2 z-10')} />}
+      {type === 'popup' && <span className={cn(block, 'left-1/2 top-1/2 h-6 w-10 -translate-x-1/2 -translate-y-1/2 z-20 shadow-xl border border-background')} />}
+      {type === 'sponsor' && <div className="absolute inset-0 flex items-center justify-center"><Megaphone className="h-4 w-4 text-primary opacity-40" /></div>}
     </div>
   );
 }
