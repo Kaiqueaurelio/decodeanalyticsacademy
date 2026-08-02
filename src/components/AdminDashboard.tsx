@@ -75,6 +75,8 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp }: Props) {
   });
   const [apostilas, setApostilas] = useState<ApostilaRow[]>([]);
   const [rankings, setRankings] = useState<Ranking[]>([]);
+  const [engagement, setEngagement] = useState<{ day: string; apostilas: number; exercises: number }[]>([]);
+
 
   // Filtros
   const [search, setSearch] = useState('');
@@ -109,7 +111,9 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp }: Props) {
   const load = async () => {
     setLoading(true);
     try {
-      const [a, e, u, c, l, ad, list, rank] = await Promise.all([
+      const since = new Date(Date.now() - 6 * 86400000);
+      since.setHours(0, 0, 0, 0);
+      const [a, e, u, c, l, ad, list, rank, views, answers] = await Promise.all([
         supabase.from('apostilas').select('id', { count: 'exact', head: true }),
         supabase.from('exercises').select('id', { count: 'exact', head: true }),
         supabase.from('profiles').select('id', { count: 'exact', head: true }),
@@ -121,6 +125,8 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp }: Props) {
           .order('created_at', { ascending: false })
           .limit(500),
         supabase.rpc('get_student_rankings', { _limit: 10 }),
+        supabase.from('apostila_views').select('viewed_at').gte('viewed_at', since.toISOString()).limit(5000),
+        supabase.from('answers').select('created_at').gte('created_at', since.toISOString()).limit(5000),
       ]);
       setStats({
         apostilas: a.count || 0,
@@ -132,6 +138,25 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp }: Props) {
       });
       setApostilas(list.data || []);
       setRankings(rank.data || []);
+
+      // Engajamento real dos últimos 7 dias
+      const DAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+      const buckets: { key: string; day: string; apostilas: number; exercises: number }[] = [];
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(Date.now() - i * 86400000);
+        buckets.push({ key: d.toDateString(), day: DAYS[d.getDay()], apostilas: 0, exercises: 0 });
+      }
+      const idx = new Map(buckets.map((b, i) => [b.key, i]));
+      (views.data || []).forEach((r: any) => {
+        const i = idx.get(new Date(r.viewed_at).toDateString());
+        if (i !== undefined) buckets[i].apostilas++;
+      });
+      (answers.data || []).forEach((r: any) => {
+        const i = idx.get(new Date(r.created_at).toDateString());
+        if (i !== undefined) buckets[i].exercises++;
+      });
+      setEngagement(buckets.map(({ day, apostilas, exercises }) => ({ day, apostilas, exercises })));
+
     } catch (err) {
       console.error(err);
     } finally {
@@ -292,15 +317,8 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp }: Props) {
   ];
 
 
-  const engagement = [
-    { day: 'Seg', apostilas: 12, exercises: 24 },
-    { day: 'Ter', apostilas: 18, exercises: 32 },
-    { day: 'Qua', apostilas: 22, exercises: 28 },
-    { day: 'Qui', apostilas: 28, exercises: 42 },
-    { day: 'Sex', apostilas: 32, exercises: 50 },
-    { day: 'Sab', apostilas: 26, exercises: 38 },
-    { day: 'Dom', apostilas: 20, exercises: 30 },
-  ];
+  const totalEngagement = engagement.reduce((s, d) => s + d.apostilas + d.exercises, 0);
+
 
   if (loading) {
     return (
