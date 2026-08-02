@@ -63,6 +63,7 @@ import { AdsChatBuilder } from '@/components/AdsChatBuilder';
 import { AdminDashboard } from '@/components/AdminDashboard';
 import { RssFeedsManagerEnhanced } from '@/components/admin/RssFeedsManagerEnhanced';
 import { FreeCoursesManager } from '@/components/admin/FreeCoursesManager';
+import { AdminSponsorsManager } from '@/components/admin/AdminSponsorsManager';
 import { ApostilaExportDialog } from '@/components/admin/ApostilaExportDialog';
 
 type Apostila = Tables<'apostilas'>;
@@ -103,7 +104,7 @@ function CategorySelect({ value, onValueChange, placeholder }: { value: string; 
   );
 }
 
-type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements' | 'calendar' | 'testimonials' | 'ai' | 'performance' | 'smoke' | 'diagnostics' | 'ads' | 'ads-chat' | 'social' | 'rss' | 'courses' | 'changelog' | 'leads' | 'ella-audit' | 'security-alerts';
+type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements' | 'calendar' | 'testimonials' | 'ai' | 'performance' | 'smoke' | 'diagnostics' | 'ads' | 'ads-chat' | 'social' | 'rss' | 'courses' | 'changelog' | 'leads' | 'ella-audit' | 'security-alerts' | 'sponsors';
 
 const ACCEPT_MAP: Record<string, string> = {
   pdf: '.pdf', image: 'image/*', gif: '.gif,image/gif',
@@ -196,7 +197,8 @@ function AdminSidebar({ tab, setTab, stats, sidebarOpen, setSidebarOpen }: {
     { id: 'security-alerts' as Tab, label: 'Alertas de segurança', icon: ShieldAlert, count: securityOpenCount || undefined },
     { id: 'ads-chat' as Tab, label: 'Assistente de anúncios', icon: MessageSquare, count: undefined },
     { id: 'rss' as Tab, label: 'Feeds RSS', icon: Megaphone, count: undefined },
-    { id: 'leads' as Tab, label: 'Patrocínio', icon: Megaphone, count: undefined },
+    { id: 'leads' as Tab, label: 'Leads de Patrocínio', icon: Megaphone, count: undefined },
+    { id: 'sponsors' as Tab, label: 'Anunciantes', icon: Store, count: undefined },
   ];
 
   return (

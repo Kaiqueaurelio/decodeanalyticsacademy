@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { AppImage } from '@/components/ui/app-image';
 import { cn } from '@/lib/utils';
 
-type AdType = 'banner' | 'popup' | 'inline' | 'sidebar' | 'footer';
+type AdType = 'banner' | 'popup' | 'inline' | 'sidebar' | 'footer' | 'sponsor';
 
 interface AdStudentPreviewProps {
   title: string;
@@ -21,6 +21,7 @@ const FORMAT_LABEL: Record<AdType, string> = {
   sidebar: 'Painel lateral fixo',
   footer: 'Rodapé do celular',
   popup: 'Pop-up central',
+  sponsor: 'Página de Patrocínio',
 };
 
 function AdCaption({
