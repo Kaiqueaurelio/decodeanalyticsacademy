@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { supabase as supabaseTyped } from '@/integrations/supabase/client';
 const supabase = supabaseTyped as any;
 import { useAuth } from '@/hooks/useAuth';
+import owlLogo from '@/assets/owl-icon.png';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
