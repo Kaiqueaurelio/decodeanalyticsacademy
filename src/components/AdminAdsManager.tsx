@@ -511,21 +511,16 @@ export function AdminAdsManager() {
                 <p className="mt-0.5 text-xl font-bold">{stats.total}</p>
               </CardContent>
             </Card>
-              <CardContent className="p-4">
-                <p className="text-xs text-muted-foreground">Total</p>
-                <p className="mt-1 text-2xl font-semibold">{stats.total}</p>
+            <Card className="min-w-[120px] border-border/60 shadow-sm">
+              <CardContent className="p-3">
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Ativos</p>
+                <p className="mt-0.5 text-xl font-bold text-primary">{stats.active}</p>
               </CardContent>
             </Card>
-            <Card className="min-w-[140px] border-border/60">
-              <CardContent className="p-4">
-                <p className="text-xs text-muted-foreground">Ativos</p>
-                <p className="mt-1 text-2xl font-semibold text-primary">{stats.active}</p>
-              </CardContent>
-            </Card>
-            <Card className="min-w-[140px] border-border/60">
-              <CardContent className="p-4">
-                <p className="text-xs text-muted-foreground">Com imagem</p>
-                <p className="mt-1 text-2xl font-semibold">{stats.withImage}</p>
+            <Card className="min-w-[120px] border-border/60 shadow-sm">
+              <CardContent className="p-3">
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Com imagem</p>
+                <p className="mt-0.5 text-xl font-bold">{stats.withImage}</p>
               </CardContent>
             </Card>
           </div>
