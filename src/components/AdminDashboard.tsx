@@ -21,8 +21,9 @@ import {
   Link as LinkIcon, FileText, FileUp, Plus,
 
   Eye, EyeOff, Edit, Trash2, Trophy, Medal, Award, Filter, X, Check,
-  CheckCircle2, XCircle, CalendarDays, ArrowDownUp, FolderOpen, ChevronDown,
+  CheckCircle2, XCircle, CalendarDays, ArrowDownUp, FolderOpen, ChevronDown, LayoutDashboard,
 } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getSubjectColor } from '@/lib/subject-colors';
 import {
@@ -30,7 +31,7 @@ import {
 } from 'recharts';
 import { toast } from 'sonner';
 
-interface Props { onNavigate: (tab: string) => void }
+interface Props { onNavigate: (tab: string) => void; isAdmin?: boolean; }
 
 type ApostilaRow = {
   id: string; title: string; category: string | null;
@@ -326,6 +327,9 @@ export function AdminDashboard({ onNavigate }: Props) {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
+            <Button variant="outline" size="sm" className="rounded-xl border-primary/30" onClick={() => setShowWidgetConfig(true)}>
+              Personalizar
+            </Button>
             <Button onClick={() => handleQuickCreate('link')} className="rounded-xl font-semibold shadow-lg shadow-primary/20">
               <Plus className="mr-1.5 h-4 w-4" /> Nova Apostila
             </Button>
@@ -334,6 +338,33 @@ export function AdminDashboard({ onNavigate }: Props) {
             </Button>
           </div>
         </div>
+
+        {/* Dialog de Personalização */}
+        <Dialog open={showWidgetConfig} onOpenChange={setShowWidgetConfig}>
+          <DialogContent className="max-w-sm">
+            <DialogHeader>
+              <DialogTitle>Personalizar Dashboard</DialogTitle>
+              <DialogDescription>Escolha quais widgets deseja ver no início.</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              {[
+                { id: 'apostilas', label: 'Apostilas' },
+                { id: 'exercises', label: 'Exercícios' },
+                { id: 'users', label: 'Usuários' },
+                { id: 'ads', label: 'Anúncios' },
+              ].map(w => (
+                <div key={w.id} className="flex items-center justify-between">
+                  <span className="text-sm font-medium">{w.label}</span>
+                  <Switch 
+                    checked={visibleWidgets.includes(w.id)} 
+                    onCheckedChange={() => toggleWidget(w.id)}
+                  />
+                </div>
+              ))}
+            </div>
+            <Button className="w-full" onClick={() => setShowWidgetConfig(false)}>Pronto</Button>
+          </DialogContent>
+        </Dialog>
       </motion.div>
 
       {/* Widget Grid Personalizável (Atalhos e Pendências) */}
