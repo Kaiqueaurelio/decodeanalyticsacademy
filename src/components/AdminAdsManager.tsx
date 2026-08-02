@@ -792,30 +792,64 @@ export function AdminAdsManager() {
                   )}
                 </div>
 
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Título</label>
-                    <Input
-                      value={formData.title}
-                      onChange={(e) => setFormData((current) => ({ ...current, title: e.target.value }))}
-                      placeholder="Ex.: Curso de Python com desconto"
-                    />
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                  <div className="space-y-4 rounded-lg border border-border/50 bg-muted/5 p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <LayoutDashboard className="h-4 w-4 text-primary" />
+                      <h4 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Configuração Visual</h4>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Título do Anúncio</label>
+                      <Input
+                        placeholder="Ex: Novo Curso de Python 2026"
+                        value={formData.title}
+                        onChange={(e) => setFormData((current) => ({ ...current, title: e.target.value }))}
+                        className="bg-background"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Chamada (Copy)</label>
+                      <Textarea
+                        placeholder="Descrição curta e atrativa para o aluno..."
+                        value={formData.description || ''}
+                        onChange={(e) => setFormData((current) => ({ ...current, description: e.target.value }))}
+                        className="min-h-[80px] bg-background resize-none"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Link de Destino</label>
+                      <div className="relative">
+                        <ExternalLink className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                          placeholder="https://..."
+                          value={formData.link_url || ''}
+                          onChange={(e) => setFormData((current) => ({ ...current, link_url: e.target.value }))}
+                          className="pl-9 bg-background"
+                        />
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">
-                      URL de destino <span className="text-muted-foreground">(opcional)</span>
-                    </label>
-                    <Input
-                      type="url"
-                      value={formData.link_url}
-                      onChange={(e) => setFormData((current) => ({ ...current, link_url: e.target.value }))}
-                      placeholder="Deixe em branco para anúncio apenas informativo"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Sem link, o anúncio é exibido apenas como aviso e não abre nada ao ser clicado.
-                    </p>
+                  <div className="space-y-4 rounded-lg border border-border/50 bg-muted/5 p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Megaphone className="h-4 w-4 text-primary" />
+                      <h4 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Mídia & Imagem</h4>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Imagem ou Criativo</label>
+                      <div className="rounded-lg border-2 border-dashed border-border/60 bg-background/50 p-2">
+                        <AdImageUploadButton
+                          currentImageUrl={formData.image_url}
+                          onUploadComplete={(url) => setFormData((current) => ({ ...current, image_url: url }))}
+                        />
+                      </div>
+                    </div>
                   </div>
+                </div>
 
 
                   <div className="space-y-3 sm:col-span-2">
