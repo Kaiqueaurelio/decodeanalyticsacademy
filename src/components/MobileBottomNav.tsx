@@ -115,7 +115,7 @@ export function MobileBottomNav() {
             <SheetContent
               side="left"
               aria-label="Menu completo"
-              className="w-[min(88vw,320px)] sm:w-[320px] max-w-none p-0 border-r border-border flex h-dvh flex-col overflow-hidden"
+              className="w-[min(90vw,320px)] sm:w-[320px] max-w-none p-0 border-r border-border flex h-dvh flex-col overflow-hidden"
             >
               <SheetHeader className="sr-only">
                 <SheetTitle>Menu completo</SheetTitle>
