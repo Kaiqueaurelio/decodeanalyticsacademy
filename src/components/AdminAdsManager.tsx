@@ -931,7 +931,6 @@ export function AdminAdsManager() {
                       <p className="text-[10px] text-muted-foreground italic">Menor número aparece primeiro.</p>
                     </div>
                   </div>
-                </div>
 
                 <div className="flex items-center justify-between rounded-xl border border-border bg-muted/25 px-4 py-3">
                   <div>
