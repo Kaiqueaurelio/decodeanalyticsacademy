@@ -79,12 +79,12 @@ interface AdFormState {
 }
 
 const AD_TYPE_OPTIONS: { value: AdType; label: string; hint: string; where: string }[] = [
-  { value: 'banner', label: 'Topo', hint: 'Banner de destaque', where: 'Aparece no topo das páginas, acima do conteúdo.' },
-  { value: 'inline', label: 'Entre seções', hint: 'No meio do conteúdo', where: 'Inserido entre blocos de conteúdo durante a navegação.' },
-  { value: 'sidebar', label: 'Lateral', hint: 'Coluna fixa (desktop)', where: 'Painel fixo à direita, sempre visível na rolagem.' },
-  { value: 'footer', label: 'Rodapé', hint: 'Faixa fixa (mobile)', where: 'Barra fina fixa na parte inferior no celular.' },
-  { value: 'popup', label: 'Pop-up', hint: 'Sobreposto', where: 'Janela central sobre a tela, fecha automaticamente.' },
-  { value: 'sponsor', label: 'Patrocinador', hint: 'Media Kit', where: 'Aparece na página dedicada de anunciantes/patrocínio.' },
+  { value: 'banner', label: 'Topo / Banner', hint: 'Destaque horizontal', where: 'Ideal para comunicados críticos ou ofertas principais.' },
+  { value: 'inline', label: 'Feed / Lista', hint: 'Nativo no conteúdo', where: 'Inserido entre as disciplinas para máxima taxa de clique.' },
+  { value: 'sidebar', label: 'Lateral', hint: 'Painel Desktop', where: 'Fixo à direita no dashboard (apenas para computadores).' },
+  { value: 'footer', label: 'Flutuante', hint: 'Sticky Mobile', where: 'Barra persistente na base da tela em dispositivos móveis.' },
+  { value: 'popup', label: 'Pop-up Intersticial', hint: 'Tela cheia / Modal', where: 'Garante 100% de atenção ao abrir o aplicativo.' },
+  { value: 'sponsor', label: 'Patrocínio', hint: 'Media Kit', where: 'Aparece na seção exclusiva de parceiros e apoiadores.' },
 ];
 
 // Mini-wireframe indicando onde o anúncio cai no layout.
