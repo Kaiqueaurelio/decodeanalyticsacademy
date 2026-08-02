@@ -79,6 +79,7 @@ const AD_TYPE_LABELS: Record<AdType, string> = {
   inline: 'Inline',
   sidebar: 'Lateral',
   footer: 'Rodape',
+  sponsor: 'Patrocinador',
 };
 
 const ACTION_LABELS: Record<ActionType, string> = {
