@@ -1320,12 +1320,21 @@ export default function AdminPage() {
         <div className="flex-1 flex flex-col min-w-0">
           {/* Top Bar */}
           <header className="sticky top-0 z-30 bg-card/95 backdrop-blur-xl border-b border-border h-14 flex items-center px-3 sm:px-4 lg:px-6 gap-2 sm:gap-3">
-            <Button size="icon" variant="ghost" className="h-9 w-9 shrink-0" onClick={() => navigate('/dashboard')}>
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-9 w-9 shrink-0 lg:hidden"
+              onClick={() => setSidebarOpen(true)}
+              aria-label="Abrir menu do painel"
+            >
+              <Menu className="h-4 w-4" />
+            </Button>
+            <Button size="icon" variant="ghost" className="h-9 w-9 shrink-0 hidden lg:inline-flex" onClick={() => navigate('/dashboard')} aria-label="Voltar ao dashboard">
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <div className="flex-1 min-w-0">
               <h2 className="text-base font-bold text-foreground truncate">{tabTitles[tab].title}</h2>
-              <p className="text-[10px] text-muted-foreground hidden sm:block">{tabTitles[tab].desc}</p>
+              <p className="text-[10px] text-muted-foreground hidden sm:block truncate">{tabTitles[tab].desc}</p>
             </div>
 
             {tab !== 'overview' && (
@@ -1345,34 +1354,72 @@ export default function AdminPage() {
             </Button>
           </header>
 
-          {/* Mobile GliderTabs */}
-          <div className="lg:hidden sticky top-14 z-20 bg-card/95 backdrop-blur-xl border-b border-border/40 px-2 py-2 overflow-x-auto">
-            <GliderTabs
-              tabs={[
-                { id: 'overview', label: 'Geral', icon: <BarChart3 className="h-3.5 w-3.5" /> },
-                { id: 'apostilas', label: 'Apostilas', icon: <BookOpen className="h-3.5 w-3.5" />, count: apostilas.length },
-                { id: 'exercises', label: 'Exercícios', icon: <PenLine className="h-3.5 w-3.5" />, count: totalExercises },
-                { id: 'materials', label: 'Materiais', icon: <FolderOpen className="h-3.5 w-3.5" />, count: materials.length },
-                { id: 'courses', label: 'Cursos', icon: <GraduationCap className="h-3.5 w-3.5" /> },
-                { id: 'users', label: 'Usuários', icon: <Users className="h-3.5 w-3.5" />, count: users.length },
-                { id: 'announcements', label: 'Avisos', icon: <Megaphone className="h-3.5 w-3.5" /> },
-                { id: 'calendar', label: 'Calendário', icon: <CalIcon className="h-3.5 w-3.5" /> },
-                { id: 'testimonials', label: 'Depoimentos', icon: <MessageSquareQuote className="h-3.5 w-3.5" /> },
-                { id: 'ai', label: 'Assistente', icon: <MessageSquare className="h-3.5 w-3.5" /> },
-                { id: 'performance', label: 'Perf', icon: <Activity className="h-3.5 w-3.5" /> },
-                { id: 'smoke', label: 'Testes', icon: <CheckCircle className="h-3.5 w-3.5" /> },
-                { id: 'diagnostics', label: 'Diag', icon: <AlertCircle className="h-3.5 w-3.5" /> },
-                { id: 'changelog', label: 'Histórico', icon: <History className="h-3.5 w-3.5" /> },
-                { id: 'ella-audit', label: 'Auditoria', icon: <ShieldCheck className="h-3.5 w-3.5" /> },
-                { id: 'security-alerts', label: 'Segurança', icon: <ShieldAlert className="h-3.5 w-3.5" /> },
-                { id: 'ads', label: 'Anúncios', icon: <Megaphone className="h-3.5 w-3.5" /> },
-                { id: 'rss', label: 'RSS', icon: <Rss className="h-3.5 w-3.5" /> },
-                { id: 'leads', label: 'Patrocínio', icon: <Megaphone className="h-3.5 w-3.5" /> },
-              ]}
-              activeTab={tab}
-              onTabChange={(id) => setTab(id as Tab)}
-            />
+          {/* Menu deslizante (celular/tablet) — mesma organização da sidebar */}
+          <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+            <SheetContent side="left" className="w-[320px] max-w-[90vw] p-0 flex flex-col lg:hidden">
+              <SheetHeader className="px-4 py-4 border-b border-border text-left">
+                <SheetTitle className="text-sm">Painel Administrativo</SheetTitle>
+                <p className="text-[10px] text-muted-foreground">Decode Analytics</p>
+              </SheetHeader>
+              <div className="min-h-0 flex-1">
+                <AdminNavPanel
+                  tab={tab}
+                  onSelect={(id) => { setTab(id as Tab); setSidebarOpen(false); }}
+                  counts={{
+                    apostilas: apostilas.length,
+                    exercises: totalExercises,
+                    materials: materials.length,
+                    users: users.length,
+                  }}
+                  footerSlot={
+                    <div className="space-y-1">
+                      <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Acervos</p>
+                      <button
+                        onClick={() => { setSidebarOpen(false); navigate('/admin/biblioteca'); }}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium bg-primary/5 text-primary border border-primary/20"
+                      >
+                        <BookOpen className="h-4 w-4 shrink-0" />
+                        <span className="flex-1 text-left">Biblioteca de Livros</span>
+                      </button>
+                    </div>
+                  }
+                />
+              </div>
+              <div className="border-t border-border p-3">
+                <Button variant="outline" size="sm" className="w-full text-xs gap-2" onClick={() => { setSidebarOpen(false); navigate('/dashboard'); }}>
+                  <ArrowLeft className="h-3.5 w-3.5" /> Voltar ao Dashboard
+                </Button>
+              </div>
+            </SheetContent>
+          </Sheet>
+
+          {/* Atalhos rápidos no celular */}
+          <div className="lg:hidden sticky top-14 z-20 bg-card/95 backdrop-blur-xl border-b border-border/40 px-2 py-2 flex gap-2 overflow-x-auto no-scrollbar">
+            {ADMIN_MOBILE_QUICK.map(id => {
+              const item = ADMIN_NAV_BY_ID[id];
+              const active = tab === id;
+              return (
+                <button
+                  key={id}
+                  onClick={() => setTab(id as Tab)}
+                  aria-current={active ? 'page' : undefined}
+                  className={`shrink-0 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                    active ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+                  }`}
+                >
+                  <item.icon className="h-3.5 w-3.5" />
+                  {item.short}
+                </button>
+              );
+            })}
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="shrink-0 inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground"
+            >
+              <Menu className="h-3.5 w-3.5" /> Todas as seções
+            </button>
           </div>
+
 
           {/* Content */}
           <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-auto min-w-0 bg-muted/30">
