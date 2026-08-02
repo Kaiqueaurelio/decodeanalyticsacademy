@@ -1331,6 +1331,7 @@ export default function AdminPage() {
     'ella-audit': { title: 'Auditoria da Assistente', desc: 'Cada ação pedida à Ella, com papel do usuário, permissão e resultado' },
     changelog: { title: 'Histórico de Versões', desc: 'Tudo que foi criado, alterado e corrigido na plataforma' },
     leads: { title: 'Interessados em Patrocínio', desc: 'Briefings recebidos, situação e histórico de contato' },
+    sponsors: { title: 'Gestão de Anunciantes', desc: 'Controle marcas e logos para o Media Kit' },
   };
 
 
@@ -3053,6 +3054,7 @@ export default function AdminPage() {
             )}
 
             {tab === 'leads' && <SponsorLeadsPanel />}
+            {tab === 'sponsors' && <AdminSponsorsManager />}
 
 
 
