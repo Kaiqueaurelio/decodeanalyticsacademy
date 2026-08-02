@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Sun, Moon } from 'lucide-react';
 import { useUserProfile } from '@/hooks/queries/useUserProfile';
 import { useState } from 'react';
+import { useSidebar } from '@/hooks/useSidebar';
 import { useApostilasList } from '@/hooks/queries/useDashboardData';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { SidebarContent } from './StudentSidebar';
@@ -18,7 +19,7 @@ export function DashboardTopbar() {
   const { theme, toggleTheme } = useTheme();
   const { data: profile } = useUserProfile(user?.id);
   const [query, setQuery] = useState('');
-  const [navOpen, setNavOpen] = useState(false);
+  const { isOpen: navOpen, setOpen: setNavOpen } = useSidebar();
   const { data: apostilas = [] } = useApostilasList();
 
   const submit = (e: React.FormEvent) => {
