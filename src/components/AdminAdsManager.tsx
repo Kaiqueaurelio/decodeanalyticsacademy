@@ -852,14 +852,14 @@ export function AdminAdsManager() {
                 </div>
 
 
-                  <div className="space-y-3 sm:col-span-2">
+                  <div className="space-y-4 rounded-lg border border-border bg-muted/20 p-4 sm:col-span-2">
                     <div>
                       <label className="text-sm font-medium">Posição no layout</label>
                       <p className="text-xs text-muted-foreground">
                         Escolha onde este anúncio será exibido para o aluno.
                       </p>
                     </div>
-                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
                       {AD_TYPE_OPTIONS.map((item) => {
                         const active = formData.ad_type === item.value;
                         return (
@@ -869,74 +869,80 @@ export function AdminAdsManager() {
                             aria-pressed={active}
                             onClick={() => setFormData((current) => ({ ...current, ad_type: item.value }))}
                             className={cn(
-                              'rounded-lg border p-2 text-left transition',
+                              'group relative rounded-xl border p-2 text-left transition-all duration-200',
                               active
-                                ? 'border-primary bg-primary/10 ring-1 ring-primary'
-                                : 'border-border bg-card hover:border-primary/50',
+                                ? 'border-primary bg-primary/10 ring-2 ring-primary/20 scale-[1.02]'
+                                : 'border-border bg-card hover:border-primary/40 hover:bg-muted/30',
                             )}
                           >
                             <PlacementDiagram type={item.value} />
-                            <p className="mt-2 text-sm font-semibold text-foreground">{item.label}</p>
-                            <p className="text-[11px] leading-4 text-muted-foreground">{item.hint}</p>
+                            <p className="mt-2 text-[13px] font-bold text-foreground leading-tight">{item.label}</p>
+                            <p className="text-[10px] leading-3 text-muted-foreground group-hover:text-foreground/70 transition-colors">{item.hint}</p>
+                            {active && <div className="absolute -right-1 -top-1 h-4 w-4 rounded-full bg-primary flex items-center justify-center border-2 border-background shadow-sm"><div className="h-1.5 w-1.5 rounded-full bg-background" /></div>}
                           </button>
                         );
                       })}
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                      {AD_TYPE_OPTIONS.find((item) => item.value === formData.ad_type)?.where}
-                    </p>
+                    <div className="rounded-md bg-primary/5 px-3 py-2 border border-primary/10">
+                      <p className="text-[11px] leading-relaxed text-foreground/80 font-medium">
+                        <span className="text-primary font-bold mr-1">Comportamento:</span>
+                        {AD_TYPE_OPTIONS.find((item) => item.value === formData.ad_type)?.where}
+                      </p>
+                    </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Ordem na posição</label>
-                    <Input
-                      type="number"
-                      min="0"
-                      value={formData.position}
-                      onChange={(e) =>
-                        setFormData((current) => ({
-                          ...current,
-                          position: Math.max(0, Number(e.target.value) || 0),
-                        }))
-                      }
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Menor número aparece primeiro quando há vários anúncios no mesmo lugar.
-                    </p>
-                  </div>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:col-span-2">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium flex items-center gap-1.5">
+                        <Clock3 className="h-3.5 w-3.5 text-muted-foreground" />
+                        Duração da exibição
+                      </label>
+                      <Select
+                        value={String(formData.display_duration || 5)}
+                        onValueChange={(v) => setFormData(c => ({ ...c, display_duration: Number(v) }))}
+                      >
+                        <SelectTrigger className="h-10 bg-muted/20">
+                          <SelectValue placeholder="Selecione o tempo" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="3">3 segundos (rápido)</SelectItem>
+                          <SelectItem value="5">5 segundos (padrão)</SelectItem>
+                          <SelectItem value="8">8 segundos (médio)</SelectItem>
+                          <SelectItem value="12">12 segundos (longo)</SelectItem>
+                          <SelectItem value="20">20 segundos (fixo)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <p className="text-[10px] text-muted-foreground italic">Tempo antes de alternar para o próximo anúncio.</p>
+                    </div>
 
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium flex items-center gap-1.5">
-                      <Clock3 className="h-3.5 w-3.5 text-muted-foreground" />
-                      Duração da exibição
-                    </label>
-                    <Select
-                      value={String(formData.display_duration || 5)}
-                      onValueChange={(v) => setFormData(c => ({ ...c, display_duration: Number(v) }))}
-                    >
-                      <SelectTrigger className="h-10 bg-muted/20">
-                        <SelectValue placeholder="Selecione o tempo" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="3">3 segundos (rápido)</SelectItem>
-                        <SelectItem value="5">5 segundos (padrão)</SelectItem>
-                        <SelectItem value="8">8 segundos (médio)</SelectItem>
-                        <SelectItem value="12">12 segundos (longo)</SelectItem>
-                        <SelectItem value="20">20 segundos (fixo)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <p className="text-[10px] text-muted-foreground italic">Quanto tempo o anúncio permanece visível antes de alternar.</p>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Ordem na posição</label>
+                      <Input
+                        type="number"
+                        min="0"
+                        value={formData.position}
+                        onChange={(e) =>
+                          setFormData((current) => ({
+                            ...current,
+                            position: Math.max(0, Number(e.target.value) || 0),
+                          }))
+                        }
+                        className="bg-muted/20"
+                      />
+                      <p className="text-[10px] text-muted-foreground italic">Menor número aparece primeiro.</p>
+                    </div>
                   </div>
-
                 </div>
 
-                <div className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-3">
+                <div className="flex items-center justify-between rounded-xl border border-border bg-muted/25 px-4 py-3">
                   <div>
-                    <p className="text-sm font-medium">Status do anúncio</p>
-                    <p className="text-xs text-muted-foreground">Desative quando quiser pausar sem excluir.</p>
+                    <p className="text-sm font-bold">Visibilidade Imediata</p>
+                    <p className="text-[11px] text-muted-foreground">O anúncio aparecerá para os alunos assim que você salvar?</p>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="text-sm text-muted-foreground">{formData.is_active ? 'Ativo' : 'Pausado'}</span>
+                    <span className={cn("text-xs font-bold px-2 py-0.5 rounded-full border", formData.is_active ? "bg-primary/20 text-primary border-primary/30" : "bg-muted text-muted-foreground border-border")}>
+                      {formData.is_active ? 'ATIVO' : 'PAUSADO'}
+                    </span>
                     <Switch
                       checked={formData.is_active}
                       onCheckedChange={(checked) => setFormData((current) => ({ ...current, is_active: checked }))}
@@ -944,41 +950,43 @@ export function AdminAdsManager() {
                   </div>
                 </div>
 
-                <div className="space-y-3 rounded-lg border border-border bg-muted/20 p-4">
-                  <div className="flex items-center gap-2 text-sm font-medium">
+                <div className="space-y-3 rounded-xl border border-border bg-muted/15 p-4">
+                  <div className="flex items-center gap-2 text-sm font-bold">
                     <Clock3 className="h-4 w-4 text-primary" />
-                    Janela de exibição (opcional)
+                    Agendamento Automático (Opcional)
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    Defina quando o anúncio começa e para de aparecer. Deixe em branco para exibir sempre
-                    enquanto estiver ativo.
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    Configure para o anúncio entrar no ar ou ser removido automaticamente em datas específicas. 
+                    <br />Deixe vazio para exibição por tempo indeterminado.
                   </p>
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium" htmlFor="ad-start-date">
-                        Início
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground" htmlFor="ad-start-date">
+                        Data de Início
                       </label>
                       <Input
                         id="ad-start-date"
                         type="datetime-local"
                         value={formData.start_date}
                         onChange={(e) => setFormData((current) => ({ ...current, start_date: e.target.value }))}
+                        className="bg-background/50 h-9"
                       />
                     </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium" htmlFor="ad-end-date">
-                        Fim
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground" htmlFor="ad-end-date">
+                        Data de Término
                       </label>
                       <Input
                         id="ad-end-date"
                         type="datetime-local"
                         value={formData.end_date}
                         onChange={(e) => setFormData((current) => ({ ...current, end_date: e.target.value }))}
+                        className="bg-background/50 h-9"
                       />
                     </div>
                   </div>
                   {(formData.start_date || formData.end_date) && (
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border/40 pt-2 mt-2">
                       <Badge variant={scheduleState({ is_active: formData.is_active, start_date: toIso(formData.start_date), end_date: toIso(formData.end_date) }).variant}>
                         {scheduleState({ is_active: formData.is_active, start_date: toIso(formData.start_date), end_date: toIso(formData.end_date) }).label}
                       </Badge>
@@ -986,6 +994,7 @@ export function AdminAdsManager() {
                         type="button"
                         size="sm"
                         variant="ghost"
+                        className="h-7 text-[10px] text-destructive hover:bg-destructive/10"
                         onClick={() => setFormData((current) => ({ ...current, start_date: '', end_date: '' }))}
                       >
                         Limpar agendamento
@@ -994,105 +1003,27 @@ export function AdminAdsManager() {
                   )}
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Descrição</label>
-                  <Textarea
-                    rows={4}
-                    value={formData.description}
-                    onChange={(e) => setFormData((current) => ({ ...current, description: e.target.value }))}
-                    placeholder="Explique rapidamente o que o aluno encontra ao clicar."
+                <div className="mt-8 border-t border-border pt-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Eye className="h-4 w-4 text-primary" />
+                    <h4 className="text-sm font-bold uppercase tracking-wider">Simulação do Aluno</h4>
+                  </div>
+                  <AdStudentPreview
+                    title={formData.title}
+                    description={formData.description}
+                    imageUrl={formData.image_url}
+                    linkUrl={formData.link_url}
+                    adType={formData.ad_type}
                   />
                 </div>
 
-                <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Imagem do anúncio</label>
-                      <p className="text-xs text-muted-foreground">
-                        Você pode enviar um arquivo ou colar uma URL pública. A prévia aparece ao lado.
-                      </p>
-                      <AdImageUploadButton
-                        currentImageUrl={formData.image_url}
-                        onImageUploaded={(url) => setFormData((current) => ({ ...current, image_url: url }))}
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">URL da imagem</label>
-                      <Input
-                        type="url"
-                        value={formData.image_url}
-                        onChange={(e) => setFormData((current) => ({ ...current, image_url: e.target.value }))}
-                        placeholder="https://exemplo.com/banner.jpg"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-3 rounded-lg border border-border bg-muted/20 p-4">
-                    <div className="flex items-center gap-2 text-sm font-medium">
-                      <LayoutTemplate className="h-4 w-4 text-primary" />
-                      Prévia rápida
-                    </div>
-
-                    {formData.image_url ? (
-                      <AppImage
-                        src={formData.image_url}
-                        alt={formData.title || 'Prévia do anúncio'}
-                        className="h-44 w-full rounded-lg object-cover"
-                        wrapperClassName="h-44 w-full"
-                        fallbackClassName="h-44 w-full"
-                      />
-                    ) : (
-                      <div className="flex h-44 items-center justify-center rounded-lg border border-dashed border-border bg-background text-sm text-muted-foreground">
-                        Sem imagem selecionada
-                      </div>
-                    )}
-
-                    <div className="space-y-2">
-                      <p className="line-clamp-2 font-semibold">{formData.title || 'Título do anúncio'}</p>
-                      <p className="line-clamp-3 text-sm text-muted-foreground">
-                        {formData.description || 'A descrição aparecerá aqui para facilitar a revisão antes de salvar.'}
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        <Badge variant="outline">{AD_TYPE_OPTIONS.find((item) => item.value === formData.ad_type)?.label}</Badge>
-                        <Badge variant={formData.is_active ? 'default' : 'secondary'}>
-                          {formData.is_active ? 'Ativo' : 'Pausado'}
-                        </Badge>
-                      </div>
-                      {formData.link_url && (
-                        <a
-                          href={formData.link_url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
-                        >
-                          <ExternalLink className="h-3.5 w-3.5" />
-                          Testar link
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                <AdStudentPreview
-                  title={formData.title}
-                  description={formData.description}
-                  imageUrl={formData.image_url}
-                  linkUrl={formData.link_url}
-                  adType={formData.ad_type}
-                />
-
-
-                <div className="flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="text-xs text-muted-foreground">
-                    {editingId ? 'As alterações serão aplicadas neste anúncio.' : 'Ao salvar, o anúncio já fica disponível no painel.'}
-                  </div>
-
-                  <div className="flex flex-wrap gap-2">
+                <div className="flex flex-col gap-4 border-t border-border pt-6 sm:flex-row sm:items-center sm:justify-between sticky bottom-0 bg-card py-4 z-20">
+                  <div className="flex items-center gap-3">
                     <Button
                       type="button"
                       variant="outline"
-                      className="gap-2"
+                      size="sm"
+                      className="gap-2 h-10 border-primary/30 text-primary hover:bg-primary/5"
                       onClick={() => {
                         sessionStorage.setItem(
                           AD_DRAFT_PREVIEW_KEY,
@@ -1107,22 +1038,29 @@ export function AdminAdsManager() {
                         window.open(`/dashboard?${AD_DRAFT_PREVIEW_PARAM}=1`, '_blank', 'noopener');
                       }}
                     >
-                      <Eye className="h-4 w-4" /> Ver na página do aluno
+                      <Eye className="h-4 w-4" /> 
+                      Testar na Plataforma
                     </Button>
+                  </div>
 
+                  <div className="flex flex-wrap gap-2">
                     {editingId && (
-                      <Button type="button" variant="outline" onClick={resetEditor}>
-                        Novo anúncio
+                      <Button 
+                        type="button" 
+                        variant="ghost" 
+                        className="h-10 px-4"
+                        onClick={resetEditor}
+                      >
+                        Descartar
                       </Button>
                     )}
-                    {editingId && selectedAd && (
-                      <Button type="button" variant="destructive" onClick={() => setDeleteTarget(selectedAd)}>
-                        <Trash2 className="h-4 w-4" /> Excluir
-                      </Button>
-                    )}
-                    <Button type="submit" disabled={saving} className="gap-2">
-                      {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-                      {editingId ? 'Salvar alterações' : 'Criar anúncio'}
+                    <Button 
+                      type="submit" 
+                      disabled={saving} 
+                      className="h-10 gap-2 px-6 font-bold shadow-lg shadow-primary/20 transition-all active:scale-95"
+                    >
+                      {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : editingId ? <PencilLine className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                      {editingId ? 'Salvar Alterações' : 'Publicar Agora'}
                     </Button>
                   </div>
                 </div>
