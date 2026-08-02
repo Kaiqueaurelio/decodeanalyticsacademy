@@ -25,7 +25,7 @@ const corsHeaders = {
 // Provedor único e obrigatório: API oficial do Google (endpoint OpenAI-compatível,
 // com suporte a tool calling e streaming). Nenhum outro provedor é usado.
 const GOOGLE_URL = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
-const GOOGLE_MODEL = "gemini-1.5-flash";
+const GOOGLE_MODEL = "gemini-2.0-flash";
 const GOOGLE_FALLBACK_MODEL = "gemini-1.5-flash";
 
 type ChatMsg = {
