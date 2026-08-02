@@ -87,6 +87,7 @@ function useAdminCopyPatch() {
       ["Copiloto do App", "Ella Ribeiro"],
       ["Copilot App", "Ella Ribeiro"],
       ["Gere criativos de anúncios com IA", "Assistente operacional para tarefas do app"],
+      ["oque vc acha que podemos melhorar no app por gentileza ??", "oque vc acha que podemos melhorar no app por gentileza ??"],
     ]);
 
     const patchCopy = () => {
