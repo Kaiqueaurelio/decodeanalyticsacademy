@@ -20,7 +20,7 @@ import {
   LayoutDashboard, CheckCircle, TrendingUp, Upload, BarChart3, Clock,
   Link as LinkIcon, Loader2, AlertCircle, Edit, Download, File, Image, Video, Music, FileSpreadsheet, Presentation,
   Users, ShieldBan, ShieldCheck, ShieldAlert, Search, Menu, X, Activity, GraduationCap, FolderOpen, Settings, RefreshCw,
-  Sun, Moon, FileUp, PenTool, Wand2, Megaphone, Combine, Calendar as CalIcon, MessageSquare, MessageSquareQuote, Link2, FileDown, MoreHorizontal, Paperclip, Rss, Info, ExternalLink, ChevronRight, History
+  Sun, Moon, FileUp, PenTool, Wand2, Megaphone, Combine, Calendar as CalIcon, MessageSquare, MessageSquareQuote, Link2, FileDown, MoreHorizontal, Paperclip, Rss, Info, ExternalLink, ChevronRight, History, Store
 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -63,6 +63,7 @@ import { AdsChatBuilder } from '@/components/AdsChatBuilder';
 import { AdminDashboard } from '@/components/AdminDashboard';
 import { RssFeedsManagerEnhanced } from '@/components/admin/RssFeedsManagerEnhanced';
 import { FreeCoursesManager } from '@/components/admin/FreeCoursesManager';
+import { AdminSponsorsManager } from '@/components/admin/AdminSponsorsManager';
 import { ApostilaExportDialog } from '@/components/admin/ApostilaExportDialog';
 
 type Apostila = Tables<'apostilas'>;
@@ -103,7 +104,7 @@ function CategorySelect({ value, onValueChange, placeholder }: { value: string; 
   );
 }
 
-type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements' | 'calendar' | 'testimonials' | 'ai' | 'performance' | 'smoke' | 'diagnostics' | 'ads' | 'ads-chat' | 'social' | 'rss' | 'courses' | 'changelog' | 'leads' | 'ella-audit' | 'security-alerts';
+type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements' | 'calendar' | 'testimonials' | 'ai' | 'performance' | 'smoke' | 'diagnostics' | 'ads' | 'ads-chat' | 'social' | 'rss' | 'courses' | 'changelog' | 'leads' | 'ella-audit' | 'security-alerts' | 'sponsors';
 
 const ACCEPT_MAP: Record<string, string> = {
   pdf: '.pdf', image: 'image/*', gif: '.gif,image/gif',
@@ -196,7 +197,8 @@ function AdminSidebar({ tab, setTab, stats, sidebarOpen, setSidebarOpen }: {
     { id: 'security-alerts' as Tab, label: 'Alertas de segurança', icon: ShieldAlert, count: securityOpenCount || undefined },
     { id: 'ads-chat' as Tab, label: 'Assistente de anúncios', icon: MessageSquare, count: undefined },
     { id: 'rss' as Tab, label: 'Feeds RSS', icon: Megaphone, count: undefined },
-    { id: 'leads' as Tab, label: 'Patrocínio', icon: Megaphone, count: undefined },
+    { id: 'leads' as Tab, label: 'Leads de Patrocínio', icon: Megaphone, count: undefined },
+    { id: 'sponsors' as Tab, label: 'Anunciantes', icon: Store, count: undefined },
   ];
 
   return (
@@ -1329,6 +1331,7 @@ export default function AdminPage() {
     'ella-audit': { title: 'Auditoria da Assistente', desc: 'Cada ação pedida à Ella, com papel do usuário, permissão e resultado' },
     changelog: { title: 'Histórico de Versões', desc: 'Tudo que foi criado, alterado e corrigido na plataforma' },
     leads: { title: 'Interessados em Patrocínio', desc: 'Briefings recebidos, situação e histórico de contato' },
+    sponsors: { title: 'Gestão de Anunciantes', desc: 'Controle marcas e logos para o Media Kit' },
   };
 
 
@@ -3051,6 +3054,7 @@ export default function AdminPage() {
             )}
 
             {tab === 'leads' && <SponsorLeadsPanel />}
+            {tab === 'sponsors' && <AdminSponsorsManager />}
 
 
 

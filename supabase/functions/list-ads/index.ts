@@ -48,8 +48,8 @@ Deno.serve(async (req) => {
         "id, title, description, image_url, link_url, ad_type, position, display_duration, view_count, click_count, start_date, end_date, target_pages",
       )
       .eq("is_active", true)
-      .or(`start_date.is.null,start_date.lte.${nowIso}`)
-      .or(`end_date.is.null,end_date.gte.${nowIso}`)
+      .or("start_date.is.null,start_date.lte.now()")
+      .or("end_date.is.null,end_date.gte.now()")
       .order(orderBy, { ascending: dir === "asc" })
       .range(offset, offset + limit - 1);
 

@@ -27,6 +27,18 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.16.0",
+    date: "2026-08-01",
+    title: "Upgrade de Inteligência e Gestão de Anunciantes",
+    changes: [
+      { kind: 'improvement', text: 'Atualizado modelo da Ella para Gemini 2.0 Flash (maior velocidade e raciocínio).' },
+      { kind: 'fix', text: 'Corrigido bug de persistência onde anúncios pausados ainda eram exibidos por falhas no filtro de datas.' },
+      { kind: 'feature', text: 'Implementado novo tipo de anúncio: "Patrocinador" para exibição no Media Kit da plataforma.' },
+      { kind: 'feature', text: 'Criada aba "Anunciantes" no painel administrativo para gestão centralizada de marcas e logos.' },
+      { kind: 'security', text: 'Refinado filtro de data e status no servidor para anúncios (list-ads) com validação atômica.' }
+    ]
+  },
+  {
     version: '3.15.2',
     date: '2026-08-02',
     title: 'Acessibilidade, Segurança e Resiliência (Fase 2)',

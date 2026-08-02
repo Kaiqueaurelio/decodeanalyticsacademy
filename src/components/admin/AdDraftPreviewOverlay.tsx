@@ -14,7 +14,7 @@ export interface AdDraftPreview {
   description: string;
   image_url: string;
   link_url: string;
-  ad_type: 'banner' | 'popup' | 'inline' | 'sidebar' | 'footer';
+  ad_type: 'banner' | 'popup' | 'inline' | 'sidebar' | 'footer' | 'sponsor';
 }
 
 function readDraft(): AdDraftPreview | null {

@@ -40,7 +40,7 @@ const supabase = supabaseTyped as any;
 import { getEllaAvatarUrl } from '@/lib/ellaAvatar';
 const ELLA_AVATAR = getEllaAvatarUrl();
 
-type AdType = 'banner' | 'popup' | 'inline' | 'sidebar' | 'footer';
+type AdType = 'banner' | 'popup' | 'inline' | 'sidebar' | 'footer' | 'sponsor';
 type MediaKind = 'image' | 'video' | 'audio';
 type ActionType =
   | 'create_ad'
@@ -79,6 +79,7 @@ const AD_TYPE_LABELS: Record<AdType, string> = {
   inline: 'Inline',
   sidebar: 'Lateral',
   footer: 'Rodape',
+  sponsor: 'Patrocinador',
 };
 
 const ACTION_LABELS: Record<ActionType, string> = {

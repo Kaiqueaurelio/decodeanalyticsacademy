@@ -44,7 +44,7 @@ import { AD_DRAFT_PREVIEW_KEY, AD_DRAFT_PREVIEW_PARAM } from '@/components/admin
 
 const supabase = supabaseTyped as any;
 
-type AdType = 'banner' | 'popup' | 'inline' | 'sidebar' | 'footer';
+type AdType = 'banner' | 'popup' | 'inline' | 'sidebar' | 'footer' | 'sponsor';
 
 interface Ad {
   id: string;
@@ -83,6 +83,7 @@ const AD_TYPE_OPTIONS: { value: AdType; label: string; hint: string; where: stri
   { value: 'sidebar', label: 'Lateral', hint: 'Coluna fixa (desktop)', where: 'Painel fixo à direita, sempre visível na rolagem.' },
   { value: 'footer', label: 'Rodapé', hint: 'Faixa fixa (mobile)', where: 'Barra fina fixa na parte inferior no celular.' },
   { value: 'popup', label: 'Pop-up', hint: 'Sobreposto', where: 'Janela central sobre a tela, fecha automaticamente.' },
+  { value: 'sponsor', label: 'Patrocinador', hint: 'Media Kit', where: 'Aparece na página dedicada de anunciantes/patrocínio.' },
 ];
 
 // Mini-wireframe indicando onde o anúncio cai no layout.
