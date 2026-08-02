@@ -199,6 +199,14 @@ html[data-admin-mode="true"] ::-moz-selection {
 }
 
 @layer utilities {
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
   .glass {
     @apply bg-card/80 backdrop-blur-md;
     border: 1px solid hsl(var(--border));
