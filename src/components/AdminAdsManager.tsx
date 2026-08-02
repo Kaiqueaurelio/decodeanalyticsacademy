@@ -851,7 +851,7 @@ export function AdminAdsManager() {
                   </div>
                 </div>
 
-                  <div className="space-y-4 rounded-lg border border-border bg-muted/20 p-4 sm:col-span-2">
+                  <div className="space-y-4 rounded-lg border border-border bg-muted/20 p-4">
                     <div>
                       <label className="text-sm font-medium">Posição no layout</label>
                       <p className="text-xs text-muted-foreground">
