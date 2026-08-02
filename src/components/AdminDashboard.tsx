@@ -409,7 +409,7 @@ export function AdminDashboard({ onNavigate }: Props) {
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardTitle className="text-lg flex items-center gap-2">
-                <Trophy className="h-5 w-5 text-amber-500" /> Ranking
+                <Trophy className="h-5 w-5 text-primary" /> Ranking
               </CardTitle>
               <CardDescription>Clique para ver detalhes</CardDescription>
             </div>
@@ -425,7 +425,7 @@ export function AdminDashboard({ onNavigate }: Props) {
             )}
             {rankings.map((r, idx) => {
               const MedalIcon = idx === 0 ? Trophy : idx === 1 ? Medal : idx === 2 ? Award : null;
-              const medalColor = idx === 0 ? 'text-amber-500' : idx === 1 ? 'text-slate-400' : idx === 2 ? 'text-orange-600' : '';
+              const medalColor = idx === 0 ? 'text-primary' : idx === 1 ? 'text-accent' : 'text-muted-foreground';
               return (
                 <button
                   key={r.user_id}
@@ -436,7 +436,7 @@ export function AdminDashboard({ onNavigate }: Props) {
                   <div className="w-7 text-center font-bold text-sm text-muted-foreground">
                     {MedalIcon ? <MedalIcon className={`h-5 w-5 ${medalColor} mx-auto`} /> : `${idx + 1}º`}
                   </div>
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-semibold text-xs shrink-0 overflow-hidden">
+                  <div className="w-9 h-9 rounded-full border border-primary/30 bg-primary/10 text-primary flex items-center justify-center font-semibold text-xs shrink-0 overflow-hidden">
                     {r.avatar_url
                       ? <img src={r.avatar_url} alt="" className="w-full h-full object-cover" />
                       : (r.full_name || '?').slice(0, 2).toUpperCase()}
@@ -444,12 +444,13 @@ export function AdminDashboard({ onNavigate }: Props) {
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{r.full_name || 'Aluno'}</p>
                     <p className="text-xs text-muted-foreground">
-                      <span className="text-emerald-600 font-medium">{r.hits}</span> acertos · <span className="text-rose-600">{r.errors}</span> erros
+                      <span className="text-primary font-medium">{r.hits}</span> acertos · <span className="text-destructive">{r.errors}</span> erros
                     </p>
                   </div>
-                  <Badge variant="outline" className="rounded-full bg-emerald-500/10 text-emerald-600 border-emerald-500/30">
+                  <Badge variant="outline" className="rounded-full bg-primary/10 text-primary border-primary/30">
                     {r.accuracy}%
                   </Badge>
+
                 </button>
               );
             })}
