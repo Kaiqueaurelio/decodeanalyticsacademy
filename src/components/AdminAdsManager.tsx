@@ -877,10 +877,10 @@ export function AdminAdsManager() {
                       Duração da exibição
                     </label>
                     <Select
-                      value={String(formData.display_duration)}
+                      value={String(formData.display_duration || 5)}
                       onValueChange={(v) => setFormData(c => ({ ...c, display_duration: Number(v) }))}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="h-10 bg-muted/20">
                         <SelectValue placeholder="Selecione o tempo" />
                       </SelectTrigger>
                       <SelectContent>
@@ -891,6 +891,7 @@ export function AdminAdsManager() {
                         <SelectItem value="20">20 segundos (fixo)</SelectItem>
                       </SelectContent>
                     </Select>
+                    <p className="text-[10px] text-muted-foreground italic">Quanto tempo o anúncio permanece visível antes de alternar.</p>
                   </div>
 
                 </div>
