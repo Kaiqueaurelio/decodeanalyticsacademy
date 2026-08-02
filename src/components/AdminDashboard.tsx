@@ -383,13 +383,14 @@ export function AdminDashboard({ onNavigate }: Props) {
               <BarChart data={engagement} barGap={6}>
                 <defs>
                   <linearGradient id="grad-purple" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="hsl(280 80% 60%)" />
-                    <stop offset="100%" stopColor="hsl(265 85% 45%)" />
+                    <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.95} />
+                    <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.45} />
                   </linearGradient>
                   <linearGradient id="grad-amber" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="hsl(45 95% 60%)" />
-                    <stop offset="100%" stopColor="hsl(30 95% 55%)" />
+                    <stop offset="0%" stopColor="hsl(var(--accent))" stopOpacity={0.95} />
+                    <stop offset="100%" stopColor="hsl(var(--accent))" stopOpacity={0.45} />
                   </linearGradient>
+
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                 <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" fontSize={12} />
