@@ -27,6 +27,17 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '3.15.1',
+    date: '2026-08-02',
+    title: 'Unificação do Drawer e persistência de navegação',
+    changes: [
+      { kind: 'improvement', text: 'Implementada persistência do estado do menu lateral via localStorage para navegação fluida entre páginas.' },
+      { kind: 'improvement', text: 'Refinamento global de dimensões do drawer (320px cap) para exibição consistente em qualquer largura de tela.' },
+      { kind: 'fix', text: 'Eliminação de trancamento visual ao navegar: adicionado micro-delay atômico no fechamento para garantir o carregamento da nova rota.' },
+      { kind: 'security', text: 'Acessibilidade reforçada: focus trap ativo, navegação por teclado (Esc) e labels ARIA em todos os pontos de entrada do menu.' },
+    ],
+  },
+  {
     version: '3.15.0',
     date: '2026-07-31',
     title: 'Auditoria de segurança: correções críticas',

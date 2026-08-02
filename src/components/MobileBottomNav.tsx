@@ -1,4 +1,5 @@
-import { useState, type MouseEvent } from 'react';
+import { type MouseEvent } from 'react';
+import { useSidebar } from '@/hooks/useSidebar';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { Activity, BookOpen, GraduationCap, Home, Library, Menu, PenLine, Trophy } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
@@ -38,7 +39,7 @@ export function MobileBottomNav() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [open, setOpen] = useState(false);
+  const { isOpen: open, setOpen } = useSidebar();
   const { unreadCount } = useNotifications();
   const { data: profile } = useUserProfile(user?.id);
   const isEnemOnly = profile?.content_scope === 'enem_only';
