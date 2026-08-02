@@ -29,13 +29,13 @@ export const CHANGELOG: ChangelogEntry[] = [
   {
     version: "3.16.0",
     date: "2026-08-01",
-    description: "Upgrade de Inteligência e Gestão de Anunciantes",
+    title: "Upgrade de Inteligência e Gestão de Anunciantes",
     changes: [
-      "Atualizado modelo da Ella para Gemini 2.0 Flash (maior velocidade e raciocínio)",
-      "Corrigido bug de persistência onde anúncios pausados ainda eram exibidos",
-      "Implementado novo tipo de anúncio: 'Patrocinador' para o Media Kit",
-      "Criada aba 'Anunciantes' no painel administrativo para gestão de marcas",
-      "Refinado filtro de data e status no servidor para anúncios (list-ads)"
+      { kind: 'improvement', text: 'Atualizado modelo da Ella para Gemini 2.0 Flash (maior velocidade e raciocínio).' },
+      { kind: 'fix', text: 'Corrigido bug de persistência onde anúncios pausados ainda eram exibidos por falhas no filtro de datas.' },
+      { kind: 'feature', text: 'Implementado novo tipo de anúncio: "Patrocinador" para exibição no Media Kit da plataforma.' },
+      { kind: 'feature', text: 'Criada aba "Anunciantes" no painel administrativo para gestão centralizada de marcas e logos.' },
+      { kind: 'security', text: 'Refinado filtro de data e status no servidor para anúncios (list-ads) com validação atômica.' }
     ]
   },
   {
