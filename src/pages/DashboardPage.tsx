@@ -38,6 +38,8 @@ export default function DashboardPage() {
   const loading = loadingApostilas || loadingStats;
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [query, setQuery] = useState('');
+  const [visibleFolders, setVisibleFolders] = useState(6);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
   
   
 
