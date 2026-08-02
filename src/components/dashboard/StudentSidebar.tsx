@@ -167,7 +167,12 @@ function useSidebarNavigation(onNavigate?: () => void) {
     } else {
       navigate(to);
     }
-    onNavigate?.();
+    
+    // Pequeno delay para garantir que a navegação iniciou antes de fechar o sheet
+    // Isso ajuda a evitar "trancamento" visual se o dispositivo for lento
+    requestAnimationFrame(() => {
+      onNavigate?.();
+    });
   };
 
   return { navigate, open };
