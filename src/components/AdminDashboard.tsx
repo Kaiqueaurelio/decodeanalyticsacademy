@@ -18,11 +18,12 @@ import {
 } from '@/components/ui/alert-dialog';
 import {
   BookOpen, PenLine, Users, Megaphone, RefreshCw, Search, ChevronRight,
-  Link as LinkIcon, FileText, FileUp,
+  Link as LinkIcon, FileText, FileUp, Plus,
 
   Eye, EyeOff, Edit, Trash2, Trophy, Medal, Award, Filter, X, Check,
-  CheckCircle2, XCircle, CalendarDays, ArrowDownUp, FolderOpen, ChevronDown,
+  CheckCircle2, XCircle, CalendarDays, ArrowDownUp, FolderOpen, ChevronDown, LayoutDashboard,
 } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getSubjectColor } from '@/lib/subject-colors';
 import {
@@ -30,7 +31,7 @@ import {
 } from 'recharts';
 import { toast } from 'sonner';
 
-interface Props { onNavigate: (tab: string) => void }
+interface Props { onNavigate: (tab: string) => void; isAdmin?: boolean; }
 
 type ApostilaRow = {
   id: string; title: string; category: string | null;
@@ -47,9 +48,26 @@ type SortKey = 'created_desc' | 'created_asc' | 'updated_desc' | 'updated_asc';
 
 const PAGE_SIZE = 12;
 
-export function AdminDashboard({ onNavigate }: Props) {
-  const { user, isAdmin } = useAuth();
+export function AdminDashboard({ onNavigate, isAdmin: isAdminProp }: Props) {
+  const { user, isAdmin: authIsAdmin } = useAuth();
+  const isAdmin = isAdminProp ?? authIsAdmin;
   const navigate = useNavigate();
+
+  const [visibleWidgets, setVisibleWidgets] = useState<string[]>(() => {
+    const saved = localStorage.getItem('decode:admin-widgets');
+    return saved ? JSON.parse(saved) : ['apostilas', 'exercises', 'users', 'ads'];
+  });
+  const [showWidgetConfig, setShowWidgetConfig] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem('decode:admin-widgets', JSON.stringify(visibleWidgets));
+  }, [visibleWidgets]);
+
+  const toggleWidget = (id: string) => {
+    setVisibleWidgets(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
+  };
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     apostilas: 0, exercises: 0, users: 0, comments: 0, likes: 0, ads: 0,
@@ -308,37 +326,66 @@ export function AdminDashboard({ onNavigate }: Props) {
           }}
         />
         <div className="relative z-10 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-          <div className="min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-primary">
-              Painel administrativo
-            </p>
-            <h1 className="mt-2 text-2xl font-bold leading-tight tracking-tight sm:text-3xl">
-              Olá, {user?.email?.split('@')[0] || 'Admin'}
-            </h1>
-            <p className="mt-1.5 text-sm text-muted-foreground">
-              Crie uma apostila em segundos ou escolha uma seção no menu lateral.
-            </p>
+          <div className="flex items-center gap-4 min-w-0">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-background ring-1 ring-primary/40 shadow-[0_0_20px_hsl(var(--primary)/0.15)]">
+              <img src="/assets/owl-icon.png" alt="Decode Logo" className="h-10 w-10 object-contain" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-primary">
+                Painel administrativo
+              </p>
+              <h1 className="mt-1 text-2xl font-bold leading-tight tracking-tight sm:text-3xl">
+                Olá, {user?.email?.split('@')[0] || 'Admin'}
+              </h1>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Gerencie sua academia digital em um só lugar.
+              </p>
+            </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <Button onClick={() => handleQuickCreate('link')} className="rounded-xl font-semibold">
-              <LinkIcon className="mr-1.5 h-4 w-4" /> Nova por link
+            <Button variant="outline" size="sm" className="rounded-xl border-primary/30" onClick={() => setShowWidgetConfig(true)}>
+              Personalizar
             </Button>
-            <Button onClick={() => handleQuickCreate('pdf')} variant="secondary" className="rounded-xl font-semibold">
-              <FileUp className="mr-1.5 h-4 w-4" /> Por PDF
-            </Button>
-            <Button onClick={() => handleQuickCreate('text')} variant="secondary" className="rounded-xl font-semibold">
-              <FileText className="mr-1.5 h-4 w-4" /> Por texto
+            <Button onClick={() => handleQuickCreate('link')} className="rounded-xl font-semibold shadow-lg shadow-primary/20">
+              <Plus className="mr-1.5 h-4 w-4" /> Nova Apostila
             </Button>
             <Button variant="outline" size="icon" className="rounded-xl" onClick={load} aria-label="Atualizar dados">
               <RefreshCw className="h-4 w-4" />
             </Button>
           </div>
         </div>
+
+        {/* Dialog de Personalização */}
+        <Dialog open={showWidgetConfig} onOpenChange={setShowWidgetConfig}>
+          <DialogContent className="max-w-sm">
+            <DialogHeader>
+              <DialogTitle>Personalizar Dashboard</DialogTitle>
+              <DialogDescription>Escolha quais widgets deseja ver no início.</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              {[
+                { id: 'apostilas', label: 'Apostilas' },
+                { id: 'exercises', label: 'Exercícios' },
+                { id: 'users', label: 'Usuários' },
+                { id: 'ads', label: 'Anúncios' },
+              ].map(w => (
+                <div key={w.id} className="flex items-center justify-between">
+                  <span className="text-sm font-medium">{w.label}</span>
+                  <Switch 
+                    checked={visibleWidgets.includes(w.id)} 
+                    onCheckedChange={() => toggleWidget(w.id)}
+                  />
+                </div>
+              ))}
+            </div>
+            <Button className="w-full" onClick={() => setShowWidgetConfig(false)}>Pronto</Button>
+          </DialogContent>
+        </Dialog>
       </motion.div>
 
-      {/* Stat cards */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 sm:gap-4">
+      {/* Widget Grid Personalizável (Atalhos e Pendências) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {cards.map((c, i) => (
           <motion.button
             key={c.label}
@@ -347,23 +394,29 @@ export function AdminDashboard({ onNavigate }: Props) {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.05 }}
-            whileHover={{ y: -2 }}
-            className="rounded-2xl border border-border/60 bg-card p-4 text-left shadow-sm transition-all hover:border-primary/40 hover:shadow-md sm:p-5"
+            whileHover={{ y: -4, transition: { duration: 0.2 } }}
+            className="group relative overflow-hidden rounded-2xl border border-border/60 bg-card p-5 text-left transition-all hover:border-primary/50 hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)]"
           >
             <div className="flex items-center justify-between">
-              <p className="text-xs font-medium text-muted-foreground sm:text-sm">{c.label}</p>
               <div
-                className={`flex h-9 w-9 items-center justify-center rounded-xl border ${
+                className={`flex h-10 w-10 items-center justify-center rounded-xl border transition-colors ${
                   c.tone === 'primary'
-                    ? 'border-primary/30 bg-primary/10 text-primary'
-                    : 'border-accent/30 bg-accent/10 text-accent'
+                    ? 'border-primary/20 bg-primary/5 text-primary group-hover:bg-primary/10'
+                    : 'border-accent/20 bg-accent/5 text-accent group-hover:bg-accent/10'
                 }`}
               >
-                <c.icon className="h-4 w-4" />
+                <c.icon className="h-5 w-5" />
               </div>
+              <ChevronRight className="h-4 w-4 text-muted-foreground/50 transition-transform group-hover:translate-x-1" />
             </div>
-            <p className="mt-3 text-2xl font-bold tabular-nums sm:text-3xl">{c.value}</p>
-            <p className="mt-1 text-xs text-muted-foreground">Ver detalhes →</p>
+            <div className="mt-4">
+              <p className="text-2xl font-bold tabular-nums tracking-tight">{c.value}</p>
+              <p className="text-sm font-medium text-muted-foreground">{c.label}</p>
+            </div>
+            {/* Ambient indicator */}
+            <div className={`absolute bottom-0 left-0 h-1 w-full opacity-0 transition-opacity group-hover:opacity-100 ${
+              c.tone === 'primary' ? 'bg-primary' : 'bg-accent'
+            }`} />
           </motion.button>
         ))}
       </div>
