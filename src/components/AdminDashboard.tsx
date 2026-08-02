@@ -48,9 +48,26 @@ type SortKey = 'created_desc' | 'created_asc' | 'updated_desc' | 'updated_asc';
 
 const PAGE_SIZE = 12;
 
-export function AdminDashboard({ onNavigate }: Props) {
-  const { user, isAdmin } = useAuth();
+export function AdminDashboard({ onNavigate, isAdmin: isAdminProp }: Props) {
+  const { user, isAdmin: authIsAdmin } = useAuth();
+  const isAdmin = isAdminProp ?? authIsAdmin;
   const navigate = useNavigate();
+
+  const [visibleWidgets, setVisibleWidgets] = useState<string[]>(() => {
+    const saved = localStorage.getItem('decode:admin-widgets');
+    return saved ? JSON.parse(saved) : ['apostilas', 'exercises', 'users', 'ads'];
+  });
+  const [showWidgetConfig, setShowWidgetConfig] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem('decode:admin-widgets', JSON.stringify(visibleWidgets));
+  }, [visibleWidgets]);
+
+  const toggleWidget = (id: string) => {
+    setVisibleWidgets(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
+  };
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     apostilas: 0, exercises: 0, users: 0, comments: 0, likes: 0, ads: 0,
