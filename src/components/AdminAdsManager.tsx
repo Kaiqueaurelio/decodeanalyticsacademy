@@ -844,7 +844,7 @@ export function AdminAdsManager() {
                       <div className="rounded-lg border-2 border-dashed border-border/60 bg-background/50 p-2">
                         <AdImageUploadButton
                           currentImageUrl={formData.image_url}
-                          onUploadComplete={(url) => setFormData((current) => ({ ...current, image_url: url }))}
+                          onImageUploaded={(url) => setFormData((current) => ({ ...current, image_url: url }))}
                         />
                       </div>
                     </div>
