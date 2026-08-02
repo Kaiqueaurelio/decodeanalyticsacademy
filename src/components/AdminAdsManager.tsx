@@ -856,19 +856,25 @@ export function AdminAdsManager() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Duração (segundos)</label>
-                    <Input
-                      type="number"
-                      min="1"
-                      max="30"
-                      value={formData.display_duration}
-                      onChange={(e) =>
-                        setFormData((current) => ({
-                          ...current,
-                          display_duration: Math.min(30, Math.max(1, Number(e.target.value) || 1)),
-                        }))
-                      }
-                    />
+                    <label className="text-sm font-medium flex items-center gap-1.5">
+                      <Clock3 className="h-3.5 w-3.5 text-muted-foreground" />
+                      Duração da exibição
+                    </label>
+                    <Select
+                      value={String(formData.display_duration)}
+                      onValueChange={(v) => setFormData(c => ({ ...c, display_duration: Number(v) }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione o tempo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="3">3 segundos (rápido)</SelectItem>
+                        <SelectItem value="5">5 segundos (padrão)</SelectItem>
+                        <SelectItem value="8">8 segundos (médio)</SelectItem>
+                        <SelectItem value="12">12 segundos (longo)</SelectItem>
+                        <SelectItem value="20">20 segundos (fixo)</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
 
                 </div>
