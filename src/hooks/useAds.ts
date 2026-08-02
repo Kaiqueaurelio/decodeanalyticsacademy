@@ -10,7 +10,7 @@ export interface Ad {
   description: string | null;
   image_url: string | null;
   link_url: string | null;
-  ad_type: 'banner' | 'popup' | 'inline' | 'sidebar' | 'footer';
+  ad_type: 'banner' | 'popup' | 'inline' | 'sidebar' | 'footer' | 'sponsor';
   position: number;
   display_duration: number;
   view_count: number;
@@ -79,7 +79,7 @@ function professionalizeAd(ad: any): Ad {
   };
 }
 
-export function useAds(adType?: 'banner' | 'popup' | 'inline' | 'sidebar' | 'footer', targetPage?: string) {
+export function useAds(adType?: 'banner' | 'popup' | 'inline' | 'sidebar' | 'footer' | 'sponsor', targetPage?: string) {
   const { user } = useAuth();
   const [ads, setAds] = useState<Ad[]>([]);
   const [loading, setLoading] = useState(true);
