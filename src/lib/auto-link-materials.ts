@@ -130,7 +130,9 @@ export async function getSuggestedMaterials(apostilaId: string): Promise<{
  */
 export async function autoLinkApostila(apostilaId: string, minScore = 20): Promise<AutoLinkResult> {
   const ctx = await fetchContext(apostilaId);
-  if (!ctx) return { linked: 0, apostilaTitle: '' };
+  if (!ctx) {
+    throw new Error('Apostila não encontrada ou sem acesso.');
+  }
 
   const toLink: string[] = [];
   for (const mat of ctx.materials) {
@@ -145,7 +147,11 @@ export async function autoLinkApostila(apostilaId: string, minScore = 20): Promi
       material_id: materialId,
       sort_order: ctx.existingCount + i,
     }));
-    await supabase.from('apostila_materials').insert(rows);
+    const { error } = await supabase.from('apostila_materials').insert(rows);
+    if (error) {
+      console.error('[AutoLink] Insert failed:', error);
+      throw new Error(`Erro ao vincular ${rows.length} materiais: ${error.message}`);
+    }
   }
 
   return { linked: toLink.length, apostilaTitle: ctx.apostila.title };
@@ -167,7 +173,11 @@ export async function linkMaterials(apostilaId: string, materialIds: string[]): 
     material_id: materialId,
     sort_order: baseOrder + i,
   }));
-  await supabase.from('apostila_materials').insert(rows);
+  const { error } = await supabase.from('apostila_materials').insert(rows);
+  if (error) {
+    console.error('[LinkMaterials] Insert failed:', error);
+    throw new Error(`Erro ao vincular materiais selecionados: ${error.message}`);
+  }
   return newIds.length;
 }
 

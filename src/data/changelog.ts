@@ -27,6 +27,17 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '3.15.2',
+    date: '2026-08-02',
+    title: 'Acessibilidade, Segurança e Resiliência (Fase 2)',
+    changes: [
+      { kind: 'improvement', text: 'Reforço no tratamento de erros do fluxo de clonagem/vínculo de materiais: erros de rede ou permissão agora exibem toasts explicativos em vez de falhas silenciosas.' },
+      { kind: 'security', text: 'Proteção de rotas aprimorada em ProtectedRoute: adição de estados de sincronização de sessão para evitar " flashes" de conteúdo ou telas em branco.' },
+      { kind: 'improvement', text: 'Sincronização atômica do estado do drawer (localStorage) garantindo que a preferência do aluno seja respeitada entre navegações.' },
+      { kind: 'feature', text: 'Implementado conjunto de testes automatizados para o drawer cobrindo focus trap, navegação por teclado (Esc) e labels ARIA.' },
+    ],
+  },
+  {
     version: '3.15.1',
     date: '2026-08-02',
     title: 'Unificação do Drawer e persistência de navegação',

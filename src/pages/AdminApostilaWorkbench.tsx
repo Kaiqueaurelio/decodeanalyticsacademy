@@ -110,11 +110,19 @@ export default function AdminApostilaWorkbench() {
   const loadApostila = async (apostilaId: string) => {
     setLoading(true);
     initialLoadRef.current = true;
-    const [{ data: ap }, { data: links, error: linksErr }, { count }] = await Promise.all([
+    const results = await Promise.allSettled([
       supabase.from('apostilas').select('id, title, category, content, published, semester, course, cover_url').eq('id', apostilaId).maybeSingle(),
       supabase.from('apostila_materials').select('id, sort_order, material_id').eq('apostila_id', apostilaId).order('sort_order'),
       supabase.from('exercises').select('id', { count: 'exact', head: true }).eq('apostila_id', apostilaId),
     ]);
+
+    const apRes = results[0].status === 'fulfilled' ? results[0].value : { data: null, error: new Error('Network error') };
+    const linksRes = results[1].status === 'fulfilled' ? results[1].value : { data: [], error: null };
+    const countRes = results[2].status === 'fulfilled' ? results[2].value : { count: 0 };
+
+    const ap = apRes.data;
+    const links = linksRes.data;
+    const count = countRes.count;
 
     if (!ap) {
       toast.error('Apostila não encontrada');

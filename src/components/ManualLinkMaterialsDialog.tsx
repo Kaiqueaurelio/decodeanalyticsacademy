@@ -27,14 +27,20 @@ export function ManualLinkMaterialsDialog({ open, onOpenChange, apostilaId, onLi
   useEffect(() => {
     if (!open) return;
     setLoading(true);
-    getSuggestedMaterials(apostilaId).then(({ apostilaTitle, suggestions, others }) => {
-      setApostilaTitle(apostilaTitle);
-      setSuggestions(suggestions.map(s => ({ id: s.material.id, title: s.material.title, reason: s.reason })));
-      setOthers(others.map(o => ({ id: o.id, title: o.title })));
-      // Pre-select all suggestions
-      setSelected(new Set(suggestions.map(s => s.material.id)));
-      setLoading(false);
-    });
+    getSuggestedMaterials(apostilaId)
+      .then(({ apostilaTitle, suggestions, others }) => {
+        setApostilaTitle(apostilaTitle);
+        setSuggestions(suggestions.map(s => ({ id: s.material.id, title: s.material.title, reason: s.reason })));
+        setOthers(others.map(o => ({ id: o.id, title: o.title })));
+        // Pre-select all suggestions
+        setSelected(new Set(suggestions.map(s => s.material.id)));
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error('[ManualLink] Failed to load suggestions:', err);
+        toast.error('Não foi possível carregar os materiais sugeridos.');
+        setLoading(false);
+      });
   }, [open, apostilaId]);
 
   const toggle = (id: string) => {
