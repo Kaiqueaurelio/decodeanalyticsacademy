@@ -206,6 +206,7 @@ export function AdminAdsManager() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Ad | null>(null);
   const [search, setSearch] = useState('');
+  const [showConfig, setShowConfig] = useState(false);
   const [formData, setFormData] = useState<AdFormState>(createEmptyForm());
   const [draftSavedAt, setDraftSavedAt] = useState<string | null>(null);
   const restoredDraftRef = React.useRef(false);
@@ -292,9 +293,13 @@ export function AdminAdsManager() {
     try {
       setLoading(true);
       setLoadError(null);
-      const { data, error } = await supabase.from('ads').select('*').order('created_at', { ascending: false });
+      const { data, error } = await supabase
+        .from('ads')
+        .select('*')
+        .order('is_active', { ascending: false })
+        .order('created_at', { ascending: false });
       if (error) throw error;
-      setAds(sortAds(data || []));
+      setAds(data || []);
     } catch (error) {
       console.error('Erro ao carregar anúncios:', error);
       const message = formatErrorMessage(error, 'Não foi possível carregar os anúncios');
@@ -480,13 +485,32 @@ export function AdminAdsManager() {
     <>
       <div className="space-y-6">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
-          <div>
-            <h2 className="text-2xl font-bold">Gerenciador de Anúncios</h2>
-            <p className="text-muted-foreground">Agora você edita, ativa e remove tudo a partir de uma lista simples.</p>
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <Megaphone className="h-6 w-6" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold tracking-tight">Anúncios & Campanhas</h2>
+              <p className="text-sm text-muted-foreground">Gerencie a visibilidade e patrocínios da plataforma.</p>
+            </div>
           </div>
 
           <div className="flex flex-wrap gap-3">
-            <Card className="min-w-[140px] border-border/60">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="gap-2"
+              onClick={() => setShowConfig(!showConfig)}
+            >
+              <LayoutDashboard className="h-4 w-4" />
+              Layout
+            </Button>
+            <Card className="min-w-[120px] border-border/60 shadow-sm">
+              <CardContent className="p-3">
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Total</p>
+                <p className="mt-0.5 text-xl font-bold">{stats.total}</p>
+              </CardContent>
+            </Card>
               <CardContent className="p-4">
                 <p className="text-xs text-muted-foreground">Total</p>
                 <p className="mt-1 text-2xl font-semibold">{stats.total}</p>
