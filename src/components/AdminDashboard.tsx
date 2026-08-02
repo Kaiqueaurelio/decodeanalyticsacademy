@@ -447,11 +447,17 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp }: Props) {
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardTitle className="text-lg">Engajamento da semana</CardTitle>
-              <CardDescription>Apostilas lidas e exercícios resolvidos</CardDescription>
+              <CardDescription>Leituras de apostilas e exercícios respondidos (dados reais)</CardDescription>
             </div>
-            <Badge variant="outline" className="rounded-full">Últimos 7 dias</Badge>
+            <Badge variant="outline" className="rounded-full tabular-nums">{totalEngagement} interações</Badge>
           </CardHeader>
           <CardContent>
+            {totalEngagement === 0 && (
+              <p className="pb-3 text-sm text-muted-foreground">
+                Nenhuma atividade registrada nos últimos 7 dias.
+              </p>
+            )}
+
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={engagement} barGap={6}>
                 <defs>
