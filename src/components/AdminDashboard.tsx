@@ -265,11 +265,12 @@ export function AdminDashboard({ onNavigate }: Props) {
     || !!dateFrom || !!dateUntil || sortKey !== 'created_desc';
 
   const cards = [
-    { label: 'Apostilas', value: stats.apostilas, icon: BookOpen, gradient: 'from-blue-500 to-blue-600', tab: 'apostilas' },
-    { label: 'Exercícios', value: stats.exercises, icon: PenLine, gradient: 'from-emerald-500 to-green-600', tab: 'exercises' },
-    { label: 'Usuários', value: stats.users, icon: Users, gradient: 'from-pink-500 to-rose-600', tab: 'users' },
-    { label: 'Anúncios', value: stats.ads, icon: Megaphone, gradient: 'from-amber-500 to-orange-600', tab: 'ads' },
+    { label: 'Apostilas', value: stats.apostilas, icon: BookOpen, tone: 'primary' as const, tab: 'apostilas' },
+    { label: 'Exercícios', value: stats.exercises, icon: PenLine, tone: 'accent' as const, tab: 'exercises' },
+    { label: 'Usuários', value: stats.users, icon: Users, tone: 'primary' as const, tab: 'users' },
+    { label: 'Anúncios', value: stats.ads, icon: Megaphone, tone: 'accent' as const, tab: 'ads' },
   ];
+
 
   const engagement = [
     { day: 'Seg', apostilas: 12, exercises: 24 },
