@@ -505,7 +505,11 @@ export function AdminAdsManager() {
 
   return (
     <>
-      <div className="space-y-6">
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                  <div className="space-y-4 rounded-lg border border-border bg-muted/20 p-4 sm:col-span-2">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div className="flex items-center gap-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
