@@ -17,8 +17,9 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import {
-  BookOpen, PenLine, Users, Megaphone, RefreshCw, Search, ChevronRight, Wand2,
-  GraduationCap, Bell, Link as LinkIcon, FileText, FileUp,
+  BookOpen, PenLine, Users, Megaphone, RefreshCw, Search, ChevronRight,
+  Link as LinkIcon, FileText, FileUp,
+
   Eye, EyeOff, Edit, Trash2, Trophy, Medal, Award, Filter, X, Check,
   CheckCircle2, XCircle, CalendarDays, ArrowDownUp, FolderOpen, ChevronDown,
 } from 'lucide-react';
@@ -265,11 +266,12 @@ export function AdminDashboard({ onNavigate }: Props) {
     || !!dateFrom || !!dateUntil || sortKey !== 'created_desc';
 
   const cards = [
-    { label: 'Apostilas', value: stats.apostilas, icon: BookOpen, gradient: 'from-blue-500 to-blue-600', tab: 'apostilas' },
-    { label: 'Exercícios', value: stats.exercises, icon: PenLine, gradient: 'from-emerald-500 to-green-600', tab: 'exercises' },
-    { label: 'Usuários', value: stats.users, icon: Users, gradient: 'from-pink-500 to-rose-600', tab: 'users' },
-    { label: 'Anúncios', value: stats.ads, icon: Megaphone, gradient: 'from-amber-500 to-orange-600', tab: 'ads' },
+    { label: 'Apostilas', value: stats.apostilas, icon: BookOpen, tone: 'primary' as const, tab: 'apostilas' },
+    { label: 'Exercícios', value: stats.exercises, icon: PenLine, tone: 'accent' as const, tab: 'exercises' },
+    { label: 'Usuários', value: stats.users, icon: Users, tone: 'primary' as const, tab: 'users' },
+    { label: 'Anúncios', value: stats.ads, icon: Megaphone, tone: 'accent' as const, tab: 'ads' },
   ];
+
 
   const engagement = [
     { day: 'Seg', apostilas: 12, exercises: 24 },
@@ -291,57 +293,52 @@ export function AdminDashboard({ onNavigate }: Props) {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold">Dashboard</h1>
-          <p className="text-sm text-muted-foreground">Painel administrativo Decode Analytics</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" className="rounded-full" aria-label="Notificações"><Bell className="h-4 w-4" /></Button>
-          <Button variant="outline" size="icon" className="rounded-full" onClick={load} aria-label="Atualizar"><RefreshCw className="h-4 w-4" /></Button>
-        </div>
-      </div>
-
-      {/* Welcome banner */}
+      {/* Barra de comando — identidade Decode */}
       <motion.div
-        initial={{ opacity: 0, y: 12 }}
+        initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden rounded-2xl p-6 sm:p-8"
-        style={{ background: 'linear-gradient(135deg, hsl(265 85% 35%), hsl(280 80% 50%) 50%, hsl(300 70% 55%))' }}
+        className="relative overflow-hidden rounded-2xl border border-primary/25 bg-card p-5 sm:p-7"
       >
-        <div className="relative z-10 max-w-xl">
-          <p className="text-amber-200 font-semibold text-lg">
-            Olá, {user?.email?.split('@')[0] || 'Admin'}
-          </p>
-          <h2 className="text-white text-2xl sm:text-3xl font-bold mt-2 leading-tight">
-            Gerencie a <span className="text-amber-200">academia</span> com
-            uma <span className="text-amber-200">experiência</span> intuitiva.
-          </h2>
-          <div className="mt-5 flex flex-wrap gap-2">
-            <Button onClick={() => handleQuickCreate('link')} className="bg-amber-400 hover:bg-amber-500 text-purple-950 font-semibold rounded-full px-5">
-              <LinkIcon className="h-4 w-4 mr-1.5" /> Por link
-            </Button>
-            <Button onClick={() => handleQuickCreate('pdf')} className="bg-white/15 hover:bg-white/25 text-white font-semibold rounded-full px-5 backdrop-blur">
-              <FileUp className="h-4 w-4 mr-1.5" /> Por PDF
-            </Button>
-            <Button onClick={() => handleQuickCreate('text')} className="bg-white/15 hover:bg-white/25 text-white font-semibold rounded-full px-5 backdrop-blur">
-              <FileText className="h-4 w-4 mr-1.5" /> Por texto
-            </Button>
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 opacity-[0.16]"
+          style={{
+            background:
+              'radial-gradient(680px 300px at 8% -20%, hsl(var(--primary)), transparent 62%), radial-gradient(560px 300px at 95% 0%, hsl(var(--accent)), transparent 62%)',
+          }}
+        />
+        <div className="relative z-10 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+          <div className="min-w-0">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-primary">
+              Painel administrativo
+            </p>
+            <h1 className="mt-2 text-2xl font-bold leading-tight tracking-tight sm:text-3xl">
+              Olá, {user?.email?.split('@')[0] || 'Admin'}
+            </h1>
+            <p className="mt-1.5 text-sm text-muted-foreground">
+              Crie uma apostila em segundos ou escolha uma seção no menu lateral.
+            </p>
           </div>
-        </div>
-        <div className="absolute -right-12 -top-12 w-64 h-64 rounded-full bg-white/10 blur-2xl" />
-        <div className="absolute right-10 bottom-0 w-40 h-40 rounded-full bg-amber-300/20 blur-3xl" />
-        <div className="hidden md:block absolute right-8 top-1/2 -translate-y-1/2 opacity-90">
-          <div className="relative">
-            <GraduationCap className="w-32 h-32 text-white/90" strokeWidth={1.2} />
-            <Wand2 className="absolute -top-2 -right-2 w-6 h-6 text-amber-200" />
+
+          <div className="flex flex-wrap items-center gap-2">
+            <Button onClick={() => handleQuickCreate('link')} className="rounded-xl font-semibold">
+              <LinkIcon className="mr-1.5 h-4 w-4" /> Nova por link
+            </Button>
+            <Button onClick={() => handleQuickCreate('pdf')} variant="secondary" className="rounded-xl font-semibold">
+              <FileUp className="mr-1.5 h-4 w-4" /> Por PDF
+            </Button>
+            <Button onClick={() => handleQuickCreate('text')} variant="secondary" className="rounded-xl font-semibold">
+              <FileText className="mr-1.5 h-4 w-4" /> Por texto
+            </Button>
+            <Button variant="outline" size="icon" className="rounded-xl" onClick={load} aria-label="Atualizar dados">
+              <RefreshCw className="h-4 w-4" />
+            </Button>
           </div>
         </div>
       </motion.div>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 sm:gap-4">
         {cards.map((c, i) => (
           <motion.button
             key={c.label}
@@ -351,19 +348,26 @@ export function AdminDashboard({ onNavigate }: Props) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.05 }}
             whileHover={{ y: -2 }}
-            className="text-left rounded-2xl bg-card border border-border/50 p-4 sm:p-5 shadow-sm hover:shadow-md transition-all"
+            className="rounded-2xl border border-border/60 bg-card p-4 text-left shadow-sm transition-all hover:border-primary/40 hover:shadow-md sm:p-5"
           >
             <div className="flex items-center justify-between">
-              <p className="text-xs sm:text-sm text-muted-foreground font-medium">{c.label}</p>
-              <div className={`w-9 h-9 rounded-full bg-gradient-to-br ${c.gradient} flex items-center justify-center text-white shadow-md`}>
+              <p className="text-xs font-medium text-muted-foreground sm:text-sm">{c.label}</p>
+              <div
+                className={`flex h-9 w-9 items-center justify-center rounded-xl border ${
+                  c.tone === 'primary'
+                    ? 'border-primary/30 bg-primary/10 text-primary'
+                    : 'border-accent/30 bg-accent/10 text-accent'
+                }`}
+              >
                 <c.icon className="h-4 w-4" />
               </div>
             </div>
-            <p className="text-2xl sm:text-3xl font-bold mt-3">{c.value}</p>
-            <p className="text-xs text-muted-foreground mt-1">Ver detalhes →</p>
+            <p className="mt-3 text-2xl font-bold tabular-nums sm:text-3xl">{c.value}</p>
+            <p className="mt-1 text-xs text-muted-foreground">Ver detalhes →</p>
           </motion.button>
         ))}
       </div>
+
 
       {/* Chart + Ranking */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -380,13 +384,14 @@ export function AdminDashboard({ onNavigate }: Props) {
               <BarChart data={engagement} barGap={6}>
                 <defs>
                   <linearGradient id="grad-purple" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="hsl(280 80% 60%)" />
-                    <stop offset="100%" stopColor="hsl(265 85% 45%)" />
+                    <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.95} />
+                    <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.45} />
                   </linearGradient>
                   <linearGradient id="grad-amber" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="hsl(45 95% 60%)" />
-                    <stop offset="100%" stopColor="hsl(30 95% 55%)" />
+                    <stop offset="0%" stopColor="hsl(var(--accent))" stopOpacity={0.95} />
+                    <stop offset="100%" stopColor="hsl(var(--accent))" stopOpacity={0.45} />
                   </linearGradient>
+
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                 <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" fontSize={12} />
@@ -405,7 +410,7 @@ export function AdminDashboard({ onNavigate }: Props) {
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardTitle className="text-lg flex items-center gap-2">
-                <Trophy className="h-5 w-5 text-amber-500" /> Ranking
+                <Trophy className="h-5 w-5 text-primary" /> Ranking
               </CardTitle>
               <CardDescription>Clique para ver detalhes</CardDescription>
             </div>
@@ -421,7 +426,7 @@ export function AdminDashboard({ onNavigate }: Props) {
             )}
             {rankings.map((r, idx) => {
               const MedalIcon = idx === 0 ? Trophy : idx === 1 ? Medal : idx === 2 ? Award : null;
-              const medalColor = idx === 0 ? 'text-amber-500' : idx === 1 ? 'text-slate-400' : idx === 2 ? 'text-orange-600' : '';
+              const medalColor = idx === 0 ? 'text-primary' : idx === 1 ? 'text-accent' : 'text-muted-foreground';
               return (
                 <button
                   key={r.user_id}
@@ -432,7 +437,7 @@ export function AdminDashboard({ onNavigate }: Props) {
                   <div className="w-7 text-center font-bold text-sm text-muted-foreground">
                     {MedalIcon ? <MedalIcon className={`h-5 w-5 ${medalColor} mx-auto`} /> : `${idx + 1}º`}
                   </div>
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-semibold text-xs shrink-0 overflow-hidden">
+                  <div className="w-9 h-9 rounded-full border border-primary/30 bg-primary/10 text-primary flex items-center justify-center font-semibold text-xs shrink-0 overflow-hidden">
                     {r.avatar_url
                       ? <img src={r.avatar_url} alt="" className="w-full h-full object-cover" />
                       : (r.full_name || '?').slice(0, 2).toUpperCase()}
@@ -440,12 +445,13 @@ export function AdminDashboard({ onNavigate }: Props) {
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{r.full_name || 'Aluno'}</p>
                     <p className="text-xs text-muted-foreground">
-                      <span className="text-emerald-600 font-medium">{r.hits}</span> acertos · <span className="text-rose-600">{r.errors}</span> erros
+                      <span className="text-primary font-medium">{r.hits}</span> acertos · <span className="text-destructive">{r.errors}</span> erros
                     </p>
                   </div>
-                  <Badge variant="outline" className="rounded-full bg-emerald-500/10 text-emerald-600 border-emerald-500/30">
+                  <Badge variant="outline" className="rounded-full bg-primary/10 text-primary border-primary/30">
                     {r.accuracy}%
                   </Badge>
+
                 </button>
               );
             })}
