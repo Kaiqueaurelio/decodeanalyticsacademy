@@ -159,7 +159,7 @@ export function SponsorLeadsPanel() {
             Interessados em patrocínio
           </CardTitle>
           <CardDescription>
-            Cada briefing enviado e cada clique nos contatos comerciais fica registrado aqui.
+            Acompanhe o funil de vendas: briefings recebidos, contatos realizados e contratos fechados.
           </CardDescription>
         </div>
         <Button variant="outline" size="sm" onClick={() => void load()} className="gap-2" aria-label="Recarregar interessados">
