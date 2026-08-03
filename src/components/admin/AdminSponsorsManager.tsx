@@ -22,7 +22,7 @@ export function AdminSponsorsManager() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-2xl font-bold">Gestão de Anunciantes</h2>
-          <p className="text-muted-foreground text-sm">Controle as marcas que aparecem no Media Kit e página "Anuncie".</p>
+          <p className="text-muted-foreground text-sm">Controle as marcas externas que aparecem no Media Kit e página "Anuncie".</p>
         </div>
         <div className="flex gap-2">
           <div className="relative w-64">
@@ -87,7 +87,7 @@ export function AdminSponsorsManager() {
           </div>
           <div className="flex-1">
             <p className="text-sm font-bold">Como adicionar?</p>
-            <p className="text-xs text-muted-foreground">Use o <b>Gerenciador de Anúncios</b> principal e selecione o tipo <b>"Patrocinador"</b>.</p>
+            <p className="text-xs text-muted-foreground">Use o <b>Gerenciador de Anúncios</b> principal e selecione o tipo <b>"Anunciante Externo"</b>.</p>
           </div>
         </CardContent>
       </Card>

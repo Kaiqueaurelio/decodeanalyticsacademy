@@ -89,7 +89,7 @@ const AD_TYPE_OPTIONS: { value: AdType; label: string; hint: string; where: stri
   { value: 'sidebar', label: 'Lateral', hint: 'Painel Desktop', where: 'Fixo à direita no dashboard (apenas para computadores).' },
   { value: 'footer', label: 'Flutuante', hint: 'Sticky Mobile', where: 'Barra persistente na base da tela em dispositivos móveis.' },
   { value: 'popup', label: 'Pop-up Intersticial', hint: 'Tela cheia / Modal', where: 'Garante 100% de atenção ao abrir o aplicativo.' },
-  { value: 'sponsor', label: 'Patrocínio', hint: 'Media Kit', where: 'Aparece na seção exclusiva de parceiros e apoiadores.' },
+  { value: 'sponsor', label: 'Anunciante Externo', hint: 'Parceiro / Marca', where: 'Exibido no Media Kit e seção de patrocinadores externos.' },
 ];
 
 // Mini-wireframe indicando onde o anúncio cai no layout.
@@ -289,16 +289,22 @@ export function AdminAdsManager() {
   }, [loading, editingId, selectedAd]);
 
 
+  const [activeFilter, setActiveFilter] = useState<'all' | 'decode' | 'sponsor'>('all');
+
   const filteredAds = useMemo(() => {
     const query = search.trim().toLowerCase();
-    if (!query) return ads;
-    return ads.filter((ad) =>
-      [ad.title, ad.description || '', ad.link_url || '', ad.ad_type]
+    return ads.filter((ad) => {
+      // Filtro de Categoria (Decode vs Anunciantes)
+      if (activeFilter === 'decode' && ad.ad_type === 'sponsor') return false;
+      if (activeFilter === 'sponsor' && ad.ad_type !== 'sponsor') return false;
+
+      if (!query) return true;
+      return [ad.title, ad.description || '', ad.link_url || '', ad.ad_type]
         .join(' ')
         .toLowerCase()
-        .includes(query),
-    );
-  }, [ads, search]);
+        .includes(query);
+    });
+  }, [ads, search, activeFilter]);
 
   const stats = useMemo(() => {
     const active = ads.filter((ad) => ad.is_active).length;
@@ -562,14 +568,45 @@ export function AdminAdsManager() {
                 </Button>
               </div>
 
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Buscar por título, link ou tipo"
-                  className="pl-9"
-                />
+              <div className="flex flex-col gap-3">
+                <div className="flex gap-1 rounded-lg bg-muted p-1">
+                  <button
+                    onClick={() => setActiveFilter('all')}
+                    className={cn(
+                      "flex-1 rounded-md px-2 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-all",
+                      activeFilter === 'all' ? "bg-background shadow-sm text-primary" : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    Todos
+                  </button>
+                  <button
+                    onClick={() => setActiveFilter('decode')}
+                    className={cn(
+                      "flex-1 rounded-md px-2 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-all",
+                      activeFilter === 'decode' ? "bg-background shadow-sm text-primary" : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    Nossos
+                  </button>
+                  <button
+                    onClick={() => setActiveFilter('sponsor')}
+                    className={cn(
+                      "flex-1 rounded-md px-2 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-all",
+                      activeFilter === 'sponsor' ? "bg-background shadow-sm text-primary" : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    Anunciantes
+                  </button>
+                </div>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Buscar..."
+                    className="pl-9 bg-muted/30"
+                  />
+                </div>
               </div>
             </CardHeader>
 
