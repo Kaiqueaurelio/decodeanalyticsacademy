@@ -73,20 +73,33 @@ export function AdminNavPanel({ tab, onSelect, counts, footerSlot, autoFocusSear
                     type="button"
                     onClick={() => onSelect(item.id)}
                     aria-current={active ? 'page' : undefined}
-                    className={`group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium transition-colors ${
+                    className={`group relative flex w-full items-center gap-4 rounded-xl px-4 py-3 text-left transition-all duration-200 ${
                       active
-                        ? 'bg-primary/10 text-primary'
-                        : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
+                        ? 'bg-gradient-to-r from-primary/15 to-accent/5 text-primary ring-1 ring-primary/20 shadow-sm'
+                        : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
                     }`}
                   >
-                    <item.icon className={`h-4 w-4 shrink-0 ${active ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`} />
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate">{item.label}</span>
-                      <span className="block truncate text-[10px] font-normal text-muted-foreground">{item.desc}</span>
+                    <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border transition-all ${
+                      active 
+                        ? 'bg-primary border-primary shadow-lg shadow-primary/30' 
+                        : 'bg-background border-border group-hover:border-muted-foreground/30'
+                    }`}>
+                      <item.icon className={`h-4.5 w-4.5 shrink-0 ${active ? 'text-primary-foreground' : 'text-muted-foreground group-hover:text-foreground'}`} />
+                    </div>
+                    <span className="min-w-0 flex-1 py-0.5">
+                      <span className={`block truncate text-sm font-bold tracking-tight ${active ? 'text-primary' : 'text-foreground/90'}`}>
+                        {item.label}
+                      </span>
+                      <span className="block truncate text-[10px] font-medium text-muted-foreground/80 mt-0.5">
+                        {item.desc}
+                      </span>
                     </span>
+                    {active && (
+                      <div className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 rounded-r-full bg-primary" />
+                    )}
                     {count !== undefined && count > 0 && (
-                      <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                        active ? 'bg-primary/20 text-primary' : 'bg-muted text-muted-foreground'
+                      <span className={`shrink-0 rounded-full px-2 py-0.5 text-[9px] font-black tracking-tighter ${
+                        active ? 'bg-primary/20 text-primary ring-1 ring-primary/30' : 'bg-muted text-muted-foreground'
                       }`}>
                         {count}
                       </span>

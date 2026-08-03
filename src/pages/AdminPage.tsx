@@ -310,7 +310,7 @@ function OverviewTab({ apostilas, exercises, allAnswers, materials, users, setTa
       </div>
 
       {/* KPI Grid */}
-      <div className="grid gap-4 sm:gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {statCards.map((s, i) => {
           const t = toneStyles[s.tone];
           return (
@@ -320,24 +320,27 @@ function OverviewTab({ apostilas, exercises, allAnswers, materials, users, setTa
               animate={{ opacity: 1, y: 0 }}
               transition={{ type: 'spring', stiffness: 260, damping: 22, delay: i * 0.06 }}
             >
-              <Card className="group overflow-hidden border-border/60 hover:border-border hover:shadow-lg transition-all duration-200">
-                <CardContent className="p-5">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className={`rounded-xl p-2.5 ${t.wrap}`}>
-                      <s.icon className={`h-5 w-5 ${t.icon}`} />
+              <Card className="group relative overflow-hidden border-border/50 bg-card/50 hover:bg-card hover:border-primary/20 hover:shadow-2xl hover:shadow-primary/5 transition-all duration-300 rounded-[2rem] cursor-default">
+                <CardContent className="p-6">
+                  <div className="flex items-start justify-between mb-5">
+                    <div className={`rounded-2xl p-3 shadow-inner ${t.wrap} ring-1 ring-inset ring-white/5`}>
+                      <s.icon className={`h-6 w-6 ${t.icon}`} />
                     </div>
                     {s.trend && (
-                      <span className="text-[10px] font-mono-label font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
+                      <Badge variant="secondary" className="rounded-full px-2.5 py-0.5 text-[10px] font-black uppercase tracking-widest bg-muted/80 text-foreground shadow-sm">
                         {s.trend}
-                      </span>
+                      </Badge>
                     )}
                   </div>
-                  <p className="text-3xl font-bold text-foreground tabular-nums leading-none">
-                    <AnimatedCounter end={typeof s.value === 'number' ? s.value : 0} suffix={(s as any).suffix} />
-                  </p>
-                  <p className="text-sm font-semibold text-foreground mt-2">{s.label}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5 truncate">{s.sub}</p>
+                  <div className="space-y-1">
+                    <p className="text-4xl font-black text-foreground tabular-nums tracking-tighter">
+                      <AnimatedCounter end={typeof s.value === 'number' ? s.value : 0} suffix={(s as any).suffix} />
+                    </p>
+                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-[0.15em] pt-1">{s.label}</p>
+                    <p className="text-[11px] font-medium text-muted-foreground/60 truncate">{s.sub}</p>
+                  </div>
                 </CardContent>
+                <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-primary/0 via-primary/20 to-primary/0 opacity-0 group-hover:opacity-100 transition-opacity" />
               </Card>
             </motion.div>
           );
