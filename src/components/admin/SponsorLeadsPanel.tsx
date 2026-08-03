@@ -323,38 +323,60 @@ export function SponsorLeadsPanel() {
                       </Button>
                     </div>
 
-                    <div className="space-y-2">
-                      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                        Histórico de contato
-                      </p>
+                    <div className="mt-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                          Histórico da Negociação
+                        </p>
+                        <Badge variant="outline" className="text-[9px] opacity-70">
+                          {history.length} interações
+                        </Badge>
+                      </div>
                       <div className="flex flex-col gap-2 sm:flex-row">
                         <Textarea
                           value={noteDraft}
                           onChange={(e) => setNoteDraft(e.target.value)}
-                          placeholder="Ex.: liguei hoje, pediu proposta por e-mail."
+                          placeholder="Registrar próximo passo (ex: Agendamos call, Enviamos PDF...)"
                           rows={2}
                           maxLength={1000}
+                          className="bg-background/50 text-xs"
                           aria-label="Nova anotação de contato"
                         />
-                        <Button onClick={() => void addNote(lead)} className="sm:self-end" aria-label="Registrar anotação">
-                          Registrar
+                        <Button 
+                          onClick={() => void addNote(lead)} 
+                          size="sm"
+                          className="sm:self-end h-auto py-3 px-6 font-bold text-xs" 
+                          aria-label="Registrar anotação"
+                        >
+                          Salvar Nota
                         </Button>
                       </div>
 
                       {history.length === 0 ? (
-                        <p className="text-xs text-muted-foreground">Nenhum contato registrado ainda.</p>
+                        <div className="rounded-lg border border-dashed p-6 text-center">
+                          <Handshake className="mx-auto h-8 w-8 text-muted-foreground/20 mb-2" />
+                          <p className="text-xs text-muted-foreground font-medium">Inicie o contato com o interessado.</p>
+                        </div>
                       ) : (
-                        <ul className="space-y-2">
+                        <div className="relative ml-2 border-l border-primary/20 pl-4 space-y-4 py-2">
                           {history.map((ev) => (
-                            <li key={ev.id} className="rounded-lg border border-border/50 bg-background/40 p-3 text-sm">
-                              <span className="flex items-center gap-2 text-[11px] text-muted-foreground">
-                                <Clock className="h-3 w-3" strokeWidth={1.75} />
-                                {fmt(ev.created_at)} · {ev.kind === 'status' ? 'situação' : 'anotação'}
-                              </span>
-                              <p className="mt-1 whitespace-pre-wrap">{ev.note}</p>
-                            </li>
+                            <div key={ev.id} className="relative">
+                              <div className="absolute -left-[21px] top-1.5 h-2 w-2 rounded-full bg-primary shadow-[0_0_8px_rgba(var(--primary-rgb),0.5)]" />
+                              <div className="rounded-xl border border-border/50 bg-background/60 p-3 shadow-sm">
+                                <div className="flex items-center justify-between mb-2">
+                                  <Badge variant="outline" className="text-[9px] bg-primary/5 uppercase font-black">
+                                    {ev.kind === 'status' ? 'Sistema' : 'Nota Admin'}
+                                  </Badge>
+                                  <span className="flex items-center gap-1.5 text-[10px] text-muted-foreground font-medium">
+                                    <Clock className="h-3 w-3" />
+                                    {fmt(ev.created_at)}
+                                  </span>
+                                </div>
+                                <p className="text-xs leading-relaxed text-foreground/90 font-medium">{ev.note}</p>
+                              </div>
+                            </div>
                           ))}
-                        </ul>
+                        </div>
                       )}
                     </div>
                   </div>
