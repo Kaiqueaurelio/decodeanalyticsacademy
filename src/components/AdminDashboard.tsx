@@ -19,8 +19,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import {
   BookOpen, PenLine, Users, Megaphone, RefreshCw, Search, ChevronRight,
-  Link as LinkIcon, FileText, FileUp, Plus,
-
+  Link as LinkIcon, FileText, FileUp, Plus, Activity,
   Eye, EyeOff, Edit, Trash2, Trophy, Medal, Award, Filter, X, Check,
   CheckCircle2, XCircle, CalendarDays, ArrowDownUp, FolderOpen, ChevronDown, LayoutDashboard,
 } from 'lucide-react';
