@@ -71,11 +71,16 @@ describe('navegação mobile', () => {
   });
 
   it('o drawer lateral nunca passa da largura da tela', () => {
-    const widths = [...bottomNav.matchAll(/w-\[(\d+)vw\]/g)].map((m) => Number(m[1]));
-    expect(widths.length).toBeGreaterThan(0);
-    widths.forEach((w) => expect(w).toBeLessThanOrEqual(100));
-    expect(bottomNav).toMatch(/max-w-\[360px\]/);
-    expect(topbar).toMatch(/max-w-\[360px\]/);
+    // Drawer unificado: mesma largura no mobile e no desktop
+    [bottomNav, topbar].forEach((file) => {
+      const matches = [...file.matchAll(/w-\[min\((\d+)vw,\s*(\d+)px\)\]/g)];
+      expect(matches.length).toBeGreaterThan(0);
+      matches.forEach((m) => {
+        expect(Number(m[1])).toBeLessThanOrEqual(100);
+        expect(Number(m[2])).toBeLessThanOrEqual(360);
+      });
+      expect(file).toContain('h-dvh');
+    });
   });
 
   it('o menu lateral continua acessível pelo topo no mobile', () => {
