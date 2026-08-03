@@ -19,8 +19,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import {
   BookOpen, PenLine, Users, Megaphone, RefreshCw, Search, ChevronRight,
-  Link as LinkIcon, FileText, FileUp, Plus,
-
+  Link as LinkIcon, FileText, FileUp, Plus, Activity,
   Eye, EyeOff, Edit, Trash2, Trophy, Medal, Award, Filter, X, Check,
   CheckCircle2, XCircle, CalendarDays, ArrowDownUp, FolderOpen, ChevronDown, LayoutDashboard,
 } from 'lucide-react';
@@ -332,44 +331,66 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp }: Props) {
     <div className="space-y-6">
       {/* Barra de comando — identidade Decode */}
       <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden rounded-2xl border border-primary/25 bg-card p-5 sm:p-7"
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="relative overflow-hidden rounded-3xl border border-primary/20 bg-card/50 p-6 backdrop-blur-xl sm:p-8"
       >
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 opacity-[0.16]"
+          className="pointer-events-none absolute inset-0 opacity-[0.08]"
           style={{
             background:
-              'radial-gradient(680px 300px at 8% -20%, hsl(var(--primary)), transparent 62%), radial-gradient(560px 300px at 95% 0%, hsl(var(--accent)), transparent 62%)',
+              'radial-gradient(1000px 400px at 0% 0%, hsl(var(--primary)), transparent 70%), radial-gradient(800px 400px at 100% 100%, hsl(var(--accent)), transparent 70%)',
           }}
         />
-        <div className="relative z-10 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-          <div className="flex items-center gap-4 min-w-0">
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-background ring-1 ring-primary/40 shadow-[0_0_20px_hsl(var(--primary)/0.15)]">
-              <img src={owlLogo} alt="Decode Logo" className="h-10 w-10 object-contain" />
+        <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex items-center gap-6 min-w-0">
+            <div className="group relative flex h-20 w-20 shrink-0 items-center justify-center rounded-[2rem] bg-background shadow-2xl transition-transform hover:scale-105 active:scale-95 ring-1 ring-primary/20">
+              <div className="absolute inset-0 rounded-[2rem] bg-gradient-to-br from-primary/10 to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <img src={owlLogo} alt="Decode Logo" className="relative z-10 h-14 w-14 object-contain" />
             </div>
             <div className="min-w-0">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-primary">
-                Painel administrativo
-              </p>
-              <h1 className="mt-1 text-2xl font-bold leading-tight tracking-tight sm:text-3xl">
-                Olá, {user?.email?.split('@')[0] || 'Admin'}
+              <div className="flex items-center gap-2 mb-1.5">
+                <Badge variant="outline" className="h-5 rounded-full border-primary/30 text-[9px] font-bold uppercase tracking-widest text-primary bg-primary/5 px-2">
+                  System Core v3.18
+                </Badge>
+                <div className="h-1 w-1 rounded-full bg-primary/40" />
+                <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest">
+                  Live Analytics
+                </span>
+              </div>
+              <h1 className="text-3xl font-black leading-tight tracking-tight sm:text-4xl bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                Bem-vindo, {user?.email?.split('@')[0] || 'Admin'}
               </h1>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Gerencie sua academia digital em um só lugar.
+              <p className="mt-1.5 text-sm text-muted-foreground font-medium max-w-md leading-relaxed">
+                Gerencie sua academia digital com controle total sobre conteúdo, alunos e monetização.
               </p>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <Button variant="outline" size="sm" className="rounded-xl border-primary/30" onClick={() => setShowWidgetConfig(true)}>
-              Personalizar
+          <div className="flex flex-wrap items-center gap-3">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="h-11 rounded-2xl border-primary/20 bg-background/50 hover:bg-primary/5 transition-all px-5 font-semibold text-xs" 
+              onClick={() => setShowWidgetConfig(true)}
+            >
+              <Activity className="mr-2 h-3.5 w-3.5 text-primary" />
+              Configurar Painel
             </Button>
-            <Button onClick={() => handleQuickCreate('link')} className="rounded-xl font-semibold shadow-lg shadow-primary/20">
-              <Plus className="mr-1.5 h-4 w-4" /> Nova Apostila
+            <Button 
+              onClick={() => handleQuickCreate('link')} 
+              className="h-11 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground shadow-xl shadow-primary/20 transition-all px-6 font-bold text-xs"
+            >
+              <Plus className="mr-2 h-4 w-4 stroke-[3px]" /> Criar Apostila
             </Button>
-            <Button variant="outline" size="icon" className="rounded-xl" onClick={load} aria-label="Atualizar dados">
+            <Button 
+              variant="secondary" 
+              size="icon" 
+              className="h-11 w-11 rounded-2xl border border-border shadow-sm hover:scale-105 active:scale-95 transition-all" 
+              onClick={load} 
+              aria-label="Atualizar dados"
+            >
               <RefreshCw className="h-4 w-4" />
             </Button>
           </div>
