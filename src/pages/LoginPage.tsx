@@ -442,7 +442,12 @@ export default function LoginPage() {
                           placeholder="--------"
                           className={`border-border/80 bg-background/90 pr-10 text-foreground placeholder:text-muted-foreground/85 ${loginAttempts > 0 ? 'border-destructive focus-visible:ring-destructive' : ''}`}
                         />
-                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground smooth-all">
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                          className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground hover:text-foreground smooth-all"
+                        >
                           {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                         </button>
                       </div>
