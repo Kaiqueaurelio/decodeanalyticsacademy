@@ -442,7 +442,12 @@ export default function LoginPage() {
                           placeholder="--------"
                           className={`border-border/80 bg-background/90 pr-10 text-foreground placeholder:text-muted-foreground/85 ${loginAttempts > 0 ? 'border-destructive focus-visible:ring-destructive' : ''}`}
                         />
-                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground smooth-all">
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                          className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground hover:text-foreground smooth-all"
+                        >
                           {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                         </button>
                       </div>
@@ -478,16 +483,16 @@ export default function LoginPage() {
 
                     {!isSignUp && (
                       <div className="space-y-1.5">
-                        <div className="flex items-center justify-between">
-                          <label className="flex items-center gap-2 cursor-pointer">
+                        <div className="flex flex-wrap items-center justify-between gap-x-2">
+                          <label className="flex min-h-11 cursor-pointer items-center gap-2 py-1">
                             <Checkbox
                               checked={rememberMe}
                               onCheckedChange={(v) => setRememberMe(!!v)}
-                              className="h-3.5 w-3.5"
+                              className="h-4 w-4"
                             />
                             <span className="text-xs text-muted-foreground">Lembrar-me</span>
                           </label>
-                          <button type="button" onClick={() => setIsReset(true)} className="text-xs text-muted-foreground hover:text-foreground smooth-all">
+                          <button type="button" onClick={() => setIsReset(true)} className="min-h-11 px-1 text-xs text-muted-foreground hover:text-foreground smooth-all">
                             {isLocked ? 'Redefinir senha' : 'Esqueceu a senha?'}
                           </button>
                         </div>

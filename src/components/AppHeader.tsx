@@ -88,23 +88,23 @@ export function AppHeader() {
         </nav>
 
         <div className="flex shrink-0 items-center gap-1 sm:hidden">
-          <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-9 w-9 shrink-0 rounded-md" aria-label="Modo claro">
+          <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-11 w-11 shrink-0 rounded-md" aria-label="Modo claro">
             {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </Button>
           {user && <NotificationBell />}
           {user ? (
             <Sheet open={open} onOpenChange={setOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0 rounded-md" aria-label="Abrir menu">
-                  <Menu className="h-4 w-4" />
+                <Button variant="ghost" size="icon" className="h-11 w-11 shrink-0 rounded-md" aria-label="Abrir menu">
+                  <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
               <SheetContent side="right" className="w-[78vw] max-w-xs pt-10 bg-card">
                 <nav className="flex flex-col gap-1">
-                  <Button variant="ghost" size="sm" className="justify-start text-sm font-sans normal-case tracking-normal" onClick={() => nav('/dashboard')}>
+                  <Button variant="ghost" size="sm" className="min-h-11 justify-start text-sm font-sans normal-case tracking-normal" onClick={() => nav('/dashboard')}>
                     <LayoutDashboard className="mr-2 h-4 w-4" /> Dashboard
                   </Button>
-                  <Button variant="ghost" size="sm" className="justify-start text-sm font-sans normal-case tracking-normal relative" onClick={() => nav('/comunidade')}>
+                  <Button variant="ghost" size="sm" className="min-h-11 justify-start text-sm font-sans normal-case tracking-normal relative" onClick={() => nav('/comunidade')}>
                     <Users className="mr-2 h-4 w-4" /> Comunidade
                     {unreadCount > 0 && (
                       <span className="ml-auto min-w-[18px] h-4 px-1 rounded-full bg-primary text-[10px] font-mono font-bold text-primary-foreground flex items-center justify-center leading-none">
@@ -112,34 +112,34 @@ export function AppHeader() {
                       </span>
                     )}
                   </Button>
-                  <Button variant="ghost" size="sm" className="justify-start text-sm font-sans normal-case tracking-normal" onClick={() => nav('/biblioteca')}>
+                  <Button variant="ghost" size="sm" className="min-h-11 justify-start text-sm font-sans normal-case tracking-normal" onClick={() => nav('/biblioteca')}>
                     <BookOpen className="mr-2 h-4 w-4" /> Biblioteca
                   </Button>
-                  <Button variant="ghost" size="sm" className="justify-start text-sm font-sans normal-case tracking-normal" onClick={() => nav('/livros')}>
+                  <Button variant="ghost" size="sm" className="min-h-11 justify-start text-sm font-sans normal-case tracking-normal" onClick={() => nav('/livros')}>
                     <Library className="mr-2 h-4 w-4" /> Livros
                   </Button>
-                  <Button variant="ghost" size="sm" className="justify-start text-sm font-sans normal-case tracking-normal" onClick={() => nav('/calculadora')}>
+                  <Button variant="ghost" size="sm" className="min-h-11 justify-start text-sm font-sans normal-case tracking-normal" onClick={() => nav('/calculadora')}>
                     <Calculator className="mr-2 h-4 w-4" /> Calculadora de Médias
                   </Button>
-                  <Button variant="ghost" size="sm" className="justify-start text-sm font-sans normal-case tracking-normal" onClick={() => nav('/tira-duvida')}>
+                  <Button variant="ghost" size="sm" className="min-h-11 justify-start text-sm font-sans normal-case tracking-normal" onClick={() => nav('/tira-duvida')}>
                     <Camera className="mr-2 h-4 w-4" /> Tira-dúvida
                   </Button>
-                  <Button variant="ghost" size="sm" className="justify-start text-sm font-sans normal-case tracking-normal" onClick={() => nav('/profile')}>
+                  <Button variant="ghost" size="sm" className="min-h-11 justify-start text-sm font-sans normal-case tracking-normal" onClick={() => nav('/profile')}>
                     <User className="mr-2 h-4 w-4" /> Perfil
                   </Button>
                   {showAdmin && (
-                    <Button variant="ghost" size="sm" className="justify-start text-sm font-sans normal-case tracking-normal" onClick={() => nav('/admin')}>
+                    <Button variant="ghost" size="sm" className="min-h-11 justify-start text-sm font-sans normal-case tracking-normal" onClick={() => nav('/admin')}>
                       <Shield className="mr-2 h-4 w-4" /> Admin
                     </Button>
                   )}
-                  <Button variant="ghost" size="sm" className="justify-start text-sm text-destructive font-sans normal-case tracking-normal" onClick={() => { signOut(); setOpen(false); }}>
+                  <Button variant="ghost" size="sm" className="min-h-11 justify-start text-sm text-destructive font-sans normal-case tracking-normal" onClick={() => { signOut(); setOpen(false); }}>
                     <LogOut className="mr-2 h-4 w-4" /> Sair
                   </Button>
                 </nav>
               </SheetContent>
             </Sheet>
           ) : (
-            <Button size="sm" onClick={() => navigate('/login')} className="h-7 px-3 text-[10px]">
+            <Button size="sm" onClick={() => navigate('/login')} className="h-10 min-w-[72px] px-4 text-xs">
               Entrar
             </Button>
           )}
