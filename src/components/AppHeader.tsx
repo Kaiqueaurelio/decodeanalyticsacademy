@@ -139,7 +139,7 @@ export function AppHeader() {
               </SheetContent>
             </Sheet>
           ) : (
-            <Button size="sm" onClick={() => navigate('/login')} className="h-7 px-3 text-[10px]">
+            <Button size="sm" onClick={() => navigate('/login')} className="h-10 min-w-[72px] px-4 text-xs">
               Entrar
             </Button>
           )}
