@@ -46,7 +46,7 @@ export function AppendLinkDialog({ apostilaId, apostilaTitle, currentContent, tr
     setProgress({ current: 0, total: list.length });
 
     // Buscamos sempre o conteúdo mais recente para não sobrescrever edições paralelas
-    let { data: latest } = await supabase
+    const { data: latest } = await supabase
       .from('apostilas')
       .select('content')
       .eq('id', apostilaId)

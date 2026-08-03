@@ -96,10 +96,10 @@ export function EpubReader({ fileUrl, initialLocation, onProgress }: EpubReaderP
     const onKey = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement;
       if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
-      if (e.key === 'ArrowRight' || e.key === 'PageDown') { e.preventDefault(); next(); }
-      else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); prev(); }
-      else if (e.shiftKey && e.key === 'ArrowRight') { e.preventDefault(); nextChapter(); }
+      if (e.shiftKey && e.key === 'ArrowRight') { e.preventDefault(); nextChapter(); }
       else if (e.shiftKey && e.key === 'ArrowLeft') { e.preventDefault(); prevChapter(); }
+      else if (e.key === 'ArrowRight' || e.key === 'PageDown') { e.preventDefault(); next(); }
+      else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); prev(); }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);

@@ -50,7 +50,7 @@ function cleanAdCopy(value: string | null | undefined, fallback = '') {
 
   let text = value
     .replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, ' ')
-    .replace(/[🎓🔥🚀✨⭐💥✅❌👉⚡📚🎯💡🏆]/g, ' ')
+    .replace(/[🎓🔥🚀✨⭐💥✅❌👉⚡📚🎯💡🏆]/gu, ' ')
     .replace(/([a-záàâãéêíóôõúç])([A-ZÁÀÂÃÉÊÍÓÔÕÚÇ])/g, '$1 $2')
     .replace(/\b(domine|imperdivel|imperdível|incrivel|incrível|top|sensacional|promoção|promocao)\b/gi, '')
     .replace(/[!]{2,}/g, '.')
