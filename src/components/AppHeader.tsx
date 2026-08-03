@@ -88,15 +88,15 @@ export function AppHeader() {
         </nav>
 
         <div className="flex shrink-0 items-center gap-1 sm:hidden">
-          <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-9 w-9 shrink-0 rounded-md" aria-label="Modo claro">
+          <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-11 w-11 shrink-0 rounded-md" aria-label="Modo claro">
             {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </Button>
           {user && <NotificationBell />}
           {user ? (
             <Sheet open={open} onOpenChange={setOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0 rounded-md" aria-label="Abrir menu">
-                  <Menu className="h-4 w-4" />
+                <Button variant="ghost" size="icon" className="h-11 w-11 shrink-0 rounded-md" aria-label="Abrir menu">
+                  <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
               <SheetContent side="right" className="w-[78vw] max-w-xs pt-10 bg-card">
