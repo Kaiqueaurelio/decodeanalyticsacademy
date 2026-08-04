@@ -27,6 +27,16 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.28.0",
+    date: "2026-08-04",
+    title: "UX: Dashboard de Alta Performance",
+    changes: [
+      { kind: 'improvement', text: 'Interface: Redesign do HeroGreetingCard com foco em motivação e estatísticas rápidas.' },
+      { kind: 'feature', text: 'Navegação: Adicionada barra de resumo estatístico no topo do dashboard para acompanhamento rápido de progresso.' },
+      { kind: 'improvement', text: 'Visual: Refinamento estético dos widgets de XP e progressão no menu lateral.' },
+    ],
+  },
+  {
     version: "3.27.0",
     date: "2026-08-04",
     title: "Sessão Persistente e 'Permanecer Conectado'",
