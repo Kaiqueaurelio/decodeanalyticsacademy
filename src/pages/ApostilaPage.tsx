@@ -31,7 +31,7 @@ import { exportApostilaToDOCX } from '@/lib/apostila-docx';
 import {
   ArrowLeft, BookOpen, PenLine, Eye, List, X, MoreHorizontal,
   ChevronUp, StickyNote, Layers, Wand2, MessageSquare, Share2, CheckCircle2, Copy, Volume2,
-  FileDown, Loader2, Brain, ArrowRight, Settings
+  FileDown, Loader2, Brain, ArrowRight, Settings, PenTool
 } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 
