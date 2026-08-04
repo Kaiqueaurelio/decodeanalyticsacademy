@@ -28,10 +28,13 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 export const CHANGELOG: ChangelogEntry[] = [
   {
     version: "3.33.0",
-    date: "04/08/2026",
+    date: "2026-08-04",
     title: "Dashboard Administrativa Híbrida",
-    description: "Unificação total da visão do aluno com controles administrativos. Agora é possível gerenciar conteúdos, alunos e configurações diretamente da interface principal sem navegar para o menu admin.",
-    type: "feature"
+    changes: [
+      { kind: 'feature', text: 'Dashboard Híbrido: Unificação total da visão do aluno com controles administrativos integrados.' },
+      { kind: 'feature', text: 'Gestão Direta: Adicionado painel de controle rápido no HeroGreetingCard para acesso instantâneo a Conteúdo e Alunos.' },
+      { kind: 'improvement', text: 'UX Admin: Atalhos de configuração e edição de material agora utilizam ícones intuitivos e estados de hover refinados.' },
+    ],
   },
   {
     version: "3.32.0",
