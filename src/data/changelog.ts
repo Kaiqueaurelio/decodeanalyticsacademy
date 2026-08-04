@@ -27,7 +27,19 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.35.0",
+    date: "2026-08-04",
+    title: "Segurança e Auditoria Administrativa",
+    changes: [
+      { kind: 'security', text: 'Reforçada a blindagem dos recursos administrativos no dashboard do aluno.' },
+      { kind: 'improvement', text: 'Implementado indicador visual explícito "Modo Administrador" para evitar confusões de contexto.' },
+      { kind: 'improvement', text: 'Atualizados tooltips e rótulos de ferramentas de gestão para clareza sobre permissões.' },
+      { kind: 'security', text: 'Auditoria completa de componentes híbridos (ApostilaCoverCard, SubjectFolderGrid e ApostilaPage).' },
+    ],
+  },
+  {
     version: "3.34.0",
+
     date: "2026-08-04",
     title: "Administração Omnipresente (UX Híbrida)",
     changes: [
