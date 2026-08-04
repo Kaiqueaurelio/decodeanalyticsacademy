@@ -33,17 +33,27 @@ export function HeroGreetingCard({ name, overallProgress, totalApostilas, totalA
           <p className="mt-2 max-w-md text-sm text-muted-foreground">
             Acompanhe suas atividades, apostilas e revisões em um só lugar.
           </p>
-          <Button
-            className="mt-5 h-10 px-4 font-bold gap-2 shadow-[0_8px_30px_hsl(var(--primary)/0.24)]"
-            onClick={() => {
-              const el = document.getElementById('minhas-disciplinas');
-              if (el) el.scrollIntoView({ behavior: 'smooth' });
-              else navigate('/dashboard#minhas-disciplinas');
-            }}
-          >
-            Ver disciplinas
-            <ArrowRight className="h-4 w-4" />
-          </Button>
+          <div className="flex flex-wrap gap-3 mt-5">
+            <Button
+              className="h-10 px-5 font-bold gap-2 shadow-[0_8px_30px_hsl(var(--primary)/0.24)] group transition-all hover:scale-105"
+              onClick={() => {
+                const el = document.getElementById('minhas-disciplinas');
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+                else navigate('/dashboard#minhas-disciplinas');
+              }}
+            >
+              Ver disciplinas
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+            </Button>
+            
+            <Button
+              variant="outline"
+              className="h-10 px-5 font-bold gap-2 border-primary/20 bg-primary/5 hover:bg-primary/10 transition-all hover:scale-105"
+              onClick={() => navigate('/simulado')}
+            >
+              Fazer Simulado
+            </Button>
+          </div>
         </div>
 
         <div className="hidden lg:flex items-center justify-center relative">
