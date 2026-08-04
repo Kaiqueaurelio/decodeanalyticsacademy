@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
-  Plus, Trash2, FileText, Image, Video, Music, Presentation, File, Link as LinkIcon, FileSpreadsheet, Search, Paperclip, Wand2, Loader2, Headphones, Upload
+  Plus, Trash2, FileText, Image, Video, Music, Presentation, File, Link as LinkIcon, FileSpreadsheet, Search, Paperclip, Wand2, Loader2, Headphones, Upload, FileUp
 } from 'lucide-react';
 import { autoLinkApostila } from '@/lib/auto-link-materials';
 import { ManualLinkMaterialsDialog } from '@/components/ManualLinkMaterialsDialog';
@@ -171,21 +171,45 @@ export function ApostilaMaterialsManager({ apostilaId, apostilaTitle, open: open
           </DialogHeader>
 
           {/* Upload rápido de áudio — destaque */}
-          <button
-            type="button"
-            onClick={() => audioInputRef.current?.click()}
-            disabled={uploadingAudio}
-            className="w-full mb-2 flex items-center gap-3 p-3 rounded-lg border-2 border-dashed border-primary/40 bg-primary/5 hover:bg-primary/10 transition-colors disabled:opacity-50"
-          >
-            <div className="h-9 w-9 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
-              {uploadingAudio ? <Loader2 className="h-4 w-4 animate-spin text-primary" /> : <Headphones className="h-4 w-4 text-primary" />}
-            </div>
-            <div className="text-left flex-1 min-w-0">
-              <p className="text-xs font-semibold text-foreground">Subir áudio da aula</p>
-              <p className="text-[10px] text-muted-foreground">MP3, WAV, M4A — vincula automaticamente</p>
-            </div>
-            <Upload className="h-3.5 w-3.5 text-primary shrink-0" />
-          </button>
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <button
+              type="button"
+              onClick={() => audioInputRef.current?.click()}
+              disabled={uploadingAudio}
+              className="flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border border-primary/20 bg-primary/5 hover:bg-primary/10 transition-all group disabled:opacity-50"
+            >
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center transition-transform group-hover:scale-110">
+                {uploadingAudio ? <Loader2 className="h-5 w-5 animate-spin text-primary" /> : <Headphones className="h-5 w-5 text-primary" />}
+              </div>
+              <div className="text-center">
+                <p className="text-[11px] font-bold text-foreground">Gravação</p>
+                <p className="text-[9px] text-muted-foreground">Subir Áudio</p>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'application/pdf,application/epub+zip,application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+                input.onchange = async (e) => {
+                  const file = (e.target as HTMLInputElement).files?.[0];
+                  if (file) handleAudioUpload(file); // Reusando lógica de upload genérico
+                };
+                input.click();
+              }}
+              className="flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border border-accent/20 bg-accent/5 hover:bg-accent/10 transition-all group"
+            >
+              <div className="h-10 w-10 rounded-full bg-accent/10 flex items-center justify-center transition-transform group-hover:scale-110">
+                <FileUp className="h-5 w-5 text-accent-foreground" />
+              </div>
+              <div className="text-center">
+                <p className="text-[11px] font-bold text-foreground">Documento</p>
+                <p className="text-[9px] text-muted-foreground">PDF, EPUB, DOCX</p>
+              </div>
+            </button>
+          </div>
           <input
             ref={audioInputRef}
             type="file"

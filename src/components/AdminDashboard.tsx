@@ -340,12 +340,12 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Barra de comando — identidade Decode */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.98 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="relative overflow-hidden rounded-3xl border border-primary/20 bg-card/50 p-6 backdrop-blur-xl sm:p-8"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="relative overflow-hidden rounded-[2.5rem] border border-primary/20 bg-card/40 p-6 backdrop-blur-2xl sm:p-10 shadow-2xl shadow-primary/5"
       >
         <div
           aria-hidden
