@@ -27,6 +27,15 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.26.0",
+    date: "2026-08-04",
+    title: "Editor de Material em Modal",
+    changes: [
+      { kind: 'feature', text: 'UX Administrativa: O botão "Editar Material" agora abre o Workbench em um modal (Sheet) diretamente na página da apostila, permitindo edições rápidas sem perder o contexto de leitura.' },
+      { kind: 'improvement', text: 'Workbench Versátil: O editor administrativo foi refatorado para suportar tanto uso em rota própria quanto embutido em modais com controle de fechamento customizado.' },
+    ],
+  },
+  {
     version: "3.25.0",
     date: "2026-08-04",
     title: "Refinamento do Atalho de Edição",

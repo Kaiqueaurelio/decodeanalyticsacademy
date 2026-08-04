@@ -21,7 +21,7 @@ import { ApostilaPreview } from '@/components/ApostilaPreview';
 import { AdBanner } from '@/components/AdBanner';
 import { AdSidebar } from '@/components/AdSidebar';
 import { UnitTilesGrid, buildUnitResources } from '@/components/UnitTilesGrid';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ActionSheet, type ActionItem } from '@/components/ActionSheet';
 import { toast } from 'sonner';
@@ -75,6 +75,8 @@ interface Props {
   setTab?: (tab: any) => void;
 }
 
+import AdminApostilaWorkbench from './AdminApostilaWorkbench';
+
 export default function ApostilaPage({ tab, setTab }: Props) {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -91,6 +93,7 @@ export default function ApostilaPage({ tab, setTab }: Props) {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [chatOpen, setChatOpen] = useState(false);
   const [exportingPdf, setExportingPdf] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
 
   useEffect(() => {
@@ -381,17 +384,33 @@ export default function ApostilaPage({ tab, setTab }: Props) {
 
               {isAdmin && (
                 <div className="flex items-center gap-1 sm:gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => navigate(`/admin/apostilas/${apostila?.id}`)}
-                    className="text-xs gap-1.5 hover-lift border-primary/40 bg-primary/5 text-primary hover:bg-primary/10"
-                    title="Editar esta apostila no Workbench"
-                  >
-                    <PenTool className="h-3.5 w-3.5" />
-                    <span className="hidden lg:inline">Editar Material</span>
-                    <span className="lg:hidden">Editar</span>
-                  </Button>
+                  <Sheet open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+                    <SheetTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-xs gap-1.5 hover-lift border-primary/40 bg-primary/5 text-primary hover:bg-primary/10"
+                        title="Editar esta apostila diretamente aqui"
+                      >
+                        <PenTool className="h-3.5 w-3.5" />
+                        <span className="hidden lg:inline">Editar Material</span>
+                        <span className="lg:hidden">Editar</span>
+                      </Button>
+                    </SheetTrigger>
+                    <SheetContent side="right" className="w-full sm:max-w-[95vw] lg:max-w-[85vw] p-0 overflow-hidden">
+                      <div className="h-full flex flex-col">
+                        <SheetHeader className="p-4 border-b shrink-0 flex flex-row items-center justify-between space-y-0">
+                          <SheetTitle className="text-lg font-bold flex items-center gap-2">
+                            <PenTool className="h-5 w-5 text-primary" />
+                            Editor de Material
+                          </SheetTitle>
+                        </SheetHeader>
+                        <div className="flex-1 overflow-hidden">
+                          {isEditModalOpen && <AdminApostilaWorkbench overrideId={apostila?.id} onBack={() => setIsEditModalOpen(false)} />}
+                        </div>
+                      </div>
+                    </SheetContent>
+                  </Sheet>
                   <Button
                     variant="outline"
                     size="sm"
