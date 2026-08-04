@@ -37,7 +37,7 @@ export default function DashboardPage() {
   const { data: profile } = useUserProfile(user?.id);
   const [selectedSemester, setSelectedSemester] = useState<number | null>(() => {
     const saved = localStorage.getItem('selectedSemestre');
-    return saved ? parseInt(saved, 10) : 6;
+    return saved ? parseInt(saved, 10) : null; // Padrão 'null' para mostrar todos se não houver preferência, ou conforme regra anterior
   });
   const { data: apostilasRaw = [], isLoading: loadingApostilas } = useApostilasList();
   const { data: exerciseCounts = {} } = useExerciseCounts();
@@ -165,7 +165,7 @@ export default function DashboardPage() {
       <div className="flex flex-col min-h-screen transition-[padding] duration-300 ease-out">
         <DashboardTopbar />
 
-        <main className="flex-1 px-3 sm:px-6 lg:px-8 py-6 space-y-6 max-w-[1400px] w-full mx-auto animate-content-show overflow-x-hidden">
+        <main className="flex-1 px-3 sm:px-6 lg:px-8 py-6 space-y-6 max-w-[1400px] w-full mx-auto animate-content-show overflow-x-hidden pt-12">
           <AdBanner position="inline" />
 
           <Reveal from="bottom" delay={10}>

@@ -41,12 +41,15 @@ export function ApostilaCoverCard({ apostila, status = 'em-progresso' }: Props) 
     status === 'concluida' ? 'Concluída' : status === 'novo' ? 'Novo' : 'Em progresso';
 
   const isPlaceholder = (apostila as any).isPlaceholder === true || !apostila.source_type;
+  
+  // Data prevista se for placeholder
+  const availabilityDate = (apostila as any).availability_date || "Em breve";
 
   const handleClick = (e: React.MouseEvent) => {
     if (isPlaceholder) {
       e.preventDefault();
-      toast.info("Sem material disponível por enquanto", {
-        description: "Esta apostila ainda está sendo preparada pela nossa equipe pedagógica.",
+      toast.info(`Disponível: ${availabilityDate}`, {
+        description: "Conteúdo pedagógico em fase final de preparação.",
         icon: <Lock className="h-4 w-4 text-primary" />,
       });
       return;
@@ -77,8 +80,11 @@ export function ApostilaCoverCard({ apostila, status = 'em-progresso' }: Props) 
         />
         {isPlaceholder && (
           <div className="absolute inset-0 flex items-center justify-center bg-background/20 backdrop-blur-[1px]">
-            <div className="bg-background/80 p-2 rounded-full border border-border/50 shadow-sm">
-              <Lock className="h-5 w-5 text-muted-foreground/60" />
+            <div className="bg-background/90 p-2.5 rounded-xl border border-primary/30 shadow-2xl flex flex-col items-center gap-1.5 animate-in fade-in zoom-in duration-300">
+              <Lock className="h-5 w-5 text-primary" />
+              <span className="text-[9px] font-black uppercase tracking-tighter text-primary bg-primary/10 px-1.5 py-0.5 rounded-md">
+                {availabilityDate}
+              </span>
             </div>
           </div>
         )}

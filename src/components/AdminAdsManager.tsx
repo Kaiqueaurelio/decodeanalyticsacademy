@@ -399,7 +399,7 @@ export function AdminAdsManager() {
     link_url: formData.link_url.trim() || null,
     ad_type: formData.ad_type,
     position: Math.max(0, Number(formData.position) || 0),
-    display_duration: Math.min(30, Math.max(1, Number(formData.display_duration) || 5)),
+    display_duration: Math.min(3600, Math.max(1, Number(formData.display_duration) || 5)), // Aumentado limite para 1 hora (3600s)
     is_active: formData.is_active,
     start_date: toIso(formData.start_date),
     end_date: toIso(formData.end_date),
