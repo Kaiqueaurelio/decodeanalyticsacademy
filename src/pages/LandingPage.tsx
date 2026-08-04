@@ -79,6 +79,39 @@ function CyberGrid() {
   );
 }
 
+function TypewriterWords() {
+  const [index, setIndex] = useState(0);
+  const [displayText, setDisplayText] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      const currentWord = words[index];
+      if (isDeleting) {
+        setDisplayText(currentWord.substring(0, displayText.length - 1));
+        if (displayText.length === 0) {
+          setIsDeleting(false);
+          setIndex((prev) => (prev + 1) % words.length);
+        }
+      } else {
+        setDisplayText(currentWord.substring(0, displayText.length + 1));
+        if (displayText === currentWord) {
+          setIsDeleting(true);
+        }
+      }
+    }, isDeleting ? 100 : 200);
+    return () => clearTimeout(timeout);
+  }, [displayText, isDeleting, index]);
+
+  return (
+    <span className="mt-2 block min-h-[1.2em] bg-gradient-to-r from-[#00f0ff] via-[#a855f7] to-[#c084fc] bg-clip-text text-transparent">
+      {displayText}
+      <span className="ml-1 animate-pulse border-r-4 border-[#00f0ff]" />
+    </span>
+  );
+}
+
+
 /* ─── DATA ─── */
 const features = [
   { icon: BookOpen, name: 'Apostilas Interativas', desc: 'Conteúdo estruturado por disciplina com anotações', color: '#00f0ff' },
@@ -86,6 +119,9 @@ const features = [
   { icon: Brain, name: 'Flashcards Inteligentes', desc: 'Revisão espaçada para memorização eficiente', color: '#22c55e' },
   { icon: Flame, name: 'Gamificação & XP', desc: 'Pontos, badges, streaks e ranking entre alunos', color: '#f59e0b' },
 ];
+
+const words = ['inteligência.', 'eficiência.', 'tecnologia.', 'foco total.'];
+
 
 const roadmap = [
   { phase: '01', title: 'Fundamentos', desc: 'Lógica de programação, matemática discreta e introdução à computação.', icon: Cpu },
@@ -392,15 +428,19 @@ export default function LandingPage() {
                 no primeiro frame e a entrada é feita só por CSS. */}
             <div className="hero-entrance mx-auto max-w-5xl">
 
-              <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-white/[0.06] px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-cyan-100 backdrop-blur-sm">
-                <GraduationCap className="h-3.5 w-3.5 text-[#00f0ff]" />
-                Plataforma de estudos
+              <div className="mb-7 flex flex-wrap items-center justify-center gap-3">
+                <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-white/[0.06] px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-cyan-100 backdrop-blur-sm">
+                  <GraduationCap className="h-3.5 w-3.5 text-[#00f0ff]" />
+                  Plataforma de estudos
+                </div>
+                <div className="inline-flex items-center gap-2 rounded-full border border-purple-400/20 bg-purple-500/5 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-purple-200 backdrop-blur-sm">
+                  <Brain className="h-3.5 w-3.5 text-[#a855f7]" />
+                  Ella Ribeiro Assistant
+                </div>
               </div>
               <h1 className="max-w-4xl text-5xl font-bold leading-[0.94] tracking-[-0.05em] text-white sm:text-7xl md:text-8xl">
                 Estude com
-                <span className="mt-2 block bg-gradient-to-r from-[#00f0ff] via-[#a855f7] to-[#c084fc] bg-clip-text text-transparent">
-                  inteligência.
-                </span>
+                <TypewriterWords />
               </h1>
               <p className="mx-auto mt-7 max-w-2xl text-base leading-7 text-white/80 sm:text-lg">
                 Apostilas, exercícios, flashcards e acompanhamento de progresso para você dominar cada disciplina.

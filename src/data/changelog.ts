@@ -27,6 +27,16 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.37.0",
+    date: "2026-08-04",
+    title: "Landing Page: Dinâmica e Inteligente",
+    changes: [
+      { kind: 'improvement', text: 'Hero Section: Implementado efeito Typewriter dinâmico no título principal para destacar os pilares da plataforma.' },
+      { kind: 'improvement', text: 'Branding: Adicionado badge dedicado à Ella Ribeiro na seção hero para destacar o suporte da assistente.' },
+      { kind: 'improvement', text: 'UX: Otimizada a transição visual entre palavras-chave para maior fluidez e engajamento na primeira dobra.' },
+    ],
+  },
+  {
     version: "3.36.0",
     date: "2026-08-04",
     title: "Experiência do Aluno e Fluidez de Carregamento",
@@ -37,6 +47,7 @@ export const CHANGELOG: ChangelogEntry[] = [
       { kind: 'improvement', text: 'Filtro Inteligente: O dashboard agora seleciona automaticamente o semestre correto baseado no perfil acadêmico do aluno no primeiro acesso.' },
     ],
   },
+
 
   {
     version: "3.35.0",
