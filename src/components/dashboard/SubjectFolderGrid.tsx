@@ -12,13 +12,14 @@ interface Props {
   exerciseCounts: Record<string, number>;
   stats: { byApostila: Record<string, { title: string; hits: number; errors: number }> };
   query?: string;
+  selectedSemester?: number | null;
 }
 
 /**
  * Grid de matérias no estilo Notion.
  * Inclui "Blank Cards" baseados na grade curricular para matérias sem conteúdo ainda.
  */
-export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = '' }: Props) {
+export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = '', selectedSemester }: Props) {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { data: profile } = useUserProfile(user?.id);
@@ -34,10 +35,9 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
       const key = a.category?.trim() || 'Geral';
       if (q && !normalize(a.title || '').includes(q) && !normalize(key).includes(q)) continue;
       
-      // FILTRO: Se o aluno tem semestre definido, mostramos apenas as apostilas do semestre atual
-      // O usuário solicitou "no semestre de agora, no sexto, deixa só as apostilas do sexto semestre"
-      // Se a apostila tem semestre e ele é diferente do perfil, ocultamos.
-      if (profile?.semester && (a as any).semester && Number((a as any).semester) !== Number(profile.semester)) {
+      // FILTRO: Se houver um semestre selecionado ou no perfil, filtramos as apostilas
+      const activeSemester = selectedSemester || profile?.semester;
+      if (activeSemester && (a as any).semester && Number((a as any).semester) !== Number(activeSemester)) {
         continue;
       }
 
@@ -47,8 +47,9 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
     }
 
     // 2. Add blank subjects from curriculum if not present
-    if (profile?.course && profile?.semester && !q) {
-      const curriculum = getCurriculumSubjects(profile.course, profile.semester);
+    const semesterToUse = selectedSemester || profile?.semester;
+    if (profile?.course && semesterToUse && !q) {
+      const curriculum = getCurriculumSubjects(profile.course, semesterToUse);
       for (const subjectName of curriculum) {
         if (!map.has(subjectName)) {
           map.set(subjectName, []); // Empty array indicates a "blank" card
@@ -62,7 +63,7 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
     return Array.from(map.entries()).sort(([a], [b]) =>
       a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }),
     );
-  }, [apostilas, query, profile?.course, profile?.semester]);
+  }, [apostilas, query, profile?.course, profile?.semester, selectedSemester]);
 
   if (groups.length === 0) {
     return (
