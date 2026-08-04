@@ -27,6 +27,15 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.41.0",
+    date: "2026-08-04",
+    title: "Performance e Otimização de Renderização",
+    changes: [
+      { kind: 'improvement', text: 'Sincronização de diretrizes de performance para aceleração da renderização da Landing Page.' },
+      { kind: 'improvement', text: 'Refinamento da lógica de DeferredSection para garantir LCP (Largest Contentful Paint) otimizado.' },
+    ],
+  },
+  {
     version: "3.40.0",
     date: "2026-08-04",
     title: "Otimização de Landing Page e Feedback Visual",
