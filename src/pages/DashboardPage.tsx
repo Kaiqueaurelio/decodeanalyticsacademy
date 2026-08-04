@@ -48,7 +48,7 @@ export default function DashboardPage() {
   const loading = loadingApostilas || loadingStats;
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [query, setQuery] = useState('');
-  const [visibleFolders, setVisibleFolders] = useState(12);
+  const [visibleFolders, setVisibleFolders] = useState(6); // Começa com menos matérias para melhor performance e scroll infinito nítido
   const [isFetchingMore, setIsFetchingMore] = useState(false);
 
   // Lógica de processamento de apostilas (filtro + placeholders de semestres futuros)
@@ -180,7 +180,7 @@ export default function DashboardPage() {
       <div className="flex flex-col min-h-screen transition-[padding] duration-300 ease-out">
         <DashboardTopbar hideSearchOnMobile />
 
-        <main className="flex-1 px-3 sm:px-6 lg:px-8 py-6 space-y-6 max-w-[1400px] w-full mx-auto animate-content-show overflow-x-hidden pt-12">
+        <main className="flex-1 px-3 sm:px-6 lg:px-8 py-6 space-y-6 max-w-[1600px] w-full mx-auto animate-content-show overflow-x-hidden pt-12">
           {/* Dashboard Summary Bar */}
           <div className="flex flex-wrap items-center gap-4 pb-2 border-b border-border/10 overflow-x-auto scrollbar-none">
             <div className="flex items-center gap-2 whitespace-nowrap">

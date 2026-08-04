@@ -1,10 +1,11 @@
-import { FileText, Lock, PenTool } from 'lucide-react';
+import { FileText, Lock, PenTool, Edit3 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { getSubjectColor } from '@/lib/subject-colors';
 import { getApostilaCover } from '@/lib/apostila-covers';
 import { useCoverTheme } from '@/lib/cover-theme';
 import { buildCoverDataUri } from '@/lib/cover-render';
+import { useAuth } from '@/hooks/useAuth';
 import type { ApostilaSummary } from '@/hooks/queries/useDashboardData';
 
 interface Props {
@@ -19,6 +20,7 @@ interface Props {
  */
 export function ApostilaCoverCard({ apostila, status = 'em-progresso' }: Props) {
   const navigate = useNavigate();
+  const { isAdmin } = useAuth();
   const color = getSubjectColor(apostila.category || 'Geral');
   const theme = useCoverTheme();
   const uploaded = (apostila as any).cover_url as string | undefined;
@@ -94,17 +96,28 @@ export function ApostilaCoverCard({ apostila, status = 'em-progresso' }: Props) 
             style={{ background: `linear-gradient(90deg, ${color}, ${color}55)` }}
           />
         </div>
-        {!isPlaceholder && (
-          <div className="absolute top-2 left-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity">
+        {isAdmin && (
+          <div className="absolute top-2 left-2 z-20 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-[-10px] group-hover:translate-x-0">
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 navigate(`/admin/apostilas/${apostila.id}`);
               }}
-              className="flex h-8 w-8 items-center justify-center rounded-lg bg-black/60 backdrop-blur-md border border-white/20 text-white hover:bg-primary hover:border-primary transition-all shadow-xl"
-              title="Editar Material (Admin)"
+              className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary shadow-[0_0_20px_rgba(168,85,247,0.4)] border border-primary/50 text-white hover:scale-110 active:scale-95 transition-all"
+              title="Editar Conteúdo (Admin)"
             >
-              <PenTool className="h-4 w-4" />
+              <PenTool className="h-4.5 w-4.5" />
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                // Abre o editor de metadados se necessário ou workbench
+                navigate(`/admin/apostilas/${apostila.id}`);
+              }}
+              className="flex h-9 w-9 items-center justify-center rounded-xl bg-black/60 backdrop-blur-md border border-white/20 text-white hover:bg-accent hover:border-accent hover:scale-110 active:scale-95 transition-all shadow-xl"
+              title="Ajustar Configurações"
+            >
+              <Edit3 className="h-4.5 w-4.5" />
             </button>
           </div>
         )}

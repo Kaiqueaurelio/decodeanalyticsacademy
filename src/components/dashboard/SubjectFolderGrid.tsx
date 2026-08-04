@@ -20,7 +20,7 @@ interface Props {
  */
 export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = '' }: Props) {
   const navigate = useNavigate();
-  const [visibleGroups, setVisibleGroups] = useState(3);
+  const [visibleGroups, setVisibleGroups] = useState(2); // Inicia com 2 matérias para forçar rolagem infinita cedo
 
   useEffect(() => {
     const handleScroll = () => {
@@ -29,7 +29,7 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
       const clientHeight = document.documentElement.clientHeight;
 
       if (scrollTop + clientHeight >= scrollHeight - 300) {
-        setVisibleGroups(prev => prev + 2);
+        setVisibleGroups(prev => prev + 1); // Carrega uma matéria por vez para suavidade
       }
     };
 
@@ -109,7 +109,7 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
                 const progress = isCompleted ? 100 : (stats.byApostila[apostila.id] ? 50 : 0);
                 
                 return (
-                  <div key={apostila.id} className="relative group/card">
+                  <div key={apostila.id} className="relative group/card h-full">
                     <ApostilaCoverCard 
                       apostila={apostila} 
                       status={isCompleted ? 'concluida' : (stats.byApostila[apostila.id] ? 'em-progresso' : 'novo')} 
