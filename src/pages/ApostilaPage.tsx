@@ -379,21 +379,17 @@ export default function ApostilaPage({ tab, setTab }: Props) {
                 <Eye className="h-3.5 w-3.5" /> {focusMode ? 'Foco ativo' : 'Modo foco'}
               </Button>
 
-              {isAdmin && (
                 <div className="flex items-center gap-1 sm:gap-2">
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => {
-                      if (setTab) setTab('apostilas');
-                      navigate(`/admin?edit=${apostila?.id}`);
-                    }}
+                    onClick={() => navigate(`/admin/apostilas/${apostila?.id}`)}
                     className="text-xs gap-1.5 hover-lift border-primary/40 bg-primary/5 text-primary hover:bg-primary/10"
-                    title="Editar esta apostila no painel Admin"
+                    title="Editar esta apostila no Workbench"
                   >
-                    <Settings className="h-3.5 w-3.5" />
-                    <span className="hidden lg:inline">Gerenciar no Admin</span>
-                    <span className="lg:hidden">Admin</span>
+                    <PenTool className="h-3.5 w-3.5" />
+                    <span className="hidden lg:inline">Editar Conteúdo</span>
+                    <span className="lg:hidden">Editar</span>
                   </Button>
                   <Button
                     variant="outline"
