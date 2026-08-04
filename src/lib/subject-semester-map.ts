@@ -12,7 +12,7 @@ const stripAccents = (s: string) =>
 
 // Lista canônica por semestre (subset de keywords). A ordem importa: testamos
 // do 8º ao 1º para que termos mais específicos (ex: "II") batam antes.
-const BY_SEMESTER: Record<number, string[]> = {
+export const BY_SEMESTER: Record<number, string[]> = {
   1: [
     'logica de programacao', 'matematica discreta', 'introducao a computacao',
     'introducao à computacao', 'comunicacao e expressao',

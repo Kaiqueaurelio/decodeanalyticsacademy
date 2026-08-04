@@ -1,7 +1,8 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowUpRight } from 'lucide-react';
+import { ArrowUpRight, FolderOpen } from 'lucide-react';
 import { getSubjectColor } from '@/lib/subject-colors';
+import { cn } from '@/lib/utils';
 import type { ApostilaSummary } from '@/hooks/queries/useDashboardData';
 
 interface Props {
@@ -58,6 +59,10 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
         const color = getSubjectColor(category);
         const started = items.filter((a) => stats.byApostila[a.id]).length;
         const inProgress = started > 0;
+        
+        // Determina se é um card "vazio" (sem apostilas reais)
+        const isPlaceholder = items.length === 0 || (items.length === 1 && (items[0] as any).isPlaceholder);
+        
         const semester = items.find((a) => (a as any).semester)?.['semester' as keyof ApostilaSummary] as
           | number
           | null
@@ -73,8 +78,14 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
           <button
             key={category}
             type="button"
-            onClick={() => openSubject(category)}
-            className="group relative flex flex-col rounded-2xl border border-border/60 bg-card overflow-hidden text-left transition-all duration-300 hover:border-primary/50 hover:shadow-xl hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-primary/50"
+            onClick={() => !isPlaceholder && openSubject(category)}
+            disabled={isPlaceholder}
+            className={cn(
+              "group relative flex flex-col rounded-2xl border border-border/60 bg-card overflow-hidden text-left transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary/50",
+              isPlaceholder 
+                ? "opacity-60 cursor-not-allowed border-dashed border-muted-foreground/30 grayscale-[0.5]" 
+                : "hover:border-primary/50 hover:shadow-xl hover:-translate-y-0.5"
+            )}
             aria-label={`Abrir matéria ${category}`}
           >
             {/* Cover */}
@@ -83,21 +94,37 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
               style={{
                 backgroundImage: cover
                   ? `linear-gradient(135deg, ${color}66 0%, #0b1220cc 100%), url("${cover}")`
-                  : `linear-gradient(135deg, ${color}dd 0%, ${color}33 55%, #0b1220 100%)`,
+                  : isPlaceholder
+                    ? `linear-gradient(135deg, #1a1a1a 0%, #050508 100%)`
+                    : `linear-gradient(135deg, ${color}dd 0%, ${color}33 55%, #0b1220 100%)`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
               }}
             >
               <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent" />
-              {source && (
+              
+              {isPlaceholder ? (
+                <div className="absolute inset-0 flex items-center justify-center opacity-20">
+                  <FolderOpen className="h-12 w-12 text-muted-foreground" />
+                </div>
+              ) : null}
+
+              {source && !isPlaceholder && (
                 <span className="absolute right-3 top-3 inline-block rounded-md bg-black/55 backdrop-blur-sm px-2 py-[3px] text-[10px] font-semibold uppercase tracking-wider text-white/95 ring-1 ring-white/10">
                   {source === 'ava' ? 'Ava' : source === 'presencial' ? 'Presencial' : source}
                 </span>
               )}
-              <span className="absolute right-3 bottom-3 inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-white ring-1 ring-white/20 backdrop-blur-sm transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5">
-                <ArrowUpRight className="h-3.5 w-3.5" strokeWidth={2.2} />
-              </span>
-              <span className="absolute left-4 right-12 bottom-3 font-display font-semibold text-white text-lg leading-tight drop-shadow-[0_2px_6px_rgba(0,0,0,0.7)] line-clamp-2">
+              
+              {!isPlaceholder && (
+                <span className="absolute right-3 bottom-3 inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-white ring-1 ring-white/20 backdrop-blur-sm transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5">
+                  <ArrowUpRight className="h-3.5 w-3.5" strokeWidth={2.2} />
+                </span>
+              )}
+
+              <span className={cn(
+                "absolute left-4 right-12 bottom-3 font-display font-semibold text-lg leading-tight line-clamp-2",
+                isPlaceholder ? "text-muted-foreground/70" : "text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.7)]"
+              )}>
                 {category}
               </span>
             </div>
@@ -105,7 +132,11 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
             {/* Meta */}
             <div className="flex w-full items-center gap-2 px-4 py-2.5">
               <div className="flex flex-1 flex-wrap items-center gap-1.5 min-w-0">
-                {inProgress ? (
+                {isPlaceholder ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-muted/50 px-2 py-[3px] text-[10px] font-medium text-muted-foreground/60">
+                    Aguardando conteúdo
+                  </span>
+                ) : inProgress ? (
                   <span className="inline-flex items-center gap-1 rounded-full bg-sky-500/15 px-2 py-[3px] text-[10px] font-medium text-sky-300">
                     <span className="h-1.5 w-1.5 rounded-full bg-sky-400" />
                     Em progresso
@@ -118,17 +149,22 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
                 )}
                 {semester && (
                   <span
-                    className="inline-flex items-center rounded-md px-2 py-[3px] text-[10px] font-medium text-white/90"
-                    style={{ backgroundColor: `${color}55` }}
+                    className={cn(
+                      "inline-flex items-center rounded-md px-2 py-[3px] text-[10px] font-medium",
+                      isPlaceholder ? "bg-muted/40 text-muted-foreground/60" : "text-white/90"
+                    )}
+                    style={!isPlaceholder ? { backgroundColor: `${color}55` } : undefined}
                   >
                     {semester}º Sem.
                   </span>
                 )}
               </div>
-              <span className="text-[10px] tabular-nums text-muted-foreground shrink-0">
-                {items.length} {items.length === 1 ? 'apostila' : 'apostilas'}
-                {totalEx > 0 ? ` · ${totalEx} ex.` : ''}
-              </span>
+              {!isPlaceholder && (
+                <span className="text-[10px] tabular-nums text-muted-foreground shrink-0">
+                  {items.length} {items.length === 1 ? 'apostila' : 'apostilas'}
+                  {totalEx > 0 ? ` · ${totalEx} ex.` : ''}
+                </span>
+              )}
             </div>
           </button>
         );
