@@ -56,7 +56,7 @@ async function fileToCompactAvatarDataUrl(file: File): Promise<string> {
 }
 
 export default function ProfilePage() {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const { data: profileLite } = useUserProfile(user?.id);
   const scope = profileLite?.content_scope ?? 'full';
   const allowedAreas = scope === 'enem_only'
@@ -329,6 +329,46 @@ export default function ProfilePage() {
         </Card>
 
         <div className="mb-6 animate-content-show delay-3"><EvolutionChart /></div>
+
+        <Card className="p-5 border-destructive/20 bg-destructive/5 mb-6 animate-content-show delay-3">
+          <h3 className="text-sm font-semibold text-destructive mb-2 flex items-center gap-2">
+            <AlertCircle className="h-4 w-4" /> Zona de Perigo
+          </h3>
+          <p className="text-xs text-muted-foreground mb-4">
+            Ao excluir sua conta, todos os seus dados (progresso, respostas, planos de estudo e conquistas) serão apagados permanentemente conforme as diretrizes da LGPD. Esta ação não pode ser desfeita.
+          </p>
+          <Button 
+            variant="destructive" 
+            size="sm" 
+            className="w-full sm:w-auto"
+            onClick={async () => {
+              const confirm = window.confirm("TEM CERTEZA? Todos os seus dados serão apagados permanentemente e você perderá acesso imediato ao app.");
+              if (!confirm) return;
+              
+              const finalConfirm = window.prompt("Para confirmar, digite EXCLUIR no campo abaixo:");
+              if (finalConfirm !== "EXCLUIR") return;
+
+              toast.loading("Excluindo sua conta e dados...");
+              try {
+                const { data, error } = await supabase.functions.invoke('delete-account');
+                if (error) throw error;
+                
+                toast.dismiss();
+                toast.success("Conta excluída com sucesso. Adeus!");
+                
+                // Limpa tudo e desloga
+                localStorage.clear();
+                await signOut();
+                navigate('/');
+              } catch (err: any) {
+                toast.dismiss();
+                toast.error("Erro ao excluir conta: " + (err.message || "tente novamente mais tarde"));
+              }
+            }}
+          >
+            Excluir minha conta permanentemente
+          </Button>
+        </Card>
 
         {Object.keys(stats.byApostila).length > 0 && (
           <Card className="p-5 bg-card border border-border/50 animate-content-show delay-3">
