@@ -40,13 +40,6 @@ export default function DashboardPage() {
   const [query, setQuery] = useState('');
   const [visibleFolders, setVisibleFolders] = useState(6);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
-  const [selectedSemester, setSelectedSemester] = useState<number | null>(null);
-
-  useEffect(() => {
-    if (profile?.semester) {
-      setSelectedSemester(Number(profile.semester));
-    }
-  }, [profile?.semester]);
   
   
 
@@ -133,40 +126,20 @@ export default function DashboardPage() {
           </Reveal>
 
           <section id="minhas-disciplinas" className="scroll-mt-24 rounded-2xl border border-border bg-card p-5">
-            <header className="flex flex-col gap-4 mb-4 lg:flex-row lg:items-center lg:justify-between">
-              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <BookOpen className="h-4 w-4 text-primary" />
-                  <h2 className="font-bold text-base whitespace-nowrap">Minhas Disciplinas</h2>
-                </div>
-
-                <div className="flex items-center gap-1.5 p-1 bg-muted/50 rounded-lg border border-border/50">
-                  {[1, 2, 3, 4, 5, 6, 7, 8].map((sem) => (
-                    <button
-                      key={sem}
-                      onClick={() => setSelectedSemester(sem)}
-                      className={`
-                        h-7 px-2.5 text-[11px] font-medium rounded-md transition-all
-                        ${selectedSemester === sem 
-                          ? 'bg-primary text-primary-foreground shadow-sm' 
-                          : 'text-muted-foreground hover:text-foreground hover:bg-muted'}
-                      `}
-                    >
-                      {sem}º
-                    </button>
-                  ))}
-                </div>
+            <header className="flex flex-col gap-3 mb-4 md:flex-row md:items-center md:justify-between">
+              <div className="flex items-center gap-2">
+                <BookOpen className="h-4 w-4 text-primary" />
+                <h2 className="font-bold text-base">Minhas Disciplinas</h2>
               </div>
-
-              <div className="relative w-full lg:max-w-xs">
+              <div className="relative w-full md:max-w-xs">
                 <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
                 <Input
                   type="search"
                   value={query}
                   onChange={(e) => setQuery(e.target.value.slice(0, 80))}
-                  placeholder="Buscar disciplina..."
-                  aria-label="Buscar disciplina"
-                  className="h-9 pl-8 pr-8 text-sm bg-muted/30 border-none focus-visible:ring-1"
+                  placeholder="Buscar disciplina ou apostila..."
+                  aria-label="Buscar disciplina ou apostila"
+                  className="h-9 pl-8 pr-8 text-sm"
                 />
                 {query && (
                   <button
@@ -193,8 +166,7 @@ export default function DashboardPage() {
                   apostilas={apostilas.slice(0, visibleFolders)}
                   exerciseCounts={exerciseCounts}
                   stats={stats}
-                   query={query}
-                  selectedSemester={selectedSemester}
+                  query={query}
                 />
                 
                 {visibleFolders < apostilas.length && (

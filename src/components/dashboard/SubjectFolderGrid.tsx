@@ -2,9 +2,6 @@ import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowUpRight } from 'lucide-react';
 import { getSubjectColor } from '@/lib/subject-colors';
-import { getCurriculumSubjects } from '@/lib/curriculum-subjects';
-import { useAuth } from '@/hooks/useAuth';
-import { useUserProfile } from '@/hooks/queries/useUserProfile';
 import type { ApostilaSummary } from '@/hooks/queries/useDashboardData';
 
 interface Props {
@@ -12,59 +9,36 @@ interface Props {
   exerciseCounts: Record<string, number>;
   stats: { byApostila: Record<string, { title: string; hits: number; errors: number }> };
   query?: string;
-  selectedSemester?: number | null;
 }
 
 /**
- * Grid de matérias no estilo Notion.
- * Inclui "Blank Cards" baseados na grade curricular para matérias sem conteúdo ainda.
+ * Grid de matérias no estilo Notion: cada card representa uma matéria e ao ser
+ * clicado abre a página da matéria com a lista de apostilas. Sem expansão inline
+ * — a navegação vai direto para /materia/:slug, onde o aluno abre as apostilas
+ * uma a uma.
  */
-export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = '', selectedSemester }: Props) {
+export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = '' }: Props) {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const { data: profile } = useUserProfile(user?.id);
 
   const groups = useMemo(() => {
     const normalize = (s: string) =>
       s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
     const q = normalize(query.trim());
-    
-    // 1. Get existing subjects from apostilas
     const map = new Map<string, ApostilaSummary[]>();
     for (const a of apostilas) {
       const key = a.category?.trim() || 'Geral';
       if (q && !normalize(a.title || '').includes(q) && !normalize(key).includes(q)) continue;
-      
-      // FILTRO: Se houver um semestre selecionado ou no perfil, filtramos as apostilas
-      const activeSemester = selectedSemester || profile?.semester;
-      if (activeSemester && (a as any).semester && Number((a as any).semester) !== Number(activeSemester)) {
-        continue;
-      }
-
       const arr = map.get(key) ?? [];
       arr.push(a);
       map.set(key, arr);
     }
-
-    // 2. Add blank subjects from curriculum IF they are from the 8th semester (current academic target for placeholders)
-    // and only if they don't already have content. Other semesters should ONLY show existing content.
-    const semesterToUse = selectedSemester || profile?.semester;
-    if (profile?.course && Number(semesterToUse) === 8 && !q) {
-      const curriculum = getCurriculumSubjects(profile.course, 8);
-      for (const subjectName of curriculum) {
-        if (!map.has(subjectName)) {
-          map.set(subjectName, []); // Empty array indicates a "blank" card
-        }
-      }
-    }
-
     for (const [, arr] of map) {
       arr.sort((a, b) => (a.title || '').localeCompare(b.title || '', 'pt-BR'));
     }
     return Array.from(map.entries()).sort(([a], [b]) =>
       a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }),
     );
-  }, [apostilas, query, profile?.course, profile?.semester, selectedSemester]);
+  }, [apostilas, query]);
 
   if (groups.length === 0) {
     return (
@@ -131,12 +105,7 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
             {/* Meta */}
             <div className="flex w-full items-center gap-2 px-4 py-2.5">
               <div className="flex flex-1 flex-wrap items-center gap-1.5 min-w-0">
-                {items.length === 0 ? (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-[3px] text-[10px] font-medium text-amber-500/80 border border-amber-500/20">
-                    <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
-                    Aguardando conteúdo
-                  </span>
-                ) : inProgress ? (
+                {inProgress ? (
                   <span className="inline-flex items-center gap-1 rounded-full bg-sky-500/15 px-2 py-[3px] text-[10px] font-medium text-sky-300">
                     <span className="h-1.5 w-1.5 rounded-full bg-sky-400" />
                     Em progresso
@@ -147,19 +116,17 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
                     Não iniciado
                   </span>
                 )}
-                {(semester || profile?.semester) && (
+                {semester && (
                   <span
                     className="inline-flex items-center rounded-md px-2 py-[3px] text-[10px] font-medium text-white/90"
                     style={{ backgroundColor: `${color}55` }}
                   >
-                    {semester || profile?.semester}º Sem.
+                    {semester}º Sem.
                   </span>
                 )}
               </div>
               <span className="text-[10px] tabular-nums text-muted-foreground shrink-0">
-                {items.length === 0 
-                  ? 'Vazio' 
-                  : `${items.length} ${items.length === 1 ? 'apostila' : 'apostilas'}`}
+                {items.length} {items.length === 1 ? 'apostila' : 'apostilas'}
                 {totalEx > 0 ? ` · ${totalEx} ex.` : ''}
               </span>
             </div>
