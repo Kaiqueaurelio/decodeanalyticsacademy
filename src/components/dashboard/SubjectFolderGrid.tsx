@@ -96,5 +96,3 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
     </div>
   );
 }
-  );
-}
