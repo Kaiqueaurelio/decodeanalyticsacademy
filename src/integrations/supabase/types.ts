@@ -2771,6 +2771,10 @@ export type Database = {
         }
         Returns: Json
       }
+      force_complete_semesters_upto_five: {
+        Args: { _user_id: string }
+        Returns: undefined
+      }
       get_apostila_reader_tree: {
         Args: { _apostila_id: string }
         Returns: Json
