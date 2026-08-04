@@ -301,7 +301,7 @@ export default function ApostilaReaderPage() {
   }
 
   return (
-    <div className="flex h-[100dvh] w-full bg-background text-foreground">
+    <div className="flex h-screen w-full bg-background text-foreground overflow-hidden">
       {/* Sidebar TOC — desktop */}
       <aside
         className={cn(
@@ -446,7 +446,7 @@ export default function ApostilaReaderPage() {
         )}
 
         {/* Content */}
-        <div ref={contentRef} className="flex-1 overflow-y-auto">
+        <div ref={contentRef} className="flex-1 overflow-y-auto scroll-smooth">
           <div className="mx-auto max-w-[68ch] px-5 py-8 md:px-10 md:py-12">
             {lessonLoading ? (
               <div className="flex items-center justify-center py-16">

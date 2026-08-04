@@ -290,7 +290,7 @@ export default function ApostilaPage() {
   );
 
   return (
-    <div className={`min-h-dvh bg-background relative ${focusMode ? 'focus-mode' : ''}`}>
+    <div className={`min-h-screen bg-background relative overflow-x-hidden ${focusMode ? 'focus-mode' : ''}`}>
       {!focusMode && <Watermark />}
       {!focusMode && <AppHeader />}
       {!focusMode && <AdSidebar />}
