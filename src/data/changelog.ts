@@ -31,8 +31,8 @@ export const CHANGELOG: ChangelogEntry[] = [
     date: "2026-08-04",
     title: "Sincronização Visual e Estabilidade",
     changes: [
-      { kind: 'improvement', text: 'Correção de mapeamento de texto residual nas rotas de sistema.' },
-      { kind: 'improvement', text: 'Refinamento da lógica de substituição dinâmica de strings para melhor consistência visual.' },
+      { kind: 'improvement', text: 'Correção de mapeamento de texto residual nas rotas de sistema para garantir estabilidade visual.' },
+      { kind: 'improvement', text: 'Refinamento da lógica de substituição dinâmica de strings (v3.38.1).' },
     ],
   },
   {
