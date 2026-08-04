@@ -215,8 +215,12 @@ const clearAutosave = () => {
   }
 };
 
-const formatErrorMessage = (error: any, fallback: string) =>
-  error?.message || error?.details || error?.hint || fallback;
+const formatErrorMessage = (error: any, fallback: string) => {
+  const msg = error?.message || error?.details || error?.hint || fallback;
+  // Oculta termos técnicos sensíveis
+  if (/(table|column|relation|syntax|pg_|^42)/i.test(msg)) return fallback;
+  return msg;
+};
 
 export function AdminAdsManager() {
   const { user, isAdmin } = useAuth();

@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Send, Wand2, Trash2, Loader2, BookOpen, Volume2, Square } from 'lucide-react';
 import { toast } from 'sonner';
+import { showFriendlyError } from '@/lib/error-utils';
 import ReactMarkdown from 'react-markdown';
 
 interface Msg {
@@ -216,8 +217,7 @@ export function ApostilaChat({ apostilaId, apostilaTitle, variant = 'panel' }: P
         });
       }
     } catch (e) {
-      console.error(e);
-      toast.error('Falha de conexão com o chat');
+      showFriendlyError(e, 'Falha de conexão com o chat');
     } finally {
       setLoading(false);
       setStreaming(false);

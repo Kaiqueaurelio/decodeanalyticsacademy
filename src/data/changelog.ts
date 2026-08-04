@@ -27,6 +27,16 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.18.1",
+    date: "2026-08-04",
+    title: "Consolidação de Segurança e Tratamento de Erros",
+    changes: [
+      { kind: 'security', text: 'Padronização do tratamento de erros no Chat da Apostila e no Gerenciador de Anúncios para prevenir vazamento de esquema de banco de dados.' },
+      { kind: 'improvement', text: 'Limpeza de logs de console em ambiente de produção para reforçar a privacidade dos dados de depuração.' },
+      { kind: 'fix', text: 'Correção de inconsistência na sanitização de conteúdos markdown que permitiam tags HTML obsoletas.' },
+    ],
+  },
+  {
     version: "3.18.0",
     date: "2026-08-04",
     title: "Reforço de Segurança e Sanitização",
