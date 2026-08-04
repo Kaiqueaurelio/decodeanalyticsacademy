@@ -24,7 +24,7 @@ import { StudyHeatmap } from '@/components/gamification/StudyHeatmap';
 import { useApostilasList, useExerciseCounts, useDashboardStats, type ApostilaSummary } from '@/hooks/queries/useDashboardData';
 import { useUserProfile } from '@/hooks/queries/useUserProfile';
 import { BY_SEMESTER } from '@/lib/subject-semester-map';
-import { BookOpen, Search, X } from 'lucide-react';
+import { BookOpen, Search, X, PenLine } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { NewUpdatePopup } from '@/components/NewUpdatePopup';
@@ -178,9 +178,47 @@ export default function DashboardPage() {
       <StudentSidebar />
 
       <div className="flex flex-col min-h-screen transition-[padding] duration-300 ease-out">
-        <DashboardTopbar />
+        <DashboardTopbar hideSearchOnMobile />
 
         <main className="flex-1 px-3 sm:px-6 lg:px-8 py-6 space-y-6 max-w-[1400px] w-full mx-auto animate-content-show overflow-x-hidden pt-12">
+          {/* Dashboard Summary Bar */}
+          <div className="flex flex-wrap items-center gap-4 pb-2 border-b border-border/10 overflow-x-auto scrollbar-none">
+            <div className="flex items-center gap-2 whitespace-nowrap">
+              <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                <BookOpen className="h-4 w-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[10px] uppercase font-bold text-muted-foreground/60 leading-none">Disciplinas</span>
+                <span className="text-xs font-bold">{disciplinesTotal} Ativas</span>
+              </div>
+            </div>
+            
+            <div className="h-4 w-px bg-border/40" />
+
+            <div className="flex items-center gap-2 whitespace-nowrap">
+              <div className="h-8 w-8 rounded-lg bg-accent/10 flex items-center justify-center text-accent">
+                <PenLine className="h-4 w-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[10px] uppercase font-bold text-muted-foreground/60 leading-none">Exercícios</span>
+                <span className="text-xs font-bold">{answeredExercises} Resolvidos</span>
+              </div>
+            </div>
+
+            <div className="ml-auto flex items-center gap-3">
+              <div className="hidden sm:flex flex-col items-end">
+                <span className="text-[10px] font-bold text-primary uppercase leading-none">Progresso Geral</span>
+                <span className="text-xs font-black">{overallProgress}%</span>
+              </div>
+              <div className="h-1.5 w-24 bg-muted rounded-full overflow-hidden hidden sm:block">
+                <div 
+                  className="h-full bg-primary shadow-[0_0_8px_hsl(var(--primary)/0.5)] transition-all duration-1000" 
+                  style={{ width: `${overallProgress}%` }} 
+                />
+              </div>
+            </div>
+          </div>
+
           <AdBanner position="inline" />
 
           <Reveal from="bottom" delay={10}>
