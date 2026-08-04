@@ -386,7 +386,7 @@ export default function ApostilaPage({ tab, setTab }: Props) {
                     size="sm"
                     onClick={() => {
                       if (setTab) setTab('apostilas');
-                      navigate('/admin');
+                      navigate(`/admin?edit=${apostila?.id}`);
                     }}
                     className="text-xs gap-1.5 hover-lift border-primary/40 bg-primary/5 text-primary hover:bg-primary/10"
                     title="Editar esta apostila no painel Admin"
