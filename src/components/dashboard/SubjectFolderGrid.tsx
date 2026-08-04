@@ -55,13 +55,6 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
       a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }),
     );
   }, [apostilas, query, profile?.course, profile?.semester]);
-    for (const [, arr] of map) {
-      arr.sort((a, b) => (a.title || '').localeCompare(b.title || '', 'pt-BR'));
-    }
-    return Array.from(map.entries()).sort(([a], [b]) =>
-      a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }),
-    );
-  }, [apostilas, query]);
 
   if (groups.length === 0) {
     return (
