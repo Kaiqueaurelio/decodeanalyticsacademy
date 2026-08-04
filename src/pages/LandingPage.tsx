@@ -428,9 +428,15 @@ export default function LandingPage() {
                 no primeiro frame e a entrada é feita só por CSS. */}
             <div className="hero-entrance mx-auto max-w-5xl">
 
-              <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-white/[0.06] px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-cyan-100 backdrop-blur-sm">
-                <GraduationCap className="h-3.5 w-3.5 text-[#00f0ff]" />
-                Plataforma de estudos
+              <div className="mb-7 flex flex-wrap items-center justify-center gap-3">
+                <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-white/[0.06] px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-cyan-100 backdrop-blur-sm">
+                  <GraduationCap className="h-3.5 w-3.5 text-[#00f0ff]" />
+                  Plataforma de estudos
+                </div>
+                <div className="inline-flex items-center gap-2 rounded-full border border-purple-400/20 bg-purple-500/5 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-purple-200 backdrop-blur-sm">
+                  <Brain className="h-3.5 w-3.5 text-[#a855f7]" />
+                  Ella Ribeiro Assistant
+                </div>
               </div>
               <h1 className="max-w-4xl text-5xl font-bold leading-[0.94] tracking-[-0.05em] text-white sm:text-7xl md:text-8xl">
                 Estude com
