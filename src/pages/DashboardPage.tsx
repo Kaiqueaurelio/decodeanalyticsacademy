@@ -78,7 +78,7 @@ export default function DashboardPage() {
       <div className="flex flex-col min-h-dvh transition-[padding] duration-300 ease-out">
         <DashboardTopbar />
 
-        <main className="flex-1 px-4 sm:px-6 lg:px-8 py-6 space-y-6 max-w-[1400px] w-full mx-auto animate-content-show">
+        <main className="flex-1 px-3 sm:px-6 lg:px-8 py-6 space-y-6 max-w-[1400px] w-full mx-auto animate-content-show overflow-x-hidden">
           <AdBanner position="inline" />
 
           <Reveal from="bottom" delay={10}>
@@ -126,12 +126,12 @@ export default function DashboardPage() {
           </Reveal>
 
           <section id="minhas-disciplinas" className="scroll-mt-24 rounded-2xl border border-border bg-card p-5">
-            <header className="flex flex-col gap-3 mb-4 sm:flex-row sm:items-center sm:justify-between">
+            <header className="flex flex-col gap-3 mb-4 md:flex-row md:items-center md:justify-between">
               <div className="flex items-center gap-2">
                 <BookOpen className="h-4 w-4 text-primary" />
                 <h2 className="font-bold text-base">Minhas Disciplinas</h2>
               </div>
-              <div className="relative w-full sm:max-w-xs">
+              <div className="relative w-full md:max-w-xs">
                 <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
                 <Input
                   type="search"
@@ -155,7 +155,7 @@ export default function DashboardPage() {
             </header>
 
             {loading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
                 {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => <div key={i} className="h-36 rounded-2xl bg-muted/30 animate-pulse" />)}
               </div>
             ) : apostilas.length === 0 ? (

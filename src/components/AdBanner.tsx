@@ -53,16 +53,16 @@ export function AdBanner({ position = 'inline', className = '' }: AdBannerProps)
       className={`rounded-2xl border border-primary/45 bg-card/75 p-3 shadow-sm backdrop-blur sm:p-4 ${className}`}
       aria-label="Publicidade"
     >
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center">
         {currentAd.image_url && (
-          <div className="flex w-full shrink-0 flex-col items-center gap-2 sm:w-auto">
+          <div className="flex w-full shrink-0 flex-col items-center gap-2 md:w-auto">
           <AppImage
             src={currentAd.image_url}
             alt={currentAd.title}
             referrerPolicy="strict-origin-when-cross-origin"
             loading="lazy"
-            className="mx-auto h-auto max-h-64 w-auto max-w-full rounded-xl object-contain sm:max-h-32 sm:max-w-[220px]"
-            wrapperClassName="flex w-full shrink-0 items-center justify-center overflow-hidden rounded-xl bg-muted/40 sm:w-auto"
+            className="mx-auto h-auto max-h-48 w-auto max-w-full rounded-xl object-contain md:max-h-32 md:max-w-[220px]"
+            wrapperClassName="flex w-full shrink-0 items-center justify-center overflow-hidden rounded-xl bg-muted/40 md:w-auto"
             fallbackLabel=""
           />
           <AdZoomButton onClick={() => setZoomOpen(true)} />
@@ -82,7 +82,7 @@ export function AdBanner({ position = 'inline', className = '' }: AdBannerProps)
               <X size={15} />
             </button>
           </div>
-          <h3 className="line-clamp-2 text-base font-bold leading-snug text-foreground sm:text-lg">
+          <h3 className="line-clamp-2 text-base font-bold leading-snug text-foreground md:text-lg">
             {currentAd.title}
           </h3>
           {currentAd.description && (
@@ -92,7 +92,7 @@ export function AdBanner({ position = 'inline', className = '' }: AdBannerProps)
           )}
         </div>
 
-        <div className="flex shrink-0 items-center gap-2 sm:flex-col sm:items-stretch">
+        <div className="flex shrink-0 items-center gap-2 md:flex-col md:items-stretch">
           {hasLink && (
             <Button onClick={handleClick} size="sm" className="h-10 gap-2 px-4 font-bold">
               Saiba mais <ExternalLink size={14} />

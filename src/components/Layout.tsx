@@ -29,7 +29,7 @@ export function Layout({ header, sidebar, footer, children, className }: LayoutP
     <div
       className={cn(
         "dark min-h-dvh bg-background text-foreground",
-        "grid grid-cols-1 md:grid-cols-[260px_1fr]",
+        "grid grid-cols-1 md:grid-cols-[auto_1fr]",
         "grid-rows-[auto_1fr_auto]",
         "[grid-template-areas:'header'_'sidebar'_'main'_'footer'] md:[grid-template-areas:'header_header'_'sidebar_main'_'footer_footer']",
         className
@@ -45,7 +45,7 @@ export function Layout({ header, sidebar, footer, children, className }: LayoutP
 
       {sidebar && (
         <aside
-          className="[grid-area:sidebar] border-b md:border-b-0 md:border-r border-border/60 bg-card/40"
+          className="[grid-area:sidebar] border-b md:border-b-0 md:border-r border-border/60 bg-card/40 hidden md:block"
         >
           {sidebar}
         </aside>
