@@ -1320,10 +1320,20 @@ export default function AdminPage() {
           semester: activeSemNum,
           published: false,
           created_at: new Date().toISOString(),
-          isPlaceholder: true
+          isPlaceholder: true,
+          content: '',
+          content_backup: '',
+          course: [],
+          cover_url: '',
+          created_by: '',
+          embedding: '',
+          file_url: '',
+          source_type: '',
+          teacher: '',
+          updated_at: new Date().toISOString()
         }));
         
-      return [...list, ...placeholders];
+      return [...list, ...placeholders] as any[];
     }
 
     return list;
