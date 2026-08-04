@@ -197,6 +197,7 @@ export default function DashboardPage() {
             <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-accent/10 px-3 py-1 border border-accent/20">
               <ShieldCheck className="h-3 w-3 text-accent" />
               <span className="text-[9px] font-black uppercase tracking-wider text-accent">Modo Administrador Ativo</span>
+              <div className="h-1 w-1 rounded-full bg-accent animate-pulse ml-1" />
             </div>
           )}
 

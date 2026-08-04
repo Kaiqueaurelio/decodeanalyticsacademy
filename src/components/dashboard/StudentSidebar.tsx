@@ -309,16 +309,16 @@ export function SidebarContent({
                     <div className="mt-4 px-3 py-3 rounded-xl bg-gradient-to-br from-primary/10 to-accent/10 border border-primary/20 space-y-2 mx-1 shadow-inner shadow-primary/5">
                       <div className="flex items-center justify-between">
                         <span className="text-[10px] font-bold uppercase tracking-wider text-primary drop-shadow-sm">Estágio Pro</span>
-                        <span className="text-[10px] font-black text-foreground">LVL 5</span>
+                        <span className="text-[10px] font-black text-foreground">LVL 99</span>
                       </div>
                       <div className="h-1.5 w-full bg-background/50 rounded-full overflow-hidden border border-border/10">
                         <div 
-                          className="h-full bg-gradient-to-r from-primary to-accent w-[65%] rounded-full shadow-[0_0_12px_hsl(var(--primary)/0.5)] transition-all duration-1000" 
+                          className="h-full bg-gradient-to-r from-primary to-accent w-[100%] rounded-full shadow-[0_0_12px_hsl(var(--primary)/0.5)] transition-all duration-1000" 
                         />
                       </div>
                       <div className="flex justify-between items-center text-[8px] text-muted-foreground font-mono uppercase tracking-tighter">
-                        <span>1.250 XP</span>
-                        <span>Próximo: 2.000 XP</span>
+                        <span>MAX XP</span>
+                        <span>Mestre da Decode</span>
                       </div>
                     </div>
                   )}
