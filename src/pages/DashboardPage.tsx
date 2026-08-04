@@ -91,7 +91,12 @@ export default function DashboardPage() {
     // Marcar do 1º ao 5º semestre como concluído
     const markCompleted = async () => {
       await supabase.rpc('force_complete_semesters_upto_five', { _user_id: user.id });
-      await supabase.rpc('complete_semesters_six_to_eight', { _user_id: user.id });
+      // Use try/catch because the function might not be in the generated types yet
+      try {
+        await (supabase.rpc as any)('complete_semesters_six_to_eight', { _user_id: user.id });
+      } catch (e) {
+        console.error("Erro ao marcar semestres 6-8:", e);
+      }
     };
     markCompleted();
 
