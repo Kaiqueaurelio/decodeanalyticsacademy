@@ -1011,23 +1011,32 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
           </div>
 
 
-          {/* Paginação - Carregar mais */}
-          {hasMore && (
-            <div className="flex justify-center pt-4">
-              <Button
-                variant="outline"
-                onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
-                className="rounded-full"
-              >
-                Carregar mais ({filtered.length - visibleCount} restantes)
-              </Button>
-            </div>
-          )}
-          {!hasMore && filtered.length > PAGE_SIZE && (
-            <p className="text-center text-xs text-muted-foreground pt-4">
-              Fim da lista · {filtered.length} apostila(s)
-            </p>
-          )}
+          {/* Rolagem infinita */}
+          <div ref={adminLoaderRef} className="pt-6">
+            {hasMore ? (
+              <div className="flex flex-col items-center gap-3">
+                <div className="flex items-center gap-2 text-primary">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span className="text-[11px] font-bold uppercase tracking-widest">
+                    Carregando mais ({filtered.length - visibleCount} restantes)
+                  </span>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
+                  className="rounded-full text-xs"
+                >
+                  Carregar agora
+                </Button>
+              </div>
+            ) : filtered.length > PAGE_SIZE ? (
+              <p className="text-center text-xs text-muted-foreground">
+                Fim da lista · {filtered.length} apostila(s)
+              </p>
+            ) : null}
+          </div>
+
         </CardContent>
       </Card>
 
