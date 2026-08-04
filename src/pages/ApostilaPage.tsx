@@ -390,7 +390,7 @@ export default function ApostilaPage({ tab, setTab }: Props) {
                         variant="outline"
                         size="sm"
                         className="text-xs gap-1.5 hover-lift border-primary/40 bg-primary/5 text-primary hover:bg-primary/10"
-                        title="Editar esta apostila diretamente aqui"
+                        title="Editar esta apostila diretamente aqui (Somente Administrador)"
                       >
                         <PenTool className="h-3.5 w-3.5" />
                         <span className="hidden lg:inline">Editar Material</span>
@@ -417,7 +417,7 @@ export default function ApostilaPage({ tab, setTab }: Props) {
                     onClick={handleExportPdf}
                     disabled={exportingPdf}
                     className="text-xs gap-1.5 hover-lift border-accent/40 text-accent-foreground hover:bg-accent/10"
-                    title="Baixar apostila em PDF (admin)"
+                    title="Baixar apostila em PDF (Somente Administrador)"
                   >
                     {exportingPdf ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <FileDown className="h-3.5 w-3.5" />}
                     <span className="hidden sm:inline">PDF</span>

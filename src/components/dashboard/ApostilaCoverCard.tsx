@@ -104,7 +104,7 @@ export function ApostilaCoverCard({ apostila, status = 'em-progresso' }: Props) 
                 navigate(`/admin/apostilas/${apostila.id}`);
               }}
               className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary shadow-[0_0_20px_rgba(168,85,247,0.4)] border border-primary/50 text-white hover:scale-110 active:scale-95 transition-all"
-              title="Editar Conteúdo (Admin)"
+              title="Editar Conteúdo (Somente Administrador)"
             >
               <PenTool className="h-4.5 w-4.5" />
             </button>
@@ -114,12 +114,13 @@ export function ApostilaCoverCard({ apostila, status = 'em-progresso' }: Props) 
                 navigate(`/admin/apostilas/${apostila.id}`, { state: { editMetadata: true } });
               }}
               className="flex h-9 w-9 items-center justify-center rounded-xl bg-black/60 backdrop-blur-md border border-white/20 text-white hover:bg-accent hover:border-accent hover:scale-110 active:scale-95 transition-all shadow-xl"
-              title="Configurações do Material"
+              title="Configurações do Material (Somente Administrador)"
             >
               <Settings className="h-4.5 w-4.5" />
             </button>
           </div>
         )}
+
       </div>
 
 

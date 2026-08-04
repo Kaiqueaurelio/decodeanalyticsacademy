@@ -179,6 +179,13 @@ export default function DashboardPage() {
         <DashboardTopbar hideSearchOnMobile />
 
         <main className="flex-1 px-3 sm:px-6 lg:px-8 py-6 space-y-8 max-w-[1600px] w-full mx-auto animate-content-show overflow-x-hidden pt-12 pb-24">
+          {isAdmin && (
+            <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-accent/10 px-3 py-1 border border-accent/20">
+              <ShieldCheck className="h-3 w-3 text-accent" />
+              <span className="text-[9px] font-black uppercase tracking-wider text-accent">Modo Administrador Ativo</span>
+            </div>
+          )}
+
           {/* Dashboard Summary Bar */}
           <div className="flex flex-wrap items-center gap-4 pb-2 border-b border-border/10 overflow-x-auto scrollbar-none">
             <div className="flex items-center gap-2 whitespace-nowrap">

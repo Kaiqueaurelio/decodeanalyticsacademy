@@ -104,24 +104,27 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
               </div>
               <div className="flex items-center gap-2">
                 {isAdmin && (
-                  <div className="flex items-center gap-2 mr-2">
+                  <div className="flex items-center gap-2 mr-2 bg-accent/5 p-1 rounded-full border border-accent/10 shadow-sm">
                     <button 
                       onClick={() => navigate('/admin', { state: { tab: 'apostilas', filter: category, action: 'new' } })}
-                      className="flex items-center gap-1.5 text-[10px] font-bold text-primary hover:text-primary/80 transition-all bg-primary/5 px-3 py-1.5 rounded-full border border-primary/10"
+                      className="flex items-center gap-1.5 text-[10px] font-bold text-primary hover:bg-primary/10 transition-all px-3 py-1.5 rounded-full"
                       title="Adicionar novo material nesta disciplina"
                     >
                       <Plus className="h-3 w-3" />
                       Novo Material
                     </button>
+                    <div className="h-3 w-px bg-accent/20" />
                     <button 
                       onClick={() => navigate('/admin', { state: { tab: 'apostilas', filter: category } })}
-                      className="flex items-center gap-1.5 text-[10px] font-bold text-accent hover:text-accent/80 transition-all bg-accent/5 px-3 py-1.5 rounded-full border border-accent/10"
+                      className="flex items-center gap-1.5 text-[10px] font-bold text-accent hover:bg-accent/10 transition-all px-3 py-1.5 rounded-full"
+                      title="Gerenciar disciplina no painel administrativo"
                     >
                       <PenTool className="h-3 w-3" />
                       Gerenciar Matéria
                     </button>
                   </div>
                 )}
+
                 <button 
                   onClick={() => navigate(`/materia/${encodeURIComponent(category)}`)}
                   className="group flex items-center gap-1.5 text-xs font-bold text-primary hover:text-primary/80 transition-all bg-primary/5 px-3 py-1.5 rounded-full border border-primary/10"
