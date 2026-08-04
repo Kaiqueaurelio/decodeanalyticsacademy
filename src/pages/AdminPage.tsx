@@ -2014,24 +2014,44 @@ export default function AdminPage() {
                                 <Button size="icon" variant="ghost" className="h-8 w-8 text-primary" onClick={() => setExportingApostila(a)} title="Exportar apostila (PDF/DOCX)">
                                   <FileDown className="h-3.5 w-3.5" />
                                 </Button>
-                                <Button size="icon" variant="ghost" className={`h-8 w-8 ${a.published ? 'text-destructive' : 'text-[hsl(var(--success))]'}`} onClick={() => togglePublish(a.id, a.published)} title={a.published ? 'Ocultar' : 'Publicar'}>
-                                  {a.published ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="default"
-                                  className="hidden sm:inline-flex h-8 px-2.5 text-xs gap-1.5 gradient-primary text-primary-foreground"
-                                  onClick={() => navigate(`/admin/apostilas/${a.id}`)}
-                                  title="Abrir no Workbench (editor completo)"
-                                >
-                                  <PenTool className="h-3.5 w-3.5" /> Workbench
-                                </Button>
-                                <Button size="icon" variant="ghost" className="hidden sm:inline-flex h-8 w-8" onClick={() => { setEditingApostila(a); setEditTitle(a.title); setEditContent(a.content || ''); setEditCategory(a.category); }} title="Editar (modal clássico)">
-                                  <Edit className="h-3.5 w-3.5" />
-                                </Button>
-                                <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => setConfirmDeleteId(a.id)} title="Excluir">
-                                  <Trash2 className="h-3.5 w-3.5" />
-                                </Button>
+                                 {!(a as any).isPlaceholder && (
+                                   <Button size="icon" variant="ghost" className={`h-8 w-8 ${a.published ? 'text-destructive' : 'text-[hsl(var(--success))]'}`} onClick={() => togglePublish(a.id, a.published)} title={a.published ? 'Ocultar' : 'Publicar'}>
+                                     {a.published ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                                   </Button>
+                                 )}
+                                 <Button
+                                   size="sm"
+                                   variant="default"
+                                   className="hidden sm:inline-flex h-8 px-2.5 text-xs gap-1.5 gradient-primary text-primary-foreground"
+                                   onClick={() => {
+                                     if ((a as any).isPlaceholder) {
+                                       setImportTitle(a.title.replace('[GRADE] ', ''));
+                                       setImportTopic(a.category || '');
+                                       setImportStep('edit');
+                                     } else {
+                                       navigate(`/admin/apostilas/${a.id}`);
+                                     }
+                                   }}
+                                   title={(a as any).isPlaceholder ? 'Começar esta matéria' : 'Abrir no Workbench (editor completo)'}
+                                 >
+                                   {(a as any).isPlaceholder ? <><Plus className="h-3.5 w-3.5" /> Começar</> : <><PenTool className="h-3.5 w-3.5" /> Workbench</>}
+                                 </Button>
+                                 <Button size="icon" variant="ghost" className="hidden sm:inline-flex h-8 w-8" onClick={() => { 
+                                   if ((a as any).isPlaceholder) {
+                                     setImportTitle(a.title.replace('[GRADE] ', ''));
+                                     setImportTopic(a.category || '');
+                                     setImportStep('edit');
+                                   } else {
+                                     setEditingApostila(a); setEditTitle(a.title); setEditContent(a.content || ''); setEditCategory(a.category); 
+                                   }
+                                 }} title="Editar">
+                                   <Edit className="h-3.5 w-3.5" />
+                                 </Button>
+                                 {!(a as any).isPlaceholder && (
+                                   <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => setConfirmDeleteId(a.id)} title="Excluir">
+                                     <Trash2 className="h-3.5 w-3.5" />
+                                   </Button>
+                                 )}
 
                                   {/* Kebab — mobile only, agrupa secundárias + editar */}
                                   <DropdownMenu>
