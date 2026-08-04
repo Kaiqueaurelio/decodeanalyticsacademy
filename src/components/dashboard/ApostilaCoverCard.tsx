@@ -94,6 +94,20 @@ export function ApostilaCoverCard({ apostila, status = 'em-progresso' }: Props) 
             style={{ background: `linear-gradient(90deg, ${color}, ${color}55)` }}
           />
         </div>
+        {!isPlaceholder && (
+          <div className="absolute top-2 left-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/admin/apostilas/${apostila.id}`);
+              }}
+              className="flex h-8 w-8 items-center justify-center rounded-lg bg-black/60 backdrop-blur-md border border-white/20 text-white hover:bg-primary hover:border-primary transition-all shadow-xl"
+              title="Editar Material (Admin)"
+            >
+              <PenTool className="h-4 w-4" />
+            </button>
+          </div>
+        )}
       </div>
 
 
