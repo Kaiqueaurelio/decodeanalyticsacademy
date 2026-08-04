@@ -1,4 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
+import { DashboardSkeleton } from "@/components/dashboard/DashboardSkeleton";
+
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
