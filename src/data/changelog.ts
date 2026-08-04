@@ -27,6 +27,15 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.29.0",
+    date: "2026-08-04",
+    title: "UX: Atalhos de Edição para Administradores",
+    changes: [
+      { kind: 'feature', text: 'Navegação: Adicionado atalho direto de edição (ícone PenTool) nos cards de apostilas para usuários administradores.' },
+      { kind: 'improvement', text: 'UX: Otimizado o grid de disciplinas para permitir acesso rápido ao editor sem necessidade de múltiplos cliques.' },
+    ],
+  },
+  {
     version: "3.28.0",
     date: "2026-08-04",
     title: "UX: Dashboard de Alta Performance",
