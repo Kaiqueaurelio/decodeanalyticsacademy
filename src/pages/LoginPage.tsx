@@ -487,10 +487,17 @@ export default function LoginPage() {
                           <label className="flex min-h-11 cursor-pointer items-center gap-2 py-1">
                             <Checkbox
                               checked={rememberMe}
-                              onCheckedChange={(v) => setRememberMe(!!v)}
+                              onCheckedChange={(v) => {
+                                setRememberMe(!!v);
+                                if (v) {
+                                  localStorage.setItem('decode_stay_logged_in', 'true');
+                                } else {
+                                  localStorage.removeItem('decode_stay_logged_in');
+                                }
+                              }}
                               className="h-4 w-4"
                             />
-                            <span className="text-xs text-muted-foreground">Lembrar-me</span>
+                            <span className="text-xs text-muted-foreground">Permanecer conectado</span>
                           </label>
                           <button type="button" onClick={() => setIsReset(true)} className="min-h-11 px-1 text-xs text-muted-foreground hover:text-foreground smooth-all">
                             {isLocked ? 'Redefinir senha' : 'Esqueceu a senha?'}
@@ -498,7 +505,7 @@ export default function LoginPage() {
                         </div>
                         {rememberMe && (
                           <p className="text-[10px] text-muted-foreground/70 leading-snug pl-6">
-                            Apenas seu RA/e-mail sera lembrado neste dispositivo. A senha fica com o navegador ou gerenciador de senhas.
+                            Você continuará logado mesmo após fechar o navegador, a menos que saia manualmente da conta.
                           </p>
                         )}
                       </div>

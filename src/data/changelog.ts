@@ -27,6 +27,15 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.27.0",
+    date: "2026-08-04",
+    title: "Sessão Persistente e 'Permanecer Conectado'",
+    changes: [
+      { kind: 'feature', text: 'Auth: Adicionada opção "Permanecer conectado" na tela de login, garantindo que o usuário não seja deslogado ao fechar o navegador.' },
+      { kind: 'improvement', text: 'Persistência: Refinada a lógica de keepalive e restauração de sessão para respeitar a escolha de privacidade do usuário.' },
+    ],
+  },
+  {
     version: "3.26.0",
     date: "2026-08-04",
     title: "Editor de Material em Modal",
