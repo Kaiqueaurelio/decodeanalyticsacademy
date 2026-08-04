@@ -56,7 +56,7 @@ async function fileToCompactAvatarDataUrl(file: File): Promise<string> {
 }
 
 export default function ProfilePage() {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const { data: profileLite } = useUserProfile(user?.id);
   const scope = profileLite?.content_scope ?? 'full';
   const allowedAreas = scope === 'enem_only'
