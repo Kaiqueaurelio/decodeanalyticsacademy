@@ -1668,8 +1668,7 @@ export default function AdminPage() {
                                     return;
                                   }
                                   setImportContent(importRawText);
-                                  setImportStep('review');
-                                  toast.success("Modo Edição ativado!");
+                                  setImportStep('edit');
                                 }}
                                 disabled={cloning || !importRawText.trim()} 
                                 variant="outline" 
@@ -1688,6 +1687,44 @@ export default function AdminPage() {
                             </div>
                           </div>
                         )}
+                      </div>
+                    ) : importStep === 'edit' ? (
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between gap-2 p-3 rounded-lg bg-primary/10 text-primary text-xs border border-primary/20">
+                          <div className="flex items-center gap-2">
+                            <FileText className="h-4 w-4 shrink-0" />
+                            <span>Modo Word Ativado: Formate seu conteúdo com as ferramentas acima.</span>
+                          </div>
+                          <Button variant="ghost" size="sm" onClick={() => setImportStep('input')} className="h-6 px-2 text-[10px]">Alterar Origem</Button>
+                        </div>
+                        
+                        <div className="grid sm:grid-cols-2 gap-4">
+                          <div>
+                            <Label className="text-xs text-muted-foreground">Título</Label>
+                            <Input value={importTitle} onChange={e => setImportTitle(e.target.value)} placeholder="Título da apostila" className="mt-1" />
+                          </div>
+                          <div>
+                            <Label className="text-xs text-muted-foreground">Disciplina</Label>
+                            <CategorySelect value={importTopic} onValueChange={setImportTopic} />
+                          </div>
+                        </div>
+
+                        <div className="border border-border rounded-xl overflow-hidden bg-background">
+                          <MarkdownEditor 
+                            value={importContent} 
+                            onChange={setImportContent} 
+                            onSave={handleSaveImport}
+                            className="border-none shadow-none min-h-[500px]"
+                          />
+                        </div>
+
+                        <div className="flex gap-2">
+                          <Button variant="outline" className="flex-1" onClick={resetImportForm}>Cancelar</Button>
+                          <Button className="flex-1 gradient-primary text-primary-foreground shadow-lg shadow-primary/20" onClick={handleSaveImport} disabled={cloning || !importTitle.trim()}>
+                            {cloning && <Loader2 className="h-4 w-4 animate-spin mr-1.5" />}
+                            Salvar Apostila
+                          </Button>
+                        </div>
                       </div>
                     ) : (
                       <div className="space-y-3">
