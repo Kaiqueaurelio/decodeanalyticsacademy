@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowUpRight } from 'lucide-react';
+import { ArrowUpRight, FolderOpen } from 'lucide-react';
 import { getSubjectColor } from '@/lib/subject-colors';
 import type { ApostilaSummary } from '@/hooks/queries/useDashboardData';
 
