@@ -24,7 +24,7 @@ import { StudyHeatmap } from '@/components/gamification/StudyHeatmap';
 import { useApostilasList, useExerciseCounts, useDashboardStats, type ApostilaSummary } from '@/hooks/queries/useDashboardData';
 import { useUserProfile } from '@/hooks/queries/useUserProfile';
 import { BY_SEMESTER } from '@/lib/subject-semester-map';
-import { BookOpen, Search, X } from 'lucide-react';
+import { BookOpen, Search, X, PenLine } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { NewUpdatePopup } from '@/components/NewUpdatePopup';
