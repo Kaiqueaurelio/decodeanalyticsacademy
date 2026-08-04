@@ -22,6 +22,7 @@ import {
   Link as LinkIcon, FileText, FileUp, Plus, Activity,
   Eye, EyeOff, Edit, Trash2, Trophy, Medal, Award, Filter, X, Check,
   CheckCircle2, XCircle, CalendarDays, ArrowDownUp, FolderOpen, ChevronDown, LayoutDashboard,
+  GraduationCap,
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { motion, AnimatePresence } from 'framer-motion';
