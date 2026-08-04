@@ -87,6 +87,9 @@ const features = [
   { icon: Flame, name: 'Gamificação & XP', desc: 'Pontos, badges, streaks e ranking entre alunos', color: '#f59e0b' },
 ];
 
+const words = ['inteligência.', 'eficiência.', 'tecnologia.', 'foco total.'];
+
+
 const roadmap = [
   { phase: '01', title: 'Fundamentos', desc: 'Lógica de programação, matemática discreta e introdução à computação.', icon: Cpu },
   { phase: '02', title: 'Desenvolvimento', desc: 'Estrutura de dados, algoritmos, banco de dados e engenharia de software.', icon: Layers },
