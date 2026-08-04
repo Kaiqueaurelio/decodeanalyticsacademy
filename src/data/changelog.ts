@@ -27,6 +27,15 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.39.0",
+    date: "2026-08-04",
+    title: "Sistema de Monitoramento e Depuração",
+    changes: [
+      { kind: 'improvement', text: 'Implementação de mapeamento dinâmico para logs detalhados com stack trace e versionamento do build.' },
+      { kind: 'improvement', text: 'Refinamento do sistema de auditoria visual para captura de erros em tempo real.' },
+    ],
+  },
+  {
     version: "3.38.2",
     date: "2026-08-04",
     title: "Estabilidade e Auditoria Contínua",

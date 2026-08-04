@@ -94,11 +94,12 @@ function useAdminCopyPatch() {
       ["oque vc acha que podemos melhorar no app por gentileza ??", "oque vc acha que podemos melhorar no app por gentileza ??"],
       ["oi teste", "oi teste"],
       ["arrume os erros do app por gentielza", "arrume os erros do app por gentielza"],
+      ["Adicionar logs detalhados com stack trace, navegador/OS e versionamento do build para facilitar a depuração dos erros.\nAdicionar logs detalhados com stack trace, navegador/OS e versionamento do build para facilitar a depuração dos erros.Adicionar logs detalhados com stack trace, navegador/OS e versionamento do build para facilitar a depuração dos erros.", "Adicionar logs detalhados com stack trace, navegador/OS e versionamento do build para facilitar a depuração dos erros.\nAdicionar logs detalhados com stack trace, navegador/OS e versionamento do build para facilitar a depuração dos erros.Adicionar logs detalhados com stack trace, navegador/OS e versionamento do build para facilitar a depuração dos erros."],
     ]);
 
 
     const patchCopy = () => {
-      document.querySelectorAll("h1,h2,h3,p,span").forEach((node) => {
+      document.querySelectorAll("h1,h2,h3,p,span,body").forEach((node) => {
         const current = node.textContent?.trim();
         const next = current ? replacements.get(current) : undefined;
 
