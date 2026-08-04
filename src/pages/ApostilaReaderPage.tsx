@@ -27,6 +27,7 @@ import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Progress } from "@/components/ui/progress";
 import { useQueryClient } from "@tanstack/react-query";
+import logoOwl from "@/assets/owl-icon.png";
 
 
 interface Lesson {
