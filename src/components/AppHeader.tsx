@@ -33,7 +33,7 @@ export function AppHeader() {
           </div>
           <div className="hidden min-w-0 flex-col leading-tight sm:flex">
             <span className="truncate font-display text-[14px] font-extrabold tracking-tight text-foreground">
-              DECODE <span className="text-primary tracking-tighter">ANALYTICS</span> ACADEMY
+              DECODE ANALYTICS ACADEMY
             </span>
             <span className="truncate font-mono-label text-[10px] font-medium uppercase tracking-[0.3em] text-primary/80">
               Academy By Kaique Aurelio
