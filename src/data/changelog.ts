@@ -27,6 +27,16 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.34.0",
+    date: "2026-08-04",
+    title: "Administração Omnipresente (UX Híbrida)",
+    changes: [
+      { kind: 'feature', text: 'Topbar Híbrida: Adicionados controles rápidos de gestão (Conteúdo e Alunos) diretamente na barra superior para administradores.' },
+      { kind: 'improvement', text: 'Acesso Rápido: Otimizado o fluxo de criação com botão "Novo Material" por disciplina no dashboard.' },
+      { kind: 'improvement', text: 'Interface: Padronização dos ícones de gestão em todo o ecossistema do aluno para maior clareza.' },
+    ],
+  },
+  {
     version: "3.33.0",
     date: "2026-08-04",
     title: "Dashboard Administrativa Híbrida",

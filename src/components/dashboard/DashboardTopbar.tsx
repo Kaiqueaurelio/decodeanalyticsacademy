@@ -1,4 +1,4 @@
-import { Search, ChevronDown, Menu, ShieldCheck } from 'lucide-react';
+import { Search, ChevronDown, Menu, ShieldCheck, PenTool, Users, Layout } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
@@ -64,16 +64,50 @@ export function DashboardTopbar({ hideSearchOnMobile = false }: { hideSearchOnMo
 
 
         {isAdmin && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigate('/admin')}
-            className="lg:hidden h-9 px-2.5 gap-1.5 border-accent/50 text-accent hover:bg-accent/10"
-            aria-label="Painel Admin"
-          >
-            <ShieldCheck strokeWidth={2.5} className="h-[16px] w-[16px]" />
-            <span className="hidden min-[390px]:inline text-[11px] font-bold">Admin</span>
-          </Button>
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate('/admin')}
+              className="hidden lg:flex h-9 px-3 gap-2 border-accent/40 text-accent hover:bg-accent/10 hover:border-accent font-bold text-xs rounded-xl shadow-sm shadow-accent/5"
+            >
+              <ShieldCheck strokeWidth={2.5} className="h-4 w-4" />
+              <span>Painel Admin</span>
+            </Button>
+            
+            <div className="hidden min-[1100px]:flex items-center gap-1 bg-muted/40 p-1 rounded-xl border border-border/40">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate('/admin', { state: { tab: 'apostilas' } })}
+                className="h-8 px-2.5 gap-1.5 text-[11px] font-bold hover:bg-background"
+                title="Gerenciar Apostilas"
+              >
+                <Layout className="h-3.5 w-3.5" />
+                <span>Conteúdo</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate('/admin', { state: { tab: 'users' } })}
+                className="h-8 px-2.5 gap-1.5 text-[11px] font-bold hover:bg-background"
+                title="Gerenciar Alunos"
+              >
+                <Users className="h-3.5 w-3.5" />
+                <span>Alunos</span>
+              </Button>
+            </div>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate('/admin')}
+              className="lg:hidden h-9 w-9 p-0 border-accent/50 text-accent hover:bg-accent/10 rounded-xl"
+              aria-label="Painel Admin"
+            >
+              <ShieldCheck strokeWidth={2.5} className="h-[18px] w-[18px]" />
+            </Button>
+          </div>
         )}
 
         <form onSubmit={submit} className={`flex-1 max-w-2xl relative ${hideSearchOnMobile ? 'hidden sm:block' : ''}`}>
