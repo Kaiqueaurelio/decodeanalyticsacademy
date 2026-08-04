@@ -2834,6 +2834,10 @@ export type Database = {
           title: string
         }[]
       }
+      maximize_user_gamification: {
+        Args: { _user_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       activity_action:

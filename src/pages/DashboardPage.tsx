@@ -109,12 +109,17 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!user) return;
     
-    // Marcar do 1º ao 5º semestre como concluído
+    // Marcar do 1º ao 5º semestre como concluído e maximizar gamificação para admin
     const markCompleted = async () => {
       try {
         await supabase.rpc('force_complete_semesters_upto_five', { _user_id: user.id });
-        // Use try/catch because the function might not be in the generated types yet
         await (supabase.rpc as any)('complete_semesters_six_to_eight', { _user_id: user.id });
+        
+        // Maximizar para administrador
+        if (profile?.is_admin || user.email === 'decoanalytics@outlook.com.br') {
+          await (supabase.rpc as any)('maximize_user_gamification', { _user_id: user.id });
+          gamification.loadAll();
+        }
       } catch (e) {
         console.error("Erro ao sincronizar progresso acadêmico:", e);
       }
