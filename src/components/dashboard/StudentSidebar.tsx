@@ -304,6 +304,18 @@ export function SidebarContent({
                       </button>
                     );
                   })}
+                  
+                  {group.label === 'Principal' && (
+                    <div className="mt-4 px-3 py-3 rounded-xl bg-gradient-to-br from-primary/10 to-accent/10 border border-primary/20 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-primary">Estágio Pro</span>
+                        <span className="text-[10px] font-black text-foreground">LVL 5</span>
+                      </div>
+                      <div className="h-1.5 w-full bg-background/50 rounded-full overflow-hidden">
+                        <div className="h-full bg-primary w-[65%] rounded-full shadow-[0_0_8px_rgba(168,85,247,0.4)]" />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

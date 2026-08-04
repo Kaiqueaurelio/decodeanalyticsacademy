@@ -15,6 +15,7 @@ import { AdBanner } from '@/components/AdBanner';
 import { AdSidebar } from '@/components/AdSidebar';
 import { Watermark } from '@/components/Watermark';
 import { Reveal } from '@/components/Reveal';
+import { GamificationWidget } from '@/components/gamification/GamificationWidget';
 import { ExamCalendarWidget } from '@/components/ExamCalendarWidget';
 import { OnboardingTour } from '@/components/OnboardingTour';
 import { TermsFooterLink } from '@/components/TermsFooterLink';
@@ -163,6 +164,10 @@ export default function DashboardPage() {
               totalApostilas={apostilas.length}
               totalAnswered={answeredExercises}
             />
+          </Reveal>
+
+          <Reveal from="bottom" delay={15}>
+            <GamificationWidget />
           </Reveal>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">

@@ -82,13 +82,24 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
             </div>
             
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-              {items.map((apostila) => (
-                <ApostilaCoverCard 
-                  key={apostila.id} 
-                  apostila={apostila} 
-                  status={stats.byApostila[apostila.id] ? 'em-progresso' : 'novo'} 
-                />
-              ))}
+              {items.map((apostila) => {
+                const isCompleted = stats.byApostila[apostila.id]?.hits > 0;
+                const progress = isCompleted ? 100 : (stats.byApostila[apostila.id] ? 50 : 0);
+                
+                return (
+                  <div key={apostila.id} className="relative group/card">
+                    <ApostilaCoverCard 
+                      apostila={apostila} 
+                      status={isCompleted ? 'concluida' : (stats.byApostila[apostila.id] ? 'em-progresso' : 'novo')} 
+                    />
+                    {progress > 0 && (
+                      <div className="absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-full bg-background/80 backdrop-blur-sm border border-primary/20 shadow-lg z-10 scale-0 group-hover/card:scale-100 transition-transform">
+                        <span className="text-[8px] font-black text-primary">{progress}%</span>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         );

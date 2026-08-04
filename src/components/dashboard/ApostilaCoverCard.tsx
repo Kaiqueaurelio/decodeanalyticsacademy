@@ -41,7 +41,7 @@ export function ApostilaCoverCard({ apostila, status = 'em-progresso' }: Props) 
     <a
       href={`/apostila/${apostila.id}`}
       data-testid="apostila-cover-card"
-      className="group flex flex-col rounded-xl overflow-hidden border border-border/60 bg-card hover:border-primary/50 hover:-translate-y-0.5 transition-all duration-300 shadow-sm hover:shadow-lg"
+      className="group flex flex-col rounded-xl overflow-hidden border border-border/60 bg-card hover:border-primary/50 hover:-translate-y-1 hover:scale-[1.02] transition-all duration-300 shadow-sm hover:shadow-[0_8px_30px_rgba(168,85,247,0.12)] active:scale-[0.98]"
     >
       {/* Cover editorial (a própria capa já traz título/tipografia) */}
       <div
@@ -70,12 +70,13 @@ export function ApostilaCoverCard({ apostila, status = 'em-progresso' }: Props) 
       >
         <div className="flex items-start gap-2">
           <FileText className="h-3.5 w-3.5 mt-0.5 text-muted-foreground shrink-0" />
-          <h3 className="text-[13px] sm:text-sm font-semibold leading-snug line-clamp-2 group-hover:text-primary transition-colors">
+          <h3 className="text-[13px] sm:text-sm font-semibold leading-snug line-clamp-2 group-hover:text-primary transition-colors group-hover:underline decoration-primary/30 underline-offset-2">
             {apostila.title}
           </h3>
         </div>
         <div className="flex flex-wrap items-center gap-1.5">
           <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium bg-[hsl(210_100%_60%/0.18)] text-[hsl(210_100%_70%)]">
+            <span className="flex h-1.5 w-1.5 rounded-full bg-primary mr-1.5 animate-pulse" />
             {statusLabel}
           </span>
           <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium bg-[hsl(24_95%_55%/0.18)] text-[hsl(24_95%_65%)]">

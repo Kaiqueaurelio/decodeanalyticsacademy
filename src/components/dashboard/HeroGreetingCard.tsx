@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { Lightbulb, ArrowRight } from 'lucide-react';
+import { Trophy, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface HeroProps {
@@ -49,8 +49,8 @@ export function HeroGreetingCard({ name, overallProgress, totalApostilas, totalA
         <div className="hidden lg:flex items-center justify-center relative">
           <div className="relative">
             <div className="absolute inset-0 bg-warning/16 blur-2xl rounded-full" />
-            <div className="relative w-24 h-24 rounded-2xl bg-gradient-to-br from-warning/24 to-warning/8 border border-warning/24 flex items-center justify-center">
-              <Lightbulb className="h-12 w-12 text-warning drop-shadow-[0_0_12px_hsl(var(--warning)/0.45)]" strokeWidth={1.5} />
+            <div className="relative w-24 h-24 rounded-2xl bg-gradient-to-br from-warning/24 to-warning/8 border border-warning/24 flex items-center justify-center animate-bounce-slow">
+              <Trophy className="h-12 w-12 text-warning drop-shadow-[0_0_12px_hsl(var(--warning)/0.45)]" strokeWidth={1.5} />
             </div>
           </div>
         </div>
