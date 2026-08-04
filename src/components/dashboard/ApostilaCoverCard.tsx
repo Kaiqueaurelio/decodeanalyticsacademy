@@ -73,8 +73,15 @@ export function ApostilaCoverCard({ apostila, status = 'em-progresso' }: Props) 
           src={cover}
           alt={apostila.title}
           loading="lazy"
-          className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+          className={`absolute inset-0 h-full w-full object-cover transition-transform duration-500 ${!isPlaceholder ? 'group-hover:scale-[1.03]' : ''}`}
         />
+        {isPlaceholder && (
+          <div className="absolute inset-0 flex items-center justify-center bg-background/20 backdrop-blur-[1px]">
+            <div className="bg-background/80 p-2 rounded-full border border-border/50 shadow-sm">
+              <Lock className="h-5 w-5 text-muted-foreground/60" />
+            </div>
+          </div>
+        )}
         <div className="absolute inset-x-0 bottom-0 h-1.5">
           <div
             className="h-full w-full"
