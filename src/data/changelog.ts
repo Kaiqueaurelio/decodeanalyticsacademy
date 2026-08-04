@@ -27,6 +27,15 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.25.0",
+    date: "2026-08-04",
+    title: "Refinamento do Atalho de Edição",
+    changes: [
+      { kind: 'improvement', text: 'Interface Administrativa: O botão de edição direta agora utiliza o termo "Editar Material" para maior clareza contextual ao visualizar apostilas.' },
+      { kind: 'fix', text: 'Limpeza de Metadados: Removidas referências de texto residuais em arquivos de configuração de rotas.' },
+    ],
+  },
+  {
     version: "3.24.0",
     date: "2026-08-04",
     title: "Edição Direta e Atalhos Administrativos",

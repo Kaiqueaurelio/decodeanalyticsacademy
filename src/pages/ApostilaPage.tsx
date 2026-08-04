@@ -389,7 +389,7 @@ export default function ApostilaPage({ tab, setTab }: Props) {
                     title="Editar esta apostila no Workbench"
                   >
                     <PenTool className="h-3.5 w-3.5" />
-                    <span className="hidden lg:inline">Editar Conteúdo</span>
+                    <span className="hidden lg:inline">Editar Material</span>
                     <span className="lg:hidden">Editar</span>
                   </Button>
                   <Button
