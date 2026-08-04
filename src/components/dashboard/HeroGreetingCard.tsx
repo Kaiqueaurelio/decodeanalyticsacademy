@@ -50,7 +50,7 @@ export function HeroGreetingCard({ name, overallProgress, totalApostilas, totalA
 
           <div className="flex flex-wrap items-center gap-4 pt-2">
             <div className="flex items-center gap-2 bg-muted/30 px-3 py-2 rounded-xl border border-border/40">
-              <Zap className="h-4 w-4 text-yellow-500 fill-yellow-500/20" />
+              <Zap className="h-4 w-4 text-warning fill-warning/20" />
               <div className="flex flex-col">
                 <span className="text-[10px] font-bold text-muted-foreground uppercase leading-none">Meta Diária</span>
                 <span className="text-xs font-bold text-foreground">85% Completa</span>
