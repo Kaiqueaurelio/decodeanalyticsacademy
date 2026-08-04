@@ -875,7 +875,7 @@ export default function LandingPage() {
           </div>
 
           <p className="text-[10px] uppercase tracking-[0.15em] text-center" style={{ color: '#475569' }}>
-            © {new Date().getFullYear()} Decode Analytics Academy · Desenvolvido por Kaique Aurélio (Aluno de CC)
+            Desenvolvido por: Kaique Aurelio &amp; Decode Analytics
           </p>
         </div>
       </footer>
