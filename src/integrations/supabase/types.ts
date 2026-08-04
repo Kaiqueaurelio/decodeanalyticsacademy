@@ -816,6 +816,7 @@ export type Database = {
           reformatted_at: string | null
           semester: number | null
           source_type: string | null
+          teacher: string | null
           title: string
           updated_at: string
         }
@@ -834,6 +835,7 @@ export type Database = {
           reformatted_at?: string | null
           semester?: number | null
           source_type?: string | null
+          teacher?: string | null
           title: string
           updated_at?: string
         }
@@ -852,6 +854,7 @@ export type Database = {
           reformatted_at?: string | null
           semester?: number | null
           source_type?: string | null
+          teacher?: string | null
           title?: string
           updated_at?: string
         }
@@ -2735,6 +2738,10 @@ export type Database = {
       check_exercise_answer: {
         Args: { _exercise_id: string; _selected_answer: string }
         Returns: Json
+      }
+      complete_fifth_semester_apostilas: {
+        Args: { _user_id: string }
+        Returns: undefined
       }
       count_open_security_notifications: { Args: never; Returns: Json }
       count_tira_duvidas_today: { Args: { _user_id: string }; Returns: number }
