@@ -187,7 +187,8 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
       if (q && !a.title.toLowerCase().includes(q)) return false;
       if (statusFilter === 'published' && !a.published) return false;
       if (statusFilter === 'draft' && a.published) return false;
-      if (categoryFilter !== 'all' && a.category !== categoryFilter) return false;
+      if (categoryFilter === '__uncategorized' && a.category?.trim()) return false;
+      if (categoryFilter !== 'all' && categoryFilter !== '__uncategorized' && a.category !== categoryFilter) return false;
       
       // Filtro de semestre integrado
       if (filterSemester && filterSemester !== 'all') {
@@ -529,7 +530,7 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
             <Button
               variant="outline"
               className="h-auto min-h-20 justify-start gap-3 rounded-xl p-4 text-left"
-              onClick={() => { setCategoryFilter('all'); setSearch(''); setStatusFilter('all'); }}
+              onClick={() => { setCategoryFilter('__uncategorized'); setSearch(''); setStatusFilter('all'); }}
             >
               <FolderOpen className="h-5 w-5 shrink-0 text-primary" />
               <span><strong className="block text-lg tabular-nums">{contentHealth.withoutCategory.length}</strong><span className="text-xs text-muted-foreground">sem categoria</span></span>
@@ -553,7 +554,7 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
               <Button variant="outline" className="justify-start rounded-xl" onClick={() => onNavigate('apostilas')}>
                 <PenLine className="mr-2 h-4 w-4" /> Editar conteúdo
               </Button>
-              <Button variant="outline" className="justify-start rounded-xl" onClick={() => onNavigate('history')}>
+              <Button variant="outline" className="justify-start rounded-xl" onClick={() => onNavigate('changelog')}>
                 <History className="mr-2 h-4 w-4" /> Histórico
               </Button>
             </div>
