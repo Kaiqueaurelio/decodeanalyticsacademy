@@ -33,7 +33,10 @@ export default function DashboardPage() {
   const gamification = useGamification();
   const examFocus = useExamFocus();
   const { data: profile } = useUserProfile(user?.id);
-  const [selectedSemester, setSelectedSemester] = useState<number | null>(5); // Inicia no 5º por padrão como solicitado
+  const [selectedSemester, setSelectedSemester] = useState<number | null>(() => {
+    const saved = localStorage.getItem('selectedSemestre');
+    return saved ? parseInt(saved, 10) : 5; // Inicia no 5º por padrão ou recupera do localStorage
+  });
   const { data: apostilasRaw = [], isLoading: loadingApostilas } = useApostilasList();
   const { data: exerciseCounts = {} } = useExerciseCounts();
   const { data: statsData, isLoading: loadingStats } = useDashboardStats(user?.id);
@@ -74,6 +77,12 @@ export default function DashboardPage() {
   }, [apostilasRaw, selectedSemester]);
   
   
+
+  useEffect(() => {
+    if (selectedSemester !== null) {
+      localStorage.setItem('selectedSemestre', selectedSemester.toString());
+    }
+  }, [selectedSemester]);
 
   useEffect(() => {
     if (!user) return;
