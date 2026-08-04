@@ -49,7 +49,7 @@ export function ApostilaCoverCard({ apostila, status = 'em-progresso' }: Props) 
     if (isPlaceholder) {
       e.preventDefault();
       toast.info(`Disponível: ${availabilityDate}`, {
-        description: "Conteúdo pedagógico em fase final de preparação.",
+        description: "Material em fase final de preparação.",
         icon: <Lock className="h-4 w-4 text-primary" />,
       });
       return;
