@@ -58,7 +58,7 @@ function useLiveData() {
     window.addEventListener('decode:runtime-update', refresh);
     window.addEventListener('decode:auth-log-update', refresh);
     window.addEventListener('decode:safe-mode-change', refresh);
-    const interval = setInterval(refresh, 2000);
+    const interval = setInterval(refresh, 5000);
     return () => {
       window.removeEventListener('decode:perf-update', refresh);
       window.removeEventListener('decode:runtime-update', refresh);
