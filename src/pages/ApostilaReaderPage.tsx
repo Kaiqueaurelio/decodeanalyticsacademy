@@ -26,6 +26,8 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Progress } from "@/components/ui/progress";
+import { useQueryClient } from "@tanstack/react-query";
+
 
 interface Lesson {
   id: string;
@@ -88,6 +90,8 @@ export default function ApostilaReaderPage() {
   const [noteText, setNoteText] = useState("");
   const [noteSaving, setNoteSaving] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
+  const queryClient = useQueryClient();
+
 
   // Load apostila + tree
   useEffect(() => {
