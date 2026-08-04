@@ -24,7 +24,7 @@ import { StudyHeatmap } from '@/components/gamification/StudyHeatmap';
 import { useApostilasList, useExerciseCounts, useDashboardStats, type ApostilaSummary } from '@/hooks/queries/useDashboardData';
 import { useUserProfile } from '@/hooks/queries/useUserProfile';
 import { BY_SEMESTER } from '@/lib/subject-semester-map';
-import { BookOpen, Search, X, PenLine } from 'lucide-react';
+import { BookOpen, Search, X, PenLine, ShieldCheck } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { NewUpdatePopup } from '@/components/NewUpdatePopup';
@@ -33,7 +33,7 @@ import { NewUpdatePopup } from '@/components/NewUpdatePopup';
 
 
 export default function DashboardPage() {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const gamification = useGamification();
   const examFocus = useExamFocus();
   const { data: profile } = useUserProfile(user?.id);
