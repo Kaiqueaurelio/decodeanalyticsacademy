@@ -36,7 +36,7 @@ export default function DashboardPage() {
   const { data: profile } = useUserProfile(user?.id);
   const [selectedSemester, setSelectedSemester] = useState<number | null>(() => {
     const saved = localStorage.getItem('selectedSemestre');
-    return saved ? parseInt(saved, 10) : 5; // Inicia no 5º por padrão ou recupera do localStorage
+    return saved ? parseInt(saved, 10) : 6; // Agora o 6º semestre é o default
   });
   const { data: apostilasRaw = [], isLoading: loadingApostilas } = useApostilasList();
   const { data: exerciseCounts = {} } = useExerciseCounts();
@@ -91,6 +91,7 @@ export default function DashboardPage() {
     // Marcar do 1º ao 5º semestre como concluído
     const markCompleted = async () => {
       await supabase.rpc('force_complete_semesters_upto_five', { _user_id: user.id });
+      await supabase.rpc('complete_semesters_six_to_eight', { _user_id: user.id });
     };
     markCompleted();
 
