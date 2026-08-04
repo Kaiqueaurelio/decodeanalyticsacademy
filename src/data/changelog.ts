@@ -27,12 +27,21 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
-    version: "3.38.0",
+    version: "3.38.2",
+    date: "2026-08-04",
+    title: "Estabilidade e Auditoria Contínua",
+    changes: [
+      { kind: 'improvement', text: 'Sincronização de diretrizes de auditoria no sistema de mapeamento dinâmico para estabilidade visual.' },
+      { kind: 'improvement', text: 'Limpeza de strings residuais e otimização da lógica de substituição dinâmica.' },
+    ],
+  },
+  {
+    version: "3.38.1",
     date: "2026-08-04",
     title: "Sincronização Visual e Estabilidade",
     changes: [
       { kind: 'improvement', text: 'Correção de mapeamento de texto residual nas rotas de sistema para garantir estabilidade visual.' },
-      { kind: 'improvement', text: 'Refinamento da lógica de substituição dinâmica de strings (v3.38.1).' },
+      { kind: 'improvement', text: 'Refinamento da lógica de substituição dinâmica de strings.' },
     ],
   },
   {
