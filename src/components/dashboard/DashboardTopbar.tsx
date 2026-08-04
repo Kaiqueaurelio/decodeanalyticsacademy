@@ -12,6 +12,7 @@ import { useSidebar } from '@/hooks/useSidebar';
 import { useApostilasList } from '@/hooks/queries/useDashboardData';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { SidebarContent } from './StudentSidebar';
+import logoOwl from '@/assets/owl-icon.png';
 
 export function DashboardTopbar({ hideSearchOnMobile = false }: { hideSearchOnMobile?: boolean }) {
   const navigate = useNavigate();
@@ -62,6 +63,20 @@ export function DashboardTopbar({ hideSearchOnMobile = false }: { hideSearchOnMo
           </SheetContent>
         </Sheet>
 
+        <Button
+          variant="ghost"
+          onClick={() => navigate('/dashboard')}
+          className="h-11 min-w-0 shrink-0 gap-2 px-1.5 sm:px-2"
+          aria-label="Decode Analytics Academy — ir para o início"
+        >
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-card ring-1 ring-primary/35">
+            <img src={logoOwl} alt="" className="h-7 w-7 object-contain" width="28" height="28" />
+          </span>
+          <span className="hidden max-w-[150px] text-left leading-tight xl:block">
+            <span className="block truncate text-[11px] font-extrabold text-foreground">DECODE ANALYTICS</span>
+            <span className="block text-[9px] font-semibold text-muted-foreground">ACADEMY</span>
+          </span>
+        </Button>
 
         {isAdmin && (
           <div className="flex items-center gap-1.5 sm:gap-2">

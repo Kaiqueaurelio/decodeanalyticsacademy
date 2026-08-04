@@ -27,6 +27,16 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.44.0",
+    date: "2026-08-04",
+    title: "Retomada de leitura e marca persistente",
+    changes: [
+      { kind: 'feature', text: 'Novo card no topo do dashboard mostra o último tópico lido, o progresso da apostila e permite retomar exatamente de onde o aluno parou.' },
+      { kind: 'improvement', text: 'A marca Decode Analytics Academy permanece visível na barra superior em telas móveis e desktop.' },
+      { kind: 'fix', text: 'O leitor estruturado agora reconhece links diretos para o último tópico acessado.' },
+    ],
+  },
+  {
     version: "3.43.0",
     date: "2026-08-04",
     title: "Rolagem infinita no acervo (aluno e admin)",

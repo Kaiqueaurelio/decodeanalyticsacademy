@@ -20,6 +20,10 @@ export type ContinueItem =
       category?: string | null;
       lastAt: string;        // ISO
       reason: 'chat' | 'annotation' | 'pomodoro';
+      progress?: number;
+      lessonTitle?: string | null;
+      completedLessons?: number;
+      totalLessons?: number;
       href: string;
     }
   | {
@@ -50,7 +54,13 @@ export function useContinueWhereLeft(limit = 3) {
     (async () => {
       setLoading(true);
       try {
-        const [chats, annots, pomos, reads] = await Promise.all([
+        const [lessonProgress, chats, annots, pomos, reads] = await Promise.all([
+          supabase
+            .from('apostila_lesson_progress')
+            .select('lesson_id, status, updated_at, apostila_lessons(title, apostila_chapters(title, apostila_modules(apostila_id, apostilas(title, category))))')
+            .eq('user_id', user.id)
+            .order('updated_at', { ascending: false })
+            .limit(500),
           supabase
             .from('apostila_chats')
             .select('apostila_id, created_at')
@@ -78,7 +88,10 @@ export function useContinueWhereLeft(limit = 3) {
             .limit(10),
         ]);
 
-        // Aggregate latest per apostila across the three sources
+        const failedRequest = [lessonProgress, chats, annots, pomos, reads].find((response) => response.error);
+        if (failedRequest?.error) throw failedRequest.error;
+
+        // Aggregate latest per apostila across all study sources.
         const apostilaMap = new Map<string, { lastAt: string; reason: ContinueItem['reason'] extends infer R ? R : never }>();
         const push = (id: string | null | undefined, when: string, reason: 'chat' | 'annotation' | 'pomodoro') => {
           if (!id || !when) return;
@@ -90,6 +103,36 @@ export function useContinueWhereLeft(limit = 3) {
         chats.data?.forEach((r: any) => push(r.apostila_id, r.created_at, 'chat'));
         annots.data?.forEach((r: any) => push(r.apostila_id, r.updated_at, 'annotation'));
         pomos.data?.forEach((r: any) => push(r.apostila_id, r.created_at, 'pomodoro'));
+
+        const structuredProgress = new Map<string, {
+          title: string;
+          category: string | null;
+          lessonId: string;
+          lessonTitle: string;
+          lastAt: string;
+          completed: number;
+          total: number;
+        }>();
+
+        for (const row of lessonProgress.data || []) {
+          const lesson = (row as any).apostila_lessons;
+          const chapter = lesson?.apostila_chapters;
+          const module = chapter?.apostila_modules;
+          const apostila = module?.apostilas;
+          const apostilaId = module?.apostila_id;
+          if (!apostilaId || !apostila) continue;
+
+          const existing = structuredProgress.get(apostilaId);
+          structuredProgress.set(apostilaId, {
+            title: apostila.title,
+            category: apostila.category || null,
+            lessonId: existing?.lessonId || (row as any).lesson_id,
+            lessonTitle: existing?.lessonTitle || lesson.title,
+            lastAt: existing?.lastAt || (row as any).updated_at,
+            completed: (existing?.completed || 0) + ((row as any).status === 'completed' ? 1 : 0),
+            total: (existing?.total || 0) + 1,
+          });
+        }
 
         const apostilaIds = Array.from(apostilaMap.keys()).slice(0, 6);
         const bookIds = (reads.data || []).map((r: any) => r.book_id).slice(0, 6);
@@ -107,7 +150,24 @@ export function useContinueWhereLeft(limit = 3) {
 
         const merged: ContinueItem[] = [];
 
+        for (const [apostilaId, info] of structuredProgress.entries()) {
+          merged.push({
+            kind: 'apostila',
+            id: apostilaId,
+            title: info.title,
+            category: info.category,
+            lastAt: info.lastAt,
+            reason: 'annotation',
+            progress: info.total > 0 ? Math.round((info.completed / info.total) * 100) : 0,
+            lessonTitle: info.lessonTitle,
+            completedLessons: info.completed,
+            totalLessons: info.total,
+            href: `/apostila/${apostilaId}/read?lesson=${encodeURIComponent(info.lessonId)}`,
+          });
+        }
+
         for (const [aid, info] of apostilaMap.entries()) {
+          if (structuredProgress.has(aid)) continue;
           const ap: any = apMap.get(aid);
           if (!ap) continue;
           merged.push({
