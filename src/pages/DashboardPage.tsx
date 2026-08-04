@@ -178,7 +178,7 @@ export default function DashboardPage() {
       <StudentSidebar />
 
       <div className="flex flex-col min-h-screen transition-[padding] duration-300 ease-out">
-        <DashboardTopbar />
+        <DashboardTopbar hideSearchOnMobile />
 
         <main className="flex-1 px-3 sm:px-6 lg:px-8 py-6 space-y-6 max-w-[1400px] w-full mx-auto animate-content-show overflow-x-hidden pt-12">
           {/* Dashboard Summary Bar */}

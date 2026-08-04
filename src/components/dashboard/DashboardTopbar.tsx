@@ -13,7 +13,7 @@ import { useApostilasList } from '@/hooks/queries/useDashboardData';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { SidebarContent } from './StudentSidebar';
 
-export function DashboardTopbar() {
+export function DashboardTopbar({ hideSearchOnMobile = false }: { hideSearchOnMobile?: boolean }) {
   const navigate = useNavigate();
   const { user, signOut, isAdmin } = useAuth();
   const { theme, toggleTheme } = useTheme();
@@ -76,7 +76,7 @@ export function DashboardTopbar() {
           </Button>
         )}
 
-        <form onSubmit={submit} className="flex-1 max-w-2xl relative">
+        <form onSubmit={submit} className={`flex-1 max-w-2xl relative ${hideSearchOnMobile ? 'hidden sm:block' : ''}`}>
           <Search strokeWidth={2.5} className="absolute left-3.5 top-1/2 -translate-y-1/2 h-[16px] w-[16px] text-muted-foreground pointer-events-none" />
           <input
             type="text"
