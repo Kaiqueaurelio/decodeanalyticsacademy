@@ -401,9 +401,7 @@ export default function LandingPage() {
               </div>
               <h1 className="max-w-4xl text-5xl font-bold leading-[0.94] tracking-[-0.05em] text-white sm:text-7xl md:text-8xl">
                 Estude com
-                <span className="mt-2 block bg-gradient-to-r from-[#00f0ff] via-[#a855f7] to-[#c084fc] bg-clip-text text-transparent">
-                  inteligência.
-                </span>
+                <TypewriterWords />
               </h1>
               <p className="mx-auto mt-7 max-w-2xl text-base leading-7 text-white/80 sm:text-lg">
                 Apostilas, exercícios, flashcards e acompanhamento de progresso para você dominar cada disciplina.
