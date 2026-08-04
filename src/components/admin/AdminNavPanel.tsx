@@ -127,22 +127,23 @@ export function AdminNavPanel({ tab, onSelect, counts, footerSlot, autoFocusSear
             
             <div className="pt-2 border-t border-border/50">
               <button
-                type="button;
-              onClick={() => navigate('/dashboard')}
-              className="flex w-full items-center gap-4 rounded-xl px-4 py-3 text-left text-muted-foreground transition-all duration-200 hover:bg-muted/60 hover:text-foreground"
-            >
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border bg-background border-border">
-                <Home className="h-4.5 w-4.5" />
-              </div>
-              <span className="min-w-0 flex-1 py-0.5">
-                <span className="block truncate text-sm font-bold tracking-tight">
-                  Sair do Painel
+                type="button"
+                onClick={() => navigate('/dashboard')}
+                className="flex w-full items-center gap-4 rounded-xl px-4 py-3 text-left text-muted-foreground transition-all duration-200 hover:bg-muted/60 hover:text-foreground"
+              >
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border bg-background border-border">
+                  <Home className="h-4.5 w-4.5" />
+                </div>
+                <span className="min-w-0 flex-1 py-0.5">
+                  <span className="block truncate text-sm font-bold tracking-tight">
+                    Sair do Painel
+                  </span>
+                  <span className="block truncate text-[10px] font-medium text-muted-foreground/80 mt-0.5">
+                    Voltar para o site (Área do Aluno)
+                  </span>
                 </span>
-                <span className="block truncate text-[10px] font-medium text-muted-foreground/80 mt-0.5">
-                  Voltar para o site (Área do Aluno)
-                </span>
-              </span>
-            </button>
+              </button>
+            </div>
           </div>
           {footerSlot}
         </nav>
