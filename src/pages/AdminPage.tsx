@@ -2033,34 +2033,52 @@ export default function AdminPage() {
                                   <Trash2 className="h-3.5 w-3.5" />
                                 </Button>
 
-                                {/* Kebab — mobile only, agrupa secundárias + editar */}
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button size="icon" variant="ghost" className="sm:hidden h-8 w-8" title="Mais ações">
-                                      <MoreHorizontal className="h-4 w-4" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end" className="w-52">
-                                    <DropdownMenuLabel className="text-xs">Mais ações</DropdownMenuLabel>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem onClick={() => setShowMaterialsFor(a.id)}>
-                                      <Paperclip className="h-3.5 w-3.5 mr-2" /> Materiais vinculados
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => setShowAppendFor(a.id)}>
-                                      <Link2 className="h-3.5 w-3.5 mr-2" /> Anexar link
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => setShowExerciseDialog(a.id)}>
-                                      <PenLine className="h-3.5 w-3.5 mr-2" /> Ver exercícios
-                                    </DropdownMenuItem>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem onClick={() => navigate(`/admin/apostilas/${a.id}`)}>
-                                      <PenTool className="h-3.5 w-3.5 mr-2 text-primary" /> Abrir no Workbench
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => { setEditingApostila(a); setEditTitle(a.title); setEditContent(a.content || ''); setEditCategory(a.category); }}>
-                                      <Edit className="h-3.5 w-3.5 mr-2" /> Editar (modal clássico)
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
+                                  {/* Kebab — mobile only, agrupa secundárias + editar */}
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button size="icon" variant="ghost" className="sm:hidden h-8 w-8" title="Mais ações">
+                                        <MoreHorizontal className="h-4 w-4" />
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="w-52">
+                                      <DropdownMenuLabel className="text-xs">Mais ações</DropdownMenuLabel>
+                                      <DropdownMenuSeparator />
+                                      {!(a as any).isPlaceholder && (
+                                        <>
+                                          <DropdownMenuItem onClick={() => setShowMaterialsFor(a.id)}>
+                                            <Paperclip className="h-3.5 w-3.5 mr-2" /> Materiais vinculados
+                                          </DropdownMenuItem>
+                                          <DropdownMenuItem onClick={() => setShowAppendFor(a.id)}>
+                                            <Link2 className="h-3.5 w-3.5 mr-2" /> Anexar link
+                                          </DropdownMenuItem>
+                                          <DropdownMenuItem onClick={() => setShowExerciseDialog(a.id)}>
+                                            <PenLine className="h-3.5 w-3.5 mr-2" /> Ver exercícios
+                                          </DropdownMenuItem>
+                                          <DropdownMenuSeparator />
+                                        </>
+                                      )}
+                                      <DropdownMenuItem onClick={() => {
+                                        if ((a as any).isPlaceholder) {
+                                          setNewApostila(prev => ({ ...prev, title: a.title.replace('[GRADE] ', ''), category: a.category || '' }));
+                                          setImportStep('edit');
+                                        } else {
+                                          navigate(`/admin/apostilas/${a.id}`);
+                                        }
+                                      }}>
+                                        <PenTool className="h-3.5 w-3.5 mr-2 text-primary" /> {(a as any).isPlaceholder ? 'Começar Matéria' : 'Abrir no Workbench'}
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem onClick={() => { 
+                                        if ((a as any).isPlaceholder) {
+                                          setNewApostila(prev => ({ ...prev, title: a.title.replace('[GRADE] ', ''), category: a.category || '' }));
+                                          setImportStep('edit');
+                                        } else {
+                                          setEditingApostila(a); setEditTitle(a.title); setEditContent(a.content || ''); setEditCategory(a.category); 
+                                        }
+                                      }}>
+                                        <Edit className="h-3.5 w-3.5 mr-2" /> Editar
+                                      </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
                               </div>
                             </div>
                           </CardContent>
