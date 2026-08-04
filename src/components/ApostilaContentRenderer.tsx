@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Check, Copy, Volume2, Info, Lightbulb, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
+import DOMPurify from 'dompurify';
 import { AppImage } from '@/components/ui/app-image';
 import { highlightCode } from '@/lib/shiki-highlighter';
 import { cn } from '@/lib/utils';
@@ -28,15 +29,7 @@ function cleanInlineText(input: string): string {
 
 /**
  * Renderização inline rica: aceita formatação markdown comum e um subconjunto
- * seguro de HTML inline (negrito/itálico/sublinhado/tachado/realce/cor/tamanho/
- * sub/sup/alinhamento) — usado pelo MarkdownEditor estilo Word.
- *
- * Sanitização: removemos tags perigosas (script, iframe, on*) e atributos de
- * evento; permitimos apenas style com `color`, `background`, `font-size`.
- */
-/**
- * Aceita apenas URLs com esquema seguro. Bloqueia `javascript:`, `data:` e
- * `vbscript:` (inclusive ofuscados com espaços/entidades/maiúsculas).
+ * seguro de HTML inline.
  */
 export function safeUrl(raw: string): string {
   const url = String(raw || '')
@@ -49,51 +42,40 @@ export function safeUrl(raw: string): string {
   return '#';
 }
 
-function sanitizeInlineHtml(html: string): string {
-  return html
-    // Remove tags perigosas inteiras
-    .replace(/<\/?(script|style|iframe|object|embed|link|meta|form|input|button|svg|a)\b[^>]*>/gi, '')
-    // Remove handlers on* (com aspas duplas, simples ou sem aspas)
-    .replace(/\son[a-z]+\s*=\s*"[^"]*"/gi, '')
-    .replace(/\son[a-z]+\s*=\s*'[^']*'/gi, '')
-    .replace(/\son[a-z]+\s*=\s*[^\s>]+/gi, '')
-    // Remove href/src inteiros: tags inline permitidas não precisam deles
-    .replace(/\s(href|src|xlink:href|formaction)\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, '')
-    // Filtra atributos style: mantém só color/background/font-size/text-align
-    .replace(/\sstyle\s*=\s*"([^"]*)"/gi, (_m, css: string) => {
-      const safe = css
-        .split(';')
-        .map((d) => d.trim())
-        .filter((d) => /^(color|background(-color)?|font-size|text-align)\s*:/i.test(d))
-        .filter((d) => !/(expression|url\s*\(|javascript:)/i.test(d))
-        .join('; ');
-      return safe ? ` style="${safe}"` : '';
-    });
+/**
+ * Sanitização robusta via DOMPurify para evitar XSS em conteúdos dinâmicos.
+ */
+function sanitizeHtml(html: string): string {
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: [
+      'u', 'mark', 'sub', 'sup', 'span', 'div', 'strong', 'em', 'b', 'i', 's', 'small', 'br', 'a', 'p',
+      'table', 'thead', 'tbody', 'tr', 'th', 'td', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+      'code', 'pre', 'blockquote', 'img'
+    ],
+    ALLOWED_ATTR: ['style', 'class', 'href', 'target', 'rel', 'src', 'alt', 'width', 'align', 'data-float', 'data-mx', 'data-my'],
+    ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto|tel):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
+    // Permite apenas estilos específicos para evitar bypass de UI
+    FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover', 'onfocus', 'onblur', 'formaction'],
+  });
 }
-
 
 function renderInline(input: string): { __html: string } {
   if (!input) return { __html: '' };
-  // 0. Extrai fórmulas matemáticas ANTES de qualquer escape — evita que `_`,
-  //    `*`, `<` ou `&` dentro da fórmula sejam corrompidos pelo Markdown.
+  // 0. Extrai fórmulas matemáticas ANTES de qualquer escape
   const mathPlaceholders: string[] = [];
   let safe = input
-    // Bloco $$...$$ inline (ex: dentro de uma frase) → KaTeX displayMode
     .replace(/\$\$([\s\S]+?)\$\$/g, (_m, tex) => {
       mathPlaceholders.push(renderMathToHTML(String(tex).trim(), true));
       return `\u0000MATH${mathPlaceholders.length - 1}\u0000`;
     })
-    // \[ ... \] bloco
     .replace(/\\\[([\s\S]+?)\\\]/g, (_m, tex) => {
       mathPlaceholders.push(renderMathToHTML(String(tex).trim(), true));
       return `\u0000MATH${mathPlaceholders.length - 1}\u0000`;
     })
-    // \( ... \) inline
     .replace(/\\\(([\s\S]+?)\\\)/g, (_m, tex) => {
       mathPlaceholders.push(renderMathToHTML(String(tex).trim(), false));
       return `\u0000MATH${mathPlaceholders.length - 1}\u0000`;
     })
-    // $...$ inline (com heurística para evitar confundir com cifrão monetário)
     .replace(/(^|[^\\$])\$([^\n$]{1,200}?)\$(?!\d)/g, (full, pre, tex) => {
       const t = String(tex).trim();
       const looksMath =
@@ -105,24 +87,10 @@ function renderInline(input: string): { __html: string } {
       return `${pre}\u0000MATH${mathPlaceholders.length - 1}\u0000`;
     });
 
-  // 1. Escapa < e > exceto para tags permitidas
-  const ALLOWED = /<\/?(?:u|mark|sub|sup|span|div|strong|em|b|i|s|small|br)\b[^>]*\/?>/gi;
-  const placeholders: string[] = [];
-  safe = safe.replace(ALLOWED, (tag) => {
-    placeholders.push(sanitizeInlineHtml(tag));
-    return `\u0000HTML${placeholders.length - 1}\u0000`;
-  });
-  safe = safe
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
-  // 2. Restaura tags permitidas
-  safe = safe.replace(/\u0000HTML(\d+)\u0000/g, (_m, i) => placeholders[Number(i)] || '');
-  // 3. Markdown inline → HTML
+  // 1. Markdown inline → HTML
   safe = safe
     .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_m, text: string, href: string) =>
       `<a href="${safeUrl(href).replace(/"/g, '&quot;')}" target="_blank" rel="noopener noreferrer" class="text-primary underline">${text}</a>`)
-
     .replace(/\*{3}([^*\n]+)\*{3}/g, '<strong><em>$1</em></strong>')
     .replace(/\*{2}([^*\n]+)\*{2}/g, '<strong>$1</strong>')
     .replace(/(?<![*\w])\*(?!\s)([^*\n]+?)\*(?!\w)/g, '<em>$1</em>')
@@ -130,8 +98,13 @@ function renderInline(input: string): { __html: string } {
     .replace(/==([^=\n]+)==/g, '<mark>$1</mark>')
     .replace(/`([^`\n]+)`/g, '<code class="px-1 py-0.5 rounded bg-muted text-primary text-[0.92em] font-mono">$1</code>')
     .replace(/^\s*#{1,6}\s+/gm, '');
-  // 4. Restaura blocos KaTeX (HTML pronto) por último — sem escape.
+
+  // 2. Sanitização final do HTML gerado (markdown + tags HTML cruas no input)
+  safe = sanitizeHtml(safe);
+
+  // 3. Restaura blocos KaTeX (HTML pronto) por último — sem escape/purify (confiável)
   safe = safe.replace(/\u0000MATH(\d+)\u0000/g, (_m, i) => mathPlaceholders[Number(i)] || '');
+
   return { __html: safe };
 }
 
