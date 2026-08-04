@@ -58,7 +58,7 @@ import { DiagnosticsPanel } from '@/components/DiagnosticsPanel';
 import { VersionHistoryPanel } from '@/components/admin/VersionHistoryPanel';
 import { EllaAuditPanel } from '@/components/admin/EllaAuditPanel';
 import { SecurityAlertsPanel } from '@/components/admin/SecurityAlertsPanel';
-import { BY_SEMESTER, SEMESTER_LABELS } from '@/lib/subject-semester-map';
+import { BY_SEMESTER } from '@/lib/subject-semester-map';
 import { useSecurityAlerts } from '@/hooks/useSecurityAlerts';
 import { SponsorLeadsPanel } from '@/components/admin/SponsorLeadsPanel';
 import { DuplicateApostilaDialog } from '@/components/DuplicateApostilaDialog';
@@ -76,7 +76,7 @@ type Apostila = Tables<'apostilas'>;
 type Exercise = Tables<'exercises'>;
 type Material = Tables<'materials'>;
 
-const SEMESTER_LABELS: Record<number, string> = {
+const SEMESTER_MAP: Record<number, string> = {
   1: '1º Semestre', 2: '2º Semestre', 3: '3º Semestre', 4: '4º Semestre',
   5: '5º Semestre', 6: '6º Semestre', 7: '7º Semestre', 8: '8º Semestre',
 };
@@ -101,7 +101,7 @@ function CategorySelect({ value, onValueChange, placeholder }: { value: string; 
       <SelectContent className="max-h-[300px]">
         {Object.entries(grouped).sort(([a], [b]) => +a - +b).map(([sem, names]) => (
           <div key={sem}>
-            <div className="px-2 py-1.5 text-xs font-semibold text-primary sticky top-0 bg-popover">{SEMESTER_LABELS[+sem] || `Semestre ${sem}`}</div>
+            <div className="px-2 py-1.5 text-xs font-semibold text-primary sticky top-0 bg-popover">{SEMESTER_MAP[+sem] || `Semestre ${sem}`}</div>
             {names.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}
           </div>
         ))}
