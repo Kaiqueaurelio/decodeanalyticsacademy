@@ -305,11 +305,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           message: err instanceof Error ? err.message : 'unknown',
         });
         // Fallback: sessão não pôde ser renovada — força signOut limpo e avisa.
-        try { localStorage.removeItem(LAST_SESSION_MARKER); } catch {}
-        toast.error('Sua sessão expirou', {
-          description: 'Faça login novamente para continuar.',
-        });
-        await supabase.auth.signOut().catch(() => {});
+        const stayLoggedIn = localStorage.getItem('decode_stay_logged_in') === 'true';
+        if (!stayLoggedIn) {
+          try { localStorage.removeItem(LAST_SESSION_MARKER); } catch {}
+          toast.error('Sua sessão expirou', {
+            description: 'Faça login novamente para continuar.',
+          });
+          await supabase.auth.signOut().catch(() => {});
+        } else {
+          // Se o usuário optou por permanecer logado, tentamos apenas logar o erro
+          // mas evitamos deslogar agressivamente se houver chance de recuperação posterior
+          // ou se for apenas uma falha momentânea de rede.
+          console.warn('[AUTH FLOW] Keepalive refresh failed but stayLoggedIn is active.');
+        }
       } finally {
         setIsRefreshingToken(false);
       }
