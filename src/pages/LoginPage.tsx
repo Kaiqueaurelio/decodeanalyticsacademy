@@ -515,7 +515,7 @@ export default function LoginPage() {
               )}
             </div>
             <p className="mt-4 text-center font-mono-label text-[11px] uppercase tracking-wider text-muted-foreground">
-              Decode Analytics Academy - Kaique Aurelio
+              Desenvolvido por: Kaique Aurelio &amp; Decode Analytics
             </p>
           </motion.div>
         </div>

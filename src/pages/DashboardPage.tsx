@@ -57,10 +57,13 @@ export default function DashboardPage() {
       ? apostilasRaw.filter(a => a.semester === selectedSemester)
       : apostilasRaw;
 
-    // 2. Se for um semestre futuro (6, 7, 8) e não houver conteúdo, gerar placeholders
-    if (selectedSemester && [6, 7, 8].includes(selectedSemester)) {
-      const futureSubjects = BY_SEMESTER[selectedSemester] || [];
+    // 2. Placeholder para disciplinas da grade (1º ao 8º)
+    if (selectedSemester) {
+      const canonicalSubjects = BY_SEMESTER[selectedSemester] || [];
       const teacherMap: Record<string, string> = {
+        'Logica de Programacao': 'Prof. Dr. Ricardo Silva',
+        'Matematica Discreta': 'Profa. Ana Paula',
+        'Introducao a Computacao': 'Prof. Anderson Lima',
         'Sistemas Distribuidos': 'Prof. Dr. Ricardo Silva',
         'Engenharia de Software II': 'Profa. Ana Paula',
         'Programacao para Dispositivos Moveis': 'Prof. Anderson Lima',
@@ -83,7 +86,7 @@ export default function DashboardPage() {
       const existingCategories = new Set(list.map(a => a.category));
 
       // Gerar placeholders apenas para as disciplinas da grade que NÃO existem no banco
-      const placeholders = futureSubjects
+      const placeholders = canonicalSubjects
         .filter(subject => !existingCategories.has(subject))
         .map((subject, idx) => ({
           id: `placeholder-${selectedSemester}-${idx}`,
@@ -310,7 +313,6 @@ export default function DashboardPage() {
             <TermsFooterLink variant="inline" />
             <div className="flex flex-col gap-1 items-center">
               <span className="font-medium tracking-wide">Desenvolvido por: Kaique Aurelio &amp; Decode Analytics</span>
-              <span className="opacity-50">© 2026 Decode Analytics Academy · Todos os direitos reservados</span>
             </div>
           </footer>
         </main>

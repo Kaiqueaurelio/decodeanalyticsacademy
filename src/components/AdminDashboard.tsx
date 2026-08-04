@@ -27,6 +27,7 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getSubjectColor } from '@/lib/subject-colors';
+import { BY_SEMESTER } from '@/lib/subject-semester-map';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from 'recharts';
@@ -182,7 +183,7 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
     const fromTs = dateFrom ? new Date(dateFrom + 'T00:00:00').getTime() : null;
     const untilTs = dateUntil ? new Date(dateUntil + 'T23:59:59').getTime() : null;
 
-    const list = apostilas.filter((a) => {
+    let list = apostilas.filter((a) => {
       if (q && !a.title.toLowerCase().includes(q)) return false;
       if (statusFilter === 'published' && !a.published) return false;
       if (statusFilter === 'draft' && a.published) return false;
@@ -198,6 +199,28 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
       if (untilTs && ts > untilTs) return false;
       return true;
     });
+
+    // Placeholders para o Admin Dashboard
+    const activeSemNum = filterSemester && filterSemester !== 'all' && filterSemester !== 'none' ? parseInt(filterSemester, 10) : null;
+    if (activeSemNum && !q) {
+      const canonicalSubjects = BY_SEMESTER[activeSemNum] || [];
+      const existingCategories = new Set(list.map(a => a.category));
+      
+      const placeholders = canonicalSubjects
+        .filter((subject: string) => !existingCategories.has(subject))
+        .map((subject: string, idx: number) => ({
+          id: `placeholder-admin-dash-${activeSemNum}-${idx}`,
+          title: `[GRADE] ${subject}`,
+          category: subject,
+          semester: activeSemNum,
+          published: false,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          isPlaceholder: true
+        }));
+        
+      list = [...list, ...placeholders] as any[];
+    }
 
     const sorted = [...list].sort((x, y) => {
       switch (sortKey) {

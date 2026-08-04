@@ -58,6 +58,7 @@ import { DiagnosticsPanel } from '@/components/DiagnosticsPanel';
 import { VersionHistoryPanel } from '@/components/admin/VersionHistoryPanel';
 import { EllaAuditPanel } from '@/components/admin/EllaAuditPanel';
 import { SecurityAlertsPanel } from '@/components/admin/SecurityAlertsPanel';
+import { BY_SEMESTER } from '@/lib/subject-semester-map';
 import { useSecurityAlerts } from '@/hooks/useSecurityAlerts';
 import { SponsorLeadsPanel } from '@/components/admin/SponsorLeadsPanel';
 import { DuplicateApostilaDialog } from '@/components/DuplicateApostilaDialog';
@@ -1283,14 +1284,18 @@ export default function AdminPage() {
   // Filtered data
   const filteredApostilas = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
-    return apostilas.filter((a) => {
+    
+    // 1. Filtragem inicial por busca e status
+    let list = apostilas.filter((a) => {
       if (q && !(a.title.toLowerCase().includes(q) || a.category.toLowerCase().includes(q))) return false;
       if (filterStatus === 'published' && !a.published) return false;
       if (filterStatus === 'draft' && a.published) return false;
+      
       if (filterSemester !== 'all') {
         if (filterSemester === 'none') { if (a.semester != null) return false; }
         else if (String(a.semester) !== filterSemester) return false;
       }
+      
       if (filterCourse !== 'all') {
         const arr = (a.course || []) as string[];
         if (filterCourse === 'none') { if (arr.length) return false; }
@@ -1298,6 +1303,40 @@ export default function AdminPage() {
       }
       return true;
     });
+
+    // 2. Placeholder para o Admin (quando filtrado por semestre)
+    const activeSemNum = filterSemester !== 'all' && filterSemester !== 'none' ? parseInt(filterSemester, 10) : null;
+    
+    if (activeSemNum && !q) {
+      const canonicalSubjects = BY_SEMESTER[activeSemNum] || [];
+      const existingCategories = new Set(list.map(a => a.category));
+      
+      const placeholders = canonicalSubjects
+        .filter((subject: string) => !existingCategories.has(subject))
+        .map((subject: string, idx: number) => ({
+          id: `placeholder-admin-${activeSemNum}-${idx}`,
+          title: `[GRADE] ${subject}`,
+          category: subject,
+          semester: activeSemNum,
+          published: false,
+          created_at: new Date().toISOString(),
+          isPlaceholder: true,
+          content: '',
+          content_backup: '',
+          course: [],
+          cover_url: '',
+          created_by: '',
+          embedding: '',
+          file_url: '',
+          source_type: '',
+          teacher: '',
+          updated_at: new Date().toISOString()
+        }));
+        
+      return [...list, ...placeholders] as any[];
+    }
+
+    return list;
   }, [apostilas, searchQuery, filterStatus, filterSemester, filterCourse]);
 
   const filteredMaterials = useMemo(() => {
@@ -1975,53 +2014,93 @@ export default function AdminPage() {
                                 <Button size="icon" variant="ghost" className="h-8 w-8 text-primary" onClick={() => setExportingApostila(a)} title="Exportar apostila (PDF/DOCX)">
                                   <FileDown className="h-3.5 w-3.5" />
                                 </Button>
-                                <Button size="icon" variant="ghost" className={`h-8 w-8 ${a.published ? 'text-destructive' : 'text-[hsl(var(--success))]'}`} onClick={() => togglePublish(a.id, a.published)} title={a.published ? 'Ocultar' : 'Publicar'}>
-                                  {a.published ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="default"
-                                  className="hidden sm:inline-flex h-8 px-2.5 text-xs gap-1.5 gradient-primary text-primary-foreground"
-                                  onClick={() => navigate(`/admin/apostilas/${a.id}`)}
-                                  title="Abrir no Workbench (editor completo)"
-                                >
-                                  <PenTool className="h-3.5 w-3.5" /> Workbench
-                                </Button>
-                                <Button size="icon" variant="ghost" className="hidden sm:inline-flex h-8 w-8" onClick={() => { setEditingApostila(a); setEditTitle(a.title); setEditContent(a.content || ''); setEditCategory(a.category); }} title="Editar (modal clássico)">
-                                  <Edit className="h-3.5 w-3.5" />
-                                </Button>
-                                <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => setConfirmDeleteId(a.id)} title="Excluir">
-                                  <Trash2 className="h-3.5 w-3.5" />
-                                </Button>
+                                 {!(a as any).isPlaceholder && (
+                                   <Button size="icon" variant="ghost" className={`h-8 w-8 ${a.published ? 'text-destructive' : 'text-[hsl(var(--success))]'}`} onClick={() => togglePublish(a.id, a.published)} title={a.published ? 'Ocultar' : 'Publicar'}>
+                                     {a.published ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                                   </Button>
+                                 )}
+                                 <Button
+                                   size="sm"
+                                   variant="default"
+                                   className="hidden sm:inline-flex h-8 px-2.5 text-xs gap-1.5 gradient-primary text-primary-foreground"
+                                   onClick={() => {
+                                     if ((a as any).isPlaceholder) {
+                                       setImportTitle(a.title.replace('[GRADE] ', ''));
+                                       setImportTopic(a.category || '');
+                                       setImportStep('edit');
+                                     } else {
+                                       navigate(`/admin/apostilas/${a.id}`);
+                                     }
+                                   }}
+                                   title={(a as any).isPlaceholder ? 'Começar esta matéria' : 'Abrir no Workbench (editor completo)'}
+                                 >
+                                   {(a as any).isPlaceholder ? <><Plus className="h-3.5 w-3.5" /> Começar</> : <><PenTool className="h-3.5 w-3.5" /> Workbench</>}
+                                 </Button>
+                                 <Button size="icon" variant="ghost" className="hidden sm:inline-flex h-8 w-8" onClick={() => { 
+                                   if ((a as any).isPlaceholder) {
+                                     setImportTitle(a.title.replace('[GRADE] ', ''));
+                                     setImportTopic(a.category || '');
+                                     setImportStep('edit');
+                                   } else {
+                                     setEditingApostila(a); setEditTitle(a.title); setEditContent(a.content || ''); setEditCategory(a.category); 
+                                   }
+                                 }} title="Editar">
+                                   <Edit className="h-3.5 w-3.5" />
+                                 </Button>
+                                 {!(a as any).isPlaceholder && (
+                                   <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => setConfirmDeleteId(a.id)} title="Excluir">
+                                     <Trash2 className="h-3.5 w-3.5" />
+                                   </Button>
+                                 )}
 
-                                {/* Kebab — mobile only, agrupa secundárias + editar */}
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button size="icon" variant="ghost" className="sm:hidden h-8 w-8" title="Mais ações">
-                                      <MoreHorizontal className="h-4 w-4" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end" className="w-52">
-                                    <DropdownMenuLabel className="text-xs">Mais ações</DropdownMenuLabel>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem onClick={() => setShowMaterialsFor(a.id)}>
-                                      <Paperclip className="h-3.5 w-3.5 mr-2" /> Materiais vinculados
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => setShowAppendFor(a.id)}>
-                                      <Link2 className="h-3.5 w-3.5 mr-2" /> Anexar link
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => setShowExerciseDialog(a.id)}>
-                                      <PenLine className="h-3.5 w-3.5 mr-2" /> Ver exercícios
-                                    </DropdownMenuItem>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem onClick={() => navigate(`/admin/apostilas/${a.id}`)}>
-                                      <PenTool className="h-3.5 w-3.5 mr-2 text-primary" /> Abrir no Workbench
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => { setEditingApostila(a); setEditTitle(a.title); setEditContent(a.content || ''); setEditCategory(a.category); }}>
-                                      <Edit className="h-3.5 w-3.5 mr-2" /> Editar (modal clássico)
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
+                                  {/* Kebab — mobile only, agrupa secundárias + editar */}
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button size="icon" variant="ghost" className="sm:hidden h-8 w-8" title="Mais ações">
+                                        <MoreHorizontal className="h-4 w-4" />
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="w-52">
+                                      <DropdownMenuLabel className="text-xs">Mais ações</DropdownMenuLabel>
+                                      <DropdownMenuSeparator />
+                                      {!(a as any).isPlaceholder && (
+                                        <>
+                                          <DropdownMenuItem onClick={() => setShowMaterialsFor(a.id)}>
+                                            <Paperclip className="h-3.5 w-3.5 mr-2" /> Materiais vinculados
+                                          </DropdownMenuItem>
+                                          <DropdownMenuItem onClick={() => setShowAppendFor(a.id)}>
+                                            <Link2 className="h-3.5 w-3.5 mr-2" /> Anexar link
+                                          </DropdownMenuItem>
+                                          <DropdownMenuItem onClick={() => setShowExerciseDialog(a.id)}>
+                                            <PenLine className="h-3.5 w-3.5 mr-2" /> Ver exercícios
+                                          </DropdownMenuItem>
+                                          <DropdownMenuSeparator />
+                                        </>
+                                      )}
+                                      <DropdownMenuItem onClick={() => {
+                                        if ((a as any).isPlaceholder) {
+                                          setImportTitle(a.title.replace('[GRADE] ', ''));
+                                          setImportTopic(a.category || '');
+                                          setImportStep('edit');
+                                        } else {
+                                          navigate(`/admin/apostilas/${a.id}`);
+                                        }
+                                      }}>
+                                        <PenTool className="h-3.5 w-3.5 mr-2 text-primary" /> {(a as any).isPlaceholder ? 'Começar Matéria' : 'Abrir no Workbench'}
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem onClick={() => { 
+                                        if ((a as any).isPlaceholder) {
+                                          setImportTitle(a.title.replace('[GRADE] ', ''));
+                                          setImportTopic(a.category || '');
+                                          setImportStep('edit');
+                                        } else {
+                                          setEditingApostila(a); setEditTitle(a.title); setEditContent(a.content || ''); setEditCategory(a.category); 
+                                        }
+                                      }}>
+                                        <Edit className="h-3.5 w-3.5 mr-2" /> Editar
+                                      </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
                               </div>
                             </div>
                           </CardContent>
