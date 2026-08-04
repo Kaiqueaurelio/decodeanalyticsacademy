@@ -27,6 +27,17 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.19.0",
+    date: "2026-08-04",
+    title: "Expansão da Central de Notificações e Diagnóstico",
+    changes: [
+      { kind: 'feature', text: 'Novo pop-up de novidades detalhado: agora você vê exatamente o que mudou (Melhorias, Correções, Novidades) direto ao entrar no app.' },
+      { kind: 'improvement', text: 'Gamificação Administrador: Seus níveis de XP, Streak e conquistas foram restaurados ao patamar máximo de excelência.' },
+      { kind: 'fix', text: 'Estabilidade do Admin: Corrigido erro "BY_SEMESTER is not defined" no painel de diagnóstico e filtros de semestre.' },
+      { kind: 'improvement', text: 'Otimização Mobile: Drawer lateral e menus administrativos refinados para toque e visualização em telas pequenas.' },
+    ],
+  },
+  {
     version: "3.18.1",
     date: "2026-08-04",
     title: "Consolidação de Segurança e Tratamento de Erros",

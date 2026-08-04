@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { CHANGELOG } from '@/data/changelog';
+import { CHANGELOG, CHANGE_KIND_LABEL } from '@/data/changelog';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Sparkles, X, ChevronRight, Check } from 'lucide-react';
@@ -50,16 +50,26 @@ export function NewUpdatePopup() {
               </Badge>
             </div>
             <h2 className="text-xl font-black tracking-tight">{latestVersion.title}</h2>
-            <p className="text-xs text-muted-foreground mt-1">Veja o que preparamos de novo para você hoje.</p>
+            <div className="flex flex-col gap-0.5 mt-1">
+              <p className="text-xs text-muted-foreground">Veja o que preparamos de novo para você hoje.</p>
+              <p className="text-[10px] text-primary/70 font-medium">Novidades da DECODE ANALYTICS ACADEMY</p>
+            </div>
           </div>
 
-          <div className="space-y-3 mb-8">
-            {latestVersion.changes.slice(0, 4).map((change, i) => (
-              <div key={i} className="flex gap-3 group">
+          <div className="space-y-4 mb-8">
+            {latestVersion.changes.slice(0, 8).map((change, i) => (
+              <div key={i} className="flex gap-3 group items-start">
                 <div className="mt-1 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                  <Check className="h-2.5 w-2.5 text-primary" />
+                  <Check className="h-2.5 w-2.5 text-primary" strokeWidth={3} />
                 </div>
-                <p className="text-xs leading-relaxed text-foreground/80">{change.text}</p>
+                <div className="space-y-0.5">
+                  <p className="text-xs font-bold text-foreground leading-tight">
+                    {CHANGE_KIND_LABEL[change.kind]}
+                  </p>
+                  <p className="text-[11px] leading-relaxed text-muted-foreground group-hover:text-foreground/90 transition-colors">
+                    {change.text}
+                  </p>
+                </div>
               </div>
             ))}
           </div>
