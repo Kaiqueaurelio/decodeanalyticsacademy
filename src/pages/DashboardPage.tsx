@@ -26,6 +26,7 @@ import { BY_SEMESTER } from '@/lib/subject-semester-map';
 import { BookOpen, Search, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { NewUpdatePopup } from '@/components/NewUpdatePopup';
 
 
 
@@ -167,6 +168,7 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-background relative selection:bg-primary/20 overflow-x-hidden">
       <Watermark />
+      <NewUpdatePopup />
       {showOnboarding && <OnboardingTour onComplete={handleOnboardingComplete} />}
 
       <StudentSidebar />
