@@ -80,7 +80,7 @@ export default function DashboardPage() {
     
     // Marcar do 1º ao 5º semestre como concluído
     const markCompleted = async () => {
-      await supabase.rpc('complete_semesters_upto_five', { _user_id: user.id });
+      await supabase.rpc('force_complete_semesters_upto_five', { _user_id: user.id });
     };
     markCompleted();
 
