@@ -43,11 +43,10 @@ export const CHANGELOG: ChangelogEntry[] = [
     date: "2026-08-04",
     title: "Expansão da Central de Notificações e Diagnóstico",
     changes: [
-      { kind: 'feature', text: 'Central de Disciplinas (6º ao 8º Semestre): Estrutura pronta para recebimento de materiais das disciplinas de Ciência da Computação.' },
-      { kind: 'improvement', text: 'Filtro de Semestres Inteligente: Agora sua seleção de semestre fica salva automaticamente mesmo após fechar o navegador.' },
-      { kind: 'feature', text: 'Gamificação Avançada: Novo sistema de XP, medalhas e ofensiva de estudos para acompanhar seu progresso diário.' },
-      { kind: 'improvement', text: 'Navegação Unificada: Menu lateral redesenhado para acesso rápido a todas as ferramentas acadêmicas em celulares e computadores.' },
-      { kind: 'improvement', text: 'Interface Acadêmica: Melhoria na visualização das apostilas estilo Notion com capas personalizadas por matéria.' },
+      { kind: 'feature', text: 'Novo pop-up de novidades detalhado: agora você vê exatamente o que mudou (Melhorias, Correções, Novidades) direto ao entrar no app.' },
+      { kind: 'improvement', text: 'Gamificação Administrador: Seus níveis de XP, Streak e conquistas foram restaurados ao patamar máximo de excelência.' },
+      { kind: 'fix', text: 'Estabilidade do Admin: Corrigido erro "BY_SEMESTER is not defined" no painel de diagnóstico e filtros de semestre.' },
+      { kind: 'improvement', text: 'Otimização Mobile: Drawer lateral e menus administrativos refinados para toque e visualização em telas pequenas.' },
     ],
   },
   {
