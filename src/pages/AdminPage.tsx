@@ -2059,7 +2059,8 @@ export default function AdminPage() {
                                       )}
                                       <DropdownMenuItem onClick={() => {
                                         if ((a as any).isPlaceholder) {
-                                          setNewApostila(prev => ({ ...prev, title: a.title.replace('[GRADE] ', ''), category: a.category || '' }));
+                                          setImportTitle(a.title.replace('[GRADE] ', ''));
+                                          setImportTopic(a.category || '');
                                           setImportStep('edit');
                                         } else {
                                           navigate(`/admin/apostilas/${a.id}`);
@@ -2069,7 +2070,8 @@ export default function AdminPage() {
                                       </DropdownMenuItem>
                                       <DropdownMenuItem onClick={() => { 
                                         if ((a as any).isPlaceholder) {
-                                          setNewApostila(prev => ({ ...prev, title: a.title.replace('[GRADE] ', ''), category: a.category || '' }));
+                                          setImportTitle(a.title.replace('[GRADE] ', ''));
+                                          setImportTopic(a.category || '');
                                           setImportStep('edit');
                                         } else {
                                           setEditingApostila(a); setEditTitle(a.title); setEditContent(a.content || ''); setEditCategory(a.category); 
