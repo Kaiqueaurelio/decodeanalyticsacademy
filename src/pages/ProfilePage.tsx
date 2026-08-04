@@ -18,7 +18,8 @@ import { Progress } from '@/components/ui/progress';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   BookOpen, CheckCircle, XCircle, Camera, Save, ArrowLeft,
-  PenLine, Trophy, Target, Flame, Rocket, Settings, AlertCircle, PencilLine, Loader2, ShieldCheck
+  PenLine, Trophy, Target, Flame, Rocket, Settings, AlertCircle, PencilLine, Loader2, ShieldCheck,
+  Download, History
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
@@ -270,6 +271,58 @@ export default function ProfilePage() {
               {allowedAreas.map((area) => (
                 <Badge key={area} variant="secondary" className="text-[10px] font-normal">{area}</Badge>
               ))}
+            </div>
+          </div>
+        </Card>
+
+        <Card className="p-5 bg-card border border-border/50 mb-6 animate-content-show delay-1">
+          <h3 className="text-sm font-semibold mb-4 flex items-center gap-2">
+            <ShieldCheck className="h-4 w-4 text-primary" /> Privacidade e LGPD
+          </h3>
+          <div className="space-y-4">
+            <div>
+              <p className="text-xs text-muted-foreground mb-3">
+                Você tem o direito de solicitar uma cópia de todos os seus dados armazenados em nossa plataforma em um formato estruturado.
+              </p>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full sm:w-auto gap-2"
+                onClick={async () => {
+                  toast.loading("Preparando seus dados...");
+                  try {
+                    const { data, error } = await supabase.functions.invoke('export-user-data');
+                    if (error) throw error;
+                    
+                    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `meus-dados-decode-${new Date().toISOString().split('T')[0]}.json`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    
+                    toast.dismiss();
+                    toast.success("Dados exportados com sucesso!");
+                  } catch (err: any) {
+                    toast.dismiss();
+                    toast.error("Erro ao exportar dados: " + (err.message || "tente novamente"));
+                  }
+                }}
+              >
+                <Download className="h-3.5 w-3.5" /> Exportar meus dados (JSON)
+              </Button>
+            </div>
+            
+            <div className="pt-4 border-t border-border/30">
+              <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1.5">
+                <History className="h-3 w-3" /> <strong>Política de Retenção:</strong>
+              </p>
+              <p className="text-[10px] text-muted-foreground leading-relaxed">
+                Para sua segurança, contas inativas por mais de 24 meses são automaticamente marcadas para expurgo. Você receberá um aviso por e-mail 30 dias antes de qualquer exclusão automática.
+              </p>
             </div>
           </div>
         </Card>

@@ -20,13 +20,9 @@ Deno.serve(async (req) => {
   const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
   const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
+    auth: { persistSession: false },
   });
 
-  // 1. Get user from token to verify identity
   const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(
     authHeader.replace("Bearer ", "")
   );
@@ -38,38 +34,60 @@ Deno.serve(async (req) => {
     });
   }
 
-  console.log(`Starting complete deletion for user: ${user.id}`);
-
   try {
-    // 2. Call the database function that handles cascading deletions
-    const { error: rpcError } = await supabaseAdmin.rpc("delete_user_completely", {
-      _target_user_id: user.id,
+    const tablesToExport = [
+      'profiles',
+      'answers',
+      'planos_estudo',
+      'study_plans',
+      'study_streaks',
+      'user_xp',
+      'user_badges',
+      'flashcards',
+      'annotations',
+      'apostila_comments',
+      'apostila_likes',
+      'apostila_favorites',
+      'community_posts',
+      'community_replies',
+      'reading_progress',
+      'playbooks_highlights',
+      'playbooks_notes',
+      'playbooks_bookmarks',
+      'notifications'
+    ];
+
+    const exportData: Record<string, any> = {
+      user_info: {
+        id: user.id,
+        email: user.email,
+        created_at: user.created_at,
+        last_sign_in_at: user.last_sign_in_at
+      }
+    };
+
+    // Parallel fetch of user data from all related tables
+    const fetchPromises = tablesToExport.map(async (table) => {
+      const { data, error } = await supabaseAdmin
+        .from(table)
+        .select('*')
+        .eq('user_id', user.id);
+      
+      if (!error && data) {
+        exportData[table] = data;
+      }
     });
 
-    if (rpcError) {
-      console.error(`RPC Error: ${rpcError.message}`);
-      throw rpcError;
-    }
+    await Promise.all(fetchPromises);
 
-    // 2.5 Log the audit event for compliance
-    await supabaseAdmin.from('activity_logs').insert({
-      user_id: user.id,
-      action: 'logout', // Usando logout como proxy se 'delete_account' não estiver no enum
-      ip_address: req.headers.get("x-forwarded-for") || null
-    });
-
-    // 3. Delete the user from Auth (this is the final step)
-    const { error: deleteAuthError } = await supabaseAdmin.auth.admin.deleteUser(user.id);
-    if (deleteAuthError) {
-      console.error(`Auth Delete Error: ${deleteAuthError.message}`);
-      throw deleteAuthError;
-    }
-
-    return new Response(JSON.stringify({ success: true }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    return new Response(JSON.stringify(exportData), {
+      headers: { 
+        ...corsHeaders, 
+        "Content-Type": "application/json",
+        "Content-Disposition": `attachment; filename="decode_data_export_${user.id}.json"`
+      },
     });
   } catch (err: any) {
-    console.error(`Deletion failed: ${err.message}`);
     return new Response(JSON.stringify({ error: err.message }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
