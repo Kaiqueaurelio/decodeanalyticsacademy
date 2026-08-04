@@ -31,7 +31,7 @@ import { exportApostilaToDOCX } from '@/lib/apostila-docx';
 import {
   ArrowLeft, BookOpen, PenLine, Eye, List, X, MoreHorizontal,
   ChevronUp, StickyNote, Layers, Wand2, MessageSquare, Share2, CheckCircle2, Copy, Volume2,
-  FileDown, Loader2, Brain
+  FileDown, Loader2, Brain, ArrowRight
 } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 
@@ -650,11 +650,19 @@ export default function ApostilaPage() {
                     <div className="h-20 w-20 rounded-full bg-primary/5 flex items-center justify-center">
                       <BookOpen className="h-10 w-10 text-primary/40" />
                     </div>
-                    <div className="space-y-2 max-w-sm">
+                    <div className="space-y-4 max-w-sm">
                       <h3 className="text-xl font-bold tracking-tight">Sem material disponível por enquanto</h3>
                       <p className="text-sm text-muted-foreground leading-relaxed">
                         Nossa equipe pedagógica e a assistência estão preparando o melhor conteúdo acadêmico para esta disciplina. Fique atento às atualizações!
                       </p>
+                      <div className="flex flex-col sm:flex-row gap-2 pt-2 justify-center">
+                        <Button variant="outline" size="sm" className="gap-2" onClick={() => navigate(-1)}>
+                          <ArrowLeft className="h-4 w-4" /> Voltar
+                        </Button>
+                        <Button variant="default" size="sm" className="gap-2" onClick={() => navigate('/dashboard')}>
+                          Ver catálogo <ArrowRight className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 )}
