@@ -117,8 +117,14 @@ export default function DashboardPage() {
         
         // Maximizar para administrador
         if (profile?.is_admin || user.email === 'decoanalytics@outlook.com.br') {
-          await (supabase.rpc as any)('maximize_user_gamification', { _user_id: user.id });
-          gamification.loadAll();
+          const lastMaximized = localStorage.getItem('last_gamification_maximized');
+          const today = new Date().toISOString().split('T')[0];
+          
+          if (lastMaximized !== today) {
+            await (supabase.rpc as any)('maximize_user_gamification', { _user_id: user.id });
+            localStorage.setItem('last_gamification_maximized', today);
+            gamification.loadAll();
+          }
         }
       } catch (e) {
         console.error("Erro ao sincronizar progresso acadêmico:", e);
@@ -130,7 +136,7 @@ export default function DashboardPage() {
     if (!seen) setShowOnboarding(true);
     gamification.updateStreak();
     gamification.checkAndAwardBadge('first_login');
-  }, [user]);
+  }, [user, profile?.is_admin]);
 
   const handleOnboardingComplete = () => {
     localStorage.setItem('decode_onboarding_done', 'true');
