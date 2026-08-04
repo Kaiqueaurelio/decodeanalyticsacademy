@@ -27,6 +27,18 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.20.0",
+    date: "2026-08-04",
+    title: "Novas funcionalidades e melhorias acadêmicas",
+    changes: [
+      { kind: 'feature', text: 'Central de Disciplinas (6º ao 8º Semestre): Estrutura pronta para recebimento de materiais das disciplinas de Ciência da Computação.' },
+      { kind: 'improvement', text: 'Filtro de Semestres Inteligente: Agora sua seleção de semestre fica salva automaticamente mesmo após fechar o navegador.' },
+      { kind: 'feature', text: 'Gamificação Avançada: Novo sistema de XP, medalhas e ofensiva de estudos para acompanhar seu progresso diário.' },
+      { kind: 'improvement', text: 'Navegação Unificada: Menu lateral redesenhado para acesso rápido a todas as ferramentas acadêmicas em celulares e computadores.' },
+      { kind: 'improvement', text: 'Interface Acadêmica: Melhoria na visualização das apostilas estilo Notion com capas personalizadas por matéria.' },
+    ],
+  },
+  {
     version: "3.19.0",
     date: "2026-08-04",
     title: "Expansão da Central de Notificações e Diagnóstico",
