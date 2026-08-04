@@ -37,7 +37,7 @@ export default function DashboardPage() {
   const { data: profile } = useUserProfile(user?.id);
   const [selectedSemester, setSelectedSemester] = useState<number | null>(() => {
     const saved = localStorage.getItem('selectedSemestre');
-    return saved ? parseInt(saved, 10) : null; // Padrão 'null' para mostrar todos se não houver preferência, ou conforme regra anterior
+    return saved ? parseInt(saved, 10) : 6; // Padrão '6' para o 6º semestre se não houver preferência
   });
   const { data: apostilasRaw = [], isLoading: loadingApostilas } = useApostilasList();
   const { data: exerciseCounts = {} } = useExerciseCounts();
@@ -57,27 +57,34 @@ export default function DashboardPage() {
       : apostilasRaw;
 
     // 2. Se for um semestre futuro (6, 7, 8) e não houver conteúdo, gerar placeholders
-    if (selectedSemester && [6, 7, 8].includes(selectedSemester) && list.length === 0) {
+    if (selectedSemester && [6, 7, 8].includes(selectedSemester)) {
       const futureSubjects = BY_SEMESTER[selectedSemester] || [];
-      return futureSubjects.map((subject, idx) => {
-        // Mapeamento de professores para capas
-        const teacherMap: Record<string, string> = {
-          'Sistemas Distribuidos': 'Prof. Dr. Ricardo Silva',
-          'Engenharia de Software II': 'Profa. Ana Paula',
-          'Programacao para Dispositivos Moveis': 'Prof. Anderson Lima',
-          'Mineracao de Dados': 'Profa. Mariana Costa',
-          'Analise de Algoritmos': 'Prof. Luiz Henrique',
-          'Seguranca da Informacao': 'Prof. Carlos Oliveira',
-          'Computacao em Nuvem': 'Prof. Roberto Santos',
-          'Aprendizado de Maquina (Machine Learning)': 'Prof. Fabiano Gomes',
-          'Topicos Especiais de Computacao': 'Prof. Sergio Murilo',
-          'Trabalho de Conclusao de Curso (TCC)': 'Coordenacao CC',
-          'Empreendedorismo': 'Prof. Marcos Viana',
-          'Gestao de Projetos': 'Prof. Andre Luiz',
-          'Etica Profissional': 'Profa. Clarisse Lispector',
-        };
+      const teacherMap: Record<string, string> = {
+        'Sistemas Distribuidos': 'Prof. Dr. Ricardo Silva',
+        'Engenharia de Software II': 'Profa. Ana Paula',
+        'Programacao para Dispositivos Moveis': 'Prof. Anderson Lima',
+        'Mineracao de Dados': 'Profa. Mariana Costa',
+        'Analise de Algoritmos': 'Prof. Luiz Henrique',
+        'Metodos Numericos': 'Prof. Jorge Amaral',
+        'Seguranca da Informacao': 'Prof. Carlos Oliveira',
+        'Computacao em Nuvem': 'Prof. Roberto Santos',
+        'Aprendizado de Maquina (Machine Learning)': 'Prof. Fabiano Gomes',
+        'Topicos Especiais de Computacao': 'Prof. Sergio Murilo',
+        'Sistemas Digitais': 'Prof. Fabio Souza',
+        'Trabalho de Conclusao de Curso (TCC)': 'Coordenacao CC',
+        'Empreendedorismo': 'Prof. Marcos Viana',
+        'Gestao de Projetos': 'Prof. Andre Luiz',
+        'Etica Profissional': 'Profa. Clarisse Lispector',
+        'Computacao de Alto Desempenho': 'Prof. Valter Braga',
+      };
 
-        return {
+      // Criar lista de disciplinas que já existem no banco para este semestre
+      const existingCategories = new Set(list.map(a => a.category));
+
+      // Gerar placeholders apenas para as disciplinas da grade que NÃO existem no banco
+      const placeholders = futureSubjects
+        .filter(subject => !existingCategories.has(subject))
+        .map((subject, idx) => ({
           id: `placeholder-${selectedSemester}-${idx}`,
           title: `Caderno de ${subject}`,
           category: subject,
@@ -91,8 +98,9 @@ export default function DashboardPage() {
           source_type: null,
           course: null,
           teacher: teacherMap[subject] || 'Professor da Disciplina'
-        };
-      }) as any as ApostilaSummary[];
+        }));
+
+      return [...list, ...placeholders] as any as ApostilaSummary[];
     }
 
     return list;
