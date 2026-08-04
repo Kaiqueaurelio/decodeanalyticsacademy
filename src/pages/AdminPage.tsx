@@ -1023,6 +1023,7 @@ export default function AdminPage() {
           title: data.title || 'Sem título', content: data.content || '',
           category: data.category || 'Geral', source_type: isNotion ? 'notion' : 'link',
           file_url: isNotion ? null : url, created_by: user.id, published: true,
+          semester: 6 // Padrão conforme solicitado
         }).select().single();
         if (insertErr) throw insertErr;
         if (data.exercises?.length > 0 && newApostila) {
@@ -1149,6 +1150,7 @@ export default function AdminPage() {
     const OPT_MARKED_CORRECT = /^\s*[*✓✔→»]\s*(?:[\(\[])?\s*([A-Ea-e])\s*(?:[\)\].:\-])\s*(.+?)\s*$/;
     const OPT_INLINE_CORRECT = /\((?:correta|certa|gabarito|resposta)\)\s*$/i;
     const GAB_RE = /^\s*(?:gabarito|resposta(?:\s+correta)?|alternativa\s+correta|alternativa|letra|answer|correct)\s*[:=\-]?\s*\(?\s*([A-Ea-e])\s*\)?\s*\.?\s*$/i;
+    const GAB_INLINE_BOLD = /\*\*([A-Ea-e])\*\*/i; // Suporte para **A**
     const EXP_RE = /^\s*(?:explica[çc][ãa]o|justificativa|coment[áa]rio|explanation|resposta modelo|resposta esperada|coment\.?|just\.?)\s*[:=\-]\s*(.*)$/i;
     const ESSAY_RE = /^\s*(?:tipo|type)\s*[:=]\s*(?:dissertativa|essay|aberta|discursiva)/i;
     const Q_PREFIX = /^(?:\s*)(?:[\(\[]?\d{1,3}[\)\]]?[\.\)\-:]?|(?:quest[aã]o|pergunta|exerc[ií]cio|ex|q)\s*\d{1,3}\s*[\)\.\-:]?)\s+(.+)$/i;
