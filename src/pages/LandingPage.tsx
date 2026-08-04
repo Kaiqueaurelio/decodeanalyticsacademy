@@ -79,6 +79,39 @@ function CyberGrid() {
   );
 }
 
+function TypewriterWords() {
+  const [index, setIndex] = useState(0);
+  const [displayText, setDisplayText] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      const currentWord = words[index];
+      if (isDeleting) {
+        setDisplayText(currentWord.substring(0, displayText.length - 1));
+        if (displayText.length === 0) {
+          setIsDeleting(false);
+          setIndex((prev) => (prev + 1) % words.length);
+        }
+      } else {
+        setDisplayText(currentWord.substring(0, displayText.length + 1));
+        if (displayText === currentWord) {
+          setIsDeleting(true);
+        }
+      }
+    }, isDeleting ? 100 : 200);
+    return () => clearTimeout(timeout);
+  }, [displayText, isDeleting, index]);
+
+  return (
+    <span className="mt-2 block min-h-[1.2em] bg-gradient-to-r from-[#00f0ff] via-[#a855f7] to-[#c084fc] bg-clip-text text-transparent">
+      {displayText}
+      <span className="ml-1 animate-pulse border-r-4 border-[#00f0ff]" />
+    </span>
+  );
+}
+
+
 /* ─── DATA ─── */
 const features = [
   { icon: BookOpen, name: 'Apostilas Interativas', desc: 'Conteúdo estruturado por disciplina com anotações', color: '#00f0ff' },
