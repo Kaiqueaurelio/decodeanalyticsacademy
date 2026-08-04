@@ -27,6 +27,18 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.36.0",
+    date: "2026-08-04",
+    title: "Experiência do Aluno e Fluidez de Carregamento",
+    changes: [
+      { kind: 'improvement', text: 'Percepção de Performance: Implementado DashboardSkeleton para um carregamento visual instantâneo e profissional.' },
+      { kind: 'feature', text: 'Ella Ribeiro: Adicionada mensagem de boas-vindas contextual para novos alunos e melhoria na persistência de mensagens.' },
+      { kind: 'improvement', text: 'Sincronização Acadêmica: Otimizada a invalidação de cache ao concluir lições no leitor estruturado, atualizando o progresso no dashboard em tempo real.' },
+      { kind: 'improvement', text: 'Filtro Inteligente: O dashboard agora seleciona automaticamente o semestre correto baseado no perfil acadêmico do aluno no primeiro acesso.' },
+    ],
+  },
+
+  {
     version: "3.35.0",
     date: "2026-08-04",
     title: "Segurança e Auditoria Administrativa",

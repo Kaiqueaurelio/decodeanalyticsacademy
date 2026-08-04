@@ -58,11 +58,21 @@ export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps)
   const [messages, setMessages] = useState<Msg[]>(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      return raw ? JSON.parse(raw) : [];
+      if (raw) return JSON.parse(raw);
+      
+      // Mensagem de boas-vindas para novos alunos
+      if (!isAdmin) {
+        return [{ 
+          role: "assistant", 
+          content: "Olá! Eu sou a **Ella**, sua tutora de estudos. Estou aqui para te ajudar a entender qualquer conteúdo, resolver exercícios ou criar planos de estudos personalizados. Como posso te ajudar hoje?" 
+        }];
+      }
+      return [];
     } catch {
       return [];
     }
   });
+
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [statusHint, setStatusHint] = useState<string | null>(null);

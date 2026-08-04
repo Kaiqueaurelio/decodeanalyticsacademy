@@ -135,15 +135,21 @@ export function ApostilaCoverCard({ apostila, status = 'em-progresso' }: Props) 
             {apostila.title}
           </h3>
         </div>
-        <div className="flex flex-wrap items-center gap-1.5">
-          <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium bg-[hsl(210_100%_60%/0.18)] text-[hsl(210_100%_70%)]">
-            <span className="flex h-1.5 w-1.5 rounded-full bg-primary mr-1.5 animate-pulse" />
-            {statusLabel}
-          </span>
-          <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium bg-[hsl(24_95%_55%/0.18)] text-[hsl(24_95%_65%)]">
-            {semester}
-          </span>
+        <div className="flex flex-wrap items-center justify-between gap-1.5 mt-auto">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium bg-[hsl(210_100%_60%/0.18)] text-[hsl(210_100%_70%)]">
+              <span className="flex h-1.5 w-1.5 rounded-full bg-primary mr-1.5 animate-pulse" />
+              {statusLabel}
+            </span>
+            <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium bg-[hsl(24_95%_55%/0.18)] text-[hsl(24_95%_65%)]">
+              {semester}
+            </span>
+          </div>
+          {(apostila as any).progress !== undefined && (
+             <span className="text-[10px] font-black text-primary/80">{(apostila as any).progress}%</span>
+          )}
         </div>
+
       </div>
 
     </div>

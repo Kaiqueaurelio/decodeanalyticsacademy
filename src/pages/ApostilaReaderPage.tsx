@@ -26,6 +26,8 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Progress } from "@/components/ui/progress";
+import { useQueryClient } from "@tanstack/react-query";
+
 
 interface Lesson {
   id: string;
@@ -88,6 +90,8 @@ export default function ApostilaReaderPage() {
   const [noteText, setNoteText] = useState("");
   const [noteSaving, setNoteSaving] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
+  const queryClient = useQueryClient();
+
 
   // Load apostila + tree
   useEffect(() => {
@@ -210,7 +214,13 @@ export default function ApostilaReaderPage() {
       ...l,
       progress_status: nextStatus as "completed" | "in_progress",
     })));
+
+    // Invalida cache para atualizar progresso no dashboard
+    queryClient.invalidateQueries({ queryKey: ['dashboard', 'stats', userId] });
+    queryClient.invalidateQueries({ queryKey: ['apostilas', 'list'] });
+
     toast.success(nextStatus === "completed" ? "Lição concluída" : "Marcada como em progresso");
+
     if (nextStatus === "completed" && nextLesson) {
       setTimeout(() => setSelectedLessonId(nextLesson.id), 400);
     }
