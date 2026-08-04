@@ -123,6 +123,7 @@ function useAdminCopyPatch() {
 
 function AnimatedRoutes() {
   const [showSplash, setShowSplash] = React.useState(true);
+  const [adminTab, setAdminTab] = React.useState<any>("overview");
   useAdminCopyPatch();
 
   return (
@@ -147,7 +148,7 @@ function AnimatedRoutes() {
         <Route path="/simulado" element={<ProtectedRoute><SimuladoPage /></ProtectedRoute>} />
         <Route path="/plano-de-estudos" element={<ProtectedRoute><PlanoEstudosPage /></ProtectedRoute>} />
         <Route path="/revisao-prova/:eventId" element={<ProtectedRoute><PreExamReviewPage /></ProtectedRoute>} />
-        <Route path="/apostila/:id" element={<ProtectedRoute><ApostilaPage /></ProtectedRoute>} />
+        <Route path="/apostila/:id" element={<ProtectedRoute><ApostilaPage tab={adminTab} setTab={setAdminTab} /></ProtectedRoute>} />
         <Route path="/apostila/:id/read" element={<ProtectedRoute><ApostilaReaderPage /></ProtectedRoute>} />
         <Route path="/materia/:category" element={<ProtectedRoute><SubjectPage /></ProtectedRoute>} />
         <Route path="/exercises/:id" element={<ProtectedRoute><ExercisesPage /></ProtectedRoute>} />
@@ -172,8 +173,8 @@ function AnimatedRoutes() {
         <Route path="/noticias" element={<ProtectedRoute blockForEnem><NewsPage /></ProtectedRoute>} />
         <Route path="/admin/biblioteca" element={<ProtectedRoute adminOnly><AdminBibliotecaPage /></ProtectedRoute>} />
         <Route path="/admin/apostilas/:id" element={<ProtectedRoute adminOnly><AdminApostilaWorkbench /></ProtectedRoute>} />
-        <Route path="/admin" element={<ProtectedRoute adminOnly><AdminPage /></ProtectedRoute>} />
-        <Route path="/admin/*" element={<ProtectedRoute adminOnly><AdminPage /></ProtectedRoute>} />
+        <Route path="/admin" element={<ProtectedRoute adminOnly><AdminPage tab={adminTab} setTab={setAdminTab} /></ProtectedRoute>} />
+        <Route path="/admin/*" element={<ProtectedRoute adminOnly><AdminPage tab={adminTab} setTab={setAdminTab} /></ProtectedRoute>} />
         {import.meta.env.DEV && (
           <Route path="/__visual/cover-card" element={<CoverCardVisualPage />} />
         )}

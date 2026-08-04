@@ -590,10 +590,17 @@ function OverviewTab({ apostilas, exercises, allAnswers, materials, users, setTa
 }
 
 // ─── Main Admin Page ────────────────────────────────────────────
-export default function AdminPage() {
+interface AdminPageProps {
+  tab?: Tab;
+  setTab?: (tab: Tab) => void;
+}
+
+export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPageProps = {}) {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [tab, setTab] = useState<Tab>('overview');
+  const [internalTab, setInternalTab] = useState<Tab>('overview');
+  const tab = propTab || internalTab;
+  const setTab = propSetTab || setInternalTab;
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [apostilas, setApostilas] = useState<Apostila[]>([]);
   const [exercises, setExercises] = useState<Record<string, Exercise[]>>({});
