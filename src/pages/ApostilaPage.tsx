@@ -322,6 +322,7 @@ export default function ApostilaPage({ tab, setTab }: Props) {
 
       <main className={`relative z-10 ${focusMode ? 'pt-16' : ''}`}>
 
+
         {/* Navigation bar */}
         <div className={`w-full max-w-7xl mx-auto px-3 sm:px-4 ${focusMode ? 'py-2' : 'py-4'} animate-content-show`}>
           <div className="flex items-center justify-between">
