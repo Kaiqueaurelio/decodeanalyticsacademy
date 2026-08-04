@@ -110,7 +110,7 @@ function CategorySelect({ value, onValueChange, placeholder }: { value: string; 
   );
 }
 
-type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements' | 'calendar' | 'testimonials' | 'ai' | 'performance' | 'smoke' | 'diagnostics' | 'ads' | 'ads-chat' | 'social' | 'rss' | 'courses' | 'changelog' | 'leads' | 'ella-audit' | 'security-alerts' | 'sponsors';
+type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements' | 'calendar' | 'testimonials' | 'ai' | 'performance' | 'smoke' | 'diagnostics' | 'ads' | 'ads-chat' | 'social' | 'rss' | 'courses' | 'changelog' | 'leads' | 'ella-audit' | 'security-alerts' | 'sponsors' | 'edit' | 'review';
 
 const ACCEPT_MAP: Record<string, string> = {
   pdf: '.pdf', image: 'image/*', gif: '.gif,image/gif',
@@ -1381,11 +1381,13 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
     'ads-chat': { title: 'Ads Chat Builder', desc: 'Gere criativos de anúncios com IA' },
     rss: { title: 'Feeds RSS de Notícias', desc: 'Gerencie as fontes de notícias exibidas em /noticias' },
     courses: { title: 'Cursos Gratuitos', desc: 'Gerencie os cursos gratuitos exibidos aos alunos' },
-    'security-alerts': { title: 'Alertas de Segurança', desc: 'Tentativas recusadas pelo servidor: escalada de privilégio, ação não autorizada e escopo inválido' },
-    'ella-audit': { title: 'Auditoria da Assistente', desc: 'Cada ação pedida à Ella, com papel do usuário, permissão e resultado' },
+    'security-alerts': { title: 'Alertas de Segurança', desc: 'Tentativas recusadas pelo servidor' },
+    'ella-audit': { title: 'Auditoria da Assistente', desc: 'Registro de ações e decisões do assistente' },
     changelog: { title: 'Histórico de Versões', desc: 'Tudo que foi criado, alterado e corrigido na plataforma' },
-    leads: { title: 'Interessados em Patrocínio', desc: 'Briefings recebidos, situação e histórico de contato' },
+    leads: { title: 'Interessados em Patrocínio', desc: 'Briefings recebidos e histórico de contato' },
     sponsors: { title: 'Gestão de Anunciantes', desc: 'Controle marcas e logos para o Media Kit' },
+    edit: { title: 'Editar Apostila', desc: 'Modo de edição manual' },
+    review: { title: 'Revisar Apostila', desc: 'Revisão do conteúdo gerado' },
   };
 
 
