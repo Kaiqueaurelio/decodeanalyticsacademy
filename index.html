@@ -7,30 +7,45 @@
     <meta name="description" content="Plataforma de estudos premium para organizar apostilas, exercícios e materiais acadêmicos. Feita de aluno para aluno, 100% gratuita.">
     <meta name="author" content="Kaique Aurelio" />
 
-    <!-- Fonte única (Space Grotesk) com apenas os pesos usados. DM Mono é carregado sem bloquear o render. -->
+    <!-- Fonte única (Space Grotesk) carregada sem bloquear o render. DM Mono é secundária. -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       rel="preload"
       as="style"
       href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap"
+      onload="this.onload=null;this.rel='stylesheet'"
     />
     <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap"
-    />
-    <link
-      rel="stylesheet"
+      rel="preload"
+      as="style"
       media="print"
-      onload="this.media='all'"
       href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&display=swap"
+      onload="this.onload=null;this.rel='stylesheet';this.media='all'"
     />
     <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap"
+      />
       <link
         rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&display=swap"
       />
     </noscript>
+    <style>
+      /* Fallback com métricas ajustadas: reduz o layout shift ao trocar para Space Grotesk */
+      @font-face {
+        font-family: 'Space Grotesk Fallback';
+        src: local('Arial');
+        size-adjust: 97%;
+        ascent-override: 96%;
+        descent-override: 24%;
+        line-gap-override: 0%;
+        font-display: swap;
+      }
+    </style>
+
 
 
     <meta name="theme-color" content="#0A0A0B" />
