@@ -19,6 +19,7 @@ function applyTokens(tpl: string, s: CoverSubject) {
     .replace(/\{categoria\}/gi, s.category || 'Estudos')
     .replace(/\{titulo\}/gi, s.title)
     .replace(/\{professor\}/gi, s.teacher || '')
+    .replace(/\{professor\?\s*([^}]*)\}/gi, s.teacher ? '$1' : '')
     .replace(/\{semestre\}/gi, s.semester ? `${s.semester}º semestre` : 'Extracurricular');
 }
 
