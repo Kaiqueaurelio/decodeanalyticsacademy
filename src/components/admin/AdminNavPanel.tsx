@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react';
-import { Search, X, Home } from 'lucide-react';
+import { Search, X, Home, BookOpen } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { filterAdminNav, type AdminTabId } from '@/config/adminNav';
+import { Badge } from '@/components/ui/badge';
 
 export type AdminNavCounts = Partial<Record<'apostilas' | 'exercises' | 'materials' | 'users' | 'securityAlerts', number>>;
 
@@ -111,24 +112,38 @@ export function AdminNavPanel({ tab, onSelect, counts, footerSlot, autoFocusSear
               })}
             </div>
           ))}
-          <div className="pt-2 pb-1">
-            <button
-              type="button"
-              onClick={() => navigate('/dashboard')}
-              className="flex w-full items-center gap-4 rounded-xl px-4 py-3 text-left text-muted-foreground transition-all duration-200 hover:bg-muted/60 hover:text-foreground"
-            >
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border bg-background border-border">
-                <Home className="h-4.5 w-4.5" />
-              </div>
-              <span className="min-w-0 flex-1 py-0.5">
-                <span className="block truncate text-sm font-bold tracking-tight">
-                  Sair do Painel
+          <div className="pt-2 pb-1 space-y-4">
+            <div className="space-y-1">
+              <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Acervos</p>
+              <button
+                onClick={() => navigate('/admin/biblioteca')}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors bg-primary/5 text-primary hover:bg-primary/10 border border-primary/20"
+              >
+                <BookOpen className="h-4 w-4 shrink-0 text-primary" />
+                <span className="flex-1 text-left">Biblioteca de Livros</span>
+                <Badge variant="secondary" className="text-[9px] h-4 px-1.5">PDF/EPUB</Badge>
+              </button>
+            </div>
+            
+            <div className="pt-2 border-t border-border/50">
+              <button
+                type="button"
+                onClick={() => navigate('/dashboard')}
+                className="flex w-full items-center gap-4 rounded-xl px-4 py-3 text-left text-muted-foreground transition-all duration-200 hover:bg-muted/60 hover:text-foreground"
+              >
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border bg-background border-border">
+                  <Home className="h-4.5 w-4.5" />
+                </div>
+                <span className="min-w-0 flex-1 py-0.5">
+                  <span className="block truncate text-sm font-bold tracking-tight">
+                    Sair do Painel
+                  </span>
+                  <span className="block truncate text-[10px] font-medium text-muted-foreground/80 mt-0.5">
+                    Voltar para o site (Área do Aluno)
+                  </span>
                 </span>
-                <span className="block truncate text-[10px] font-medium text-muted-foreground/80 mt-0.5">
-                  Voltar para o site (Área do Aluno)
-                </span>
-              </span>
-            </button>
+              </button>
+            </div>
           </div>
           {footerSlot}
         </nav>
