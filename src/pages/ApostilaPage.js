@@ -27,7 +27,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { exportApostilaToPDF } from '@/lib/apostila-pdf';
 import { exportApostilaToDOCX } from '@/lib/apostila-docx';
-import { ArrowLeft, BookOpen, PenLine, Eye, List, X, MoreHorizontal, ChevronUp, StickyNote, Layers, Wand2, Share2, CheckCircle2, Copy, Volume2, FileDown, Loader2, Brain, ArrowRight } from 'lucide-react';
+import { ArrowLeft, BookOpen, PenLine, Eye, List, X, MoreHorizontal, ChevronUp, StickyNote, Layers, Wand2, Share2, CheckCircle2, Copy, Volume2, FileDown, Loader2, Brain, ArrowRight, Settings } from 'lucide-react';
 import { parseApostilaContent } from '@/lib/apostila-parser';
 /**
  * Remove sintaxe markdown residual (negrito, itálico, código, links etc.)
@@ -297,10 +297,14 @@ export default function ApostilaPage({ tab, setTab }) {
               </Button>
 
               {isAdmin && (<div className="flex items-center gap-1 sm:gap-2">
-                  <Button variant="outline" size="sm" onClick={() => setTab && setTab('apostilas')} className="text-xs gap-1.5 hover-lift border-primary/40 bg-primary/5 text-primary hover:bg-primary/10" title="Editar esta apostila no painel Admin">
-                    <PenLine className="h-3.5 w-3.5"/>
-                    <span className="hidden lg:inline">Editar Apostila</span>
-                    <span className="lg:hidden">Editar</span>
+                  <Button variant="outline" size="sm" onClick={() => {
+                if (setTab)
+                    setTab('apostilas');
+                navigate('/admin');
+            }} className="text-xs gap-1.5 hover-lift border-primary/40 bg-primary/5 text-primary hover:bg-primary/10" title="Editar esta apostila no painel Admin">
+                    <Settings className="h-3.5 w-3.5"/>
+                    <span className="hidden lg:inline">Gerenciar no Admin</span>
+                    <span className="lg:hidden">Admin</span>
                   </Button>
                   <Button variant="outline" size="sm" onClick={handleExportPdf} disabled={exportingPdf} className="text-xs gap-1.5 hover-lift border-accent/40 text-accent-foreground hover:bg-accent/10" title="Baixar apostila em PDF (admin)">
                     {exportingPdf ? <Loader2 className="h-3.5 w-3.5 animate-spin"/> : <FileDown className="h-3.5 w-3.5"/>}

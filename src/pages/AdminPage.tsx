@@ -195,9 +195,13 @@ function AdminSidebar({ tab, setTab, stats, sidebarOpen, setSidebarOpen }: {
         <div className="p-5 border-b border-border">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="rounded-xl bg-primary p-2.5">
+              <button 
+                onClick={() => navigate('/dashboard')}
+                className="rounded-xl bg-primary p-2.5 hover:ring-2 hover:ring-primary/50 transition-all active:scale-95"
+                title="Voltar para a Área do Aluno"
+              >
                 <LayoutDashboard className="h-5 w-5 text-primary-foreground" />
-              </div>
+              </button>
               <div>
                 <h1 className="text-sm font-bold text-foreground">Admin Panel</h1>
                 <p className="text-[10px] text-muted-foreground">Decode Analytics</p>

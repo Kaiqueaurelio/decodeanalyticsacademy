@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { Search, X } from 'lucide-react';
+import { Search, X, Home } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
@@ -22,6 +23,7 @@ interface AdminNavPanelProps {
  * garantindo a mesma organização nos dois formatos.
  */
 export function AdminNavPanel({ tab, onSelect, counts, footerSlot, autoFocusSearch }: AdminNavPanelProps) {
+  const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const groups = useMemo(() => filterAdminNav(query), [query]);
 
@@ -109,6 +111,25 @@ export function AdminNavPanel({ tab, onSelect, counts, footerSlot, autoFocusSear
               })}
             </div>
           ))}
+          <div className="pt-2 pb-1">
+            <button
+              type="button"
+              onClick={() => navigate('/dashboard')}
+              className="flex w-full items-center gap-4 rounded-xl px-4 py-3 text-left text-muted-foreground transition-all duration-200 hover:bg-muted/60 hover:text-foreground"
+            >
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border bg-background border-border">
+                <Home className="h-4.5 w-4.5" />
+              </div>
+              <span className="min-w-0 flex-1 py-0.5">
+                <span className="block truncate text-sm font-bold tracking-tight">
+                  Sair do Painel
+                </span>
+                <span className="block truncate text-[10px] font-medium text-muted-foreground/80 mt-0.5">
+                  Voltar para o site (Área do Aluno)
+                </span>
+              </span>
+            </button>
+          </div>
           {footerSlot}
         </nav>
       </ScrollArea>
