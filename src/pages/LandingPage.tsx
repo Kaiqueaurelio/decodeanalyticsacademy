@@ -359,7 +359,7 @@ export default function LandingPage() {
               controls={false}
               disablePictureInPicture
               preload="auto"
-              poster={heroPoster.url}
+              poster={heroPosterWebp.url}
               // atributos legados necessários no Safari iOS
               webkit-playsinline="true"
               x5-playsinline="true"
