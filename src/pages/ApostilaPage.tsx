@@ -670,9 +670,9 @@ export default function ApostilaPage({ tab, setTab }: Props) {
                       <BookOpen className="h-10 w-10 text-primary/40" />
                     </div>
                     <div className="space-y-4 max-w-sm">
-                      <h3 className="text-xl font-bold tracking-tight">Sem material disponível por enquanto</h3>
+                      <h3 className="text-xl font-bold tracking-tight">Material ainda não disponível</h3>
                       <p className="text-sm text-muted-foreground leading-relaxed">
-                        Nossa equipe pedagógica e a assistência estão preparando o melhor conteúdo acadêmico para esta disciplina. Fique atento às atualizações!
+                        Aguarde o início do semestre ou o início das aulas. Nossa equipe está preparando o melhor conteúdo acadêmico para esta disciplina.
                       </p>
                       <div className="flex flex-col sm:flex-row gap-2 pt-2 justify-center">
                         <Button variant="outline" size="sm" className="gap-2" onClick={() => navigate(-1)}>
