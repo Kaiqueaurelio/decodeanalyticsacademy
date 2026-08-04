@@ -39,8 +39,20 @@ export default function DashboardPage() {
   const { data: profile } = useUserProfile(user?.id);
   const [selectedSemester, setSelectedSemester] = useState<number | null>(() => {
     const saved = localStorage.getItem('selectedSemestre');
-    return saved ? parseInt(saved, 10) : 6; // Padrão '6' para o 6º semestre se não houver preferência
+    if (saved) return parseInt(saved, 10);
+    return null; // Inicialmente null para decidir baseado no perfil
   });
+
+  // Sincroniza o semestre inicial com o perfil do aluno
+  useEffect(() => {
+    if (profile?.semester && selectedSemester === null && !localStorage.getItem('selectedSemestre')) {
+      setSelectedSemester(profile.semester);
+    } else if (selectedSemester === null) {
+      // Fallback para 1 ou 6 dependendo da lógica de negócio se o perfil não tem
+      setSelectedSemester(6); 
+    }
+  }, [profile?.semester]);
+
   const { data: apostilasRaw = [], isLoading: loadingApostilas } = useApostilasList();
   const { data: exerciseCounts = {} } = useExerciseCounts();
   const { data: statsData, isLoading: loadingStats } = useDashboardStats(user?.id);
