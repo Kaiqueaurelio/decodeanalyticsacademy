@@ -78,9 +78,9 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!user) return;
     
-    // Marcar 5º semestre como concluído (apenas uma vez ou quando mudar algo)
+    // Marcar do 1º ao 5º semestre como concluído
     const markCompleted = async () => {
-      await supabase.rpc('complete_fifth_semester_apostilas', { _user_id: user.id });
+      await supabase.rpc('complete_semesters_upto_five', { _user_id: user.id });
     };
     markCompleted();
 
