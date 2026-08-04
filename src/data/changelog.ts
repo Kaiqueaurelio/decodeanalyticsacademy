@@ -27,6 +27,12 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.29.0",
+    date: "04/08/2026",
+    description: "UX: Rolagem infinita no dashboard e atalhos rápidos de edição para administradores em todos os materiais.",
+    type: "feature"
+  },
+  {
     version: "3.30.0",
     date: "2026-08-04",
     title: "Transparência e Privacidade",
