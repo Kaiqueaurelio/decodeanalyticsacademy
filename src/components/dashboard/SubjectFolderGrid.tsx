@@ -45,6 +45,38 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
     );
   }, [apostilas, query]);
 
+  // Reinicia a paginação quando a busca muda
+  useEffect(() => {
+    setVisibleGroups(3);
+  }, [query]);
+
+  // Rolagem infinita: re-observa o sentinela a cada lote carregado
+  useEffect(() => {
+    if (visibleGroups >= groups.length) return;
+    const el = loaderRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') return;
+
+    let done = false;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (done) return;
+        if (entries[0]?.isIntersecting) {
+          done = true;
+          // rAF evita travar o scroll durante o render do próximo lote
+          requestAnimationFrame(() =>
+            setVisibleGroups((prev) => Math.min(prev + 2, groups.length)),
+          );
+        }
+      },
+      { root: null, rootMargin: '600px 0px', threshold: 0 },
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [visibleGroups, groups.length]);
+
+
+
   if (groups.length === 0) {
     return (
       <div className="py-10 text-center text-sm text-muted-foreground">
