@@ -1,4 +1,4 @@
-import { FileText, Lock, PenTool, Edit3 } from 'lucide-react';
+import { FileText, Lock, PenTool, Edit3, Settings } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { getSubjectColor } from '@/lib/subject-colors';
@@ -111,13 +111,12 @@ export function ApostilaCoverCard({ apostila, status = 'em-progresso' }: Props) 
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                // Abre o editor de metadados se necessário ou workbench
-                navigate(`/admin/apostilas/${apostila.id}`);
+                navigate(`/admin/apostilas/${apostila.id}`, { state: { editMetadata: true } });
               }}
               className="flex h-9 w-9 items-center justify-center rounded-xl bg-black/60 backdrop-blur-md border border-white/20 text-white hover:bg-accent hover:border-accent hover:scale-110 active:scale-95 transition-all shadow-xl"
-              title="Ajustar Configurações"
+              title="Configurações do Material"
             >
-              <Edit3 className="h-4.5 w-4.5" />
+              <Settings className="h-4.5 w-4.5" />
             </button>
           </div>
         )}

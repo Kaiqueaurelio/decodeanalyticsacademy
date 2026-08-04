@@ -104,13 +104,23 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
               </div>
               <div className="flex items-center gap-2">
                 {isAdmin && (
-                  <button 
-                    onClick={() => navigate('/admin', { state: { tab: 'apostilas', filter: category } })}
-                    className="flex items-center gap-1.5 text-[10px] font-bold text-accent hover:text-accent/80 transition-all bg-accent/5 px-3 py-1.5 rounded-full border border-accent/10 mr-2"
-                  >
-                    <PenTool className="h-3 w-3" />
-                    Gerenciar Matéria
-                  </button>
+                  <div className="flex items-center gap-2 mr-2">
+                    <button 
+                      onClick={() => navigate('/admin', { state: { tab: 'apostilas', filter: category, action: 'new' } })}
+                      className="flex items-center gap-1.5 text-[10px] font-bold text-primary hover:text-primary/80 transition-all bg-primary/5 px-3 py-1.5 rounded-full border border-primary/10"
+                      title="Adicionar novo material nesta disciplina"
+                    >
+                      <Plus className="h-3 w-3" />
+                      Novo Material
+                    </button>
+                    <button 
+                      onClick={() => navigate('/admin', { state: { tab: 'apostilas', filter: category } })}
+                      className="flex items-center gap-1.5 text-[10px] font-bold text-accent hover:text-accent/80 transition-all bg-accent/5 px-3 py-1.5 rounded-full border border-accent/10"
+                    >
+                      <PenTool className="h-3 w-3" />
+                      Gerenciar Matéria
+                    </button>
+                  </div>
                 )}
                 <button 
                   onClick={() => navigate(`/materia/${encodeURIComponent(category)}`)}
