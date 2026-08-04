@@ -58,20 +58,40 @@ export default function DashboardPage() {
     // 2. Se for um semestre futuro (6, 7, 8) e não houver conteúdo, gerar placeholders
     if (selectedSemester && [6, 7, 8].includes(selectedSemester) && list.length === 0) {
       const futureSubjects = BY_SEMESTER[selectedSemester] || [];
-      return futureSubjects.map((subject, idx) => ({
-        id: `placeholder-${selectedSemester}-${idx}`,
-        title: `Conteúdo de ${subject}`,
-        category: subject,
-        semester: selectedSemester,
-        isPlaceholder: true,
-        published: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        cover_url: null,
-        file_url: null,
-        source_type: null,
-        course: null
-      })) as any as ApostilaSummary[];
+      return futureSubjects.map((subject, idx) => {
+        // Mapeamento de professores para capas
+        const teacherMap: Record<string, string> = {
+          'Sistemas Distribuidos': 'Prof. Dr. Ricardo Silva',
+          'Engenharia de Software II': 'Profa. Ana Paula',
+          'Programacao para Dispositivos Moveis': 'Prof. Anderson Lima',
+          'Mineracao de Dados': 'Profa. Mariana Costa',
+          'Analise de Algoritmos': 'Prof. Luiz Henrique',
+          'Seguranca da Informacao': 'Prof. Carlos Oliveira',
+          'Computacao em Nuvem': 'Prof. Roberto Santos',
+          'Aprendizado de Maquina (Machine Learning)': 'Prof. Fabiano Gomes',
+          'Topicos Especiais de Computacao': 'Prof. Sergio Murilo',
+          'Trabalho de Conclusao de Curso (TCC)': 'Coordenacao CC',
+          'Empreendedorismo': 'Prof. Marcos Viana',
+          'Gestao de Projetos': 'Prof. Andre Luiz',
+          'Etica Profissional': 'Profa. Clarisse Lispector',
+        };
+
+        return {
+          id: `placeholder-${selectedSemester}-${idx}`,
+          title: `Caderno de ${subject}`,
+          category: subject,
+          semester: selectedSemester,
+          isPlaceholder: true,
+          published: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          cover_url: null,
+          file_url: null,
+          source_type: null,
+          course: null,
+          teacher: teacherMap[subject] || 'Professor da Disciplina'
+        };
+      }) as any as ApostilaSummary[];
     }
 
     return list;
