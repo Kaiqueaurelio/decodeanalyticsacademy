@@ -27,6 +27,16 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.45.0",
+    date: "2026-08-04",
+    title: "Branding de Alta Visibilidade",
+    changes: [
+      { kind: 'improvement', text: 'Logo expandido na tela de leitura: selo flutuante agora atinge 128px em telas grandes para máxima presença de marca.' },
+      { kind: 'improvement', text: 'Topbar responsiva com logo ampliado (h-32) e efeitos de brilho neon reforçados para melhor contraste em fundos escuros.' },
+      { kind: 'improvement', text: 'Ajuste fino de hierarquia tipográfica no selo persistente.' },
+    ],
+  },
+  {
     version: "3.44.0",
     date: "2026-08-04",
     title: "Retomada de leitura e marca persistente",
