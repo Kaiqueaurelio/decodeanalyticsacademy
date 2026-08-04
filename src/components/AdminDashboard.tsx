@@ -22,7 +22,7 @@ import {
   Link as LinkIcon, FileText, FileUp, Plus, Activity,
   Eye, EyeOff, Edit, Trash2, Trophy, Medal, Award, Filter, X, Check,
   CheckCircle2, XCircle, CalendarDays, ArrowDownUp, FolderOpen, ChevronDown, LayoutDashboard,
-  GraduationCap,
+  GraduationCap, AlertTriangle, Clock3, ShieldCheck, ExternalLink, History,
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -352,6 +352,18 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
 
 
   const totalEngagement = engagement.reduce((s, d) => s + d.apostilas + d.exercises, 0);
+  const contentHealth = useMemo(() => {
+    const now = Date.now();
+    const drafts = apostilas.filter((item) => !item.published);
+    const staleDrafts = drafts.filter((item) => {
+      const updatedAt = new Date(item.updated_at || item.created_at).getTime();
+      return Number.isFinite(updatedAt) && now - updatedAt > 30 * 86400000;
+    });
+    const withoutCategory = apostilas.filter((item) => !item.category?.trim());
+    const healthy = Math.max(0, apostilas.length - drafts.length - withoutCategory.length);
+    const score = apostilas.length > 0 ? Math.round((healthy / apostilas.length) * 100) : 100;
+    return { drafts, staleDrafts, withoutCategory, score };
+  }, [apostilas]);
 
 
   if (loading) {
@@ -433,6 +445,14 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
             >
               <Plus className="mr-2 h-4 w-4 stroke-[3px]" /> Criar Apostila
             </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-11 rounded-2xl border-accent/30 bg-background/50 px-5 text-xs font-semibold"
+              onClick={() => navigate('/dashboard')}
+            >
+              <ExternalLink className="mr-2 h-4 w-4 text-accent" /> Ver como aluno
+            </Button>
             <Button 
               variant="secondary" 
               size="icon" 
@@ -472,6 +492,74 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
           </DialogContent>
         </Dialog>
       </motion.div>
+
+      {/* Centro operacional: pendências, saúde e caminhos frequentes */}
+      <section aria-labelledby="admin-operations-title" className="grid gap-4 lg:grid-cols-[1.35fr_1fr]">
+        <Card className="rounded-2xl border-border/60">
+          <CardHeader className="pb-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <CardTitle id="admin-operations-title" className="flex items-center gap-2 text-lg">
+                  <AlertTriangle className="h-5 w-5 text-accent" /> Central de pendências
+                </CardTitle>
+                <CardDescription>Itens que merecem atenção antes da próxima publicação.</CardDescription>
+              </div>
+              <Badge variant="outline" className="border-accent/30 bg-accent/10 text-accent">
+                {contentHealth.drafts.length + contentHealth.withoutCategory.length} pendência(s)
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent className="grid gap-3 sm:grid-cols-3">
+            <Button
+              variant="outline"
+              className="h-auto min-h-20 justify-start gap-3 rounded-xl p-4 text-left"
+              onClick={() => { setStatusFilter('draft'); setCategoryFilter('all'); }}
+            >
+              <FileText className="h-5 w-5 shrink-0 text-primary" />
+              <span><strong className="block text-lg tabular-nums">{contentHealth.drafts.length}</strong><span className="text-xs text-muted-foreground">rascunhos</span></span>
+            </Button>
+            <Button
+              variant="outline"
+              className="h-auto min-h-20 justify-start gap-3 rounded-xl p-4 text-left"
+              onClick={() => { setStatusFilter('draft'); setSortKey('updated_asc'); }}
+            >
+              <Clock3 className="h-5 w-5 shrink-0 text-accent" />
+              <span><strong className="block text-lg tabular-nums">{contentHealth.staleDrafts.length}</strong><span className="text-xs text-muted-foreground">parados há 30+ dias</span></span>
+            </Button>
+            <Button
+              variant="outline"
+              className="h-auto min-h-20 justify-start gap-3 rounded-xl p-4 text-left"
+              onClick={() => { setCategoryFilter('all'); setSearch(''); setStatusFilter('all'); }}
+            >
+              <FolderOpen className="h-5 w-5 shrink-0 text-primary" />
+              <span><strong className="block text-lg tabular-nums">{contentHealth.withoutCategory.length}</strong><span className="text-xs text-muted-foreground">sem categoria</span></span>
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="rounded-2xl border-border/60">
+          <CardHeader className="pb-3">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <CardTitle className="flex items-center gap-2 text-lg"><ShieldCheck className="h-5 w-5 text-primary" /> Saúde do conteúdo</CardTitle>
+                <CardDescription>Organização e prontidão do acervo.</CardDescription>
+              </div>
+              <span className="text-2xl font-bold tabular-nums text-primary">{contentHealth.score}%</span>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Progress value={contentHealth.score} className="h-2" />
+            <div className="grid grid-cols-2 gap-2">
+              <Button variant="outline" className="justify-start rounded-xl" onClick={() => onNavigate('apostilas')}>
+                <PenLine className="mr-2 h-4 w-4" /> Editar conteúdo
+              </Button>
+              <Button variant="outline" className="justify-start rounded-xl" onClick={() => onNavigate('history')}>
+                <History className="mr-2 h-4 w-4" /> Histórico
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </section>
 
       {/* Widget Grid Personalizável (Atalhos e Pendências) */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

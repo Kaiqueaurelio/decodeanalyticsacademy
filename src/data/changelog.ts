@@ -27,6 +27,17 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.42.0",
+    date: "2026-08-04",
+    title: "Central Operacional do Administrador",
+    changes: [
+      { kind: 'feature', text: 'Nova Central de Pendências com acesso direto a rascunhos, conteúdos antigos e itens sem categoria.' },
+      { kind: 'feature', text: 'Indicador de saúde do acervo e atalho seguro para visualizar a experiência como aluno.' },
+      { kind: 'improvement', text: 'Ações frequentes e histórico foram concentrados no início do painel administrativo.' },
+      { kind: 'fix', text: 'Validada a entrada index.html do Vite para impedir falha de resolução no build.' },
+    ],
+  },
+  {
     version: "3.41.0",
     date: "2026-08-04",
     title: "Performance e Otimização de Renderização",
