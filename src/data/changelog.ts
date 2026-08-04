@@ -27,6 +27,16 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.32.0",
+    date: "2026-08-04",
+    title: "UX: Dashboard Infinito e Gestão Direta",
+    changes: [
+      { kind: 'improvement', text: 'Rolagem Infinita: Implementado Intersection Observer com sentinel visual e skeletons para uma experiência de "feed infinito" real.' },
+      { kind: 'feature', text: 'Admin: Adicionado botão "Gerenciar Matéria" diretamente nos cabeçalhos das disciplinas no dashboard do aluno.' },
+      { kind: 'improvement', text: 'Performance: Ajustado o buffer de carregamento para antecipar a renderização de novos blocos antes que o usuário atinja o fim da página.' },
+    ],
+  },
+  {
     version: "3.31.0",
     date: "2026-08-04",
     title: "Rolagem Infinita e Edição Direta",
