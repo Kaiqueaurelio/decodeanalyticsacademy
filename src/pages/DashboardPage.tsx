@@ -20,6 +20,7 @@ import { ExamCalendarWidget } from '@/components/ExamCalendarWidget';
 import { OnboardingTour } from '@/components/OnboardingTour';
 import { TermsFooterLink } from '@/components/TermsFooterLink';
 import { ContinueWhereLeftCard } from '@/components/ContinueWhereLeftCard';
+import { StudyHeatmap } from '@/components/gamification/StudyHeatmap';
 import { useApostilasList, useExerciseCounts, useDashboardStats, type ApostilaSummary } from '@/hooks/queries/useDashboardData';
 import { useUserProfile } from '@/hooks/queries/useUserProfile';
 import { BY_SEMESTER } from '@/lib/subject-semester-map';
@@ -160,6 +161,11 @@ export default function DashboardPage() {
   const totalExercises = Object.values(exerciseCounts).reduce((sum, count) => sum + count, 0);
   const answeredExercises = stats.hits + stats.errors;
   const overallProgress = totalExercises > 0 ? Math.round((answeredExercises / totalExercises) * 100) : 0;
+  const heatmapData = stats.byApostila ? Object.entries(stats.byApostila).map(([_, s]: any) => ({
+    date: new Date().toISOString().split('T')[0], // Fallback para data atual se não houver timestamp no stats
+    count: (s.hits || 0) + (s.errors || 0)
+  })) : [];
+  
   const disciplinesTotal = Math.max(new Set(apostilas.map((a) => a.category || 'Geral')).size, 10);
   const apostilasIniciadas = Object.keys(stats.byApostila).length;
 
@@ -190,27 +196,66 @@ export default function DashboardPage() {
             <GamificationWidget />
           </Reveal>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-            <div className="lg:col-span-2 space-y-5" id="atividades">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+            <div className="lg:col-span-8 space-y-5">
               <Reveal from="bottom" delay={20}>
-                <ActivitiesToDoSection
-                  apostilas={apostilas}
-                  exerciseCounts={exerciseCounts}
-                  examFocusSubject={examFocus?.subject || null}
-                />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <ContinueWhereLeftCard />
+                  <StudyHeatmap data={heatmapData} />
+                </div>
               </Reveal>
+
+              <div id="atividades">
+                <Reveal from="bottom" delay={25}>
+                  <ActivitiesToDoSection
+                    apostilas={apostilas}
+                    exerciseCounts={exerciseCounts}
+                    examFocusSubject={examFocus?.subject || null}
+                  />
+                </Reveal>
+              </div>
+
               <Reveal from="bottom" delay={30}>
                 <RecommendedExercisesSection apostilas={apostilas} exerciseCounts={exerciseCounts} />
               </Reveal>
             </div>
 
-            <div className="space-y-5">
+            <div className="lg:col-span-4 space-y-5">
               <Reveal from="bottom" delay={20}>
                 <div className="rounded-2xl border border-border bg-card p-5">
                   <header className="flex items-center justify-between mb-3">
                     <h3 className="font-bold text-base">Agenda · Próximos prazos</h3>
                   </header>
                   <ExamCalendarWidget />
+                </div>
+              </Reveal>
+              
+              <Reveal from="bottom" delay={40}>
+                <div className="rounded-2xl border border-border bg-gradient-to-br from-card to-accent/5 p-5">
+                  <header className="flex items-center gap-2 mb-4">
+                    <div className="h-8 w-8 rounded-lg bg-accent/20 text-accent flex items-center justify-center">
+                      <Search className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-sm">Busca Rápida</h3>
+                      <p className="text-[10px] text-muted-foreground">Pule direto para uma aula</p>
+                    </div>
+                  </header>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                    <Input 
+                      placeholder="Pressione '/' para buscar..."
+                      className="h-9 pl-9 text-xs bg-background/40"
+                      onFocus={(e) => {
+                        e.target.blur();
+                        const searchInput = document.querySelector('input[type="search"]') as HTMLInputElement;
+                        if (searchInput) {
+                          searchInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                          searchInput.focus();
+                        }
+                      }}
+                    />
+                  </div>
                 </div>
               </Reveal>
             </div>
@@ -299,9 +344,6 @@ export default function DashboardPage() {
 
 
 
-          <Reveal from="bottom" delay={60}>
-            <ContinueWhereLeftCard />
-          </Reveal>
 
 
           <footer className="flex flex-col items-center justify-center gap-3 py-10 mt-6 border-t border-border/10 text-center text-[10px] text-muted-foreground/60 bg-gradient-to-b from-transparent to-primary/5 rounded-b-3xl">
