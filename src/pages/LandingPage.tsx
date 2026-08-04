@@ -341,11 +341,12 @@ export default function LandingPage() {
           <div
             className="absolute inset-0 opacity-60"
             style={{
-              backgroundImage: `url(${heroPoster.url})`,
+              backgroundImage: `image-set(url(${heroPosterAvif.url}) type("image/avif"), url(${heroPosterWebp.url}) type("image/webp"), url(${heroPoster.url}) type("image/jpeg"))`,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
             }}
           />
+
 
           {bgVideoEnabled && (
             <video
