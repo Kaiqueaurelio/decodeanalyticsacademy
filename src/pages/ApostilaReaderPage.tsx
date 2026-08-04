@@ -316,7 +316,23 @@ export default function ApostilaReaderPage() {
 
   return (
     <div className="flex h-screen w-full bg-background text-foreground overflow-hidden">
+      {/* Logo persistente — sempre visível durante a leitura */}
+      <div className="pointer-events-none fixed bottom-4 right-4 z-30 hidden items-center gap-2 rounded-2xl border border-primary/25 bg-background/80 px-3 py-2 backdrop-blur-md sm:flex">
+        <img
+          src={logoOwl}
+          alt="Decode Analytics Academy"
+          width={40}
+          height={40}
+          className="h-10 w-10 object-contain drop-shadow-[0_0_12px_hsl(var(--primary)/0.5)]"
+        />
+        <span className="font-display text-[11px] font-extrabold leading-tight tracking-tight text-foreground">
+          DECODE ANALYTICS
+          <span className="block text-[9px] font-semibold text-muted-foreground">ACADEMY</span>
+        </span>
+      </div>
+
       {/* Sidebar TOC — desktop */}
+
       <aside
         className={cn(
           "hidden md:flex md:w-[320px] shrink-0 border-r border-border/60 bg-card/50 flex-col",
