@@ -214,7 +214,13 @@ export default function ApostilaReaderPage() {
       ...l,
       progress_status: nextStatus as "completed" | "in_progress",
     })));
+
+    // Invalida cache para atualizar progresso no dashboard
+    queryClient.invalidateQueries({ queryKey: ['dashboard', 'stats', userId] });
+    queryClient.invalidateQueries({ queryKey: ['apostilas', 'list'] });
+
     toast.success(nextStatus === "completed" ? "Lição concluída" : "Marcada como em progresso");
+
     if (nextStatus === "completed" && nextLesson) {
       setTimeout(() => setSelectedLessonId(nextLesson.id), 400);
     }
