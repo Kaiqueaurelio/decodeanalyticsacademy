@@ -244,10 +244,10 @@ export function SidebarContent({
               </span>
               <span className="min-w-0">
                 <span className="block font-display text-[13px] font-extrabold tracking-tight text-foreground">
-                  DECODE <span className="text-primary">ANALYTICS</span>
+                  DECODE ANALYTICS ACADEMY
                 </span>
                 <span className="block font-mono text-[9px] font-semibold uppercase tracking-[0.32em] text-muted-foreground">
-                  Academy
+                  Academy By Kaique Aurelio
                 </span>
               </span>
             </button>

@@ -369,7 +369,7 @@ export default function LandingPage() {
                   <source type="image/webp" srcSet={`${logoWebp1x} 1x, ${logoWebp2x} 2x`} />
                   <img src={logoPng1x} srcSet={`${logoPng1x} 1x, ${logoPng2x} 2x`} alt="" width={36} height={36} decoding="async" {...{ fetchpriority: 'high' }} className="h-9 w-9 object-contain drop-shadow-[0_0_12px_rgba(0,240,255,0.5)]" />
                 </picture>
-                <span className="text-sm font-semibold uppercase tracking-[0.18em] text-[#00f0ff]">Decode Analytics</span>
+                <span className="text-sm font-semibold uppercase tracking-[0.18em] text-[#00f0ff]">Decode Analytics Academy</span>
               </a>
               <nav aria-label="Navegação principal" className="hidden items-center gap-7 md:flex">
                 <a href="#recursos" className="text-sm text-white/80 transition-colors hover:text-white">Recursos</a>
