@@ -246,9 +246,10 @@ function AdminSidebar({ tab, setTab, stats, sidebarOpen, setSidebarOpen }: {
 
 
 // ─── Overview Tab ───────────────────────────────────────────────
-function OverviewTab({ apostilas, exercises, allAnswers, materials, users, setTab, loading }: {
+function OverviewTab({ apostilas, exercises, allAnswers, materials, users, setTab, loading, filterSemester, setFilterSemester }: {
   apostilas: Apostila[]; exercises: Record<string, Exercise[]>; allAnswers: any[];
   materials: Material[]; users: any[]; setTab: (t: Tab) => void; loading?: boolean;
+  filterSemester: string; setFilterSemester: (s: string) => void;
 }) {
   const navigate = useNavigate();
   const totalExercises = Object.values(exercises).flat().length;
@@ -299,15 +300,29 @@ function OverviewTab({ apostilas, exercises, allAnswers, materials, users, setTa
   return (
     <div className="space-y-8">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground tracking-tight">Visão Geral</h2>
-          <p className="text-sm text-muted-foreground mt-1">Resumo executivo da plataforma · atualizado agora</p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h2 className="text-3xl font-black text-foreground tracking-tight">Visão Geral</h2>
+            <p className="text-sm text-muted-foreground mt-1">Status operacional e métricas de desempenho</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Select value={filterSemester} onValueChange={setFilterSemester}>
+              <SelectTrigger className="w-[180px] rounded-2xl bg-card border-primary/20">
+                <GraduationCap className="h-4 w-4 mr-2 text-primary" />
+                <SelectValue placeholder="Semestre" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os Semestres</SelectItem>
+                {[1, 2, 3, 4, 5, 6, 7, 8].map(s => (
+                  <SelectItem key={s} value={s.toString()}>{s}º Semestre</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button variant="outline" size="sm" className="h-10 rounded-2xl gap-2" onClick={() => setTab('apostilas')}>
+              <Plus className="h-4 w-4" /> Nova Apostila
+            </Button>
+          </div>
         </div>
-        <Button variant="outline" size="sm" className="gap-2" onClick={() => setTab('apostilas')}>
-          <Plus className="h-4 w-4" /> Nova Apostila
-        </Button>
-      </div>
 
       {/* KPI Grid */}
       <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
@@ -585,11 +600,19 @@ export default function AdminPage() {
   const [users, setUsers] = useState<{ id: string; user_id: string; full_name: string; email: string; is_blocked: boolean; created_at: string }[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [refreshing, setRefreshing] = useState(false);
+
   // Filtros admin avançados
-  const [filterSemester, setFilterSemester] = useState<string>('all');
+  const [filterSemester, setFilterSemester] = useState<string>(() => {
+    return localStorage.getItem('adminSelectedSemester') || '6';
+  });
   const [filterCourse, setFilterCourse] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<'all' | 'published' | 'draft'>('all');
   const [expandedCats, setExpandedCats] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    localStorage.setItem('adminSelectedSemester', filterSemester);
+  }, [filterSemester]);
+
   const toggleCat = useCallback((cat: string) => {
     setExpandedCats(prev => {
       const next = new Set(prev);
@@ -1000,6 +1023,7 @@ export default function AdminPage() {
           title: data.title || 'Sem título', content: data.content || '',
           category: data.category || 'Geral', source_type: isNotion ? 'notion' : 'link',
           file_url: isNotion ? null : url, created_by: user.id, published: true,
+          semester: 6 // Padrão conforme solicitado
         }).select().single();
         if (insertErr) throw insertErr;
         if (data.exercises?.length > 0 && newApostila) {
@@ -1126,6 +1150,7 @@ export default function AdminPage() {
     const OPT_MARKED_CORRECT = /^\s*[*✓✔→»]\s*(?:[\(\[])?\s*([A-Ea-e])\s*(?:[\)\].:\-])\s*(.+?)\s*$/;
     const OPT_INLINE_CORRECT = /\((?:correta|certa|gabarito|resposta)\)\s*$/i;
     const GAB_RE = /^\s*(?:gabarito|resposta(?:\s+correta)?|alternativa\s+correta|alternativa|letra|answer|correct)\s*[:=\-]?\s*\(?\s*([A-Ea-e])\s*\)?\s*\.?\s*$/i;
+    const GAB_INLINE_BOLD = /\*\*([A-Ea-e])\*\*/i; // Suporte para **A**
     const EXP_RE = /^\s*(?:explica[çc][ãa]o|justificativa|coment[áa]rio|explanation|resposta modelo|resposta esperada|coment\.?|just\.?)\s*[:=\-]\s*(.*)$/i;
     const ESSAY_RE = /^\s*(?:tipo|type)\s*[:=]\s*(?:dissertativa|essay|aberta|discursiva)/i;
     const Q_PREFIX = /^(?:\s*)(?:[\(\[]?\d{1,3}[\)\]]?[\.\)\-:]?|(?:quest[aã]o|pergunta|exerc[ií]cio|ex|q)\s*\d{1,3}\s*[\)\.\-:]?)\s+(.+)$/i;
@@ -1187,6 +1212,11 @@ export default function AdminPage() {
         // Caso contrário, faz parte do enunciado
         const qm = line.match(Q_PREFIX);
         const cleaned = qm ? qm[1] : line;
+        
+        // Tentar capturar gabarito inline via negrito se presente (ex: **A**)
+        const boldGab = line.match(GAB_INLINE_BOLD);
+        if (boldGab && !correct) correct = boldGab[1].toUpperCase();
+
         question = question ? question + ' ' + cleaned : cleaned;
       }
 
@@ -1416,7 +1446,11 @@ export default function AdminPage() {
             <div key={tab} className="animate-fade-in">
             {/* OVERVIEW */}
             {tab === 'overview' && (
-              <AdminDashboard onNavigate={(newTab) => setTab(newTab as Tab)} />
+              <AdminDashboard 
+                onNavigate={(newTab) => setTab(newTab as Tab)} 
+                filterSemester={filterSemester}
+                setFilterSemester={setFilterSemester}
+              />
             )}
 
             {/* APOSTILAS */}

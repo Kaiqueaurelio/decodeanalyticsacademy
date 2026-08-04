@@ -1,4 +1,5 @@
-import { useMemo } from 'react';
+import { useMemo, useEffect, useState } from 'react';
+import { ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { getSubjectColor } from '@/lib/subject-colors';
 import type { ApostilaSummary } from '@/hooks/queries/useDashboardData';
@@ -19,6 +20,22 @@ interface Props {
  */
 export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = '' }: Props) {
   const navigate = useNavigate();
+  const [visibleGroups, setVisibleGroups] = useState(3);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollHeight = document.documentElement.scrollHeight;
+      const scrollTop = document.documentElement.scrollTop;
+      const clientHeight = document.documentElement.clientHeight;
+
+      if (scrollTop + clientHeight >= scrollHeight - 300) {
+        setVisibleGroups(prev => prev + 2);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const groups = useMemo(() => {
     const normalize = (s: string) =>
@@ -53,31 +70,34 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
   };
 
   return (
-    <div className="space-y-8">
-      {groups.map(([category, items]) => {
+    <div className="space-y-12">
+      {groups.slice(0, visibleGroups).map(([category, items]) => {
         const color = getSubjectColor(category);
         const semester = items.find((a) => (a as any).semester)?.semester;
 
         return (
           <div key={category} className="space-y-4">
-            <div className="flex items-center justify-between border-b border-border/40 pb-2">
-              <div className="flex items-center gap-3">
+            <div className="flex items-center justify-between border-b border-border/40 pb-3 mb-6">
+              <div className="flex items-center gap-4">
                 <div 
-                  className="h-3 w-3 rounded-full shadow-[0_0_10px_rgba(0,0,0,0.1)]" 
+                  className="h-4 w-4 rounded-full shadow-[0_0_15px_rgba(0,0,0,0.1)] ring-2 ring-background" 
                   style={{ backgroundColor: color }}
                 />
-                <h3 className="font-display font-bold text-lg tracking-tight">{category}</h3>
-                {semester && (
-                  <span className="rounded-md bg-muted px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                    {semester}º Semestre
-                  </span>
-                )}
+                <div className="flex flex-col">
+                  <h3 className="font-display font-black text-xl tracking-tight sm:text-2xl">{category}</h3>
+                  {semester && (
+                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/60 mt-0.5">
+                      {semester}º Semestre · Grade Curricular
+                    </span>
+                  )}
+                </div>
               </div>
               <button 
                 onClick={() => navigate(`/materia/${encodeURIComponent(category)}`)}
-                className="text-[11px] font-semibold text-primary hover:underline"
+                className="group flex items-center gap-1.5 text-xs font-bold text-primary hover:text-primary/80 transition-all bg-primary/5 px-3 py-1.5 rounded-full"
               >
                 Ver tudo
+                <ChevronRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
               </button>
             </div>
             

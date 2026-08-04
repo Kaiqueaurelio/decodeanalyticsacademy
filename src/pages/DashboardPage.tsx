@@ -37,7 +37,7 @@ export default function DashboardPage() {
   const { data: profile } = useUserProfile(user?.id);
   const [selectedSemester, setSelectedSemester] = useState<number | null>(() => {
     const saved = localStorage.getItem('selectedSemestre');
-    return saved ? parseInt(saved, 10) : 6; // Agora o 6º semestre é o default
+    return saved ? parseInt(saved, 10) : 6;
   });
   const { data: apostilasRaw = [], isLoading: loadingApostilas } = useApostilasList();
   const { data: exerciseCounts = {} } = useExerciseCounts();
@@ -279,34 +279,11 @@ export default function DashboardPage() {
             ) : (
               <div className="space-y-6">
                 <SubjectFolderGrid
-                  apostilas={apostilas.slice(0, visibleFolders)}
+                  apostilas={apostilas}
                   exerciseCounts={exerciseCounts}
                   stats={stats}
                   query={query}
                 />
-                
-                {visibleFolders < apostilas.length && (
-                  <div className="flex justify-center pt-4">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-muted-foreground hover:text-primary transition-colors gap-2"
-                      onClick={() => {
-                        setIsFetchingMore(true);
-                        setTimeout(() => {
-                          setVisibleFolders(prev => prev + 6);
-                          setIsFetchingMore(false);
-                        }, 400);
-                      }}
-                      disabled={isFetchingMore}
-                    >
-                      {isFetchingMore ? (
-                        <div className="h-4 w-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                      ) : null}
-                      {isFetchingMore ? 'Carregando...' : 'Ver mais disciplinas'}
-                    </Button>
-                  </div>
-                )}
               </div>
             )}
           </section>
