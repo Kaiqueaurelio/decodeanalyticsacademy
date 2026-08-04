@@ -2743,6 +2743,10 @@ export type Database = {
         Args: { _user_id: string }
         Returns: undefined
       }
+      complete_semesters_upto_five: {
+        Args: { _user_id: string }
+        Returns: undefined
+      }
       count_open_security_notifications: { Args: never; Returns: Json }
       count_tira_duvidas_today: { Args: { _user_id: string }; Returns: number }
       delete_user_completely: {
