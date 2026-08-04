@@ -27,6 +27,16 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.22.0",
+    date: "2026-08-04",
+    title: "Aprimoramento de Feedbacks e Bloqueios",
+    changes: [
+      { kind: 'improvement', text: 'Status de Apostila: Adicionado aviso claro de "Material ainda não disponível" ao tentar acessar conteúdos em preparação, orientando sobre o início das aulas.' },
+      { kind: 'fix', text: 'Navegação Admin: Corrigida a compatibilidade de tipos e mapeamento de rotas para garantir transição suave entre edição e visualização.' },
+      { kind: 'improvement', text: 'Estabilidade: Refinada a lógica de observação de seções no leitor de apostilas para evitar falhas silenciosas de compilação.' },
+    ],
+  },
+  {
     version: "3.21.0",
     date: "2026-08-04",
     title: "Refinamento de UX e Vocabulário Acadêmico",
