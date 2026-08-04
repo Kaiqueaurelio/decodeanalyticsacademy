@@ -70,7 +70,12 @@ function cleanText(input: string): string {
 
 const parseContent = parseApostilaContent;
 
-export default function ApostilaPage() {
+interface Props {
+  tab?: string;
+  setTab?: (tab: any) => void;
+}
+
+export default function ApostilaPage({ tab, setTab }: Props) {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const gamification = useGamification();
@@ -372,7 +377,18 @@ export default function ApostilaPage() {
               </Button>
 
               {isAdmin && (
-                <>
+                <div className="flex items-center gap-1 sm:gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setTab && setTab('apostilas')}
+                    className="text-xs gap-1.5 hover-lift border-primary/40 bg-primary/5 text-primary hover:bg-primary/10"
+                    title="Editar esta apostila no painel Admin"
+                  >
+                    <PenLine className="h-3.5 w-3.5" />
+                    <span className="hidden lg:inline">Editar Apostila</span>
+                    <span className="lg:hidden">Editar</span>
+                  </Button>
                   <Button
                     variant="outline"
                     size="sm"
@@ -395,7 +411,7 @@ export default function ApostilaPage() {
                     {exportingPdf ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <FileDown className="h-3.5 w-3.5" />}
                     <span className="hidden sm:inline">DOCX</span>
                   </Button>
-                </>
+                </div>
               )}
               {/* Bottom sheet de ações rápidas (mobile-first) */}
               <ActionSheet
