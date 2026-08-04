@@ -40,16 +40,19 @@ export const BY_SEMESTER: Record<number, string[]> = {
   6: [
     'Sistemas Distribuidos', 'Engenharia de Software II',
     'Programacao para Dispositivos Moveis', 'Mineracao de Dados',
-    'Analise de Algoritmos', 'Atividades Praticas Supervisionadas VI (APS)',
+    'Analise de Algoritmos', 'Metodos Numericos',
+    'Atividades Praticas Supervisionadas VI (APS)',
   ],
   7: [
     'Seguranca da Informacao', 'Computacao em Nuvem',
     'Aprendizado de Maquina (Machine Learning)', 'Topicos Especiais de Computacao',
+    'Sistemas Digitais',
     'Atividades Praticas Supervisionadas VII (APS)',
   ],
   8: [
     'Trabalho de Conclusao de Curso (TCC)', 'Empreendedorismo',
     'Gestao de Projetos', 'Etica Profissional',
+    'Computacao de Alto Desempenho',
     'Atividades Praticas Supervisionadas VIII (APS)',
   ],
 };
