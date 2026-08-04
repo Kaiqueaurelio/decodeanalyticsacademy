@@ -279,18 +279,22 @@ export default function ApostilaReaderPage() {
     );
   }
 
-  if (!tree || flat.length === 0) {
+  if (!tree || !flat || flat.length === 0) {
     return (
       <div className="mx-auto max-w-2xl px-6 py-16 text-center">
-        <BookOpen className="mx-auto h-10 w-10 text-muted-foreground" strokeWidth={1.5} />
-        <h1 className="mt-4 font-display text-2xl">Modo de leitura estruturada não disponível</h1>
-        <p className="mt-2 text-muted-foreground">
+        <BookOpen className="mx-auto h-12 w-12 text-primary/40 mb-6" strokeWidth={1.5} />
+        <h1 className="font-display text-3xl font-bold tracking-tight text-foreground">Sem material disponível por enquanto</h1>
+        <p className="mt-4 text-muted-foreground leading-relaxed">
           Esta apostila ainda não foi organizada em módulos e lições. Peça a um administrador
-          para executar a estruturação, ou volte para o leitor clássico.
+          para executar a estruturação, ou continue pelo leitor clássico.
         </p>
-        <div className="mt-6 flex justify-center gap-2">
-          <Button variant="outline" onClick={() => navigate(`/apostila/${id}`)}>Ir para o leitor clássico</Button>
-          <Button onClick={() => navigate(-1)}>Voltar</Button>
+        <div className="mt-10 flex flex-col sm:flex-row justify-center gap-3">
+          <Button variant="default" size="lg" className="hover-lift" onClick={() => navigate(`/apostila/${id}`)}>
+            Ir para o leitor clássico
+          </Button>
+          <Button variant="outline" size="lg" className="hover-lift" onClick={() => navigate(-1)}>
+            Voltar
+          </Button>
         </div>
       </div>
     );
