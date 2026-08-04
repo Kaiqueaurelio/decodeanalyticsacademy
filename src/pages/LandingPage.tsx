@@ -14,9 +14,11 @@ import logoAvif1x from '@/assets/owl-icon-72.avif';
 import logoAvif2x from '@/assets/owl-icon-144.avif';
 import logoWebp1x from '@/assets/owl-icon-72.webp';
 import logoWebp2x from '@/assets/owl-icon-144.webp';
-import logoPng1x from '@/assets/owl-icon-72.png';
-import logoPng2x from '@/assets/owl-icon-144.png';
+import logoPng1x from '@/assets/owl-icon-72.webp';
+import logoPng2x from '@/assets/owl-icon-144.webp';
 import heroPoster from '@/assets/hero-bg-poster.jpg.asset.json';
+import heroPosterWebp from '@/assets/hero-bg-poster.webp.asset.json';
+import heroPosterAvif from '@/assets/hero-bg-poster.avif.asset.json';
 import { Reveal } from '@/components/Reveal';
 
 /* ─── SEÇÕES ABAIXO DA DOBRA: carregadas sob demanda (menor bundle inicial / LCP) ─── */
@@ -339,11 +341,12 @@ export default function LandingPage() {
           <div
             className="absolute inset-0 opacity-60"
             style={{
-              backgroundImage: `url(${heroPoster.url})`,
+              backgroundImage: `image-set(url(${heroPosterAvif.url}) type("image/avif"), url(${heroPosterWebp.url}) type("image/webp"), url(${heroPoster.url}) type("image/jpeg"))`,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
             }}
           />
+
 
           {bgVideoEnabled && (
             <video
@@ -356,7 +359,7 @@ export default function LandingPage() {
               controls={false}
               disablePictureInPicture
               preload="auto"
-              poster={heroPoster.url}
+              poster={heroPosterWebp.url}
               // atributos legados necessários no Safari iOS
               webkit-playsinline="true"
               x5-playsinline="true"
