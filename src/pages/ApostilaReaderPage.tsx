@@ -283,7 +283,7 @@ export default function ApostilaReaderPage() {
     return (
       <div className="mx-auto max-w-2xl px-6 py-16 text-center">
         <BookOpen className="mx-auto h-12 w-12 text-primary/40 mb-6" strokeWidth={1.5} />
-        <h1 className="font-display text-3xl font-bold tracking-tight text-foreground">Sem material disponível por enquanto</h1>
+        <h1 className="font-display text-3xl font-bold tracking-tight text-foreground">Material em fase de estruturação</h1>
         <p className="mt-4 text-muted-foreground leading-relaxed">
           Esta apostila ainda não foi organizada em módulos e lições. Peça a um administrador
           para executar a estruturação, ou continue pelo leitor clássico.
