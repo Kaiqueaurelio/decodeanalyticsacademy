@@ -58,6 +58,7 @@ import { DiagnosticsPanel } from '@/components/DiagnosticsPanel';
 import { VersionHistoryPanel } from '@/components/admin/VersionHistoryPanel';
 import { EllaAuditPanel } from '@/components/admin/EllaAuditPanel';
 import { SecurityAlertsPanel } from '@/components/admin/SecurityAlertsPanel';
+import { BY_SEMESTER } from '@/lib/subject-semester-map';
 import { useSecurityAlerts } from '@/hooks/useSecurityAlerts';
 import { SponsorLeadsPanel } from '@/components/admin/SponsorLeadsPanel';
 import { DuplicateApostilaDialog } from '@/components/DuplicateApostilaDialog';
