@@ -46,8 +46,9 @@ import { ShareLinkSettings } from '@/components/ShareLinkSettings';
 import { SplashDownloader } from '@/components/admin/SplashDownloader';
 import { CoverDesignEditor } from '@/components/admin/CoverDesignEditor';
 import { exportApostilaToPDF } from '@/lib/apostila-pdf';
-import { parseApostilaContent } from '@/lib/apostila-parser';
+import { parseApostilaContent, parseExercisesFromRaw } from '@/lib/apostila-parser';
 import { extractTextFromFile } from '@/lib/file-extract';
+import { markdownToHtml } from '@/lib/markdown-html';
 import { MarkdownEditor } from '@/components/MarkdownEditor';
 import { StructureValidationDialog } from '@/components/admin/StructureValidationDialog';
 import { validateApostilaStructure, type ValidationReport } from '@/lib/apostilaValidation';
@@ -649,7 +650,8 @@ export default function AdminPage() {
   // Validação estrutural (H2/H3) antes de salvar
   const [validationReport, setValidationReport] = useState<ValidationReport | null>(null);
   const [validationContext, setValidationContext] = useState<{ title?: string; run: () => Promise<void> | void } | null>(null);
-  const [importStep, setImportStep] = useState<'input' | 'review'>('input');
+  const [importStep, setImportStep] = useState<'input' | 'review' | 'edit'>('input');
+  const [importReadyHtml, setImportReadyHtml] = useState('');
   const [importMode, setImportMode] = useState<'url' | 'text'>('url');
 
   // Quick-create hint from dashboard: 'link' | 'pdf' | 'text'
@@ -1665,8 +1667,9 @@ export default function AdminPage() {
                                     toast.error("Dê um título antes de entrar no Modo Word");
                                     return;
                                   }
-                                  setImportStep('edit');
-                                  setImportReadyHtml(markdownToHtml(importRawText));
+                                  setImportContent(importRawText);
+                                  setImportStep('review');
+                                  toast.success("Modo Edição ativado!");
                                 }}
                                 disabled={cloning || !importRawText.trim()} 
                                 variant="outline" 
