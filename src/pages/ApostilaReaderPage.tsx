@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from "react-markdown";
 import {
@@ -77,6 +77,7 @@ function flatten(tree: Tree): FlatLesson[] {
 export default function ApostilaReaderPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [apostilaTitle, setApostilaTitle] = useState<string>("");
   const [tree, setTree] = useState<Tree | null>(null);
   const [loadingTree, setLoadingTree] = useState(true);
@@ -109,7 +110,9 @@ export default function ApostilaReaderPage() {
       setTree(t);
       const flat = flatten(t);
       // Retomar de onde parou: primeira in_progress ou primeira sem progresso
+      const requestedLesson = searchParams.get("lesson");
       const resume =
+        flat.find((l) => l.id === requestedLesson) ||
         flat.find((l) => l.progress_status === "in_progress") ||
         flat.find((l) => !l.progress_status) ||
         flat[0];
@@ -119,7 +122,7 @@ export default function ApostilaReaderPage() {
     return () => {
       cancelled = true;
     };
-  }, [id]);
+  }, [id, searchParams]);
 
   const flat = useMemo(() => (tree ? flatten(tree) : []), [tree]);
   const currentIndex = flat.findIndex((l) => l.id === selectedLessonId);

@@ -201,6 +201,8 @@ export default function DashboardPage() {
             </div>
           )}
 
+          <ContinueWhereLeftCard />
+
           {/* Dashboard Summary Bar */}
           <div className="flex flex-wrap items-center gap-4 pb-2 border-b border-border/10 overflow-x-auto scrollbar-none">
             <div className="flex items-center gap-2 whitespace-nowrap">
@@ -258,7 +260,6 @@ export default function DashboardPage() {
             <div className="lg:col-span-8 space-y-5">
               <Reveal from="bottom" delay={20}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <ContinueWhereLeftCard />
                   <StudyHeatmap data={heatmapData} />
                 </div>
               </Reveal>
