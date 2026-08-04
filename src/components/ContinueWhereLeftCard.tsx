@@ -66,7 +66,9 @@ export function ContinueWhereLeftCard() {
             <h2 className="truncate text-lg font-bold text-foreground sm:text-xl">{item.title}</h2>
             <div className="mt-1 flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
               <ContextIcon className="h-3.5 w-3.5 shrink-0" />
-              <span className="truncate">{item.lessonTitle || item.category || meta.label}</span>
+              <span className="truncate">
+                {item.kind === 'apostila' ? (item.lessonTitle || item.category || meta.label) : (item.category || meta.label)}
+              </span>
             </div>
           </div>
         </div>
