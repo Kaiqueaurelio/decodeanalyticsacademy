@@ -161,6 +161,11 @@ export default function DashboardPage() {
   const totalExercises = Object.values(exerciseCounts).reduce((sum, count) => sum + count, 0);
   const answeredExercises = stats.hits + stats.errors;
   const overallProgress = totalExercises > 0 ? Math.round((answeredExercises / totalExercises) * 100) : 0;
+  const heatmapData = stats.byApostila ? Object.entries(stats.byApostila).map(([_, s]: any) => ({
+    date: new Date().toISOString().split('T')[0], // Fallback para data atual se não houver timestamp no stats
+    count: (s.hits || 0) + (s.errors || 0)
+  })) : [];
+  
   const disciplinesTotal = Math.max(new Set(apostilas.map((a) => a.category || 'Geral')).size, 10);
   const apostilasIniciadas = Object.keys(stats.byApostila).length;
 
@@ -196,7 +201,7 @@ export default function DashboardPage() {
               <Reveal from="bottom" delay={20}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <ContinueWhereLeftCard />
-                  <StudyHeatmap />
+                  <StudyHeatmap data={heatmapData} />
                 </div>
               </Reveal>
 

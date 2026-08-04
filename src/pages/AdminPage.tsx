@@ -1136,16 +1136,25 @@ export default function AdminPage() {
     //   Questão 1: / Questao 1 / Q1) / Q 1: / Pergunta 1 - / Exercício 1 / Ex 1:
     const QUESTION_START = /^(?:\s*)(?:[\(\[]?\d{1,3}[\)\]]?[\.\)\-:]?|(?:quest[aã]o|pergunta|exerc[ií]cio|ex|q)\s*\d{1,3}\s*[\)\.\-:]?)\s+/i;
 
-    // Quebra em blocos: split em linhas-início-de-questão OU parágrafos vazios
+    // Quebra em blocos: split em linhas-início-de-questão OU parágrafos vazios OU parágrafos com muitos traços
     const lines = normalized.split('\n');
     const blocks: string[] = [];
     let buf: string[] = [];
     const flush = () => { if (buf.join('\n').trim()) blocks.push(buf.join('\n')); buf = []; };
+    
     for (const line of lines) {
+      const trimmedLine = line.trim();
       const isStart = QUESTION_START.test(line);
-      const isBlank = !line.trim();
-      if ((isStart && buf.length) || (isBlank && buf.length)) flush();
-      if (!isBlank) buf.push(line);
+      const isBlank = !trimmedLine;
+      const isSeparator = /^[-=_*]{3,}$/.test(trimmedLine);
+      
+      if ((isStart && buf.length) || (isSeparator && buf.length)) {
+        flush();
+      } else if (isBlank && buf.length > 5) { // Só quebra em linha em branco se o bloco já tiver conteúdo
+        flush();
+      }
+      
+      if (!isBlank && !isSeparator) buf.push(line);
     }
     flush();
 
@@ -1153,8 +1162,9 @@ export default function AdminPage() {
     const OPT_RE = /^\s*(?:[\(\[])?\s*([A-Ea-e])\s*(?:[\)\].:\-])\s*(.+?)\s*$/;
     const OPT_MARKED_CORRECT = /^\s*[*✓✔→»]\s*(?:[\(\[])?\s*([A-Ea-e])\s*(?:[\)\].:\-])\s*(.+?)\s*$/;
     const OPT_INLINE_CORRECT = /\((?:correta|certa|gabarito|resposta)\)\s*$/i;
-    const GAB_RE = /^\s*(?:gabarito|resposta(?:\s+correta)?|alternativa\s+correta|alternativa|letra|answer|correct)\s*[:=\-]?\s*\(?\s*([A-Ea-e])\s*\)?\s*\.?\s*$/i;
+    const GAB_RE = /^\s*(?:gabarito|resposta(?:\s+correta)?|alternativa\s+correta|alternativa|letra|answer|correct|resp)\s*[:=\-]?\s*\(?\s*([A-Ea-e])\s*\)?\s*\.?\s*$/i;
     const GAB_INLINE_BOLD = /\*\*([A-Ea-e])\*\*/i; // Suporte para **A**
+    const GAB_INLINE_PAREN = /\(([A-Ea-e])\)/i; // Suporte para (A)
     const EXP_RE = /^\s*(?:explica[çc][ãa]o|justificativa|coment[áa]rio|explanation|resposta modelo|resposta esperada|coment\.?|just\.?)\s*[:=\-]\s*(.*)$/i;
     const ESSAY_RE = /^\s*(?:tipo|type)\s*[:=]\s*(?:dissertativa|essay|aberta|discursiva)/i;
     const Q_PREFIX = /^(?:\s*)(?:[\(\[]?\d{1,3}[\)\]]?[\.\)\-:]?|(?:quest[aã]o|pergunta|exerc[ií]cio|ex|q)\s*\d{1,3}\s*[\)\.\-:]?)\s+(.+)$/i;
@@ -1217,9 +1227,11 @@ export default function AdminPage() {
         const qm = line.match(Q_PREFIX);
         const cleaned = qm ? qm[1] : line;
         
-        // Tentar capturar gabarito inline via negrito se presente (ex: **A**)
+        // Tentar capturar gabarito inline via negrito ou parênteses se presente (ex: **A** ou (A))
         const boldGab = line.match(GAB_INLINE_BOLD);
+        const parenGab = line.match(GAB_INLINE_PAREN);
         if (boldGab && !correct) correct = boldGab[1].toUpperCase();
+        else if (parenGab && !correct) correct = parenGab[1].toUpperCase();
 
         question = question ? question + ' ' + cleaned : cleaned;
       }
