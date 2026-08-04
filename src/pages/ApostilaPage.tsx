@@ -31,7 +31,7 @@ import { exportApostilaToDOCX } from '@/lib/apostila-docx';
 import {
   ArrowLeft, BookOpen, PenLine, Eye, List, X, MoreHorizontal,
   ChevronUp, StickyNote, Layers, Wand2, MessageSquare, Share2, CheckCircle2, Copy, Volume2,
-  FileDown, Loader2, Brain, ArrowRight
+  FileDown, Loader2, Brain, ArrowRight, Settings
 } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 
@@ -381,13 +381,16 @@ export default function ApostilaPage({ tab, setTab }: Props) {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setTab && setTab('apostilas')}
+                    onClick={() => {
+                      if (setTab) setTab('apostilas');
+                      navigate('/admin');
+                    }}
                     className="text-xs gap-1.5 hover-lift border-primary/40 bg-primary/5 text-primary hover:bg-primary/10"
                     title="Editar esta apostila no painel Admin"
                   >
-                    <PenLine className="h-3.5 w-3.5" />
-                    <span className="hidden lg:inline">Editar Apostila</span>
-                    <span className="lg:hidden">Editar</span>
+                    <Settings className="h-3.5 w-3.5" />
+                    <span className="hidden lg:inline">Gerenciar no Admin</span>
+                    <span className="lg:hidden">Admin</span>
                   </Button>
                   <Button
                     variant="outline"
