@@ -36,6 +36,7 @@ export const CHANGELOG: ChangelogEntry[] = [
       { kind: 'improvement', text: 'Ajuste fino de hierarquia tipográfica no selo persistente.' },
     ],
   },
+  {
     version: "3.44.0",
     date: "2026-08-04",
     title: "Retomada de leitura e marca persistente",
