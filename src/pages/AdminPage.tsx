@@ -599,6 +599,7 @@ export default function AdminPage() {
   const [users, setUsers] = useState<{ id: string; user_id: string; full_name: string; email: string; is_blocked: boolean; created_at: string }[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [refreshing, setRefreshing] = useState(false);
+
   // Filtros admin avançados
   const [filterSemester, setFilterSemester] = useState<string>(() => {
     return localStorage.getItem('adminSelectedSemester') || '6';
