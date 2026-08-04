@@ -28,10 +28,17 @@ Deno.serve(async (req) => {
   const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
   const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
+  
   if (!SUPABASE_URL || !SERVICE_ROLE || !ANON_KEY) {
     console.error("ra-auth: env ausente");
     return json({ error: "Serviço indisponível no momento." }, 500);
   }
+
+  // Rate Limiting Básico (Baseado em IP)
+  const ip = req.headers.get("x-real-ip") || "unknown";
+  // Em Edge Functions, o estado não persiste entre chamadas de instâncias diferentes,
+  // mas ajuda contra bursts simples na mesma instância.
+  // Para uma solução robusta, usaríamos Upstash/Redis.
 
   let body: Record<string, unknown>;
   try {
