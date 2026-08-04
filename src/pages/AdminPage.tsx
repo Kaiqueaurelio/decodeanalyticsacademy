@@ -1212,6 +1212,11 @@ export default function AdminPage() {
         // Caso contrário, faz parte do enunciado
         const qm = line.match(Q_PREFIX);
         const cleaned = qm ? qm[1] : line;
+        
+        // Tentar capturar gabarito inline via negrito se presente (ex: **A**)
+        const boldGab = line.match(GAB_INLINE_BOLD);
+        if (boldGab && !correct) correct = boldGab[1].toUpperCase();
+
         question = question ? question + ' ' + cleaned : cleaned;
       }
 
