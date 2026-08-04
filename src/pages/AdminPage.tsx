@@ -120,7 +120,7 @@ const TYPE_FROM_EXT: Record<string, string> = {
   gif: 'gif', mp4: 'video', mov: 'video', avi: 'video', mkv: 'video',
   mp3: 'audio', wav: 'audio', m4a: 'audio', ogg: 'audio',
   ppt: 'powerpoint', pptx: 'powerpoint', doc: 'word', docx: 'word',
-  xls: 'excel', xlsx: 'excel',
+  xls: 'excel', xlsx: 'excel', epub: 'epub',
 };
 
 function ThemeToggleButton() {
@@ -1457,9 +1457,16 @@ export default function AdminPage() {
             {tab === 'apostilas' && (
               <div className="space-y-6">
                 {/* Import Card */}
-                <Card className="overflow-hidden" data-import-card>
-                  <div className="h-1 bg-primary" />
-                  <CardContent className="p-5 space-y-4">
+                <Card className="overflow-hidden bg-card/40 backdrop-blur-md border-primary/20 shadow-xl" data-import-card>
+                  <div className="h-1 bg-gradient-to-r from-primary via-accent to-primary animate-pulse" />
+                  <CardHeader className="pb-2 pt-4 px-5">
+                    <CardTitle className="text-lg font-bold flex items-center gap-2">
+                      <Plus className="h-5 w-5 text-primary" />
+                      Central de Criação
+                    </CardTitle>
+                    <CardDescription className="text-[11px]">Crie novas apostilas via link, arquivo ou texto estruturado.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-5 space-y-5 pt-0">
                     <div className="flex items-center justify-between flex-wrap gap-2">
                       <div className="flex items-center gap-2">
                         <LinkIcon className="h-4 w-4 text-primary" />
@@ -1631,16 +1638,28 @@ export default function AdminPage() {
                           <Input id="import-topic" value={importTopic} onChange={e => setImportTopic(e.target.value)} placeholder="Ex: Redes de Computadores, Banco de Dados" className="mt-1.5" />
                         </div>
                         {importMode === 'text' && importStep === 'input' && (
-                          <div className="space-y-2">
-                            <p className="text-[11px] text-muted-foreground leading-relaxed">
-                              Use <strong>Estruturar como Apostila</strong> para organizar texto cru, ou <strong>Salvar texto já formatado</strong> quando a apostila já estiver pronta.
-                            </p>
-                            <div className="grid gap-2 sm:grid-cols-2">
-                              <Button onClick={handleExtract} disabled={cloning || !importRawText.trim()} className="w-full gradient-primary text-primary-foreground">
-                                {cloning ? <><Loader2 className="h-4 w-4 animate-spin mr-1.5" /> Estruturando...</> : 'Estruturar como Apostila'}
+                          <div className="space-y-3 p-4 rounded-xl bg-primary/5 border border-primary/10 shadow-inner">
+                            <div className="flex items-start gap-2.5">
+                              <Sparkles className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                                Use <strong>Estruturar como Apostila</strong> para que a Ella organize automaticamente seu texto cru em módulos e tópicos. Ou use <strong>Salvar Pronto</strong> se o texto já estiver no formato final.
+                              </p>
+                            </div>
+                            <div className="grid gap-3 sm:grid-cols-2">
+                              <Button 
+                                onClick={handleExtract} 
+                                disabled={cloning || !importRawText.trim()} 
+                                className="w-full gradient-primary text-primary-foreground shadow-lg shadow-primary/20 hover:scale-[1.02] transition-transform h-10"
+                              >
+                                {cloning ? <><Loader2 className="h-4 w-4 animate-spin mr-1.5" /> Estruturando...</> : <><Wand2 className="h-4 w-4 mr-2" /> Estruturar com Ella</>}
                               </Button>
-                              <Button onClick={handleSaveReadyText} disabled={cloning || !importRawText.trim() || !importTitle.trim()} variant="outline" className="w-full">
-                                {cloning ? <><Loader2 className="h-4 w-4 animate-spin mr-1.5" /> Salvando...</> : 'Salvar texto já formatado'}
+                              <Button 
+                                onClick={handleSaveReadyText} 
+                                disabled={cloning || !importRawText.trim() || !importTitle.trim()} 
+                                variant="outline" 
+                                className="w-full h-10 border-primary/20 hover:bg-primary/5"
+                              >
+                                {cloning ? <><Loader2 className="h-4 w-4 animate-spin mr-1.5" /> Salvando...</> : <><Check className="h-4 w-4 mr-2" /> Salvar texto pronto</>}
                               </Button>
                             </div>
                           </div>
