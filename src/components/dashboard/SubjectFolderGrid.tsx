@@ -53,7 +53,7 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-3 gap-5">
       {groups.map(([category, items]) => {
         const color = getSubjectColor(category);
         const started = items.filter((a) => stats.byApostila[a.id]).length;
