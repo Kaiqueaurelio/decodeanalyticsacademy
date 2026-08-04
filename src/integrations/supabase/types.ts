@@ -2743,6 +2743,10 @@ export type Database = {
         Args: { _user_id: string }
         Returns: undefined
       }
+      complete_semesters_six_to_eight: {
+        Args: { _user_id: string }
+        Returns: undefined
+      }
       complete_semesters_upto_five: {
         Args: { _user_id: string }
         Returns: undefined
