@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
-  Plus, Trash2, FileText, Image, Video, Music, Presentation, File, Link as LinkIcon, FileSpreadsheet, Search, Paperclip, Wand2, Loader2, Headphones, Upload
+  Plus, Trash2, FileText, Image, Video, Music, Presentation, File, Link as LinkIcon, FileSpreadsheet, Search, Paperclip, Wand2, Loader2, Headphones, Upload, FileUp
 } from 'lucide-react';
 import { autoLinkApostila } from '@/lib/auto-link-materials';
 import { ManualLinkMaterialsDialog } from '@/components/ManualLinkMaterialsDialog';
