@@ -125,9 +125,9 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
         supabase.from('apostila_likes').select('id', { count: 'exact', head: true }),
         supabase.from('ads').select('id', { count: 'exact', head: true }),
         supabase.from('apostilas')
-          .select('id,title,category,published,created_at,updated_at')
+          .select('id,title,category,published,created_at,updated_at,semester,course,cover_url,teacher')
           .order('created_at', { ascending: false })
-          .limit(500),
+          .limit(1000),
         supabase.rpc('get_student_rankings', { _limit: 10 }),
         supabase.from('apostila_views').select('viewed_at').gte('viewed_at', since.toISOString()).limit(5000),
         supabase.from('answers').select('created_at').gte('created_at', since.toISOString()).limit(5000),
@@ -186,6 +186,12 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
       if (statusFilter === 'published' && !a.published) return false;
       if (statusFilter === 'draft' && a.published) return false;
       if (categoryFilter !== 'all' && a.category !== categoryFilter) return false;
+      
+      // Filtro de semestre integrado
+      if (filterSemester && filterSemester !== 'all') {
+        if ((a as any).semester?.toString() !== filterSemester) return false;
+      }
+
       const ts = new Date(a.created_at).getTime();
       if (fromTs && ts < fromTs) return false;
       if (untilTs && ts > untilTs) return false;
@@ -374,6 +380,20 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
+            {setFilterSemester && (
+              <Select value={filterSemester || 'all'} onValueChange={setFilterSemester}>
+                <SelectTrigger className="h-11 w-[160px] rounded-2xl border-primary/20 bg-background/50 backdrop-blur-md font-semibold text-xs">
+                  <GraduationCap className="mr-2 h-4 w-4 text-primary" />
+                  <SelectValue placeholder="Semestre" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  {[1, 2, 3, 4, 5, 6, 7, 8].map(s => (
+                    <SelectItem key={s} value={s.toString()}>{s}º Semestre</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
             <Button 
               variant="outline" 
               size="sm" 
