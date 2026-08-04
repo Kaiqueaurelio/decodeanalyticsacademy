@@ -77,7 +77,7 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
 
         return (
           <div key={category} className="space-y-4">
-            <div className="flex items-center justify-between border-b border-border/40 pb-3 mb-6">
+            <div className="flex flex-wrap items-center justify-between border-b border-border/40 pb-3 mb-6 gap-4">
               <div className="flex items-center gap-4">
                 <div 
                   className="h-4 w-4 rounded-full shadow-[0_0_15px_rgba(0,0,0,0.1)] ring-2 ring-background" 
@@ -92,13 +92,15 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
                   )}
                 </div>
               </div>
-              <button 
-                onClick={() => navigate(`/materia/${encodeURIComponent(category)}`)}
-                className="group flex items-center gap-1.5 text-xs font-bold text-primary hover:text-primary/80 transition-all bg-primary/5 px-3 py-1.5 rounded-full"
-              >
-                Ver tudo
-                <ChevronRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
-              </button>
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => navigate(`/materia/${encodeURIComponent(category)}`)}
+                  className="group flex items-center gap-1.5 text-xs font-bold text-primary hover:text-primary/80 transition-all bg-primary/5 px-3 py-1.5 rounded-full border border-primary/10"
+                >
+                  Ver tudo
+                  <ChevronRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+                </button>
+              </div>
             </div>
             
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
