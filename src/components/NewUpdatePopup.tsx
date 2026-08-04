@@ -3,8 +3,9 @@ import { createPortal } from 'react-dom';
 import { CHANGELOG, CHANGE_KIND_LABEL } from '@/data/changelog';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Sparkles, X, ChevronRight, Check } from 'lucide-react';
+import { Sparkles, X, Check } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import confetti from 'canvas-confetti';
 
 export function NewUpdatePopup() {
   const [open, setOpen] = useState(false);
@@ -21,6 +22,26 @@ export function NewUpdatePopup() {
 
   const handleClose = () => {
     localStorage.setItem('decode:last-seen-version', latestVersion.version);
+    
+    // Efeito de celebração ao fechar
+    const duration = 3 * 1000;
+    const animationEnd = Date.now() + duration;
+    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+    const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
+
+    const interval: any = setInterval(function() {
+      const timeLeft = animationEnd - Date.now();
+
+      if (timeLeft <= 0) {
+        return clearInterval(interval);
+      }
+
+      const particleCount = 50 * (timeLeft / duration);
+      confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
+      confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
+    }, 250);
+
     setOpen(false);
   };
 
