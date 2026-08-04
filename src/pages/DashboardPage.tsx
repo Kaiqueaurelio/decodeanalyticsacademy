@@ -78,7 +78,7 @@ export default function DashboardPage() {
       <div className="flex flex-col min-h-dvh transition-[padding] duration-300 ease-out">
         <DashboardTopbar />
 
-        <main className="flex-1 px-4 sm:px-6 lg:px-8 py-6 space-y-6 max-w-[1400px] w-full mx-auto animate-content-show">
+        <main className="flex-1 px-3 sm:px-6 lg:px-8 py-6 space-y-6 max-w-[1400px] w-full mx-auto animate-content-show overflow-x-hidden">
           <AdBanner position="inline" />
 
           <Reveal from="bottom" delay={10}>

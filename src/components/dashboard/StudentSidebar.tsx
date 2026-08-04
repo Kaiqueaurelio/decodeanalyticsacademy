@@ -265,7 +265,7 @@ export function SidebarContent({
           </div>
 
           {/* Nav groups */}
-          <nav className="flex-1 min-h-0 space-y-6 overflow-y-auto overscroll-contain px-3 pt-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] [scrollbar-width:thin]">
+          <nav className="flex-1 min-h-0 space-y-6 overflow-y-auto overscroll-contain px-3 pt-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] [scrollbar-width:thin] scrollbar-none">
             {filteredGroups.map((group) => (
               <div key={group.label}>
                 <div className="flex items-center gap-2 px-3 pb-2">

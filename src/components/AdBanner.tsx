@@ -53,7 +53,7 @@ export function AdBanner({ position = 'inline', className = '' }: AdBannerProps)
       className={`rounded-2xl border border-primary/45 bg-card/75 p-3 shadow-sm backdrop-blur sm:p-4 ${className}`}
       aria-label="Publicidade"
     >
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center">
         {currentAd.image_url && (
           <div className="flex w-full shrink-0 flex-col items-center gap-2 sm:w-auto">
           <AppImage
