@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { Lightbulb, ArrowRight } from 'lucide-react';
+import { Trophy, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface HeroProps {
