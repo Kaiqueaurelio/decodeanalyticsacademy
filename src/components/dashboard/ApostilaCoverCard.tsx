@@ -1,4 +1,4 @@
-import { FileText, Lock } from 'lucide-react';
+import { FileText, Lock, PenTool } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { getSubjectColor } from '@/lib/subject-colors';
