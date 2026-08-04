@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
+import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useGamification } from '@/hooks/useGamification';
@@ -188,7 +189,19 @@ export default function DashboardPage() {
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                 <SemesterFilter 
                   selectedSemester={selectedSemester} 
-                  onSelect={setSelectedSemester} 
+                  onSelect={(sem) => {
+                    setSelectedSemester(sem);
+                    if (sem) {
+                      toast.success(`Semestre ${sem}º selecionado e salvo.`, {
+                        description: "Suas preferências foram sincronizadas.",
+                        duration: 2000,
+                      });
+                    } else {
+                      toast.info("Visualizando toda a grade curricular.", {
+                        duration: 2000,
+                      });
+                    }
+                  }} 
                 />
 
                 <div className="relative w-full md:max-w-xs">
