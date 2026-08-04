@@ -8,6 +8,7 @@ export interface CoverSubject {
   title: string;
   category?: string | null;
   semester?: number | null;
+  teacher?: string | null;
 }
 
 const esc = (s: string) =>
@@ -17,6 +18,7 @@ function applyTokens(tpl: string, s: CoverSubject) {
   return tpl
     .replace(/\{categoria\}/gi, s.category || 'Estudos')
     .replace(/\{titulo\}/gi, s.title)
+    .replace(/\{professor\}/gi, s.teacher || '')
     .replace(/\{semestre\}/gi, s.semester ? `${s.semester}º semestre` : 'Extracurricular');
 }
 

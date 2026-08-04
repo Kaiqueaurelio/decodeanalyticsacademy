@@ -75,7 +75,7 @@ export const DEFAULT_COVER_THEME: CoverTheme = {
   },
   content: {
     kicker: '{categoria}',
-    subtitle: 'Material de estudo · {semestre}',
+    subtitle: 'Material de estudo · {semestre}{professor? · :}{professor}',
     signature: 'Decode Analytics Academy',
   },
   preferUploaded: true,

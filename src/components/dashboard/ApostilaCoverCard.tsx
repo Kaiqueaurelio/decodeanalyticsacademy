@@ -27,6 +27,7 @@ export function ApostilaCoverCard({ apostila, status = 'em-progresso' }: Props) 
             title: apostila.title,
             category: apostila.category,
             semester: (apostila as any).semester ?? null,
+            teacher: (apostila as any).teacher ?? null,
           },
           theme,
         ) || getApostilaCover(apostila.category, apostila.id);

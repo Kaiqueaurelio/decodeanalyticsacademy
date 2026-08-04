@@ -15,11 +15,12 @@ export type ApostilaSummary = Pick<
   semester: number | null;
   course: CourseCode[] | null;
   cover_url: string | null;
+  teacher: string | null;
 };
 
 // Colunas leves: SEM `content` nem `content_backup` (podem ter centenas de KB).
 const APOSTILA_LIST_COLUMNS =
-  'id, title, category, published, source_type, file_url, created_at, updated_at, semester, course, cover_url';
+  'id, title, category, published, source_type, file_url, created_at, updated_at, semester, course, cover_url, teacher';
 
 export interface ApostilasListOptions {
   /** Filtra para mostrar apenas as do semestre informado + as sem semestre (extracurricular). */
