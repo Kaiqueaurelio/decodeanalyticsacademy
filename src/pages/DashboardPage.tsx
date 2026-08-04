@@ -77,6 +77,13 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!user) return;
+    
+    // Marcar 5º semestre como concluído (apenas uma vez ou quando mudar algo)
+    const markCompleted = async () => {
+      await supabase.rpc('complete_fifth_semester_apostilas', { _user_id: user.id });
+    };
+    markCompleted();
+
     const seen = localStorage.getItem('decode_onboarding_done');
     if (!seen) setShowOnboarding(true);
     gamification.updateStreak();

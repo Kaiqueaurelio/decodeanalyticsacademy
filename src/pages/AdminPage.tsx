@@ -1953,6 +1953,51 @@ export default function AdminPage() {
                   );
                 })()}
 
+                {/* Edit Classico Modal Refatorado */}
+                <Dialog open={!!editingApostila} onOpenChange={(v) => { if (!v) setEditingApostila(null); }}>
+                  <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle>Editar Apostila</DialogTitle>
+                    </DialogHeader>
+                    {editingApostila && (
+                      <div className="space-y-4 py-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div className="md:col-span-2">
+                            <Label htmlFor="edit-title" className="text-xs font-medium">Título</Label>
+                            <Input id="edit-title" value={editTitle} onChange={e => setEditTitle(e.target.value)} className="mt-1" />
+                          </div>
+                          <div>
+                            <Label htmlFor="edit-teacher" className="text-xs font-medium">Professor</Label>
+                            <Input id="edit-teacher" value={(editingApostila as any).teacher || ''} onChange={e => setEditingApostila({ ...editingApostila, teacher: e.target.value })} placeholder="Nome do prof." className="mt-1" />
+                          </div>
+                        </div>
+                        <div>
+                          <Label htmlFor="edit-category" className="text-xs font-medium">Disciplina/Categoria</Label>
+                          <CategorySelect value={editCategory || ''} onValueChange={setEditCategory} />
+                        </div>
+                        <div className="flex justify-end gap-3 pt-4">
+                          <Button variant="outline" onClick={() => setEditingApostila(null)}>Cancelar</Button>
+                          <Button onClick={async () => {
+                            if (!editingApostila) return;
+                            const tId = toast.loading('Salvando...');
+                            const { error } = await supabase.from('apostilas').update({
+                              title: editTitle,
+                              category: editCategory,
+                              teacher: (editingApostila as any).teacher
+                            }).eq('id', editingApostila.id);
+                            if (error) toast.error('Erro ao salvar', { id: tId });
+                            else {
+                              toast.success('Salvo com sucesso', { id: tId });
+                              setEditingApostila(null);
+                              loadAll();
+                            }
+                          }}>Salvar Alterações</Button>
+                        </div>
+                      </div>
+                    )}
+                  </DialogContent>
+                </Dialog>
+
                 {/* Exercise Dialog */}
                 {apostilas.map(a => (
                   <Dialog key={a.id} open={showExerciseDialog === a.id} onOpenChange={(v) => { setShowExerciseDialog(v ? a.id : null); if (v) { setExerciseDialogMode('individual'); setAiExercises([]); } }}>
