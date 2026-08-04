@@ -27,6 +27,16 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.23.0",
+    date: "2026-08-04",
+    title: "Estabilidade de Build e Resiliência do Sistema",
+    changes: [
+      { kind: 'fix', text: 'Integridade de Build: Removidos arquivos JavaScript residuais (.js) que causavam conflitos de sintaxe no pipeline de transformação do Vite.' },
+      { kind: 'fix', text: 'Interface do Aluno: Sanada falha de sintaxe JSX em ApostilaPage.tsx, garantindo a renderização correta de feedbacks de indisponibilidade.' },
+      { kind: 'improvement', text: 'Performance: Limpeza de diretórios de código fonte para evitar ambiguidades no carregamento de módulos e HMR.' },
+    ],
+  },
+  {
     version: "3.22.0",
     date: "2026-08-04",
     title: "Aprimoramento de Feedbacks e Bloqueios",
@@ -36,6 +46,7 @@ export const CHANGELOG: ChangelogEntry[] = [
       { kind: 'improvement', text: 'Estabilidade: Refinada a lógica de observação de seções no leitor de apostilas para evitar falhas silenciosas de compilação.' },
     ],
   },
+
   {
     version: "3.21.0",
     date: "2026-08-04",
