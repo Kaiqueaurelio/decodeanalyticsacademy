@@ -37,7 +37,7 @@ export default function DashboardPage() {
   const { data: profile } = useUserProfile(user?.id);
   const [selectedSemester, setSelectedSemester] = useState<number | null>(() => {
     const saved = localStorage.getItem('selectedSemestre');
-    return saved ? parseInt(saved, 10) : 6; // Agora o 6º semestre é o default
+    return saved ? parseInt(saved, 10) : 6;
   });
   const { data: apostilasRaw = [], isLoading: loadingApostilas } = useApostilasList();
   const { data: exerciseCounts = {} } = useExerciseCounts();
