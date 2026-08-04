@@ -109,7 +109,7 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
                 const progress = isCompleted ? 100 : (stats.byApostila[apostila.id] ? 50 : 0);
                 
                 return (
-                  <div key={apostila.id} className="relative group/card">
+                  <div key={apostila.id} className="relative group/card h-full">
                     <ApostilaCoverCard 
                       apostila={apostila} 
                       status={isCompleted ? 'concluida' : (stats.byApostila[apostila.id] ? 'em-progresso' : 'novo')} 
