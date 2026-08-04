@@ -27,6 +27,16 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.43.0",
+    date: "2026-08-04",
+    title: "Rolagem infinita no acervo (aluno e admin)",
+    changes: [
+      { kind: 'improvement', text: 'Dashboard do aluno carrega novas disciplinas automaticamente conforme a rolagem, em blocos leves.' },
+      { kind: 'improvement', text: 'Painel administrativo passou a carregar mais apostilas automaticamente, mantendo o botão manual como alternativa.' },
+      { kind: 'fix', text: 'Corrigido travamento da rolagem infinita que parava após o primeiro lote de conteúdos.' },
+    ],
+  },
+  {
     version: "3.42.0",
     date: "2026-08-04",
     title: "Central Operacional do Administrador",

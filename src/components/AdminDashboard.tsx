@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { supabase as supabaseTyped } from '@/integrations/supabase/client';
 const supabase = supabaseTyped as any;
 import { useAuth } from '@/hooks/useAuth';
@@ -22,7 +22,7 @@ import {
   Link as LinkIcon, FileText, FileUp, Plus, Activity,
   Eye, EyeOff, Edit, Trash2, Trophy, Medal, Award, Filter, X, Check,
   CheckCircle2, XCircle, CalendarDays, ArrowDownUp, FolderOpen, ChevronDown, LayoutDashboard,
-  GraduationCap, AlertTriangle, Clock3, ShieldCheck, ExternalLink, History,
+  GraduationCap, AlertTriangle, Clock3, ShieldCheck, ExternalLink, History, Loader2,
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -94,6 +94,7 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
 
   // Paginação
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const adminLoaderRef = useRef<HTMLDivElement>(null);
   // Pasta aberta no grid por categoria
   const [openCategory, setOpenCategory] = useState<string | null>(null);
 
@@ -239,6 +240,29 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
 
   const visibleItems = filtered.slice(0, visibleCount);
   const hasMore = visibleCount < filtered.length;
+
+  // Rolagem infinita no acervo administrativo
+  useEffect(() => {
+    if (!hasMore) return;
+    const el = adminLoaderRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') return;
+
+    let done = false;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (done) return;
+        if (entries[0]?.isIntersecting) {
+          done = true;
+          requestAnimationFrame(() => setVisibleCount((c) => c + PAGE_SIZE));
+        }
+      },
+      { root: null, rootMargin: '600px 0px', threshold: 0 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [hasMore, visibleCount]);
+
+
 
   // Sincroniza seleção quando a lista filtrada muda (remove ids fora)
   useEffect(() => {
@@ -1011,23 +1035,32 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
           </div>
 
 
-          {/* Paginação - Carregar mais */}
-          {hasMore && (
-            <div className="flex justify-center pt-4">
-              <Button
-                variant="outline"
-                onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
-                className="rounded-full"
-              >
-                Carregar mais ({filtered.length - visibleCount} restantes)
-              </Button>
-            </div>
-          )}
-          {!hasMore && filtered.length > PAGE_SIZE && (
-            <p className="text-center text-xs text-muted-foreground pt-4">
-              Fim da lista · {filtered.length} apostila(s)
-            </p>
-          )}
+          {/* Rolagem infinita */}
+          <div ref={adminLoaderRef} className="pt-6">
+            {hasMore ? (
+              <div className="flex flex-col items-center gap-3">
+                <div className="flex items-center gap-2 text-primary">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span className="text-[11px] font-bold uppercase tracking-widest">
+                    Carregando mais ({filtered.length - visibleCount} restantes)
+                  </span>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
+                  className="rounded-full text-xs"
+                >
+                  Carregar agora
+                </Button>
+              </div>
+            ) : filtered.length > PAGE_SIZE ? (
+              <p className="text-center text-xs text-muted-foreground">
+                Fim da lista · {filtered.length} apostila(s)
+              </p>
+            ) : null}
+          </div>
+
         </CardContent>
       </Card>
 

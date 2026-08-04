@@ -25,28 +25,6 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
   const [visibleGroups, setVisibleGroups] = useState(3); // Aumentado para preencher a tela inicial melhor
   const loaderRef = useRef<HTMLDivElement>(null);
 
-  // Intersection Observer para Rolagem Infinita Real e Fluida
-  useEffect(() => {
-    const options = {
-      root: null,
-      rootMargin: '400px', // Carrega antes do usuário chegar no fim
-      threshold: 0.1
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-      const target = entries[0];
-      if (target.isIntersecting) {
-        setVisibleGroups(prev => prev + 2); // Carrega blocos de 2 matérias
-      }
-    }, options);
-
-    if (loaderRef.current) {
-      observer.observe(loaderRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, []);
-
   const groups = useMemo(() => {
     const normalize = (s: string) =>
       s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
@@ -66,6 +44,38 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
       a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }),
     );
   }, [apostilas, query]);
+
+  // Reinicia a paginação quando a busca muda
+  useEffect(() => {
+    setVisibleGroups(3);
+  }, [query]);
+
+  // Rolagem infinita: re-observa o sentinela a cada lote carregado
+  useEffect(() => {
+    if (visibleGroups >= groups.length) return;
+    const el = loaderRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') return;
+
+    let done = false;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (done) return;
+        if (entries[0]?.isIntersecting) {
+          done = true;
+          // rAF evita travar o scroll durante o render do próximo lote
+          requestAnimationFrame(() =>
+            setVisibleGroups((prev) => Math.min(prev + 2, groups.length)),
+          );
+        }
+      },
+      { root: null, rootMargin: '600px 0px', threshold: 0 },
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [visibleGroups, groups.length]);
+
+
 
   if (groups.length === 0) {
     return (
