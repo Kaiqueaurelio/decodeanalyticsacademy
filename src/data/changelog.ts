@@ -27,6 +27,16 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.21.0",
+    date: "2026-08-04",
+    title: "Refinamento de UX e Vocabulário Acadêmico",
+    changes: [
+      { kind: 'improvement', text: 'Vocabulário Acadêmico: Substituído o termo "conteúdo pedagógico" por termos mais diretos como "material" e "conteúdo" em todo o app.' },
+      { kind: 'improvement', text: 'Interface do Aluno: Ajustado o aviso de apostilas em preparação para ser mais claro e direto.' },
+      { kind: 'fix', text: 'Leitor Estruturado: Corrigido aviso de conteúdo ausente para refletir o status de estruturação do material.' },
+    ],
+  },
+  {
     version: "3.20.0",
     date: "2026-08-04",
     title: "Novas funcionalidades e melhorias acadêmicas",
