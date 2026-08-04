@@ -1,6 +1,8 @@
 import { useMemo } from 'react';
 import { Card } from '@/components/ui/card';
-import { Sparkles, Trophy, Target, Zap, PenLine } from 'lucide-react';
+import { Sparkles, Trophy, Target, Zap, PenLine, Settings, Users, Layout } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
 
 interface HeroGreetingCardProps {
   name: string;
@@ -10,6 +12,8 @@ interface HeroGreetingCardProps {
 }
 
 export function HeroGreetingCard({ name, overallProgress, totalApostilas, totalAnswered }: HeroGreetingCardProps) {
+  const navigate = useNavigate();
+  const { isAdmin } = useAuth();
   const firstName = name.split(' ')[0];
   const hour = new Date().getHours();
   
@@ -65,6 +69,31 @@ export function HeroGreetingCard({ name, overallProgress, totalApostilas, totalA
             </div>
           </div>
         </div>
+
+        {isAdmin && (
+          <div className="flex flex-col gap-3 p-4 rounded-2xl bg-accent/5 border border-accent/20 backdrop-blur-sm self-start md:self-center">
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-accent mb-1 flex items-center gap-2">
+              <Settings className="h-3 w-3" />
+              Painel de Gestão
+            </span>
+            <div className="grid grid-cols-2 gap-2">
+              <button 
+                onClick={() => navigate('/admin', { state: { tab: 'apostilas' } })}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-background/50 hover:bg-accent hover:text-white border border-border/50 transition-all group/btn"
+              >
+                <Layout className="h-3.5 w-3.5 group-hover/btn:scale-110" />
+                <span className="text-xs font-bold">Conteúdo</span>
+              </button>
+              <button 
+                onClick={() => navigate('/admin', { state: { tab: 'alunos' } })}
+                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-background/50 hover:bg-accent hover:text-white border border-border/50 transition-all group/btn"
+              >
+                <Users className="h-3.5 w-3.5 group-hover/btn:scale-110" />
+                <span className="text-xs font-bold">Alunos</span>
+              </button>
+            </div>
+          </div>
+        )}
 
         <div className="flex flex-row md:flex-col gap-4">
           <Card className="flex flex-col items-center justify-center p-4 bg-gradient-to-br from-primary/20 to-primary/5 border-primary/30 min-w-[120px]">
