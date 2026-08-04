@@ -464,7 +464,21 @@ export default function ApostilaReaderPage() {
                   {currentLesson?.title}
                 </h1>
                 <article className="reader-prose mt-6">
-                  <ReactMarkdown>{lessonContent}</ReactMarkdown>
+                  {lessonContent ? (
+                    <ReactMarkdown>{lessonContent}</ReactMarkdown>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-20 text-center space-y-4 rounded-3xl border-2 border-dashed border-border/40 bg-muted/5">
+                      <div className="h-16 w-16 rounded-full bg-primary/5 flex items-center justify-center">
+                        <BookOpen className="h-8 w-8 text-primary/30" />
+                      </div>
+                      <div className="space-y-1.5 max-w-sm px-4">
+                        <h3 className="text-lg font-bold">Sem material disponível por enquanto</h3>
+                        <p className="text-sm text-muted-foreground">
+                          O conteúdo detalhado desta lição está sendo finalizado. Explore outros capítulos enquanto isso!
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </article>
               </>
             )}
