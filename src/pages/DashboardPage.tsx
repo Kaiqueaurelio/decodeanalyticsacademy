@@ -313,7 +313,6 @@ export default function DashboardPage() {
             <TermsFooterLink variant="inline" />
             <div className="flex flex-col gap-1 items-center">
               <span className="font-medium tracking-wide">Desenvolvido por: Kaique Aurelio &amp; Decode Analytics</span>
-              <span className="opacity-50">© 2026 Decode Analytics Academy · Todos os direitos reservados</span>
             </div>
           </footer>
         </main>
