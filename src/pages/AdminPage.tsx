@@ -299,15 +299,29 @@ function OverviewTab({ apostilas, exercises, allAnswers, materials, users, setTa
   return (
     <div className="space-y-8">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground tracking-tight">Visão Geral</h2>
-          <p className="text-sm text-muted-foreground mt-1">Resumo executivo da plataforma · atualizado agora</p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h2 className="text-3xl font-black text-foreground tracking-tight">Visão Geral</h2>
+            <p className="text-sm text-muted-foreground mt-1">Status operacional e métricas de desempenho</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Select value={filterSemester} onValueChange={setFilterSemester}>
+              <SelectTrigger className="w-[180px] rounded-2xl bg-card border-primary/20">
+                <GraduationCap className="h-4 w-4 mr-2 text-primary" />
+                <SelectValue placeholder="Semestre" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os Semestres</SelectItem>
+                {[1, 2, 3, 4, 5, 6, 7, 8].map(s => (
+                  <SelectItem key={s} value={s.toString()}>{s}º Semestre</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button variant="outline" size="sm" className="h-10 rounded-2xl gap-2" onClick={() => setTab('apostilas')}>
+              <Plus className="h-4 w-4" /> Nova Apostila
+            </Button>
+          </div>
         </div>
-        <Button variant="outline" size="sm" className="gap-2" onClick={() => setTab('apostilas')}>
-          <Plus className="h-4 w-4" /> Nova Apostila
-        </Button>
-      </div>
 
       {/* KPI Grid */}
       <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
@@ -586,10 +600,17 @@ export default function AdminPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [refreshing, setRefreshing] = useState(false);
   // Filtros admin avançados
-  const [filterSemester, setFilterSemester] = useState<string>('all');
+  const [filterSemester, setFilterSemester] = useState<string>(() => {
+    return localStorage.getItem('adminSelectedSemester') || '6';
+  });
   const [filterCourse, setFilterCourse] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<'all' | 'published' | 'draft'>('all');
   const [expandedCats, setExpandedCats] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    localStorage.setItem('adminSelectedSemester', filterSemester);
+  }, [filterSemester]);
+
   const toggleCat = useCallback((cat: string) => {
     setExpandedCats(prev => {
       const next = new Set(prev);
