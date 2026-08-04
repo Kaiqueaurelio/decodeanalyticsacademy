@@ -27,6 +27,7 @@ import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Progress } from "@/components/ui/progress";
 import { useQueryClient } from "@tanstack/react-query";
+import logoOwl from "@/assets/owl-icon.png";
 
 
 interface Lesson {
@@ -315,7 +316,23 @@ export default function ApostilaReaderPage() {
 
   return (
     <div className="flex h-screen w-full bg-background text-foreground overflow-hidden">
+      {/* Logo persistente — sempre visível durante a leitura */}
+      <div className="pointer-events-none fixed bottom-4 right-4 z-30 hidden items-center gap-2 rounded-2xl border border-primary/25 bg-background/80 px-3 py-2 backdrop-blur-md sm:flex">
+        <img
+          src={logoOwl}
+          alt="Decode Analytics Academy"
+          width={40}
+          height={40}
+          className="h-10 w-10 object-contain drop-shadow-[0_0_12px_hsl(var(--primary)/0.5)]"
+        />
+        <span className="font-display text-[11px] font-extrabold leading-tight tracking-tight text-foreground">
+          DECODE ANALYTICS
+          <span className="block text-[9px] font-semibold text-muted-foreground">ACADEMY</span>
+        </span>
+      </div>
+
       {/* Sidebar TOC — desktop */}
+
       <aside
         className={cn(
           "hidden md:flex md:w-[320px] shrink-0 border-r border-border/60 bg-card/50 flex-col",
@@ -365,6 +382,15 @@ export default function ApostilaReaderPage() {
       <main className="flex-1 flex min-w-0 flex-col">
         {/* Top bar */}
         <div className="sticky top-0 z-20 flex items-center gap-2 border-b border-border/60 bg-background/95 backdrop-blur px-3 py-2.5 md:px-6">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-card ring-1 ring-primary/40 shadow-[0_0_18px_hsl(var(--primary)/0.25)]">
+            <img
+              src={logoOwl}
+              alt="Decode Analytics Academy"
+              width={36}
+              height={36}
+              className="h-9 w-9 object-contain"
+            />
+          </span>
           <button
             className="md:hidden inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-accent"
             onClick={() => setTocOpen(true)}
@@ -374,6 +400,7 @@ export default function ApostilaReaderPage() {
           </button>
           <div className="min-w-0 flex-1">
             <div className="truncate text-[11px] uppercase tracking-wider text-muted-foreground">
+
               {currentLesson?.moduleTitle} · {currentLesson?.chapterTitle}
             </div>
             <div className="truncate font-display text-base font-semibold">
