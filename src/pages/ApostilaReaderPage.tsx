@@ -383,15 +383,16 @@ export default function ApostilaReaderPage() {
       <main className="flex-1 flex min-w-0 flex-col">
         {/* Top bar */}
         <div className="sticky top-0 z-20 flex items-center gap-2 border-b border-border/60 bg-background/95 backdrop-blur px-3 py-2.5 md:px-6">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-card ring-1 ring-primary/40 shadow-[0_0_18px_hsl(var(--primary)/0.25)]">
+          <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-card ring-1 ring-primary/40 shadow-[0_0_22px_hsl(var(--primary)/0.3)]">
             <img
               src={logoOwl}
               alt="Decode Analytics Academy"
-              width={36}
-              height={36}
-              className="h-9 w-9 object-contain"
+              width={48}
+              height={48}
+              className="h-12 w-12 object-contain"
             />
           </span>
+
           <button
             className="md:hidden inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-accent"
             onClick={() => setTocOpen(true)}
