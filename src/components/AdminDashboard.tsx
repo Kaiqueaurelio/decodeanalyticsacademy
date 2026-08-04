@@ -94,6 +94,7 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
 
   // Paginação
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const adminLoaderRef = useRef<HTMLDivElement>(null);
   // Pasta aberta no grid por categoria
   const [openCategory, setOpenCategory] = useState<string | null>(null);
 
