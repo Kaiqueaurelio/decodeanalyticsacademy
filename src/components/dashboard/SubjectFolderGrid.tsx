@@ -33,6 +33,14 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
     for (const a of apostilas) {
       const key = a.category?.trim() || 'Geral';
       if (q && !normalize(a.title || '').includes(q) && !normalize(key).includes(q)) continue;
+      
+      // FILTRO: Se o aluno tem semestre definido, mostramos apenas as apostilas do semestre atual
+      // O usuário solicitou "no semestre de agora, no sexto, deixa só as apostilas do sexto semestre"
+      // Se a apostila tem semestre e ele é diferente do perfil, ocultamos.
+      if (profile?.semester && (a as any).semester && Number((a as any).semester) !== Number(profile.semester)) {
+        continue;
+      }
+
       const arr = map.get(key) ?? [];
       arr.push(a);
       map.set(key, arr);
