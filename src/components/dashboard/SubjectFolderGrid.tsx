@@ -46,10 +46,11 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
       map.set(key, arr);
     }
 
-    // 2. Add blank subjects from curriculum if not present
+    // 2. Add blank subjects from curriculum IF they are from the 8th semester (current academic target for placeholders)
+    // and only if they don't already have content. Other semesters should ONLY show existing content.
     const semesterToUse = selectedSemester || profile?.semester;
-    if (profile?.course && semesterToUse && !q) {
-      const curriculum = getCurriculumSubjects(profile.course, semesterToUse);
+    if (profile?.course && Number(semesterToUse) === 8 && !q) {
+      const curriculum = getCurriculumSubjects(profile.course, 8);
       for (const subjectName of curriculum) {
         if (!map.has(subjectName)) {
           map.set(subjectName, []); // Empty array indicates a "blank" card
