@@ -27,8 +27,20 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.18.0",
+    date: "2026-08-04",
+    title: "Reforço de Segurança e Sanitização",
+    changes: [
+      { kind: 'security', text: 'Implementação de sanitização robusta via DOMPurify no renderizador de apostilas para prevenir XSS.' },
+      { kind: 'security', text: 'Melhoria no tratamento de erros com novo sistema de logs seguros (safeLog) para evitar vazamento de dados técnicos.' },
+      { kind: 'improvement', text: 'Otimização da Edge Function de autenticação (ra-auth) com rate limiting básico e limpeza de logs.' },
+    ],
+  },
+
+  {
     version: "3.17.0",
     date: "2026-08-02",
+
     title: "Painel administrativo reorganizado (celular e computador)",
     changes: [
       { kind: 'improvement', text: 'Todas as seções do admin agora ficam agrupadas por área: Conteúdo, Alunos e Comunidade, Monetização, Assistente e Sistema.' },

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { X, ExternalLink, Share2, Loader2, AlertCircle, Clock } from 'lucide-react';
 import DOMPurify from 'dompurify';
 import { supabase } from '@/integrations/supabase/client';
+import { showFriendlyError } from '@/lib/error-utils';
 
 interface NewsItem {
   id: string;
@@ -90,7 +91,8 @@ export function InAppNewsReader({ item, onClose }: Props) {
       } catch (e: any) {
         if (!cancelled) {
           // Timeout ou erro de rede: força fallback
-          setError('Não foi possível carregar a matéria. Abrindo no site original...');
+          showFriendlyError(e, 'Não foi possível carregar a matéria. Abrindo no site original...');
+          setError('Ocorreu um problema ao carregar o conteúdo.');
         }
       } finally {
         if (!cancelled) setLoading(false);
