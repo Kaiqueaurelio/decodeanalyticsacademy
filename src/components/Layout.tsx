@@ -45,7 +45,7 @@ export function Layout({ header, sidebar, footer, children, className }: LayoutP
 
       {sidebar && (
         <aside
-          className="[grid-area:sidebar] border-b md:border-b-0 md:border-r border-border/60 bg-card/40"
+          className="[grid-area:sidebar] border-b md:border-b-0 md:border-r border-border/60 bg-card/40 hidden md:block"
         >
           {sidebar}
         </aside>
