@@ -48,8 +48,6 @@ export default function DashboardPage() {
   const loading = loadingApostilas || loadingStats;
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [query, setQuery] = useState('');
-  const [visibleFolders, setVisibleFolders] = useState(6); // Começa com menos matérias para melhor performance e scroll infinito nítido
-  const [isFetchingMore, setIsFetchingMore] = useState(false);
 
   // Lógica de processamento de apostilas (filtro + placeholders de semestres futuros)
   const apostilas = useMemo(() => {
