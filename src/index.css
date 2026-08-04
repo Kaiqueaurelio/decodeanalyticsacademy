@@ -1619,11 +1619,7 @@ html {
   .apostila-heading-active { animation: none; }
 }
 
-#lovable-badge {
-  display: none !important;
-}
-
-/* Hide Lovable badge */
+/* Logo and Branding Protection */
 #lovable-badge,
 #lovable-badge-v2,
 [id^="lovable-badge"],
