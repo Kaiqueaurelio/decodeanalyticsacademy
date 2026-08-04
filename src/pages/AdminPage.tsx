@@ -1642,11 +1642,16 @@ export default function AdminPage() {
                           <div className="space-y-3 p-4 rounded-xl bg-primary/5 border border-primary/10 shadow-inner">
                             <div className="flex items-start gap-2.5">
                               <Sparkles className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                              <p className="text-[11px] text-muted-foreground leading-relaxed">
-                                Use <strong>Estruturar como Apostila</strong> para que a Ella organize automaticamente seu texto cru em módulos e tópicos. Ou use <strong>Salvar Pronto</strong> se o texto já estiver no formato final.
-                              </p>
+                              <div className="space-y-1">
+                                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                                  Use <strong>Estruturar com Ella</strong> para organizar seu texto cru em módulos.
+                                </p>
+                                <p className="text-[10px] text-primary font-medium">
+                                  DICA: Se já tiver o texto pronto, use o <strong>Modo Word</strong> abaixo para formatar como se estivesse no Google Docs!
+                                </p>
+                              </div>
                             </div>
-                            <div className="grid gap-3 sm:grid-cols-2">
+                            <div className="grid gap-3 sm:grid-cols-3">
                               <Button 
                                 onClick={handleExtract} 
                                 disabled={cloning || !importRawText.trim()} 
@@ -1655,12 +1660,27 @@ export default function AdminPage() {
                                 {cloning ? <><Loader2 className="h-4 w-4 animate-spin mr-1.5" /> Estruturando...</> : <><Wand2 className="h-4 w-4 mr-2" /> Estruturar com Ella</>}
                               </Button>
                               <Button 
+                                onClick={() => {
+                                  if (!importTitle.trim()) {
+                                    toast.error("Dê um título antes de entrar no Modo Word");
+                                    return;
+                                  }
+                                  setImportStep('edit');
+                                  setImportReadyHtml(markdownToHtml(importRawText));
+                                }}
+                                disabled={cloning || !importRawText.trim()} 
+                                variant="outline" 
+                                className="w-full h-10 border-primary/20 hover:bg-primary/5 text-primary"
+                              >
+                                <FileText className="h-4 w-4 mr-2" /> Modo Word
+                              </Button>
+                              <Button 
                                 onClick={handleSaveReadyText} 
                                 disabled={cloning || !importRawText.trim() || !importTitle.trim()} 
                                 variant="outline" 
-                                className="w-full h-10 border-primary/20 hover:bg-primary/5"
+                                className="w-full h-10 border-border/50 hover:bg-muted/50"
                               >
-                                {cloning ? <><Loader2 className="h-4 w-4 animate-spin mr-1.5" /> Salvando...</> : <><Check className="h-4 w-4 mr-2" /> Salvar texto pronto</>}
+                                {cloning ? <><Loader2 className="h-4 w-4 animate-spin mr-1.5" /> Salvando...</> : <><Check className="h-4 w-4 mr-2" /> Salvar Rápido</>}
                               </Button>
                             </div>
                           </div>
@@ -1685,7 +1705,10 @@ export default function AdminPage() {
                             </span>
                           )}
                         </div>
-                        <div><Label className="text-xs text-muted-foreground">Título</Label><Input value={importTitle} onChange={e => setImportTitle(e.target.value)} className="mt-1" /></div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Título</Label>
+                          <Input value={importTitle} onChange={e => setImportTitle(e.target.value)} placeholder="Título da apostila" className="mt-1" />
+                        </div>
                         <div><Label className="text-xs text-muted-foreground">Categoria</Label><CategorySelect value={importTopic} onValueChange={setImportTopic} /></div>
 
                         {/* Pré-visualização rica: sebras + estrutura + glossário + perguntas */}
