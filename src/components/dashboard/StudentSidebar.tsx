@@ -247,7 +247,7 @@ export function SidebarContent({
                   DECODE <span className="text-primary">ANALYTICS</span> ACADEMY
                 </span>
                 <span className="block font-mono text-[9px] font-semibold uppercase tracking-[0.32em] text-muted-foreground">
-                  By Kaique Aurelio
+                  Academy By Kaique Aurelio
                 </span>
               </span>
             </button>
