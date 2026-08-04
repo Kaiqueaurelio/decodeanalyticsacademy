@@ -1283,14 +1283,18 @@ export default function AdminPage() {
   // Filtered data
   const filteredApostilas = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
-    return apostilas.filter((a) => {
+    
+    // 1. Filtragem inicial por busca e status
+    let list = apostilas.filter((a) => {
       if (q && !(a.title.toLowerCase().includes(q) || a.category.toLowerCase().includes(q))) return false;
       if (filterStatus === 'published' && !a.published) return false;
       if (filterStatus === 'draft' && a.published) return false;
+      
       if (filterSemester !== 'all') {
         if (filterSemester === 'none') { if (a.semester != null) return false; }
         else if (String(a.semester) !== filterSemester) return false;
       }
+      
       if (filterCourse !== 'all') {
         const arr = (a.course || []) as string[];
         if (filterCourse === 'none') { if (arr.length) return false; }
@@ -1298,6 +1302,30 @@ export default function AdminPage() {
       }
       return true;
     });
+
+    // 2. Placeholder para o Admin (quando filtrado por semestre)
+    const activeSemNum = filterSemester !== 'all' && filterSemester !== 'none' ? parseInt(filterSemester, 10) : null;
+    
+    if (activeSemNum && !q) {
+      const canonicalSubjects = BY_SEMESTER[activeSemNum] || [];
+      const existingCategories = new Set(list.map(a => a.category));
+      
+      const placeholders = canonicalSubjects
+        .filter((subject: string) => !existingCategories.has(subject))
+        .map((subject: string, idx: number) => ({
+          id: `placeholder-admin-${activeSemNum}-${idx}`,
+          title: `[GRADE] ${subject}`,
+          category: subject,
+          semester: activeSemNum,
+          published: false,
+          created_at: new Date().toISOString(),
+          isPlaceholder: true
+        }));
+        
+      return [...list, ...placeholders];
+    }
+
+    return list;
   }, [apostilas, searchQuery, filterStatus, filterSemester, filterCourse]);
 
   const filteredMaterials = useMemo(() => {
