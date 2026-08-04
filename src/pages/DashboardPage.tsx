@@ -121,7 +121,8 @@ export default function DashboardPage() {
     const markCompleted = async () => {
       try {
         await supabase.rpc('force_complete_semesters_upto_five', { _user_id: user.id });
-        await (supabase.rpc as any)('complete_semesters_six_to_eight', { _user_id: user.id });
+        // RPC para o 6º ao 8º semestre removida para permitir progresso real nessas apostilas
+        // await (supabase.rpc as any)('complete_semesters_six_to_eight', { _user_id: user.id });
         
         // Maximizar para administrador
         if (profile?.is_admin || user.email === 'decoanalytics@outlook.com.br') {
