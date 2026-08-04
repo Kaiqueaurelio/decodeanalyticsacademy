@@ -27,6 +27,15 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.24.0",
+    date: "2026-08-04",
+    title: "Edição Direta e Atalhos Administrativos",
+    changes: [
+      { kind: 'feature', text: 'Gestão Inteligente: Adicionado atalho direto da Apostila para o Editor Admin, facilitando a atualização rápida de materiais sem navegação manual.' },
+      { kind: 'improvement', text: 'Fluxo de Trabalho: Otimizada a transição entre visão de aluno e painel de controle para administradores.' },
+    ],
+  },
+  {
     version: "3.23.0",
     date: "2026-08-04",
     title: "Estabilidade de Build e Resiliência do Sistema",
