@@ -74,19 +74,19 @@ export function HeroGreetingCard({ name, overallProgress, totalApostilas, totalA
           <div className="flex flex-col gap-3 p-4 rounded-2xl bg-accent/5 border border-accent/20 backdrop-blur-sm self-start md:self-center">
             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-accent mb-1 flex items-center gap-2">
               <Settings className="h-3 w-3" />
-              Painel de Gestão
+              Painel de Gestão Rápida
             </span>
             <div className="grid grid-cols-2 gap-2">
               <button 
                 onClick={() => navigate('/admin', { state: { tab: 'apostilas' } })}
-                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-background/50 hover:bg-accent hover:text-white border border-border/50 transition-all group/btn"
+                className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-background/50 hover:bg-accent hover:text-white border border-border/50 transition-all group/btn shadow-sm"
               >
                 <Layout className="h-3.5 w-3.5 group-hover/btn:scale-110" />
                 <span className="text-xs font-bold">Conteúdo</span>
               </button>
               <button 
-                onClick={() => navigate('/admin', { state: { tab: 'alunos' } })}
-                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-background/50 hover:bg-accent hover:text-white border border-border/50 transition-all group/btn"
+                onClick={() => navigate('/admin', { state: { tab: 'users' } })}
+                className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-background/50 hover:bg-accent hover:text-white border border-border/50 transition-all group/btn shadow-sm"
               >
                 <Users className="h-3.5 w-3.5 group-hover/btn:scale-110" />
                 <span className="text-xs font-bold">Alunos</span>
