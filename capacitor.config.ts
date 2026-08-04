@@ -6,8 +6,8 @@ import type { CapacitorConfig } from '@capacitor/cli';
 const isDev = process.env.CAPACITOR_ENV === 'dev';
 
 const config: CapacitorConfig = {
-  appId: 'app.lovable.4dd1aec291754ae994018637f1ffe1a2',
-  appName: 'decodeanalyticsacademy',
+  appId: 'com.decodeanalytics.academy',
+  appName: 'Decode Academy',
   webDir: 'dist',
   ...(isDev
     ? {
