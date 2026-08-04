@@ -224,19 +224,6 @@ function AdminSidebar({ tab, setTab, stats, sidebarOpen, setSidebarOpen }: {
             users: stats.users,
             securityAlerts: securityOpenCount,
           }}
-          footerSlot={
-            <div className="space-y-1">
-              <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Acervos</p>
-              <button
-                onClick={() => { navigate('/admin/biblioteca'); setSidebarOpen(false); }}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors bg-primary/5 text-primary hover:bg-primary/10 border border-primary/20"
-              >
-                <BookOpen className="h-4 w-4 shrink-0 text-primary" />
-                <span className="flex-1 text-left">Biblioteca de Livros</span>
-                <Badge variant="secondary" className="text-[9px] h-4 px-1.5">PDF/EPUB</Badge>
-              </button>
-            </div>
-          }
         />
 
         {/* Footer */}
