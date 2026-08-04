@@ -27,10 +27,14 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
-    version: "3.29.0",
-    date: "04/08/2026",
-    description: "UX: Rolagem infinita no dashboard e atalhos rápidos de edição para administradores em todos os materiais.",
-    type: "feature"
+    version: "3.31.0",
+    date: "2026-08-04",
+    title: "Rolagem Infinita e Edição Direta",
+    changes: [
+      { kind: 'feature', text: 'Dashboard: Implementada rolagem infinita nas disciplinas para navegação mais fluida.' },
+      { kind: 'feature', text: 'Admin: Atalhos rápidos de edição agora aparecem diretamente nos cards do dashboard para administradores.' },
+      { kind: 'improvement', text: 'Performance: Otimizado o carregamento inicial do dashboard com renderização progressiva de matérias.' },
+    ],
   },
   {
     version: "3.30.0",
