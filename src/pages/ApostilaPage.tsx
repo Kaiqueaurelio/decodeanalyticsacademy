@@ -644,6 +644,21 @@ export default function ApostilaPage() {
                   apostilaId={id!}
                   isLoggedIn={!!user}
                 />
+                
+                {user && (organizedSections.length === 0 || organizedSections.every(s => s.isPlaceholder)) && (
+                  <div className="flex flex-col items-center justify-center py-20 px-4 text-center space-y-4 rounded-3xl border-2 border-dashed border-border/40 bg-muted/5 animate-content-show">
+                    <div className="h-20 w-20 rounded-full bg-primary/5 flex items-center justify-center">
+                      <BookOpen className="h-10 w-10 text-primary/40" />
+                    </div>
+                    <div className="space-y-2 max-w-sm">
+                      <h3 className="text-xl font-bold tracking-tight">Sem material disponível por enquanto</h3>
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        Nossa equipe pedagógica e a assistência estão preparando o melhor conteúdo acadêmico para esta disciplina. Fique atento às atualizações!
+                      </p>
+                    </div>
+                  </div>
+                )}
+
                 {user && organizedSections.map((section, idx) => {
                   if (section.isPlaceholder) return null;
 
