@@ -31,7 +31,12 @@ import {
 } from 'recharts';
 import { toast } from 'sonner';
 
-interface Props { onNavigate: (tab: string) => void; isAdmin?: boolean; }
+interface Props { 
+  onNavigate: (tab: string) => void; 
+  isAdmin?: boolean;
+  filterSemester?: string;
+  setFilterSemester?: (s: string) => void;
+}
 
 type ApostilaRow = {
   id: string; title: string; category: string | null;
@@ -48,7 +53,7 @@ type SortKey = 'created_desc' | 'created_asc' | 'updated_desc' | 'updated_asc';
 
 const PAGE_SIZE = 12;
 
-export function AdminDashboard({ onNavigate, isAdmin: isAdminProp }: Props) {
+export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemester, setFilterSemester }: Props) {
   const { user, isAdmin: authIsAdmin } = useAuth();
   const isAdmin = isAdminProp ?? authIsAdmin;
   const navigate = useNavigate();

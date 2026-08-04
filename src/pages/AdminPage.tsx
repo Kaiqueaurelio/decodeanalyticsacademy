@@ -246,9 +246,10 @@ function AdminSidebar({ tab, setTab, stats, sidebarOpen, setSidebarOpen }: {
 
 
 // ─── Overview Tab ───────────────────────────────────────────────
-function OverviewTab({ apostilas, exercises, allAnswers, materials, users, setTab, loading }: {
+function OverviewTab({ apostilas, exercises, allAnswers, materials, users, setTab, loading, filterSemester, setFilterSemester }: {
   apostilas: Apostila[]; exercises: Record<string, Exercise[]>; allAnswers: any[];
   materials: Material[]; users: any[]; setTab: (t: Tab) => void; loading?: boolean;
+  filterSemester: string; setFilterSemester: (s: string) => void;
 }) {
   const navigate = useNavigate();
   const totalExercises = Object.values(exercises).flat().length;
@@ -1438,7 +1439,11 @@ export default function AdminPage() {
             <div key={tab} className="animate-fade-in">
             {/* OVERVIEW */}
             {tab === 'overview' && (
-              <AdminDashboard onNavigate={(newTab) => setTab(newTab as Tab)} />
+              <AdminDashboard 
+                onNavigate={(newTab) => setTab(newTab as Tab)} 
+                filterSemester={filterSemester}
+                setFilterSemester={setFilterSemester}
+              />
             )}
 
             {/* APOSTILAS */}
