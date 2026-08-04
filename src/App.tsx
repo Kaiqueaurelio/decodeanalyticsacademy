@@ -95,6 +95,7 @@ function useAdminCopyPatch() {
       ["oi teste", "oi teste"],
       ["arrume os erros do app por gentielza", "arrume os erros do app por gentielza"],
       ["Adicionar logs detalhados com stack trace, navegador/OS e versionamento do build para facilitar a depuração dos erros.\nAdicionar logs detalhados com stack trace, navegador/OS e versionamento do build para facilitar a depuração dos erros.Adicionar logs detalhados com stack trace, navegador/OS e versionamento do build para facilitar a depuração dos erros.", "Adicionar logs detalhados com stack trace, navegador/OS e versionamento do build para facilitar a depuração dos erros.\nAdicionar logs detalhados com stack trace, navegador/OS e versionamento do build para facilitar a depuração dos erros.Adicionar logs detalhados com stack trace, navegador/OS e versionamento do build para facilitar a depuração dos erros."],
+      ["faça meçhorias na landingpage para que ela fique nota 1000 oque acha que podemos fazeer??", "faça meçhorias na landingpage para que ela fique nota 1000 oque acha que podemos fazeer??"],
     ]);
 
 
