@@ -100,7 +100,7 @@ function useAdminCopyPatch() {
 
 
     const patchCopy = () => {
-      document.querySelectorAll("h1,h2,h3,p,span,body").forEach((node) => {
+      document.querySelectorAll("h1,h2,h3,p,span,body,button,a").forEach((node) => {
         const current = node.textContent?.trim();
         const next = current ? replacements.get(current) : undefined;
 
