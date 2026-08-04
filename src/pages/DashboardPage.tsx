@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useGamification } from '@/hooks/useGamification';
@@ -9,6 +9,7 @@ import { HeroGreetingCard } from '@/components/dashboard/HeroGreetingCard';
 import { ActivitiesToDoSection, RecommendedExercisesSection } from '@/components/dashboard/DashboardSections';
 import { ProgressSummaryRow } from '@/components/dashboard/DashboardCarousels';
 import { SubjectFolderGrid } from '@/components/dashboard/SubjectFolderGrid';
+import { SemesterFilter } from '@/components/dashboard/filters/SemesterFilter';
 import { AdBanner } from '@/components/AdBanner';
 import { AdSidebar } from '@/components/AdSidebar';
 import { Watermark } from '@/components/Watermark';
@@ -19,6 +20,7 @@ import { TermsFooterLink } from '@/components/TermsFooterLink';
 import { ContinueWhereLeftCard } from '@/components/ContinueWhereLeftCard';
 import { useApostilasList, useExerciseCounts, useDashboardStats, type ApostilaSummary } from '@/hooks/queries/useDashboardData';
 import { useUserProfile } from '@/hooks/queries/useUserProfile';
+import { BY_SEMESTER } from '@/lib/subject-semester-map';
 import { BookOpen, Search, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -31,15 +33,45 @@ export default function DashboardPage() {
   const gamification = useGamification();
   const examFocus = useExamFocus();
   const { data: profile } = useUserProfile(user?.id);
-  const { data: apostilas = [], isLoading: loadingApostilas } = useApostilasList();
+  const [selectedSemester, setSelectedSemester] = useState<number | null>(5); // Inicia no 5º por padrão como solicitado
+  const { data: apostilasRaw = [], isLoading: loadingApostilas } = useApostilasList();
   const { data: exerciseCounts = {} } = useExerciseCounts();
   const { data: statsData, isLoading: loadingStats } = useDashboardStats(user?.id);
   const stats = statsData || { total: 0, hits: 0, errors: 0, byApostila: {} };
   const loading = loadingApostilas || loadingStats;
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [query, setQuery] = useState('');
-  const [visibleFolders, setVisibleFolders] = useState(6);
+  const [visibleFolders, setVisibleFolders] = useState(12);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
+
+  // Lógica de processamento de apostilas (filtro + placeholders de semestres futuros)
+  const apostilas = useMemo(() => {
+    // 1. Filtragem por semestre se selecionado
+    let list = selectedSemester 
+      ? apostilasRaw.filter(a => a.semester === selectedSemester)
+      : apostilasRaw;
+
+    // 2. Se for um semestre futuro (6, 7, 8) e não houver conteúdo, gerar placeholders
+    if (selectedSemester && [6, 7, 8].includes(selectedSemester) && list.length === 0) {
+      const futureSubjects = BY_SEMESTER[selectedSemester] || [];
+      return futureSubjects.map((subject, idx) => ({
+        id: `placeholder-${selectedSemester}-${idx}`,
+        title: `Conteúdo de ${subject}`,
+        category: subject,
+        semester: selectedSemester,
+        isPlaceholder: true,
+        published: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        cover_url: null,
+        file_url: null,
+        source_type: null,
+        course: null
+      })) as any as ApostilaSummary[];
+    }
+
+    return list;
+  }, [apostilasRaw, selectedSemester]);
   
   
 
@@ -126,31 +158,44 @@ export default function DashboardPage() {
           </Reveal>
 
           <section id="minhas-disciplinas" className="scroll-mt-24 rounded-2xl border border-border bg-card p-5">
-            <header className="flex flex-col gap-3 mb-4 md:flex-row md:items-center md:justify-between">
-              <div className="flex items-center gap-2">
-                <BookOpen className="h-4 w-4 text-primary" />
-                <h2 className="font-bold text-base">Minhas Disciplinas</h2>
+            <header className="flex flex-col gap-4 mb-6 md:flex-row md:items-center md:justify-between">
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-2">
+                  <BookOpen className="h-4 w-4 text-primary" />
+                  <h2 className="font-bold text-base">Minhas Disciplinas</h2>
+                </div>
+                <p className="text-[10px] text-muted-foreground pl-6">
+                  {selectedSemester ? `Visualizando ${selectedSemester}º semestre` : 'Visualizando toda a grade curricular'}
+                </p>
               </div>
-              <div className="relative w-full md:max-w-xs">
-                <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
-                <Input
-                  type="search"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value.slice(0, 80))}
-                  placeholder="Buscar disciplina ou apostila..."
-                  aria-label="Buscar disciplina ou apostila"
-                  className="h-9 pl-8 pr-8 text-sm"
+
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <SemesterFilter 
+                  selectedSemester={selectedSemester} 
+                  onSelect={setSelectedSemester} 
                 />
-                {query && (
-                  <button
-                    type="button"
-                    onClick={() => setQuery('')}
-                    aria-label="Limpar busca"
-                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground hover:text-foreground"
-                  >
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                )}
+
+                <div className="relative w-full md:max-w-xs">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+                  <Input
+                    type="search"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value.slice(0, 80))}
+                    placeholder="Buscar disciplina..."
+                    aria-label="Buscar disciplina ou apostila"
+                    className="h-8 pl-8 pr-8 text-xs bg-background/50 border-primary/10"
+                  />
+                  {query && (
+                    <button
+                      type="button"
+                      onClick={() => setQuery('')}
+                      aria-label="Limpar busca"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground hover:text-foreground"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                </div>
               </div>
             </header>
 
@@ -202,9 +247,12 @@ export default function DashboardPage() {
           </Reveal>
 
 
-          <footer className="flex flex-col items-center justify-center gap-3 py-10 mt-6 border-t border-border/30 text-center text-[10px] text-muted-foreground/60">
+          <footer className="flex flex-col items-center justify-center gap-3 py-10 mt-6 border-t border-border/10 text-center text-[10px] text-muted-foreground/60 bg-gradient-to-b from-transparent to-primary/5 rounded-b-3xl">
             <TermsFooterLink variant="inline" />
-            <span>Desenvolvido por: Kaique Aurelio &amp; Decode Analytics</span>
+            <div className="flex flex-col gap-1 items-center">
+              <span className="font-medium tracking-wide">Desenvolvido por: Kaique Aurelio &amp; Decode Analytics</span>
+              <span className="opacity-50">© 2026 Decode Analytics Academy · Todos os direitos reservados</span>
+            </div>
           </footer>
         </main>
       </div>
