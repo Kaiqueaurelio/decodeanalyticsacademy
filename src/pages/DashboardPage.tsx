@@ -380,10 +380,9 @@ export default function DashboardPage() {
             </header>
 
             {loading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
-                {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => <div key={i} className="h-36 rounded-2xl bg-muted/30 animate-pulse" />)}
-              </div>
+              <DashboardSkeleton />
             ) : apostilas.length === 0 ? (
+
               <p className="text-sm text-muted-foreground py-8 text-center">Nenhuma apostila disponível.</p>
             ) : (
               <div className="space-y-6">
