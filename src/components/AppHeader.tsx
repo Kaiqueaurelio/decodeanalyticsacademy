@@ -36,7 +36,7 @@ export function AppHeader() {
               DECODE <span className="text-primary tracking-tighter">ANALYTICS</span> ACADEMY
             </span>
             <span className="truncate font-mono-label text-[10px] font-medium uppercase tracking-[0.3em] text-primary/80">
-              By Kaique Aurelio
+              Academy By Kaique Aurelio
             </span>
           </div>
         </Link>
