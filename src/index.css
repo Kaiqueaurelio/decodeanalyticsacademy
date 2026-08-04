@@ -270,7 +270,7 @@ html[data-admin-mode="true"] ::-moz-selection {
     50% { opacity: 0.7; }
   }
   .font-display {
-    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-family: 'Space Grotesk', 'Space Grotesk Fallback', system-ui, sans-serif;
     font-weight: 600;
     letter-spacing: -0.02em;
   }

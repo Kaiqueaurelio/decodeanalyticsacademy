@@ -24,10 +24,10 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['"Space Grotesk"', 'system-ui', 'sans-serif'],
-        display: ['"Space Grotesk"', 'system-ui', 'sans-serif'],
+        sans: ['"Space Grotesk"', '"Space Grotesk Fallback"', 'system-ui', 'sans-serif'],
+        display: ['"Space Grotesk"', '"Space Grotesk Fallback"', 'system-ui', 'sans-serif'],
         'mono-label': ['"DM Mono"', 'monospace'],
-        cyber: ['"Space Grotesk"', 'system-ui', 'sans-serif'],
+        cyber: ['"Space Grotesk"', '"Space Grotesk Fallback"', 'system-ui', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",
