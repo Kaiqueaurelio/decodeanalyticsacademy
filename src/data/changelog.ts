@@ -27,15 +27,6 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
-    version: "3.38.0",
-    date: "2026-08-04",
-    title: "Landing Page: Excelência e Refinamento",
-    changes: [
-      { kind: 'improvement', text: 'Landing Page: Adicionada nova palavra-chave dinâmica "nota 1000." ao efeito typewriter no título principal.' },
-      { kind: 'improvement', text: 'UX: Refinada a cadência de transição do herô para destacar o compromisso com a qualidade máxima.' },
-    ],
-  },
-  {
     version: "3.37.0",
     date: "2026-08-04",
     title: "Landing Page: Dinâmica e Inteligente",
