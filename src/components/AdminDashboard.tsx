@@ -241,6 +241,29 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
   const visibleItems = filtered.slice(0, visibleCount);
   const hasMore = visibleCount < filtered.length;
 
+  // Rolagem infinita no acervo administrativo
+  useEffect(() => {
+    if (!hasMore) return;
+    const el = adminLoaderRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') return;
+
+    let done = false;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (done) return;
+        if (entries[0]?.isIntersecting) {
+          done = true;
+          requestAnimationFrame(() => setVisibleCount((c) => c + PAGE_SIZE));
+        }
+      },
+      { root: null, rootMargin: '600px 0px', threshold: 0 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [hasMore, visibleCount]);
+
+
+
   // Sincroniza seleção quando a lista filtrada muda (remove ids fora)
   useEffect(() => {
     setSelected((prev) => {
