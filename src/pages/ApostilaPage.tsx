@@ -379,6 +379,7 @@ export default function ApostilaPage({ tab, setTab }: Props) {
                 <Eye className="h-3.5 w-3.5" /> {focusMode ? 'Foco ativo' : 'Modo foco'}
               </Button>
 
+              {isAdmin && (
                 <div className="flex items-center gap-1 sm:gap-2">
                   <Button
                     variant="outline"
