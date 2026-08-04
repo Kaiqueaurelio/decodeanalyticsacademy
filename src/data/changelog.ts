@@ -46,6 +46,7 @@ export const CHANGELOG: ChangelogEntry[] = [
       { kind: 'fix', text: 'Leitor Estruturado: Corrigido aviso de conteúdo ausente para refletir o status de estruturação do material.' },
     ],
   },
+  {
     version: "3.20.0",
     date: "2026-08-04",
     title: "Novas funcionalidades e melhorias acadêmicas",
