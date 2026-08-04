@@ -1,4 +1,6 @@
-import { FileText } from 'lucide-react';
+import { FileText, Lock } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import { getSubjectColor } from '@/lib/subject-colors';
 import { getApostilaCover } from '@/lib/apostila-covers';
 import { useCoverTheme } from '@/lib/cover-theme';
@@ -16,6 +18,7 @@ interface Props {
  * badges "Em progresso" e "5º Semestre".
  */
 export function ApostilaCoverCard({ apostila, status = 'em-progresso' }: Props) {
+  const navigate = useNavigate();
   const color = getSubjectColor(apostila.category || 'Geral');
   const theme = useCoverTheme();
   const uploaded = (apostila as any).cover_url as string | undefined;
@@ -37,11 +40,29 @@ export function ApostilaCoverCard({ apostila, status = 'em-progresso' }: Props) 
   const statusLabel =
     status === 'concluida' ? 'Concluída' : status === 'novo' ? 'Novo' : 'Em progresso';
 
+  const isPlaceholder = (apostila as any).isPlaceholder === true || !apostila.source_type;
+
+  const handleClick = (e: React.MouseEvent) => {
+    if (isPlaceholder) {
+      e.preventDefault();
+      toast.info("Sem material disponível por enquanto", {
+        description: "Esta apostila ainda está sendo preparada pela nossa equipe pedagógica.",
+        icon: <Lock className="h-4 w-4 text-primary" />,
+      });
+      return;
+    }
+    navigate(`/apostila/${apostila.id}`);
+  };
+
   return (
-    <a
-      href={`/apostila/${apostila.id}`}
+    <div
+      onClick={handleClick}
       data-testid="apostila-cover-card"
-      className="group flex flex-col rounded-xl overflow-hidden border border-border/60 bg-card hover:border-primary/50 hover:-translate-y-1 hover:scale-[1.02] transition-all duration-300 shadow-sm hover:shadow-[0_8px_30px_rgba(168,85,247,0.12)] active:scale-[0.98]"
+      className={`group flex flex-col rounded-xl overflow-hidden border border-border/60 bg-card transition-all duration-300 shadow-sm active:scale-[0.98] cursor-pointer ${
+        isPlaceholder 
+          ? 'opacity-80 grayscale-[0.3] hover:border-border' 
+          : 'hover:border-primary/50 hover:-translate-y-1 hover:scale-[1.02] hover:shadow-[0_8px_30px_rgba(168,85,247,0.12)]'
+      }`}
     >
       {/* Cover editorial (a própria capa já traz título/tipografia) */}
       <div
@@ -85,6 +106,6 @@ export function ApostilaCoverCard({ apostila, status = 'em-progresso' }: Props) 
         </div>
       </div>
 
-    </a>
+    </div>
   );
 }
