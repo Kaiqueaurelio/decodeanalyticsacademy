@@ -46,7 +46,7 @@ import { ShareLinkSettings } from '@/components/ShareLinkSettings';
 import { SplashDownloader } from '@/components/admin/SplashDownloader';
 import { CoverDesignEditor } from '@/components/admin/CoverDesignEditor';
 import { exportApostilaToPDF } from '@/lib/apostila-pdf';
-import { parseApostilaContent, parseExercisesFromRaw } from '@/lib/apostila-parser';
+import { parseApostilaContent } from '@/lib/apostila-parser';
 import { extractTextFromFile } from '@/lib/file-extract';
 import { markdownToHtml } from '@/lib/markdown-html';
 import { MarkdownEditor } from '@/components/MarkdownEditor';
