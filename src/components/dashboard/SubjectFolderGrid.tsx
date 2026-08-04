@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowUpRight, FolderOpen } from 'lucide-react';
 import { getSubjectColor } from '@/lib/subject-colors';
+import { cn } from '@/lib/utils';
 import type { ApostilaSummary } from '@/hooks/queries/useDashboardData';
 
 interface Props {
