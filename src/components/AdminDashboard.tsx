@@ -724,6 +724,7 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
               <SelectTrigger className="rounded-full"><SelectValue placeholder="Categoria" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todas as categorias</SelectItem>
+                <SelectItem value="__uncategorized">Sem categoria</SelectItem>
                 {categories.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
               </SelectContent>
             </Select>
