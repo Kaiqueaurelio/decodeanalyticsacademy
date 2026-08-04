@@ -27,7 +27,17 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.30.0",
+    date: "2026-08-04",
+    title: "Transparência e Privacidade",
+    changes: [
+      { kind: 'feature', text: 'Privacidade: Implementada nova página de Transparência detalhando o tratamento de dados dos alunos.' },
+      { kind: 'improvement', text: 'Interface: Rodapé atualizado com acesso rápido às políticas de dados e termos de uso.' },
+    ],
+  },
+  {
     version: "3.29.0",
+
     date: "2026-08-04",
     title: "UX: Atalhos de Edição para Administradores",
     changes: [
