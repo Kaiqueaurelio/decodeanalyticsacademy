@@ -317,19 +317,20 @@ export default function ApostilaReaderPage() {
   return (
     <div className="flex h-screen w-full bg-background text-foreground overflow-hidden">
       {/* Logo persistente — sempre visível durante a leitura */}
-      <div className="pointer-events-none fixed bottom-4 right-4 z-30 hidden items-center gap-2 rounded-2xl border border-primary/25 bg-background/80 px-3 py-2 backdrop-blur-md sm:flex">
+      <div className="pointer-events-none fixed bottom-5 right-5 z-30 hidden items-center gap-3 rounded-3xl border border-primary/30 bg-background/85 px-4 py-3 backdrop-blur-md sm:flex">
         <img
           src={logoOwl}
           alt="Decode Analytics Academy"
-          width={40}
-          height={40}
-          className="h-10 w-10 object-contain drop-shadow-[0_0_12px_hsl(var(--primary)/0.5)]"
+          width={72}
+          height={72}
+          className="h-14 w-14 object-contain drop-shadow-[0_0_18px_hsl(var(--primary)/0.6)] lg:h-[72px] lg:w-[72px]"
         />
-        <span className="font-display text-[11px] font-extrabold leading-tight tracking-tight text-foreground">
+        <span className="font-display text-sm font-extrabold leading-tight tracking-tight text-foreground lg:text-base">
           DECODE ANALYTICS
-          <span className="block text-[9px] font-semibold text-muted-foreground">ACADEMY</span>
+          <span className="block text-[11px] font-semibold text-muted-foreground lg:text-xs">ACADEMY</span>
         </span>
       </div>
+
 
       {/* Sidebar TOC — desktop */}
 
@@ -382,15 +383,16 @@ export default function ApostilaReaderPage() {
       <main className="flex-1 flex min-w-0 flex-col">
         {/* Top bar */}
         <div className="sticky top-0 z-20 flex items-center gap-2 border-b border-border/60 bg-background/95 backdrop-blur px-3 py-2.5 md:px-6">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-card ring-1 ring-primary/40 shadow-[0_0_18px_hsl(var(--primary)/0.25)]">
+          <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-card ring-1 ring-primary/40 shadow-[0_0_22px_hsl(var(--primary)/0.3)]">
             <img
               src={logoOwl}
               alt="Decode Analytics Academy"
-              width={36}
-              height={36}
-              className="h-9 w-9 object-contain"
+              width={48}
+              height={48}
+              className="h-12 w-12 object-contain"
             />
           </span>
+
           <button
             className="md:hidden inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-accent"
             onClick={() => setTocOpen(true)}
