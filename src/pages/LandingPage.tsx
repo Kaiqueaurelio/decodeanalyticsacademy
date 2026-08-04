@@ -120,7 +120,7 @@ const features = [
   { icon: Flame, name: 'Gamificação & XP', desc: 'Pontos, badges, streaks e ranking entre alunos', color: '#f59e0b' },
 ];
 
-const words = ['inteligência.', 'eficiência.', 'tecnologia.', 'foco total.'];
+const words = ['inteligência.', 'eficiência.', 'tecnologia.', 'foco total.', 'nota 1000.'];
 
 
 const roadmap = [
