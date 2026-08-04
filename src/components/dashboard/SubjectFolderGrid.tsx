@@ -25,28 +25,6 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
   const [visibleGroups, setVisibleGroups] = useState(3); // Aumentado para preencher a tela inicial melhor
   const loaderRef = useRef<HTMLDivElement>(null);
 
-  // Intersection Observer para Rolagem Infinita Real e Fluida
-  useEffect(() => {
-    const options = {
-      root: null,
-      rootMargin: '400px', // Carrega antes do usuário chegar no fim
-      threshold: 0.1
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-      const target = entries[0];
-      if (target.isIntersecting) {
-        setVisibleGroups(prev => prev + 2); // Carrega blocos de 2 matérias
-      }
-    }, options);
-
-    if (loaderRef.current) {
-      observer.observe(loaderRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, []);
-
   const groups = useMemo(() => {
     const normalize = (s: string) =>
       s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
