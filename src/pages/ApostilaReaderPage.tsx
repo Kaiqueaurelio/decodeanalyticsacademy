@@ -323,7 +323,7 @@ export default function ApostilaReaderPage() {
           alt="Decode Analytics Academy"
           width={96}
           height={96}
-          className="h-16 w-16 object-contain drop-shadow-[0_0_20px_hsl(var(--primary)/0.7)] md:h-20 md:w-20 lg:h-32 lg:w-32"
+          className="h-16 w-16 object-contain drop-shadow-[0_0_20px_hsl(var(--primary)/0.7)] md:h-24 md:w-24 lg:h-32 lg:w-32"
         />
         <div className="flex flex-col">
           <span className="font-display text-base font-black leading-none tracking-tighter text-foreground lg:text-xl">
@@ -393,7 +393,7 @@ export default function ApostilaReaderPage() {
               alt="Decode Analytics Academy"
               width={128}
               height={128}
-              className="h-12 w-12 object-contain md:h-20 md:w-20 lg:h-28 lg:w-28"
+              className="h-12 w-12 object-contain md:h-24 md:w-24 lg:h-28 lg:w-28"
             />
           </span>
 

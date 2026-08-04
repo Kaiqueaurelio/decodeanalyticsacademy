@@ -1,1 +1,0 @@
-Aumentei significativamente o tamanho do logo da **Decode Analytics Academy** na tela de leitura, garantindo presença de marca persistente e adaptável a telas grandes (até 128px), com efeitos de brilho reforçados e responsividade aprimorada na topbar.
