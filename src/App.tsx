@@ -66,6 +66,8 @@ const CalculadoraPage = lazy(() => import("./pages/CalculadoraPage"));
 const EllaPage = lazy(() => import("./pages/EllaPage"));
 const NewsPage = lazy(() => import("./pages/NewsPage"));
 const OAuthConsentPage = lazy(() => import("./pages/OAuthConsentPage"));
+const TransparencyPage = lazy(() => import("./pages/TransparencyPage"));
+
 
 const queryClient = new QueryClient({
   defaultOptions: {
