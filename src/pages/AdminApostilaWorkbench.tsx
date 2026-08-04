@@ -57,8 +57,14 @@ interface ApostilaLite {
 
 const AUTOSAVE_MS = 1500;
 
-export default function AdminApostilaWorkbench() {
-  const { id } = useParams<{ id: string }>();
+interface WorkbenchProps {
+  overrideId?: string;
+  onBack?: () => void;
+}
+
+export default function AdminApostilaWorkbench({ overrideId, onBack }: WorkbenchProps = {}) {
+  const { id: routeId } = useParams<{ id: string }>();
+  const id = overrideId || routeId;
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -126,7 +132,8 @@ export default function AdminApostilaWorkbench() {
 
     if (!ap) {
       toast.error('Apostila não encontrada');
-      navigate('/admin');
+      if (onBack) onBack();
+      else navigate('/admin');
       return;
     }
     setTitle(ap.title || '');
@@ -323,8 +330,8 @@ export default function AdminApostilaWorkbench() {
   const SidebarList = (
     <div className="flex flex-col h-full bg-card border-r border-border">
       <div className="p-3 border-b border-border space-y-2">
-        <Button size="sm" variant="ghost" className="h-7 px-2 -ml-2 gap-1.5 text-xs" onClick={() => navigate('/admin')}>
-          <ArrowLeft className="h-3.5 w-3.5" /> Voltar ao Admin
+        <Button size="sm" variant="ghost" className="h-7 px-2 -ml-2 gap-1.5 text-xs" onClick={() => onBack ? onBack() : navigate('/admin')}>
+          <ArrowLeft className="h-3.5 w-3.5" /> {onBack ? 'Fechar Editor' : 'Voltar ao Admin'}
         </Button>
         <div className="relative">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
