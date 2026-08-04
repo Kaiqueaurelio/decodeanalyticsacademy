@@ -1,9 +1,10 @@
-import { useMemo, useEffect, useState } from 'react';
-import { ChevronRight } from 'lucide-react';
+import { useMemo, useEffect, useState, useRef } from 'react';
+import { ChevronRight, PenTool, Plus, LayoutGrid, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { getSubjectColor } from '@/lib/subject-colors';
 import type { ApostilaSummary } from '@/hooks/queries/useDashboardData';
 import { ApostilaCoverCard } from './ApostilaCoverCard';
+import { useAuth } from '@/hooks/useAuth';
 
 interface Props {
   apostilas: ApostilaSummary[];
@@ -20,21 +21,30 @@ interface Props {
  */
 export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = '' }: Props) {
   const navigate = useNavigate();
-  const [visibleGroups, setVisibleGroups] = useState(2); // Inicia com 2 matérias para forçar rolagem infinita cedo
+  const { isAdmin } = useAuth();
+  const [visibleGroups, setVisibleGroups] = useState(3); // Aumentado para preencher a tela inicial melhor
+  const loaderRef = useRef<HTMLDivElement>(null);
 
+  // Intersection Observer para Rolagem Infinita Real e Fluida
   useEffect(() => {
-    const handleScroll = () => {
-      const scrollHeight = document.documentElement.scrollHeight;
-      const scrollTop = document.documentElement.scrollTop;
-      const clientHeight = document.documentElement.clientHeight;
-
-      if (scrollTop + clientHeight >= scrollHeight - 300) {
-        setVisibleGroups(prev => prev + 1); // Carrega uma matéria por vez para suavidade
-      }
+    const options = {
+      root: null,
+      rootMargin: '400px', // Carrega antes do usuário chegar no fim
+      threshold: 0.1
     };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    const observer = new IntersectionObserver((entries) => {
+      const target = entries[0];
+      if (target.isIntersecting) {
+        setVisibleGroups(prev => prev + 2); // Carrega blocos de 2 matérias
+      }
+    }, options);
+
+    if (loaderRef.current) {
+      observer.observe(loaderRef.current);
+    }
+
+    return () => observer.disconnect();
   }, []);
 
   const groups = useMemo(() => {
@@ -93,6 +103,15 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
                 </div>
               </div>
               <div className="flex items-center gap-2">
+                {isAdmin && (
+                  <button 
+                    onClick={() => navigate('/admin', { state: { tab: 'apostilas', filter: category } })}
+                    className="flex items-center gap-1.5 text-[10px] font-bold text-accent hover:text-accent/80 transition-all bg-accent/5 px-3 py-1.5 rounded-full border border-accent/10 mr-2"
+                  >
+                    <PenTool className="h-3 w-3" />
+                    Gerenciar Matéria
+                  </button>
+                )}
                 <button 
                   onClick={() => navigate(`/materia/${encodeURIComponent(category)}`)}
                   className="group flex items-center gap-1.5 text-xs font-bold text-primary hover:text-primary/80 transition-all bg-primary/5 px-3 py-1.5 rounded-full border border-primary/10"
@@ -126,6 +145,31 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
           </div>
         );
       })}
+
+      {/* Sentinel e Indicador de Carregamento para Rolagem Infinita */}
+      <div 
+        ref={loaderRef} 
+        className="py-16 flex flex-col items-center justify-center gap-4 transition-all"
+      >
+        {visibleGroups < groups.length ? (
+          <>
+            <div className="flex items-center gap-2 text-primary animate-pulse">
+              <Loader2 className="h-5 w-5 animate-spin" />
+              <span className="text-xs font-black uppercase tracking-widest">Carregando mais disciplinas...</span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 w-full opacity-20 pointer-events-none">
+              {[1, 2, 3, 4, 5, 6].map(i => (
+                <div key={i} className="h-48 rounded-xl bg-muted animate-pulse" />
+              ))}
+            </div>
+          </>
+        ) : (
+          <div className="flex flex-col items-center gap-2 opacity-40">
+            <LayoutGrid className="h-6 w-6 text-muted-foreground" />
+            <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted-foreground">Fim da grade curricular</span>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
