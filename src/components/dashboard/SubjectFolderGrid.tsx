@@ -23,6 +23,7 @@ interface Props {
 export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = '' }: Props) {
   const navigate = useNavigate();
   const { isAdmin } = useAuth();
+  const { progressMap } = useApostilaProgressMap();
   const [visibleGroups, setVisibleGroups] = useState(3); // Aumentado para preencher a tela inicial melhor
   const loaderRef = useRef<HTMLDivElement>(null);
 
