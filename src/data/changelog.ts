@@ -27,6 +27,14 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.45.7",
+    date: "2026-08-05",
+    title: "Gestão de Conteúdo e UX",
+    changes: [
+      { kind: 'improvement', text: 'Sincronizada a lógica de mapeamento para a listagem protegida de apostilas com filtros e busca.' },
+    ],
+  },
+  {
     version: "3.45.6",
     date: "2026-08-05",
     title: "Recuperação de Senha e Segurança",
