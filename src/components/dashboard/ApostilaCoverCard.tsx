@@ -43,7 +43,14 @@ export function ApostilaCoverCard({ apostila, status = 'em-progresso', progress 
 
 
   const statusLabel =
-    status === 'concluida' ? 'Concluída' : status === 'novo' ? 'Novo' : 'Em progresso';
+    status === 'concluida' ? 'Concluída' : status === 'novo' ? 'Não iniciada' : 'Em andamento';
+
+  const percent =
+    typeof progress === 'number'
+      ? Math.max(0, Math.min(100, Math.round(progress)))
+      : typeof (apostila as any).progress === 'number'
+        ? Math.max(0, Math.min(100, Math.round((apostila as any).progress)))
+        : null;
 
   const isPlaceholder = (apostila as any).isPlaceholder === true || !apostila.source_type;
   
