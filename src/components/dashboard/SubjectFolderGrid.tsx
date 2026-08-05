@@ -149,18 +149,28 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
             
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
               {items.map((apostila) => {
-                const isCompleted = stats.byApostila[apostila.id]?.hits > 0;
-                const progress = isCompleted ? 100 : (stats.byApostila[apostila.id] ? 50 : 0);
-                
+                const reading = progressMap[apostila.id];
+                const touchedExercises = !!stats.byApostila[apostila.id];
+                const progress = reading?.percent ?? (touchedExercises ? 50 : 0);
+                const status: 'concluida' | 'em-progresso' | 'novo' =
+                  reading?.status === 'concluida'
+                    ? 'concluida'
+                    : progress > 0
+                      ? 'em-progresso'
+                      : 'novo';
+
                 return (
                   <div key={apostila.id} className="relative group/card h-full">
-                    <ApostilaCoverCard 
-                      apostila={apostila} 
-                      status={isCompleted ? 'concluida' : (stats.byApostila[apostila.id] ? 'em-progresso' : 'novo')} 
+                    <ApostilaCoverCard
+                      apostila={apostila}
+                      status={status}
+                      progress={progress}
                     />
-                    {progress > 0 && (
-                      <div className="absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-full bg-background/80 backdrop-blur-sm border border-primary/20 shadow-lg z-10 scale-0 group-hover/card:scale-100 transition-transform">
-                        <span className="text-[8px] font-black text-primary">{progress}%</span>
+                    {reading && reading.total > 0 && (
+                      <div className="absolute top-2 right-2 flex items-center rounded-full bg-background/85 backdrop-blur-sm border border-primary/20 px-2 py-0.5 shadow-lg z-10 scale-0 group-hover/card:scale-100 transition-transform">
+                        <span className="text-[8px] font-black text-primary">
+                          {reading.completed}/{reading.total} lições
+                        </span>
                       </div>
                     )}
                   </div>
