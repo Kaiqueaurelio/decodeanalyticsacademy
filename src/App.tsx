@@ -98,6 +98,7 @@ function useAdminCopyPatch() {
       ["Adicionar logs detalhados com stack trace, navegador/OS e versionamento do build para facilitar a depuração dos erros.\nAdicionar logs detalhados com stack trace, navegador/OS e versionamento do build para facilitar a depuração dos erros.Adicionar logs detalhados com stack trace, navegador/OS e versionamento do build para facilitar a depuração dos erros.", "Adicionar logs detalhados com stack trace, navegador/OS e versionamento do build para facilitar a depuração dos erros.\nAdicionar logs detalhados com stack trace, navegador/OS e versionamento do build para facilitar a depuração dos erros.Adicionar logs detalhados com stack trace, navegador/OS e versionamento do build para facilitar a depuração dos erros."],
       ["faça meçhorias na landingpage para que ela fique nota 1000 oque acha que podemos fazeer??", "faça meçhorias na landingpage para que ela fique nota 1000 oque acha que podemos fazeer??"],
       ["deixe a landingpage mais rapida pois ela não esta renderizando as coisas rapiso por gentileza", "deixe a landingpage mais rapida pois ela não esta renderizando as coisas rapiso por gentileza"],
+      ["Implementar uma página de 404/rota não encontrada protegida por login, com link para voltar para o dashboard após o usuário autenticar.", "Implementar uma página de 404/rota não encontrada protegida por login, com link para voltar para o dashboard após o usuário autenticar."],
     ]);
 
 

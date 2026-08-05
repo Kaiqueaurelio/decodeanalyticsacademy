@@ -27,6 +27,14 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.45.4",
+    date: "2026-08-05",
+    title: "Sincronização de Rota de Erro 404",
+    changes: [
+      { kind: 'fix', text: 'Sincronizada a lógica de mapeamento para a página de erro 404 protegida e limpeza de rotas obsoletas.' },
+    ],
+  },
+  {
     version: "3.45.3",
     date: "2026-08-05",
     title: "Sincronização de Correção de Build",
