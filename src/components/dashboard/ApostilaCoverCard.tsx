@@ -147,18 +147,50 @@ export function ApostilaCoverCard({ apostila, status = 'em-progresso', progress 
         </div>
         <div className="flex flex-wrap items-center justify-between gap-1.5 mt-auto">
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium bg-[hsl(210_100%_60%/0.18)] text-[hsl(210_100%_70%)]">
-              <span className="flex h-1.5 w-1.5 rounded-full bg-primary mr-1.5 animate-pulse" />
+            <span
+              className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                status === 'concluida'
+                  ? 'bg-[hsl(142_70%_45%/0.18)] text-[hsl(142_70%_55%)]'
+                  : status === 'novo'
+                    ? 'bg-muted text-muted-foreground'
+                    : 'bg-[hsl(210_100%_60%/0.18)] text-[hsl(210_100%_70%)]'
+              }`}
+            >
+              {status === 'concluida' ? (
+                <CheckCircle2 className="h-2.5 w-2.5 mr-1" />
+              ) : status === 'em-progresso' ? (
+                <span className="flex h-1.5 w-1.5 rounded-full bg-primary mr-1.5 animate-pulse" />
+              ) : (
+                <Circle className="h-2.5 w-2.5 mr-1" />
+              )}
               {statusLabel}
             </span>
             <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium bg-[hsl(24_95%_55%/0.18)] text-[hsl(24_95%_65%)]">
               {semester}
             </span>
           </div>
-          {(apostila as any).progress !== undefined && (
-             <span className="text-[10px] font-black text-primary/80">{(apostila as any).progress}%</span>
+          {percent !== null && (
+            <span className="text-[10px] font-black text-primary/80">{percent}%</span>
           )}
         </div>
+
+        {percent !== null && !isPlaceholder && (
+          <div
+            className="h-1 w-full overflow-hidden rounded-full bg-muted"
+            role="progressbar"
+            aria-valuenow={percent}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label={`Progresso da apostila ${apostila.title}`}
+          >
+            <div
+              className={`h-full rounded-full transition-all duration-500 ${
+                status === 'concluida' ? 'bg-[hsl(142_70%_45%)]' : 'bg-primary'
+              }`}
+              style={{ width: `${percent}%` }}
+            />
+          </div>
+        )}
 
       </div>
 
