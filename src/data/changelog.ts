@@ -27,6 +27,15 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.45.3",
+    date: "2026-08-05",
+    title: "Sincronização de Correção de Build",
+    changes: [
+      { kind: 'fix', text: 'Atualizado o sistema de mapeamento dinâmico para garantir a integridade da mensagem de correção de build.' },
+      { kind: 'improvement', text: 'Limpeza de definições de rotas fantasmas para otimizar o bundle do aplicativo.' },
+    ],
+  },
+  {
     version: "3.45.2",
     date: "2026-08-05",
     title: "Logo responsiva no leitor",

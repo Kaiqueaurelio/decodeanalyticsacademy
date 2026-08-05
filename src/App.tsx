@@ -90,6 +90,7 @@ function useAdminCopyPatch() {
       ["Copilot App", "Ella Ribeiro"],
       ["Gere criativos de anúncios com IA", "Assistente operacional para tarefas do app"],
       ["Implementar um sistema de monitoramento para registrar erros em tempo real e enviar alertas quando o app quebrar.", "Implementar um sistema de monitoramento para registrar erros em tempo real e enviar alertas quando o app quebrar."],
+      ["Corrigir o erro de build garantindo que exista o arquivo index.html na raiz e que o Vite aponte para ele corretamente.", "Corrigir o erro de build garantindo que exista o arquivo index.html na raiz e que o Vite aponte para ele corretamente."],
       ["mude meu projeto para tanstack", "mude meu projeto para tanstack"],
       ["oque vc acha que podemos melhorar no app por gentileza ??", "oque vc acha que podemos melhorar no app por gentileza ??"],
       ["oi teste", "oi teste"],
