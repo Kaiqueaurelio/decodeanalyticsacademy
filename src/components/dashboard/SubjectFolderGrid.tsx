@@ -5,6 +5,7 @@ import { getSubjectColor } from '@/lib/subject-colors';
 import type { ApostilaSummary } from '@/hooks/queries/useDashboardData';
 import { ApostilaCoverCard } from './ApostilaCoverCard';
 import { useAuth } from '@/hooks/useAuth';
+import { useApostilaProgressMap } from '@/hooks/useApostilaProgressMap';
 
 interface Props {
   apostilas: ApostilaSummary[];
