@@ -27,6 +27,14 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.45.6",
+    date: "2026-08-05",
+    title: "Recuperação de Senha e Segurança",
+    changes: [
+      { kind: 'security', text: 'Sincronizada a lógica de mapeamento para o fluxo de recuperação de senha e redefinição segura.' },
+    ],
+  },
+  {
     version: "3.45.5",
     date: "2026-08-05",
     title: "Segurança de Rotas e UX de Erros",
