@@ -1,11 +1,11 @@
 /* As fontes são carregadas via <link> no index.html (descoberta antecipada
    pelo preload scanner). Manter o @import aqui atrasava o primeiro texto. */
 
+@import './styles/de-ai-overrides.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@import './styles/de-ai-overrides.css';
 
 /* Global selection / copy block — protects content. Inputs remain editable. */
 html, body, #root {
