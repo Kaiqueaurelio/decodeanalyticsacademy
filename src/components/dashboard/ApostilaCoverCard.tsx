@@ -21,7 +21,7 @@ interface Props {
  * faixa colorida da matéria, ícone + título embaixo,
  * badges "Em progresso" e "5º Semestre".
  */
-export function ApostilaCoverCard({ apostila, status = 'em-progresso' }: Props) {
+export function ApostilaCoverCard({ apostila, status = 'em-progresso', progress }: Props) {
   const navigate = useNavigate();
   const { isAdmin } = useAuth();
   const color = getSubjectColor(apostila.category || 'Geral');
