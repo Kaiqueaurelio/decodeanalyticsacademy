@@ -27,6 +27,15 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.45.1",
+    date: "2026-08-05",
+    title: "Estabilidade do build",
+    changes: [
+      { kind: 'fix', text: 'A raiz do projeto e a entrada index.html agora são resolvidas por caminho absoluto no Vite, inclusive em ambientes de CI.' },
+      { kind: 'fix', text: 'Ordem das diretivas CSS corrigida para eliminar avisos de importação durante a compilação.' },
+    ],
+  },
+  {
     version: "3.45.0",
     date: "2026-08-04",
     title: "Branding de Alta Visibilidade",
