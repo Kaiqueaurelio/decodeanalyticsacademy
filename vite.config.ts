@@ -6,9 +6,6 @@ import { VitePWA } from "vite-plugin-pwa";
 import { mcpPlugin } from "@lovable.dev/mcp-js/stacks/supabase/vite";
 
 export default defineConfig(({ mode }) => ({
-  // Keep Vite anchored to the repository root even when a CI runner invokes
-  // the build from a different working directory.
-  root: __dirname,
   server: {
     host: true,
     port: 8080,
@@ -101,11 +98,6 @@ export default defineConfig(({ mode }) => ({
     __APP_ENVIRONMENT__: JSON.stringify(
       process.env.VERCEL_ENV || (mode === "production" ? "production" : "development"),
     ),
-  },
-  build: {
-    rollupOptions: {
-      input: path.resolve(__dirname, "index.html"),
-    },
   },
   resolve: {
     alias: {
