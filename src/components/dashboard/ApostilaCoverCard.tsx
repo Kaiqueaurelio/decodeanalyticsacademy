@@ -11,7 +11,10 @@ import type { ApostilaSummary } from '@/hooks/queries/useDashboardData';
 interface Props {
   apostila: ApostilaSummary;
   status?: 'em-progresso' | 'concluida' | 'novo';
+  /** Percentual real de lições concluídas (0-100). */
+  progress?: number;
 }
+
 
 /**
  * Card estilo Notion: capa com imagem temática + título em itálico,
