@@ -27,6 +27,15 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.46.0",
+    date: "2026-08-05",
+    title: "Progresso das apostilas no dashboard",
+    changes: [
+      { kind: 'feature', text: 'Cada apostila agora mostra "Em andamento", "Concluída" ou "Não iniciada" com barra de progresso e contagem de lições concluídas.' },
+      { kind: 'fix', text: 'Corrigida a resolução do index.html no build removendo a configuração manual de root/entrada do Vite.' },
+    ],
+  },
+  {
     version: "3.45.7",
     date: "2026-08-05",
     title: "Gestão de Conteúdo e UX",
