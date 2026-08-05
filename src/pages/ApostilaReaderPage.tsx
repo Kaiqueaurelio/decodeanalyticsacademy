@@ -317,19 +317,19 @@ export default function ApostilaReaderPage() {
   return (
     <div className="flex h-screen w-full bg-background text-foreground overflow-hidden">
       {/* Logo persistente — sempre visível durante a leitura */}
-      <div className="pointer-events-none fixed bottom-6 right-6 z-30 hidden items-center gap-4 rounded-[2rem] border border-primary/40 bg-background/90 px-5 py-4 shadow-[0_0_30px_-5px_hsl(var(--primary)/0.4)] backdrop-blur-xl sm:flex">
+      <div className="pointer-events-none fixed bottom-4 right-4 z-30 hidden max-w-[min(22rem,calc(100vw-2rem))] items-center gap-3 rounded-2xl border border-primary/40 bg-background/90 px-4 py-3 shadow-[0_0_30px_-5px_hsl(var(--primary)/0.4)] backdrop-blur-xl lg:flex xl:bottom-6 xl:right-6 xl:gap-4 xl:px-5 xl:py-4">
         <img
           src={logoOwl}
           alt="Decode Analytics Academy"
           width={96}
           height={96}
-          className="h-16 w-16 object-contain drop-shadow-[0_0_20px_hsl(var(--primary)/0.7)] md:h-24 md:w-24 lg:h-32 lg:w-32"
+          className="h-16 w-16 shrink-0 object-contain drop-shadow-[0_0_20px_hsl(var(--primary)/0.7)] xl:h-20 xl:w-20 2xl:h-24 2xl:w-24"
         />
         <div className="flex flex-col">
-          <span className="font-display text-base font-black leading-none tracking-tighter text-foreground lg:text-xl">
+          <span className="font-display text-base font-black leading-none tracking-normal text-foreground xl:text-lg">
             DECODE ANALYTICS
           </span>
-          <span className="mt-1 font-display text-[12px] font-bold tracking-[0.2em] text-primary lg:text-sm">
+          <span className="mt-1 font-display text-xs font-bold tracking-normal text-primary xl:text-sm">
             ACADEMY
           </span>
         </div>
@@ -386,14 +386,14 @@ export default function ApostilaReaderPage() {
       {/* Main */}
       <main className="flex-1 flex min-w-0 flex-col">
         {/* Top bar */}
-        <div className="sticky top-0 z-20 flex items-center gap-2 border-b border-border/60 bg-background/95 backdrop-blur px-3 py-2.5 md:px-6">
-          <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-card ring-1 ring-primary/50 shadow-[0_0_25px_hsl(var(--primary)/0.4)] md:h-24 md:w-24 lg:h-32 lg:w-32">
+        <div className="sticky top-0 z-20 flex min-h-16 items-center gap-1.5 border-b border-border/60 bg-background/95 px-2 py-2 backdrop-blur sm:gap-2 sm:px-3 md:min-h-[4.5rem] md:px-5">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-card ring-1 ring-primary/50 shadow-[0_0_20px_hsl(var(--primary)/0.35)] sm:h-14 sm:w-14 md:h-16 md:w-16">
             <img
               src={logoOwl}
               alt="Decode Analytics Academy"
               width={128}
               height={128}
-              className="h-12 w-12 object-contain md:h-24 md:w-24 lg:h-28 lg:w-28"
+              className="h-9 w-9 object-contain sm:h-12 sm:w-12 md:h-14 md:w-14"
             />
           </span>
 

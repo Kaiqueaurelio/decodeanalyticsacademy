@@ -27,6 +27,15 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.45.2",
+    date: "2026-08-05",
+    title: "Logo responsiva no leitor",
+    changes: [
+      { kind: 'fix', text: 'Logo da barra de leitura ajustada para celular, tablet e desktop sem comprimir os controles ou quebrar o layout.' },
+      { kind: 'improvement', text: 'Selo flutuante da marca agora aparece somente em telas amplas e respeita a largura disponível.' },
+    ],
+  },
+  {
     version: "3.45.1",
     date: "2026-08-05",
     title: "Estabilidade do build",
