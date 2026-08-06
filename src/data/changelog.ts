@@ -27,6 +27,15 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.48.4",
+    date: "2026-08-06",
+    title: "Estabilização Crítica de Edge Functions",
+    changes: [
+      { kind: 'fix', text: 'Correção definitiva do erro "non-2xx status code" na estruturação de lições através da implementação de retry e tratamento de concorrência na limpeza de módulos.' },
+      { kind: 'improvement', text: 'Otimização do fluxo de deleção em cascata para conteúdos de grande volume.' },
+    ],
+  },
+  {
     version: "3.48.3",
     date: "2026-08-06",
     title: "Otimização de Estruturação de Lições",
