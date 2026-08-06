@@ -114,6 +114,7 @@ function useAdminCopyPatch() {
       ["Melhor a parte d eapostila  que esta o botão estruturar com Ella arrume deixe funcional sem erros", "Melhor a parte d eapostila  que esta o botão estruturar com Ella arrume deixe funcional sem erros"],
       ["Inclua gráficos e métricas no dashboard do aluno e admin para acompanhar desempenho por matéria, acertos/erros e evolução ao longo do tempo.", "Inclua gráficos e métricas no dashboard do aluno e admin para acompanhar desempenho por matéria, acertos/erros e evolução ao longo do tempo."],
       ["Implemente a edição de uma apostila que já está pronta, carregando o conteúdo existente e permitindo salvar alterações com segurança.", "Implemente a edição de uma apostila que já está pronta, carregando o conteúdo existente e permitindo salvar alterações com segurança."],
+      ["Adicionar suporte para anexar arquivos (PDFs, planilhas e documentos) dentro da apostila, com upload e organização por seção.", "Adicionar suporte para anexar arquivos (PDFs, planilhas e documentos) dentro da apostila, com upload e organização por seção."],
     ]);
 
 
