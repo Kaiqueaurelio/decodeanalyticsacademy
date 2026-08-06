@@ -78,12 +78,13 @@ export function buildCoverSvg(subject: CoverSubject, theme: CoverTheme = DEFAULT
       <stop offset="100%" stop-color="${palette.backgroundAlt}"/>
     </linearGradient>
     <radialGradient id="glow" cx="0.8" cy="0.15" r="0.7">
-      <stop offset="0%" stop-color="${accent}" stop-opacity="0.20"/>
+      <stop offset="0%" stop-color="${accent}" stop-opacity="0.35"/>
       <stop offset="100%" stop-color="${accent}" stop-opacity="0"/>
     </radialGradient>
   </defs>
   <rect width="${COVER_W}" height="${COVER_H}" fill="url(#bg)"/>
   <rect width="${COVER_W}" height="${COVER_H}" fill="url(#glow)"/>
+  <rect width="${COVER_W}" height="${COVER_H}" fill="none" stroke="${accent}" stroke-width="2" stroke-opacity="0.2"/>
   <g stroke="${palette.text}" stroke-opacity="${grid.opacity}" stroke-width="1">${gridLines.join('')}</g>
   ${grid.accentBar > 0 ? `<rect x="0" y="0" width="${COVER_W}" height="${grid.accentBar}" fill="${accent}"/>` : ''}
   ${grid.rules ? `<line x1="${m}" y1="${m + 46}" x2="${COVER_W - m}" y2="${m + 46}" stroke="${palette.muted}" stroke-opacity="0.35"/>` : ''}

@@ -13,7 +13,7 @@ export function NewUpdatePopup() {
 
   useEffect(() => {
     const lastSeen = localStorage.getItem('decode:last-seen-version');
-    if (lastSeen !== latestVersion.version) {
+    if (lastSeen !== latestVersion.version && latestVersion.major) {
       // Delay para não brigar com outros popups (onboarding)
       const t = setTimeout(() => setOpen(true), 2500);
       return () => clearTimeout(t);

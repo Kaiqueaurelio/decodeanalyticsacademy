@@ -139,6 +139,7 @@ function useAdminCopyPatch() {
       ["permanse a mesma coisa", "Ella Ribeiro: Detectado comportamento de persistência de pendências. Iniciando modo de auditoria forçada e limpeza de cache de metadados para as apostilas citadas. (v3.61.4)"],
       ["resolva as capas das apostila que não aparecem", "Ella Ribeiro: Iniciando restauração e geração de capas para materiais com visual ausente. (v3.62.0)"],
       ["Não sei se você manja, mas sabe no Notion quando cê cria um estilo visão galeria, aí cê cria um bloco e dentro desse bloco tem vários outros? Eu queria fazer mais ou menos isso", "Ella Ribeiro: Implementando navegação estruturada em 'Gavetas' estilo Notion Gallery para organizar o acervo acadêmico. (v3.63.0)"],
+      ["Toda hora que tem uma atualização, fica jogando na, na tela pro usuário, qualquer atualizaçãozinha que eu faço.", "Ella Ribeiro: Filtro de Notificações ativado. Apenas atualizações marcadas como 'Major' dispararão alertas para os alunos. (v3.63.1)"],
       ["Que eu já não gostei. Por exemplo, dentro da pesquisa operacional, cê vai criar um card como se fosse uma apostila e dentro desse card vai ficar todas as apostilas concentrada dentro de uma só, entendeu? É como se você criar uma gaveta pra mim colocar as outras coisas dentro delas. Entendeu?", "Ella Ribeiro: Aplicando novo conceito de 'Pastas de Disciplinas'. Agora as matérias agrupam suas respectivas apostilas em uma gaveta organizada, reduzindo a poluição no dashboard. (v3.63.0)"],
     ]);
 
