@@ -27,6 +27,15 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.48.1",
+    date: "2026-08-06",
+    title: "Métricas e Desempenho",
+    changes: [
+      { kind: 'feature', text: 'Implementação de gráficos e métricas detalhadas no dashboard (aluno/admin) para acompanhamento de desempenho por matéria e evolução temporal.' },
+      { kind: 'improvement', text: 'Sincronização de metadados de auditoria visual no sistema de mapeamento dinâmico.' },
+    ],
+  },
+  {
     version: "3.48.0",
     date: "2026-08-06",
     title: "Otimização TanStack & Estabilidade",

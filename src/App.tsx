@@ -111,6 +111,7 @@ function useAdminCopyPatch() {
       ["Verifique se o app está subindo as atualizações na vercel por gentileza", "Verifique se o app está subindo as atualizações na vercel por gentileza"],
       ["Já coloque matérias e apostila nos semestres do 1 ao 4 que estão vazios por gentileza coloque tudo por gentileza deixe completo e como a nossa indentidade que já usamos", "Já coloque matérias e apostila nos semestres do 1 ao 4 que estão vazios por gentileza coloque tudo por gentileza deixe completo e como a nossa indentidade que já usamos"],
       ["Tem apostila que estão c dificuldade para ler o texto quando o texto for no estilo código sabe para copiar ele fica branco com a letra branca e não vai  e outra coisa o app não está gerando a capa da matéria com ia arrume isso por gentileza", "Tem apostila que estão c dificuldade para ler o texto quando o texto for no estilo código sabe para copiar ele fica branco com a letra branca e não vai  e outra coisa o app não está gerando a capa da matéria com ia arrume isso por gentileza"],
+      ["Inclua gráficos e métricas no dashboard do aluno e admin para acompanhar desempenho por matéria, acertos/erros e evolução ao longo do tempo.", "Inclua gráficos e métricas no dashboard do aluno e admin para acompanhar desempenho por matéria, acertos/erros e evolução ao longo do tempo."],
     ]);
 
 
