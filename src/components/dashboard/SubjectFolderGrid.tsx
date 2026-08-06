@@ -147,38 +147,93 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
               </div>
             </div>
             
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* Card estilo Notion Gallery View (Gaveta) */}
               <button
                 onClick={() => openSubject(category)}
-                className="group relative flex flex-col rounded-3xl border border-border/60 bg-card overflow-hidden transition-all duration-500 hover:border-primary/50 hover:shadow-[0_20px_50px_rgba(168,85,247,0.15)] hover:-translate-y-1.5 active:scale-[0.98] aspect-[3/4]"
+                className="group relative flex flex-col rounded-3xl border border-border/40 bg-card/40 backdrop-blur-sm overflow-hidden transition-all duration-700 hover:border-primary/50 hover:shadow-[0_30px_60px_-15px_rgba(168,85,247,0.25)] hover:-translate-y-2 active:scale-[0.98] aspect-video"
               >
-                <div className="relative h-full w-full overflow-hidden bg-muted">
+                {/* Background Decorativo Estilizado */}
+                <div className="absolute inset-0 overflow-hidden">
                   <div 
-                    className="absolute inset-0 opacity-20 mix-blend-overlay group-hover:opacity-40 transition-opacity duration-700"
+                    className="absolute -right-8 -top-8 h-40 w-40 rounded-full blur-[60px] opacity-20 transition-opacity duration-700 group-hover:opacity-40"
                     style={{ backgroundColor: color }}
                   />
-                  <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center">
-                    <div 
-                      className="p-4 rounded-2xl bg-background/80 backdrop-blur-xl border border-white/10 shadow-2xl group-hover:scale-110 transition-transform duration-500 mb-4"
-                    >
-                      <LayoutGrid className="h-8 w-8 text-primary" />
+                  <div 
+                    className="absolute -left-8 -bottom-8 h-40 w-40 rounded-full blur-[60px] opacity-10 transition-opacity duration-700 group-hover:opacity-30"
+                    style={{ backgroundColor: color }}
+                  />
+                  <div className="absolute inset-0 bg-grid-white/[0.02] bg-[length:20px_20px]" />
+                </div>
+
+                <div className="relative z-10 h-full w-full flex flex-col p-6">
+                  <div className="flex items-start justify-between">
+                    <div className="p-3 rounded-2xl bg-background/80 backdrop-blur-xl border border-white/10 shadow-xl group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
+                      <LayoutGrid className="h-6 w-6 text-primary" strokeWidth={2.5} />
                     </div>
-                    <h4 className="font-display font-black text-sm leading-tight group-hover:text-primary transition-colors uppercase tracking-tight">
-                      Abrir {category}
-                    </h4>
-                    <span className="text-[10px] font-bold text-muted-foreground mt-2">
-                      {items.length} {items.length === 1 ? 'Material' : 'Materiais'}
-                    </span>
+                    <div className="flex -space-x-2 overflow-hidden">
+                      {items.slice(0, 3).map((item, idx) => (
+                        <div 
+                          key={item.id}
+                          className="h-8 w-8 rounded-lg border-2 border-background bg-muted overflow-hidden shadow-lg transform transition-transform group-hover:-translate-y-1"
+                          style={{ transitionDelay: `${idx * 50}ms` }}
+                        >
+                          <div className="h-full w-full opacity-60" style={{ backgroundColor: color }} />
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                  
-                  <div className="absolute bottom-0 inset-x-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 bg-gradient-to-t from-background via-background/90 to-transparent">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-black text-primary uppercase tracking-widest">Acessar Gaveta</span>
-                      <ChevronRight className="h-4 w-4 text-primary" />
+
+                  <div className="mt-auto">
+                    <h4 className="font-display font-black text-lg sm:text-xl leading-tight group-hover:text-primary transition-colors tracking-tight">
+                      {category}
+                    </h4>
+                    <div className="flex items-center gap-3 mt-2">
+                      <span className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest bg-muted/50 px-2 py-0.5 rounded-md border border-border/40">
+                        {items.length} {items.length === 1 ? 'Caderno' : 'Cadernos'}
+                      </span>
+                      <div className="h-1 w-1 rounded-full bg-primary/40" />
+                      <span className="text-[10px] font-black text-primary uppercase tracking-widest group-hover:translate-x-1 transition-transform inline-flex items-center gap-1">
+                        Abrir gaveta <ChevronRight className="h-3 w-3" />
+                      </span>
                     </div>
                   </div>
                 </div>
+
+                {/* Overlay Glow na borda inferior */}
+                <div 
+                  className="absolute bottom-0 inset-x-0 h-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                  style={{ background: `linear-gradient(90deg, transparent, ${color}, transparent)` }}
+                />
               </button>
+
+              {/* Mini previews das apostilas (estilo sub-blocos Notion) */}
+              <div className="hidden lg:grid grid-cols-2 gap-3">
+                {items.slice(0, 2).map((a) => (
+                  <button
+                    key={a.id}
+                    onClick={() => navigate(`/apostila/${a.id}`)}
+                    className="group/mini relative flex flex-col rounded-2xl border border-border/40 bg-card/20 p-3 transition-all hover:bg-card/40 hover:border-primary/30"
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: color }} />
+                      <span className="text-[9px] font-bold text-muted-foreground uppercase truncate">{a.title}</span>
+                    </div>
+                    <div className="mt-auto flex items-center justify-between">
+                      <span className="text-[8px] font-black text-primary/60">ESTUDAR</span>
+                      <ChevronRight className="h-2 w-2 text-primary/40 group-hover/mini:translate-x-0.5 transition-transform" />
+                    </div>
+                  </button>
+                ))}
+                {items.length > 2 && (
+                  <button 
+                    onClick={() => openSubject(category)}
+                    className="col-span-2 text-center py-2 rounded-xl border border-dashed border-border/40 text-[9px] font-black text-muted-foreground hover:text-primary hover:border-primary/40 transition-colors"
+                  >
+                    + {items.length - 2} OUTROS MATERIAIS
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         );
