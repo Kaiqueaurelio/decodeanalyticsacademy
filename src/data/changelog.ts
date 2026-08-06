@@ -27,6 +27,15 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.61.3",
+    date: "2026-08-06",
+    title: "Ella Fix: Ferramentas de Análise e Gestão de Projetos",
+    changes: [
+      { kind: 'improvement', text: 'Estruturação automática de seções e geração de exercícios para a apostila de Ferramentas de Análise de Dados e Gestão de Projetos Operacionais.' },
+      { kind: 'fix', text: 'Resolvida pendência de "Zero Seções" através da ativação do parser Ella em conteúdos legados.' },
+    ],
+  },
+  {
     version: "3.61.2",
     date: "2026-08-06",
     title: "Ella Fix: Pesquisa Operacional",
