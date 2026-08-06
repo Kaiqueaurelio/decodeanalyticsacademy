@@ -27,6 +27,15 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.59.1",
+    date: "2026-08-06",
+    title: "Correção de Visibilidade: Pesquisa Operacional",
+    changes: [
+      { kind: 'fix', text: 'Corrigido o mapeamento de semestre da disciplina "Pesquisa Operacional" para garantir que apareça no dashboard do aluno (6º Semestre).' },
+      { kind: 'improvement', text: 'Sincronização forçada de metadados para materiais recém-criados.' },
+    ],
+  },
+  {
     version: "3.59.0",
     date: "2026-08-06",
     title: "Sincronização Acadêmica: 6º Semestre e Exercícios",
