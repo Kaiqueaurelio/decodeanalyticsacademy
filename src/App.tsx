@@ -1,7 +1,7 @@
 /**
- * DECODE ANALYTICS ACADEMY - v3.59.2
+ * DECODE ANALYTICS ACADEMY - v3.59.3
  * 
- * - Correção de Mapeamento Acadêmico: Ella CC e SI.
+ * - Otimização de Conteúdo: Remoção de duplicatas na disciplina de Pesquisa Operacional.
  * - Sincronização Acadêmica do 6º Semestre (Vigente).
  * - Geração Massiva de Exercícios de Fixação.
  * - Validação de Integridade de Conteúdos.
