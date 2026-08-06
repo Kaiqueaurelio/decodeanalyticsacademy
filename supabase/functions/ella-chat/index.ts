@@ -84,14 +84,14 @@ const tools = [
     type: "function",
     function: {
       name: "update_apostila",
-      description: "Atualiza campos de uma apostila existente.",
+      description: "Atualiza ou acrescenta conteúdo a uma apostila existente. Use para adicionar texto, imagens, áudios ou vídeos ao corpo da apostila.",
       parameters: {
         type: "object",
         properties: {
           id: { type: "string" },
           title: { type: "string" },
           category: { type: "string" },
-          content: { type: "string" },
+          content: { type: "string", description: "O novo conteúdo completo em Markdown. Se o usuário pedir para 'acrescentar', você deve primeiro ler a apostila com get_apostila e concatenar o novo conteúdo ao final ou na seção solicitada." },
           published: { type: "boolean" },
           semester: { type: "number" },
         },

@@ -1,6 +1,6 @@
 /**
  * DECODE ANALYTICS ACADEMY
- * v3.49.3 - Histórico de Versões em Apostilas
+ * v3.50.0 - Ella: Automação de Conteúdo e Mídia
  */
 import React, { Suspense, lazy } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -116,6 +116,7 @@ function useAdminCopyPatch() {
       ["Implemente a edição de uma apostila que já está pronta, carregando o conteúdo existente e permitindo salvar alterações com segurança.", "Implemente a edição de uma apostila que já está pronta, carregando o conteúdo existente e permitindo salvar alterações com segurança."],
       ["Adicionar suporte para anexar arquivos (PDFs, planilhas e documentos) dentro da apostila, com upload e organização por seção.", "Adicionar suporte para anexar arquivos (PDFs, planilhas e documentos) dentro da apostila, com upload e organização por seção."],
       ["Adicionar um histórico de versões na edição da apostila para eu poder comparar mudanças e reverter quando necessário.", "Adicionar um histórico de versões na edição da apostila para eu poder comparar mudanças e reverter quando necessário."],
+      ["Eu quero uma função que eu faça o seguinte: eu jogo na, no chat da ela e falo: \"Olha, tem uma apostila tal, eu quero que você acrescente esse conteúdo\". Ela vai lá e faz. Eu falo: \"Ó, naquela apostila tal, coloca essa imagem, esse áudio e esse vídeo\". E ela possa fazer isso pra mim pra poder me ajudar", "Eu quero uma função que eu faça o seguinte: eu jogo na, no chat da ela e falo: \"Olha, tem uma apostila tal, eu quero que você acrescente esse conteúdo\". Ela vai lá e faz. Eu falo: \"Ó, naquela apostila tal, coloca essa imagem, esse áudio e esse vídeo\". E ela possa fazer isso pra mim pra poder me ajudar"],
     ]);
 
 
