@@ -1,6 +1,6 @@
 /**
  * DECODE ANALYTICS ACADEMY
- * v3.54.0 - Auditoria de Gestão e Estabilidade
+ * v3.55.0 - Sincronização de Dashboard e Progresso
  */
 import React, { Suspense, lazy } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -123,6 +123,7 @@ function useAdminCopyPatch() {
       ["Melhore a Ella ainda mais e verifique todos os erros dela e do app e os arrume  e mitigue todos os erros", "Melhore a Ella ainda mais e verifique todos os erros dela e do app e os arrume  e mitigue todos os erros"],
       ["Veja o app teste tudo e corrija erros e bugs", "Veja o app teste tudo e corrija erros e bugs"],
       ["Adicione uma área do admin para colar links, clonar conteúdo e gerenciar as apostilas geradas, incluindo seções, glossário e questionários.", "Adicione uma área do admin para colar links, clonar conteúdo e gerenciar as apostilas geradas, incluindo seções, glossário e questionários."],
+      ["Crie um dashboard para os alunos acompanharem progresso e desempenho por apostila, com histórico de acertos e ranking.", "Crie um dashboard para os alunos acompanharem progresso e desempenho por apostila, com histórico de acertos e ranking."],
     ]);
 
 
