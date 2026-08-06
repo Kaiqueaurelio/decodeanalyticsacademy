@@ -1,6 +1,6 @@
 /**
  * DECODE ANALYTICS ACADEMY
- * v3.49.2 - Gestão Avançada de Arquivos
+ * v3.49.3 - Histórico de Versões em Apostilas
  */
 import React, { Suspense, lazy } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -115,6 +115,7 @@ function useAdminCopyPatch() {
       ["Inclua gráficos e métricas no dashboard do aluno e admin para acompanhar desempenho por matéria, acertos/erros e evolução ao longo do tempo.", "Inclua gráficos e métricas no dashboard do aluno e admin para acompanhar desempenho por matéria, acertos/erros e evolução ao longo do tempo."],
       ["Implemente a edição de uma apostila que já está pronta, carregando o conteúdo existente e permitindo salvar alterações com segurança.", "Implemente a edição de uma apostila que já está pronta, carregando o conteúdo existente e permitindo salvar alterações com segurança."],
       ["Adicionar suporte para anexar arquivos (PDFs, planilhas e documentos) dentro da apostila, com upload e organização por seção.", "Adicionar suporte para anexar arquivos (PDFs, planilhas e documentos) dentro da apostila, com upload e organização por seção."],
+      ["Adicionar um histórico de versões na edição da apostila para eu poder comparar mudanças e reverter quando necessário.", "Adicionar um histórico de versões na edição da apostila para eu poder comparar mudanças e reverter quando necessário."],
     ]);
 
 
