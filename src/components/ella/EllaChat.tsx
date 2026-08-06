@@ -87,8 +87,6 @@ export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps)
     });
   }, [messages]);
 
-  useEffect(() => { taRef.current?.focus(); }, []);
-
   const send = useCallback(async (override?: string) => {
     const text = (override ?? input).trim();
     if (!text || loading) return;
@@ -172,6 +170,18 @@ export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps)
     setTimeout(() => taRef.current?.focus(), 50);
   }, [input, loading, messages, contextHint, navigate, onAfterAction]);
 
+  useEffect(() => { taRef.current?.focus(); }, []);
+
+  // Listener para prompt externo (ex.: botão de resolver pendências)
+  useEffect(() => {
+    const handleExternalPrompt = (e: any) => {
+      if (e.detail) {
+        send(e.detail);
+      }
+    };
+    window.addEventListener('ella:prompt', handleExternalPrompt);
+    return () => window.removeEventListener('ella:prompt', handleExternalPrompt);
+  }, [send]);
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }

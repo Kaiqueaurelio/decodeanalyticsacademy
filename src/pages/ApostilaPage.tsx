@@ -31,7 +31,7 @@ import { exportApostilaToDOCX } from '@/lib/apostila-docx';
 import {
   ArrowLeft, BookOpen, PenLine, Eye, List, X, MoreHorizontal,
   ChevronUp, StickyNote, Layers, Wand2, MessageSquare, Share2, CheckCircle2, Copy, Volume2,
-  FileDown, Loader2, Brain, ArrowRight, Settings, PenTool
+  FileDown, Loader2, Brain, ArrowRight, Settings, PenTool, AlertTriangle, Sparkles
 } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 
@@ -693,12 +693,28 @@ export default function ApostilaPage({ tab, setTab }: Props) {
                       <p className="text-sm text-muted-foreground leading-relaxed">
                         Aguarde o início do semestre ou o início das aulas. Nossa equipe está preparando o melhor conteúdo acadêmico para esta disciplina.
                       </p>
-                      <div className="flex flex-col sm:flex-row gap-2 pt-2 justify-center">
+                      <div className="flex flex-col sm:flex-row gap-2 pt-4 justify-center">
+                        {isAdmin && (
+                          <Button 
+                            variant="default" 
+                            size="lg" 
+                            className="gap-2 gradient-primary shadow-lg shadow-primary/20 hover-lift min-w-[200px]"
+                            onClick={() => {
+                              toast.info("Ella Ribeiro está iniciando a correção deste material...");
+                              setChatOpen(true);
+                              // O prompt abaixo aciona a Ella Ribeiro para "resolver as pendências"
+                              setTimeout(() => {
+                                window.dispatchEvent(new CustomEvent('ella:prompt', { 
+                                  detail: `Preciso que você resolva as pendências desta apostila "${apostila.title}". Ela está vazia ou incompleta. Estruture o conteúdo, adicione glossário e exercícios de fixação agora.` 
+                                }));
+                              }, 500);
+                            }}
+                          >
+                            <Sparkles className="h-4 w-4" /> Resolver Pendências
+                          </Button>
+                        )}
                         <Button variant="outline" size="sm" className="gap-2" onClick={() => navigate(-1)}>
                           <ArrowLeft className="h-4 w-4" /> Voltar
-                        </Button>
-                        <Button variant="default" size="sm" className="gap-2" onClick={() => navigate('/dashboard')}>
-                          Ver catálogo <ArrowRight className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>

@@ -27,6 +27,15 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.61.0",
+    date: "2026-08-06",
+    title: "Ella Fix: Resolução de Pendências com um Clique",
+    changes: [
+      { kind: 'feature', text: 'Novo botão "Resolver Pendências" adicionado a apostilas incompletas ou com erros, permitindo que a Ella Ribeiro corrija o conteúdo automaticamente.' },
+      { kind: 'improvement', text: 'Integrado fluxo de remediação automática para rascunhos sem categoria ou sem conteúdo estruturado.' },
+    ],
+  },
+  {
     version: "3.60.0",
     date: "2026-08-06",
     title: "Inclusividade: Linguagem Simples em Pesquisa Operacional",
