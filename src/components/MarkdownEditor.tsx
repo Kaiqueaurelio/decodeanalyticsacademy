@@ -50,7 +50,7 @@ import { useEditorOutline } from '@/components/editor/useEditorOutline';
 import { useActiveHeading } from '@/components/editor/useActiveHeading';
 import { useSyncedScroll } from '@/components/editor/useSyncedScroll';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { Eye, Pencil, ListTree, Wand2, Columns2 } from 'lucide-react';
+import { Eye, Pencil, ListTree, Wand2, Columns2, Video, ImageIcon } from 'lucide-react';
 
 interface Props {
   value: string;
@@ -371,7 +371,43 @@ export function MarkdownEditor({
       </div>
 
       {(viewMode === 'edit' || viewMode === 'split') && !focusMode && (
-        <EditorRibbon editor={editor} onInsertImage={insertImage} onSave={onSave} saveStatus={status} />
+        <div className="flex flex-col border-b border-border">
+          <EditorRibbon editor={editor} onInsertImage={insertImage} onSave={onSave} saveStatus={status} />
+          <div className="flex items-center gap-4 px-4 py-1.5 bg-primary/5 border-t border-primary/10">
+            <span className="text-[10px] font-bold text-primary uppercase tracking-widest flex items-center gap-1">
+              <Wand2 className="h-3 w-3" /> Atalhos Rápidos:
+            </span>
+            <button
+              onClick={() => {
+                const url = window.prompt('URL do vídeo (YouTube/Vimeo/MP4):');
+                if (url) {
+                  editor.chain().focus().insertContent(`\n<div class="aspect-video w-full my-4"><iframe src="${url}" class="w-full h-full rounded-lg" allowfullscreen></iframe></div>\n`).run();
+                }
+              }}
+              className="text-[11px] flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors"
+            >
+              <Video className="h-3.5 w-3.5" /> Inserir Vídeo
+            </button>
+            <button
+              onClick={() => {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                input.onchange = (e: any) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    const event = new CustomEvent('editor-upload-image', { detail: file });
+                    window.dispatchEvent(event);
+                  }
+                };
+                input.click();
+              }}
+              className="text-[11px] flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors"
+            >
+              <ImageIcon className="h-3.5 w-3.5" /> Inserir Imagem
+            </button>
+          </div>
+        </div>
       )}
 
       <div className="flex flex-1 min-h-0">

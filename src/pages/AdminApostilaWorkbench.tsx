@@ -375,9 +375,9 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     <div className="flex flex-col h-full bg-card border-l border-border">
       <Tabs value={rightTab} onValueChange={(v) => setRightTab(v as any)} className="flex flex-col h-full">
         <TabsList className="grid grid-cols-3 m-2">
-          <TabsTrigger value="materials" className="text-xs gap-1"><FileText className="h-3 w-3" /> Materiais</TabsTrigger>
+          <TabsTrigger value="materials" className="text-xs gap-1"><FileText className="h-3 w-3" /> Materiais & Mídia</TabsTrigger>
           <TabsTrigger value="preview" className="text-xs gap-1"><Eye className="h-3 w-3" /> Preview</TabsTrigger>
-          <TabsTrigger value="exercises" className="text-xs gap-1"><ListChecks className="h-3 w-3" /> Exerc.</TabsTrigger>
+          <TabsTrigger value="exercises" className="text-xs gap-1"><ListChecks className="h-3 w-3" /> Questões</TabsTrigger>
         </TabsList>
 
         <TabsContent value="materials" className="flex-1 overflow-hidden p-3 pt-0 m-0">

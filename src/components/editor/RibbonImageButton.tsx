@@ -49,6 +49,15 @@ async function compressIfNeeded(file: File): Promise<File> {
 }
 
 export function RibbonImageButton({ onImageInserted, label = 'Imagem' }: Props) {
+  useEffect(() => {
+    const handler = (e: any) => {
+      if (e.detail instanceof File) {
+        handleUploadMany([e.detail]);
+      }
+    };
+    window.addEventListener('editor-upload-image', handler);
+    return () => window.removeEventListener('editor-upload-image', handler);
+  }, []);
   const [uploading, setUploading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
