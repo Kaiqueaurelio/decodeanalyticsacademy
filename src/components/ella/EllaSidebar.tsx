@@ -28,8 +28,8 @@ export function EllaSidebar() {
         <Button
           aria-label="Abrir Ella"
           className={cn(
-            "fixed z-40 right-4 bottom-28 md:bottom-6 h-14 w-14 rounded-full shadow-xl p-0 overflow-hidden",
-            "ring-2 ring-primary/60 hover:scale-105 transition-transform",
+            "fixed z-40 right-4 bottom-28 md:bottom-6 h-14 w-14 rounded-full shadow-[0_8px_30px_rgba(168,85,247,0.3)] p-0 overflow-hidden bg-background",
+            "ring-2 ring-primary/60 hover:scale-110 transition-all duration-300",
             "border-2 border-background"
           )}
           size="icon"
