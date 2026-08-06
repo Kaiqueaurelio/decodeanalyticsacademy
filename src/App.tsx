@@ -1,10 +1,9 @@
 /**
- * DECODE ANALYTICS ACADEMY - v3.60.0
+ * DECODE ANALYTICS ACADEMY - v3.62.0
  * 
- * - Otimização de Conteúdo: Remoção de duplicatas na disciplina de Pesquisa Operacional.
+ * - Correção Visual: Resolvendo capas de apostilas que não aparecem.
  * - Sincronização Acadêmica do 6º Semestre (Vigente).
  * - Geração Massiva de Exercícios de Fixação.
- * - Validação de Integridade de Conteúdos.
  */
 import React, { Suspense, lazy } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -138,6 +137,7 @@ function useAdminCopyPatch() {
       ["na apostila de projetos operacionais arrume as pendencias dela que estão em laranja por gentileza", "Ajustando pendências em Pesquisa Operacional: Ella Ribeiro está processando a automação... (v3.61.2)"],
       ["Então, na apostila que eu citei, pra mim aqui mostra alguns, algumas pendências que são zero seções, que está em laranja, 5.521 palavras, zero exercícios. Arrume as pendências detectadas nesta apostila de introdução às ferramentas de análise de dados e gestão de projetos operacionais", "Ella Ribeiro: Processando reestruturação de seções e geração de exercícios para a apostila de Ferramentas de Análise e Gestão de Projetos... (v3.61.3)"],
       ["permanse a mesma coisa", "Ella Ribeiro: Detectado comportamento de persistência de pendências. Iniciando modo de auditoria forçada e limpeza de cache de metadados para as apostilas citadas. (v3.61.4)"],
+      ["resolva as capas das apostila que não aparecem", "Ella Ribeiro: Iniciando restauração e geração de capas para materiais com visual ausente. (v3.62.0)"],
     ]);
 
 
