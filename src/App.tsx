@@ -1,5 +1,5 @@
 /**
- * DECODE ANALYTICS ACADEMY - v3.59.3
+ * DECODE ANALYTICS ACADEMY - v3.60.0
  * 
  * - Otimização de Conteúdo: Remoção de duplicatas na disciplina de Pesquisa Operacional.
  * - Sincronização Acadêmica do 6º Semestre (Vigente).
