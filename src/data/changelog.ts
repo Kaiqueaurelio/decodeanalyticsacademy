@@ -14,6 +14,7 @@ export type ChangelogEntry = {
   version: string;
   date: string; // ISO (YYYY-MM-DD)
   title: string;
+  major?: boolean; // Se true, dispara o popup de novidade para o aluno
   changes: { kind: ChangeKind; text: string }[];
 };
 
