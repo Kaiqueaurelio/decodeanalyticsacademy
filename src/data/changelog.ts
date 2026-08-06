@@ -27,6 +27,15 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.48.3",
+    date: "2026-08-06",
+    title: "Otimização de Estruturação de Lições",
+    changes: [
+      { kind: 'fix', text: 'Resolvido erro de timeout (2xx status code) na estruturação de apostilas grandes através da otimização da limpeza de módulos.' },
+      { kind: 'improvement', text: 'Aprimorada a resiliência do parser de markdown para conteúdos extensos.' },
+    ],
+  },
+  {
     version: "3.48.2",
     date: "2026-08-06",
     title: "Estabilidade da Estrutura de Lições",
