@@ -27,6 +27,15 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.47.0",
+    date: "2026-08-06",
+    title: "Atualização da Grade do 6º Semestre",
+    changes: [
+      { kind: 'feature', text: 'Atualização das disciplinas canônicas do 6º semestre (Sistemas Operacionais, Cálculo Numérico, Pesquisa Operacional, Ciência de Dados, etc.) para garantir visibilidade no dashboard.' },
+      { kind: 'improvement', text: 'Adicionados professores padrão para as novas disciplinas do 6º semestre.' },
+    ],
+  },
+  {
     version: "3.46.0",
     date: "2026-08-05",
     title: "Progresso das apostilas no dashboard",
