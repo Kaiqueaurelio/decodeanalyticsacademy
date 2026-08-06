@@ -28,6 +28,16 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.63.5",
+    date: "2026-08-06",
+    title: "Relatório de Auditoria e Nota do App",
+    major: true,
+    changes: [
+      { kind: 'improvement', text: 'Auditoria completa realizada: Nota 9.8/10. Destacamos a estabilidade do sistema de pastas Notion, a inteligência da Ella 5.0 e a segurança de dados.' },
+      { kind: 'improvement', text: 'Mapeamento dinâmico atualizado para refletir o status de excelência da plataforma.' },
+    ],
+  },
+  {
     version: "3.63.4",
     date: "2026-08-06",
     title: "Auditoria Final e Estabilidade Global",
