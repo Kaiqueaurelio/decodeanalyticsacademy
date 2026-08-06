@@ -27,7 +27,7 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
-    version: "3.56.0",
+    version: "3.57.0",
     date: "2026-08-06",
     title: "Auditoria de Estabilidade e Refinamento de UI",
     changes: [

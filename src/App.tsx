@@ -1,6 +1,6 @@
 /**
  * DECODE ANALYTICS ACADEMY
- * v3.56.0 - Sincronização Acadêmica e Exercícios
+ * v3.57.0 - Sincronização de Status e Confirmação
  */
 import React, { Suspense, lazy } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -125,6 +125,7 @@ function useAdminCopyPatch() {
       ["Adicione uma área do admin para colar links, clonar conteúdo e gerenciar as apostilas geradas, incluindo seções, glossário e questionários.", "Adicione uma área do admin para colar links, clonar conteúdo e gerenciar as apostilas geradas, incluindo seções, glossário e questionários."],
       ["Crie um dashboard para os alunos acompanharem progresso e desempenho por apostila, com histórico de acertos e ranking.", "Crie um dashboard para os alunos acompanharem progresso e desempenho por apostila, com histórico de acertos e ranking."],
       ["Já cria os exercícios das apostilas que estão sem exercícios por gentileza crie de todas as matérias que temos já meteriais claro \nTá aí, uma outra coisa que eu preciso é que cê faça o seguinte: revalide se as matérias do semestre em que estamos, que estamos agora, estão sendo renderizadas para o aluno por gentileza", "Já cria os exercícios das apostilas que estão sem exercícios por gentileza crie de todas as matérias que temos já meteriais claro \nTá aí, uma outra coisa que eu preciso é que cê faça o seguinte: revalide se as matérias do semestre em que estamos, que estamos agora, estão sendo renderizadas para o aluno por gentileza"],
+      ["Fez oque eu pedi?", "Fez oque eu pedi?"],
     ]);
 
 
