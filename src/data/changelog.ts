@@ -27,6 +27,16 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.59.0",
+    date: "2026-08-06",
+    title: "Sincronização Acadêmica: 6º Semestre e Exercícios",
+    changes: [
+      { kind: 'content', text: 'Geração massiva de exercícios de fixação para todas as apostilas (exceto ENEM) baseada no conteúdo didático.' },
+      { kind: 'improvement', text: 'Garantida a visibilidade e renderização completa das disciplinas do 6º semestre (vigente) para os alunos.' },
+      { kind: 'improvement', text: 'Validação de integridade de conteúdos e mapeamento acadêmico para o semestre atual.' },
+    ],
+  },
+  {
     version: "3.58.0",
     date: "2026-08-06",
     title: "Auditoria de Estabilidade e Refinamento de UI",
