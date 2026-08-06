@@ -134,6 +134,7 @@ function useAdminCopyPatch() {
       ["Ela de cc e SI coloque", "Ela de cc e SI coloque"],
       ["Percebi que tem duas apostilas de pesquisa, na matéria de pesquisa. Veja qual delas está mais completa e deixe apenas a mais completa. A que tiver mais conteúdo. A que não tiver, remova, por gentileza.", "Percebi que tem duas apostilas de pesquisa, na matéria de pesquisa. Veja qual delas está mais completa e deixe apenas a mais completa. A que tiver mais conteúdo. A que não tiver, remova, por gentileza."],
       ["Bora lá. Precisa que cê faça o seguinte: na apostila de pesquisa, quero que você simplifique mais a linguagem de uma forma que até uma criança de 10 anos, autista, vai conseguir entender. Por gentileza", "Simplificando a apostila de Pesquisa Operacional para linguagem inclusiva e neurodiversa (v3.60.0)."],
+      ["Dentro da apostila, quando eu clicar e ele mostrar que tem pendência, que crie um botão escrito \"resolver pendências\" e ele, ao clicar nesse botão, ele resolva as pendências que têm pra ser resolvidas, por gentileza", "Implementando 'Ella Fix': Resolução automática de pendências acadêmicas via Assistente (v3.61.0)."],
     ]);
 
 
