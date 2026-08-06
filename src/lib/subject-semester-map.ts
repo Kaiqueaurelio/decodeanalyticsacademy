@@ -16,19 +16,23 @@ export const BY_SEMESTER: Record<number, string[]> = {
   1: [
     'Logica de Programacao', 'Matematica Discreta', 'Introducao a Computacao',
     'Comunicacao e Expressao', 'Fundamentos de Sistemas de Informacao',
+    'Sociedade e Tecnologia', 'Estudos Disciplinares I',
   ],
   2: [
     'Orientada a Objeto (POO)', 'Calculo Diferencial e Integral I',
     'Algebra Linear', 'Arquitetura e Organizacao de Computadores',
+    'Fisica para Computacao', 'Metodologia Cientifica', 'Estudos Disciplinares II',
   ],
   3: [
     'Estrutura de Dados', 'Banco de Dados', 'Probabilidade e Estatistica',
     'Engenharia de Software', 'Atividades Praticas Supervisionadas III (APS)',
+    'Organizacao de Computadores', 'Estudos Disciplinares III',
   ],
   4: [
     'Programacao Web', 'Analise e Projeto de Sistemas',
     'Compiladores', 'Computabilidade', 'Banco de Dados II',
     'Atividades Praticas Supervisionadas IV (APS)',
+    'Redes de Computadores I', 'Estudos Disciplinares IV',
   ],
   5: [
     'Inteligencia Artificial', 'Arquitetura de Redes', 'Redes de Computadores',
