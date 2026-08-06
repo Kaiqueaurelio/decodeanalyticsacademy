@@ -77,7 +77,7 @@ export default function DashboardPage() {
         'Logica de Programacao': 'Prof. Dr. Ricardo Silva',
         'Matematica Discreta': 'Profa. Ana Paula',
         'Introducao a Computacao': 'Prof. Anderson Lima',
-        'Sistemas Distribuidos': 'Prof. Dr. Ricardo Silva',
+        'Sistemas Operacionais e Mobile': 'Prof. Dr. Ricardo Silva',
         'Engenharia de Software II': 'Profa. Ana Paula',
         'Programacao para Dispositivos Moveis': 'Prof. Anderson Lima',
         'Mineracao de Dados': 'Profa. Mariana Costa',
