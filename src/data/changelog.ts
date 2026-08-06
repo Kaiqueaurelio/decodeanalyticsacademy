@@ -27,6 +27,16 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.51.0",
+    date: "2026-08-06",
+    title: "Ella 5.0: Inteligência e Integração Total",
+    changes: [
+      { kind: 'improvement', text: 'Ella 5.0 lançada com foco em melhoria contínua e feedback operacional direto.' },
+      { kind: 'improvement', text: 'Otimização das diretrizes de resposta para integração profunda com materiais e mídias.' },
+    ],
+  },
+
+  {
     version: "3.50.0",
     date: "2026-08-06",
     title: "Ella: Automação de Conteúdo e Mídia",
