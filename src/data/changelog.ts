@@ -28,6 +28,16 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.63.2",
+    date: "2026-08-06",
+    title: "Ella: Identidade Visual e Conhecimento Total",
+    major: false,
+    changes: [
+      { kind: 'fix', text: 'Restaurado o ícone oficial da Ella Ribeiro no chat e na barra lateral.' },
+      { kind: 'improvement', text: 'Atualizada a base de conhecimento da Ella para abranger todas as novas funcionalidades do app (Notion Gallery, Filtro de Notificações).' },
+    ],
+  },
+  {
     version: "3.63.1",
     date: "2026-08-06",
     title: "Ella: Filtro de Notificações e Restauração de Capas",

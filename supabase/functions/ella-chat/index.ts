@@ -1,6 +1,6 @@
 // Edge function: Ella — assistente admin com poder de criar/editar/excluir
 // no app via tool calling no Lovable AI Gateway.
-// redeploy trigger
+// v3.63.2 knowledge update: Notion Gallery, Notification Filter, Cover redundancy.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 // Camada de segurança isolada e coberta por testes automatizados (security_test.ts).
 import {
