@@ -201,10 +201,10 @@ export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps)
     <div className={cn("flex flex-col h-full bg-background", compact ? "" : "")}>
       <div className="flex items-center justify-between px-4 py-3 border-b border-border/50">
         <div className="flex items-center gap-3">
-          <Avatar className="h-10 w-10 ring-1 ring-border">
-            <AvatarImage src={getEllaAvatarUrl()} alt="Ella Ribeiro" />
-            <AvatarFallback className="bg-muted text-foreground">
-              <MessageCircle className="h-4 w-4" />
+          <Avatar className="h-10 w-10 ring-2 ring-primary/20 bg-background overflow-hidden">
+            <AvatarImage src={getEllaAvatarUrl()} alt="Ella Ribeiro" className="object-cover" />
+            <AvatarFallback className="bg-gradient-to-br from-primary/10 to-accent/10 text-primary">
+              <MessageCircle className="h-5 w-5" />
             </AvatarFallback>
           </Avatar>
           <div>
