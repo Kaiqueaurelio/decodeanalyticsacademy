@@ -244,10 +244,10 @@ export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps)
           {messages.map((m, i) => (
             <div key={i} className={cn("flex gap-3", m.role === "user" ? "justify-end" : "")}>
               {m.role === "assistant" && (
-                <Avatar className="h-8 w-8 shrink-0 ring-1 ring-border/60">
-                  <AvatarImage src={getEllaAvatarUrl()} alt="Ella" />
-                  <AvatarFallback className="bg-muted text-foreground">
-                    <MessageCircle className="h-3.5 w-3.5" />
+                <Avatar className="h-8 w-8 shrink-0 ring-1 ring-primary/20 bg-background overflow-hidden">
+                  <AvatarImage src={getEllaAvatarUrl()} alt="Ella" className="object-cover" />
+                  <AvatarFallback className="bg-gradient-to-br from-primary/5 to-accent/5 text-primary">
+                    <MessageCircle className="h-4 w-4" />
                   </AvatarFallback>
                 </Avatar>
               )}
@@ -296,10 +296,10 @@ export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps)
 
           {loading && !messages[messages.length - 1]?.content && (
             <div className="flex gap-3">
-              <Avatar className="h-8 w-8 shrink-0 ring-1 ring-border/60">
-                <AvatarImage src={getEllaAvatarUrl()} alt="Ella" />
-                <AvatarFallback className="bg-muted text-foreground">
-                  <MessageCircle className="h-3.5 w-3.5" />
+              <Avatar className="h-8 w-8 shrink-0 ring-1 ring-primary/20 bg-background overflow-hidden">
+                <AvatarImage src={getEllaAvatarUrl()} alt="Ella" className="object-cover" />
+                <AvatarFallback className="bg-gradient-to-br from-primary/5 to-accent/5 text-primary">
+                  <MessageCircle className="h-4 w-4" />
                 </AvatarFallback>
               </Avatar>
               <div className="bg-muted/50 rounded-2xl px-4 py-2.5 flex items-center gap-2">
