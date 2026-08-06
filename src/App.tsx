@@ -1,3 +1,7 @@
+/**
+ * DECODE ANALYTICS ACADEMY
+ * v3.48.0 - TanStack Query Integration & Performance Opt
+ */
 import React, { Suspense, lazy } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";

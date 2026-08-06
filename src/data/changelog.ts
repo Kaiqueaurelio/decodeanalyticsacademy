@@ -27,6 +27,15 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.48.0",
+    date: "2026-08-06",
+    title: "Otimização TanStack & Estabilidade",
+    changes: [
+      { kind: 'improvement', text: 'Unificação da infraestrutura de dados para TanStack Query (v4+), otimizando o cache e a velocidade de resposta do dashboard.' },
+      { kind: 'improvement', text: 'Melhoria na estabilidade das requisições e redução de latência no carregamento de apostilas.' },
+    ],
+  },
+  {
     version: "3.47.0",
     date: "2026-08-06",
     title: "Atualização da Grade do 6º Semestre",
