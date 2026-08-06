@@ -1,4 +1,5 @@
 import { FileText, Lock, PenTool, Edit3, Settings, CheckCircle2, Circle } from 'lucide-react';
+import { useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { getSubjectColor } from '@/lib/subject-colors';
@@ -27,18 +28,23 @@ export function ApostilaCoverCard({ apostila, status = 'em-progresso', progress 
   const color = getSubjectColor(apostila.category || 'Geral');
   const theme = useCoverTheme();
   const uploaded = (apostila as any).cover_url as string | undefined;
-  const cover =
-    theme.preferUploaded && uploaded
-      ? uploaded
-      : buildCoverDataUri(
-          {
-            title: apostila.title,
-            category: apostila.category,
-            semester: (apostila as any).semester ?? null,
-            teacher: (apostila as any).teacher ?? null,
-          },
-          theme,
-        ) || getApostilaCover(apostila.category, apostila.id);
+  
+  // Prioriza URL subida (IA ou manual), depois tenta gerar SVG dinâmico, por fim fallback de imagem estática.
+  const cover = useMemo(() => {
+    if (uploaded) return uploaded;
+    
+    const dynamicSvg = buildCoverDataUri(
+      {
+        title: apostila.title,
+        category: apostila.category,
+        semester: (apostila as any).semester ?? null,
+        teacher: (apostila as any).teacher ?? null,
+      },
+      theme,
+    );
+    
+    return dynamicSvg || getApostilaCover(apostila.category, apostila.id);
+  }, [uploaded, apostila.title, apostila.category, apostila.id, (apostila as any).semester, (apostila as any).teacher, theme]);
   const semester = apostila.semester ? `${apostila.semester}º Semestre` : 'Extracurricular';
 
 

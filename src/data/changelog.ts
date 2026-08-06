@@ -27,6 +27,15 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.62.0",
+    date: "2026-08-06",
+    title: "Ella Fix: Restauração de Capas Visuais",
+    changes: [
+      { kind: 'fix', text: 'Resolvido problema de capas de apostilas que não apareciam através da re-sincronização do sistema de geração dinâmica.' },
+      { kind: 'improvement', text: 'Otimizada a prioridade de carregamento de capas geradas via IA sobre os fallbacks estáticos.' },
+    ],
+  },
+  {
     version: "3.61.4",
     date: "2026-08-06",
     title: "Ella: Auditoria Forçada e Limpeza de Metadados",
