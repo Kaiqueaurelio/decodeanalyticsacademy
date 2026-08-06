@@ -28,6 +28,16 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.63.3",
+    date: "2026-08-06",
+    title: "Segurança: Acesso Administrativo às Pendências",
+    major: false,
+    changes: [
+      { kind: 'security', text: 'Botão "Resolver Pendências" e a Central de Melhorias Ella agora são exibidos exclusivamente para administradores; alunos nunca têm acesso a esses controles.' },
+      { kind: 'improvement', text: 'Mensagem de "Material ainda não disponível" mantida para alunos de forma isolada, sem referências a ferramentas administrativas.' },
+    ],
+  },
+  {
     version: "3.63.2",
     date: "2026-08-06",
     title: "Ella: Identidade Visual e Conhecimento Total",
