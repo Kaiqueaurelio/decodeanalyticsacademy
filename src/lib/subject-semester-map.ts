@@ -38,9 +38,11 @@ export const BY_SEMESTER: Record<number, string[]> = {
     'Atividades Praticas Supervisionadas V (APS)',
   ],
   6: [
-    'Sistemas Distribuidos', 'Engenharia de Software II',
-    'Programacao para Dispositivos Moveis', 'Mineracao de Dados',
-    'Analise de Algoritmos', 'Metodos Numericos',
+    'Sistemas Operacionais e Mobile', 'Calculo Numerico Computacional',
+    'Pesquisa Operacional', 'Aspectos Teoricos da Computacao',
+    'Gestao de Projetos', 'Processamento de Imagem e Visao Computacional',
+    'Ciencia de Dados', 'Metodos de Pesquisa',
+    'Interdisciplinar de Ciencia da Computacao',
     'Atividades Praticas Supervisionadas VI (APS)',
   ],
   7: [
