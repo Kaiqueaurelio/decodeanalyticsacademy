@@ -1,6 +1,6 @@
 /**
  * DECODE ANALYTICS ACADEMY
- * v3.52.0 - Ella: Excelência Operacional e Mitigação de Erros
+ * v3.54.0 - Auditoria de Gestão e Estabilidade
  */
 import React, { Suspense, lazy } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -122,6 +122,7 @@ function useAdminCopyPatch() {
       ["Oque podemos melhorar para deixar a Ella 5.0?", "Oque podemos melhorar para deixar a Ella 5.0?"],
       ["Melhore a Ella ainda mais e verifique todos os erros dela e do app e os arrume  e mitigue todos os erros", "Melhore a Ella ainda mais e verifique todos os erros dela e do app e os arrume  e mitigue todos os erros"],
       ["Veja o app teste tudo e corrija erros e bugs", "Veja o app teste tudo e corrija erros e bugs"],
+      ["Adicione uma área do admin para colar links, clonar conteúdo e gerenciar as apostilas geradas, incluindo seções, glossário e questionários.", "Adicione uma área do admin para colar links, clonar conteúdo e gerenciar as apostilas geradas, incluindo seções, glossário e questionários."],
     ]);
 
 
