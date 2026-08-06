@@ -27,14 +27,16 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
-    version: "3.49.1",
+    version: "3.49.2",
     date: "2026-08-06",
-    title: "Estabilização da Edição de Apostilas",
+    title: "Gestão Avançada de Arquivos",
     changes: [
-      { kind: 'improvement', text: 'Implementação de persistência garantida e carregamento de conteúdo legado no Workbench Administrativo.' },
-      { kind: 'fix', text: 'Correção de mapeamento de texto para garantir a integridade da funcionalidade de edição segura.' },
+      { kind: 'feature', text: 'Adicionado suporte para anexar PDFs, planilhas e documentos diretamente no Workbench Administrativo com upload otimizado.' },
+      { kind: 'improvement', text: 'Refinamento visual da zona de arraste de arquivos para melhor orientação do usuário.' },
     ],
   },
+  {
+    version: "3.49.1",
   {
     version: "3.49.0",
     date: "2026-08-06",

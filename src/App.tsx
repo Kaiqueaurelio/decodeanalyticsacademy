@@ -1,6 +1,6 @@
 /**
  * DECODE ANALYTICS ACADEMY
- * v3.49.1 - Estabilização da Edição de Apostilas
+ * v3.49.2 - Gestão Avançada de Arquivos
  */
 import React, { Suspense, lazy } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
