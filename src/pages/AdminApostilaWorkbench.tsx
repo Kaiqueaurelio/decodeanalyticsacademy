@@ -30,6 +30,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MarkdownEditor } from '@/components/MarkdownEditor';
 import { ApostilaHealthBar } from '@/components/admin/ApostilaHealthBar';
+import { ApostilaVersionHistory } from '@/components/admin/ApostilaVersionHistory';
 import { MaterialsDropZone } from '@/components/admin/MaterialsDropZone';
 import { SortableMaterialsList, type LinkedMaterialItem } from '@/components/admin/SortableMaterialsList';
 import { SmartPasteDialog } from '@/components/admin/SmartPasteDialog';
@@ -183,6 +184,23 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
   const doSave = async () => {
     if (!id || !dirtyRef.current) return;
     setSaving(true);
+
+    // Antes de atualizar, criamos uma versão no histórico se houver conteúdo anterior
+    const { data: currentApostila } = await supabase
+      .from('apostilas')
+      .select('title, content')
+      .eq('id', id)
+      .single();
+
+    if (currentApostila && (currentApostila.content !== content || currentApostila.title !== title)) {
+      await supabase.from('apostila_versions').insert({
+        apostila_id: id,
+        title: currentApostila.title,
+        content: currentApostila.content,
+        created_by: user?.id
+      });
+    }
+
     const { error } = await supabase
       .from('apostilas')
       .update({
@@ -193,6 +211,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         course: course.length ? course : null,
       })
       .eq('id', id);
+
     setSaving(false);
     if (error) {
       toast.error('Erro ao salvar');
@@ -203,6 +222,13 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     setApostilas((prev) =>
       prev.map((p) => (p.id === id ? { ...p, title: title.trim() || 'Sem título', category, semester, course: course.length ? course : null, updated_at: new Date().toISOString() } : p))
     );
+  };
+
+  const handleRestoreVersion = (version: { title: string; content: string }) => {
+    setTitle(version.title);
+    setContent(version.content);
+    dirtyRef.current = true;
+    toast.success('Versão carregada! Salve para confirmar.');
   };
 
   // Sugere semestre automaticamente quando a categoria muda e ainda não há semestre
@@ -581,6 +607,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
           >
             <Wand2 className="h-3 w-3 text-primary" /> Questões ENEM
           </Button>
+          <ApostilaVersionHistory apostilaId={id} onRestore={handleRestoreVersion} />
           <Button size="sm" variant="outline" className="h-7 gap-1.5 text-xs" onClick={() => setPasteOpen(true)}>
             <PenTool className="h-3 w-3 text-primary" /> Colar inteligente
           </Button>
