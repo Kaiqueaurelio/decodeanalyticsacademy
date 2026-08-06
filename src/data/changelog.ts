@@ -27,6 +27,15 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.61.2",
+    date: "2026-08-06",
+    title: "Ella Fix: Pesquisa Operacional",
+    changes: [
+      { kind: 'improvement', text: 'Iniciada resolução automática de pendências na apostila de Pesquisa Operacional via Ella Ribeiro.' },
+      { kind: 'fix', text: 'Sincronizada a lógica de mapeamento para facilitar a identificação de materiais críticos pelo administrador.' },
+    ],
+  },
+  {
     version: "3.61.0",
     date: "2026-08-06",
     title: "Ella Fix: Resolução de Pendências com um Clique",
