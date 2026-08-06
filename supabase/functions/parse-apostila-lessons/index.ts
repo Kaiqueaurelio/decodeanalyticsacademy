@@ -160,18 +160,17 @@ serve(async (req) => {
     }
 
     if (replace) {
-      // ON DELETE CASCADE remove capítulos/lições/progresso — mas manteremos
-      // progresso do usuário só para lições que ainda existirem depois. Como
-      // reconstruímos a árvore, avisamos no retorno.
-      const { data: existingModules } = await admin
+      // Deletar em lote usando o apostila_id direto se o schema permitir,
+      // ou coletando IDs para evitar timeout em deleções muito grandes.
+      const { error: delErr } = await admin
         .from("apostila_modules")
-        .select("id")
+        .delete()
         .eq("apostila_id", apostila_id);
-      if (existingModules?.length) {
-        await admin
-          .from("apostila_modules")
-          .delete()
-          .in("id", existingModules.map((m: { id: string }) => m.id));
+
+      if (delErr) {
+        console.error("Erro ao limpar módulos existentes:", delErr);
+        // Não falhamos o processo inteiro se a limpeza falhar por causa de FKS,
+        // mas tentamos seguir.
       }
     }
 
