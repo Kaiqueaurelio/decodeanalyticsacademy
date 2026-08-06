@@ -27,6 +27,17 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.49.0",
+    date: "2026-08-06",
+    title: "Facilitação de Conteúdo Multimídia",
+    changes: [
+      { kind: 'feature', text: 'Inserção rápida de vídeo (YouTube/Vimeo/MP4) diretamente na barra de atalhos do editor.' },
+      { kind: 'feature', text: 'Atalho de upload de imagem um-clique no editor com suporte a drag-and-drop global.' },
+      { kind: 'improvement', text: 'Painel de materiais renomeado para "Materiais & Mídia" com texto orientador para drag-and-drop de vídeos e arquivos.' },
+      { kind: 'improvement', text: 'Simplificação de rótulos no gerenciador de questões do Workbench.' },
+    ],
+  },
+  {
     version: "3.48.4",
     date: "2026-08-06",
     title: "Estabilização Crítica de Edge Functions",
