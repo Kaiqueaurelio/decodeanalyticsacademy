@@ -27,6 +27,15 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.49.2",
+    date: "2026-08-06",
+    title: "Gestão Avançada de Arquivos",
+    changes: [
+      { kind: 'feature', text: 'Adicionado suporte para anexar PDFs, planilhas e documentos diretamente no Workbench Administrativo com upload otimizado.' },
+      { kind: 'improvement', text: 'Refinamento visual da zona de arraste de arquivos para melhor orientação do usuário.' },
+    ],
+  },
+  {
     version: "3.49.1",
     date: "2026-08-06",
     title: "Estabilização da Edição de Apostilas",

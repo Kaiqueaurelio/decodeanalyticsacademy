@@ -172,7 +172,7 @@ export function MaterialsDropZone({ apostilaId, baseSortOrder, onUploaded, class
         )}
       >
         <Upload className="h-5 w-5 text-primary" />
-        <p className="text-xs font-semibold text-foreground">Solte vídeos, imagens ou arquivos aqui</p>
+        <p className="text-xs font-semibold text-foreground">Solte PDFs, vídeos, imagens ou documentos aqui</p>
         <p className="text-[10px] text-muted-foreground text-center">
           PDF, áudio, vídeo, Word, Excel, imagens — vincula automaticamente
         </p>
