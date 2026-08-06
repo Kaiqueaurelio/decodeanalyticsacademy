@@ -27,6 +27,15 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.48.2",
+    date: "2026-08-06",
+    title: "Estabilidade da Estrutura de Lições",
+    changes: [
+      { kind: 'fix', text: 'Corrigida a lógica de parsing e estruturação automática de lições no Admin Workbench para evitar erros de duplicidade e timeout.' },
+      { kind: 'improvement', text: 'Refinamento do mapeamento de metadados para auditoria visual e segurança.' },
+    ],
+  },
+  {
     version: "3.48.1",
     date: "2026-08-06",
     title: "Métricas e Desempenho",
