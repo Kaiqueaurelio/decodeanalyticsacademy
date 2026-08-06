@@ -27,6 +27,15 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.59.2",
+    date: "2026-08-06",
+    title: "Mapeamento Acadêmico e Integridade",
+    changes: [
+      { kind: 'fix', text: 'Sincronizada a lógica de mapeamento para as grades de Ciência da Computação (CC) e Sistemas de Informação (SI) no sistema de substituição dinâmica.' },
+      { kind: 'improvement', text: 'Reforçada a integridade dos rótulos globais de navegação acadêmica.' },
+    ],
+  },
+  {
     version: "3.59.1",
     date: "2026-08-06",
     title: "Correção de Visibilidade: Pesquisa Operacional",

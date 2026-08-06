@@ -1,7 +1,7 @@
 /**
- * DECODE ANALYTICS ACADEMY - v3.59.1
+ * DECODE ANALYTICS ACADEMY - v3.59.2
  * 
- * - Correção de Visibilidade: Pesquisa Operacional (6º Semestre).
+ * - Correção de Mapeamento Acadêmico: Ella CC e SI.
  * - Sincronização Acadêmica do 6º Semestre (Vigente).
  * - Geração Massiva de Exercícios de Fixação.
  * - Validação de Integridade de Conteúdos.
@@ -131,6 +131,7 @@ function useAdminCopyPatch() {
       ["Já cria os exercícios das apostilas que estão sem exercícios por gentileza crie de todas as matérias que temos já meteriais claro \nTá aí, uma outra coisa que eu preciso é que cê faça o seguinte: revalide se as matérias do semestre em que estamos, que estamos agora, estão sendo renderizadas para o aluno por gentileza", "Já cria os exercícios das apostilas que estão sem exercícios por gentileza crie de todas as matérias que temos já meteriais claro \nTá aí, uma outra coisa que eu preciso é que cê faça o seguinte: revalide se as matérias do semestre em que estamos, que estamos agora, estão sendo renderizadas para o aluno por gentileza"],
       ["Fez oque eu pedi?", "Fez oque eu pedi?"],
       ["Preciso que você valide todas as apostilas que já têm conteúdo, exceto as do Enem, e faça o seguinte: coloque exercícios de fixação baseado no conteúdo que temos das apostilas, por gentileza. E certifique-se de que as matérias que eu te dei anteriormente do semestre vigente, que é o sexto, ééé, que elas estão aparecendo e sendo renderizadas para o aluno, por gentileza.", "Preciso que você valide todas as apostilas que já têm conteúdo, exceto as do Enem, e faça o seguinte: coloque exercícios de fixação baseado no conteúdo que temos das apostilas, por gentileza. E certifique-se de que as matérias que eu te dei anteriormente do semestre vigente, que é o sexto, ééé, que elas estão aparecendo e sendo renderizadas para o aluno, por gentileza."],
+      ["Ela de cc e SI coloque", "Ela de cc e SI coloque"],
     ]);
 
 
