@@ -121,7 +121,7 @@ export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps)
       "ella-chat",
       {
         messages: history.map((m) => ({ role: m.role, content: m.content })),
-        context: contextHint,
+        context: `Notion Gallery (v3.63.0), Notification Filter (v3.63.1), Cover Redundancy (v3.63.1). ${contextHint || ""}`,
         stream: true,
       },
       {
