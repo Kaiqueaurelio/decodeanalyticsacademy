@@ -27,6 +27,15 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.61.4",
+    date: "2026-08-06",
+    title: "Ella: Auditoria Forçada e Limpeza de Metadados",
+    changes: [
+      { kind: 'improvement', text: 'Implementada auditoria forçada para apostilas com pendências persistentes, ignorando cache de renderização.' },
+      { kind: 'fix', text: 'Corrigida inconsistência na contagem de seções e exercícios através da re-sincronização de módulos em Pesquisa Operacional e Ferramentas de Análise.' },
+    ],
+  },
+  {
     version: "3.61.3",
     date: "2026-08-06",
     title: "Ella Fix: Ferramentas de Análise e Gestão de Projetos",

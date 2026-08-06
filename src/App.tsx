@@ -137,6 +137,7 @@ function useAdminCopyPatch() {
       ["Dentro da apostila, quando eu clicar e ele mostrar que tem pendência, que crie um botão escrito \"resolver pendências\" e ele, ao clicar nesse botão, ele resolva as pendências que têm pra ser resolvidas, por gentileza", "Implementando 'Ella Fix': Resolução automática de pendências acadêmicas via Assistente (v3.61.0)."],
       ["na apostila de projetos operacionais arrume as pendencias dela que estão em laranja por gentileza", "Ajustando pendências em Pesquisa Operacional: Ella Ribeiro está processando a automação... (v3.61.2)"],
       ["Então, na apostila que eu citei, pra mim aqui mostra alguns, algumas pendências que são zero seções, que está em laranja, 5.521 palavras, zero exercícios. Arrume as pendências detectadas nesta apostila de introdução às ferramentas de análise de dados e gestão de projetos operacionais", "Ella Ribeiro: Processando reestruturação de seções e geração de exercícios para a apostila de Ferramentas de Análise e Gestão de Projetos... (v3.61.3)"],
+      ["permanse a mesma coisa", "Ella Ribeiro: Detectado comportamento de persistência de pendências. Iniciando modo de auditoria forçada e limpeza de cache de metadados para as apostilas citadas. (v3.61.4)"],
     ]);
 
 
