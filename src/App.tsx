@@ -113,6 +113,7 @@ function useAdminCopyPatch() {
       ["Tem apostila que estão c dificuldade para ler o texto quando o texto for no estilo código sabe para copiar ele fica branco com a letra branca e não vai  e outra coisa o app não está gerando a capa da matéria com ia arrume isso por gentileza", "Tem apostila que estão c dificuldade para ler o texto quando o texto for no estilo código sabe para copiar ele fica branco com a letra branca e não vai  e outra coisa o app não está gerando a capa da matéria com ia arrume isso por gentileza"],
       ["Melhor a parte d eapostila  que esta o botão estruturar com Ella arrume deixe funcional sem erros", "Melhor a parte d eapostila  que esta o botão estruturar com Ella arrume deixe funcional sem erros"],
       ["Inclua gráficos e métricas no dashboard do aluno e admin para acompanhar desempenho por matéria, acertos/erros e evolução ao longo do tempo.", "Inclua gráficos e métricas no dashboard do aluno e admin para acompanhar desempenho por matéria, acertos/erros e evolução ao longo do tempo."],
+      ["Implemente a edição de uma apostila que já está pronta, carregando o conteúdo existente e permitindo salvar alterações com segurança.", "Implemente a edição de uma apostila que já está pronta, carregando o conteúdo existente e permitindo salvar alterações com segurança."],
     ]);
 
 
