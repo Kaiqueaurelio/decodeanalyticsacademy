@@ -27,6 +27,15 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.59.3",
+    date: "2026-08-06",
+    title: "Otimização de Conteúdo e Remoção de Duplicatas",
+    changes: [
+      { kind: 'content', text: 'Removida a apostila duplicada na disciplina de Pesquisa Operacional, mantendo apenas a versão com conteúdo mais abrangente.' },
+      { kind: 'improvement', text: 'Sincronização de rótulos globais para auditoria de integridade de materiais.' },
+    ],
+  },
+  {
     version: "3.59.2",
     date: "2026-08-06",
     title: "Mapeamento Acadêmico e Integridade",
