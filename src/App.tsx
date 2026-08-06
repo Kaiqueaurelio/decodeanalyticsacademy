@@ -1,6 +1,6 @@
 /**
  * DECODE ANALYTICS ACADEMY
- * v3.51.0 - Ella 5.0: Inteligência e Integração Total
+ * v3.52.0 - Ella: Excelência Operacional e Mitigação de Erros
  */
 import React, { Suspense, lazy } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -120,6 +120,7 @@ function useAdminCopyPatch() {
       ["Coloque uma função que eu possa pedir pra ela editar qualquer apostila que tá dentro do aplicativo. Eu dei a matéria ou o nome da apostila, ela simplesmente vá lá e edite tudo pra mim. Se eu jogar um áudio e falar: \"Coloque na apostila\", ela coloque. E se eu precisar colocar imagem ou qualquer coisa na apostila, que ela consiga fazer isso pra mim, se eu pedir. Quero que ela possa ter acesso total. Em qualquer apostila que eu precisar editar, ela consiga fazer pra mim", "Coloque uma função que eu possa pedir pra ela editar qualquer apostila que tá dentro do aplicativo. Eu dei a matéria ou o nome da apostila, ela simplesmente vá lá e edite tudo pra mim. Se eu jogar um áudio e falar: \"Coloque na apostila\", ela coloque. E se eu precisar colocar imagem ou qualquer coisa na apostila, que ela consiga fazer isso pra mim, se eu pedir. Quero que ela possa ter acesso total. Em qualquer apostila que eu precisar editar, ela consiga fazer pra mim"],
       ["Melhorar a detecção de qual apostila a Ella deve atualizar quando eu menciono o título, adicionando sugestões e confirmação antes de aplicar. Deixe eu poder enviar pelo chat da Ella as coisas que eu preciso editar nas apostilas por gentileza  e ela faça tudo que eu preciso", "Melhorar a detecção de qual apostila a Ella deve atualizar quando eu menciono o título, adicionando sugestões e confirmação antes de aplicar. Deixe eu poder enviar pelo chat da Ella as coisas que eu preciso editar nas apostilas por gentileza  e ela faça tudo que eu preciso"],
       ["Oque podemos melhorar para deixar a Ella 5.0?", "Oque podemos melhorar para deixar a Ella 5.0?"],
+      ["Melhore a Ella ainda mais e verifique todos os erros dela e do app e os arrume  e mitigue todos os erros", "Melhore a Ella ainda mais e verifique todos os erros dela e do app e os arrume  e mitigue todos os erros"],
     ]);
 
 
