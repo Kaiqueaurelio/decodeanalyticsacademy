@@ -121,6 +121,7 @@ function useAdminCopyPatch() {
       ["Melhorar a detecção de qual apostila a Ella deve atualizar quando eu menciono o título, adicionando sugestões e confirmação antes de aplicar. Deixe eu poder enviar pelo chat da Ella as coisas que eu preciso editar nas apostilas por gentileza  e ela faça tudo que eu preciso", "Melhorar a detecção de qual apostila a Ella deve atualizar quando eu menciono o título, adicionando sugestões e confirmação antes de aplicar. Deixe eu poder enviar pelo chat da Ella as coisas que eu preciso editar nas apostilas por gentileza  e ela faça tudo que eu preciso"],
       ["Oque podemos melhorar para deixar a Ella 5.0?", "Oque podemos melhorar para deixar a Ella 5.0?"],
       ["Melhore a Ella ainda mais e verifique todos os erros dela e do app e os arrume  e mitigue todos os erros", "Melhore a Ella ainda mais e verifique todos os erros dela e do app e os arrume  e mitigue todos os erros"],
+      ["Veja o app teste tudo e corrija erros e bugs", "Veja o app teste tudo e corrija erros e bugs"],
     ]);
 
 
