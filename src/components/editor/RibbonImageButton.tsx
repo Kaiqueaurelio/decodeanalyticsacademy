@@ -9,7 +9,7 @@
  *  - Comprime imagens > 1.5MB no navegador (canvas) para subida rápida.
  *  - Toast de progresso + estado "enviando" no botão.
  */
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Image as ImageIcon, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
