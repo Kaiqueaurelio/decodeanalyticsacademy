@@ -93,6 +93,14 @@ export default function DashboardPage() {
         'Gestao de Projetos': 'Prof. Andre Luiz',
         'Etica Profissional': 'Profa. Clarisse Lispector',
         'Computacao de Alto Desempenho': 'Prof. Valter Braga',
+        'Sistemas Operacionais e Mobile': 'Prof. Anderson Lima',
+        'Calculo Numerico Computacional': 'Prof. Jorge Amaral',
+        'Pesquisa Operacional': 'Prof. Dr. Ricardo Silva',
+        'Aspectos Teoricos da Computacao': 'Profa. Ana Paula',
+        'Processamento de Imagem e Visao Computacional': 'Prof. Luiz Henrique',
+        'Ciencia de Dados': 'Profa. Mariana Costa',
+        'Metodos de Pesquisa': 'Profa. Clarisse Lispector',
+        'Interdisciplinar de Ciencia da Computacao': 'Coordenacao CC'
       };
 
       // Criar lista de disciplinas que já existem no banco para este semestre
