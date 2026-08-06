@@ -27,6 +27,15 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.63.0",
+    date: "2026-08-06",
+    title: "UX: Pastas de Disciplinas (Gavetas de Conteúdo)",
+    changes: [
+      { kind: 'improvement', text: 'Redesenhada a navegação do dashboard para usar o conceito de "Pastas": cada matéria agora é uma gaveta que contém suas respectivas apostilas.' },
+      { kind: 'improvement', text: 'Otimização visual para reduzir o excesso de cards soltos, agrupando o conhecimento por área de estudo.' },
+    ],
+  },
+  {
     version: "3.62.0",
     date: "2026-08-06",
     title: "Ella Fix: Restauração de Capas Visuais",

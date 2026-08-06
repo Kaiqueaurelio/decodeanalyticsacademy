@@ -147,35 +147,49 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
               </div>
             </div>
             
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-              {items.map((apostila) => {
-                const reading = progressMap[apostila.id];
-                const touchedExercises = !!stats.byApostila[apostila.id];
-                const progress = reading?.percent ?? (touchedExercises ? 50 : 0);
-                const status: 'concluida' | 'em-progresso' | 'novo' =
-                  reading?.status === 'concluida'
-                    ? 'concluida'
-                    : progress > 0
-                      ? 'em-progresso'
-                      : 'novo';
-
-                return (
-                  <div key={apostila.id} className="relative group/card h-full">
-                    <ApostilaCoverCard
-                      apostila={apostila}
-                      status={status}
-                      progress={progress}
-                    />
-                    {reading && reading.total > 0 && (
-                      <div className="absolute top-2 right-2 flex items-center rounded-full bg-background/85 backdrop-blur-sm border border-primary/20 px-2 py-0.5 shadow-lg z-10 scale-0 group-hover/card:scale-100 transition-transform">
-                        <span className="text-[8px] font-black text-primary">
-                          {reading.completed}/{reading.total} lições
-                        </span>
-                      </div>
-                    )}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <button
+                onClick={() => openSubject(category)}
+                className="group relative flex flex-col rounded-3xl border border-border/60 bg-card overflow-hidden transition-all duration-500 hover:border-primary/50 hover:shadow-[0_20px_50px_rgba(168,85,247,0.15)] hover:-translate-y-1.5 active:scale-[0.98]"
+              >
+                <div className="relative aspect-video w-full overflow-hidden bg-muted">
+                  <div 
+                    className="absolute inset-0 opacity-20 mix-blend-overlay group-hover:opacity-40 transition-opacity duration-700"
+                    style={{ backgroundColor: color }}
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div 
+                      className="p-4 rounded-2xl bg-background/80 backdrop-blur-xl border border-white/10 shadow-2xl group-hover:scale-110 transition-transform duration-500"
+                    >
+                      <LayoutGrid className="h-8 w-8 text-primary" />
+                    </div>
                   </div>
-                );
-              })}
+                  {/* Badge de quantidade */}
+                  <div className="absolute top-4 right-4 bg-background/90 backdrop-blur-md border border-border/40 px-3 py-1 rounded-full shadow-lg">
+                    <span className="text-[10px] font-black text-primary uppercase">
+                      {items.length} {items.length === 1 ? 'Material' : 'Materiais'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="p-5 flex flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                    <div className="h-2 w-2 rounded-full animate-pulse" style={{ backgroundColor: color }} />
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/80">Pasta de Estudos</span>
+                  </div>
+                  <h4 className="font-display font-black text-xl leading-tight group-hover:text-primary transition-colors">
+                    Abrir {category}
+                  </h4>
+                  <p className="text-xs text-muted-foreground line-clamp-2">
+                    Clique para acessar todas as apostilas e materiais vinculados a esta disciplina.
+                  </p>
+                  
+                  <div className="mt-4 flex items-center justify-between pt-4 border-t border-border/10">
+                    <span className="text-xs font-bold text-primary group-hover:underline">Explorar gaveta</span>
+                    <ChevronRight className="h-4 w-4 text-primary transition-transform group-hover:translate-x-1" />
+                  </div>
+                </div>
+              </button>
             </div>
           </div>
         );
