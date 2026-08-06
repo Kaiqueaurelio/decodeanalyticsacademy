@@ -1,7 +1,7 @@
 /**
- * DECODE ANALYTICS ACADEMY - v3.59.2
+ * DECODE ANALYTICS ACADEMY - v3.59.3
  * 
- * - Correção de Mapeamento Acadêmico: Ella CC e SI.
+ * - Otimização de Conteúdo: Remoção de duplicatas na disciplina de Pesquisa Operacional.
  * - Sincronização Acadêmica do 6º Semestre (Vigente).
  * - Geração Massiva de Exercícios de Fixação.
  * - Validação de Integridade de Conteúdos.
@@ -132,6 +132,7 @@ function useAdminCopyPatch() {
       ["Fez oque eu pedi?", "Fez oque eu pedi?"],
       ["Preciso que você valide todas as apostilas que já têm conteúdo, exceto as do Enem, e faça o seguinte: coloque exercícios de fixação baseado no conteúdo que temos das apostilas, por gentileza. E certifique-se de que as matérias que eu te dei anteriormente do semestre vigente, que é o sexto, ééé, que elas estão aparecendo e sendo renderizadas para o aluno, por gentileza.", "Preciso que você valide todas as apostilas que já têm conteúdo, exceto as do Enem, e faça o seguinte: coloque exercícios de fixação baseado no conteúdo que temos das apostilas, por gentileza. E certifique-se de que as matérias que eu te dei anteriormente do semestre vigente, que é o sexto, ééé, que elas estão aparecendo e sendo renderizadas para o aluno, por gentileza."],
       ["Ela de cc e SI coloque", "Ela de cc e SI coloque"],
+      ["Percebi que tem duas apostilas de pesquisa, na matéria de pesquisa. Veja qual delas está mais completa e deixe apenas a mais completa. A que tiver mais conteúdo. A que não tiver, remova, por gentileza.", "Percebi que tem duas apostilas de pesquisa, na matéria de pesquisa. Veja qual delas está mais completa e deixe apenas a mais completa. A que tiver mais conteúdo. A que não tiver, remova, por gentileza."],
     ]);
 
 
