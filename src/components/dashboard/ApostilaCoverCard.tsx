@@ -94,6 +94,22 @@ export function ApostilaCoverCard({ apostila, status = 'em-progresso', progress 
           src={cover}
           alt={apostila.title}
           loading="lazy"
+          onError={(e) => {
+            // Se a imagem falhar (404/broken), tenta o fallback SVG dinâmico via data URI
+            const target = e.currentTarget;
+            const dynamicSvg = buildCoverDataUri(
+              {
+                title: apostila.title,
+                category: apostila.category,
+                semester: (apostila as any).semester ?? null,
+                teacher: (apostila as any).teacher ?? null,
+              },
+              theme,
+            );
+            if (target.src !== dynamicSvg) {
+              target.src = dynamicSvg;
+            }
+          }}
           className={`absolute inset-0 h-full w-full object-cover transition-transform duration-500 ${!isPlaceholder ? 'group-hover:scale-[1.03]' : ''}`}
         />
         {isPlaceholder && (
