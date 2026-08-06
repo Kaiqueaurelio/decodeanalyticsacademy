@@ -1,6 +1,9 @@
 /**
- * DECODE ANALYTICS ACADEMY
- * v3.58.0 - Validação de Conteúdo e Visibilidade Acadêmica
+ * DECODE ANALYTICS ACADEMY - v3.59.0
+ * 
+ * - Sincronização Acadêmica do 6º Semestre (Vigente).
+ * - Geração Massiva de Exercícios de Fixação.
+ * - Validação de Integridade de Conteúdos.
  */
 import React, { Suspense, lazy } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
