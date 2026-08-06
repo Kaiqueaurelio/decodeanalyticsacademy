@@ -137,7 +137,7 @@ export default function ApostilaPage({ tab, setTab }: Props) {
         .replace(/[`#>*_~\-]/g, ' ')
         .replace(/\s+/g, ' ')
         .trim();
-      const hasContent = contentPreview.length >= 24;
+      const hasContent = contentPreview.length >= 10;
 
       let hasChildren = false;
       for (let i = index + 1; i < sections.length; i++) {
@@ -683,7 +683,7 @@ export default function ApostilaPage({ tab, setTab }: Props) {
                   isLoggedIn={!!user}
                 />
                 
-                {user && (!organizedSections.length || organizedSections.every(s => s.isPlaceholder)) && (
+                {(isAdmin || (user && (!organizedSections.length || organizedSections.every(s => s.isPlaceholder)))) && (
                   <div className="flex flex-col items-center justify-center py-20 px-4 text-center space-y-4 rounded-3xl border-2 border-dashed border-border/40 bg-muted/5 animate-content-show">
                     <div className="h-20 w-20 rounded-full bg-primary/5 flex items-center justify-center">
                       <BookOpen className="h-10 w-10 text-primary/40" />
