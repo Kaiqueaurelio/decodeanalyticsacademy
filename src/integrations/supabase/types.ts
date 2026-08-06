@@ -768,6 +768,41 @@ export type Database = {
         }
         Relationships: []
       }
+      apostila_versions: {
+        Row: {
+          apostila_id: string
+          content: string
+          created_at: string
+          created_by: string | null
+          id: string
+          title: string | null
+        }
+        Insert: {
+          apostila_id: string
+          content: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          title?: string | null
+        }
+        Update: {
+          apostila_id?: string
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          title?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "apostila_versions_apostila_id_fkey"
+            columns: ["apostila_id"]
+            isOneToOne: false
+            referencedRelation: "apostilas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       apostila_views: {
         Row: {
           apostila_id: string
