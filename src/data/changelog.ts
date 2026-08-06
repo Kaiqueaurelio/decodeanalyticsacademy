@@ -31,8 +31,8 @@ export const CHANGELOG: ChangelogEntry[] = [
     date: "2026-08-06",
     title: "Otimização TanStack & Estabilidade",
     changes: [
-      { kind: 'improvement', text: 'Unificação da infraestrutura de dados para TanStack Query, removendo dependências legadas de fetch manual.' },
-      { kind: 'improvement', text: 'Otimização de performance global e redução de re-renderizações no dashboard.' },
+      { kind: 'improvement', text: 'Unificação da infraestrutura de dados para TanStack Query (v4+), otimizando o cache e a velocidade de resposta do dashboard.' },
+      { kind: 'improvement', text: 'Melhoria na estabilidade das requisições e redução de latência no carregamento de apostilas.' },
     ],
   },
   {
