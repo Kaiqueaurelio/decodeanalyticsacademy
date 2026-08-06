@@ -27,6 +27,15 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.60.0",
+    date: "2026-08-06",
+    title: "Inclusividade: Linguagem Simples em Pesquisa Operacional",
+    changes: [
+      { kind: 'content', text: 'Simplificação da apostila de Pesquisa Operacional para linguagem ultra-acessível, focada em inclusão cognitiva e neurodiversidade.' },
+      { kind: 'improvement', text: 'Implementação de analogias visuais e estruturação de texto para facilitar o aprendizado autônomo.' },
+    ],
+  },
+  {
     version: "3.59.3",
     date: "2026-08-06",
     title: "Otimização de Conteúdo e Remoção de Duplicatas",
