@@ -1,6 +1,7 @@
 /**
- * DECODE ANALYTICS ACADEMY - v3.59.0
+ * DECODE ANALYTICS ACADEMY - v3.59.1
  * 
+ * - Correção de Visibilidade: Pesquisa Operacional (6º Semestre).
  * - Sincronização Acadêmica do 6º Semestre (Vigente).
  * - Geração Massiva de Exercícios de Fixação.
  * - Validação de Integridade de Conteúdos.
