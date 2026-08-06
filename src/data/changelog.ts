@@ -31,6 +31,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     version: "3.63.0",
     date: "2026-08-06",
     title: "UX: Pastas de Disciplinas (Notion Gallery View)",
+    major: true,
     changes: [
       { kind: 'improvement', text: 'Implementada visão de galeria estilo Notion: cada matéria agora funciona como uma "Gaveta" que agrupa visualmente seus materiais.' },
       { kind: 'improvement', text: 'Redesenhado o card de abertura de disciplina com efeito glassmorphism e animação de profundidade.' },
