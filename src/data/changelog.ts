@@ -28,6 +28,17 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.63.1",
+    date: "2026-08-06",
+    title: "Ella: Filtro de Notificações e Restauração de Capas",
+    major: false,
+    changes: [
+      { kind: 'improvement', text: 'Implementado filtro de notificações: agora apenas atualizações críticas (Major) disparam popups na tela do aluno.' },
+      { kind: 'fix', text: 'Refinamento do sistema de renderização de capas SVG para garantir contraste e visibilidade em todos os dispositivos.' },
+      { kind: 'improvement', text: 'Auditoria de conteúdo iniciada para identificação e correção de apostilas sem formatação ou material didático.' },
+    ],
+  },
+  {
     version: "3.63.0",
     date: "2026-08-06",
     title: "UX: Pastas de Disciplinas (Notion Gallery View)",
