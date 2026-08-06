@@ -153,17 +153,21 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
                 onClick={() => openSubject(category)}
                 className="group relative flex flex-col rounded-3xl border border-border/40 bg-card/40 backdrop-blur-sm overflow-hidden transition-all duration-700 hover:border-primary/50 hover:shadow-[0_30px_60px_-15px_rgba(168,85,247,0.25)] hover:-translate-y-2 active:scale-[0.98] aspect-video"
               >
-                {/* Background Decorativo Estilizado */}
-                <div className="absolute inset-0 overflow-hidden">
-                  <div 
-                    className="absolute -right-8 -top-8 h-40 w-40 rounded-full blur-[60px] opacity-20 transition-opacity duration-700 group-hover:opacity-40"
-                    style={{ backgroundColor: color }}
-                  />
-                  <div 
-                    className="absolute -left-8 -bottom-8 h-40 w-40 rounded-full blur-[60px] opacity-10 transition-opacity duration-700 group-hover:opacity-30"
-                    style={{ backgroundColor: color }}
-                  />
-                  <div className="absolute inset-0 bg-grid-white/[0.02] bg-[length:20px_20px]" />
+                {/* Background da Matéria (Capa da primeira apostila) */}
+                <div className="absolute inset-0">
+                  {items[0]?.cover_url ? (
+                    <img 
+                      src={items[0].cover_url} 
+                      alt={category} 
+                      className="h-full w-full object-cover opacity-30 group-hover:opacity-50 group-hover:scale-105 transition-all duration-700"
+                    />
+                  ) : (
+                    <div 
+                      className="absolute inset-0 opacity-20 mix-blend-overlay group-hover:opacity-40 transition-opacity duration-700"
+                      style={{ backgroundColor: color }}
+                    />
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
                 </div>
 
                 <div className="relative z-10 h-full w-full flex flex-col p-6">
@@ -178,7 +182,11 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
                           className="h-8 w-8 rounded-lg border-2 border-background bg-muted overflow-hidden shadow-lg transform transition-transform group-hover:-translate-y-1"
                           style={{ transitionDelay: `${idx * 50}ms` }}
                         >
-                          <div className="h-full w-full opacity-60" style={{ backgroundColor: color }} />
+                          {item.cover_url ? (
+                            <img src={item.cover_url} className="h-full w-full object-cover" />
+                          ) : (
+                            <div className="h-full w-full opacity-60" style={{ backgroundColor: color }} />
+                          )}
                         </div>
                       ))}
                     </div>
