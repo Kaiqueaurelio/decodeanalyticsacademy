@@ -683,24 +683,36 @@ export default function ApostilaPage({ tab, setTab }: Props) {
                   isLoggedIn={!!user}
                 />
                 
-                {user && (isAdmin || !organizedSections.length || organizedSections.every(s => s.isPlaceholder)) && (
-                  <div className="flex flex-col items-center justify-center py-20 px-4 text-center space-y-4 rounded-3xl border-2 border-dashed border-border/40 bg-muted/5 animate-content-show">
-                    <div className="h-20 w-20 rounded-full bg-primary/5 flex items-center justify-center">
-                      <BookOpen className="h-10 w-10 text-primary/40" />
+                {/* Área de pendências visível apenas para administradores. Alunos nunca veem o botão "Resolver Pendências". */}
+                {user && (
+                  (!organizedSections.length || organizedSections.every(s => s.isPlaceholder)) ? (
+                    <div className="flex flex-col items-center justify-center py-20 px-4 text-center space-y-4 rounded-3xl border-2 border-dashed border-border/40 bg-muted/5 animate-content-show">
+                      <div className="h-20 w-20 rounded-full bg-primary/5 flex items-center justify-center">
+                        <BookOpen className="h-10 w-10 text-primary/40" />
+                      </div>
+                      <div className="space-y-4 max-w-sm">
+                        <h3 className="text-xl font-bold tracking-tight">Material ainda não disponível</h3>
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                          Aguarde o início do semestre ou o início das aulas. Nossa equipe está preparando o melhor conteúdo acadêmico para esta disciplina.
+                        </p>
+                        <div className="flex flex-col sm:flex-row gap-2 pt-4 justify-center">
+                          <Button variant="outline" size="sm" className="gap-2" onClick={() => navigate(-1)}>
+                            <ArrowLeft className="h-4 w-4" /> Voltar
+                          </Button>
+                        </div>
+                      </div>
                     </div>
-                    <div className="space-y-4 max-w-sm">
-                      <h3 className="text-xl font-bold tracking-tight">
-                        {(!organizedSections.length || organizedSections.every(s => s.isPlaceholder)) 
-                          ? "Material ainda não disponível" 
-                          : "Central de Melhorias Ella"}
-                      </h3>
-                      <p className="text-sm text-muted-foreground leading-relaxed">
-                        {(!organizedSections.length || organizedSections.every(s => s.isPlaceholder))
-                          ? "Aguarde o início do semestre ou o início das aulas. Nossa equipe está preparando o melhor conteúdo acadêmico para esta disciplina."
-                          : "Este material já possui conteúdo, mas como administrador você pode pedir para a Ella revisar, expandir ou criar novos exercícios agora."}
-                      </p>
-                      <div className="flex flex-col sm:flex-row gap-2 pt-4 justify-center">
-                        {isAdmin && (
+                  ) : isAdmin ? (
+                    <div className="flex flex-col items-center justify-center py-20 px-4 text-center space-y-4 rounded-3xl border-2 border-dashed border-border/40 bg-muted/5 animate-content-show">
+                      <div className="h-20 w-20 rounded-full bg-primary/5 flex items-center justify-center">
+                        <BookOpen className="h-10 w-10 text-primary/40" />
+                      </div>
+                      <div className="space-y-4 max-w-sm">
+                        <h3 className="text-xl font-bold tracking-tight">Central de Melhorias Ella</h3>
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                          Este material já possui conteúdo, mas como administrador você pode pedir para a Ella revisar, expandir ou criar novos exercícios agora.
+                        </p>
+                        <div className="flex flex-col sm:flex-row gap-2 pt-4 justify-center">
                           <Button 
                             variant="default" 
                             size="lg" 
@@ -708,7 +720,6 @@ export default function ApostilaPage({ tab, setTab }: Props) {
                             onClick={() => {
                               toast.info("Ella Ribeiro está iniciando a correção deste material...");
                               setChatOpen(true);
-                              // O prompt abaixo aciona a Ella Ribeiro para "resolver as pendências"
                               setTimeout(() => {
                                 window.dispatchEvent(new CustomEvent('ella:prompt', { 
                                   detail: `Preciso que você resolva as pendências desta apostila "${apostila.title}". Ela está vazia ou incompleta. Estruture o conteúdo, adicione glossário e exercícios de fixação agora.` 
@@ -718,13 +729,13 @@ export default function ApostilaPage({ tab, setTab }: Props) {
                           >
                             <Sparkles className="h-4 w-4" /> Resolver Pendências
                           </Button>
-                        )}
-                        <Button variant="outline" size="sm" className="gap-2" onClick={() => navigate(-1)}>
-                          <ArrowLeft className="h-4 w-4" /> Voltar
-                        </Button>
+                          <Button variant="outline" size="sm" className="gap-2" onClick={() => navigate(-1)}>
+                            <ArrowLeft className="h-4 w-4" /> Voltar
+                          </Button>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  ) : null
                 )}
 
                 {user && organizedSections.map((section, idx) => {
