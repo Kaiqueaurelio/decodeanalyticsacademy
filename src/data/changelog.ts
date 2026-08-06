@@ -27,6 +27,15 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.50.0",
+    date: "2026-08-06",
+    title: "Ella: Automação de Conteúdo e Mídia",
+    changes: [
+      { kind: 'feature', text: 'Ella agora pode editar apostilas, acrescentar conteúdos, áudios, vídeos e imagens via chat.' },
+      { kind: 'improvement', text: 'Melhoria na autorização de ferramentas Ella para suporte a gestão multisseção.' },
+    ],
+  },
+  {
     version: "3.49.3",
     date: "2026-08-06",
     title: "Histórico de Versões em Apostilas",
