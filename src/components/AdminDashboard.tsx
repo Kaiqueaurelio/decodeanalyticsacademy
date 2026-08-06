@@ -22,7 +22,7 @@ import {
   Link as LinkIcon, FileText, FileUp, Plus, Activity,
   Eye, EyeOff, Edit, Trash2, Trophy, Medal, Award, Filter, X, Check,
   CheckCircle2, XCircle, CalendarDays, ArrowDownUp, FolderOpen, ChevronDown, LayoutDashboard,
-  GraduationCap, AlertTriangle, Clock3, ShieldCheck, ExternalLink, History, Loader2,
+  GraduationCap, AlertTriangle, Clock3, ShieldCheck, ExternalLink, History, Loader2, Sparkles
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -523,15 +523,40 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
         <Card className="rounded-2xl border-border/60">
           <CardHeader className="pb-3">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <CardTitle id="admin-operations-title" className="flex items-center gap-2 text-lg">
-                  <AlertTriangle className="h-5 w-5 text-accent" /> Central de pendências
-                </CardTitle>
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-1">
+                  <CardTitle id="admin-operations-title" className="flex items-center gap-2 text-lg">
+                    <AlertTriangle className="h-5 w-5 text-accent" /> Central de pendências
+                  </CardTitle>
+                  <Badge variant="outline" className="border-accent/30 bg-accent/10 text-accent">
+                    {contentHealth.drafts.length + contentHealth.withoutCategory.length} pendência(s)
+                  </Badge>
+                </div>
                 <CardDescription>Itens que merecem atenção antes da próxima publicação.</CardDescription>
+                
+                {(contentHealth.drafts.length > 0 || contentHealth.withoutCategory.length > 0) && (
+                  <div className="mt-4 flex animate-in fade-in slide-in-from-top-2">
+                    <Button 
+                      size="sm" 
+                      className="gap-2 gradient-primary shadow-lg shadow-primary/20 hover-lift w-full sm:w-auto"
+                      onClick={() => {
+                        toast.info("Ella Ribeiro está iniciando a resolução de pendências...");
+                        // Abrir sidebar da Ella
+                        const sidebarToggle = document.querySelector('[aria-label="Ella Ribeiro"]');
+                        if (sidebarToggle instanceof HTMLElement) sidebarToggle.click();
+                        
+                        setTimeout(() => {
+                          window.dispatchEvent(new CustomEvent('ella:prompt', { 
+                            detail: `Preciso que você atue na Central de Pendências. Temos ${contentHealth.drafts.length} rascunhos e ${contentHealth.withoutCategory.length} itens sem categoria. Analise os últimos materiais e resolva o que for possível automaticamente agora.` 
+                          }));
+                        }, 500);
+                      }}
+                    >
+                      <Sparkles className="h-4 w-4" /> Resolver Pendências
+                    </Button>
+                  </div>
+                )}
               </div>
-              <Badge variant="outline" className="border-accent/30 bg-accent/10 text-accent">
-                {contentHealth.drafts.length + contentHealth.withoutCategory.length} pendência(s)
-              </Badge>
             </div>
           </CardHeader>
           <CardContent className="grid gap-3 sm:grid-cols-3">
