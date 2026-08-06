@@ -160,17 +160,19 @@ serve(async (req) => {
     }
 
     if (replace) {
-      // Deletar em lote usando o apostila_id direto se o schema permitir,
-      // ou coletando IDs para evitar timeout em deleções muito grandes.
-      const { error: delErr } = await admin
-        .from("apostila_modules")
-        .delete()
-        .eq("apostila_id", apostila_id);
+      // Deletar em lote usando o apostila_id direto.
+      // Adicionado retry básico para lidar com transações pendentes/locks.
+      let retries = 2;
+      while (retries > 0) {
+        const { error: delErr } = await admin
+          .from("apostila_modules")
+          .delete()
+          .eq("apostila_id", apostila_id);
 
-      if (delErr) {
-        console.error("Erro ao limpar módulos existentes:", delErr);
-        // Não falhamos o processo inteiro se a limpeza falhar por causa de FKS,
-        // mas tentamos seguir.
+        if (!delErr) break;
+        console.error(`Erro ao limpar módulos existentes (tentativas restantes ${retries}):`, delErr);
+        retries--;
+        if (retries > 0) await new Promise(r => setTimeout(r, 500));
       }
     }
 

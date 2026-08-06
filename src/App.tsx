@@ -1,6 +1,6 @@
 /**
  * DECODE ANALYTICS ACADEMY
- * v3.48.3 - Otimização de Estruturação de Lições
+ * v3.48.4 - Estabilização de Edge Functions
  */
 import React, { Suspense, lazy } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
