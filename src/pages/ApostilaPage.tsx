@@ -137,7 +137,7 @@ export default function ApostilaPage({ tab, setTab }: Props) {
         .replace(/[`#>*_~\-]/g, ' ')
         .replace(/\s+/g, ' ')
         .trim();
-      const hasContent = contentPreview.length >= 24;
+      const hasContent = contentPreview.length >= 10;
 
       let hasChildren = false;
       for (let i = index + 1; i < sections.length; i++) {
@@ -683,15 +683,21 @@ export default function ApostilaPage({ tab, setTab }: Props) {
                   isLoggedIn={!!user}
                 />
                 
-                {user && (!organizedSections.length || organizedSections.every(s => s.isPlaceholder)) && (
+                {user && (isAdmin || !organizedSections.length || organizedSections.every(s => s.isPlaceholder)) && (
                   <div className="flex flex-col items-center justify-center py-20 px-4 text-center space-y-4 rounded-3xl border-2 border-dashed border-border/40 bg-muted/5 animate-content-show">
                     <div className="h-20 w-20 rounded-full bg-primary/5 flex items-center justify-center">
                       <BookOpen className="h-10 w-10 text-primary/40" />
                     </div>
                     <div className="space-y-4 max-w-sm">
-                      <h3 className="text-xl font-bold tracking-tight">Material ainda não disponível</h3>
+                      <h3 className="text-xl font-bold tracking-tight">
+                        {(!organizedSections.length || organizedSections.every(s => s.isPlaceholder)) 
+                          ? "Material ainda não disponível" 
+                          : "Central de Melhorias Ella"}
+                      </h3>
                       <p className="text-sm text-muted-foreground leading-relaxed">
-                        Aguarde o início do semestre ou o início das aulas. Nossa equipe está preparando o melhor conteúdo acadêmico para esta disciplina.
+                        {(!organizedSections.length || organizedSections.every(s => s.isPlaceholder))
+                          ? "Aguarde o início do semestre ou o início das aulas. Nossa equipe está preparando o melhor conteúdo acadêmico para esta disciplina."
+                          : "Este material já possui conteúdo, mas como administrador você pode pedir para a Ella revisar, expandir ou criar novos exercícios agora."}
                       </p>
                       <div className="flex flex-col sm:flex-row gap-2 pt-4 justify-center">
                         {isAdmin && (
