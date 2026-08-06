@@ -77,7 +77,7 @@ function fallbackSvgCover(title: string, category: string) {
 }
 
 async function callGeminiImage(apiKey: string, prompt: string) {
-  const model = "gemini-2.5-flash-image";
+  const model = "gemini-2.0-flash"; // Use the standard flash model which supports text-to-image in v1beta
   const resp = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`,
     {
