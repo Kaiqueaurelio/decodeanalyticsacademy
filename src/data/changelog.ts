@@ -27,6 +27,15 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.53.0",
+    date: "2026-08-06",
+    title: "Auditoria de Estabilidade e Refinamento de UI",
+    changes: [
+      { kind: 'improvement', text: 'Realizada auditoria completa de fluxo para detecção e mitigação de bugs residuais.' },
+      { kind: 'fix', text: 'Correção de inconsistências visuais e sincronização de rótulos globais.' },
+    ],
+  },
+  {
     version: "3.52.0",
     date: "2026-08-06",
     title: "Ella: Excelência Operacional e Mitigação de Erros",
