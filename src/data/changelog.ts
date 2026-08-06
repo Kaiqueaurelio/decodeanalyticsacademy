@@ -37,6 +37,13 @@ export const CHANGELOG: ChangelogEntry[] = [
   },
   {
     version: "3.49.1",
+    date: "2026-08-06",
+    title: "Estabilização da Edição de Apostilas",
+    changes: [
+      { kind: 'improvement', text: 'Implementação de persistência garantida e carregamento de conteúdo legado no Workbench Administrativo.' },
+      { kind: 'fix', text: 'Correção de mapeamento de texto para garantir a integridade da funcionalidade de edição segura.' },
+    ],
+  },
   {
     version: "3.49.0",
     date: "2026-08-06",
