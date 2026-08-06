@@ -148,34 +148,37 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
             </div>
             
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-              {items.map((apostila) => {
-                const reading = progressMap[apostila.id];
-                const touchedExercises = !!stats.byApostila[apostila.id];
-                const progress = reading?.percent ?? (touchedExercises ? 50 : 0);
-                const status: 'concluida' | 'em-progresso' | 'novo' =
-                  reading?.status === 'concluida'
-                    ? 'concluida'
-                    : progress > 0
-                      ? 'em-progresso'
-                      : 'novo';
-
-                return (
-                  <div key={apostila.id} className="relative group/card h-full">
-                    <ApostilaCoverCard
-                      apostila={apostila}
-                      status={status}
-                      progress={progress}
-                    />
-                    {reading && reading.total > 0 && (
-                      <div className="absolute top-2 right-2 flex items-center rounded-full bg-background/85 backdrop-blur-sm border border-primary/20 px-2 py-0.5 shadow-lg z-10 scale-0 group-hover/card:scale-100 transition-transform">
-                        <span className="text-[8px] font-black text-primary">
-                          {reading.completed}/{reading.total} lições
-                        </span>
-                      </div>
-                    )}
+              <button
+                onClick={() => openSubject(category)}
+                className="group relative flex flex-col rounded-3xl border border-border/60 bg-card overflow-hidden transition-all duration-500 hover:border-primary/50 hover:shadow-[0_20px_50px_rgba(168,85,247,0.15)] hover:-translate-y-1.5 active:scale-[0.98] aspect-[3/4]"
+              >
+                <div className="relative h-full w-full overflow-hidden bg-muted">
+                  <div 
+                    className="absolute inset-0 opacity-20 mix-blend-overlay group-hover:opacity-40 transition-opacity duration-700"
+                    style={{ backgroundColor: color }}
+                  />
+                  <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center">
+                    <div 
+                      className="p-4 rounded-2xl bg-background/80 backdrop-blur-xl border border-white/10 shadow-2xl group-hover:scale-110 transition-transform duration-500 mb-4"
+                    >
+                      <LayoutGrid className="h-8 w-8 text-primary" />
+                    </div>
+                    <h4 className="font-display font-black text-sm leading-tight group-hover:text-primary transition-colors uppercase tracking-tight">
+                      Abrir {category}
+                    </h4>
+                    <span className="text-[10px] font-bold text-muted-foreground mt-2">
+                      {items.length} {items.length === 1 ? 'Material' : 'Materiais'}
+                    </span>
                   </div>
-                );
-              })}
+                  
+                  <div className="absolute bottom-0 inset-x-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 bg-gradient-to-t from-background via-background/90 to-transparent">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-black text-primary uppercase tracking-widest">Acessar Gaveta</span>
+                      <ChevronRight className="h-4 w-4 text-primary" />
+                    </div>
+                  </div>
+                </div>
+              </button>
             </div>
           </div>
         );

@@ -1,9 +1,9 @@
 /**
- * DECODE ANALYTICS ACADEMY - v3.62.0
+ * DECODE ANALYTICS ACADEMY - v3.63.0
  * 
+ * - Experiência de Navegação: Implementada visualização de "Pastas de Matérias" no Dashboard.
+ * - UX: As apostilas agora são concentradas por disciplina para evitar poluição visual.
  * - Correção Visual: Resolvendo capas de apostilas que não aparecem.
- * - Sincronização Acadêmica do 6º Semestre (Vigente).
- * - Geração Massiva de Exercícios de Fixação.
  */
 import React, { Suspense, lazy } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -138,6 +138,7 @@ function useAdminCopyPatch() {
       ["Então, na apostila que eu citei, pra mim aqui mostra alguns, algumas pendências que são zero seções, que está em laranja, 5.521 palavras, zero exercícios. Arrume as pendências detectadas nesta apostila de introdução às ferramentas de análise de dados e gestão de projetos operacionais", "Ella Ribeiro: Processando reestruturação de seções e geração de exercícios para a apostila de Ferramentas de Análise e Gestão de Projetos... (v3.61.3)"],
       ["permanse a mesma coisa", "Ella Ribeiro: Detectado comportamento de persistência de pendências. Iniciando modo de auditoria forçada e limpeza de cache de metadados para as apostilas citadas. (v3.61.4)"],
       ["resolva as capas das apostila que não aparecem", "Ella Ribeiro: Iniciando restauração e geração de capas para materiais com visual ausente. (v3.62.0)"],
+      ["Que eu já não gostei. Por exemplo, dentro da pesquisa operacional, cê vai criar um card como se fosse uma apostila e dentro desse card vai ficar todas as apostilas concentrada dentro de uma só, entendeu? É como se você criar uma gaveta pra mim colocar as outras coisas dentro delas. Entendeu?", "Ella Ribeiro: Aplicando novo conceito de 'Pastas de Disciplinas'. Agora as matérias agrupam suas respectivas apostilas em uma gaveta organizada, reduzindo a poluição no dashboard. (v3.63.0)"],
     ]);
 
 
