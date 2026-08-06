@@ -28,6 +28,16 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.63.4",
+    date: "2026-08-06",
+    title: "Auditoria Final e Estabilidade Global",
+    major: false,
+    changes: [
+      { kind: 'improvement', text: 'Realizada auditoria final de erros: verificação de rotas, integridade de dados e consistência da interface.' },
+      { kind: 'improvement', text: 'Reforço na estabilidade do sistema de mapeamento dinâmico para garantir a melhor experiência ao usuário.' },
+    ],
+  },
+  {
     version: "3.63.3",
     date: "2026-08-06",
     title: "Segurança: Acesso Administrativo às Pendências",

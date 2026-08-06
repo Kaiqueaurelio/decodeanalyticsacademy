@@ -142,6 +142,7 @@ function useAdminCopyPatch() {
       ["Toda hora que tem uma atualização, fica jogando na, na tela pro usuário, qualquer atualizaçãozinha que eu faço.", "Ella Ribeiro: Filtro de Notificações ativado. Apenas atualizações marcadas como 'Major' dispararão alertas para os alunos. (v3.63.1)"],
       ["Quando eu clico no chat com o Iale não tá aparecendo o logo da Ella e é a Ella que tem que saber o aplicativo inteiro. Por gentileza, verifique isso também", "Ella Ribeiro: Identidade visual restaurada e base de conhecimento atualizada para suporte total ao ecossistema do aplicativo. (v3.63.2)"],
       ["Que eu já não gostei. Por exemplo, dentro da pesquisa operacional, cê vai criar um card como se fosse uma apostila e dentro desse card vai ficar todas as apostilas concentrada dentro de uma só, entendeu? É como se você criar uma gaveta pra mim colocar as outras coisas dentro delas. Entendeu?", "Ella Ribeiro: Aplicando novo conceito de 'Pastas de Disciplinas'. Agora as matérias agrupam suas respectivas apostilas em uma gaveta organizada, reduzindo a poluição no dashboard. (v3.63.0)"],
+      ["Faça a última verificação de erros para garantir que tudo esteja funcionando corretamente", "Decode Analytics Academy: Auditoria Final v3.63.4 - Verificação de integridade, UX e segurança concluída com sucesso."],
     ]);
 
 
