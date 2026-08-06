@@ -27,6 +27,14 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.49.3",
+    date: "2026-08-06",
+    title: "Histórico de Versões em Apostilas",
+    changes: [
+      { kind: 'feature', text: 'Implementado sistema de histórico de versões no Workbench Administrativo, permitindo comparar e restaurar edições anteriores.' },
+    ],
+  },
+  {
     version: "3.49.2",
     date: "2026-08-06",
     title: "Gestão Avançada de Arquivos",
