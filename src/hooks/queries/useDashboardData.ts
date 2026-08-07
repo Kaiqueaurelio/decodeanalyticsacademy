@@ -1,10 +1,10 @@
 // Hooks de cache para o Dashboard.
-// Usa React Query (já configurado em App.tsx com staleTime 5min) para evitar
-// refetch a cada navegação e diminuir o trabalho do JS thread no abrir do app.
+// Usa React Query (ja configurado em App.tsx com staleTime 5min) para evitar
+// refetch a cada navegacao e diminuir o trabalho do JS thread no abrir do app.
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
-import type { CourseCode } from '@/lib/subject-semester-map';
+import { guessSemesterFromCategory, type CourseCode } from '@/lib/subject-semester-map';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserProfile } from '@/hooks/queries/useUserProfile';
 
@@ -23,9 +23,9 @@ const APOSTILA_LIST_COLUMNS =
   'id, title, category, published, source_type, file_url, created_at, updated_at, semester, course, cover_url, teacher';
 
 export interface ApostilasListOptions {
-  /** Filtra para mostrar apenas as do semestre informado + as sem semestre (extracurricular). */
+  /** Mantido na queryKey para atualizar a UI quando o aluno troca o semestre. O filtro final fica na tela. */
   semester?: number | null;
-  /** Filtra para o curso do aluno (mantém apostilas com course NULL/vazio). */
+  /** Filtra para o curso do aluno (mantem apostilas com course NULL/vazio). */
   course?: CourseCode | null;
   /** Quando false, ignora os filtros e retorna tudo. Default: true. */
   enabled?: boolean;
@@ -33,11 +33,11 @@ export interface ApostilasListOptions {
 
 /**
  * Lista todas as apostilas publicadas — SEM o campo `content` nem `content_backup`,
- * que podem somar centenas de KB. O conteúdo só carrega na ApostilaPage.
+ * que podem somar centenas de KB. O conteudo so carrega na ApostilaPage.
  *
- * CORREÇÃO: Removida a restrição de semestre/curso que causava o sumiço das apostilas.
- * Agora retorna TODAS as apostilas publicadas, independentemente do perfil do aluno.
- * O filtro por semestre/curso era muito restritivo e deixava o dashboard vazio.
+ * Importante: nao filtramos por semestre no banco. Muitas apostilas antigas foram
+ * cadastradas sem `semester` ou com pequenas variacoes no nome da disciplina; se o
+ * filtro rodar no Supabase elas desaparecem do aluno antes de podermos normalizar.
  */
 export function useApostilasList(options: ApostilasListOptions = {}) {
   const { semester = null, course = null, enabled = true } = options;
@@ -49,46 +49,41 @@ export function useApostilasList(options: ApostilasListOptions = {}) {
   return useQuery({
     queryKey: ['apostilas', 'list', semester, course, canLoadApostilas, isAdmin, scope],
     enabled: canLoadApostilas,
-    refetchInterval: 5000, // Atualiza a cada 5 segundos para liberar acesso automático sem recarregar a página
+    refetchInterval: 5000,
     queryFn: async () => {
-      // Busca apostilas e garante que a query considere semester e course
       let q = supabase
         .from('apostilas')
         .select(APOSTILA_LIST_COLUMNS);
 
-      // Alunos comuns só veem publicadas
       if (!isAdmin) {
         q = q.eq('published', true);
       }
 
-      // Perfil restrito: só matérias ENEM
       if (!isAdmin && scope === 'enem_only') {
         q = q.in('category', ['ENEM']);
       }
 
-      // Filtro Opcional: Se as opções forem passadas, filtra no banco para maior eficiência
-      if (semester) {
-        q = q.eq('semester', semester);
-      }
-      
       const { data, error } = await q
         .order('category')
         .order('created_at', { ascending: false });
-        
+
       if (error) throw error;
-      return (data || []) as ApostilaSummary[];
+
+      return ((data || []) as ApostilaSummary[]).map((apostila) => ({
+        ...apostila,
+        semester: apostila.semester ?? guessSemesterFromCategory(apostila.category) ?? null,
+      }));
     },
   });
 }
 
-/** Quantidade de exercícios por apostila (uma chamada agregada). */
+/** Quantidade de exercicios por apostila (uma chamada agregada). */
 export function useExerciseCounts() {
   return useQuery({
     queryKey: ['exercises', 'counts'],
     queryFn: async () => {
       const { data, error } = await supabase.rpc('get_exercise_counts' as any);
       if (error) {
-        // Fallback: agregação no client se a RPC ainda não estiver disponível
         const { data: rows } = await supabase.from('exercises').select('apostila_id');
         const counts: Record<string, number> = {};
         rows?.forEach((r) => {
@@ -108,7 +103,7 @@ export interface DashboardStats {
   byApostila: Record<string, { title: string; hits: number; errors: number }>;
 }
 
-/** Estatísticas agregadas do aluno (RPC: 1 chamada O(1) em vez de baixar todas as respostas). */
+/** Estatisticas agregadas do aluno (RPC: 1 chamada O(1) em vez de baixar todas as respostas). */
 export function useDashboardStats(userId: string | undefined) {
   return useQuery({
     queryKey: ['dashboard', 'stats', userId],
