@@ -740,330 +740,60 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
     </div>
   );
 }
-            <div className="group relative flex h-20 w-20 shrink-0 items-center justify-center rounded-[2rem] bg-background shadow-2xl transition-transform hover:scale-105 active:scale-95 ring-1 ring-primary/20">
-              <div className="absolute inset-0 rounded-[2rem] bg-gradient-to-br from-primary/10 to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-              <img src={owlLogo} alt="Decode Logo" className="relative z-10 h-14 w-14 object-contain" />
-            </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-2 mb-1.5">
-                <Badge variant="outline" className="h-5 rounded-full border-primary/30 text-[9px] font-bold uppercase tracking-widest text-primary bg-primary/5 px-2">
-                  System Core v3.18
-                </Badge>
-                <div className="h-1 w-1 rounded-full bg-primary/40" />
-                <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest">
-                  Live Analytics
-                </span>
-              </div>
-              <h1 className="text-3xl font-black leading-tight tracking-tight sm:text-4xl bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-                Bem-vindo, {user?.email?.split('@')[0] || 'Admin'}
-              </h1>
-              <p className="mt-1.5 text-sm text-muted-foreground font-medium max-w-md leading-relaxed">
-                Gerencie sua academia digital com controle total sobre conteúdo, alunos e monetização.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3">
-            {setFilterSemester && (
-              <Select value={filterSemester || 'all'} onValueChange={setFilterSemester}>
-                <SelectTrigger className="h-11 w-[160px] rounded-2xl border-primary/20 bg-background/50 backdrop-blur-md font-semibold text-xs">
-                  <GraduationCap className="mr-2 h-4 w-4 text-primary" />
-                  <SelectValue placeholder="Semestre" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  {[1, 2, 3, 4, 5, 6, 7, 8].map(s => (
-                    <SelectItem key={s} value={s.toString()}>{s}º Semestre</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="h-11 rounded-2xl border-primary/20 bg-background/50 hover:bg-primary/5 transition-all px-5 font-semibold text-xs" 
-              onClick={() => setShowWidgetConfig(true)}
-            >
-              <Activity className="mr-2 h-3.5 w-3.5 text-primary" />
-              Configurar Painel
-            </Button>
-            <Button 
-              onClick={() => handleQuickCreate('link')} 
-              className="h-11 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground shadow-xl shadow-primary/20 transition-all px-6 font-bold text-xs"
-            >
-              <Plus className="mr-2 h-4 w-4 stroke-[3px]" /> Criar Apostila
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-11 rounded-2xl border-accent/30 bg-background/50 px-5 text-xs font-semibold"
-              onClick={() => navigate('/dashboard')}
-            >
-              <ExternalLink className="mr-2 h-4 w-4 text-accent" /> Ver como aluno
-            </Button>
-            <Button 
-              variant="secondary" 
-              size="icon" 
-              className="h-11 w-11 rounded-2xl border border-border shadow-sm hover:scale-105 active:scale-95 transition-all" 
-              onClick={load} 
-              aria-label="Atualizar dados"
-            >
-              <RefreshCw className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-
-        {/* Dialog de Personalização */}
-        <Dialog open={showWidgetConfig} onOpenChange={setShowWidgetConfig}>
-          <DialogContent className="max-w-sm">
-            <DialogHeader>
-              <DialogTitle>Personalizar Dashboard</DialogTitle>
-              <DialogDescription>Escolha quais widgets deseja ver no início.</DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              {[
-                { id: 'apostilas', label: 'Apostilas' },
-                { id: 'exercises', label: 'Exercícios' },
-                { id: 'users', label: 'Usuários' },
-                { id: 'ads', label: 'Anúncios' },
-              ].map(w => (
-                <div key={w.id} className="flex items-center justify-between">
-                  <span className="text-sm font-medium">{w.label}</span>
-                  <Switch 
-                    checked={visibleWidgets.includes(w.id)} 
-                    onCheckedChange={() => toggleWidget(w.id)}
-                  />
-                </div>
-              ))}
-            </div>
-            <Button className="w-full" onClick={() => setShowWidgetConfig(false)}>Pronto</Button>
-          </DialogContent>
-        </Dialog>
-      </motion.div>
-
-      {/* Centro operacional: pendências, saúde e caminhos frequentes */}
-      <section aria-labelledby="admin-operations-title" className="grid gap-4 lg:grid-cols-[1.35fr_1fr]">
-        <Card className="rounded-2xl border-border/60">
-          <CardHeader className="pb-3">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="flex-1">
-                <div className="flex items-center justify-between mb-1">
-                  <CardTitle id="admin-operations-title" className="flex items-center gap-2 text-lg">
-                    <AlertTriangle className="h-5 w-5 text-accent" /> Central de pendências
-                  </CardTitle>
-                  <Badge variant="outline" className="border-accent/30 bg-accent/10 text-accent">
-                    {contentHealth.drafts.length + contentHealth.withoutCategory.length} pendência(s)
-                  </Badge>
-                </div>
-                <CardDescription>Itens que merecem atenção antes da próxima publicação.</CardDescription>
-                
-                {(contentHealth.drafts.length > 0 || contentHealth.withoutCategory.length > 0) && (
-                  <div className="mt-4 flex animate-in fade-in slide-in-from-top-2">
-                    <Button 
-                      size="sm" 
-                      className="gap-2 gradient-primary shadow-lg shadow-primary/20 hover-lift w-full sm:w-auto"
-                      onClick={() => {
-                        toast.info("Ella Ribeiro está iniciando a resolução de pendências...");
-                        // Abrir sidebar da Ella
-                        const sidebarToggle = document.querySelector('[aria-label="Ella Ribeiro"]');
-                        if (sidebarToggle instanceof HTMLElement) sidebarToggle.click();
-                        
-                        setTimeout(() => {
-                          window.dispatchEvent(new CustomEvent('ella:prompt', { 
-                            detail: `Preciso que você atue na Central de Pendências. Temos ${contentHealth.drafts.length} rascunhos e ${contentHealth.withoutCategory.length} itens sem categoria. Analise os últimos materiais e resolva o que for possível automaticamente agora.` 
-                          }));
-                        }, 500);
-                      }}
-                    >
-                      <Sparkles className="h-4 w-4" /> Resolver Pendências
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="grid gap-3 sm:grid-cols-3">
-            <Button
-              variant="outline"
-              className="h-auto min-h-20 justify-start gap-3 rounded-xl p-4 text-left"
-              onClick={() => { setStatusFilter('draft'); setCategoryFilter('all'); }}
-            >
-              <FileText className="h-5 w-5 shrink-0 text-primary" />
-              <span><strong className="block text-lg tabular-nums">{contentHealth.drafts.length}</strong><span className="text-xs text-muted-foreground">rascunhos</span></span>
-            </Button>
-            <Button
-              variant="outline"
-              className="h-auto min-h-20 justify-start gap-3 rounded-xl p-4 text-left"
-              onClick={() => { setStatusFilter('draft'); setSortKey('updated_asc'); }}
-            >
-              <Clock3 className="h-5 w-5 shrink-0 text-accent" />
-              <span><strong className="block text-lg tabular-nums">{contentHealth.staleDrafts.length}</strong><span className="text-xs text-muted-foreground">parados há 30+ dias</span></span>
-            </Button>
-            <Button
-              variant="outline"
-              className="h-auto min-h-20 justify-start gap-3 rounded-xl p-4 text-left"
-              onClick={() => { setCategoryFilter('__uncategorized'); setSearch(''); setStatusFilter('all'); }}
-            >
-              <FolderOpen className="h-5 w-5 shrink-0 text-primary" />
-              <span><strong className="block text-lg tabular-nums">{contentHealth.withoutCategory.length}</strong><span className="text-xs text-muted-foreground">sem categoria</span></span>
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card className="rounded-2xl border-border/60">
-          <CardHeader className="pb-3">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <CardTitle className="flex items-center gap-2 text-lg"><ShieldCheck className="h-5 w-5 text-primary" /> Saúde do conteúdo</CardTitle>
-                <CardDescription>Organização e prontidão do acervo.</CardDescription>
-              </div>
-              <span className="text-2xl font-bold tabular-nums text-primary">{contentHealth.score}%</span>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Progress value={contentHealth.score} className="h-2" />
-            <div className="grid grid-cols-2 gap-2">
-              <Button variant="outline" className="justify-start rounded-xl" onClick={() => onNavigate('apostilas')}>
-                <PenLine className="mr-2 h-4 w-4" /> Editar conteúdo
-              </Button>
-              <Button variant="outline" className="justify-start rounded-xl" onClick={() => onNavigate('changelog')}>
-                <History className="mr-2 h-4 w-4" /> Histórico
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </section>
-
-      {/* Widget Grid Personalizável (Atalhos e Pendências) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {cards.map((c, i) => (
-          <motion.button
-            key={c.label}
-            type="button"
-            onClick={() => onNavigate(c.tab)}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.05 }}
-            whileHover={{ y: -4, transition: { duration: 0.2 } }}
-            className="group relative overflow-hidden rounded-2xl border border-border/60 bg-card p-5 text-left transition-all hover:border-primary/50 hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)]"
-          >
-            <div className="flex items-center justify-between">
-              <div
-                className={`flex h-10 w-10 items-center justify-center rounded-xl border transition-colors ${
-                  c.tone === 'primary'
-                    ? 'border-primary/20 bg-primary/5 text-primary group-hover:bg-primary/10'
-                    : 'border-accent/20 bg-accent/5 text-accent group-hover:bg-accent/10'
-                }`}
-              >
-                <c.icon className="h-5 w-5" />
-              </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground/50 transition-transform group-hover:translate-x-1" />
-            </div>
-            <div className="mt-4">
-              <p className="text-2xl font-bold tabular-nums tracking-tight">{c.value}</p>
-              <p className="text-sm font-medium text-muted-foreground">{c.label}</p>
-            </div>
-            {/* Ambient indicator */}
-            <div className={`absolute bottom-0 left-0 h-1 w-full opacity-0 transition-opacity group-hover:opacity-100 ${
-              c.tone === 'primary' ? 'bg-primary' : 'bg-accent'
-            }`} />
-          </motion.button>
-        ))}
-      </div>
-
-
-      {/* Chart + Ranking */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <Card className="lg:col-span-2 rounded-2xl">
+      {/* Seção de Gráficos e Ranking unificada */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <Card className="lg:col-span-2 border-primary/10 bg-card/20 backdrop-blur-md">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle className="text-lg">Engajamento da semana</CardTitle>
-              <CardDescription>Leituras de apostilas e exercícios respondidos (dados reais)</CardDescription>
+              <CardTitle className="text-lg">Engajamento Semanal</CardTitle>
+              <CardDescription>Atividade real de leitura e exercícios</CardDescription>
             </div>
-            <Badge variant="outline" className="rounded-full tabular-nums">{totalEngagement} interações</Badge>
+            <Badge variant="outline">{totalEngagement} Interações</Badge>
           </CardHeader>
           <CardContent>
-            {totalEngagement === 0 && (
-              <p className="pb-3 text-sm text-muted-foreground">
-                Nenhuma atividade registrada nos últimos 7 dias.
-              </p>
-            )}
-
-            <ResponsiveContainer width="100%" height={260}>
-              <BarChart data={engagement} barGap={6}>
-                <defs>
-                  <linearGradient id="grad-purple" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.95} />
-                    <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.45} />
-                  </linearGradient>
-                  <linearGradient id="grad-amber" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="hsl(var(--accent))" stopOpacity={0.95} />
-                    <stop offset="100%" stopColor="hsl(var(--accent))" stopOpacity={0.45} />
-                  </linearGradient>
-
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--popover))', border: '1px solid hsl(var(--border))', borderRadius: 12 }} />
-                <Legend />
-                <Bar dataKey="apostilas" fill="url(#grad-purple)" radius={[8,8,0,0]} />
-                <Bar dataKey="exercises" fill="url(#grad-amber)" radius={[8,8,0,0]} />
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={engagement}>
+                <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.1} vertical={false} />
+                <XAxis dataKey="day" strokeOpacity={0.5} fontSize={12} />
+                <YAxis strokeOpacity={0.5} fontSize={12} />
+                <Tooltip 
+                  cursor={{fill: 'rgba(var(--primary-rgb), 0.05)'}}
+                  contentStyle={{backgroundColor: 'hsl(var(--card))', borderRadius: '12px', border: '1px solid hsl(var(--border))'}}
+                />
+                <Bar dataKey="apostilas" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="exercises" fill="hsl(var(--accent))" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
 
-        {/* Ranking de alunos */}
-        <Card className="rounded-2xl">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Trophy className="h-5 w-5 text-primary" /> Ranking
-              </CardTitle>
-              <CardDescription>Clique para ver detalhes</CardDescription>
-            </div>
-            <Button size="sm" variant="ghost" onClick={() => onNavigate('users')}>
-              <ChevronRight className="h-4 w-4" />
-            </Button>
+        <Card className="border-primary/10 bg-card/20 backdrop-blur-md">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Trophy className="h-5 w-5 text-yellow-500" />
+              Ranking de Alunos
+            </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2">
-            {rankings.length === 0 && (
-              <p className="text-sm text-muted-foreground text-center py-6">
-                Ainda sem respostas registradas.
-              </p>
-            )}
-            {rankings.map((r, idx) => {
-              const MedalIcon = idx === 0 ? Trophy : idx === 1 ? Medal : idx === 2 ? Award : null;
-              const medalColor = idx === 0 ? 'text-primary' : idx === 1 ? 'text-accent' : 'text-muted-foreground';
-              return (
-                <button
-                  key={r.user_id}
-                  type="button"
-                  onClick={() => openStudent(r)}
-                  className="w-full text-left flex items-center gap-3 p-2.5 rounded-xl hover:bg-muted/40 transition-colors"
-                >
-                  <div className="w-7 text-center font-bold text-sm text-muted-foreground">
-                    {MedalIcon ? <MedalIcon className={`h-5 w-5 ${medalColor} mx-auto`} /> : `${idx + 1}º`}
+          <CardContent className="p-0">
+            <ScrollArea className="h-[300px] px-4">
+              <div className="space-y-2 pb-4">
+                {rankings.map((r, idx) => (
+                  <div key={r.user_id} className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all cursor-pointer" onClick={() => openStudent(r)}>
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs font-bold text-muted-foreground w-4">{idx + 1}º</span>
+                      <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-[10px] font-bold text-primary border border-primary/20">
+                        {r.avatar_url ? <img src={r.avatar_url} className="h-full w-full rounded-full object-cover" /> : r.full_name?.slice(0, 2).toUpperCase()}
+                      </div>
+                      <div className="text-xs">
+                        <p className="font-semibold line-clamp-1">{r.full_name}</p>
+                        <p className="text-muted-foreground">{r.hits} acertos</p>
+                      </div>
+                    </div>
+                    <Badge variant="outline" className="text-[10px] border-emerald-500/30 text-emerald-500">{r.accuracy}%</Badge>
                   </div>
-                  <div className="w-9 h-9 rounded-full border border-primary/30 bg-primary/10 text-primary flex items-center justify-center font-semibold text-xs shrink-0 overflow-hidden">
-                    {r.avatar_url
-                      ? <img src={r.avatar_url} alt="" className="w-full h-full object-cover" />
-                      : (r.full_name || '?').slice(0, 2).toUpperCase()}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{r.full_name || 'Aluno'}</p>
-                    <p className="text-xs text-muted-foreground">
-                      <span className="text-primary font-medium">{r.hits}</span> acertos · <span className="text-destructive">{r.errors}</span> erros
-                    </p>
-                  </div>
-                  <Badge variant="outline" className="rounded-full bg-primary/10 text-primary border-primary/30">
-                    {r.accuracy}%
-                  </Badge>
-
-                </button>
-              );
-            })}
+                ))}
+              </div>
+            </ScrollArea>
           </CardContent>
         </Card>
       </div>
