@@ -2061,9 +2061,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                                    className="hidden sm:inline-flex h-8 px-2.5 text-xs gap-1.5 gradient-primary text-primary-foreground"
                                    onClick={() => {
                                      if ((a as any).isPlaceholder) {
-                                       setImportTitle(a.title.replace('[GRADE] ', ''));
-                                       setImportTopic(a.category || '');
-                                       setImportStep('edit');
+                                       startPlaceholder(a);
                                      } else {
                                        navigate(`/admin/apostilas/${a.id}`);
                                      }
