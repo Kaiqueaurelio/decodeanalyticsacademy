@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, FileText, ChevronRight } from 'lucide-react';
+import { ArrowLeft, FileText, ChevronRight, Search } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { AppHeader } from '@/components/AppHeader';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { getSubjectColor } from '@/lib/subject-colors';
+import { guessSemesterFromCategory, subjectKey } from '@/lib/subject-semester-map';
 
 interface ApostilaRow {
   id: string;
@@ -23,19 +25,35 @@ export default function SubjectPage() {
   const [rows, setRows] = useState<ApostilaRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [exerciseCounts, setExerciseCounts] = useState<Record<string, number>>({});
+  const [query, setQuery] = useState('');
 
   useEffect(() => {
     let alive = true;
     (async () => {
       setLoading(true);
+      const targetKey = subjectKey(decodedCategory);
+      const targetSemester = guessSemesterFromCategory(decodedCategory);
+
       const { data } = await supabase
         .from('apostilas')
         .select('id, title, category, cover_url, semester, source_type, content')
-        .eq('category', decodedCategory)
         .eq('published', true)
         .order('title', { ascending: true });
+
       if (!alive) return;
-      setRows((data as ApostilaRow[]) || []);
+
+      const normalizedRows = ((data as ApostilaRow[]) || [])
+        .map((row) => ({
+          ...row,
+          semester: row.semester ?? guessSemesterFromCategory(row.category) ?? null,
+        }))
+        .filter((row) => {
+          const rowKey = subjectKey(row.category || '');
+          if (rowKey === targetKey) return true;
+          return !!targetSemester && row.semester === targetSemester && rowKey.includes(targetKey);
+        });
+
+      setRows(normalizedRows);
       const { data: counts } = await supabase.rpc('get_exercise_counts');
       if (!alive) return;
       setExerciseCounts((counts as Record<string, number>) || {});
@@ -48,6 +66,11 @@ export default function SubjectPage() {
 
   const color = getSubjectColor(decodedCategory);
   const cover = useMemo(() => rows.find((r) => r.cover_url)?.cover_url || null, [rows]);
+  const filteredRows = useMemo(() => {
+    const q = subjectKey(query);
+    if (!q) return rows;
+    return rows.filter((row) => subjectKey(`${row.title} ${row.category || ''}`).includes(q));
+  }, [rows, query]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -64,7 +87,6 @@ export default function SubjectPage() {
           </Button>
         </div>
 
-        {/* Hero */}
         <header
           className="relative mt-3 overflow-hidden rounded-3xl border border-border/60 h-40 sm:h-52"
           style={{
@@ -78,21 +100,33 @@ export default function SubjectPage() {
           <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent" />
           <div className="absolute inset-x-5 bottom-4">
             <p className="text-[11px] font-medium uppercase tracking-wider text-white/70">
-              Matéria
+              Materia
             </p>
             <h1 className="font-display font-bold text-white text-2xl sm:text-3xl leading-tight drop-shadow-[0_2px_6px_rgba(0,0,0,0.7)]">
               {decodedCategory}
             </h1>
             <p className="mt-1 text-xs text-white/80">
               {loading
-                ? 'Carregando…'
-                : `${rows.length} ${rows.length === 1 ? 'apostila disponível' : 'apostilas disponíveis'}`}
+                ? 'Carregando...'
+                : `${rows.length} ${rows.length === 1 ? 'apostila disponivel' : 'apostilas disponiveis'}`}
             </p>
           </div>
         </header>
 
-        {/* Grid de apostilas */}
-        <section className="mt-6">
+        <section className="mt-6 space-y-4">
+          {!loading && rows.length > 1 && (
+            <div className="relative max-w-md">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                type="search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value.slice(0, 80))}
+                placeholder="Buscar nesta materia..."
+                className="h-9 pl-9 text-xs"
+              />
+            </div>
+          )}
+
           {loading ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-2.5 sm:gap-4">
               {[0, 1, 2, 3, 4, 5].map((i) => (
@@ -101,11 +135,15 @@ export default function SubjectPage() {
             </div>
           ) : rows.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-border/60 p-10 text-center text-sm text-muted-foreground">
-              Nenhuma apostila cadastrada nesta matéria ainda.
+              Nenhuma apostila publicada nesta materia ainda.
+            </div>
+          ) : filteredRows.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-border/60 p-10 text-center text-sm text-muted-foreground">
+              Nenhuma apostila encontrada para essa busca.
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
-              {rows.map((a) => {
+              {filteredRows.map((a) => {
                 const exCount = exerciseCounts[a.id] || 0;
                 const words = (a.content || '').split(/\s+/).filter(Boolean).length;
                 const readMin = Math.max(2, Math.round(words / 220));
@@ -143,7 +181,7 @@ export default function SubjectPage() {
                         {exCount > 0 && (
                           <>
                             <span aria-hidden>·</span>
-                            <span className="tabular-nums">{exCount} exercícios</span>
+                            <span className="tabular-nums">{exCount} exercicios</span>
                           </>
                         )}
                       </div>
