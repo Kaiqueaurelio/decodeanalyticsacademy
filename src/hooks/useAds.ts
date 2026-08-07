@@ -3,6 +3,7 @@ import { supabase as supabaseTyped } from '@/integrations/supabase/client';
 const supabase = supabaseTyped as any;
 import { useAuth } from './useAuth';
 import { toPromoMediaUrl } from '@/lib/promo-media';
+import { recordSponsorLead } from '@/lib/sponsor-leads';
 
 export interface Ad {
   id: string;
