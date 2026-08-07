@@ -28,6 +28,17 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.65.0",
+    date: "2026-08-07",
+    title: "Ella Core Stability & Reorder Pro",
+    major: true,
+    changes: [
+      { kind: 'fix', text: 'Correção de erro 500/timeout na Ella através da otimização de parsers e redução de carga na estruturação de lições.' },
+      { kind: 'improvement', text: 'Reordenação de materiais por arrastar agora usa RPC atômica, eliminando falhas de concorrência no salvamento.' },
+      { kind: 'improvement', text: 'Workbench: melhoria na performance de autosave e persistência de versão segura em dispositivos iPhone 11.' },
+    ],
+  },
+  {
     version: "3.64.0",
     date: "2026-08-07",
     title: "Sincronização de Grade e Workbench Mobile",

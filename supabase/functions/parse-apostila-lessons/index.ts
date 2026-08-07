@@ -1,3 +1,4 @@
+// v3.65.0: Otimização de estruturação de lições e limpeza atômica.
 // Parser: pega o `content` markdown existente da apostila e explode em
 // módulos (H1) → capítulos (H2) → lições (H3). Se não houver H3 dentro de um H2,
 // o próprio H2 vira uma única lição com todo o corpo. Se não houver H1, cria

@@ -40,12 +40,24 @@ export function SortableMaterialsList({ items, onReorder, onRemove }: Props) {
     onReorder(next);
     try {
       // Atualiza sort_order de todos, em paralelo
-      await Promise.all(
-        next.map((item, idx) =>
-          supabase.from('apostila_materials').update({ sort_order: idx }).eq('id', item.id)
-        )
-      );
-    } catch {
+      // Usamos fetch direto porque o rpc gerado pelo supabase-js pode não ter
+      // regenerado os tipos ainda, causando erro de TS.
+      const { data: session } = await supabase.auth.getSession();
+      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/rpc/update_materials_order`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          'Authorization': `Bearer ${session.session?.access_token}`,
+        },
+        body: JSON.stringify({
+          payload: next.map((item, idx) => ({ id: item.id, sort_order: idx }))
+        })
+      });
+
+      if (!res.ok) throw new Error(await res.text());
+    } catch (err: any) {
+      console.error('[SortableMaterialsList] update error:', err);
       toast.error('Não foi possível salvar a nova ordem');
     }
   };

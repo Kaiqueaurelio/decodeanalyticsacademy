@@ -13,10 +13,8 @@
  *   └──────────────┴──────────────────────────────┴──────────────────┘
  *
  * Mobile: lista vira drawer, painel direito vira sheet inferior.
- *
- * Não substitui o AdminPage atual — é uma rota nova (/admin/apostilas/:id)
- * acessível pelo botão "Workbench" em cada card. Toda lógica de salvar é
- * autosave com debounce + Ctrl+S manual.
+ * Melhora: Arrastar e soltar para materiais e reordenação de seções
+ * facilitada no Workbench.
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
