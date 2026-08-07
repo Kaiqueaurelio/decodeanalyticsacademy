@@ -52,10 +52,10 @@ export function SmartPasteDialog({ open, onOpenChange, onApply }: Props) {
         <DialogHeader className="space-y-1 pr-8">
           <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
             <PenTool className="h-4 w-4 text-primary" />
-            Colar apostila
+            Colar e organizar
           </DialogTitle>
           <p className="text-xs text-muted-foreground">
-            Cole seu texto ou Markdown. Por padrão, o app preserva sua escrita e só limpa formatação invisível.
+            Cole seu texto ou Markdown. O app organizará automaticamente a formatação para você.
           </p>
         </DialogHeader>
 

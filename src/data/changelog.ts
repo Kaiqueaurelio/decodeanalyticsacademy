@@ -28,6 +28,17 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.66.0",
+    date: "2026-08-07",
+    title: "Version Control & Smart Organization",
+    major: true,
+    changes: [
+      { kind: 'feature', text: 'Implementado Histórico de Versões em todas as apostilas, permitindo desfazer alterações e restaurar estados anteriores com segurança.' },
+      { kind: 'feature', text: 'Novo sistema "Colar e Organizar" que limpa e estrutura automaticamente textos externos colados no editor.' },
+      { kind: 'improvement', text: 'Otimização mobile extrema para iPhone 11: maior fluidez no Workbench e controles de edição adaptados para uso com uma mão.' },
+    ],
+  },
+  {
     version: "3.65.0",
     date: "2026-08-07",
     title: "Ella Core Stability & Reorder Pro",
@@ -48,7 +59,6 @@ export const CHANGELOG: ChangelogEntry[] = [
       { kind: 'feature', text: 'Workbench Administrativo otimizado para mobile com edição direta de disciplina e título na barra superior.' },
       { kind: 'improvement', text: 'Editor de Markdown aprimorado para melhor legibilidade em telas pequenas (espaçamento relaxado).' },
     ],
-
   },
 
   {
