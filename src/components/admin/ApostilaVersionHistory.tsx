@@ -83,37 +83,51 @@ export function ApostilaVersionHistory({ apostilaId, onRestore }: ApostilaVersio
                 <p className="text-xs">Nenhuma versão anterior encontrada.</p>
               </div>
             ) : (
-              versions.map((v) => (
-                <div 
-                  key={v.id} 
-                  className="group relative border rounded-lg p-3 hover:border-primary/50 transition-colors bg-card"
-                >
-                  <div className="flex justify-between items-start mb-2">
-                    <div className="space-y-0.5">
-                      <p className="text-xs font-medium line-clamp-1">{v.title || 'Sem título'}</p>
-                      <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                        <Clock className="h-3 w-3" />
-                        {format(new Date(v.created_at), "dd 'de' MMM, HH:mm", { locale: ptBR })}
+              versions.map((v, idx) => {
+                const nextVersion = versions[idx + 1];
+                const hasDiff = nextVersion && (v.content.length !== nextVersion.content.length);
+
+                return (
+                  <div 
+                    key={v.id} 
+                    className="group relative border rounded-lg p-3 hover:border-primary/50 transition-colors bg-card"
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="space-y-0.5">
+                        <p className="text-xs font-medium line-clamp-1">{v.title || 'Sem título'}</p>
+                        <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                          <Clock className="h-3 w-3" />
+                          {format(new Date(v.created_at), "dd 'de' MMM, HH:mm", { locale: ptBR })}
+                          {hasDiff && (
+                            <span className="flex items-center gap-0.5 text-[9px] bg-primary/10 text-primary px-1 rounded">
+                              <PenTool className="h-2.5 w-2.5" />
+                              Alterado
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          size="icon"
+                          variant="secondary"
+                          className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={() => {
+                            onRestore({ title: v.title, content: v.content });
+                            setOpen(false);
+                            toast.success('Versão restaurada!');
+                          }}
+                          title="Restauração rápida"
+                        >
+                          <RotateCcw className="h-3.5 w-3.5" />
+                        </Button>
                       </div>
                     </div>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={() => {
-                        onRestore({ title: v.title, content: v.content });
-                        setOpen(false);
-                      }}
-                      title="Restaurar esta versão"
-                    >
-                      <RotateCcw className="h-3.5 w-3.5" />
-                    </Button>
+                    <p className="text-[10px] text-muted-foreground line-clamp-2 bg-muted/50 p-1.5 rounded font-mono">
+                      {v.content.substring(0, 80)}...
+                    </p>
                   </div>
-                  <p className="text-[10px] text-muted-foreground line-clamp-2 bg-muted/50 p-1.5 rounded">
-                    {v.content.substring(0, 100)}...
-                  </p>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </ScrollArea>
