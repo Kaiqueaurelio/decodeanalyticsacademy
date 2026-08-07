@@ -33,9 +33,11 @@ export const CHANGELOG: ChangelogEntry[] = [
     title: "Sincronização de Grade e Workbench Mobile",
     major: true,
     changes: [
-      { kind: 'improvement', text: 'Sincronização de grade curricular aprimorada: detecção robusta de disciplinas existentes.' },
-      { kind: 'feature', text: 'Workbench Administrativo otimizado para mobile com barra de ferramentas flutuante e edição rápida.' },
+      { kind: 'improvement', text: 'Sincronização de grade curricular aprimorada: detecção robusta de disciplinas existentes para evitar duplicidade de placeholders.' },
+      { kind: 'feature', text: 'Workbench Administrativo otimizado para mobile com edição direta de disciplina e título na barra superior.' },
+      { kind: 'improvement', text: 'Editor de Markdown aprimorado para melhor legibilidade em telas pequenas (espaçamento relaxado).' },
     ],
+
   },
 
   {

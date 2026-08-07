@@ -94,13 +94,17 @@ export function MarkdownEditor({
   const [autoFit, setAutoFit] = useState<number | null>(null);
   const [tocCollapsed, setTocCollapsed] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
-    return window.localStorage.getItem(TOC_KEY) === '1';
+    return window.innerWidth < 1024 || window.localStorage.getItem(TOC_KEY) === '1';
   });
   const [inspectorCollapsed, setInspectorCollapsed] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
-    return window.localStorage.getItem(INSPECTOR_KEY) === '1';
+    return window.innerWidth < 1024 || window.localStorage.getItem(INSPECTOR_KEY) === '1';
   });
-  const [focusMode, setFocusMode] = useState(false);
+  const [focusMode, setFocusMode] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.innerWidth < 768;
+  });
+
   const [viewMode, setViewMode] = useState<'edit' | 'preview' | 'split'>('edit');
   const [mobileTocOpen, setMobileTocOpen] = useState(false);
   const [mobileInspectorOpen, setMobileInspectorOpen] = useState(false);
@@ -151,7 +155,9 @@ export function MarkdownEditor({
     extensions: [
       StarterKit.configure({
         heading: { levels: [1, 2, 3] },
-        codeBlock: { HTMLAttributes: { class: 'rounded bg-muted p-3 font-mono text-sm' } },
+        paragraph: { HTMLAttributes: { class: 'leading-relaxed mobile-friendly-p' } },
+        codeBlock: { HTMLAttributes: { class: 'rounded bg-muted p-3 font-mono text-sm overflow-x-auto' } },
+
       }),
       Underline,
       TextStyle,
@@ -327,8 +333,9 @@ export function MarkdownEditor({
         onToggleFocus={() => setFocusMode((f) => !f)}
       />
 
-      {/* Toggle Editar / Split / Visualizar como aluno */}
-      <div className="flex items-center gap-1 px-2 py-1 border-b border-border bg-muted/40 overflow-x-auto">
+      {/* Toggle Editar / Split / Visualizar como aluno — Mobile Responsive */}
+      <div className="flex items-center gap-1 px-2 py-1 border-b border-border bg-muted/40 overflow-x-auto scrollbar-none sticky top-0 z-20">
+
         <button
           type="button"
           onClick={() => setViewMode('edit')}
@@ -370,10 +377,10 @@ export function MarkdownEditor({
         </button>
       </div>
 
-      {(viewMode === 'edit' || viewMode === 'split') && !focusMode && (
+      {(viewMode === 'edit' || viewMode === 'split') && (!focusMode || window.innerWidth >= 768) && (
         <div className="flex flex-col border-b border-border">
           <EditorRibbon editor={editor} onInsertImage={insertImage} onSave={onSave} saveStatus={status} />
-          <div className="flex items-center gap-4 px-4 py-1.5 bg-primary/5 border-t border-primary/10">
+          <div className="flex items-center gap-4 px-4 py-1.5 bg-primary/5 border-t border-primary/10 overflow-x-auto scrollbar-none">
             <span className="text-[10px] font-bold text-primary uppercase tracking-widest flex items-center gap-1">
               <Wand2 className="h-3 w-3" /> Atalhos Rápidos:
             </span>

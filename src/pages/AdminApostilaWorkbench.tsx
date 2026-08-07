@@ -484,7 +484,8 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       />
 
       {/* Toolbar do Workbench — Otimizado para Mobile */}
-      <div className="sticky top-0 z-20 flex items-center gap-2 px-3 py-1.5 border-b border-border bg-card/95 backdrop-blur-sm shadow-sm overflow-x-auto scrollbar-none">
+      <div className="sticky top-0 z-40 flex items-center gap-2 px-3 py-1.5 border-b border-border bg-card/95 backdrop-blur-md shadow-sm overflow-x-auto scrollbar-none">
+
         <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
           <SheetTrigger asChild>
             <Button size="sm" variant="ghost" className="h-7 w-7 p-0 lg:w-auto lg:px-2.5 lg:gap-1.5 text-xs">
@@ -502,11 +503,15 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
             className="h-6 text-sm font-bold border-0 bg-transparent focus-visible:ring-0 px-1 truncate shadow-none"
           />
           <div className="flex items-center gap-2 px-1">
-            <span className="text-[9px] font-black uppercase text-muted-foreground/60 tracking-widest truncate max-w-[100px]">
-              {category || 'Sem disciplina'}
-            </span>
+            <input
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              placeholder="Disciplina"
+              className="text-[9px] font-black uppercase text-muted-foreground/60 tracking-widest bg-transparent border-none p-0 focus:ring-0 truncate max-w-[100px] placeholder:text-muted-foreground/30"
+            />
           </div>
         </div>
+
 
 
         {/* Semestre */}

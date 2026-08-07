@@ -42,24 +42,31 @@ export const BY_SEMESTER: Record<number, string[]> = {
     'Atividades Praticas Supervisionadas V (APS)',
   ],
   6: [
-    'Sistemas Operacionais e Mobile', 'Calculo Numerico Computacional',
-    'Pesquisa Operacional', 'Aspectos Teoricos da Computacao',
-    'Gestao de Projetos', 'Processamento de Imagem e Visao Computacional',
-    'Ciencia de Dados', 'Metodos de Pesquisa',
+    'Pesquisa Operacional',
+    'Sistemas Operacionais e Mobile',
+    'Calculo Numerico Computacional',
+    'Aspectos Teoricos da Computacao',
+    'Gestao de Projetos',
+    'Processamento de Imagem e Visao Computacional',
+    'Ciencia de Dados',
+    'Metodos de Pesquisa',
     'Interdisciplinar de Ciencia da Computacao',
     'Atividades Praticas Supervisionadas VI (APS)',
+    'Estudos Disciplinares VI',
   ],
   7: [
     'Seguranca da Informacao', 'Computacao em Nuvem',
     'Aprendizado de Maquina (Machine Learning)', 'Topicos Especiais de Computacao',
     'Sistemas Digitais',
     'Atividades Praticas Supervisionadas VII (APS)',
+    'Estudos Disciplinares VII',
   ],
   8: [
     'Trabalho de Conclusao de Curso (TCC)', 'Empreendedorismo',
-    'Gestao de Projetos', 'Etica Profissional',
+    'Gestao de Projetos II', 'Etica Profissional',
     'Computacao de Alto Desempenho',
     'Atividades Praticas Supervisionadas VIII (APS)',
+    'Estudos Disciplinares VIII',
   ],
 };
 
@@ -67,10 +74,18 @@ export const BY_SEMESTER: Record<number, string[]> = {
 export function guessSemesterFromCategory(category?: string | null): number | null {
   if (!category) return null;
   const hay = stripAccents(category);
-  // Testa do 8º ao 1º (termos mais específicos primeiro)
+  
+  // 1. Tenta match EXATO primeiro (mais preciso)
+  for (let sem = 1; sem <= 8; sem++) {
+    for (const kw of BY_SEMESTER[sem]) {
+      if (stripAccents(kw) === hay) return sem;
+    }
+  }
+
+  // 2. Fallback: match parcial (testa do 8º ao 1º para termos mais específicos primeiro)
   for (let sem = 8; sem >= 1; sem--) {
     for (const kw of BY_SEMESTER[sem]) {
-      if (hay.includes(kw)) return sem;
+      if (hay.includes(stripAccents(kw))) return sem;
     }
   }
   return null;

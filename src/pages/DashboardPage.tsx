@@ -112,7 +112,8 @@ export default function DashboardPage() {
       };
 
       // Criar lista de disciplinas que já existem no banco para este semestre
-      const existingCategories = new Set(list.map(a => a.category?.trim()));
+      const existingCategories = new Set(list.map(a => a.category?.trim() || ''));
+
 
 
       // Gerar placeholders apenas para as disciplinas da grade que NÃO existem no banco
@@ -209,7 +210,7 @@ export default function DashboardPage() {
       <div className="flex flex-col min-h-screen transition-[padding] duration-300 ease-out">
         <DashboardTopbar hideSearchOnMobile />
 
-        <main className="flex-1 px-3 sm:px-6 lg:px-8 py-6 space-y-8 max-w-[1600px] w-full mx-auto animate-content-show overflow-x-hidden pt-12 pb-24">
+        <main className="flex-1 px-3 sm:px-6 lg:px-8 py-6 space-y-8 max-w-[1600px] w-full mx-auto animate-content-show pt-12 pb-24">
           {isAdmin && (
             <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-accent/10 px-3 py-1 border border-accent/20">
               <ShieldCheck className="h-3 w-3 text-accent" />
@@ -346,7 +347,7 @@ export default function DashboardPage() {
             />
           </Reveal>
 
-          <section id="minhas-disciplinas" className="scroll-mt-24 rounded-2xl border border-border bg-card p-5">
+          <section id="minhas-disciplinas" className="scroll-mt-24 rounded-2xl border border-border bg-card/40 backdrop-blur-sm p-4 sm:p-6 transition-all duration-500">
             <header className="flex flex-col gap-4 mb-6 md:flex-row md:items-center md:justify-between">
               <div className="flex flex-col gap-1">
                 <div className="flex items-center gap-2">
