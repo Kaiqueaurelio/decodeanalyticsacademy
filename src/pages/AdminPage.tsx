@@ -2072,9 +2072,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                                  </Button>
                                  <Button size="icon" variant="ghost" className="hidden sm:inline-flex h-8 w-8" onClick={() => { 
                                    if ((a as any).isPlaceholder) {
-                                     setImportTitle(a.title.replace('[GRADE] ', ''));
-                                     setImportTopic(a.category || '');
-                                     setImportStep('edit');
+                                     startPlaceholder(a);
                                    } else {
                                      setEditingApostila(a); setEditTitle(a.title); setEditContent(a.content || ''); setEditCategory(a.category); 
                                    }
