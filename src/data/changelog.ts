@@ -28,6 +28,27 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.72.0",
+    date: "2026-08-08",
+    title: "Dashboard de Conversão e Análise Comparativa",
+    major: true,
+    changes: [
+      { kind: 'feature', text: 'Implementado novo dashboard de funil de conversão com gráficos comparativos de visualizações, cliques e leads por anúncio.' },
+      { kind: 'feature', text: 'Adicionada visualização de série temporal para monitorar a tendência de conversão comercial dos últimos 15 dias.' },
+      { kind: 'improvement', text: 'Refinada a hierarquia visual na aba de Patrocinadores com alternância rápida entre modo Lista e modo Gráficos.' },
+    ],
+  },
+  {
+    version: "3.71.0",
+    date: "2026-08-08",
+    title: "Sincronização de Conversão e UI Limpa",
+    major: true,
+    changes: [
+      { kind: 'fix', text: 'Sincronizados contadores de anúncios (views/clicks) com o funil comercial (sponsor_leads) via triggers no banco de dados.' },
+      { kind: 'improvement', text: 'Landing Page: removidos componentes intrusivos (popups/sidebar) para uma experiência de visitante focada na conversão.' },
+    ],
+  },
+  {
     version: "3.70.0",
     date: "2026-08-08",
     title: "Gestão Atômica e Exclusão em Lote",

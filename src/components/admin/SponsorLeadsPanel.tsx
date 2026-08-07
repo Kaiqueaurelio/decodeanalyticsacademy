@@ -7,10 +7,12 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Handshake, RefreshCw, Search, Trash2, Clock, Mail, Phone, Globe } from 'lucide-react';
+import { Handshake, RefreshCw, Search, Trash2, Clock, Mail, Phone, Globe, LayoutDashboard } from 'lucide-react';
 import { SponsorLeadsMetrics } from '@/components/admin/SponsorLeadsMetrics';
 import { SponsorFunnel } from '@/components/admin/SponsorFunnel';
 import { SPONSOR_LEAD_STATUS, SPONSOR_LEAD_CHANNEL_LABEL } from '@/lib/sponsor-leads';
+import { ConversionComparisonCharts } from '@/components/admin/ConversionComparisonCharts';
+import { useAds } from '@/hooks/useAds';
 
 type Lead = {
   id: string;
@@ -62,6 +64,8 @@ export function SponsorLeadsPanel() {
   const [statusFilter, setStatusFilter] = useState('todos');
   const [openId, setOpenId] = useState<string | null>(null);
   const [noteDraft, setNoteDraft] = useState('');
+  const [showCharts, setShowCharts] = useState(false);
+  const { ads } = useAds();
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -162,33 +166,53 @@ export function SponsorLeadsPanel() {
             Acompanhe o funil de vendas: briefings recebidos, contatos realizados e contratos fechados.
           </CardDescription>
         </div>
-        <Button variant="outline" size="sm" onClick={() => void load()} className="gap-2" aria-label="Recarregar interessados">
-          <RefreshCw className="h-4 w-4" strokeWidth={1.75} />
-          Atualizar
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            variant={showCharts ? "secondary" : "outline"} 
+            size="sm" 
+            onClick={() => setShowCharts(!showCharts)} 
+            className="gap-2"
+          >
+            <LayoutDashboard className="h-4 w-4" />
+            {showCharts ? "Ver Lista" : "Ver Gráficos"}
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => void load()} className="gap-2" aria-label="Recarregar interessados">
+            <RefreshCw className="h-4 w-4" strokeWidth={1.75} />
+            Atualizar
+          </Button>
+        </div>
       </CardHeader>
 
       <CardContent className="space-y-5">
-        {!loading && !error && <SponsorLeadsMetrics leads={leads} />}
-        {!loading && !error && leads.length > 0 && (
-          <SponsorFunnel
-            leads={leads.map((l) => ({
-              id: l.id,
-              company: l.company,
-              contact_name: l.contact_name,
-              email: l.email,
-              plan: l.plan,
-              channel: l.channel,
-              source: l.source,
-              status: l.status,
-              created_at: l.created_at,
-              cta_id: l.cta_id,
-              utm_source: l.utm_source,
-              utm_medium: l.utm_medium,
-              utm_campaign: l.utm_campaign,
-            }))}
-            events={events.map((e) => ({ lead_id: e.lead_id, kind: e.kind }))}
-          />
+        {!loading && !error && showCharts && (
+          <div className="animate-in fade-in slide-in-from-top-4 duration-300 space-y-6">
+            <SponsorLeadsMetrics leads={leads} />
+            <ConversionComparisonCharts ads={ads} leads={leads} />
+            <SponsorFunnel
+              leads={leads.map((l) => ({
+                id: l.id,
+                company: l.company,
+                contact_name: l.contact_name,
+                email: l.email,
+                plan: l.plan,
+                channel: l.channel,
+                source: l.source,
+                status: l.status,
+                created_at: l.created_at,
+                cta_id: l.cta_id,
+                utm_source: l.utm_source,
+                utm_medium: l.utm_medium,
+                utm_campaign: l.utm_campaign,
+              }))}
+              events={events.map((e) => ({ lead_id: e.lead_id, kind: e.kind }))}
+            />
+          </div>
+        )}
+
+        {!loading && !error && !showCharts && leads.length > 0 && (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
+            <SponsorLeadsMetrics leads={leads} />
+          </div>
         )}
 
 
