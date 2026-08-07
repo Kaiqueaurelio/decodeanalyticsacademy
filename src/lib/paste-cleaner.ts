@@ -34,6 +34,7 @@ const NOTION_NOISE = [
 ];
 
 const BULLET_CHARS = /^[\s]*[•●○◦▪■◆►‣⁃·]\s+/;
+const TABLE_CELL_DELIMITER = /\t| {2,}| \| /;
 
 interface CleanOptions {
   /** Se true, tenta inferir títulos a partir de numeração e caixa alta. Default false para preservar texto. */
