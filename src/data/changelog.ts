@@ -28,6 +28,18 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.67.0",
+    date: "2026-08-07",
+    title: "Otimização Mobile e Smart Tools",
+    major: true,
+    changes: [
+      { kind: 'feature', text: 'Smart Paste Pro: Agora detecta automaticamente dados tabulares (Excel/Notion) e converte em tabelas Markdown estruturadas.' },
+      { kind: 'improvement', text: 'Histórico com Diff: Adicionado indicador visual de alterações entre versões no histórico de apostilas.' },
+      { kind: 'improvement', text: 'Restauração Rápida: Botão de restauração simplificado com feedback imediato de sucesso.' },
+      { kind: 'feature', text: 'Undo/Redo Mobile: Atalhos de desfazer/refazer otimizados para teclados externos (Cmd/Ctrl+Z) no iPhone 11.' },
+      { kind: 'improvement', text: 'Status de Salvamento: Melhoria no feedback visual e atalhos de salvamento no editor.' },
+    ],
+  },
     version: "3.66.0",
     date: "2026-08-07",
     title: "Version Control & Smart Organization",
