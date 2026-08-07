@@ -34,6 +34,7 @@ const NOTION_NOISE = [
 ];
 
 const BULLET_CHARS = /^[\s]*[•●○◦▪■◆►‣⁃·]\s+/;
+const TABLE_CELL_DELIMITER = /\t| {2,}| \| /;
 
 interface CleanOptions {
   /** Se true, tenta inferir títulos a partir de numeração e caixa alta. Default false para preservar texto. */
@@ -153,6 +154,46 @@ export function cleanPastedContent(raw: string, opts: CleanOptions = {}): CleanR
   if (noiseRemoved > 0) changes.push(`Removeu ${noiseRemoved} linha(s) de ruído (Notion/breadcrumbs)`);
 
   let result = out.join('\n');
+
+  // Detecção de Tabela Experimental (Tabs ou colunas alinhadas)
+  if (result.includes('\t') || result.match(/(?:.*\s{3,}.*\n){2,}/)) {
+    const lines = result.split('\n');
+    const tableOut: string[] = [];
+    let currentTable: string[][] = [];
+
+    const flushTable = () => {
+      if (currentTable.length === 0) return;
+      const colCount = Math.max(...currentTable.map(r => r.length));
+      if (colCount > 1) {
+        const header = currentTable[0];
+        const rows = currentTable.slice(1);
+        tableOut.push('| ' + header.map(h => h || ' ').join(' | ') + ' |');
+        tableOut.push('| ' + Array(colCount).fill('---').join(' | ') + ' |');
+        rows.forEach(r => {
+          const padded = [...r, ...Array(colCount - r.length).fill(' ')];
+          tableOut.push('| ' + padded.map(c => c || ' ').join(' | ') + ' |');
+        });
+        tableOut.push('');
+      } else {
+        currentTable.forEach(r => tableOut.push(r[0]));
+      }
+      currentTable = [];
+    };
+
+    for (const line of lines) {
+      const cells = line.split(TABLE_CELL_DELIMITER).map(c => c.trim()).filter(Boolean);
+      if (cells.length > 1) {
+        currentTable.push(cells);
+      } else {
+        flushTable();
+        tableOut.push(line);
+      }
+    }
+    flushTable();
+    result = tableOut.join('\n');
+    changes.push('Formatou dados tabulares detectados em tabela Markdown');
+  }
+
   const beforeBlank = result;
   result = result.replace(/\n{3,}/g, '\n\n').replace(/^\s+|\s+$/g, '');
   if (result !== beforeBlank) changes.push('Compactou linhas em branco extras');
