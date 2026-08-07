@@ -112,7 +112,8 @@ export default function DashboardPage() {
       };
 
       // Criar lista de disciplinas que já existem no banco para este semestre
-      const existingCategories = new Set(list.map(a => a.category));
+      const existingCategories = new Set(list.map(a => a.category?.trim()));
+
 
       // Gerar placeholders apenas para as disciplinas da grade que NÃO existem no banco
       const placeholders = canonicalSubjects
