@@ -28,6 +28,17 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.74.0",
+    date: "2026-08-07",
+    title: "Cadastro de Alunos e Acesso Imediato por RA",
+    major: false,
+    changes: [
+      { kind: 'feature', text: 'Administrador agora pode cadastrar alunos manualmente (por RA ou e-mail) direto na aba de usuários, com senha inicial gerada automaticamente.' },
+      { kind: 'improvement', text: 'Cadastro por RA passa a liberar o acesso na hora, sem exigir verificação de e-mail.' },
+      { kind: 'fix', text: 'Botão "Começar" das matérias da grade agora abre e rola até a Central de Criação já preenchida.' },
+    ],
+  },
+  {
     version: "3.73.11",
     date: "2026-08-07",
     title: "Auditoria de Linguagem e UX",
