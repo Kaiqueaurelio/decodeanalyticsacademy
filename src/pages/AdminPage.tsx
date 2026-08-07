@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { AdminNavPanel } from '@/components/admin/AdminNavPanel';
+import { AdminCreateUserDialog } from '@/components/admin/AdminCreateUserDialog';
 import { ADMIN_NAV_BY_ID } from '@/config/adminNav';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 
