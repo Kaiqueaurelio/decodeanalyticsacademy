@@ -13,6 +13,20 @@ const stripAccents = (s: string) =>
 // Lista canônica por semestre (subset de keywords). A ordem importa: testamos
 // do 8º ao 1º para que termos mais específicos (ex: "II") batam antes.
 export const BY_SEMESTER: Record<number, string[]> = {
+  // Matérias do 6º Semestre (Foco do usuário)
+  6: [
+    'Pesquisa Operacional',
+    'Sistemas Operacionais e Mobile',
+    'Calculo Numerico Computacional',
+    'Aspectos Teoricos da Computacao',
+    'Gestao de Projetos',
+    'Processamento de Imagem e Visao Computacional',
+    'Ciencia de Dados',
+    'Metodos de Pesquisa',
+    'Interdisciplinar de Ciencia da Computacao',
+    'Atividades Praticas Supervisionadas VI (APS)',
+  ],
+
   1: [
     'Logica de Programacao', 'Matematica Discreta', 'Introducao a Computacao',
     'Comunicacao e Expressao', 'Fundamentos de Sistemas de Informacao',
@@ -40,14 +54,6 @@ export const BY_SEMESTER: Record<number, string[]> = {
     'Arquitetura de Computadores Modernos', 'Linguagens Formais e Automatos',
     'Computacao Grafica', 'Analise Matematica',
     'Atividades Praticas Supervisionadas V (APS)',
-  ],
-  6: [
-    'Sistemas Operacionais e Mobile', 'Calculo Numerico Computacional',
-    'Pesquisa Operacional', 'Aspectos Teoricos da Computacao',
-    'Gestao de Projetos', 'Processamento de Imagem e Visao Computacional',
-    'Ciencia de Dados', 'Metodos de Pesquisa',
-    'Interdisciplinar de Ciencia da Computacao',
-    'Atividades Praticas Supervisionadas VI (APS)',
   ],
   7: [
     'Seguranca da Informacao', 'Computacao em Nuvem',
