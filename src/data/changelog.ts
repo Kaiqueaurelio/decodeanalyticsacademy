@@ -28,6 +28,15 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.73.3",
+    date: "2026-08-08",
+    title: "Otimização Visual: Visão Computacional",
+    major: false,
+    changes: [
+      { kind: 'content', text: 'Reestruturação completa da apostila de Processamento de Imagem e Visão Computacional com hierarquia Markdown, tabelas e formatação profissional.' },
+    ],
+  },
+  {
     version: "3.73.2",
     date: "2026-08-08",
     title: "Restauração de Ativos: Pesquisa Operacional",
