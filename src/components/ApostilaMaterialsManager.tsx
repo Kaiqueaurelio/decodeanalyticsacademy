@@ -2,12 +2,12 @@ import { useEffect, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { dedupeByMaterialName, duplicateMaterialLinkIds, materialDedupeKey } from '@/lib/material-dedupe';
 import {
-  Plus, Trash2, FileText, Image, Video, Music, Presentation, File, Link as LinkIcon, FileSpreadsheet, Search, Paperclip, Wand2, Loader2, Headphones, Upload, FileUp
+  Plus, Trash2, FileText, Image, Video, Music, Presentation, File, Link as LinkIcon, FileSpreadsheet, Search, Paperclip, Wand2, Loader2, Headphones, FileUp
 } from 'lucide-react';
 import { autoLinkApostila } from '@/lib/auto-link-materials';
 import { ManualLinkMaterialsDialog } from '@/components/ManualLinkMaterialsDialog';
@@ -69,17 +69,30 @@ export function ApostilaMaterialsManager({ apostilaId, apostilaTitle, open: open
       })
       .filter(Boolean) as LinkedMaterial[];
 
-    setLinked(linkedItems);
-    setAllMaterials(mats || []);
+    const duplicateLinkIds = duplicateMaterialLinkIds(linkedItems, (item) => item.material);
+    if (duplicateLinkIds.length > 0) {
+      await supabase.from('apostila_materials').delete().in('id', duplicateLinkIds);
+      toast.success(`${duplicateLinkIds.length} material(is) duplicado(s) removido(s).`);
+    }
+
+    const cleanLinkedItems = dedupeByMaterialName(linkedItems, (item) => item.material);
+    setLinked(cleanLinkedItems);
+    setAllMaterials(dedupeByMaterialName(mats || [], (material) => material));
     setLoading(false);
   };
 
   useEffect(() => { if (open) load(); }, [open, apostilaId]);
 
-  const linkedIds = new Set(linked.map(l => l.material.id));
-  const available = allMaterials.filter(m => !linkedIds.has(m.id) && (!search.trim() || m.title.toLowerCase().includes(search.toLowerCase())));
+  const linkedKeys = new Set(linked.map(l => materialDedupeKey(l.material)));
+  const available = allMaterials.filter(m => !linkedKeys.has(materialDedupeKey(m)) && (!search.trim() || m.title.toLowerCase().includes(search.toLowerCase())));
 
   const addMaterial = async (materialId: string) => {
+    const material = allMaterials.find((m) => m.id === materialId);
+    if (material && linkedKeys.has(materialDedupeKey(material))) {
+      toast.info('Esse material já está vinculado nesta apostila.');
+      return;
+    }
+
     const maxOrder = linked.length > 0 ? Math.max(...linked.map(l => l.sort_order)) + 1 : 0;
     const { error } = await supabase.from('apostila_materials').insert({
       apostila_id: apostilaId, material_id: materialId, sort_order: maxOrder,
@@ -113,17 +126,20 @@ export function ApostilaMaterialsManager({ apostilaId, apostilaTitle, open: open
     load();
   };
 
-  /**
-   * Upload rápido de áudio: cria material 'audio' + vincula à apostila em 1 clique.
-   * Útil para o admin subir as gravações das aulas direto pelo modal da apostila.
-   */
   const handleAudioUpload = async (file: File) => {
     if (!user) { toast.error('Sessão expirada'); return; }
-    if (file.size > 100 * 1024 * 1024) { toast.error('Áudio acima de 100MB.'); return; }
+    if (file.size > 100 * 1024 * 1024) { toast.error('Arquivo acima de 100MB.'); return; }
 
     setUploadingAudio(true);
     const tId = toast.loading(`Subindo ${file.name}...`);
     try {
+      const title = file.name.replace(/\.[^.]+$/, '');
+      const newKey = materialDedupeKey({ title });
+      if (linkedKeys.has(newKey)) {
+        toast.info(`"${title}" já está vinculado nesta apostila.`, { id: tId });
+        return;
+      }
+
       const ext = file.name.split('.').pop() || 'mp3';
       const path = `audios/${apostilaId}/${Date.now()}.${ext}`;
 
@@ -131,7 +147,6 @@ export function ApostilaMaterialsManager({ apostilaId, apostilaTitle, open: open
         .from('materials').upload(path, file, { contentType: file.type, upsert: false });
       if (upErr) throw upErr;
 
-      const title = file.name.replace(/\.[^.]+$/, '');
       const { data: mat, error: insErr } = await supabase.from('materials').insert({
         title, type: 'audio', file_path: path, created_by: user.id,
       } as any).select().single();
@@ -143,10 +158,10 @@ export function ApostilaMaterialsManager({ apostilaId, apostilaTitle, open: open
       });
       if (linkErr) throw linkErr;
 
-      toast.success(`Áudio "${title}" vinculado à apostila!`, { id: tId });
+      toast.success(`Arquivo "${title}" vinculado à apostila!`, { id: tId });
       load();
     } catch (err: any) {
-      toast.error(err?.message || 'Erro ao subir áudio', { id: tId });
+      toast.error(err?.message || 'Erro ao subir arquivo', { id: tId });
     } finally {
       setUploadingAudio(false);
       if (audioInputRef.current) audioInputRef.current.value = '';
@@ -170,7 +185,6 @@ export function ApostilaMaterialsManager({ apostilaId, apostilaTitle, open: open
             </DialogTitle>
           </DialogHeader>
 
-          {/* Upload rápido de áudio — destaque */}
           <div className="grid grid-cols-2 gap-3 mb-4">
             <button
               type="button"
@@ -195,7 +209,7 @@ export function ApostilaMaterialsManager({ apostilaId, apostilaTitle, open: open
                 input.accept = 'application/pdf,application/epub+zip,application/vnd.openxmlformats-officedocument.wordprocessingml.document';
                 input.onchange = async (e) => {
                   const file = (e.target as HTMLInputElement).files?.[0];
-                  if (file) handleAudioUpload(file); // Reusando lógica de upload genérico
+                  if (file) handleAudioUpload(file);
                 };
                 input.click();
               }}
@@ -218,7 +232,6 @@ export function ApostilaMaterialsManager({ apostilaId, apostilaTitle, open: open
             onChange={(e) => { const f = e.target.files?.[0]; if (f) handleAudioUpload(f); }}
           />
 
-          {/* Auto-link buttons */}
           <div className="grid grid-cols-2 gap-2 mb-2">
             <Button size="sm" variant="outline" className="text-xs gap-1.5" onClick={handleAutoLink} disabled={autoLinking}>
               {autoLinking ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wand2 className="h-3 w-3" />}
@@ -229,10 +242,11 @@ export function ApostilaMaterialsManager({ apostilaId, apostilaTitle, open: open
             </Button>
           </div>
 
-          {/* Linked materials */}
           <div className="space-y-2 mb-4">
             <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Vinculados ({linked.length})</p>
-            {linked.length === 0 ? (
+            {loading ? (
+              <div className="flex justify-center py-4"><Loader2 className="h-4 w-4 animate-spin text-primary" /></div>
+            ) : linked.length === 0 ? (
               <p className="text-xs text-muted-foreground py-3 text-center">Nenhum material vinculado.</p>
             ) : (
               <div className="space-y-1.5">
@@ -253,7 +267,6 @@ export function ApostilaMaterialsManager({ apostilaId, apostilaTitle, open: open
             )}
           </div>
 
-          {/* Add from library */}
           <div className="space-y-2 flex-1 min-h-0">
             <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Adicionar Material</p>
             <div className="relative">
