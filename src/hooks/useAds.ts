@@ -182,11 +182,26 @@ export function useAds(adType?: 'banner' | 'popup' | 'inline' | 'sidebar' | 'foo
     clickedInFlight.add(clickKey);
 
     try {
+      const ad = ads.find(a => a.id === adId);
+      
+      // Registrar o clique na tabela de logs detalhados
       await supabase.from('ad_clicks').insert({
         ad_id: adId,
         user_id: user?.id || null,
         session_id: user ? null : sessionId,
       });
+
+      // SINCRONIZAÇÃO DE CONVERSÃO:
+      // Se for um clique em anúncio, também registramos no funil de patrocínio
+      // para que a conversão apareça no Dashboard Administrativo.
+      if (ad) {
+        await recordSponsorLead({
+          company: ad.title,
+          channel: 'clique',
+          source: `ad_${ad.ad_type}`,
+          ctaId: ad.id
+        });
+      }
     } catch (error) {
       if (!isAbortLikeError(error)) {
         console.error('Erro ao registrar clique de anuncio:', error);
