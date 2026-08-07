@@ -13,8 +13,8 @@
  *   └──────────────┴──────────────────────────────┴──────────────────┘
  *
  * Mobile: lista vira drawer, painel direito vira sheet inferior.
- * Melhora: Arrastar e soltar para materiais e reordenação de seções
- * facilitada no Workbench.
+ * Melhora: Arrastar e soltar para materiais, reordenação de seções e
+ * Histórico de Versões para desfazer alterações.
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
