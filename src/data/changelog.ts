@@ -28,6 +28,17 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.68.0",
+    date: "2026-08-07",
+    title: "Sincronização de Grade e Inteligência Ella",
+    major: true,
+    changes: [
+      { kind: 'fix', text: 'Corrigida sincronização entre banco de dados e filtros de semestre no Dashboard, garantindo que apostilas antigas não apareçam em semestres incorretos.' },
+      { kind: 'feature', text: 'Ella Inteligente: A assistente agora é capaz de processar grandes blocos de texto e inseri-los diretamente em apostilas existentes sob comando.' },
+      { kind: 'improvement', text: 'Otimização de performance: O carregamento de apostilas no Dashboard agora utiliza filtros nativos do banco de dados.' },
+    ],
+  },
+  {
     version: "3.67.0",
     date: "2026-08-07",
     title: "Otimização Mobile e Smart Tools",
