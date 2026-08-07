@@ -27,7 +27,7 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getSubjectColor } from '@/lib/subject-colors';
-import { BY_SEMESTER } from '@/lib/subject-semester-map';
+import { BY_SEMESTER, subjectKey } from '@/lib/subject-semester-map';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from 'recharts';
@@ -208,10 +208,10 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
     const activeSemNum = filterSemester && filterSemester !== 'all' && filterSemester !== 'none' ? parseInt(filterSemester, 10) : null;
     if (activeSemNum && !q) {
       const canonicalSubjects = BY_SEMESTER[activeSemNum] || [];
-      const existingCategories = new Set(list.map(a => a.category));
+      const existingCategoriesKeys = new Set(list.map(a => subjectKey(a.category || '')));
       
       const placeholders = canonicalSubjects
-        .filter((subject: string) => !existingCategories.has(subject))
+        .filter((subject: string) => !existingCategoriesKeys.has(subjectKey(subject)))
         .map((subject: string, idx: number) => ({
           id: `placeholder-admin-dash-${activeSemNum}-${idx}`,
           title: `[GRADE] ${subject}`,
