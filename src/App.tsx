@@ -1,10 +1,11 @@
 /**
- * DECODE ANALYTICS ACADEMY - v3.63.0
+ * DECODE ANALYTICS ACADEMY - v3.69.0
  * 
- * - Experiência de Navegação: Implementada visualização de "Pastas de Matérias" no Dashboard.
- * - UX: As apostilas agora são concentradas por disciplina para evitar poluição visual.
- * - Correção Visual: Resolvendo capas de apostilas que não aparecem.
+ * - Central Operacional: Overhaul completo da UI administrativa para hierarquia profissional.
+ * - Saúde das Apostilas: Novo painel de auditoria automática e integridade visual.
+ * - Mobile First: Otimização de grids e filtros para acesso via iPhone 11.
  */
+
 import React, { Suspense, lazy } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
