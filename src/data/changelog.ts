@@ -28,6 +28,17 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.73.11",
+    date: "2026-08-07",
+    title: "Auditoria de Linguagem e UX",
+    major: false,
+    changes: [
+      { kind: 'improvement', text: 'Refinamento de textos nos botões e menus para uma linguagem mais profissional ("Visualizar" / "Ler Material").' },
+      { kind: 'fix', text: 'Correção de labels de navegação na Central Operacional e Sidebar Administrativa.' },
+      { kind: 'fix', text: 'Verificação de fluxo de redirecionamento no dashboard do administrador.' },
+    ],
+  },
+  {
     version: "3.73.10",
     date: "2026-08-07",
     title: "Correção de Navegação Admin",
