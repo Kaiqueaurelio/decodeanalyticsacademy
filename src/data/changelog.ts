@@ -45,6 +45,7 @@ export const CHANGELOG: ChangelogEntry[] = [
       { kind: 'content', text: 'Sincronizadas apostilas de Processamento de Imagem e Ferramentas de Análise com suas respectivas disciplinas, garantindo organização correta no dashboard.' },
     ],
   },
+  {
     version: "3.73.5",
     date: "2026-08-07",
     title: "Ella: Smart Transcription & Organization",
