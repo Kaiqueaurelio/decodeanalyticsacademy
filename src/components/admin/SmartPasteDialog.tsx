@@ -55,7 +55,7 @@ export function SmartPasteDialog({ open, onOpenChange, onApply }: Props) {
             Colar e organizar
           </DialogTitle>
           <p className="text-xs text-muted-foreground">
-            Cole seu texto ou Markdown. O app organizará automaticamente a formatação para você.
+            Cole seu texto, Markdown ou transcrições de aula. O app organizará automaticamente a formatação para você.
           </p>
         </DialogHeader>
 
