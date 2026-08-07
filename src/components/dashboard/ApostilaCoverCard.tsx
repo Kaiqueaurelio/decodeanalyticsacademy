@@ -9,12 +9,15 @@ import { buildCoverDataUri } from '@/lib/cover-render';
 import { useAuth } from '@/hooks/useAuth';
 import type { ApostilaSummary } from '@/hooks/queries/useDashboardData';
 
+import { ensureApostilaExists } from '@/lib/create-placeholder-apostila';
+
 interface Props {
   apostila: ApostilaSummary;
   status?: 'em-progresso' | 'concluida' | 'novo';
   /** Percentual real de lições concluídas (0-100). */
   progress?: number;
 }
+
 
 
 /**
@@ -131,9 +134,14 @@ export function ApostilaCoverCard({ apostila, status = 'em-progresso', progress 
         {isAdmin && (
           <div className="absolute top-2 left-2 z-20 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-[-10px] group-hover:translate-x-0">
             <button
-              onClick={(e) => {
+              onClick={async (e) => {
                 e.stopPropagation();
-                navigate(`/admin/apostilas/${apostila.id}`);
+                try {
+                  const realId = await ensureApostilaExists(apostila as any);
+                  navigate(`/admin/apostilas/${realId}`);
+                } catch (err: any) {
+                  toast.error('Erro ao abrir apostila: ' + (err?.message || 'Tente novamente.'));
+                }
               }}
               className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary shadow-[0_0_20px_rgba(168,85,247,0.4)] border border-primary/50 text-white hover:scale-110 active:scale-95 transition-all"
               title="Editar Conteúdo (Somente Administrador)"
@@ -141,9 +149,14 @@ export function ApostilaCoverCard({ apostila, status = 'em-progresso', progress 
               <PenTool className="h-4.5 w-4.5" />
             </button>
             <button
-              onClick={(e) => {
+              onClick={async (e) => {
                 e.stopPropagation();
-                navigate(`/admin/apostilas/${apostila.id}`, { state: { editMetadata: true } });
+                try {
+                  const realId = await ensureApostilaExists(apostila as any);
+                  navigate(`/admin/apostilas/${realId}`, { state: { editMetadata: true } });
+                } catch (err: any) {
+                  toast.error('Erro ao abrir configurações: ' + (err?.message || 'Tente novamente.'));
+                }
               }}
               className="flex h-9 w-9 items-center justify-center rounded-xl bg-black/60 backdrop-blur-md border border-white/20 text-white hover:bg-accent hover:border-accent hover:scale-110 active:scale-95 transition-all shadow-xl"
               title="Configurações do Material (Somente Administrador)"
@@ -152,6 +165,7 @@ export function ApostilaCoverCard({ apostila, status = 'em-progresso', progress 
             </button>
           </div>
         )}
+
 
       </div>
 

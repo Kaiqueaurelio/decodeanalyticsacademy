@@ -36,6 +36,8 @@ import { ManualLinkMaterialsDialog } from '@/components/ManualLinkMaterialsDialo
 import { autoLinkApostila } from '@/lib/auto-link-materials';
 import { ApostilaContentRenderer } from '@/components/ApostilaContentRenderer';
 import { guessSemesterFromCategory, SEMESTER_OPTIONS, COURSE_OPTIONS, type CourseCode } from '@/lib/subject-semester-map';
+import { ensureApostilaExists } from '@/lib/create-placeholder-apostila';
+
 import {
   ArrowLeft, Search, Save, Eye, PenTool, Wand2, Loader2, Menu, FileText,
   ListChecks, PanelRightClose, ExternalLink, GraduationCap, ImageIcon,
@@ -130,11 +132,23 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     const count = countRes.count;
 
     if (!ap) {
+      if (apostilaId && (apostilaId.startsWith('placeholder') || (apostilas && apostilas.some(a => a.id === apostilaId)))) {
+        try {
+          const matched = apostilas.find(a => a.id === apostilaId);
+          const realId = await ensureApostilaExists(matched || { id: apostilaId, title: '' });
+          navigate(`/admin/apostilas/${realId}`, { replace: true });
+          await loadApostila(realId);
+          return;
+        } catch (err: any) {
+          console.error('Erro ao resolver placeholder no Workbench:', err);
+        }
+      }
       toast.error('Apostila não encontrada');
       if (onBack) onBack();
       else navigate('/admin');
       return;
     }
+
     setTitle(ap.title || '');
     setCategory(ap.category || '');
     setContent(ap.content || '');

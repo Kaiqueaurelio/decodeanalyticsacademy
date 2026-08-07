@@ -28,6 +28,8 @@ import { Switch } from '@/components/ui/switch';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getSubjectColor } from '@/lib/subject-colors';
 import { BY_SEMESTER, subjectKey } from '@/lib/subject-semester-map';
+import { ensureApostilaExists } from '@/lib/create-placeholder-apostila';
+
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from 'recharts';
@@ -311,7 +313,23 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
     toast.success(a.published ? 'Despublicada' : 'Publicada');
   };
 
-  const handleEdit = (a: ApostilaRow) => navigate(`/admin/apostilas/${a.id}`);
+  const handleEdit = async (a: ApostilaRow) => {
+    if ((a as any).isPlaceholder || a.id.startsWith('placeholder')) {
+      try {
+        setBusyId(a.id);
+        const realId = await ensureApostilaExists(a as any);
+        setBusyId(null);
+        toast.success(`Apostila "${a.title.replace(/^\[GRADE\]\s*/i, '')}" iniciada!`);
+        navigate(`/admin/apostilas/${realId}`);
+      } catch (err: any) {
+        setBusyId(null);
+        toast.error('Erro ao iniciar apostila: ' + (err?.message || 'Tente novamente.'));
+      }
+    } else {
+      navigate(`/admin/apostilas/${a.id}`);
+    }
+  };
+
 
   const confirmDelete = async () => {
     if (!deleteTarget) return;

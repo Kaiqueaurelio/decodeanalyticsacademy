@@ -38,6 +38,8 @@ import { ImageUploadButton } from '@/components/ImageUploadButton';
 import { AnnouncementsAdmin } from '@/components/AnnouncementsAdmin';
 import { CalendarEventsAdmin } from '@/components/CalendarEventsAdmin';
 import { ApostilaMaterialsManager } from '@/components/ApostilaMaterialsManager';
+import { ensureApostilaExists } from '@/lib/create-placeholder-apostila';
+
 import { AppendLinkDialog } from '@/components/AppendLinkDialog';
 import { autoLinkAll, autoLinkApostila } from '@/lib/auto-link-materials';
 import { MergeApostilasDialog } from '@/components/MergeApostilasDialog';
@@ -2050,40 +2052,47 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                                 <Button size="icon" variant="ghost" className="h-8 w-8 text-primary" onClick={() => setExportingApostila(a)} title="Exportar apostila (PDF/DOCX)">
                                   <FileDown className="h-3.5 w-3.5" />
                                 </Button>
-                                 {!(a as any).isPlaceholder && (
-                                   <Button size="icon" variant="ghost" className={`h-8 w-8 ${a.published ? 'text-destructive' : 'text-[hsl(var(--success))]'}`} onClick={() => togglePublish(a.id, a.published)} title={a.published ? 'Ocultar' : 'Publicar'}>
-                                     {a.published ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                                   </Button>
-                                 )}
-                                 <Button
-                                   size="sm"
-                                   variant="default"
-                                   className="hidden sm:inline-flex h-8 px-2.5 text-xs gap-1.5 gradient-primary text-primary-foreground"
-                                   onClick={() => {
-                                     if ((a as any).isPlaceholder) {
-                                       startPlaceholder(a);
-                                     } else {
-                                       navigate(`/admin/apostilas/${a.id}`);
-                                     }
-                                   }}
-                                   title={(a as any).isPlaceholder ? 'Começar esta matéria' : 'Abrir no Workbench (editor completo)'}
-                                 >
-                                   {(a as any).isPlaceholder ? <><Plus className="h-3.5 w-3.5" /> Começar</> : <><PenTool className="h-3.5 w-3.5" /> Workbench</>}
-                                 </Button>
-                                 <Button size="icon" variant="ghost" className="hidden sm:inline-flex h-8 w-8" onClick={() => { 
-                                   if ((a as any).isPlaceholder) {
-                                     startPlaceholder(a);
-                                   } else {
-                                     setEditingApostila(a); setEditTitle(a.title); setEditContent(a.content || ''); setEditCategory(a.category); 
-                                   }
-                                 }} title="Editar">
-                                   <Edit className="h-3.5 w-3.5" />
-                                 </Button>
-                                 {!(a as any).isPlaceholder && (
-                                   <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => setConfirmDeleteId(a.id)} title="Excluir">
-                                     <Trash2 className="h-3.5 w-3.5" />
-                                   </Button>
-                                 )}
+                                <Button
+                                    size="sm"
+                                    variant="default"
+                                    className="hidden sm:inline-flex h-8 px-2.5 text-xs gap-1.5 gradient-primary text-primary-foreground"
+                                    onClick={async () => {
+                                      if ((a as any).isPlaceholder || a.id.startsWith('placeholder')) {
+                                        try {
+                                          const realId = await ensureApostilaExists(a as any);
+                                          toast.success(`Apostila "${a.title.replace(/^\[GRADE\]\s*/i, '')}" iniciada!`);
+                                          navigate(`/admin/apostilas/${realId}`);
+                                        } catch (err: any) {
+                                          toast.error('Erro ao iniciar apostila: ' + (err?.message || 'Tente novamente.'));
+                                        }
+                                      } else {
+                                        navigate(`/admin/apostilas/${a.id}`);
+                                      }
+                                    }}
+                                    title={(a as any).isPlaceholder ? 'Começar esta matéria' : 'Abrir no Workbench (editor completo)'}
+                                  >
+                                    {(a as any).isPlaceholder ? <><Plus className="h-3.5 w-3.5" /> Começar</> : <><PenTool className="h-3.5 w-3.5" /> Workbench</>}
+                                  </Button>
+                                  <Button size="icon" variant="ghost" className="hidden sm:inline-flex h-8 w-8" onClick={async () => { 
+                                    if ((a as any).isPlaceholder || a.id.startsWith('placeholder')) {
+                                      try {
+                                        const realId = await ensureApostilaExists(a as any);
+                                        toast.success(`Apostila "${a.title.replace(/^\[GRADE\]\s*/i, '')}" iniciada!`);
+                                        navigate(`/admin/apostilas/${realId}`);
+                                      } catch (err: any) {
+                                        toast.error('Erro ao iniciar apostila: ' + (err?.message || 'Tente novamente.'));
+                                      }
+                                    } else {
+                                      setEditingApostila(a); setEditTitle(a.title); setEditContent(a.content || ''); setEditCategory(a.category); 
+                                    }
+                                  }} title="Editar">
+                                    <Edit className="h-3.5 w-3.5" />
+                                  </Button>
+                                  {!(a as any).isPlaceholder && (
+                                    <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => setConfirmDeleteId(a.id)} title="Excluir">
+                                      <Trash2 className="h-3.5 w-3.5" />
+                                    </Button>
+                                  )}
 
                                   {/* Kebab — mobile only, agrupa secundárias + editar */}
                                   <DropdownMenu>
@@ -2109,18 +2118,30 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                                           <DropdownMenuSeparator />
                                         </>
                                       )}
-                                      <DropdownMenuItem onClick={() => {
-                                        if ((a as any).isPlaceholder) {
-                                          startPlaceholder(a);
+                                      <DropdownMenuItem onClick={async () => {
+                                        if ((a as any).isPlaceholder || a.id.startsWith('placeholder')) {
+                                          try {
+                                            const realId = await ensureApostilaExists(a as any);
+                                            toast.success(`Apostila "${a.title.replace(/^\[GRADE\]\s*/i, '')}" iniciada!`);
+                                            navigate(`/admin/apostilas/${realId}`);
+                                          } catch (err: any) {
+                                            toast.error('Erro ao iniciar apostila: ' + (err?.message || 'Tente novamente.'));
+                                          }
                                         } else {
                                           navigate(`/admin/apostilas/${a.id}`);
                                         }
                                       }}>
                                         <PenTool className="h-3.5 w-3.5 mr-2 text-primary" /> {(a as any).isPlaceholder ? 'Começar Matéria' : 'Abrir no Workbench'}
                                       </DropdownMenuItem>
-                                      <DropdownMenuItem onClick={() => { 
-                                        if ((a as any).isPlaceholder) {
-                                          startPlaceholder(a);
+                                      <DropdownMenuItem onClick={async () => { 
+                                        if ((a as any).isPlaceholder || a.id.startsWith('placeholder')) {
+                                          try {
+                                            const realId = await ensureApostilaExists(a as any);
+                                            toast.success(`Apostila "${a.title.replace(/^\[GRADE\]\s*/i, '')}" iniciada!`);
+                                            navigate(`/admin/apostilas/${realId}`);
+                                          } catch (err: any) {
+                                            toast.error('Erro ao iniciar apostila: ' + (err?.message || 'Tente novamente.'));
+                                          }
                                         } else {
                                           setEditingApostila(a); setEditTitle(a.title); setEditContent(a.content || ''); setEditCategory(a.category); 
                                         }
