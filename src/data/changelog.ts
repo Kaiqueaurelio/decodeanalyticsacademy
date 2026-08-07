@@ -28,6 +28,15 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.73.10",
+    date: "2026-08-07",
+    title: "Correção de Navegação Admin",
+    major: false,
+    changes: [
+      { kind: 'fix', text: 'Corrigido o botão "Começar" no painel administrativo para redirecionar corretamente à visualização da apostila.' },
+    ],
+  },
+  {
     version: "3.73.9",
     date: "2026-08-07",
     title: "Sincronização 6º Semestre e Pesquisa Operacional",

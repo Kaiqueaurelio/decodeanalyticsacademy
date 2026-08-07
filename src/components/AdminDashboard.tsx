@@ -998,9 +998,9 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
                         variant="secondary" 
                         size="sm" 
                         className="h-7 text-[10px] px-3 rounded-lg shadow-sm"
-                        onClick={() => handleEdit(a)}
+                        onClick={() => navigate(`/apostila/${a.id}`)}
                       >
-                        Editar
+                        Começar
                       </Button>
                     </div>
                   )}
