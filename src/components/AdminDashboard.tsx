@@ -695,8 +695,9 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
                             {a.published ? 'Visível' : 'Oculto'}
                           </Button>
                           <Button 
-                            variant="primary" 
+                            variant="secondary" 
                             size="sm" 
+
                             className="h-7 text-[10px] px-3 rounded-lg shadow-sm"
                             onClick={() => handleEdit(a)}
                           >
