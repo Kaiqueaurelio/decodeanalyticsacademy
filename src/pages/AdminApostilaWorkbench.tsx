@@ -483,29 +483,31 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         onFocusMaterials={() => { setRightTab('materials'); setRightOpen(true); }}
       />
 
-      {/* Toolbar do Workbench */}
-      <div className="flex items-center gap-2 px-3 py-1.5 border-b border-border bg-card/50">
+      {/* Toolbar do Workbench — Otimizado para Mobile */}
+      <div className="sticky top-0 z-20 flex items-center gap-2 px-3 py-1.5 border-b border-border bg-card/95 backdrop-blur-sm shadow-sm overflow-x-auto scrollbar-none">
         <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
           <SheetTrigger asChild>
-            <Button size="sm" variant="ghost" className="lg:hidden h-7 gap-1.5 text-xs">
-              <Menu className="h-3.5 w-3.5" /> Apostilas
+            <Button size="sm" variant="ghost" className="h-7 w-7 p-0 lg:w-auto lg:px-2.5 lg:gap-1.5 text-xs">
+              <Menu className="h-4 w-4" /> <span className="hidden lg:inline">Apostilas</span>
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="w-72 p-0">{SidebarList}</SheetContent>
         </Sheet>
 
-        <Input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="Título da apostila"
-          className="h-7 text-sm font-semibold border-0 bg-transparent focus-visible:ring-0 px-1 max-w-md"
-        />
-        <Input
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          placeholder="Disciplina"
-          className="h-7 text-xs border-0 bg-transparent focus-visible:ring-0 px-1 max-w-[180px] text-muted-foreground"
-        />
+        <div className="flex-1 flex flex-col min-w-[120px]">
+          <Input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Título da apostila"
+            className="h-6 text-sm font-bold border-0 bg-transparent focus-visible:ring-0 px-1 truncate shadow-none"
+          />
+          <div className="flex items-center gap-2 px-1">
+            <span className="text-[9px] font-black uppercase text-muted-foreground/60 tracking-widest truncate max-w-[100px]">
+              {category || 'Sem disciplina'}
+            </span>
+          </div>
+        </div>
+
 
         {/* Semestre */}
         <Select
@@ -545,8 +547,19 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
           })}
         </div>
 
-        <div className="ml-auto flex items-center gap-1.5">
+        <div className="ml-auto flex items-center gap-1.5 shrink-0">
+          <Button 
+            size="sm" 
+            variant="ghost" 
+            className="h-8 w-8 p-0"
+            onClick={handleGenerateCover}
+            disabled={generatingCover}
+            title="Capa IA"
+          >
+            {generatingCover ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ImageIcon className="h-4 w-4 text-primary" />}
+          </Button>
           {coverUrl && (
+
             <a
               href={coverUrl}
               target="_blank"

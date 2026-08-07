@@ -28,6 +28,17 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.64.0",
+    date: "2026-08-07",
+    title: "Sincronização de Grade e Workbench Mobile",
+    major: true,
+    changes: [
+      { kind: 'improvement', text: 'Sincronização de grade curricular aprimorada: detecção robusta de disciplinas existentes.' },
+      { kind: 'feature', text: 'Workbench Administrativo otimizado para mobile com barra de ferramentas flutuante e edição rápida.' },
+    ],
+  },
+
+  {
     version: "3.63.5",
     date: "2026-08-06",
     title: "Relatório de Auditoria e Nota do App",
