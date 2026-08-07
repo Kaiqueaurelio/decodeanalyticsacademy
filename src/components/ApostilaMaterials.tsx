@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { AppImage } from '@/components/ui/app-image';
+import { dedupeByMaterialName } from '@/lib/material-dedupe';
 import {
   ExternalLink, Play, Pause, SkipBack, SkipForward,
   Volume2, VolumeX, Loader2, AlertCircle, Music, Maximize, X
@@ -64,7 +65,7 @@ export function ApostilaMaterials({ apostilaId, excludeAudio }: Props) {
           sorted.push(m);
         }
         const filtered = excludeAudio ? sorted.filter((m) => m.type !== 'audio') : sorted;
-        setMaterials(filtered);
+        setMaterials(dedupeByMaterialName(filtered, (m) => m));
         setLoading(false);
       });
   }, [apostilaId, excludeAudio]);
