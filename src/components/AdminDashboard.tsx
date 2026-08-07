@@ -32,6 +32,8 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from 'recharts';
 import { toast } from 'sonner';
+import { cn } from "@/lib/utils";
+
 
 interface Props { 
   onNavigate: (tab: string) => void; 
