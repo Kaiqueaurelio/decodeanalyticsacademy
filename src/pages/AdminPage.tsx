@@ -1009,6 +1009,29 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
     setImportRawText(''); setExtractionMethod('');
   };
 
+  /**
+   * "Começar" numa matéria da grade (placeholder): prepara a Central de Criação
+   * e rola a tela até ela — antes o estado mudava mas nada aparecia na tela.
+   */
+  const startPlaceholder = (a: { title: string; category?: string | null }) => {
+    setBatchMode(false);
+    setImportMode('text');
+    setImportUrl('');
+    setImportContent('');
+    setImportRawText('');
+    setImportExercises([]);
+    setImportTitle(a.title.replace('[GRADE] ', ''));
+    setImportTopic(a.category || '');
+    setImportStep('edit');
+    setTab('apostilas');
+    requestAnimationFrame(() => {
+      document.querySelector('[data-import-card]')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    toast.info('Central de Criação pronta para esta matéria.');
+  };
+
+
+
   const handleBatchImport = async () => {
     if (!user || batchRunning) return;
     const urls = batchUrls.split('\n').map(u => u.trim()).filter(u => u.startsWith('http'));
