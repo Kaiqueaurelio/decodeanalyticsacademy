@@ -80,7 +80,7 @@ function stageLeads(leads: FunnelLead[], contacted: Set<string>, stage: StageKey
     case 'clique':
       return leads;
     case 'lead':
-      return leads.filter((l) => l.channel !== 'clique');
+      return leads.filter((l) => l.channel !== 'clique' || (l.contact_name !== 'Visitante' && l.email !== 'lead@decode.academy'));
     case 'contato':
       return leads.filter((l) => isContacted(l, contacted));
     case 'negociacao':

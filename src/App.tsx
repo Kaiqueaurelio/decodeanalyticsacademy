@@ -8,7 +8,7 @@
 
 import React, { Suspense, lazy } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -172,11 +172,16 @@ function useAdminCopyPatch() {
 function AnimatedRoutes() {
   const [showSplash, setShowSplash] = React.useState(true);
   const [adminTab, setAdminTab] = React.useState<any>("overview");
+  const location = useLocation();
   useAdminCopyPatch();
+
+  const isPublicPage = ['/', '/login', '/reset-password', '/termos', '/transparencia', '/anuncie', '/patrocine'].includes(location.pathname);
+  const isLandingPage = location.pathname === '/';
 
   return (
     <>
       {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} />}
+
       <Suspense fallback={<PageSkeleton />}>
       <PageTransition>
       <Routes>
@@ -233,6 +238,18 @@ function AnimatedRoutes() {
       </Routes>
       </PageTransition>
     </Suspense>
+    {!isLandingPage && (
+      <>
+        <EllaSidebar />
+        <RANamePrompt />
+        <ForcePasswordChangeGate />
+        <AdFooterMobile />
+        <PersistentAdSpot />
+        <TermsFooterLink />
+        <AdPopup trigger="onLoad" delay={2500} />
+        <AdDraftPreviewOverlay />
+      </>
+    )}
     </>
   );
 }
@@ -247,15 +264,6 @@ const App = () => (
           <AuthProvider>
             <AudioPlayerProvider>
               <AnimatedRoutes />
-              <EllaSidebar />
-              <RANamePrompt />
-              <ForcePasswordChangeGate />
-              <AdFooterMobile />
-              <PersistentAdSpot />
-              <TermsFooterLink />
-              <AdPopup trigger="onLoad" delay={2500} />
-              <AdDraftPreviewOverlay />
-
             </AudioPlayerProvider>
           </AuthProvider>
         </BrowserRouter>

@@ -3,6 +3,7 @@ import { supabase as supabaseTyped } from '@/integrations/supabase/client';
 const supabase = supabaseTyped as any;
 import { useAuth } from './useAuth';
 import { toPromoMediaUrl } from '@/lib/promo-media';
+import { recordSponsorLead } from '@/lib/sponsor-leads';
 
 export interface Ad {
   id: string;
@@ -181,11 +182,26 @@ export function useAds(adType?: 'banner' | 'popup' | 'inline' | 'sidebar' | 'foo
     clickedInFlight.add(clickKey);
 
     try {
+      const ad = ads.find(a => a.id === adId);
+      
+      // Registrar o clique na tabela de logs detalhados
       await supabase.from('ad_clicks').insert({
         ad_id: adId,
         user_id: user?.id || null,
         session_id: user ? null : sessionId,
       });
+
+      // SINCRONIZAÇÃO DE CONVERSÃO:
+      // Se for um clique em anúncio, também registramos no funil de patrocínio
+      // para que a conversão apareça no Dashboard Administrativo.
+      if (ad) {
+        await recordSponsorLead({
+          company: ad.title,
+          channel: 'clique',
+          source: `ad_${ad.ad_type}`,
+          ctaId: ad.id
+        });
+      }
     } catch (error) {
       if (!isAbortLikeError(error)) {
         console.error('Erro ao registrar clique de anuncio:', error);
