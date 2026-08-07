@@ -28,6 +28,15 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.73.2",
+    date: "2026-08-08",
+    title: "Restauração de Ativos: Pesquisa Operacional",
+    major: false,
+    changes: [
+      { kind: 'fix', text: 'Sincronizada a capa da apostila de Pesquisa Operacional com o repositório de ativos digitais, garantindo visibilidade imediata no dashboard.' },
+    ],
+  },
+  {
     version: "3.73.1",
     date: "2026-08-08",
     title: "Otimização de Deploy e Performance",
