@@ -937,10 +937,6 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
               </motion.div>
             ))}
           </div>
-        </CardContent>
-      </Card>
-
-
           {/* Rolagem infinita */}
           <div ref={adminLoaderRef} className="pt-6">
             {hasMore ? (
