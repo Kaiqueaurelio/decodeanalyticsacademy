@@ -28,6 +28,17 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.73.0",
+    date: "2026-08-08",
+    title: "Limpador de Apostilas e Estabilidade de Grade",
+    major: true,
+    changes: [
+      { kind: 'improvement', text: 'Realizada auditoria profunda no banco de dados para identificação e remoção de apostilas duplicadas ou rascunhos órfãos.' },
+      { kind: 'fix', text: 'Sincronização de placeholders de grade otimizada para evitar que matérias sugeridas apareçam simultaneamente a apostilas reais.' },
+      { kind: 'improvement', text: 'Reforço na integridade do Dashboard para garantir que o aluno visualize apenas o conteúdo único e atualizado de cada disciplina.' },
+    ],
+  },
+  {
     version: "3.72.0",
     date: "2026-08-08",
     title: "Dashboard de Conversão e Análise Comparativa",
