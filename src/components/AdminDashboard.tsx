@@ -798,319 +798,147 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
         </Card>
       </div>
 
-      {/* Apostilas recentes com filtros */}
-      <Card className="rounded-2xl">
-        <CardHeader>
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div>
-              <CardTitle className="text-lg">Apostilas recentes</CardTitle>
-              <CardDescription>Busque, filtre e gerencie sem sair do dashboard</CardDescription>
+      {/* Seção unificada de Acervo e Pendências */}
+      <Card className="border-primary/10 bg-card/20 backdrop-blur-md overflow-hidden">
+        <CardHeader className="pb-4">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <BookOpen className="h-5 w-5 text-primary" />
+              Acervo Administrativo
+            </CardTitle>
+            <div className="flex items-center gap-2">
+              <Button size="sm" variant="ghost" onClick={clearFilters} className={cn("h-8 text-[10px] uppercase tracking-wider", !hasFilters && "hidden")}>
+                Limpar Filtros
+              </Button>
+              <Badge variant="secondary" className="bg-primary/10 text-primary hover:bg-primary/20 transition-colors cursor-pointer">
+                {filtered.length} Apostilas
+              </Badge>
             </div>
-            <Button size="sm" variant="ghost" onClick={() => onNavigate('apostilas')}>
-              Ver todas <ChevronRight className="ml-1 h-4 w-4" />
-            </Button>
           </div>
-
-          {/* Filtros linha 1: busca, categoria, status */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 pt-3">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Barra de Busca e Ações */}
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="relative flex-1 group">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
               <Input
-                placeholder="Buscar por título..."
+                placeholder="Filtrar por título, categoria ou professor..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 rounded-full"
+                className="pl-10 bg-white/5 border-white/10 rounded-xl focus:ring-primary/30"
               />
             </div>
+            <div className="flex gap-2">
+              <Button onClick={() => handleQuickCreate('text')} className="rounded-xl shadow-lg shadow-primary/20 gap-2">
+                <Plus className="h-4 w-4" /> Novo Conteúdo
+              </Button>
+            </div>
+          </div>
+          
+          <div className="flex flex-wrap gap-2">
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger className="rounded-full"><SelectValue placeholder="Categoria" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas as categorias</SelectItem>
-                <SelectItem value="__uncategorized">Sem categoria</SelectItem>
-                {categories.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+              <SelectTrigger className="w-[160px] h-9 bg-white/5 border-white/10 rounded-xl text-xs">
+                <SelectValue placeholder="Categoria" />
+              </SelectTrigger>
+              <SelectContent className="bg-popover/90 backdrop-blur-xl border-white/10 rounded-xl">
+                <SelectItem value="all">Todas Categorias</SelectItem>
+                {categories.map(c => (
+                  <SelectItem key={c} value={c}>{c}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
-            <Select value={statusFilter} onValueChange={(v: any) => setStatusFilter(v)}>
-              <SelectTrigger className="rounded-full"><SelectValue placeholder="Status" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos os status</SelectItem>
+
+            <Select value={statusFilter} onValueChange={setStatusFilter as any}>
+              <SelectTrigger className="w-[140px] h-9 bg-white/5 border-white/10 rounded-xl text-xs">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent className="bg-popover/90 backdrop-blur-xl border-white/10 rounded-xl">
+                <SelectItem value="all">Qualquer Status</SelectItem>
                 <SelectItem value="published">Publicadas</SelectItem>
                 <SelectItem value="draft">Rascunhos</SelectItem>
               </SelectContent>
             </Select>
-          </div>
 
-          {/* Filtros linha 2: intervalo de datas + ordenação */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 pt-2">
-            <div className="flex items-center gap-2">
-              <CalendarDays className="h-4 w-4 text-muted-foreground shrink-0" />
-              <Input
-                type="date"
-                value={dateFrom}
-                onChange={(e) => setDateFrom(e.target.value)}
-                className="rounded-full"
-                aria-label="De"
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground shrink-0">até</span>
-              <Input
-                type="date"
-                value={dateUntil}
-                onChange={(e) => setDateUntil(e.target.value)}
-                className="rounded-full"
-                aria-label="Até"
-              />
-            </div>
-            <Select value={sortKey} onValueChange={(v: any) => setSortKey(v)}>
-              <SelectTrigger className="rounded-full">
-                <ArrowDownUp className="h-3.5 w-3.5 mr-1.5" />
-                <SelectValue placeholder="Ordenar" />
+            <Select value={sortKey} onValueChange={setSortKey as any}>
+              <SelectTrigger className="w-[160px] h-9 bg-white/5 border-white/10 rounded-xl text-xs">
+                <SelectValue placeholder="Ordenação" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="created_desc">Criada · mais recente</SelectItem>
-                <SelectItem value="created_asc">Criada · mais antiga</SelectItem>
-                <SelectItem value="updated_desc">Atualizada · mais recente</SelectItem>
-                <SelectItem value="updated_asc">Atualizada · mais antiga</SelectItem>
+              <SelectContent className="bg-popover/90 backdrop-blur-xl border-white/10 rounded-xl">
+                <SelectItem value="created_desc">Mais Recentes</SelectItem>
+                <SelectItem value="created_asc">Mais Antigas</SelectItem>
+                <SelectItem value="updated_desc">Atualizadas Recente</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
-          {(hasFilters || selected.size > 0) && (
-            <div className="flex items-center justify-between pt-2 flex-wrap gap-2">
-              <p className="text-xs text-muted-foreground flex items-center gap-1">
-                <Filter className="h-3 w-3" /> {filtered.length} resultado(s) · mostrando {Math.min(visibleCount, filtered.length)}
-              </p>
-              {hasFilters && (
-                <Button variant="ghost" size="sm" onClick={clearFilters} className="h-7 text-xs">
-                  <X className="h-3 w-3 mr-1" /> Limpar filtros
-                </Button>
-              )}
-            </div>
-          )}
-        </CardHeader>
-
-        <CardContent>
-          {/* Barra de ações em lote */}
-          {selected.size > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-3 flex flex-wrap items-center gap-2 rounded-xl border border-primary/30 bg-primary/5 px-3 py-2"
-            >
-              <Badge className="rounded-full bg-primary/15 text-primary border-primary/30">
-                {selected.size} selecionada(s)
-              </Badge>
-              <div className="flex-1" />
-              <Button
-                size="sm" variant="outline" className="rounded-full"
-                onClick={() => bulkSetPublished(true)} disabled={bulkBusy}
+          {/* Grid de Apostilas Organizado */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {visibleItems.map((a) => (
+              <motion.div
+                key={a.id}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="group"
               >
-                <Eye className="h-3.5 w-3.5 mr-1.5" /> Publicar
-              </Button>
-              <Button
-                size="sm" variant="outline" className="rounded-full"
-                onClick={() => bulkSetPublished(false)} disabled={bulkBusy}
-              >
-                <EyeOff className="h-3.5 w-3.5 mr-1.5" /> Despublicar
-              </Button>
-              <Button
-                size="sm" variant="destructive" className="rounded-full"
-                onClick={() => setBulkDeleteOpen(true)} disabled={bulkBusy}
-              >
-                <Trash2 className="h-3.5 w-3.5 mr-1.5" /> Excluir
-              </Button>
-              <Button size="sm" variant="ghost" className="rounded-full" onClick={clearSelection}>
-                <X className="h-3.5 w-3.5" />
-              </Button>
-            </motion.div>
-          )}
-
-          {/* Cabeçalho com select-all */}
-          {visibleItems.length > 0 && (
-            <div className="flex items-center gap-3 px-3 py-1.5 text-xs text-muted-foreground border-b border-border/40 mb-2">
-              <Checkbox
-                checked={allVisibleSelected}
-                onCheckedChange={toggleSelectAllVisible}
-                aria-label="Selecionar todas visíveis"
-              />
-              <span>Selecionar todas visíveis</span>
-            </div>
-          )}
-
-          <div className="space-y-4">
-            {filtered.length === 0 && (
-              <div className="text-center py-8 text-muted-foreground">
-                <BookOpen className="h-9 w-9 mx-auto mb-2 opacity-30" strokeWidth={1.5} />
-                <p className="text-sm">Nenhuma apostila encontrada.</p>
-              </div>
-            )}
-
-            {(() => {
-              // Agrupa por categoria mantendo ordem alfabetica
-              const groupsMap = new Map<string, ApostilaRow[]>();
-              for (const it of visibleItems) {
-                const key = (it.category?.trim() || 'Sem categoria');
-                const arr = groupsMap.get(key) ?? [];
-                arr.push(it);
-                groupsMap.set(key, arr);
-              }
-              const groups = Array.from(groupsMap.entries()).sort(([a], [b]) =>
-                a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }),
-              );
-
-              return (
-                <>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {groups.map(([category, items]) => {
-                      const color = getSubjectColor(category);
-                      const published = items.filter((i) => i.published).length;
-                      const isOpen = openCategory === category;
-                      return (
-                        <button
-                          key={category}
-                          type="button"
-                          onClick={() => setOpenCategory(isOpen ? null : category)}
-                          aria-expanded={isOpen}
-                          className={`group relative text-left rounded-2xl border bg-card p-4 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg ${
-                            isOpen
-                              ? 'border-primary/60 shadow-lg ring-1 ring-primary/30'
-                              : 'border-border/60 hover:border-primary/40'
-                          }`}
-                          style={{ boxShadow: isOpen ? `0 8px 32px -12px ${color}55` : undefined }}
-                        >
-                          <div
-                            className="absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl"
-                            style={{ backgroundColor: color }}
-                            aria-hidden
-                          />
-                          <div className="flex items-start justify-between mb-3">
-                            <div
-                              className="rounded-xl p-2.5 shrink-0"
-                              style={{ backgroundColor: `${color}22`, color }}
-                            >
-                              <FolderOpen className="h-5 w-5" strokeWidth={1.75} />
-                            </div>
-                            <ChevronDown
-                              className={`h-4 w-4 text-muted-foreground transition-transform duration-300 ${
-                                isOpen ? 'rotate-180 text-primary' : ''
-                              }`}
-                            />
-                          </div>
-                          <h3 className="font-semibold text-sm leading-snug line-clamp-2 mb-2">
-                            {category}
-                          </h3>
-                          <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-                            <Badge variant="outline" className="rounded-full px-2 py-0 text-[10px]">
-                              {items.length} {items.length === 1 ? 'apostila' : 'apostilas'}
-                            </Badge>
-                            <span className="tabular-nums">
-                              {published}/{items.length} publicadas
-                            </span>
-                          </div>
-                        </button>
-                      );
-                    })}
+                <div className={cn(
+                  "relative p-4 rounded-2xl border transition-all duration-300 h-full flex flex-col justify-between",
+                  (a as any).isPlaceholder 
+                    ? "bg-primary/5 border-dashed border-primary/30" 
+                    : "bg-white/5 border-white/10 hover:border-primary/40 hover:bg-white/10 shadow-lg hover:shadow-primary/5"
+                )}>
+                  <div>
+                    <div className="flex justify-between items-start mb-2">
+                      <Badge variant="outline" className={cn(
+                        "text-[10px] py-0 px-1.5 uppercase tracking-tighter",
+                        (a as any).isPlaceholder ? "bg-primary/20 text-primary border-primary/20" : 
+                        a.published ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                      )}>
+                        {(a as any).isPlaceholder ? 'Grade Acadêmica' : a.published ? 'Ativa' : 'Rascunho'}
+                      </Badge>
+                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button size="icon" variant="ghost" className="h-7 w-7 rounded-lg" onClick={() => handleEdit(a)}>
+                          <Edit className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    <h3 className="font-semibold text-sm line-clamp-1 mb-1 group-hover:text-primary transition-colors">
+                      {a.title}
+                    </h3>
+                    <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                      <span className="truncate max-w-[120px]">{a.category || 'Sem Categoria'}</span>
+                      <span>•</span>
+                      <span>{new Date(a.created_at).toLocaleDateString('pt-BR')}</span>
+                    </div>
                   </div>
-
-                  <AnimatePresence initial={false}>
-                    {openCategory && (
-                      <motion.div
-                        key={openCategory}
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        transition={{ duration: 0.25, ease: 'easeOut' }}
-                        className="overflow-hidden"
+                  
+                  {!(a as any).isPlaceholder && (
+                    <div className="mt-4 pt-3 border-t border-white/5 flex justify-between items-center">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-7 text-[10px] px-2 rounded-lg hover:bg-primary/10 hover:text-primary transition-all"
+                        onClick={() => handleTogglePublish(a)}
                       >
-                        {(() => {
-                          const items = groups.find(([c]) => c === openCategory)?.[1] ?? [];
-                          const color = getSubjectColor(openCategory);
-                          return (
-                            <div
-                              className="rounded-2xl border border-border/60 bg-muted/30 p-3 sm:p-4"
-                              style={{ borderTopColor: color, borderTopWidth: 2 }}
-                            >
-                              <div className="flex items-baseline justify-between mb-3 px-1">
-                                <h4 className="font-semibold text-sm" style={{ color }}>
-                                  {openCategory}
-                                </h4>
-                                <span className="text-[11px] text-muted-foreground tabular-nums">
-                                  {items.length} {items.length === 1 ? 'item' : 'itens'}
-                                </span>
-                              </div>
-                              <div className="space-y-2">
-                                {items.map((item) => {
-                                  const isSel = selected.has(item.id);
-                                  return (
-                                    <div
-                                      key={item.id}
-                                      className={`flex items-center gap-3 p-3 rounded-xl border transition-colors ${
-                                        isSel ? 'border-primary/40 bg-primary/5' : 'border-border/50 bg-card hover:bg-muted/40'
-                                      }`}
-                                    >
-                                      <Checkbox
-                                        checked={isSel}
-                                        onCheckedChange={() => toggleSelectOne(item.id)}
-                                        aria-label={`Selecionar ${item.title}`}
-                                      />
-                                      <div
-                                        className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
-                                        style={{ backgroundColor: `${color}22`, color }}
-                                      >
-                                        <BookOpen className="h-5 w-5" strokeWidth={1.75} />
-                                      </div>
-                                      <div className="flex-1 min-w-0">
-                                        <p className="font-medium truncate">{item.title}</p>
-                                        <p className="text-xs text-muted-foreground truncate">
-                                          criada {new Date(item.created_at).toLocaleDateString('pt-BR')}
-                                          {item.updated_at && item.updated_at !== item.created_at && (
-                                            <> · atualizada {new Date(item.updated_at).toLocaleDateString('pt-BR')}</>
-                                          )}
-                                        </p>
-                                      </div>
-                                      <Badge
-                                        variant="outline"
-                                        className={item.published
-                                          ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30'
-                                          : 'bg-amber-500/10 text-amber-600 border-amber-500/30'}
-                                      >
-                                        {item.published ? 'Publicada' : 'Rascunho'}
-                                      </Badge>
-                                      <div className="flex items-center gap-1">
-                                        <Button
-                                          size="icon" variant="ghost"
-                                          title={item.published ? 'Despublicar' : 'Publicar'}
-                                          disabled={busyId === item.id}
-                                          onClick={() => handleTogglePublish(item)}
-                                        >
-                                          {item.published ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                                        </Button>
-                                        <Button size="icon" variant="ghost" title="Editar" onClick={() => handleEdit(item)}>
-                                          <Edit className="h-4 w-4" />
-                                        </Button>
-                                        <Button
-                                          size="icon" variant="ghost" title="Excluir"
-                                          className="text-destructive hover:text-destructive"
-                                          onClick={() => setDeleteTarget(item)}
-                                        >
-                                          <Trash2 className="h-4 w-4" />
-                                        </Button>
-                                      </div>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            </div>
-                          );
-                        })()}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </>
-              );
-            })()}
+                        <Switch checked={a.published} className="scale-75 mr-1" />
+                        {a.published ? 'Visível' : 'Oculto'}
+                      </Button>
+                      <Button 
+                        variant="secondary" 
+                        size="sm" 
+                        className="h-7 text-[10px] px-3 rounded-lg shadow-sm"
+                        onClick={() => handleEdit(a)}
+                      >
+                        Editar
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            ))}
           </div>
+        </CardContent>
+      </Card>
 
 
           {/* Rolagem infinita */}
