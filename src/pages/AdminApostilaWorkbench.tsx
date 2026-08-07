@@ -313,8 +313,28 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
 
   // === Smart paste handler ===
   const handlePasteApply = (text: string, mode: 'append' | 'replace') => {
+    // Se o texto parecer uma transcrição bruta (parágrafos longos sem formatação), 
+    // podemos sugerir o uso da Ella para estruturar melhor.
+    const isLikelyRawTranscript = text.length > 500 && !text.includes('#') && !text.includes('|');
+    
     setContent((prev) => mode === 'append' ? (prev ? prev + '\n\n' + text : text) : text);
-    toast.success(mode === 'append' ? 'Conteúdo inserido' : 'Conteúdo substituído');
+    
+    if (isLikelyRawTranscript) {
+      toast.info('Texto longo detectado. Use o botão "Estruturar com Ella" se precisar de uma organização mais profissional.', {
+        duration: 5000,
+        action: {
+          label: 'Estruturar',
+          onClick: () => {
+             // Dispara o evento que a Ella escuta para estruturação
+             window.dispatchEvent(new CustomEvent('ella:prompt', { 
+               detail: { prompt: `Estruture esta transcrição que acabei de colar na apostila, criando títulos, tópicos e melhorando a fluidez acadêmica: ${text.slice(0, 1000)}...` } 
+             }));
+          }
+        }
+      });
+    } else {
+      toast.success(mode === 'append' ? 'Conteúdo inserido' : 'Conteúdo substituído');
+    }
   };
 
   // === Gerar capa com IA ===
