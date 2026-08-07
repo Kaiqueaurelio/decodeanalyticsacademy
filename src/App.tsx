@@ -1,9 +1,9 @@
 /**
- * DECODE ANALYTICS ACADEMY - v3.69.0
+ * DECODE ANALYTICS ACADEMY - v3.70.0
  * 
- * - Central Operacional: Overhaul completo da UI administrativa para hierarquia profissional.
- * - Saúde das Apostilas: Novo painel de auditoria automática e integridade visual.
- * - Mobile First: Otimização de grids e filtros para acesso via iPhone 11.
+ * - Gestão Atômica: Exclusão individual e em lote de apostilas na Central Operacional.
+ * - Seleção Múltipla: Interface com checkboxes para agilizar a limpeza de duplicatas.
+ * - Central Operacional: Refinamento contínuo da UI e controles administrativos.
  */
 
 import React, { Suspense, lazy } from "react";

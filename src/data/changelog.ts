@@ -28,6 +28,17 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.70.0",
+    date: "2026-08-08",
+    title: "Gestão Atômica e Exclusão em Lote",
+    major: true,
+    changes: [
+      { kind: 'feature', text: 'Implementada exclusão de apostilas individual e em lote diretamente na Central Operacional, facilitando a limpeza de conteúdos duplicados.' },
+      { kind: 'improvement', text: 'Novo sistema de seleção múltipla com checkbox e botão de "Excluir Selecionados" para maior agilidade administrativa.' },
+      { kind: 'improvement', text: 'Alertas de confirmação de segurança adicionados para evitar remoções acidentais de materiais acadêmicos.' },
+    ],
+  },
+  {
     version: "3.69.0",
     date: "2026-08-08",
     title: "Nova Central Operacional: Hierarquia e Saúde",

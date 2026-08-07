@@ -605,10 +605,27 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
                   <Button onClick={() => handleQuickCreate('text')} className="rounded-xl shadow-lg shadow-primary/20 gap-2">
                     <Plus className="h-4 w-4" /> Novo Conteúdo
                   </Button>
+                  {selected.size > 0 && (
+                    <Button 
+                      variant="destructive" 
+                      onClick={() => setBulkDeleteOpen(true)} 
+                      className="rounded-xl gap-2 animate-in fade-in zoom-in duration-200"
+                    >
+                      <Trash2 className="h-4 w-4" /> Excluir ({selected.size})
+                    </Button>
+                  )}
                 </div>
               </div>
               
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={toggleSelectAllVisible}
+                  className="h-9 px-3 rounded-xl bg-white/5 border border-white/10 text-[10px] uppercase tracking-wider"
+                >
+                  {allVisibleSelected ? 'Desmarcar Tudo' : 'Selecionar Visíveis'}
+                </Button>
                 <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                   <SelectTrigger className="w-[160px] h-9 bg-white/5 border-white/10 rounded-xl text-xs">
                     <SelectValue placeholder="Categoria" />
@@ -660,17 +677,34 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
                         : "bg-white/5 border-white/10 hover:border-primary/40 hover:bg-white/10 shadow-lg hover:shadow-primary/5"
                     )}>
                       <div className="flex justify-between items-start mb-2">
-                        <Badge variant="outline" className={cn(
-                          "text-[10px] py-0 px-1.5 uppercase tracking-tighter",
-                          (a as any).isPlaceholder ? "bg-primary/20 text-primary border-primary/20" : 
-                          a.published ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : "bg-amber-500/10 text-amber-500 border-amber-500/20"
-                        )}>
-                          {(a as any).isPlaceholder ? 'Grade Acadêmica' : a.published ? 'Ativa' : 'Rascunho'}
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          <Checkbox 
+                            checked={selected.has(a.id)} 
+                            onCheckedChange={() => toggleSelectOne(a.id)}
+                            className="h-4 w-4 rounded border-white/20 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                          />
+                          <Badge variant="outline" className={cn(
+                            "text-[10px] py-0 px-1.5 uppercase tracking-tighter",
+                            (a as any).isPlaceholder ? "bg-primary/20 text-primary border-primary/20" : 
+                            a.published ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                          )}>
+                            {(a as any).isPlaceholder ? 'Grade Acadêmica' : a.published ? 'Ativa' : 'Rascunho'}
+                          </Badge>
+                        </div>
                         <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                           <Button size="icon" variant="ghost" className="h-7 w-7 rounded-lg" onClick={() => handleEdit(a)}>
                             <Edit className="h-3.5 w-3.5" />
                           </Button>
+                          {!(a as any).isPlaceholder && (
+                            <Button 
+                              size="icon" 
+                              variant="ghost" 
+                              className="h-7 w-7 rounded-lg text-destructive hover:bg-destructive/10" 
+                              onClick={() => setDeleteTarget(a)}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          )}
                         </div>
                       </div>
                       
@@ -831,14 +865,31 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
                 className="pl-10 bg-white/5 border-white/10 rounded-xl focus:ring-primary/30"
               />
             </div>
-            <div className="flex gap-2">
-              <Button onClick={() => handleQuickCreate('text')} className="rounded-xl shadow-lg shadow-primary/20 gap-2">
-                <Plus className="h-4 w-4" /> Novo Conteúdo
-              </Button>
-            </div>
+              <div className="flex gap-2">
+                <Button onClick={() => handleQuickCreate('text')} className="rounded-xl shadow-lg shadow-primary/20 gap-2">
+                  <Plus className="h-4 w-4" /> Novo Conteúdo
+                </Button>
+                {selected.size > 0 && (
+                  <Button 
+                    variant="destructive" 
+                    onClick={() => setBulkDeleteOpen(true)} 
+                    className="rounded-xl gap-2 animate-in fade-in zoom-in duration-200"
+                  >
+                    <Trash2 className="h-4 w-4" /> Excluir ({selected.size})
+                  </Button>
+                )}
+              </div>
           </div>
           
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={toggleSelectAllVisible}
+              className="h-9 px-3 rounded-xl bg-white/5 border border-white/10 text-[10px] uppercase tracking-wider"
+            >
+              {allVisibleSelected ? 'Desmarcar Tudo' : 'Selecionar Visíveis'}
+            </Button>
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
               <SelectTrigger className="w-[160px] h-9 bg-white/5 border-white/10 rounded-xl text-xs">
                 <SelectValue placeholder="Categoria" />
@@ -891,17 +942,34 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
                 )}>
                   <div>
                     <div className="flex justify-between items-start mb-2">
-                      <Badge variant="outline" className={cn(
-                        "text-[10px] py-0 px-1.5 uppercase tracking-tighter",
-                        (a as any).isPlaceholder ? "bg-primary/20 text-primary border-primary/20" : 
-                        a.published ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : "bg-amber-500/10 text-amber-500 border-amber-500/20"
-                      )}>
-                        {(a as any).isPlaceholder ? 'Grade Acadêmica' : a.published ? 'Ativa' : 'Rascunho'}
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        <Checkbox 
+                          checked={selected.has(a.id)} 
+                          onCheckedChange={() => toggleSelectOne(a.id)}
+                          className="h-4 w-4 rounded border-white/20 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                        />
+                        <Badge variant="outline" className={cn(
+                          "text-[10px] py-0 px-1.5 uppercase tracking-tighter",
+                          (a as any).isPlaceholder ? "bg-primary/20 text-primary border-primary/20" : 
+                          a.published ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                        )}>
+                          {(a as any).isPlaceholder ? 'Grade Acadêmica' : a.published ? 'Ativa' : 'Rascunho'}
+                        </Badge>
+                      </div>
                       <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <Button size="icon" variant="ghost" className="h-7 w-7 rounded-lg" onClick={() => handleEdit(a)}>
                           <Edit className="h-3.5 w-3.5" />
                         </Button>
+                        {!(a as any).isPlaceholder && (
+                          <Button 
+                            size="icon" 
+                            variant="ghost" 
+                            className="h-7 w-7 rounded-lg text-destructive hover:bg-destructive/10" 
+                            onClick={() => setDeleteTarget(a)}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        )}
                       </div>
                     </div>
                     
