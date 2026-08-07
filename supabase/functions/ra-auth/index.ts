@@ -47,7 +47,7 @@ Deno.serve(async (req) => {
     return json({ error: "Requisição inválida." }, 400);
   }
 
-  const mode = body.mode === "reset" ? "reset" : "signin";
+  const mode = body.mode === "reset" ? "reset" : body.mode === "signup" ? "signup" : "signin";
   const ra = String(body.ra ?? "").trim().toUpperCase();
   const password = typeof body.password === "string" ? body.password : "";
   const redirectTo = typeof body.redirectTo === "string" ? body.redirectTo : "";
@@ -57,6 +57,9 @@ Deno.serve(async (req) => {
   }
   if (mode === "signin" && (password.length < 6 || password.length > 200)) {
     return json({ error: GENERIC_FAIL }, 401);
+  }
+  if (mode === "signup" && (password.length < 6 || password.length > 72)) {
+    return json({ error: "A senha deve ter entre 6 e 72 caracteres." }, 400);
   }
 
   try {
@@ -81,6 +84,36 @@ Deno.serve(async (req) => {
       if (error) console.warn("ra-auth reset:", error.message);
       return json({ ok: true });
     }
+
+    // Cadastro por RA: conta criada já confirmada (não existe caixa de e-mail
+    // real em @ra.unip.local, então exigir verificação travaria o aluno).
+    if (mode === "signup") {
+      const raEmail = `${ra.toLowerCase()}@ra.unip.local`;
+      const { error: createErr } = await admin.auth.admin.createUser({
+        email: raEmail,
+        password,
+        email_confirm: true,
+        user_metadata: { ra, account_type: "ra", full_name: `Aluno UNIP ${ra}` },
+      });
+      if (createErr) {
+        const msg = createErr.message?.toLowerCase() ?? "";
+        if (msg.includes("already") || msg.includes("registered") || msg.includes("exists")) {
+          return json({ error: "Este RA já está cadastrado. Faça login.", code: "already_registered" }, 409);
+        }
+        console.error("ra-auth signup:", createErr.message);
+        return json({ error: "Não foi possível criar sua conta agora." }, 500);
+      }
+
+      const signupClient = createClient(SUPABASE_URL, ANON_KEY, { auth: { persistSession: false } });
+      const { data: sData } = await signupClient.auth.signInWithPassword({ email: raEmail, password });
+      return json({
+        created: true,
+        session: sData?.session
+          ? { access_token: sData.session.access_token, refresh_token: sData.session.refresh_token }
+          : null,
+      });
+    }
+
 
     const authClient = createClient(SUPABASE_URL, ANON_KEY, { auth: { persistSession: false } });
     const { data, error } = await authClient.auth.signInWithPassword({

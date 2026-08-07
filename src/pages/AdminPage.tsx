@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { AdminNavPanel } from '@/components/admin/AdminNavPanel';
+import { AdminCreateUserDialog } from '@/components/admin/AdminCreateUserDialog';
 import { ADMIN_NAV_BY_ID } from '@/config/adminNav';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 
@@ -1007,6 +1008,29 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
     setImportContent(''); setImportExercises([]); setImportStep('input');
     setImportRawText(''); setExtractionMethod('');
   };
+
+  /**
+   * "Começar" numa matéria da grade (placeholder): prepara a Central de Criação
+   * e rola a tela até ela — antes o estado mudava mas nada aparecia na tela.
+   */
+  const startPlaceholder = (a: { title: string; category?: string | null }) => {
+    setBatchMode(false);
+    setImportMode('text');
+    setImportUrl('');
+    setImportContent('');
+    setImportRawText('');
+    setImportExercises([]);
+    setImportTitle(a.title.replace('[GRADE] ', ''));
+    setImportTopic(a.category || '');
+    setImportStep('edit');
+    setTab('apostilas');
+    requestAnimationFrame(() => {
+      document.querySelector('[data-import-card]')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    toast.info('Central de Criação pronta para esta matéria.');
+  };
+
+
 
   const handleBatchImport = async () => {
     if (!user || batchRunning) return;
@@ -2037,9 +2061,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                                    className="hidden sm:inline-flex h-8 px-2.5 text-xs gap-1.5 gradient-primary text-primary-foreground"
                                    onClick={() => {
                                      if ((a as any).isPlaceholder) {
-                                       setImportTitle(a.title.replace('[GRADE] ', ''));
-                                       setImportTopic(a.category || '');
-                                       setImportStep('edit');
+                                       startPlaceholder(a);
                                      } else {
                                        navigate(`/admin/apostilas/${a.id}`);
                                      }
@@ -2050,9 +2072,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                                  </Button>
                                  <Button size="icon" variant="ghost" className="hidden sm:inline-flex h-8 w-8" onClick={() => { 
                                    if ((a as any).isPlaceholder) {
-                                     setImportTitle(a.title.replace('[GRADE] ', ''));
-                                     setImportTopic(a.category || '');
-                                     setImportStep('edit');
+                                     startPlaceholder(a);
                                    } else {
                                      setEditingApostila(a); setEditTitle(a.title); setEditContent(a.content || ''); setEditCategory(a.category); 
                                    }
@@ -2091,9 +2111,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                                       )}
                                       <DropdownMenuItem onClick={() => {
                                         if ((a as any).isPlaceholder) {
-                                          setImportTitle(a.title.replace('[GRADE] ', ''));
-                                          setImportTopic(a.category || '');
-                                          setImportStep('edit');
+                                          startPlaceholder(a);
                                         } else {
                                           navigate(`/admin/apostilas/${a.id}`);
                                         }
@@ -2102,9 +2120,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                                       </DropdownMenuItem>
                                       <DropdownMenuItem onClick={() => { 
                                         if ((a as any).isPlaceholder) {
-                                          setImportTitle(a.title.replace('[GRADE] ', ''));
-                                          setImportTopic(a.category || '');
-                                          setImportStep('edit');
+                                          startPlaceholder(a);
                                         } else {
                                           setEditingApostila(a); setEditTitle(a.title); setEditContent(a.content || ''); setEditCategory(a.category); 
                                         }
@@ -3096,6 +3112,15 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
             {/* USERS */}
             {tab === 'users' && (
               <div className="space-y-6">
+                {/* Cabeçalho com cadastro manual */}
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <div>
+                    <h2 className="text-lg font-bold">Alunos</h2>
+                    <p className="text-[11px] text-muted-foreground">Cadastre, bloqueie ou ajuste o acesso das contas.</p>
+                  </div>
+                  <AdminCreateUserDialog onCreated={loadAll} />
+                </div>
+
                 {/* Stats */}
                 <div className="grid gap-3 grid-cols-3">
                   <Card>

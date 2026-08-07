@@ -159,29 +159,34 @@ export default function LoginPage() {
 
     if (isSignUp) {
       if (!isEmail) {
-        const { error } = await supabase.auth.signUp({
-          email: effectiveEmail,
-          password,
-          options: {
-            data: { ra: id, account_type: 'ra', full_name: `Aluno UNIP ${id}` },
-            emailRedirectTo: `${window.location.origin}/dashboard`,
-          },
-        });
+        // Cadastro por RA: liberado na hora, sem verificacao de e-mail.
+        const { data, message, code } = await callRaAuth({ mode: 'signup', ra: normalizeRa(id), password });
         setLoading(false);
-        if (error) {
-          toast.error(error.message.includes('already') ? 'Este RA ja esta cadastrado.' : error.message);
+        if (!data?.created) {
+          toast.error(
+            code === 'already_registered'
+              ? 'Este RA ja esta cadastrado. Faca login.'
+              : (message || 'Nao foi possivel criar sua conta agora.')
+          );
+          if (code === 'already_registered') setIsSignUp(false);
           return;
         }
-        const { error: signInError } = await signIn(effectiveEmail, password);
-        if (signInError) {
-          toast.success('Conta criada. Faca login com seu RA.');
-          setIsSignUp(false);
-        } else {
-          toast.success('Conta criada e login realizado.');
-          navigate('/dashboard');
+        if (data?.session?.access_token) {
+          const { error: setErr } = await supabase.auth.setSession({
+            access_token: data.session.access_token,
+            refresh_token: data.session.refresh_token,
+          });
+          if (!setErr) {
+            toast.success('Conta criada e acesso liberado.');
+            navigate('/dashboard');
+            return;
+          }
         }
+        toast.success('Conta criada. Faca login com seu RA.');
+        setIsSignUp(false);
         return;
       }
+
       const { error } = await signUp(effectiveEmail, password);
       setLoading(false);
       if (error) {
