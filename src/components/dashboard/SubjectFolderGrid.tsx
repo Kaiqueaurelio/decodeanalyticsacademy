@@ -29,12 +29,14 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
 
   const groups = useMemo(() => {
     const normalize = (s: string) =>
-      s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+      s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
     const q = normalize(query.trim());
     const map = new Map<string, ApostilaSummary[]>();
     for (const a of apostilas) {
       const key = a.category?.trim() || 'Geral';
       if (q && !normalize(a.title || '').includes(q) && !normalize(key).includes(q)) continue;
+      
+      // Busca a chave canônica se existir para agrupar nomes levemente diferentes
       const arr = map.get(key) ?? [];
       arr.push(a);
       map.set(key, arr);

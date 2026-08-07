@@ -25,7 +25,7 @@ import { ContinueWhereLeftCard } from '@/components/ContinueWhereLeftCard';
 import { StudyHeatmap } from '@/components/gamification/StudyHeatmap';
 import { useApostilasList, useExerciseCounts, useDashboardStats, type ApostilaSummary } from '@/hooks/queries/useDashboardData';
 import { useUserProfile } from '@/hooks/queries/useUserProfile';
-import { BY_SEMESTER } from '@/lib/subject-semester-map';
+import { BY_SEMESTER, subjectKey } from '@/lib/subject-semester-map';
 import { BookOpen, Search, X, PenLine, ShieldCheck } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -112,13 +112,13 @@ export default function DashboardPage() {
       };
 
       // Criar lista de disciplinas que já existem no banco para este semestre
-      const existingCategories = new Set(list.map(a => a.category?.trim() || ''));
+      const existingCategoriesKeys = new Set(list.map(a => subjectKey(a.category || '')));
 
 
 
       // Gerar placeholders apenas para as disciplinas da grade que NÃO existem no banco
       const placeholders = canonicalSubjects
-        .filter(subject => !existingCategories.has(subject))
+        .filter(subject => !existingCategoriesKeys.has(subjectKey(subject)))
         .map((subject, idx) => ({
           id: `placeholder-${selectedSemester}-${idx}`,
           title: `Caderno de ${subject}`,

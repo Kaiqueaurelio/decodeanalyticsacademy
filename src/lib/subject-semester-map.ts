@@ -10,6 +10,11 @@
 const stripAccents = (s: string) =>
   s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
 
+/** Chave normalizada para deduplicar nomes de matéria. */
+export function subjectKey(s: string): string {
+  return stripAccents(s).replace(/\s+/g, ' ');
+}
+
 // Lista canônica por semestre (subset de keywords). A ordem importa: testamos
 // do 8º ao 1º para que termos mais específicos (ex: "II") batam antes.
 export const BY_SEMESTER: Record<number, string[]> = {
