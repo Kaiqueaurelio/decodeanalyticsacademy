@@ -55,7 +55,7 @@ export default function DashboardPage() {
     }
   }, [profile?.semester]);
 
-  const { data: apostilasRaw = [], isLoading: loadingApostilas } = useApostilasList();
+  const { data: apostilasRaw = [], isLoading: loadingApostilas } = useApostilasList({ semester: selectedSemester });
   const { data: exerciseCounts = {} } = useExerciseCounts();
   const { data: statsData, isLoading: loadingStats } = useDashboardStats(user?.id);
   const stats = statsData || { total: 0, hits: 0, errors: 0, byApostila: {} };
