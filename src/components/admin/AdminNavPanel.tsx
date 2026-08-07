@@ -139,7 +139,7 @@ export function AdminNavPanel({ tab, onSelect, counts, footerSlot, autoFocusSear
                     Sair do Painel
                   </span>
                   <span className="block truncate text-[10px] font-medium text-muted-foreground/80 mt-0.5">
-                    Voltar para o site (Área do Aluno)
+                    Voltar para a Área do Aluno
                   </span>
                 </span>
               </button>
