@@ -309,6 +309,16 @@ export function MarkdownEditor({
         if (url === '') editor.chain().focus().unsetLink().run();
         else editor.chain().focus().extendMarkRange('link').setLink({ href: url, target: '_blank' }).run();
       }
+      } else if (key === 'z') {
+        // Redundância de Undo/Redo para mobile (iPhone 11)
+        if (e.shiftKey) {
+          e.preventDefault();
+          editor.chain().focus().redo().run();
+        } else {
+          e.preventDefault();
+          editor.chain().focus().undo().run();
+        }
+      }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
