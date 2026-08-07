@@ -67,14 +67,23 @@ export const BY_SEMESTER: Record<number, string[]> = {
 export function guessSemesterFromCategory(category?: string | null): number | null {
   if (!category) return null;
   const hay = stripAccents(category);
-  // Testa do 8º ao 1º (termos mais específicos primeiro)
+  
+  // 1. Tenta match EXATO primeiro (mais preciso)
+  for (let sem = 1; sem <= 8; sem++) {
+    for (const kw of BY_SEMESTER[sem]) {
+      if (stripAccents(kw) === hay) return sem;
+    }
+  }
+
+  // 2. Fallback: match parcial (testa do 8º ao 1º para termos mais específicos primeiro)
   for (let sem = 8; sem >= 1; sem--) {
     for (const kw of BY_SEMESTER[sem]) {
-      if (hay.includes(kw)) return sem;
+      if (hay.includes(stripAccents(kw))) return sem;
     }
   }
   return null;
 }
+
 
 /** Label amigável do semestre. */
 export function semesterLabel(sem: number | null | undefined): string {

@@ -372,7 +372,7 @@ export function MarkdownEditor({
         </button>
       </div>
 
-      {(viewMode === 'edit' || viewMode === 'split') && !focusMode && (
+      {(viewMode === 'edit' || viewMode === 'split') && (!focusMode || window.innerWidth >= 768) && (
         <div className="flex flex-col border-b border-border">
           <EditorRibbon editor={editor} onInsertImage={insertImage} onSave={onSave} saveStatus={status} />
           <div className="flex items-center gap-4 px-4 py-1.5 bg-primary/5 border-t border-primary/10">

@@ -347,7 +347,7 @@ export default function DashboardPage() {
             />
           </Reveal>
 
-          <section id="minhas-disciplinas" className="scroll-mt-24 rounded-2xl border border-border bg-card p-5">
+          <section id="minhas-disciplinas" className="scroll-mt-24 rounded-2xl border border-border bg-card/40 backdrop-blur-sm p-4 sm:p-6 transition-all duration-500">
             <header className="flex flex-col gap-4 mb-6 md:flex-row md:items-center md:justify-between">
               <div className="flex flex-col gap-1">
                 <div className="flex items-center gap-2">
