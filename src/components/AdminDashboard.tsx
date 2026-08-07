@@ -1138,7 +1138,6 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
               </p>
             ) : null}
           </div>
-
         </CardContent>
       </Card>
 
