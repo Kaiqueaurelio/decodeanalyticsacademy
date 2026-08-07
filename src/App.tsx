@@ -172,11 +172,16 @@ function useAdminCopyPatch() {
 function AnimatedRoutes() {
   const [showSplash, setShowSplash] = React.useState(true);
   const [adminTab, setAdminTab] = React.useState<any>("overview");
+  const location = useLocation();
   useAdminCopyPatch();
+
+  const isPublicPage = ['/', '/login', '/reset-password', '/termos', '/transparencia', '/anuncie', '/patrocine'].includes(location.pathname);
+  const isLandingPage = location.pathname === '/';
 
   return (
     <>
       {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} />}
+
       <Suspense fallback={<PageSkeleton />}>
       <PageTransition>
       <Routes>
