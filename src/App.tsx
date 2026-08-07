@@ -238,7 +238,6 @@ function AnimatedRoutes() {
       </Routes>
       </PageTransition>
     </Suspense>
-    </>
     {!isLandingPage && (
       <>
         <EllaSidebar />
