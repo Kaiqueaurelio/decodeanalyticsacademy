@@ -721,7 +721,7 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
       </div>
       
       {/* Diálogos e Modais Administrativos */}
-      <Dialog open={showWidgetConfig} onValueChange={setShowWidgetConfig}>
+      <Dialog open={showWidgetConfig} onOpenChange={setShowWidgetConfig}>
         <DialogContent className="bg-popover/90 backdrop-blur-2xl border-white/10 rounded-3xl">
           <DialogHeader>
             <DialogTitle>Personalizar Central Operacional</DialogTitle>
