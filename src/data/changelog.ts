@@ -28,6 +28,15 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.73.1",
+    date: "2026-08-08",
+    title: "Otimização de Deploy e Performance",
+    major: false,
+    changes: [
+      { kind: 'improvement', text: 'Sincronização de ambiente concluída: Otimizada a performance do aplicativo para espelhar a estabilidade e velocidade da versão de produção.' },
+    ],
+  },
+  {
     version: "3.73.0",
     date: "2026-08-08",
     title: "Limpador de Apostilas e Estabilidade de Grade",
