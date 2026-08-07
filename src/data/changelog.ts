@@ -28,6 +28,19 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.69.0",
+    date: "2026-08-08",
+    title: "Nova Central Operacional: Hierarquia e Saúde",
+    major: true,
+    changes: [
+      { kind: 'improvement', text: 'Redesign da Central Operacional: Remoção da estética "IA" em favor de um layout profissional com hierarquia visual clara, cards de métricas refinados e grid estruturado.' },
+      { kind: 'feature', text: 'Painel de Saúde das Apostilas: Novo sistema de auditoria automática que monitora integridade visual, rascunhos obsoletos e dados ausentes.' },
+      { kind: 'improvement', text: 'Otimização iPhone 11: Interface administrativa totalmente responsiva com controles simplificados e navegação otimizada para telas menores.' },
+      { kind: 'fix', text: 'Estabilização de Gráficos: Correção de erros de renderização e estruturação no dashboard administrativo.' },
+    ],
+  },
+  {
+
     version: "3.68.0",
     date: "2026-08-07",
     title: "Sincronização de Grade e Inteligência Ella",
