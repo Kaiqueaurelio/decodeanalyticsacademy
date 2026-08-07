@@ -400,23 +400,346 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
   }
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      {/* Barra de comando — identidade Decode */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden rounded-[2.5rem] border border-primary/20 bg-card/40 p-6 backdrop-blur-2xl sm:p-10 shadow-2xl shadow-primary/5"
-      >
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 opacity-[0.08]"
-          style={{
-            background:
-              'radial-gradient(1000px 400px at 0% 0%, hsl(var(--primary)), transparent 70%), radial-gradient(800px 400px at 100% 100%, hsl(var(--accent)), transparent 70%)',
-          }}
-        />
-        <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex items-center gap-6 min-w-0">
+    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
+      {/* Cabeçalho da Central Operacional - Design Refinado e Hierárquico */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 px-2">
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <div className="h-8 w-1 bg-primary rounded-full shadow-[0_0_12px_rgba(var(--primary-rgb),0.5)]" />
+            <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+              Central Operacional
+            </h1>
+          </div>
+          <p className="text-muted-foreground max-w-2xl leading-relaxed">
+            Gestão estratégica de conteúdos, usuários e métricas acadêmicas.
+            Monitore a integridade do ecossistema <span className="text-primary font-medium">Decode Analytics Academy</span>.
+          </p>
+        </div>
+        
+        <div className="flex items-center gap-3">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="rounded-xl border-primary/10 bg-primary/5 hover:bg-primary/10 transition-all duration-300"
+            onClick={load}
+          >
+            <RefreshCw className={cn("h-4 w-4 mr-2", loading && "animate-spin")} />
+            Sincronizar Dados
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="rounded-xl hover:bg-muted"
+            onClick={() => setShowWidgetConfig(true)}
+          >
+            <LayoutDashboard className="h-5 w-5" />
+          </Button>
+        </div>
+      </div>
+
+      {/* Grid de Métricas Principais - Mais Limpo e Profissional */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 px-2">
+        {cards.map((card) => (
+          <motion.div
+            key={card.label}
+            whileHover={{ y: -4 }}
+            className="group cursor-pointer"
+            onClick={() => onNavigate(card.tab)}
+          >
+            <Card className="relative overflow-hidden border-primary/10 bg-card/30 backdrop-blur-sm hover:border-primary/30 transition-all duration-500">
+              <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                <card.icon className="h-12 w-12" />
+              </div>
+              <CardContent className="p-5">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className={cn(
+                    "p-2 rounded-lg",
+                    card.tone === 'primary' ? "bg-primary/10 text-primary" : "bg-accent/10 text-accent"
+                  )}>
+                    <card.icon className="h-5 w-5" />
+                  </div>
+                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">{card.label}</span>
+                </div>
+                <div className="text-3xl font-bold tracking-tighter">
+                  {card.value}
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Painel de Saúde e Integridade - NOVA SEÇÃO SOLICITADA */}
+        <div className="lg:col-span-1 space-y-6">
+          <Card className="border-primary/10 bg-card/20 backdrop-blur-md overflow-hidden h-full">
+            <CardHeader className="border-b border-white/5 pb-4">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <ShieldCheck className="h-5 w-5 text-emerald-500" />
+                  Saúde das Apostilas
+                </CardTitle>
+                <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20">
+                  {contentHealth.score}% OK
+                </Badge>
+              </div>
+              <CardDescription>Auditoria automática de renderização</CardDescription>
+            </CardHeader>
+            <CardContent className="p-0">
+              <ScrollArea className="h-[400px]">
+                <div className="p-4 space-y-4">
+                  {/* Status Geral */}
+                  <div className="p-4 rounded-2xl bg-white/5 border border-white/5 space-y-3">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-muted-foreground">Integridade Visual</span>
+                      <span className="font-mono text-emerald-500">STATUS: NOMINAL</span>
+                    </div>
+                    <Progress value={contentHealth.score} className="h-2" />
+                  </div>
+
+                  {/* Lista de Alertas */}
+                  <div className="space-y-1">
+                    <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2 px-1">Alertas Críticos</h4>
+                    
+                    {contentHealth.withoutCategory.length > 0 && (
+                      <div className="flex items-center justify-between p-3 rounded-xl bg-amber-500/5 border border-amber-500/10 hover:bg-amber-500/10 transition-colors group">
+                        <div className="flex items-center gap-3">
+                          <AlertTriangle className="h-4 w-4 text-amber-500" />
+                          <div className="text-sm">
+                            <p className="font-medium">{contentHealth.withoutCategory.length} Sem Categoria</p>
+                            <p className="text-[10px] text-muted-foreground">Afeta a organização por pastas</p>
+                          </div>
+                        </div>
+                        <Button size="icon" variant="ghost" className="h-8 w-8 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                          <ChevronRight className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    )}
+
+                    {contentHealth.staleDrafts.length > 0 && (
+                      <div className="flex items-center justify-between p-3 rounded-xl bg-primary/5 border border-primary/10 hover:bg-primary/10 transition-colors group">
+                        <div className="flex items-center gap-3">
+                          <Clock3 className="h-4 w-4 text-primary" />
+                          <div className="text-sm">
+                            <p className="font-medium">{contentHealth.staleDrafts.length} Rascunhos Antigos</p>
+                            <p className="text-[10px] text-muted-foreground">Inativos há mais de 30 dias</p>
+                          </div>
+                        </div>
+                        <Button size="icon" variant="ghost" className="h-8 w-8 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                          <ChevronRight className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    )}
+
+                    {apostilas.filter(a => !a.title || a.title.includes('Sem título')).length > 0 && (
+                      <div className="flex items-center justify-between p-3 rounded-xl bg-red-500/5 border border-red-500/10 hover:bg-red-500/10 transition-colors group">
+                        <div className="flex items-center gap-3">
+                          <XCircle className="h-4 w-4 text-red-500" />
+                          <div className="text-sm">
+                            <p className="font-medium">Títulos Ausentes</p>
+                            <p className="text-[10px] text-muted-foreground">Identificadas apostilas sem nome</p>
+                          </div>
+                        </div>
+                        <Button size="icon" variant="ghost" className="h-8 w-8 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                          <ChevronRight className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    )}
+
+                    {contentHealth.score === 100 && (
+                      <div className="py-12 text-center space-y-3">
+                        <div className="mx-auto h-12 w-12 rounded-full bg-emerald-500/10 flex items-center justify-center">
+                          <CheckCircle2 className="h-6 w-6 text-emerald-500" />
+                        </div>
+                        <p className="text-sm text-muted-foreground">Tudo certo! Nenhuma inconsistência encontrada.</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </ScrollArea>
+              <div className="p-4 border-t border-white/5 bg-white/5">
+                <Button variant="outline" className="w-full text-xs gap-2 rounded-xl" onClick={() => onNavigate('apostilas')}>
+                  Gerenciar Acervo Acadêmico
+                  <ExternalLink className="h-3 w-3" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Acervo Administrativo e Ranking */}
+        <div className="lg:col-span-2 space-y-8">
+          {/* Aba de Comando Rápido */}
+          <Card className="border-primary/10 bg-card/20 backdrop-blur-md overflow-hidden">
+            <CardHeader className="pb-4">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <BookOpen className="h-5 w-5 text-primary" />
+                  Acervo Administrativo
+                </CardTitle>
+                <div className="flex items-center gap-2">
+                  <Button size="sm" variant="ghost" onClick={clearFilters} className={cn("h-8 text-[10px] uppercase tracking-wider", !hasFilters && "hidden")}>
+                    Limpar Filtros
+                  </Button>
+                  <Badge variant="secondary" className="bg-primary/10 text-primary hover:bg-primary/20 transition-colors cursor-pointer">
+                    {filtered.length} Apostilas
+                  </Badge>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Barra de Busca e Ações */}
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="relative flex-1 group">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                  <Input
+                    placeholder="Filtrar por título, categoria ou professor..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="pl-10 bg-white/5 border-white/10 rounded-xl focus:ring-primary/30"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button onClick={() => handleQuickCreate('text')} className="rounded-xl shadow-lg shadow-primary/20 gap-2">
+                    <Plus className="h-4 w-4" /> Novo Conteúdo
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="flex flex-wrap gap-2">
+                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                  <SelectTrigger className="w-[160px] h-9 bg-white/5 border-white/10 rounded-xl text-xs">
+                    <SelectValue placeholder="Categoria" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover/90 backdrop-blur-xl border-white/10 rounded-xl">
+                    <SelectItem value="all">Todas Categorias</SelectItem>
+                    {categories.map(c => (
+                      <SelectItem key={c} value={c}>{c}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Select value={statusFilter} onValueChange={setStatusFilter as any}>
+                  <SelectTrigger className="w-[140px] h-9 bg-white/5 border-white/10 rounded-xl text-xs">
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover/90 backdrop-blur-xl border-white/10 rounded-xl">
+                    <SelectItem value="all">Qualquer Status</SelectItem>
+                    <SelectItem value="published">Publicadas</SelectItem>
+                    <SelectItem value="draft">Rascunhos</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Select value={sortKey} onValueChange={setSortKey as any}>
+                  <SelectTrigger className="w-[160px] h-9 bg-white/5 border-white/10 rounded-xl text-xs">
+                    <SelectValue placeholder="Ordenação" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover/90 backdrop-blur-xl border-white/10 rounded-xl">
+                    <SelectItem value="created_desc">Mais Recentes</SelectItem>
+                    <SelectItem value="created_asc">Mais Antigas</SelectItem>
+                    <SelectItem value="updated_desc">Atualizadas Recente</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Grid de Apostilas Organizado */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {visibleItems.map((a) => (
+                  <motion.div
+                    key={a.id}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="group"
+                  >
+                    <div className={cn(
+                      "relative p-4 rounded-2xl border transition-all duration-300",
+                      (a as any).isPlaceholder 
+                        ? "bg-primary/5 border-dashed border-primary/30" 
+                        : "bg-white/5 border-white/10 hover:border-primary/40 hover:bg-white/10 shadow-lg hover:shadow-primary/5"
+                    )}>
+                      <div className="flex justify-between items-start mb-2">
+                        <Badge variant="outline" className={cn(
+                          "text-[10px] py-0 px-1.5 uppercase tracking-tighter",
+                          (a as any).isPlaceholder ? "bg-primary/20 text-primary border-primary/20" : 
+                          a.published ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                        )}>
+                          {(a as any).isPlaceholder ? 'Grade Acadêmica' : a.published ? 'Ativa' : 'Rascunho'}
+                        </Badge>
+                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Button size="icon" variant="ghost" className="h-7 w-7 rounded-lg" onClick={() => handleEdit(a)}>
+                            <Edit className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </div>
+                      
+                      <h3 className="font-semibold text-sm line-clamp-1 mb-1 group-hover:text-primary transition-colors">
+                        {a.title}
+                      </h3>
+                      <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                        <span className="truncate max-w-[120px]">{a.category || 'Sem Categoria'}</span>
+                        <span>•</span>
+                        <span>{new Date(a.created_at).toLocaleDateString('pt-BR')}</span>
+                      </div>
+                      
+                      {!(a as any).isPlaceholder && (
+                        <div className="mt-4 pt-3 border-t border-white/5 flex justify-between items-center">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-7 text-[10px] px-2 rounded-lg hover:bg-primary/10 hover:text-primary transition-all"
+                            onClick={() => handleTogglePublish(a)}
+                          >
+                            <Switch checked={a.published} className="scale-75 mr-1" />
+                            {a.published ? 'Visível' : 'Oculto'}
+                          </Button>
+                          <Button 
+                            variant="primary" 
+                            size="sm" 
+                            className="h-7 text-[10px] px-3 rounded-lg shadow-sm"
+                            onClick={() => handleEdit(a)}
+                          >
+                            Editar
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+              
+              {hasMore && (
+                <div ref={adminLoaderRef} className="py-10 flex justify-center">
+                  <div className="h-6 w-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+      
+      {/* Diálogos e Modais Administrativos */}
+      <Dialog open={showWidgetConfig} onValueChange={setShowWidgetConfig}>
+        <DialogContent className="bg-popover/90 backdrop-blur-2xl border-white/10 rounded-3xl">
+          <DialogHeader>
+            <DialogTitle>Personalizar Central Operacional</DialogTitle>
+            <DialogDescription>Escolha quais painéis e métricas deseja manter visíveis.</DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            {['apostilas', 'exercises', 'users', 'ads', 'rankings', 'engagement'].map((id) => (
+              <div key={id} className="flex items-center justify-between p-3 rounded-2xl bg-white/5 border border-white/5">
+                <span className="text-sm font-medium capitalize">{id.replace('apostilas', 'Contéudos').replace('exercises', 'Exercícios').replace('users', 'Alunos').replace('ads', 'Publicidade')}</span>
+                <Switch 
+                  checked={visibleWidgets.includes(id)} 
+                  onCheckedChange={() => toggleWidget(id)} 
+                />
+              </div>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
             <div className="group relative flex h-20 w-20 shrink-0 items-center justify-center rounded-[2rem] bg-background shadow-2xl transition-transform hover:scale-105 active:scale-95 ring-1 ring-primary/20">
               <div className="absolute inset-0 rounded-[2rem] bg-gradient-to-br from-primary/10 to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity" />
               <img src={owlLogo} alt="Decode Logo" className="relative z-10 h-14 w-14 object-contain" />
