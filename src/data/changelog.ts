@@ -49,6 +49,7 @@ export const CHANGELOG: ChangelogEntry[] = [
       { kind: 'improvement', text: 'Workbench: melhoria na performance de autosave e persistência de versão segura em dispositivos iPhone 11.' },
     ],
   },
+  {
     version: "3.64.0",
     date: "2026-08-07",
     title: "Sincronização de Grade e Workbench Mobile",
@@ -58,6 +59,7 @@ export const CHANGELOG: ChangelogEntry[] = [
       { kind: 'feature', text: 'Workbench Administrativo otimizado para mobile com edição direta de disciplina e título na barra superior.' },
       { kind: 'improvement', text: 'Editor de Markdown aprimorado para melhor legibilidade em telas pequenas (espaçamento relaxado).' },
     ],
+  },
 
   },
 
