@@ -47,7 +47,7 @@ Deno.serve(async (req) => {
     return json({ error: "Requisição inválida." }, 400);
   }
 
-  const mode = body.mode === "reset" ? "reset" : "signin";
+  const mode = body.mode === "reset" ? "reset" : body.mode === "signup" ? "signup" : "signin";
   const ra = String(body.ra ?? "").trim().toUpperCase();
   const password = typeof body.password === "string" ? body.password : "";
   const redirectTo = typeof body.redirectTo === "string" ? body.redirectTo : "";
@@ -57,6 +57,9 @@ Deno.serve(async (req) => {
   }
   if (mode === "signin" && (password.length < 6 || password.length > 200)) {
     return json({ error: GENERIC_FAIL }, 401);
+  }
+  if (mode === "signup" && (password.length < 6 || password.length > 72)) {
+    return json({ error: "A senha deve ter entre 6 e 72 caracteres." }, 400);
   }
 
   try {
