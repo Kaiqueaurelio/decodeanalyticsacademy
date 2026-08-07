@@ -308,7 +308,6 @@ export function MarkdownEditor({
         if (url === null) return;
         if (url === '') editor.chain().focus().unsetLink().run();
         else editor.chain().focus().extendMarkRange('link').setLink({ href: url, target: '_blank' }).run();
-      }
       } else if (key === 'z') {
         // Redundância de Undo/Redo para mobile (iPhone 11)
         if (e.shiftKey) {
