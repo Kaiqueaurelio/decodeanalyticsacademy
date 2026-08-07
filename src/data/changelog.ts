@@ -28,6 +28,16 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.73.5",
+    date: "2026-08-07",
+    title: "Ella: Smart Transcription & Organization",
+    major: true,
+    changes: [
+      { kind: 'feature', text: 'Implementada integração de transcrições brutas: a Ella agora pode processar áudios transcritos e estruturá-los automaticamente em apostilas profissionais.' },
+      { kind: 'improvement', text: 'Refinamento do Smart Paste no Workbench para suportar grandes blocos de texto de transcrição com detecção de tópicos e hierarquia automática.' },
+    ],
+  },
+  {
     version: "3.73.4",
     date: "2026-08-07",
     title: "Gestão Atômica e Estabilidade",
