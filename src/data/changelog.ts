@@ -28,6 +28,17 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.73.8",
+    date: "2026-08-07",
+    title: "Sincronização de Grade Acadêmica: 6º Semestre",
+    major: true,
+    changes: [
+      { kind: 'content', text: 'Sincronizadas apostilas de Processamento de Imagem e Análise de Dados com a Grade Acadêmica do 6º semestre.' },
+      { kind: 'fix', text: 'Corrigida lógica de detecção de placeholders para evitar duplicidade visual entre apostilas reais e sugestões de grade.' },
+      { kind: 'improvement', text: 'Implementada normalização de nomes de disciplinas para garantir agrupamento consistente no dashboard.' },
+    ],
+  },
+  {
     version: "3.73.7",
     date: "2026-08-07",
     title: "Reorganização Fina de Disciplinas",
