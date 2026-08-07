@@ -61,8 +61,6 @@ export const CHANGELOG: ChangelogEntry[] = [
     ],
   },
 
-  },
-
   {
     version: "3.63.5",
     date: "2026-08-06",
