@@ -1000,7 +1000,7 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
                         className="h-7 text-[10px] px-3 rounded-lg shadow-sm"
                         onClick={() => navigate(`/apostila/${a.id}`)}
                       >
-                        Começar
+                        Visualizar
                       </Button>
                     </div>
                   )}
