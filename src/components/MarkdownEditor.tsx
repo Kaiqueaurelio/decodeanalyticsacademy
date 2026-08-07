@@ -151,7 +151,9 @@ export function MarkdownEditor({
     extensions: [
       StarterKit.configure({
         heading: { levels: [1, 2, 3] },
-        codeBlock: { HTMLAttributes: { class: 'rounded bg-muted p-3 font-mono text-sm' } },
+        paragraph: { HTMLAttributes: { class: 'leading-relaxed mobile-friendly-p' } },
+        codeBlock: { HTMLAttributes: { class: 'rounded bg-muted p-3 font-mono text-sm overflow-x-auto' } },
+
       }),
       Underline,
       TextStyle,
