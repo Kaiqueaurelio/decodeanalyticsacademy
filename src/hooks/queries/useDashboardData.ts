@@ -51,6 +51,7 @@ export function useApostilasList(options: ApostilasListOptions = {}) {
     enabled: canLoadApostilas,
     refetchInterval: 5000, // Atualiza a cada 5 segundos para liberar acesso automático sem recarregar a página
     queryFn: async () => {
+      // Busca apostilas e garante que a query considere semester e course
       let q = supabase
         .from('apostilas')
         .select(APOSTILA_LIST_COLUMNS);
@@ -65,9 +66,15 @@ export function useApostilasList(options: ApostilasListOptions = {}) {
         q = q.in('category', ['ENEM']);
       }
 
+      // Filtro Opcional: Se as opções forem passadas, filtra no banco para maior eficiência
+      if (semester) {
+        q = q.eq('semester', semester);
+      }
+      
       const { data, error } = await q
         .order('category')
         .order('created_at', { ascending: false });
+        
       if (error) throw error;
       return (data || []) as ApostilaSummary[];
     },

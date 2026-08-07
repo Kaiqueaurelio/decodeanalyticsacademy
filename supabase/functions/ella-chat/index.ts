@@ -84,14 +84,14 @@ const tools = [
     type: "function",
     function: {
       name: "update_apostila",
-      description: "Atualiza ou acrescenta conteúdo a uma apostila existente. Use para adicionar texto, imagens, áudios ou vídeos ao corpo da apostila.",
+      description: "Atualiza ou acrescenta conteúdo a uma apostila existente. Use para adicionar texto, imagens, áudios ou vídeos ao corpo da apostila. Se o usuário fornecer um 'texto gigante' e o nome de uma apostila, use esta função para integrar o conteúdo.",
       parameters: {
         type: "object",
         properties: {
           id: { type: "string" },
           title: { type: "string" },
           category: { type: "string" },
-          content: { type: "string", description: "O novo conteúdo completo em Markdown. Se o usuário pedir para 'acrescentar', você deve primeiro ler a apostila com get_apostila e concatenar o novo conteúdo ao final ou na seção solicitada." },
+          content: { type: "string", description: "O novo conteúdo completo em Markdown. Se o usuário pedir para 'acrescentar', você deve primeiro ler a apostila com get_apostila e concatenar o novo conteúdo ao final ou na seção solicitada. Para textos grandes, formate-os em seções adequadas." },
           published: { type: "boolean" },
           semester: { type: "number" },
         },
