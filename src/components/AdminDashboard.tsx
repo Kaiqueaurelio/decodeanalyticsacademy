@@ -737,10 +737,9 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
           </div>
         </DialogContent>
       </Dialog>
-    </div>
   );
 }
-      {/* Seção de Gráficos e Ranking unificada */}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <Card className="lg:col-span-2 border-primary/10 bg-card/20 backdrop-blur-md">
           <CardHeader className="flex flex-row items-center justify-between">
