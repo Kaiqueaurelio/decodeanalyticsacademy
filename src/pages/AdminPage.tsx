@@ -2111,9 +2111,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                                       )}
                                       <DropdownMenuItem onClick={() => {
                                         if ((a as any).isPlaceholder) {
-                                          setImportTitle(a.title.replace('[GRADE] ', ''));
-                                          setImportTopic(a.category || '');
-                                          setImportStep('edit');
+                                          startPlaceholder(a);
                                         } else {
                                           navigate(`/admin/apostilas/${a.id}`);
                                         }
@@ -2122,9 +2120,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                                       </DropdownMenuItem>
                                       <DropdownMenuItem onClick={() => { 
                                         if ((a as any).isPlaceholder) {
-                                          setImportTitle(a.title.replace('[GRADE] ', ''));
-                                          setImportTopic(a.category || '');
-                                          setImportStep('edit');
+                                          startPlaceholder(a);
                                         } else {
                                           setEditingApostila(a); setEditTitle(a.title); setEditContent(a.content || ''); setEditCategory(a.category); 
                                         }
