@@ -57,10 +57,11 @@ export const BY_SEMESTER: Record<number, string[]> = {
   ],
   8: [
     'Trabalho de Conclusao de Curso (TCC)', 'Empreendedorismo',
-    'Gestao de Projetos', 'Etica Profissional',
+    'Gestao de Projetos II', 'Etica Profissional',
     'Computacao de Alto Desempenho',
     'Atividades Praticas Supervisionadas VIII (APS)',
   ],
+
 };
 
 /** Retorna o semestre (1–8) que melhor casa com a disciplina, ou null. */

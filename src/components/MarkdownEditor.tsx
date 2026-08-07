@@ -94,13 +94,17 @@ export function MarkdownEditor({
   const [autoFit, setAutoFit] = useState<number | null>(null);
   const [tocCollapsed, setTocCollapsed] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
-    return window.localStorage.getItem(TOC_KEY) === '1';
+    return window.innerWidth < 1024 || window.localStorage.getItem(TOC_KEY) === '1';
   });
   const [inspectorCollapsed, setInspectorCollapsed] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
-    return window.localStorage.getItem(INSPECTOR_KEY) === '1';
+    return window.innerWidth < 1024 || window.localStorage.getItem(INSPECTOR_KEY) === '1';
   });
-  const [focusMode, setFocusMode] = useState(false);
+  const [focusMode, setFocusMode] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.innerWidth < 768;
+  });
+
   const [viewMode, setViewMode] = useState<'edit' | 'preview' | 'split'>('edit');
   const [mobileTocOpen, setMobileTocOpen] = useState(false);
   const [mobileInspectorOpen, setMobileInspectorOpen] = useState(false);
