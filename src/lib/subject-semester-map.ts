@@ -13,20 +13,6 @@ const stripAccents = (s: string) =>
 // Lista canônica por semestre (subset de keywords). A ordem importa: testamos
 // do 8º ao 1º para que termos mais específicos (ex: "II") batam antes.
 export const BY_SEMESTER: Record<number, string[]> = {
-  // Matérias do 6º Semestre (Foco do usuário)
-  6: [
-    'Pesquisa Operacional',
-    'Sistemas Operacionais e Mobile',
-    'Calculo Numerico Computacional',
-    'Aspectos Teoricos da Computacao',
-    'Gestao de Projetos',
-    'Processamento de Imagem e Visao Computacional',
-    'Ciencia de Dados',
-    'Metodos de Pesquisa',
-    'Interdisciplinar de Ciencia da Computacao',
-    'Atividades Praticas Supervisionadas VI (APS)',
-  ],
-
   1: [
     'Logica de Programacao', 'Matematica Discreta', 'Introducao a Computacao',
     'Comunicacao e Expressao', 'Fundamentos de Sistemas de Informacao',
@@ -55,19 +41,33 @@ export const BY_SEMESTER: Record<number, string[]> = {
     'Computacao Grafica', 'Analise Matematica',
     'Atividades Praticas Supervisionadas V (APS)',
   ],
+  6: [
+    'Pesquisa Operacional',
+    'Sistemas Operacionais e Mobile',
+    'Calculo Numerico Computacional',
+    'Aspectos Teoricos da Computacao',
+    'Gestao de Projetos',
+    'Processamento de Imagem e Visao Computacional',
+    'Ciencia de Dados',
+    'Metodos de Pesquisa',
+    'Interdisciplinar de Ciencia da Computacao',
+    'Atividades Praticas Supervisionadas VI (APS)',
+    'Estudos Disciplinares VI',
+  ],
   7: [
     'Seguranca da Informacao', 'Computacao em Nuvem',
     'Aprendizado de Maquina (Machine Learning)', 'Topicos Especiais de Computacao',
     'Sistemas Digitais',
     'Atividades Praticas Supervisionadas VII (APS)',
+    'Estudos Disciplinares VII',
   ],
   8: [
     'Trabalho de Conclusao de Curso (TCC)', 'Empreendedorismo',
     'Gestao de Projetos II', 'Etica Profissional',
     'Computacao de Alto Desempenho',
     'Atividades Praticas Supervisionadas VIII (APS)',
+    'Estudos Disciplinares VIII',
   ],
-
 };
 
 /** Retorna o semestre (1–8) que melhor casa com a disciplina, ou null. */
@@ -90,7 +90,6 @@ export function guessSemesterFromCategory(category?: string | null): number | nu
   }
   return null;
 }
-
 
 /** Label amigável do semestre. */
 export function semesterLabel(sem: number | null | undefined): string {
