@@ -28,6 +28,15 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.73.4",
+    date: "2026-08-07",
+    title: "Gestão Atômica e Estabilidade",
+    major: false,
+    changes: [
+      { kind: 'improvement', text: 'Refinamento da funcionalidade de exclusão de apostilas para garantir a gestão eficiente de conteúdos duplicados e integridade do banco de dados.' },
+    ],
+  },
+  {
     version: "3.73.3",
     date: "2026-08-08",
     title: "Otimização Visual: Visão Computacional",
