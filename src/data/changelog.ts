@@ -28,6 +28,15 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.73.6",
+    date: "2026-08-07",
+    title: "Sincronização de Grade Curricular",
+    major: false,
+    changes: [
+      { kind: 'content', text: 'Sincronizadas apostilas de Processamento de Imagem e Ferramentas de Análise com suas respectivas disciplinas, garantindo organização correta no dashboard.' },
+    ],
+  },
+  {
     version: "3.73.5",
     date: "2026-08-07",
     title: "Ella: Smart Transcription & Organization",
