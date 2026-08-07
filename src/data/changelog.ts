@@ -41,6 +41,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     ],
   },
   {
+    version: "3.66.0",
     date: "2026-08-07",
     title: "Version Control & Smart Organization",
     major: true,
