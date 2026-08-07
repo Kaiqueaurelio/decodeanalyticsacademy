@@ -1,12 +1,13 @@
 /**
- * ApostilaAudios — seção dedicada "🎧 Áudios da aula" no topo da apostila.
- * Lista todos os materiais do tipo 'audio' vinculados à apostila com player inline.
+ * ApostilaAudios — seção dedicada de audios da aula no topo da apostila.
+ * Lista materiais do tipo 'audio' vinculados à apostila com player inline.
  */
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Slider } from '@/components/ui/slider';
 import { useAudioPlayer } from '@/contexts/AudioPlayerContext';
 import { Button } from '@/components/ui/button';
+import { dedupeByMaterialName } from '@/lib/material-dedupe';
 import {
   Play, Pause, SkipBack, SkipForward, Volume2, VolumeX,
   Loader2, AlertCircle, Music, Headphones, Gauge, PlayCircle,
@@ -62,7 +63,7 @@ export function ApostilaAudios({ apostilaId }: { apostilaId: string }) {
         }),
       );
 
-      setAudios(sorted.filter((a) => a.file_url));
+      setAudios(dedupeByMaterialName(sorted.filter((a) => a.file_url), (audio) => audio));
       setLoading(false);
     })();
   }, [apostilaId]);
