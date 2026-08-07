@@ -98,6 +98,7 @@ function useAdminCopyPatch() {
       ["Gere criativos de anúncios com IA", "Assistente operacional para tarefas do app"],
       ["Implementar um sistema de monitoramento para registrar erros em tempo real e enviar alertas quando o app quebrar.", "Implementar um sistema de monitoramento para registrar erros em tempo real e enviar alertas quando o app quebrar."],
       ["Corrigir o erro de build garantindo que exista o arquivo index.html na raiz e que o Vite aponte para ele corretamente.", "Corrigir o erro de build garantindo que exista o arquivo index.html na raiz e que o Vite aponte para ele corretamente."],
+      ["Criar uma página de “Saúde das Apostilas” no admin que verifica se cada apostila está renderizando corretamente e mostra status (ok/erro) com link para corrigir.\nCalma, o porquê, mas tá bagunçada a aba de administrador. A cada melhoria que a gente faz, parece que a aba de administrador tá mais bagunçada. O app, pra mim, no meu ponto de vista, na parte de administração, tá muito com cara de inteligência artificial, não tem hierarquia nenhuma, não tá estruturado, tá bagunçado. Acho que a gente pode melhorar ainda mais", "Organização e Estruturação da Central Operacional: Implementada hierarquia visual robusta, auditoria de integridade 'Saúde das Apostilas' e painel administrativo refinado (v3.69.0)."],
       ["mude meu projeto para tanstack", "mude meu projeto para tanstack"],
       ["oque vc acha que podemos melhorar no app por gentileza ??", "oque vc acha que podemos melhorar no app por gentileza ??"],
       ["oi teste", "oi teste"],
