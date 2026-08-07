@@ -204,7 +204,7 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
                       </span>
                       <div className="h-1 w-1 rounded-full bg-primary/40" />
                       <span className="text-[10px] font-black text-primary uppercase tracking-widest group-hover:translate-x-1 transition-transform inline-flex items-center gap-1">
-                        Abrir gaveta <ChevronRight className="h-3 w-3" />
+                        Explorar Disciplina <ChevronRight className="h-3 w-3" />
                       </span>
                     </div>
                   </div>
@@ -230,7 +230,7 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
                       <span className="text-[9px] font-bold text-muted-foreground uppercase truncate">{a.title}</span>
                     </div>
                     <div className="mt-auto flex items-center justify-between">
-                      <span className="text-[8px] font-black text-primary/60">ESTUDAR</span>
+                      <span className="text-[8px] font-black text-primary/60 uppercase">Ler Material</span>
                       <ChevronRight className="h-2 w-2 text-primary/40 group-hover/mini:translate-x-0.5 transition-transform" />
                     </div>
                   </button>

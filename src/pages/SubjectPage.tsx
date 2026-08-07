@@ -149,7 +149,7 @@ export default function SubjectPage() {
                       </div>
                       <div className="mt-1 flex items-center justify-between">
                         <span className="text-[11px] font-medium text-primary/90">
-                          Abrir apostila
+                          Ler Material
                         </span>
                         <ChevronRight className="h-3.5 w-3.5 text-primary/70 group-hover:translate-x-0.5 transition-transform" />
                       </div>
