@@ -40,12 +40,12 @@ export function SortableMaterialsList({ items, onReorder, onRemove }: Props) {
     onReorder(next);
     try {
       // Atualiza sort_order de todos, em paralelo
-      await Promise.all(
-        next.map((item, idx) =>
-          supabase.from('apostila_materials').update({ sort_order: idx }).eq('id', item.id)
-        )
-      );
-    } catch {
+      const { error } = await supabase.rpc('update_materials_order', {
+        payload: next.map((item, idx) => ({ id: item.id, sort_order: idx }))
+      });
+      if (error) throw error;
+    } catch (err: any) {
+      console.error('[SortableMaterialsList] update error:', err);
       toast.error('Não foi possível salvar a nova ordem');
     }
   };
