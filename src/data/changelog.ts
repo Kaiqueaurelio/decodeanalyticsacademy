@@ -28,6 +28,15 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.73.7",
+    date: "2026-08-07",
+    title: "Reorganização Fina de Disciplinas",
+    major: false,
+    changes: [
+      { kind: 'content', text: 'Apostila de Análise de Dados movida para Pesquisa Operacional e Processamento de Imagem vinculada à sua grade específica conforme auditoria.' },
+    ],
+  },
+  {
     version: "3.73.6",
     date: "2026-08-07",
     title: "Sincronização de Grade Curricular",
