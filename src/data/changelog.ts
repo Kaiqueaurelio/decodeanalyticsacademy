@@ -40,7 +40,7 @@ export const CHANGELOG: ChangelogEntry[] = [
       { kind: 'improvement', text: 'Status de Salvamento: Melhoria no feedback visual e atalhos de salvamento no editor.' },
     ],
   },
-    version: "3.66.0",
+  {
     date: "2026-08-07",
     title: "Version Control & Smart Organization",
     major: true,
