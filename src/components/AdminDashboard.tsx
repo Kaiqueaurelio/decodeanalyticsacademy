@@ -965,6 +965,7 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
         </CardContent>
       </Card>
 
+
       {/* Confirm individual delete */}
       <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
         <AlertDialogContent>
