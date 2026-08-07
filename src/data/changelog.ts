@@ -30,6 +30,17 @@ export const CHANGELOG: ChangelogEntry[] = [
   {
     version: "3.73.9",
     date: "2026-08-07",
+    title: "Sincronização 6º Semestre e Pesquisa Operacional",
+    major: true,
+    changes: [
+      { kind: 'content', text: 'Movida apostila de Análise de Dados para Pesquisa Operacional e corrigida visibilidade no Admin.' },
+      { kind: 'fix', text: 'Ativado selo de Grade Acadêmica para Processamento de Imagem vinculando-a ao 6º semestre.' },
+      { kind: 'improvement', text: 'Unificada lógica de normalização de categorias para evitar duplicatas entre placeholders e materiais reais.' },
+    ],
+  },
+  {
+    version: "3.73.9",
+    date: "2026-08-07",
     title: "Correção de Fluxo e Grade 6º Semestre",
     major: true,
     changes: [
