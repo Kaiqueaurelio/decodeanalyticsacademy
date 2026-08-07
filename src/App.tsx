@@ -239,6 +239,19 @@ function AnimatedRoutes() {
       </PageTransition>
     </Suspense>
     </>
+    {!isLandingPage && (
+      <>
+        <EllaSidebar />
+        <RANamePrompt />
+        <ForcePasswordChangeGate />
+        <AdFooterMobile />
+        <PersistentAdSpot />
+        <TermsFooterLink />
+        <AdPopup trigger="onLoad" delay={2500} />
+        <AdDraftPreviewOverlay />
+      </>
+    )}
+    </>
   );
 }
 
@@ -252,15 +265,6 @@ const App = () => (
           <AuthProvider>
             <AudioPlayerProvider>
               <AnimatedRoutes />
-              <EllaSidebar />
-              <RANamePrompt />
-              <ForcePasswordChangeGate />
-              <AdFooterMobile />
-              <PersistentAdSpot />
-              <TermsFooterLink />
-              <AdPopup trigger="onLoad" delay={2500} />
-              <AdDraftPreviewOverlay />
-
             </AudioPlayerProvider>
           </AuthProvider>
         </BrowserRouter>
