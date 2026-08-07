@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { materialDedupeKey } from '@/lib/material-dedupe';
 
 const STOPWORDS = new Set([
   'para', 'sobre', 'como', 'guia', 'estudo', 'estudos', 'completo', 'apostila',
@@ -39,17 +40,12 @@ interface MaterialMatch {
   reason: string;
 }
 
-/**
- * Score a material against an apostila.
- * Higher score = better match.
- */
 function scoreMatch(
   mat: MaterialLite,
   apostilaTitle: string,
   apostilaCategory: string,
   catMap: Map<string, string>
 ): { score: number; reason: string } {
-  // Strategy 1: exact category_id match
   if (mat.category_id) {
     const catName = catMap.get(mat.category_id);
     if (catName && normalize(catName) === normalize(apostilaCategory)) {
@@ -57,18 +53,15 @@ function scoreMatch(
     }
   }
 
-  // Strategy 2: bidirectional keyword matching
   const apostilaKeywords = extractKeywords(`${apostilaTitle} ${apostilaCategory}`);
   const materialText = normalize(`${mat.title} ${mat.description || ''}`);
   const materialKeywords = extractKeywords(`${mat.title} ${mat.description || ''}`);
   const apostilaText = normalize(`${apostilaTitle} ${apostilaCategory}`);
 
   let matches = 0;
-  // apostila keywords found in material text
   for (const kw of apostilaKeywords) {
     if (materialText.includes(kw)) matches++;
   }
-  // material keywords found in apostila text
   for (const kw of materialKeywords) {
     if (apostilaText.includes(kw)) matches++;
   }
@@ -91,15 +84,19 @@ async function fetchContext(apostilaId: string) {
     supabase.from('apostila_materials').select('material_id').eq('apostila_id', apostilaId),
   ]);
 
+  const materialById = new Map((materials || []).map((m) => [m.id, m]));
   const alreadyLinked = new Set((existingLinks || []).map(l => l.material_id));
+  const alreadyLinkedKeys = new Set(
+    (existingLinks || [])
+      .map((link) => materialById.get(link.material_id))
+      .filter(Boolean)
+      .map((material) => materialDedupeKey(material!)),
+  );
   const catMap = new Map((categories || []).map(c => [c.id, c.name]));
 
-  return { apostila, materials: materials || [], catMap, alreadyLinked, existingCount: (existingLinks || []).length };
+  return { apostila, materials: materials || [], catMap, alreadyLinked, alreadyLinkedKeys, existingCount: (existingLinks || []).length };
 }
 
-/**
- * Get suggested materials with scores (for manual review dialog).
- */
 export async function getSuggestedMaterials(apostilaId: string): Promise<{
   apostilaTitle: string;
   suggestions: MaterialMatch[];
@@ -110,9 +107,13 @@ export async function getSuggestedMaterials(apostilaId: string): Promise<{
 
   const suggestions: MaterialMatch[] = [];
   const others: MaterialLite[] = [];
+  const seenAvailableKeys = new Set<string>();
 
   for (const mat of ctx.materials) {
-    if (ctx.alreadyLinked.has(mat.id)) continue;
+    const key = materialDedupeKey(mat);
+    if (ctx.alreadyLinked.has(mat.id) || ctx.alreadyLinkedKeys.has(key) || seenAvailableKeys.has(key)) continue;
+    seenAvailableKeys.add(key);
+
     const { score, reason } = scoreMatch(mat, ctx.apostila.title, ctx.apostila.category, ctx.catMap);
     if (score > 0) {
       suggestions.push({ material: mat, score, reason });
@@ -125,9 +126,6 @@ export async function getSuggestedMaterials(apostilaId: string): Promise<{
   return { apostilaTitle: ctx.apostila.title, suggestions, others };
 }
 
-/**
- * Auto-link materials with score > threshold.
- */
 export async function autoLinkApostila(apostilaId: string, minScore = 20): Promise<AutoLinkResult> {
   const ctx = await fetchContext(apostilaId);
   if (!ctx) {
@@ -135,10 +133,16 @@ export async function autoLinkApostila(apostilaId: string, minScore = 20): Promi
   }
 
   const toLink: string[] = [];
+  const seenKeys = new Set(ctx.alreadyLinkedKeys);
+
   for (const mat of ctx.materials) {
-    if (ctx.alreadyLinked.has(mat.id)) continue;
+    const key = materialDedupeKey(mat);
+    if (ctx.alreadyLinked.has(mat.id) || seenKeys.has(key)) continue;
     const { score } = scoreMatch(mat, ctx.apostila.title, ctx.apostila.category, ctx.catMap);
-    if (score >= minScore) toLink.push(mat.id);
+    if (score >= minScore) {
+      toLink.push(mat.id);
+      seenKeys.add(key);
+    }
   }
 
   if (toLink.length > 0) {
@@ -157,16 +161,38 @@ export async function autoLinkApostila(apostilaId: string, minScore = 20): Promi
   return { linked: toLink.length, apostilaTitle: ctx.apostila.title };
 }
 
-/**
- * Manually link a list of material IDs to an apostila.
- */
 export async function linkMaterials(apostilaId: string, materialIds: string[]): Promise<number> {
   if (materialIds.length === 0) return 0;
-  const { data: existing } = await supabase
-    .from('apostila_materials').select('material_id, sort_order').eq('apostila_id', apostilaId);
+
+  const uniqueRequestedIds = Array.from(new Set(materialIds));
+  const [{ data: existing }, { data: requestedMaterials }] = await Promise.all([
+    supabase.from('apostila_materials').select('material_id, sort_order').eq('apostila_id', apostilaId),
+    supabase.from('materials').select('id, title, description, category_id').in('id', uniqueRequestedIds),
+  ]);
+
+  const requestedById = new Map((requestedMaterials || []).map((material) => [material.id, material]));
   const existingIds = new Set((existing || []).map(e => e.material_id));
-  const newIds = materialIds.filter(id => !existingIds.has(id));
+
+  const existingMaterialIds = Array.from(existingIds);
+  const { data: existingMaterials } = existingMaterialIds.length
+    ? await supabase.from('materials').select('id, title, description, category_id').in('id', existingMaterialIds)
+    : { data: [] as MaterialLite[] };
+
+  const linkedKeys = new Set((existingMaterials || []).map((material) => materialDedupeKey(material)));
+  const newIds: string[] = [];
+
+  for (const id of uniqueRequestedIds) {
+    if (existingIds.has(id)) continue;
+    const material = requestedById.get(id);
+    if (!material) continue;
+    const key = materialDedupeKey(material);
+    if (linkedKeys.has(key)) continue;
+    linkedKeys.add(key);
+    newIds.push(id);
+  }
+
   if (newIds.length === 0) return 0;
+
   const baseOrder = (existing || []).length;
   const rows = newIds.map((materialId, i) => ({
     apostila_id: apostilaId,
@@ -196,13 +222,6 @@ export async function autoLinkAll(
   return { totalLinked, apostilasProcessed: apostilas.length };
 }
 
-/**
- * Unify the content of multiple apostilas into a single seamless document.
- * - Removes the apostila title repeated as a heading at the start of its content
- * - Deduplicates identical paragraphs across apostilas
- * - Drops standalone repeated section headers (introdução, conclusão, referências)
- *   when they appear more than once — keeps only the first occurrence's content
- */
 function unifyContent(apostilas: { title: string; content: string | null }[]): string {
   const seenParagraphs = new Set<string>();
   const seenSectionHeaders = new Set<string>();
@@ -214,7 +233,6 @@ function unifyContent(apostilas: { title: string; content: string | null }[]): s
     let content = (ap.content || '').trim();
     if (!content) continue;
 
-    // Remove the title if it appears as the first heading
     const titleNorm = ap.title.trim().toLowerCase();
     const lines = content.split('\n');
     while (lines.length > 0) {
@@ -224,28 +242,22 @@ function unifyContent(apostilas: { title: string; content: string | null }[]): s
     }
     content = lines.join('\n').trim();
 
-    // Remove markdown horizontal rules (---, ***, ___) anywhere in the content
     content = content
       .split('\n')
       .filter(line => !/^\s*(?:-{3,}|\*{3,}|_{3,})\s*$/.test(line))
       .join('\n');
 
-    // Split into paragraphs (double newline)
     const paragraphs = content.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
 
     for (const p of paragraphs) {
       const normalized = p.toLowerCase().replace(/\s+/g, ' ').trim();
-
-      // Skip any leftover horizontal rule paragraphs
       if (/^\s*(?:-{3,}|\*{3,}|_{3,})\s*$/.test(p.trim())) continue;
 
-      // Skip duplicated section headers
       if (REPEATABLE_SECTIONS.test(p.trim())) {
         if (seenSectionHeaders.has(normalized)) continue;
         seenSectionHeaders.add(normalized);
       }
 
-      // Skip exact duplicates of substantive paragraphs (>40 chars)
       if (normalized.length > 40) {
         if (seenParagraphs.has(normalized)) continue;
         seenParagraphs.add(normalized);
@@ -258,14 +270,6 @@ function unifyContent(apostilas: { title: string; content: string | null }[]): s
   return allParagraphs.join('\n\n');
 }
 
-/**
- * Merge multiple apostilas into a target one.
- * - All must belong to the same category (matéria)
- * - Concatenates content as a single seamless document (no separators/extra headers)
- * - Moves all exercises to target
- * - Moves all material links to target (deduped)
- * - Deletes the source apostilas
- */
 export async function mergeApostilas(
   targetId: string,
   sourceIds: string[],
@@ -273,7 +277,6 @@ export async function mergeApostilas(
 ): Promise<{ mergedCount: number; exercisesMoved: number; materialsMoved: number }> {
   const allIds = [targetId, ...sourceIds.filter(id => id !== targetId)];
 
-  // Fetch all apostilas
   const { data: apostilas } = await supabase
     .from('apostilas').select('id, title, content, category').in('id', allIds);
 
@@ -286,18 +289,14 @@ export async function mergeApostilas(
 
   const sources = apostilas.filter(a => a.id !== targetId);
 
-  // Validate: all must share the same category
   const targetCat = target.category.trim().toLowerCase();
   const mismatch = sources.find(s => s.category.trim().toLowerCase() !== targetCat);
   if (mismatch) {
     throw new Error(`Só é possível mesclar apostilas da mesma matéria. "${mismatch.title}" é de "${mismatch.category}".`);
   }
 
-  // 1. Unify content as a single seamless apostila
   const mergedContent = unifyContent([target, ...sources]);
 
-
-  // 2. Move exercises
   const sourceIdList = sources.map(s => s.id);
   const { data: srcExercises } = await supabase
     .from('exercises').select('id').in('apostila_id', sourceIdList);
@@ -306,7 +305,6 @@ export async function mergeApostilas(
     await supabase.from('exercises').update({ apostila_id: targetId }).in('apostila_id', sourceIdList);
   }
 
-  // 3. Move material links (dedupe)
   const { data: targetLinks } = await supabase
     .from('apostila_materials').select('material_id, sort_order').eq('apostila_id', targetId);
   const targetMatIds = new Set((targetLinks || []).map(l => l.material_id));
@@ -317,11 +315,23 @@ export async function mergeApostilas(
 
   let materialsMoved = 0;
   if (srcLinks && srcLinks.length > 0) {
+    const allMaterialIds = Array.from(new Set([...(targetLinks || []).map(l => l.material_id), ...srcLinks.map(l => l.material_id)]));
+    const { data: materials } = await supabase.from('materials').select('id, title, description, category_id').in('id', allMaterialIds);
+    const materialById = new Map((materials || []).map((material) => [material.id, material]));
+    const targetKeys = new Set(
+      (targetLinks || [])
+        .map((link) => materialById.get(link.material_id))
+        .filter(Boolean)
+        .map((material) => materialDedupeKey(material!)),
+    );
+
     const seenInSrc = new Set<string>();
     const toInsert: { apostila_id: string; material_id: string; sort_order: number }[] = [];
     for (const link of srcLinks) {
-      if (targetMatIds.has(link.material_id) || seenInSrc.has(link.material_id)) continue;
-      seenInSrc.add(link.material_id);
+      const material = materialById.get(link.material_id);
+      const key = material ? materialDedupeKey(material) : link.material_id;
+      if (targetMatIds.has(link.material_id) || targetKeys.has(key) || seenInSrc.has(key)) continue;
+      seenInSrc.add(key);
       toInsert.push({
         apostila_id: targetId,
         material_id: link.material_id,
@@ -332,17 +342,14 @@ export async function mergeApostilas(
       await supabase.from('apostila_materials').insert(toInsert);
       materialsMoved = toInsert.length;
     }
-    // Delete old links
     await supabase.from('apostila_materials').delete().in('apostila_id', sourceIdList);
   }
 
-  // 4. Update target with merged content + optional new title
   await supabase.from('apostilas').update({
     content: mergedContent,
     ...(newTitle && newTitle.trim() ? { title: newTitle.trim() } : {}),
   }).eq('id', targetId);
 
-  // 5. Delete source apostilas
   await supabase.from('apostilas').delete().in('id', sourceIdList);
 
   return { mergedCount: sources.length, exercisesMoved, materialsMoved };
