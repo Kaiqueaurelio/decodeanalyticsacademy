@@ -74,6 +74,62 @@ export const BY_SEMESTER: Record<number, string[]> = {
     'Estudos Disciplinares VIII',
   ],
 };
+  1: [
+    'Logica de Programacao', 'Matematica Discreta', 'Introducao a Computacao',
+    'Comunicacao e Expressao', 'Fundamentos de Sistemas de Informacao',
+    'Sociedade e Tecnologia', 'Estudos Disciplinares I',
+  ],
+  2: [
+    'Orientada a Objeto (POO)', 'Calculo Diferencial e Integral I',
+    'Algebra Linear', 'Arquitetura e Organizacao de Computadores',
+    'Fisica para Computacao', 'Metodologia Cientifica', 'Estudos Disciplinares II',
+  ],
+  3: [
+    'Estrutura de Dados', 'Banco de Dados', 'Probabilidade e Estatistica',
+    'Engenharia de Software', 'Atividades Praticas Supervisionadas III (APS)',
+    'Organizacao de Computadores', 'Estudos Disciplinares III',
+  ],
+  4: [
+    'Programacao Web', 'Analise e Projeto de Sistemas',
+    'Compiladores', 'Computabilidade', 'Banco de Dados II',
+    'Atividades Praticas Supervisionadas IV (APS)',
+    'Redes de Computadores I', 'Estudos Disciplinares IV',
+  ],
+  5: [
+    'Inteligencia Artificial', 'Arquitetura de Redes', 'Redes de Computadores',
+    'Sistemas Operacionais', 'Teoria dos Grafos',
+    'Arquitetura de Computadores Modernos', 'Linguagens Formais e Automatos',
+    'Computacao Grafica', 'Analise Matematica',
+    'Atividades Praticas Supervisionadas V (APS)',
+  ],
+  6: [
+    'Pesquisa Operacional',
+    'Sistemas Operacionais e Mobile',
+    'Calculo Numerico Computacional',
+    'Aspectos Teoricos da Computacao',
+    'Gestao de Projetos',
+    'Processamento de Imagem e Visao Computacional',
+    'Ciencia de Dados',
+    'Metodos de Pesquisa',
+    'Interdisciplinar de Ciencia da Computacao',
+    'Atividades Praticas Supervisionadas VI (APS)',
+    'Estudos Disciplinares VI',
+  ],
+  7: [
+    'Seguranca da Informacao', 'Computacao em Nuvem',
+    'Aprendizado de Maquina (Machine Learning)', 'Topicos Especiais de Computacao',
+    'Sistemas Digitais',
+    'Atividades Praticas Supervisionadas VII (APS)',
+    'Estudos Disciplinares VII',
+  ],
+  8: [
+    'Trabalho de Conclusao de Curso (TCC)', 'Empreendedorismo',
+    'Gestao de Projetos II', 'Etica Profissional',
+    'Computacao de Alto Desempenho',
+    'Atividades Praticas Supervisionadas VIII (APS)',
+    'Estudos Disciplinares VIII',
+  ],
+};
 
 /** Retorna o semestre (1–8) que melhor casa com a disciplina, ou null. */
 export function guessSemesterFromCategory(category?: string | null): number | null {

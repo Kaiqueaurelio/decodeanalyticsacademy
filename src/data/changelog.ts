@@ -28,6 +28,17 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.73.9",
+    date: "2026-08-07",
+    title: "Correção de Fluxo e Grade 6º Semestre",
+    major: true,
+    changes: [
+      { kind: 'content', text: 'Movida apostila de Análise de Dados para a categoria correta: Pesquisa Operacional.' },
+      { kind: 'fix', text: 'Sincronizado semestre da apostila de Processamento de Imagem para ativar selo de Grade Acadêmica.' },
+      { kind: 'improvement', text: 'Atualizada lista canônica do 6º semestre para garantir visibilidade total no dashboard e admin.' },
+    ],
+  },
+  {
     version: "3.73.8",
     date: "2026-08-07",
     title: "Sincronização de Grade Acadêmica: 6º Semestre",
