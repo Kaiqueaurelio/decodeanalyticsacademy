@@ -2873,6 +2873,7 @@ export type Database = {
         Args: { _user_id: string }
         Returns: undefined
       }
+      update_materials_order: { Args: { payload: Json }; Returns: undefined }
     }
     Enums: {
       activity_action:
