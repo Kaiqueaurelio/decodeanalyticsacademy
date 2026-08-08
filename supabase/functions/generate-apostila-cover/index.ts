@@ -1,7 +1,7 @@
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+const getCorsHeaders(req) = {
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
@@ -105,7 +105,7 @@ async function callGeminiImage(apiKey: string, prompt: string) {
 }
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS") return new Response(null, { headers: getCorsHeaders(req) });
 
   try {
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -117,7 +117,7 @@ Deno.serve(async (req) => {
     if (!authHeader.startsWith("Bearer ")) {
       return new Response(JSON.stringify({ error: "Missing Authorization header" }), {
         status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -128,7 +128,7 @@ Deno.serve(async (req) => {
     if (userErr || !userData?.user) {
       return new Response(JSON.stringify({ error: "Invalid session" }), {
         status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -140,7 +140,7 @@ Deno.serve(async (req) => {
     if (roleErr || !isAdmin) {
       return new Response(JSON.stringify({ error: "Permission denied: admin only" }), {
         status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -149,7 +149,7 @@ Deno.serve(async (req) => {
     if (!apostilaId) {
       return new Response(JSON.stringify({ error: "apostila_id e obrigatorio" }), {
         status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -161,7 +161,7 @@ Deno.serve(async (req) => {
     if (apErr || !apostila) {
       return new Response(JSON.stringify({ error: "Apostila nao encontrada" }), {
         status: 404,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -223,12 +223,12 @@ Requisitos visuais:
 
     return new Response(JSON.stringify({ ok: true, cover_url: coverUrl, path: objectPath, provider }), {
       status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   } catch (e) {
     return new Response(JSON.stringify({ error: (e as Error).message || "Erro ao gerar capa" }), {
       status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 });

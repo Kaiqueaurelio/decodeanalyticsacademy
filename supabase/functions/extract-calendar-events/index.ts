@@ -1,9 +1,9 @@
+import { getCorsHeaders } from "../_shared/cors.ts";
 // Extracts calendar events (provas, trabalhos, atividades) from a PDF using Lovable AI or Google AI
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+const getCorsHeaders(req) = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
@@ -30,7 +30,7 @@ const EVENTS_SCHEMA = {
 };
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS") return new Response(null, { headers: getCorsHeaders(req) });
 
   try {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
@@ -47,14 +47,14 @@ serve(async (req) => {
     const { data: userData, error: userErr } = await supabase.auth.getUser(token);
     if (userErr || !userData?.user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
     const { data: roleRow } = await supabase
       .from("user_roles").select("role").eq("user_id", userData.user.id).eq("role", "admin").maybeSingle();
     if (!roleRow) {
       return new Response(JSON.stringify({ error: "Admin only" }), {
-        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 403, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -69,7 +69,7 @@ serve(async (req) => {
     const { pdfBase64, pdfUrl, imageBase64, imageMime, imageUrl, rawText, defaultSubject } = await req.json();
     if (!pdfBase64 && !pdfUrl && !imageBase64 && !imageUrl && !rawText) {
       return new Response(JSON.stringify({ error: "pdfBase64, pdfUrl, imageBase64, imageUrl or rawText required" }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -186,7 +186,7 @@ Hoje é ${today}. Retorne datas no formato YYYY-MM-DD. Se houver hora, inclua em
           if (status === 429) msg = "Limite de requisições excedido. Tente novamente em alguns instantes.";
           else if (status === 402) msg = "Créditos da IA esgotados. Ative sua chave Google AI Studio em Admin → IA.";
           return new Response(JSON.stringify({ error: msg }), {
-            status, headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
           });
         }
       } else if (Array.isArray(r)) {
@@ -198,12 +198,12 @@ Hoje é ${today}. Retorne datas no formato YYYY-MM-DD. Se houver hora, inclua em
     }
 
     return new Response(JSON.stringify({ events: events ?? [], provider: providerUsed }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json", "X-AI-Provider": providerUsed },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json", "X-AI-Provider": providerUsed },
     });
   } catch (e) {
     console.error("extract-calendar-events", e);
     return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown" }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 });

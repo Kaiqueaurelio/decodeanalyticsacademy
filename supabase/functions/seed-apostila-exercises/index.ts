@@ -1,9 +1,9 @@
+import { getCorsHeaders } from "../_shared/cors.ts";
 // Seed exercises for a single apostila via Lovable AI.
 // Auth: admin user JWT OR service-role bearer (para uso interno/batch).
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+const getCorsHeaders(req) = {
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
 };
@@ -19,7 +19,7 @@ function letterFromOption(correct: string, options: string[]): string {
 }
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS") return new Response(null, { headers: getCorsHeaders(req) });
 
   try {
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
       return new Response(JSON.stringify({ error: "AI provider ausente" }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -43,7 +43,7 @@ Deno.serve(async (req) => {
     if (!isServiceRole) {
       if (!authHeader.toLowerCase().startsWith("bearer ")) {
         return new Response(JSON.stringify({ error: "Unauthorized" }), {
-          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 401, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
       const userClient = createClient(SUPABASE_URL, SUPABASE_ANON, {
@@ -52,13 +52,13 @@ Deno.serve(async (req) => {
       const { data: uData, error: uErr } = await userClient.auth.getUser();
       if (uErr || !uData.user) {
         return new Response(JSON.stringify({ error: "Unauthorized" }), {
-          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 401, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
       const { data: isAdmin } = await admin.rpc("has_role", { _user_id: uData.user.id, _role: "admin" });
       if (!isAdmin) {
         return new Response(JSON.stringify({ error: "Forbidden" }), {
-          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 403, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
     }
@@ -70,7 +70,7 @@ Deno.serve(async (req) => {
 
     if (!apostilaId) {
       return new Response(JSON.stringify({ error: "apostilaId obrigatório" }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -81,7 +81,7 @@ Deno.serve(async (req) => {
       .maybeSingle();
     if (apErr || !apostila) {
       return new Response(JSON.stringify({ error: "Apostila não encontrada" }), {
-        status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 404, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -92,7 +92,7 @@ Deno.serve(async (req) => {
         .eq("apostila_id", apostilaId);
       if ((existing ?? 0) > 0) {
         return new Response(JSON.stringify({ ok: true, skipped: true, existing }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
     }
@@ -100,7 +100,7 @@ Deno.serve(async (req) => {
     const content = String(apostila.content ?? "").slice(0, 25000);
     if (content.trim().length < 60) {
       return new Response(JSON.stringify({ error: "Conteúdo insuficiente" }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -181,18 +181,18 @@ Deno.serve(async (req) => {
       const g = await callGoogle();
       if (!("err" in g)) result = g;
       else return new Response(JSON.stringify({ error: `AI ${result.status}/${g.status}`, detail: result.err + " | " + g.err }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
     if ("err" in result) {
       return new Response(JSON.stringify({ error: `AI ${result.status}`, detail: result.err }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
     const items = result.items;
     if (!items.length) {
       return new Response(JSON.stringify({ error: "IA não retornou questões" }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -210,23 +210,23 @@ Deno.serve(async (req) => {
 
     if (!rows.length) {
       return new Response(JSON.stringify({ error: "Questões inválidas" }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
     const { data: inserted, error: insErr } = await admin.from("exercises").insert(rows).select("id");
     if (insErr) {
       return new Response(JSON.stringify({ error: insErr.message }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
     return new Response(JSON.stringify({ ok: true, inserted: inserted?.length ?? 0, apostilaId }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   } catch (e: any) {
     return new Response(JSON.stringify({ error: e?.message ?? "Erro interno" }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 });

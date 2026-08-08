@@ -1,8 +1,8 @@
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+const getCorsHeaders(req) = {
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
@@ -25,7 +25,7 @@ interface Apostila {
  * respeitando 1-3 apostilas/dia e priorizando provas mais próximas.
  */
 serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS") return new Response(null, { headers: getCorsHeaders(req) });
 
   try {
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -39,7 +39,7 @@ serve(async (req) => {
     const { data: userData } = await userClient.auth.getUser();
     if (!userData?.user) {
       return new Response(JSON.stringify({ error: "Não autenticado" }), {
-        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
     const userId = userData.user.id;
@@ -87,7 +87,7 @@ serve(async (req) => {
 
     if (apList.length === 0) {
       return new Response(JSON.stringify({ inserted: 0, message: "Nenhuma apostila publicada" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -170,7 +170,7 @@ serve(async (req) => {
       if (error) {
         console.error("insert study_plans error", error);
         return new Response(JSON.stringify({ error: error.message }), {
-          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
     }
@@ -179,11 +179,11 @@ serve(async (req) => {
       inserted: inserts.length,
       events: eventList.length,
       apostilas: apList.length,
-    }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }), { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } });
   } catch (e) {
     console.error("generate-study-plan error:", e);
     return new Response(JSON.stringify({ error: e instanceof Error ? e.message : String(e) }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 });

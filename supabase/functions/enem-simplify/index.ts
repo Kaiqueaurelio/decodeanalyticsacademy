@@ -1,10 +1,10 @@
+import { getCorsHeaders } from "../_shared/cors.ts";
 // Enriches ENEM apostilas with a plain-language "Descomplicado" intro section.
 // Admin-only. Idempotent: skips apostilas already containing the marker.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { requireUser } from "../_shared/auth-guard.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+const getCorsHeaders(req) = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
@@ -53,9 +53,9 @@ ${excerpt}`;
 }
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS") return new Response(null, { headers: getCorsHeaders(req) });
 
-  const auth = await requireUser(req, corsHeaders, { requireAdmin: true });
+  const auth = await requireUser(req, getCorsHeaders(req), { requireAdmin: true });
   if (!auth.ok) return auth.response;
 
   const admin = createClient(SUPABASE_URL, SERVICE_ROLE);
@@ -65,7 +65,7 @@ Deno.serve(async (req) => {
   let q = admin.from("apostilas").select("id,title,content").eq("category", "ENEM");
   if (onlyId) q = q.eq("id", onlyId);
   const { data: rows, error } = await q;
-  if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } });
 
   const results: any[] = [];
   for (const row of rows ?? []) {
@@ -90,6 +90,6 @@ Deno.serve(async (req) => {
   }
 
   return new Response(JSON.stringify({ ok: true, results }), {
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
+    headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
   });
 });

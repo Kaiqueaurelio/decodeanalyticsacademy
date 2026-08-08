@@ -1,19 +1,19 @@
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { requireUser } from "../_shared/auth-guard.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+const getCorsHeaders(req) = {
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
-  const auth = await requireUser(req, corsHeaders, { requireAdmin: true });
+  const auth = await requireUser(req, getCorsHeaders(req), { requireAdmin: true });
   if (!auth.ok) return auth.response;
 
   try {
@@ -22,7 +22,7 @@ serve(async (req) => {
     if (!content || typeof content !== "string" || content.trim().length < 20) {
       return new Response(
         JSON.stringify({ error: "Conteudo insuficiente para gerar exercicios." }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -34,7 +34,7 @@ serve(async (req) => {
     if (!LOVABLE_API_KEY && !GOOGLE_AI_API_KEY) {
       return new Response(
         JSON.stringify({ error: "Nenhum provedor de IA configurado." }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -57,7 +57,7 @@ serve(async (req) => {
     if (total < 1) {
       return new Response(
         JSON.stringify({ error: "Selecione pelo menos 1 exercicio." }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -254,7 +254,7 @@ REGRAS OBRIGATORIAS:
           if (r.__status === 402) msg = "Créditos de Lovable AI esgotados. Ative sua chave Google AI Studio em Admin → IA.";
           else if (r.__status === 429) msg = "Muitas requisições. Aguarde alguns segundos.";
           return new Response(JSON.stringify({ error: msg, upstream_status: r.__status }), {
-            status: r.__status, headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: r.__status, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
           });
         }
       } else {
@@ -271,7 +271,7 @@ REGRAS OBRIGATORIAS:
 
     if (!parsed?.exercises) {
       return new Response(JSON.stringify({ error: "A IA nao conseguiu gerar exercicios estruturados." }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -284,13 +284,13 @@ REGRAS OBRIGATORIAS:
     }));
 
     return new Response(JSON.stringify({ exercises, provider: providerUsed }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json", "X-AI-Provider": providerUsed },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json", "X-AI-Provider": providerUsed },
     });
   } catch (e) {
     console.error("generate-exercises error:", e);
     return new Response(
       JSON.stringify({ error: e instanceof Error ? e.message : "Erro desconhecido" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
     );
   }
 });

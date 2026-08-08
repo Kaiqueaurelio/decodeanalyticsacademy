@@ -1,9 +1,9 @@
+import { getCorsHeaders } from "../_shared/cors.ts";
 // Generates embeddings for apostilas missing them. Admin-only.
 // Suporta dual provider: Google AI Studio direto ou Lovable AI Gateway (fallback).
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+const getCorsHeaders(req) = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
@@ -37,7 +37,7 @@ async function embedLovable(apiKey: string, text: string): Promise<number[] | nu
 }
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS") return new Response(null, { headers: getCorsHeaders(req) });
 
   try {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
@@ -46,16 +46,16 @@ Deno.serve(async (req) => {
     const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    if (!authHeader) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } });
 
     const userClient = createClient(SUPABASE_URL, Deno.env.get("SUPABASE_ANON_KEY")!, {
       global: { headers: { Authorization: authHeader } },
     });
     const { data: { user } } = await userClient.auth.getUser();
-    if (!user) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    if (!user) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } });
 
     const { data: isAdmin } = await userClient.rpc("has_role", { _user_id: user.id, _role: "admin" });
-    if (!isAdmin) return new Response(JSON.stringify({ error: "Admin only" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    if (!isAdmin) return new Response(JSON.stringify({ error: "Admin only" }), { status: 403, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } });
 
     const admin = createClient(SUPABASE_URL, SERVICE_KEY);
     const { force } = await req.json().catch(() => ({ force: false }));
@@ -71,10 +71,10 @@ Deno.serve(async (req) => {
     }
 
     if (!preferGoogle && !LOVABLE_API_KEY) {
-      return new Response(JSON.stringify({ error: "Nenhum provedor de IA configurado" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ error: "Nenhum provedor de IA configurado" }), { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } });
     }
     if (preferGoogle && !GOOGLE_AI_API_KEY && !LOVABLE_API_KEY) {
-      return new Response(JSON.stringify({ error: "Google preferido mas sem chave configurada" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ error: "Google preferido mas sem chave configurada" }), { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } });
     }
 
     let query = admin.from("apostilas").select("id, title, category, content").eq("published", true);
@@ -117,12 +117,12 @@ Deno.serve(async (req) => {
     }
 
     return new Response(JSON.stringify({ processed, failed, total: apostilas?.length ?? 0, provider: providerUsed }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json", "X-AI-Provider": providerUsed },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json", "X-AI-Provider": providerUsed },
     });
   } catch (e) {
     console.error("fatal", e);
     return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown" }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 });

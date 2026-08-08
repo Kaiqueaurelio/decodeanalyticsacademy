@@ -1,9 +1,9 @@
+import { getCorsHeaders } from "../_shared/cors.ts";
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+const getCorsHeaders(req) = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
@@ -266,9 +266,9 @@ const apostilaTool = {
 import { requireUser } from "../_shared/auth-guard.ts";
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS") return new Response(null, { headers: getCorsHeaders(req) });
 
-  const auth = await requireUser(req, corsHeaders, { requireAdmin: true });
+  const auth = await requireUser(req, getCorsHeaders(req), { requireAdmin: true });
   if (!auth.ok) return auth.response;
 
   try {
@@ -469,7 +469,7 @@ Retorne APENAS chamando a funcao return_apostila.`;
         status = lastStatus;
       }
       return new Response(JSON.stringify({ error: msg }), {
-        status, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -480,13 +480,13 @@ Retorne APENAS chamando a funcao return_apostila.`;
       exercises: Array.isArray(parsed.exercises) ? parsed.exercises : [],
       extraction_method: rawText ? "text" : extractionMethod,
       provider: providerUsed,
-    }), { headers: { ...corsHeaders, "Content-Type": "application/json", "X-AI-Provider": providerUsed } });
+    }), { headers: { ...getCorsHeaders(req), "Content-Type": "application/json", "X-AI-Provider": providerUsed } });
 
   } catch (error) {
     console.error("Error:", error);
     return new Response(JSON.stringify({ error: error instanceof Error ? error.message : "Erro desconhecido" }), {
       status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 });

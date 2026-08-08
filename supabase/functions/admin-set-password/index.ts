@@ -1,16 +1,17 @@
+import { getCorsHeaders } from "../_shared/cors.ts";
 // Edge Function: admin-set-password
 // Allows an admin to directly change another user's password using the service role.
 // Verifies that the caller is authenticated AND has the `admin` role via has_role().
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 
-const corsHeaders = {
+const getCorsHeaders(req) = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
 Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
+  if (req.method === 'OPTIONS') return new Response(null, { headers: getCorsHeaders(req) });
 
   try {
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
@@ -20,7 +21,7 @@ Deno.serve(async (req) => {
     const authHeader = req.headers.get('Authorization') || '';
     if (!authHeader.startsWith('Bearer ')) {
       return new Response(JSON.stringify({ error: 'Missing Authorization header' }), {
-        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 401, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
@@ -31,7 +32,7 @@ Deno.serve(async (req) => {
     const { data: userData, error: userErr } = await userClient.auth.getUser();
     if (userErr || !userData?.user) {
       return new Response(JSON.stringify({ error: 'Invalid session' }), {
-        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 401, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
     const callerId = userData.user.id;
@@ -40,19 +41,19 @@ Deno.serve(async (req) => {
     let body: any;
     try { body = await req.json(); } catch {
       return new Response(JSON.stringify({ error: 'Invalid JSON' }), {
-        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
     const targetUserId: string | undefined = body?.target_user_id;
     const newPassword: string | undefined = body?.new_password;
     if (!targetUserId || typeof targetUserId !== 'string') {
       return new Response(JSON.stringify({ error: 'target_user_id is required' }), {
-        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
     if (!newPassword || typeof newPassword !== 'string' || newPassword.length < 6 || newPassword.length > 72) {
       return new Response(JSON.stringify({ error: 'A senha deve ter entre 6 e 72 caracteres' }), {
-        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
@@ -63,7 +64,7 @@ Deno.serve(async (req) => {
     });
     if (roleErr || !isAdmin) {
       return new Response(JSON.stringify({ error: 'Permission denied: admin only' }), {
-        status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 403, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
@@ -73,7 +74,7 @@ Deno.serve(async (req) => {
     });
     if (updErr) {
       return new Response(JSON.stringify({ error: updErr.message }), {
-        status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
@@ -88,11 +89,11 @@ Deno.serve(async (req) => {
     } catch { /* non-fatal */ }
 
     return new Response(JSON.stringify({ ok: true }), {
-      status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 200, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
     });
   } catch (e) {
     return new Response(JSON.stringify({ error: (e as Error).message }), {
-      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 500, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
     });
   }
 });

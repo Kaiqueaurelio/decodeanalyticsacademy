@@ -1,8 +1,8 @@
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+const getCorsHeaders(req) = {
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
@@ -35,10 +35,10 @@ import { requireUser } from "../_shared/auth-guard.ts";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
-  const auth = await requireUser(req, corsHeaders);
+  const auth = await requireUser(req, getCorsHeaders(req));
   if (!auth.ok) return auth.response;
 
   try {
@@ -47,7 +47,7 @@ serve(async (req) => {
     if (!markdown && !metadata) {
       return new Response(
         JSON.stringify({ error: "Bad Request" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -59,7 +59,7 @@ serve(async (req) => {
     if (!LOVABLE_API_KEY && !GOOGLE_AI_API_KEY) {
       return new Response(
         JSON.stringify({ error: "AI not configured" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -166,7 +166,7 @@ serve(async (req) => {
           else if (status === 402) msg = "Credits exhausted";
           return new Response(
             JSON.stringify({ error: msg }),
-            { status, headers: { ...corsHeaders, "Content-Type": "application/json", "X-AI-Provider": "lovable-ai" } }
+            { status, headers: { ...getCorsHeaders(req), "Content-Type": "application/json", "X-AI-Provider": "lovable-ai" } }
           );
         }
       } else {
@@ -180,7 +180,7 @@ serve(async (req) => {
     if (!parsed) {
       return new Response(
         JSON.stringify({ error: "AI extraction failed" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -206,13 +206,13 @@ serve(async (req) => {
         image_url: parsed.image_url || null,
         provider: providerUsed,
       }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json", "X-AI-Provider": providerUsed } }
+      { headers: { ...getCorsHeaders(req), "Content-Type": "application/json", "X-AI-Provider": providerUsed } }
     );
   } catch (error) {
     console.error("Error:", error);
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
     );
   }
 });
