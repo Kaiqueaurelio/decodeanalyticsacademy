@@ -63,12 +63,27 @@ export default function SimuladoPage() {
     if (!sim) { setSimulado(null); setQuestions([]); setLoading(false); return; }
     setSimulado(sim as any);
 
+    // Gabarito nunca é carregado antecipadamente: buscamos apenas o enunciado
+    // e revelamos a resposta correta somente das questões já respondidas.
     const { data: ans } = await supabase
       .from('weekly_simulado_answers')
-      .select('id, question_index, question, options, correct_answer, explanation, selected_answer, is_correct, subject')
+      .select('id, question_index, question, options, selected_answer, is_correct, subject')
       .eq('simulado_id', sim.id)
       .order('question_index', { ascending: true });
-    const list = (ans ?? []).map((a: any) => ({ ...a, options: Array.isArray(a.options) ? a.options : [] }));
+
+    const { data: revealed } = await supabase
+      .from('weekly_simulado_answers')
+      .select('id, correct_answer, explanation')
+      .eq('simulado_id', sim.id)
+      .not('selected_answer', 'is', null);
+    const revealMap = new Map((revealed ?? []).map((r: any) => [r.id, r]));
+
+    const list = (ans ?? []).map((a: any) => ({
+      ...a,
+      options: Array.isArray(a.options) ? a.options : [],
+      correct_answer: revealMap.get(a.id)?.correct_answer ?? null,
+      explanation: revealMap.get(a.id)?.explanation ?? null,
+    }));
     setQuestions(list);
 
     // posiciona no primeiro não respondido
