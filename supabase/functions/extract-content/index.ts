@@ -209,7 +209,7 @@ REGRAS DE FORMATACAO DO CAMPO content (MARKDOWN OBRIGATORIO):
 - Cada subtopico deve ter pelo menos 2 paragrafos de conteudo proprio.
 - Use **negrito** para termos-chave (1 a 3 por paragrafo).
 - Listas com "- " como marcador.
-- Blocos de codigo com tres crases ``` quando houver codigo.
+- Blocos de codigo com tres crases \`\`\` quando houver codigo.
 - Paragrafos bem separados por linha em branco.
 - MINIMO 1500 palavras totais.
 - NAO use H1 ("# ") — o titulo da apostila ja e exibido a parte.
