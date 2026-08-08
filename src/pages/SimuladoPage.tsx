@@ -114,18 +114,23 @@ export default function SimuladoPage() {
 
   const choose = async (letter: string) => {
     if (!current || current.selected_answer || !simulado) return;
-    const isCorrect = letter === current.correct_answer;
-    // Atualiza local
-    setQuestions((prev) => prev.map((q, i) => i === currentIdx ? { ...q, selected_answer: letter, is_correct: isCorrect } : q));
+
+    // Correção feita no servidor: o gabarito só volta depois da resposta.
+    const { data, error } = await supabase.rpc('answer_simulado_question' as never, {
+      _answer_id: current.id,
+      _selected_answer: letter,
+    } as never);
+
+    if (error) { toast.error('Não foi possível registrar sua resposta'); return; }
+
+    const result = data as unknown as { is_correct: boolean; correct_answer: string; explanation: string | null };
+
+    setQuestions((prev) => prev.map((q, i) => i === currentIdx
+      ? { ...q, selected_answer: letter, is_correct: result.is_correct, correct_answer: result.correct_answer, explanation: result.explanation }
+      : q));
     setShowFeedback(true);
 
-    // Persiste
-    await supabase
-      .from('weekly_simulado_answers')
-      .update({ selected_answer: letter, is_correct: isCorrect, answered_at: new Date().toISOString() })
-      .eq('id', current.id);
-
-    if (isCorrect && user) {
+    if (result.is_correct && user) {
       try { await supabase.rpc('increment_xp', { _user_id: user.id, _amount: 5 }); } catch {/* ignore */}
     }
   };
