@@ -28,6 +28,17 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '3.84.0',
+    date: '2026-08-08',
+    title: 'Migração Definitiva para o Backend Integrado',
+    major: true,
+    changes: [
+      { kind: 'security', text: 'Removidas todas as credenciais e variáveis de ambiente externas (.env), consolidando o uso do backend integrado nativamente no projeto.' },
+      { kind: 'improvement', text: 'Sincronizada toda a comunicação da aplicação (Auth, DB, Storage, Edge Functions) com a instância oficial conectada.' },
+      { kind: 'improvement', text: 'Realizada auditoria técnica para garantir que 100% das tabelas, views e buckets existentes sejam utilizados sem recriação.' },
+    ],
+  },
+  {
     version: '3.77.0',
     date: '2026-08-08',
     title: 'Auditoria Técnica e Funcional Completa',
