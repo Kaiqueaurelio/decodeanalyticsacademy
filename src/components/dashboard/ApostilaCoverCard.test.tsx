@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
 import { ApostilaCoverCard } from "./ApostilaCoverCard";
 
 const apostila = {
@@ -9,6 +10,14 @@ const apostila = {
   semester: 1,
 } as never;
 
+function renderCard() {
+  return render(
+    <MemoryRouter>
+      <ApostilaCoverCard apostila={apostila} />
+    </MemoryRouter>,
+  );
+}
+
 /**
  * Testes rápidos de responsividade: garantem que a capa nunca fique
  * "pequena demais" no celular (proporção alta, sem alturas fixas curtas,
@@ -16,14 +25,14 @@ const apostila = {
  */
 describe("ApostilaCoverCard — responsividade", () => {
   it("usa proporção alta (2:3) no mobile e 3:4 a partir de sm", () => {
-    render(<ApostilaCoverCard apostila={apostila} />);
+    renderCard();
     const media = screen.getByTestId("apostila-cover-media");
     expect(media.className).toContain("aspect-[2/3]");
     expect(media.className).toContain("sm:aspect-[3/4]");
   });
 
   it("não aplica altura fixa que encolha a capa em telas pequenas", () => {
-    render(<ApostilaCoverCard apostila={apostila} />);
+    renderCard();
     const media = screen.getByTestId("apostila-cover-media");
     expect(media.className).not.toMatch(/\bh-\d+\b/);
     expect(media.className).not.toMatch(/max-h-/);
@@ -31,14 +40,14 @@ describe("ApostilaCoverCard — responsividade", () => {
   });
 
   it("mantém o corpo compacto no mobile para sobrar área à capa", () => {
-    render(<ApostilaCoverCard apostila={apostila} />);
+    renderCard();
     const body = screen.getByTestId("apostila-cover-body");
     expect(body.className).toContain("p-2");
     expect(body.className).toContain("sm:p-3.5");
   });
 
   it("preenche a imagem sem deixar bordas vazias", () => {
-    render(<ApostilaCoverCard apostila={apostila} />);
+    renderCard();
     const img = screen.getByRole("img", { name: "Matemática Básica" });
     expect(img.className).toContain("object-cover");
     expect(img.className).toContain("h-full");
@@ -46,7 +55,7 @@ describe("ApostilaCoverCard — responsividade", () => {
   });
 
   it("permanece legível em cada breakpoint simulado", () => {
-    const { container } = render(<ApostilaCoverCard apostila={apostila} />);
+    const { container } = renderCard();
     const media = container.querySelector<HTMLElement>(
       '[data-testid="apostila-cover-media"]',
     )!;
