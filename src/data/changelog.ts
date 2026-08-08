@@ -28,6 +28,17 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.75.0",
+    date: "2026-08-08",
+    title: "Otimização Mobile e Resiliência de UX",
+    major: true,
+    changes: [
+      { kind: 'fix', text: 'Correção de erros de layout no dashboard administrativo para visualização em iPhone 11.' },
+      { kind: 'improvement', text: 'Melhoria na resiliência da navegação e skeletons de carregamento em páginas de exercícios.' },
+      { kind: 'fix', text: 'Refinamento do fluxo de redirecionamento em botões de ação rápida do admin.' },
+    ],
+  },
+  {
     version: "3.74.0",
     date: "2026-08-07",
     title: "Cadastro de Alunos e Acesso Imediato por RA",
