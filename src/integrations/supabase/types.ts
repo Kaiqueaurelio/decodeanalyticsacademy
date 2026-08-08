@@ -2799,6 +2799,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      answer_simulado_question: {
+        Args: { _answer_id: string; _selected_answer: string }
+        Returns: Json
+      }
       award_badge: { Args: { _criteria: string }; Returns: Json }
       check_exercise_answer: {
         Args: { _exercise_id: string; _selected_answer: string }
