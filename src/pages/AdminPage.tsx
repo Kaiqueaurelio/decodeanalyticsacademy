@@ -14,8 +14,6 @@ import { MaterialsTab } from '@/components/admin/refactored/MaterialsTab';
 import { AnnouncementsTab } from '@/components/admin/refactored/AnnouncementsTab';
 import { CategorySelect } from '@/components/admin/CategorySelect';
 import { ApostilaCreationCard } from '@/components/admin/refactored/ApostilaCreationCard';
-import { toast } from 'sonner';
-import { extractTextFromFile } from '@/utils/fileExtractor';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
