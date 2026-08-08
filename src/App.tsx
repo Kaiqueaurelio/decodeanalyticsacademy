@@ -151,6 +151,7 @@ function useAdminCopyPatch() {
       ["verifique novamente todos os setores do app e faça com que tudo fiqeu mais facil para o admin editar", "verifique novamente todos os setores do app e faça com que tudo fiqeu mais facil para o admin editar"],
       ["Implemente um editor para o admin revisar e ajustar o conteúdo clonado antes de publicar a apostila para os alunos.", "Implemente um editor para o admin revisar e ajustar o conteúdo clonado antes de publicar a apostila para os alunos."],
       ["deixe masi facila edição do admin nas apostilas por gentielza", "deixe masi facila edição do admin nas apostilas por gentielza"],
+      ["oqeu podemos fazer para deixar a aba de admin mais facil de utilizar no app e menos confulsa ?", "oqeu podemos fazer para deixar a aba de admin mais facil de utilizar no app e menos confulsa ?"],
     ]);
 
 
