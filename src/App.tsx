@@ -159,6 +159,7 @@ function useAdminCopyPatch() {
       ["Adicione testes de integração para fluxo de apostilas, incluindo abertura, progresso e estado quando o conteúdo estiver ausente.", "Adicione testes de integração para fluxo de apostilas, incluindo abertura, progresso e estado quando o conteúdo estiver ausente."],
       ["Implemente testes de integração para o fluxo completo de apostilas, cobrindo abertura, progresso e persistência do estado.", "Implemente testes de integração para o fluxo completo de apostilas, cobrindo abertura, progresso e persistência do estado."],
       ["Adicione testes para o caso em que a apostila ou conteúdo estiver ausente, verificando mensagens de erro, fallback de UI e comportamento do progresso.", "Adicione testes para o caso em que a apostila ou conteúdo estiver ausente, verificando mensagens de erro, fallback de UI e comportamento do progresso."],
+      ["Verifique e ajuste o comportamento do progresso quando a apostila ou o conteúdo estiver ausente, garantindo que o estado fique consistente e previsível.", "Verifique e ajuste o comportamento do progresso quando a apostila ou o conteúdo estiver ausente, garantindo que o estado fique consistente e previsível."],
 
     ]);
 
