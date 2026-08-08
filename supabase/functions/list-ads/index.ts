@@ -1,8 +1,8 @@
 // Lista anúncios ativos validando o content_scope do usuário no servidor.
 // Autenticado: se o perfil for `enem_only` (ou bloqueado), retorna [].
 // Não autenticado: retorna [] (anúncios são recurso interno de alunos logados).
-import { createClient } from "npm:@supabase/supabase-js@2";
-import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { getCorsHeaders } from "../_shared/cors.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
@@ -20,7 +20,8 @@ function clampInt(raw: string | null, def: number, min: number, max: number) {
 }
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  const corsHeaders = getCorsHeaders(req);
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
     const url = new URL(req.url);
@@ -75,9 +76,9 @@ Deno.serve(async (req) => {
   }
 });
 
-function json(body: unknown, status = 200) {
+function json(body: unknown, status = 200, headers = {}) {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
+    headers: { ...headers, "Content-Type": "application/json" },
   });
 }
