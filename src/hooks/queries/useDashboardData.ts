@@ -49,7 +49,7 @@ export function useApostilasList(options: ApostilasListOptions = {}) {
   return useQuery({
     queryKey: ['apostilas', 'list', semester, course, canLoadApostilas, isAdmin, scope],
     enabled: canLoadApostilas,
-    refetchInterval: 5000,
+    refetchInterval: 15000,
     queryFn: async () => {
       let q = supabase
         .from('apostilas')

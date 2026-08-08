@@ -28,6 +28,17 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.75.1",
+    date: "2026-08-08",
+    title: "Estabilidade de Dados e Refinamento de UX",
+    major: false,
+    changes: [
+      { kind: 'improvement', text: 'Otimizado o intervalo de atualização de dados (polling) para 15s para maior estabilidade em redes instáveis.' },
+      { kind: 'fix', text: 'Resolvida inconsistência visual nos contadores de progresso do dashboard.' },
+      { kind: 'improvement', text: 'Sincronizados skeletons de carregamento com o novo layout de grid do 6º semestre.' },
+    ],
+  },
+  {
     version: "3.75.0",
     date: "2026-08-08",
     title: "Otimização Mobile e Resiliência de UX",
