@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { AdminAdsManager } from '@/components/admin/AdminAdsManager';
+import { AdminAdsManager } from '@/components/AdminAdsManager';
 
 interface Ad {
   id: string;
