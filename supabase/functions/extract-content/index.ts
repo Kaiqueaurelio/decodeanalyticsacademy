@@ -1,4 +1,5 @@
 import { getCorsHeaders } from "../_shared/cors.ts";
+import { isSafePublicUrl } from "../_shared/ssrf.ts";
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
@@ -59,6 +60,7 @@ async function fetchViaFirecrawl(url: string): Promise<{ text: string; title: st
 }
 
 async function fetchNotionContent(url: string): Promise<{ text: string; title: string }> {
+  if (!isSafePublicUrl(url)) throw new Error("URL nao permitida");
   const headers: Record<string, string> = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
@@ -133,6 +135,7 @@ async function fetchNotionContent(url: string): Promise<{ text: string; title: s
 }
 
 async function fetchGenericContent(url: string): Promise<{ text: string; title: string }> {
+  if (!isSafePublicUrl(url)) throw new Error("URL nao permitida");
   let textContent = "";
   let pageTitle = "Sem titulo";
 
@@ -310,6 +313,7 @@ Sua tarefa:
 
 Retorne APENAS chamando a funcao return_apostila.`;
     } else if (url) {
+      if (!isSafePublicUrl(url)) throw new Error("URL invalida ou nao permitida");
       const isJsRendered = isJsRenderedUrl(url);
       const isNotion = isNotionUrl(url);
 
