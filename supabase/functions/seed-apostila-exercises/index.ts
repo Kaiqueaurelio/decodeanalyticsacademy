@@ -3,10 +3,6 @@ import { getCorsHeaders } from "../_shared/cors.ts";
 // Auth: admin user JWT OR service-role bearer (para uso interno/batch).
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
-const getCorsHeaders(req) = {
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
 
 const GATEWAY = "https://ai.gateway.lovable.dev/v1/chat/completions";
 

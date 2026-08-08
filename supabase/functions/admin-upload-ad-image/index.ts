@@ -1,11 +1,6 @@
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 
-const getCorsHeaders(req) = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-};
 
 function cleanBase64(base64: string) {
   return base64.trim().replace(/^data:[^;]+;base64,/, '').replace(/\s/g, '');

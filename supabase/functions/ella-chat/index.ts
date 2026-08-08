@@ -17,10 +17,6 @@ import {
   type AuthzCtx,
 } from "./security.ts";
 
-const getCorsHeaders(req) = {
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
 
 // Provedor único e obrigatório: API oficial do Google (endpoint OpenAI-compatível,
 // com suporte a tool calling e streaming). Nenhum outro provedor é usado.

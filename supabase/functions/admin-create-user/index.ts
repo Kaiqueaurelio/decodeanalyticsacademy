@@ -4,11 +4,6 @@ import { getCorsHeaders } from "../_shared/cors.ts";
 // Contas criadas aqui já nascem confirmadas — o admin é a fonte de verdade.
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 
-const getCorsHeaders(req) = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-};
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {

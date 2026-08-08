@@ -3,10 +3,6 @@ import { getCorsHeaders } from "../_shared/cors.ts";
 // Faz fallback automático para Lovable AI Gateway em caso de erro.
 // Suporta streaming SSE no formato OpenAI-compatible (delta.content).
 
-const getCorsHeaders(req) = {
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
 
 interface Msg {
   role: "system" | "user" | "assistant";
