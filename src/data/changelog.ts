@@ -38,6 +38,7 @@ export const CHANGELOG: ChangelogEntry[] = [
       { kind: 'improvement', text: 'Otimizei a normalização de matérias no dashboard para agrupar materiais de forma mais inteligente.' },
     ],
   },
+  {
     version: "3.75.1",
     date: "2026-08-08",
     title: "Estabilidade de Dados e Refinamento de UX",
