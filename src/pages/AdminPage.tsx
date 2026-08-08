@@ -7,6 +7,14 @@ import { AdminNavPanel } from '@/components/admin/AdminNavPanel';
 import { AdminCreateUserDialog } from '@/components/admin/AdminCreateUserDialog';
 import { ADMIN_NAV_BY_ID } from '@/config/adminNav';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { OverviewTab } from '@/components/admin/refactored/OverviewTab';
+import { AdminSidebar } from '@/components/admin/refactored/AdminSidebar';
+import { UsersTab } from '@/components/admin/refactored/UsersTab';
+import { AnnouncementsTab } from '@/components/admin/refactored/AnnouncementsTab';
+import { CategorySelect } from '@/components/admin/CategorySelect';
+import { ApostilaCreationCard } from '@/components/admin/refactored/ApostilaCreationCard';
+import { ExercisesTab } from '@/components/admin/refactored/ExercisesTab';
+import { MaterialsTab } from '@/components/admin/refactored/MaterialsTab';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -86,32 +94,6 @@ const SEMESTER_MAP: Record<number, string> = {
 
 const CategoriesCtx = createContext<{ categories: { id: string; name: string; sort_order: number }[] }>({ categories: [] });
 
-function CategorySelect({ value, onValueChange, placeholder }: { value: string; onValueChange: (v: string) => void; placeholder?: string }) {
-  const { categories } = useContext(CategoriesCtx);
-  const grouped = useMemo(() => {
-    const map: Record<number, string[]> = {};
-    categories.forEach(c => {
-      const sem = Math.floor(c.sort_order / 100);
-      if (!map[sem]) map[sem] = [];
-      map[sem].push(c.name);
-    });
-    return map;
-  }, [categories]);
-
-  return (
-    <Select value={value} onValueChange={onValueChange}>
-      <SelectTrigger className="mt-1"><SelectValue placeholder={placeholder} /></SelectTrigger>
-      <SelectContent className="max-h-[300px]">
-        {Object.entries(grouped).sort(([a], [b]) => +a - +b).map(([sem, names]) => (
-          <div key={sem}>
-            <div className="px-2 py-1.5 text-xs font-semibold text-primary sticky top-0 bg-popover">{SEMESTER_MAP[+sem] || `Semestre ${sem}`}</div>
-            {names.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}
-          </div>
-        ))}
-      </SelectContent>
-    </Select>
-  );
-}
 
 type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements' | 'calendar' | 'testimonials' | 'ai' | 'performance' | 'smoke' | 'diagnostics' | 'ads' | 'ads-chat' | 'social' | 'rss' | 'courses' | 'changelog' | 'leads' | 'ella-audit' | 'security-alerts' | 'sponsors' | 'edit' | 'review';
 
@@ -178,410 +160,6 @@ function MergeButton({ onMerged }: { onMerged: () => void }) {
   );
 }
 // ─── Sidebar Navigation ────────────────────────────────────────
-function AdminSidebar({ tab, setTab, stats, sidebarOpen, setSidebarOpen }: {
-  tab: Tab; setTab: (t: Tab) => void;
-  stats: { apostilas: number; exercises: number; materials: number; users: number };
-  sidebarOpen: boolean; setSidebarOpen: (v: boolean) => void;
-}) {
-  const navigate = useNavigate();
-  // Contador ao vivo de alertas de segurança em aberto (visível só para admin).
-  const { openCount: securityOpenCount } = useSecurityAlerts({ enabled: true });
-
-  return (
-    <>
-      {/* Mobile overlay */}
-      {sidebarOpen && (
-        <div className="fixed inset-0 bg-foreground/20 backdrop-blur-sm z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
-      )}
-      <aside className={`fixed top-0 left-0 z-50 h-full w-[min(260px,85vw)] bg-card border-r border-border flex flex-col transition-transform duration-300 lg:translate-x-0 lg:static lg:z-auto ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        {/* Header */}
-        <div className="p-5 border-b border-border">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <button 
-                onClick={() => navigate('/dashboard')}
-                className="rounded-xl bg-primary p-2.5 hover:ring-2 hover:ring-primary/50 transition-all active:scale-95"
-                title="Voltar para a Área do Aluno"
-              >
-                <LayoutDashboard className="h-5 w-5 text-primary-foreground" />
-              </button>
-              <div>
-                <h1 className="text-sm font-bold text-foreground">Admin Panel</h1>
-                <p className="text-[10px] text-muted-foreground">Decode Analytics</p>
-              </div>
-            </div>
-            <Button size="icon" variant="ghost" className="lg:hidden h-8 w-8" onClick={() => setSidebarOpen(false)}>
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-
-        {/* Navigation */}
-        <AdminNavPanel
-          tab={tab}
-          onSelect={(id) => { setTab(id as Tab); setSidebarOpen(false); }}
-          counts={{
-            apostilas: stats.apostilas,
-            exercises: stats.exercises,
-            materials: stats.materials,
-            users: stats.users,
-            securityAlerts: securityOpenCount,
-          }}
-        />
-
-        {/* Footer */}
-        <div className="p-4 border-t border-border space-y-2">
-          <ThemeToggleButton />
-          <Button variant="outline" size="sm" className="w-full text-xs gap-2" onClick={() => navigate('/dashboard')}>
-            <ArrowLeft className="h-3.5 w-3.5" /> Voltar à Área do Aluno
-          </Button>
-        </div>
-      </aside>
-    </>
-  );
-}
-
-
-// ─── Overview Tab ───────────────────────────────────────────────
-function OverviewTab({ apostilas, exercises, allAnswers, materials, users, setTab, loading, filterSemester, setFilterSemester }: {
-  apostilas: Apostila[]; exercises: Record<string, Exercise[]>; allAnswers: any[];
-  materials: Material[]; users: any[]; setTab: (t: Tab) => void; loading?: boolean;
-  filterSemester: string; setFilterSemester: (s: string) => void;
-}) {
-  const navigate = useNavigate();
-  const totalExercises = Object.values(exercises).flat().length;
-  const totalAnswers = allAnswers.length;
-  const correctAnswers = allAnswers.filter(a => a.is_correct).length;
-  const approvalRate = totalAnswers > 0 ? Math.round((correctAnswers / totalAnswers) * 100) : 0;
-  const published = apostilas.filter(a => a.published).length;
-  const blocked = users.filter((u: any) => u.is_blocked).length;
-  const draft = apostilas.length - published;
-
-  // Novos cadastros últimos 7 dias
-  const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-  const newUsers7d = users.filter((u: any) => new Date(u.created_at).getTime() > weekAgo).length;
-
-  const statCards = [
-    { icon: BookOpen, label: 'Apostilas', value: apostilas.length, sub: `${published} publicadas · ${draft} rascunho`, tone: 'primary', trend: published > 0 ? `${Math.round((published / Math.max(apostilas.length, 1)) * 100)}%` : null },
-    { icon: PenLine, label: 'Exercícios', value: totalExercises, sub: `em ${Object.keys(exercises).length} apostilas`, tone: 'violet', trend: null },
-    { icon: TrendingUp, label: 'Aproveitamento', value: approvalRate, sub: `${totalAnswers} respostas totais`, tone: 'success', trend: null, suffix: '%' },
-    { icon: Users, label: 'Usuários', value: users.length, sub: blocked > 0 ? `${blocked} bloqueados` : `+${newUsers7d} esta semana`, tone: blocked > 0 ? 'danger' : 'warning', trend: newUsers7d > 0 ? `+${newUsers7d}` : null },
-  ] as const;
-
-  const toneStyles: Record<string, { wrap: string; icon: string; ring: string }> = {
-    primary: { wrap: 'bg-primary/10', icon: 'text-primary', ring: 'group-hover:ring-primary/30' },
-    violet:  { wrap: 'bg-accent', icon: 'text-accent-foreground', ring: 'group-hover:ring-accent-foreground/20' },
-    success: { wrap: 'bg-[hsl(var(--success))]/10', icon: 'text-[hsl(var(--success))]', ring: 'group-hover:ring-[hsl(var(--success))]/30' },
-    warning: { wrap: 'bg-[hsl(var(--warning))]/10', icon: 'text-[hsl(var(--warning))]', ring: 'group-hover:ring-[hsl(var(--warning))]/30' },
-    danger:  { wrap: 'bg-destructive/10', icon: 'text-destructive', ring: 'group-hover:ring-destructive/30' },
-  };
-
-  if (loading) {
-    return (
-      <div className="space-y-6">
-        <div className="skeleton-shimmer h-8 w-40 rounded" />
-        <div className="grid gap-3 sm:gap-4 grid-cols-1 xs:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3, 4, 5, 6].map(i => (
-            <div key={i} className="skeleton-shimmer h-28 rounded-xl" />
-          ))}
-        </div>
-        <div className="skeleton-shimmer h-40 rounded-xl" />
-        <div className="grid gap-6 lg:grid-cols-2">
-          <div className="skeleton-shimmer h-64 rounded-xl" />
-          <div className="skeleton-shimmer h-64 rounded-xl" />
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-8">
-      {/* Page Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h2 className="text-3xl font-black text-foreground tracking-tight">Painel Operacional</h2>
-            <p className="text-sm text-muted-foreground mt-1">Status operacional e métricas de desempenho</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <Select value={filterSemester} onValueChange={setFilterSemester}>
-              <SelectTrigger className="w-[180px] rounded-2xl bg-card border-primary/20">
-                <GraduationCap className="h-4 w-4 mr-2 text-primary" />
-                <SelectValue placeholder="Semestre" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos os Semestres</SelectItem>
-                {[1, 2, 3, 4, 5, 6, 7, 8].map(s => (
-                  <SelectItem key={s} value={s.toString()}>{s}º Semestre</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button variant="outline" size="sm" className="h-10 rounded-2xl gap-2" onClick={() => setTab('apostilas')}>
-              <Plus className="h-4 w-4" /> Nova Apostila
-            </Button>
-          </div>
-        </div>
-
-      {/* KPI Grid */}
-      <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-        {statCards.map((s, i) => {
-          const t = toneStyles[s.tone];
-          return (
-            <motion.div
-              key={s.label}
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ type: 'spring', stiffness: 260, damping: 22, delay: i * 0.06 }}
-            >
-              <Card className="group relative overflow-hidden border-border/50 bg-card/50 hover:bg-card hover:border-primary/20 hover:shadow-2xl hover:shadow-primary/5 transition-all duration-300 rounded-[2rem] cursor-default">
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between mb-5">
-                    <div className={`rounded-2xl p-3 shadow-inner ${t.wrap} ring-1 ring-inset ring-white/5`}>
-                      <s.icon className={`h-6 w-6 ${t.icon}`} />
-                    </div>
-                    {s.trend && (
-                      <Badge variant="secondary" className="rounded-full px-2.5 py-0.5 text-[10px] font-black uppercase tracking-widest bg-muted/80 text-foreground shadow-sm">
-                        {s.trend}
-                      </Badge>
-                    )}
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-4xl font-black text-foreground tabular-nums tracking-tighter">
-                      <AnimatedCounter end={typeof s.value === 'number' ? s.value : 0} suffix={(s as any).suffix} />
-                    </p>
-                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-[0.15em] pt-1">{s.label}</p>
-                    <p className="text-[11px] font-medium text-muted-foreground/60 truncate">{s.sub}</p>
-                  </div>
-                </CardContent>
-                <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-primary/0 via-primary/20 to-primary/0 opacity-0 group-hover:opacity-100 transition-opacity" />
-              </Card>
-            </motion.div>
-          );
-        })}
-      </div>
-
-      {/* Performance + Activity */}
-      <div className="grid gap-5 lg:grid-cols-3">
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ type: 'spring', stiffness: 260, damping: 22, delay: 0.3 }}
-          className="lg:col-span-1"
-        >
-          <Card className="h-full border-border/60">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Activity className="h-4 w-4 text-primary" />
-                Desempenho
-              </CardTitle>
-              <CardDescription className="text-xs">Taxa de acerto geral dos alunos</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-end justify-between">
-                <div>
-                  <p className="text-4xl font-bold text-primary tabular-nums leading-none">
-                    <AnimatedCounter end={approvalRate} suffix="%" />
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">Aproveitamento</p>
-                </div>
-                <div className="text-right space-y-1">
-                  <p className="text-xs text-muted-foreground">{totalAnswers} respostas</p>
-                  <p className="text-xs text-muted-foreground">{totalExercises} exercícios</p>
-                </div>
-              </div>
-              <Progress value={approvalRate} className="h-2.5" />
-              <div className="flex gap-4 text-xs">
-                <span className="flex items-center gap-1.5 text-muted-foreground">
-                  <span className="h-2.5 w-2.5 rounded-full bg-[hsl(var(--success))]" /> {correctAnswers} acertos
-                </span>
-                <span className="flex items-center gap-1.5 text-muted-foreground">
-                  <span className="h-2.5 w-2.5 rounded-full bg-destructive" /> {totalAnswers - correctAnswers} erros
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ type: 'spring', stiffness: 260, damping: 22, delay: 0.35 }}
-          className="lg:col-span-2"
-        >
-          <Card className="h-full border-border/60">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base flex items-center gap-2">
-                <BarChart3 className="h-4 w-4 text-primary" />
-                Atividade Recente
-              </CardTitle>
-              <CardDescription className="text-xs">Engajamento dos últimos dias</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ActivityChart delay={0.4} />
-            </CardContent>
-          </Card>
-        </motion.div>
-      </div>
-
-      {/* Blocked Users Alert */}
-      {blocked > 0 && (
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ type: 'spring', stiffness: 260, damping: 20, delay: 0.6 }}
-        >
-          <Card className="border-destructive/30 bg-destructive/5">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="rounded-lg bg-destructive/10 p-2.5">
-                    <ShieldBan className="h-5 w-5 text-destructive" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold">{blocked} usuário(s) bloqueado(s)</p>
-                    <p className="text-xs text-muted-foreground">Contas aguardando revisão ou desbloqueio</p>
-                  </div>
-                </div>
-                <Button size="sm" variant="outline" className="text-xs" onClick={() => setTab('users')}>
-                  Gerenciar
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      )}
-
-      {/* Two-column layout */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Recent Apostilas */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ type: 'spring', stiffness: 260, damping: 20, delay: 0.7 }}
-        >
-          <Card>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-muted-foreground" /> Apostilas Recentes
-                </CardTitle>
-                <Button size="sm" variant="ghost" className="text-xs h-7" onClick={() => setTab('apostilas')}>
-                  Ver todas
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {apostilas.slice(0, 5).map((a, i) => (
-                <motion.div
-                  key={a.id}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.8 + i * 0.06 }}
-                  className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-muted/50 transition-colors"
-                >
-                  <span className={`h-2.5 w-2.5 rounded-full shrink-0 ${a.published ? 'bg-[hsl(var(--success))]' : 'bg-muted-foreground'}`} />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{a.title}</p>
-                    <p className="text-[10px] text-muted-foreground">{a.category} · {exercises[a.id]?.length || 0} exercícios</p>
-                  </div>
-                  <Badge variant={a.published ? 'default' : 'secondary'} className="text-[10px] shrink-0">
-                    {a.published ? 'Publicada' : 'Oculta'}
-                  </Badge>
-                </motion.div>
-              ))}
-              {apostilas.length === 0 && (
-                <div className="text-center py-6 text-muted-foreground">
-                  <BookOpen className="h-8 w-8 mx-auto mb-2 opacity-30" strokeWidth={1.5} />
-                  <p className="text-sm">Nenhuma apostila criada.</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        {/* Quick Actions */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ type: 'spring', stiffness: 260, damping: 20, delay: 0.8 }}
-        >
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Settings className="h-4 w-4 text-muted-foreground" /> Ações Rápidas
-              </CardTitle>
-              <CardDescription>Acesse as principais funcionalidades</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {/* Featured: Biblioteca de Livros (PDF/EPUB) */}
-              <motion.button
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.85 }}
-                onClick={() => navigate('/admin/biblioteca')}
-                className="group w-full text-left rounded-xl border-2 border-primary/30 bg-gradient-to-br from-primary/10 via-primary/5 to-accent/10 hover:border-primary/60 hover:shadow-lg transition-all p-4 flex items-center gap-4"
-              >
-                <div className="rounded-xl bg-primary/15 p-3 shrink-0 group-hover:scale-110 transition-transform">
-                  <BookOpen className="h-6 w-6 text-primary" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-foreground flex items-center gap-2 flex-wrap">
-                    Publicar Livros (PDF / EPUB)
-                    <Badge variant="secondary" className="text-[10px] h-4 px-1.5">Biblioteca Decode</Badge>
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-0.5">Acervo exclusivo de livros — separado da aba Materiais</p>
-                </div>
-                <Plus className="h-4 w-4 text-primary shrink-0" />
-              </motion.button>
-
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  { label: 'Importar URL', icon: LinkIcon, action: () => setTab('apostilas') },
-                  { label: 'Criar Apostila', icon: Plus, action: () => setTab('apostilas') },
-                  { label: 'Exercícios', icon: PenLine, action: () => setTab('exercises') },
-                  { label: 'Upload Material', icon: Upload, action: () => setTab('materials') },
-                  { label: 'Gerenciar Usuários', icon: Users, action: () => setTab('users') },
-                  { label: 'Ver Materiais', icon: FolderOpen, action: () => setTab('materials') },
-                  { label: 'Download Logo', icon: Download, action: async () => {
-                    try {
-                      const response = await fetch('/logo-decode.png');
-                      const blob = await response.blob();
-                      const url = URL.createObjectURL(blob);
-                      const a = document.createElement('a');
-                      a.href = url;
-                      a.download = 'logo-decode.png';
-                      document.body.appendChild(a);
-                      a.click();
-                      document.body.removeChild(a);
-                      URL.revokeObjectURL(url);
-                      toast.success('Logo baixado com sucesso!');
-                    } catch (err) {
-                      toast.error('Erro ao baixar logo');
-                    }
-                  } },
-                ].map((a, i) => (
-                  <motion.div
-                    key={a.label}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.9 + i * 0.05 }}
-                  >
-                    <Button variant="outline" className="h-auto py-4 flex-col gap-2 text-xs w-full" onClick={() => {
-                      const result = a.action() as unknown;
-                      if (result instanceof Promise) result.catch(() => {});
-                    }}>
-                      <a.icon className="h-5 w-5 text-primary" />
-                      {a.label}
-                    </Button>
-                  </motion.div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      </div>
-    </div>
-  );
-}
 
 // ─── Main Admin Page ────────────────────────────────────────────
 interface AdminPageProps {
@@ -604,6 +182,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
   const [users, setUsers] = useState<{ id: string; user_id: string; full_name: string; email: string; is_blocked: boolean; created_at: string }[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [refreshing, setRefreshing] = useState(false);
+  const [ads, setAds] = useState<any[]>([]);
 
   // Filtros admin avançados
   const [filterSemester, setFilterSemester] = useState<string>(() => {
@@ -755,13 +334,14 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
 
   const loadAll = async () => {
     setRefreshing(true);
-    const [{ data: ap }, { data: ex }, { data: ans }, { data: mats }, { data: cats }, { data: profs }] = await Promise.all([
+    const [{ data: ap }, { data: ex }, { data: ans }, { data: mats }, { data: cats }, { data: profs }, { data: adsData }] = await Promise.all([
       supabase.from('apostilas').select('*').order('created_at', { ascending: false }),
       supabase.from('exercises').select('*'),
       supabase.from('answers').select('*'),
       supabase.from('materials').select('*').order('created_at', { ascending: false }),
       supabase.from('categories').select('*').order('sort_order', { ascending: true }),
       supabase.from('profiles').select('*').order('created_at', { ascending: false }),
+      supabase.from('ads').select('*').order('created_at', { ascending: false }),
     ]);
     setApostilas(ap || []);
     const map: Record<string, Exercise[]> = {};
@@ -771,6 +351,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
     setMaterials(mats || []);
     setUsers((profs || []).map(p => ({ id: p.id, user_id: p.user_id, full_name: p.full_name, email: p.email, is_blocked: (p as any).is_blocked ?? false, created_at: p.created_at, content_scope: (p as any).content_scope ?? 'full', account_type: (p as any).account_type } as any)));
     setDbCategories((cats || []).map(c => ({ id: c.id, name: c.name, sort_order: c.sort_order })));
+    setAds(adsData || []);
     setRefreshing(false);
   };
 
@@ -1536,317 +1117,34 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
             {/* APOSTILAS */}
             {tab === 'apostilas' && (
               <div className="space-y-6">
-                {/* Import Card */}
-                <Card className="overflow-hidden bg-card/40 backdrop-blur-md border-primary/20 shadow-xl" data-import-card>
-                  <div className="h-1 bg-gradient-to-r from-primary via-accent to-primary animate-pulse" />
-                  <CardHeader className="pb-2 pt-4 px-5">
-                    <CardTitle className="text-lg font-bold flex items-center gap-2">
-                      <Plus className="h-5 w-5 text-primary" />
-                      Central de Criação
-                    </CardTitle>
-                    <CardDescription className="text-[11px]">Crie novas apostilas via link, arquivo ou texto estruturado.</CardDescription>
-                  </CardHeader>
-                  <CardContent className="p-5 space-y-5 pt-0">
-                    <div className="flex items-center justify-between flex-wrap gap-2">
-                      <div className="flex items-center gap-2">
-                        <LinkIcon className="h-4 w-4 text-primary" />
-                        <h3 className="font-semibold text-sm">Importar Apostila</h3>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {!batchMode && importStep === 'input' && (
-                          <div className="inline-flex bg-muted rounded-full p-0.5">
-                            <button
-                              onClick={() => setImportMode('url')}
-                              className={`text-[10px] font-medium px-3 py-1 rounded-full transition-colors ${importMode === 'url' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}
-                            >
-                              URL
-                            </button>
-                            <button
-                              onClick={() => setImportMode('text')}
-                              className={`text-[10px] font-medium px-3 py-1 rounded-full transition-colors ${importMode === 'text' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}
-                            >
-                              Texto
-                            </button>
-                          </div>
-                        )}
-                        <button
-                          onClick={() => { setBatchMode(!batchMode); resetImportForm(); }}
-                          className={`text-[10px] font-medium px-3 py-1 rounded-full transition-colors ${batchMode ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:text-foreground'}`}
-                        >
-                          {batchMode ? 'Lote' : 'Modo Lote'}
-                        </button>
-                      </div>
-                    </div>
-
-                    {batchMode ? (
-                      <div className="space-y-3">
-                        <div>
-                          <Label className="text-xs text-muted-foreground">Cole várias URLs (uma por linha)</Label>
-                          <Textarea value={batchUrls} onChange={e => setBatchUrls(e.target.value)}
-                            placeholder={"https://notion.site/pagina-1\nhttps://exemplo.com/artigo"}
-                            rows={5} className="mt-1 text-xs font-mono" disabled={batchRunning} />
-                          <p className="text-[10px] text-muted-foreground mt-1">
-                            {batchUrls.split('\n').filter(u => u.trim().startsWith('http')).length} URL(s) detectada(s)
-                          </p>
-                        </div>
-                        {batchRunning && (
-                          <div className="space-y-2">
-                            <div className="flex items-center justify-between text-xs">
-                              <span className="text-muted-foreground">Importando...</span>
-                              <span className="font-medium">{batchProgress.current}/{batchProgress.total}</span>
-                            </div>
-                            <Progress value={(batchProgress.current / batchProgress.total) * 100} className="h-2" />
-                          </div>
-                        )}
-                        {batchProgress.results.length > 0 && (
-                          <div className="space-y-1 max-h-40 overflow-y-auto">
-                            {batchProgress.results.map((r, i) => (
-                              <div key={i} className={`flex items-center gap-2 text-xs p-2 rounded-lg ${r.status === 'ok' ? 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]' : 'bg-destructive/10 text-destructive'}`}>
-                                {r.status === 'ok' ? <CheckCircle className="h-3.5 w-3.5 shrink-0" /> : <AlertCircle className="h-3.5 w-3.5 shrink-0" />}
-                                <span className="truncate">{r.title}</span>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                        <Button onClick={handleBatchImport} disabled={batchRunning || !batchUrls.trim()} className="w-full gradient-primary text-primary-foreground">
-                          {batchRunning ? <><Loader2 className="h-4 w-4 animate-spin mr-1.5" /> Importando {batchProgress.current}/{batchProgress.total}</> : 'Importar Tudo'}
-                        </Button>
-                      </div>
-                    ) : importStep === 'input' ? (
-                      <div className="space-y-3">
-                        {importMode === 'url' ? (
-                          <>
-                            <div>
-                              <Label htmlFor="import-url" className="text-xs font-medium text-foreground">URL da Página</Label>
-                              <div className="flex gap-3 mt-1.5">
-                                <div className="relative flex-1">
-                                  <Input id="import-url" value={importUrl} onChange={e => setImportUrl(e.target.value)} placeholder="Ex: https://youtu.be/… ou https://notion.site/…"
-                                    className={importUrl.includes('notion') ? 'pr-20' : ''} />
-                                  {importUrl.includes('notion') && (
-                                    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-semibold bg-primary/10 text-primary px-2 py-0.5 rounded-full">Notion</span>
-                                  )}
-                                </div>
-                                <Button onClick={handleExtract} disabled={cloning || !importUrl.trim()} className="gradient-primary text-primary-foreground shrink-0">
-                                  {cloning ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Clonar'}
-                                </Button>
-                              </div>
-                            </div>
-                          </>
-                        ) : (
-                          <>
-                            {/* PDF Drop Zone */}
-                            <div
-                              onDragOver={e => { e.preventDefault(); e.stopPropagation(); }}
-                              onDrop={async (e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                const files = Array.from(e.dataTransfer.files);
-                                const file = files.find(f => /\.(pdf|txt|docx?)$/i.test(f.name));
-                                if (!file) { toast.error('Arraste um arquivo PDF, TXT ou DOCX'); return; }
-                                const tId = toast.loading(`Lendo ${file.name}...`);
-                                try {
-                                  const text = await extractTextFromFile(file, (p) => {
-                                    toast.loading(p.message, { id: tId });
-                                  });
-                                  if (!text || text.trim().length < 20) {
-                                    toast.error('Não foi possível extrair texto deste arquivo (pode estar protegido ou ser só imagens).', { id: tId });
-                                    return;
-                                  }
-                                  setImportRawText(prev => prev ? prev + '\n\n' + text : text);
-                                  if (!importTitle) setImportTitle(file.name.replace(/\.[^.]+$/, ''));
-                                  toast.success(`"${file.name}" — ${text.split(/\s+/).length} palavras extraídas`, { id: tId });
-                                } catch (err: any) {
-                                  toast.error(err?.message || 'Erro ao ler o arquivo', { id: tId });
-                                }
-                              }}
-                              className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-4 text-center cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors"
-                              onClick={() => {
-                                const input = document.createElement('input');
-                                input.type = 'file';
-                                input.accept = '.pdf,.txt,.doc,.docx';
-                                input.onchange = async (ev) => {
-                                  const file = (ev.target as HTMLInputElement).files?.[0];
-                                  if (!file) return;
-                                  const tId = toast.loading(`Lendo ${file.name}...`);
-                                  try {
-                                    const text = await extractTextFromFile(file, (p) => {
-                                      toast.loading(p.message, { id: tId });
-                                    });
-                                    if (!text || text.trim().length < 20) {
-                                      toast.error('Não foi possível extrair texto deste arquivo.', { id: tId });
-                                      return;
-                                    }
-                                    setImportRawText(prev => prev ? prev + '\n\n' + text : text);
-                                    if (!importTitle) setImportTitle(file.name.replace(/\.[^.]+$/, ''));
-                                    toast.success(`"${file.name}" — ${text.split(/\s+/).length} palavras extraídas`, { id: tId });
-                                  } catch (err: any) {
-                                    toast.error(err?.message || 'Erro ao ler o arquivo', { id: tId });
-                                  }
-                                };
-                                input.click();
-                              }}
-                            >
-                              <FileUp className="h-6 w-6 mx-auto text-muted-foreground mb-1.5" />
-                              <p className="text-xs font-medium text-foreground">Arraste um PDF, TXT ou DOCX aqui</p>
-                              <p className="text-[10px] text-muted-foreground mt-0.5">ou clique para selecionar (até 25MB)</p>
-                            </div>
-
-                            <div className="relative">
-                              <div className="absolute inset-x-0 top-1/2 border-t border-border" />
-                              <p className="relative bg-card text-[10px] text-muted-foreground text-center w-fit mx-auto px-2">ou cole o texto diretamente</p>
-                            </div>
-
-                            <div>
-                              <Label htmlFor="import-rawtext" className="text-xs font-medium text-foreground mb-1.5 block">Texto da Apostila</Label>
-                              <Textarea
-                                id="import-rawtext"
-                                value={importRawText}
-                                onChange={e => setImportRawText(e.target.value)}
-                                placeholder={"Cole aqui a aula bruta para estruturar com IA ou uma apostila já pronta para salvar direto.\n\nVocê pode colar texto com títulos, listas e links já organizados."}
-                                rows={14}
-                                className="min-h-[320px] resize-y leading-6"
-                              />
-                            </div>
-                          </>
-                        )}
-                        <div>
-                          <Label htmlFor="import-title" className="text-xs font-medium text-foreground">Título da Aula (opcional)</Label>
-                          <Input id="import-title" value={importTitle} onChange={e => setImportTitle(e.target.value)} placeholder="Ex: Estrutura de Dados — Árvores AVL (NP2)" className="mt-1.5" />
-                        </div>
-                        <div>
-                          <Label htmlFor="import-topic" className="text-xs font-medium text-foreground">Disciplina / Tópico</Label>
-                          <Input id="import-topic" value={importTopic} onChange={e => setImportTopic(e.target.value)} placeholder="Ex: Redes de Computadores, Banco de Dados" className="mt-1.5" />
-                        </div>
-                        {importMode === 'text' && importStep === 'input' && (
-                          <div className="space-y-3 p-4 rounded-xl bg-primary/5 border border-primary/10 shadow-inner">
-                            <div className="flex items-start gap-2.5">
-                              <Sparkles className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                              <div className="space-y-1">
-                                <p className="text-[11px] text-muted-foreground leading-relaxed">
-                                  Use <strong>Estruturar com Ella</strong> para organizar seu texto cru em módulos.
-                                </p>
-                                <p className="text-[10px] text-primary font-medium">
-                                  DICA: Se já tiver o texto pronto, use o <strong>Modo Word</strong> abaixo para formatar como se estivesse no Google Docs!
-                                </p>
-                              </div>
-                            </div>
-                            <div className="grid gap-3 sm:grid-cols-3">
-                              <Button 
-                                onClick={handleExtract} 
-                                disabled={cloning || !importRawText.trim()} 
-                                className="w-full gradient-primary text-primary-foreground shadow-lg shadow-primary/20 hover:scale-[1.02] transition-transform h-10"
-                              >
-                                {cloning ? <><Loader2 className="h-4 w-4 animate-spin mr-1.5" /> Estruturando...</> : <><Wand2 className="h-4 w-4 mr-2" /> Estruturar com Ella</>}
-                              </Button>
-                              <Button 
-                                onClick={() => {
-                                  if (!importTitle.trim()) {
-                                    toast.error("Dê um título antes de entrar no Modo Word");
-                                    return;
-                                  }
-                                  setImportContent(importRawText);
-                                  setImportStep('edit');
-                                }}
-                                disabled={cloning || !importRawText.trim()} 
-                                variant="outline" 
-                                className="w-full h-10 border-primary/20 hover:bg-primary/5 text-primary"
-                              >
-                                <FileText className="h-4 w-4 mr-2" /> Modo Word
-                              </Button>
-                              <Button 
-                                onClick={handleSaveReadyText} 
-                                disabled={cloning || !importRawText.trim() || !importTitle.trim()} 
-                                variant="outline" 
-                                className="w-full h-10 border-border/50 hover:bg-muted/50"
-                              >
-                                {cloning ? <><Loader2 className="h-4 w-4 animate-spin mr-1.5" /> Salvando...</> : <><Check className="h-4 w-4 mr-2" /> Salvar Rápido</>}
-                              </Button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    ) : importStep === 'edit' ? (
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between gap-2 p-3 rounded-lg bg-primary/10 text-primary text-xs border border-primary/20">
-                          <div className="flex items-center gap-2">
-                            <FileText className="h-4 w-4 shrink-0" />
-                            <span>Modo Word Ativado: Formate seu conteúdo com as ferramentas acima.</span>
-                          </div>
-                          <Button variant="ghost" size="sm" onClick={() => setImportStep('input')} className="h-6 px-2 text-[10px]">Alterar Origem</Button>
-                        </div>
-                        
-                        <div className="grid sm:grid-cols-2 gap-4">
-                          <div>
-                            <Label className="text-xs text-muted-foreground">Título</Label>
-                            <Input value={importTitle} onChange={e => setImportTitle(e.target.value)} placeholder="Título da apostila" className="mt-1" />
-                          </div>
-                          <div>
-                            <Label className="text-xs text-muted-foreground">Disciplina</Label>
-                            <CategorySelect value={importTopic} onValueChange={setImportTopic} />
-                          </div>
-                        </div>
-
-                        <div className="border border-border rounded-xl overflow-hidden bg-background">
-                          <MarkdownEditor 
-                            value={importContent} 
-                            onChange={setImportContent} 
-                            onSave={handleSaveImport}
-                            className="border-none shadow-none min-h-[500px]"
-                          />
-                        </div>
-
-                        <div className="flex gap-2">
-                          <Button variant="outline" className="flex-1" onClick={resetImportForm}>Cancelar</Button>
-                          <Button className="flex-1 gradient-primary text-primary-foreground shadow-lg shadow-primary/20" onClick={handleSaveImport} disabled={cloning || !importTitle.trim()}>
-                            {cloning && <Loader2 className="h-4 w-4 animate-spin mr-1.5" />}
-                            Salvar Apostila
-                          </Button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between gap-2 p-3 rounded-lg bg-[hsl(var(--success))]/10 text-[hsl(var(--success))] text-xs">
-                          <div className="flex items-center gap-2">
-                            <CheckCircle className="h-4 w-4 shrink-0" />
-                            <span>Conteúdo extraído! Revise antes de salvar.</span>
-                          </div>
-                          {extractionMethod && (
-                            <span className={`shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                              extractionMethod.includes('firecrawl')
-                                ? 'bg-orange-500/20 text-orange-400'
-                                : extractionMethod === 'text'
-                                  ? 'bg-blue-500/20 text-blue-400'
-                                  : 'bg-emerald-500/20 text-emerald-400'
-                            }`}>
-                              {extractionMethod.includes('firecrawl') ? 'Firecrawl' : extractionMethod === 'text' ? 'Texto' : 'Fetch'}
-                            </span>
-                          )}
-                        </div>
-                        <div>
-                          <Label className="text-xs text-muted-foreground">Título</Label>
-                          <Input value={importTitle} onChange={e => setImportTitle(e.target.value)} placeholder="Título da apostila" className="mt-1" />
-                        </div>
-                        <div><Label className="text-xs text-muted-foreground">Categoria</Label><CategorySelect value={importTopic} onValueChange={setImportTopic} /></div>
-
-                        {/* Pré-visualização rica: sebras + estrutura + glossário + perguntas */}
-                        <ImportPreviewPanel content={importContent} aiExercises={importExercises} />
-
-                        <div>
-                          <Label className="text-xs text-muted-foreground">Conteúdo (Markdown)</Label>
-                          <Textarea value={importContent} onChange={e => setImportContent(e.target.value)} rows={6} className="mt-1 text-xs font-mono" />
-                        </div>
-
-                        <div className="flex gap-2">
-                          <Button variant="outline" className="flex-1" onClick={resetImportForm}>Cancelar</Button>
-                          <Button className="flex-1 gradient-primary text-primary-foreground" onClick={handleSaveImport} disabled={cloning || !importTitle.trim()}>
-                            {cloning && <Loader2 className="h-4 w-4 animate-spin mr-1.5" />}
-                            Salvar {importExercises.length > 0 && `+ ${importExercises.length} ex.`}
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
+                <ApostilaCreationCard
+                  batchMode={batchMode}
+                  setBatchMode={setBatchMode}
+                  importStep={importStep}
+                  setImportStep={setImportStep}
+                  importMode={importMode}
+                  setImportMode={setImportMode}
+                  importUrl={importUrl}
+                  setImportUrl={setImportUrl}
+                  importTitle={importTitle}
+                  setImportTitle={setImportTitle}
+                  importTopic={importTopic}
+                  setImportTopic={setImportTopic}
+                  importRawText={importRawText}
+                  setImportRawText={setImportRawText}
+                  batchUrls={batchUrls}
+                  setBatchUrls={setBatchUrls}
+                  batchRunning={batchRunning}
+                  batchProgress={batchProgress}
+                  cloning={cloning}
+                  handleExtract={handleExtract}
+                  handleBatchImport={handleBatchImport}
+                  handleSaveReadyText={handleSaveReadyText}
+                  resetImportForm={resetImportForm}
+                  extractTextFromFile={extractTextFromFile}
+                  setImportContent={setImportContent}
+                  dbCategories={dbCategories}
+                />
 
                 {/* Manual Create */}
                 {showManualForm ? (
@@ -1861,7 +1159,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                       </div>
                       <div>
                         <Label htmlFor="manual-category" className="text-xs font-medium text-foreground">Disciplina / Categoria</Label>
-                        <CategorySelect value={manualCategory} onValueChange={setManualCategory} placeholder="Selecione a disciplina" />
+                        <CategorySelect categories={dbCategories} value={manualCategory} onValueChange={setManualCategory} placeholder="Selecione a disciplina" />
                       </div>
                       <div>
                         <Label htmlFor="manual-content" className="text-xs font-medium text-foreground mb-1.5 block">Conteúdo da Apostila</Label>
@@ -2218,7 +1516,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                         </div>
                         <div>
                           <Label htmlFor="edit-category" className="text-xs font-medium">Disciplina/Categoria</Label>
-                          <CategorySelect value={editCategory || ''} onValueChange={setEditCategory} />
+                          <CategorySelect categories={dbCategories} value={editCategory || ''} onValueChange={setEditCategory} />
                         </div>
                         <div className="flex justify-end gap-3 pt-4">
                           <Button variant="outline" onClick={() => setEditingApostila(null)}>Cancelar</Button>
@@ -2470,7 +1768,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                     <div className="flex-1 overflow-y-auto px-3 sm:px-5 py-3 sm:py-4 space-y-3 sm:space-y-4">
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                         <div><Label className="text-xs mb-1 block">Título</Label><Input value={editTitle} onChange={e => setEditTitle(e.target.value)} /></div>
-                        <div><Label className="text-xs mb-1 block">Categoria</Label><CategorySelect value={editCategory} onValueChange={setEditCategory} /></div>
+                        <div><Label className="text-xs mb-1 block">Categoria</Label><CategorySelect categories={dbCategories} value={editCategory} onValueChange={setEditCategory} /></div>
                       </div>
                       <div>
                         <Label className="text-xs mb-1.5 block">Conteúdo</Label>
@@ -2705,899 +2003,110 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
               </div>
             )}
 
-            {/* EXERCISES */}
             {tab === 'exercises' && (
-              <div className="space-y-6">
-                <Card>
-                  <CardContent className="p-5">
-                    <h3 className="font-semibold text-sm mb-3">Selecionar Apostila</h3>
-                    <Select value={selectedApostila} onValueChange={setSelectedApostila}>
-                      <SelectTrigger><SelectValue placeholder="Selecione uma apostila" /></SelectTrigger>
-                      <SelectContent>
-                        {apostilas.map(a => (
-                          <SelectItem key={a.id} value={a.id}>{a.title} ({exercises[a.id]?.length || 0})</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </CardContent>
-                </Card>
-
-                {selectedApostila && (
-                  <>
-                    {(exercises[selectedApostila]?.length || 0) === 0 && !bulkExerciseMode && (
-                      <div className="text-center py-10 text-muted-foreground">
-                        <PenTool className="h-10 w-10 mx-auto mb-3 opacity-25" strokeWidth={1.5} />
-                        <p className="text-sm">Nenhum exercício para esta apostila.</p>
-                        <p className="text-xs text-muted-foreground/70 mt-1">Gere com IA ou importe em lote.</p>
-                      </div>
-                    )}
-                    <div className="space-y-2">
-                      {exercises[selectedApostila]?.map((ex, i) => (
-                        <Card key={ex.id} className="hover:shadow-md transition-shadow">
-                          <CardContent className="p-4">
-                            <div className="flex justify-between items-start">
-                              <p className="font-medium text-sm flex-1">{i + 1}. {ex.question}</p>
-                              <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0" onClick={() => deleteExercise(ex.id)}>
-                                <Trash2 className="h-3.5 w-3.5 text-destructive" />
-                              </Button>
-                            </div>
-                            {Array.isArray(ex.options) && (ex.options as string[]).map((opt, oi) => (
-                              <p key={oi} className={`text-xs mt-0.5 ${String.fromCharCode(65 + oi) === ex.correct_answer ? 'text-[hsl(var(--success))] font-medium' : 'text-muted-foreground'}`}>
-                                {String.fromCharCode(65 + oi)}) {opt}
-                              </p>
-                            ))}
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-
-                    {/* Toggle between modes */}
-                    <div className="flex items-center gap-2">
-                      <div className="inline-flex bg-muted rounded-full p-0.5">
-                        {([['individual', 'Individual'], ['bulk', 'Lote'], ['ai', 'Assistente']] as [string, string][]).map(([mode, label]) => (
-                          <button key={mode} onClick={() => { setBulkExerciseMode(mode === 'bulk'); if (mode === 'ai') setBulkExerciseMode(false); setExerciseDialogMode(mode as any); }}
-                            className={`text-[10px] font-medium px-3 py-1 rounded-full transition-colors ${
-                              (mode === 'individual' && !bulkExerciseMode && exerciseDialogMode !== 'ai') ||
-                              (mode === 'bulk' && bulkExerciseMode) ||
-                              (mode === 'ai' && exerciseDialogMode === 'ai' && !bulkExerciseMode)
-                                ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
-                            }`}>
-                            {label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {bulkExerciseMode ? (
-                      <Card>
-                        <CardContent className="p-5 space-y-3">
-                          <h3 className="font-semibold text-sm flex items-center gap-2">
-                            <FileText className="h-4 w-4 text-primary" />
-                            Importar Exercícios em Lote
-                          </h3>
-                          <p className="text-[10px] text-muted-foreground leading-relaxed">
-                            Cole as perguntas no formato abaixo. Separe cada exercício com uma linha em branco:
-                          </p>
-                          <div className="bg-muted/50 rounded-lg p-3 text-[10px] font-mono text-muted-foreground leading-relaxed">
-                            <p>Qual é a capital do Brasil?</p>
-                            <p>A) São Paulo</p><p>B) Rio de Janeiro</p><p>C) Brasília</p><p>D) Salvador</p>
-                            <p>Gabarito: C</p>
-                            <p>Explicação: Brasília é a capital federal desde 1960.</p>
-                          </div>
-                          <Textarea value={bulkExerciseText} onChange={e => setBulkExerciseText(e.target.value)}
-                            placeholder="Cole aqui suas perguntas, alternativas, gabarito e explicação..." rows={12} className="font-mono text-xs" />
-                          {bulkExerciseText.trim() && (
-                            <p className="text-[10px] text-muted-foreground">{parseBulkExercises(bulkExerciseText).length} exercício(s) detectado(s)</p>
-                          )}
-                          <Button onClick={handleBulkExerciseImport} disabled={!bulkExerciseText.trim() || bulkExerciseImporting} className="w-full gradient-primary text-primary-foreground">
-                            {bulkExerciseImporting ? <><Loader2 className="h-4 w-4 animate-spin mr-1.5" /> Importando...</> : 'Importar Exercícios'}
-                          </Button>
-                        </CardContent>
-                      </Card>
-                    ) : exerciseDialogMode === 'ai' ? (
-                      <Card>
-                        <CardContent className="p-5 space-y-3">
-                          <h3 className="font-semibold text-sm flex items-center gap-2">
-                            <PenTool className="h-4 w-4 text-primary" /> Gerar com IA
-                          </h3>
-                          {(() => {
-                            const apt = apostilas.find(a => a.id === selectedApostila);
-                            if (!apt?.content?.trim()) return (
-                              <div className="text-center py-6 text-muted-foreground">
-                                <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-30" />
-                                <p className="text-xs">Esta apostila não tem conteúdo. Adicione conteúdo primeiro.</p>
-                              </div>
-                            );
-                            if (aiExercises.length === 0) return (
-                              <>
-                                <p className="text-xs text-muted-foreground">A IA vai analisar o conteúdo e gerar exercícios automaticamente.</p>
-                                <Button onClick={async () => {
-                                  setAiGenerating(true);
-                                  try {
-                                    const { data, error } = await supabase.functions.invoke('generate-exercises', {
-                                      body: { content: apt.content, title: apt.title, mcCount: 8, essayCount: 2 },
-                                    });
-                                    if (error) {
-                                      let msg = error.message;
-                                      try { const ctx = await (error as any).context?.json?.(); if (ctx?.error) msg = ctx.error; } catch {}
-                                      throw new Error(msg);
-                                    }
-                                    if (data?.error) throw new Error(data.error);
-                                    if (!data?.exercises?.length) throw new Error('Nenhum exercício gerado.');
-                                    setAiExercises(data.exercises);
-                                    toast.success(`${data.exercises.length} exercícios gerados!`);
-                                  } catch (err: any) { toast.error('Erro: ' + (err.message || 'Tente novamente')); }
-                                  setAiGenerating(false);
-                                }} disabled={aiGenerating} className="w-full gradient-primary text-primary-foreground">
-                                  {aiGenerating ? <><Loader2 className="h-4 w-4 animate-spin mr-1.5" /> Gerando exercícios...</> : <><Wand2 className="h-4 w-4 mr-1.5" /> Gerar Exercícios com IA</>}
-                                </Button>
-                              </>
-                            );
-                            return (
-                              <>
-                                <p className="text-xs text-muted-foreground">{aiExercises.length} exercícios gerados. Revise e salve:</p>
-                                <div className="space-y-2 max-h-80 overflow-y-auto">
-                                  {aiExercises.map((ex, i) => (
-                                    <div key={i} className="border border-border/50 rounded-lg p-3 text-xs">
-                                      <div className="flex justify-between items-start">
-                                        <p className="font-medium">{i + 1}. {ex.question}</p>
-                                        <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => setAiExercises(prev => prev.filter((_, idx) => idx !== i))}>
-                                          <Trash2 className="h-3 w-3 text-destructive" />
-                                        </Button>
-                                      </div>
-                                      <div className="mt-1 space-y-0.5 text-muted-foreground">
-                                        {ex.options.map((opt, oi) => (
-                                          <p key={oi} className={String.fromCharCode(65 + oi) === ex.correct_answer ? 'text-[hsl(var(--success))] font-medium' : ''}>{String.fromCharCode(65 + oi)}) {opt}</p>
-                                        ))}
-                                      </div>
-                                      {ex.explanation && <p className="mt-1 text-[10px] text-muted-foreground italic">{ex.explanation}</p>}
-                                    </div>
-                                  ))}
-                                </div>
-                                <div className="flex gap-2">
-                                  <Button variant="outline" className="flex-1" onClick={() => setAiExercises([])}>Descartar</Button>
-                                  <Button className="flex-1 gradient-primary text-primary-foreground" onClick={async () => {
-                                    let ok = 0;
-                                    for (const ex of aiExercises) {
-                                      const { error } = await supabase.from('exercises').insert({
-                                        apostila_id: selectedApostila, question: ex.question, options: ex.options,
-                                        correct_answer: ex.correct_answer, explanation: ex.explanation || null,
-                                      });
-                                      if (!error) ok++;
-                                    }
-                                    toast.success(`${ok}/${aiExercises.length} exercícios salvos!`);
-                                    setAiExercises([]); loadAll();
-                                  }}>Salvar Todos ({aiExercises.length})</Button>
-                                </div>
-                              </>
-                            );
-                          })()}
-                        </CardContent>
-                      </Card>
-                    ) : (
-                      <Card>
-                        <CardContent className="p-5 space-y-3">
-                          <h3 className="font-semibold text-sm">Novo Exercício</h3>
-                          <Textarea value={exQuestion} onChange={e => setExQuestion(e.target.value)} placeholder="Pergunta" rows={2} />
-                          {exOptions.map((o, i) => (
-                            <div key={i} className="flex items-center gap-2">
-                              <span className="text-sm font-medium w-6">{String.fromCharCode(65 + i)})</span>
-                              <Input value={o} onChange={e => { const n = [...exOptions]; n[i] = e.target.value; setExOptions(n); }} placeholder={`Opção ${String.fromCharCode(65 + i)}`} />
-                            </div>
-                          ))}
-                          <div><Label className="text-xs">Resposta correta</Label>
-                            <Select value={exCorrect} onValueChange={setExCorrect}>
-                              <SelectTrigger><SelectValue /></SelectTrigger>
-                              <SelectContent>{['A','B','C','D'].map(l => <SelectItem key={l} value={l}>{l}</SelectItem>)}</SelectContent>
-                            </Select>
-                          </div>
-                          <div><Label className="text-xs">Explicação (opcional)</Label><Textarea value={exExplanation} onChange={e => setExExplanation(e.target.value)} rows={2} /></div>
-                          <Button onClick={addExercise} className="w-full gradient-primary text-primary-foreground">Adicionar</Button>
-                        </CardContent>
-                      </Card>
-                    )}
-                  </>
-                )}
-              </div>
+              <ExercisesTab
+                selectedApostila={selectedApostila}
+                setSelectedApostila={setSelectedApostila}
+                apostilas={apostilas}
+                exercises={exercises}
+                bulkExerciseMode={bulkExerciseMode}
+                setBulkExerciseMode={setBulkExerciseMode}
+                exerciseDialogMode={exerciseDialogMode}
+                setExerciseDialogMode={setExerciseDialogMode}
+                bulkExerciseText={bulkExerciseText}
+                setBulkExerciseText={setBulkExerciseText}
+                bulkExerciseImporting={bulkExerciseImporting}
+                aiGenerating={aiGenerating}
+                setAiGenerating={setAiGenerating}
+                aiExercises={aiExercises}
+                setAiExercises={setAiExercises}
+                exQuestion={exQuestion}
+                setExQuestion={setExQuestion}
+                exOptions={exOptions}
+                setExOptions={setExOptions}
+                exCorrect={exCorrect}
+                setExCorrect={setExCorrect}
+                exExplanation={exExplanation}
+                setExExplanation={setExExplanation}
+                addExercise={addExercise}
+                deleteExercise={deleteExercise}
+                handleBulkExerciseImport={handleBulkExerciseImport}
+                parseBulkExercises={parseBulkExercises}
+                loadAll={loadAll}
+              />
             )}
 
             {/* MATERIALS */}
             {tab === 'materials' && (
-              <div className="space-y-6">
-                <Card className="overflow-hidden">
-                  <div className="h-1 bg-primary" />
-                  <CardContent className="p-5 space-y-4">
-                    <div className="flex items-center gap-2">
-                      <Upload className="h-4 w-4 text-primary" />
-                      <h3 className="font-semibold text-sm">Upload Rápido</h3>
-                    </div>
-                    <p className="text-xs text-muted-foreground">Arraste arquivos ou clique para enviar. O tipo é detectado automaticamente.</p>
-
-                    <input ref={fileInputRef} type="file" multiple className="hidden"
-                      onChange={e => {
-                        const files = Array.from(e.target.files || []);
-                        if (files.length === 1) handleFileDrop(files[0]);
-                        else if (files.length > 1) handleMultiUpload(files);
-                      }} accept="*" />
-
-                    <div
-                      onDragOver={onDragOver} onDragLeave={onDragLeave}
-                      onDrop={e => { e.preventDefault(); setDragActive(false); const files = Array.from(e.dataTransfer.files); files.length === 1 ? handleFileDrop(files[0]) : handleMultiUpload(files); }}
-                      onClick={() => !matFile && fileInputRef.current?.click()}
-                      className={`relative flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-10 cursor-pointer transition-all duration-300 ${
-                        dragActive ? 'border-primary bg-primary/10 scale-[1.01] shadow-lg' : matFile ? 'border-primary/40 bg-primary/5 cursor-default' : 'border-border/60 hover:border-primary/50 hover:bg-muted/30'
-                      }`}
-                    >
-                      {matUploading ? (
-                        <div className="w-full space-y-3">
-                          <div className="flex items-center gap-3">
-                            <Loader2 className="h-5 w-5 text-primary animate-spin shrink-0" />
-                            <div className="flex-1">
-                              <p className="text-sm font-medium">Enviando{uploadQueue.length > 1 ? ` (${uploadProgress.current}/${uploadProgress.total})` : ''}...</p>
-                              <p className="text-xs text-muted-foreground truncate">{matFile?.name || 'Processando'}</p>
-                            </div>
-                          </div>
-                          <Progress value={uploadQueue.length > 1 ? (uploadProgress.current / uploadProgress.total) * 100 : 50} className="h-2" />
-                        </div>
-                      ) : matFile ? (
-                        <div className="w-full">
-                          <div className="flex items-center gap-3">
-                            <div className="rounded-lg bg-primary/10 p-2.5 shrink-0">
-                              {(() => {
-                                const icons: Record<string, any> = { pdf: FileText, image: Image, video: Video, audio: Music, powerpoint: Presentation, word: FileText, excel: FileSpreadsheet, gif: Image };
-                                const Icon = icons[matType] || File;
-                                return <Icon className="h-5 w-5 text-primary" />;
-                              })()}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium truncate">{matFile.name}</p>
-                              <p className="text-xs text-muted-foreground">{(matFile.size / 1024 / 1024).toFixed(2)} MB · {matType.toUpperCase()}</p>
-                            </div>
-                            <Button size="icon" variant="ghost" className="h-8 w-8 shrink-0 text-destructive" onClick={e => { e.stopPropagation(); setMatFile(null); setMatTitle(''); }}>
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                          <div className="mt-4 space-y-3">
-                            <Input value={matTitle} onChange={e => setMatTitle(e.target.value)} placeholder="Título do material" onClick={e => e.stopPropagation()} />
-                            <Input value={matDesc} onChange={e => setMatDesc(e.target.value)} placeholder="Descrição (opcional)" onClick={e => e.stopPropagation()} />
-                            <div onClick={e => e.stopPropagation()}>
-                              <CategorySelect value={matCategoryId} onValueChange={setMatCategoryId} placeholder="Categoria (opcional)" />
-                            </div>
-                            <Button className="w-full gradient-primary text-primary-foreground" disabled={!matTitle.trim()}
-                              onClick={async (e) => {
-                                e.stopPropagation();
-                                if (!user || !matFile) return;
-                                if (matFile.size === 0) { toast.error('Arquivo vazio.'); return; }
-                                setMatUploading(true);
-                                try {
-                                  const ext = matFile.name.split('.').pop();
-                                  const path = `${user.id}/${Date.now()}.${ext}`;
-                                  const { error: uploadErr } = await supabase.storage.from('materials').upload(path, matFile, { contentType: matFile.type || undefined, upsert: false });
-                                  if (uploadErr) throw uploadErr;
-                                  const { data: urlData } = supabase.storage.from('materials').getPublicUrl(path);
-                                  const catMatch = dbCategories.find(c => c.name === matCategoryId);
-                                  const { error } = await supabase.from('materials').insert({
-                                    title: matTitle.trim(), description: matDesc || null, type: matType as any,
-                                    file_url: urlData.publicUrl, file_path: path, created_by: user.id,
-                                    category_id: catMatch?.id || null,
-                                  });
-                                  if (error) throw error;
-                                  toast.success('Material adicionado!');
-                                  setMatTitle(''); setMatDesc(''); setMatFile(null); setMatCategoryId(''); loadAll();
-                                } catch (err: any) { toast.error('Erro: ' + (err.message || 'Tente novamente')); }
-                                setMatUploading(false);
-                              }}>
-                              <Upload className="h-4 w-4 mr-1.5" /> Enviar Material
-                            </Button>
-                          </div>
-                        </div>
-                      ) : (
-                        <>
-                          <div className={`rounded-full p-4 transition-colors ${dragActive ? 'bg-primary/20' : 'bg-muted/50'}`}>
-                            <Upload className={`h-8 w-8 transition-colors ${dragActive ? 'text-primary' : 'text-muted-foreground'}`} />
-                          </div>
-                          <div className="text-center">
-                            <p className="text-sm font-medium">{dragActive ? 'Solte para enviar' : 'Arraste arquivos aqui'}</p>
-                            <p className="text-xs text-muted-foreground mt-0.5">ou <span className="text-primary underline underline-offset-2">clique para selecionar</span></p>
-                          </div>
-                          <div className="flex flex-wrap gap-1.5 justify-center mt-1">
-                            {['PDF', 'IMG', 'MP4', 'MP3', 'PPTX', 'DOC', 'XLS'].map(t => (
-                              <span key={t} className="text-[9px] font-medium px-2 py-0.5 rounded-full bg-muted text-muted-foreground">{t}</span>
-                            ))}
-                          </div>
-                        </>
-                      )}
-                    </div>
-
-                    {/* Link mode */}
-                    <div className="flex items-center gap-2 pt-2">
-                      <button onClick={() => { setMatType('link'); setMatFile(null); }}
-                        className={`text-xs flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-colors ${matType === 'link' && !matFile ? 'bg-primary/10 text-primary font-medium' : 'text-muted-foreground hover:text-foreground'}`}>
-                        <LinkIcon className="h-3 w-3" /> Adicionar por link
-                      </button>
-                    </div>
-
-                    {matType === 'link' && !matFile && (
-                      <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
-                        <Input value={matUrl} onChange={e => setMatUrl(e.target.value)} placeholder="https://..." />
-                        <Input value={matTitle} onChange={e => setMatTitle(e.target.value)} placeholder="Título do material" />
-                        <Button className="w-full gradient-primary text-primary-foreground" disabled={matUploading || !matTitle.trim() || !matUrl.trim()}
-                          onClick={async () => {
-                            if (!user) return;
-                            setMatUploading(true);
-                            try {
-                              const { error } = await supabase.from('materials').insert({
-                                title: matTitle.trim(), description: matDesc || null, type: 'link' as any,
-                                file_url: matUrl.trim(), created_by: user.id,
-                              });
-                              if (error) throw error;
-                              toast.success('Link adicionado!');
-                              setMatTitle(''); setMatDesc(''); setMatUrl(''); loadAll();
-                            } catch (err: any) { toast.error('Erro: ' + (err.message || 'Tente novamente')); }
-                            setMatUploading(false);
-                          }}>
-                          <Plus className="h-4 w-4 mr-1.5" /> Adicionar Link
-                        </Button>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-
-                {/* Materials List */}
-                <div>
-                  <h3 className="font-semibold text-sm mb-4 flex items-center gap-2">
-                    <FolderOpen className="h-4 w-4 text-primary" /> Materiais ({filteredMaterials.length})
-                  </h3>
-                  <div className="grid gap-2">
-                    {filteredMaterials.map(m => {
-                      const typeIcon = { pdf: FileText, image: Image, video: Video, audio: Music, powerpoint: Presentation, word: FileText, excel: FileSpreadsheet, link: LinkIcon, other: File, exam: FileText, gif: Image }[m.type] || File;
-                      const Icon = typeIcon;
-                      return (
-                        <Card key={m.id} className="hover:shadow-md transition-shadow">
-                          <CardContent className="p-3 sm:p-4">
-                            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                              <div className="flex items-start sm:items-center gap-3 min-w-0 flex-1">
-                                <div className="rounded-lg bg-accent p-2.5 shrink-0">
-                                  <Icon className="h-4 w-4 text-primary" />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <h4 className="font-medium text-sm break-words leading-snug">{m.title}</h4>
-                                  <p className="text-[11px] text-muted-foreground break-words">
-                                    {m.type.toUpperCase()} · {new Date(m.created_at).toLocaleDateString('pt-BR')}
-                                    {m.description && ` · ${m.description}`}
-                                  </p>
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-1 shrink-0 justify-end pl-12 sm:pl-0">
-                                {/* Secundário: Editar (apenas desktop como botão direto) */}
-                                <Button size="icon" variant="ghost" className="hidden sm:inline-flex h-8 w-8" onClick={() => { setEditingMaterial(m); setEditMatTitle(m.title); setEditMatDesc(m.description || ''); }}>
-                                  <Edit className="h-3.5 w-3.5" />
-                                </Button>
-                                {/* Primários: Download + Excluir */}
-                                {m.file_url && (
-                                  <Button size="icon" variant="ghost" className="h-8 w-8" asChild aria-label="Baixar">
-                                    <a href={m.file_url} target="_blank" rel="noopener noreferrer"><Download className="h-3.5 w-3.5" /></a>
-                                  </Button>
-                                )}
-                                <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive"
-                                  onClick={async () => {
-                                    if (!confirm('Excluir este material?')) return;
-                                    if (m.file_path) await supabase.storage.from('materials').remove([m.file_path]);
-                                    await supabase.from('materials').delete().eq('id', m.id);
-                                    toast.success('Material excluído'); loadAll();
-                                  }}>
-                                  <Trash2 className="h-3.5 w-3.5" />
-                                </Button>
-                                {/* Kebab mobile com ações secundárias */}
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button size="icon" variant="ghost" className="sm:hidden h-8 w-8" aria-label="Mais opções">
-                                      <MoreHorizontal className="h-4 w-4" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end" className="w-48">
-                                    <DropdownMenuItem onClick={() => { setEditingMaterial(m); setEditMatTitle(m.title); setEditMatDesc(m.description || ''); }}>
-                                      <Edit className="h-3.5 w-3.5 mr-2" /> Editar
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      );
-                    })}
-                    {filteredMaterials.length === 0 && (
-                      <div className="text-center py-12 text-muted-foreground">
-                        <Upload className="h-10 w-10 mx-auto mb-3 opacity-20" />
-                        <p className="text-sm">{searchQuery ? 'Nenhum material encontrado.' : 'Nenhum material adicionado.'}</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Edit Material Dialog */}
-                <Dialog open={!!editingMaterial} onOpenChange={(v) => !v && setEditingMaterial(null)}>
-                  <DialogContent className="max-w-lg">
-                    <DialogHeader><DialogTitle className="text-base">Editar Material</DialogTitle></DialogHeader>
-                    <div className="space-y-3">
-                      <div><Label className="text-xs">Título</Label><Input value={editMatTitle} onChange={e => setEditMatTitle(e.target.value)} className="mt-1" /></div>
-                      <div><Label className="text-xs">Descrição</Label><Input value={editMatDesc} onChange={e => setEditMatDesc(e.target.value)} placeholder="Descrição (opcional)" className="mt-1" /></div>
-                      <Button className="w-full gradient-primary text-primary-foreground" onClick={handleEditMaterial} disabled={!editMatTitle.trim()}>Salvar Alterações</Button>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              </div>
+              <MaterialsTab
+                user={user}
+                matFile={matFile}
+                setMatFile={setMatFile}
+                matTitle={matTitle}
+                setMatTitle={setMatTitle}
+                matDesc={matDesc}
+                setMatDesc={setMatDesc}
+                matType={matType}
+                setMatType={setMatType}
+                matUrl={matUrl}
+                setMatUrl={setMatUrl}
+                matCategoryId={matCategoryId}
+                setMatCategoryId={setMatCategoryId}
+                matUploading={matUploading}
+                setMatUploading={setMatUploading}
+                dragActive={dragActive}
+                setDragActive={setDragActive}
+                uploadQueue={uploadQueue}
+                uploadProgress={uploadProgress}
+                dbCategories={dbCategories}
+                filteredMaterials={filteredMaterials}
+                searchQuery={searchQuery}
+                editingMaterial={editingMaterial}
+                setEditingMaterial={setEditingMaterial}
+                editMatTitle={editMatTitle}
+                setEditMatTitle={setEditMatTitle}
+                editMatDesc={editMatDesc}
+                setEditMatDesc={setEditMatDesc}
+                handleFileDrop={handleFileDrop}
+                handleMultiUpload={handleMultiUpload}
+                handleEditMaterial={handleEditMaterial}
+                loadAll={loadAll}
+                onDragOver={onDragOver}
+                onDragLeave={onDragLeave}
+                fileInputRef={fileInputRef}
+              />
             )}
 
-            {/* USERS */}
             {tab === 'users' && (
-              <div className="space-y-6">
-                {/* Cabeçalho com cadastro manual */}
-                <div className="flex items-center justify-between gap-3 flex-wrap">
-                  <div>
-                    <h2 className="text-lg font-bold">Alunos</h2>
-                    <p className="text-[11px] text-muted-foreground">Cadastre, bloqueie ou ajuste o acesso das contas.</p>
-                  </div>
-                  <AdminCreateUserDialog onCreated={loadAll} />
-                </div>
-
-                {/* Stats */}
-                <div className="grid gap-3 grid-cols-3">
-                  <Card>
-                    <CardContent className="p-4 text-center">
-                      <p className="text-2xl font-bold text-foreground">{users.length}</p>
-                      <p className="text-xs text-muted-foreground">Total</p>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-4 text-center">
-                      <p className="text-2xl font-bold text-[hsl(var(--success))]">{users.filter(u => !u.is_blocked).length}</p>
-                      <p className="text-xs text-muted-foreground">Ativos</p>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-4 text-center">
-                      <p className="text-2xl font-bold text-destructive">{users.filter(u => u.is_blocked).length}</p>
-                      <p className="text-xs text-muted-foreground">Bloqueados</p>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                {/* User List */}
-                <div className="space-y-2">
-                  {filteredUsers.map(u => {
-                    const isTestBot = (u.full_name || '').toLowerCase().includes('[teste bot]') || (u.email || '').includes('teste.evasive');
-                    const isRA = (u as any).account_type === 'ra' || (u.email || '').endsWith('@ra.unip.local');
-                    return (
-                    <Card key={u.id} className={`hover:shadow-md transition-shadow ${u.is_blocked ? 'border-destructive/30' : ''} ${isTestBot ? 'border-amber-500/40 bg-amber-500/5' : ''}`}>
-                      <CardContent className="p-4">
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                          <div className="flex items-start gap-3 flex-1 min-w-0">
-                            <div className={`rounded-full p-2.5 shrink-0 ${u.is_blocked ? 'bg-destructive/10' : isTestBot ? 'bg-amber-500/15' : 'bg-accent'}`}>
-                              {u.is_blocked ? <ShieldBan className="h-5 w-5 text-destructive" /> : <ShieldCheck className={`h-5 w-5 ${isTestBot ? 'text-amber-500' : 'text-primary'}`} />}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex flex-wrap items-center gap-1.5 mb-1">
-                                <p className="text-sm font-medium break-words">{u.full_name || 'Sem nome'}</p>
-                                {isTestBot && <Badge className="text-[10px] bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-500/30 hover:bg-amber-500/20">TESTE BOT</Badge>}
-                                {u.is_blocked && <Badge variant="destructive" className="text-[10px]">Bloqueado</Badge>}
-                                {isRA && <Badge variant="outline" className="text-[10px]">RA UNIP</Badge>}
-                                {(u as any).content_scope === 'enem_only' && (
-                                  <Badge className="text-[10px] bg-primary/15 text-primary border-primary/30 hover:bg-primary/15">Apenas ENEM</Badge>
-                                )}
-                              </div>
-                              <p className="text-xs text-foreground/80 break-all leading-snug font-mono">{u.email}</p>
-                              <p className="text-[11px] text-muted-foreground mt-0.5">Desde {new Date(u.created_at).toLocaleDateString('pt-BR')}</p>
-                            </div>
-                          </div>
-                          <div className="flex gap-1.5 shrink-0 sm:ml-auto items-center justify-end flex-wrap">
-                            {/* Escopo de conteúdo (ENEM/Completo) */}
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="text-xs h-9 gap-1.5"
-                              onClick={async () => {
-                                const current = (u as any).content_scope === 'enem_only' ? 'enem_only' : 'full';
-                                const next = current === 'enem_only' ? 'full' : 'enem_only';
-                                const { error } = await supabase.from('profiles').update({ content_scope: next } as any).eq('user_id', u.user_id);
-                                if (error) { toast.error('Erro ao atualizar escopo'); return; }
-                                toast.success(next === 'enem_only' ? 'Acesso restrito a ENEM' : 'Acesso completo liberado');
-                                loadAll();
-                              }}
-                            >
-                              {(u as any).content_scope === 'enem_only' ? 'Liberar tudo' : 'Restringir a ENEM'}
-                            </Button>
-                            {/* Primário: Bloquear/Desbloquear */}
-                            <Button
-                              size="sm"
-                              variant={u.is_blocked ? 'outline' : 'destructive'}
-                              className="text-xs h-9 gap-1.5"
-                              onClick={async () => {
-                                const newBlocked = !u.is_blocked;
-                                const { error } = await supabase.from('profiles').update({ is_blocked: newBlocked } as any).eq('user_id', u.user_id);
-                                if (error) { toast.error('Erro ao atualizar'); return; }
-                                toast.success(newBlocked ? `${u.full_name} foi bloqueado` : `${u.full_name} foi desbloqueado`);
-                                loadAll();
-                              }}
-                            >
-                              {u.is_blocked ? <><ShieldCheck className="h-3.5 w-3.5" /> Desbloquear</> : <><ShieldBan className="h-3.5 w-3.5" /> Bloquear</>}
-                            </Button>
-                            {/* Redefinir senha (admin) */}
-                            <AdminPasswordResetMenu user={u} />
-                            {/* Secundário: Remover — botão direto no desktop */}
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button size="sm" variant="ghost" className="hidden sm:inline-flex text-xs h-9 gap-1.5 text-destructive hover:text-destructive hover:bg-destructive/10">
-                                  <Trash2 className="h-3.5 w-3.5" /> Remover
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>Remover usuário permanentemente?</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    Esta ação é <strong>irreversível</strong>. Todos os dados de <strong>{u.full_name || u.email}</strong> serão excluídos permanentemente: respostas, flashcards, anotações, progresso, XP e badges.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                    onClick={async () => {
-                                      const { error } = await supabase.rpc('delete_user_completely', { _target_user_id: u.user_id });
-                                      if (error) {
-                                        toast.error(`Erro ao remover: ${error.message}`);
-                                        return;
-                                      }
-                                      toast.success(`${u.full_name || u.email} foi removido permanentemente`);
-                                      setUsers(prev => prev.filter(x => x.user_id !== u.user_id));
-                                    }}
-                                  >
-                                    Sim, remover permanentemente
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                            {/* Kebab mobile: agrupa ação secundária Remover */}
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button size="icon" variant="ghost" className="sm:hidden h-9 w-9" aria-label="Mais opções">
-                                  <MoreHorizontal className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="w-48">
-                                <DropdownMenuItem
-                                  className="text-destructive focus:text-destructive"
-                                  onSelect={async (e) => {
-                                    e.preventDefault();
-                                    if (!confirm(`Remover ${u.full_name || u.email} permanentemente? Esta ação é irreversível.`)) return;
-                                    const { error } = await supabase.rpc('delete_user_completely', { _target_user_id: u.user_id });
-                                    if (error) { toast.error(`Erro ao remover: ${error.message}`); return; }
-                                    toast.success(`${u.full_name || u.email} foi removido permanentemente`);
-                                    setUsers(prev => prev.filter(x => x.user_id !== u.user_id));
-                                  }}
-                                >
-                                  <Trash2 className="h-3.5 w-3.5 mr-2" /> Remover usuário
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                  })}
-                  {filteredUsers.length === 0 && (
-                    <div className="text-center py-12 text-muted-foreground">
-                      <Users className="h-10 w-10 mx-auto mb-3 opacity-20" />
-                      <p className="text-sm">{searchQuery ? 'Nenhum usuário encontrado.' : 'Nenhum usuário cadastrado.'}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
+              <UsersTab
+                users={users}
+                setUsers={setUsers}
+                filteredUsers={filteredUsers}
+                searchQuery={searchQuery}
+                loadAll={loadAll}
+              />
             )}
 
-            {/* ANNOUNCEMENTS */}
             {tab === 'announcements' && (
-              <AnnouncementsAdmin />
+              <AnnouncementsTab
+                ads={ads}
+                loadAll={loadAll}
+              />
             )}
-
-            {/* CALENDAR */}
-            {tab === 'calendar' && (
-              <CalendarEventsAdmin />
-            )}
-
-            {/* TESTIMONIALS */}
-            {tab === 'testimonials' && (
-              <TestimonialsAdmin />
-            )}
-
-            {/* AI PROVIDER */}
-            {tab === 'ai' && (
-              <div className="space-y-6">
-                <AIProviderSettings />
-                <ShareLinkSettings />
-                <CoverDesignEditor />
-                <SplashDownloader />
-              </div>
-            )}
-
-            {/* PERFORMANCE */}
-            {tab === 'performance' && (
-              <PerformanceMetrics />
-            )}
-
-            {/* SMOKE TESTS */}
-            {tab === 'smoke' && (
-              <SmokeTestsPanel />
-            )}
-
-            {/* DIAGNOSTICS */}
-            {tab === 'diagnostics' && (
-              <DiagnosticsPanel />
-            )}
-
-            {/* CHANGELOG */}
-            {tab === 'changelog' && (
-              <VersionHistoryPanel />
-            )}
-
-            {tab === 'ella-audit' && (
-              <EllaAuditPanel />
-            )}
-
-            {tab === 'security-alerts' && (
-              <SecurityAlertsPanel />
-            )}
-
-            {tab === 'leads' && <SponsorLeadsPanel />}
-            {tab === 'sponsors' && <AdminSponsorsManager />}
-
-
-
-            {/* ADS */}
-            {tab === 'ads' && (
-              <AdminAdsManager />
-            )}
-            {tab === 'ads-chat' && (
-              <AdsChatBuilder />
-            )}
-            {tab === 'rss' && (
-              <RssFeedsManagerEnhanced />
-            )}
-
-            {/* COURSES */}
-            {tab === 'courses' && (
-              <FreeCoursesManager />
-            )}
-            </div>
-          </main>
-        </div>
+          </div>
+        </main>
       </div>
 
-      {/* Validação estrutural (H2/H3): avisa antes de salvar quando faltam seções/subtópicos */}
-      <StructureValidationDialog
-        open={!!validationReport}
-        report={validationReport}
-        apostilaTitle={validationContext?.title}
-        onCancel={() => {
-          setValidationReport(null);
-          setValidationContext(null);
-        }}
-        onConfirm={async () => {
-          const ctx = validationContext;
-          setValidationReport(null);
-          setValidationContext(null);
-          if (ctx) await ctx.run();
-        }}
-      />
-
-      {/* Diálogo de duplicata: detecta apostilas parecidas e mantém a melhor formatada */}
-      <DuplicateApostilaDialog
-        open={!!duplicateMatch}
-        match={duplicateMatch}
-        onReplaceExisting={async () => {
-          // Substitui o conteúdo existente pelo novo (que está melhor formatado)
-          const newContent = pendingSave ? (manualContent || importContent || importRawText) : '';
-          await replaceExistingWithBetter(newContent || importContent || manualContent || importRawText);
-          setDuplicateMatch(null);
-          setPendingSave(null);
-        }}
-        onKeepExisting={() => {
-          toast.info('Mantida a versão existente — a melhor formatada.');
-          // Apenas limpa formulários
-          resetImportForm();
-          setManualTitle(''); setManualContent(''); setManualCategory(''); setShowManualForm(false);
-          setDuplicateMatch(null);
-          setPendingSave(null);
-        }}
-        onCreateAnyway={async () => {
-          if (pendingSave) await pendingSave();
-          setDuplicateMatch(null);
-          setPendingSave(null);
-        }}
-        onCancel={() => {
-          setDuplicateMatch(null);
-          setPendingSave(null);
-        }}
-      />
-
-      {/* Confirmação de exclusão de apostila */}
-      <AlertDialog open={!!confirmDeleteId} onOpenChange={(v) => { if (!v) setConfirmDeleteId(null); }}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Excluir apostila?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Esta ação remove a apostila, seus exercícios e os vínculos com materiais. Não pode ser desfeita.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              onClick={async () => {
-                const id = confirmDeleteId;
-                setConfirmDeleteId(null);
-                if (id) await deleteApostila(id);
-              }}
-            >
-              Excluir
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <ApostilaExportDialog
-        apostila={exportingApostila}
-        open={!!exportingApostila}
-        onOpenChange={(v) => { if (!v) setExportingApostila(null); }}
-      />
+      <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+        <SheetContent side="left" className="p-0 w-72 bg-background border-r border-border">
+          <AdminSidebar
+            tab={tab} setTab={setTab}
+            stats={{ apostilas: apostilas.length, exercises: totalExercises, materials: materials.length, users: users.length }}
+            sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen}
+          />
+        </SheetContent>
+      </Sheet>
+    </div>
     </CategoriesCtx.Provider>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Admin: redefinir senha de um usuário
-// ─────────────────────────────────────────────────────────────────────────────
-function AdminPasswordResetMenu({ user }: { user: { user_id: string; email: string; full_name: string } }) {
-  const [open, setOpen] = useState(false);
-  const [pwd, setPwd] = useState('');
-  const [confirmPwd, setConfirmPwd] = useState('');
-  const [showPwd, setShowPwd] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [sendingLink, setSendingLink] = useState(false);
-
-  const isRA = (user.email || '').endsWith('@ra.unip.local');
-
-  const generateSuggested = () => {
-    const chars = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789!@#$';
-    let p = '';
-    for (let i = 0; i < 12; i++) p += chars[Math.floor(Math.random() * chars.length)];
-    setPwd(p);
-    setConfirmPwd(p);
-    setShowPwd(true);
-  };
-
-  const handleSetPassword = async () => {
-    if (pwd.length < 6) { toast.error('A senha deve ter no mínimo 6 caracteres'); return; }
-    if (pwd !== confirmPwd) { toast.error('As senhas não coincidem'); return; }
-    setSaving(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('admin-set-password', {
-        body: { target_user_id: user.user_id, new_password: pwd },
-      });
-      if (error || (data as any)?.error) {
-        toast.error(`Erro: ${(data as any)?.error || error?.message}`);
-        return;
-      }
-      toast.success(`Senha de ${user.full_name || user.email} alterada`);
-      setOpen(false);
-      setPwd(''); setConfirmPwd(''); setShowPwd(false);
-    } finally { setSaving(false); }
-  };
-
-  const handleSendResetLink = async () => {
-    if (isRA) { toast.error('Contas RA UNIP não recebem e-mail. Defina a senha manualmente.'); return; }
-    setSendingLink(true);
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
-      if (error) { toast.error(`Erro: ${error.message}`); return; }
-      toast.success(`Link de redefinição enviado para ${user.email}`);
-    } finally { setSendingLink(false); }
-  };
-
-  return (
-    <>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button size="sm" variant="outline" className="text-xs h-9 gap-1.5">
-            <Settings className="h-3.5 w-3.5" /> Senha
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-56">
-          <DropdownMenuLabel className="text-[11px]">Redefinir senha</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setOpen(true); }}>
-            <PenLine className="h-3.5 w-3.5 mr-2" /> Definir nova senha
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            disabled={isRA || sendingLink}
-            onSelect={(e) => { e.preventDefault(); void handleSendResetLink(); }}
-          >
-            {sendingLink ? <Loader2 className="h-3.5 w-3.5 mr-2 animate-spin" /> : <LinkIcon className="h-3.5 w-3.5 mr-2" />}
-            Enviar link por e-mail
-          </DropdownMenuItem>
-          {isRA && (
-            <div className="px-2 py-1.5 text-[10px] text-muted-foreground">
-              Contas RA UNIP não recebem e-mail.
-            </div>
-          )}
-        </DropdownMenuContent>
-      </DropdownMenu>
-
-      <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) { setPwd(''); setConfirmPwd(''); setShowPwd(false); } }}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Definir nova senha</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3">
-            <div className="text-xs text-muted-foreground">
-              Usuário: <span className="font-medium text-foreground">{user.full_name || user.email}</span>
-              <br />
-              <span className="font-mono">{user.email}</span>
-            </div>
-            <div>
-              <Label className="text-xs">Nova senha</Label>
-              <div className="relative mt-1">
-                <Input
-                  type={showPwd ? 'text' : 'password'}
-                  value={pwd}
-                  onChange={(e) => setPwd(e.target.value)}
-                  placeholder="Mínimo 6 caracteres"
-                  autoComplete="new-password"
-                />
-                <Button
-                  type="button" size="icon" variant="ghost"
-                  className="absolute right-1 top-1 h-7 w-7"
-                  onClick={() => setShowPwd((s) => !s)}
-                >
-                  {showPwd ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                </Button>
-              </div>
-            </div>
-            <div>
-              <Label className="text-xs">Confirmar nova senha</Label>
-              <Input
-                type={showPwd ? 'text' : 'password'}
-                value={confirmPwd}
-                onChange={(e) => setConfirmPwd(e.target.value)}
-                placeholder="Repita a senha"
-                className="mt-1"
-                autoComplete="new-password"
-              />
-            </div>
-            <div className="flex items-center justify-between gap-2 pt-1">
-              <Button type="button" size="sm" variant="ghost" className="text-xs" onClick={generateSuggested}>
-                <PenTool className="h-3.5 w-3.5 mr-1.5" /> Gerar senha forte
-              </Button>
-              <div className="flex gap-2">
-                <Button type="button" size="sm" variant="outline" onClick={() => setOpen(false)} disabled={saving}>
-                  Cancelar
-                </Button>
-                <Button type="button" size="sm" onClick={handleSetPassword} disabled={saving}>
-                  {saving ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <CheckCircle className="h-3.5 w-3.5 mr-1.5" />}
-                  Salvar nova senha
-                </Button>
-              </div>
-            </div>
-            <p className="text-[11px] text-muted-foreground pt-1">
-              Informe a nova senha ao usuário por um canal seguro. O acesso anterior continuará válido até o usuário sair em outros dispositivos.
-            </p>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </>
   );
 }
