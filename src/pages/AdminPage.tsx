@@ -2110,5 +2110,3 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
     </CategoriesCtx.Provider>
   );
 }
-
-export default AdminPage;
