@@ -2000,200 +2000,37 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
               </div>
             )}
 
-            {/* EXERCISES */}
             {tab === 'exercises' && (
-              <div className="space-y-6">
-                <Card>
-                  <CardContent className="p-5">
-                    <h3 className="font-semibold text-sm mb-3">Selecionar Apostila</h3>
-                    <Select value={selectedApostila} onValueChange={setSelectedApostila}>
-                      <SelectTrigger><SelectValue placeholder="Selecione uma apostila" /></SelectTrigger>
-                      <SelectContent>
-                        {apostilas.map(a => (
-                          <SelectItem key={a.id} value={a.id}>{a.title} ({exercises[a.id]?.length || 0})</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </CardContent>
-                </Card>
-
-                {selectedApostila && (
-                  <>
-                    {(exercises[selectedApostila]?.length || 0) === 0 && !bulkExerciseMode && (
-                      <div className="text-center py-10 text-muted-foreground">
-                        <PenTool className="h-10 w-10 mx-auto mb-3 opacity-25" strokeWidth={1.5} />
-                        <p className="text-sm">Nenhum exercício para esta apostila.</p>
-                        <p className="text-xs text-muted-foreground/70 mt-1">Gere com IA ou importe em lote.</p>
-                      </div>
-                    )}
-                    <div className="space-y-2">
-                      {exercises[selectedApostila]?.map((ex, i) => (
-                        <Card key={ex.id} className="hover:shadow-md transition-shadow">
-                          <CardContent className="p-4">
-                            <div className="flex justify-between items-start">
-                              <p className="font-medium text-sm flex-1">{i + 1}. {ex.question}</p>
-                              <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0" onClick={() => deleteExercise(ex.id)}>
-                                <Trash2 className="h-3.5 w-3.5 text-destructive" />
-                              </Button>
-                            </div>
-                            {Array.isArray(ex.options) && (ex.options as string[]).map((opt, oi) => (
-                              <p key={oi} className={`text-xs mt-0.5 ${String.fromCharCode(65 + oi) === ex.correct_answer ? 'text-[hsl(var(--success))] font-medium' : 'text-muted-foreground'}`}>
-                                {String.fromCharCode(65 + oi)}) {opt}
-                              </p>
-                            ))}
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-
-                    {/* Toggle between modes */}
-                    <div className="flex items-center gap-2">
-                      <div className="inline-flex bg-muted rounded-full p-0.5">
-                        {([['individual', 'Individual'], ['bulk', 'Lote'], ['ai', 'Assistente']] as [string, string][]).map(([mode, label]) => (
-                          <button key={mode} onClick={() => { setBulkExerciseMode(mode === 'bulk'); if (mode === 'ai') setBulkExerciseMode(false); setExerciseDialogMode(mode as any); }}
-                            className={`text-[10px] font-medium px-3 py-1 rounded-full transition-colors ${
-                              (mode === 'individual' && !bulkExerciseMode && exerciseDialogMode !== 'ai') ||
-                              (mode === 'bulk' && bulkExerciseMode) ||
-                              (mode === 'ai' && exerciseDialogMode === 'ai' && !bulkExerciseMode)
-                                ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
-                            }`}>
-                            {label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {bulkExerciseMode ? (
-                      <Card>
-                        <CardContent className="p-5 space-y-3">
-                          <h3 className="font-semibold text-sm flex items-center gap-2">
-                            <FileText className="h-4 w-4 text-primary" />
-                            Importar Exercícios em Lote
-                          </h3>
-                          <p className="text-[10px] text-muted-foreground leading-relaxed">
-                            Cole as perguntas no formato abaixo. Separe cada exercício com uma linha em branco:
-                          </p>
-                          <div className="bg-muted/50 rounded-lg p-3 text-[10px] font-mono text-muted-foreground leading-relaxed">
-                            <p>Qual é a capital do Brasil?</p>
-                            <p>A) São Paulo</p><p>B) Rio de Janeiro</p><p>C) Brasília</p><p>D) Salvador</p>
-                            <p>Gabarito: C</p>
-                            <p>Explicação: Brasília é a capital federal desde 1960.</p>
-                          </div>
-                          <Textarea value={bulkExerciseText} onChange={e => setBulkExerciseText(e.target.value)}
-                            placeholder="Cole aqui suas perguntas, alternativas, gabarito e explicação..." rows={12} className="font-mono text-xs" />
-                          {bulkExerciseText.trim() && (
-                            <p className="text-[10px] text-muted-foreground">{parseBulkExercises(bulkExerciseText).length} exercício(s) detectado(s)</p>
-                          )}
-                          <Button onClick={handleBulkExerciseImport} disabled={!bulkExerciseText.trim() || bulkExerciseImporting} className="w-full gradient-primary text-primary-foreground">
-                            {bulkExerciseImporting ? <><Loader2 className="h-4 w-4 animate-spin mr-1.5" /> Importando...</> : 'Importar Exercícios'}
-                          </Button>
-                        </CardContent>
-                      </Card>
-                    ) : exerciseDialogMode === 'ai' ? (
-                      <Card>
-                        <CardContent className="p-5 space-y-3">
-                          <h3 className="font-semibold text-sm flex items-center gap-2">
-                            <PenTool className="h-4 w-4 text-primary" /> Gerar com IA
-                          </h3>
-                          {(() => {
-                            const apt = apostilas.find(a => a.id === selectedApostila);
-                            if (!apt?.content?.trim()) return (
-                              <div className="text-center py-6 text-muted-foreground">
-                                <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-30" />
-                                <p className="text-xs">Esta apostila não tem conteúdo. Adicione conteúdo primeiro.</p>
-                              </div>
-                            );
-                            if (aiExercises.length === 0) return (
-                              <>
-                                <p className="text-xs text-muted-foreground">A IA vai analisar o conteúdo e gerar exercícios automaticamente.</p>
-                                <Button onClick={async () => {
-                                  setAiGenerating(true);
-                                  try {
-                                    const { data, error } = await supabase.functions.invoke('generate-exercises', {
-                                      body: { content: apt.content, title: apt.title, mcCount: 8, essayCount: 2 },
-                                    });
-                                    if (error) {
-                                      let msg = error.message;
-                                      try { const ctx = await (error as any).context?.json?.(); if (ctx?.error) msg = ctx.error; } catch {}
-                                      throw new Error(msg);
-                                    }
-                                    if (data?.error) throw new Error(data.error);
-                                    if (!data?.exercises?.length) throw new Error('Nenhum exercício gerado.');
-                                    setAiExercises(data.exercises);
-                                    toast.success(`${data.exercises.length} exercícios gerados!`);
-                                  } catch (err: any) { toast.error('Erro: ' + (err.message || 'Tente novamente')); }
-                                  setAiGenerating(false);
-                                }} disabled={aiGenerating} className="w-full gradient-primary text-primary-foreground">
-                                  {aiGenerating ? <><Loader2 className="h-4 w-4 animate-spin mr-1.5" /> Gerando exercícios...</> : <><Wand2 className="h-4 w-4 mr-1.5" /> Gerar Exercícios com IA</>}
-                                </Button>
-                              </>
-                            );
-                            return (
-                              <>
-                                <p className="text-xs text-muted-foreground">{aiExercises.length} exercícios gerados. Revise e salve:</p>
-                                <div className="space-y-2 max-h-80 overflow-y-auto">
-                                  {aiExercises.map((ex, i) => (
-                                    <div key={i} className="border border-border/50 rounded-lg p-3 text-xs">
-                                      <div className="flex justify-between items-start">
-                                        <p className="font-medium">{i + 1}. {ex.question}</p>
-                                        <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => setAiExercises(prev => prev.filter((_, idx) => idx !== i))}>
-                                          <Trash2 className="h-3 w-3 text-destructive" />
-                                        </Button>
-                                      </div>
-                                      <div className="mt-1 space-y-0.5 text-muted-foreground">
-                                        {ex.options.map((opt, oi) => (
-                                          <p key={oi} className={String.fromCharCode(65 + oi) === ex.correct_answer ? 'text-[hsl(var(--success))] font-medium' : ''}>{String.fromCharCode(65 + oi)}) {opt}</p>
-                                        ))}
-                                      </div>
-                                      {ex.explanation && <p className="mt-1 text-[10px] text-muted-foreground italic">{ex.explanation}</p>}
-                                    </div>
-                                  ))}
-                                </div>
-                                <div className="flex gap-2">
-                                  <Button variant="outline" className="flex-1" onClick={() => setAiExercises([])}>Descartar</Button>
-                                  <Button className="flex-1 gradient-primary text-primary-foreground" onClick={async () => {
-                                    let ok = 0;
-                                    for (const ex of aiExercises) {
-                                      const { error } = await supabase.from('exercises').insert({
-                                        apostila_id: selectedApostila, question: ex.question, options: ex.options,
-                                        correct_answer: ex.correct_answer, explanation: ex.explanation || null,
-                                      });
-                                      if (!error) ok++;
-                                    }
-                                    toast.success(`${ok}/${aiExercises.length} exercícios salvos!`);
-                                    setAiExercises([]); loadAll();
-                                  }}>Salvar Todos ({aiExercises.length})</Button>
-                                </div>
-                              </>
-                            );
-                          })()}
-                        </CardContent>
-                      </Card>
-                    ) : (
-                      <Card>
-                        <CardContent className="p-5 space-y-3">
-                          <h3 className="font-semibold text-sm">Novo Exercício</h3>
-                          <Textarea value={exQuestion} onChange={e => setExQuestion(e.target.value)} placeholder="Pergunta" rows={2} />
-                          {exOptions.map((o, i) => (
-                            <div key={i} className="flex items-center gap-2">
-                              <span className="text-sm font-medium w-6">{String.fromCharCode(65 + i)})</span>
-                              <Input value={o} onChange={e => { const n = [...exOptions]; n[i] = e.target.value; setExOptions(n); }} placeholder={`Opção ${String.fromCharCode(65 + i)}`} />
-                            </div>
-                          ))}
-                          <div><Label className="text-xs">Resposta correta</Label>
-                            <Select value={exCorrect} onValueChange={setExCorrect}>
-                              <SelectTrigger><SelectValue /></SelectTrigger>
-                              <SelectContent>{['A','B','C','D'].map(l => <SelectItem key={l} value={l}>{l}</SelectItem>)}</SelectContent>
-                            </Select>
-                          </div>
-                          <div><Label className="text-xs">Explicação (opcional)</Label><Textarea value={exExplanation} onChange={e => setExExplanation(e.target.value)} rows={2} /></div>
-                          <Button onClick={addExercise} className="w-full gradient-primary text-primary-foreground">Adicionar</Button>
-                        </CardContent>
-                      </Card>
-                    )}
-                  </>
-                )}
-              </div>
+              <ExercisesTab
+                selectedApostila={selectedApostila}
+                setSelectedApostila={setSelectedApostila}
+                apostilas={apostilas}
+                exercises={exercises}
+                bulkExerciseMode={bulkExerciseMode}
+                setBulkExerciseMode={setBulkExerciseMode}
+                exerciseDialogMode={exerciseDialogMode}
+                setExerciseDialogMode={setExerciseDialogMode}
+                bulkExerciseText={bulkExerciseText}
+                setBulkExerciseText={setBulkExerciseText}
+                bulkExerciseImporting={bulkExerciseImporting}
+                aiGenerating={aiGenerating}
+                setAiGenerating={setAiGenerating}
+                aiExercises={aiExercises}
+                setAiExercises={setAiExercises}
+                exQuestion={exQuestion}
+                setExQuestion={setExQuestion}
+                exOptions={exOptions}
+                setExOptions={setExOptions}
+                exCorrect={exCorrect}
+                setExCorrect={setExCorrect}
+                exExplanation={exExplanation}
+                setExExplanation={setExExplanation}
+                addExercise={addExercise}
+                deleteExercise={deleteExercise}
+                handleBulkExerciseImport={handleBulkExerciseImport}
+                parseBulkExercises={parseBulkExercises}
+                loadAll={loadAll}
+              />
             )}
 
             {/* MATERIALS */}
