@@ -105,7 +105,7 @@ export default function ExercisesPage() {
 
   const getExerciseType = useCallback((ex: Exercise): 'multiple_choice' | 'essay' => {
     const opts = Array.isArray(ex.options) ? ex.options as string[] : [];
-    if (opts.length === 0 || ex.correct_answer === 'dissertativa') return 'essay';
+    if (opts.length === 0 || ex.type === 'essay' || ex.question_type === 'essay') return 'essay';
     return 'multiple_choice';
   }, []);
 
