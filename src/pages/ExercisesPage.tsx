@@ -19,7 +19,9 @@ import {
 import { toast } from 'sonner';
 import type { Tables } from '@/integrations/supabase/types';
 
-type Exercise = Tables<'exercises'>;
+// Nunca carregamos `correct_answer` no cliente: a correção é feita pelo servidor
+// (RPC check_exercise_answer) e a alternativa correta só é revelada após responder.
+type Exercise = Omit<Tables<'exercises'>, 'correct_answer'>;
 
 type AnswerState = {
   selected: string;
