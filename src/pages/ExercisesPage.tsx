@@ -68,7 +68,7 @@ export default function ExercisesPage() {
     setLoading(true);
     Promise.all([
       supabase.from('apostilas').select('title').eq('id', id).single(),
-      supabase.from('exercises').select('id, question, options, explanation, apostila_id, created_at, correct_answer').eq('apostila_id', id),
+      supabase.from('exercises').select('id, question, options, explanation, apostila_id, created_at, type, question_type, min_chars, reference_answer, sort_order, expected_answer, allow_image_upload').eq('apostila_id', id),
       supabase.from('answers').select('exercise_id, selected_answer, is_correct').eq('user_id', user.id),
     ]).then(([apostila, exercisesRes, answersRes]) => {
       if (apostila.data) setTitle(apostila.data.title);
