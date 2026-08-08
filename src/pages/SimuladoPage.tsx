@@ -17,7 +17,7 @@ type Question = {
   question_index: number;
   question: string;
   options: string[];
-  correct_answer: string;
+  correct_answer: string | null;
   explanation: string | null;
   selected_answer: string | null;
   is_correct: boolean | null;
@@ -63,12 +63,27 @@ export default function SimuladoPage() {
     if (!sim) { setSimulado(null); setQuestions([]); setLoading(false); return; }
     setSimulado(sim as any);
 
+    // Gabarito nunca é carregado antecipadamente: buscamos apenas o enunciado
+    // e revelamos a resposta correta somente das questões já respondidas.
     const { data: ans } = await supabase
       .from('weekly_simulado_answers')
-      .select('id, question_index, question, options, correct_answer, explanation, selected_answer, is_correct, subject')
+      .select('id, question_index, question, options, selected_answer, is_correct, subject')
       .eq('simulado_id', sim.id)
       .order('question_index', { ascending: true });
-    const list = (ans ?? []).map((a: any) => ({ ...a, options: Array.isArray(a.options) ? a.options : [] }));
+
+    const { data: revealed } = await supabase
+      .from('weekly_simulado_answers')
+      .select('id, correct_answer, explanation')
+      .eq('simulado_id', sim.id)
+      .not('selected_answer', 'is', null);
+    const revealMap = new Map((revealed ?? []).map((r: any) => [r.id, r]));
+
+    const list = (ans ?? []).map((a: any) => ({
+      ...a,
+      options: Array.isArray(a.options) ? a.options : [],
+      correct_answer: revealMap.get(a.id)?.correct_answer ?? null,
+      explanation: revealMap.get(a.id)?.explanation ?? null,
+    }));
     setQuestions(list);
 
     // posiciona no primeiro não respondido
@@ -99,18 +114,23 @@ export default function SimuladoPage() {
 
   const choose = async (letter: string) => {
     if (!current || current.selected_answer || !simulado) return;
-    const isCorrect = letter === current.correct_answer;
-    // Atualiza local
-    setQuestions((prev) => prev.map((q, i) => i === currentIdx ? { ...q, selected_answer: letter, is_correct: isCorrect } : q));
+
+    // Correção feita no servidor: o gabarito só volta depois da resposta.
+    const { data, error } = await supabase.rpc('answer_simulado_question' as never, {
+      _answer_id: current.id,
+      _selected_answer: letter,
+    } as never);
+
+    if (error) { toast.error('Não foi possível registrar sua resposta'); return; }
+
+    const result = data as unknown as { is_correct: boolean; correct_answer: string; explanation: string | null };
+
+    setQuestions((prev) => prev.map((q, i) => i === currentIdx
+      ? { ...q, selected_answer: letter, is_correct: result.is_correct, correct_answer: result.correct_answer, explanation: result.explanation }
+      : q));
     setShowFeedback(true);
 
-    // Persiste
-    await supabase
-      .from('weekly_simulado_answers')
-      .update({ selected_answer: letter, is_correct: isCorrect, answered_at: new Date().toISOString() })
-      .eq('id', current.id);
-
-    if (isCorrect && user) {
+    if (result.is_correct && user) {
       try { await supabase.rpc('increment_xp', { _user_id: user.id, _amount: 5 }); } catch {/* ignore */}
     }
   };

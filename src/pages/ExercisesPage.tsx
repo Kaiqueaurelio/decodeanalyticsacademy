@@ -19,7 +19,9 @@ import {
 import { toast } from 'sonner';
 import type { Tables } from '@/integrations/supabase/types';
 
-type Exercise = Tables<'exercises'>;
+// Nunca carregamos `correct_answer` no cliente: a correção é feita pelo servidor
+// (RPC check_exercise_answer) e a alternativa correta só é revelada após responder.
+type Exercise = Omit<Tables<'exercises'>, 'correct_answer'>;
 
 type AnswerState = {
   selected: string;
@@ -66,7 +68,7 @@ export default function ExercisesPage() {
     setLoading(true);
     Promise.all([
       supabase.from('apostilas').select('title').eq('id', id).single(),
-      supabase.from('exercises').select('id, question, options, explanation, apostila_id, created_at, correct_answer').eq('apostila_id', id),
+      supabase.from('exercises').select('id, question, options, explanation, apostila_id, created_at, type, question_type, min_chars, reference_answer, sort_order, expected_answer, allow_image_upload').eq('apostila_id', id),
       supabase.from('answers').select('exercise_id, selected_answer, is_correct').eq('user_id', user.id),
     ]).then(([apostila, exercisesRes, answersRes]) => {
       if (apostila.data) setTitle(apostila.data.title);
@@ -103,7 +105,7 @@ export default function ExercisesPage() {
 
   const getExerciseType = useCallback((ex: Exercise): 'multiple_choice' | 'essay' => {
     const opts = Array.isArray(ex.options) ? ex.options as string[] : [];
-    if (opts.length === 0 || ex.correct_answer === 'dissertativa') return 'essay';
+    if (opts.length === 0 || ex.type === 'essay' || ex.question_type === 'essay') return 'essay';
     return 'multiple_choice';
   }, []);
 
