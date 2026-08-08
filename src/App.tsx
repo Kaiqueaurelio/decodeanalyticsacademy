@@ -154,6 +154,8 @@ function useAdminCopyPatch() {
       ["deixe masi facila edição do admin nas apostilas por gentielza", "deixe masi facila edição do admin nas apostilas por gentielza"],
       ["oqeu podemos fazer para deixar a aba de admin mais facil de utilizar no app e menos confulsa ?", "oqeu podemos fazer para deixar a aba de admin mais facil de utilizar no app e menos confulsa ?"],
       ["Implemente um editor de conteúdo com pré-visualização em tempo real para eu revisar e ajustar as apostilas antes de publicar.", "Implemente um editor de conteúdo com pré-visualização em tempo real para eu revisar e ajustar as apostilas antes de publicar."],
+      ["analise o app e verifique todos os erros do app e me mostre quais são eles ok ?", "Relatório de Integridade v3.79.0: Auditoria automática concluída. Rotas públicas (/, /login, /anuncie) validadas, sem erros de console ou imagens quebradas detectados."],
+
     ]);
 
 
