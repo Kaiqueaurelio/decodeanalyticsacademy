@@ -92,32 +92,6 @@ const SEMESTER_MAP: Record<number, string> = {
 
 const CategoriesCtx = createContext<{ categories: { id: string; name: string; sort_order: number }[] }>({ categories: [] });
 
-function CategorySelect({ value, onValueChange, placeholder }: { value: string; onValueChange: (v: string) => void; placeholder?: string }) {
-  const { categories } = useContext(CategoriesCtx);
-  const grouped = useMemo(() => {
-    const map: Record<number, string[]> = {};
-    categories.forEach(c => {
-      const sem = Math.floor(c.sort_order / 100);
-      if (!map[sem]) map[sem] = [];
-      map[sem].push(c.name);
-    });
-    return map;
-  }, [categories]);
-
-  return (
-    <Select value={value} onValueChange={onValueChange}>
-      <SelectTrigger className="mt-1"><SelectValue placeholder={placeholder} /></SelectTrigger>
-      <SelectContent className="max-h-[300px]">
-        {Object.entries(grouped).sort(([a], [b]) => +a - +b).map(([sem, names]) => (
-          <div key={sem}>
-            <div className="px-2 py-1.5 text-xs font-semibold text-primary sticky top-0 bg-popover">{SEMESTER_MAP[+sem] || `Semestre ${sem}`}</div>
-            {names.map(n => <SelectItem key={n} value={n}>{n}</SelectItem>)}
-          </div>
-        ))}
-      </SelectContent>
-    </Select>
-  );
-}
 
 type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements' | 'calendar' | 'testimonials' | 'ai' | 'performance' | 'smoke' | 'diagnostics' | 'ads' | 'ads-chat' | 'social' | 'rss' | 'courses' | 'changelog' | 'leads' | 'ella-audit' | 'security-alerts' | 'sponsors' | 'edit' | 'review';
 
