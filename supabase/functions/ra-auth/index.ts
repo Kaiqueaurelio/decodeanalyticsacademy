@@ -5,25 +5,21 @@
 // é resolvido aqui com a service role e o e-mail nunca volta para o cliente.
 // Erros são sempre genéricos para não distinguir "RA inexistente" de "senha errada".
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+import { getCorsHeaders } from "../_shared/cors.ts";
 
 const RA_RE = /^[A-Z0-9]{6,13}$/;
 const GENERIC_FAIL = "RA ou senha incorretos.";
 
-const json = (body: unknown, status = 200) =>
+const json = (body: unknown, status = 200, headers = {}) =>
   new Response(JSON.stringify(body), {
     status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
+    headers: { ...headers, "Content-Type": "application/json" },
   });
 
 Deno.serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
-  if (req.method !== "POST") return json({ error: "Método não permitido." }, 405);
+  if (req.method !== "POST") return json({ error: "Método não permitido." }, 405, corsHeaders);
 
   const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
   const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -31,29 +27,25 @@ Deno.serve(async (req) => {
   
   if (!SUPABASE_URL || !SERVICE_ROLE || !ANON_KEY) {
     console.error("ra-auth: env ausente");
-    return json({ error: "Serviço indisponível no momento." }, 500);
+    return json({ error: "Serviço indisponível no momento." }, 500, corsHeaders);
   }
 
-  // persistent rate limiting via database
+  let body: Record<string, unknown>;
+  try {
+    body = await req.json();
+  } catch {
+    return json({ error: "Requisição inválida." }, 400, corsHeaders);
+  }
+
   const ra = String(body.ra ?? "").trim().toUpperCase();
   const ip = req.headers.get("x-real-ip") || "unknown";
 
   try {
     const admin = createClient(SUPABASE_URL, SERVICE_ROLE, { auth: { persistSession: false } });
 
-    // 1. Rate Limiting Persistent
-    const { data: rateCheck, error: rateErr } = await admin.rpc("ella_rate_check", {
-      _user_id: null, // Login anônimo
-      _window_limit: 5,
-      _window_seconds: 600,
-      _daily_limit: 50
-    });
-
-    // Nota: Reaproveitando a lógica de rate check da Ella ou criando uma específica para RA
-    // Como a ella_rate_check parece esperar user_id, vamos usar a service role para consultar
-    // uma nova tabela auth_attempts que criaremos na migração.
-    
-    const { data: lockout } = await admin.from('auth_attempts').select('*')
+    // 1. Rate Limiting Persistent (Audit 2026-08)
+    const { data: lockout } = await admin.from('auth_attempts')
+      .select('*')
       .or(`identifier.eq.${ra},ip_address.eq.${ip}`)
       .gt('locked_until', new Date().toISOString())
       .limit(1)
@@ -73,7 +65,6 @@ Deno.serve(async (req) => {
       return json({ error: "Use seu RA com 6 a 13 letras/números." }, 400, corsHeaders);
     }
     
-    // ... resto da validação de tamanho de senha ...
     if (mode === "signin" && (password.length < 6 || password.length > 200)) {
       await registerAttempt(admin, ra, ip, false);
       return json({ error: GENERIC_FAIL }, 401, corsHeaders);
@@ -97,8 +88,7 @@ Deno.serve(async (req) => {
       return json({ ok: true }, 200, corsHeaders);
     }
 
-    // Cadastro por RA: conta criada já confirmada (não existe caixa de e-mail
-    // real em @ra.unip.local, então exigir verificação travaria o aluno).
+    // Cadastro por RA: conta criada já confirmada
     if (mode === "signup") {
       const raEmail = `${ra.toLowerCase()}@ra.unip.local`;
       const { error: createErr } = await admin.auth.admin.createUser({
@@ -110,10 +100,10 @@ Deno.serve(async (req) => {
       if (createErr) {
         const msg = createErr.message?.toLowerCase() ?? "";
         if (msg.includes("already") || msg.includes("registered") || msg.includes("exists")) {
-          return json({ error: "Este RA já está cadastrado. Faça login.", code: "already_registered" }, 409);
+          return json({ error: "Este RA já está cadastrado. Faça login.", code: "already_registered" }, 409, corsHeaders);
         }
         console.error("ra-auth signup:", createErr.message);
-        return json({ error: "Não foi possível criar sua conta agora." }, 500);
+        return json({ error: "Não foi possível criar sua conta agora." }, 500, corsHeaders);
       }
 
       const signupClient = createClient(SUPABASE_URL, ANON_KEY, { auth: { persistSession: false } });
