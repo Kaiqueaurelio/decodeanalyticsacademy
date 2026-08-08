@@ -150,6 +150,7 @@ function useAdminCopyPatch() {
       ["faça nosso app aqui ser igual da vercel por favor", "Otimização de Deploy e Performance: Sincronização de ambiente de produção concluída. Agora o app no Lovable opera com a mesma performance e estabilidade da versão de produção na Vercel (v3.73.1)."],
       ["verifique novamente todos os setores do app e faça com que tudo fiqeu mais facil para o admin editar", "verifique novamente todos os setores do app e faça com que tudo fiqeu mais facil para o admin editar"],
       ["Implemente um editor para o admin revisar e ajustar o conteúdo clonado antes de publicar a apostila para os alunos.", "Implemente um editor para o admin revisar e ajustar o conteúdo clonado antes de publicar a apostila para os alunos."],
+      ["deixe masi facila edição do admin nas apostilas por gentielza", "deixe masi facila edição do admin nas apostilas por gentielza"],
     ]);
 
 
