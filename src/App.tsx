@@ -152,6 +152,7 @@ function useAdminCopyPatch() {
       ["Implemente um editor para o admin revisar e ajustar o conteúdo clonado antes de publicar a apostila para os alunos.", "Implemente um editor para o admin revisar e ajustar o conteúdo clonado antes de publicar a apostila para os alunos."],
       ["deixe masi facila edição do admin nas apostilas por gentielza", "deixe masi facila edição do admin nas apostilas por gentielza"],
       ["oqeu podemos fazer para deixar a aba de admin mais facil de utilizar no app e menos confulsa ?", "oqeu podemos fazer para deixar a aba de admin mais facil de utilizar no app e menos confulsa ?"],
+      ["Implemente um editor de conteúdo com pré-visualização em tempo real para eu revisar e ajustar as apostilas antes de publicar.", "Implemente um editor de conteúdo com pré-visualização em tempo real para eu revisar e ajustar as apostilas antes de publicar."],
     ]);
 
 
