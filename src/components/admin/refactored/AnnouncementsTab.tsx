@@ -29,7 +29,7 @@ interface Ad {
 }
 
 interface AnnouncementsTabProps {
-  ads: Ad[];
+  ads: any[];
   loadAll: () => void;
 }
 

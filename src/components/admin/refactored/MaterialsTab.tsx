@@ -73,7 +73,7 @@ interface MaterialsTabProps {
   filteredMaterials: Material[];
   loadAll: () => void;
   editingMaterial: Material | null;
-  setEditingMaterial: (m: Material | null) => void;
+  setEditingMaterial: (m: any | null) => void;
   editMatTitle: string;
   setEditMatTitle: (title: string) => void;
   editMatDesc: string;
