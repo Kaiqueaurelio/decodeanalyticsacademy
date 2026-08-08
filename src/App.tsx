@@ -1,9 +1,8 @@
 /**
- * DECODE ANALYTICS ACADEMY - v3.70.0
+ * DECODE ANALYTICS ACADEMY - v3.76.0
  * 
- * - Gestão Atômica: Exclusão individual e em lote de apostilas na Central Operacional.
- * - Seleção Múltipla: Interface com checkboxes para agilizar a limpeza de duplicatas.
- * - Central Operacional: Refinamento contínuo da UI e controles administrativos.
+ * - Auditoria Visual: Substituição de placeholders de texto confusos por labels profissionais.
+ * - UX/UI: Refinamento de hierarquia visual e correção de elementos flutuantes no Dashboard.
  */
 
 import React, { Suspense, lazy } from "react";

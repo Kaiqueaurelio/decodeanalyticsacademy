@@ -28,6 +28,17 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '3.76.0',
+    date: '2026-08-08',
+    title: 'Auditoria Visual e Refinamento de UX',
+    major: true,
+    changes: [
+      { kind: 'improvement', text: 'Realizada auditoria visual completa para remover placeholders de texto e melhorar a clareza da interface.' },
+      { kind: 'improvement', text: 'Refinada a hierarquia visual do Dashboard com foco na experiência do aluno.' },
+      { kind: 'fix', text: 'Corrigidos elementos de UI que apresentavam labels inconsistentes ou confusos.' },
+    ],
+  },
+  {
     version: '3.75.2',
     date: '2026-08-08',
     title: 'Integridade de Dados e Visibilidade Sincronizada',
