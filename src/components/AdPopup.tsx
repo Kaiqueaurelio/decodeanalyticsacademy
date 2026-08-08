@@ -34,8 +34,8 @@ export function AdPopup({ trigger = 'onLoad', delay = 2000 }: AdPopupProps) {
 
 
 
-  const COOLDOWN_MS = 3 * 60 * 1000; // 3 min entre popups
-  const STORAGE_KEY = 'popup_ad_last_shown';
+  const COOLDOWN_MS = 10 * 60 * 1000; // Aumentado para 10 min entre popups (era 3min)
+  const STORAGE_KEY = 'popup_ad_last_shown_v2';
 
   const currentAd = ads[currentAdIndex];
 
@@ -123,11 +123,11 @@ export function AdPopup({ trigger = 'onLoad', delay = 2000 }: AdPopupProps) {
           onClick={handleClose}
         >
           <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.9, opacity: 0 }}
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 20, opacity: 0 }}
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-2xl max-h-[92vh] my-auto rounded-2xl bg-card shadow-2xl flex flex-col overflow-hidden border border-border/60"
+            className="relative w-full max-w-lg max-h-[85vh] my-auto rounded-xl bg-card/95 backdrop-blur-md shadow-2xl flex flex-col overflow-hidden border border-border/40"
           >
             {/* Botao de Fechar (X) sempre visivel, acima de tudo */}
             <button
