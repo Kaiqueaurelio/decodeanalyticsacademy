@@ -427,7 +427,7 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
           <div className="flex items-center gap-2 mb-2">
             <div className="h-8 w-1 bg-primary rounded-full shadow-[0_0_12px_rgba(var(--primary-rgb),0.5)]" />
             <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-              Central Operacional
+              Painel Operacional
             </h1>
           </div>
           <p className="text-muted-foreground max-w-2xl leading-relaxed">

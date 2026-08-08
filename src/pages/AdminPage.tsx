@@ -299,7 +299,7 @@ function OverviewTab({ apostilas, exercises, allAnswers, materials, users, setTa
       {/* Page Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h2 className="text-3xl font-black text-foreground tracking-tight">Visão Geral</h2>
+            <h2 className="text-3xl font-black text-foreground tracking-tight">Painel Operacional</h2>
             <p className="text-sm text-muted-foreground mt-1">Status operacional e métricas de desempenho</p>
           </div>
           <div className="flex items-center gap-3">
