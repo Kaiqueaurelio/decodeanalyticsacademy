@@ -34,7 +34,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     id: 'inicio',
     label: 'Início',
     items: [
-      { id: 'overview', label: 'Visão Geral', short: 'Geral', icon: BarChart3, desc: 'Resumo completo da plataforma', keywords: 'dashboard home painel resumo' },
+      { id: 'overview', label: 'Painel Operacional', short: 'Geral', icon: BarChart3, desc: 'Resumo completo da plataforma', keywords: 'dashboard home painel resumo' },
     ],
   },
   {

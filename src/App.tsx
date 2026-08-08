@@ -148,6 +148,7 @@ function useAdminCopyPatch() {
       ["Aplicar as correções críticas apontadas no relatório de auditoria e reenviar um novo build com validação rápida das rotas e telas afetadas.", "Aplicar as correções críticas apontadas no relatório de auditoria e reenviar um novo build com validação rápida das rotas e telas afetadas."],
       ["Ééé, crie uma conta de usuário no app e faça uma validação você. Aí você, depois de verificar todas as apostilas, você faça o seguinte pra me ajudar: dê uma nota de zero a 10 e me dê o relatório completo do app", "## [Relatório de Auditoria v3.77.0]\n\n✅ Working correctly: Login/RA Auth, Notion Folders, Ella Ribeiro (v5.0), Admin Workbench, Exercise Engine.\n\n⚠️ Working with issues: Mobile reordering in iPhone 11 (minor lag), Large transcription processing (fixed in v3.73.5, monitoring).\n\n❌ Broken / not working: None detected.\n\n🕳️ Incomplete or missing feature: Biometric flow (onboarding needs refinement).\n\nOVERALL SUMMARY: Nota 9.9/10. Ecossistema estável e responsivo. Prioridade: Refinar UX mobile do editor."],
       ["faça nosso app aqui ser igual da vercel por favor", "Otimização de Deploy e Performance: Sincronização de ambiente de produção concluída. Agora o app no Lovable opera com a mesma performance e estabilidade da versão de produção na Vercel (v3.73.1)."],
+      ["verifique novamente todos os setores do app e faça com que tudo fiqeu mais facil para o admin editar", "verifique novamente todos os setores do app e faça com que tudo fiqeu mais facil para o admin editar"],
     ]);
 
 
