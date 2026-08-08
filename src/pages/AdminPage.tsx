@@ -10,7 +10,6 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { OverviewTab } from '@/components/admin/refactored/OverviewTab';
 import { AdminSidebar } from '@/components/admin/refactored/AdminSidebar';
 import { UsersTab } from '@/components/admin/refactored/UsersTab';
-import { MaterialsTab } from '@/components/admin/refactored/MaterialsTab';
 import { AnnouncementsTab } from '@/components/admin/refactored/AnnouncementsTab';
 import { CategorySelect } from '@/components/admin/CategorySelect';
 import { ApostilaCreationCard } from '@/components/admin/refactored/ApostilaCreationCard';
