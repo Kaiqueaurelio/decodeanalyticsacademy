@@ -28,6 +28,17 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '3.75.2',
+    date: '2026-08-08',
+    title: 'Integridade de Dados e Visibilidade Sincronizada',
+    major: true,
+    changes: [
+      { kind: 'fix', text: 'Sincronizei semestres órfãos no banco de dados para garantir visibilidade correta na grade acadêmica.' },
+      { kind: 'fix', text: 'Unifiquei a lógica de filtragem entre Aluno e Admin para evitar que apostilas fiquem ocultas por erros de categoria.' },
+      { kind: 'improvement', text: 'Otimizei a normalização de matérias no dashboard para agrupar materiais de forma mais inteligente.' },
+    ],
+  },
+  {
     version: "3.75.1",
     date: "2026-08-08",
     title: "Estabilidade de Dados e Refinamento de UX",

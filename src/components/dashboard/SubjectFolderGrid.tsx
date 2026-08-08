@@ -32,18 +32,23 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
       s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
     const q = normalize(query.trim());
     const map = new Map<string, ApostilaSummary[]>();
+    
     for (const a of apostilas) {
-      const key = a.category?.trim() || 'Geral';
+      // Normalização da categoria: se estiver vazia ou 'Geral', agrupa como 'Geral'
+      const category = a.category?.trim() || 'Geral';
+      const key = category;
+      
       if (q && !normalize(a.title || '').includes(q) && !normalize(key).includes(q)) continue;
       
-      // Busca a chave canônica se existir para agrupar nomes levemente diferentes
       const arr = map.get(key) ?? [];
       arr.push(a);
       map.set(key, arr);
     }
+    
     for (const [, arr] of map) {
       arr.sort((a, b) => (a.title || '').localeCompare(b.title || '', 'pt-BR'));
     }
+    
     return Array.from(map.entries()).sort(([a], [b]) =>
       a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }),
     );
