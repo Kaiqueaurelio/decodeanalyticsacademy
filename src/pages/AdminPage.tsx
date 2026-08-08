@@ -1358,7 +1358,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                           </div>
                           <div>
                             <Label className="text-xs text-muted-foreground">Disciplina</Label>
-                            <CategorySelect value={importTopic} onValueChange={setImportTopic} />
+                            <CategorySelect categories={dbCategories} value={importTopic} onValueChange={setImportTopic} />
                           </div>
                         </div>
 
@@ -1402,7 +1402,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                           <Label className="text-xs text-muted-foreground">Título</Label>
                           <Input value={importTitle} onChange={e => setImportTitle(e.target.value)} placeholder="Título da apostila" className="mt-1" />
                         </div>
-                        <div><Label className="text-xs text-muted-foreground">Categoria</Label><CategorySelect value={importTopic} onValueChange={setImportTopic} /></div>
+                        <div><Label className="text-xs text-muted-foreground">Categoria</Label><CategorySelect categories={dbCategories} value={importTopic} onValueChange={setImportTopic} /></div>
 
                         {/* Pré-visualização rica: sebras + estrutura + glossário + perguntas */}
                         <ImportPreviewPanel content={importContent} aiExercises={importExercises} />
@@ -1437,7 +1437,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                       </div>
                       <div>
                         <Label htmlFor="manual-category" className="text-xs font-medium text-foreground">Disciplina / Categoria</Label>
-                        <CategorySelect value={manualCategory} onValueChange={setManualCategory} placeholder="Selecione a disciplina" />
+                        <CategorySelect categories={dbCategories} value={manualCategory} onValueChange={setManualCategory} placeholder="Selecione a disciplina" />
                       </div>
                       <div>
                         <Label htmlFor="manual-content" className="text-xs font-medium text-foreground mb-1.5 block">Conteúdo da Apostila</Label>
@@ -1794,7 +1794,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                         </div>
                         <div>
                           <Label htmlFor="edit-category" className="text-xs font-medium">Disciplina/Categoria</Label>
-                          <CategorySelect value={editCategory || ''} onValueChange={setEditCategory} />
+                          <CategorySelect categories={dbCategories} value={editCategory || ''} onValueChange={setEditCategory} />
                         </div>
                         <div className="flex justify-end gap-3 pt-4">
                           <Button variant="outline" onClick={() => setEditingApostila(null)}>Cancelar</Button>
@@ -2046,7 +2046,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                     <div className="flex-1 overflow-y-auto px-3 sm:px-5 py-3 sm:py-4 space-y-3 sm:space-y-4">
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                         <div><Label className="text-xs mb-1 block">Título</Label><Input value={editTitle} onChange={e => setEditTitle(e.target.value)} /></div>
-                        <div><Label className="text-xs mb-1 block">Categoria</Label><CategorySelect value={editCategory} onValueChange={setEditCategory} /></div>
+                        <div><Label className="text-xs mb-1 block">Categoria</Label><CategorySelect categories={dbCategories} value={editCategory} onValueChange={setEditCategory} /></div>
                       </div>
                       <div>
                         <Label className="text-xs mb-1.5 block">Conteúdo</Label>
@@ -2537,7 +2537,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                             <Input value={matTitle} onChange={e => setMatTitle(e.target.value)} placeholder="Título do material" onClick={e => e.stopPropagation()} />
                             <Input value={matDesc} onChange={e => setMatDesc(e.target.value)} placeholder="Descrição (opcional)" onClick={e => e.stopPropagation()} />
                             <div onClick={e => e.stopPropagation()}>
-                              <CategorySelect value={matCategoryId} onValueChange={setMatCategoryId} placeholder="Categoria (opcional)" />
+                              <CategorySelect categories={dbCategories} value={matCategoryId} onValueChange={setMatCategoryId} placeholder="Categoria (opcional)" />
                             </div>
                             <Button className="w-full gradient-primary text-primary-foreground" disabled={!matTitle.trim()}
                               onClick={async (e) => {
