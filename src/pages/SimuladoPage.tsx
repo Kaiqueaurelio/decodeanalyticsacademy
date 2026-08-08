@@ -17,7 +17,7 @@ type Question = {
   question_index: number;
   question: string;
   options: string[];
-  correct_answer: string;
+  correct_answer: string | null;
   explanation: string | null;
   selected_answer: string | null;
   is_correct: boolean | null;
