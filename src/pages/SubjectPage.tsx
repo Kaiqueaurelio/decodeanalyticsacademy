@@ -34,6 +34,8 @@ export default function SubjectPage() {
       const targetKey = subjectKey(decodedCategory);
       const targetSemester = guessSemesterFromCategory(decodedCategory);
 
+      // Buscamos todas para garantir que a lógica de "targetSemester" funcione mesmo se o 
+      // semester no banco estiver nulo, usando a normalização local.
       const { data } = await supabase
         .from('apostilas')
         .select('id, title, category, cover_url, semester, source_type, content')
@@ -49,8 +51,14 @@ export default function SubjectPage() {
         }))
         .filter((row) => {
           const rowKey = subjectKey(row.category || '');
+          // 1. Se o slug da categoria bater exatamente (normalizado)
           if (rowKey === targetKey) return true;
-          return !!targetSemester && row.semester === targetSemester && rowKey.includes(targetKey);
+          // 2. Se a categoria contiver o termo (ex: "Processamento" em "Processamento de Imagem")
+          // mas APENAS se estiverem no mesmo semestre (para evitar poluição entre matérias)
+          if (targetSemester && row.semester === targetSemester && rowKey.includes(targetKey)) return true;
+          // 3. Fallback se a categoria for nula mas o título contiver o termo (casos extremos de erro de cadastro)
+          if (!rowKey && row.title.toLowerCase().includes(targetKey)) return true;
+          return false;
         });
 
       setRows(normalizedRows);
