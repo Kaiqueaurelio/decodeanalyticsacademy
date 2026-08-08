@@ -131,7 +131,7 @@ export default function ExerciciosIndexPage() {
                   {items.map(r => (
                     <Card
                       key={r.apostila_id}
-                      className="group p-0 transition-all hover:border-primary/40 hover:shadow-[0_0_24px_-12px_hsl(var(--primary)/0.5)] focus-within:border-primary/60"
+                      className="group p-0 h-full transition-all hover:border-primary/40 hover:shadow-[0_0_24px_-12px_hsl(var(--primary)/0.5)] focus-within:border-primary/60"
                     >
                       <button
                         type="button"

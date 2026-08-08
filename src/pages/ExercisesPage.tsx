@@ -218,8 +218,8 @@ export default function ExercisesPage() {
         <AppHeader />
         <main className="container py-12 px-4 max-w-2xl">
           <div className="space-y-4">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="h-32 rounded-xl bg-muted/50 animate-pulse" />
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="h-24 sm:h-32 rounded-xl bg-muted/50 animate-pulse" />
             ))}
           </div>
         </main>
