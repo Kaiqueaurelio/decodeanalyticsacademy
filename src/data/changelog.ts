@@ -28,6 +28,17 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '3.77.0',
+    date: '2026-08-08',
+    title: 'Auditoria Técnica e Funcional Completa',
+    major: true,
+    changes: [
+      { kind: 'improvement', text: 'Realizada auditoria técnica profunda em todas as abas e funções do app para garantir estabilidade máxima.' },
+      { kind: 'fix', text: 'Validada a integridade das rotas protegidas e o fluxo de autenticação via Supabase.' },
+      { kind: 'improvement', text: 'Verificada a responsividade e consistência visual nos módulos de Dashboard, Admin e Ella Ribeiro.' },
+    ],
+  },
+  {
     version: '3.76.0',
     date: '2026-08-08',
     title: 'Auditoria Visual e Refinamento de UX',

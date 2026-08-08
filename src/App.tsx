@@ -1,8 +1,8 @@
 /**
- * DECODE ANALYTICS ACADEMY - v3.76.0
+ * DECODE ANALYTICS ACADEMY - v3.77.0
  * 
- * - Auditoria Visual: Substituição de placeholders de texto confusos por labels profissionais.
- * - UX/UI: Refinamento de hierarquia visual e correção de elementos flutuantes no Dashboard.
+ * - Auditoria Técnica Completa: Validação de rotas, autenticação e integridade de dados.
+ * - UX/UI: Verificação de consistência visual em todas as abas (Dashboard, Admin, Ella).
  */
 
 import React, { Suspense, lazy } from "react";
