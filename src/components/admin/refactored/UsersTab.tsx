@@ -4,7 +4,8 @@ import {
   ShieldCheck, 
   Trash2, 
   Key, 
-  ChevronDown 
+  ChevronDown,
+  Users
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
