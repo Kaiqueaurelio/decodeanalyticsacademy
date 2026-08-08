@@ -151,7 +151,7 @@ export function MaterialsTab(props: MaterialsTabProps) {
                   <Input value={matTitle} onChange={e => setMatTitle(e.target.value)} placeholder="Título do material" onClick={e => e.stopPropagation()} />
                   <Input value={matDesc} onChange={e => setMatDesc(e.target.value)} placeholder="Descrição (opcional)" onClick={e => e.stopPropagation()} />
                   <div onClick={e => e.stopPropagation()}>
-                    <CategorySelect value={matCategoryId} onValueChange={setMatCategoryId} placeholder="Categoria (opcional)" />
+                    <CategorySelect value={matCategoryId} onValueChange={setMatCategoryId} placeholder="Categoria (opcional)" categories={dbCategories} />
                   </div>
                   <Button className="w-full gradient-primary text-primary-foreground" disabled={!matTitle.trim()}
                     onClick={async (e) => {
