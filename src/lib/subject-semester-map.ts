@@ -75,6 +75,27 @@ export const BY_SEMESTER: Record<number, string[]> = {
   ],
 };
 
+/**
+ * Chave única para a mesma disciplina, inclusive quando um registro antigo
+ * veio com acentos, sufixos entre parênteses ou pequenas descrições extras.
+ */
+export function canonicalSubjectKey(subject?: string | null): string {
+  const raw = subjectKey(subject || '').replace(/\([^)]*\)/g, '').replace(/\s+/g, ' ').trim();
+  if (!raw) return '';
+
+  const known = Object.values(BY_SEMESTER)
+    .flat()
+    .map(subjectKey)
+    .sort((a, b) => b.length - a.length);
+  return known.find((candidate) => raw === candidate || raw.includes(candidate) || candidate.includes(raw)) || raw;
+}
+
+export function sameSubject(first?: string | null, second?: string | null): boolean {
+  const a = canonicalSubjectKey(first);
+  const b = canonicalSubjectKey(second);
+  return !!a && a === b;
+}
+
 /** Retorna o semestre (1–8) que melhor casa com a disciplina, ou null. */
 export function guessSemesterFromCategory(category?: string | null): number | null {
   if (!category) return null;

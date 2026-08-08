@@ -36,6 +36,7 @@ export function RANamePrompt() {
   const { user, loading } = useAuth();
   const [open, setOpen] = useState(false);
   const [fullName, setFullName] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
   const [course, setCourse] = useState<string>("");
   const [semester, setSemester] = useState<string>("");
   const [saving, setSaving] = useState(false);
@@ -48,7 +49,7 @@ export function RANamePrompt() {
     (async () => {
       const { data, error } = await supabase
         .from("profiles")
-        .select("account_type, full_name, course, semester")
+        .select("account_type, full_name, email, course, semester")
         .eq("user_id", user.id)
         .maybeSingle();
 
@@ -64,9 +65,12 @@ export function RANamePrompt() {
         name.toLowerCase().includes("[teste bot]");
       const missingCourse = !(data as any).course;
       const missingSemester = !(data as any).semester;
+      const savedEmail = ((data as any).email || "").trim();
+      const missingContactEmail = !savedEmail || savedEmail.endsWith("@ra.unip.local");
 
-      if (isRA && (looksDefaultName || missingCourse || missingSemester)) {
+      if (isRA && (looksDefaultName || missingContactEmail || missingCourse || missingSemester)) {
         if (!looksDefaultName) setFullName(name);
+        if (!missingContactEmail) setContactEmail(savedEmail);
         if ((data as any).course) setCourse((data as any).course);
         if ((data as any).semester)
           setSemester(String((data as any).semester));
@@ -80,15 +84,20 @@ export function RANamePrompt() {
   }, [user, loading]);
 
   const nameValid = fullName.trim().length >= 3 && fullName.trim().length <= 100;
+  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactEmail.trim()) && !contactEmail.trim().endsWith('@ra.unip.local');
   const courseValid = COURSES.some((c) => c.value === course);
   const semNum = parseInt(semester, 10);
   const semesterValid = !isNaN(semNum) && semNum >= 1 && semNum <= 12;
-  const canSave = nameValid && courseValid && semesterValid && !saving;
+  const canSave = nameValid && emailValid && courseValid && semesterValid && !saving;
 
   const handleSave = async () => {
     if (!user) return;
     if (!nameValid) {
       toast.error("Digite seu nome completo (3 a 100 caracteres).");
+      return;
+    }
+    if (!emailValid) {
+      toast.error("Digite um e-mail de contato válido.");
       return;
     }
     if (!courseValid) {
@@ -105,6 +114,7 @@ export function RANamePrompt() {
       .from("profiles")
       .update({
         full_name: fullName.trim(),
+        email: contactEmail.trim().toLowerCase(),
         course,
         semester: semNum,
       } as any)
@@ -141,8 +151,8 @@ export function RANamePrompt() {
           <DialogDescription className="text-center">
             Você entrou com seu RA UNIP. Para personalizar a experiência e
             aparecer corretamente na comunidade e no ranking, informe seu
-            <strong> nome completo</strong>, <strong>curso</strong> e
-            <strong> semestre atual</strong>.
+            <strong> nome completo</strong>, <strong>e-mail de contato</strong>,
+            <strong> curso</strong> e <strong>semestre atual</strong>.
           </DialogDescription>
         </DialogHeader>
 
@@ -158,6 +168,20 @@ export function RANamePrompt() {
               autoFocus
               disabled={saving}
             />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="ra-contact-email">E-mail de contato</Label>
+            <Input
+              id="ra-contact-email"
+              type="email"
+              placeholder="voce@exemplo.com"
+              value={contactEmail}
+              onChange={(e) => setContactEmail(e.target.value)}
+              maxLength={254}
+              disabled={saving}
+            />
+            <p className="text-xs text-muted-foreground">Usado para contato; o acesso continua sendo pelo RA.</p>
           </div>
 
           <div className="space-y-1.5">

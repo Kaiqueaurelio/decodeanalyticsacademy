@@ -118,7 +118,9 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     setLoading(true);
     initialLoadRef.current = true;
     const results = await Promise.allSettled([
-      supabase.from('apostilas').select('id, title, category, content, published, semester, course, cover_url').eq('id', apostilaId).maybeSingle(),
+      // Usa o mesmo registro completo consumido pela página do aluno. A seleção
+      // parcial fazia o Workbench abrir algumas apostilas grandes sem conteúdo.
+      supabase.from('apostilas').select('*').eq('id', apostilaId).maybeSingle(),
       supabase.from('apostila_materials').select('id, sort_order, material_id').eq('apostila_id', apostilaId).order('sort_order'),
       supabase.from('exercises').select('id', { count: 'exact', head: true }).eq('apostila_id', apostilaId),
     ]);
@@ -151,7 +153,10 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
 
     setTitle(ap.title || '');
     setCategory(ap.category || '');
-    setContent(ap.content || '');
+    // Nunca abra uma apostila vazia quando há uma cópia de recuperação do texto.
+    // Isso também impede que o autosave grave um rascunho por cima do conteúdo.
+    const restoredContent = ap.content || (ap as { content_backup?: string | null }).content_backup || '';
+    setContent(restoredContent);
     setPublished(!!ap.published);
     setSemester((ap as any).semester ?? null);
     setCourse(((ap as any).course as CourseCode[] | null) ?? []);
@@ -204,6 +209,16 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       .eq('id', id)
       .single();
 
+    // Proteção contra perda de conteúdo: se por uma falha de carregamento o
+    // editor vier vazio, ele jamais pode sobrescrever uma apostila existente.
+    if (currentApostila?.content?.trim() && !content.trim()) {
+      setContent(currentApostila.content);
+      dirtyRef.current = false;
+      setSaving(false);
+      toast.error('O conteúdo não foi carregado; a apostila foi preservada e recarregada.');
+      return;
+    }
+
     if (currentApostila && (currentApostila.content !== content || currentApostila.title !== title)) {
       await supabase.from('apostila_versions').insert({
         apostila_id: id,
@@ -219,6 +234,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         title: title.trim() || 'Sem título',
         category,
         content,
+        published: content.trim().length > 0 ? true : published,
         semester,
         course: course.length ? course : null,
       })
@@ -230,6 +246,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       return;
     }
     dirtyRef.current = false;
+    if (content.trim().length > 0) setPublished(true);
     setLastSavedAt(new Date());
     setApostilas((prev) =>
       prev.map((p) => (p.id === id ? { ...p, title: title.trim() || 'Sem título', category, semester, course: course.length ? course : null, updated_at: new Date().toISOString() } : p))
@@ -298,6 +315,10 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         })
         .filter(Boolean) as LinkedMaterialItem[]
     );
+    // Material vinculado também é conteúdo. Sem isso, uma apostila criada
+    // pela grade ficava disponível só no admin mesmo após receber arquivos.
+    await supabase.from('apostilas').update({ published: true }).eq('id', id);
+    setPublished(true);
   };
 
   const removeLink = async (linkId: string) => {

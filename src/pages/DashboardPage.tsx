@@ -66,12 +66,14 @@ export default function DashboardPage() {
   // Lógica de processamento de apostilas (filtro + placeholders de semestres futuros)
   const apostilas = useMemo(() => {
     // 1. Filtragem por semestre se selecionado
-    let list = selectedSemester 
-      ? apostilasRaw.filter(a => a.semester === selectedSemester)
+    const list = selectedSemester
+      ? apostilasRaw.filter(a => a.semester === selectedSemester || a.semester === null)
       : apostilasRaw;
 
     // 2. Placeholder para disciplinas da grade (1º ao 8º)
-    if (selectedSemester) {
+    // A grade é uma referência administrativa; o aluno só vê registros reais.
+    const showAcademicPlaceholders = false;
+    if (selectedSemester && showAcademicPlaceholders) {
       const canonicalSubjects = BY_SEMESTER[selectedSemester] || [];
       const teacherMap: Record<string, string> = {
         'Logica de Programacao': 'Prof. Dr. Ricardo Silva',

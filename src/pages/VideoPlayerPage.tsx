@@ -13,6 +13,7 @@ import {
   Loader2, AlertCircle, BookOpen, PenLine, ExternalLink
 } from 'lucide-react';
 import { getSubjectColor } from '@/lib/subject-colors';
+import { sameSubject } from '@/lib/subject-semester-map';
 import type { Tables } from '@/integrations/supabase/types';
 
 type Material = Tables<'materials'>;
@@ -109,8 +110,9 @@ export default function VideoPlayerPage() {
     if (mat.category_id) {
       const { data: cat } = await supabase.from('categories').select('name').eq('id', mat.category_id).single();
       if (cat) {
-        const { data: ap } = await supabase.from('apostilas').select('*').eq('category', cat.name).eq('published', true).limit(1);
-        if (ap && ap.length > 0) setRelatedApostila(ap[0]);
+        const { data: ap } = await supabase.from('apostilas').select('*').eq('published', true);
+        const related = ap?.find((apostila) => sameSubject(apostila.category, cat.name));
+        if (related) setRelatedApostila(related);
       }
     }
 

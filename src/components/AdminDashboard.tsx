@@ -27,7 +27,7 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getSubjectColor } from '@/lib/subject-colors';
-import { BY_SEMESTER, subjectKey } from '@/lib/subject-semester-map';
+import { BY_SEMESTER, canonicalSubjectKey, subjectKey } from '@/lib/subject-semester-map';
 import { ensureApostilaExists } from '@/lib/create-placeholder-apostila';
 
 import {
@@ -47,6 +47,7 @@ interface Props {
 type ApostilaRow = {
   id: string; title: string; category: string | null;
   published: boolean; created_at: string; updated_at: string;
+  content?: string | null;
 };
 
 type Ranking = {
@@ -132,7 +133,7 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
         supabase.from('apostila_likes').select('id', { count: 'exact', head: true }),
         supabase.from('ads').select('id', { count: 'exact', head: true }),
         supabase.from('apostilas')
-          .select('id,title,category,published,created_at,updated_at,semester,course,cover_url,teacher')
+          .select('id,title,category,published,created_at,updated_at,semester,course,cover_url,teacher,content')
           .order('created_at', { ascending: false })
           .limit(1000),
         supabase.rpc('get_student_rankings', { _limit: 10 }),
@@ -205,6 +206,14 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
       if (untilTs && ts > untilTs) return false;
       return true;
     });
+
+    const unique = new Map<string, ApostilaRow>();
+    for (const apostila of list) {
+      const key = `${subjectKey(apostila.title)}::${canonicalSubjectKey(apostila.category)}`;
+      const current = unique.get(key);
+      if (!current || (apostila.content || '').length > (current.content || '').length) unique.set(key, apostila);
+    }
+    list = [...unique.values()];
 
     // Placeholders para o Admin Dashboard
     const activeSemNum = filterSemester && filterSemester !== 'all' && filterSemester !== 'none' ? parseInt(filterSemester, 10) : null;

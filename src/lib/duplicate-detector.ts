@@ -161,7 +161,8 @@ export async function findDuplicateApostila(
 ): Promise<DuplicateMatch | null> {
   const threshold = options.threshold ?? 0.82;
   const normalized = normalize(newContent);
-  if (normalized.length < 200) return null; // muito curto p/ comparar com confiança
+  const normalizedTitle = normalize(newTitle);
+  if (normalized.length < 200 || !normalizedTitle) return null;
 
   const { data, error } = await supabase
     .from('apostilas')
@@ -173,6 +174,7 @@ export async function findDuplicateApostila(
   let best: DuplicateMatch | null = null;
   for (const row of data) {
     if (options.ignoreId && row.id === options.ignoreId) continue;
+    if (normalize(row.title) !== normalizedTitle) continue;
     if (!row.content || row.content.length < 200) continue;
     const sim = similarity(newContent, row.content);
     if (sim < threshold) continue;

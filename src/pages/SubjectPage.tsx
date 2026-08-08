@@ -6,7 +6,7 @@ import { AppHeader } from '@/components/AppHeader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { getSubjectColor } from '@/lib/subject-colors';
-import { guessSemesterFromCategory, subjectKey } from '@/lib/subject-semester-map';
+import { canonicalSubjectKey, guessSemesterFromCategory, subjectKey } from '@/lib/subject-semester-map';
 
 interface ApostilaRow {
   id: string;
@@ -16,6 +16,17 @@ interface ApostilaRow {
   semester: number | null;
   source_type: string | null;
   content: string | null;
+}
+
+function keepMostComplete(rows: ApostilaRow[]) {
+  const unique = new Map<string, ApostilaRow>();
+  for (const row of rows) {
+    const title = subjectKey(row.title);
+    const key = `${title}::${canonicalSubjectKey(row.category)}`;
+    const current = unique.get(key);
+    if (!current || (row.content || '').length > (current.content || '').length) unique.set(key, row);
+  }
+  return [...unique.values()];
 }
 
 export default function SubjectPage() {
@@ -61,7 +72,7 @@ export default function SubjectPage() {
           return false;
         });
 
-      setRows(normalizedRows);
+      setRows(keepMostComplete(normalizedRows));
       const { data: counts } = await supabase.rpc('get_exercise_counts');
       if (!alive) return;
       setExerciseCounts((counts as Record<string, number>) || {});

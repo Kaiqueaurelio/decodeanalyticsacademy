@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, useRef, useMemo, useContext, createContext } from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { AdminNavPanel } from '@/components/admin/AdminNavPanel';
@@ -61,7 +61,7 @@ import { DiagnosticsPanel } from '@/components/DiagnosticsPanel';
 import { VersionHistoryPanel } from '@/components/admin/VersionHistoryPanel';
 import { EllaAuditPanel } from '@/components/admin/EllaAuditPanel';
 import { SecurityAlertsPanel } from '@/components/admin/SecurityAlertsPanel';
-import { BY_SEMESTER } from '@/lib/subject-semester-map';
+import { BY_SEMESTER, canonicalSubjectKey, guessSemesterFromCategory } from '@/lib/subject-semester-map';
 import { useSecurityAlerts } from '@/hooks/useSecurityAlerts';
 import { SponsorLeadsPanel } from '@/components/admin/SponsorLeadsPanel';
 import { DuplicateApostilaDialog } from '@/components/DuplicateApostilaDialog';
@@ -592,6 +592,7 @@ interface AdminPageProps {
 export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPageProps = {}) {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [internalTab, setInternalTab] = useState<Tab>('overview');
   const tab = propTab || internalTab;
   const setTab = propSetTab || setInternalTab;
@@ -606,9 +607,9 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
   const [refreshing, setRefreshing] = useState(false);
 
   // Filtros admin avançados
-  const [filterSemester, setFilterSemester] = useState<string>(() => {
-    return localStorage.getItem('adminSelectedSemester') || '6';
-  });
+  // A aba administrativa precisa mostrar tudo por padrão. Manter o último
+  // semestre salvo fazia apostilas recém-criadas parecerem ter sumido.
+  const [filterSemester, setFilterSemester] = useState<string>('all');
   const [filterCourse, setFilterCourse] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<'all' | 'published' | 'draft'>('all');
   const [expandedCats, setExpandedCats] = useState<Set<string>>(new Set());
@@ -679,6 +680,30 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
   const [manualTitle, setManualTitle] = useState('');
   const [manualCategory, setManualCategory] = useState('');
   const [manualContent, setManualContent] = useState('');
+
+  // A grade acadêmica abre o admin com a matéria escolhida. Antes este estado
+  // era ignorado, o que levava o conteúdo a ser criado fora da disciplina.
+  useEffect(() => {
+    const state = location.state as { tab?: Tab; filter?: string; action?: string } | null;
+    if (!state?.filter) return;
+
+    const category = state.filter.trim();
+    if (!category) return;
+    setTab(state.tab || 'apostilas');
+    setSearchQuery(category);
+    setImportTopic(category);
+    setManualCategory(category);
+
+    if (state.action === 'new') {
+      setShowManualForm(true);
+      window.setTimeout(() => {
+        document.querySelector('[data-manual-apostila-form]')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    }
+
+    // Evita que voltar/atualizar reabra o formulário sem intenção do usuário.
+    navigate(location.pathname, { replace: true, state: null });
+  }, [location.pathname, location.state, navigate, setTab]);
 
   // Exercise form
   const [exQuestion, setExQuestion] = useState('');
@@ -856,6 +881,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
       title: importTitle.trim(), content: importContent,
       category: importTopic || 'Geral', source_type: sourceType,
       file_url: importMode === 'text' ? null : isNotion ? null : importUrl, created_by: currentUser.id, published: true,
+      semester: guessSemesterFromCategory(importTopic),
     }).select().single();
     if (error) throw error;
     if (importExercises.length > 0 && newApostila) {
@@ -866,7 +892,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
       if (exErr) console.warn('Falha ao salvar exercícios:', exErr);
     }
     toast.success(`Apostila salva com ${importExercises.length} exercícios!`);
-    resetImportForm(); loadAll();
+    resetImportForm(); setFilterSemester('all'); loadAll();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [importUrl, importMode, importTitle, importContent, importTopic, importExercises]);
 
@@ -881,10 +907,12 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
       created_by: user.id,
       published: true,
       file_url: null,
+      semester: guessSemesterFromCategory(importTopic),
     });
     if (error) throw error;
     toast.success('Apostila formatada salva com sucesso!');
     resetImportForm();
+    setFilterSemester('all');
     loadAll();
   }, [user, importTitle, importRawText, importTopic, loadAll]);
 
@@ -969,10 +997,11 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
     const { error } = await supabase.from('apostilas').insert({
       title: manualTitle.trim(), content: manualContent,
       category: manualCategory || 'Geral', source_type: 'manual', created_by: user.id, published: true,
+      semester: guessSemesterFromCategory(manualCategory),
     });
     if (error) { toast.error('Erro ao criar'); return; }
     toast.success('Apostila criada!');
-    setManualTitle(''); setManualContent(''); setManualCategory(''); setShowManualForm(false); loadAll();
+    setManualTitle(''); setManualContent(''); setManualCategory(''); setShowManualForm(false); setFilterSemester('all'); loadAll();
   }, [user, manualTitle, manualContent, manualCategory]);
 
   const handleManualSave = async () => {
@@ -994,13 +1023,44 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
     if (!duplicateMatch) return;
     const { error } = await supabase
       .from('apostilas')
-      .update({ content: newContent, updated_at: new Date().toISOString() })
+      .update({ content: newContent, published: true, updated_at: new Date().toISOString() })
       .eq('id', duplicateMatch.apostila.id);
     if (error) { toast.error('Erro ao atualizar: ' + error.message); return; }
     toast.success(`"${duplicateMatch.apostila.title}" foi atualizada com a versão melhor formatada.`);
     // Limpa formulário ativo (importação ou manual)
     resetImportForm();
     setManualTitle(''); setManualContent(''); setManualCategory(''); setShowManualForm(false);
+    loadAll();
+  }, [duplicateMatch]);
+
+  /** Acrescenta texto à apostila encontrada sem perder o conteúdo já salvo. */
+  const appendToExistingApostila = useCallback(async (newContent: string) => {
+    if (!duplicateMatch) return;
+    const existing = duplicateMatch.apostila.content || '';
+    const compact = (text: string) => text.replace(/\s+/g, ' ').trim().toLocaleLowerCase();
+    const existingCompact = compact(existing);
+    const newCompact = compact(newContent);
+
+    if (!newCompact || newCompact === existingCompact) {
+      toast.info('Esse conteúdo já está presente na apostila existente.');
+      return;
+    }
+
+    // Se o texto enviado já contém a apostila inteira, usamos a nova versão
+    // diretamente; caso contrário, anexamos somente o novo material.
+    const content = existingCompact && newCompact.includes(existingCompact)
+      ? newContent
+      : [existing, newContent].filter(Boolean).join('\n\n');
+    const { error } = await supabase
+      .from('apostilas')
+      .update({ content, published: true, updated_at: new Date().toISOString() })
+      .eq('id', duplicateMatch.apostila.id);
+    if (error) { toast.error('Erro ao adicionar conteúdo: ' + error.message); return; }
+
+    toast.success(`Conteúdo adicionado a "${duplicateMatch.apostila.title}".`);
+    resetImportForm();
+    setManualTitle(''); setManualContent(''); setManualCategory(''); setShowManualForm(false);
+    setFilterSemester('all');
     loadAll();
   }, [duplicateMatch]);
 
@@ -1051,7 +1111,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
           title: data.title || 'Sem título', content: data.content || '',
           category: data.category || 'Geral', source_type: isNotion ? 'notion' : 'link',
           file_url: isNotion ? null : url, created_by: user.id, published: true,
-          semester: 6 // Padrão conforme solicitado
+          semester: guessSemesterFromCategory(data.category) ?? 6,
         }).select().single();
         if (insertErr) throw insertErr;
         if (data.exercises?.length > 0 && newApostila) {
@@ -1067,6 +1127,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
     }
     setBatchRunning(false);
     toast.success('Importação em lote concluída!');
+    setFilterSemester('all');
     loadAll();
   };
 
@@ -1340,15 +1401,29 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
       return true;
     });
 
+    // Dados antigos podem conter a mesma apostila importada mais de uma vez.
+    // Na listagem mostramos somente a versão mais completa; as cópias não
+    // somem do banco de forma destrutiva e continuam recuperáveis.
+    const uniqueApostilas = new Map<string, Apostila>();
+    for (const apostila of list) {
+      const title = apostila.title.trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+      const key = `${title}::${canonicalSubjectKey(apostila.category)}`;
+      const current = uniqueApostilas.get(key);
+      const contentLength = (apostila.content || '').trim().length;
+      const currentLength = (current?.content || '').trim().length;
+      if (!current || contentLength > currentLength) uniqueApostilas.set(key, apostila);
+    }
+    list = [...uniqueApostilas.values()];
+
     // 2. Placeholder para o Admin (quando filtrado por semestre)
     const activeSemNum = filterSemester !== 'all' && filterSemester !== 'none' ? parseInt(filterSemester, 10) : null;
     
     if (activeSemNum && !q) {
       const canonicalSubjects = BY_SEMESTER[activeSemNum] || [];
-      const existingCategories = new Set(list.map(a => a.category));
+      const existingCategories = new Set(list.map(a => canonicalSubjectKey(a.category)));
       
       const placeholders = canonicalSubjects
-        .filter((subject: string) => !existingCategories.has(subject))
+        .filter((subject: string) => !existingCategories.has(canonicalSubjectKey(subject)))
         .map((subject: string, idx: number) => ({
           id: `placeholder-admin-${activeSemNum}-${idx}`,
           title: `[GRADE] ${subject}`,
@@ -1850,7 +1925,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
 
                 {/* Manual Create */}
                 {showManualForm ? (
-                  <Card className="animate-in fade-in slide-in-from-top-2 duration-300">
+                  <Card data-manual-apostila-form className="animate-in fade-in slide-in-from-top-2 duration-300">
                     <CardContent className="p-6 space-y-5">
                       <h3 className="font-semibold flex items-center gap-2 text-sm">
                         <FileText className="h-4 w-4 text-primary" /> Criar Apostila Manualmente
@@ -3413,6 +3488,12 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
         }}
         onCreateAnyway={async () => {
           if (pendingSave) await pendingSave();
+          setDuplicateMatch(null);
+          setPendingSave(null);
+        }}
+        onAppendExisting={async () => {
+          const newContent = manualContent || importContent || importRawText;
+          await appendToExistingApostila(newContent);
           setDuplicateMatch(null);
           setPendingSave(null);
         }}

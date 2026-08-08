@@ -20,11 +20,13 @@ interface Props {
   onKeepExisting: () => void;
   /** Cria mesmo assim, como uma apostila separada. */
   onCreateAnyway: () => void;
+  /** Acrescenta o novo texto à apostila existente, sem descartar seu conteúdo. */
+  onAppendExisting: () => void;
   onCancel: () => void;
 }
 
 export function DuplicateApostilaDialog({
-  open, match, onReplaceExisting, onKeepExisting, onCreateAnyway, onCancel,
+  open, match, onReplaceExisting, onKeepExisting, onCreateAnyway, onAppendExisting, onCancel,
 }: Props) {
   if (!match) return null;
   const simPct = Math.round(match.similarity * 100);
@@ -74,6 +76,10 @@ export function DuplicateApostilaDialog({
         </AlertDialogHeader>
 
         <AlertDialogFooter className="flex-col gap-2 sm:flex-col">
+          <Button onClick={onAppendExisting} className="w-full gap-1">
+            Adicionar conteúdo à apostila existente
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Button>
           {recommendReplace ? (
             <AlertDialogAction asChild>
               <Button onClick={onReplaceExisting} className="w-full gap-1">
