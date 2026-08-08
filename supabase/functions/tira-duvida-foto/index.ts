@@ -3,9 +3,6 @@ import { getCorsHeaders } from "../_shared/cors.ts";
 // Suporta dual provider: Google AI Studio direto (chave do user) ou Lovable AI Gateway (fallback).
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
-const getCorsHeaders(req) = {
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
 
 const DAILY_LIMIT = 10;
 

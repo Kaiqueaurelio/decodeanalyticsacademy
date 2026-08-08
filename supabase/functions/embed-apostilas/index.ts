@@ -3,9 +3,6 @@ import { getCorsHeaders } from "../_shared/cors.ts";
 // Suporta dual provider: Google AI Studio direto ou Lovable AI Gateway (fallback).
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
-const getCorsHeaders(req) = {
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
 
 async function embedGoogle(apiKey: string, text: string): Promise<number[] | null> {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=${encodeURIComponent(apiKey)}`;
