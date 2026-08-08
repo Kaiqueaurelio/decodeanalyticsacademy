@@ -7,6 +7,12 @@ import { AdminNavPanel } from '@/components/admin/AdminNavPanel';
 import { AdminCreateUserDialog } from '@/components/admin/AdminCreateUserDialog';
 import { ADMIN_NAV_BY_ID } from '@/config/adminNav';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { OverviewTab } from '@/components/admin/refactored/OverviewTab';
+import { AdminSidebar } from '@/components/admin/refactored/AdminSidebar';
+import { UsersTab } from '@/components/admin/refactored/UsersTab';
+import { MaterialsTab } from '@/components/admin/refactored/MaterialsTab';
+import { AnnouncementsTab } from '@/components/admin/refactored/AnnouncementsTab';
+import { CategorySelect } from '@/components/admin/CategorySelect';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
