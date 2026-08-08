@@ -49,6 +49,7 @@ interface UsersTabProps {
   filteredUsers: User[];
   loadAll: () => void;
   setUsers: React.Dispatch<React.SetStateAction<User[]>>;
+  searchQuery?: string;
 }
 
 function AdminPasswordResetMenu({ user }: { user: User }) {

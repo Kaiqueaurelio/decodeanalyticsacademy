@@ -29,11 +29,12 @@ interface Ad {
 }
 
 interface AnnouncementsTabProps {
-  filteredAds: Ad[];
+  ads: Ad[];
   loadAll: () => void;
 }
 
-export function AnnouncementsTab({ filteredAds, loadAll }: AnnouncementsTabProps) {
+export function AnnouncementsTab({ ads, loadAll }: AnnouncementsTabProps) {
+  const filteredAds = ads;
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-3 flex-wrap">
