@@ -1,9 +1,10 @@
+import { getCorsHeaders } from "../_shared/cors.ts";
 // Proxy neutro para imagens promocionais.
 // GET ?b=bucket&p=path  -> retorna a imagem (público, sem auth) com caminho que não dispara ad-blockers.
 // POST { fileName, contentType, base64Data } -> faz upload (admin) no bucket 'announcements/promos/'.
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 
-const corsHeaders = {
+const getCorsHeaders(req) = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
@@ -14,7 +15,7 @@ const ALLOWED_BUCKETS = new Set(['announcements', 'ads']);
 function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
   });
 }
 
@@ -23,7 +24,7 @@ function cleanBase64(base64: string) {
 }
 
 Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: getCorsHeaders(req) });
 
   const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
   const SERVICE_ROLE = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -48,7 +49,7 @@ Deno.serve(async (req) => {
       return new Response(buffer, {
         status: 200,
         headers: {
-          ...corsHeaders,
+          ...getCorsHeaders(req),
           'Content-Type': contentType,
           'Cache-Control': 'public, max-age=3600',
         },

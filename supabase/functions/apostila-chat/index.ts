@@ -1,8 +1,8 @@
+import { getCorsHeaders } from "../_shared/cors.ts";
 // Edge function: chat didático restrito ao conteúdo da apostila
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+const getCorsHeaders(req) = {
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
@@ -14,7 +14,7 @@ interface Msg {
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   try {
@@ -29,7 +29,7 @@ Deno.serve(async (req) => {
     if (!authHeader) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -41,7 +41,7 @@ Deno.serve(async (req) => {
     if (userErr || !userData.user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -52,7 +52,7 @@ Deno.serve(async (req) => {
     if (!apostilaId || messages.length === 0) {
       return new Response(JSON.stringify({ error: "apostilaId e messages são obrigatórios" }), {
         status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -66,7 +66,7 @@ Deno.serve(async (req) => {
     if (apErr || !apostila) {
       return new Response(JSON.stringify({ error: "Apostila não encontrada" }), {
         status: 404,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -189,7 +189,7 @@ ${apostilaContent}
         const g = await callGoogle();
         if (g.ok && g.body) {
           return new Response(transformGoogle(g.body), {
-            headers: { ...corsHeaders, "Content-Type": "text/event-stream", "X-AI-Provider": "google-direct" },
+            headers: { ...getCorsHeaders(req), "Content-Type": "text/event-stream", "X-AI-Provider": "google-direct" },
           });
         }
         const errText = (await g.text()).slice(0, 500);
@@ -201,13 +201,13 @@ ${apostilaContent}
         else if (g.status >= 500) msg = "Google AI Studio está com instabilidade. Tente novamente em instantes.";
         return new Response(
           JSON.stringify({ error: msg, fallback: true, provider: "google-direct", upstream_status: g.status }),
-          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json", "X-AI-Provider": "google-direct-error" } },
+          { status: 200, headers: { ...getCorsHeaders(req), "Content-Type": "application/json", "X-AI-Provider": "google-direct-error" } },
         );
       } catch (e) {
         console.error("Google exception:", e);
         return new Response(
           JSON.stringify({ error: "Falha de rede ao chamar Google AI Studio.", fallback: true, provider: "google-direct" }),
-          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json", "X-AI-Provider": "google-direct-error" } },
+          { status: 200, headers: { ...getCorsHeaders(req), "Content-Type": "application/json", "X-AI-Provider": "google-direct-error" } },
         );
       }
     }
@@ -215,7 +215,7 @@ ${apostilaContent}
     if (!LOVABLE_API_KEY) {
       return new Response(JSON.stringify({ error: "Provedor indisponível" }), {
         status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -232,18 +232,18 @@ ${apostilaContent}
       // Devolve 200 com fallback flag para o cliente exibir mensagem amigável sem quebrar
       return new Response(
         JSON.stringify({ error: msg, fallback: true, upstream_status: status }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { status: 200, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } },
       );
     }
 
     return new Response(aiResp.body, {
-      headers: { ...corsHeaders, "Content-Type": "text/event-stream", "X-AI-Provider": provider },
+      headers: { ...getCorsHeaders(req), "Content-Type": "text/event-stream", "X-AI-Provider": provider },
     });
   } catch (e) {
     console.error("apostila-chat error", e);
     return new Response(
       JSON.stringify({ error: e instanceof Error ? e.message : "Erro inesperado" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } },
     );
   }
 });

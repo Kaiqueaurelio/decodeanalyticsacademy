@@ -1,9 +1,10 @@
+import { getCorsHeaders } from "../_shared/cors.ts";
 // Edge Function: admin-create-user
 // Permite que um administrador cadastre alunos manualmente (por RA ou e-mail).
 // Contas criadas aqui já nascem confirmadas — o admin é a fonte de verdade.
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 
-const corsHeaders = {
+const getCorsHeaders(req) = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
@@ -12,14 +13,14 @@ const corsHeaders = {
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
     status,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
   });
 
 const RA_RE = /^[A-Z0-9]{6,13}$/;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
+  if (req.method === 'OPTIONS') return new Response(null, { headers: getCorsHeaders(req) });
   if (req.method !== 'POST') return json({ error: 'Método não permitido.' }, 405);
 
   try {

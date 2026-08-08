@@ -1,6 +1,7 @@
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 
-const corsHeaders = {
+const getCorsHeaders(req) = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
@@ -11,7 +12,7 @@ function cleanBase64(base64: string) {
 }
 
 Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
+  if (req.method === 'OPTIONS') return new Response(null, { headers: getCorsHeaders(req) });
 
   try {
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
@@ -22,7 +23,7 @@ Deno.serve(async (req) => {
     if (!authHeader.startsWith('Bearer ')) {
       return new Response(JSON.stringify({ error: 'Missing Authorization header' }), {
         status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
@@ -33,7 +34,7 @@ Deno.serve(async (req) => {
     if (userErr || !userData?.user) {
       return new Response(JSON.stringify({ error: 'Invalid session' }), {
         status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
@@ -45,7 +46,7 @@ Deno.serve(async (req) => {
     if (!fileName || !base64Data) {
       return new Response(JSON.stringify({ error: 'fileName e base64Data são obrigatórios' }), {
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
@@ -58,7 +59,7 @@ Deno.serve(async (req) => {
     if (roleErr || !isAdmin) {
       return new Response(JSON.stringify({ error: 'Permission denied: admin only' }), {
         status: 403,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
@@ -74,19 +75,19 @@ Deno.serve(async (req) => {
     if (uploadError) {
       return new Response(JSON.stringify({ error: uploadError.message }), {
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       });
     }
 
     const { data } = admin.storage.from('ads').getPublicUrl(objectPath);
     return new Response(JSON.stringify({ publicUrl: data.publicUrl, path: objectPath }), {
       status: 200,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
     });
   } catch (e) {
     return new Response(JSON.stringify({ error: (e as Error).message }), {
       status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
     });
   }
 });

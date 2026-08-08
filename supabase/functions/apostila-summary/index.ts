@@ -1,8 +1,8 @@
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+const getCorsHeaders(req) = {
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
@@ -13,13 +13,13 @@ const corsHeaders = {
  * Body: { apostila_id: string, force?: boolean }
  */
 serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS") return new Response(null, { headers: getCorsHeaders(req) });
 
   try {
     const { apostila_id, force } = await req.json();
     if (!apostila_id) {
       return new Response(JSON.stringify({ error: "apostila_id obrigatório" }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -36,7 +36,7 @@ serve(async (req) => {
     const { data: userData } = await userClient.auth.getUser();
     if (!userData?.user) {
       return new Response(JSON.stringify({ error: "Não autenticado" }), {
-        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -51,7 +51,7 @@ serve(async (req) => {
         .maybeSingle();
       if (cached?.summary_md && cached?.mindmap_mermaid) {
         return new Response(JSON.stringify({ ...cached, cached: true }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
     }
@@ -64,7 +64,7 @@ serve(async (req) => {
 
     if (!ap?.content) {
       return new Response(JSON.stringify({ error: "Apostila sem conteúdo" }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -170,7 +170,7 @@ Para a apostila enviada, gere DOIS artefatos:
           let msg = "Erro ao gerar resumo.";
           if (status === 402) msg = "Créditos de Lovable AI esgotados. Ative sua chave Google AI Studio em Admin → IA.";
           else if (status === 429) msg = "Limite de IA. Tente em alguns segundos.";
-          return new Response(JSON.stringify({ error: msg }), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+          return new Response(JSON.stringify({ error: msg }), { status, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } });
         }
       } else {
         parsed = r as any;
@@ -181,7 +181,7 @@ Para a apostila enviada, gere DOIS artefatos:
 
     if (!parsed?.summary_md || !parsed?.mindmap_mermaid) {
       return new Response(JSON.stringify({ error: "IA não estruturou resposta" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } });
     }
 
     // Sanitiza Mermaid (remove fences)
@@ -201,10 +201,10 @@ Para a apostila enviada, gere DOIS artefatos:
     }, { onConflict: "apostila_id" });
 
     return new Response(JSON.stringify({ summary_md, mindmap_mermaid: mindmap, cached: false }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } });
   } catch (e) {
     console.error("apostila-summary error", e);
     return new Response(JSON.stringify({ error: e instanceof Error ? e.message : String(e) }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } });
   }
 });

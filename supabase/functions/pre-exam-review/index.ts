@@ -1,8 +1,8 @@
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+const getCorsHeaders(req) = {
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
@@ -24,7 +24,7 @@ interface ReviewBundle {
 }
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS") return new Response(null, { headers: getCorsHeaders(req) });
 
   try {
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -40,7 +40,7 @@ serve(async (req) => {
     const { data: userData } = await userClient.auth.getUser();
     if (!userData?.user) {
       return new Response(JSON.stringify({ error: "Não autenticado" }), {
-        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
     const userId = userData.user.id;
@@ -48,7 +48,7 @@ serve(async (req) => {
     const { eventId } = await req.json();
     if (!eventId) {
       return new Response(JSON.stringify({ error: "eventId obrigatório" }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -63,7 +63,7 @@ serve(async (req) => {
 
     if (!ev) {
       return new Response(JSON.stringify({ error: "Prova não encontrada" }), {
-        status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 404, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -250,12 +250,12 @@ serve(async (req) => {
     };
 
     return new Response(JSON.stringify({ ...bundle, provider: providerUsed }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json", "X-AI-Provider": providerUsed },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json", "X-AI-Provider": providerUsed },
     });
   } catch (e) {
     console.error("pre-exam-review error:", e);
     return new Response(JSON.stringify({ error: e instanceof Error ? e.message : String(e) }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 });

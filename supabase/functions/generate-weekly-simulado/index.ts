@@ -1,8 +1,8 @@
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+const getCorsHeaders(req) = {
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
@@ -20,7 +20,7 @@ const QUESTIONS_PER_SIMULADO = 20;
  *  3. Cria weekly_simulados + 20 weekly_simulado_answers vazios.
  */
 serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS") return new Response(null, { headers: getCorsHeaders(req) });
 
   try {
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -34,7 +34,7 @@ serve(async (req) => {
     const { data: userData } = await userClient.auth.getUser();
     if (!userData?.user) {
       return new Response(JSON.stringify({ error: "Não autenticado" }), {
-        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
     const userId = userData.user.id;
@@ -55,7 +55,7 @@ serve(async (req) => {
         .maybeSingle();
       if (inProgress) {
         return new Response(JSON.stringify({ simulado_id: inProgress.id, resumed: true }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
     }
@@ -99,7 +99,7 @@ serve(async (req) => {
 
     if (!pool || pool.length === 0) {
       return new Response(JSON.stringify({ error: "Ainda não há exercícios suficientes no banco para montar um simulado." }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -142,7 +142,7 @@ serve(async (req) => {
 
     if (picked.length === 0) {
       return new Response(JSON.stringify({ error: "Sem exercícios disponíveis." }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -168,7 +168,7 @@ serve(async (req) => {
     if (simErr || !simulado) {
       console.error("create simulado", simErr);
       return new Response(JSON.stringify({ error: "Não foi possível criar o simulado." }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -191,7 +191,7 @@ serve(async (req) => {
       console.error("insert answers", ansErr);
       await admin.from("weekly_simulados").delete().eq("id", simulado.id);
       return new Response(JSON.stringify({ error: "Falha ao inserir questões." }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -199,11 +199,11 @@ serve(async (req) => {
       simulado_id: simulado.id,
       total: picked.length,
       subjects: Array.from(perSubject.keys()),
-    }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }), { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } });
   } catch (e) {
     console.error("generate-weekly-simulado error:", e);
     return new Response(JSON.stringify({ error: e instanceof Error ? e.message : String(e) }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 });

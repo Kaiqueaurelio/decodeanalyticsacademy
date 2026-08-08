@@ -1,3 +1,4 @@
+import { getCorsHeaders } from "../_shared/cors.ts";
 // Geração de questões estilo ENEM: contextualização longa,
 // 5 alternativas (A-E), explicação da correta E por que cada distrator
 // está errado. Salva em `exercises` vinculadas ao apostila_id.
@@ -5,8 +6,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { requireUser } from "../_shared/auth-guard.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+const getCorsHeaders(req) = {
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
 };
@@ -26,9 +26,9 @@ Regras absolutas:
 Retorne APENAS JSON válido conforme o schema, sem comentários.`;
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS") return new Response(null, { headers: getCorsHeaders(req) });
 
-  const auth = await requireUser(req, corsHeaders, { requireAdmin: true });
+  const auth = await requireUser(req, getCorsHeaders(req), { requireAdmin: true });
   if (!auth.ok) return auth.response;
 
   try {
@@ -36,7 +36,7 @@ serve(async (req) => {
     if (!apostila_id) {
       return new Response(JSON.stringify({ error: "apostila_id required" }), {
         status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
     const n = Math.min(Math.max(Number(count) || 10, 1), 20);
@@ -47,7 +47,7 @@ serve(async (req) => {
     if (!LOVABLE_API_KEY) {
       return new Response(JSON.stringify({ error: "LOVABLE_API_KEY missing" }), {
         status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
     const admin = createClient(SUPABASE_URL, SERVICE_ROLE);
@@ -60,7 +60,7 @@ serve(async (req) => {
     if (!apostila) {
       return new Response(JSON.stringify({ error: "Apostila not found" }), {
         status: 404,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -109,7 +109,7 @@ Gere ${n} questões inéditas no formato ENEM, cobrindo tópicos variados do con
       const errBody = await aiRes.text();
       return new Response(
         JSON.stringify({ error: "AI request failed", status: aiRes.status, details: errBody }),
-        { status: aiRes.status, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { status: aiRes.status, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } },
       );
     }
     const aiJson = await aiRes.json();
@@ -120,7 +120,7 @@ Gere ${n} questões inéditas no formato ENEM, cobrindo tópicos variados do con
     } catch {
       return new Response(
         JSON.stringify({ error: "AI returned invalid JSON", raw }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } },
       );
     }
 
@@ -128,7 +128,7 @@ Gere ${n} questões inéditas no formato ENEM, cobrindo tópicos variados do con
     if (!questions.length) {
       return new Response(JSON.stringify({ error: "No questions produced" }), {
         status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -161,18 +161,18 @@ Gere ${n} questões inéditas no formato ENEM, cobrindo tópicos variados do con
     if (insErr) {
       return new Response(
         JSON.stringify({ error: "Insert failed", details: insErr.message }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } },
       );
     }
 
     return new Response(
       JSON.stringify({ ok: true, inserted: inserted?.length ?? rows.length }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } },
     );
   } catch (e) {
     return new Response(JSON.stringify({ error: (e as Error).message }), {
       status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 });

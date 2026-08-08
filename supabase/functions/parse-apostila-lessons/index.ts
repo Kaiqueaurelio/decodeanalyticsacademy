@@ -1,3 +1,4 @@
+import { getCorsHeaders } from "../_shared/cors.ts";
 // v3.65.0: Otimização de estruturação de lições e limpeza atômica.
 // Parser: pega o `content` markdown existente da apostila e explode em
 // módulos (H1) → capítulos (H2) → lições (H3). Se não houver H3 dentro de um H2,
@@ -8,8 +9,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { requireUser } from "../_shared/auth-guard.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+const getCorsHeaders(req) = {
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
 };
@@ -123,9 +123,9 @@ function parseMarkdown(md: string): Module[] {
 }
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS") return new Response(null, { headers: getCorsHeaders(req) });
 
-  const auth = await requireUser(req, corsHeaders, { requireAdmin: true });
+  const auth = await requireUser(req, getCorsHeaders(req), { requireAdmin: true });
   if (!auth.ok) return auth.response;
 
   try {
@@ -133,7 +133,7 @@ serve(async (req) => {
     if (!apostila_id) {
       return new Response(JSON.stringify({ error: "apostila_id required" }), {
         status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -149,14 +149,14 @@ serve(async (req) => {
     if (aErr || !apostila) {
       return new Response(JSON.stringify({ error: "Apostila not found" }), {
         status: 404,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
     const md = (apostila.content as string) || "";
     if (md.trim().length < 40) {
       return new Response(JSON.stringify({ error: "Conteúdo insuficiente para estruturar." }), {
         status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -241,12 +241,12 @@ serve(async (req) => {
         chapters: chapterCount,
         lessons: lessonCount,
       }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } },
     );
   } catch (e) {
     return new Response(JSON.stringify({ error: (e as Error).message }), {
       status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 });

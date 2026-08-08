@@ -1,9 +1,9 @@
+import { getCorsHeaders } from "../_shared/cors.ts";
 // Edge function: chama Google AI Studio (Gemini) direto com a chave do usuário.
 // Faz fallback automático para Lovable AI Gateway em caso de erro.
 // Suporta streaming SSE no formato OpenAI-compatible (delta.content).
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+const getCorsHeaders(req) = {
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
@@ -105,10 +105,10 @@ import { requireUser } from "../_shared/auth-guard.ts";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
-  const auth = await requireUser(req, corsHeaders);
+  const auth = await requireUser(req, getCorsHeaders(req));
   if (!auth.ok) return auth.response;
 
   try {
@@ -124,7 +124,7 @@ Deno.serve(async (req) => {
     if (messages.length === 0) {
       return new Response(JSON.stringify({ error: "messages é obrigatório" }), {
         status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -140,7 +140,7 @@ Deno.serve(async (req) => {
           const transformed = googleToOpenAIStream(gResp.body);
           return new Response(transformed, {
             headers: {
-              ...corsHeaders,
+              ...getCorsHeaders(req),
               "Content-Type": "text/event-stream",
               "X-AI-Provider": "google-direct",
             },
@@ -157,7 +157,7 @@ Deno.serve(async (req) => {
     if (!LOVABLE_API_KEY) {
       return new Response(JSON.stringify({ error: "Nenhum provedor de IA configurado" }), {
         status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -172,13 +172,13 @@ Deno.serve(async (req) => {
       else if (status === 503) msg = "Serviço de IA temporariamente sobrecarregado. Tente em segundos.";
       return new Response(
         JSON.stringify({ error: msg, fallback: true, upstream_status: status }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { status: 200, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } },
       );
     }
 
     return new Response(lResp.body, {
       headers: {
-        ...corsHeaders,
+        ...getCorsHeaders(req),
         "Content-Type": "text/event-stream",
         "X-AI-Provider": "lovable-fallback",
       },
@@ -187,7 +187,7 @@ Deno.serve(async (req) => {
     console.error("gemini-direct error", e);
     return new Response(
       JSON.stringify({ error: e instanceof Error ? e.message : "Erro inesperado" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } },
     );
   }
 });

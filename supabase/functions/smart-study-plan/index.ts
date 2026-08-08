@@ -1,3 +1,4 @@
+import { getCorsHeaders } from "../_shared/cors.ts";
 // Plano de Estudos Inteligente — geração e replanejamento assistido pela Ella.
 //
 // Segurança: exige usuário autenticado; o plano é sempre gravado com o user_id
@@ -5,8 +6,7 @@
 // existente, a propriedade é verificada antes de qualquer escrita.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+const getCorsHeaders(req) = {
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
@@ -15,7 +15,7 @@ const corsHeaders = {
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
     status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
+    headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
   });
 
 const LEVELS = ["iniciante", "intermediario", "avancado"] as const;
@@ -351,7 +351,7 @@ ${SUGGESTION_SHAPE}`;
 
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS") return new Response(null, { headers: getCorsHeaders(req) });
 
   try {
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;

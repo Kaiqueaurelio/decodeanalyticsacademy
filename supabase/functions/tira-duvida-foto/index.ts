@@ -1,9 +1,9 @@
+import { getCorsHeaders } from "../_shared/cors.ts";
 // Receives a photo of an exercise, returns concept + hint + related apostila.
 // Suporta dual provider: Google AI Studio direto (chave do user) ou Lovable AI Gateway (fallback).
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+const getCorsHeaders(req) = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
@@ -163,7 +163,7 @@ async function embedLovable(apiKey: string, text: string): Promise<number[] | nu
 }
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS") return new Response(null, { headers: getCorsHeaders(req) });
 
   try {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
@@ -173,11 +173,11 @@ Deno.serve(async (req) => {
     const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    if (!authHeader) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } });
 
     const userClient = createClient(SUPABASE_URL, ANON_KEY, { global: { headers: { Authorization: authHeader } } });
     const { data: { user } } = await userClient.auth.getUser();
-    if (!user) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    if (!user) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } });
 
     const body = await req.json();
     const imageDataUrl: string | undefined = body.image;
@@ -185,7 +185,7 @@ Deno.serve(async (req) => {
     const providedImageUrl: string | undefined = body.image_url;
     const imageName: string | undefined = body.image_name;
     if (!imageDataUrl) {
-      return new Response(JSON.stringify({ error: "Imagem ausente" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ error: "Imagem ausente" }), { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } });
     }
 
     const admin = createClient(SUPABASE_URL, SERVICE_KEY);
@@ -194,7 +194,7 @@ Deno.serve(async (req) => {
     const { data: countToday } = await admin.rpc("count_tira_duvidas_today", { _user_id: user.id });
     if ((countToday ?? 0) >= DAILY_LIMIT) {
       return new Response(JSON.stringify({ error: `Limite diário de ${DAILY_LIMIT} dúvidas atingido. Tente novamente amanhã.` }), {
-        status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 429, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -229,10 +229,10 @@ Deno.serve(async (req) => {
             provider = "google-direct";
           } catch (e) {
             console.error("google fallback fatal", e);
-            return new Response(JSON.stringify({ error: "Falha na análise da imagem (provedor Google indisponível)." }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json", "X-AI-Provider": "google-direct" } });
+            return new Response(JSON.stringify({ error: "Falha na análise da imagem (provedor Google indisponível)." }), { status: 200, headers: { ...getCorsHeaders(req), "Content-Type": "application/json", "X-AI-Provider": "google-direct" } });
           }
         } else {
-          return new Response(JSON.stringify({ error: "Nenhum provedor de IA configurado." }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+          return new Response(JSON.stringify({ error: "Nenhum provedor de IA configurado." }), { status: 200, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } });
         }
       } else {
         try {
@@ -240,8 +240,8 @@ Deno.serve(async (req) => {
         } catch (e: any) {
           const status = e?.status;
           console.error("lovable vision falhou", status, e?.body?.slice?.(0, 300));
-          if (status === 429) return new Response(JSON.stringify({ error: "Muitas requisições. Tente novamente em instantes." }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json", "X-AI-Provider": "lovable-ai" } });
-          if (status === 402) return new Response(JSON.stringify({ error: "Créditos de IA esgotados. Ative sua chave Google AI Studio no Admin ou avise o administrador." }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json", "X-AI-Provider": "lovable-ai" } });
+          if (status === 429) return new Response(JSON.stringify({ error: "Muitas requisições. Tente novamente em instantes." }), { status: 200, headers: { ...getCorsHeaders(req), "Content-Type": "application/json", "X-AI-Provider": "lovable-ai" } });
+          if (status === 402) return new Response(JSON.stringify({ error: "Créditos de IA esgotados. Ative sua chave Google AI Studio no Admin ou avise o administrador." }), { status: 200, headers: { ...getCorsHeaders(req), "Content-Type": "application/json", "X-AI-Provider": "lovable-ai" } });
 
           if (GOOGLE_AI_API_KEY) {
             try {
@@ -249,10 +249,10 @@ Deno.serve(async (req) => {
               provider = "google-direct";
             } catch (e2) {
               console.error("google ultimate fallback fatal", e2);
-              return new Response(JSON.stringify({ error: "Falha na análise da imagem. Tente novamente em instantes." }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+              return new Response(JSON.stringify({ error: "Falha na análise da imagem. Tente novamente em instantes." }), { status: 200, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } });
             }
           } else {
-            return new Response(JSON.stringify({ error: "Falha na análise da imagem. Tente novamente em instantes." }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+            return new Response(JSON.stringify({ error: "Falha na análise da imagem. Tente novamente em instantes." }), { status: 200, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } });
           }
         }
       }
@@ -305,11 +305,11 @@ Deno.serve(async (req) => {
       related_apostila: relatedApostila,
       remaining_today: DAILY_LIMIT - (countToday ?? 0) - 1,
       provider,
-    }), { headers: { ...corsHeaders, "Content-Type": "application/json", "X-AI-Provider": provider } });
+    }), { headers: { ...getCorsHeaders(req), "Content-Type": "application/json", "X-AI-Provider": provider } });
   } catch (e) {
     console.error("fatal", e);
     return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown" }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 });

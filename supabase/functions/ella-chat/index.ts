@@ -1,3 +1,4 @@
+import { getCorsHeaders } from "../_shared/cors.ts";
 // Edge function: Ella — assistente admin com poder de criar/editar/excluir
 // no app via tool calling no Lovable AI Gateway.
 // v3.63.2 knowledge update: Notion Gallery, Notification Filter, Cover redundancy.
@@ -16,8 +17,7 @@ import {
   type AuthzCtx,
 } from "./security.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+const getCorsHeaders(req) = {
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
 };
@@ -982,7 +982,7 @@ ${SECURITY_GUARD}
 Proibido: mencionar "IA", "Lovable", "modelo de linguagem", "Gemini", ou qualquer tema de hacking/pentest. Você é a Ella, ponto.`;
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS") return new Response(null, { headers: getCorsHeaders(req) });
 
   try {
     const GOOGLE_AI_API_KEY = Deno.env.get("GOOGLE_AI_API_KEY");
@@ -992,11 +992,11 @@ Deno.serve(async (req) => {
     if (!GOOGLE_AI_API_KEY) throw new Error("Chave do provedor Google não configurada em Admin → Provedor do Assistente.");
 
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    if (!authHeader) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } });
 
     const userClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { global: { headers: { Authorization: authHeader } } });
     const { data: userData, error: userErr } = await userClient.auth.getUser();
-    if (userErr || !userData.user) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    if (userErr || !userData.user) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } });
 
     const userId = userData.user.id;
     const adminClient = createClient(SUPABASE_URL, SERVICE_KEY);
@@ -1031,7 +1031,7 @@ Deno.serve(async (req) => {
         {
           status: 429,
           headers: {
-            ...corsHeaders,
+            ...getCorsHeaders(req),
             "Content-Type": "application/json",
             "Retry-After": String(Math.max(Number(rate.retry_after_seconds ?? 60), 1)),
           },
@@ -1154,7 +1154,7 @@ Proibido: mencionar "IA", "modelo de linguagem", "Lovable", "Gemini" ou qualquer
         if ("errorStatus" in r) {
           return new Response(JSON.stringify({ error: friendlyError(r.errorStatus, r.errorText) }), {
             status: r.errorStatus === 429 ? 429 : 500,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
           });
         }
         const data = await r.json();
@@ -1164,13 +1164,13 @@ Proibido: mencionar "IA", "modelo de linguagem", "Lovable", "Gemini" ou qualquer
         const toolCalls = msg.tool_calls ?? [];
         if (!toolCalls.length) {
           return new Response(JSON.stringify({ reply: msg.content ?? "", actions: executedTools }), {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
           });
         }
         await runToolCalls(toolCalls);
       }
       return new Response(JSON.stringify({ reply: "Limite de passos atingido. Tente reformular.", actions: executedTools }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -1274,7 +1274,7 @@ Proibido: mencionar "IA", "modelo de linguagem", "Lovable", "Gemini" ou qualquer
 
     return new Response(stream, {
       headers: {
-        ...corsHeaders,
+        ...getCorsHeaders(req),
         "Content-Type": "text/event-stream; charset=utf-8",
         "Cache-Control": "no-cache",
         Connection: "keep-alive",
@@ -1282,6 +1282,6 @@ Proibido: mencionar "IA", "modelo de linguagem", "Lovable", "Gemini" ou qualquer
     });
 
   } catch (e: any) {
-    return new Response(JSON.stringify({ error: e?.message ?? "Erro interno" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    return new Response(JSON.stringify({ error: e?.message ?? "Erro interno" }), { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } });
   }
 });
