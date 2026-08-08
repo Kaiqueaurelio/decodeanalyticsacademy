@@ -164,6 +164,7 @@ function useAdminCopyPatch() {
       ["Configure alertas no pipeline para bloquear deploy quando forem detectadas issues de segurança relacionadas a Supabase search_path ou updates sensíveis de perfil.", "Configure alertas no pipeline para bloquear deploy quando forem detectadas issues de segurança relacionadas a Supabase search_path ou updates sensíveis de perfil."],
       ["Configure o pipeline para falhar o deploy automaticamente quando forem detectadas issues de segurança relacionadas a Supabase `search_path` ou updates sensíveis de perfil.", "Configure o pipeline para falhar o deploy automaticamente quando forem detectadas issues de segurança relacionadas a Supabase `search_path` ou updates sensíveis de perfil."],
       ["Adicionar um log de auditoria no admin com histórico de quem acessou exercícios, simulados e materiais, incluindo horário e ID do conteúdo.", "Adicionar um log de auditoria no admin com histórico de quem acessou exercícios, simulados e materiais, incluindo horário e ID do conteúdo."],
+      ["VERIFIQUE TODOS OS ERROS DO APP E OS CORRIJA OS", "VERIFIQUE TODOS OS ERROS DO APP E OS CORRIJA OS"],
 
     ]);
 
