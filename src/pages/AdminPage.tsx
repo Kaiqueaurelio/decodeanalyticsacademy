@@ -1113,235 +1113,34 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
             {/* APOSTILAS */}
             {tab === 'apostilas' && (
               <div className="space-y-6">
-                {/* Import Card */}
-                <Card className="overflow-hidden bg-card/40 backdrop-blur-md border-primary/20 shadow-xl" data-import-card>
-                  <div className="h-1 bg-gradient-to-r from-primary via-accent to-primary animate-pulse" />
-                  <CardHeader className="pb-2 pt-4 px-5">
-                    <CardTitle className="text-lg font-bold flex items-center gap-2">
-                      <Plus className="h-5 w-5 text-primary" />
-                      Central de Criação
-                    </CardTitle>
-                    <CardDescription className="text-[11px]">Crie novas apostilas via link, arquivo ou texto estruturado.</CardDescription>
-                  </CardHeader>
-                  <CardContent className="p-5 space-y-5 pt-0">
-                    <div className="flex items-center justify-between flex-wrap gap-2">
-                      <div className="flex items-center gap-2">
-                        <LinkIcon className="h-4 w-4 text-primary" />
-                        <h3 className="font-semibold text-sm">Importar Apostila</h3>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {!batchMode && importStep === 'input' && (
-                          <div className="inline-flex bg-muted rounded-full p-0.5">
-                            <button
-                              onClick={() => setImportMode('url')}
-                              className={`text-[10px] font-medium px-3 py-1 rounded-full transition-colors ${importMode === 'url' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}
-                            >
-                              URL
-                            </button>
-                            <button
-                              onClick={() => setImportMode('text')}
-                              className={`text-[10px] font-medium px-3 py-1 rounded-full transition-colors ${importMode === 'text' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}
-                            >
-                              Texto
-                            </button>
-                          </div>
-                        )}
-                        <button
-                          onClick={() => { setBatchMode(!batchMode); resetImportForm(); }}
-                          className={`text-[10px] font-medium px-3 py-1 rounded-full transition-colors ${batchMode ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:text-foreground'}`}
-                        >
-                          {batchMode ? 'Lote' : 'Modo Lote'}
-                        </button>
-                      </div>
-                    </div>
-
-                    {batchMode ? (
-                      <div className="space-y-3">
-                        <div>
-                          <Label className="text-xs text-muted-foreground">Cole várias URLs (uma por linha)</Label>
-                          <Textarea value={batchUrls} onChange={e => setBatchUrls(e.target.value)}
-                            placeholder={"https://notion.site/pagina-1\nhttps://exemplo.com/artigo"}
-                            rows={5} className="mt-1 text-xs font-mono" disabled={batchRunning} />
-                          <p className="text-[10px] text-muted-foreground mt-1">
-                            {batchUrls.split('\n').filter(u => u.trim().startsWith('http')).length} URL(s) detectada(s)
-                          </p>
-                        </div>
-                        {batchRunning && (
-                          <div className="space-y-2">
-                            <div className="flex items-center justify-between text-xs">
-                              <span className="text-muted-foreground">Importando...</span>
-                              <span className="font-medium">{batchProgress.current}/{batchProgress.total}</span>
-                            </div>
-                            <Progress value={(batchProgress.current / batchProgress.total) * 100} className="h-2" />
-                          </div>
-                        )}
-                        {batchProgress.results.length > 0 && (
-                          <div className="space-y-1 max-h-40 overflow-y-auto">
-                            {batchProgress.results.map((r, i) => (
-                              <div key={i} className={`flex items-center gap-2 text-xs p-2 rounded-lg ${r.status === 'ok' ? 'bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]' : 'bg-destructive/10 text-destructive'}`}>
-                                {r.status === 'ok' ? <CheckCircle className="h-3.5 w-3.5 shrink-0" /> : <AlertCircle className="h-3.5 w-3.5 shrink-0" />}
-                                <span className="truncate">{r.title}</span>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                        <Button onClick={handleBatchImport} disabled={batchRunning || !batchUrls.trim()} className="w-full gradient-primary text-primary-foreground">
-                          {batchRunning ? <><Loader2 className="h-4 w-4 animate-spin mr-1.5" /> Importando {batchProgress.current}/{batchProgress.total}</> : 'Importar Tudo'}
-                        </Button>
-                      </div>
-                    ) : importStep === 'input' ? (
-                      <div className="space-y-3">
-                        {importMode === 'url' ? (
-                          <>
-                            <div>
-                              <Label htmlFor="import-url" className="text-xs font-medium text-foreground">URL da Página</Label>
-                              <div className="flex gap-3 mt-1.5">
-                                <div className="relative flex-1">
-                                  <Input id="import-url" value={importUrl} onChange={e => setImportUrl(e.target.value)} placeholder="Ex: https://youtu.be/… ou https://notion.site/…"
-                                    className={importUrl.includes('notion') ? 'pr-20' : ''} />
-                                  {importUrl.includes('notion') && (
-                                    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-semibold bg-primary/10 text-primary px-2 py-0.5 rounded-full">Notion</span>
-                                  )}
-                                </div>
-                                <Button onClick={handleExtract} disabled={cloning || !importUrl.trim()} className="gradient-primary text-primary-foreground shrink-0">
-                                  {cloning ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Clonar'}
-                                </Button>
-                              </div>
-                            </div>
-                          </>
-                        ) : (
-                          <>
-                            {/* PDF Drop Zone */}
-                            <div
-                              onDragOver={e => { e.preventDefault(); e.stopPropagation(); }}
-                              onDrop={async (e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                const files = Array.from(e.dataTransfer.files);
-                                const file = files.find(f => /\.(pdf|txt|docx?)$/i.test(f.name));
-                                if (!file) { toast.error('Arraste um arquivo PDF, TXT ou DOCX'); return; }
-                                const tId = toast.loading(`Lendo ${file.name}...`);
-                                try {
-                                  const text = await extractTextFromFile(file, (p) => {
-                                    toast.loading(p.message, { id: tId });
-                                  });
-                                  if (!text || text.trim().length < 20) {
-                                    toast.error('Não foi possível extrair texto deste arquivo (pode estar protegido ou ser só imagens).', { id: tId });
-                                    return;
-                                  }
-                                  setImportRawText(prev => prev ? prev + '\n\n' + text : text);
-                                  if (!importTitle) setImportTitle(file.name.replace(/\.[^.]+$/, ''));
-                                  toast.success(`"${file.name}" — ${text.split(/\s+/).length} palavras extraídas`, { id: tId });
-                                } catch (err: any) {
-                                  toast.error(err?.message || 'Erro ao ler o arquivo', { id: tId });
-                                }
-                              }}
-                              className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-4 text-center cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors"
-                              onClick={() => {
-                                const input = document.createElement('input');
-                                input.type = 'file';
-                                input.accept = '.pdf,.txt,.doc,.docx';
-                                input.onchange = async (ev) => {
-                                  const file = (ev.target as HTMLInputElement).files?.[0];
-                                  if (!file) return;
-                                  const tId = toast.loading(`Lendo ${file.name}...`);
-                                  try {
-                                    const text = await extractTextFromFile(file, (p) => {
-                                      toast.loading(p.message, { id: tId });
-                                    });
-                                    if (!text || text.trim().length < 20) {
-                                      toast.error('Não foi possível extrair texto deste arquivo.', { id: tId });
-                                      return;
-                                    }
-                                    setImportRawText(prev => prev ? prev + '\n\n' + text : text);
-                                    if (!importTitle) setImportTitle(file.name.replace(/\.[^.]+$/, ''));
-                                    toast.success(`"${file.name}" — ${text.split(/\s+/).length} palavras extraídas`, { id: tId });
-                                  } catch (err: any) {
-                                    toast.error(err?.message || 'Erro ao ler o arquivo', { id: tId });
-                                  }
-                                };
-                                input.click();
-                              }}
-                            >
-                              <FileUp className="h-6 w-6 mx-auto text-muted-foreground mb-1.5" />
-                              <p className="text-xs font-medium text-foreground">Arraste um PDF, TXT ou DOCX aqui</p>
-                              <p className="text-[10px] text-muted-foreground mt-0.5">ou clique para selecionar (até 25MB)</p>
-                            </div>
-
-                            <div className="relative">
-                              <div className="absolute inset-x-0 top-1/2 border-t border-border" />
-                              <p className="relative bg-card text-[10px] text-muted-foreground text-center w-fit mx-auto px-2">ou cole o texto diretamente</p>
-                            </div>
-
-                            <div>
-                              <Label htmlFor="import-rawtext" className="text-xs font-medium text-foreground mb-1.5 block">Texto da Apostila</Label>
-                              <Textarea
-                                id="import-rawtext"
-                                value={importRawText}
-                                onChange={e => setImportRawText(e.target.value)}
-                                placeholder={"Cole aqui a aula bruta para estruturar com IA ou uma apostila já pronta para salvar direto.\n\nVocê pode colar texto com títulos, listas e links já organizados."}
-                                rows={14}
-                                className="min-h-[320px] resize-y leading-6"
-                              />
-                            </div>
-                          </>
-                        )}
-                        <div>
-                          <Label htmlFor="import-title" className="text-xs font-medium text-foreground">Título da Aula (opcional)</Label>
-                          <Input id="import-title" value={importTitle} onChange={e => setImportTitle(e.target.value)} placeholder="Ex: Estrutura de Dados — Árvores AVL (NP2)" className="mt-1.5" />
-                        </div>
-                        <div>
-                          <Label htmlFor="import-topic" className="text-xs font-medium text-foreground">Disciplina / Tópico</Label>
-                          <Input id="import-topic" value={importTopic} onChange={e => setImportTopic(e.target.value)} placeholder="Ex: Redes de Computadores, Banco de Dados" className="mt-1.5" />
-                        </div>
-                        {importMode === 'text' && importStep === 'input' && (
-                          <div className="space-y-3 p-4 rounded-xl bg-primary/5 border border-primary/10 shadow-inner">
-                            <div className="flex items-start gap-2.5">
-                              <Sparkles className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                              <div className="space-y-1">
-                                <p className="text-[11px] text-muted-foreground leading-relaxed">
-                                  Use <strong>Estruturar com Ella</strong> para organizar seu texto cru em módulos.
-                                </p>
-                                <p className="text-[10px] text-primary font-medium">
-                                  DICA: Se já tiver o texto pronto, use o <strong>Modo Word</strong> abaixo para formatar como se estivesse no Google Docs!
-                                </p>
-                              </div>
-                            </div>
-                            <div className="grid gap-3 sm:grid-cols-3">
-                              <Button 
-                                onClick={handleExtract} 
-                                disabled={cloning || !importRawText.trim()} 
-                                className="w-full gradient-primary text-primary-foreground shadow-lg shadow-primary/20 hover:scale-[1.02] transition-transform h-10"
-                              >
-                                {cloning ? <><Loader2 className="h-4 w-4 animate-spin mr-1.5" /> Estruturando...</> : <><Wand2 className="h-4 w-4 mr-2" /> Estruturar com Ella</>}
-                              </Button>
-                              <Button 
-                                onClick={() => {
-                                  if (!importTitle.trim()) {
-                                    toast.error("Dê um título antes de entrar no Modo Word");
-                                    return;
-                                  }
-                                  setImportContent(importRawText);
-                                  setImportStep('edit');
-                                }}
-                                disabled={cloning || !importRawText.trim()} 
-                                variant="outline" 
-                                className="w-full h-10 border-primary/20 hover:bg-primary/5 text-primary"
-                              >
-                                <FileText className="h-4 w-4 mr-2" /> Modo Word
-                              </Button>
-                              <Button 
-                                onClick={handleSaveReadyText} 
-                                disabled={cloning || !importRawText.trim() || !importTitle.trim()} 
-                                variant="outline" 
-                                className="w-full h-10 border-border/50 hover:bg-muted/50"
-                              >
-                                {cloning ? <><Loader2 className="h-4 w-4 animate-spin mr-1.5" /> Salvando...</> : <><Check className="h-4 w-4 mr-2" /> Salvar Rápido</>}
-                              </Button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
+                <ApostilaCreationCard
+                  batchMode={batchMode}
+                  setBatchMode={setBatchMode}
+                  importStep={importStep}
+                  setImportStep={setImportStep}
+                  importMode={importMode}
+                  setImportMode={setImportMode}
+                  importUrl={importUrl}
+                  setImportUrl={setImportUrl}
+                  importTitle={importTitle}
+                  setImportTitle={setImportTitle}
+                  importTopic={importTopic}
+                  setImportTopic={setImportTopic}
+                  importRawText={importRawText}
+                  setImportRawText={setImportRawText}
+                  batchUrls={batchUrls}
+                  setBatchUrls={setBatchUrls}
+                  batchRunning={batchRunning}
+                  batchProgress={batchProgress}
+                  cloning={cloning}
+                  handleExtract={handleExtract}
+                  handleBatchImport={handleBatchImport}
+                  handleSaveReadyText={handleSaveReadyText}
+                  resetImportForm={resetImportForm}
+                  extractTextFromFile={extractTextFromFile}
+                  setImportContent={setImportContent}
+                  dbCategories={dbCategories}
+                />
                     ) : importStep === 'edit' ? (
                       <div className="space-y-4">
                         <div className="flex items-center justify-between gap-2 p-3 rounded-lg bg-primary/10 text-primary text-xs border border-primary/20">
