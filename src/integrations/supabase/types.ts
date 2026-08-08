@@ -913,6 +913,36 @@ export type Database = {
         }
         Relationships: []
       }
+      auth_attempts: {
+        Row: {
+          attempts: number | null
+          created_at: string | null
+          id: string
+          identifier: string | null
+          ip_address: string | null
+          last_attempt: string | null
+          locked_until: string | null
+        }
+        Insert: {
+          attempts?: number | null
+          created_at?: string | null
+          id?: string
+          identifier?: string | null
+          ip_address?: string | null
+          last_attempt?: string | null
+          locked_until?: string | null
+        }
+        Update: {
+          attempts?: number | null
+          created_at?: string | null
+          id?: string
+          identifier?: string | null
+          ip_address?: string | null
+          last_attempt?: string | null
+          locked_until?: string | null
+        }
+        Relationships: []
+      }
       badges: {
         Row: {
           created_at: string
