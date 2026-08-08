@@ -183,7 +183,7 @@ export function ExercisesTab(props: ExercisesTabProps) {
                               apostila_id: selectedApostila, ...ex
                             });
                             if (!error) {
-                              setAiExercises(prev => prev.filter((_, idx) => idx !== i));
+                              setAiExercises(aiExercises.filter((_, idx) => idx !== i));
                               loadAll();
                               toast.success('Salvo!');
                             }
