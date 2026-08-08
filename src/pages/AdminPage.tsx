@@ -2090,75 +2090,22 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                 loadAll={loadAll}
               />
             )}
-          {isRA && (
-            <div className="px-2 py-1.5 text-[10px] text-muted-foreground">
-              Contas RA UNIP não recebem e-mail.
-            </div>
-          )}
-        </DropdownMenuContent>
-      </DropdownMenu>
-
-      <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) { setPwd(''); setConfirmPwd(''); setShowPwd(false); } }}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Definir nova senha</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3">
-            <div className="text-xs text-muted-foreground">
-              Usuário: <span className="font-medium text-foreground">{user.full_name || user.email}</span>
-              <br />
-              <span className="font-mono">{user.email}</span>
-            </div>
-            <div>
-              <Label className="text-xs">Nova senha</Label>
-              <div className="relative mt-1">
-                <Input
-                  type={showPwd ? 'text' : 'password'}
-                  value={pwd}
-                  onChange={(e) => setPwd(e.target.value)}
-                  placeholder="Mínimo 6 caracteres"
-                  autoComplete="new-password"
-                />
-                <Button
-                  type="button" size="icon" variant="ghost"
-                  className="absolute right-1 top-1 h-7 w-7"
-                  onClick={() => setShowPwd((s) => !s)}
-                >
-                  {showPwd ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                </Button>
-              </div>
-            </div>
-            <div>
-              <Label className="text-xs">Confirmar nova senha</Label>
-              <Input
-                type={showPwd ? 'text' : 'password'}
-                value={confirmPwd}
-                onChange={(e) => setConfirmPwd(e.target.value)}
-                placeholder="Repita a senha"
-                className="mt-1"
-                autoComplete="new-password"
-              />
-            </div>
-            <div className="flex items-center justify-between gap-2 pt-1">
-              <Button type="button" size="sm" variant="ghost" className="text-xs" onClick={generateSuggested}>
-                <PenTool className="h-3.5 w-3.5 mr-1.5" /> Gerar senha forte
-              </Button>
-              <div className="flex gap-2">
-                <Button type="button" size="sm" variant="outline" onClick={() => setOpen(false)} disabled={saving}>
-                  Cancelar
-                </Button>
-                <Button type="button" size="sm" onClick={handleSetPassword} disabled={saving}>
-                  {saving ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <CheckCircle className="h-3.5 w-3.5 mr-1.5" />}
-                  Salvar nova senha
-                </Button>
-              </div>
-            </div>
-            <p className="text-[11px] text-muted-foreground pt-1">
-              Informe a nova senha ao usuário por um canal seguro. O acesso anterior continuará válido até o usuário sair em outros dispositivos.
-            </p>
           </div>
-        </DialogContent>
-      </Dialog>
-    </>
+        </main>
+      </div>
+
+      <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+        <SheetContent side="left" className="p-0 w-72 bg-background border-r border-border">
+          <AdminSidebar
+            tab={tab} setTab={setTab}
+            stats={{ apostilas: apostilas.length, exercises: totalExercises, materials: materials.length, users: users.length }}
+            sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen}
+          />
+        </SheetContent>
+      </Sheet>
+    </div>
+    </CategoriesCtx.Provider>
   );
 }
+
+export default AdminPage;
