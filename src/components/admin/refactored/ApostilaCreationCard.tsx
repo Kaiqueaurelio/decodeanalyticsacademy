@@ -22,8 +22,8 @@ import { CategorySelect } from '@/components/admin/CategorySelect';
 interface ApostilaCreationCardProps {
   batchMode: boolean;
   setBatchMode: (v: boolean) => void;
-  importStep: 'input' | 'edit';
-  setImportStep: (v: 'input' | 'edit') => void;
+  importStep: 'input' | 'edit' | 'review';
+  setImportStep: (v: 'input' | 'edit' | 'review') => void;
   importMode: 'url' | 'text';
   setImportMode: (v: 'url' | 'text') => void;
   importUrl: string;
