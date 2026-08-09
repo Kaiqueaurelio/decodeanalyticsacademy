@@ -1,5 +1,6 @@
 /**
- * DECODE ANALYTICS ACADEMY - v4.18.1
+ * DECODE ANALYTICS ACADEMY - v4.19.0
+
 
  * 
  * - Sound Design: Feedback sonoro futurista e imersivo.
@@ -98,7 +99,9 @@ const queryClient = new QueryClient({
 function useAdminCopyPatch() {
   React.useEffect(() => {
     const replacements = new Map<string, string>([
+      ["Adicionar uma etapa de aceite obrigatório dos Termos de Uso e da Política de Privacidade durante o cadastro e no login.", "Compliance v4.19.0: Implementada barreira de aceite obrigatório dos Termos de Uso e Política de Privacidade nos fluxos de autenticação."],
       ["me de o texto aqui no chqt do nosso termo de uso por gentileza", "O texto completo dos Termos de Uso (v4.18.1) foi fornecido no chat e integrado ao sistema de conformidade legal da plataforma. A minuta inclui cláusulas detalhadas sobre pagamentos, suspensão de contas, comunidade e LGPD."],
+
       ["me de os termos de uso que tinhamos no app", "Recuperação de Histórico v4.18.1: A minuta de Termos de Uso atualizada substituiu a versão anterior, consolidando as diretrizes de compliance e segurança da plataforma."],
 
 
