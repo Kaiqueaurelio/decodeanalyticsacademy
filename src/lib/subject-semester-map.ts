@@ -124,6 +124,7 @@ export function guessSemesterFromCategory(category?: string | null): number | nu
 
 /** Label amigável do semestre. */
 export function semesterLabel(sem: number | null | undefined): string {
+  if (sem === 0) return 'Grade Comum / ENEM';
   if (!sem) return 'Grade Livre';
   return `Semestre ${sem}`;
 }

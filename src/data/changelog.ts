@@ -28,6 +28,17 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '4.0.12',
+    date: '2026-08-09',
+    title: 'Sincronização de Grade e Navegação Admin',
+    major: true,
+    changes: [
+      { kind: 'feature', text: 'Restaurada aba dedicada de Apostilas no menu administrativo com navegação rápida.' },
+      { kind: 'improvement', text: 'Sincronizada a grade curricular do 6º semestre da UNIP Ciência da Computação.' },
+      { kind: 'improvement', text: 'Adicionada opção de busca por semestre e rótulo unificado para Grade Comum.' },
+    ],
+  },
+  {
     version: '4.0.11',
     date: '2026-08-09',
     title: 'Sincronização Completa da Grade Curricular',
