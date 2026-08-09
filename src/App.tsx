@@ -6,6 +6,7 @@
  * - Auditoria Técnica 360º: Validação integral de fluxos Aluno/Admin sem regressões.
  * - Análise Comparativa: Diagnóstico de maturidade e unificação de instâncias.
  * - UX & Acessibilidade: Refinamento de conversão e contraste universal.
+ * - Autoridade & Transparência: Otimização SEO (Meta tags) e links institucionais.
  */
 
 import React, { Suspense, lazy } from "react";
