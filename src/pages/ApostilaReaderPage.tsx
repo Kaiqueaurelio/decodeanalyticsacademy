@@ -512,8 +512,29 @@ export default function ApostilaReaderPage() {
         )}
 
         {/* Content */}
-        <div ref={contentRef} className="flex-1 overflow-y-auto scroll-smooth">
-          <div className="mx-auto max-w-[68ch] px-5 py-8 md:px-10 md:py-12">
+        <div className="flex-1 overflow-hidden relative">
+          <button
+            onClick={() => setFocusMode(!focusMode)}
+            className={cn(
+              "fixed bottom-6 left-6 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-primary/20 text-primary border border-primary/40 backdrop-blur-md transition-all hover:bg-primary/30",
+              focusMode ? "opacity-100 scale-100" : "opacity-0 scale-90 md:opacity-40 md:scale-100 hover:opacity-100"
+            )}
+            title={focusMode ? "Sair do Modo Foco" : "Entrar no Modo Foco"}
+          >
+            {focusMode ? <X className="h-5 w-5" /> : <Maximize2 className="h-5 w-5" />}
+          </button>
+
+          <div 
+            ref={contentRef} 
+            className={cn(
+              "h-full overflow-y-auto scroll-smooth transition-all duration-500",
+              focusMode && "bg-background"
+            )}
+          >
+            <div className={cn(
+              "mx-auto w-full px-5 py-8 md:px-10 md:py-12 transition-all duration-500",
+              focusMode ? "max-w-3xl py-16 md:py-24" : "max-w-[68ch]"
+            )}>
             {lessonLoading ? (
               <div className="flex items-center justify-center py-16">
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
