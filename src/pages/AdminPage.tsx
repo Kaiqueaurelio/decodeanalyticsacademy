@@ -1,5 +1,5 @@
 /**
- * DECODE ANALYTICS ACADEMY - v4.0.14
+ * DECODE ANALYTICS ACADEMY - v4.1.0
  * 
  * - Verificação Final: Testes de responsividade automatizados concluídos.
  * - Mobile First Audit: UI milimetricamente pensada para dispositivos móveis.
@@ -1642,7 +1642,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
               aria-label="Trocar de seção"
             >
               <h2 className="text-base font-bold text-foreground truncate">{tabTitles[tab].title}</h2>
-              <p className="text-[10px] text-muted-foreground hidden sm:block truncate">{tabTitles[tab].desc}</p>
+              <p className="text-[10px] text-muted-foreground hidden sm:block truncate">{tabTitles[tab].desc} · v4.1.0</p>
             </button>
 
 

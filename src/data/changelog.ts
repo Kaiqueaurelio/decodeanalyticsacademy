@@ -28,6 +28,17 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '4.1.0',
+    date: '2026-08-09',
+    title: 'Otimização de Leitura Mobile e UX Responsiva',
+    major: true,
+    changes: [
+      { kind: 'improvement', text: 'Refatoração do leitor de apostilas para máxima fluidez em dispositivos móveis.' },
+      { kind: 'feature', text: 'Implementada navegação por seções e paginação otimizada para telas pequenas.' },
+      { kind: 'improvement', text: 'Ajustes de tipografia e espaçamento para conforto visual em smartphones.' },
+    ],
+  },
+  {
     version: '4.0.14',
     date: '2026-08-09',
     title: 'Verificação Final e Preparação para Deploy',

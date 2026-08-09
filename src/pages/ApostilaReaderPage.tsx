@@ -315,8 +315,8 @@ export default function ApostilaReaderPage() {
   }
 
   return (
-    <div className="flex h-screen w-full bg-background text-foreground overflow-hidden">
-      {/* Logo persistente — sempre visível durante a leitura */}
+    <div className="flex h-screen w-full bg-background text-foreground overflow-hidden flex-col md:flex-row">
+      {/* Logo persistente — sempre visível durante a leitura (Desktop) */}
       <div className="pointer-events-none fixed bottom-4 right-4 z-30 hidden max-w-[min(22rem,calc(100vw-2rem))] items-center gap-3 rounded-2xl border border-primary/40 bg-background/90 px-4 py-3 shadow-[0_0_30px_-5px_hsl(var(--primary)/0.4)] backdrop-blur-xl lg:flex xl:bottom-6 xl:right-6 xl:gap-4 xl:px-5 xl:py-4">
         <img
           src={logoOwl}
@@ -332,6 +332,7 @@ export default function ApostilaReaderPage() {
           <span className="mt-1 font-display text-xs font-bold tracking-normal text-primary xl:text-sm">
             ACADEMY
           </span>
+          <span className="mt-0.5 text-[10px] font-medium text-muted-foreground/60 tabular-nums">v4.1.0</span>
         </div>
       </div>
 
@@ -461,10 +462,11 @@ export default function ApostilaReaderPage() {
         </div>
 
         {searchOpen && (
-          <div className="border-b border-border/60 bg-background/95 backdrop-blur px-3 py-2 md:px-6">
+          <div className="border-b border-border/60 bg-background/95 backdrop-blur px-3 py-2 md:px-6 animate-in slide-in-from-top duration-200">
             <Input
               autoFocus
-              placeholder="Buscar por título de lição, capítulo ou módulo..."
+              placeholder="Buscar lição, capítulo ou módulo..."
+              className="h-10 text-sm"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
