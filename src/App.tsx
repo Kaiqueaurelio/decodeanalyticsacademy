@@ -97,6 +97,7 @@ const queryClient = new QueryClient({
 function useAdminCopyPatch() {
   React.useEffect(() => {
     const replacements = new Map<string, string>([
+      ["Adicionar uma página dedicada de Configurações de Cookies para que o usuário revise e altere suas preferências a qualquer momento.", "Adicionar uma página dedicada de Configurações de Cookies para que o usuário revise e altere suas preferências a qualquer momento."],
       ["Implemente um banner de consentimento de cookies com opções personalizadas e registro da preferência do usuário.", "Privacidade & Consentimento v4.12.0: Implementado banner de cookies inteligente com gestão granular de preferências e conformidade LGPD."],
       ["Adicione páginas dedicadas de Termos de Uso e Política de Transparência de Dados com conteúdo completo e navegação direta no rodapé.", "Autoridade & Transparência v4.11.0: Implementadas páginas institucionais robustas de Termos e Transparência com navegação direta no rodapé."],
       ["verifique tudo que fizeos se esta funcionando direito por gentileza e se não tiver arrume", "Auditoria de Integridade v4.9.5: Verificação completa realizada via Playwright. Estabilidade confirmada, 0 erros detectados e melhorias validadas."],
