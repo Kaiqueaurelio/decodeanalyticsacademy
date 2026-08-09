@@ -35,7 +35,9 @@ import {
   LogOut,
   Newspaper,
   CheckSquare,
+  HeartHandshake,
 } from 'lucide-react';
+
 import logoOwl from '@/assets/owl-icon.png';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
@@ -91,8 +93,10 @@ const menuGroups: { label: string; items: MenuItem[] }[] = [
     label: 'Conta',
     items: [
       { to: '/profile', icon: User, label: 'Meu Perfil' },
+      { to: '/apoie', icon: HeartHandshake, label: 'Apoie o App' },
     ],
   },
+
 ];
 
 

@@ -45,6 +45,18 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '4.21.0',
+    date: '2026-08-09',
+    title: 'Apoio Voluntário & Transparência',
+    major: false,
+    changes: [
+      { kind: 'feature', text: 'Lançada a página "Apoie o Projeto" com canal de doação voluntária via PIX para manutenção do ecossistema.' },
+      { kind: 'improvement', text: 'Consolidado o compromisso de gratuidade vitalícia da plataforma para todos os alunos.' },
+      { kind: 'improvement', text: 'Adicionado atalho de apoio no menu lateral para incentivar a sustentabilidade do projeto.' },
+    ]
+  },
+  {
+
     version: '4.20.0',
     date: '2026-08-09',
     title: 'Auditoria Legal & Segurança',
