@@ -28,6 +28,17 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '4.0.0',
+    date: '2026-08-09',
+    title: 'Estúdio Visual Photoroom e Refinamento Admin',
+    major: true,
+    changes: [
+      { kind: 'feature', text: 'Lançada a Central Photoroom no Admin para processamento avançado de imagens e remoção de fundos.' },
+      { kind: 'improvement', text: 'Integrada a ferramenta de otimização visual diretamente no fluxo de edição de apostilas.' },
+      { kind: 'improvement', text: 'Melhorada a hierarquia visual da sidebar administrativa com novos atalhos de utilitários.' },
+    ],
+  },
+  {
     version: '3.99.0',
     date: '2026-08-09',
     title: 'Segurança e Gestão de Segredos',

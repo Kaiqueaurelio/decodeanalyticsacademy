@@ -114,7 +114,97 @@ function CategorySelect({ value, onValueChange, placeholder }: { value: string; 
   );
 }
 
-type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements' | 'calendar' | 'testimonials' | 'ai' | 'performance' | 'smoke' | 'diagnostics' | 'ads' | 'ads-chat' | 'social' | 'rss' | 'courses' | 'changelog' | 'leads' | 'ella-audit' | 'security-alerts' | 'sponsors' | 'tasks' | 'edit' | 'review';
+const PH_API_URL = 'https://sdk.photoroom.com/v1/segment';
+
+function PhotoroomStudio() {
+  const [file, setFile] = useState<File | null>(null);
+  const [processing, setProcessing] = useState(false);
+  const [result, setResult] = useState<string | null>(null);
+
+  const processImage = async () => {
+    if (!file) return;
+    setProcessing(true);
+    try {
+      const formData = new FormData();
+      formData.append('image_file', file);
+      
+      const response = await fetch(PH_API_URL, {
+        method: 'POST',
+        headers: {
+          'x-api-key': 'sk_pr_default_e56c0ee2e1dcae4788205851cc3508744c44627e',
+        },
+        body: formData,
+      });
+
+      if (!response.ok) throw new Error('Falha no processamento Photoroom');
+      
+      const blob = await response.blob();
+      setResult(URL.createObjectURL(blob));
+      toast.success('Imagem processada com sucesso!');
+    } catch (error) {
+      console.error(error);
+      toast.error('Erro ao processar imagem via Photoroom.');
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  return (
+    <Card className="rounded-[2rem] border-primary/20 bg-card/50 backdrop-blur-sm overflow-hidden">
+      <CardHeader>
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 rounded-xl bg-primary/10">
+            <Wand2 className="h-5 w-5 text-primary" />
+          </div>
+          <div>
+            <CardTitle>Estúdio Visual Photoroom</CardTitle>
+            <CardDescription>Remova fundos e otimize imagens para apostilas e anúncios</CardDescription>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="flex flex-col items-center justify-center border-2 border-dashed border-border/50 rounded-3xl p-8 bg-background/30 hover:bg-background/50 transition-colors">
+          {!file && (
+            <label className="flex flex-col items-center cursor-pointer">
+              <Upload className="h-10 w-10 text-muted-foreground mb-3" />
+              <span className="text-sm font-medium">Clique para enviar imagem</span>
+              <input type="file" className="hidden" accept="image/*" onChange={(e) => setFile(e.target.files?.[0] || null)} />
+            </label>
+          )}
+          {file && !result && (
+            <div className="text-center space-y-4">
+              <div className="text-sm font-medium text-primary bg-primary/10 px-4 py-2 rounded-full inline-block">{file.name}</div>
+              <div className="flex gap-3 justify-center">
+                <Button variant="ghost" size="sm" onClick={() => setFile(null)}>Trocar</Button>
+                <Button size="sm" onClick={processImage} disabled={processing}>
+                  {processing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
+                  Remover Fundo
+                </Button>
+              </div>
+            </div>
+          )}
+          {result && (
+            <div className="space-y-4 w-full">
+              <div className="aspect-video relative rounded-2xl overflow-hidden bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] border border-border">
+                <img src={result} alt="Resultado" className="w-full h-full object-contain" />
+              </div>
+              <div className="flex gap-3 justify-center">
+                <Button variant="ghost" size="sm" onClick={() => { setFile(null); setResult(null); }}>Novo</Button>
+                <a href={result} download="photoroom-result.png">
+                  <Button size="sm">
+                    <Download className="h-4 w-4 mr-2" /> Baixar Resultado
+                  </Button>
+                </a>
+              </div>
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements' | 'calendar' | 'testimonials' | 'ai' | 'performance' | 'smoke' | 'diagnostics' | 'ads' | 'ads-chat' | 'social' | 'rss' | 'courses' | 'changelog' | 'leads' | 'ella-audit' | 'security-alerts' | 'sponsors' | 'tasks' | 'photoroom' | 'edit' | 'review';
 
 const ACCEPT_MAP: Record<string, string> = {
   pdf: '.pdf', image: 'image/*', gif: '.gif,image/gif',
@@ -1489,6 +1579,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
     leads: { title: 'Interessados em Patrocínio', desc: 'Briefings recebidos e histórico de contato' },
     sponsors: { title: 'Gestão de Anunciantes', desc: 'Controle marcas e logos para o Media Kit' },
     tasks: { title: 'Gerenciador de Tarefas', desc: 'Organize suas atividades administrativas' },
+    photoroom: { title: 'Estúdio Visual Photoroom', desc: 'Remoção de fundo e otimização de imagens via IA' },
     edit: { title: 'Editar Apostila', desc: 'Modo de edição manual' },
     review: { title: 'Revisar Apostila', desc: 'Revisão do conteúdo gerado' },
   };
@@ -3446,6 +3537,12 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
             {tab === 'tasks' && (
               <div id="tasks-section" className="animate-in fade-in slide-in-from-bottom-2 duration-300">
                 <TaskManager />
+              </div>
+            )}
+
+            {tab === 'photoroom' && (
+              <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <PhotoroomStudio />
               </div>
             )}
 
