@@ -34,6 +34,7 @@ import {
   RotateCcw,
   LogOut,
   Newspaper,
+  CheckSquare,
 } from 'lucide-react';
 import logoOwl from '@/assets/owl-icon.png';
 import { Button } from '@/components/ui/button';
@@ -96,9 +97,9 @@ const menuGroups: { label: string; items: MenuItem[] }[] = [
 
 
 const adminMenuItems = [
-  { to: '/admin', icon: Users, label: 'Usuários' },
-  { to: '/admin/financeiro', icon: TrendingUp, label: 'Financeiro' },
-  { to: '/admin/relatorios', icon: BarChart3, label: 'Relatórios' },
+  { to: '/admin', icon: LayoutDashboard, label: 'Resumo' },
+  { to: '/admin?tab=apostilas', icon: BookOpen, label: 'Apostilas' },
+  { to: '/admin?tab=tasks', icon: CheckSquare, label: 'Minhas Tarefas' },
 ];
 
 const railItems = [

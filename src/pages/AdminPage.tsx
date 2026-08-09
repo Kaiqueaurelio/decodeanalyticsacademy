@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef, useMemo, useContext, createContext } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -25,7 +25,7 @@ import {
   Link as LinkIcon, Loader2, AlertCircle, Edit, Download, File, Image, Video, Music, FileSpreadsheet, Presentation,
   Users, ShieldBan, ShieldCheck, ShieldAlert, Search, Menu, X, Activity, GraduationCap, FolderOpen, Settings, RefreshCw,
   Sun, Moon, FileUp, PenTool, Wand2, Megaphone, Combine, Calendar as CalIcon, MessageSquare, MessageSquareQuote, Link2, FileDown, MoreHorizontal, Paperclip, Rss, Info, ExternalLink, ChevronRight, History, Store,
-  Sparkles, Check
+  Sparkles, Check, CheckSquare
 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -74,6 +74,7 @@ import { RssFeedsManagerEnhanced } from '@/components/admin/RssFeedsManagerEnhan
 import { FreeCoursesManager } from '@/components/admin/FreeCoursesManager';
 import { AdminSponsorsManager } from '@/components/admin/AdminSponsorsManager';
 import { ApostilaExportDialog } from '@/components/admin/ApostilaExportDialog';
+import { TaskManager } from '@/components/admin/TaskManager';
 
 type Apostila = Tables<'apostilas'>;
 type Exercise = Tables<'exercises'>;
@@ -113,7 +114,7 @@ function CategorySelect({ value, onValueChange, placeholder }: { value: string; 
   );
 }
 
-type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements' | 'calendar' | 'testimonials' | 'ai' | 'performance' | 'smoke' | 'diagnostics' | 'ads' | 'ads-chat' | 'social' | 'rss' | 'courses' | 'changelog' | 'leads' | 'ella-audit' | 'security-alerts' | 'sponsors' | 'edit' | 'review';
+type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements' | 'calendar' | 'testimonials' | 'ai' | 'performance' | 'smoke' | 'diagnostics' | 'ads' | 'ads-chat' | 'social' | 'rss' | 'courses' | 'changelog' | 'leads' | 'ella-audit' | 'security-alerts' | 'sponsors' | 'tasks' | 'edit' | 'review';
 
 const ACCEPT_MAP: Record<string, string> = {
   pdf: '.pdf', image: 'image/*', gif: '.gif,image/gif',
@@ -1487,6 +1488,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
     changelog: { title: 'Histórico de Versões', desc: 'Tudo que foi criado, alterado e corrigido na plataforma' },
     leads: { title: 'Interessados em Patrocínio', desc: 'Briefings recebidos e histórico de contato' },
     sponsors: { title: 'Gestão de Anunciantes', desc: 'Controle marcas e logos para o Media Kit' },
+    tasks: { title: 'Gerenciador de Tarefas', desc: 'Organize suas atividades administrativas' },
     edit: { title: 'Editar Apostila', desc: 'Modo de edição manual' },
     review: { title: 'Revisar Apostila', desc: 'Revisão do conteúdo gerado' },
   };
@@ -3207,7 +3209,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
 
             {/* USERS */}
             {tab === 'users' && (
-              <div className="space-y-6">
+              <div id="users-section" className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
                 {/* Cabeçalho com cadastro manual */}
                 <div className="flex items-center justify-between gap-3 flex-wrap">
                   <div>
@@ -3439,6 +3441,12 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
             )}
             {tab === 'rss' && (
               <RssFeedsManagerEnhanced />
+            )}
+
+            {tab === 'tasks' && (
+              <div id="tasks-section" className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <TaskManager />
+              </div>
             )}
 
             {/* COURSES */}

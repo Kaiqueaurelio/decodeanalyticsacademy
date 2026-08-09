@@ -28,6 +28,39 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '3.87.0',
+    date: '2026-08-08',
+    title: 'Navegação e Integração de Tarefas Admin',
+    major: true,
+    changes: [
+      { kind: 'feature', text: 'Integrado o Gerenciador de Tarefas na Sidebar administrativa para acesso rápido.' },
+      { kind: 'improvement', text: 'Otimizada a navegação do painel admin com transições suaves e hierarquia visual refinada.' },
+      { kind: 'fix', text: 'Corrigida a ativação de ícones e rotas na sidebar para a seção de Administração.' },
+    ],
+  },
+  {
+    version: '3.86.0',
+    date: '2026-08-08',
+    title: 'Gerenciador de Tarefas e Modo de Depuração',
+    major: true,
+    changes: [
+      { kind: 'feature', text: 'Implementado módulo de Gerenciamento de Tarefas com CRUD completo, persistência local, filtros e busca em tempo real.' },
+      { kind: 'improvement', text: 'Ativado Modo de Depuração Avançado para detecção proativa de erros e componentes ausentes em ambiente de desenvolvimento.' },
+      { kind: 'improvement', text: 'Refinamento do sistema de mapeamento dinâmico para suporte a novos casos de uso operacionais.' },
+    ],
+  },
+  {
+    version: '3.85.0',
+    date: '2026-08-08',
+    title: 'Otimização Estrutural do SGC',
+    major: true,
+    changes: [
+      { kind: 'improvement', text: 'Auditoria técnica e estrutural do SGC concluída com sucesso.' },
+      { kind: 'fix', text: 'Sincronizada visibilidade de apostilas entre painel Aluno e Admin.' },
+      { kind: 'improvement', text: 'Validação de estabilidade nos fluxos de edição e gerenciamento de materiais.' },
+    ],
+  },
+  {
     version: '3.84.0',
     date: '2026-08-08',
     title: 'Migração Definitiva para o Backend Integrado',

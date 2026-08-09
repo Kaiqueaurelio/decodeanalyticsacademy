@@ -2,14 +2,14 @@ import {
   BarChart3, BookOpen, PenLine, FolderOpen, GraduationCap, Users, Megaphone,
   Calendar as CalIcon, MessageSquareQuote, MessageSquare, Activity, CheckCircle,
   AlertCircle, History, ShieldCheck, ShieldAlert, Rss, Store, HandCoins, Heart,
-  Sparkles, type LucideIcon,
+  Sparkles, CheckSquare, type LucideIcon,
 } from 'lucide-react';
 
 export type AdminTabId =
   | 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements'
   | 'calendar' | 'testimonials' | 'ai' | 'performance' | 'smoke' | 'diagnostics'
   | 'ads' | 'ads-chat' | 'social' | 'rss' | 'courses' | 'changelog' | 'leads'
-  | 'ella-audit' | 'security-alerts' | 'sponsors' | 'edit' | 'review';
+  | 'ella-audit' | 'security-alerts' | 'sponsors' | 'tasks' | 'edit' | 'review';
 
 export type AdminNavItem = {
   id: AdminTabId;
@@ -35,6 +35,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     label: 'Início',
     items: [
       { id: 'overview', label: 'Painel Operacional', short: 'Geral', icon: BarChart3, desc: 'Resumo completo da plataforma', keywords: 'dashboard home painel resumo' },
+      { id: 'tasks', label: 'Gerenciador de Tarefas', short: 'Tarefas', icon: CheckSquare, desc: 'Organize suas atividades administrativas', keywords: 'tarefas checklist todo afazeres' },
     ],
   },
   {
