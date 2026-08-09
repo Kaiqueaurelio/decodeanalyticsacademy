@@ -45,6 +45,16 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '4.15.1',
+    date: '2026-08-10',
+    title: 'Resultados da Auditoria de Segurança',
+    major: false,
+    changes: [
+      { kind: 'security', text: 'Mapeamento dos resultados do teste de penetração e auditoria de cibersegurança.' },
+      { kind: 'improvement', text: 'Adicionado rastreamento de descobertas técnicas para hardening do sistema.' },
+    ]
+  },
+  {
     version: '4.15.0',
     date: '2026-08-10',
     title: 'Auditoria de Segurança & Pentest',
