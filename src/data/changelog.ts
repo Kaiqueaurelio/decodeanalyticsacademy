@@ -28,6 +28,17 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '3.94.0',
+    date: '2026-08-09',
+    title: 'Correção de Visibilidade e Sincronização Dual',
+    major: true,
+    changes: [
+      { kind: 'fix', text: 'Corrigida a lógica de filtragem de semestre para garantir que apostilas sem semestre definido apareçam tanto para Aluno quanto para Admin.' },
+      { kind: 'improvement', text: 'Auditoria técnica realizada com sucesso usando credenciais de teste para validar paridade de visibilidade.' },
+      { kind: 'fix', text: 'Refinada a detecção de apostilas no Painel Operacional Admin para evitar que materiais "livres" fiquem ocultos nos filtros.' },
+    ],
+  },
+  {
     version: '3.93.0',
     date: '2026-08-09',
     title: 'Ações em Lote e Gestão de Massa',
