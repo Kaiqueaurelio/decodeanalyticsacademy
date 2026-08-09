@@ -45,6 +45,16 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '4.18.0',
+    date: '2026-08-10',
+    title: 'Minuta Legal & Compliance',
+    major: true,
+    changes: [
+      { kind: 'content', text: 'Implementada minuta estruturada de Termos de Uso para a Decode Analytics Academy.' },
+      { kind: 'improvement', text: 'Mapeamento de diretrizes legais e conformidade para operação da plataforma.' },
+    ]
+  },
+  {
     version: '4.17.0',
     date: '2026-08-10',
     title: 'Monitoramento & Log de Atividades',
