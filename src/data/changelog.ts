@@ -28,6 +28,16 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '4.6.1',
+    date: '2026-08-09',
+    title: 'Consolidação de Diagnóstico e Auditoria v4.6',
+    major: false,
+    changes: [
+      { kind: 'improvement', text: 'Refinamento do sistema de auditoria de patches para incluir a varredura aprimorada de recursos.' },
+      { kind: 'fix', text: 'Sincronização global de versão v4.6.1 e auditoria técnica de estabilidade final.' },
+    ],
+  },
+  {
     version: '4.6.0',
     date: '2026-08-09',
     title: 'Varredura de Componentes e Validação de Recursos',
