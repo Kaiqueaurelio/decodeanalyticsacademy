@@ -197,7 +197,7 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
       
       const isEnem = (a.category || '').toUpperCase().includes('ENEM');
       
-      // Detecção de aba para separação ENEM vs CC
+      // Detecção de aba para separação ENEM vs Faculdade
       const searchParams = new URLSearchParams(window.location.search);
       const activeTab = searchParams.get('tab');
       
