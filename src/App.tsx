@@ -1,9 +1,9 @@
 /**
- * DECODE ANALYTICS ACADEMY - v4.5.0
+ * DECODE ANALYTICS ACADEMY - v4.6.0
  * 
+ * - Varredura de Recursos: Validação HTTP de imagens, fontes, CSS, scripts e ícones.
+ * - Detecção de Componentes Ausentes: Comparação da árvore esperada com o DOM.
  * - Auditoria Técnica 360º: Validação integral de fluxos Aluno/Admin sem regressões.
- * - Plano de Gamificação: Estrutura para XP, Badges e Streaks (Roadmap v4.5+).
- * - Estabilidade Garantida: Refinamento de erros silenciosos e logs de performance.
  */
 
 import React, { Suspense, lazy } from "react";

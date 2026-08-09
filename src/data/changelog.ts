@@ -28,6 +28,18 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '4.6.0',
+    date: '2026-08-09',
+    title: 'Varredura de Componentes e Validação de Recursos',
+    major: true,
+    changes: [
+      { kind: 'feature', text: 'Nova aba "Varredura" no Diagnóstico: compara a árvore de componentes esperada com o DOM renderizado.' },
+      { kind: 'feature', text: 'Validação HTTP (HEAD com fallback GET) de imagens, fontes @font-face, CSS, scripts, favicons e manifest.' },
+      { kind: 'feature', text: 'Relatório consolidado por tipo de recurso com caminho esperado, status HTTP e exportação em JSON.' },
+      { kind: 'improvement', text: 'Listagem global de caminhos esperados (assets do código e rotas) destacando os não localizados.' },
+    ],
+  },
+  {
     version: '4.5.0',
     date: '2026-08-09',
     title: 'Auditoria 360º & Plano de Gamificação',
