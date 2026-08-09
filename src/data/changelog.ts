@@ -50,7 +50,7 @@ export const CHANGELOG: Release[] = [
     changes: [
       { kind: 'improvement', text: 'Refinamento da seção de Prova Social com depoimentos dinâmicos.' },
       { kind: 'feature', text: 'Adicionado selo de destaque para o Modo ENEM 2026.' },
-      { kind: 'style', text: 'Otimização de contraste e acessibilidade em botões e fontes secundárias.' },
+      { kind: 'improvement', text: 'Otimização de contraste e acessibilidade em botões e fontes secundárias.' },
     ]
   },
   {
