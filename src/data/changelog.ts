@@ -45,6 +45,17 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '4.22.0',
+    date: '2026-08-09',
+    title: 'Expansão de Canais de Apoio',
+    major: false,
+    changes: [
+      { kind: 'feature', text: 'Integrado link de pagamento SumUp para doações via cartão de crédito e outros métodos digitais.' },
+      { kind: 'improvement', text: 'Redesign da seção de apoio com layout otimizado para múltiplos métodos (PIX e Link de Pagamento).' },
+      { kind: 'improvement', text: 'Aprimoramento da experiência mobile na página de suporte ao projeto.' },
+    ]
+  },
+  {
     version: '4.21.0',
     date: '2026-08-09',
     title: 'Apoio Voluntário & Transparência',
