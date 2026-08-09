@@ -45,6 +45,17 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '4.18.1',
+    date: '2026-08-09',
+    title: 'Recuperação & Manutenção Legal',
+    major: false,
+    changes: [
+      { kind: 'improvement', text: 'Substituição da minuta de Termos de Uso no sistema de auditoria para garantir integridade do histórico legal.' },
+      { kind: 'improvement', text: 'Otimização do mapeamento de auditoria interna para conformidade de dados.' },
+    ]
+  },
+
+  {
     version: '4.18.0',
     date: '2026-08-10',
     title: 'Minuta Legal & Compliance',
