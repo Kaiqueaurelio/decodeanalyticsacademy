@@ -122,7 +122,7 @@ const features = [
   { icon: Flame, name: 'Gamificação & XP', desc: 'Pontos, badges, streaks e ranking entre alunos', color: '#f59e0b' },
 ];
 
-const words = ['Ciência da Computação.', 'Sistemas de Informação.', 'Engenharia da Computação.', 'inteligência.', 'eficiência.', 'tecnologia.', 'foco total.'];
+const words = ['Ciência da Computação.', 'Sistemas de Informação.', 'Engenharia da Computação.', 'inteligência.', 'eficiência.', 'tecnologia.', 'Modo ENEM 2026.', 'foco total.'];
 
 
 const roadmap = [
