@@ -200,7 +200,13 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
       
       // Filtro de semestre integrado
       if (filterSemester && filterSemester !== 'all') {
-        if ((a as any).semester?.toString() !== filterSemester) return false;
+        const rowSemester = (a as any).semester;
+        if (rowSemester !== undefined && rowSemester !== null) {
+           if (rowSemester.toString() !== filterSemester) return false;
+        } else if (filterSemester !== '0' && filterSemester !== 'none') {
+           // Se a apostila não tem semestre e o filtro não é "sem semestre", oculta
+           return false;
+        }
       }
 
       const ts = new Date(a.created_at).getTime();
