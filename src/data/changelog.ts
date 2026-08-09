@@ -28,6 +28,17 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '4.0.6',
+    date: '2026-08-09',
+    title: 'Filtros Avançados e Otimização de Busca Admin',
+    major: true,
+    changes: [
+      { kind: 'feature', text: 'Implementados novos filtros de busca por categoria, status e ordenação temporal no Painel Operacional.' },
+      { kind: 'improvement', text: 'Adicionada auditoria de integridade visual e saúde de materiais com alertas críticos no Admin.' },
+      { kind: 'improvement', text: 'Otimizada a performance da lista de apostilas com carregamento infinito e debounce de busca.' },
+    ],
+  },
+  {
     version: '4.0.5',
     date: '2026-08-09',
     title: 'Sincronização de Grade e Navegação Persistente',
