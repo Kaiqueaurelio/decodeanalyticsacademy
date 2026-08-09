@@ -1,10 +1,11 @@
 /**
- * DECODE ANALYTICS ACADEMY - v4.9.7
+ * DECODE ANALYTICS ACADEMY - v4.11.0
  * 
  * - Sound Design: Feedback sonoro para gamificação e interações.
  * - Modo Foco: Experiência de leitura imersiva.
  * - Hall da Fama: Ranking de performance.
  * - Checklist de Publicação: Garantia de qualidade acadêmica.
+ * - Páginas Institucionais: Conteúdo completo de Termos e Transparência.
  */
 
 export type ChangeKind = 'feature' | 'fix' | 'improvement' | 'security' | 'content';
@@ -43,10 +44,21 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '4.11.0',
+    date: '2026-08-10',
+    title: 'Páginas Institucionais e Autoridade',
+    major: true,
+    changes: [
+      { kind: 'feature', text: 'Implementadas páginas dedicadas de Termos de Uso e Política de Transparência com conteúdo completo.' },
+      { kind: 'improvement', text: 'Navegação direta no rodapé consolidada para maior transparência e autoridade acadêmica.' },
+      { kind: 'improvement', text: 'Otimização de metadados e estrutura SEO para as novas rotas institucionais.' },
+    ]
+  },
+  {
     version: '4.10.0',
     date: '2026-08-10',
     title: 'Autoridade e Transparência Acadêmica',
-    major: true,
+    major: false,
     changes: [
       { kind: 'improvement', text: 'Otimização de SEO com meta tags dinâmicas e palavras-chave acadêmicas.' },
       { kind: 'feature', text: 'Implementados links institucionais (Termos e Transparência) no rodapé da landing page.' },
