@@ -1,8 +1,8 @@
 /**
- * DECODE ANALYTICS ACADEMY - v4.8.0
+ * DECODE ANALYTICS ACADEMY - v4.9.0
  * 
- * - Hall da Fama: Implementação do ranking semanal de XP e simulados.
- * - Auditoria Estratégica: Consolidação de melhorias de UX e Engajamento.
+ * - Sound Design: Feedback sonoro futurista e imersivo.
+ * - Modo Foco: Leitor de apostilas otimizado para concentração.
  * - Auditoria Técnica 360º: Validação integral de fluxos Aluno/Admin sem regressões.
  */
 
