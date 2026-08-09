@@ -332,6 +332,7 @@ export default function ApostilaReaderPage() {
           <span className="mt-1 font-display text-xs font-bold tracking-normal text-primary xl:text-sm">
             ACADEMY
           </span>
+          <span className="mt-0.5 text-[10px] font-medium text-muted-foreground/60 tabular-nums">v4.1.0</span>
         </div>
       </div>
 
