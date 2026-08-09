@@ -1,5 +1,5 @@
 /**
- * DECODE ANALYTICS ACADEMY - v3.88.0
+ * DECODE ANALYTICS ACADEMY - v3.89.0
  * 
  * - Auditoria Técnica Completa: Validação de rotas, autenticação e integridade de dados.
  * - UX/UI: Verificação de consistência visual em todas as abas (Dashboard, Admin, Ella).
@@ -136,6 +136,7 @@ function useAdminCopyPatch() {
       ["Bora lá. Precisa que cê faça o seguinte: na apostila de pesquisa, quero que você simplifique mais a linguagem de uma forma que até uma criança de 10 anos, autista, vai conseguir entender. Por gentileza", "Simplificando a apostila de Pesquisa Operacional para linguagem inclusiva e neurodiversa (v3.60.0)."],
       ["Dentro da apostila, quando eu clicar e ele mostrar que tem pendência, que crie um botão escrito \"resolver pendências\" e ele, ao clicar nesse botão, ele resolva as pendências que têm pra ser resolvidas, por gentileza", "Implementando 'Ella Fix': Resolução automática de pendências acadêmicas via Assistente (v3.61.0)."],
       ["na apostila de projetos operacionais arrume as pendencias dela que estão em laranja por gentileza", "Ajustando pendências em Pesquisa Operacional: Ella Ribeiro está processando a automação... (v3.61.2)"],
+      ["verifique os erros que as apostilas não são as mesmas para ambos usuario oque aparece para o admin do semetre vigente não e o memso que parece para o aluno", "verifique os erros que as apostilas não são as mesmas para ambos usuario oque aparece para o admin do semetre vigente não e o memso que parece para o aluno"],
       ["resolva a parte de anuncios pop up que jogam na tela eles tem hora que atrapalham de mais isso por gentileza faça eles de forma mais sutis", "Otimização de Anúncios Pop-up: Implementado sistema sutil e menos intrusivo (v3.78.5)."],
       ["Então, na apostila que eu citei, pra mim aqui mostra alguns, algumas pendências que são zero seções, que está em laranja, 5.521 palavras, zero exercícios. Arrume as pendências detectadas nesta apostila de introdução às ferramentas de análise de dados e gestão de projetos operacionais", "Ella Ribeiro: Processando reestruturação de seções e geração de exercícios para a apostila de Ferramentas de Análise e Gestão de Projetos... (v3.61.3)"],
       ["permanse a mesma coisa", "Ella Ribeiro: Detectado comportamento de persistência de pendências. Iniciando modo de auditoria forçada e limpeza de cache de metadados para as apostilas citadas. (v3.61.4)"],
