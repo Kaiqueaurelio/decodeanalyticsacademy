@@ -1,8 +1,8 @@
 /**
- * DECODE ANALYTICS ACADEMY - v4.0.7
+ * DECODE ANALYTICS ACADEMY - v4.0.8
  * 
  * - Separação Estrutural de Acervos: Abas dedicadas ENEM e Faculdade no Admin.
- * - UX/UI: Refinamento de busca e organização de massa.
+ * - Gestão por Semestre: Interface inteligente para organização da grade acadêmica.
  */
 
 import React, { Suspense, lazy } from "react";

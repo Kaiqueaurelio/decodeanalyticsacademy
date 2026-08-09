@@ -28,6 +28,17 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '4.0.8',
+    date: '2026-08-09',
+    title: 'Gestão por Semestre e Organização da Grade CC',
+    major: true,
+    changes: [
+      { kind: 'feature', text: 'Implementada filtragem inteligente por semestre (1º ao 8º) no Painel Administrativo da faculdade.' },
+      { kind: 'improvement', text: 'Reorganizada a visualização da grade acadêmica para facilitar a gestão de massa por período letivo.' },
+      { kind: 'improvement', text: 'Sincronização de categoria ENEM mantida em bloco único conforme preferência operacional.' },
+    ],
+  },
+  {
     version: '4.0.7',
     date: '2026-08-09',
     title: 'Separação Estrutural de Acervos e Refinamento Admin',
