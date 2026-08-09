@@ -91,6 +91,8 @@ export default function ApostilaReaderPage() {
   const [noteOpen, setNoteOpen] = useState(false);
   const [noteText, setNoteText] = useState("");
   const [noteSaving, setNoteSaving] = useState(false);
+  const [marksOpen, setMarksOpen] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
@@ -445,6 +447,16 @@ export default function ApostilaReaderPage() {
           >
             <NotebookPen className="h-4.5 w-4.5" strokeWidth={1.75} />
           </button>
+          <button
+            className={cn(
+              "inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-accent",
+              marksOpen && "bg-accent",
+            )}
+            onClick={() => setMarksOpen((v) => !v)}
+            aria-label="Marcadores e Seções"
+          >
+            <BookmarkCheck className="h-4.5 w-4.5" strokeWidth={1.75} />
+          </button>
           <Button
             size="sm"
             variant={currentLesson?.progress_status === "completed" ? "secondary" : "default"}
@@ -596,6 +608,64 @@ export default function ApostilaReaderPage() {
               {noteSaving ? "Salvando..." : "Salvar anotação"}
             </Button>
           </div>
+        </aside>
+      )}
+
+      {/* Marks drawer */}
+      {marksOpen && (
+        <aside className="fixed right-0 top-0 z-30 flex h-[100dvh] w-full max-w-[360px] flex-col border-l border-border bg-card shadow-2xl">
+          <div className="flex items-center justify-between border-b px-4 py-3">
+            <span className="font-semibold">Marcadores e Seções</span>
+            <button aria-label="Fechar" onClick={() => setMarksOpen(false)}>
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+          <ScrollArea className="flex-1">
+            <div className="p-4 space-y-4">
+              <div>
+                <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-3">Seções da Lição</h4>
+                <div className="space-y-2">
+                  {/* Seções dinâmicas baseadas no markdown poderiam vir aqui */}
+                  <p className="text-xs text-muted-foreground italic px-2">Navegue rapidamente entre as seções desta lição.</p>
+                  <Button variant="ghost" className="w-full justify-start text-sm py-2 h-auto" onClick={() => contentRef.current?.scrollTo({top: 0, behavior: 'smooth'})}>
+                    Início da lição
+                  </Button>
+                </div>
+              </div>
+              
+              <Separator />
+
+              <div>
+                <h4 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-3">Itens Marcados</h4>
+                <div className="space-y-2">
+                  {flat.filter(l => l.bookmarked).map(l => (
+                    <button
+                      key={l.id}
+                      onClick={() => {
+                        onSelect(l.id);
+                        setMarksOpen(false);
+                      }}
+                      className={cn(
+                        "flex w-full flex-col gap-0.5 rounded-lg border border-border/60 p-3 text-left hover:bg-accent transition-colors",
+                        selectedLessonId === l.id && "border-primary/40 bg-primary/5"
+                      )}
+                    >
+                      <div className="text-[10px] text-muted-foreground uppercase tracking-tight">
+                        {l.moduleTitle} · {l.chapterTitle}
+                      </div>
+                      <div className="text-sm font-medium line-clamp-1">{l.title}</div>
+                    </button>
+                  ))}
+                  {flat.filter(l => l.bookmarked).length === 0 && (
+                    <div className="text-center py-6 border-2 border-dashed border-border/40 rounded-xl">
+                      <Bookmark className="h-6 w-6 text-muted-foreground/30 mx-auto mb-2" />
+                      <p className="text-xs text-muted-foreground">Nenhuma lição favoritada ainda.</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </ScrollArea>
         </aside>
       )}
     </div>

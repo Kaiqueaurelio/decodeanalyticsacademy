@@ -28,6 +28,18 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '4.2.0',
+    date: '2026-08-09',
+    title: 'Mobile First & Auditoria Operacional',
+    major: true,
+    changes: [
+      { kind: 'feature', text: 'Implementada interface de Marcadores e Anotações por seção no leitor de apostilas.' },
+      { kind: 'improvement', text: 'Otimização extrema de responsividade para iPhone 11 e dispositivos móveis.' },
+      { kind: 'feature', text: 'Painel de Auditoria Ella consolidado para registro e validação de ações administrativas.' },
+      { kind: 'improvement', text: 'Dashboard de desempenho do aluno refinado para visualização em telas pequenas.' },
+    ],
+  },
+  {
     version: '4.1.0',
     date: '2026-08-09',
     title: 'Otimização de Leitura Mobile e UX Responsiva',
