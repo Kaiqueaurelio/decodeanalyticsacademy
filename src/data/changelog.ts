@@ -28,6 +28,17 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '4.0.1',
+    date: '2026-08-09',
+    title: 'Automação Visual e Dashboard de Performance',
+    major: true,
+    changes: [
+      { kind: 'feature', text: 'Implementado processamento automático de imagens via Central Photoroom no fluxo de clonagem de materiais.' },
+      { kind: 'feature', text: 'Lançado Dashboard de Desempenho do Aluno com métricas por exercício, evolução temporal e ranking de turma.' },
+      { kind: 'improvement', text: 'Otimizada a persistência de progresso para suportar novos indicadores de performance em tempo real.' },
+    ],
+  },
+  {
     version: '4.0.0',
     date: '2026-08-09',
     title: 'Estúdio Visual Photoroom e Refinamento Admin',
