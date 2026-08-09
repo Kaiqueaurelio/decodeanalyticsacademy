@@ -18,8 +18,9 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Activity, AlertTriangle, Trash2, RefreshCw, Rocket, ShieldAlert, Clock,
-  Bug, Network, ChevronRight, CheckCircle2, ShieldCheck, KeyRound, Download
+  Bug, Network, ChevronRight, CheckCircle2, ShieldCheck, KeyRound, Download, ScanLine
 } from 'lucide-react';
+import { ResourceScanPanel } from '@/components/admin/ResourceScanPanel';
 import { getEvents, clearEvents, summarizeEvents, PERF_THRESHOLDS, type PerfEvent } from '@/lib/perf-monitor';
 import {
   getRuntimeErrors, getRouteTimings, clearRuntimeLogs, bucketRoute,
@@ -227,13 +228,15 @@ export function DiagnosticsPanel() {
 
       {/* Conteúdo em abas */}
       <Tabs defaultValue="auth" className="w-full">
-        <TabsList className="grid grid-cols-5 w-full">
+        <TabsList className="grid grid-cols-3 w-full sm:grid-cols-6">
           <TabsTrigger value="auth" className="gap-1.5 text-xs"><ShieldCheck className="h-3.5 w-3.5" />Auth</TabsTrigger>
           <TabsTrigger value="routes" className="gap-1.5 text-xs"><Activity className="h-3.5 w-3.5" />Rotas</TabsTrigger>
           <TabsTrigger value="errors" className="gap-1.5 text-xs"><Bug className="h-3.5 w-3.5" />Erros ({errors.length})</TabsTrigger>
           <TabsTrigger value="network" className="gap-1.5 text-xs"><Network className="h-3.5 w-3.5" />Rede ({networkErrors.length + slowFetches.length})</TabsTrigger>
           <TabsTrigger value="loads" className="gap-1.5 text-xs"><Clock className="h-3.5 w-3.5" />Loads ({summary.pageLoads})</TabsTrigger>
+          <TabsTrigger value="scan" className="gap-1.5 text-xs"><ScanLine className="h-3.5 w-3.5" />Varredura</TabsTrigger>
         </TabsList>
+
 
         {/* Auth */}
         <TabsContent value="auth" className="mt-3">
@@ -473,8 +476,14 @@ export function DiagnosticsPanel() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        {/* Varredura de componentes e recursos */}
+        <TabsContent value="scan" className="mt-3">
+          <ResourceScanPanel />
+        </TabsContent>
       </Tabs>
     </div>
+
   );
 }
 
