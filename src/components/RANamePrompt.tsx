@@ -250,5 +250,6 @@ export function RANamePrompt() {
         </DialogFooter>
       </DialogContent>
     </Dialog>
+    </>
   );
 }
