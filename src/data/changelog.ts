@@ -28,6 +28,17 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '3.87.0',
+    date: '2026-08-08',
+    title: 'Navegação e Integração de Tarefas Admin',
+    major: true,
+    changes: [
+      { kind: 'feature', text: 'Integrado o Gerenciador de Tarefas na Sidebar administrativa para acesso rápido.' },
+      { kind: 'improvement', text: 'Otimizada a navegação do painel admin com transições suaves e hierarquia visual refinada.' },
+      { kind: 'fix', text: 'Corrigida a ativação de ícones e rotas na sidebar para a seção de Administração.' },
+    ],
+  },
+  {
     version: '3.86.0',
     date: '2026-08-08',
     title: 'Gerenciador de Tarefas e Modo de Depuração',
