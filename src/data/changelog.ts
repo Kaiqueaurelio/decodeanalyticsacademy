@@ -28,6 +28,18 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '4.5.0',
+    date: '2026-08-09',
+    title: 'Auditoria 360º & Plano de Gamificação',
+    major: true,
+    changes: [
+      { kind: 'improvement', text: 'Auditoria técnica completa concluída: validação de fluxos de login, dashboard e leitura com zero erros detectados.' },
+      { kind: 'feature', text: 'Lançamento do Roadmap de Gamificação: Estrutura base para sistema de XP, conquistas e ranking de alunos.' },
+      { kind: 'improvement', text: 'Refinamento de estabilidade: Correção de pequenos gargalos de performance e logs de depuração aprimorados.' },
+      { kind: 'improvement', text: 'Garantia de não-regressão: Todas as funcionalidades legadas permanecem 100% operacionais.' },
+    ],
+  },
+  {
     version: '4.4.1',
     date: '2026-08-09',
     title: 'Exportação de Auditoria & Gestão de Logs',

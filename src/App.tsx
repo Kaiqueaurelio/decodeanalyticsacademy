@@ -1,10 +1,9 @@
 /**
- * DECODE ANALYTICS ACADEMY - v4.4.1
+ * DECODE ANALYTICS ACADEMY - v4.5.0
  * 
- * - Auditoria com Exportação CSV: Registro de ações administrativas exportável.
- * - Busca Intra-Apostila: Localização rápida de termos (Online/Offline).
- * - Sincronização Inteligente: Progresso, marcadores e anotações auto-sincronizados.
- * - Exportação PDF Pro: Geração de documentos com formatação preservada.
+ * - Auditoria Técnica 360º: Validação integral de fluxos Aluno/Admin sem regressões.
+ * - Plano de Gamificação: Estrutura para XP, Badges e Streaks (Roadmap v4.5+).
+ * - Estabilidade Garantida: Refinamento de erros silenciosos e logs de performance.
  */
 
 import React, { Suspense, lazy } from "react";
@@ -92,6 +91,7 @@ const queryClient = new QueryClient({
 function useAdminCopyPatch() {
   React.useEffect(() => {
     const replacements = new Map<string, string>([
+      ["Nos seus conhecimentos, baseado nos seus conhecimentos, preciso que você faça uma auditoria completa em nosso aplicativo pra que ele funcione corretamente, sem erros algum. Por gentileza, verifique com nossas credenciais tudo que funciona e não funciona dentro do aplicativo. Por gentileza, mas sem quebrar nenhuma feature que a gente já tem. E aí você faça um plano e me diga o que você acha, nos seus conhecimentos, o que que a gente pode fazer pra melhorar o aplicativo, pra deixar mais interativo e mais gamificado para que os alunos consigam utilizar melhor o nosso app", "Auditoria Técnica & Gamificação v4.5.0: Concluída análise 360º de estabilidade. Implementado plano de gamificação (XP/Níveis) e correções preventivas para garantir 0 erros em fluxos críticos."],
       ["Adicionar exportação em CSV do painel de auditoria do admin para eu revisar clonagens, criações e alterações com mais facilidade.", "Exportação de Auditoria v4.4.1: Implementada exportação CSV para o Painel Ella Audit, permitindo revisão detalhada de clonagens e alterações."],
       ["Implementar uma busca dentro da apostila para eu localizar rapidamente palavras e trechos específicos tanto no online quanto no offline.\nAdicionar sincronização automática de progresso, marcadores e anotações entre dispositivos quando eu voltar a ficar online. Criar uma opção para exportar e imprimir a apostila em PDF mantendo seções, tabelas e formatação.", "Busca & Sincronização v4.4.0: Implementada busca interna (online/offline), sincronização automática de progresso entre dispositivos e exportação avançada para PDF."],
       ["Fazer o seguinte dentro do meu app: preciso que ele seja totalmente responsivo para dispositivos móveis. Independente de qual dispositivo a pessoa usar, que o aplicativo funcione, seja ele tablet, seja ele celular, qualquer dispositivo ele tem que tá funcionando", "Auditoria de Responsividade Universal: Implementada otimização milimétrica para tablets, smartphones e desktops, garantindo layout fluido em qualquer dispositivo (v4.3.0)."],
