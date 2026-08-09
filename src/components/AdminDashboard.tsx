@@ -776,19 +776,6 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
                           </Button>
                         </div>
                       )}
-                            {a.published ? 'Visível' : 'Oculto'}
-                          </Button>
-                          <Button 
-                            variant="secondary" 
-                            size="sm" 
-
-                            className="h-7 text-[10px] px-3 rounded-lg shadow-sm"
-                            onClick={() => handleEdit(a)}
-                          >
-                            Editar
-                          </Button>
-                        </div>
-                      )}
                     </div>
                   </motion.div>
                 ))}
