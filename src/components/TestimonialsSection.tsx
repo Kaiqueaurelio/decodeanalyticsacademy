@@ -18,6 +18,8 @@ import {
   Play,
   Volume2,
   MonitorPlay,
+  Target,
+  Brain,
 } from 'lucide-react';
 
 interface Testimonial {
