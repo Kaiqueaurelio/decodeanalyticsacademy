@@ -18,7 +18,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Activity, AlertTriangle, Trash2, RefreshCw, Rocket, ShieldAlert, Clock,
-  Bug, Network, ChevronRight, CheckCircle2, ShieldCheck, KeyRound,
+  Bug, Network, ChevronRight, CheckCircle2, ShieldCheck, KeyRound, Download
 } from 'lucide-react';
 import { getEvents, clearEvents, summarizeEvents, PERF_THRESHOLDS, type PerfEvent } from '@/lib/perf-monitor';
 import {
@@ -30,6 +30,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useUserProfile } from '@/hooks/queries/useUserProfile';
 import { isSafeModeEnabled, isSafeModeManual, disableSafeMode, getRecentFailures } from '@/lib/safe-mode';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 function useLiveData() {
   const [perfEvents, setPerfEvents] = useState<PerfEvent[]>(() => getEvents());
