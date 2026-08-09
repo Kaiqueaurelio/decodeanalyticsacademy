@@ -45,6 +45,16 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '4.15.0',
+    date: '2026-08-10',
+    title: 'Auditoria de Segurança & Pentest',
+    major: true,
+    changes: [
+      { kind: 'security', text: 'Mapeamento de auditoria técnica avançada em cibersegurança e proteção contra invasões.' },
+      { kind: 'improvement', text: 'Estabelecido plano de verificação de vulnerabilidades e testes de penetração no sistema.' },
+    ]
+  },
+  {
     version: '4.14.0',
     date: '2026-08-10',
     title: 'Gamificação & Ranking Acadêmico',
