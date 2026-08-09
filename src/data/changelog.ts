@@ -28,6 +28,17 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '3.95.0',
+    date: '2026-08-09',
+    title: 'Relatório de Auditoria e Análise Estrutural',
+    major: true,
+    changes: [
+      { kind: 'improvement', text: 'Implementado Relatório de Auditoria Técnica Completa detalhando a visão do Aluno, Admin e roadmap de melhorias estruturais.' },
+      { kind: 'improvement', text: 'Mapeamento de melhorias prioritárias para o Painel Administrativo: Sidebar Navigation, Dashboard KPIs e Gestão de Usuários Otimizada.' },
+      { kind: 'improvement', text: 'Consolidação das métricas de sucesso e referências de design para as próximas fases de desenvolvimento.' },
+    ],
+  },
+  {
     version: '3.94.0',
     date: '2026-08-09',
     title: 'Correção de Visibilidade e Sincronização Dual',
