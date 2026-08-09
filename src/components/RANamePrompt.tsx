@@ -58,17 +58,25 @@ export function RANamePrompt() {
       const isRA =
         (data as any).account_type === "ra" ||
         (user.email || "").endsWith("@ra.unip.local");
+      
       const name = ((data as any).full_name || "").trim();
       const looksDefaultName =
         !name ||
         /^aluno\s+unip\b/i.test(name) ||
-        name.toLowerCase().includes("[teste bot]");
+        name.toLowerCase().includes("[teste bot]") ||
+        name.toLowerCase() === "novo aluno" ||
+        name.length < 3;
+        
       const missingCourse = !(data as any).course;
       const missingSemester = !(data as any).semester;
       const savedEmail = ((data as any).email || "").trim();
+      
+      // Para usuários RA, o e-mail @ra.unip.local é considerado "ausente" (precisamos do real)
       const missingContactEmail = !savedEmail || savedEmail.endsWith("@ra.unip.local");
 
-      if (isRA && (looksDefaultName || missingContactEmail || missingCourse || missingSemester)) {
+      // O prompt agora é para TODOS os alunos sem nome, não apenas RA.
+      // RA apenas tem a verificação de e-mail extra.
+      if (looksDefaultName || (isRA && missingContactEmail) || missingCourse || missingSemester) {
         if (!looksDefaultName) setFullName(name);
         if (!missingContactEmail) setContactEmail(savedEmail);
         if ((data as any).course) setCourse((data as any).course);

@@ -22,7 +22,7 @@ import {
   Link as LinkIcon, FileText, FileUp, Plus, Activity,
   Eye, EyeOff, Edit, Trash2, Trophy, Medal, Award, Filter, X, Check,
   CheckCircle2, XCircle, CalendarDays, ArrowDownUp, FolderOpen, ChevronDown, LayoutDashboard,
-  GraduationCap, AlertTriangle, Clock3, ShieldCheck, ExternalLink, History, Loader2, Sparkles
+  GraduationCap, AlertTriangle, Clock3, ShieldCheck, ExternalLink, History, Loader2, Sparkles, FileDown
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -427,6 +427,42 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
     setSearch(''); setStatusFilter('all'); setCategoryFilter('all');
     setDateFrom(''); setDateUntil(''); setSortKey('created_desc');
   };
+
+  const handleExportAcervo = () => {
+    if (filtered.length === 0) {
+      toast.error('Nenhum dado para exportar.');
+      return;
+    }
+
+    const headers = ['ID', 'Título', 'Categoria', 'Semestre', 'Status', 'Criado em', 'Atualizado em', 'Professor'];
+    const rows = filtered.map(a => [
+      a.id,
+      a.title,
+      a.category || '',
+      (a as any).semester || '',
+      a.published ? 'Ativo' : 'Rascunho',
+      new Date(a.created_at).toLocaleDateString(),
+      new Date(a.updated_at).toLocaleDateString(),
+      (a as any).teacher || ''
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(r => r.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `acervo-decode-academy-${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast.success('Acervo exportado com sucesso (CSV).');
+  };
   const hasFilters = !!search || statusFilter !== 'all' || categoryFilter !== 'all'
     || !!dateFrom || !!dateUntil || sortKey !== 'created_desc';
 
@@ -667,6 +703,9 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
                   />
                 </div>
                 <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={handleExportAcervo} className="rounded-xl gap-2 border-primary/20">
+                    <FileDown className="h-4 w-4" /> Exportar
+                  </Button>
                   <Button onClick={() => handleQuickCreate('text')} className="rounded-xl shadow-lg shadow-primary/20 gap-2">
                     <Plus className="h-4 w-4" /> Novo Conteúdo
                   </Button>

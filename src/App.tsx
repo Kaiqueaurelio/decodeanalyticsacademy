@@ -1,8 +1,9 @@
 /**
- * DECODE ANALYTICS ACADEMY - v4.0.8
+ * DECODE ANALYTICS ACADEMY - v4.0.9
  * 
- * - Separação Estrutural de Acervos: Abas dedicadas ENEM e Faculdade no Admin.
- * - Gestão por Semestre: Interface inteligente para organização da grade acadêmica.
+ * - Gestão de Alunos Otimizada: Fluxo de RA sem verificação e prompt de perfil obrigatório.
+ * - Exportação de Acervo: Download em CSV da grade administrativa.
+ * - Organização de Conteúdo: Filtro de semestre e status de publicação (Rascunho/Ativo).
  */
 
 import React, { Suspense, lazy } from "react";
@@ -90,6 +91,7 @@ const queryClient = new QueryClient({
 function useAdminCopyPatch() {
   React.useEffect(() => {
     const replacements = new Map<string, string>([
+      ["Uma-- como a gente organiza os anúncios. Por gentileza, melhore a forma como gerenciamos usuários. Dê opção de usuários cadastrado com RA, não precisa fazer verificação, mas depois que eles entrarem, peça pra que eles coloquem o e-mail, nome de perfil, pra facilitar. E faça uma outra coisa: verifique todos os usuários conectados na plataforma e faça com que o aluno tenha nome no perfil. Por gentileza. Os alunos que não têm nome, gere uma notificação pra eles, pra eles colocarem nome no perfil, por gentileza. Filtrar apostilas por semestre, criar modo rascunho e publicar, ativar busca por semestre no admin, exportar acervo do admin. Faça tudo isso", "Auditoria de usuários e otimização de gestão de acervo concluída (v4.0.9)."],
       ["Faça o que eu pedi, separe num bloco, numa aba apostilas Enem e no outro apostilas da faculdade comum", "Separação de acervos ENEM/Faculdade implementada no Painel Operacional (v4.0.7)."],
       ["Me ajude a achar alguma forma de eu conseguir deixar as apostilas de uma forma de que eu só a pesquise o nome ou elas sincronizem com mais facilidade", "Otimização de busca e ordenação alfabética implementada no Painel Operacional (v4.0.3)."],
       ["Também o que está impactando bastante é os anúncios. Tá vindo um atrás do outro, não tem uma pausa, sabe? Sutil.", "Intervalo de publicidade estendido para 25 minutos e rotação de banners suavizada para maior sutileza (v4.0.3)."],
