@@ -74,6 +74,7 @@ import { RssFeedsManagerEnhanced } from '@/components/admin/RssFeedsManagerEnhan
 import { FreeCoursesManager } from '@/components/admin/FreeCoursesManager';
 import { AdminSponsorsManager } from '@/components/admin/AdminSponsorsManager';
 import { ApostilaExportDialog } from '@/components/admin/ApostilaExportDialog';
+import { TaskManager } from '@/components/admin/TaskManager';
 
 type Apostila = Tables<'apostilas'>;
 type Exercise = Tables<'exercises'>;
@@ -113,7 +114,7 @@ function CategorySelect({ value, onValueChange, placeholder }: { value: string; 
   );
 }
 
-type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements' | 'calendar' | 'testimonials' | 'ai' | 'performance' | 'smoke' | 'diagnostics' | 'ads' | 'ads-chat' | 'social' | 'rss' | 'courses' | 'changelog' | 'leads' | 'ella-audit' | 'security-alerts' | 'sponsors' | 'edit' | 'review';
+type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements' | 'calendar' | 'testimonials' | 'ai' | 'performance' | 'smoke' | 'diagnostics' | 'ads' | 'ads-chat' | 'social' | 'rss' | 'courses' | 'changelog' | 'leads' | 'ella-audit' | 'security-alerts' | 'sponsors' | 'tasks' | 'edit' | 'review';
 
 const ACCEPT_MAP: Record<string, string> = {
   pdf: '.pdf', image: 'image/*', gif: '.gif,image/gif',
