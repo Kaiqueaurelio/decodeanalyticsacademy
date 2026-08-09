@@ -9,6 +9,7 @@ import { useGamification } from '@/hooks/useGamification';
 import { useExamFocus } from '@/hooks/useExamFocus';
 import { StudentSidebar } from '@/components/dashboard/StudentSidebar';
 import { DashboardTopbar } from '@/components/dashboard/DashboardTopbar';
+import { HallOfFame } from '@/components/HallOfFame';
 import { HeroGreetingCard } from '@/components/dashboard/HeroGreetingCard';
 import { ActivitiesToDoSection, RecommendedExercisesSection } from '@/components/dashboard/DashboardSections';
 import { ProgressSummaryRow } from '@/components/dashboard/DashboardCarousels';
@@ -319,11 +320,14 @@ export default function DashboardPage() {
 
             <div className="lg:col-span-4 space-y-5">
               <Reveal from="bottom" delay={20}>
-                <div className="rounded-2xl border border-border bg-card p-5">
-                  <header className="flex items-center justify-between mb-3">
-                    <h3 className="font-bold text-base">Agenda · Próximos prazos</h3>
-                  </header>
-                  <ExamCalendarWidget />
+                <div className="space-y-5">
+                  <HallOfFame />
+                  <div className="rounded-2xl border border-border bg-card p-5">
+                    <header className="flex items-center justify-between mb-3">
+                      <h3 className="font-bold text-base">Agenda · Próximos prazos</h3>
+                    </header>
+                    <ExamCalendarWidget />
+                  </div>
                 </div>
               </Reveal>
               

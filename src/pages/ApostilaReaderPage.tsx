@@ -18,6 +18,10 @@ import {
   Loader2,
   Clock,
   GraduationCap,
+  Maximize2,
+  Minimize2,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,6 +33,7 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { useQueryClient } from "@tanstack/react-query";
 import logoOwl from "@/assets/owl-icon.png";
+import { useSoundEffects } from "@/hooks/useSoundEffects";
 
 
 interface Lesson {
@@ -93,6 +98,16 @@ export default function ApostilaReaderPage() {
   const [noteText, setNoteText] = useState("");
   const [noteSaving, setNoteSaving] = useState(false);
   const [marksOpen, setMarksOpen] = useState(false);
+  const [focusMode, setFocusMode] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const { playSound } = useSoundEffects();
+
+  useEffect(() => {
+    if (soundEnabled) {
+      if (focusMode) playSound('focus-enter');
+      else playSound('focus-exit');
+    }
+  }, [focusMode, soundEnabled]);
   const contentRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
@@ -334,7 +349,7 @@ export default function ApostilaReaderPage() {
           <span className="mt-1 font-display text-xs font-bold tracking-normal text-primary xl:text-sm">
             ACADEMY
           </span>
-          <span className="mt-0.5 text-[10px] font-medium text-muted-foreground/60 tabular-nums">v4.3.0</span>
+          <span className="mt-0.5 text-[10px] font-medium text-muted-foreground/60 tabular-nums">v4.8.0</span>
         </div>
       </div>
 
@@ -343,7 +358,8 @@ export default function ApostilaReaderPage() {
 
       <aside
         className={cn(
-          "hidden md:flex md:w-[320px] shrink-0 border-r border-border/60 bg-card/50 flex-col",
+          "hidden md:flex md:w-[320px] shrink-0 border-r border-border/60 bg-card/50 flex-col transition-all duration-500",
+          focusMode && "md:w-0 md:opacity-0 md:pointer-events-none border-none"
         )}
       >
         <SidebarInner
@@ -389,7 +405,10 @@ export default function ApostilaReaderPage() {
       {/* Main */}
       <main className="flex-1 flex min-w-0 flex-col">
         {/* Top bar */}
-        <div className="sticky top-0 z-20 flex min-h-16 items-center gap-1.5 border-b border-border/60 bg-background/95 px-2 py-2 backdrop-blur sm:gap-2 sm:px-3 md:min-h-[4.5rem] md:px-5">
+        <div className={cn(
+          "sticky top-0 z-20 flex min-h-16 items-center gap-1.5 border-b border-border/60 bg-background/95 px-2 py-2 backdrop-blur sm:gap-2 sm:px-3 md:min-h-[4.5rem] md:px-5 transition-all duration-500",
+          focusMode && "opacity-0 pointer-events-none -translate-y-full min-h-0 h-0 border-none"
+        )}>
           <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-card ring-1 ring-primary/50 shadow-[0_0_20px_hsl(var(--primary)/0.35)] sm:h-14 sm:w-14 md:h-16 md:w-16">
             <img
               src={logoOwl}
@@ -506,14 +525,50 @@ export default function ApostilaReaderPage() {
         )}
 
         {/* Content */}
-        <div ref={contentRef} className="flex-1 overflow-y-auto scroll-smooth">
-          <div className="mx-auto max-w-[68ch] px-5 py-8 md:px-10 md:py-12">
-            {lessonLoading ? (
-              <div className="flex items-center justify-center py-16">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-              </div>
-            ) : (
-              <>
+        <div className="flex-1 overflow-hidden relative">
+          <div className="fixed bottom-6 left-6 z-50 flex gap-2">
+            <button
+              onClick={() => {
+                setFocusMode(!focusMode);
+                if (soundEnabled) playSound('click');
+              }}
+              className={cn(
+                "flex h-10 w-10 items-center justify-center rounded-full bg-primary/20 text-primary border border-primary/40 backdrop-blur-md transition-all hover:bg-primary/30",
+                focusMode ? "opacity-100 scale-100 shadow-[0_0_20px_rgba(0,240,255,0.3)]" : "opacity-0 scale-90 md:opacity-40 md:scale-100 hover:opacity-100"
+              )}
+              title={focusMode ? "Sair do Modo Foco" : "Entrar no Modo Foco"}
+            >
+              {focusMode ? <Minimize2 className="h-5 w-5" /> : <Maximize2 className="h-5 w-5" />}
+            </button>
+            
+            {focusMode && (
+              <button
+                onClick={() => setSoundEnabled(!soundEnabled)}
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/20 text-primary border border-primary/40 backdrop-blur-md transition-all hover:bg-primary/30"
+                title={soundEnabled ? "Desativar Sons" : "Ativar Sons"}
+              >
+                {soundEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+              </button>
+            )}
+          </div>
+
+          <div 
+            ref={contentRef} 
+            className={cn(
+              "h-full overflow-y-auto scroll-smooth transition-all duration-500",
+              focusMode && "bg-background"
+            )}
+          >
+            <div className={cn(
+              "mx-auto w-full px-5 py-8 md:px-10 md:py-12 transition-all duration-500",
+              focusMode ? "max-w-3xl py-16 md:py-24" : "max-w-[68ch]"
+            )}>
+              {lessonLoading ? (
+                <div className="flex items-center justify-center py-16">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </div>
+              ) : (
+                <>
                 <div className="mb-6 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
                   <span className="inline-flex items-center gap-1">
                     <GraduationCap className="h-3.5 w-3.5" />
@@ -584,7 +639,8 @@ export default function ApostilaReaderPage() {
             </div>
           </div>
         </div>
-      </main>
+      </div>
+    </main>
 
       {/* Notes drawer */}
       {noteOpen && (
