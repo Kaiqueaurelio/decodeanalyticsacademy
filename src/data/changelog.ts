@@ -32,16 +32,26 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.9.7',
+    version: '4.9.8',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.9.7-release',
-    commitMessage: 'Release v4.9.7: Revisão Final com Checklist'
+    commit: 'v4.9.8-release',
+    commitMessage: 'Release v4.9.8: Análise Comparativa e Unificação'
   };
 }
 
 export const CHANGELOG: Release[] = [
+  {
+    version: '4.9.8',
+    date: '2026-08-09',
+    title: 'Análise Comparativa e Unificação',
+    major: false,
+    changes: [
+      { kind: 'improvement', text: 'Implementado diagnóstico de maturidade de seções e plano de unificação de domínio entre instâncias Lovable e Vercel.' },
+      { kind: 'improvement', text: 'Consolidação de identidade visual e proposta de valor baseada em auditoria de produção.' },
+    ]
+  },
   {
     version: '4.9.7',
     date: '2026-08-09',
