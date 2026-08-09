@@ -187,6 +187,7 @@ function useAdminCopyPatch() {
       ["ARRUME ISSO ESTE ERRO 7", "ARRUME ISSO ESTE ERRO 7"],
       ["Crie uma página web para o gerenciamento de tarefas...", "Sistema de Gerenciamento de Tarefas: Implementado módulo de CRUD de tarefas com persistência em Local Storage, filtros por status, busca em tempo real e interface responsiva (v3.86.0)."],
       ["MELHORE TD OS ERROS DO APP POR GENTILEZA", "MELHORE TD OS ERROS DO APP POR GENTILEZA"],
+      ["A de acervo administrativo, onde estão todas as categorias, sinto que está faltando matérias das apostilas. Então faça o seguinte: eu já te dei a grade do semestre, já te dei a grade do curso inteiro. Coloque elas na ordem, por gentileza, pois não está\n\nEu quero todos os semestres. Aí coloque, por exemplo, semestre um, semestre dois, semestre três, semestre quatro, semestre cinco, semestre seis, semestre sete, semestre oito. Em cada semestre que você colocar, eu quero as matérias, por exemplo, matérias do semestre um, matérias do semestre dois, matérias do semestre três, matérias do semestre quatro, matérias do semestre cinco, matérias do semestre seis, matérias do semestre sete, matérias do semestre oito.", "Sincronização de Grade v4.0.11: Todos os semestres (1-8) agora possuem blocos dedicados para cada disciplina da grade UNIP, garantindo organização total mesmo para matérias sem conteúdo prévio."],
     ]);
 
 
