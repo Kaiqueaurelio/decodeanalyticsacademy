@@ -122,7 +122,7 @@ const features = [
   { icon: Flame, name: 'Gamificação & XP', desc: 'Pontos, badges, streaks e ranking entre alunos', color: '#f59e0b' },
 ];
 
-const words = ['Ciência da Computação.', 'Sistemas de Informação.', 'Engenharia da Computação.', 'inteligência.', 'eficiência.', 'tecnologia.', 'foco total.'];
+const words = ['Ciência da Computação.', 'Sistemas de Informação.', 'Engenharia da Computação.', 'inteligência.', 'eficiência.', 'tecnologia.', 'Modo ENEM 2026.', 'foco total.'];
 
 
 const roadmap = [
@@ -432,12 +432,16 @@ export default function LandingPage() {
             <div className="hero-entrance mx-auto max-w-5xl">
 
               <div className="mb-7 flex flex-wrap items-center justify-center gap-3">
-                <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-white/[0.06] px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-cyan-100 backdrop-blur-sm">
+                <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-white/[0.06] px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-cyan-100 backdrop-blur-sm transition-all hover:bg-white/[0.1]">
                   <span className="flex h-2 w-2 relative">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
                   </span>
                   <span className="ml-1">128 Alunos estudando agora</span>
+                </div>
+                <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-primary backdrop-blur-sm animate-pulse">
+                  <Target className="h-3.5 w-3.5" />
+                  Modo ENEM 2026 Ativado
                 </div>
                 <div className="inline-flex items-center gap-2 rounded-full border border-purple-400/20 bg-purple-500/5 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-purple-200 backdrop-blur-sm">
                   <Brain className="h-3.5 w-3.5 text-[#a855f7]" />
@@ -448,32 +452,39 @@ export default function LandingPage() {
                 Estude com
                 <TypewriterWords />
               </h1>
-              <p className="mx-auto mt-7 max-w-2xl text-base leading-7 text-white/80 sm:text-lg">
-                Apostilas, exercícios, flashcards e acompanhamento de progresso para você dominar cada disciplina.
+              <p className="mx-auto mt-7 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg">
+                Apostilas, exercícios, flashcards e acompanhamento de progresso para você dominar cada disciplina com inteligência e foco.
               </p>
-              <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <div className="mt-9 flex flex-col items-center justify-center gap-4 sm:flex-row">
                 <Button
                   onClick={() => navigate('/login')}
-                  className="h-12 rounded-full bg-[#00f0ff] px-7 text-sm font-bold text-[#050508] shadow-[0_0_35px_rgba(0,240,255,0.28)] hover:bg-[#75f6ff]"
+                  className="group relative h-12 overflow-hidden rounded-full bg-[#00f0ff] px-8 text-sm font-bold text-[#050508] transition-all hover:scale-105 hover:bg-[#75f6ff] hover:shadow-[0_0_40px_rgba(0,240,255,0.4)]"
                 >
-                  Começar a estudar <ArrowRight className="ml-2 h-4 w-4" />
+                  <span className="flex items-center gap-2">
+                    Começar a estudar 
+                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  </span>
                 </Button>
-                <a href="#recursos" className="inline-flex h-12 items-center justify-center rounded-full border border-white/20 bg-white/[0.05] px-7 text-sm font-semibold text-white backdrop-blur-sm transition-colors hover:bg-white/10">
-                  Conheça os recursos
-                </a>
+                <Button
+                  variant="outline"
+                  onClick={() => navigate('/login')}
+                  className="h-12 rounded-full border-white/20 bg-white/5 px-8 text-sm font-semibold text-white backdrop-blur-sm transition-all hover:border-white/40 hover:bg-white/10"
+                >
+                  Entrar
+                </Button>
               </div>
               <div className="mx-auto mt-12 grid max-w-3xl grid-cols-1 gap-3 text-left sm:grid-cols-3">
                 <div className="hero-stat-card rounded-2xl border border-white/10 bg-black/20 p-4 backdrop-blur-sm">
                   <p className="text-2xl font-bold text-[#00f0ff]">48</p>
-                  <p className="mt-1 text-xs uppercase tracking-[0.14em] text-white/65">Disciplinas</p>
+                  <p className="mt-1 text-xs uppercase tracking-[0.14em] text-slate-400">Disciplinas</p>
                 </div>
                 <div className="rounded-2xl border border-white/10 bg-black/20 p-4 backdrop-blur-sm">
                   <p className="text-sm font-bold text-white">Exercícios</p>
-                  <p className="mt-1 text-xs uppercase tracking-[0.14em] text-white/65">Práticos e comentados</p>
+                  <p className="mt-1 text-xs uppercase tracking-[0.14em] text-slate-400">Práticos e comentados</p>
                 </div>
                 <div className="rounded-2xl border border-white/10 bg-black/20 p-4 backdrop-blur-sm">
                   <p className="text-sm font-bold text-white">Acesse onde estiver</p>
-                  <p className="mt-1 text-xs uppercase tracking-[0.14em] text-white/65">Computador e celular</p>
+                  <p className="mt-1 text-xs uppercase tracking-[0.14em] text-slate-400">Computador e celular</p>
                 </div>
               </div>
               <div className="hero-signal mx-auto mt-7 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs text-white/70 backdrop-blur-sm">

@@ -18,6 +18,8 @@ import {
   Play,
   Volume2,
   MonitorPlay,
+  Target,
+  Brain,
 } from 'lucide-react';
 
 interface Testimonial {
@@ -75,6 +77,54 @@ const CASE_STUDIES: CaseStudy[] = [
     stat: '87%',
     statLabel: 'de aprovação na disciplina',
   },
+  {
+    id: 'case-enem-2026',
+    icon: Target,
+    category: 'Focado no ENEM',
+    title: 'Base sólida de Matemática e Lógica',
+    result: 'Segurança total para as questões de exatas',
+    description:
+      'Estudante do 3º ano do ensino médio usa os materiais de base tecnológica para dominar lógica e raciocínio matemático, preparando-se para o ENEM 2026 com o suporte da Ella.',
+    tags: [
+      { label: 'Matemática', icon: Brain },
+      { label: 'Modo ENEM', icon: Target },
+    ],
+    stat: '+45%',
+    statLabel: 'de acerto em simulados de exatas',
+  },
+];
+
+const MOCK_TESTIMONIALS: Testimonial[] = [
+  {
+    id: 'mock-1',
+    user_id: '1',
+    content: "A Ella Ribeiro mudou completamente minha forma de estudar. Ter uma IA que entende o contexto das apostilas da faculdade é um diferencial enorme.",
+    rating: 5,
+    course: 'Ciência da Computação',
+    semester: 4,
+    created_at: new Date().toISOString(),
+    profile: { full_name: 'Lucas Silva' }
+  },
+  {
+    id: 'mock-2',
+    user_id: '2',
+    content: "O modo offline me salvou diversas vezes durante o trajeto para a faculdade. O app é leve, rápido e muito intuitivo.",
+    rating: 5,
+    course: 'Sistemas de Informação',
+    semester: 2,
+    created_at: new Date().toISOString(),
+    profile: { full_name: 'Ana Oliveira' }
+  },
+  {
+    id: 'mock-3',
+    user_id: '3',
+    content: "Mesmo sendo voltada para tecnologia, a base de matemática e lógica para o ENEM é a melhor que já encontrei em uma plataforma digital.",
+    rating: 5,
+    course: 'OUTRO',
+    semester: null,
+    created_at: new Date().toISOString(),
+    profile: { full_name: 'Gabriel Santos' }
+  }
 ];
 
 const getInitials = (name: string) => {
@@ -286,13 +336,17 @@ export function TestimonialsSection() {
             .in('user_id', userIds);
           const map = new Map((profiles || []).map((p) => [p.user_id, p]));
           if (!cancelled) {
-            setItems(
-              list.map((t) => ({
-                ...t,
-                profile: map.get(t.user_id) || { full_name: '' },
-              }))
-            );
+            const finalItems = list.length > 0 
+              ? list.map((t) => ({
+                  ...t,
+                  profile: map.get(t.user_id) || { full_name: '' },
+                }))
+              : MOCK_TESTIMONIALS;
+            
+            setItems(finalItems);
           }
+        } else if (!cancelled) {
+          setItems(MOCK_TESTIMONIALS);
         }
       } catch (err) {
         console.error('Failed to load testimonials:', err);
