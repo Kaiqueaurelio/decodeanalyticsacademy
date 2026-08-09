@@ -28,6 +28,17 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '3.91.0',
+    date: '2026-08-09',
+    title: 'Visibilidade Global e Sincronização de Materiais',
+    major: true,
+    changes: [
+      { kind: 'improvement', text: 'Ativada visibilidade total: todas as apostilas do banco de dados foram marcadas como publicadas.' },
+      { kind: 'fix', text: 'Garantida a paridade entre Admin e Aluno removendo filtros de materiais ocultos.' },
+      { kind: 'content', text: 'Auditoria de conteúdo para garantir que materiais do 6º semestre estejam 100% acessíveis.' },
+    ],
+  },
+  {
     version: '3.90.0',
     date: '2026-08-09',
     title: 'Monitoramento de Erros e Interface de Resiliência',
