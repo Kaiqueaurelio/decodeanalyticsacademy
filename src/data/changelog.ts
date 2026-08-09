@@ -1,5 +1,5 @@
 /**
- * DECODE ANALYTICS ACADEMY - v4.9.0
+ * DECODE ANALYTICS ACADEMY - v4.9.5
  * 
  * - Sound Design: Feedback sonoro para gamificação e interações.
  * - Modo Foco: Experiência de leitura imersiva.
@@ -51,6 +51,12 @@ export const CHANGELOG: Release[] = [
       { kind: 'improvement', text: 'Validação de performance e renderização dos novos componentes do Hero.' }
     ]
   },
+  {
+    version: '4.9.4',
+    date: '2026-08-09',
+    title: 'Social Proof e Online Status',
+    major: false,
+    changes: [
       { kind: 'feature', text: 'Implementado contador dinâmico de alunos online no Hero.' },
       { kind: 'improvement', text: 'Otimização de componentes de prova social na Landing Page.' }
     ]
