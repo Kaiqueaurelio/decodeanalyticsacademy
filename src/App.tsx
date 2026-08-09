@@ -1,9 +1,9 @@
 /**
  * DECODE ANALYTICS ACADEMY - v4.2.0
  * 
- * - Marcadores & Seções: Implementada navegação rápida por anotações e favoritos no leitor.
+ * - Marcadores & Seções: Navegação rápida por anotações e favoritos no leitor.
  * - Auditoria Admin: Painel Ella Audit consolidado para transparência operacional.
- * - Performance Dash: Dashboards 100% responsivos para iPhone 11 e tablets.
+ * - Performance Dash: Dashboards responsivos para mobile e tablets.
  * - Mobile First: Otimização extrema para o aluno estudar de qualquer lugar.
  */
 

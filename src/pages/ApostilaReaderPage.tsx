@@ -93,7 +93,6 @@ export default function ApostilaReaderPage() {
   const [noteSaving, setNoteSaving] = useState(false);
   const [marksOpen, setMarksOpen] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
 
@@ -642,7 +641,7 @@ export default function ApostilaReaderPage() {
                     <button
                       key={l.id}
                       onClick={() => {
-                        onSelect(l.id);
+                        setSelectedLessonId(l.id);
                         setMarksOpen(false);
                       }}
                       className={cn(
