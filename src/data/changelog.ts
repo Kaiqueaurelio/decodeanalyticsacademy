@@ -32,16 +32,27 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.9.9',
+    version: '4.10.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.9.9-release',
-    commitMessage: 'Release v4.9.9: Otimização UX e Acessibilidade'
+    commit: 'v4.10.0-release',
+    commitMessage: 'Release v4.10.0: Autoridade e Transparência Acadêmica'
   };
 }
 
 export const CHANGELOG: Release[] = [
+  {
+    version: '4.10.0',
+    date: '2026-08-10',
+    title: 'Autoridade e Transparência Acadêmica',
+    major: true,
+    changes: [
+      { kind: 'improvement', text: 'Otimização de SEO com meta tags dinâmicas e palavras-chave acadêmicas.' },
+      { kind: 'feature', text: 'Implementados links institucionais (Termos e Transparência) no rodapé da landing page.' },
+      { kind: 'improvement', text: 'Redesign da seção "Sob o Capô" com cards tecnológicos responsivos e imersivos.' },
+    ]
+  },
   {
     version: '4.9.9',
     date: '2026-08-09',
