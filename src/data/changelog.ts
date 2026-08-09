@@ -28,6 +28,16 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '3.99.0',
+    date: '2026-08-09',
+    title: 'Segurança e Gestão de Segredos',
+    major: false,
+    changes: [
+      { kind: 'security', text: 'Migrada a chave de API do Photoroom para o gerenciador de segredos seguro do Lovable, removendo-a do código-fonte.' },
+      { kind: 'improvement', text: 'Implementada validação de formato para chaves de API Photoroom no fluxo de configuração.' },
+    ],
+  },
+  {
     version: '3.98.0',
     date: '2026-08-09',
     title: 'Integração Photoroom API e Processamento de Imagem',
