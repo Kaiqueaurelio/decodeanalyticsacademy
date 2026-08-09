@@ -90,7 +90,7 @@ export function DuplicateApostilaDialog({
           ) : (
             <AlertDialogAction asChild>
               <Button onClick={onKeepExisting} className="w-full">
-                Manter a existente (descartar novo)
+                Ir para a apostila existente
               </Button>
             </AlertDialogAction>
           )}
