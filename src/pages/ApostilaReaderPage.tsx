@@ -19,6 +19,9 @@ import {
   Clock,
   GraduationCap,
   Maximize2,
+  Minimize2,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,6 +33,7 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { useQueryClient } from "@tanstack/react-query";
 import logoOwl from "@/assets/owl-icon.png";
+import { useSoundEffects } from "@/hooks/useSoundEffects";
 
 
 interface Lesson {
