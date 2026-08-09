@@ -32,16 +32,27 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.9.8',
+    version: '4.9.9',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.9.8-release',
-    commitMessage: 'Release v4.9.8: Análise Comparativa e Unificação'
+    commit: 'v4.9.9-release',
+    commitMessage: 'Release v4.9.9: Otimização UX e Acessibilidade'
   };
 }
 
 export const CHANGELOG: Release[] = [
+  {
+    version: '4.9.9',
+    date: '2026-08-09',
+    title: 'Otimização UX e Acessibilidade',
+    major: false,
+    changes: [
+      { kind: 'improvement', text: 'Refinamento da seção de Prova Social com depoimentos dinâmicos.' },
+      { kind: 'feature', text: 'Adicionado selo de destaque para o Modo ENEM 2026.' },
+      { kind: 'style', text: 'Otimização de contraste e acessibilidade em botões e fontes secundárias.' },
+    ]
+  },
   {
     version: '4.9.8',
     date: '2026-08-09',

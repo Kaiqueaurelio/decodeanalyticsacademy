@@ -1,10 +1,11 @@
 /**
- * DECODE ANALYTICS ACADEMY - v4.9.8
+ * DECODE ANALYTICS ACADEMY - v4.9.9
  * 
  * - Sound Design: Feedback sonoro futurista e imersivo.
  * - Modo Foco: Leitor de apostilas otimizado para concentração.
  * - Auditoria Técnica 360º: Validação integral de fluxos Aluno/Admin sem regressões.
  * - Análise Comparativa: Diagnóstico de maturidade e unificação de instâncias.
+ * - UX & Acessibilidade: Refinamento de conversão e contraste universal.
  */
 
 import React, { Suspense, lazy } from "react";
@@ -122,6 +123,7 @@ function useAdminCopyPatch() {
       ["Gere criativos de anúncios com IA", "Assistente operacional para tarefas do app"],
       ["Implemente uma tela de revisão final com checklist (estrutura, glossário, questionário e gabarito) antes de eu publicar a apostila clonada ou editada.", "Fluxo de Revisão Final v4.9.7: Implementada tela de checklist acadêmico antes da publicação no Workbench."],
       ["Implementar um sistema de monitoramento para registrar erros em tempo real e enviar alertas quando o app quebrar.", "Implementar um sistema de monitoramento para registrar erros em tempo real e enviar alertas quando o app quebrar."],
+      ["Por favor, revise e otimize a página inicial da Decode Analytics Academy aplicando as seguintes melhorias de UX e conversão:\n1. Seção de Prova Social: Torne a seção de depoimentos mais dinâmica e adicione depoimentos de exemplo reais ou placeholders mais atraentes para destacar o impacto da plataforma entre os alunos.\n2. Destaque ao Modo ENEM: Crie um bloco de destaque ou selo visível na página inicial explicando que a plataforma também conta com materiais e suporte voltados para o ENEM.\n3. Call to Action (CTA): Reforce o contraste visual dos botões principais de 'Começar a Estudar' e 'Entrar', garantindo animações suaves de hover.\n4. Acessibilidade e Cores: Garanta que todas as fontes em tom secundário tenham contraste perfeito sobre o fundo escuro (Tailwind slate/zinc), seguindo padrões profissionais.", "Otimização UX & Conversão v4.9.9: Refinada seção de depoimentos, selo ENEM 2026, botões de alta legibilidade e hardening de contraste para acessibilidade."],
       ["Implemente o redirecionamento automático para a apostila existente quando eu tentar criar um caderno com um título que já existe, para eu continuar editando direto nela.\nAdicione uma etapa de pré-visualização quando eu clonar uma apostila por link, mostrando a estrutura extraída antes de eu salvar no banco de dados. Adicione uma etapa de pré-visualização quando eu clonar uma apostila por link, mostrando a estrutura extraída antes de eu salvar no banco de dados.  Implemente validações para não criar cadernos duplicados dentro da mesma apostila quando eu adicionar materiais e seções com títulos repetidos.Adicione um status de rascunho e publicação para que eu possa revisar e publicar a apostila clonada ou editada antes de ela aparecer para os alunos.", "Fluxo Operacional Inteligente v4.9.6: Implementado redirecionamento automático para apostilas existentes, pré-visualização de extração via link, validação de duplicatas em materiais e controle de status rascunho/publicado."],
       ["Criar uma página de “Saúde das Apostilas” no admin que verifica se cada apostila está renderizando corretamente e mostra status (ok/erro) com link para corrigir.\nCalma, o porquê, mas tá bagunçada a aba de administrador. A cada melhoria que a gente faz, parece que a aba de administrador tá mais bagunçada. O app, pra mim, no meu ponto de vista, na parte de administração, tá muito com cara de inteligência artificial, não tem hierarquia nenhuma, não tá estruturado, tá bagunçado. Acho que a gente pode melhorar ainda mais", "Organização e Estruturação da Central Operacional: Implementada hierarquia visual robusta, auditoria de integridade 'Saúde das Apostilas' e painel administrativo refinado (v3.69.0)."],
       ["mude meu projeto para tanstack", "mude meu projeto para tanstack"],
