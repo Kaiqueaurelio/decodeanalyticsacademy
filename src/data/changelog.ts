@@ -28,6 +28,16 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '4.4.1',
+    date: '2026-08-09',
+    title: 'Exportação de Auditoria & Gestão de Logs',
+    major: false,
+    changes: [
+      { kind: 'feature', text: 'Implementada exportação em formato CSV para o Painel de Auditoria Ella Audit.' },
+      { kind: 'improvement', text: 'Refinamento do rastreamento de ações administrativas para auditoria simplificada.' },
+    ],
+  },
+  {
     version: '4.4.0',
     date: '2026-08-09',
     title: 'Busca Intra-Apostila & Sincronização Inteligente',

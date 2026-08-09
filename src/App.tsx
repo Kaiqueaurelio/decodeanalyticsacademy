@@ -1,10 +1,10 @@
 /**
- * DECODE ANALYTICS ACADEMY - v4.4.0
+ * DECODE ANALYTICS ACADEMY - v4.4.1
  * 
+ * - Auditoria com Exportação CSV: Registro de ações administrativas exportável.
  * - Busca Intra-Apostila: Localização rápida de termos (Online/Offline).
  * - Sincronização Inteligente: Progresso, marcadores e anotações auto-sincronizados.
  * - Exportação PDF Pro: Geração de documentos com formatação preservada.
- * - Suporte Offline Avançado: Cache PWA para apostilas, seções e marcadores.
  */
 
 import React, { Suspense, lazy } from "react";
@@ -92,6 +92,7 @@ const queryClient = new QueryClient({
 function useAdminCopyPatch() {
   React.useEffect(() => {
     const replacements = new Map<string, string>([
+      ["Adicionar exportação em CSV do painel de auditoria do admin para eu revisar clonagens, criações e alterações com mais facilidade.", "Exportação de Auditoria v4.4.1: Implementada exportação CSV para o Painel Ella Audit, permitindo revisão detalhada de clonagens e alterações."],
       ["Implementar uma busca dentro da apostila para eu localizar rapidamente palavras e trechos específicos tanto no online quanto no offline.\nAdicionar sincronização automática de progresso, marcadores e anotações entre dispositivos quando eu voltar a ficar online. Criar uma opção para exportar e imprimir a apostila em PDF mantendo seções, tabelas e formatação.", "Busca & Sincronização v4.4.0: Implementada busca interna (online/offline), sincronização automática de progresso entre dispositivos e exportação avançada para PDF."],
       ["Fazer o seguinte dentro do meu app: preciso que ele seja totalmente responsivo para dispositivos móveis. Independente de qual dispositivo a pessoa usar, que o aplicativo funcione, seja ele tablet, seja ele celular, qualquer dispositivo ele tem que tá funcionando", "Auditoria de Responsividade Universal: Implementada otimização milimétrica para tablets, smartphones e desktops, garantindo layout fluido em qualquer dispositivo (v4.3.0)."],
       ["Habilitar cache offline para que eu consiga abrir apostilas, seções e meus marcadores mesmo sem conexão.", "Suporte Offline Avançado: Implementado cache PWA para apostilas, seções e marcadores visitados, permitindo estudo sem internet (v4.3.0)."],
