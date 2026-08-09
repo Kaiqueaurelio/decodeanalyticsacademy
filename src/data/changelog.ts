@@ -45,6 +45,16 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '4.14.0',
+    date: '2026-08-10',
+    title: 'Gamificação & Ranking Acadêmico',
+    major: true,
+    changes: [
+      { kind: 'feature', text: 'Mapeamento de 4 estratégias para aumentar o engajamento: Rankings de usuários, Missões Diárias, Badges de Conquista e Streaks de Estudo.' },
+      { kind: 'improvement', text: 'Integrada visão de Ranking de usuários ativos para incentivar a competição saudável entre alunos.' },
+    ]
+  },
+  {
     version: '4.13.0',
     date: '2026-08-10',
     title: 'Roadmap Estratégico Acadêmico',
