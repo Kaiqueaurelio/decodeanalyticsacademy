@@ -34,7 +34,7 @@ export function AdFooterMobile() {
 
   useEffect(() => {
     if (ads.length < 2) return;
-    const t = setInterval(() => setIdx((i) => (i + 1) % ads.length), 90_000);
+    const t = setInterval(() => setIdx((i) => (i + 1) % ads.length), 180_000); // Rotaciona a cada 3 min (era 90s)
     return () => clearInterval(t);
   }, [ads.length]);
 
