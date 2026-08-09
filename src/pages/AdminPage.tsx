@@ -3443,6 +3443,10 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
               <RssFeedsManagerEnhanced />
             )}
 
+            {tab === 'tasks' && (
+              <TaskManager />
+            )}
+
             {/* COURSES */}
             {tab === 'courses' && (
               <FreeCoursesManager />
