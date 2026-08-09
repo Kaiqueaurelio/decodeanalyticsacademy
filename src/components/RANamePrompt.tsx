@@ -147,7 +147,9 @@ export function RANamePrompt() {
   };
 
   return (
-    <Dialog open={open} onOpenChange={(v) => !v && handleLater()}>
+    <>
+      <button data-ra-prompt-trigger className="hidden" onClick={() => setOpen(true)} aria-hidden="true" />
+      <Dialog open={open} onOpenChange={(v) => !v && handleLater()}>
       <DialogContent
         className="sm:max-w-md top-4 translate-y-0 sm:top-8 data-[state=open]:slide-in-from-top-2"
       >

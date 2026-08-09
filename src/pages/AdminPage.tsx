@@ -1,8 +1,8 @@
 /**
- * DECODE ANALYTICS ACADEMY - v4.0.8
+ * DECODE ANALYTICS ACADEMY - v4.0.10
  * 
- * - Separação estrutural de acervos (ENEM vs Faculdade).
- * - Gestão inteligente por semestre na Faculdade (1º-8º).
+ * - Gestão de Alunos Otimizada: Fluxo de RA sem verificação e auditoria de perfis.
+ * - Exportação de Acervo: Download em CSV da grade administrativa.
  */
 import React, { useEffect, useState, useCallback, useRef, useMemo, useContext, createContext } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';

@@ -1,9 +1,9 @@
 /**
- * DECODE ANALYTICS ACADEMY - v4.0.9
+ * DECODE ANALYTICS ACADEMY - v4.0.10
  * 
- * - Gestão de Alunos Otimizada: Fluxo de RA sem verificação e prompt de perfil obrigatório.
- * - Exportação de Acervo: Download em CSV da grade administrativa.
- * - Organização de Conteúdo: Filtro de semestre e status de publicação (Rascunho/Ativo).
+ * - Auditoria de Perfis: Notificação proativa para alunos com dados incompletos.
+ * - Gestão de Acervo: Exportação CSV e filtros avançados por semestre e status.
+ * - UX Administrativa: Fluxo de RA otimizado e gestão de massa v3.
  */
 
 import React, { Suspense, lazy } from "react";

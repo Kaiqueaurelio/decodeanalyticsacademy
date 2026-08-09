@@ -177,7 +177,23 @@ export default function DashboardPage() {
     if (!seen) setShowOnboarding(true);
     gamification.updateStreak();
     gamification.checkAndAwardBadge('first_login');
-  }, [user, profile?.is_admin]);
+
+    // Notificação persistente para perfis incompletos
+    if (profile && (!profile.full_name || profile.full_name.length < 3 || (profile.account_type === 'ra' && (!profile.email || profile.email.endsWith('@ra.unip.local'))))) {
+      toast.info("Perfil Incompleto", {
+        description: "Por favor, preencha seu nome e e-mail no perfil para habilitar todas as funções da comunidade.",
+        duration: 8000,
+        action: {
+          label: "Completar",
+          onClick: () => {
+            const btn = document.querySelector('[data-ra-prompt-trigger]') as HTMLButtonElement;
+            if (btn) btn.click();
+            else navigate('/profile');
+          }
+        }
+      });
+    }
+  }, [user, profile?.is_admin, profile?.full_name]);
 
   const handleOnboardingComplete = () => {
     localStorage.setItem('decode_onboarding_done', 'true');

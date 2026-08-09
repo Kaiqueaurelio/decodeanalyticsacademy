@@ -28,6 +28,18 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '4.0.10',
+    date: '2026-08-09',
+    title: 'Auditoria de Perfis e Refinamento de UX Administrativa',
+    major: true,
+    changes: [
+      { kind: 'improvement', text: 'Implementada notificação proativa e persistente para alunos com perfis incompletos.' },
+      { kind: 'feature', text: 'Adicionado atalho oculto para disparo manual do prompt de perfil via sistema.' },
+      { kind: 'improvement', text: 'Refinada a lógica de exportação de acervo para incluir metadados de professores e semestres.' },
+      { kind: 'improvement', text: 'Sincronização global v4.0.10 da grade acadêmica e fluxos de autenticação por RA.' },
+    ],
+  },
+  {
     version: '4.0.9',
     date: '2026-08-09',
     title: 'Gestão Otimizada de Usuários e Exportação de Acervo',
