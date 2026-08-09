@@ -8,8 +8,8 @@
 
 const ERR_KEY = 'decode:runtime-errors:v1';
 const ROUTE_KEY = 'decode:route-timings:v1';
-const MAX_ERRORS = 100;
-const MAX_ROUTES = 100;
+const MAX_ERRORS = 500;
+const MAX_ROUTES = 200;
 
 export type RuntimeError = {
   ts: number;
@@ -49,6 +49,10 @@ export function recordRuntimeError(err: RuntimeError) {
   if (isBenignRuntimeMessage(err.message)) return;
 
   const all = readJSON<RuntimeError>(ERR_KEY);
+  // Evitar duplicatas exatas seguidas (throttling simples)
+  const last = all[all.length - 1];
+  if (last && last.message === err.message && last.route === err.route && (err.ts - last.ts < 2000)) return;
+
   all.push(err);
   writeJSON(ERR_KEY, all, MAX_ERRORS);
 }

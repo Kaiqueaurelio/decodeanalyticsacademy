@@ -1,4 +1,5 @@
 import React, { Component, ErrorInfo } from 'react';
+import { ShieldAlert } from 'lucide-react';
 
 interface Props {
   children: React.ReactNode;
@@ -125,30 +126,51 @@ class ErrorBoundary extends Component<Props, State> {
 
   render() {
     if (this.state.hasError) {
-      const title = this.state.isCacheError ? 'Atualizando o app' : 'Algo deu errado';
-      const description = this.state.isCacheError
-        ? 'Uma versao antiga ficou presa no cache do navegador. O app vai limpar esses arquivos e abrir a versao nova.'
-        : 'O app encontrou um erro inesperado. Atualize a pagina; se continuar, verifique os diagnosticos do admin.';
-      const buttonLabel = this.state.isRecovering ? 'Atualizando...' : 'Atualizar agora';
+      const isCacheError = this.state.isCacheError;
+      const title = isCacheError ? 'Atualizando o app' : 'Algo deu errado';
+      const description = isCacheError
+        ? 'Uma versão antiga ficou presa no cache do navegador. O app vai limpar esses arquivos e abrir a versão nova.'
+        : 'O app encontrou um erro inesperado. O log foi registrado e nossa equipe será notificada.';
+      const buttonLabel = this.state.isRecovering ? 'Atualizando...' : 'Tentar novamente';
 
       return (
-        <main className="min-h-dvh bg-background text-foreground flex items-center justify-center p-6">
-          <section className="w-full max-w-md rounded-2xl border border-border bg-card p-6 text-center shadow-xl">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
-              !
+        <main className="min-h-dvh bg-[#050508] text-foreground flex items-center justify-center p-6 selection:bg-primary/20">
+          <section className="w-full max-w-lg rounded-[2rem] border border-border/50 bg-card/80 backdrop-blur-xl p-8 text-center shadow-2xl shadow-primary/5">
+            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-destructive/10 text-destructive border border-destructive/20 animate-pulse">
+              <ShieldAlert className="h-8 w-8" />
             </div>
-            <h1 className="text-xl font-bold">{title}</h1>
-            <p className="mt-2 text-sm text-muted-foreground">{description}</p>
-            <button
-              type="button"
-              onClick={this.handleReload}
-              disabled={this.state.isRecovering}
-              className="mt-5 inline-flex h-10 items-center justify-center rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-70"
-            >
-              {buttonLabel}
-            </button>
+            
+            <h1 className="text-2xl font-black tracking-tight">{title}</h1>
+            <p className="mt-3 text-sm text-muted-foreground leading-relaxed px-4">{description}</p>
+            
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
+              <button
+                type="button"
+                onClick={this.handleReload}
+                disabled={this.state.isRecovering}
+                className="inline-flex h-12 items-center justify-center rounded-2xl bg-primary px-8 text-sm font-bold text-primary-foreground transition-all hover:bg-primary/90 hover:scale-[1.02] active:scale-95 disabled:cursor-not-allowed disabled:opacity-70 shadow-lg shadow-primary/20"
+              >
+                {buttonLabel}
+              </button>
+              
+              {!isCacheError && (
+                <button
+                  type="button"
+                  onClick={() => window.location.href = '/dashboard'}
+                  className="inline-flex h-12 items-center justify-center rounded-2xl bg-card border border-border px-8 text-sm font-bold text-foreground transition-all hover:bg-accent/50 hover:scale-[1.02] active:scale-95"
+                >
+                  Voltar ao Início
+                </button>
+              )}
+            </div>
+
             {this.state.message && !this.state.isRecovering && (
-              <p className="mt-4 break-words text-[11px] text-muted-foreground/70">{this.state.message}</p>
+              <div className="mt-10 p-4 rounded-xl bg-destructive/5 border border-destructive/10 text-left overflow-hidden">
+                <p className="text-[10px] font-black uppercase text-destructive tracking-widest mb-2 opacity-60">Status do Sistema / Stack Trace</p>
+                <code className="text-[11px] font-mono text-muted-foreground/90 block overflow-x-auto whitespace-pre-wrap leading-tight max-h-[120px] scrollbar-thin">
+                  {this.state.message}
+                </code>
+              </div>
             )}
           </section>
         </main>
