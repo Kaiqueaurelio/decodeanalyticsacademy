@@ -1,8 +1,8 @@
 /**
- * DECODE ANALYTICS ACADEMY - v4.0.7
+ * DECODE ANALYTICS ACADEMY - v4.0.8
  * 
  * - Separação estrutural de acervos (ENEM vs Faculdade).
- * - Otimização de busca e visibilidade.
+ * - Gestão inteligente por semestre na Faculdade (1º-8º).
  */
 import React, { useEffect, useState, useCallback, useRef, useMemo, useContext, createContext } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';

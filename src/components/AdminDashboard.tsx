@@ -722,6 +722,25 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
                 >
                   {allVisibleSelected ? 'Desmarcar Tudo' : 'Selecionar Visíveis'}
                 </Button>
+
+                {(new URLSearchParams(window.location.search).get('tab') === 'cc-apostilas' || new URLSearchParams(window.location.search).get('tab') === 'overview') && (
+                  <Select 
+                    value={filterSemester || 'all'} 
+                    onValueChange={(v) => setFilterSemester?.(v)}
+                  >
+                    <SelectTrigger className="w-[140px] h-9 bg-white/5 border-white/10 rounded-xl text-xs font-medium">
+                      <GraduationCap className="h-3 w-3 mr-2 text-primary" />
+                      <SelectValue placeholder="Semestre" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-popover/90 backdrop-blur-xl border-white/10 rounded-xl">
+                      <SelectItem value="all">Grade Completa</SelectItem>
+                      {[1, 2, 3, 4, 5, 6, 7, 8].map(s => (
+                        <SelectItem key={s} value={s.toString()}>{s}º Semestre</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+
                 <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                   <SelectTrigger className="w-[160px] h-9 bg-white/5 border-white/10 rounded-xl text-xs">
                     <SelectValue placeholder="Categoria" />
