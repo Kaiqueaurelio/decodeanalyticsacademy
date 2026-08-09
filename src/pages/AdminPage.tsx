@@ -1710,25 +1710,25 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
             )}
 
             {/* APOSTILAS */}
-                {tab === 'cc-apostilas' && (
-                  <div className="flex-1 overflow-y-auto">
-                    <AdminDashboard 
-                      isAdmin={true} 
-                      onNavigate={setTab} 
-                      filterSemester={filterSemester} 
-                      setFilterSemester={setFilterSemester}
-                    />
-                  </div>
-                )}
-                {tab === 'enem-apostilas' && (
-                  <div className="flex-1 overflow-y-auto">
-                     <AdminDashboard 
-                      isAdmin={true} 
-                      onNavigate={setTab} 
-                      filterSemester="all" 
-                    />
-                  </div>
-                )}
+            {tab === 'cc-apostilas' && (
+              <div className="flex-1 overflow-y-auto">
+                <AdminDashboard 
+                  isAdmin={true} 
+                  onNavigate={(newTab) => setTab(newTab as Tab)} 
+                  filterSemester={filterSemester} 
+                  setFilterSemester={setFilterSemester}
+                />
+              </div>
+            )}
+            {tab === 'enem-apostilas' && (
+              <div className="flex-1 overflow-y-auto">
+                 <AdminDashboard 
+                  isAdmin={true} 
+                  onNavigate={(newTab) => setTab(newTab as Tab)} 
+                  filterSemester="all" 
+                />
+              </div>
+            )}
                 {tab === 'apostilas' && (
               <div className="space-y-6">
                 {/* Import Card */}

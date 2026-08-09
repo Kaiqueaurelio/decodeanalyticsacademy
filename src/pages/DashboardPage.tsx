@@ -67,8 +67,8 @@ export default function DashboardPage() {
   const apostilas = useMemo(() => {
     // 1. Filtragem por semestre se selecionado
     const list = selectedSemester
-      ? apostilasRaw.filter(a => a.semester === selectedSemester || a.semester === null || a.semester === 0)
-      : apostilasRaw;
+      ? apostilasRaw.filter(a => (a.semester === selectedSemester || a.semester === 0) && a.published)
+      : apostilasRaw.filter(a => a.published);
 
     // 2. Placeholder para disciplinas da grade (1º ao 8º)
     // A grade é uma referência administrativa; o aluno só vê registros reais.
