@@ -1588,6 +1588,8 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
     photoroom: { title: 'Estúdio Visual Photoroom', desc: 'Remoção de fundo e otimização de imagens via IA' },
     edit: { title: 'Editar Apostila', desc: 'Modo de edição manual' },
     review: { title: 'Revisar Apostila', desc: 'Revisão do conteúdo gerado' },
+    'enem-apostilas': { title: 'Apostilas ENEM', desc: 'Gerenciamento de materiais exclusivos do ENEM' },
+    'cc-apostilas': { title: 'Ciência da Computação', desc: 'Gerenciamento da grade acadêmica da faculdade' },
   };
 
 
@@ -1708,7 +1710,26 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
             )}
 
             {/* APOSTILAS */}
-            {tab === 'apostilas' && (
+                {tab === 'cc-apostilas' && (
+                  <div className="flex-1 overflow-y-auto">
+                    <AdminDashboard 
+                      isAdmin={true} 
+                      onNavigate={setTab} 
+                      filterSemester={filterSemester} 
+                      setFilterSemester={setFilterSemester}
+                    />
+                  </div>
+                )}
+                {tab === 'enem-apostilas' && (
+                  <div className="flex-1 overflow-y-auto">
+                     <AdminDashboard 
+                      isAdmin={true} 
+                      onNavigate={setTab} 
+                      filterSemester="all" 
+                    />
+                  </div>
+                )}
+                {tab === 'apostilas' && (
               <div className="space-y-6">
                 {/* Import Card */}
                 <Card className="overflow-hidden bg-card/40 backdrop-blur-md border-primary/20 shadow-xl" data-import-card>
