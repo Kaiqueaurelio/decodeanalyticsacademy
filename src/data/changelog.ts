@@ -28,6 +28,28 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '4.0.5',
+    date: '2026-08-09',
+    title: 'Sincronização de Grade e Navegação Persistente',
+    major: true,
+    changes: [
+      { kind: 'improvement', text: 'Implementada navegação persistente via URL no painel administrativo para evitar perda de estado.' },
+      { kind: 'fix', text: 'Garantida a visibilidade apenas de materiais publicados para o aluno, sincronizando a grade do 6º semestre.' },
+      { kind: 'improvement', text: 'Refinada a separação de acervos ENEM/CC no Painel Operacional.' },
+    ],
+  },
+  {
+    version: '4.0.4',
+    date: '2026-08-09',
+    title: 'Organização de Acervos e Visibilidade de Grade',
+    major: true,
+    changes: [
+      { kind: 'feature', text: 'Separadas as abas de apostilas no Admin: ENEM e Ciência da Computação (Faculdade).' },
+      { kind: 'fix', text: 'Corrigida a visibilidade de apostilas do 6º semestre no dashboard do aluno, garantindo sincronização total com a grade acadêmica.' },
+      { kind: 'improvement', text: 'Refinada a navegação administrativa com atalhos específicos para categorias de conteúdo.' },
+    ],
+  },
+  {
     version: '4.0.3',
     date: '2026-08-09',
     title: 'Otimização de Fluxo Operacional e Sutileza de Anúncios',

@@ -1,3 +1,9 @@
+/**
+ * DECODE ANALYTICS ACADEMY - v4.0.4
+ * 
+ * - Otimização de busca e visibilidade de apostilas.
+ * - Separação de acervos Admin (ENEM vs CC).
+ */
 import React, { useEffect, useState, useCallback, useRef, useMemo, useContext, createContext } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -204,7 +210,7 @@ function PhotoroomStudio() {
   );
 }
 
-type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements' | 'calendar' | 'testimonials' | 'ai' | 'performance' | 'smoke' | 'diagnostics' | 'ads' | 'ads-chat' | 'social' | 'rss' | 'courses' | 'changelog' | 'leads' | 'ella-audit' | 'security-alerts' | 'sponsors' | 'tasks' | 'photoroom' | 'edit' | 'review';
+type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements' | 'calendar' | 'testimonials' | 'ai' | 'performance' | 'smoke' | 'diagnostics' | 'ads' | 'ads-chat' | 'social' | 'rss' | 'courses' | 'changelog' | 'leads' | 'ella-audit' | 'security-alerts' | 'sponsors' | 'tasks' | 'photoroom' | 'edit' | 'review' | 'enem-apostilas' | 'cc-apostilas';
 
 const ACCEPT_MAP: Record<string, string> = {
   pdf: '.pdf', image: 'image/*', gif: '.gif,image/gif',
@@ -684,9 +690,22 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [internalTab, setInternalTab] = useState<Tab>('overview');
+  const [internalTab, setInternalTab] = useState<Tab>(() => {
+    const params = new URLSearchParams(window.location.search);
+    return (params.get('tab') as Tab) || 'overview';
+  });
   const tab = propTab || internalTab;
-  const setTab = propSetTab || setInternalTab;
+  
+  const setTab = useCallback((newTab: Tab) => {
+    if (propSetTab) {
+      propSetTab(newTab);
+    } else {
+      setInternalTab(newTab);
+      const params = new URLSearchParams(window.location.search);
+      params.set('tab', newTab);
+      navigate(`${location.pathname}?${params.toString()}`, { replace: true });
+    }
+  }, [propSetTab, navigate, location.pathname]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [apostilas, setApostilas] = useState<Apostila[]>([]);
   const [exercises, setExercises] = useState<Record<string, Exercise[]>>({});
@@ -1582,6 +1601,8 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
     photoroom: { title: 'Estúdio Visual Photoroom', desc: 'Remoção de fundo e otimização de imagens via IA' },
     edit: { title: 'Editar Apostila', desc: 'Modo de edição manual' },
     review: { title: 'Revisar Apostila', desc: 'Revisão do conteúdo gerado' },
+    'enem-apostilas': { title: 'Apostilas ENEM', desc: 'Gerenciamento de materiais exclusivos do ENEM' },
+    'cc-apostilas': { title: 'Ciência da Computação', desc: 'Gerenciamento da grade acadêmica da faculdade' },
   };
 
 
@@ -1702,7 +1723,26 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
             )}
 
             {/* APOSTILAS */}
-            {tab === 'apostilas' && (
+            {tab === 'cc-apostilas' && (
+              <div className="flex-1 overflow-y-auto">
+                <AdminDashboard 
+                  isAdmin={true} 
+                  onNavigate={(newTab) => setTab(newTab as Tab)} 
+                  filterSemester={filterSemester} 
+                  setFilterSemester={setFilterSemester}
+                />
+              </div>
+            )}
+            {tab === 'enem-apostilas' && (
+              <div className="flex-1 overflow-y-auto">
+                 <AdminDashboard 
+                  isAdmin={true} 
+                  onNavigate={(newTab) => setTab(newTab as Tab)} 
+                  filterSemester="all" 
+                />
+              </div>
+            )}
+                {tab === 'apostilas' && (
               <div className="space-y-6">
                 {/* Import Card */}
                 <Card className="overflow-hidden bg-card/40 backdrop-blur-md border-primary/20 shadow-xl" data-import-card>
