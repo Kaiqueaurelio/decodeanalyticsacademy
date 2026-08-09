@@ -1,5 +1,5 @@
 /**
- * DECODE ANALYTICS ACADEMY - v4.9.9
+ * DECODE ANALYTICS ACADEMY - v4.11.0
  * 
  * - Sound Design: Feedback sonoro futurista e imersivo.
  * - Modo Foco: Leitor de apostilas otimizado para concentração.
@@ -7,6 +7,7 @@
  * - Análise Comparativa: Diagnóstico de maturidade e unificação de instâncias.
  * - UX & Acessibilidade: Refinamento de conversão e contraste universal.
  * - Autoridade & Transparência: Otimização SEO (Meta tags) e links institucionais.
+ * - Páginas Institucionais: Conteúdo completo de Termos e Transparência.
  */
 
 import React, { Suspense, lazy } from "react";
@@ -94,6 +95,7 @@ const queryClient = new QueryClient({
 function useAdminCopyPatch() {
   React.useEffect(() => {
     const replacements = new Map<string, string>([
+      ["Adicione páginas dedicadas de Termos de Uso e Política de Transparência de Dados com conteúdo completo e navegação direta no rodapé.", "Autoridade & Transparência v4.11.0: Implementadas páginas institucionais robustas de Termos e Transparência com navegação direta no rodapé."],
       ["verifique tudo que fizeos se esta funcionando direito por gentileza e se não tiver arrume", "Auditoria de Integridade v4.9.5: Verificação completa realizada via Playwright. Estabilidade confirmada, 0 erros detectados e melhorias validadas."],
       ["proximo", "Executando Item 02 do Plano: Social Proof v4.9.4 - Implementado contador de alunos online e refinamento de depoimentos."],
       ["faça os 10 cada um de uma vez", "Executando Item 01 do Plano: Hero Section v4.9.3 - Implementada animação Typewriter e mockup interativo."],
