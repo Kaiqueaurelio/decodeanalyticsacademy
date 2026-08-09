@@ -28,6 +28,17 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '4.7.0',
+    date: '2026-08-09',
+    title: 'Dashboard de Saúde e Automação de Diagnóstico',
+    major: true,
+    changes: [
+      { kind: 'feature', text: 'Resumo gráfico de saúde técnica por categoria (componentes, imagens, fontes).' },
+      { kind: 'feature', text: 'Sistema de agendamento de varreduras automáticas pós-deploy.' },
+      { kind: 'improvement', text: 'Interface visual do ResourceScanPanel atualizada com gráficos de pizza e barras.' },
+    ],
+  },
+  {
     version: '4.6.1',
     date: '2026-08-09',
     title: 'Consolidação de Diagnóstico e Auditoria v4.6',
