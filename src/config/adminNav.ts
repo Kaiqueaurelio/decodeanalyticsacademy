@@ -9,7 +9,7 @@ export type AdminTabId =
   | 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements'
   | 'calendar' | 'testimonials' | 'ai' | 'performance' | 'smoke' | 'diagnostics'
   | 'ads' | 'ads-chat' | 'social' | 'rss' | 'courses' | 'changelog' | 'leads'
-  | 'ella-audit' | 'security-alerts' | 'sponsors' | 'tasks' | 'edit' | 'review';
+  | 'ella-audit' | 'security-alerts' | 'sponsors' | 'tasks' | 'photoroom' | 'edit' | 'review';
 
 export type AdminNavItem = {
   id: AdminTabId;
@@ -36,6 +36,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     items: [
       { id: 'overview', label: 'Painel Operacional', short: 'Geral', icon: BarChart3, desc: 'Resumo completo da plataforma', keywords: 'dashboard home painel resumo' },
       { id: 'tasks', label: 'Gerenciador de Tarefas', short: 'Tarefas', icon: CheckSquare, desc: 'Organize suas atividades administrativas', keywords: 'tarefas checklist todo afazeres' },
+      { id: 'photoroom', label: 'Estúdio Visual', short: 'Estúdio', icon: Sparkles, desc: 'Remova fundos e otimize imagens', keywords: 'imagem foto fundo remover studio photoroom' },
     ],
   },
   {

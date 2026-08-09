@@ -1579,6 +1579,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
     leads: { title: 'Interessados em Patrocínio', desc: 'Briefings recebidos e histórico de contato' },
     sponsors: { title: 'Gestão de Anunciantes', desc: 'Controle marcas e logos para o Media Kit' },
     tasks: { title: 'Gerenciador de Tarefas', desc: 'Organize suas atividades administrativas' },
+    photoroom: { title: 'Estúdio Visual Photoroom', desc: 'Remoção de fundo e otimização de imagens via IA' },
     edit: { title: 'Editar Apostila', desc: 'Modo de edição manual' },
     review: { title: 'Revisar Apostila', desc: 'Revisão do conteúdo gerado' },
   };
