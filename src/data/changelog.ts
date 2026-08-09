@@ -28,6 +28,17 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '4.0.7',
+    date: '2026-08-09',
+    title: 'Separação Estrutural de Acervos e Refinamento Admin',
+    major: true,
+    changes: [
+      { kind: 'feature', text: 'Implementada separação física de acervos no painel administrativo: Abas dedicadas para ENEM e Faculdade.' },
+      { kind: 'improvement', text: 'Refinada a lógica de filtragem de categoria para garantir que materiais do ENEM não se misturem com a grade acadêmica.' },
+      { kind: 'improvement', text: 'Atualização visual da hierarquia administrativa v4.0.7 com foco em gestão organizacional.' },
+    ],
+  },
+  {
     version: '4.0.6',
     date: '2026-08-09',
     title: 'Filtros Avançados e Otimização de Busca Admin',

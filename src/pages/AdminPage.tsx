@@ -1,8 +1,8 @@
 /**
- * DECODE ANALYTICS ACADEMY - v4.0.4
+ * DECODE ANALYTICS ACADEMY - v4.0.7
  * 
- * - Otimização de busca e visibilidade de apostilas.
- * - Separação de acervos Admin (ENEM vs CC).
+ * - Separação estrutural de acervos (ENEM vs Faculdade).
+ * - Otimização de busca e visibilidade.
  */
 import React, { useEffect, useState, useCallback, useRef, useMemo, useContext, createContext } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
