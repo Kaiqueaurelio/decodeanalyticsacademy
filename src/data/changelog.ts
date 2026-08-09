@@ -45,6 +45,17 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '4.19.0',
+    date: '2026-08-09',
+    title: 'Compliance de Aceite Obrigatório',
+    major: true,
+    changes: [
+      { kind: 'security', text: 'Implementada barreira de aceite obrigatório dos Termos de Uso e Política de Privacidade no Cadastro/Login.' },
+      { kind: 'improvement', text: 'Bloqueio de ações de autenticação para usuários que não concordarem com as diretrizes legais.' },
+    ]
+  },
+
+  {
     version: '4.18.1',
     date: '2026-08-09',
     title: 'Recuperação & Manutenção Legal',
