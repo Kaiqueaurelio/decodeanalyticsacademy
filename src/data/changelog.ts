@@ -28,6 +28,18 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '4.4.0',
+    date: '2026-08-09',
+    title: 'Busca Intra-Apostila & Sincronização Inteligente',
+    major: true,
+    changes: [
+      { kind: 'feature', text: 'Implementada busca interna poderosa para localização de termos dentro das apostilas (suporte Online/Offline).' },
+      { kind: 'feature', text: 'Sincronização automática de progresso, marcadores e anotações entre múltiplos dispositivos.' },
+      { kind: 'feature', text: 'Nova funcionalidade de Exportar e Imprimir para PDF mantendo formatação original e tabelas.' },
+      { kind: 'improvement', text: 'Otimização do motor de busca para resultados instantâneos.' },
+    ],
+  },
+  {
     version: '4.3.0',
     date: '2026-08-09',
     title: 'Responsividade Universal & Suporte Offline',
