@@ -31,22 +31,26 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.9.4',
+    version: '4.9.5',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.9.4-release',
-    commitMessage: 'Release v4.9.4: Social Proof e Online Status'
+    commit: 'v4.9.5-release',
+    commitMessage: 'Release v4.9.5: Auditoria de Integridade e Estabilidade'
   };
 }
 
 export const CHANGELOG: Release[] = [
   {
-    version: '4.9.4',
+    version: '4.9.5',
     date: '2026-08-09',
-    title: 'Social Proof e Online Status',
+    title: 'Auditoria de Integridade e Estabilidade',
     major: false,
     changes: [
+      { kind: 'security', text: 'Verificação completa de integridade via Playwright concluída com 0 erros.' },
+      { kind: 'improvement', text: 'Validação de performance e renderização dos novos componentes do Hero.' }
+    ]
+  },
       { kind: 'feature', text: 'Implementado contador dinâmico de alunos online no Hero.' },
       { kind: 'improvement', text: 'Otimização de componentes de prova social na Landing Page.' }
     ]
