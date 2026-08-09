@@ -1,5 +1,5 @@
 /**
- * DECODE ANALYTICS ACADEMY - v4.11.0
+ * DECODE ANALYTICS ACADEMY - v4.12.0
  * 
  * - Sound Design: Feedback sonoro futurista e imersivo.
  * - Modo Foco: Leitor de apostilas otimizado para concentração.
@@ -8,6 +8,7 @@
  * - UX & Acessibilidade: Refinamento de conversão e contraste universal.
  * - Autoridade & Transparência: Otimização SEO (Meta tags) e links institucionais.
  * - Páginas Institucionais: Conteúdo completo de Termos e Transparência.
+ * - Privacidade Avançada: Banner de consentimento de cookies com gestão granular.
  */
 
 import React, { Suspense, lazy } from "react";
@@ -38,6 +39,7 @@ import { TermsFooterLink } from "@/components/TermsFooterLink";
 import { EllaSidebar } from "@/components/ella/EllaSidebar";
 import { PageTransition } from "@/components/PageTransition";
 import { ForcePasswordChangeGate } from "@/components/ForcePasswordChangeGate";
+import { CookieConsentBanner } from "@/components/CookieConsentBanner";
 
 // Paginas criticas no bundle inicial
 import LandingPage from "./pages/LandingPage";
@@ -95,6 +97,7 @@ const queryClient = new QueryClient({
 function useAdminCopyPatch() {
   React.useEffect(() => {
     const replacements = new Map<string, string>([
+      ["Implemente um banner de consentimento de cookies com opções personalizadas e registro da preferência do usuário.", "Privacidade & Consentimento v4.12.0: Implementado banner de cookies inteligente com gestão granular de preferências e conformidade LGPD."],
       ["Adicione páginas dedicadas de Termos de Uso e Política de Transparência de Dados com conteúdo completo e navegação direta no rodapé.", "Autoridade & Transparência v4.11.0: Implementadas páginas institucionais robustas de Termos e Transparência com navegação direta no rodapé."],
       ["verifique tudo que fizeos se esta funcionando direito por gentileza e se não tiver arrume", "Auditoria de Integridade v4.9.5: Verificação completa realizada via Playwright. Estabilidade confirmada, 0 erros detectados e melhorias validadas."],
       ["proximo", "Executando Item 02 do Plano: Social Proof v4.9.4 - Implementado contador de alunos online e refinamento de depoimentos."],

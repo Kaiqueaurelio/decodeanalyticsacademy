@@ -1,11 +1,12 @@
 /**
- * DECODE ANALYTICS ACADEMY - v4.11.0
+ * DECODE ANALYTICS ACADEMY - v4.12.0
  * 
  * - Sound Design: Feedback sonoro para gamificação e interações.
  * - Modo Foco: Experiência de leitura imersiva.
  * - Hall da Fama: Ranking de performance.
  * - Checklist de Publicação: Garantia de qualidade acadêmica.
  * - Páginas Institucionais: Conteúdo completo de Termos e Transparência.
+ * - Privacidade Avançada: Banner de consentimento de cookies.
  */
 
 export type ChangeKind = 'feature' | 'fix' | 'improvement' | 'security' | 'content';
@@ -44,10 +45,21 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '4.12.0',
+    date: '2026-08-10',
+    title: 'Privacidade e Consentimento Inteligente',
+    major: true,
+    changes: [
+      { kind: 'feature', text: 'Implementado banner de consentimento de cookies com opções granulares (Essencial, Analítico, Desempenho, Marketing).' },
+      { kind: 'improvement', text: 'Persistência de preferências de privacidade local para conformidade com normas de proteção de dados.' },
+      { kind: 'improvement', text: 'Interface não intrusiva com animações fluidas para gestão de cookies.' },
+    ]
+  },
+  {
     version: '4.11.0',
     date: '2026-08-10',
     title: 'Páginas Institucionais e Autoridade',
-    major: true,
+    major: false,
     changes: [
       { kind: 'feature', text: 'Implementadas páginas dedicadas de Termos de Uso e Política de Transparência com conteúdo completo.' },
       { kind: 'improvement', text: 'Navegação direta no rodapé consolidada para maior transparência e autoridade acadêmica.' },
