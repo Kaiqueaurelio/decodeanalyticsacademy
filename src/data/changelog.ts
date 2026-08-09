@@ -28,6 +28,17 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '4.8.0',
+    date: '2026-08-09',
+    title: 'Gamificação: Hall da Fama e Estratégia UX',
+    major: true,
+    changes: [
+      { kind: 'feature', text: 'Implementação do Hall da Fama semanal com ranking de XP e simulados.' },
+      { kind: 'improvement', text: 'Estruturação de 7 pilares estratégicos para melhoria de UX e retenção de alunos.' },
+      { kind: 'fix', text: 'Consolidação de transições de página e feedback visual de progresso.' },
+    ],
+  },
+  {
     version: '4.7.0',
     date: '2026-08-09',
     title: 'Dashboard de Saúde e Automação de Diagnóstico',
