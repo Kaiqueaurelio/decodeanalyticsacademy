@@ -28,6 +28,17 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '3.97.0',
+    date: '2026-08-09',
+    title: 'Auditoria Estrutural e Refinamento de UX v4',
+    major: true,
+    changes: [
+      { kind: 'improvement', text: 'Realizada auditoria técnica completa em todos os setores do app (Aluno/Admin).' },
+      { kind: 'improvement', text: 'Atualizado o relatório dinâmico de auditoria para refletir as correções de segurança v3.96.0.' },
+      { kind: 'fix', text: 'Validada a integridade visual da sidebar, topbar e dashboard de alta performance.' },
+    ],
+  },
+  {
     version: '3.96.0',
     date: '2026-08-09',
     title: 'Hardening de Segurança e Proteção de Gabaritos',
