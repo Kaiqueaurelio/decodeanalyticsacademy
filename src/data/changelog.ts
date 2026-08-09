@@ -28,6 +28,17 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '3.93.0',
+    date: '2026-08-09',
+    title: 'Ações em Lote e Gestão de Massa',
+    major: true,
+    changes: [
+      { kind: 'feature', text: 'Implementadas ações em lote no Admin: ativar/ocultar (publicação) e mover de semestre múltiplas apostilas simultaneamente.' },
+      { kind: 'improvement', text: 'Adicionados modais de confirmação e seleção de semestre para fluxos em massa.' },
+      { kind: 'fix', text: 'Corrigida duplicidade de widgets de acervo no painel operacional admin.' },
+    ],
+  },
+  {
     version: '3.92.0',
     date: '2026-08-09',
     title: 'Otimização de Fluxo Admin e Controle de Visibilidade',
