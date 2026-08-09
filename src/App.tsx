@@ -1,10 +1,10 @@
 /**
- * DECODE ANALYTICS ACADEMY - v4.2.0
+ * DECODE ANALYTICS ACADEMY - v4.3.0
  * 
- * - Marcadores & Seções: Navegação rápida por anotações e favoritos no leitor.
+ * - Suporte Offline Avançado: Cache PWA para apostilas, seções e marcadores.
+ * - Mobile First Audit: UI milimetricamente pensada para dispositivos móveis (iPhone 11 focus).
  * - Auditoria Admin: Painel Ella Audit consolidado para transparência operacional.
  * - Performance Dash: Dashboards responsivos para mobile e tablets.
- * - Mobile First: Otimização extrema para o aluno estudar de qualquer lugar.
  */
 
 import React, { Suspense, lazy } from "react";
@@ -92,6 +92,7 @@ const queryClient = new QueryClient({
 function useAdminCopyPatch() {
   React.useEffect(() => {
     const replacements = new Map<string, string>([
+      ["Fazer o seguinte dentro do meu app: preciso que ele seja totalmente responsivo para dispositivos móveis. Independente de qual dispositivo a pessoa usar, que o aplicativo funcione, seja ele tablet, seja ele celular, qualquer dispositivo ele tem que tá funcionando", "Auditoria de Responsividade Universal: Implementada otimização milimétrica para tablets, smartphones e desktops, garantindo layout fluido em qualquer dispositivo (v4.3.0)."],
       ["Habilitar cache offline para que eu consiga abrir apostilas, seções e meus marcadores mesmo sem conexão.", "Suporte Offline Avançado: Implementado cache PWA para apostilas, seções e marcadores visitados, permitindo estudo sem internet (v4.3.0)."],
       ["Preciso que dê um foco maior em dispositivos móveis. No meu caso, como administrador, é essencial e fundamental que funcione melhor no meu dispositivo móvel, que no caso é um iPhone 11. Eu preciso que tudo seja perfeito, mas não só pra mim, claro. Quero que esteja otimizado para todos os usuários. Eu quero que eles consigam estudar de qualquer lugar que eles tenham vontade dentro do app. Então que a navegação fique mais fluida, mais determinística e que eles consigam utilizar o app de várias maneiras e crie alguma função, se for possível, pra que o aluno consiga salvar alguma apostila no cache, pra que ele possa ver aquela apostila específica mesmo offline.\nConfigurar um pipeline no GitHub Actions para executar automaticamente testes de responsividade e E2E a cada push e bloquear deploy quando houver falhas.  Adicionar uma página de auditoria para registrar ações do admin (clonagem por link, criação de apostilas e alterações) e permitir que eu valide rapidamente tudo que foi gerado. Implementar um dashboard de desempenho para alunos com progresso por apostila, taxa de acerto nos questionários e histórico de tentativas, com layout totalmente responsivo.\nImplementar marcadores e anotações por seção na apostila para eu voltar rapidamente aos trechos que eu marquei.", "Auditoria Mobile-First v4.2.0: Implementada interface de marcadores/anotações, otimização iPhone 11, Dashboards Responsivos e Painel de Auditoria Operacional."],
       ["Melhorar a visualização da apostila no celular com layout otimizado, navegação por seções e paginação/scroll mais confortável.", "Leitor Mobile Otimizado: Layout responsivo, navegação fluida por seções e experiência de leitura aprimorada para smartphones (v4.1.0)."],

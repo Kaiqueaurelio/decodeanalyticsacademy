@@ -30,10 +30,11 @@ export const CHANGELOG: ChangelogEntry[] = [
   {
     version: '4.3.0',
     date: '2026-08-09',
-    title: 'Suporte Offline & Cache PWA',
+    title: 'Responsividade Universal & Suporte Offline',
     major: true,
     changes: [
-      { kind: 'feature', text: 'Habilitado cache inteligente de apostilas visitadas para leitura totalmente offline.' },
+      { kind: 'improvement', text: 'Auditoria milimétrica de responsividade: Garantida fluidez total em smartphones, tablets e desktops.' },
+      { kind: 'feature', text: 'Habilitado cache inteligente de apostilas visitadas para leitura totalmente offline via PWA.' },
       { kind: 'improvement', text: 'Persistência de marcadores e seções no cache local do dispositivo.' },
       { kind: 'improvement', text: 'Página de fallback offline aprimorada com acesso rápido à biblioteca local.' },
     ],
