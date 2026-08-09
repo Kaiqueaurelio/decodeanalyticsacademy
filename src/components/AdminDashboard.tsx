@@ -489,8 +489,13 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
                   </div>
                   <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">{card.label}</span>
                 </div>
-                <div className="text-3xl font-bold tracking-tighter">
-                  {card.value}
+                <div className="flex items-end justify-between">
+                  <div className="text-3xl font-bold tracking-tighter">
+                    {card.value}
+                  </div>
+                  <div className="text-[10px] font-bold text-primary flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                    GERENCIAR <ChevronRight className="h-3 w-3" />
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -746,23 +751,28 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
                       
                       {!(a as any).isPlaceholder && (
                         <div className="mt-4 pt-3 border-t border-white/5 flex justify-between items-center">
+                          <div className="flex items-center gap-2">
+                            <Switch 
+                              checked={a.published} 
+                              onCheckedChange={() => handleTogglePublish(a)}
+                              disabled={busyId === a.id}
+                              className="scale-75"
+                            />
+                            <span className={cn(
+                              "text-[9px] font-bold uppercase tracking-wider",
+                              a.published ? "text-emerald-500" : "text-amber-500"
+                            )}>
+                              {a.published ? 'Visível' : 'Oculto'}
+                            </span>
+                          </div>
+                          
                           <Button 
-                            variant="ghost" 
+                            variant="default" 
                             size="sm" 
-                            className="h-7 text-[10px] px-2 rounded-lg hover:bg-primary/10 hover:text-primary transition-all"
-                            onClick={() => handleTogglePublish(a)}
-                          >
-                            <Switch checked={a.published} className="scale-75 mr-1" />
-                            {a.published ? 'Visível' : 'Oculto'}
-                          </Button>
-                          <Button 
-                            variant="secondary" 
-                            size="sm" 
-
-                            className="h-7 text-[10px] px-3 rounded-lg shadow-sm"
+                            className="h-8 rounded-xl px-4 text-xs font-bold gap-2"
                             onClick={() => handleEdit(a)}
                           >
-                            Editar
+                            <Edit className="h-3 w-3" /> Editar
                           </Button>
                         </div>
                       )}

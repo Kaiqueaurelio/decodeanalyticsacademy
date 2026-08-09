@@ -28,6 +28,17 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '3.92.0',
+    date: '2026-08-09',
+    title: 'Otimização de Fluxo Admin e Controle de Visibilidade',
+    major: true,
+    changes: [
+      { kind: 'improvement', text: 'Melhorada a acessibilidade das apostilas no Painel Operacional com botões de edição direta.' },
+      { kind: 'feature', text: 'Implementado controle visual de visibilidade (Switch) para ocultar/exibir materiais com um clique.' },
+      { kind: 'improvement', text: 'Refinada a hierarquia visual dos cards de métricas para facilitar o gerenciamento de seções.' },
+    ],
+  },
+  {
     version: '3.91.0',
     date: '2026-08-09',
     title: 'Visibilidade Global e Sincronização de Materiais',
