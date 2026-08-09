@@ -191,24 +191,18 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
     const untilTs = dateUntil ? new Date(dateUntil + 'T23:59:59').getTime() : null;
 
     let list = apostilas.filter((a) => {
-      // Filtro de aba específica (CC vs ENEM) se invocado via prop implícita de contexto
-      // No Dashboard fixo de ENEM, forçamos a categoria ENEM
-      if (filterSemester === 'all' && !q && !search) {
-         // Se estamos na aba ENEM, filtramos por categoria ENEM
-         // Como o componente é o mesmo, usamos a prop filterSemester como sinalizador ou detectamos a rota
-         const isEnemTab = window.location.hash.includes('enem-apostilas') || (window.location.search.includes('tab=enem-apostilas'));
-         // Mas melhor usar a lógica de categoria fixa se o semestre for fixo 'all' numa aba específica
-      }
-
       if (q && !a.title.toLowerCase().includes(q) && !(a.category || '').toLowerCase().includes(q)) return false;
       if (statusFilter === 'published' && !a.published) return false;
       if (statusFilter === 'draft' && a.published) return false;
       
-      // Lógica de categoria para separação ENEM/CC
       const isEnem = (a.category || '').toUpperCase().includes('ENEM');
       
-      // Se estamos filtrando por semestre específico, assumimos que é CC (Grade)
-      if (filterSemester && filterSemester !== 'all' && isEnem) return false;
+      // Detecção de aba para separação ENEM vs CC
+      const searchParams = new URLSearchParams(window.location.search);
+      const activeTab = searchParams.get('tab');
+      
+      if (activeTab === 'cc-apostilas' && isEnem) return false;
+      if (activeTab === 'enem-apostilas' && !isEnem) return false;
 
       if (categoryFilter === '__uncategorized' && a.category?.trim()) return false;
       if (categoryFilter !== 'all' && categoryFilter !== '__uncategorized' && a.category !== categoryFilter) return false;
@@ -219,7 +213,6 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
         if (rowSemester !== undefined && rowSemester !== null) {
            if (rowSemester.toString() !== filterSemester) return false;
         } else if (filterSemester !== '0' && filterSemester !== 'none') {
-           // Se a apostila não tem semestre e o filtro não é "sem semestre", oculta
            return false;
         }
       }
