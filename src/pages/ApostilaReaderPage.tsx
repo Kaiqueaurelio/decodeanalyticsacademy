@@ -608,13 +608,13 @@ export default function ApostilaReaderPage() {
               ) : (
                 <div className="flex-1" />
               )}
-            </div>
-          </>
-        )}
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </div>
-  </div>
-</main>
+  </main>
 
       {/* Notes drawer */}
       {noteOpen && (
