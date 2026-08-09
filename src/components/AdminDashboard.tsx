@@ -231,26 +231,39 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
     }
     list = [...unique.values()];
 
+    const searchParams = new URLSearchParams(window.location.search);
+    const activeTab = searchParams.get('tab');
+    const isCcTab = activeTab === 'cc-apostilas';
+
     // Placeholders para o Admin Dashboard
-    const activeSemNum = filterSemester && filterSemester !== 'all' && filterSemester !== 'none' ? parseInt(filterSemester, 10) : null;
-    if (activeSemNum && !q) {
-      const canonicalSubjects = BY_SEMESTER[activeSemNum] || [];
-      const existingCategoriesKeys = new Set(list.map(a => subjectKey(a.category || '')));
+    if (isCcTab && !q) {
+      const activeSemNum = filterSemester && filterSemester !== 'all' && filterSemester !== 'none' ? parseInt(filterSemester, 10) : null;
       
-      const placeholders = canonicalSubjects
-        .filter((subject: string) => !existingCategoriesKeys.has(subjectKey(subject)))
-        .map((subject: string, idx: number) => ({
-          id: `placeholder-admin-dash-${activeSemNum}-${idx}`,
-          title: `[GRADE] ${subject}`,
-          category: subject,
-          semester: activeSemNum,
-          published: false,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          isPlaceholder: true
-        }));
+      // Se tiver semestre selecionado, mostra placeholders apenas desse semestre
+      // Se não tiver, mostra de TODOS os semestres para garantir visibilidade da grade
+      const semestersToDisplay = activeSemNum ? [activeSemNum] : [1, 2, 3, 4, 5, 6, 7, 8];
+      
+      const existingCategoriesKeys = new Set(list.map(a => subjectKey(a.category || '')));
+      let allPlaceholders: any[] = [];
+
+      semestersToDisplay.forEach(semNum => {
+        const canonicalSubjects = BY_SEMESTER[semNum] || [];
+        const placeholders = canonicalSubjects
+          .filter((subject: string) => !existingCategoriesKeys.has(subjectKey(subject)))
+          .map((subject: string, idx: number) => ({
+            id: `placeholder-admin-dash-${semNum}-${idx}`,
+            title: `[GRADE] ${subject}`,
+            category: subject,
+            semester: semNum,
+            published: false,
+            created_at: new Date(2000, 0, 1).toISOString(), // Antigo para ficar no fim se ordenado por desc
+            updated_at: new Date(2000, 0, 1).toISOString(),
+            isPlaceholder: true
+          }));
+        allPlaceholders = [...allPlaceholders, ...placeholders];
+      });
         
-      list = [...list, ...placeholders] as any[];
+      list = [...list, ...allPlaceholders] as any[];
     }
 
     const sorted = [...list].sort((x, y) => {
