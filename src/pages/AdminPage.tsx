@@ -1,8 +1,8 @@
 /**
- * DECODE ANALYTICS ACADEMY - v4.1.0
+ * DECODE ANALYTICS ACADEMY - v4.2.0
  * 
- * - Verificação Final: Testes de responsividade automatizados concluídos.
- * - Mobile First Audit: UI milimetricamente pensada para dispositivos móveis.
+ * - Auditoria Admin: Painel Ella Audit consolidado para transparência operacional.
+ * - Mobile First Audit: UI milimetricamente pensada para dispositivos móveis (iPhone 11 focus).
  */
 import React, { useEffect, useState, useCallback, useRef, useMemo, useContext, createContext } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
