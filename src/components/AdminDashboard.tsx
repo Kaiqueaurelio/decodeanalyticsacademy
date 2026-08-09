@@ -241,7 +241,7 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
       
       // Se tiver semestre selecionado, mostra placeholders apenas desse semestre
       // Se não tiver, mostra de TODOS os semestres para garantir visibilidade da grade
-      const semestersToDisplay = activeSemNum ? [activeSemNum] : [1, 2, 3, 4, 5, 6, 7, 8];
+      const semestersToDisplay = activeSemNum !== null ? [activeSemNum] : [1, 2, 3, 4, 5, 6, 7, 8];
       
       const existingCategoriesKeys = new Set(list.map(a => subjectKey(a.category || '')));
       let allPlaceholders: any[] = [];

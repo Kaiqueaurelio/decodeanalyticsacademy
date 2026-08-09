@@ -1,9 +1,9 @@
 /**
- * DECODE ANALYTICS ACADEMY - v4.0.10
+ * DECODE ANALYTICS ACADEMY - v4.0.12
  * 
- * - Auditoria de Perfis: Notificação proativa para alunos com dados incompletos.
- * - Gestão de Acervo: Exportação CSV e filtros avançados por semestre e status.
- * - UX Administrativa: Fluxo de RA otimizado e gestão de massa v3.
+ * - Sincronização de Grade: Disciplinas do 6º semestre mapeadas e visíveis.
+ * - Navegação Admin: Restaurada aba de Apostilas e filtros por semestre.
+ * - UX Operacional: Labels de semestre unificados e busca aprimorada.
  */
 
 import React, { Suspense, lazy } from "react";
@@ -91,6 +91,7 @@ const queryClient = new QueryClient({
 function useAdminCopyPatch() {
   React.useEffect(() => {
     const replacements = new Map<string, string>([
+      ["Já percebi uma coisa aqui no modo admin que não tem, que antigamente tinha e me ajudava, pelo menos na-na aba de menu, no painel, a aba de apostilas. Pode colocar ela por gentileza pra mim? E aí nela me dê a opção de eu procurar apostilas como acabei de citar pra você, usando o semestre. E aí eu quero que você olhe toda a minha grade curricular do curso e vai colocando. Lembrando que as matérias do sexto semestre você já tem. Olha no histórico da nossa conversa e faça o seguinte: coloca as matérias do sexto semestre", "Restaurada aba de Apostilas e sincronizada a grade curricular do 6º semestre v4.0.12."],
       ["Uma-- como a gente organiza os anúncios. Por gentileza, melhore a forma como gerenciamos usuários. Dê opção de usuários cadastrado com RA, não precisa fazer verificação, mas depois que eles entrarem, peça pra que eles coloquem o e-mail, nome de perfil, pra facilitar. E faça uma outra coisa: verifique todos os usuários conectados na plataforma e faça com que o aluno tenha nome no perfil. Por gentileza. Os alunos que não têm nome, gere uma notificação pra eles, pra eles colocarem nome no perfil, por gentileza. Filtrar apostilas por semestre, criar modo rascunho e publicar, ativar busca por semestre no admin, exportar acervo do admin. Faça tudo isso", "Auditoria de usuários e otimização de gestão de acervo concluída (v4.0.9)."],
       ["Faça o que eu pedi, separe num bloco, numa aba apostilas Enem e no outro apostilas da faculdade comum", "Separação de acervos ENEM/Faculdade implementada no Painel Operacional (v4.0.7)."],
       ["Me ajude a achar alguma forma de eu conseguir deixar as apostilas de uma forma de que eu só a pesquise o nome ou elas sincronizem com mais facilidade", "Otimização de busca e ordenação alfabética implementada no Painel Operacional (v4.0.3)."],
