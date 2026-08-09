@@ -691,8 +691,22 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
   const navigate = useNavigate();
   const location = useLocation();
   const [internalTab, setInternalTab] = useState<Tab>('overview');
+  const [internalTab, setInternalTab] = useState<Tab>(() => {
+    const params = new URLSearchParams(window.location.search);
+    return (params.get('tab') as Tab) || 'overview';
+  });
   const tab = propTab || internalTab;
-  const setTab = propSetTab || setInternalTab;
+  
+  const setTab = useCallback((newTab: Tab) => {
+    if (propSetTab) {
+      propSetTab(newTab);
+    } else {
+      setInternalTab(newTab);
+      const params = new URLSearchParams(window.location.search);
+      params.set('tab', newTab);
+      navigate(`${location.pathname}?${params.toString()}`, { replace: true });
+    }
+  }, [propSetTab, navigate, location.pathname]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [apostilas, setApostilas] = useState<Apostila[]>([]);
   const [exercises, setExercises] = useState<Record<string, Exercise[]>>({});
