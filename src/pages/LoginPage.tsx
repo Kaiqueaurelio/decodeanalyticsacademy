@@ -225,20 +225,37 @@ export default function LoginPage() {
         access_token: data.session.access_token,
         refresh_token: data.session.refresh_token,
       });
-      setLoading(false);
+      
       if (sessionError) {
+        setLoading(false);
         setAwaitingSession(false);
         toast.error('Não consegui iniciar sua sessão. Tente novamente.');
         return;
       }
+
+      // Log compliance for RA login
+      try {
+        const { data: { user: currentUser } } = await supabase.auth.getUser();
+        if (currentUser) {
+          await supabase.from('compliance_logs').insert({
+            user_id: currentUser.id,
+            terms_version: '4.18.1',
+            privacy_version: '4.18.1'
+          });
+        }
+      } catch (err) {
+        console.error('Falha ao logar compliance (RA):', err);
+      }
+
+      setLoading(false);
       persistSuccessfulLogin(id);
       return;
     }
 
-    const { error } = await signIn(effectiveEmail, password);
-    setLoading(false);
 
+    const { error } = await signIn(effectiveEmail, password);
     if (error) {
+      setLoading(false);
       if (error.message?.includes('Email not confirmed')) {
         setAwaitingSession(false);
         setUnverifiedEmail(true);
@@ -248,8 +265,23 @@ export default function LoginPage() {
       }
       registerLoginFailure(false);
     } else {
+      // Log compliance for Email login
+      try {
+        const { data: { user: currentUser } } = await supabase.auth.getUser();
+        if (currentUser) {
+          await supabase.from('compliance_logs').insert({
+            user_id: currentUser.id,
+            terms_version: '4.18.1',
+            privacy_version: '4.18.1'
+          });
+        }
+      } catch (err) {
+        console.error('Falha ao logar compliance (Email):', err);
+      }
+      setLoading(false);
       persistSuccessfulLogin(id);
     }
+
   };
 
 
