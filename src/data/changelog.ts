@@ -45,6 +45,16 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '4.13.0',
+    date: '2026-08-10',
+    title: 'Roadmap Estratégico Acadêmico',
+    major: true,
+    changes: [
+      { kind: 'improvement', text: 'Consolidado plano de 5 eixos para evolução do app: Gamificação, IA (Ella), UX Foco, Flashcards SRS e Organização de Biblioteca.' },
+      { kind: 'feature', text: 'Mapeamento de prompts otimizados para implementação modular de novas funcionalidades acadêmicas.' },
+    ]
+  },
+  {
     version: '4.12.0',
     date: '2026-08-10',
     title: 'Privacidade e Consentimento Inteligente',
