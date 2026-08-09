@@ -70,6 +70,8 @@ export default function LoginPage() {
   const [rememberMe, setRememberMe] = useState(!!savedIdentifier);
   const [awaitingSession, setAwaitingSession] = useState(false);
   const passwordRef = useRef<HTMLInputElement>(null);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
+
 
   const authSettling = authLoading || !isSessionHydrated || status === 'loading' || status === 'hydrating';
 
@@ -139,7 +141,12 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!agreedToTerms) {
+      toast.error('Você precisa aceitar os Termos de Uso e a Política de Privacidade.');
+      return;
+    }
     if (isLocked) {
+
       setShowLockModal(true);
       return;
     }
@@ -472,7 +479,25 @@ export default function LoginPage() {
                       </AnimatePresence>
                     </div>
 
+                    <div className="space-y-3 pt-2">
+                      <div className="flex items-start gap-2 rounded-md border border-border/40 bg-muted/30 p-2.5">
+                        <Checkbox 
+                          id="terms" 
+                          checked={agreedToTerms} 
+                          onCheckedChange={(v) => setAgreedToTerms(!!v)}
+                          className="mt-0.5"
+                        />
+                        <Label htmlFor="terms" className="text-[11px] leading-relaxed text-muted-foreground cursor-pointer select-none">
+                          Eu li e concordo com os{' '}
+                          <button type="button" onClick={() => navigate('/terms')} className="text-primary hover:underline font-medium">Termos de Uso</button>
+                          {' '}e a{' '}
+                          <button type="button" onClick={() => navigate('/transparency')} className="text-primary hover:underline font-medium">Política de Privacidade</button>.
+                        </Label>
+                      </div>
+                    </div>
+
                     {unverifiedEmail && !isSignUp ? (
+
                       <EvasiveButton email={email} disabled={loading} className="w-full">
                         {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         Entrar
