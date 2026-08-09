@@ -1,6 +1,7 @@
 /**
- * DECODE ANALYTICS ACADEMY - v4.2.0
+ * DECODE ANALYTICS ACADEMY - v4.3.0
  * 
+ * - Suporte Offline: Cache PWA para apostilas e materiais.
  * - Auditoria Admin: Painel Ella Audit consolidado para transparência operacional.
  * - Mobile First Audit: UI milimetricamente pensada para dispositivos móveis (iPhone 11 focus).
  */
