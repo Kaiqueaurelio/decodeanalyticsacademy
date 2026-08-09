@@ -18,6 +18,7 @@ import {
   Loader2,
   Clock,
   GraduationCap,
+  Maximize2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -93,6 +94,7 @@ export default function ApostilaReaderPage() {
   const [noteText, setNoteText] = useState("");
   const [noteSaving, setNoteSaving] = useState(false);
   const [marksOpen, setMarksOpen] = useState(false);
+  const [focusMode, setFocusMode] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
@@ -334,7 +336,7 @@ export default function ApostilaReaderPage() {
           <span className="mt-1 font-display text-xs font-bold tracking-normal text-primary xl:text-sm">
             ACADEMY
           </span>
-          <span className="mt-0.5 text-[10px] font-medium text-muted-foreground/60 tabular-nums">v4.3.0</span>
+          <span className="mt-0.5 text-[10px] font-medium text-muted-foreground/60 tabular-nums">v4.8.0</span>
         </div>
       </div>
 
@@ -343,7 +345,8 @@ export default function ApostilaReaderPage() {
 
       <aside
         className={cn(
-          "hidden md:flex md:w-[320px] shrink-0 border-r border-border/60 bg-card/50 flex-col",
+          "hidden md:flex md:w-[320px] shrink-0 border-r border-border/60 bg-card/50 flex-col transition-all duration-500",
+          focusMode && "md:w-0 md:opacity-0 md:pointer-events-none border-none"
         )}
       >
         <SidebarInner
@@ -389,7 +392,10 @@ export default function ApostilaReaderPage() {
       {/* Main */}
       <main className="flex-1 flex min-w-0 flex-col">
         {/* Top bar */}
-        <div className="sticky top-0 z-20 flex min-h-16 items-center gap-1.5 border-b border-border/60 bg-background/95 px-2 py-2 backdrop-blur sm:gap-2 sm:px-3 md:min-h-[4.5rem] md:px-5">
+        <div className={cn(
+          "sticky top-0 z-20 flex min-h-16 items-center gap-1.5 border-b border-border/60 bg-background/95 px-2 py-2 backdrop-blur sm:gap-2 sm:px-3 md:min-h-[4.5rem] md:px-5 transition-all duration-500",
+          focusMode && "opacity-0 pointer-events-none -translate-y-full min-h-0 h-0 border-none"
+        )}>
           <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-card ring-1 ring-primary/50 shadow-[0_0_20px_hsl(var(--primary)/0.35)] sm:h-14 sm:w-14 md:h-16 md:w-16">
             <img
               src={logoOwl}
