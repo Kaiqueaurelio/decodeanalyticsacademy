@@ -28,6 +28,17 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '3.98.0',
+    date: '2026-08-09',
+    title: 'Integração Photoroom API e Processamento de Imagem',
+    major: true,
+    changes: [
+      { kind: 'feature', text: 'Implementada integração com a API do Photoroom para remoção automática de fundo em imagens de materiais e anúncios.' },
+      { kind: 'improvement', text: 'Otimização de carregamento de ativos visuais com pré-processamento via API.' },
+      { kind: 'fix', text: 'Resolvida inconsistência na exibição de miniaturas de apostilas sem fundo transparente.' },
+    ],
+  },
+  {
     version: '3.97.0',
     date: '2026-08-09',
     title: 'Auditoria Estrutural e Refinamento de UX v4',
