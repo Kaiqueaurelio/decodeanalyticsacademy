@@ -1,8 +1,9 @@
 /**
- * DECODE ANALYTICS ACADEMY - v4.0.10
+ * DECODE ANALYTICS ACADEMY - v4.0.12
  * 
- * - Gestão de Alunos Otimizada: Fluxo de RA sem verificação e auditoria de perfis.
- * - Exportação de Acervo: Download em CSV da grade administrativa.
+ * - Navegação Admin: Restaurada aba de Apostilas e filtros por semestre.
+ * - Sincronização de Grade: Disciplinas do 6º semestre mapeadas e visíveis.
+ * - UX Operacional: Labels de semestre unificados e busca aprimorada.
  */
 import React, { useEffect, useState, useCallback, useRef, useMemo, useContext, createContext } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -87,6 +88,7 @@ type Exercise = Tables<'exercises'>;
 type Material = Tables<'materials'>;
 
 const SEMESTER_MAP: Record<number, string> = {
+  0: 'Grade Comum / ENEM',
   1: '1º Semestre', 2: '2º Semestre', 3: '3º Semestre', 4: '4º Semestre',
   5: '5º Semestre', 6: '6º Semestre', 7: '7º Semestre', 8: '8º Semestre',
 };
