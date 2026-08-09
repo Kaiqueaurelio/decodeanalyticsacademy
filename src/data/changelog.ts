@@ -45,6 +45,18 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '4.20.0',
+    date: '2026-08-09',
+    title: 'Auditoria Legal & Segurança',
+    major: true,
+    changes: [
+      { kind: 'feature', text: 'Implementado rastreamento persistente de aceite de termos (data, hora e versão) na tabela compliance_logs.' },
+      { kind: 'security', text: 'Reforço na recuperação de senha por e-mail com tokens seguros via backend.' },
+      { kind: 'improvement', text: 'Sincronização de versões legais 4.18.1 para auditoria de compliance.' },
+    ]
+  },
+
+  {
     version: '4.19.0',
     date: '2026-08-09',
     title: 'Compliance de Aceite Obrigatório',

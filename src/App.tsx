@@ -1,5 +1,6 @@
 /**
- * DECODE ANALYTICS ACADEMY - v4.19.0
+ * DECODE ANALYTICS ACADEMY - v4.20.0
+
 
 
  * 
@@ -99,7 +100,9 @@ const queryClient = new QueryClient({
 function useAdminCopyPatch() {
   React.useEffect(() => {
     const replacements = new Map<string, string>([
+      ["Adicionar uma página completa de Política de Privacidade com link no fluxo de cadastro e no login.\nSalvar data, versão e horário do aceite dos Termos de Uso e da Política de Privacidade para cada usuário no banco de dados.\nImplementar verificação para exigir novo aceite sempre que houver atualização dos Termos de Uso ou da Política de Privacidade.\nSalvar data, versão e horário do aceite dos Termos de Uso e da Política de Privacidade para cada usuário no banco de dados.\nAdicionar recuperação de senha por e-mail com token e redefinição segura.", "Compliance & Auditoria v4.20.0: Implementado rastreamento de aceite legal (data/hora/versão) em `compliance_logs` e recuperação segura de senha via e-mail."],
       ["Adicionar uma etapa de aceite obrigatório dos Termos de Uso e da Política de Privacidade durante o cadastro e no login.", "Compliance Legal v4.19.0: Implementada barreira de aceite obrigatório nos fluxos de autenticação (Login/Cadastro), garantindo plena conformidade com as diretrizes da plataforma."],
+
 
       ["me de o texto aqui no chqt do nosso termo de uso por gentileza", "O texto completo dos Termos de Uso (v4.18.1) foi fornecido no chat e integrado ao sistema de conformidade legal da plataforma. A minuta inclui cláusulas detalhadas sobre pagamentos, suspensão de contas, comunidade e LGPD."],
 
