@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { DashboardSkeleton } from "@/components/dashboard/DashboardSkeleton";
 
 import { toast } from 'sonner';
@@ -36,6 +37,7 @@ import { NewUpdatePopup } from '@/components/NewUpdatePopup';
 
 export default function DashboardPage() {
   const { user, isAdmin } = useAuth();
+  const navigate = useNavigate();
   const gamification = useGamification();
   const examFocus = useExamFocus();
   const { data: profile } = useUserProfile(user?.id);
