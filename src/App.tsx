@@ -84,6 +84,8 @@ const EllaPage = lazy(() => import("./pages/EllaPage"));
 const NewsPage = lazy(() => import("./pages/NewsPage"));
 const OAuthConsentPage = lazy(() => import("./pages/OAuthConsentPage"));
 const TransparencyPage = lazy(() => import("./pages/TransparencyPage"));
+const SupportProjectPage = lazy(() => import("./pages/SupportProjectPage"));
+
 
 
 const queryClient = new QueryClient({
@@ -100,6 +102,7 @@ const queryClient = new QueryClient({
 function useAdminCopyPatch() {
   React.useEffect(() => {
     const replacements = new Map<string, string>([
+      ["Coloca o seguinte dentro do app, alguma parte você vai ter que estudar melhor e fazer o seguinte: coloque que o aplicativo sempre foi e sempre será gratuito, porém, se algum aluno quiser fortalecer e ajudar a evolução do aplicativo, que ele faça uma doação para o app, qualquer valor simbólico. Caso ele queira, não é obrigatório. Diga que o app continuará funcionando sempre de graça, com tudo que ele sempre teve e com atualizações futuras, mesmo que o aluno não pagar. Isso é caso ele queira ajudar nosso aplicativo a melhorar.", "Mensagem de Apoio v4.21.0: O aplicativo é e sempre será gratuito para todos os alunos. Para quem desejar apoiar voluntariamente a evolução do projeto, disponibilizamos um canal de doação simbólica no perfil, sem qualquer obrigatoriedade ou restrição de recursos."],
       ["Adicionar uma página completa de Política de Privacidade com link no fluxo de cadastro e no login.\nSalvar data, versão e horário do aceite dos Termos de Uso e da Política de Privacidade para cada usuário no banco de dados.\nImplementar verificação para exigir novo aceite sempre que houver atualização dos Termos de Uso ou da Política de Privacidade.\nSalvar data, versão e horário do aceite dos Termos de Uso e da Política de Privacidade para cada usuário no banco de dados.\nAdicionar recuperação de senha por e-mail com token e redefinição segura.", "Compliance & Auditoria v4.20.0: Implementado rastreamento de aceite legal (data/hora/versão) em `compliance_logs` e recuperação segura de senha via e-mail."],
       ["Adicionar uma etapa de aceite obrigatório dos Termos de Uso e da Política de Privacidade durante o cadastro e no login.", "Compliance Legal v4.19.0: Implementada barreira de aceite obrigatório nos fluxos de autenticação (Login/Cadastro), garantindo plena conformidade com as diretrizes da plataforma."],
 
@@ -283,6 +286,9 @@ function AnimatedRoutes() {
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/termos" element={<TermsPage />} />
         <Route path="/transparencia" element={<TransparencyPage />} />
+        <Route path="/apoie" element={<SupportProjectPage />} />
+        <Route path="/support" element={<Navigate to="/apoie" replace />} />
+
         <Route path="/anuncie" element={<AnunciePage />} />
 
         <Route path="/patrocine" element={<Navigate to="/anuncie" replace />} />
