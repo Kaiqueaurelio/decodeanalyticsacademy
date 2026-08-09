@@ -1642,7 +1642,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
               aria-label="Trocar de seção"
             >
               <h2 className="text-base font-bold text-foreground truncate">{tabTitles[tab].title}</h2>
-              <p className="text-[10px] text-muted-foreground hidden sm:block truncate">{tabTitles[tab].desc}</p>
+              <p className="text-[10px] text-muted-foreground hidden sm:block truncate">{tabTitles[tab].desc} · v4.1.0</p>
             </button>
 
 
