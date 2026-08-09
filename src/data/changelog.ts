@@ -28,6 +28,17 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '4.0.3',
+    date: '2026-08-09',
+    title: 'Otimização de Fluxo Operacional e Sutileza de Anúncios',
+    major: true,
+    changes: [
+      { kind: 'improvement', text: 'Refinada a busca e ordenação de apostilas no Painel Operacional para facilitar a localização de materiais.' },
+      { kind: 'improvement', text: 'Aumentado o intervalo de exibição e rotação de anúncios (Popups e Banners) para uma experiência mais sutil e menos intrusiva.' },
+      { kind: 'improvement', text: 'Implementada ordenação alfabética por padrão no carregamento de apostilas administrativas.' },
+    ],
+  },
+  {
     version: '4.0.2',
     date: '2026-08-09',
     title: 'Monitoramento de Processamento e Status Visual',

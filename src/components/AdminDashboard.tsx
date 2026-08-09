@@ -95,7 +95,7 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [dateFrom, setDateFrom] = useState<string>('');
   const [dateUntil, setDateUntil] = useState<string>('');
-  const [sortKey, setSortKey] = useState<SortKey>('created_desc');
+  const [sortKey, setSortKey] = useState<SortKey>('updated_desc');
 
   // Paginação
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
@@ -136,8 +136,7 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
         supabase.from('ads').select('id', { count: 'exact', head: true }),
         supabase.from('apostilas')
           .select('id,title,category,published,created_at,updated_at,semester,course,cover_url,teacher,content')
-          .order('created_at', { ascending: false })
-          .limit(1000),
+          .order('title', { ascending: true }), // Agora ordenado por título por padrão para facilitar a busca visual
         supabase.rpc('get_student_rankings', { _limit: 10 }),
         supabase.from('apostila_views').select('viewed_at').gte('viewed_at', since.toISOString()).limit(5000),
         supabase.from('answers').select('created_at').gte('created_at', since.toISOString()).limit(5000),

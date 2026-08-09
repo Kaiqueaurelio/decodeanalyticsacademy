@@ -37,7 +37,7 @@ export function PersistentAdSpot() {
 
   useEffect(() => {
     if (ads.length < 2) return;
-    const timer = window.setInterval(() => setIdx((value) => (value + 1) % ads.length), 120_000);
+    const timer = window.setInterval(() => setIdx((value) => (value + 1) % ads.length), 240_000); // Rotaciona a cada 4 min (era 120s)
     return () => window.clearInterval(timer);
   }, [ads.length]);
 

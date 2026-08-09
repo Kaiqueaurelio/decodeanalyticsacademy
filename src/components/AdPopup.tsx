@@ -34,7 +34,7 @@ export function AdPopup({ trigger = 'onLoad', delay = 2000 }: AdPopupProps) {
 
 
 
-  const COOLDOWN_MS = 10 * 60 * 1000; // Aumentado para 10 min entre popups (era 3min)
+  const COOLDOWN_MS = 25 * 60 * 1000; // Aumentado para 25 min entre popups (era 10min) para maior sutileza
   const STORAGE_KEY = 'popup_ad_last_shown_v2';
 
   const currentAd = ads[currentAdIndex];
