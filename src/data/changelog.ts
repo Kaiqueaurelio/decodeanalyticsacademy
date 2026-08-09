@@ -36,6 +36,7 @@ export const CHANGELOG: ChangelogEntry[] = [
       { kind: 'fix', text: 'Corrigida a lógica de filtragem de semestre para garantir que apostilas sem semestre definido apareçam tanto para Aluno quanto para Admin.' },
       { kind: 'improvement', text: 'Auditoria técnica realizada com sucesso usando credenciais de teste para validar paridade de visibilidade.' },
       { kind: 'fix', text: 'Refinada a detecção de apostilas no Painel Operacional Admin para evitar que materiais "livres" fiquem ocultos nos filtros.' },
+      { kind: 'improvement', text: 'Auditoria estruturada completa realizada: login, dashboard e visibilidade de materiais validados.' },
     ],
   },
   {
