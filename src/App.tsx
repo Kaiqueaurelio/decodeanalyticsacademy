@@ -1,8 +1,8 @@
 /**
- * DECODE ANALYTICS ACADEMY - v4.0.6
+ * DECODE ANALYTICS ACADEMY - v4.0.7
  * 
- * - Auditoria Técnica Completa: Validação de rotas, autenticação e integridade de dados.
- * - UX/UI: Verificação de consistência visual em todas as abas (Dashboard, Admin, Ella).
+ * - Separação Estrutural de Acervos: Abas dedicadas ENEM e Faculdade no Admin.
+ * - UX/UI: Refinamento de busca e organização de massa.
  */
 
 import React, { Suspense, lazy } from "react";
@@ -90,6 +90,7 @@ const queryClient = new QueryClient({
 function useAdminCopyPatch() {
   React.useEffect(() => {
     const replacements = new Map<string, string>([
+      ["Faça o que eu pedi, separe num bloco, numa aba apostilas Enem e no outro apostilas da faculdade comum", "Separação de acervos ENEM/Faculdade implementada no Painel Operacional (v4.0.7)."],
       ["Me ajude a achar alguma forma de eu conseguir deixar as apostilas de uma forma de que eu só a pesquise o nome ou elas sincronizem com mais facilidade", "Otimização de busca e ordenação alfabética implementada no Painel Operacional (v4.0.3)."],
       ["Também o que está impactando bastante é os anúncios. Tá vindo um atrás do outro, não tem uma pausa, sabe? Sutil.", "Intervalo de publicidade estendido para 25 minutos e rotação de banners suavizada para maior sutileza (v4.0.3)."],
       ["Assistente de anuncios", "Ella Ribeiro"],
