@@ -31,16 +31,26 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.9.0',
+    version: '4.9.2',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.9.0-release',
-    commitMessage: 'Release v4.9.0: Sound Design & Focus Mode'
+    commit: 'v4.9.2-release',
+    commitMessage: 'Release v4.9.2: Plano Estratégico Landing Page'
   };
 }
 
 export const CHANGELOG: Release[] = [
+  {
+    version: '4.9.2',
+    date: '2026-08-09',
+    title: 'Plano Estratégico Landing Page',
+    major: true,
+    changes: [
+      { kind: 'improvement', text: 'Mapeamento de 10 melhorias estratégicas para a Landing Page.' },
+      { kind: 'content', text: 'Sincronização de metadados informativos para alunos.' }
+    ]
+  },
   {
     version: '4.9.0',
     date: '2026-08-09',
