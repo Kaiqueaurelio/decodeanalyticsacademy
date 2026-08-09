@@ -28,6 +28,18 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '4.0.11',
+    date: '2026-08-09',
+    title: 'Sincronização Completa da Grade Curricular',
+    major: true,
+    changes: [
+      { kind: 'feature', text: 'Implementada exibição integral de todos os semestres (1º ao 8º) no painel administrativo.' },
+      { kind: 'improvement', text: 'Atualizada a grade curricular canônica com disciplinas faltantes da UNIP Ciência da Computação.' },
+      { kind: 'improvement', text: 'Placeholders automáticos para disciplinas sem conteúdo garantem visibilidade da estrutura do curso.' },
+      { kind: 'improvement', text: 'Renomeação dos labels para "Semestre X" visando maior clareza organizacional.' },
+    ],
+  },
+  {
     version: '4.0.10',
     date: '2026-08-09',
     title: 'Auditoria de Perfis e Refinamento de UX Administrativa',
