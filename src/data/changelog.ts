@@ -45,6 +45,16 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '4.16.0',
+    date: '2026-08-10',
+    title: 'Hardening & Segurança de Dados',
+    major: true,
+    changes: [
+      { kind: 'security', text: 'Remoção proativa de informações sensíveis do front-end e reforço de proteção de dados.' },
+      { kind: 'fix', text: 'Correção integral de erros residuais identificados na auditoria técnica 360º.' },
+    ]
+  },
+  {
     version: '4.15.1',
     date: '2026-08-10',
     title: 'Resultados da Auditoria de Segurança',
