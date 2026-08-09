@@ -1,9 +1,8 @@
 /**
- * DECODE ANALYTICS ACADEMY - v4.0.12
+ * DECODE ANALYTICS ACADEMY - v4.0.13
  * 
+ * - Mobile First Audit: UI milimetricamente pensada para dispositivos móveis.
  * - Navegação Admin: Restaurada aba de Apostilas e filtros por semestre.
- * - Sincronização de Grade: Disciplinas do 6º semestre mapeadas e visíveis.
- * - UX Operacional: Labels de semestre unificados e busca aprimorada.
  */
 import React, { useEffect, useState, useCallback, useRef, useMemo, useContext, createContext } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';

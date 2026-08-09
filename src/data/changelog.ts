@@ -28,6 +28,17 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '4.0.13',
+    date: '2026-08-09',
+    title: 'Auditoria Mobile First e Otimização de Responsividade',
+    major: true,
+    changes: [
+      { kind: 'improvement', text: 'Realizada auditoria técnica milimétrica em dispositivos móveis (iPhone 12) via Playwright.' },
+      { kind: 'fix', text: 'Prevenção de overflow horizontal e ajustes de containers para garantir 100% de responsividade.' },
+      { kind: 'improvement', text: 'Validação de fluxos críticos (Login e Landing) em telas pequenas com foco na experiência do aluno.' },
+    ],
+  },
+  {
     version: '4.0.12',
     date: '2026-08-09',
     title: 'Sincronização de Grade e Navegação Admin',
