@@ -535,12 +535,12 @@ export default function ApostilaReaderPage() {
               "mx-auto w-full px-5 py-8 md:px-10 md:py-12 transition-all duration-500",
               focusMode ? "max-w-3xl py-16 md:py-24" : "max-w-[68ch]"
             )}>
-            {lessonLoading ? (
-              <div className="flex items-center justify-center py-16">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-              </div>
-            ) : (
-              <>
+              {lessonLoading ? (
+                <div className="flex items-center justify-center py-16">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </div>
+              ) : (
+                <>
                 <div className="mb-6 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
                   <span className="inline-flex items-center gap-1">
                     <GraduationCap className="h-3.5 w-3.5" />
