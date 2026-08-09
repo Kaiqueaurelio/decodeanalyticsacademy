@@ -124,8 +124,8 @@ export function guessSemesterFromCategory(category?: string | null): number | nu
 
 /** Label amigável do semestre. */
 export function semesterLabel(sem: number | null | undefined): string {
-  if (!sem) return 'Todos os semestres';
-  return `${sem}º semestre`;
+  if (!sem) return 'Grade Livre';
+  return `Semestre ${sem}`;
 }
 
 /** Label curto. */
