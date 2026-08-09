@@ -28,6 +28,17 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '3.96.0',
+    date: '2026-08-09',
+    title: 'Hardening de Segurança e Proteção de Gabaritos',
+    major: true,
+    changes: [
+      { kind: 'security', text: 'Removida a exposição de correct_answer e explanation nas consultas iniciais de exercícios para evitar vazamento via inspeção de rede.' },
+      { kind: 'security', text: 'Otimizada a carga de simulados para carregar respostas corretas apenas de questões já respondidas pelo aluno.' },
+      { kind: 'security', text: 'Validada a segurança de notificações via Realtime com políticas RLS baseadas em auth.uid().' },
+    ],
+  },
+  {
     version: '3.95.0',
     date: '2026-08-09',
     title: 'Relatório de Auditoria e Análise Estrutural',

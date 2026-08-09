@@ -76,6 +76,7 @@ export default function SimuladoPage() {
       .select('id, correct_answer, explanation')
       .eq('simulado_id', sim.id)
       .not('selected_answer', 'is', null);
+    
     const revealMap = new Map((revealed ?? []).map((r: any) => [r.id, r]));
 
     const list = (ans ?? []).map((a: any) => ({
