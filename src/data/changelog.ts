@@ -1,9 +1,10 @@
 /**
- * DECODE ANALYTICS ACADEMY - v4.9.6
+ * DECODE ANALYTICS ACADEMY - v4.9.7
  * 
  * - Sound Design: Feedback sonoro para gamificação e interações.
  * - Modo Foco: Experiência de leitura imersiva.
  * - Hall da Fama: Ranking de performance.
+ * - Checklist de Publicação: Garantia de qualidade acadêmica.
  */
 
 export type ChangeKind = 'feature' | 'fix' | 'improvement' | 'security' | 'content';
@@ -31,16 +32,26 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.9.6',
+    version: '4.9.7',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.9.6-release',
-    commitMessage: 'Release v4.9.6: Fluxo Inteligente de Criação Admin'
+    commit: 'v4.9.7-release',
+    commitMessage: 'Release v4.9.7: Revisão Final com Checklist'
   };
 }
 
 export const CHANGELOG: Release[] = [
+  {
+    version: '4.9.7',
+    date: '2026-08-09',
+    title: 'Revisão Final com Checklist',
+    major: false,
+    changes: [
+      { kind: 'feature', text: 'Nova tela de revisão final com checklist obrigatório (estrutura, glossário, exercícios) antes de publicar.' },
+      { kind: 'improvement', text: 'Integração de sons de sucesso e feedback visual no fluxo de publicação.' },
+    ]
+  },
   {
     version: '4.9.6',
     date: '2026-08-09',

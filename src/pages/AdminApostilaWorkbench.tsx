@@ -743,6 +743,15 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         apostilaId={id}
         onLinked={reloadMaterials}
       />
+      <FinalReviewDialog
+        open={reviewOpen}
+        onOpenChange={setReviewOpen}
+        onConfirm={() => executeTogglePublish(true)}
+        title={title}
+        content={content}
+        exerciseCount={exerciseCount}
+        materialCount={linkedMaterials.length}
+      />
     </div>
   );
 }
