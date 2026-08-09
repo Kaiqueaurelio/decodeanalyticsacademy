@@ -28,6 +28,16 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '3.89.0',
+    date: '2026-08-09',
+    title: 'Sincronização de Visibilidade e Auditoria de Semestre',
+    major: false,
+    changes: [
+      { kind: 'fix', text: 'Corrigida inconsistência de visibilidade entre Aluno e Admin para apostilas do semestre vigente.' },
+      { kind: 'improvement', text: 'Atualizado sistema de patches dinâmicos para auditoria de erros de sincronização.' },
+    ],
+  },
+  {
     version: '3.88.0',
     date: '2026-08-09',
     title: 'Auditoria de Erros e Refinamento de Texto',
