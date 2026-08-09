@@ -28,6 +28,30 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '4.0.10',
+    date: '2026-08-09',
+    title: 'Auditoria de Perfis e Refinamento de UX Administrativa',
+    major: true,
+    changes: [
+      { kind: 'improvement', text: 'Implementada notificação proativa e persistente para alunos com perfis incompletos.' },
+      { kind: 'feature', text: 'Adicionado atalho oculto para disparo manual do prompt de perfil via sistema.' },
+      { kind: 'improvement', text: 'Refinada a lógica de exportação de acervo para incluir metadados de professores e semestres.' },
+      { kind: 'improvement', text: 'Sincronização global v4.0.10 da grade acadêmica e fluxos de autenticação por RA.' },
+    ],
+  },
+  {
+    version: '4.0.9',
+    date: '2026-08-09',
+    title: 'Gestão Otimizada de Usuários e Exportação de Acervo',
+    major: true,
+    changes: [
+      { kind: 'feature', text: 'Implementada exportação do acervo administrativo em formato CSV para gestão externa.' },
+      { kind: 'improvement', text: 'Prompt de perfil obrigatório para todos os alunos sem nome/e-mail, visando melhorar a identificação na comunidade.' },
+      { kind: 'improvement', text: 'Refinado o fluxo de RA: acesso imediato sem verificação, com pedido de dados reais no primeiro login.' },
+      { kind: 'feature', text: 'Consolidado o sistema de Rascunho/Publicação com filtros rápidos no dashboard admin.' },
+    ],
+  },
+  {
     version: '4.0.8',
     date: '2026-08-09',
     title: 'Gestão por Semestre e Organização da Grade CC',

@@ -27,14 +27,16 @@ const randomPassword = () => {
 export function AdminCreateUserDialog({ onCreated }: Props) {
   const [open, setOpen] = useState(false);
   const [identifier, setIdentifier] = useState('');
-  const [fullName, setFullName] = useState('');
+  const [fullName, setFullName] = useState('Novo Aluno');
+  const [contactEmail, setContactEmail] = useState('');
   const [password, setPassword] = useState(randomPassword());
   const [enemOnly, setEnemOnly] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const reset = () => {
     setIdentifier('');
-    setFullName('');
+    setFullName('Novo Aluno');
+    setContactEmail('');
     setPassword(randomPassword());
     setEnemOnly(false);
   };
@@ -49,6 +51,7 @@ export function AdminCreateUserDialog({ onCreated }: Props) {
         identifier: identifier.trim(),
         password,
         full_name: fullName.trim(),
+        email: contactEmail.trim().toLowerCase() || null,
         content_scope: enemOnly ? 'enem_only' : 'full',
       },
     });
@@ -107,11 +110,22 @@ export function AdminCreateUserDialog({ onCreated }: Props) {
           </div>
 
           <div>
-            <Label className="text-xs">Nome completo (opcional)</Label>
+            <Label className="text-xs">Nome completo (Padrão: Novo Aluno)</Label>
             <Input
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               placeholder="Ex: Maria Silva"
+              className="mt-1.5"
+            />
+          </div>
+
+          <div>
+            <Label className="text-xs">E-mail de contato (Opcional)</Label>
+            <Input
+              type="email"
+              value={contactEmail}
+              onChange={(e) => setContactEmail(e.target.value)}
+              placeholder="aluno@exemplo.com"
               className="mt-1.5"
             />
           </div>
