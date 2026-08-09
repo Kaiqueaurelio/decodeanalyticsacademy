@@ -3626,8 +3626,10 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
           setPendingSave(null);
         }}
         onKeepExisting={() => {
-          toast.info('Mantida a versão existente — a melhor formatada.');
-          // Apenas limpa formulários
+          if (duplicateMatch?.apostila?.id) {
+            toast.info(`Redirecionando para apostila existente: ${duplicateMatch.apostila.title}`);
+            navigate(`/admin/apostilas/${duplicateMatch.apostila.id}`);
+          }
           resetImportForm();
           setManualTitle(''); setManualContent(''); setManualCategory(''); setShowManualForm(false);
           setDuplicateMatch(null);
