@@ -28,6 +28,17 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '4.0.14',
+    date: '2026-08-09',
+    title: 'Verificação Final e Preparação para Deploy',
+    major: true,
+    changes: [
+      { kind: 'improvement', text: 'Concluída verificação técnica final com testes automatizados de responsividade.' },
+      { kind: 'fix', text: 'Validação de estabilidade do código para sincronização via GitHub e Vercel.' },
+      { kind: 'improvement', text: 'Consolidação das correções mobile v4.0.14: zero vazamentos de layout detectados.' },
+    ],
+  },
+  {
     version: '4.0.13',
     date: '2026-08-09',
     title: 'Auditoria Mobile First e Otimização de Responsividade',

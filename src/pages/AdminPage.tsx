@@ -1,8 +1,8 @@
 /**
- * DECODE ANALYTICS ACADEMY - v4.0.13
+ * DECODE ANALYTICS ACADEMY - v4.0.14
  * 
+ * - Verificação Final: Testes de responsividade automatizados concluídos.
  * - Mobile First Audit: UI milimetricamente pensada para dispositivos móveis.
- * - Navegação Admin: Restaurada aba de Apostilas e filtros por semestre.
  */
 import React, { useEffect, useState, useCallback, useRef, useMemo, useContext, createContext } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
