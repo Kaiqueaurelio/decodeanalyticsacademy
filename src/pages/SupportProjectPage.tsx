@@ -59,29 +59,46 @@ export default function DonationPage() {
 
             <div className="space-y-6 pt-4 border-t border-border">
               <div className="flex flex-col items-center gap-6">
-                <div className="relative group">
-                  <div className="absolute -inset-4 rounded-3xl bg-primary/20 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <div className="relative rounded-2xl bg-white p-4 shadow-xl">
-                    <QrCode className="h-48 w-48 text-black" />
+                <div className="text-center space-y-4 w-full">
+                  <p className="text-sm font-medium text-muted-foreground">Escolha como deseja apoiar:</p>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <Button 
+                      className="w-full h-14 text-lg font-bold gap-2 shadow-lg shadow-primary/20"
+                      onClick={() => window.open('https://pay.sumup.com/b2c/QQ9V46MZ', '_blank')}
+                    >
+                      Apoiar via Cartão/Link
+                    </Button>
+
+                    <div className="relative group">
+                      <div className="flex flex-col items-center p-4 rounded-xl border border-border bg-muted/20">
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">Pix (E-mail)</p>
+                        <p className="text-sm font-mono font-bold text-foreground mb-3">
+                          decoanalytics@outlook.com.br
+                        </p>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="text-[10px] h-8 w-full"
+                          onClick={() => {
+                            navigator.clipboard.writeText('decoanalytics@outlook.com.br');
+                          }}
+                        >
+                          Copiar Chave Pix
+                        </Button>
+                      </div>
+                    </div>
                   </div>
-                </div>
-                
-                <div className="text-center space-y-2">
-                  <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Chave PIX (E-mail)</p>
-                  <p className="text-lg font-mono font-bold text-foreground bg-muted px-4 py-2 rounded-lg border border-border">
-                    decoanalytics@outlook.com.br
-                  </p>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="mt-2 text-[10px] h-8"
-                    onClick={() => {
-                      navigator.clipboard.writeText('decoanalytics@outlook.com.br');
-                      // Seria bom um toast aqui, mas vamos manter simples por agora
-                    }}
-                  >
-                    Copiar chave
-                  </Button>
+
+                  <div className="pt-4 flex justify-center">
+                    <div className="relative group cursor-help" title="Escaneie para apoiar via PIX">
+                      <div className="absolute -inset-4 rounded-3xl bg-primary/10 blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <div className="relative rounded-2xl bg-white p-3 shadow-md">
+                        <QrCode className="h-32 w-32 text-black" />
+                      </div>
+                      <p className="text-[9px] text-muted-foreground mt-2 uppercase tracking-tighter">QR Code de Apoio</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
