@@ -31,16 +31,36 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.9.2',
+    version: '4.9.4',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.9.2-release',
-    commitMessage: 'Release v4.9.2: Plano Estratégico Landing Page'
+    commit: 'v4.9.4-release',
+    commitMessage: 'Release v4.9.4: Social Proof e Online Status'
   };
 }
 
 export const CHANGELOG: Release[] = [
+  {
+    version: '4.9.4',
+    date: '2026-08-09',
+    title: 'Social Proof e Online Status',
+    major: false,
+    changes: [
+      { kind: 'feature', text: 'Implementado contador dinâmico de alunos online no Hero.' },
+      { kind: 'improvement', text: 'Otimização de componentes de prova social na Landing Page.' }
+    ]
+  },
+  {
+    version: '4.9.3',
+    date: '2026-08-09',
+    title: 'Hero Section Otimizada',
+    major: false,
+    changes: [
+      { kind: 'improvement', text: 'Animação Typewriter expandida com cursos da UNIP.' },
+      { kind: 'improvement', text: 'Refinamento de performance para o elemento LCP.' }
+    ]
+  },
   {
     version: '4.9.2',
     date: '2026-08-09',

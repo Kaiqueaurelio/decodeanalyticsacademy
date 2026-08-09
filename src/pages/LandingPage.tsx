@@ -433,8 +433,11 @@ export default function LandingPage() {
 
               <div className="mb-7 flex flex-wrap items-center justify-center gap-3">
                 <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-white/[0.06] px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-cyan-100 backdrop-blur-sm">
-                  <GraduationCap className="h-3.5 w-3.5 text-[#00f0ff]" />
-                  Plataforma de estudos
+                  <span className="flex h-2 w-2 relative">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
+                  </span>
+                  <span className="ml-1">128 Alunos estudando agora</span>
                 </div>
                 <div className="inline-flex items-center gap-2 rounded-full border border-purple-400/20 bg-purple-500/5 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-purple-200 backdrop-blur-sm">
                   <Brain className="h-3.5 w-3.5 text-[#a855f7]" />
