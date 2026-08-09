@@ -28,6 +28,17 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '4.0.2',
+    date: '2026-08-09',
+    title: 'Monitoramento de Processamento e Status Visual',
+    major: false,
+    changes: [
+      { kind: 'feature', text: 'Implementada tela de status em tempo real para acompanhamento do processamento de imagens Photoroom.' },
+      { kind: 'improvement', text: 'Adicionado indicador de progresso granular durante a clonagem de apostilas.' },
+      { kind: 'fix', text: 'Garantida a trava de publicação de materiais enquanto o processamento automático de imagens está em curso.' },
+    ],
+  },
+  {
     version: '4.0.1',
     date: '2026-08-09',
     title: 'Automação Visual e Dashboard de Performance',
