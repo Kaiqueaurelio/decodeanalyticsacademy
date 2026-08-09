@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef, useMemo, useContext, createContext } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -3209,14 +3209,14 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
 
             {/* USERS */}
             {tab === 'users' && (
-              <div id="users-section" className="space-y-6">
+              <div id="users-section" className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
                 {/* Cabeçalho com cadastro manual */}
                 <div className="flex items-center justify-between gap-3 flex-wrap">
                   <div>
                     <h2 className="text-lg font-bold">Alunos</h2>
                     <p className="text-[11px] text-muted-foreground">Cadastre, bloqueie ou ajuste o acesso das contas.</p>
                   </div>
-                  <AdminCreateUserDialog onCreated={() => loadAll()} />
+                  <AdminCreateUserDialog onCreated={loadAll} />
                 </div>
 
                 {/* Stats */}
@@ -3444,7 +3444,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
             )}
 
             {tab === 'tasks' && (
-              <div className="space-y-6">
+              <div id="tasks-section" className="animate-in fade-in slide-in-from-bottom-2 duration-300">
                 <TaskManager />
               </div>
             )}
