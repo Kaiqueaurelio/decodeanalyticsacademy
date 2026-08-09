@@ -178,11 +178,13 @@ export function PlatformEngineSection() {
                   {STACK.map(({ icon: Icon, name, desc }) => (
                     <div
                       key={name}
-                      className="rounded-xl border border-border/50 bg-background/40 p-4 transition-transform duration-200 hover:-translate-y-0.5"
+                      className="rounded-xl border border-border/50 bg-background/40 p-5 transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:bg-primary/5 hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] group"
                     >
-                      <Icon className="h-5 w-5 text-primary" aria-hidden="true" />
-                      <p className="mt-3 text-sm font-semibold leading-tight">{name}</p>
-                      <p className="mt-1 text-xs leading-snug text-muted-foreground">{desc}</p>
+                      <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10 mb-4 transition-colors group-hover:bg-primary/20">
+                        <Icon className="h-5 w-5 text-primary" aria-hidden="true" />
+                      </div>
+                      <p className="text-sm font-bold leading-tight group-hover:text-primary transition-colors">{name}</p>
+                      <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{desc}</p>
                     </div>
                   ))}
                 </div>
