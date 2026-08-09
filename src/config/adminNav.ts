@@ -9,7 +9,8 @@ export type AdminTabId =
   | 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements'
   | 'calendar' | 'testimonials' | 'ai' | 'performance' | 'smoke' | 'diagnostics'
   | 'ads' | 'ads-chat' | 'social' | 'rss' | 'courses' | 'changelog' | 'leads'
-  | 'ella-audit' | 'security-alerts' | 'sponsors' | 'tasks' | 'photoroom' | 'edit' | 'review';
+  | 'ella-audit' | 'security-alerts' | 'sponsors' | 'tasks' | 'photoroom' | 'edit' | 'review'
+  | 'enem-apostilas' | 'cc-apostilas';
 
 export type AdminNavItem = {
   id: AdminTabId;
@@ -43,7 +44,9 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     id: 'conteudo',
     label: 'Conteúdo',
     items: [
-      { id: 'apostilas', label: 'Apostilas', short: 'Apostilas', icon: BookOpen, desc: 'Importe, edite e publique apostilas', countKey: 'apostilas', keywords: 'materia disciplina texto importar' },
+      { id: 'apostilas', label: 'Todo o Acervo', short: 'Acervo', icon: BookOpen, desc: 'Importe, edite e publique apostilas', countKey: 'apostilas', keywords: 'materia disciplina texto importar acervo' },
+      { id: 'enem-apostilas', label: 'Apostilas ENEM', short: 'ENEM', icon: GraduationCap, desc: 'Apenas materiais do ENEM', keywords: 'enem vestibular simulado' },
+      { id: 'cc-apostilas', label: 'Ciência da Computação', short: 'CC', icon: BookOpen, desc: 'Materiais da grade acadêmica CC', keywords: 'faculdade unip cc ciencia computacao' },
       { id: 'exercises', label: 'Exercícios', short: 'Exercícios', icon: PenLine, desc: 'Questões, gabaritos e importação em lote', countKey: 'exercises', keywords: 'questoes prova gabarito' },
       { id: 'materials', label: 'Materiais', short: 'Materiais', icon: FolderOpen, desc: 'PDFs, vídeos, slides e planilhas', countKey: 'materials', keywords: 'arquivo upload pdf video' },
       { id: 'courses', label: 'Cursos Gratuitos', short: 'Cursos', icon: GraduationCap, desc: 'Cursos externos exibidos aos alunos', keywords: 'curso externo horas complementares' },
