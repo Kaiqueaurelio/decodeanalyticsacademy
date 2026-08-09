@@ -690,7 +690,6 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [internalTab, setInternalTab] = useState<Tab>('overview');
   const [internalTab, setInternalTab] = useState<Tab>(() => {
     const params = new URLSearchParams(window.location.search);
     return (params.get('tab') as Tab) || 'overview';
