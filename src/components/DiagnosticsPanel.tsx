@@ -18,7 +18,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Activity, AlertTriangle, Trash2, RefreshCw, Rocket, ShieldAlert, Clock,
-  Bug, Network, ChevronRight, CheckCircle2, ShieldCheck, KeyRound,
+  Bug, Network, ChevronRight, CheckCircle2, ShieldCheck, KeyRound, Download
 } from 'lucide-react';
 import { getEvents, clearEvents, summarizeEvents, PERF_THRESHOLDS, type PerfEvent } from '@/lib/perf-monitor';
 import {
@@ -30,6 +30,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useUserProfile } from '@/hooks/queries/useUserProfile';
 import { isSafeModeEnabled, isSafeModeManual, disableSafeMode, getRecentFailures } from '@/lib/safe-mode';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 function useLiveData() {
   const [perfEvents, setPerfEvents] = useState<PerfEvent[]>(() => getEvents());
@@ -136,6 +137,26 @@ export function DiagnosticsPanel() {
     clearAuthEvents();
   };
 
+  const exportLogs = () => {
+    const data = {
+      timestamp: new Date().toISOString(),
+      user: auth.user?.email,
+      ra: profile?.ra,
+      errors,
+      perf: perfEvents,
+      auth: authEvents,
+      timings
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `decode-logs-${new Date().getTime()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success('Logs exportados com sucesso!');
+  };
+
   return (
     <div className="space-y-4">
       {/* Cards de status no topo */}
@@ -194,6 +215,9 @@ export function DiagnosticsPanel() {
         <div className="flex gap-2">
           <Button size="sm" variant="outline" onClick={() => window.location.reload()}>
             <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Recarregar
+          </Button>
+          <Button size="sm" variant="outline" onClick={exportLogs} className="gap-2">
+            <Download className="h-3.5 w-3.5" /> Exportar JSON
           </Button>
           <Button size="sm" variant="outline" onClick={clearAll}>
             <Trash2 className="h-3.5 w-3.5 mr-1.5" /> Limpar logs

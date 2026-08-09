@@ -28,6 +28,18 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '3.90.0',
+    date: '2026-08-09',
+    title: 'Monitoramento de Erros e Interface de Resiliência',
+    major: true,
+    changes: [
+      { kind: 'feature', text: 'Implementado painel de logs detalhados no admin com opção de exportação JSON.' },
+      { kind: 'improvement', text: 'Interface de Erro (ErrorBoundary) redesenhada com stack trace e recuperação automática de cache.' },
+      { kind: 'security', text: 'Aumentada a retenção de logs de erro e implementado throttling para evitar flood de memória.' },
+      { kind: 'fix', text: 'Padronizada a sincronização de semestre entre Dashboard e Admin para evitar discrepâncias de conteúdo.' },
+    ],
+  },
+  {
     version: '3.89.0',
     date: '2026-08-09',
     title: 'Sincronização de Visibilidade e Auditoria de Semestre',
