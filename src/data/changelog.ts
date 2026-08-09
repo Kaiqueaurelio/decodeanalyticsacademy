@@ -28,6 +28,16 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '3.88.0',
+    date: '2026-08-09',
+    title: 'Auditoria de Erros e Refinamento de Texto',
+    major: false,
+    changes: [
+      { kind: 'improvement', text: 'Implementado mapeamento de correção de texto para solicitações de melhoria global.' },
+      { kind: 'fix', text: 'Otimização do sistema de patches dinâmicos para suportar novas diretrizes de depuração.' },
+    ],
+  },
+  {
     version: '3.87.0',
     date: '2026-08-08',
     title: 'Navegação e Integração de Tarefas Admin',
