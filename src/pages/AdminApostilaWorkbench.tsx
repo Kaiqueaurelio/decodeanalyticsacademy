@@ -32,6 +32,7 @@ import { ApostilaVersionHistory } from '@/components/admin/ApostilaVersionHistor
 import { MaterialsDropZone } from '@/components/admin/MaterialsDropZone';
 import { SortableMaterialsList, type LinkedMaterialItem } from '@/components/admin/SortableMaterialsList';
 import { SmartPasteDialog } from '@/components/admin/SmartPasteDialog';
+import { FinalReviewDialog } from '@/components/admin/FinalReviewDialog';
 import { ManualLinkMaterialsDialog } from '@/components/ManualLinkMaterialsDialog';
 import { autoLinkApostila } from '@/lib/auto-link-materials';
 import { ApostilaContentRenderer } from '@/components/ApostilaContentRenderer';
@@ -94,6 +95,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
   const [autoLinking, setAutoLinking] = useState(false);
   const [generatingCover, setGeneratingCover] = useState(false);
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
+  const [reviewOpen, setReviewOpen] = useState(false);
   const [rightTab, setRightTab] = useState<'materials' | 'preview' | 'exercises'>('materials');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [rightOpen, setRightOpen] = useState(false);
@@ -284,7 +286,18 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
   // === Publicar / despublicar ===
   const togglePublish = async () => {
     if (!id) return;
+    
+    // Se estiver rascunho e for publicar, abre a revisão final
+    if (!published) {
+      setReviewOpen(true);
+      return;
+    }
+
     const next = !published;
+    await executeTogglePublish(next);
+  };
+
+  const executeTogglePublish = async (next: boolean) => {
     setPublished(next);
     const { error } = await supabase.from('apostilas').update({ published: next }).eq('id', id);
     if (error) {
