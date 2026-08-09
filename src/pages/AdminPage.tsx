@@ -3209,14 +3209,14 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
 
             {/* USERS */}
             {tab === 'users' && (
-              <div className="space-y-6">
+              <div id="users-section" className="space-y-6">
                 {/* Cabeçalho com cadastro manual */}
                 <div className="flex items-center justify-between gap-3 flex-wrap">
                   <div>
                     <h2 className="text-lg font-bold">Alunos</h2>
                     <p className="text-[11px] text-muted-foreground">Cadastre, bloqueie ou ajuste o acesso das contas.</p>
                   </div>
-                  <AdminCreateUserDialog onCreated={loadAll} />
+                  <AdminCreateUserDialog onCreated={() => loadAll()} />
                 </div>
 
                 {/* Stats */}
@@ -3444,7 +3444,9 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
             )}
 
             {tab === 'tasks' && (
-              <TaskManager />
+              <div className="space-y-6">
+                <TaskManager />
+              </div>
             )}
 
             {/* COURSES */}
