@@ -3449,6 +3449,12 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
               </div>
             )}
 
+            {tab === 'photoroom' && (
+              <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <PhotoroomStudio />
+              </div>
+            )}
+
             {/* COURSES */}
             {tab === 'courses' && (
               <FreeCoursesManager />
