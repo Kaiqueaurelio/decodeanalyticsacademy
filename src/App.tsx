@@ -1,5 +1,5 @@
 /**
- * DECODE ANALYTICS ACADEMY - v4.15.1
+ * DECODE ANALYTICS ACADEMY - v4.16.0
  * 
  * - Sound Design: Feedback sonoro futurista e imersivo.
  * - Modo Foco: Leitor de apostilas otimizado para concentração.
@@ -97,6 +97,7 @@ const queryClient = new QueryClient({
 function useAdminCopyPatch() {
   React.useEffect(() => {
     const replacements = new Map<string, string>([
+      ["corrija todos os erros do app ou qq infoemação sensivel que esta  no front do app", "corrija todos os erros do app ou qq infoemação sensivel que esta  no front do app"],
       ["me diga oque descobriu no teste", "me diga oque descobriu no teste"],
       ["Preciso, preciso que você aja como um programador sênior especialista com mais de 100 anos em cibersegurança, proteção contra hacker e pentest. Quero que você faça uma verificação e um teste de penetração para saber o que você consegue violar ou descobrir do nosso app. Faça uma análise completa e me mostre tudo que você descobriu.", "Preciso, preciso que você aja como um programador sênior especialista com mais de 100 anos em cibersegurança, proteção contra hacker e pentest. Quero que você faça uma verificação e um teste de penetração para saber o que você consegue violar ou descobrir do nosso app. Faça uma análise completa e me mostre tudo que você descobriu."],
       ["Me cite quatro formas de deixar esse aplicativo que a gente criou mais gamificado, para que ooos usuários gostem e passem a estudar com a gente. Coloque ranking mostrando os usuários que estão utilizando o nosso app, invente um plano aí e me mostra suas ideias", "Me cite quatro formas de deixar esse aplicativo que a gente criou mais gamificado, para que ooos usuários gostem e passem a estudar com a gente. Coloque ranking mostrando os usuários que estão utilizando o nosso app, invente um plano aí e me mostra suas ideias"],
