@@ -95,6 +95,15 @@ export default function ApostilaReaderPage() {
   const [noteSaving, setNoteSaving] = useState(false);
   const [marksOpen, setMarksOpen] = useState(false);
   const [focusMode, setFocusMode] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const { playSound } = useSoundEffects();
+
+  useEffect(() => {
+    if (soundEnabled) {
+      if (focusMode) playSound('focus-enter');
+      else playSound('focus-exit');
+    }
+  }, [focusMode, soundEnabled]);
   const contentRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
@@ -513,16 +522,31 @@ export default function ApostilaReaderPage() {
 
         {/* Content */}
         <div className="flex-1 overflow-hidden relative">
-          <button
-            onClick={() => setFocusMode(!focusMode)}
-            className={cn(
-              "fixed bottom-6 left-6 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-primary/20 text-primary border border-primary/40 backdrop-blur-md transition-all hover:bg-primary/30",
-              focusMode ? "opacity-100 scale-100" : "opacity-0 scale-90 md:opacity-40 md:scale-100 hover:opacity-100"
+          <div className="fixed bottom-6 left-6 z-50 flex gap-2">
+            <button
+              onClick={() => {
+                setFocusMode(!focusMode);
+                if (soundEnabled) playSound('click');
+              }}
+              className={cn(
+                "flex h-10 w-10 items-center justify-center rounded-full bg-primary/20 text-primary border border-primary/40 backdrop-blur-md transition-all hover:bg-primary/30",
+                focusMode ? "opacity-100 scale-100 shadow-[0_0_20px_rgba(0,240,255,0.3)]" : "opacity-0 scale-90 md:opacity-40 md:scale-100 hover:opacity-100"
+              )}
+              title={focusMode ? "Sair do Modo Foco" : "Entrar no Modo Foco"}
+            >
+              {focusMode ? <Minimize2 className="h-5 w-5" /> : <Maximize2 className="h-5 w-5" />}
+            </button>
+            
+            {focusMode && (
+              <button
+                onClick={() => setSoundEnabled(!soundEnabled)}
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/20 text-primary border border-primary/40 backdrop-blur-md transition-all hover:bg-primary/30"
+                title={soundEnabled ? "Desativar Sons" : "Ativar Sons"}
+              >
+                {soundEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+              </button>
             )}
-            title={focusMode ? "Sair do Modo Foco" : "Entrar no Modo Foco"}
-          >
-            {focusMode ? <X className="h-5 w-5" /> : <Maximize2 className="h-5 w-5" />}
-          </button>
+          </div>
 
           <div 
             ref={contentRef} 
