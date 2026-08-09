@@ -1,5 +1,5 @@
 /**
- * DECODE ANALYTICS ACADEMY - v4.9.5
+ * DECODE ANALYTICS ACADEMY - v4.9.6
  * 
  * - Sound Design: Feedback sonoro para gamificação e interações.
  * - Modo Foco: Experiência de leitura imersiva.
@@ -31,16 +31,26 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.9.5',
+    version: '4.9.6',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.9.5-release',
-    commitMessage: 'Release v4.9.5: Auditoria de Integridade e Estabilidade'
+    commit: 'v4.9.6-release',
+    commitMessage: 'Release v4.9.6: Fluxo Inteligente de Criação Admin'
   };
 }
 
 export const CHANGELOG: Release[] = [
+  {
+    version: '4.9.6',
+    date: '2026-08-09',
+    title: 'Fluxo Inteligente de Criação Admin',
+    major: false,
+    changes: [
+      { kind: 'improvement', text: 'Redirecionamento automático para apostilas existentes ao tentar criar duplicatas por título.' },
+      { kind: 'improvement', text: 'Melhorias de UX na Central de Criação para facilitar a adição de materiais a apostilas existentes.' },
+    ]
+  },
   {
     version: '4.9.5',
     date: '2026-08-09',
