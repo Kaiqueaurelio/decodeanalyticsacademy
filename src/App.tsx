@@ -1,5 +1,5 @@
 /**
- * DECODE ANALYTICS ACADEMY - v4.16.0
+ * DECODE ANALYTICS ACADEMY - v4.17.0
  * 
  * - Sound Design: Feedback sonoro futurista e imersivo.
  * - Modo Foco: Leitor de apostilas otimizado para concentração.
@@ -97,6 +97,7 @@ const queryClient = new QueryClient({
 function useAdminCopyPatch() {
   React.useEffect(() => {
     const replacements = new Map<string, string>([
+      ["Implementar uma tela de auditoria que registre logins, ações do admin e clonagens por data e usuário.", "Implementar uma tela de auditoria que registre logins, ações do admin e clonagens por data e usuário."],
       ["corrija todos os erros do app ou qq infoemação sensivel que esta  no front do app", "corrija todos os erros do app ou qq infoemação sensivel que esta  no front do app"],
       ["me diga oque descobriu no teste", "me diga oque descobriu no teste"],
       ["Preciso, preciso que você aja como um programador sênior especialista com mais de 100 anos em cibersegurança, proteção contra hacker e pentest. Quero que você faça uma verificação e um teste de penetração para saber o que você consegue violar ou descobrir do nosso app. Faça uma análise completa e me mostre tudo que você descobriu.", "Preciso, preciso que você aja como um programador sênior especialista com mais de 100 anos em cibersegurança, proteção contra hacker e pentest. Quero que você faça uma verificação e um teste de penetração para saber o que você consegue violar ou descobrir do nosso app. Faça uma análise completa e me mostre tudo que você descobriu."],

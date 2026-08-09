@@ -45,6 +45,16 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '4.17.0',
+    date: '2026-08-10',
+    title: 'Monitoramento & Log de Atividades',
+    major: true,
+    changes: [
+      { kind: 'feature', text: 'Implementada tela de auditoria avançada com logs de login, ações administrativas e clonagens.' },
+      { kind: 'improvement', text: 'Rastreamento detalhado por data e usuário para garantir a integridade operacional do admin.' },
+    ]
+  },
+  {
     version: '4.16.0',
     date: '2026-08-10',
     title: 'Hardening & Segurança de Dados',
