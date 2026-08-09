@@ -1,5 +1,5 @@
 /**
- * DECODE ANALYTICS ACADEMY - v4.0.5
+ * DECODE ANALYTICS ACADEMY - v4.0.6
  * 
  * - Auditoria Técnica Completa: Validação de rotas, autenticação e integridade de dados.
  * - UX/UI: Verificação de consistência visual em todas as abas (Dashboard, Admin, Ella).
