@@ -109,6 +109,8 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
   // Confirmações
   const [deleteTarget, setDeleteTarget] = useState<ApostilaRow | null>(null);
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const [bulkSemesterOpen, setBulkSemesterOpen] = useState(false);
+  const [targetSemester, setTargetSemester] = useState<string>('1');
   const [busyId, setBusyId] = useState<string | null>(null);
   const [bulkBusy, setBulkBusy] = useState(false);
 
@@ -377,6 +379,23 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
     setBulkDeleteOpen(false);
   };
 
+  const bulkMoveSemester = async () => {
+    const ids = Array.from(selected);
+    if (ids.length === 0) return;
+    const sem = parseInt(targetSemester, 10);
+    if (isNaN(sem)) return;
+
+    setBulkBusy(true);
+    const { error } = await supabase.from('apostilas').update({ semester: sem }).in('id', ids);
+    setBulkBusy(false);
+
+    if (error) { toast.error('Erro: ' + error.message); return; }
+    setApostilas((prev) => prev.map((x) => selected.has(x.id) ? { ...x, semester: sem } : x));
+    toast.success(`${ids.length} apostila(s) movidas para o ${sem}º semestre`);
+    clearSelection();
+    setBulkSemesterOpen(false);
+  };
+
   // Detalhe do aluno
   const openStudent = async (r: Ranking) => {
     setStudentLoading(true);
@@ -638,13 +657,44 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
                     <Plus className="h-4 w-4" /> Novo Conteúdo
                   </Button>
                   {selected.size > 0 && (
-                    <Button 
-                      variant="destructive" 
-                      onClick={() => setBulkDeleteOpen(true)} 
-                      className="rounded-xl gap-2 animate-in fade-in zoom-in duration-200"
-                    >
-                      <Trash2 className="h-4 w-4" /> Excluir ({selected.size})
-                    </Button>
+                    <div className="flex items-center gap-2 animate-in fade-in zoom-in duration-200">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="rounded-xl gap-2 border-primary/20 bg-primary/5 hover:bg-primary/10"
+                        onClick={() => bulkSetPublished(true)}
+                        disabled={bulkBusy}
+                      >
+                        <Eye className="h-4 w-4" /> Ativar
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="rounded-xl gap-2 border-amber-500/20 bg-amber-500/5 hover:bg-amber-500/10"
+                        onClick={() => bulkSetPublished(false)}
+                        disabled={bulkBusy}
+                      >
+                        <EyeOff className="h-4 w-4" /> Ocultar
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="rounded-xl gap-2"
+                        onClick={() => setBulkSemesterOpen(true)}
+                        disabled={bulkBusy}
+                      >
+                        <CalendarDays className="h-4 w-4" /> Mover
+                      </Button>
+                      <Button 
+                        variant="destructive" 
+                        size="sm"
+                        onClick={() => setBulkDeleteOpen(true)} 
+                        className="rounded-xl gap-2"
+                        disabled={bulkBusy}
+                      >
+                        <Trash2 className="h-4 w-4" /> Excluir ({selected.size})
+                      </Button>
+                    </div>
                   )}
                 </div>
               </div>
@@ -907,13 +957,44 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
                   <Plus className="h-4 w-4" /> Novo Conteúdo
                 </Button>
                 {selected.size > 0 && (
-                  <Button 
-                    variant="destructive" 
-                    onClick={() => setBulkDeleteOpen(true)} 
-                    className="rounded-xl gap-2 animate-in fade-in zoom-in duration-200"
-                  >
-                    <Trash2 className="h-4 w-4" /> Excluir ({selected.size})
-                  </Button>
+                  <div className="flex items-center gap-2 animate-in fade-in zoom-in duration-200">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="rounded-xl gap-2 border-primary/20 bg-primary/5 hover:bg-primary/10"
+                      onClick={() => bulkSetPublished(true)}
+                      disabled={bulkBusy}
+                    >
+                      <Eye className="h-4 w-4" /> Ativar
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="rounded-xl gap-2 border-amber-500/20 bg-amber-500/5 hover:bg-amber-500/10"
+                      onClick={() => bulkSetPublished(false)}
+                      disabled={bulkBusy}
+                    >
+                      <EyeOff className="h-4 w-4" /> Ocultar
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="rounded-xl gap-2"
+                      onClick={() => setBulkSemesterOpen(true)}
+                      disabled={bulkBusy}
+                    >
+                      <CalendarDays className="h-4 w-4" /> Mover
+                    </Button>
+                    <Button 
+                      variant="destructive" 
+                      size="sm"
+                      onClick={() => setBulkDeleteOpen(true)} 
+                      className="rounded-xl gap-2"
+                      disabled={bulkBusy}
+                    >
+                      <Trash2 className="h-4 w-4" /> Excluir ({selected.size})
+                    </Button>
+                  </div>
                 )}
               </div>
           </div>
@@ -1299,6 +1380,60 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
               </div>
             </ScrollArea>
           ) : null}
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog open={bulkDeleteOpen} onOpenChange={setBulkDeleteOpen}>
+        <AlertDialogContent className="bg-popover/90 backdrop-blur-2xl border-white/10 rounded-3xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir em Lote</AlertDialogTitle>
+            <AlertDialogDescription>
+              Você está prestes a excluir permanentemente {selected.size} apostila(s). Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-xl">Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={bulkDelete} 
+              className="bg-destructive hover:bg-destructive/90 text-destructive-foreground rounded-xl"
+            >
+              Excluir Tudo
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <Dialog open={bulkSemesterOpen} onOpenChange={setBulkSemesterOpen}>
+        <DialogContent className="bg-popover/90 backdrop-blur-2xl border-white/10 rounded-3xl">
+          <DialogHeader>
+            <DialogTitle>Mover em Lote</DialogTitle>
+            <DialogDescription>
+              Selecione o semestre de destino para as {selected.size} apostilas selecionadas.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-6 space-y-4">
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Semestre de Destino</label>
+              <Select value={targetSemester} onValueChange={setTargetSemester}>
+                <SelectTrigger className="w-full bg-white/5 border-white/10 rounded-xl h-12">
+                  <SelectValue placeholder="Escolha o semestre" />
+                </SelectTrigger>
+                <SelectContent className="bg-popover/90 backdrop-blur-xl border-white/10 rounded-xl">
+                  {[1,2,3,4,5,6,7,8].map(s => (
+                    <SelectItem key={s} value={s.toString()}>{s}º Semestre</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Button 
+              className="w-full h-12 rounded-xl shadow-lg shadow-primary/20 font-bold" 
+              onClick={bulkMoveSemester}
+              disabled={bulkBusy}
+            >
+              {bulkBusy ? <RefreshCw className="h-4 w-4 animate-spin mr-2" /> : <Check className="h-4 w-4 mr-2" />}
+              Confirmar Movimentação
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
