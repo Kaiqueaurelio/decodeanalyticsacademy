@@ -767,7 +767,7 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
                           </div>
                           
                           <Button 
-                            variant="primary" 
+                            variant="default" 
                             size="sm" 
                             className="h-8 rounded-xl px-4 text-xs font-bold gap-2"
                             onClick={() => handleEdit(a)}
