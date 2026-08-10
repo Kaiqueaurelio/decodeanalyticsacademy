@@ -133,6 +133,7 @@ const queryClient = new QueryClient({
 function useAdminCopyPatch() {
   React.useEffect(() => {
     const replacements = new Map<string, string>([
+      ["# Buy Me a Coffee Widget Integration Prompt", "Release v4.41.0: Integrado o widget 'Buy Me a Coffee' com branding institucional azul ciano/roxo, garantindo suporte discreto e profissional ao projeto Decode Academy."],
       ["# Student Dashboard - Subjects/Courses Display Fix Prompt", "Correção Estrutural de Dashboard v4.40.0: Diagnóstico e resolução de falhas na renderização de matérias e cursos para alunos."],
       ["Implemente uma rota /apoie protegida, disponível apenas para alunos logados.", "Proteção Acadêmica v4.34.0: Rota /apoie agora é protegida, garantindo que apenas alunos autenticados acessem a página de suporte institucional."],
 
