@@ -32,16 +32,26 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.44.0',
+    version: '4.45.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.44.0-release',
-    commitMessage: 'Release v4.44.0: Correção Crítica de Visibilidade de Matérias'
+    commit: 'v4.45.0-release',
+    commitMessage: 'Release v4.45.0: Novo Módulo de Grade Curricular'
   };
 }
 
 export const CHANGELOG: Release[] = [
+  {
+    version: '4.45.0',
+    date: '2026-08-10',
+    title: 'Novo Módulo: Grade Curricular & Horário Escolar',
+    changes: [
+      { kind: 'feature', text: 'Implementada a visualização interativa do horário de aula e grade acadêmica.' },
+      { kind: 'feature', text: 'Adicionada seção de atendimento à coordenação e disciplinas especiais.' },
+      { kind: 'improvement', text: 'Estilização High-Tech com suporte a temas e responsividade mobile.' },
+    ],
+  },
   {
     version: '4.44.0',
     date: '2026-08-10',

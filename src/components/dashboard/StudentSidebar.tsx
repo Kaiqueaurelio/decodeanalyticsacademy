@@ -40,6 +40,7 @@ import {
   HeartHandshake,
   Heart,
   Coffee,
+  CalendarRange,
 } from 'lucide-react';
 
 import logoOwl from '@/assets/owl-icon.png';
@@ -88,6 +89,7 @@ const menuGroups: { label: string; items: MenuItem[] }[] = [
     items: [
       { to: '/noticias', icon: Newspaper, label: 'Notícias Tech', unipOnly: true },
       { to: '/calculadora', icon: Calculator, label: 'Calculadora', hideForEnem: true },
+      { to: '/horarios', icon: CalendarRange, label: 'Horário Escolar', unipOnly: true },
       { to: '/performance', icon: Activity, label: 'Desempenho' },
       { to: '/tira-duvida', icon: HelpCircle, label: 'Tira-dúvidas', hideForEnem: true },
       { to: '/comunidade', icon: MessagesSquare, label: 'Comunidade', unipOnly: true },
