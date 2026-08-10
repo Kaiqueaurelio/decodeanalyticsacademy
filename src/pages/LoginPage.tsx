@@ -42,7 +42,7 @@ export default function LoginPage() {
     const { data, error } = await supabase.functions.invoke('ra-auth', { body: payload });
     if (error) {
       // O SDK devolve FunctionsHttpError sem o corpo; tentamos ler a mensagem real.
-      let message = 'Não consegui validar seu RA agora. Tente novamente.';
+      let message = 'Não consegui validar seu RA no servidor. Verifique sua conexão ou tente novamente.';
       const res = (error as any)?.context as Response | undefined;
       if (res && typeof res.json === 'function') {
         try {

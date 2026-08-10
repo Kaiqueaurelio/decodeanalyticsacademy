@@ -111,6 +111,13 @@ Deno.serve(async (req) => {
       
       if (!sErr && sData?.session) {
         await registerAttempt(admin, ra, ip, true);
+        // Force sync profiles table just in case metadata exists but profile doesn't
+        await admin.from('profiles').upsert({
+          user_id: sData.user?.id,
+          ra: ra,
+          email: raEmail,
+          full_name: `Aluno UNIP ${ra}`
+        }, { onConflict: 'user_id' });
       } else {
         await registerAttempt(admin, ra, ip, false);
       }
