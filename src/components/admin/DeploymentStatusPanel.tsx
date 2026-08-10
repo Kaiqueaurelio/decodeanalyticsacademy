@@ -216,7 +216,7 @@ export function DeploymentStatusPanel() {
                   <span>Conexões Supabase</span>
                   <span>78%</span>
                 </div>
-                <Progress value={78} className="h-1.5 bg-muted/30" indicatorClassName="bg-emerald-500" />
+                <Progress value={78} className="h-1.5 bg-muted/30 [&>div]:bg-emerald-500" />
               </div>
             </CardContent>
           </Card>
