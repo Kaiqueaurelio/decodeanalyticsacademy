@@ -32,17 +32,27 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.46.7',
+    version: '4.46.8',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.46.7-release',
-    commitMessage: 'Release v4.46.7: BMC Validation & Global Audit'
+    commit: 'v4.46.8-release',
+    commitMessage: 'Release v4.46.8: Dashboard Widgets & BMC Restoration'
   };
 }
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: '4.46.8',
+    date: '2026-08-10',
+    title: 'Restauração de Suporte & Dashboard',
+    changes: [
+      { kind: 'fix', text: 'Restaurado o widget institucional Buy Me a Coffee em todas as rotas logadas.' },
+      { kind: 'fix', text: 'Corrigido o z-index e a visibilidade dos botões de apoio no Dashboard do Aluno.' },
+      { kind: 'improvement', text: 'Otimizada a injeção do script BMC para garantir carregamento instantâneo pós-login.' }
+    ]
+  },
   {
     version: '4.46.7',
     date: '2026-08-10',
