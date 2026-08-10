@@ -32,12 +32,12 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.44.0',
+    version: '4.45.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.44.0-release',
-    commitMessage: 'Release v4.44.0: Correção Crítica de Visibilidade de Matérias'
+    commit: 'v4.45.0-release',
+    commitMessage: 'Release v4.45.0: Novo Módulo de Grade Curricular'
   };
 }
 
