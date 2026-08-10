@@ -45,16 +45,16 @@ export default function DashboardPage() {
   const [selectedSemester, setSelectedSemester] = useState<number | null>(() => {
     const saved = localStorage.getItem('selectedSemestre');
     if (saved) return parseInt(saved, 10);
-    return null; // Inicialmente null para decidir baseado no perfil
+    return null; 
   });
 
   // Sincroniza o semestre inicial com o perfil do aluno
   useEffect(() => {
     if (profile?.semester && selectedSemester === null && !localStorage.getItem('selectedSemestre')) {
       setSelectedSemester(profile.semester);
-    } else if (selectedSemester === null) {
-      // Fallback para 1 ou 6 dependendo da lógica de negócio se o perfil não tem
-      setSelectedSemester(6); 
+    } else if (selectedSemester === null && !localStorage.getItem('selectedSemestre')) {
+      // Se não houver preferência salva nem semestre no perfil, não filtramos por padrão para mostrar tudo
+      setSelectedSemester(null); 
     }
   }, [profile?.semester]);
 
@@ -69,6 +69,8 @@ export default function DashboardPage() {
   // Lógica de processamento de apostilas (filtro + placeholders de semestres futuros)
   const apostilas = useMemo(() => {
     // 1. Filtragem por semestre se selecionado
+    // Se selecionado, mostra apenas o semestre (incluindo 0/Geral).
+    // Se NÃO selecionado, retorna tudo publicado.
     const list = selectedSemester
       ? apostilasRaw.filter(a => (a.semester === selectedSemester || a.semester === 0) && a.published)
       : apostilasRaw.filter(a => a.published);
