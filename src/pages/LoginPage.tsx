@@ -157,7 +157,11 @@ export default function LoginPage() {
     const isEmail = looksLikeEmail(id);
 
     if (!isEmail && !isValidRa(id)) {
-      toast.error('Use um e-mail valido ou seu RA (6 a 13 letras/numeros).');
+      const errorMsg = 'Use um e-mail válido ou seu RA (6 a 13 letras/números). Se o erro persistir, procure a secretaria para validar seu vínculo.';
+      toast.error(errorMsg, {
+        duration: 6000,
+        icon: <AlertTriangle className="h-4 w-4 text-warning" />
+      });
       return;
     }
 

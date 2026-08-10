@@ -32,17 +32,26 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.46.4',
+    version: '4.46.5',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.46.4-release',
-    commitMessage: 'Release v4.46.4: Authentication UX & Audit Masking Stabilization'
+    commit: 'v4.46.5-release',
+    commitMessage: 'Release v4.46.5: Enhanced Auth Messages & Version Bump'
   };
 }
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: '4.46.5',
+    date: '2026-08-10',
+    title: 'Aprimoramento de Feedback de Autenticação',
+    changes: [
+      { kind: 'improvement', text: 'Refinadas as mensagens de erro de RA com orientações institucionais.' },
+      { kind: 'improvement', text: 'Atualização de metadados de versão para v4.46.5.' }
+    ]
+  },
   {
     version: '4.46.4',
     date: '2026-08-10',
