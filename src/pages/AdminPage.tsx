@@ -1613,6 +1613,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
     review: { title: 'Revisar Apostila', desc: 'Revisão do conteúdo gerado' },
     'enem-apostilas': { title: 'Apostilas ENEM', desc: 'Gerenciamento de materiais exclusivos do ENEM' },
     'cc-apostilas': { title: 'Ciência da Computação', desc: 'Gerenciamento da grade acadêmica da faculdade' },
+    'health-dashboard': { title: 'Saúde das Apostilas', desc: 'Status operacional e histórico de manutenções' },
   };
 
 
