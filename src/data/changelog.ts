@@ -32,6 +32,14 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
+    version: '4.46.0',
+    date: '10/08/2026',
+    features: [
+      { kind: 'fix', text: 'Correção Crítica v4.46.0: Widget "Buy Me a Coffee" habilitado globalmente em todas as rotas internas, incluindo dispositivos móveis, garantindo visibilidade institucional contínua.' },
+      { kind: 'security', text: 'Refinamento de política de CORS e CSP para assets externos do Buy Me a Coffee.' }
+    ]
+  },
+  {
     version: '4.45.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',

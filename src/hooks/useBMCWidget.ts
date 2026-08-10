@@ -19,14 +19,14 @@ export function useBMCWidget() {
     const isResetPassword = location.pathname === '/reset-password';
     
     // Lista de rotas permitidas (Dashboard, Suporte, Perfil, Biblioteca)
-    const allowedRoutes = ['/dashboard', '/apoie', '/profile', '/biblioteca', '/exercicios', '/cursos'];
-    const isAllowedRoute = allowedRoutes.some(route => location.pathname.startsWith(route));
+    const allowedRoutes = ['/dashboard', '/apoie', '/profile', '/biblioteca', '/exercicios', '/cursos', '/livros', '/calculadora', '/noticias', '/performance', '/horarios'];
+    const isAllowedRoute = allowedRoutes.some(route => location.pathname === route || location.pathname.startsWith(route + '/'));
 
     // O widget deve carregar apenas se:
     // - Usuário logado
-    // - NÃO for mobile (conforme solicitado: "apenas em telas desktop")
+    // - Usuário logado
     // - Rota permitida (não landing/login)
-    const shouldShow = user && !isMobile && isAllowedRoute;
+    const shouldShow = user && isAllowedRoute;
 
     // Se não deve mostrar, garante que o widget seja removido
     if (!shouldShow) {
