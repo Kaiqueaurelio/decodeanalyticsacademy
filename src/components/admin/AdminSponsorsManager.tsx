@@ -21,7 +21,7 @@ export function AdminSponsorsManager() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-2xl font-bold">Gestão de Anunciantes</h2>
+          <h2 className="text-2xl font-bold">Gestão de Parceiros</h2>
           <p className="text-muted-foreground text-sm">Controle as marcas externas que aparecem no Media Kit e página "Anuncie".</p>
         </div>
         <div className="flex gap-2">
@@ -55,7 +55,7 @@ export function AdminSponsorsManager() {
               <CardHeader className="p-4 pb-2">
                 <div className="flex items-center justify-between gap-2">
                   <CardTitle className="text-sm font-bold truncate">{ad.title}</CardTitle>
-                  <Badge variant="outline" className="text-[10px]">Patrocinador</Badge>
+                  <Badge variant="outline" className="text-[10px]">Parceiro</Badge>
                 </div>
               </CardHeader>
               <CardContent className="p-4 pt-0">

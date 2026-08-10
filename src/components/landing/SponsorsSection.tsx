@@ -8,10 +8,10 @@ const EMAIL_ADDRESS = 'decodeanalytics@outlook.com.br';
 /** Briefing pré-preenchido que o anunciante só precisa completar e enviar. */
 function briefingLines(plan?: string) {
   return [
-    'Olá Kaique! Tenho interesse em anunciar/patrocinar a Decode Analytics Academy.',
+    'Olá Kaique! Tenho interesse em anunciar ou ser um parceiro da Decode Analytics Academy.',
     '',
     'BRIEFING DO ANUNCIANTE',
-    `Formato de interesse: ${plan ?? '(Apoiador / Patrocinador de matéria / Master)'}`,
+    `Formato de interesse: ${plan ?? '(Apoiador Profissional / Parceiro de Conteúdo / Master)'}`,
     'Empresa:',
     'Responsável:',
     'Telefone / WhatsApp:',
@@ -52,24 +52,24 @@ const WHY = [
   {
     icon: ShieldCheck,
     title: 'Marca em contexto positivo',
-    desc: 'Sem rastreamento de terceiros, sem venda de dados e sem anúncio no meio da aula. Sua marca aparece apoiando, não atrapalhando.',
+    desc: 'Sem rastreamento de terceiros, sem venda de dados e sem anúncio no meio da aula. Sua marca aparece como parceira, não atrapalhando.',
   },
 ];
 
 const PLANS = [
   {
-    name: 'Apoiador',
+    name: 'Apoiador Profissional',
     kicker: 'presença institucional',
     pitch: 'Para quem quer estar junto da causa.',
-    items: ['Logo na página de apoiadores', 'Menção nas redes da Decode', 'Relatório mensal simples'],
+    items: ['Logo na página de parceiros', 'Menção nas redes da Decode', 'Relatório mensal simples'],
     featured: false,
   },
   {
-    name: 'Patrocinador de matéria',
+    name: 'Parceiro de Conteúdo',
     kicker: 'mais escolhido',
     pitch: '"Matemática apresentada por sua marca."',
     items: [
-      'Selo de patrocínio na disciplina escolhida',
+      'Selo de parceria na disciplina escolhida',
       'Anúncio fixo na lateral do app',
       'Relatório com impressões, cliques e CTR',
     ],
@@ -101,7 +101,7 @@ export function SponsorsSection() {
       <div className="container relative mx-auto max-w-5xl">
         <div className="mx-auto mb-10 max-w-2xl text-center sm:mb-14">
           <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.2em] text-primary sm:text-xs">
-            // para empresas e patrocinadores
+            // para empresas e parceiros
           </p>
           <h2 className="font-display text-3xl leading-tight sm:text-4xl">
             O aluno nunca paga. <span className="text-primary">Alguém precisa pagar.</span>
@@ -129,7 +129,7 @@ export function SponsorsSection() {
 
         <div className="mb-12">
           <h3 className="mb-5 text-center font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground sm:text-xs">
-            formatos de patrocínio
+            formatos de parceria
           </h3>
           <div className="grid gap-4 sm:grid-cols-3 sm:gap-5">
             {PLANS.map((plan) => (
@@ -200,7 +200,7 @@ export function SponsorsSection() {
               onClick={() => void recordSponsorLead({ plan: 'Não definido', channel: 'whatsapp', source: 'cta-geral', ctaId: 'landing-geral-whatsapp' })}
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="Falar sobre patrocínio no WhatsApp"
+              aria-label="Falar sobre parcerias no WhatsApp"
               className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 sm:w-auto"
             >
               <MessageCircle className="h-4 w-4" strokeWidth={1.75} />
@@ -209,7 +209,7 @@ export function SponsorsSection() {
             <a
               href={EMAIL_URL}
               onClick={() => void recordSponsorLead({ plan: 'Não definido', channel: 'email', source: 'cta-geral', ctaId: 'landing-geral-email' })}
-              aria-label="Enviar e-mail sobre patrocínio"
+              aria-label="Enviar e-mail sobre parcerias"
               className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-border/60 px-5 py-3 text-sm font-medium transition-colors hover:bg-muted/40 sm:w-auto"
             >
               <Mail className="h-4 w-4" strokeWidth={1.75} />
@@ -219,7 +219,7 @@ export function SponsorsSection() {
           <a
             href="/anuncie"
             className="mt-4 inline-flex items-center justify-center text-sm font-medium text-primary underline-offset-4 hover:underline"
-            aria-label="Abrir a página completa de patrocínio com media kit e formulário"
+            aria-label="Abrir a página completa de anúncios com media kit e formulário"
           >
             Ver media kit completo e enviar briefing
           </a>
