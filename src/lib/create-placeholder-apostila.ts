@@ -85,7 +85,7 @@ export async function ensureApostilaExists(item: PlaceholderApostilaItem): Promi
       teacher: teacher,
       published: false,
       source_type: 'grade',
-      content: `# ${cleanTitle}\n\nEscreva o conteúdo da apostila aqui...`,
+      content: cleanTitle === 'Sistemas Operacionais e Mobile' ? `# ${cleanTitle}\n\nEscreva o conteúdo da apostila aqui...` : `# ${cleanTitle}\n\nEscreva o conteúdo da apostila aqui...`,
     })
     .select('id')
     .single();
