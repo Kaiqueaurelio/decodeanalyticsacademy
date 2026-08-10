@@ -11,7 +11,7 @@ export type SelectionInfo =
   | { type: 'link'; attrs: { href?: string; target?: string }; text: string }
   | { type: 'table' }
   | { type: 'heading'; level: 1 | 2 | 3 }
-  | { type: 'paragraph' }
+  | { type: 'paragraph'; attrs: { fontSize?: string; fontFamily?: string; color?: string } }
   | { type: 'none' };
 
 export function useEditorSelection(editor: Editor | null): SelectionInfo {
@@ -46,7 +46,15 @@ export function useEditorSelection(editor: Editor | null): SelectionInfo {
         return;
       }
       if (editor.isActive('paragraph')) {
-        setInfo({ type: 'paragraph' });
+        const a = editor.getAttributes('textStyle');
+        setInfo({
+          type: 'paragraph',
+          attrs: {
+            fontSize: a.fontSize || undefined,
+            fontFamily: a.fontFamily || undefined,
+            color: a.color || undefined
+          }
+        });
         return;
       }
       setInfo({ type: 'none' });

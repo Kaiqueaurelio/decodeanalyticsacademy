@@ -33,6 +33,8 @@ import TaskList from '@tiptap/extension-task-list';
 import TaskItem from '@tiptap/extension-task-item';
 import Subscript from '@tiptap/extension-subscript';
 import Superscript from '@tiptap/extension-superscript';
+import { FontFamily } from './editor/FontFamilyExtension';
+import { FontSize } from './editor/FontSizeExtension';
 
 import { cn } from '@/lib/utils';
 import { ResizableImage } from '@/components/editor/ResizableImage';
@@ -161,6 +163,8 @@ export function MarkdownEditor({
       }),
       Underline,
       TextStyle,
+      FontFamily,
+      FontSize,
       Color,
       Highlight.configure({ multicolor: true }),
       Link.configure({ openOnClick: false, autolink: true, HTMLAttributes: { class: 'text-primary underline' } }),

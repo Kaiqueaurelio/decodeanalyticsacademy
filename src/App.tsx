@@ -1,12 +1,12 @@
 /**
- * DECODE ANALYTICS ACADEMY - v4.49.0
+ * DECODE ANALYTICS ACADEMY - v4.49.5
  * 
+ * - Editor WYSIWYG Office: Suporte total a tipografia (fonte, tamanho e cor).
+ * - Inspector de Estilo: Barra lateral para ajustes finos de design de conteúdo.
+ * - Sanitização Dinâmica: Renderizador expandido para suportar estilos inline.
  * - Matérias & Pastas: Reestruturação completa do dashboard para agrupamento por disciplina.
  * - Multi-Materiais: Suporte para múltiplos cadernos e apostilas sob a mesma matéria.
  * - Placeholders Inteligentes: Sincronização automática com a grade acadêmica da UNIP.
- * - Buy Me a Coffee: Integração estratégica do widget de apoio institucional.
- * - Chicago Click Game: Integração de mecânica de gamificação para engajamento.
- * - Monitoramento & Estabilidade: Painel de diagnóstico em tempo real.
  */
 
 import React, { Suspense, lazy } from "react";
