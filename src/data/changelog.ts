@@ -32,17 +32,27 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.46.0',
+    version: '4.46.1',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.46.0-release',
-    commitMessage: 'Release v4.46.0: Buy Me a Coffee Fix'
+    commit: 'v4.46.1-release',
+    commitMessage: 'Release v4.46.1: Cold-start Fix for Internal Server Error'
   };
 }
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: '4.46.1',
+    date: '2026-08-10',
+    title: 'Estabilização de Ambiente & Erro 500',
+    changes: [
+      { kind: 'fix', text: 'Resolvido erro interno 500 (Internal Server Error) através de reinicialização forçada do servidor de desenvolvimento.' },
+      { kind: 'improvement', text: 'Realizada purga de cache e cold-start do ambiente para garantir estabilidade pós-deploy.' },
+      { kind: 'improvement', text: 'Adicionada persistência de prompt de estabilidade para diagnóstico de infraestrutura.' }
+    ]
+  },
   {
     version: '4.46.0',
     date: '2026-08-10',
