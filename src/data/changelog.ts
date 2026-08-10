@@ -45,6 +45,15 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '4.26.0',
+    date: '2026-08-10',
+    title: 'Refinamento de UX & Limpeza de Auditoria',
+    major: false,
+    changes: [
+      { kind: 'fix', text: 'Consolidada a remoção da seção de apoio na Landing Page e atualizado o mapeamento de auditoria visual.' },
+    ]
+  },
+  {
     version: '4.25.0',
     date: '2026-08-10',
     title: 'Limpeza de Depuração & Estabilidade',
