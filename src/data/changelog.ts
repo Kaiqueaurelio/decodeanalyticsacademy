@@ -36,8 +36,8 @@ export function getBuildInfo() {
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.48.5-release',
-    commitMessage: 'Release v4.48.5: UX Audit & Desktop Refinement'
+    commit: 'v4.48.6-release',
+    commitMessage: 'Release v4.48.6: Cache Stability & Silent Refresh'
   };
 }
 
