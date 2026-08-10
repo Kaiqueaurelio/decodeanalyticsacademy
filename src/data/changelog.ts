@@ -45,6 +45,15 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '4.36.1',
+    date: '2026-08-10',
+    title: 'Auditoria de Login & Hardening de RA',
+    changes: [
+      { kind: 'fix', text: 'Consolidada a resolução de erros de validação de RA com sanitização rigorosa de entrada no servidor.' },
+      { kind: 'security', text: 'Implementado log de auditoria para tentativas de login e bloqueio de bypass de credenciais.' },
+    ],
+  },
+  {
     version: '4.36.0',
     date: '2026-08-10',
     title: 'Estabilização de Acesso por RA',
