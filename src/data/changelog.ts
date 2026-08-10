@@ -1,12 +1,10 @@
 /**
- * DECODE ANALYTICS ACADEMY - v4.37.0
+ * DECODE ANALYTICS ACADEMY - v4.38.0
  * 
- * - Sound Design: Feedback sonoro para gamificação e interações.
- * - Modo Foco: Experiência de leitura imersiva.
- * - Hall da Fama: Ranking de performance.
- * - Checklist de Publicação: Garantia de qualidade acadêmica.
- * - Páginas Institucionais: Conteúdo completo de Termos e Transparência.
- * - Privacidade Avançada: Banner de consentimento de cookies.
+ * - Chicago Click Game: Integração de mecânica de gamificação para engajamento.
+ * - Monitoramento & Estabilidade: Painel de diagnóstico em tempo real.
+ * - Hall da Fama: Ranking de performance dinâmica.
+ * - Privacidade Avançada: Gestão granular de cookies.
  */
 
 export type ChangeKind = 'feature' | 'fix' | 'improvement' | 'security' | 'content';
