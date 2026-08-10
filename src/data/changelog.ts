@@ -34,7 +34,7 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.36.3',
+    version: '4.36.4',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
@@ -44,6 +44,14 @@ export function getBuildInfo() {
 }
 
 export const CHANGELOG: Release[] = [
+  {
+    version: '4.36.4',
+    date: '2026-08-10',
+    title: 'Limpeza de Landing Page & Zero Monetização',
+    changes: [
+      { kind: 'improvement', text: 'Removidas todas as referências de suporte e manutenção gratuita da página inicial, consolidando o ambiente 100% focado em benefícios acadêmicos para o aluno.' },
+    ],
+  },
   {
     version: '4.36.3',
     date: '2026-08-10',
