@@ -84,6 +84,7 @@ export async function ensureApostilaExists(item: PlaceholderApostilaItem): Promi
       course: course,
       teacher: teacher,
       published: false,
+      status: 'bloqueada',
       source_type: 'grade',
       content: '',
     })
