@@ -41,8 +41,8 @@ export default function BuyMeCoffeeButton({
         title="Apoie nosso projeto no Buy Me a Coffee"
       >
         {!imageUnavailable ? (
-          <img 
-            src="https://cdn.buymeacoffee.com/buttons/v2/default-blue.png" 
+          <img
+            src="https://cdn.buymeacoffee.com/buttons/v2/default-blue.png"
             alt={text}
             className={cn("h-auto block", sizeClasses[size])}
             loading="lazy"

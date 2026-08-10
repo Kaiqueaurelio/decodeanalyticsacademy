@@ -175,8 +175,8 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
                 {/* Background da Matéria (Capa da primeira apostila) */}
                 <div className="absolute inset-0">
                   {mainCover ? (
-                    <img 
-                      src={mainCover} 
+                    <img
+                      src={mainCover}
                       alt={category} 
                       className="h-full w-full object-cover opacity-30 group-hover:opacity-50 group-hover:scale-105 transition-all duration-700"
                     />
