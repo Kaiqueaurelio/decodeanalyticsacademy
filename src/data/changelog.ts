@@ -45,24 +45,6 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
-    version: '4.22.2',
-    date: '2026-08-10',
-    title: 'Marketing & Social Media Kit',
-    major: false,
-    changes: [
-      { kind: 'content', text: 'Adicionada descrição otimizada para redes sociais (Instagram) ao sistema de auditoria para facilitar o compartilhamento do projeto.' },
-    ]
-  },
-  {
-    version: '4.22.1',
-    date: '2026-08-10',
-    title: 'Descrição Institucional & Refinamento',
-    major: false,
-    changes: [
-      { kind: 'improvement', text: 'Adicionada descrição institucional detalhada ao sistema de auditoria para fins de branding e clareza de propósito do app.' },
-    ]
-  },
-  {
     version: '4.22.0',
     date: '2026-08-09',
     title: 'Expansão de Canais de Apoio',
