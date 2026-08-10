@@ -32,16 +32,25 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.43.0',
+    version: '4.44.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.43.0-release',
-    commitMessage: 'Release v4.43.0: Integração Estratégica Buy Me a Coffee'
+    commit: 'v4.44.0-release',
+    commitMessage: 'Release v4.44.0: Correção Crítica de Visibilidade de Matérias'
   };
 }
 
 export const CHANGELOG: Release[] = [
+  {
+    version: '4.44.0',
+    date: '2026-08-10',
+    title: 'Correção Crítica: Visibilidade de Disciplinas',
+    changes: [
+      { kind: 'fix', text: 'Resolvida falha que impedia a exibição de matérias no dashboard para alunos sem semestre definido.' },
+      { kind: 'improvement', text: 'Removido o filtro padrão do 6º semestre para novos usuários, permitindo visualização completa do acervo.' },
+    ],
+  },
   {
     version: '4.43.0',
     date: '2026-08-11',
