@@ -34,7 +34,7 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.36.2',
+    version: '4.36.3',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
@@ -45,11 +45,11 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
-    version: '4.36.2',
+    version: '4.36.3',
     date: '2026-08-10',
-    title: 'Consolidação de Mapeamento Visual',
+    title: 'Estabilização de Auditoria de Prompt',
     changes: [
-      { kind: 'improvement', text: 'Atualizado o mapeamento de auditoria visual em App.tsx para refletir a estrutura de Prompt Zero Monetização v4.36.2.' },
+      { kind: 'improvement', text: 'Consolidado o mapeamento de auditoria visual no App.tsx para garantir a persistência do Prompt Zero Monetização v4.36.3.' },
     ],
   },
   {
