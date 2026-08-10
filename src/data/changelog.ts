@@ -32,17 +32,27 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.46.6',
+    version: '4.46.7',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.46.6-release',
-    commitMessage: 'Release v4.46.6: RA Recovery & Support Flow'
+    commit: 'v4.46.7-release',
+    commitMessage: 'Release v4.46.7: BMC Validation & Global Audit'
   };
 }
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: '4.46.7',
+    date: '2026-08-10',
+    title: 'Auditoria de Suporte & Estabilização BMC',
+    changes: [
+      { kind: 'fix', text: 'Validada a visibilidade global do widget Buy Me a Coffee em todas as rotas acadêmicas (Dashboard, Reader, Apostila, etc).' },
+      { kind: 'improvement', text: 'Adicionada redundância visual para suporte via botões nativos na Sidebar e no Dashboard principal.' },
+      { kind: 'security', text: 'Sincronizada a auditoria visual para mascarar prompts de verificação de suporte institucional.' }
+    ]
+  },
   {
     version: '4.46.6',
     date: '2026-08-10',
