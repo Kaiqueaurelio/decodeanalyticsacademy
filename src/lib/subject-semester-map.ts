@@ -88,11 +88,20 @@ export function canonicalSubjectKey(subject?: string | null): string {
   const raw = subjectKey(subject || '').replace(/\([^)]*\)/g, '').replace(/\s+/g, ' ').trim();
   if (!raw) return '';
 
+  const aliases: Record<string, string> = {
+    'sistemas operacionais abertos e mobile': 'sistemas operacionais e mobile',
+    'sist operac abertos e mobile': 'sistemas operacionais e mobile',
+    'processamento de imagem e visao comp': 'processamento de imagem e visao computacional',
+    'procs de imagem e visao comp': 'processamento de imagem e visao computacional',
+    'aspct teoricos da computacao': 'aspectos teoricos da computacao',
+  };
+  const aliased = aliases[raw] || raw;
+
   const known = Object.values(BY_SEMESTER)
     .flat()
     .map(subjectKey)
     .sort((a, b) => b.length - a.length);
-  return known.find((candidate) => raw === candidate || raw.includes(candidate) || candidate.includes(raw)) || raw;
+  return known.find((candidate) => aliased === candidate || aliased.includes(candidate) || candidate.includes(aliased)) || aliased;
 }
 
 export function sameSubject(first?: string | null, second?: string | null): boolean {

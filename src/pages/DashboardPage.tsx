@@ -28,7 +28,7 @@ import { ContinueWhereLeftCard } from '@/components/ContinueWhereLeftCard';
 import { StudyHeatmap } from '@/components/gamification/StudyHeatmap';
 import { useApostilasList, useExerciseCounts, useDashboardStats, type ApostilaSummary } from '@/hooks/queries/useDashboardData';
 import { useUserProfile } from '@/hooks/queries/useUserProfile';
-import { BY_SEMESTER, subjectKey } from '@/lib/subject-semester-map';
+import { BY_SEMESTER, canonicalSubjectKey } from '@/lib/subject-semester-map';
 import { BookOpen, Search, X, PenLine, ShieldCheck } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -78,7 +78,7 @@ export default function DashboardPage() {
 
     // 2. Placeholder para disciplinas da grade (1º ao 8º)
     // A grade é uma referência administrativa; o aluno só vê registros reais.
-    const showAcademicPlaceholders = false;
+    const showAcademicPlaceholders = true;
     if (selectedSemester && showAcademicPlaceholders) {
       const canonicalSubjects = BY_SEMESTER[selectedSemester] || [];
       const teacherMap: Record<string, string> = {
@@ -120,13 +120,13 @@ export default function DashboardPage() {
       };
 
       // Criar lista de disciplinas que já existem no banco para este semestre
-      const existingCategoriesKeys = new Set(list.map(a => subjectKey(a.category || '')));
+      const existingCategoriesKeys = new Set(list.map(a => canonicalSubjectKey(a.category)));
 
 
 
       // Gerar placeholders apenas para as disciplinas da grade que NÃO existem no banco
       const placeholders = canonicalSubjects
-        .filter(subject => !existingCategoriesKeys.has(subjectKey(subject)))
+        .filter(subject => !existingCategoriesKeys.has(canonicalSubjectKey(subject)))
         .map((subject, idx) => ({
           id: `placeholder-${selectedSemester}-${idx}`,
           title: `Caderno de ${subject}`,
