@@ -35,7 +35,7 @@ export default function BuyMeCoffeeButton({
         href="https://www.buymeacoffee.com/decodeanalyticsacademy" 
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-2 no-underline transition-all hover:-translate-y-0.5 active:translate-y-0 opacity-100 hover:opacity-90"
+        className="inline-flex items-center gap-2 no-underline transition-all hover:-translate-y-0.5 active:translate-y-0 opacity-100 hover:opacity-90 relative z-[99]"
         title="Apoie nosso projeto no Buy Me a Coffee"
       >
         <img 
