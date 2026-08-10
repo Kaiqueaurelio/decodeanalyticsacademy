@@ -23,6 +23,8 @@ export default function LoginPage() {
     || '';
   /** Identificador unico: pode ser RA ou e-mail. Detectamos pela presenca de "@". */
   const [identifier, setIdentifier] = useState(savedIdentifier);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [isForgotRa, setIsForgotRa] = useState(false);
   const [password, setPassword] = useState('');
   const [email, setEmail] = useState(''); // usado apenas no fluxo de reset por e-mail
   const [isSignUp, setIsSignUp] = useState(false);
@@ -409,11 +411,13 @@ export default function LoginPage() {
 
               <div className="text-center space-y-2">
                 <h1 className="text-xl font-bold">
-                  {isReset ? 'Recuperar Senha' : isSignUp ? 'Criar Conta' : isLocked ? 'Conta Bloqueada' : 'Entrar'}
+                  {isReset ? 'Recuperar Senha' : isForgotRa ? 'Esqueci meu RA' : isSignUp ? 'Criar Conta' : isLocked ? 'Conta Bloqueada' : 'Entrar'}
                 </h1>
                 <p className="text-xs text-muted-foreground">
                   {isReset
                     ? 'Digite seu RA ou e-mail para recuperacao'
+                    : isForgotRa
+                    ? 'Recuperação de Identificador Acadêmico'
                     : isSignUp
                     ? 'Crie sua conta para comecar'
                     : isLocked
@@ -422,7 +426,35 @@ export default function LoginPage() {
                 </p>
               </div>
 
-              {isReset ? (
+              {isForgotRa ? (
+                <div className="space-y-4">
+                  <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-3">
+                    <p className="text-xs leading-relaxed text-foreground/80">
+                      Caso tenha esquecido seu Registro Acadêmico (RA), você pode encontrá-lo no seu portal da UNIP ou no comprovante de matrícula.
+                    </p>
+                    <div className="space-y-2">
+                      <Button 
+                        variant="outline" 
+                        className="w-full text-xs gap-2"
+                        onClick={() => window.open('https://www.unip.br', '_blank')}
+                      >
+                        <BookOpen className="h-3.5 w-3.5" />
+                        Acessar Portal UNIP
+                      </Button>
+                      <Button 
+                        className="w-full text-xs gap-2"
+                        onClick={() => window.location.href = 'mailto:decodeanalytics@outlook.com.br?subject=Recuperação de RA - Decode Academy'}
+                      >
+                        <Shield className="h-3.5 w-3.5" />
+                        Falar com Suporte Decode
+                      </Button>
+                    </div>
+                  </div>
+                  <button type="button" onClick={() => setIsForgotRa(false)} className="w-full text-center text-sm text-muted-foreground hover:text-foreground smooth-all">
+                    Voltar ao login
+                  </button>
+                </div>
+              ) : isReset ? (
                 <form onSubmit={handleResetPassword} className="space-y-4">
                   <div className="space-y-1.5">
                     <Label htmlFor="resetEmail" className="text-xs text-muted-foreground">RA ou e-mail</Label>
@@ -440,9 +472,20 @@ export default function LoginPage() {
                 <>
                   <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="space-y-1.5">
-                      <Label htmlFor="identifier" className="text-xs text-muted-foreground">
-                        RA ou e-mail
-                      </Label>
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="identifier" className="text-xs text-muted-foreground">
+                          RA ou e-mail
+                        </Label>
+                        {!isSignUp && (
+                          <button 
+                            type="button" 
+                            onClick={() => setIsForgotRa(true)}
+                            className="text-[10px] text-primary hover:underline font-medium"
+                          >
+                            Esqueci meu RA
+                          </button>
+                        )}
+                      </div>
                       <Input
                         id="identifier"
                         type="text"

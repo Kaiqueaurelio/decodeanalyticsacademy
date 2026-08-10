@@ -32,17 +32,27 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.46.5',
+    version: '4.46.6',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.46.5-release',
-    commitMessage: 'Release v4.46.5: Enhanced Auth Messages & Version Bump'
+    commit: 'v4.46.6-release',
+    commitMessage: 'Release v4.46.6: RA Recovery & Support Flow'
   };
 }
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: '4.46.6',
+    date: '2026-08-10',
+    title: 'Recuperação de RA & Fluxo de Suporte',
+    changes: [
+      { kind: 'feature', text: 'Implementada a opção "Esqueci meu RA" com fluxo de recuperação e contato direto com o suporte.' },
+      { kind: 'improvement', text: 'Adicionada máscara de formatação automática para campos de RA no login.' },
+      { kind: 'improvement', text: 'Refinada a lógica de auditoria visual para mascarar prompts de sistema complexos.' }
+    ]
+  },
   {
     version: '4.46.5',
     date: '2026-08-10',
