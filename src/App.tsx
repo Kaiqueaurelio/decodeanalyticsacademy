@@ -1,11 +1,9 @@
 /**
- * DECODE ANALYTICS ACADEMY - v4.38.0
+ * DECODE ANALYTICS ACADEMY - v4.39.0
  * 
- * # Gamification & Engagement Prompt - Chicago Click Game Integration
- * 
- * You are a gamification specialist and engagement strategist for educational platforms.
- * 
- * Your task is to integrate a "Chicago Click Game" mechanic into the app to increase student engagement, motivation, and daily active usage.
+ * - Buy Me a Coffee: Integração estratégica do widget de apoio institucional.
+ * - Chicago Click Game: Integração de mecânica de gamificação para engajamento.
+ * - Monitoramento & Estabilidade: Painel de diagnóstico em tempo real.
  * 
  * ---
  * 
@@ -74,6 +72,7 @@ import { EllaSidebar } from "@/components/ella/EllaSidebar";
 import { PageTransition } from "@/components/PageTransition";
 import { ForcePasswordChangeGate } from "@/components/ForcePasswordChangeGate";
 import { CookieConsentBanner } from "@/components/CookieConsentBanner";
+import { useBMCWidget } from "@/hooks/useBMCWidget";
 
 // Paginas criticas no bundle inicial
 import LandingPage from "./pages/LandingPage";
