@@ -32,16 +32,26 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.38.0',
+    version: '4.39.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.10.0-release',
-    commitMessage: 'Release v4.10.0: Autoridade e Transparência Acadêmica'
+    commit: 'v4.39.0-release',
+    commitMessage: 'Release v4.39.0: Integração Buy Me a Coffee Widget'
   };
 }
 
 export const CHANGELOG: Release[] = [
+  {
+    version: '4.39.0',
+    date: '2026-08-11',
+    title: 'Apoio à Missão: Widget Global BMC',
+    major: false,
+    changes: [
+      { kind: 'feature', text: 'Integrado o widget flutuante "Buy Me a Coffee" de forma estratégica no App Shell.' },
+      { kind: 'improvement', text: 'Configuração de branding visual ciano/roxo sincronizada com o tema Decode Academy.' },
+    ],
+  },
   {
     version: '4.38.5',
     date: '2026-08-11',
