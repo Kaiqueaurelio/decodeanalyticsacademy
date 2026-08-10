@@ -313,6 +313,7 @@ function AnimatedRoutes() {
   const [adminTab, setAdminTab] = React.useState<any>("overview");
   const location = useLocation();
   useAdminCopyPatch();
+  useBMCWidget();
 
   const isPublicPage = ['/', '/login', '/reset-password', '/termos', '/transparencia', '/anuncie', '/patrocine'].includes(location.pathname);
   const isLandingPage = location.pathname === '/';
