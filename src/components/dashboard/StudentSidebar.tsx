@@ -36,6 +36,8 @@ import {
   Newspaper,
   CheckSquare,
   HeartHandshake,
+  Heart,
+  Coffee,
 } from 'lucide-react';
 
 import logoOwl from '@/assets/owl-icon.png';
