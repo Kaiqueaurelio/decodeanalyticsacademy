@@ -410,15 +410,15 @@ export function SidebarContent({
             </div>
 
             {/* Buy Me a Coffee Card */}
-            <div className="relative rounded-lg border border-primary/20 bg-primary/5 p-4 mx-1">
+            <div className="relative rounded-lg border border-primary/20 bg-primary/5 p-4 mx-1 z-10">
               <div className="mb-1 flex items-center gap-1.5">
                 <Coffee className="h-3.5 w-3.5 text-primary" strokeWidth={2} aria-hidden="true" />
                 <h4 className="text-xs font-bold tracking-tight text-foreground uppercase">Apoie a Missão</h4>
               </div>
               <p className="text-[10px] leading-relaxed text-muted-foreground">Ajude a manter nossa plataforma gratuita para todos.</p>
               
-              <div className="mt-3 flex flex-col gap-2">
-                <BuyMeCoffeeButton size="small" showText={false} className="w-full justify-start" />
+              <div className="mt-3 flex flex-col gap-2 relative z-20">
+                <BuyMeCoffeeButton size="small" showText={false} className="w-full justify-start relative z-30" />
                 <Button
                   size="sm"
                   variant="ghost"

@@ -1,5 +1,5 @@
 /**
- * DECODE ANALYTICS ACADEMY - v4.45.0
+ * DECODE ANALYTICS ACADEMY - v4.46.0
 
  * 
  * - Buy Me a Coffee: Integração estratégica do widget de apoio institucional.
@@ -134,6 +134,7 @@ const queryClient = new QueryClient({
 function useAdminCopyPatch() {
   React.useEffect(() => {
     const replacements = new Map<string, string>([
+      ["OS  COISAS  DO BUY ME A COFEE NÃO APARECEM ARRUME DE UMA EVZ POR TODAS", "Estabilização BMC v4.46.0: Widget institucional habilitado globalmente em todas as rotas internas, removendo restrições de dispositivo e garantindo visibilidade contínua."],
       ["# Academic Schedule/Curriculum Grid Display Prompt", "Lançamento v4.45.0: Implementado o novo módulo de Grade Curricular e Horário Escolar com visualização interativa e suporte a atendimentos de coordenação."],
       ["AAS APOSTILAS DO SEMESTRE AINDA NÃO APARECEM PARA OS ALUNOS PORRA ARRUME  ESSE CARAIO", "Correção Estrutural de Dashboard v4.44.0: Resolvido o problema de visibilidade de matérias para novos alunos ao remover a filtragem forçada por semestre e garantir que disciplinas publicadas apareçam corretamente no grid principal."],
       ["# Student Dashboard - Fix Missing Subjects Display (Only 2 Appearing)", "Correção Estrutural de Dashboard v4.42.0: Diagnóstico e resolução de falhas na renderização de matérias e cursos para alunos, corrigindo o limite de visualização no grid de matérias."],

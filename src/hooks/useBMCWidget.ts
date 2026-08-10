@@ -19,14 +19,13 @@ export function useBMCWidget() {
     const isResetPassword = location.pathname === '/reset-password';
     
     // Lista de rotas permitidas (Dashboard, Suporte, Perfil, Biblioteca)
-    const allowedRoutes = ['/dashboard', '/apoie', '/profile', '/biblioteca', '/exercicios', '/cursos'];
-    const isAllowedRoute = allowedRoutes.some(route => location.pathname.startsWith(route));
+    const allowedRoutes = ['/dashboard', '/apoie', '/profile', '/biblioteca', '/exercicios', '/cursos', '/livros', '/calculadora', '/noticias', '/performance', '/horarios'];
+    const isAllowedRoute = allowedRoutes.some(route => location.pathname === route || location.pathname.startsWith(route + '/'));
 
     // O widget deve carregar apenas se:
     // - Usuário logado
-    // - NÃO for mobile (conforme solicitado: "apenas em telas desktop")
     // - Rota permitida (não landing/login)
-    const shouldShow = user && !isMobile && isAllowedRoute;
+    const shouldShow = user && isAllowedRoute;
 
     // Se não deve mostrar, garante que o widget seja removido
     if (!shouldShow) {
@@ -59,6 +58,7 @@ export function useBMCWidget() {
     document.body.appendChild(script);
 
     return () => {
+
       // Opcional: remover ao mudar de rota se sair das permitidas
       // Mas o useEffect já roda ao mudar location.pathname se o incluirmos nas deps
     };

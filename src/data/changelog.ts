@@ -32,16 +32,27 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.45.0',
+    version: '4.46.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.45.0-release',
-    commitMessage: 'Release v4.45.0: Novo Módulo de Grade Curricular'
+    commit: 'v4.46.0-release',
+    commitMessage: 'Release v4.46.0: Buy Me a Coffee Fix'
   };
 }
 
+
 export const CHANGELOG: Release[] = [
+  {
+    version: '4.46.0',
+    date: '2026-08-10',
+    title: 'Estabilização BMC & Visibilidade Global',
+    changes: [
+      { kind: 'fix', text: 'Widget "Buy Me a Coffee" habilitado em todas as rotas acadêmicas internas.' },
+      { kind: 'improvement', text: 'Removida restrição mobile do widget de suporte, permitindo doações via celular.' },
+      { kind: 'security', text: 'Refinamento de política de injeção de scripts externos para assets BMC.' }
+    ]
+  },
   {
     version: '4.45.0',
     date: '2026-08-10',
