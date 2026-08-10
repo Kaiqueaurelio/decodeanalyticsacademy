@@ -890,9 +890,13 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
                           <Badge variant="outline" className={cn(
                             "text-[10px] py-0 px-1.5 uppercase tracking-tighter",
                             (a as any).isPlaceholder ? "bg-primary/20 text-primary border-primary/20" : 
-                            a.published ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                            a.status === 'liberada' ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : 
+                            a.status === 'em_manutencao' ? "bg-amber-500/10 text-amber-500 border-amber-500/20" : 
+                            "bg-destructive/10 text-destructive border-destructive/20"
                           )}>
-                            {(a as any).isPlaceholder ? 'Grade Acadêmica' : a.published ? 'Ativa' : 'Rascunho'}
+                            {(a as any).isPlaceholder ? 'Grade Acadêmica' : 
+                             a.status === 'liberada' ? 'Liberada' : 
+                             a.status === 'em_manutencao' ? 'Manutenção' : 'Bloqueada'}
                           </Badge>
                         </div>
                         <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -922,21 +926,21 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
                       </div>
                       
                       {!(a as any).isPlaceholder && (
-                        <div className="mt-4 pt-3 border-t border-white/5 flex justify-between items-center">
-                          <div className="flex items-center gap-2">
-                            <Switch 
-                              checked={a.published} 
-                              onCheckedChange={() => handleTogglePublish(a)}
-                              disabled={busyId === a.id}
-                              className="scale-75"
-                            />
-                            <span className={cn(
-                              "text-[9px] font-bold uppercase tracking-wider",
-                              a.published ? "text-emerald-500" : "text-amber-500"
-                            )}>
-                              {a.published ? 'Visível' : 'Oculto'}
-                            </span>
-                          </div>
+                        <div className="mt-4 pt-3 border-t border-white/5 flex justify-between items-center gap-2">
+                          <Select 
+                            value={a.status || (a.published ? 'liberada' : 'bloqueada')} 
+                            onValueChange={(v) => handleStatusChange(a, v as any)}
+                            disabled={busyId === a.id}
+                          >
+                            <SelectTrigger className="h-7 w-[120px] bg-white/5 border-white/10 rounded-lg text-[9px] font-bold uppercase tracking-wider">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="bg-popover/90 backdrop-blur-xl border-white/10 rounded-xl">
+                              <SelectItem value="liberada" className="text-[10px] text-emerald-500 font-bold">LIBERADA</SelectItem>
+                              <SelectItem value="bloqueada" className="text-[10px] text-destructive font-bold">BLOQUEADA</SelectItem>
+                              <SelectItem value="em_manutencao" className="text-[10px] text-amber-500 font-bold">MANUTENÇÃO</SelectItem>
+                            </SelectContent>
+                          </Select>
                           
                           <Button 
                             variant="default" 
