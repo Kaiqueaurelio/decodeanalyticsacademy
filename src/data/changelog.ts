@@ -34,7 +34,7 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.33.0',
+    version: '4.34.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
@@ -44,6 +44,16 @@ export function getBuildInfo() {
 }
 
 export const CHANGELOG: Release[] = [
+  {
+    version: '4.34.0',
+    date: '2026-08-10',
+    title: 'Proteção de Rota Institucional',
+    major: false,
+    changes: [
+      { kind: 'security', text: 'Rota /apoie protegida: Acesso agora exclusivo para alunos autenticados, prevenindo exposição pública da página de suporte.' },
+      { kind: 'fix', text: 'Correção de mapeamento de auditoria interna para refletir a nova política de acesso da página institucional.' },
+    ]
+  },
   {
     version: '4.33.0',
     date: '2026-08-10',
