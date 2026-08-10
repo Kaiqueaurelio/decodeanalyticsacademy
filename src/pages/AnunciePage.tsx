@@ -212,11 +212,11 @@ export default function AnunciePage() {
             // para empresas e parceiros
           </p>
           <h1 className="font-display text-3xl leading-[1.1] sm:text-5xl">
-            Anuncie ou patrocine a Decode Analytics Academy
+            Anuncie ou seja um parceiro da Decode Analytics Academy
           </h1>
           <p className="mt-4 text-sm leading-relaxed text-muted-foreground sm:text-base">
             O aluno nunca paga para estudar aqui. A plataforma se mantém com marcas que escolhem
-            apoiar educação gratuita — e ganham presença num ambiente de atenção real, sem
+            ser um parceiro da educação gratuita — e ganham presença num ambiente de atenção real, sem
             rastreamento e sem poluição visual.
           </p>
         </header>

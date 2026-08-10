@@ -34,7 +34,7 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.31.0',
+    version: '4.32.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
@@ -44,6 +44,17 @@ export function getBuildInfo() {
 }
 
 export const CHANGELOG: Release[] = [
+  {
+    version: '4.32.0',
+    date: '2026-08-10',
+    title: 'Consolidação de Branding Acadêmico',
+    major: true,
+    changes: [
+      { kind: 'improvement', text: 'Varredura de interface: Substituídos termos "Patrocinador/Apoio" por "Parceiro" em todo o sistema.' },
+      { kind: 'improvement', text: 'Redesign da página de suporte: Removido sistema de doação PIX/Link, mantendo foco na transparência da missão.' },
+      { kind: 'security', text: 'Limpeza de logs de auditoria visual para refletir a nova semântica institucional.' },
+    ]
+  },
   {
     version: '4.31.0',
     date: '2026-08-10',
