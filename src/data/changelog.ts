@@ -32,12 +32,12 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.47.1',
+    version: '4.48.1',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.47.1-release',
-    commitMessage: 'Release v4.47.1: Curriculum Data Reset (OS & Mobile)'
+    commit: 'v4.48.1-release',
+    commitMessage: 'Release v4.48.1: 6th Semester Content Visibility Fix'
   };
 }
 
