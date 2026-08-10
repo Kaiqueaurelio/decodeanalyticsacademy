@@ -31,7 +31,7 @@ const HowItWorksSection = lazy(() => import('@/components/landing/HowItWorksSect
 const EllaFeatureSection = lazy(() => import('@/components/landing/EllaFeatureSection').then(m => ({ default: m.EllaFeatureSection })));
 const PlatformEngineSection = lazy(() => import('@/components/landing/PlatformEngineSection').then(m => ({ default: m.PlatformEngineSection })));
 const FaqSection = lazy(() => import('@/components/landing/FaqSection').then(m => ({ default: m.FaqSection })));
-const SponsorsSection = lazy(() => import('@/components/landing/SponsorsSection').then(m => ({ default: m.SponsorsSection })));
+
 
 /**
  * Só monta a seção (e baixa o chunk) quando ela chega perto do viewport.
@@ -873,8 +873,6 @@ export default function LandingPage() {
       {/* ═══ CREATOR / DE ALUNO PARA ALUNO ═══ */}
       <LazySection><CreatorSection /></LazySection>
 
-      {/* ═══ ANUNCIANTES / PATROCINADORES ═══ */}
-      <LazySection><SponsorsSection /></LazySection>
 
       {/* ═══ REDES SOCIAIS + WRITELAB ═══ */}
       <LazySection><SocialAndProjectsSection /></LazySection>
