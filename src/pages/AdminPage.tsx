@@ -82,6 +82,7 @@ import { FreeCoursesManager } from '@/components/admin/FreeCoursesManager';
 import { AdminSponsorsManager } from '@/components/admin/AdminSponsorsManager';
 import { ApostilaExportDialog } from '@/components/admin/ApostilaExportDialog';
 import { TaskManager } from '@/components/admin/TaskManager';
+import { DeploymentStatusPanel } from '@/components/admin/DeploymentStatusPanel';
 
 type Apostila = Tables<'apostilas'>;
 type Exercise = Tables<'exercises'>;
@@ -3542,9 +3543,9 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
               <SmokeTestsPanel />
             )}
 
-            {/* DIAGNOSTICS */}
+            {/* DIAGNOSTICS & STABILITY */}
             {tab === 'diagnostics' && (
-              <DiagnosticsPanel />
+              <DeploymentStatusPanel />
             )}
 
             {/* CHANGELOG */}
