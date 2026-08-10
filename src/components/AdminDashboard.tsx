@@ -29,6 +29,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { getSubjectColor } from '@/lib/subject-colors';
 import { BY_SEMESTER, canonicalSubjectKey, subjectKey } from '@/lib/subject-semester-map';
 import { ensureApostilaExists } from '@/lib/create-placeholder-apostila';
+import { logMaintenance } from '@/lib/maintenance-logger';
 
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
@@ -47,6 +48,7 @@ interface Props {
 type ApostilaRow = {
   id: string; title: string; category: string | null;
   published: boolean; created_at: string; updated_at: string;
+  status?: 'liberada' | 'bloqueada' | 'em_manutencao';
   content?: string | null;
 };
 
@@ -135,7 +137,7 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
         supabase.from('apostila_likes').select('id', { count: 'exact', head: true }),
         supabase.from('ads').select('id', { count: 'exact', head: true }),
         supabase.from('apostilas')
-          .select('id,title,category,published,created_at,updated_at,semester,course,cover_url,teacher,content')
+          .select('id,title,category,published,created_at,updated_at,semester,course,cover_url,teacher,content,status')
           .order('title', { ascending: true }), // Agora ordenado por título por padrão para facilitar a busca visual
         supabase.rpc('get_student_rankings', { _limit: 10 }),
         supabase.from('apostila_views').select('viewed_at').gte('viewed_at', since.toISOString()).limit(5000),
@@ -341,14 +343,26 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
 
   const handleTogglePublish = async (a: ApostilaRow) => {
     setBusyId(a.id);
+    const nextPublished = !a.published;
+    const nextStatus = nextPublished ? 'liberada' : 'bloqueada';
+    
     const { error } = await supabase
       .from('apostilas')
-      .update({ published: !a.published })
+      .update({ published: nextPublished, status: nextStatus })
       .eq('id', a.id);
+      
     setBusyId(null);
     if (error) { toast.error('Erro: ' + error.message); return; }
-    setApostilas((prev) => prev.map((x) => x.id === a.id ? { ...x, published: !x.published } : x));
-    toast.success(a.published ? 'Despublicada' : 'Publicada');
+    
+    setApostilas((prev) => prev.map((x) => x.id === a.id ? { ...x, published: nextPublished, status: nextStatus } : x));
+    
+    logMaintenance(
+      a.id, 
+      nextPublished ? 'publish' : 'unpublish', 
+      `Status alterado para ${nextStatus}`
+    );
+    
+    toast.success(nextPublished ? 'Publicada' : 'Despublicada');
   };
 
   const handleEdit = async (a: ApostilaRow) => {
