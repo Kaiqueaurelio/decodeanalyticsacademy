@@ -118,7 +118,7 @@ function useAdminCopyPatch() {
       ["Adicionar uma etapa de aceite obrigatório dos Termos de Uso e da Política de Privacidade durante o cadastro e no login.", "Compliance Legal v4.19.0: Implementada barreira de aceite obrigatório nos fluxos de autenticação (Login/Cadastro), garantindo plena conformidade com as diretrizes da plataforma."],
 
 
-      ["me de o texto aqui no chqt do nosso termo de uso por gentileza", "O texto completo dos Termos de Uso (v4.18.1) foi fornecido no chat e integrado ao sistema de conformidade legal da plataforma. A minuta inclui cláusulas detalhadas sobre pagamentos, suspensão de contas, comunidade e LGPD."],
+      ["Implemente uma rota /apoie protegida, disponível apenas para alunos logados.", "Proteção Acadêmica v4.34.0: Rota /apoie agora é protegida, garantindo que apenas alunos autenticados acessem a página de suporte institucional."],
 
       ["me de os termos de uso que tinhamos no app", "Recuperação de Histórico v4.18.1: A minuta de Termos de Uso atualizada substituiu a versão anterior, consolidando as diretrizes de compliance e segurança da plataforma."],
 
