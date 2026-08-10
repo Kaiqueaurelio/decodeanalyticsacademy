@@ -9,6 +9,7 @@ import { useGamification } from '@/hooks/useGamification';
 import { useExamFocus } from '@/hooks/useExamFocus';
 import { StudentSidebar } from '@/components/dashboard/StudentSidebar';
 import { DashboardTopbar } from '@/components/dashboard/DashboardTopbar';
+import BuyMeCoffeeButton from '@/components/BuyMeCoffeeButton';
 import { HallOfFame } from '@/components/HallOfFame';
 import { HeroGreetingCard } from '@/components/dashboard/HeroGreetingCard';
 import { ActivitiesToDoSection, RecommendedExercisesSection } from '@/components/dashboard/DashboardSections';
