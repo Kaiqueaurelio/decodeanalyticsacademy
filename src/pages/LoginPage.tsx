@@ -472,9 +472,20 @@ export default function LoginPage() {
                 <>
                   <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="space-y-1.5">
-                      <Label htmlFor="identifier" className="text-xs text-muted-foreground">
-                        RA ou e-mail
-                      </Label>
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="identifier" className="text-xs text-muted-foreground">
+                          RA ou e-mail
+                        </Label>
+                        {!isSignUp && (
+                          <button 
+                            type="button" 
+                            onClick={() => setIsForgotRa(true)}
+                            className="text-[10px] text-primary hover:underline font-medium"
+                          >
+                            Esqueci meu RA
+                          </button>
+                        )}
+                      </div>
                       <Input
                         id="identifier"
                         type="text"
