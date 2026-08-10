@@ -8,7 +8,7 @@ import { motion } from 'framer-motion';
 export default function SupportProjectPage() {
   const navigate = useNavigate();
 
-  React.useEffect(() => {
+  useEffect(() => {
     // Injeta o botão customizado do BMC
     const container = document.getElementById('bmc-button-container');
     if (container && !container.hasChildNodes()) {
