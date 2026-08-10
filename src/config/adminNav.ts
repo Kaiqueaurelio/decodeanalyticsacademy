@@ -90,6 +90,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
       { id: 'performance', label: 'Performance', short: 'Perf.', icon: Activity, desc: 'Carregamento e erros de rede', keywords: 'velocidade metrica lentidao' },
       { id: 'diagnostics', label: 'Diagnóstico', short: 'Diag.', icon: AlertCircle, desc: 'Logs de runtime e falhas por rota', keywords: 'erro log debug' },
       { id: 'smoke', label: 'Testes', short: 'Testes', icon: CheckCircle, desc: 'Checklist automático de estabilidade', keywords: 'teste smoke checklist' },
+      { id: 'health-dashboard', label: 'Saúde das Apostilas', short: 'Saúde', icon: Activity, desc: 'Status operacional e histórico', keywords: 'saude dashboard status manutencao historico' },
       { id: 'changelog', label: 'Histórico de Versões', short: 'Histórico', icon: History, desc: 'Tudo que mudou na plataforma', keywords: 'changelog versao novidades' },
       { id: 'diagnostics', label: 'Saúde & Estabilidade', short: 'Estabilidade', icon: Activity, desc: 'Monitoramento de rede e performance', keywords: 'status saude performance rede deploy estabilidade' },
     ],

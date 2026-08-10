@@ -44,6 +44,16 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '4.48.0',
+    date: '2026-08-10',
+    title: 'Monitoramento & Auditoria de Apostilas',
+    changes: [
+      { kind: 'feature', text: 'Lançado o Dashboard de Saúde das Apostilas para acompanhamento de status (liberada, bloqueada, manutenção).' },
+      { kind: 'feature', text: 'Implementado sistema de Auditoria de Manutenção (maintenance_logs) para rastrear quem e quando alterou cada material.' },
+      { kind: 'improvement', text: 'Integrada nova aba no Painel Administrativo para gestão centralizada de integridade de conteúdo.' }
+    ]
+  },
+  {
     version: '4.47.2',
     date: '2026-08-10',
     title: 'Manutenção de Conteúdo do 6º Semestre',

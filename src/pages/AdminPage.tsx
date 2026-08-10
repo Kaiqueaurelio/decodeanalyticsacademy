@@ -83,6 +83,7 @@ import { AdminSponsorsManager } from '@/components/admin/AdminSponsorsManager';
 import { ApostilaExportDialog } from '@/components/admin/ApostilaExportDialog';
 import { TaskManager } from '@/components/admin/TaskManager';
 import { DeploymentStatusPanel } from '@/components/admin/DeploymentStatusPanel';
+import { ApostilaHealthDashboard } from '@/components/admin/ApostilaHealthDashboard';
 
 type Apostila = Tables<'apostilas'>;
 type Exercise = Tables<'exercises'>;
@@ -213,7 +214,7 @@ function PhotoroomStudio() {
   );
 }
 
-type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements' | 'calendar' | 'testimonials' | 'ai' | 'performance' | 'smoke' | 'diagnostics' | 'ads' | 'ads-chat' | 'social' | 'rss' | 'courses' | 'changelog' | 'leads' | 'ella-audit' | 'security-alerts' | 'sponsors' | 'tasks' | 'photoroom' | 'edit' | 'review' | 'enem-apostilas' | 'cc-apostilas';
+type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements' | 'calendar' | 'testimonials' | 'ai' | 'performance' | 'smoke' | 'diagnostics' | 'ads' | 'ads-chat' | 'social' | 'rss' | 'courses' | 'changelog' | 'leads' | 'ella-audit' | 'security-alerts' | 'sponsors' | 'tasks' | 'photoroom' | 'edit' | 'review' | 'enem-apostilas' | 'cc-apostilas' | 'health-dashboard';
 
 const ACCEPT_MAP: Record<string, string> = {
   pdf: '.pdf', image: 'image/*', gif: '.gif,image/gif',
