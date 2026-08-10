@@ -45,6 +45,17 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '4.37.0',
+    date: '2026-08-11',
+    title: 'Monitoramento & Estabilidade v2',
+    major: true,
+    changes: [
+      { kind: 'feature', text: 'Implementado Painel de Saúde & Estabilidade (DeploymentStatusPanel) com métricas em tempo real.' },
+      { kind: 'improvement', text: 'Otimização do Pipeline de Deploy com monitoramento de latência e performance de rede.' },
+      { kind: 'security', text: 'Refinamento de RLS e auditoria de integridade para a versão 4.37.0.' },
+    ]
+  },
+  {
     version: '4.36.5',
     date: '2026-08-10',
     title: 'Certificação de Integridade Acadêmica',
