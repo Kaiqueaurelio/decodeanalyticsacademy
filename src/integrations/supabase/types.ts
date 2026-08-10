@@ -2832,6 +2832,14 @@ export type Database = {
         Args: { _exercise_id: string; _selected_answer: string }
         Returns: Json
       }
+      check_simulado_answer: {
+        Args: {
+          _exercise_id: string
+          _selected_answer: string
+          _simulado_id: string
+        }
+        Returns: Json
+      }
       complete_fifth_semester_apostilas: {
         Args: { _user_id: string }
         Returns: undefined
