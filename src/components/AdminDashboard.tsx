@@ -29,6 +29,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { getSubjectColor } from '@/lib/subject-colors';
 import { BY_SEMESTER, canonicalSubjectKey, subjectKey } from '@/lib/subject-semester-map';
 import { ensureApostilaExists } from '@/lib/create-placeholder-apostila';
+import { logMaintenance } from '@/lib/maintenance-logger';
 
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
@@ -47,6 +48,7 @@ interface Props {
 type ApostilaRow = {
   id: string; title: string; category: string | null;
   published: boolean; created_at: string; updated_at: string;
+  status?: 'liberada' | 'bloqueada' | 'em_manutencao';
   content?: string | null;
 };
 
@@ -135,7 +137,7 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
         supabase.from('apostila_likes').select('id', { count: 'exact', head: true }),
         supabase.from('ads').select('id', { count: 'exact', head: true }),
         supabase.from('apostilas')
-          .select('id,title,category,published,created_at,updated_at,semester,course,cover_url,teacher,content')
+          .select('id,title,category,published,created_at,updated_at,semester,course,cover_url,teacher,content,status')
           .order('title', { ascending: true }), // Agora ordenado por título por padrão para facilitar a busca visual
         supabase.rpc('get_student_rankings', { _limit: 10 }),
         supabase.from('apostila_views').select('viewed_at').gte('viewed_at', since.toISOString()).limit(5000),
@@ -341,14 +343,49 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
 
   const handleTogglePublish = async (a: ApostilaRow) => {
     setBusyId(a.id);
+    const nextPublished = !a.published;
+    const nextStatus = nextPublished ? 'liberada' : 'bloqueada';
+    
     const { error } = await supabase
       .from('apostilas')
-      .update({ published: !a.published })
+      .update({ published: nextPublished, status: nextStatus })
       .eq('id', a.id);
+      
     setBusyId(null);
     if (error) { toast.error('Erro: ' + error.message); return; }
-    setApostilas((prev) => prev.map((x) => x.id === a.id ? { ...x, published: !x.published } : x));
-    toast.success(a.published ? 'Despublicada' : 'Publicada');
+    
+    setApostilas((prev) => prev.map((x) => x.id === a.id ? { ...x, published: nextPublished, status: nextStatus } : x));
+    
+    logMaintenance(
+      a.id, 
+      nextPublished ? 'publish' : 'unpublish', 
+      `Status alterado para ${nextStatus}`
+    );
+    
+    toast.success(nextPublished ? 'Publicada' : 'Despublicada');
+  };
+  
+  const handleStatusChange = async (a: ApostilaRow, status: 'liberada' | 'bloqueada' | 'em_manutencao') => {
+    setBusyId(a.id);
+    const isPublished = status === 'liberada';
+    
+    const { error } = await supabase
+      .from('apostilas')
+      .update({ status, published: isPublished })
+      .eq('id', a.id);
+      
+    setBusyId(null);
+    if (error) { toast.error('Erro: ' + error.message); return; }
+    
+    setApostilas((prev) => prev.map((x) => x.id === a.id ? { ...x, status, published: isPublished } : x));
+    
+    logMaintenance(
+      a.id, 
+      'update_status', 
+      `Status alterado para ${status}`
+    );
+    
+    toast.success(`Status da apostila alterado para ${status.replace('_', ' ')}`);
   };
 
   const handleEdit = async (a: ApostilaRow) => {
@@ -853,9 +890,13 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
                           <Badge variant="outline" className={cn(
                             "text-[10px] py-0 px-1.5 uppercase tracking-tighter",
                             (a as any).isPlaceholder ? "bg-primary/20 text-primary border-primary/20" : 
-                            a.published ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                            a.status === 'liberada' ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : 
+                            a.status === 'em_manutencao' ? "bg-amber-500/10 text-amber-500 border-amber-500/20" : 
+                            "bg-destructive/10 text-destructive border-destructive/20"
                           )}>
-                            {(a as any).isPlaceholder ? 'Grade Acadêmica' : a.published ? 'Ativa' : 'Rascunho'}
+                            {(a as any).isPlaceholder ? 'Grade Acadêmica' : 
+                             a.status === 'liberada' ? 'Liberada' : 
+                             a.status === 'em_manutencao' ? 'Manutenção' : 'Bloqueada'}
                           </Badge>
                         </div>
                         <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -885,21 +926,21 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
                       </div>
                       
                       {!(a as any).isPlaceholder && (
-                        <div className="mt-4 pt-3 border-t border-white/5 flex justify-between items-center">
-                          <div className="flex items-center gap-2">
-                            <Switch 
-                              checked={a.published} 
-                              onCheckedChange={() => handleTogglePublish(a)}
-                              disabled={busyId === a.id}
-                              className="scale-75"
-                            />
-                            <span className={cn(
-                              "text-[9px] font-bold uppercase tracking-wider",
-                              a.published ? "text-emerald-500" : "text-amber-500"
-                            )}>
-                              {a.published ? 'Visível' : 'Oculto'}
-                            </span>
-                          </div>
+                        <div className="mt-4 pt-3 border-t border-white/5 flex justify-between items-center gap-2">
+                          <Select 
+                            value={a.status || (a.published ? 'liberada' : 'bloqueada')} 
+                            onValueChange={(v) => handleStatusChange(a, v as any)}
+                            disabled={busyId === a.id}
+                          >
+                            <SelectTrigger className="h-7 w-[120px] bg-white/5 border-white/10 rounded-lg text-[9px] font-bold uppercase tracking-wider">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="bg-popover/90 backdrop-blur-xl border-white/10 rounded-xl">
+                              <SelectItem value="liberada" className="text-[10px] text-emerald-500 font-bold">LIBERADA</SelectItem>
+                              <SelectItem value="bloqueada" className="text-[10px] text-destructive font-bold">BLOQUEADA</SelectItem>
+                              <SelectItem value="em_manutencao" className="text-[10px] text-amber-500 font-bold">MANUTENÇÃO</SelectItem>
+                            </SelectContent>
+                          </Select>
                           
                           <Button 
                             variant="default" 

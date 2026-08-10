@@ -774,6 +774,7 @@ export type Database = {
           content: string
           created_at: string
           created_by: string | null
+          created_by_name: string | null
           id: string
           title: string | null
         }
@@ -782,6 +783,7 @@ export type Database = {
           content: string
           created_at?: string
           created_by?: string | null
+          created_by_name?: string | null
           id?: string
           title?: string | null
         }
@@ -790,6 +792,7 @@ export type Database = {
           content?: string
           created_at?: string
           created_by?: string | null
+          created_by_name?: string | null
           id?: string
           title?: string | null
         }
@@ -851,6 +854,7 @@ export type Database = {
           reformatted_at: string | null
           semester: number | null
           source_type: string | null
+          status: Database["public"]["Enums"]["apostila_status"] | null
           teacher: string | null
           title: string
           updated_at: string
@@ -870,6 +874,7 @@ export type Database = {
           reformatted_at?: string | null
           semester?: number | null
           source_type?: string | null
+          status?: Database["public"]["Enums"]["apostila_status"] | null
           teacher?: string | null
           title: string
           updated_at?: string
@@ -889,6 +894,7 @@ export type Database = {
           reformatted_at?: string | null
           semester?: number | null
           source_type?: string | null
+          status?: Database["public"]["Enums"]["apostila_status"] | null
           teacher?: string | null
           title?: string
           updated_at?: string
@@ -1602,6 +1608,44 @@ export type Database = {
           workload?: string
         }
         Relationships: []
+      }
+      maintenance_logs: {
+        Row: {
+          action: string
+          apostila_id: string | null
+          created_at: string | null
+          details: string | null
+          id: string
+          user_id: string | null
+          user_name: string | null
+        }
+        Insert: {
+          action: string
+          apostila_id?: string | null
+          created_at?: string | null
+          details?: string | null
+          id?: string
+          user_id?: string | null
+          user_name?: string | null
+        }
+        Update: {
+          action?: string
+          apostila_id?: string | null
+          created_at?: string | null
+          details?: string | null
+          id?: string
+          user_id?: string | null
+          user_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "maintenance_logs_apostila_id_fkey"
+            columns: ["apostila_id"]
+            isOneToOne: false
+            referencedRelation: "apostilas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       material_favorites: {
         Row: {
@@ -2949,6 +2993,7 @@ export type Database = {
         | "login"
         | "logout"
         | "unauthorized_access"
+      apostila_status: "liberada" | "bloqueada" | "em_manutencao"
       app_role: "admin" | "user"
       material_type:
         | "pdf"
@@ -3097,6 +3142,7 @@ export const Constants = {
         "logout",
         "unauthorized_access",
       ],
+      apostila_status: ["liberada", "bloqueada", "em_manutencao"],
       app_role: ["admin", "user"],
       material_type: [
         "pdf",
