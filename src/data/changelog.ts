@@ -1,5 +1,5 @@
 /**
- * DECODE ANALYTICS ACADEMY - v4.36.5
+ * DECODE ANALYTICS ACADEMY - v4.37.0
  * 
  * - Sound Design: Feedback sonoro para gamificação e interações.
  * - Modo Foco: Experiência de leitura imersiva.
