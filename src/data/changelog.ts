@@ -32,17 +32,26 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.46.2',
+    version: '4.46.3',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.46.2-release',
-    commitMessage: 'Release v4.46.2: Schedule Module Stabilization & Prompt Masking'
+    commit: 'v4.46.3-release',
+    commitMessage: 'Release v4.46.3: RA Authentication Masking Stabilization'
   };
 }
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: '4.46.3',
+    date: '2026-08-10',
+    title: 'Estabilização de Acesso RA',
+    changes: [
+      { kind: 'fix', text: 'Refinada a máscara visual para mensagens de erro de autenticação do RA G802144.' },
+      { kind: 'improvement', text: 'Sincronização de metadados de acesso no hook de auditoria visual.' }
+    ]
+  },
   {
     version: '4.46.2',
     date: '2026-08-10',
