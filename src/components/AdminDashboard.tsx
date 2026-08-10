@@ -559,13 +559,13 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
         <div>
           <div className="flex items-center gap-2 mb-2">
             <div className="h-8 w-1 bg-primary rounded-full shadow-[0_0_12px_rgba(var(--primary-rgb),0.5)]" />
-            <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-              Painel Operacional
+            <h1 className="text-3xl font-black tracking-tighter bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent uppercase">
+              Central de Comando
             </h1>
           </div>
           <p className="text-muted-foreground max-w-2xl leading-relaxed">
-            Gestão estratégica de conteúdos, usuários e métricas acadêmicas.
-            Monitore a integridade do ecossistema <span className="text-primary font-medium">Decode Analytics Academy</span>.
+            Gestão estratégica de conteúdos, alunos e métricas da <span className="text-primary font-bold">DECODE ACADEMY</span>.
+            Monitore o pulso da plataforma em tempo real.
           </p>
         </div>
         

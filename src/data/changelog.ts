@@ -32,17 +32,37 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.48.3',
+    version: '4.48.5',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.48.3-release',
-    commitMessage: 'Release v4.48.3: Fullscreen Editor Experience'
+    commit: 'v4.48.5-release',
+    commitMessage: 'Release v4.48.5: UX Audit & Desktop Refinement'
   };
 }
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: '4.48.5',
+    date: '2026-08-10',
+    title: 'Auditoria de UX & Refinamento Acadêmico',
+    changes: [
+      { kind: 'improvement', text: 'Realizada auditoria completa de UX sob a perspectiva do aluno administrador (v4.48.5).' },
+      { kind: 'improvement', text: 'Refinada a hierarquia visual e espaçamento nos cards de apostilas para melhor leitura em desktops.' },
+      { kind: 'improvement', text: 'Otimizados os contrastes de cores nos widgets do dashboard para reduzir a fadiga visual.' },
+      { kind: 'fix', text: 'Ajustada a persistência de estados de auditoria visual global no roteamento.' }
+    ]
+  },
+  {
+    version: '4.48.4',
+    date: '2026-08-10',
+    title: 'Estabilização de Responsividade Desktop',
+    changes: [
+      { kind: 'improvement', text: 'Ajustes finos na sidebar administrativa para prevenir sobreposição em resoluções 1366x768.' },
+      { kind: 'fix', text: 'Correção de alinhamento no header do editor fullscreen.' }
+    ]
+  },
   {
     version: '4.48.3',
     date: '2026-08-10',
