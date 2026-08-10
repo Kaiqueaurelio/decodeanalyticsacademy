@@ -282,7 +282,14 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <AdBanner position="inline" />
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <AdBanner position="inline" />
+            </div>
+            <div className="flex shrink-0 items-center justify-center p-2 rounded-2xl bg-primary/5 border border-primary/10">
+              <BuyMeCoffeeButton variant="minimal" size="small" showText={false} />
+            </div>
+          </div>
 
           <Reveal from="bottom" delay={10}>
             <HeroGreetingCard
