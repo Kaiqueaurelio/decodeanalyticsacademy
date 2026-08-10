@@ -30,6 +30,7 @@ export function useBMCWidget() {
 
     // Se não deve mostrar, garante que o widget seja removido
     if (!shouldShow) {
+      console.log("[BMC] Removing widget - route not allowed or user signed out:", location.pathname);
       const widget = document.getElementById('bmc-wbtn');
       const container = document.querySelector('.bmc-wbtn-container');
       const script = document.querySelector('script[data-name="BMC-Widget"]');
@@ -40,7 +41,12 @@ export function useBMCWidget() {
     }
 
     // 2. Evita duplicidade
-    if (document.querySelector('script[data-name="BMC-Widget"]')) return;
+    if (document.querySelector('script[data-name="BMC-Widget"]')) {
+      console.log("[BMC] Script already injected");
+      return;
+    }
+
+    console.log("[BMC] Injecting widget script for route:", location.pathname);
 
     // 3. Injeção do Script
     const script = document.createElement('script');
@@ -55,6 +61,9 @@ export function useBMCWidget() {
     script.setAttribute('data-x_margin', '18');
     script.setAttribute('data-y_margin', '18');
     script.async = true;
+    
+    script.onload = () => console.log("[BMC] Widget script loaded successfully");
+    script.onerror = (err) => console.error("[BMC] Error loading widget script:", err);
 
     document.body.appendChild(script);
 
