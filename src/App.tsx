@@ -116,6 +116,7 @@ const NewsPage = lazy(() => import("./pages/NewsPage"));
 const OAuthConsentPage = lazy(() => import("./pages/OAuthConsentPage"));
 const TransparencyPage = lazy(() => import("./pages/TransparencyPage"));
 const SupportProjectPage = lazy(() => import("./pages/SupportProjectPage"));
+const SchedulePage = lazy(() => import("./pages/SchedulePage"));
 
 
 
