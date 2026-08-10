@@ -307,8 +307,8 @@ function AdminSidebar({ tab, setTab, stats, sidebarOpen, setSidebarOpen }: {
                 <LayoutDashboard className="h-5 w-5 text-primary-foreground" />
               </button>
               <div>
-                <h1 className="text-sm font-bold text-foreground">Admin Panel</h1>
-                <p className="text-[10px] text-muted-foreground">Decode Analytics</p>
+                <h1 className="text-sm font-bold text-foreground">Painel Admin</h1>
+                <p className="text-[10px] text-muted-foreground truncate max-w-[120px]">Decode Analytics Academy</p>
               </div>
             </div>
             <Button size="icon" variant="ghost" className="lg:hidden h-8 w-8" onClick={() => setSidebarOpen(false)}>

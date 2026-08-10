@@ -297,10 +297,15 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
         if (done) return;
         if (entries[0]?.isIntersecting) {
           done = true;
-          requestAnimationFrame(() => setVisibleCount((c) => c + PAGE_SIZE));
+          // Use requestIdleCallback or setTimeout to avoid layout thrashing during scroll
+          if ('requestIdleCallback' in window) {
+            (window as any).requestIdleCallback(() => setVisibleCount((c) => c + PAGE_SIZE));
+          } else {
+            setTimeout(() => setVisibleCount((c) => c + PAGE_SIZE), 1);
+          }
         }
       },
-      { root: null, rootMargin: '600px 0px', threshold: 0 },
+      { root: null, rootMargin: '800px 0px', threshold: 0 },
     );
     observer.observe(el);
     return () => observer.disconnect();
