@@ -2682,9 +2682,12 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
 
                 {/* Edit Apostila Dialog */}
                 <Dialog open={!!editingApostila} onOpenChange={(v) => { if (!v) { setEditingApostila(null); setEditExerciseMode('individual'); setEditAiExercises([]); setEditBulkText(''); } }}>
-                  <DialogContent className="max-w-5xl w-[calc(100vw-1rem)] sm:w-[calc(100vw-2rem)] max-h-[95dvh] sm:max-h-[92vh] p-0 gap-0 flex flex-col overflow-hidden">
+                  <DialogContent className="max-w-[100vw] w-screen h-screen max-h-screen p-0 gap-0 flex flex-col overflow-hidden rounded-none border-none">
                     <DialogHeader className="px-3 sm:px-5 pt-4 sm:pt-5 pb-2 sm:pb-3 border-b border-border shrink-0">
                       <DialogTitle className="text-sm sm:text-base">Editar Apostila</DialogTitle>
+                      <Button variant="ghost" size="icon" className="absolute right-4 top-4 h-8 w-8" onClick={() => { setEditingApostila(null); setEditExerciseMode('individual'); setEditAiExercises([]); setEditBulkText(''); }}>
+                        <X className="h-4 w-4" />
+                      </Button>
                     </DialogHeader>
                     <div className="flex-1 overflow-y-auto px-3 sm:px-5 py-3 sm:py-4 space-y-3 sm:space-y-4">
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">

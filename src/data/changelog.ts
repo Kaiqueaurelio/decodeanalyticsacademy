@@ -32,17 +32,27 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.48.2',
+    version: '4.48.3',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.48.2-release',
-    commitMessage: 'Release v4.48.2: Admin Desktop Responsiveness & Stability'
+    commit: 'v4.48.3-release',
+    commitMessage: 'Release v4.48.3: Fullscreen Editor Experience'
   };
 }
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: '4.48.3',
+    date: '2026-08-10',
+    title: 'Editor de Apostilas em Fullscreen',
+    changes: [
+      { kind: 'improvement', text: 'Implementado modo tela cheia para o editor de apostilas no painel administrativo.' },
+      { kind: 'improvement', text: 'Removidas restrições de margens e bordas no modal de edição para maximizar a área de trabalho no PC.' },
+      { kind: 'fix', text: 'Adicionado botão de fechamento explícito no cabeçalho do editor fullscreen.' }
+    ]
+  },
   {
     version: '4.48.2',
     date: '2026-08-10',
