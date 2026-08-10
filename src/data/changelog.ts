@@ -32,17 +32,25 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.47.0',
+    version: '4.47.1',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.47.0-release',
-    commitMessage: 'Release v4.47.0: Placeholder to Real Apostila Conversion'
+    commit: 'v4.47.1-release',
+    commitMessage: 'Release v4.47.1: Curriculum Data Reset (OS & Mobile)'
   };
 }
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: '4.47.1',
+    date: '2026-08-10',
+    title: 'Limpeza de Conteúdo Antecipado',
+    changes: [
+      { kind: 'content', text: 'Resetado o conteúdo da apostila de Sistemas Operacionais e Mobile (6º Semestre) para aguardar o início oficial das aulas.' }
+    ]
+  },
   {
     version: '4.47.0',
     date: '2026-08-10',
