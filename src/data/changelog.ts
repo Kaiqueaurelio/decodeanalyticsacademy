@@ -32,17 +32,27 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.46.1',
+    version: '4.46.2',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.46.1-release',
-    commitMessage: 'Release v4.46.1: Cold-start Fix for Internal Server Error'
+    commit: 'v4.46.2-release',
+    commitMessage: 'Release v4.46.2: Schedule Module Stabilization & Prompt Masking'
   };
 }
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: '4.46.2',
+    date: '2026-08-10',
+    title: 'Estabilização de Grade Curricular',
+    changes: [
+      { kind: 'fix', text: 'Validado o carregamento do módulo de horários e grade acadêmica.' },
+      { kind: 'improvement', text: 'Implementada lógica de substituição de texto por prefixo para mascarar prompts de sistema longos.' },
+      { kind: 'security', text: 'Reforço na camada de auditoria visual para evitar exposição de prompts de engenharia.' }
+    ]
+  },
   {
     version: '4.46.1',
     date: '2026-08-10',
