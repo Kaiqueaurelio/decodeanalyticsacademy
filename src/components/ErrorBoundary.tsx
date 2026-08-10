@@ -128,9 +128,15 @@ class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       const isCacheError = this.state.isCacheError;
+      
+      // Silently handle chunk/cache errors by reloading without showing the UI
+      if (isCacheError && this.state.isRecovering) {
+        return null;
+      }
+
       const title = isCacheError ? 'Atualizando o app' : 'Algo deu errado';
       const description = isCacheError
-        ? 'Uma versão antiga ficou presa no cache do navegador. O app vai limpar esses arquivos e abrir a versão nova.'
+        ? 'Estamos preparando a nova versão para você. O app irá recarregar em instantes.'
         : 'O app encontrou um erro inesperado. O log foi registrado e nossa equipe será notificada.';
       const buttonLabel = this.state.isRecovering ? 'Atualizando...' : 'Tentar novamente';
 

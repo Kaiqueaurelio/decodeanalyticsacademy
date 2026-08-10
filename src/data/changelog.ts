@@ -45,6 +45,16 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '4.28.0',
+    date: '2026-08-10',
+    title: 'Atualização Silenciosa & UX de Recuperação',
+    major: false,
+    changes: [
+      { kind: 'fix', text: 'Implementado recarregamento silencioso para erros de chunk/cache, removendo a tela de aviso intrusiva.' },
+      { kind: 'improvement', text: 'Refinada a comunicação de erros na ErrorBoundary para ser menos técnica e mais direta.' },
+    ]
+  },
+  {
     version: '4.27.0',
     date: '2026-08-10',
     title: 'Limpeza Total de Apoio na Landing Page',

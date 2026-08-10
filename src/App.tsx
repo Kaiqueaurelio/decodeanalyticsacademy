@@ -1,5 +1,5 @@
 /**
- * DECODE ANALYTICS ACADEMY - v4.27.0
+ * DECODE ANALYTICS ACADEMY - v4.28.0
  * 
 
 
@@ -104,6 +104,7 @@ const queryClient = new QueryClient({
 function useAdminCopyPatch() {
   React.useEffect(() => {
     const replacements = new Map<string, string>([
+      ["Verifique o erro que está fazendo com que o app está colocando, atualizando o app. Seu navegador mantém uma versão antiga do app. Eu não quero que isso fique aparecendo, tá me enchendo o saco", "Silenciamento de Atualização v4.28.0: Otimizada a ErrorBoundary para realizar a recuperação de cache e recarregamento de chunks de forma silenciosa, eliminando o aviso visual de 'versão antiga' que incomodava a navegação."],
       ["Eu pedi o básico do básico do básico nessa porra, você não fez. Na landing page tem uma coisa que eu não quero. Remove. Refatória, se vira. Você colocou o negócio de apoiar, eu não quero isso na landing page, tá muito gritante, sabe? Eu não quero isso", "Remoção de CTA de Apoio v4.26.0: Removida a última referência de apoio na Landing Page (link do rodapé) e limpeza do sistema de auditoria para garantir um ambiente acadêmico 100% discreto."],
 
       ["Coloca o seguinte dentro do app, alguma parte você vai ter que estudar melhor e fazer o seguinte: coloque que o aplicativo sempre foi e sempre será gratuito, porém, se algum aluno quiser fortalecer e ajudar a evolução do aplicativo, que ele faça uma doação para o app, qualquer valor simbólico. Caso ele queira, não é obrigatório. Diga que o app continuará funcionando sempre de graça, com tudo que ele sempre teve e com atualizações futuras, mesmo que o aluno não pagar. Isso é caso ele queira ajudar nosso aplicativo a melhorar.", "Mensagem de Apoio v4.21.0: O aplicativo é e sempre será gratuito para todos os alunos. Para quem desejar apoiar voluntariamente a evolução do projeto, disponibilizamos um canal de doação simbólica no perfil, sem qualquer obrigatoriedade ou restrição de recursos."],
