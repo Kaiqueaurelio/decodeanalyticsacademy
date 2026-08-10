@@ -1,3 +1,4 @@
+import React, { useEffect } from 'react';
 import { AppHeader } from '@/components/AppHeader';
 import { Button } from '@/components/ui/button';
 import { Coffee, Heart, Star, Share2, ArrowLeft, MessageSquare, ShieldCheck, Server, Zap } from 'lucide-react';
