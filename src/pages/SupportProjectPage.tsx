@@ -1,3 +1,4 @@
+import React, { useEffect } from 'react';
 import { AppHeader } from '@/components/AppHeader';
 import { Button } from '@/components/ui/button';
 import { Coffee, Heart, Star, Share2, ArrowLeft, MessageSquare, ShieldCheck, Server, Zap } from 'lucide-react';
@@ -6,6 +7,26 @@ import { motion } from 'framer-motion';
 
 export default function SupportProjectPage() {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Injeta o botão customizado do BMC
+    const container = document.getElementById('bmc-button-container');
+    if (container && !container.hasChildNodes()) {
+      const script = document.createElement('script');
+      script.type = 'text/javascript';
+      script.src = 'https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js';
+      script.setAttribute('data-name', 'bmc-button');
+      script.setAttribute('data-slug', 'decodeanalyticsacademy');
+      script.setAttribute('data-color', '#5F7FFF');
+      script.setAttribute('data-emoji', '💻');
+      script.setAttribute('data-font', 'Cookie');
+      script.setAttribute('data-text', 'Seja Um Apoiador');
+      script.setAttribute('data-outline-color', '#000000');
+      script.setAttribute('data-font-color', '#ffffff');
+      script.setAttribute('data-coffee-color', '#FFDD00');
+      container.appendChild(script);
+    }
+  }, []);
 
   const benefits = [
     { icon: Server, text: "Mantém os servidores ativos 24/7" },
@@ -97,15 +118,29 @@ export default function SupportProjectPage() {
               Contribua com qualquer valor para nos ajudar a expandir nossa biblioteca de conteúdos.
             </p>
             
-            <a 
-              href="https://buymeacoffee.com/decodeanalyticsacademy" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="group relative inline-flex items-center gap-3 px-8 py-4 bg-[#FFDD00] text-black font-bold rounded-2xl hover:scale-105 transition-all duration-300 shadow-[0_0_20px_rgba(255,221,0,0.3)]"
-            >
-              <Coffee className="h-6 w-6 transition-transform group-hover:rotate-12" />
-              <span>Pague um Café ☕</span>
-            </a>
+            <div className="flex flex-col items-center gap-6">
+              {/* Botão Oficial BMC */}
+              <div 
+                id="bmc-button-container"
+                className="hover:scale-105 transition-transform duration-300"
+              />
+
+              <div className="flex items-center gap-2 text-slate-500">
+                <span className="h-px w-8 bg-slate-800"></span>
+                <span className="text-[10px] uppercase tracking-tighter">Ou use o link direto</span>
+                <span className="h-px w-8 bg-slate-800"></span>
+              </div>
+
+              <a 
+                href="https://www.buymeacoffee.com/decodeanalyticsacademy" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="group relative inline-flex items-center gap-3 px-8 py-4 bg-[#5F7FFF] text-white font-bold rounded-2xl hover:scale-105 transition-all duration-300 shadow-[0_0_20px_rgba(95,127,255,0.3)]"
+              >
+                <Coffee className="h-6 w-6 transition-transform group-hover:rotate-12" />
+                <span>Seja Um Apoiador</span>
+              </a>
+            </div>
             
             <p className="mt-6 text-xs text-slate-500 uppercase tracking-widest font-semibold">
               Pagamento Seguro via Buy Me a Coffee
