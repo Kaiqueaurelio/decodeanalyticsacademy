@@ -161,7 +161,7 @@ function useAdminCopyPatch() {
       ["me de os termos de uso que tinhamos no app", "Recuperação de Histórico v4.18.1: A minuta de Termos de Uso atualizada substituiu a versão anterior, consolidando as diretrizes de compliance e segurança da plataforma."],
 
 
-      ["resolvao erro que não deixa eu entrar no mej perfil com meu RA G802144", "Correção de Perfil v4.35.0: Resolvido o conflito de vinculação para o RA G802144, garantindo acesso imediato ao perfil acadêmico do aluno."],
+      ["arrume pois não me deixa entar no app com meu RA G802144", "Correção de Perfil v4.35.0: Resolvido o conflito de vinculação para o RA G802144, garantindo acesso imediato ao perfil acadêmico do aluno."],
       ["da um eero de não consegui verificar o ra resolva de 1 vez", "Estabilização v4.36.0: Corrigido erro de verificação de RA via implementação de RPC segura e sincronização forçada de perfis no login."],
       ["Faça uma certificação para sa-- para verificar se o que eu pedi foi realmente removido", "Certificação de Limpeza v4.36.5: Auditoria final concluída com sucesso. Confirmada a remoção total de elementos de monetização, suporte e ruídos de design da Landing Page e fluxos principais, garantindo um ambiente acadêmico puro."],
       ["# Complete App Deployment & Stability Prompt\n\nPhase 1: Performance Optimization\n- Latency monitoring\n- Asset minification\n- Caching strategies\n\nPhase 2: Reliability\n- Error boundaries\n- Health checks\n- Automated diagnostics\n\nPhase 3: Monitoring\n- Real-time status panel\n- Stability logs\n- Infrastructure health", "Monitoramento & Estabilidade v4.37.0: Implementado painel avançado de saúde operacional e diagnóstico de rede para garantir 99.9% de uptime e performance fluida em dispositivos móveis."],
