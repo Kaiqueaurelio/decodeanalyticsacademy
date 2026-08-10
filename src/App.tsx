@@ -296,7 +296,7 @@ function AnimatedRoutes() {
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/termos" element={<TermsPage />} />
         <Route path="/transparencia" element={<TransparencyPage />} />
-        <Route path="/apoie" element={<SupportProjectPage />} />
+        <Route path="/apoie" element={<ProtectedRoute><SupportProjectPage /></ProtectedRoute>} />
         <Route path="/support" element={<Navigate to="/apoie" replace />} />
 
         <Route path="/anuncie" element={<AnunciePage />} />
