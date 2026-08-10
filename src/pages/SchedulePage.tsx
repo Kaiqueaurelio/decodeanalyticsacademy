@@ -20,59 +20,51 @@ export default function SchedulePage() {
       dayNumber: 1,
       startTime: '19:10',
       endTime: '20:25',
-      subject: 'Sist Operac Abertos e Mobile',
-      professor: 'Prof. Anderson Lima'
+      subject: 'Sistemas Operacionais Abertos e Mobile'
     },
     {
       dayNumber: 1,
       startTime: '20:45',
       endTime: '22:00',
-      subject: 'Sist Operac Abertos e Mobile',
-      professor: 'Prof. Anderson Lima'
+      subject: 'Sistemas Operacionais Abertos e Mobile'
     },
     {
       dayNumber: 2,
       startTime: '19:10',
       endTime: '20:25',
-      subject: 'Calculo Numerico Computacional',
-      professor: 'Prof. Jorge Amaral',
+      subject: 'Cálculo Numérico Computacional',
       isQuinzenal: true
     },
     {
       dayNumber: 2,
       startTime: '20:45',
       endTime: '22:00',
-      subject: 'Calculo Numerico Computacional',
-      professor: 'Prof. Jorge Amaral',
+      subject: 'Cálculo Numérico Computacional',
       isQuinzenal: true
     },
     {
       dayNumber: 3,
       startTime: '19:10',
       endTime: '20:25',
-      subject: 'Pesquisa Operacional',
-      professor: 'Prof. Dr. Ricardo Silva'
+      subject: 'Pesquisa Operacional'
     },
     {
       dayNumber: 3,
       startTime: '20:45',
       endTime: '22:00',
-      subject: 'Gestão de Projetos',
-      professor: 'Prof. Andre Luiz'
+      subject: 'Gestão de Projetos'
     },
     {
       dayNumber: 4,
       startTime: '19:10',
       endTime: '20:25',
-      subject: 'Aspct Teóricos da Computacao',
-      professor: 'Profa. Ana Paula'
+      subject: 'Aspectos Teóricos da Computação'
     },
     {
       dayNumber: 4,
       startTime: '20:45',
       endTime: '22:00',
-      subject: 'Procs de Imagem e Visao Comp',
-      professor: 'Prof. Luiz Henrique'
+      subject: 'Processamento de Imagem e Visão Computacional'
     }
   ];
 
@@ -92,7 +84,7 @@ export default function SchedulePage() {
   ];
 
   const specialDisciplines = [
-    'Avaliência de Dados',
+    'Ciência de Dados',
     'Métodos de Pesquisa',
     'Ciência da Computação Interdis'
   ];
