@@ -45,6 +45,15 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '4.22.1',
+    date: '2026-08-10',
+    title: 'Descrição Institucional & Refinamento',
+    major: false,
+    changes: [
+      { kind: 'improvement', text: 'Adicionada descrição institucional detalhada ao sistema de auditoria para fins de branding e clareza de propósito do app.' },
+    ]
+  },
+  {
     version: '4.22.0',
     date: '2026-08-09',
     title: 'Expansão de Canais de Apoio',
