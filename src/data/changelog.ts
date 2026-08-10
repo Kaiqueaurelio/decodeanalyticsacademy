@@ -34,7 +34,7 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.30.0',
+    version: '4.31.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
@@ -44,6 +44,16 @@ export function getBuildInfo() {
 }
 
 export const CHANGELOG: Release[] = [
+  {
+    version: '4.31.0',
+    date: '2026-08-10',
+    title: 'Remoção Definitiva de Apoio & Monetização',
+    major: false,
+    changes: [
+      { kind: 'improvement', text: 'Eliminação total da seção de Patrocinadores (SponsorsSection) da Landing Page.' },
+      { kind: 'fix', text: 'Limpeza do sistema de auditoria para registrar a remoção definitiva de ruídos de monetização.' },
+    ]
+  },
   {
     version: '4.30.0',
     date: '2026-08-10',
