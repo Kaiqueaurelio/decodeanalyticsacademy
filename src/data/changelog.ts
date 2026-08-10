@@ -32,17 +32,27 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.48.1',
+    version: '4.48.2',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.48.1-release',
-    commitMessage: 'Release v4.48.1: 6th Semester Content Visibility Fix'
+    commit: 'v4.48.2-release',
+    commitMessage: 'Release v4.48.2: Admin Desktop Responsiveness & Stability'
   };
 }
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: '4.48.2',
+    date: '2026-08-10',
+    title: 'Otimização de Responsividade Desktop (Admin)',
+    changes: [
+      { kind: 'improvement', text: 'Refatoração da interface administrativa para melhor aproveitamento de telas grandes no PC.' },
+      { kind: 'fix', text: 'Correção do scroll infinito no dashboard administrativo para evitar travamentos durante a edição.' },
+      { kind: 'improvement', text: 'Ajustes de layout na sidebar e cabeçalho do painel admin.' }
+    ]
+  },
   {
     version: '4.48.1',
     date: '2026-08-10',
