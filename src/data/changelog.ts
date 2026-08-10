@@ -32,16 +32,26 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.40.0',
+    version: '4.41.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.40.0-release',
-    commitMessage: 'Release v4.40.0: Estabilização de Renderização de Dashboard'
+    commit: 'v4.41.0-release',
+    commitMessage: 'Release v4.41.0: Integração Final Buy Me a Coffee'
   };
 }
 
 export const CHANGELOG: Release[] = [
+  {
+    version: '4.41.0',
+    date: '2026-08-11',
+    title: 'Integração Final: Buy Me a Coffee',
+    major: true,
+    changes: [
+      { kind: 'feature', text: 'Implementação do widget oficial Buy Me a Coffee com branding sincronizado (v4.41.0).' },
+      { kind: 'improvement', text: 'Otimização de rotas e persistência de auditoria visual para o suporte institucional.' },
+    ],
+  },
   {
     version: '4.40.0',
     date: '2026-08-11',
