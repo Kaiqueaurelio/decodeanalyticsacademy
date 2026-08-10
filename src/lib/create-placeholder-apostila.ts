@@ -85,7 +85,7 @@ export async function ensureApostilaExists(item: PlaceholderApostilaItem): Promi
       teacher: teacher,
       published: false,
       source_type: 'grade',
-      content: `# ${cleanTitle}\n\nEscreva o conteúdo da apostila aqui...`,
+      content: '',
     })
     .select('id')
     .single();
