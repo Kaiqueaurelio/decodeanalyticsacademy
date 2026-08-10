@@ -93,7 +93,7 @@ const menuGroups: { label: string; items: MenuItem[] }[] = [
     label: 'Conta',
     items: [
       { to: '/profile', icon: User, label: 'Meu Perfil' },
-      { to: '/apoie', icon: HeartHandshake, label: 'Apoie o App' },
+      { to: '/apoie', icon: Heart, label: 'Apoie a Missão ☕' },
     ],
   },
 
