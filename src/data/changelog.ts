@@ -32,16 +32,25 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.41.0',
+    version: '4.42.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.41.0-release',
-    commitMessage: 'Release v4.41.0: Integração Final Buy Me a Coffee'
+    commit: 'v4.42.0-release',
+    commitMessage: 'Release v4.42.0: Correção de Exibição de Matérias no Dashboard'
   };
 }
 
 export const CHANGELOG: Release[] = [
+  {
+    version: '4.42.0',
+    date: '2026-08-11',
+    title: 'Correção: Exibição de Matérias no Dashboard',
+    changes: [
+      { kind: 'fix', text: 'Corrigido limite inicial de visualização de matérias no dashboard de 3 para 12 disciplinas.' },
+      { kind: 'improvement', text: 'Otimizada a renderização do grid de matérias para garantir visibilidade imediata dos conteúdos do semestre.' },
+    ],
+  },
   {
     version: '4.41.0',
     date: '2026-08-11',
