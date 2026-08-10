@@ -1,5 +1,5 @@
 /**
- * DECODE ANALYTICS ACADEMY - v4.12.0
+ * DECODE ANALYTICS ACADEMY - v4.36.5
  * 
  * - Sound Design: Feedback sonoro para gamificação e interações.
  * - Modo Foco: Experiência de leitura imersiva.
@@ -34,7 +34,7 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.36.4',
+    version: '4.36.5',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
@@ -44,6 +44,14 @@ export function getBuildInfo() {
 }
 
 export const CHANGELOG: Release[] = [
+  {
+    version: '4.36.5',
+    date: '2026-08-10',
+    title: 'Certificação de Integridade Acadêmica',
+    changes: [
+      { kind: 'improvement', text: 'Auditoria técnica final concluída: Certificada a remoção completa de referências a suporte, doações e IA da Landing Page, consolidando o ambiente 100% focado no aluno.' },
+    ],
+  },
   {
     version: '4.36.4',
     date: '2026-08-10',
