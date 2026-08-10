@@ -339,6 +339,7 @@ function AnimatedRoutes() {
         <Route path="/termos" element={<TermsPage />} />
         <Route path="/transparencia" element={<TransparencyPage />} />
         <Route path="/apoie" element={<ProtectedRoute><SupportProjectPage /></ProtectedRoute>} />
+        <Route path="/horarios" element={<ProtectedRoute><SchedulePage /></ProtectedRoute>} />
         <Route path="/support" element={<Navigate to="/apoie" replace />} />
 
         <Route path="/anuncie" element={<AnunciePage />} />
