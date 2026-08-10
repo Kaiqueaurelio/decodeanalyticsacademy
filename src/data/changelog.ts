@@ -45,6 +45,16 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '4.29.0',
+    date: '2026-08-10',
+    title: 'Refinamento de Conversão & UX Acadêmica',
+    major: false,
+    changes: [
+      { kind: 'improvement', text: 'Consolidada a landing page acadêmica focada no aluno, removendo referências de design sistêmicas e fortalecendo o CTA.' },
+      { kind: 'fix', text: 'Sincronizado o sistema de auditoria visual para refletir a nova estrutura de conversão v4.29.0.' },
+    ]
+  },
+  {
     version: '4.28.0',
     date: '2026-08-10',
     title: 'Atualização Silenciosa & UX de Recuperação',
@@ -54,6 +64,7 @@ export const CHANGELOG: Release[] = [
       { kind: 'improvement', text: 'Refinada a comunicação de erros na ErrorBoundary para ser menos técnica e mais direta.' },
     ]
   },
+
   {
     version: '4.27.0',
     date: '2026-08-10',
