@@ -44,6 +44,15 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '4.47.2',
+    date: '2026-08-10',
+    title: 'Manutenção de Conteúdo do 6º Semestre',
+    changes: [
+      { kind: 'content', text: 'Resetadas as apostilas do 6º semestre (exceto Ciência de Dados, Gestão de Projetos I e Visão Computacional) para aguardar o início das aulas.' },
+      { kind: 'improvement', text: 'Ajustado o gerador de apostilas para iniciar registros sem conteúdo placeholder.' }
+    ]
+  },
+  {
     version: '4.47.1',
     date: '2026-08-10',
     title: 'Limpeza de Conteúdo Antecipado',
