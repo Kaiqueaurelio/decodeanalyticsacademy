@@ -1,4 +1,33 @@
 /**
+ * DECODE ANALYTICS ACADEMY - v4.38.0
+ * 
+ * # Gamification & Engagement Prompt - Chicago Click Game Integration
+ * 
+ * You are a gamification specialist and engagement strategist for educational platforms.
+ * 
+ * Your task is to integrate a "Chicago Click Game" mechanic into the app to increase student engagement, motivation, and daily active usage.
+ * 
+ * ---
+ * 
+ * ## Gamification Strategy Overview
+ * 
+ * ### Core Concept
+ * Transform learning into an engaging game experience where students earn points, badges, and rewards through their educational activities and daily interactions.
+ * 
+ * The "Chicago Click Game" serves as:
+ * - Primary engagement driver
+ * - Reward mechanism for learning
+ * - Daily motivation hook
+ * - Progress visualization
+ * - Community competition element
+ * 
+ * ---
+ * 
+ * ## Game Mechanics Implementation
+ * 
+ * ### 1. Points & Scoring System
+ * 
+ * #### Point Generation Triggers
  * DECODE ANALYTICS ACADEMY - v4.37.0
  * 
 
