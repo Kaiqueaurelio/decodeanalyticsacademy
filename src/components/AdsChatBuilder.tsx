@@ -83,7 +83,7 @@ const AD_TYPE_LABELS: Record<AdType, string> = {
 };
 
 const ACTION_LABELS: Record<ActionType, string> = {
-  create_ad: 'Anuncio persistente',
+  create_ad: 'Anuncio persistente ou Parceria',
   create_reminder: 'Lembrete na agenda',
   delete_reminder: 'Remover lembrete',
   create_announcement: 'Aviso no app',
