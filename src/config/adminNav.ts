@@ -10,7 +10,7 @@ export type AdminTabId =
   | 'calendar' | 'testimonials' | 'ai' | 'performance' | 'smoke' | 'diagnostics'
   | 'ads' | 'ads-chat' | 'social' | 'rss' | 'courses' | 'changelog' | 'leads'
   | 'ella-audit' | 'security-alerts' | 'sponsors' | 'tasks' | 'photoroom' | 'edit' | 'review'
-  | 'enem-apostilas' | 'cc-apostilas';
+  | 'enem-apostilas' | 'cc-apostilas' | 'health-dashboard';
 
 export type AdminNavItem = {
   id: AdminTabId;
