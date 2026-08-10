@@ -132,7 +132,7 @@ export function EditorInspectorBody({
       {editor && sel.type === 'link' && <LinkPanel editor={editor} attrs={sel.attrs} text={sel.text} />}
       {editor && sel.type === 'table' && <TablePanel editor={editor} />}
       {editor && sel.type === 'heading' && <HeadingPanel editor={editor} level={sel.level} />}
-      {editor && sel.type === 'paragraph' && <ParagraphPanel editor={editor} />}
+      {editor && sel.type === 'paragraph' && <ParagraphPanel editor={editor} attrs={sel.attrs} />}
     </>
   );
 }
