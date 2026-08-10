@@ -45,6 +45,15 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '4.27.0',
+    date: '2026-08-10',
+    title: 'Limpeza Total de Apoio na Landing Page',
+    major: false,
+    changes: [
+      { kind: 'fix', text: 'Removido o link de apoio residual do rodapé da Landing Page para garantir discrição absoluta.' },
+    ]
+  },
+  {
     version: '4.26.0',
     date: '2026-08-10',
     title: 'Refinamento de UX & Limpeza de Auditoria',
