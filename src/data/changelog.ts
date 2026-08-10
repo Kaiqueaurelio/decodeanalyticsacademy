@@ -43,6 +43,16 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '4.38.0',
+    date: '2026-08-11',
+    title: 'Gamificação & Engajamento v4.38.0',
+    major: true,
+    changes: [
+      { kind: 'feature', text: 'Integração da mecânica "Chicago Click Game" para engajamento acadêmico.' },
+      { kind: 'improvement', text: 'Sistemas de recompensas e pontuação dinâmicos baseados em atividades.' },
+    ],
+  },
+  {
     version: '4.37.0',
     date: '2026-08-11',
     title: 'Monitoramento & Estabilidade v2',
