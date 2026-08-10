@@ -1,994 +1,268 @@
-import { useState, useRef, useEffect, useCallback, lazy } from 'react';
-import { DeferredSection } from '@/components/DeferredSection';
-import { createPortal } from 'react-dom';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import {
-  ArrowRight, BookOpen, GraduationCap, Cpu, Brain,
-  ChevronRight, Download, Smartphone, Layers, Rocket, Target,
-  BarChart3, PenLine, Flame, TrendingUp, CheckCircle, Play,
+import { 
+  BookOpen, 
+  Target, 
+  Brain, 
+  Rocket, 
+  ChevronRight, 
+  CheckCircle2, 
+  BarChart3, 
+  Smartphone,
+  ShieldCheck,
+  Zap,
+  Users
 } from 'lucide-react';
-import logoAvif1x from '@/assets/owl-icon-72.avif';
-import logoAvif2x from '@/assets/owl-icon-144.avif';
-import logoWebp1x from '@/assets/owl-icon-72.webp';
-import logoWebp2x from '@/assets/owl-icon-144.webp';
-import logoPng1x from '@/assets/owl-icon-72.webp';
-import logoPng2x from '@/assets/owl-icon-144.webp';
-import heroPoster from '@/assets/hero-bg-poster.jpg.asset.json';
-import heroPosterWebp from '@/assets/hero-bg-poster.webp.asset.json';
-import heroPosterAvif from '@/assets/hero-bg-poster.avif.asset.json';
-import { Reveal } from '@/components/Reveal';
 
-/* ─── SEÇÕES ABAIXO DA DOBRA: carregadas sob demanda (menor bundle inicial / LCP) ─── */
-const TestimonialsSection = lazy(() => import('@/components/TestimonialsSection').then(m => ({ default: m.TestimonialsSection })));
-const CreatorSection = lazy(() => import('@/components/CreatorSection').then(m => ({ default: m.CreatorSection })));
-const LiveAppSection = lazy(() => import('@/components/LiveAppSection').then(m => ({ default: m.LiveAppSection })));
-const SocialAndProjectsSection = lazy(() => import('@/components/SocialAndProjectsSection').then(m => ({ default: m.SocialAndProjectsSection })));
-const AppShowcaseSection = lazy(() => import('@/components/landing/AppShowcaseSection').then(m => ({ default: m.AppShowcaseSection })));
-const HowItWorksSection = lazy(() => import('@/components/landing/HowItWorksSection').then(m => ({ default: m.HowItWorksSection })));
-const EllaFeatureSection = lazy(() => import('@/components/landing/EllaFeatureSection').then(m => ({ default: m.EllaFeatureSection })));
-const PlatformEngineSection = lazy(() => import('@/components/landing/PlatformEngineSection').then(m => ({ default: m.PlatformEngineSection })));
-const FaqSection = lazy(() => import('@/components/landing/FaqSection').then(m => ({ default: m.FaqSection })));
-const SponsorsSection = lazy(() => import('@/components/landing/SponsorsSection').then(m => ({ default: m.SponsorsSection })));
-
-/**
- * Só monta a seção (e baixa o chunk) quando ela chega perto do viewport.
- * Antes todos os chunks eram baixados logo no mount, anulando o lazy.
- */
-function LazySection({ children }: { children: React.ReactNode }) {
-  return <DeferredSection minHeight="55vh">{children}</DeferredSection>;
-}
-
-
-
-/* ─── SECTION WRAPPER: usa o Reveal compartilhado (IntersectionObserver + reduced-motion) ─── */
-function ScrollReveal({ children, className = '', delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
+const Hero = () => {
+  const navigate = useNavigate();
   return (
-    <Reveal from="bottom" distance={48} delay={delay * 1000} className={className}>
-      {children}
-    </Reveal>
+    <section className="relative overflow-hidden pt-20 pb-16 sm:pt-32 sm:pb-24">
+      <div className="container relative z-10 mx-auto px-4 text-center">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <span className="inline-block rounded-full bg-primary/10 px-4 py-1.5 text-sm font-semibold text-primary mb-6 border border-primary/20">
+            📚 ENEM 2026 & Ciência da Computação
+          </span>
+          <h1 className="text-4xl font-bold tracking-tight text-white sm:text-7xl mb-8 leading-[1.1]">
+            Transforme seu Estudo em <br />
+            <span className="bg-gradient-to-r from-cyan-400 via-purple-500 to-cyan-400 bg-clip-text text-transparent">Alta Performance</span>
+          </h1>
+          <p className="mx-auto max-w-2xl text-lg text-zinc-400 sm:text-xl mb-10 leading-relaxed">
+            A plataforma acadêmica definitiva para alunos de tecnologia e vestibulandos. 
+            Apostilas estruturadas, simulados inteligentes e o suporte da Ella para você dominar qualquer disciplina.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Button size="lg" className="h-14 px-8 text-lg font-bold w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground shadow-[0_0_20px_rgba(0,240,255,0.3)]" onClick={() => navigate('/auth')}>
+              Começar Agora
+              <ChevronRight className="ml-2 h-5 w-5" />
+            </Button>
+            <Button variant="outline" size="lg" className="h-14 px-8 text-lg font-semibold w-full sm:w-auto border-zinc-800 text-zinc-300 hover:bg-zinc-900" onClick={() => {
+              const el = document.getElementById('features');
+              el?.scrollIntoView({ behavior: 'smooth' });
+            }}>
+              Ver Funcionalidades
+            </Button>
+          </div>
+          
+          <div className="mt-16 flex items-center justify-center gap-8 grayscale opacity-50">
+            <div className="flex items-center gap-2"><Smartphone className="h-5 w-5" /> <span>PWA Mobile</span></div>
+            <div className="flex items-center gap-2"><ShieldCheck className="h-5 w-5" /> <span>100% Seguro</span></div>
+            <div className="flex items-center gap-2"><Users className="h-5 w-5" /> <span>+500 Alunos</span></div>
+          </div>
+        </motion.div>
+      </div>
+    </section>
   );
-}
+};
 
-/* ─── PARALLAX IMAGE ─── */
-function ParallaxBlock({ children, speed = 0.3, className = '' }: { children: React.ReactNode; speed?: number; className?: string }) {
-  const ref = useRef(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] });
-  const y = useTransform(scrollYProgress, [0, 1], [speed * -100, speed * 100]);
-  return (
-    <motion.div ref={ref} style={{ y }} className={className}>
-      {children}
-    </motion.div>
-  );
-}
-
-/* ─── GLOW ORB ─── */
-function GlowOrb({ className, style }: { className: string; style?: React.CSSProperties }) {
-  return <div className={`absolute rounded-full blur-[120px] pointer-events-none ${className}`} style={style} />;
-}
-
-/* ─── GRID BG ─── */
-function CyberGrid() {
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      <div className="absolute inset-0" style={{
-        backgroundImage: `linear-gradient(rgba(0,240,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,240,255,0.03) 1px, transparent 1px)`,
-        backgroundSize: '60px 60px',
-      }} />
+const FeatureCard = ({ icon: Icon, title, desc, delay }: { icon: any, title: string, desc: string, delay: number }) => (
+  <motion.div 
+    initial={{ opacity: 0, y: 20 }}
+    whileInView={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.5, delay }}
+    viewport={{ once: true }}
+    className="group relative rounded-2xl border border-zinc-800 bg-zinc-900/50 p-8 hover:border-primary/50 transition-all hover:bg-zinc-900"
+  >
+    <div className="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary group-hover:scale-110 transition-transform">
+      <Icon className="h-6 w-6" />
     </div>
-  );
-}
+    <h3 className="mb-3 text-xl font-bold text-white">{title}</h3>
+    <p className="text-zinc-400 leading-relaxed">{desc}</p>
+  </motion.div>
+);
 
-function TypewriterWords() {
-  const [index, setIndex] = useState(0);
-  const [displayText, setDisplayText] = useState('');
-  const [isDeleting, setIsDeleting] = useState(false);
+const Features = () => (
+  <section id="features" className="py-24 bg-zinc-950/50">
+    <div className="container mx-auto px-4">
+      <div className="mb-16 text-center">
+        <h2 className="text-3xl font-bold text-white sm:text-4xl mb-4">Desenvolvido por quem entende de estudo</h2>
+        <p className="text-zinc-400">Ferramentas focadas em resultados práticos e memorização de longo prazo.</p>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <FeatureCard 
+          icon={BookOpen} 
+          title="Apostilas Estruturadas" 
+          desc="Conteúdo técnico direto ao ponto, com glossários, resumos e exercícios integrados para Ciência da Computação e ENEM."
+          delay={0.1}
+        />
+        <FeatureCard 
+          icon={Brain} 
+          title="IA Acadêmica Ella" 
+          desc="Sua assistente 24/7. Tire dúvidas sobre código, física, matemática ou peça resumos personalizados em segundos."
+          delay={0.2}
+        />
+        <FeatureCard 
+          icon={Target} 
+          title="Simulados de Alta Precisão" 
+          desc="Banco de questões atualizado com cronômetro, análise de desempenho e gabaritos detalhados para medir seu progresso."
+          delay={0.3}
+        />
+        <FeatureCard 
+          icon={Zap} 
+          title="Modo Foco" 
+          desc="Interface limpa e minimalista projetada para eliminar distrações e aumentar a retenção do conteúdo lido."
+          delay={0.4}
+        />
+        <FeatureCard 
+          icon={BarChart3} 
+          title="Gestão de Semestres" 
+          desc="Organização completa do 1º ao 8º semestre da UNIP. Nunca mais se perca na grade curricular do seu curso."
+          delay={0.5}
+        />
+        <FeatureCard 
+          icon={Rocket} 
+          title="Ecossistema PWA" 
+          desc="Instale em seu celular ou tablet. Estude no ônibus, no intervalo ou em qualquer lugar com suporte offline inteligente."
+          delay={0.6}
+        />
+      </div>
+    </div>
+  </section>
+);
 
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      const currentWord = words[index];
-      if (isDeleting) {
-        setDisplayText(currentWord.substring(0, displayText.length - 1));
-        if (displayText.length === 0) {
-          setIsDeleting(false);
-          setIndex((prev) => (prev + 1) % words.length);
-        }
-      } else {
-        setDisplayText(currentWord.substring(0, displayText.length + 1));
-        if (displayText === currentWord) {
-          setIsDeleting(true);
-        }
-      }
-    }, isDeleting ? 100 : 200);
-    return () => clearTimeout(timeout);
-  }, [displayText, isDeleting, index]);
+const FAQ = () => {
+  const [open, setOpen] = useState<number | null>(null);
+  const items = [
+    { q: "Quais cursos são suportados?", a: "Focamos em Ciência da Computação, Sistemas de Informação e Engenharia da Computação (UNIP), além de um módulo completo para o ENEM 2026." },
+    { q: "Funciona no celular?", a: "Sim! Somos uma PWA (Progressive Web App). Você pode instalar diretamente no seu iPhone ou Android e usar como um aplicativo nativo." },
+    { q: "O material é atualizado?", a: "Sim, nossa equipe acadêmica e a IA Ella revisam e atualizam os conteúdos semanalmente conforme as demandas dos cursos e editais." },
+    { q: "Preciso pagar para acessar?", a: "O acesso básico e o conteúdo principal são gratuitos para alunos cadastrados. Acreditamos na democratização do ensino de tecnologia." }
+  ];
 
   return (
-    <span className="mt-2 block min-h-[1.2em] bg-gradient-to-r from-[#00f0ff] via-[#a855f7] to-[#c084fc] bg-clip-text text-transparent">
-      {displayText}
-      <span className="ml-1 animate-pulse border-r-4 border-[#00f0ff]" />
-    </span>
+    <section className="py-24">
+      <div className="container mx-auto px-4 max-w-3xl">
+        <h2 className="text-3xl font-bold text-white mb-12 text-center">Dúvidas Frequentes</h2>
+        <div className="space-y-4">
+          {items.map((item, i) => (
+            <div key={i} className="rounded-xl border border-zinc-800 bg-zinc-900/30 overflow-hidden">
+              <button 
+                onClick={() => setOpen(open === i ? null : i)}
+                className="w-full flex items-center justify-between p-6 text-left hover:bg-zinc-800/50 transition-colors"
+              >
+                <span className="font-semibold text-white">{item.q}</span>
+                <ChevronRight className={`h-5 w-5 transition-transform ${open === i ? 'rotate-90' : ''}`} />
+              </button>
+              {open === i && (
+                <div className="p-6 pt-0 text-zinc-400 border-t border-zinc-800 bg-zinc-900/50">
+                  {item.a}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
   );
-}
-
-
-/* ─── DATA ─── */
-const features = [
-  { icon: BookOpen, name: 'Apostilas Interativas', desc: 'Conteúdo estruturado por disciplina com anotações', color: '#00f0ff' },
-  { icon: PenLine, name: 'Exercícios de Fixação', desc: 'Questões com gabarito e explicação detalhada', color: '#a855f7' },
-  { icon: Brain, name: 'Flashcards Inteligentes', desc: 'Revisão espaçada para memorização eficiente', color: '#22c55e' },
-  { icon: Flame, name: 'Gamificação & XP', desc: 'Pontos, badges, streaks e ranking entre alunos', color: '#f59e0b' },
-];
-
-const words = ['Ciência da Computação.', 'Sistemas de Informação.', 'Engenharia da Computação.', 'inteligência.', 'eficiência.', 'tecnologia.', 'Modo ENEM 2026.', 'foco total.'];
-
-
-const roadmap = [
-  { phase: '01', title: 'Fundamentos', desc: 'Lógica de programação, matemática discreta e introdução à computação.', icon: Cpu },
-  { phase: '02', title: 'Desenvolvimento', desc: 'Estrutura de dados, algoritmos, banco de dados e engenharia de software.', icon: Layers },
-  { phase: '03', title: 'Especialização', desc: 'Redes, segurança, inteligência artificial e computação em nuvem.', icon: Brain },
-  { phase: '04', title: 'Prática & Projetos', desc: 'Projetos integradores, estágio supervisionado e TCC.', icon: Target },
-];
-
-
-const faqs = [
-  { q: 'Para quais cursos a plataforma é voltada?', a: 'Ciência da Computação, Sistemas de Informação e Engenharia da Computação — do 1º ao 8º semestre.' },
-  { q: 'Como funcionam os exercícios?', a: 'Questões de múltipla escolha com gabarito comentado e explicação detalhada para cada alternativa.' },
-  { q: 'Posso acessar pelo celular?', a: 'Sim! A plataforma é um PWA — funciona no navegador e pode ser instalada como app no celular.' },
-  { q: 'O conteúdo é gratuito?', a: 'Todo o conteúdo disponível na plataforma é acessível para alunos cadastrados.' },
-];
+};
 
 export default function LandingPage() {
   const navigate = useNavigate();
-  const [showInstallGuide, setShowInstallGuide] = useState(false);
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const [appOrigin, setAppOrigin] = useState<string>('https://decodeanalyticsacademy.com.br');
-  const heroVideoRef = useRef<HTMLVideoElement>(null);
-  // O vídeo de fundo roda sempre, em qualquer dispositivo; só é montado logo
-  // após o primeiro paint para não atrasar o hero.
-  const [bgVideoEnabled, setBgVideoEnabled] = useState(false);
-  const [videoBlocked, setVideoBlocked] = useState(false);
-  const [showStickyCta, setShowStickyCta] = useState(false);
-
-  useEffect(() => {
-    let raf = 0;
-    let ticking = false;
-    const onScroll = () => {
-      if (ticking) return;
-      ticking = true;
-      raf = window.requestAnimationFrame(() => {
-        setShowStickyCta(window.scrollY > 640);
-        ticking = false;
-      });
-    };
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => {
-      window.removeEventListener('scroll', onScroll);
-      window.cancelAnimationFrame(raf);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined' && window.location?.origin?.startsWith('http')) {
-      setAppOrigin(window.location.origin);
-    }
-  }, []);
-
-  // O vídeo de fundo sempre roda: sem cortes por tamanho de tela, economia de
-  // dados ou rolagem. Ele é apenas montado logo após o primeiro paint.
-  useEffect(() => {
-    const id = window.setTimeout(() => setBgVideoEnabled(true), 0);
-    return () => window.clearTimeout(id);
-  }, []);
-
-  useEffect(() => {
-    if (!bgVideoEnabled) return;
-    const video = heroVideoRef.current;
-    if (!video) return;
-
-    // iOS/Safari exige muted + playsinline definidos no elemento ANTES do play().
-    video.muted = true;
-    video.defaultMuted = true;
-    video.volume = 0;
-    video.loop = true;
-    video.setAttribute('muted', '');
-    video.setAttribute('playsinline', '');
-    video.setAttribute('webkit-playsinline', 'true');
-    video.setAttribute('x5-playsinline', 'true');
-    video.setAttribute('disableRemotePlayback', 'true');
-
-    let disposed = false;
-
-    const startPlayback = () => {
-      if (disposed) return;
-      const attempt = video.play();
-      if (attempt && typeof attempt.catch === 'function') {
-        attempt
-          .then(() => setVideoBlocked(false))
-          .catch(() => {
-            // Safari em Modo de Baixo Consumo bloqueia o autoplay:
-            // liberamos na primeira interação do usuário (ou no botão de play).
-            setVideoBlocked(true);
-            armGestureUnlock();
-          });
-      }
-    };
-
-    let gestureArmed = false;
-    const gestureEvents: Array<keyof DocumentEventMap> = ['touchstart', 'touchend', 'pointerdown', 'click', 'keydown', 'scroll'];
-    const onGesture = () => {
-      disarmGestureUnlock();
-      void video.play().catch(() => {});
-    };
-    function armGestureUnlock() {
-      if (gestureArmed || disposed) return;
-      gestureArmed = true;
-      gestureEvents.forEach((evt) =>
-        document.addEventListener(evt, onGesture, { once: true, passive: true } as AddEventListenerOptions),
-      );
-    }
-    function disarmGestureUnlock() {
-      if (!gestureArmed) return;
-      gestureArmed = false;
-      gestureEvents.forEach((evt) => document.removeEventListener(evt, onGesture));
-    }
-
-    // Loop manual: alguns builds do Safari ignoram o atributo `loop` quando o
-    // vídeo é retomado após ficar em background.
-    const onEnded = () => {
-      try {
-        video.currentTime = 0;
-      } catch { /* noop */ }
-      startPlayback();
-    };
-
-    const onPlaying = () => setVideoBlocked(false);
-
-    startPlayback();
-    video.addEventListener('playing', onPlaying);
-    video.addEventListener('canplay', startPlayback);
-    video.addEventListener('loadedmetadata', startPlayback);
-    video.addEventListener('loadeddata', startPlayback);
-    video.addEventListener('stalled', startPlayback);
-    video.addEventListener('suspend', startPlayback);
-    video.addEventListener('pause', startPlayback);
-    video.addEventListener('ended', onEnded);
-
-    // Mantém o movimento sempre que a aba/app volta a ficar visível (iOS dispara pagehide/pageshow).
-    const onVisible = () => {
-      if (document.visibilityState === 'visible') startPlayback();
-    };
-    document.addEventListener('visibilitychange', onVisible);
-    window.addEventListener('pageshow', startPlayback);
-    window.addEventListener('focus', startPlayback);
-
-    // Rede de segurança: se por algum motivo o vídeo travar, retoma sozinho.
-    const keepAlive = window.setInterval(() => {
-      if (video.paused && document.visibilityState === 'visible') startPlayback();
-    }, 3000);
-
-    return () => {
-      disposed = true;
-      disarmGestureUnlock();
-      video.removeEventListener('playing', onPlaying);
-      video.removeEventListener('canplay', startPlayback);
-      video.removeEventListener('loadedmetadata', startPlayback);
-      video.removeEventListener('loadeddata', startPlayback);
-      video.removeEventListener('stalled', startPlayback);
-      video.removeEventListener('suspend', startPlayback);
-      video.removeEventListener('pause', startPlayback);
-      video.removeEventListener('ended', onEnded);
-      document.removeEventListener('visibilitychange', onVisible);
-      window.removeEventListener('pageshow', startPlayback);
-      window.removeEventListener('focus', startPlayback);
-      window.clearInterval(keepAlive);
-    };
-  }, [bgVideoEnabled]);
-
-
-
-
-  // Deixa body/html transparentes enquanto a landing estiver montada, para o vídeo de fundo (portal z:-1) aparecer.
-  useEffect(() => {
-    const html = document.documentElement;
-    const body = document.body;
-    const prevHtmlBg = html.style.background;
-    const prevBodyBg = body.style.background;
-    html.style.background = '#050508';
-    body.style.background = 'transparent';
-    return () => {
-      html.style.background = prevHtmlBg;
-      body.style.background = prevBodyBg;
-    };
-  }, []);
-
-
-  const handleManualPlay = useCallback(() => {
-    const video = heroVideoRef.current;
-    if (!video) return;
-    video.muted = true;
-    void video.play().then(() => setVideoBlocked(false)).catch(() => setVideoBlocked(true));
-  }, []);
-
-
-  const handleInstallPWA = async () => {
-    try {
-      const deferredPrompt = (window as any).__pwaInstallPrompt;
-      if (deferredPrompt && typeof deferredPrompt.prompt === 'function') {
-        await deferredPrompt.prompt();
-        const choice = await deferredPrompt.userChoice;
-        if (choice.outcome === 'accepted') (window as any).__pwaInstallPrompt = null;
-        return;
-      }
-    } catch (e) { console.warn('PWA prompt failed:', e); }
-    setShowInstallGuide(true);
-  };
 
   return (
-    <div className="landing-shell dark min-h-dvh font-cyber overflow-x-hidden selection:bg-primary/30 relative" style={{ color: '#e2e8f0' }}>
+    <div className="min-h-screen bg-[#050508] text-zinc-300 selection:bg-cyan-500/30">
+      {/* Background Decor */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-cyan-500/10 rounded-full blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-500/10 rounded-full blur-[120px]" />
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150 pointer-events-none" />
+      </div>
 
-      {/* ═══ VIDEO DE FUNDO GLOBAL (portal em document.body para escapar de transforms de ancestrais) ═══ */}
-      {typeof document !== 'undefined' && createPortal(
-        <div
-          aria-hidden="true"
-          className="pointer-events-none fixed inset-0 overflow-hidden"
-          style={{ zIndex: -1 }}
-        >
-          {/* Fallback estático: aparece se o autoplay for bloqueado (iOS/Safari) ou o vídeo não carregar */}
-          <div
-            className="absolute inset-0 opacity-60"
-            style={{
-              backgroundImage: `image-set(url(${heroPosterAvif.url}) type("image/avif"), url(${heroPosterWebp.url}) type("image/webp"), url(${heroPoster.url}) type("image/jpeg"))`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-            }}
-          />
+      <nav className="fixed top-0 z-50 w-full border-b border-zinc-800/50 bg-black/50 backdrop-blur-xl">
+        <div className="container mx-auto flex h-16 items-center justify-between px-4">
+          <div className="flex items-center gap-2 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+             <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center font-bold text-primary-foreground shadow-[0_0_15px_rgba(0,240,255,0.4)]">D</div>
+             <span className="text-xl font-bold text-white tracking-tighter">DECODE <span className="text-cyan-400">ACADEMY</span></span>
+          </div>
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" className="text-zinc-400 hover:text-white hidden sm:flex" onClick={() => navigate('/auth')}>Entrar</Button>
+            <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold" onClick={() => navigate('/auth')}>Cadastrar RA</Button>
+          </div>
+        </div>
+      </nav>
 
-
-          {bgVideoEnabled && (
-            <video
-              ref={heroVideoRef}
-              className="landing-bg-video relative h-full w-full scale-[1.03] object-cover opacity-60"
-              autoPlay
-              loop
-              muted
-              playsInline
-              controls={false}
-              disablePictureInPicture
-              preload="auto"
-              poster={heroPosterWebp.url}
-              // atributos legados necessários no Safari iOS
-              webkit-playsinline="true"
-              x5-playsinline="true"
-              disableRemotePlayback
-              src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260328_065045_c44942da-53c6-4804-b734-f9e07fc22e08.mp4"
-            />
-
-          )}
-          <div className="landing-bg-scrim absolute inset-0" />
-
-
-        </div>,
-        document.body,
-      )}
-
-      {/* Autoplay bloqueado (iOS/Safari): botão para iniciar o vídeo manualmente */}
-      {videoBlocked && (
-        <button
-          type="button"
-          onClick={handleManualPlay}
-          aria-label="Reproduzir vídeo de fundo"
-          className="fixed bottom-5 right-4 z-40 flex h-11 w-11 items-center justify-center rounded-full border border-primary/40 bg-background/80 text-primary backdrop-blur-sm transition-colors hover:bg-primary/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          <Play className="h-5 w-5" fill="currentColor" />
-        </button>
-      )}
-
-
-
-
-      {/* ═══ HERO / NAVEGAÇÃO ═══ */}
-      <section className="relative isolate min-h-screen overflow-hidden">
-        <CyberGrid />
-        <div className="hero-video-vignette pointer-events-none absolute inset-0 -z-10" aria-hidden="true" />
-        <div
-          className="pointer-events-none absolute left-1/2 top-1/2 -z-10 hidden h-[527px] w-[min(984px,90vw)] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#050508]/90 blur-[82px] sm:block"
-          aria-hidden="true"
-        />
-
-        <div className="relative z-10 flex min-h-screen flex-col">
-          <header className="px-5 py-5 sm:px-8">
-            <div className="mx-auto flex max-w-7xl items-center justify-between">
-              <a href="/" className="flex items-center gap-3" aria-label="Decode Analytics Academy">
-                <picture>
-                  <source type="image/avif" srcSet={`${logoAvif1x} 1x, ${logoAvif2x} 2x`} />
-                  <source type="image/webp" srcSet={`${logoWebp1x} 1x, ${logoWebp2x} 2x`} />
-                  <img src={logoPng1x} srcSet={`${logoPng1x} 1x, ${logoPng2x} 2x`} alt="" width={36} height={36} decoding="async" {...{ fetchpriority: 'high' }} className="h-9 w-9 object-contain drop-shadow-[0_0_12px_rgba(0,240,255,0.5)]" />
-                </picture>
-                <span className="text-sm font-semibold uppercase tracking-[0.18em] text-[#00f0ff]">Decode Analytics Academy</span>
-              </a>
-              <nav aria-label="Navegação principal" className="hidden items-center gap-7 md:flex">
-                <a href="#recursos" className="text-sm text-white/80 transition-colors hover:text-white">Recursos</a>
-                <a href="#roadmap" className="text-sm text-white/80 transition-colors hover:text-white">Trilha</a>
-                <a href="#depoimentos" className="text-sm text-white/80 transition-colors hover:text-white">Depoimentos</a>
-              </nav>
-              <Button
-                size="sm"
-                onClick={() => navigate('/login')}
-                className="rounded-full border border-white/15 bg-white/10 px-5 text-xs font-semibold uppercase tracking-wider text-white backdrop-blur-sm hover:bg-white/20"
-              >
-                Entrar <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
-              </Button>
-            </div>
-            <div className="mx-auto mt-4 h-px max-w-7xl bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-          </header>
-
-          <main className="flex flex-1 items-center justify-center px-5 pb-20 pt-10 text-center">
-            {/* Sem gate de JS/framer-motion: o texto do hero (elemento LCP) pinta
-                no primeiro frame e a entrada é feita só por CSS. */}
-            <div className="hero-entrance mx-auto max-w-5xl">
-
-              <div className="mb-7 flex flex-wrap items-center justify-center gap-3">
-                <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-white/[0.06] px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-cyan-100 backdrop-blur-sm transition-all hover:bg-white/[0.1]">
-                  <span className="flex h-2 w-2 relative">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
-                  </span>
-                  <span className="ml-1">128 Alunos estudando agora</span>
-                </div>
-                <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-primary backdrop-blur-sm animate-pulse">
-                  <Target className="h-3.5 w-3.5" />
-                  Modo ENEM 2026 Ativado
-                </div>
-                <div className="inline-flex items-center gap-2 rounded-full border border-purple-400/20 bg-purple-500/5 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-purple-200 backdrop-blur-sm">
-                  <Brain className="h-3.5 w-3.5 text-[#a855f7]" />
-                  Ella Ribeiro Assistant
-                </div>
+      <main className="relative z-10">
+        <Hero />
+        <Features />
+        
+        {/* Social Proof Mini Section */}
+        <section className="py-20 border-y border-zinc-900 bg-black/40">
+          <div className="container mx-auto px-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+              <div>
+                <div className="text-3xl font-bold text-white mb-1">+500</div>
+                <div className="text-sm text-zinc-500 uppercase tracking-widest">Alunos Ativos</div>
               </div>
-              <h1 className="max-w-4xl text-5xl font-bold leading-[0.94] tracking-[-0.05em] text-white sm:text-7xl md:text-8xl">
-                Estude com
-                <TypewriterWords />
-              </h1>
-              <p className="mx-auto mt-7 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg">
-                Apostilas, exercícios, flashcards e acompanhamento de progresso para você dominar cada disciplina com inteligência e foco.
-              </p>
-              <div className="mt-9 flex flex-col items-center justify-center gap-4 sm:flex-row">
-                <Button
-                  onClick={() => navigate('/login')}
-                  className="group relative h-12 overflow-hidden rounded-full bg-[#00f0ff] px-8 text-sm font-bold text-[#050508] transition-all hover:scale-105 hover:bg-[#75f6ff] hover:shadow-[0_0_40px_rgba(0,240,255,0.4)]"
-                >
-                  <span className="flex items-center gap-2">
-                    Começar a estudar 
-                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                  </span>
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => navigate('/login')}
-                  className="h-12 rounded-full border-white/20 bg-white/5 px-8 text-sm font-semibold text-white backdrop-blur-sm transition-all hover:border-white/40 hover:bg-white/10"
-                >
-                  Entrar
-                </Button>
+              <div>
+                <div className="text-3xl font-bold text-white mb-1">+1200</div>
+                <div className="text-sm text-zinc-500 uppercase tracking-widest">Apostilas Lidas</div>
               </div>
-              <div className="mx-auto mt-12 grid max-w-3xl grid-cols-1 gap-3 text-left sm:grid-cols-3">
-                <div className="hero-stat-card rounded-2xl border border-white/10 bg-black/20 p-4 backdrop-blur-sm">
-                  <p className="text-2xl font-bold text-[#00f0ff]">48</p>
-                  <p className="mt-1 text-xs uppercase tracking-[0.14em] text-slate-400">Disciplinas</p>
-                </div>
-                <div className="rounded-2xl border border-white/10 bg-black/20 p-4 backdrop-blur-sm">
-                  <p className="text-sm font-bold text-white">Exercícios</p>
-                  <p className="mt-1 text-xs uppercase tracking-[0.14em] text-slate-400">Práticos e comentados</p>
-                </div>
-                <div className="rounded-2xl border border-white/10 bg-black/20 p-4 backdrop-blur-sm">
-                  <p className="text-sm font-bold text-white">Acesse onde estiver</p>
-                  <p className="mt-1 text-xs uppercase tracking-[0.14em] text-slate-400">Computador e celular</p>
-                </div>
+              <div>
+                <div className="text-3xl font-bold text-white mb-1">98%</div>
+                <div className="text-sm text-zinc-500 uppercase tracking-widest">Aprovação IA</div>
               </div>
-              <div className="hero-signal mx-auto mt-7 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs text-white/70 backdrop-blur-sm">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#00f0ff]" />
-                Conteúdo organizado por semestre e disciplina
+              <div>
+                <div className="text-3xl font-bold text-white mb-1">24/7</div>
+                <div className="text-sm text-zinc-500 uppercase tracking-widest">Suporte Ella</div>
               </div>
-              <a href="#recursos" className="hero-scroll-cue mx-auto mt-7 flex w-fit flex-col items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/55 transition-colors hover:text-white">
-                Explore os recursos
-                <span className="h-7 w-px bg-gradient-to-b from-[#00f0ff] to-transparent" aria-hidden="true" />
-              </a>
-            </div>
-
-          </main>
-
-          <div className="hero-marquee-shell overflow-hidden border-t border-white/10 py-5" aria-label="Recursos da plataforma">
-            <div className="hero-marquee flex w-max items-center gap-10 whitespace-nowrap text-sm font-semibold text-white/75 motion-reduce:animate-none">
-              <span>Apostilas</span><span className="text-[#00f0ff]">✦</span><span>Exercícios</span><span className="text-[#00f0ff]">✦</span><span>Flashcards</span><span className="text-[#00f0ff]">✦</span><span>Simulados</span><span className="text-[#00f0ff]">✦</span><span>Progresso</span><span className="text-[#00f0ff]">✦</span><span>Calendário</span><span className="text-[#00f0ff]">✦</span>
-              <span>Apostilas</span><span className="text-[#00f0ff]">✦</span><span>Exercícios</span><span className="text-[#00f0ff]">✦</span><span>Flashcards</span><span className="text-[#00f0ff]">✦</span><span>Simulados</span><span className="text-[#00f0ff]">✦</span><span>Progresso</span><span className="text-[#00f0ff]">✦</span><span>Calendário</span><span className="text-[#00f0ff]">✦</span>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* ═══ APP SHOWCASE (Veja por dentro) ═══ */}
-      <LazySection><AppShowcaseSection /></LazySection>
+        <FAQ />
 
-      {/* ═══ COMO FUNCIONA + NÚMEROS ═══ */}
-      <LazySection><HowItWorksSection /></LazySection>
-
-      {/* ═══ ELLA RIBEIRO — ASSISTENTE DE ESTUDOS ═══ */}
-      <LazySection><EllaFeatureSection /></LazySection>
-
-      {/* ═══ SOB O CAPÔ: ENGENHARIA + BENEFÍCIOS ═══ */}
-      <LazySection><PlatformEngineSection /></LazySection>
-
-
-
-      {/* ═══ RECURSOS ═══ */}
-      <section id="recursos" className="relative py-28 md:py-36">
-        <CyberGrid />
-        <GlowOrb className="w-[400px] h-[300px] top-20 right-0" style={{ background: 'rgba(168,85,247,0.06)' } as any} />
-
-        <div className="max-w-7xl mx-auto px-5 relative">
-          <ScrollReveal>
-            <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: '#00f0ff' }}>
-              <Rocket className="h-3 w-3 inline mr-2" />Recursos da Plataforma
-            </span>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mt-3 leading-tight">
-              Tudo para você
-              <br />
-              <span style={{ color: '#64748b' }}>estudar melhor.</span>
-            </h2>
-          </ScrollReveal>
-
-          {/* Irregular grid: 1 large + rest small */}
-          <div className="grid lg:grid-cols-3 gap-4 mt-14">
-            {/* Featured card */}
-            <ScrollReveal className="lg:col-span-2 lg:row-span-2" delay={0.1}>
-              <div
-                className="h-full rounded-xl p-8 md:p-10 relative overflow-hidden group transition-all duration-500 hover:shadow-[0_0_40px_rgba(0,240,255,0.1)]"
-                style={{ background: 'linear-gradient(135deg, #0a0a14, #0f0f1a)', border: '1px solid rgba(0,240,255,0.1)' }}
-              >
-                <div className="absolute top-0 right-0 w-60 h-60 rounded-full blur-[100px] opacity-20" style={{ background: '#00f0ff' }} />
-                <div className="relative">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="p-3 rounded-lg" style={{ background: 'rgba(0,240,255,0.1)', border: '1px solid rgba(0,240,255,0.15)' }}>
-                      <BookOpen className="h-6 w-6" style={{ color: '#00f0ff' }} />
-                    </div>
-                    <span className="text-[10px] uppercase tracking-[0.15em] px-2.5 py-1 rounded-full font-semibold" style={{ background: 'rgba(0,240,255,0.1)', color: '#00f0ff' }}>
-                      Em Destaque
-                    </span>
-                  </div>
-                  <h3 className="text-2xl md:text-3xl font-bold mb-3">Apostilas Completas</h3>
-                  <p className="text-sm md:text-base leading-relaxed max-w-md" style={{ color: '#94a3b8' }}>
-                    Conteúdo estruturado e organizado por semestre e disciplina.
-                    48 disciplinas do 1º ao 8º semestre — com exercícios, resumos e material de apoio.
-                  </p>
-                  <div className="flex flex-wrap gap-2 mt-6">
-                    {['CC', 'SI', 'EC', '1º-8º Sem.', '48 Disciplinas'].map(tag => (
-                      <span key={tag} className="px-2.5 py-1 rounded text-[10px] font-semibold uppercase tracking-wider" style={{ background: 'rgba(0,240,255,0.06)', color: '#00f0ff', border: '1px solid rgba(0,240,255,0.12)' }}>
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                  <div className="mt-8">
-                    <button onClick={() => navigate('/login')} className="inline-flex items-center gap-2 text-sm font-semibold group-hover:gap-3 transition-all" style={{ color: '#00f0ff' }}>
-                      Acessar apostilas <ArrowRight className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </ScrollReveal>
-
-            {/* Feature cards */}
-            {features.map((feat, i) => (
-              <ScrollReveal key={feat.name} delay={0.15 + i * 0.08}>
-                <div
-                  className="rounded-xl p-5 h-full group transition-all duration-500 hover:translate-y-[-4px]"
-                  style={{ background: '#0a0a12', border: '1px solid rgba(255,255,255,0.06)' }}
-                >
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="p-2 rounded-lg" style={{ background: `${feat.color}10`, border: `1px solid ${feat.color}20` }}>
-                      <feat.icon className="h-4 w-4" style={{ color: feat.color }} />
-                    </div>
-                  </div>
-                  <h4 className="text-sm font-semibold mb-1 group-hover:text-white transition-colors" style={{ color: '#cbd5e1' }}>{feat.name}</h4>
-                  <p className="text-xs" style={{ color: '#475569' }}>{feat.desc}</p>
-                </div>
-              </ScrollReveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ═══ ROADMAP / TRILHA ACADÊMICA ═══ */}
-      <section id="roadmap" className="relative py-28 md:py-36" style={{ background: 'linear-gradient(180deg, rgba(5,5,8,0.4) 0%, rgba(10,10,20,0.55) 50%, rgba(5,5,8,0.4) 100%)' }}>
-        <div className="max-w-7xl mx-auto px-5">
-          <div className="grid lg:grid-cols-2 gap-16 items-start">
-            {/* Left — sticky text */}
-            <ScrollReveal>
-              <div className="lg:sticky lg:top-28">
-                <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: '#a855f7' }}>
-                  <Layers className="h-3 w-3 inline mr-2" />Trilha Acadêmica
-                </span>
-                <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mt-3 mb-5 leading-tight">
-                  Do básico ao
-                  <br />
-                  <span style={{ color: '#a855f7' }}>avançado.</span>
-                </h2>
-                <p className="text-sm leading-relaxed max-w-md" style={{ color: '#94a3b8' }}>
-                  Um roadmap estruturado que acompanha sua jornada acadêmica.
-                  Cada fase constrói sobre a anterior com apostilas e exercícios práticos.
-                </p>
-                <button
-                  onClick={() => navigate('/login')}
-                  className="mt-8 inline-flex items-center gap-3 px-6 py-3 rounded-lg text-sm font-bold uppercase tracking-wider transition-all duration-300 hover:shadow-[0_0_30px_rgba(168,85,247,0.25)]"
-                  style={{ background: '#a855f7', color: '#fff' }}
-                >
-                  Iniciar trilha <ArrowRight className="h-4 w-4" />
-                </button>
-              </div>
-            </ScrollReveal>
-
-            {/* Right — roadmap cards */}
-            <div className="space-y-4">
-              {roadmap.map((step, i) => (
-                <ScrollReveal key={step.phase} delay={i * 0.1}>
-                  <div
-                    className="rounded-xl p-6 relative group transition-all duration-500 hover:translate-x-2"
-                    style={{ background: '#0a0a12', border: '1px solid rgba(168,85,247,0.08)' }}
-                  >
-                    <div className="flex items-start gap-5">
-                      <div className="shrink-0 w-12 h-12 rounded-lg flex items-center justify-center" style={{ background: 'rgba(168,85,247,0.1)', border: '1px solid rgba(168,85,247,0.15)' }}>
-                        <step.icon className="h-5 w-5" style={{ color: '#a855f7' }} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-3 mb-1">
-                          <span className="text-[10px] font-bold tracking-[0.15em]" style={{ color: '#a855f7' }}>{step.phase}</span>
-                          <h4 className="text-sm font-bold">{step.title}</h4>
-                        </div>
-                        <p className="text-xs leading-relaxed" style={{ color: '#64748b' }}>{step.desc}</p>
-                      </div>
-                      <ChevronRight className="h-4 w-4 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: '#a855f7' }} />
-                    </div>
-                  </div>
-                </ScrollReveal>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ═══ DASHBOARD PREVIEW — Sticky Apple-style ═══ */}
-      <section className="relative py-28 md:py-36">
-        <GlowOrb className="w-[500px] h-[400px] top-1/3 left-1/2 -translate-x-1/2" style={{ background: 'rgba(0,240,255,0.04)' } as any} />
-
-        <div className="max-w-7xl mx-auto px-5">
-          <ScrollReveal className="text-center mb-16">
-            <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color: '#00f0ff' }}>
-              <BarChart3 className="h-3 w-3 inline mr-2" />Dashboard
-            </span>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mt-3">
-              Acompanhe sua
-              <br />
-              <span style={{ color: '#00f0ff' }}>evolução.</span>
-            </h2>
-          </ScrollReveal>
-
-          <ScrollReveal delay={0.2}>
-            <ParallaxBlock speed={0.15}>
-              <div
-                className="rounded-2xl overflow-hidden mx-auto max-w-4xl"
-                style={{ background: '#0a0a12', border: '1px solid rgba(0,240,255,0.1)', boxShadow: '0 20px 80px rgba(0,240,255,0.08)' }}
-              >
-                <div className="p-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                  <div className="flex items-center gap-2">
-                    <div className="flex gap-1.5">
-                      <div className="w-2.5 h-2.5 rounded-full bg-red-500/80" />
-                      <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/80" />
-                      <div className="w-2.5 h-2.5 rounded-full bg-green-500/80" />
-                    </div>
-                    <span className="text-[10px] ml-2 uppercase tracking-wider" style={{ color: '#475569' }}>Decode Analytics Dashboard</span>
-                  </div>
-                </div>
-                <div className="p-6 md:p-8">
-                  <div className="grid grid-cols-3 gap-4 mb-6">
-                    {[
-                      { label: 'Apostilas Lidas', value: '12', change: '+3 esta semana' },
-                      { label: 'XP Total', value: '2,450', change: 'Nível 8' },
-                      { label: 'Streak', value: '7 dias', change: 'Recorde: 14' },
-                    ].map((m) => (
-                      <div key={m.label} className="rounded-lg p-4" style={{ background: 'rgba(0,240,255,0.03)', border: '1px solid rgba(0,240,255,0.06)' }}>
-                        <p className="text-[10px] uppercase tracking-wider mb-1" style={{ color: '#64748b' }}>{m.label}</p>
-                        <p className="text-xl font-bold" style={{ color: '#00f0ff' }}>{m.value}</p>
-                        <p className="text-[10px] mt-1" style={{ color: '#475569' }}>{m.change}</p>
-                      </div>
-                    ))}
-                  </div>
-                  {/* Fake chart */}
-                  <div className="rounded-lg p-4 h-32 flex items-end gap-1.5" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}>
-                    {[40, 65, 45, 80, 55, 90, 70, 95, 60, 85, 75, 100].map((h, i) => (
-                      <motion.div
-                        key={i}
-                        initial={{ height: 0 }}
-                        whileInView={{ height: `${h}%` }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.6, delay: i * 0.05, ease: [0.22, 1, 0.36, 1] }}
-                        className="flex-1 rounded-sm"
-                        style={{ background: `linear-gradient(to top, rgba(0,240,255,0.3), rgba(0,240,255,0.8))` }}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </ParallaxBlock>
-          </ScrollReveal>
-        </div>
-      </section>
-
-      {/* ═══ POR QUE DECODE ═══ */}
-      <section className="relative py-28 md:py-36" style={{ background: 'linear-gradient(180deg, rgba(5,5,8,0.4) 0%, rgba(13,13,22,0.55) 50%, rgba(5,5,8,0.4) 100%)' }}>
-        <div className="max-w-7xl mx-auto px-5">
-          <ScrollReveal className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold">
-              Estude com
-              <br />
-              <span style={{ color: '#64748b' }}>inteligência.</span>
-            </h2>
-          </ScrollReveal>
-
-          <div className="grid md:grid-cols-2 gap-4 max-w-4xl mx-auto">
-            <ScrollReveal delay={0.1}>
-              <div
-                className="rounded-xl p-8 relative overflow-hidden group transition-all duration-500 hover:shadow-[0_0_40px_rgba(0,240,255,0.1)]"
-                style={{ background: 'linear-gradient(135deg, #0a0a12, #0a0f14)', border: '1px solid rgba(0,240,255,0.1)' }}
-              >
-                <div className="absolute top-0 right-0 w-40 h-40 rounded-full blur-[80px] opacity-10" style={{ background: '#00f0ff' }} />
-                <div className="relative">
-                  <div className="p-3 rounded-lg inline-flex mb-5" style={{ background: 'rgba(0,240,255,0.1)', border: '1px solid rgba(0,240,255,0.15)' }}>
-                    <TrendingUp className="h-5 w-5" style={{ color: '#00f0ff' }} />
-                  </div>
-                  <h3 className="text-xl font-bold mb-2" style={{ color: '#00f0ff' }}>Progresso Visível</h3>
-                  <p className="text-sm leading-relaxed" style={{ color: '#94a3b8' }}>
-                    Dashboard completo com gráficos de evolução, heatmap de estudos, ranking e acompanhamento por disciplina.
-                  </p>
-                  <ul className="mt-4 space-y-2">
-                    {['Gráficos de Evolução', 'Heatmap de Estudos', 'XP & Níveis', 'Ranking entre Alunos'].map(item => (
-                      <li key={item} className="flex items-center gap-2 text-xs" style={{ color: '#64748b' }}>
-                        <div className="w-1 h-1 rounded-full" style={{ background: '#00f0ff' }} />
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </ScrollReveal>
-
-            <ScrollReveal delay={0.2}>
-              <div
-                className="rounded-xl p-8 relative overflow-hidden group transition-all duration-500 hover:shadow-[0_0_40px_rgba(168,85,247,0.1)]"
-                style={{ background: 'linear-gradient(135deg, #0a0a12, #0f0a14)', border: '1px solid rgba(168,85,247,0.1)' }}
-              >
-                <div className="absolute top-0 right-0 w-40 h-40 rounded-full blur-[80px] opacity-10" style={{ background: '#a855f7' }} />
-                <div className="relative">
-                  <div className="p-3 rounded-lg inline-flex mb-5" style={{ background: 'rgba(168,85,247,0.1)', border: '1px solid rgba(168,85,247,0.15)' }}>
-                    <CheckCircle className="h-5 w-5" style={{ color: '#a855f7' }} />
-                  </div>
-                  <h3 className="text-xl font-bold mb-2" style={{ color: '#a855f7' }}>Exercícios Práticos</h3>
-                  <p className="text-sm leading-relaxed" style={{ color: '#94a3b8' }}>
-                    Exercícios de fixação com gabarito comentado e explicações detalhadas para cada alternativa.
-                  </p>
-                  <ul className="mt-4 space-y-2">
-                    {['Múltipla Escolha', 'Gabarito Comentado', 'Modo Simulado', 'Cronômetro Integrado'].map(item => (
-                      <li key={item} className="flex items-center gap-2 text-xs" style={{ color: '#64748b' }}>
-                        <div className="w-1 h-1 rounded-full" style={{ background: '#a855f7' }} />
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </ScrollReveal>
-          </div>
-        </div>
-      </section>
-
-
-      {/* ═══ FAQ ═══ */}
-      <section className="relative py-28 md:py-36">
-        <div className="max-w-2xl mx-auto px-5">
-          <ScrollReveal className="text-center mb-14">
-            <h2 className="text-3xl sm:text-4xl font-bold">Perguntas frequentes</h2>
-          </ScrollReveal>
-
-          <div className="space-y-2">
-            {faqs.map((faq, i) => (
-              <ScrollReveal key={i} delay={i * 0.05}>
-                <div className="rounded-xl overflow-hidden" style={{ background: '#0a0a12', border: '1px solid rgba(255,255,255,0.06)' }}>
-                  <button
-                    onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                    className="w-full flex items-center justify-between p-5 text-left transition-colors hover:bg-white/[0.02]"
-                  >
-                    <span className="text-sm font-medium pr-4">{faq.q}</span>
-                    <motion.div animate={{ rotate: openFaq === i ? 180 : 0 }} transition={{ duration: 0.3 }}>
-                      <ChevronRight className="h-4 w-4 rotate-90" style={{ color: '#64748b' }} />
-                    </motion.div>
-                  </button>
-                  <motion.div
-                    initial={false}
-                    animate={{ height: openFaq === i ? 'auto' : 0, opacity: openFaq === i ? 1 : 0 }}
-                    transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                    className="overflow-hidden"
-                  >
-                    <p className="px-5 pb-5 text-sm leading-relaxed" style={{ color: '#94a3b8' }}>{faq.a}</p>
-                  </motion.div>
-                </div>
-              </ScrollReveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ═══ FINAL CTA ═══ */}
-      <section className="relative py-28 md:py-36">
-        <GlowOrb className="w-[600px] h-[400px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" style={{ background: 'rgba(0,240,255,0.05)' } as any} />
-
-        <ScrollReveal className="max-w-3xl mx-auto px-5 text-center relative">
-          <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold leading-tight">
-            Pare de improvisar.
-            <br />
-            Comece a
-            <br />
-            <span style={{ color: '#00f0ff' }}>estudar de verdade.</span>
-          </h2>
-          <p className="text-sm mt-6 max-w-md mx-auto" style={{ color: '#94a3b8' }}>
-            Apostilas, exercícios, flashcards e gamificação. Tudo em um só lugar.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-10">
-            <button
-              onClick={() => navigate('/login')}
-              className="inline-flex items-center gap-3 px-8 py-4 rounded-lg text-sm font-bold uppercase tracking-wider transition-all duration-300 hover:shadow-[0_0_40px_rgba(0,240,255,0.3)]"
-              style={{ background: '#00f0ff', color: '#050508' }}
-            >
-              <GraduationCap className="h-4 w-4" /> Acessar plataforma
-            </button>
-            <button
-              onClick={handleInstallPWA}
-              className="inline-flex items-center gap-2 text-sm font-semibold transition-colors"
-              style={{ color: '#64748b' }}
-            >
-              <Download className="h-4 w-4" /> Instalar app
-            </button>
-          </div>
-        </ScrollReveal>
-      </section>
-
-      {/* ═══ PROVA SOCIAL ═══ */}
-      <LazySection><div id="depoimentos"><TestimonialsSection /></div></LazySection>
-
-      {/* ═══ OBJEÇÕES: FAQ ═══ */}
-      <LazySection><FaqSection /></LazySection>
-
-      {/* ═══ APP AO VIVO / INSTALAÇÃO ═══ */}
-      <LazySection><LiveAppSection /></LazySection>
-
-      {/* ═══ CREATOR / DE ALUNO PARA ALUNO ═══ */}
-      <LazySection><CreatorSection /></LazySection>
-
-      {/* ═══ ANUNCIANTES / PATROCINADORES ═══ */}
-      <LazySection><SponsorsSection /></LazySection>
-
-      {/* ═══ REDES SOCIAIS + WRITELAB ═══ */}
-      <LazySection><SocialAndProjectsSection /></LazySection>
-
-      {/* ═══ CTA FIXO (mobile) — em portal para escapar de transforms de ancestrais ═══ */}
-      {typeof document !== 'undefined' && createPortal(
-        <div
-          className={`fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#050508]/92 px-4 py-3 backdrop-blur-md transition-transform duration-300 md:hidden ${showStickyCta ? 'translate-y-0' : 'translate-y-full'}`}
-          style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}
-        >
-          <div className="flex items-center gap-3">
-            <Button
-              onClick={() => navigate('/login')}
-              className="h-11 flex-1 rounded-full bg-[#00f0ff] text-sm font-bold text-[#050508] hover:bg-[#75f6ff]"
-            >
-              Começar a estudar <ArrowRight className="ml-2 h-4 w-4" />
+        {/* CTA Section */}
+        <section className="py-24 relative overflow-hidden">
+          <div className="container mx-auto px-4 text-center relative z-10">
+            <h2 className="text-4xl font-bold text-white mb-6">Pronto para elevar seu nível?</h2>
+            <p className="text-zinc-400 mb-10 max-w-xl mx-auto text-lg">
+              Junte-se a centenas de alunos que já estão acelerando seus estudos com a Decode Academy.
+            </p>
+            <Button size="lg" className="h-16 px-12 text-xl font-bold bg-primary hover:bg-primary/90 text-primary-foreground shadow-[0_0_30px_rgba(0,240,255,0.2)]" onClick={() => navigate('/auth')}>
+              Começar Gratuitamente
             </Button>
-            <button
-              onClick={handleInstallPWA}
-              aria-label="Instalar aplicativo"
-              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-white/5 text-white"
-            >
-              <Download className="h-4 w-4" />
-            </button>
           </div>
-        </div>,
-        document.body,
-      )}
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/5 to-transparent pointer-events-none" />
+        </section>
+      </main>
 
-
-      {/* ═══ FOOTER ═══ */}
-
-      <footer className="py-10 px-5" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-        <div className="max-w-7xl mx-auto flex flex-col items-center gap-4">
-          <div className="flex items-center gap-2.5">
-            <picture>
-              <source type="image/avif" srcSet={`${logoAvif1x} 1x, ${logoAvif2x} 2x`} />
-              <source type="image/webp" srcSet={`${logoWebp1x} 1x, ${logoWebp2x} 2x`} />
-              <img src={logoPng1x} srcSet={`${logoPng1x} 1x, ${logoPng2x} 2x`} alt="Decode Analytics" width={32} height={32} loading="lazy" decoding="async" className="h-8 w-8 object-contain drop-shadow-[0_0_10px_rgba(0,240,255,0.45)]" />
-            </picture>
-            <span className="text-[11px] font-semibold uppercase tracking-[0.2em]" style={{ color: '#00f0ff' }}>Decode Analytics</span>
+      <footer className="border-t border-zinc-900 bg-[#050508] py-12">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-8 mb-8 text-center md:text-left">
+            <div>
+              <div className="flex items-center gap-2 mb-4 justify-center md:justify-start">
+                <div className="h-6 w-6 rounded bg-primary flex items-center justify-center font-bold text-[10px] text-primary-foreground">D</div>
+                <span className="font-bold text-white tracking-tighter">DECODE ACADEMY</span>
+              </div>
+              <p className="text-zinc-500 max-w-sm text-sm">
+                Desenvolvido por Kaique Aurelio & Decode Analytics. <br />
+                Plataforma de alta performance para o ensino de tecnologia.
+              </p>
+            </div>
+            <div className="flex gap-10">
+              <div className="flex flex-col gap-3">
+                <h4 className="text-white font-semibold text-sm">Legal</h4>
+                <a href="/termos" className="text-zinc-500 hover:text-cyan-400 text-sm transition-colors">Termos de Uso</a>
+                <a href="/privacidade" className="text-zinc-500 hover:text-cyan-400 text-sm transition-colors">Privacidade</a>
+              </div>
+              <div className="flex flex-col gap-3">
+                <h4 className="text-white font-semibold text-sm">Plataforma</h4>
+                <a href="/apoie" className="text-zinc-500 hover:text-cyan-400 text-sm transition-colors">Apoie o Projeto</a>
+                <a href="/news" className="text-zinc-500 hover:text-cyan-400 text-sm transition-colors">Blog Tech</a>
+              </div>
+            </div>
           </div>
-
-          {/* Selo "feito por aluno" */}
-          <div
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-mono uppercase tracking-[0.15em]"
-            style={{
-              background: 'rgba(0,240,255,0.06)',
-              border: '1px solid rgba(0,240,255,0.2)',
-              color: '#00f0ff',
-            }}
-          >
-            
-            Feito por aluno · para alunos
+          <div className="pt-8 border-t border-zinc-900 text-center text-zinc-600 text-xs">
+            © 2026 Decode Analytics Academy. Todos os direitos reservados.
           </div>
-
-          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 mt-2">
-            <a href="/termos" className="text-[10px] uppercase tracking-[0.15em] hover:text-primary transition-colors" style={{ color: '#64748b' }}>Termos de Uso</a>
-            <a href="/transparencia" className="text-[10px] uppercase tracking-[0.15em] hover:text-primary transition-colors" style={{ color: '#64748b' }}>Transparência de Dados</a>
-            
-          </div>
-
-          <p className="text-[10px] uppercase tracking-[0.15em] text-center mt-4" style={{ color: '#475569' }}>
-            Desenvolvido por: Kaique Aurelio &amp; Decode Analytics
-          </p>
         </div>
       </footer>
-
-      {/* Install Guide Modal */}
-      <Dialog open={showInstallGuide} onOpenChange={setShowInstallGuide}>
-        <DialogContent className="max-w-sm" style={{ background: '#0a0a12', border: '1px solid rgba(0,240,255,0.1)', color: '#e2e8f0' }}>
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-base">
-              <Smartphone className="w-5 h-5" style={{ color: '#00f0ff' }} />
-              Instalar o App
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <p className="text-sm" style={{ color: '#94a3b8' }}>
-              Para instalar, abra o site publicado no navegador do seu celular:
-            </p>
-            <div className="p-3 rounded-lg" style={{ background: 'rgba(0,240,255,0.06)', border: '1px solid rgba(0,240,255,0.12)' }}>
-              <p className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: '#00f0ff' }}>Link:</p>
-              <a
-                href={appOrigin}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm font-semibold underline break-all"
-                style={{ color: '#00f0ff' }}
-              >
-                {appOrigin.replace(/^https?:\/\//, '')}
-              </a>
-
-            </div>
-            <div className="space-y-3 text-sm" style={{ color: '#94a3b8' }}>
-              <div className="p-3 rounded-lg" style={{ background: 'rgba(255,255,255,0.03)' }}>
-                <p className="font-semibold mb-1" style={{ color: '#e2e8f0' }}>iPhone / iPad (Safari)</p>
-                <p>1. Abra no <strong>Safari</strong> → 2. <strong>Compartilhar ↑</strong> → 3. <strong>Adicionar à Tela</strong></p>
-              </div>
-              <div className="p-3 rounded-lg" style={{ background: 'rgba(255,255,255,0.03)' }}>
-                <p className="font-semibold mb-1" style={{ color: '#e2e8f0' }}>Android (Chrome)</p>
-                <p>1. Abra no <strong>Chrome</strong> → 2. <strong>Menu ⋮</strong> → 3. <strong>Instalar app</strong></p>
-              </div>
-            </div>
-            <button
-              onClick={() => setShowInstallGuide(false)}
-              className="w-full py-2.5 rounded-lg text-sm font-semibold"
-              style={{ background: '#00f0ff', color: '#050508' }}
-            >
-              Entendi
-            </button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
