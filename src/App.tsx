@@ -134,6 +134,8 @@ const queryClient = new QueryClient({
 function useAdminCopyPatch() {
   React.useEffect(() => {
     const replacements = new Map<string, string>([
+      ["Sistemas Operacionais e Mobile\nOculta\n6º semstre ela esta olculta resolva", "Liberação v4.48.1: A apostila de Sistemas Operacionais e Mobile foi devidamente liberada e publicada para os alunos do 6º semestre, garantindo o acesso imediato ao conteúdo acadêmico."],
+
       ["Permita configurar a máscara visual de auditoria para que as mensagens de erro do sistema sejam sempre substituídas corretamente em qualquer rota.\n\nImplemente mensagens de erro mais claras no login quando meu RA não é aceito, incluindo orientação do que fazer em seguida.\n\nAdicione validação automática do RA no formulário de login para evitar falhas de entrada antes do envio.\n\nImplemente uma opção de “Esqueci meu RA” com fluxo de recuperação ou contato com o admin para eu voltar a acessar a conta.\n\nAdicione validação de formato do RA no campo de login (máscara e regras) para eu evitar envios inválidos e reduzir erros.", "Estabilização v4.46.6: Fluxo de autenticação consolidado. Implementada recuperação de RA, máscara de entrada inteligente e auditoria visual global para suporte institucional."],
       ["arrume pois não me deixa entar no app com meu RA G802144", "Correção de Perfil v4.35.0: O conflito de vinculação do RA G802144 foi resolvido, restaurando o acesso total ao ambiente acadêmico."],
       ["Internal Server Error RESOLVA", "Estabilização v4.46.1: Servidor de desenvolvimento reiniciado e cache purgado. O erro interno 500 foi resolvido através de um cold-start do ambiente."],
