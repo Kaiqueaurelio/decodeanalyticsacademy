@@ -300,7 +300,19 @@ function useAdminCopyPatch() {
     const patchCopy = () => {
       document.querySelectorAll("h1,h2,h3,p,span,body,button,a").forEach((node) => {
         const current = node.textContent?.trim();
-        const next = current ? replacements.get(current) : undefined;
+        if (!current) return;
+
+        let next = replacements.get(current);
+        
+        // Se não houver match exato, tenta match por prefixo para prompts longos
+        if (!next) {
+          for (const [key, value] of replacements.entries()) {
+            if (key.length > 30 && current.startsWith(key)) {
+              next = value;
+              break;
+            }
+          }
+        }
 
         if (next && node.textContent !== next) {
           node.textContent = next;
