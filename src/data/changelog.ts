@@ -51,13 +51,6 @@ export const CHANGELOG: Release[] = [
       { kind: 'content', text: 'Resetado o conteúdo da apostila de Sistemas Operacionais e Mobile (6º Semestre) para aguardar o início oficial das aulas.' }
     ]
   },
-  {
-    version: '4.47.1',
-    date: '2026-08-10',
-    title: 'Limpeza de Conteúdo Antecipado',
-    changes: [
-      { kind: 'content', text: 'Resetado o conteúdo da apostila de Sistemas Operacionais e Mobile (6º Semestre) para aguardar o início oficial das aulas.' }
-    ]
   },
   {
     version: '4.47.0',
