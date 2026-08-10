@@ -32,17 +32,27 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.48.5',
+    version: '4.48.6',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.48.5-release',
-    commitMessage: 'Release v4.48.5: UX Audit & Desktop Refinement'
+    commit: 'v4.48.6-release',
+    commitMessage: 'Release v4.48.6: Cache Stability & Silent Refresh'
   };
 }
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: '4.48.6',
+    date: '2026-08-10',
+    title: 'Estabilidade de Cache & Refresh Silencioso',
+    changes: [
+      { kind: 'fix', text: 'Otimizada a política do Service Worker para priorizar a rede no index.html e scripts (v4.48.6).' },
+      { kind: 'improvement', text: 'Implementada limpeza forçada de caches desatualizados no ErrorBoundary para evitar avisos de atualização.' },
+      { kind: 'fix', text: 'Resolvida a falha que exibia mensagens de "arquivos antigos" ao navegar entre seções administrativas.' }
+    ]
+  },
   {
     version: '4.48.5',
     date: '2026-08-10',
