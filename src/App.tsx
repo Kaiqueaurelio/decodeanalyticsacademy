@@ -1,4 +1,4 @@
-/**
+// verifique para ver se realmente funciona por favor
  * DECODE ANALYTICS ACADEMY - v4.46.7
 
  * 
