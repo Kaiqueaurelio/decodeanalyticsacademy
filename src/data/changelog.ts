@@ -34,7 +34,7 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.32.0',
+    version: '4.33.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
@@ -44,6 +44,16 @@ export function getBuildInfo() {
 }
 
 export const CHANGELOG: Release[] = [
+  {
+    version: '4.33.0',
+    date: '2026-08-10',
+    title: 'Apoio à Missão Educacional',
+    major: true,
+    changes: [
+      { kind: 'feature', text: 'Implementada aba de Apoio à Missão com redesign elegante e foco em contribuição voluntária via Buy Me a Coffee.' },
+      { kind: 'improvement', text: 'Atualização visual da barra lateral com ícone de café e chamada discreta para suporte ao projeto.' },
+    ]
+  },
   {
     version: '4.32.0',
     date: '2026-08-10',
