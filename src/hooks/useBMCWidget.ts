@@ -15,7 +15,7 @@ export function useBMCWidget() {
     script.setAttribute('data-id', 'decodeanalyticsacademy');
     script.setAttribute('data-description', 'Support me on Buy me a coffee!');
     script.setAttribute('data-message', 'Seja Um Apoiador');
-    script.setAttribute('data-color', '#00f0ff'); // Ciano Decode
+    script.setAttribute('data-color', '#5F7FFF'); // Azul conforme solicitado
     script.setAttribute('data-position', 'Right');
     script.setAttribute('data-x_margin', '18');
     script.setAttribute('data-y_margin', '18');
@@ -26,7 +26,9 @@ export function useBMCWidget() {
     return () => {
       // Remove o widget ao desmontar, se necessário (opcional para apps SPA)
       const widget = document.getElementById('bmc-wbtn');
+      const container = document.querySelector('.bmc-wbtn-container');
       if (widget) widget.remove();
+      if (container) container.remove();
     };
   }, []);
 }
