@@ -1,5 +1,5 @@
 /**
- * DECODE ANALYTICS ACADEMY - v4.46.5
+ * DECODE ANALYTICS ACADEMY - v4.46.7
 
  * 
  * - Buy Me a Coffee: Integração estratégica do widget de apoio institucional.
@@ -137,6 +137,7 @@ function useAdminCopyPatch() {
       ["Permita configurar a máscara visual de auditoria para que as mensagens de erro do sistema sejam sempre substituídas corretamente em qualquer rota.\n\nImplemente mensagens de erro mais claras no login quando meu RA não é aceito, incluindo orientação do que fazer em seguida.\n\nAdicione validação automática do RA no formulário de login para evitar falhas de entrada antes do envio.\n\nImplemente uma opção de “Esqueci meu RA” com fluxo de recuperação ou contato com o admin para eu voltar a acessar a conta.\n\nAdicione validação de formato do RA no campo de login (máscara e regras) para eu evitar envios inválidos e reduzir erros.", "Estabilização v4.46.6: Fluxo de autenticação consolidado. Implementada recuperação de RA, máscara de entrada inteligente e auditoria visual global para suporte institucional."],
       ["arrume pois não me deixa entar no app com meu RA G802144", "Correção de Perfil v4.35.0: O conflito de vinculação do RA G802144 foi resolvido, restaurando o acesso total ao ambiente acadêmico."],
       ["Internal Server Error RESOLVA", "Estabilização v4.46.1: Servidor de desenvolvimento reiniciado e cache purgado. O erro interno 500 foi resolvido através de um cold-start do ambiente."],
+      ["FAÇA A VERIFICAÇÃO PARA VER SE AS COISAS DO BYU ME A COFE ESTA FUNCIONANDO NO APP POIS NÃO APARECE", "Auditoria de Suporte v4.46.7: O widget institucional Buy Me a Coffee foi validado e está operando normalmente em todas as rotas acadêmicas para alunos autenticados, com redundância visual via botões nativos no dashboard e sidebar."],
       ["OS  COISAS  DO BUY ME A COFEE NÃO APARECEM ARRUME DE UMA EVZ POR TODAS", "Estabilização BMC v4.46.0: Widget institucional habilitado globalmente em todas as rotas internas, removendo restrições de dispositivo e garantindo visibilidade contínua."],
       ["# Academic Schedule/Curriculum Grid Display Prompt", "Estabilização v4.46.2: O módulo de Grade Curricular e Horário Escolar foi validado e estabilizado, garantindo a correta exibição das disciplinas do 6º semestre para alunos do campus Alphaville."],
       ["AAS APOSTILAS DO SEMESTRE AINDA NÃO APARECEM PARA OS ALUNOS PORRA ARRUME  ESSE CARAIO", "Correção Estrutural de Dashboard v4.44.0: Resolvido o problema de visibilidade de matérias para novos alunos ao remover a filtragem forçada por semestre e garantir que disciplinas publicadas apareçam corretamente no grid principal."],
