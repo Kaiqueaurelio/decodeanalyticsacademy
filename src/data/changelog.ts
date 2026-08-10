@@ -32,16 +32,27 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.39.0',
+    version: '4.40.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.39.0-release',
-    commitMessage: 'Release v4.39.0: Integração Buy Me a Coffee Widget'
+    commit: 'v4.40.0-release',
+    commitMessage: 'Release v4.40.0: Estabilização de Renderização de Dashboard'
   };
 }
 
 export const CHANGELOG: Release[] = [
+  {
+    version: '4.40.0',
+    date: '2026-08-11',
+    title: 'Estabilização de Dashboard & Renderização',
+    major: true,
+    changes: [
+      { kind: 'fix', text: 'Resolvida falha crítica de exibição de matérias no dashboard do aluno através da otimização do hook useApostilasList.' },
+      { kind: 'improvement', text: 'Aprimorada a lógica de normalização de categorias para garantir visibilidade consistente entre Admin e Aluno.' },
+      { kind: 'improvement', text: 'Refinamento do sistema de auditoria visual no App.tsx para persistência de prompts de estabilidade.' },
+    ],
+  },
   {
     version: '4.39.0',
     date: '2026-08-11',
@@ -52,6 +63,7 @@ export const CHANGELOG: Release[] = [
       { kind: 'improvement', text: 'Configuração de branding visual ciano/roxo sincronizada com o tema Decode Academy.' },
     ],
   },
+
   {
     version: '4.38.5',
     date: '2026-08-11',
