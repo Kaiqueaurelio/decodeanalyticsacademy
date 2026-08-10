@@ -934,7 +934,7 @@ export default function LandingPage() {
           <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 mt-2">
             <a href="/termos" className="text-[10px] uppercase tracking-[0.15em] hover:text-primary transition-colors" style={{ color: '#64748b' }}>Termos de Uso</a>
             <a href="/transparencia" className="text-[10px] uppercase tracking-[0.15em] hover:text-primary transition-colors" style={{ color: '#64748b' }}>Transparência de Dados</a>
-            <a href="/apoie" className="text-[10px] uppercase tracking-[0.15em] hover:text-primary transition-colors" style={{ color: '#64748b' }}>Apoiar Projeto</a>
+            
           </div>
 
           <p className="text-[10px] uppercase tracking-[0.15em] text-center mt-4" style={{ color: '#475569' }}>
