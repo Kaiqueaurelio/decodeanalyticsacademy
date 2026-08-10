@@ -1,47 +1,12 @@
 /**
- * DECODE ANALYTICS ACADEMY - v4.46.7
-
+ * DECODE ANALYTICS ACADEMY - v4.49.0
  * 
+ * - Matérias & Pastas: Reestruturação completa do dashboard para agrupamento por disciplina.
+ * - Multi-Materiais: Suporte para múltiplos cadernos e apostilas sob a mesma matéria.
+ * - Placeholders Inteligentes: Sincronização automática com a grade acadêmica da UNIP.
  * - Buy Me a Coffee: Integração estratégica do widget de apoio institucional.
  * - Chicago Click Game: Integração de mecânica de gamificação para engajamento.
  * - Monitoramento & Estabilidade: Painel de diagnóstico em tempo real.
- * 
- * ---
- * 
- * ## Gamification Strategy Overview
- * 
- * ### Core Concept
- * Transform learning into an engaging game experience where students earn points, badges, and rewards through their educational activities and daily interactions.
- * 
- * The "Chicago Click Game" serves as:
- * - Primary engagement driver
- * - Reward mechanism for learning
- * - Daily motivation hook
- * - Progress visualization
- * - Community competition element
- * 
- * ---
- * 
- * ## Game Mechanics Implementation
- * 
- * ### 1. Points & Scoring System
- * 
- * #### Point Generation Triggers
- * DECODE ANALYTICS ACADEMY - v4.37.0
- * 
-
-
-
-
- * 
- * - Sound Design: Feedback sonoro futurista e imersivo.
- * - Modo Foco: Leitor de apostilas otimizado para concentração.
- * - Auditoria Técnica 360º: Validação integral de fluxos Aluno/Admin sem regressões.
- * - Análise Comparativa: Diagnóstico de maturidade e unificação de instâncias.
- * - UX & Acessibilidade: Refinamento de conversão e contraste universal.
- * - Autoridade & Transparência: Otimização SEO (Meta tags) e links institucionais.
- * - Páginas Institucionais: Conteúdo completo de Termos e Transparência.
- * - Privacidade Avançada: Banner de consentimento de cookies com gestão granular.
  */
 
 import React, { Suspense, lazy } from "react";
