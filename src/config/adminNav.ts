@@ -70,7 +70,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     items: [
       { id: 'ads', label: 'Anúncios', short: 'Anúncios', icon: Megaphone, desc: 'Banners, popups e agendamento', keywords: 'banner popup campanha propaganda' },
       { id: 'sponsors', label: 'Parceiros', short: 'Marcas', icon: Store, desc: 'Marcas e logos do Media Kit', keywords: 'parceria marca logo media kit' },
-      { id: 'leads', label: 'Leads de Patrocínio', short: 'Leads', icon: HandCoins, desc: 'Briefings recebidos e contatos', keywords: 'interessado contato briefing venda' },
+      { id: 'leads', label: 'Leads de Parceria', short: 'Leads', icon: HandCoins, desc: 'Briefings recebidos e contatos', keywords: 'interessado contato briefing venda' },
       { id: 'ads-chat', label: 'Criativos de Anúncio', short: 'Criativos', icon: Sparkles, desc: 'Gere criativos e textos de campanha', keywords: 'copy criativo gerar anuncio' },
     ],
   },
