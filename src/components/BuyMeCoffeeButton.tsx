@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Coffee } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface BuyMeCoffeeButtonProps {
@@ -16,6 +17,7 @@ export default function BuyMeCoffeeButton({
   showText = true,
   className
 }: BuyMeCoffeeButtonProps) {
+  const [imageUnavailable, setImageUnavailable] = useState(false);
   
   const sizeClasses = {
     small: 'max-w-[150px]',
@@ -38,13 +40,21 @@ export default function BuyMeCoffeeButton({
         className="inline-flex items-center gap-2 no-underline transition-all hover:-translate-y-0.5 active:translate-y-0 opacity-100 hover:opacity-90 relative z-[99]"
         title="Apoie nosso projeto no Buy Me a Coffee"
       >
-        <img 
-          src="https://cdn.buymeacoffee.com/buttons/v2/default-blue.png" 
-          alt={text}
-          className={cn("h-auto block", sizeClasses[size])}
-          loading="lazy"
-        />
-        {showText && (
+        {!imageUnavailable ? (
+          <img 
+            src="https://cdn.buymeacoffee.com/buttons/v2/default-blue.png" 
+            alt={text}
+            className={cn("h-auto block", sizeClasses[size])}
+            loading="lazy"
+            onError={() => setImageUnavailable(true)}
+          />
+        ) : (
+          <span className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-[#5F7FFF] px-4 py-2 text-sm font-semibold text-white shadow-sm">
+            <Coffee className="h-4 w-4" aria-hidden="true" />
+            {text}
+          </span>
+        )}
+        {showText && !imageUnavailable && (
           <span className={cn(
             "text-sm font-semibold text-foreground",
             variant === 'accent' && "text-white"

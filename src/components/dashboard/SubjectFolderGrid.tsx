@@ -6,6 +6,8 @@ import type { ApostilaSummary } from '@/hooks/queries/useDashboardData';
 import { ApostilaCoverCard } from './ApostilaCoverCard';
 import { useAuth } from '@/hooks/useAuth';
 import { useApostilaProgressMap } from '@/hooks/useApostilaProgressMap';
+import { buildCoverDataUri } from '@/lib/cover-render';
+import { useCoverTheme } from '@/lib/cover-theme';
 
 interface Props {
   apostilas: ApostilaSummary[];
@@ -24,6 +26,7 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
   const navigate = useNavigate();
   const { isAdmin } = useAuth();
   const { progressMap } = useApostilaProgressMap();
+  const theme = useCoverTheme();
   const [visibleGroups, setVisibleGroups] = useState(12); // Aumentado para 12 para garantir que o aluno veja a maioria das matérias imediatamente sem scroll
   const loaderRef = useRef<HTMLDivElement>(null);
 
@@ -98,11 +101,20 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
     navigate(`/materia/${encodeURIComponent(category)}`);
   };
 
+  const coverFor = (apostila: ApostilaSummary) =>
+    apostila.cover_url || buildCoverDataUri({
+      title: apostila.title,
+      category: apostila.category,
+      semester: apostila.semester,
+      teacher: apostila.teacher,
+    }, theme);
+
   return (
     <div className="space-y-12">
       {groups.slice(0, visibleGroups).map(([category, items]) => {
         const color = getSubjectColor(category);
-        const semester = items.find((a) => (a as any).semester)?.semester;
+        const semester = items.find((a) => a.semester)?.semester;
+        const mainCover = coverFor(items[0]);
 
         return (
           <div key={category} className="space-y-4">
@@ -162,9 +174,9 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
               >
                 {/* Background da Matéria (Capa da primeira apostila) */}
                 <div className="absolute inset-0">
-                  {items[0]?.cover_url ? (
+                  {mainCover ? (
                     <img 
-                      src={items[0].cover_url} 
+                      src={mainCover} 
                       alt={category} 
                       className="h-full w-full object-cover opacity-30 group-hover:opacity-50 group-hover:scale-105 transition-all duration-700"
                     />
@@ -189,8 +201,8 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
                           className="h-8 w-8 rounded-lg border-2 border-background bg-muted overflow-hidden shadow-lg transform transition-transform group-hover:-translate-y-1"
                           style={{ transitionDelay: `${idx * 50}ms` }}
                         >
-                          {item.cover_url ? (
-                            <img src={item.cover_url} className="h-full w-full object-cover" />
+                          {coverFor(item) ? (
+                            <img src={coverFor(item)} alt="" className="h-full w-full object-cover" />
                           ) : (
                             <div className="h-full w-full opacity-60" style={{ backgroundColor: color }} />
                           )}
