@@ -40,6 +40,7 @@ import {
   HeartHandshake,
   Heart,
   Coffee,
+  CalendarRange,
 } from 'lucide-react';
 
 import logoOwl from '@/assets/owl-icon.png';
