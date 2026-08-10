@@ -859,7 +859,7 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
                           </Badge>
                         </div>
                         <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Button size="icon" variant="ghost" className="h-7 w-7 rounded-lg" onClick={() => handleEdit(a)}>
+                          <Button size="icon" variant="ghost" className="h-7 w-7 rounded-lg" onClick={(e) => { e.stopPropagation(); handleEdit(a); }}>
                             <Edit className="h-3.5 w-3.5" />
                           </Button>
                           {!(a as any).isPlaceholder && (
@@ -867,7 +867,7 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
                               size="icon" 
                               variant="ghost" 
                               className="h-7 w-7 rounded-lg text-destructive hover:bg-destructive/10" 
-                              onClick={() => setDeleteTarget(a)}
+                              onClick={(e) => { e.stopPropagation(); setDeleteTarget(a); }}
                             >
                               <Trash2 className="h-3.5 w-3.5" />
                             </Button>
@@ -905,9 +905,24 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
                             variant="default" 
                             size="sm" 
                             className="h-8 rounded-xl px-4 text-xs font-bold gap-2"
-                            onClick={() => handleEdit(a)}
+                            onClick={(e) => { e.stopPropagation(); handleEdit(a); }}
                           >
                             <Edit className="h-3 w-3" /> Editar
+                          </Button>
+                        </div>
+                      )}
+                      
+                      {(a as any).isPlaceholder && (
+                        <div className="mt-4 pt-3 border-t border-dashed border-primary/20 flex justify-end">
+                          <Button 
+                            variant="default" 
+                            size="sm" 
+                            className="h-8 rounded-xl px-4 text-xs font-bold gap-2 gradient-primary text-primary-foreground"
+                            onClick={(e) => { e.stopPropagation(); handleEdit(a); }}
+                            disabled={busyId === a.id}
+                          >
+                            {busyId === a.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Plus className="h-3 w-3" />}
+                            Iniciar Matéria
                           </Button>
                         </div>
                       )}

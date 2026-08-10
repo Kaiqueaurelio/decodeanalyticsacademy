@@ -32,17 +32,27 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.46.8',
+    version: '4.47.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.46.8-release',
-    commitMessage: 'Release v4.46.8: Dashboard Widgets & BMC Restoration'
+    commit: 'v4.47.0-release',
+    commitMessage: 'Release v4.47.0: Placeholder to Real Apostila Conversion'
   };
 }
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: '4.47.0',
+    date: '2026-08-10',
+    title: 'Automação na Criação de Apostilas',
+    changes: [
+      { kind: 'feature', text: 'Implementada conversão automática de placeholders da grade em apostilas reais no banco.' },
+      { kind: 'improvement', text: 'Adicionado redirecionamento direto do dashboard administrativo para o editor ao iniciar novas matérias.' },
+      { kind: 'fix', text: 'Corrigida a inação do botão Iniciar nas apostilas de grade acadêmica.' }
+    ]
+  },
   {
     version: '4.46.8',
     date: '2026-08-10',
