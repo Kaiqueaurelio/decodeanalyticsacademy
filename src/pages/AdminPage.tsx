@@ -1186,23 +1186,29 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
 
   /**
    * "Começar" numa matéria da grade (placeholder): prepara a Central de Criação
-   * e rola a tela até ela — antes o estado mudava mas nada aparecia na tela.
+   * e rola a tela até ela.
    */
-  const startPlaceholder = (a: { title: string; category?: string | null }) => {
-    setBatchMode(false);
-    setImportMode('text');
-    setImportUrl('');
-    setImportContent('');
-    setImportRawText('');
-    setImportExercises([]);
-    setImportTitle(a.title.replace('[GRADE] ', ''));
-    setImportTopic(a.category || '');
-    setImportStep('edit');
-    setTab('apostilas');
-    requestAnimationFrame(() => {
-      document.querySelector('[data-import-card]')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
-    toast.info('Central de Criação pronta para esta matéria.');
+  const startPlaceholder = async (a: { id: string; title: string; category?: string | null; semester?: number | null }) => {
+    try {
+      setRefreshing(true);
+      // Converte o placeholder em uma apostila real no banco para permitir edição
+      const realId = await ensureApostilaExists({
+        id: a.id,
+        title: a.title,
+        category: a.category,
+        semester: a.semester
+      });
+      
+      toast.success(`Apostila "${a.title.replace(/^\[GRADE\]\s*/i, '')}" iniciada!`);
+      
+      // Navega para a rota de edição da apostila recém-criada
+      navigate(`/admin/apostilas/${realId}`);
+    } catch (err: any) {
+      console.error('Erro ao iniciar placeholder:', err);
+      toast.error('Erro ao iniciar a matéria: ' + (err.message || 'Tente novamente'));
+    } finally {
+      setRefreshing(false);
+    }
   };
 
 
