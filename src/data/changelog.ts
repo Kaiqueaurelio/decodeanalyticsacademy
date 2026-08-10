@@ -34,7 +34,7 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.34.0',
+    version: '4.35.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
@@ -44,6 +44,16 @@ export function getBuildInfo() {
 }
 
 export const CHANGELOG: Release[] = [
+  {
+    version: '4.35.0',
+    date: '2026-08-10',
+    title: 'Correção Estrutural de Acesso',
+    changes: [
+      { kind: 'fix', text: 'Resolvido conflito de vinculação do RA G802144 nos metadados de autenticação.' },
+      { kind: 'fix', text: 'Sincronização forçada de privilégios administrativos para o perfil principal.' },
+      { kind: 'security', text: 'Atualizado registro de auditoria interna para refletir a correção de acesso.' },
+    ],
+  },
   {
     version: '4.34.0',
     date: '2026-08-10',
