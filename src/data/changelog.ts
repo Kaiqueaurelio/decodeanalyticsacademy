@@ -32,7 +32,7 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.36.5',
+    version: '4.38.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
