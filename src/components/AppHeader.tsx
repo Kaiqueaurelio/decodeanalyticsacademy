@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { LogOut, LayoutDashboard, Shield, Menu, ArrowRight, Sun, Moon, User, Users, Camera, BookOpen, Library, Calculator } from 'lucide-react';
+import { LogOut, LayoutDashboard, Shield, Menu, ArrowRight, Sun, Moon, User, Users, Camera, BookOpen, Library, Calculator, Coffee } from 'lucide-react';
 import logoDark from '@/assets/owl-icon.png';
 import { useMentionNotifications } from '@/hooks/useMentionNotifications';
 import { NotificationBell } from '@/components/NotificationBell';
@@ -71,6 +71,9 @@ export function AppHeader() {
                   </span>
                 )}
               </Button>
+              <Button variant="ghost" size="sm" onClick={() => navigate('/apoie')} className="hidden xl:inline-flex text-xs h-8 px-3 font-sans normal-case tracking-normal text-primary hover:bg-primary/10">
+                <Coffee className="mr-1.5 h-3.5 w-3.5" /> Apoie
+              </Button>
               {showAdmin && (
                 <Button variant="ghost" size="sm" onClick={() => navigate('/admin')} className="text-xs h-8 px-3 font-sans normal-case tracking-normal">
                   <Shield className="mr-1.5 h-3.5 w-3.5" /> Admin
@@ -126,6 +129,9 @@ export function AppHeader() {
                   </Button>
                   <Button variant="ghost" size="sm" className="min-h-11 justify-start text-sm font-sans normal-case tracking-normal" onClick={() => nav('/profile')}>
                     <User className="mr-2 h-4 w-4" /> Perfil
+                  </Button>
+                  <Button variant="ghost" size="sm" className="min-h-11 justify-start text-sm font-sans normal-case tracking-normal text-primary hover:bg-primary/10" onClick={() => nav('/apoie')}>
+                    <Coffee className="mr-2 h-4 w-4" /> Apoie o projeto
                   </Button>
                   {showAdmin && (
                     <Button variant="ghost" size="sm" className="min-h-11 justify-start text-sm font-sans normal-case tracking-normal" onClick={() => nav('/admin')}>
