@@ -61,8 +61,18 @@ interface Props {
 export function EditorRibbon({ editor, onInsertImage, onSave, saveStatus = 'idle' }: Props) {
   const [tab, setTab] = useState<RibbonTab>('home');
   const [font, setFont] = useState('Aptos');
-  const [size, setSize] = useState(11);
+  const [size, setSize] = useState('11pt');
   const [tableOpen, setTableOpen] = useState(false);
+
+  const applyFont = (f: string) => {
+    setFont(f);
+    editor.chain().focus().setFontFamily(f).run();
+  };
+
+  const applySize = (s: string) => {
+    setSize(s);
+    editor.chain().focus().setFontSize(s).run();
+  };
 
   const insertLink = () => {
     const previous = editor.getAttributes('link').href as string | undefined;
@@ -129,20 +139,20 @@ export function EditorRibbon({ editor, onInsertImage, onSave, saveStatus = 'idle
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="bg-popover z-50">
                       {FONTS.map((f) => (
-                        <DropdownMenuItem key={f} onClick={() => setFont(f)} style={{ fontFamily: f }}>{f}</DropdownMenuItem>
+                        <DropdownMenuItem key={f} onClick={() => applyFont(f)} style={{ fontFamily: f }}>{f}</DropdownMenuItem>
                       ))}
                     </DropdownMenuContent>
                   </DropdownMenu>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <button className="word-btn" style={{ width: 44, justifyContent: 'space-between', padding: '0 6px', height: 22 }}>
-                        <span style={{ fontSize: 11 }}>{size}</span>
+                        <span style={{ fontSize: 11 }}>{size.replace('pt', '')}</span>
                         <ChevronDown style={{ width: 10, height: 10, opacity: 0.6 }} />
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="bg-popover z-50 max-h-64 overflow-y-auto">
                       {SIZES.map((s) => (
-                        <DropdownMenuItem key={s} onClick={() => setSize(s)}>{s}</DropdownMenuItem>
+                        <DropdownMenuItem key={s} onClick={() => applySize(`${s}pt`)}>{s}</DropdownMenuItem>
                       ))}
                     </DropdownMenuContent>
                   </DropdownMenu>
