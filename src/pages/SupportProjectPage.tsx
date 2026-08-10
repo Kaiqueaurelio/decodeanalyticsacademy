@@ -1,32 +1,13 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { AppHeader } from '@/components/AppHeader';
 import { Button } from '@/components/ui/button';
 import { Coffee, Heart, Star, Share2, ArrowLeft, MessageSquare, ShieldCheck, Server, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import BuyMeCoffeeButton from '@/components/BuyMeCoffeeButton';
 
 export default function SupportProjectPage() {
   const navigate = useNavigate();
-
-  useEffect(() => {
-    // Injeta o botão oficial do BMC no container
-    const container = document.getElementById('bmc-button-container');
-    if (container && !container.hasChildNodes()) {
-      const script = document.createElement('script');
-      script.type = 'text/javascript';
-      script.src = 'https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js';
-      script.setAttribute('data-name', 'bmc-button');
-      script.setAttribute('data-slug', 'decodeanalyticsacademy');
-      script.setAttribute('data-color', '#5F7FFF');
-      script.setAttribute('data-emoji', '💻');
-      script.setAttribute('data-font', 'Cookie');
-      script.setAttribute('data-text', 'Apoie o Projeto');
-      script.setAttribute('data-outline-color', '#000000');
-      script.setAttribute('data-font-color', '#ffffff');
-      script.setAttribute('data-coffee-color', '#FFDD00');
-      container.appendChild(script);
-    }
-  }, []);
 
   const benefits = [
     { icon: Server, text: "Mantém os servidores ativos 24/7" },
@@ -113,10 +94,9 @@ export default function SupportProjectPage() {
             </p>
             
             <div className="flex flex-col items-center gap-6 w-full">
-              <div 
-                id="bmc-button-container"
-                className="hover:scale-105 transition-transform duration-300 flex justify-center"
-              />
+              <div className="hover:scale-105 transition-transform duration-300 flex justify-center">
+                <BuyMeCoffeeButton variant="accent" size="large" showText={false} />
+              </div>
 
               <div className="flex items-center gap-2 text-slate-500 w-full">
                 <span className="h-px flex-1 bg-slate-800"></span>
