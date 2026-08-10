@@ -44,6 +44,15 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '4.48.1',
+    date: '2026-08-10',
+    title: 'Visibilidade de Matérias do 6º Semestre',
+    changes: [
+      { kind: 'fix', text: 'Liberada a visibilidade da apostila de Sistemas Operacionais e Mobile e demais matérias do 6º semestre.' },
+      { kind: 'improvement', text: 'Corrigido status de publicação no banco de dados para garantir exibição imediata aos alunos.' }
+    ]
+  },
+  {
     version: '4.48.0',
     date: '2026-08-10',
     title: 'Monitoramento & Auditoria de Apostilas',
