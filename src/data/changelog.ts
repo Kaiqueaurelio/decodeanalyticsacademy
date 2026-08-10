@@ -32,17 +32,27 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.49.0',
+    version: '4.49.5',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.49.0-release',
-    commitMessage: 'Release v4.49.0: Multi-material Subjects & Improved Navigation'
+    commit: 'v4.49.5-release',
+    commitMessage: 'Release v4.49.5: Typography Editor & Fine Style Controls'
   };
 }
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: '4.49.5',
+    date: '2026-08-11',
+    title: 'Editor WYSIWYG Estilo Office & Tipografia',
+    changes: [
+      { kind: 'feature', text: 'Suporte a personalização de fonte, tamanho e cor no editor.' },
+      { kind: 'improvement', text: 'Inspector lateral contextual com controles finos de parágrafo.' },
+      { kind: 'fix', text: 'Sanitização do renderizador atualizada para preservar estilos inline.' },
+    ],
+  },
   {
     version: '4.49.0',
     date: '2026-08-10',
