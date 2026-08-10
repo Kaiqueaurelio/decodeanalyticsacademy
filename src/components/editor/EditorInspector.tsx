@@ -14,13 +14,14 @@ import {
   AlignLeft, AlignCenter, AlignRight, AlignJustify,
   ChevronRight, ChevronLeft, Image as ImageIcon, Link as LinkIcon, Table as TableIcon,
   Type, Heading1, Heading2, Heading3, Trash2, ExternalLink, Wand2,
-  WrapText, Square,
+  WrapText, Square, Palette
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useEditorSelection } from './useEditorSelection';
 import { isValidUrl } from './link-utils';
 
@@ -508,14 +509,82 @@ function HeadingPanel({ editor, level }: { editor: Editor; level: 1 | 2 | 3 }) {
   );
 }
 
-function ParagraphPanel({ editor }: { editor: Editor }) {
+function ParagraphPanel({
+  editor,
+  attrs
+}: {
+  editor: Editor;
+  attrs: { fontSize?: string; fontFamily?: string; color?: string };
+}) {
+  const FONTS = ['Aptos', 'Calibri', 'Arial', 'Times New Roman', 'Georgia', 'Courier New', 'Verdana'];
+  const SIZES = [8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 28, 36, 48, 72];
+  const COLORS = [
+    { name: 'Padrão', value: '' },
+    { name: 'Preto', value: '#000000' },
+    { name: 'Azul Word', value: '#2B579A' },
+    { name: 'Vermelho', value: '#C00000' },
+    { name: 'Verde', value: '#107C10' },
+  ];
+
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       <SectionTitle icon={Type} label="Parágrafo" />
-      <AlignmentRow editor={editor} />
-      <div>
-        <Label className="text-[11px] text-muted-foreground">Converter em</Label>
-        <div className="grid grid-cols-3 gap-1 mt-1">
+
+      <div className="space-y-2">
+        <Label className="text-[11px] text-muted-foreground">Alinhamento</Label>
+        <AlignmentRow editor={editor} />
+      </div>
+
+      <div className="space-y-2">
+        <Label className="text-[11px] text-muted-foreground">Fonte</Label>
+        <Select value={attrs.fontFamily || 'Aptos'} onValueChange={(f) => editor.chain().focus().setFontFamily(f).run()}>
+          <SelectTrigger className="h-8 text-xs">
+            <SelectValue placeholder="Fonte" />
+          </SelectTrigger>
+          <SelectContent>
+            {FONTS.map(f => (
+              <SelectItem key={f} value={f} style={{ fontFamily: f }}>{f}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-2">
+        <Label className="text-[11px] text-muted-foreground">Tamanho</Label>
+        <Select value={attrs.fontSize?.replace('pt', '') || '11'} onValueChange={(s) => editor.chain().focus().setFontSize(`${s}pt`).run()}>
+          <SelectTrigger className="h-8 text-xs">
+            <SelectValue placeholder="Tamanho" />
+          </SelectTrigger>
+          <SelectContent>
+            {SIZES.map(s => (
+              <SelectItem key={s} value={String(s)}>{s}pt</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-2">
+        <Label className="text-[11px] text-muted-foreground">Cor do texto</Label>
+        <div className="flex flex-wrap gap-1.5">
+          {COLORS.map(c => (
+            <button
+              key={c.name}
+              type="button"
+              onClick={() => c.value ? editor.chain().focus().setColor(c.value).run() : editor.chain().focus().unsetColor().run()}
+              className={cn(
+                "h-6 w-6 rounded-full border border-border transition-all",
+                (attrs.color === c.value || (!attrs.color && !c.value)) && "ring-2 ring-primary ring-offset-1 scale-110"
+              )}
+              style={{ backgroundColor: c.value || 'currentColor' }}
+              title={c.name}
+            />
+          ))}
+        </div>
+      </div>
+
+      <div className="pt-2 border-t border-border">
+        <Label className="text-[11px] text-muted-foreground mb-1 block">Converter em</Label>
+        <div className="grid grid-cols-3 gap-1">
           <AlignBtn onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} icon={Heading1} label="H1" />
           <AlignBtn onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} icon={Heading2} label="H2" />
           <AlignBtn onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} icon={Heading3} label="H3" />
