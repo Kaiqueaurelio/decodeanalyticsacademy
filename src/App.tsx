@@ -1,5 +1,5 @@
 /**
- * DECODE ANALYTICS ACADEMY - v4.46.2
+ * DECODE ANALYTICS ACADEMY - v4.46.3
 
  * 
  * - Buy Me a Coffee: Integração estratégica do widget de apoio institucional.
