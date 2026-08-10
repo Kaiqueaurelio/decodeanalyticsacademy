@@ -34,7 +34,7 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.35.0',
+    version: '4.36.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
@@ -44,6 +44,16 @@ export function getBuildInfo() {
 }
 
 export const CHANGELOG: Release[] = [
+  {
+    version: '4.36.0',
+    date: '2026-08-10',
+    title: 'Estabilização de Acesso por RA',
+    changes: [
+      { kind: 'fix', text: 'Resolvida falha na validação de RA através da criação automática de tabelas de tentativas e RPC de resolução.' },
+      { kind: 'fix', text: 'Implementada sincronização forçada de perfis durante o login por RA para evitar erros de metadados.' },
+      { kind: 'security', text: 'Endurecimento de RLS e permissões na tabela de auditoria de autenticação.' },
+    ],
+  },
   {
     version: '4.35.0',
     date: '2026-08-10',
