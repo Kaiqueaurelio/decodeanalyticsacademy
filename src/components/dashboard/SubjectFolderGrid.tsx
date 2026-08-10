@@ -24,7 +24,7 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
   const navigate = useNavigate();
   const { isAdmin } = useAuth();
   const { progressMap } = useApostilaProgressMap();
-  const [visibleGroups, setVisibleGroups] = useState(3); // Aumentado para preencher a tela inicial melhor
+  const [visibleGroups, setVisibleGroups] = useState(12); // Aumentado para 12 para garantir que o aluno veja a maioria das matérias imediatamente sem scroll
   const loaderRef = useRef<HTMLDivElement>(null);
 
   const groups = useMemo(() => {
@@ -56,7 +56,7 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
 
   // Reinicia a paginação quando a busca muda
   useEffect(() => {
-    setVisibleGroups(3);
+    setVisibleGroups(12);
   }, [query]);
 
   // Rolagem infinita: re-observa o sentinela a cada lote carregado
