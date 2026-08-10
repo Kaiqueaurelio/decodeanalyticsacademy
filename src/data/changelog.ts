@@ -32,17 +32,27 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.48.6',
+    version: '4.49.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.48.6-release',
-    commitMessage: 'Release v4.48.6: Cache Stability & Silent Refresh'
+    commit: 'v4.49.0-release',
+    commitMessage: 'Release v4.49.0: Multi-material Subjects & Improved Navigation'
   };
 }
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: '4.49.0',
+    date: '2026-08-10',
+    title: 'Reestruturação por Matérias & Multi-Materiais',
+    changes: [
+      { kind: 'feature', text: 'Reestruturação completa: o sistema agora organiza apostilas dentro de Matérias (Pastas), permitindo múltiplos conteúdos por disciplina.' },
+      { kind: 'improvement', text: 'Otimizada a lógica de placeholders acadêmicos para evitar duplicidade quando já existem materiais na disciplina.' },
+      { kind: 'improvement', text: 'Melhorada a navegação no Dashboard para focar na exploração de Matérias completas.' }
+    ]
+  },
   {
     version: '4.48.6',
     date: '2026-08-10',

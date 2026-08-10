@@ -77,7 +77,6 @@ export default function DashboardPage() {
       : apostilasRaw.filter(a => a.published);
 
     // 2. Placeholder para disciplinas da grade (1º ao 8º)
-    // A grade é uma referência administrativa; o aluno só vê registros reais.
     const showAcademicPlaceholders = true;
     if (selectedSemester && showAcademicPlaceholders) {
       const canonicalSubjects = BY_SEMESTER[selectedSemester] || [];
@@ -119,12 +118,10 @@ export default function DashboardPage() {
         'Computacao de Alto Desempenho': 'Prof. Valter Braga',
       };
 
-      // Criar lista de disciplinas que já existem no banco para este semestre
+      // Criar lista de disciplinas (materias) que já existem no banco para este semestre
       const existingCategoriesKeys = new Set(list.map(a => canonicalSubjectKey(a.category)));
 
-
-
-      // Gerar placeholders apenas para as disciplinas da grade que NÃO existem no banco
+      // Gerar placeholders apenas para as disciplinas da grade que NÃO possuem nenhum conteúdo vinculado
       const placeholders = canonicalSubjects
         .filter(subject => !existingCategoriesKeys.has(canonicalSubjectKey(subject)))
         .map((subject, idx) => ({
