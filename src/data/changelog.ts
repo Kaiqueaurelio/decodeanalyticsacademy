@@ -43,6 +43,19 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '4.38.5',
+    date: '2026-08-11',
+    title: 'Chicago Click Game: Mecânicas Avançadas',
+    major: true,
+    changes: [
+      { kind: 'feature', text: 'Implementada tela de configuração de atividades e pontuações do Chicago Click Game.' },
+      { kind: 'feature', text: 'Sistema de Badges e Recompensas progressivas com metas desbloqueáveis.' },
+      { kind: 'feature', text: 'Desafios Diários com contagem regressiva e automação de pontos por leitura/exercício.' },
+      { kind: 'feature', text: 'Tabela de Classificação Semanal e Mensal para competição entre alunos.' },
+      { kind: 'improvement', text: 'Dashboard de Métricas: Relatórios de participação diária e impacto no desempenho.' },
+    ],
+  },
+  {
     version: '4.38.0',
     date: '2026-08-11',
     title: 'Gamificação & Engajamento v4.38.0',
