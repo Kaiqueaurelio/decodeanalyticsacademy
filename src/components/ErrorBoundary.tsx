@@ -79,7 +79,8 @@ async function clearRuntimeCaches() {
 function reloadWithFreshUrl() {
   const url = new URL(window.location.href);
   url.searchParams.set('__decode_refresh', String(Date.now()));
-  window.location.replace(url.toString());
+  // Forçamos o recarregamento total contornando o cache do navegador
+  window.location.assign(url.toString());
 }
 
 class ErrorBoundary extends Component<Props, State> {

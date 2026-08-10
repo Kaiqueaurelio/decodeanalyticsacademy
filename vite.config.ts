@@ -30,35 +30,19 @@ export default defineConfig(({ mode }) => ({
         clientsClaim: true,
         cleanupOutdatedCaches: true,
         navigateFallbackDenylist: [/^\/~oauth/, /^\/api/, /^\/\.lovable\/oauth/, /^\/functions\/v1/],
-        // Nao precacheia index.html nem chunks JS hashados. Esses arquivos precisam
-        // vir da rede apos deploy para evitar tela preta por app shell antigo.
-        globPatterns: ["**/*.{css,ico,svg,woff2,png}", "registerSW.js"],
-        globIgnores: ["**/index.html", "**/*.js", "**/sw.js", "**/workbox-*.js"],
+        // Precacheamos apenas recursos que garantidamente mudam de nome (hash) ou ativos
+        // estáticos globais. Ignoramos index.html para evitar o "App Shell" antigo.
+        globPatterns: ["**/*.{css,ico,svg,woff2,png}", "assets/*.js"],
+        globIgnores: ["index.html", "sw.js", "workbox-*.js"],
         maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
         runtimeCaching: [
           {
             urlPattern: ({ request }) => request.mode === "navigate",
-            handler: "NetworkFirst",
-            options: {
-              cacheName: "decode-pages-v3",
-              networkTimeoutSeconds: 3,
-              expiration: {
-                maxEntries: 20,
-                maxAgeSeconds: 5 * 60,
-              },
-            },
+            handler: "NetworkOnly", // OBRIGATÓRIO: Sempre buscar o novo index.html da rede
           },
           {
             urlPattern: ({ request }) => request.destination === "script",
-            handler: "NetworkFirst",
-            options: {
-              cacheName: "decode-js-v3",
-              networkTimeoutSeconds: 4,
-              expiration: {
-                maxEntries: 40,
-                maxAgeSeconds: 10 * 60,
-              },
-            },
+            handler: "NetworkOnly", // OBRIGATÓRIO: Sempre buscar novos chunks da rede
           },
           {
             urlPattern: ({ request }) => request.destination === "style",
