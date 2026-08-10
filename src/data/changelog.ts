@@ -32,18 +32,31 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.42.0',
+    version: '4.43.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.42.0-release',
-    commitMessage: 'Release v4.42.0: Correção de Exibição de Matérias no Dashboard'
+    commit: 'v4.43.0-release',
+    commitMessage: 'Release v4.43.0: Integração Estratégica Buy Me a Coffee'
   };
 }
 
 export const CHANGELOG: Release[] = [
   {
+    version: '4.43.0',
+    date: '2026-08-11',
+    title: 'Integração Estratégica: Buy Me a Coffee',
+    major: true,
+    changes: [
+      { kind: 'feature', text: 'Implementado componente BuyMeCoffeeButton com variantes de tamanho e estilo.' },
+      { kind: 'improvement', text: 'Otimizada a visibilidade do widget: agora carregado apenas para usuários logados, em desktop e em rotas acadêmicas.' },
+      { kind: 'improvement', text: 'Integrado card de apoio na barra lateral com acesso rápido à página institucional.' },
+      { kind: 'improvement', text: 'Refinamento visual da página /apoie com foco em transparência e impacto social.' },
+    ],
+  },
+  {
     version: '4.42.0',
+
     date: '2026-08-11',
     title: 'Correção: Exibição de Matérias no Dashboard',
     changes: [
