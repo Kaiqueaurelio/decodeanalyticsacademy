@@ -364,6 +364,29 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
     
     toast.success(nextPublished ? 'Publicada' : 'Despublicada');
   };
+  
+  const handleStatusChange = async (a: ApostilaRow, status: 'liberada' | 'bloqueada' | 'em_manutencao') => {
+    setBusyId(a.id);
+    const isPublished = status === 'liberada';
+    
+    const { error } = await supabase
+      .from('apostilas')
+      .update({ status, published: isPublished })
+      .eq('id', a.id);
+      
+    setBusyId(null);
+    if (error) { toast.error('Erro: ' + error.message); return; }
+    
+    setApostilas((prev) => prev.map((x) => x.id === a.id ? { ...x, status, published: isPublished } : x));
+    
+    logMaintenance(
+      a.id, 
+      'update_status', 
+      `Status alterado para ${status}`
+    );
+    
+    toast.success(`Status da apostila alterado para ${status.replace('_', ' ')}`);
+  };
 
   const handleEdit = async (a: ApostilaRow) => {
     if ((a as any).isPlaceholder || a.id.startsWith('placeholder')) {
