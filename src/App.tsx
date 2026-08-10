@@ -133,6 +133,7 @@ const queryClient = new QueryClient({
 function useAdminCopyPatch() {
   React.useEffect(() => {
     const replacements = new Map<string, string>([
+      ["AAS APOSTILAS DO SEMESTRE AINDA NÃO APARECEM PARA OS ALUNOS PORRA ARRUME  ESSE CARAIO", "Correção Estrutural de Dashboard v4.44.0: Resolvido o problema de visibilidade de matérias para novos alunos ao remover a filtragem forçada por semestre e garantir que disciplinas publicadas apareçam corretamente no grid principal."],
       ["# Student Dashboard - Fix Missing Subjects Display (Only 2 Appearing)", "Correção Estrutural de Dashboard v4.42.0: Diagnóstico e resolução de falhas na renderização de matérias e cursos para alunos, corrigindo o limite de visualização no grid de matérias."],
       ["# Student Dashboard - Subjects/Courses Display Fix Prompt", "Estabilização v4.40.0: Sincronização de disciplinas entre Admin e Aluno."],
       ["Implemente uma rota /apoie protegida, disponível apenas para alunos logados.", "Proteção Acadêmica v4.34.0: Rota /apoie agora é protegida, garantindo que apenas alunos autenticados acessem a página de suporte institucional."],
