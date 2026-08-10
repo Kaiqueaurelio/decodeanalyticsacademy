@@ -175,9 +175,9 @@ export function ApostilaCoverCard({ apostila, status = 'em-progresso', progress 
         data-testid="apostila-cover-body"
         className="p-2 sm:p-3.5 flex flex-col gap-1.5 sm:gap-2 bg-card"
       >
-        <div className="flex items-start gap-2">
+        <div className="flex items-start gap-2 h-[2.8rem] sm:h-[3.2rem]">
           <FileText className="h-3.5 w-3.5 mt-0.5 text-muted-foreground shrink-0" />
-          <h3 className="text-[13px] sm:text-sm font-semibold leading-snug line-clamp-2 group-hover:text-primary transition-colors group-hover:underline decoration-primary/30 underline-offset-2">
+          <h3 className="text-[13px] sm:text-[14px] font-bold leading-tight line-clamp-2 group-hover:text-primary transition-colors group-hover:underline decoration-primary/30 underline-offset-2">
             {apostila.title}
           </h3>
         </div>
@@ -201,7 +201,7 @@ export function ApostilaCoverCard({ apostila, status = 'em-progresso', progress 
               )}
               {statusLabel}
             </span>
-            <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium bg-[hsl(24_95%_55%/0.18)] text-[hsl(24_95%_65%)]">
+            <span className="inline-flex items-center rounded-md px-1.5 py-0.5 text-[9px] font-bold bg-primary/10 text-primary uppercase tracking-tight">
               {semester}
             </span>
           </div>
