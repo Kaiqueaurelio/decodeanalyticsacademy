@@ -61,6 +61,11 @@ function sanitizeHtml(html: string): string {
 
 function renderInline(input: string): { __html: string } {
   if (!input) return { __html: '' };
+
+  // Se o input já parece ser HTML sanitizado (com tags span/div/style injetadas pelo editor)
+  // precisamos tomar cuidado para não escapar as tags HTML válidas que o editor usa
+  // TipTap gera HTML como <span style="font-family: ...; font-size: ...; color: ...">texto</span>
+  
   // 0. Extrai fórmulas matemáticas ANTES de qualquer escape
   const mathPlaceholders: string[] = [];
   let safe = input
@@ -354,7 +359,14 @@ function parseBlocks(rawInput: string): Block[] {
 
     const flushParagraph = () => {
       const t = paragraph.join('\n').trim();
-      if (t) blocks.push({ type: 'paragraph', content: t });
+      if (t) {
+        // Se o parágrafo for apenas um link ou texto dentro de um span/div com style, mantemos o HTML
+        if (t.startsWith('<') && t.endsWith('>')) {
+          blocks.push({ type: 'paragraph', content: t });
+        } else {
+          blocks.push({ type: 'paragraph', content: t });
+        }
+      }
       paragraph = [];
     };
 
