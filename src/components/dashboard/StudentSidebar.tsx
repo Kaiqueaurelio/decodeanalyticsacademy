@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import BuyMeCoffeeButton from '@/components/BuyMeCoffeeButton';
+
 import {
   Home,
   BookOpen,
@@ -405,12 +407,35 @@ export function SidebarContent({
               </button>
             </div>
 
-            {/* Focus card — dentro da área rolável para que o menu seja idêntico
-                no sidebar fixo e no drawer (sem cortar itens em telas menores) */}
-            <div className="relative rounded-lg border border-border bg-card p-4">
+            {/* Buy Me a Coffee Card */}
+            <div className="relative rounded-lg border border-primary/20 bg-primary/5 p-4 mx-1">
+              <div className="mb-1 flex items-center gap-1.5">
+                <Coffee className="h-3.5 w-3.5 text-primary" strokeWidth={2} aria-hidden="true" />
+                <h4 className="text-xs font-bold tracking-tight text-foreground uppercase">Apoie a Missão</h4>
+              </div>
+              <p className="text-[10px] leading-relaxed text-muted-foreground">Ajude a manter nossa plataforma gratuita para todos.</p>
+              
+              <div className="mt-3 flex flex-col gap-2">
+                <BuyMeCoffeeButton size="small" showText={false} className="w-full justify-start" />
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-8 w-full rounded-md text-[10px] font-black uppercase tracking-tighter text-primary hover:bg-primary/10 border border-primary/10"
+                  onClick={() => {
+                    navigate('/apoie');
+                    onNavigate?.();
+                  }}
+                >
+                  Saber Mais
+                </Button>
+              </div>
+            </div>
+
+            {/* Focus card */}
+            <div className="relative rounded-lg border border-border bg-card p-4 mx-1">
               <div className="mb-1 flex items-center gap-1.5">
                 <Target className="h-3.5 w-3.5 text-primary" strokeWidth={2} aria-hidden="true" />
-                <h4 className="text-xs font-bold tracking-tight text-foreground">Mantenha o foco</h4>
+                <h4 className="text-xs font-bold tracking-tight text-foreground uppercase">Mantenha o foco</h4>
               </div>
               <p className="text-[11px] leading-relaxed text-muted-foreground">Acompanhe metas e atividades pendentes do dia.</p>
               <Button
@@ -425,6 +450,7 @@ export function SidebarContent({
                 Ver metas
               </Button>
             </div>
+
           </nav>
         </div>
       )}
