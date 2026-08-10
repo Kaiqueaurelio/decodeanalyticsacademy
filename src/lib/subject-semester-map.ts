@@ -94,6 +94,12 @@ export function canonicalSubjectKey(subject?: string | null): string {
     'processamento de imagem e visao comp': 'processamento de imagem e visao computacional',
     'procs de imagem e visao comp': 'processamento de imagem e visao computacional',
     'aspct teoricos da computacao': 'aspectos teoricos da computacao',
+    // Aliases para agrupamento de "matérias" que podem ter múltiplas apostilas
+    'logica': 'logica de programacao',
+    'poo': 'linguagem de programacao orientada a objeto',
+    'calculo': 'calculo diferencial e integral i',
+    'redes': 'redes de computadores i',
+    'ia': 'inteligencia artificial',
   };
   const aliased = aliases[raw] || raw;
 
