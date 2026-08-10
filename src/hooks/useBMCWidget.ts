@@ -24,7 +24,6 @@ export function useBMCWidget() {
 
     // O widget deve carregar apenas se:
     // - Usuário logado
-    // - Usuário logado
     // - Rota permitida (não landing/login)
     const shouldShow = user && isAllowedRoute;
 
