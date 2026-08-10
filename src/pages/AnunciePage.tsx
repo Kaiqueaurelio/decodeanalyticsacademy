@@ -86,7 +86,7 @@ const FORMATS = [
   },
 ];
 
-const PLANS = ['Apoiador', 'Patrocinador de matéria', 'Master', 'Ainda não sei'];
+const PLANS = ['Apoiador Profissional', 'Parceiro de Conteúdo', 'Master', 'Ainda não sei'];
 
 const briefingSchema = z.object({
   company: z.string().trim().min(2, 'Informe o nome da empresa').max(120),
@@ -209,7 +209,7 @@ export default function AnunciePage() {
 
         <header className="mb-12 max-w-2xl">
           <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.2em] text-primary sm:text-xs">
-            // para empresas e patrocinadores
+            // para empresas e parceiros
           </p>
           <h1 className="font-display text-3xl leading-[1.1] sm:text-5xl">
             Anuncie ou patrocine a Decode Analytics Academy

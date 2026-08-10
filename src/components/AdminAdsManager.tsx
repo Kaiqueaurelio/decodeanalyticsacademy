@@ -89,7 +89,7 @@ const AD_TYPE_OPTIONS: { value: AdType; label: string; hint: string; where: stri
   { value: 'sidebar', label: 'Lateral', hint: 'Painel Desktop', where: 'Fixo à direita no dashboard (apenas para computadores).' },
   { value: 'footer', label: 'Flutuante', hint: 'Sticky Mobile', where: 'Barra persistente na base da tela em dispositivos móveis.' },
   { value: 'popup', label: 'Pop-up Intersticial', hint: 'Tela cheia / Modal', where: 'Garante 100% de atenção ao abrir o aplicativo.' },
-  { value: 'sponsor', label: 'Anunciante Externo', hint: 'Parceiro / Marca', where: 'Exibido no Media Kit e seção de patrocinadores externos.' },
+  { value: 'sponsor', label: 'Parceiro Externo', hint: 'Parceiro / Marca', where: 'Exibido no Media Kit e seção de parceiros externos.' },
 ];
 
 // Mini-wireframe indicando onde o anúncio cai no layout.
