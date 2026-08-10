@@ -45,6 +45,15 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '4.25.0',
+    date: '2026-08-10',
+    title: 'Limpeza de Depuração & Estabilidade',
+    major: false,
+    changes: [
+      { kind: 'fix', text: 'Removidos vestígios de testes de depuração ("oi test") do sistema de mapeamento visual.' },
+    ]
+  },
+  {
     version: '4.23.0',
     date: '2026-08-10',
     title: 'Hotfix de Ciclo de Vida & Persistência PWA',
