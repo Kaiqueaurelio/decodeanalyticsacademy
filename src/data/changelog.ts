@@ -34,7 +34,7 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.23.0',
+    version: '4.30.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
@@ -44,6 +44,17 @@ export function getBuildInfo() {
 }
 
 export const CHANGELOG: Release[] = [
+  {
+    version: '4.30.0',
+    date: '2026-08-10',
+    title: 'Transformação Visual & Foco Estudantil',
+    major: true,
+    changes: [
+      { kind: 'improvement', text: 'Redesign total da Landing Page v4.30.0: Foco absoluto em conversão acadêmica e valor ao aluno.' },
+      { kind: 'security', text: 'Eliminação total de seções de patrocínio ou monetização na página inicial para conformidade de marca.' },
+      { kind: 'improvement', text: 'Sincronizado o mapeamento de auditoria visual para a nova estrutura de prompt limpo.' },
+    ]
+  },
   {
     version: '4.29.0',
     date: '2026-08-10',
