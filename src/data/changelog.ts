@@ -34,7 +34,7 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.10.0',
+    version: '4.23.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
@@ -44,6 +44,17 @@ export function getBuildInfo() {
 }
 
 export const CHANGELOG: Release[] = [
+  {
+    version: '4.23.0',
+    date: '2026-08-10',
+    title: 'Hotfix de Ciclo de Vida & Persistência PWA',
+    major: true,
+    changes: [
+      { kind: 'fix', text: 'Corrigido erro crítico de "Versão Antiga" ao forçar NetworkOnly para chunks JS e navegação principal no Service Worker.' },
+      { kind: 'improvement', text: 'Refinada política de cache PWA para evitar o travamento do App Shell em navegadores restritos.' },
+      { kind: 'security', text: 'Implementado reload forçado com bypass de cache no ErrorBoundary para recuperação automática de falhas de chunk.' },
+    ]
+  },
   {
     version: '4.22.0',
     date: '2026-08-09',
