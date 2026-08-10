@@ -40,7 +40,7 @@ export function getBuildInfo() {
     commitMessage: 'Release v4.46.0: Buy Me a Coffee Fix'
   };
 }
-}
+
 
 export const CHANGELOG: Release[] = [
   {
