@@ -73,10 +73,8 @@ export default function SubjectPage() {
     };
   }, [decodedCategory]);
 
-  const color = getSubjectColor(decodedCategory);
-  
   const subjectData = useMemo(() => {
-    const semester = guessSemesterFromCategory(decodedCategory) || 1;
+    const semesterNum = guessSemesterFromCategory(decodedCategory) || 1;
     
     // Mapeamento de professores (mock centralizado para demonstração do estilo Notion)
     const teacherMap: Record<string, string> = {
@@ -94,13 +92,13 @@ export default function SubjectPage() {
       id: decodedCategory,
       title: decodedCategory,
       coverImage: rows.find(r => r.cover_url)?.cover_url || null,
-      classType: 'Híbrido' as const,
+      classType: 'Híbrido',
       workloadHours: 80,
       thematicAxis: 'Computação',
       formationAxis: 'Ciência da Computação',
       professor: teacherMap[decodedCategory] || 'Professor da Disciplina',
-      semester: `${semester}º Semestre`,
-      status: (rows.length > 0 ? 'Em progresso' : 'A cursar') as any,
+      semester: `${semesterNum}º Semestre`,
+      status: (rows.length > 0 ? 'Em progresso' : 'A cursar') as 'Em progresso' | 'A cursar',
       progressValue: rows.length > 0 ? 35 : 0,
       contentSections: rows.map(r => ({
         id: r.id,
@@ -136,10 +134,6 @@ export default function SubjectPage() {
             <NotionSubjectDetail subject={subjectData as any} />
           )}
         </div>
-      </main>
-    </div>
-  );
-}
       </main>
     </div>
   );
