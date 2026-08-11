@@ -7,8 +7,11 @@ import {
   GraduationCap, 
   CheckCircle2, 
   Circle,
-  PlayCircle
+  PlayCircle,
+  ArrowLeft
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 import { NotionPropertyGrid } from './NotionPropertyGrid';
 import { NotionTopicAccordion } from './NotionTopicAccordion';
 import { Badge } from '@/components/ui/badge';
@@ -48,6 +51,7 @@ interface Props {
 
 export function NotionSubjectDetail({ subject }: Props) {
   const color = getSubjectColor(subject.title);
+  const navigate = useNavigate();
 
   const properties = useMemo(() => [
     { icon: PlayCircle, label: 'Tipo de Aula', value: <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20">{subject.classType}</Badge> },
@@ -70,6 +74,18 @@ export function NotionSubjectDetail({ subject }: Props) {
 
   return (
     <div className="w-full max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      {/* Action Bar */}
+      <div className="flex items-center justify-between">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate('/dashboard')}
+          className="gap-1.5 text-xs hover:bg-accent/10 transition-all rounded-full px-4"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" /> Painel de Controle
+        </Button>
+      </div>
+
       {/* Cover Header */}
       <div className="relative h-64 sm:h-80 w-full rounded-3xl overflow-hidden border border-border/40 group shadow-2xl">
         {subject.coverImage ? (
