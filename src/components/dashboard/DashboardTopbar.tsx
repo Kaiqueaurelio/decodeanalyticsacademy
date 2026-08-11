@@ -35,7 +35,7 @@ export function DashboardTopbar({ hideSearchOnMobile = false }: { hideSearchOnMo
   const roleLabel = isAdmin ? 'Administrador' : 'Aluno';
 
   return (
-    <header className="sticky top-0 z-30 bg-background/88 backdrop-blur-xl border-b border-border">
+    <header className="sticky top-0 z-30 bg-background/88 backdrop-blur-xl border-b border-border shadow-[0_4px_30px_rgba(0,0,0,0.05)]">
       <div className="flex items-center gap-2 px-3 sm:px-6 lg:px-8 h-16">
         <Sheet open={navOpen} onOpenChange={setNavOpen}>
           <SheetTrigger asChild>
