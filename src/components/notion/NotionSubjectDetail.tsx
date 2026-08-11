@@ -256,7 +256,8 @@ export function NotionSubjectDetail({ subject }: Props) {
               <div className="space-y-1">
                 <h4 className="px-3 text-[10px] font-black text-muted-foreground/40 uppercase tracking-widest">Navegação</h4>
                 <Button 
-                  variant="ghost" 
+                    variant="secondary" 
+
                   className="w-full justify-start gap-3 text-sm font-bold text-muted-foreground hover:text-foreground hover:bg-accent/5 rounded-lg"
                   onClick={() => navigate('/dashboard')}
                 >
