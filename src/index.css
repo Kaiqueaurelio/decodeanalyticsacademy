@@ -1626,3 +1626,8 @@ html {
 a[href*="lovable.dev"][target="_blank"] {
   display: none !important;
 }
+
+/* Remove Lovable badge as per user request */
+#lovable-badge {
+  display: none !important;
+}
