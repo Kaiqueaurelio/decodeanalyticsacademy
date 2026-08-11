@@ -31,13 +31,19 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
   const loaderRef = useRef<HTMLDivElement>(null);
 
   const groups = useMemo(() => {
+    if (!Array.isArray(apostilas)) {
+      console.error("SubjectFolderGrid: 'apostilas' is not an array", apostilas);
+      return [];
+    }
+
     const normalize = (s: string) =>
-      s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
+      (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
     const q = normalize(query.trim());
     const map = new Map<string, ApostilaSummary[]>();
     
     for (const a of apostilas) {
-      // Normalização da categoria: se estiver vazia ou 'Geral', agrupa como 'Geral'
+      if (!a) continue;
+      
       const category = a.category?.trim() || 'Geral';
       const key = category;
       

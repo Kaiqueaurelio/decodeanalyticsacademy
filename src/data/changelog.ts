@@ -32,17 +32,26 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.49.5',
+    version: '4.49.9',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.49.5-release',
-    commitMessage: 'Release v4.49.5: Typography Editor & Fine Style Controls'
+    commit: 'v4.49.9-release',
+    commitMessage: 'Release v4.49.9: Student Dashboard Critical Fix & Validation'
   };
 }
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: '4.49.9',
+    date: '2026-08-11',
+    title: 'Estabilização de Dashboard & Validação Crítica',
+    changes: [
+      { kind: 'fix', text: 'Resolvida falha crítica de renderização no dashboard do aluno através de validação robusta de tipos de dados (v4.49.9).' },
+      { kind: 'improvement', text: 'Implementada gestão de erro granular para listagem de disciplinas acadêmicas, garantindo estabilidade no loop de renderização.' },
+    ],
+  },
   {
     version: '4.49.8',
     date: '2026-08-11',
