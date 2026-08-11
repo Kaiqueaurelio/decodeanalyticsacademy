@@ -1,8 +1,8 @@
 /**
- * DECODE ANALYTICS ACADEMY - v4.49.8
+ * DECODE ANALYTICS ACADEMY - v4.49.9
  * 
- * - Otimização Admin: Fluxo de criação e edição simplificado via placeholders.
- * - Auditoria Visual: Mascaramento global de prompts de sistema.
+ * - Estabilização Dashboard: Validação robusta contra erros de renderização em listas de matérias.
+ * - Auditoria Visual: Mascaramento global de prompts de sistema expandido.
  */
 
 import React, { Suspense, lazy } from "react";
