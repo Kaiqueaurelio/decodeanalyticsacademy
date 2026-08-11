@@ -32,12 +32,12 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.49.5',
+    version: '4.49.9',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.49.5-release',
-    commitMessage: 'Release v4.49.5: Typography Editor & Fine Style Controls'
+    commit: 'v4.49.9-release',
+    commitMessage: 'Release v4.49.9: Student Dashboard Critical Fix & Validation'
   };
 }
 
