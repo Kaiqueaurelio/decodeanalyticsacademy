@@ -100,15 +100,31 @@ export default function SubjectPage() {
       semester: `${semesterNum}º Semestre`,
       status: (rows.length > 0 ? 'Em progresso' : 'A cursar') as 'Em progresso' | 'A cursar',
       progressValue: rows.length > 0 ? 35 : 0,
-      contentSections: rows.map(r => ({
-        id: r.id,
-        title: r.title,
-        documents: [
-          { id: `${r.id}-content`, title: 'Caderno de Estudos', type: 'note' as const, onClick: () => navigate(`/apostila/${r.id}`) },
-          { id: `${r.id}-summary`, title: 'Resumo para Prova', type: 'summary' as const, onClick: () => navigate(`/apostila/${r.id}/read`) },
-          { id: `${r.id}-exercises`, title: 'Lista de Exercícios', type: 'exam_review' as const, onClick: () => navigate(`/exercicios/${r.id}`) }
+      contentSections: rows.length > 0 
+        ? rows.map(r => ({
+          id: r.id,
+          title: r.title,
+          documents: [
+            { id: `${r.id}-content`, title: 'Caderno de Estudos', type: 'note' as const, onClick: () => navigate(`/apostila/${r.id}`) },
+            { id: `${r.id}-summary`, title: 'Resumo para Prova', type: 'summary' as const, onClick: () => navigate(`/apostila/${r.id}/read`) },
+            { id: `${r.id}-exercises`, title: 'Lista de Exercícios', type: 'exam_review' as const, onClick: () => navigate(`/exercicios/${r.id}`) }
+          ]
+        }))
+        : [
+          {
+            id: 'placeholder-intro',
+            title: '1. Introdução e Conceitos Base',
+            documents: [
+              { id: 'placeholder-doc-1', title: 'Cronograma da Disciplina', type: 'calendar' as const },
+              { id: 'placeholder-doc-2', title: 'Notas de Aula (Em breve)', type: 'note' as const }
+            ]
+          },
+          {
+            id: 'placeholder-materials',
+            title: '2. Materiais Complementares',
+            documents: []
+          }
         ]
-      }))
     };
   }, [decodedCategory, rows, navigate]);
 
