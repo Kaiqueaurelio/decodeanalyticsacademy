@@ -44,6 +44,15 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '4.49.9',
+    date: '2026-08-11',
+    title: 'Estabilização de Dashboard & Validação Crítica',
+    changes: [
+      { kind: 'fix', text: 'Resolvida falha crítica de renderização no dashboard do aluno através de validação robusta de tipos de dados (v4.49.9).' },
+      { kind: 'improvement', text: 'Implementada gestão de erro granular para listagem de disciplinas acadêmicas, garantindo estabilidade no loop de renderização.' },
+    ],
+  },
+  {
     version: '4.49.8',
     date: '2026-08-11',
     title: 'Otimização de Gestão & Auditoria Visual',
