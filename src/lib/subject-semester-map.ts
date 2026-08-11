@@ -100,6 +100,7 @@ export function canonicalSubjectKey(subject?: string | null): string {
     'calculo': 'calculo diferencial e integral i',
     'redes': 'redes de computadores i',
     'ia': 'inteligencia artificial',
+    'arquitetura de computadores': 'arquitetura de computadores modernos',
   };
   const aliased = aliases[raw] || raw;
 
