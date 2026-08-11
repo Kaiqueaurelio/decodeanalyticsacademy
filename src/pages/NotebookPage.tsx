@@ -1,14 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, FileText, Trash2, Edit2, Save } from 'lucide-react';
-import { supabase } from '@supabase/supabase-js';
+import { ArrowLeft, Plus, FileText, Save } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { AppHeader } from '@/components/AppHeader';
 import { NotionBlockEditor, BlockData } from '@/components/notion/NotionBlockEditor';
 import { toast } from 'sonner';
 import { GlitchLoader } from '@/components/GlitchLoader';
-import { Input } from '@/components/ui/input';
 
 export default function NotebookPage() {
   const { notebookId } = useParams();
@@ -20,7 +19,6 @@ export default function NotebookPage() {
   const [currentPageId, setCurrentPageId] = useState<string | null>(null);
   const [pageBlocks, setPageBlocks] = useState<BlockData[]>([]);
   const [saving, setSaving] = useState(false);
-  const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [notebookTitle, setNotebookTitle] = useState('');
 
   useEffect(() => {
@@ -30,44 +28,47 @@ export default function NotebookPage() {
 
   const fetchNotebookData = async () => {
     setLoading(true);
+    // @ts-ignore
     const { data: notebook } = await supabase
-      .from('notebooks')
+      .from('notebooks' as any)
       .select('title')
-      .eq('id', notebookId as string)
+      .eq('id', notebookId)
       .single();
     
-    if (notebook) setNotebookTitle(notebook.title);
+    if (notebook) setNotebookTitle((notebook as any).title);
 
+    // @ts-ignore
     const { data: pagesData } = await supabase
-      .from('notebook_pages')
+      .from('notebook_pages' as any)
       .select('*')
-      .eq('notebook_id', notebookId as string)
+      .eq('notebook_id', notebookId)
       .order('position', { ascending: true });
 
     if (pagesData) {
-      setPages(pagesData);
-      if (pagesData.length > 0 && !currentPageId as string) {
-        setCurrentPageId(pagesData[0].id);
+      setPages(pagesData as any[]);
+      if ((pagesData as any[]).length > 0 && !currentPageId) {
+        setCurrentPageId((pagesData as any[])[0].id);
       }
     }
     setLoading(false);
   };
 
   useEffect(() => {
-    if (currentPageId as string) {
-      fetchPageContent(currentPageId as string);
+    if (currentPageId) {
+      fetchPageContent(currentPageId);
     }
   }, [currentPageId]);
 
   const fetchPageContent = async (pageId: string) => {
+    // @ts-ignore
     const { data: contents } = await supabase
-      .from('notebook_page_contents')
+      .from('notebook_page_contents' as any)
       .select('*')
-      .eq('page_id', pageId as string)
+      .eq('page_id', pageId)
       .order('position', { ascending: true });
 
     if (contents) {
-      setPageBlocks(contents.map(c => ({
+      setPageBlocks((contents as any[]).map(c => ({
         id: c.id,
         type: c.type as any,
         content: c.content
@@ -78,9 +79,10 @@ export default function NotebookPage() {
   };
 
   const createPage = async () => {
-    if (!notebookId as string) return;
+    if (!notebookId) return;
+    // @ts-ignore
     const { data: newPage } = await supabase
-      .from('notebook_pages')
+      .from('notebook_pages' as any)
       .insert({
         notebook_id: notebookId,
         title: 'Nova Página',
@@ -91,17 +93,17 @@ export default function NotebookPage() {
 
     if (newPage) {
       setPages([...pages, newPage]);
-      setCurrentPageId(newPage.id);
+      setCurrentPageId((newPage as any).id);
       toast.success('Página criada');
     }
   };
 
   const saveContent = async () => {
-    if (!currentPageId as string) return;
+    if (!currentPageId) return;
     setSaving(true);
     try {
-      // Simplificado: deleta e reinseri para manter ordem (em prod usaríamos upsert com lógica de posição)
-      await (supabase as any).from('notebook_page_contents').delete().eq('page_id', currentPageId as string);
+      // @ts-ignore
+      await supabase.from('notebook_page_contents' as any).delete().eq('page_id', currentPageId);
       
       const toInsert = pageBlocks.map((b, idx) => ({
         page_id: currentPageId,
@@ -110,8 +112,9 @@ export default function NotebookPage() {
         position: idx
       }));
 
-      if ((toInsert.length > 0 as any) {
-        await (supabase as any).from('notebook_page_contents').insert(toInsert);
+      if (toInsert.length > 0) {
+        // @ts-ignore
+        await supabase.from('notebook_page_contents' as any).insert(toInsert);
       }
       toast.success('Alterações salvas');
     } catch (e) {
@@ -123,7 +126,7 @@ export default function NotebookPage() {
 
   if (loading) return <div className="h-screen flex items-center justify-center"><GlitchLoader text="Abrindo Caderno..." /></div>;
 
-  const activePage = pages.find(p => p.id === currentPageId as string);
+  const activePage = pages.find(p => p.id === currentPageId);
 
   return (
     <div className="min-h-screen bg-background pb-20">
