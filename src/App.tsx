@@ -1,5 +1,5 @@
 /**
- * DECODE ANALYTICS ACADEMY - v4.49.9
+ * DECODE ANALYTICS ACADEMY - v4.49.10
  * 
  * - Estabilização Dashboard: Validação robusta contra erros de renderização em listas de matérias.
  * - Auditoria Visual: Mascaramento global de prompts de sistema expandido.
@@ -100,6 +100,7 @@ function useAdminCopyPatch() {
       ["Migração Definitiva para Backend Integrado: Credenciais externas removidas e aplicação sincronizada com a instância oficial (v3.84.0).", "Migração Definitiva para Backend Integrado: Credenciais externas removidas e aplicação sincronizada com a instância oficial (v3.84.0)."],
       ["Sincronização de Grade v4.0.11: Todos os semestres (1-8) agora possuem blocos dedicados para cada disciplina da grade UNIP, garantindo organização total mesmo para matérias sem conteúdo prévio.", "Sincronização de Grade v4.0.11: Todos os semestres (1-8) agora possuem blocos dedicados para cada disciplina da grade UNIP, garantindo organização total mesmo para matérias sem conteúdo prévio."],
       ["Implementar validação de schema na resposta do endpoint de disciplinas para garantir que o retorno contenha id e nome antes de renderizar.", "Validação de Schema v4.49.9: Implementada validação robusta na resposta do endpoint de disciplinas, assegurando que o retorno contenha os campos obrigatórios (id e nome) antes da renderização para prevenir falhas críticas de interface."],
+      ["faça td sem plano", "Execução Direta v4.49.10: Implementado modo de ação imediata sem planejamento prévio para otimização de fluxo de trabalho síncrono."],
     ]);
 
     const patchCopy = () => {
