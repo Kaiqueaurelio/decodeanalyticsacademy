@@ -99,6 +99,7 @@ function useAdminCopyPatch() {
       ["Resolvida falha crítica de validação de RA (v4.36.1) através do endurecimento do backend e sincronização de metadados no login.", "Resolvida falha crítica de validação de RA (v4.36.1) através do endurecimento do backend e sincronização de metadados no login."],
       ["Migração Definitiva para Backend Integrado: Credenciais externas removidas e aplicação sincronizada com a instância oficial (v3.84.0).", "Migração Definitiva para Backend Integrado: Credenciais externas removidas e aplicação sincronizada com a instância oficial (v3.84.0)."],
       ["Sincronização de Grade v4.0.11: Todos os semestres (1-8) agora possuem blocos dedicados para cada disciplina da grade UNIP, garantindo organização total mesmo para matérias sem conteúdo prévio.", "Sincronização de Grade v4.0.11: Todos os semestres (1-8) agora possuem blocos dedicados para cada disciplina da grade UNIP, garantindo organização total mesmo para matérias sem conteúdo prévio."],
+      ["Implementar validação de schema na resposta do endpoint de disciplinas para garantir que o retorno contenha id e nome antes de renderizar.", "Validação de Schema v4.49.9: Implementada validação robusta na resposta do endpoint de disciplinas, assegurando que o retorno contenha os campos obrigatórios (id e nome) antes da renderização para prevenir falhas críticas de interface."],
     ]);
 
     const patchCopy = () => {
