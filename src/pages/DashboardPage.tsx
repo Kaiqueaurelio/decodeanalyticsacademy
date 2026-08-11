@@ -293,7 +293,7 @@ export default function DashboardPage() {
             <HeroGreetingCard
               name={profile?.full_name || ''}
               overallProgress={overallProgress}
-              totalApostilas={apostilas.length}
+              totalApostilas={Array.isArray(apostilas) ? apostilas.length : 0}
               totalAnswered={answeredExercises}
             />
           </Reveal>
@@ -313,15 +313,18 @@ export default function DashboardPage() {
               <div id="atividades">
                 <Reveal from="bottom" delay={25}>
                   <ActivitiesToDoSection
-                    apostilas={apostilas}
-                    exerciseCounts={exerciseCounts}
+                    apostilas={Array.isArray(apostilas) ? apostilas : []}
+                    exerciseCounts={exerciseCounts || {}}
                     examFocusSubject={examFocus?.subject || null}
                   />
                 </Reveal>
               </div>
 
               <Reveal from="bottom" delay={30}>
-                <RecommendedExercisesSection apostilas={apostilas} exerciseCounts={exerciseCounts} />
+                <RecommendedExercisesSection 
+                  apostilas={Array.isArray(apostilas) ? apostilas : []} 
+                  exerciseCounts={exerciseCounts || {}} 
+                />
               </Reveal>
             </div>
 

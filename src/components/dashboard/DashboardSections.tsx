@@ -15,14 +15,17 @@ export function ActivitiesToDoSection({ apostilas, exerciseCounts, examFocusSubj
   const navigate = useNavigate();
   const focus = examFocusSubject?.toLowerCase() || '';
 
-  const list = [...apostilas]
-    .filter((a) => (exerciseCounts[a.id] || 0) > 0)
-    .sort((a, b) => {
-      const af = focus && (a.category || '').toLowerCase().includes(focus) ? -1 : 0;
-      const bf = focus && (b.category || '').toLowerCase().includes(focus) ? -1 : 0;
-      return af - bf;
-    })
-    .slice(0, 3);
+  const list = useMemo(() => {
+    if (!Array.isArray(apostilas)) return [];
+    return [...apostilas]
+      .filter((a) => a && (exerciseCounts?.[a.id] || 0) > 0)
+      .sort((a, b) => {
+        const af = focus && (a.category || '').toLowerCase().includes(focus) ? -1 : 0;
+        const bf = focus && (b.category || '').toLowerCase().includes(focus) ? -1 : 0;
+        return af - bf;
+      })
+      .slice(0, 3);
+  }, [apostilas, exerciseCounts, focus]);
 
   const statusOf = (i: number): { label: string; tone: string } => {
     if (i === 0) return { label: 'Hoje', tone: 'text-destructive bg-destructive/10 border-destructive/30' };
@@ -93,10 +96,13 @@ interface RecProps {
 export function RecommendedExercisesSection({ apostilas, exerciseCounts }: RecProps) {
   const navigate = useNavigate();
 
-  const top3 = [...apostilas]
-    .filter((a) => (exerciseCounts[a.id] || 0) > 0)
-    .sort((a, b) => (exerciseCounts[b.id] || 0) - (exerciseCounts[a.id] || 0))
-    .slice(0, 3);
+  const top3 = useMemo(() => {
+    if (!Array.isArray(apostilas)) return [];
+    return [...apostilas]
+      .filter((a) => a && (exerciseCounts?.[a.id] || 0) > 0)
+      .sort((a, b) => (exerciseCounts?.[b.id] || 0) - (exerciseCounts?.[a.id] || 0))
+      .slice(0, 3);
+  }, [apostilas, exerciseCounts]);
 
   const icons = [FileText, Beaker, PenLine];
 
