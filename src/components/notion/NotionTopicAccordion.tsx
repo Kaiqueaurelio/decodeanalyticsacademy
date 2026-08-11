@@ -39,46 +39,64 @@ export function NotionTopicAccordion({
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         className={cn(
-          "w-full flex items-center gap-2 py-2 px-1 hover:bg-accent/5 rounded-lg transition-all group text-left",
-          level > 0 && "ml-4"
+          "w-full flex items-center gap-2 py-3 px-3 hover:bg-accent/5 rounded-xl transition-all group text-left",
+          level > 0 && "ml-4",
+          isExpanded && "bg-accent/5"
         )}
       >
-        <ChevronRight 
-          className={cn(
-            "h-4 w-4 text-muted-foreground/60 transition-transform duration-300",
-            isExpanded && "rotate-90"
-          )} 
-        />
-        <span className={cn(
-          "text-sm font-bold tracking-tight transition-colors",
-          isExpanded ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
-        )}>
-          {title}
-        </span>
+        <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-background border border-border/40 shadow-sm group-hover:border-primary/30 transition-colors">
+          <ChevronRight 
+            className={cn(
+              "h-4 w-4 text-muted-foreground/60 transition-transform duration-300",
+              isExpanded && "rotate-90 text-primary"
+            )} 
+          />
+        </div>
+        <div className="flex flex-col">
+          <span className={cn(
+            "text-sm font-bold tracking-tight transition-colors",
+            isExpanded ? "text-primary" : "text-foreground group-hover:text-primary"
+          )}>
+            {title}
+          </span>
+          {documents.length > 0 && !isExpanded && (
+            <span className="text-[10px] text-muted-foreground/60 font-medium">
+              {documents.length} item{documents.length > 1 ? 'ns' : ''}
+            </span>
+          )}
+        </div>
       </button>
 
       <div className={cn(
         "overflow-hidden transition-all duration-300 ease-in-out",
-        isExpanded ? "max-h-[1000px] opacity-100 mt-1" : "max-h-0 opacity-0"
+        isExpanded ? "max-h-[1000px] opacity-100 mt-2" : "max-h-0 opacity-0"
       )}>
-        <div className="space-y-1 ml-6 pl-2 border-l border-border/60">
+        <div className="space-y-2 ml-7 pl-6 border-l-2 border-primary/10">
           {documents.map((doc) => (
             <button
               key={doc.id}
               onClick={doc.onClick}
-              className="w-full flex items-center gap-3 py-1.5 px-3 rounded-lg hover:bg-primary/5 transition-all group text-left"
+              className="w-full flex items-center gap-4 py-3 px-4 rounded-xl border border-transparent hover:border-primary/20 hover:bg-primary/5 transition-all group text-left bg-card/50 shadow-sm hover:shadow-md"
             >
-              <div className="shrink-0 transition-transform group-hover:scale-110">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-background border border-border/40 group-hover:border-primary/30 group-hover:scale-110 transition-all shadow-sm">
                 {getIcon(doc.type)}
               </div>
-              <span className="text-xs font-semibold text-muted-foreground group-hover:text-primary transition-colors truncate">
-                {doc.title}
-              </span>
+              <div className="flex flex-col overflow-hidden">
+                <span className="text-sm font-bold text-foreground group-hover:text-primary transition-colors truncate">
+                  {doc.title}
+                </span>
+                <span className="text-[10px] font-medium text-muted-foreground/60 uppercase tracking-wider">
+                  {doc.type === 'note' ? 'Caderno' : doc.type === 'summary' ? 'Resumo' : doc.type === 'exam_review' ? 'Exercícios' : 'Calendário'}
+                </span>
+              </div>
             </button>
           ))}
           {documents.length === 0 && (
-            <div className="py-2 px-3">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40 italic">Sem documentos vinculados</span>
+            <div className="py-4 px-4 bg-muted/20 rounded-xl border border-dashed border-border/60">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/40 italic flex items-center gap-2">
+                <div className="h-1 w-1 rounded-full bg-muted-foreground/40" />
+                Sem documentos vinculados
+              </span>
             </div>
           )}
         </div>
