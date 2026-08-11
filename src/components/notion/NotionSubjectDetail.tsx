@@ -204,7 +204,7 @@ export function NotionSubjectDetail({ subject }: Props) {
               <Layers className="h-4 w-4 text-primary" />
               Conteúdo Programático
             </h2>
-            <Badge variant="ghost" className="text-[10px] font-bold text-muted-foreground/60">
+            <Badge variant="secondary" className="text-[10px] font-bold text-muted-foreground/60 bg-transparent border-transparent">
               {subject.contentSections.length} módulos
             </Badge>
           </div>
