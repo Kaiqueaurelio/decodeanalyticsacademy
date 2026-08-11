@@ -1,4 +1,5 @@
 import { useMemo, useEffect, useState } from 'react';
+import { useAuth } from '@/hooks/useAuth';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';

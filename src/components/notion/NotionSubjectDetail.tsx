@@ -8,7 +8,8 @@ import {
   CheckCircle2, 
   Circle,
   PlayCircle,
-  ArrowLeft
+  ArrowLeft,
+  BookOpen
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
