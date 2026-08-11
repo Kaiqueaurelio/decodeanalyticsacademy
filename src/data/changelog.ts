@@ -44,6 +44,16 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '4.49.8',
+    date: '2026-08-11',
+    title: 'Otimização de Gestão & Auditoria Visual',
+    changes: [
+      { kind: 'improvement', text: 'Otimizado o fluxo de criação e edição de apostilas com foco em produtividade administrativa.' },
+      { kind: 'security', text: 'Consolidado o mapeamento de auditoria visual global para mascarar prompts de sistema.' },
+    ],
+  },
+
+  {
     version: '4.49.5',
     date: '2026-08-11',
     title: 'Editor WYSIWYG Estilo Office & Tipografia',
