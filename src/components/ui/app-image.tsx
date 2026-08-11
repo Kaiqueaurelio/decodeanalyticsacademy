@@ -29,11 +29,17 @@ function buildSupabasePublicUrl(bucket: string, path: string) {
 }
 
 function buildImageCandidates(src?: string | null) {
-  const proxied = toPromoMediaUrl(src);
-  const normalized = normalizeImageSrc(proxied ?? src);
+  const normalized = normalizeImageSrc(src);
   if (!normalized) return [];
 
   const candidates = new Set<string>();
+  
+  // Se for uma imagem de anúncio/promoção, tentamos o proxy primeiro para evitar ad-blockers
+  const proxied = toPromoMediaUrl(normalized);
+  if (proxied && proxied !== normalized) {
+    candidates.add(proxied);
+  }
+
   const addCandidate = (value?: string | null) => {
     const next = value?.trim();
     if (next) candidates.add(next);

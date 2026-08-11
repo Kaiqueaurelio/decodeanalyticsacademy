@@ -76,7 +76,7 @@ function professionalizeAd(ad: any): Ad {
     ...ad,
     title,
     description,
-    image_url: toPromoMediaUrl(ad.image_url),
+    image_url: ad.image_url,
   };
 }
 
