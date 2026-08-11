@@ -42,6 +42,7 @@ interface SubjectData {
   semester: string;
   status: 'A cursar' | 'Em progresso' | 'Concluído';
   progressValue: number;
+  onOpenNotebook?: () => void;
   contentSections: TopicSection[];
 }
 
@@ -83,6 +84,13 @@ export function NotionSubjectDetail({ subject }: Props) {
           className="gap-1.5 text-xs hover:bg-accent/10 transition-all rounded-full px-4"
         >
           <ArrowLeft className="h-3.5 w-3.5" /> Painel de Controle
+        </Button>
+
+        <Button
+          onClick={subject.onOpenNotebook}
+          className="gap-2 bg-primary hover:bg-primary/90 text-white rounded-full px-6 shadow-xl shadow-primary/20 transition-all hover:-translate-y-0.5"
+        >
+          <BookOpen className="h-4 w-4" /> Abrir Caderno Digital
         </Button>
       </div>
 

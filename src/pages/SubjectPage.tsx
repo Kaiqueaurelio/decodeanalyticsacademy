@@ -31,6 +31,7 @@ function keepMostComplete(rows: ApostilaRow[]) {
 }
 
 export default function SubjectPage() {
+  const { user } = useAuth();
   const { category = '' } = useParams();
   const decodedCategory = decodeURIComponent(category);
   const navigate = useNavigate();
@@ -88,6 +89,38 @@ export default function SubjectPage() {
       'Engenharia de Software': 'Profa. Ana Paula',
     };
 
+    const handleOpenNotebook = async () => {
+      if (!user) return;
+      
+      // Tenta encontrar ou criar o caderno para esta disciplina
+      const { data: existing } = await supabase
+        .from('notebooks' as any)
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('subject_id', decodedCategory)
+        .maybeSingle();
+
+      if (existing) {
+        navigate(`/caderno/${(existing as any).id}`);
+      } else {
+        const { data: created } = await supabase
+          .from('notebooks' as any)
+          .insert({
+            user_id: user.id,
+            subject_id: decodedCategory,
+            title: decodedCategory,
+            semester: `${semesterNum}º Semestre`,
+            status: 'Em progresso'
+          })
+          .select()
+          .single();
+        
+        if (created) {
+          navigate(`/caderno/${(created as any).id}`);
+        }
+      }
+    };
+
     return {
       id: decodedCategory,
       title: decodedCategory,
@@ -100,7 +133,9 @@ export default function SubjectPage() {
       semester: `${semesterNum}º Semestre`,
       status: (rows.length > 0 ? 'Em progresso' : 'A cursar') as 'Em progresso' | 'A cursar',
       progressValue: rows.length > 0 ? 35 : 0,
+      onOpenNotebook: handleOpenNotebook,
       contentSections: rows.length > 0 
+
         ? rows.map(r => ({
           id: r.id,
           title: r.title,
