@@ -187,13 +187,13 @@ const App = () => {
                     {/* 404 */}
                     <Route path="*" element={<NotFound />} />
                   </Routes>
-                </BrowserRouter>
+                </Suspense>
                 <CookieConsentBanner />
                 <ForcePasswordChangeGate />
-              </TooltipProvider>
-            </AudioPlayerProvider>
-          </AuthProvider>
-        </ThemeProvider>
+              </BrowserRouter>
+            </TooltipProvider>
+          </AudioPlayerProvider>
+        </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );
