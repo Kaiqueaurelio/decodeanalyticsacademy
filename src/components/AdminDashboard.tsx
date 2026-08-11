@@ -30,6 +30,7 @@ import { getSubjectColor } from '@/lib/subject-colors';
 import { BY_SEMESTER, canonicalSubjectKey, subjectKey } from '@/lib/subject-semester-map';
 import { ensureApostilaExists } from '@/lib/create-placeholder-apostila';
 import { logMaintenance } from '@/lib/maintenance-logger';
+import { AdminNotionGalleryCard } from './admin/AdminNotionGalleryCard';
 
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
@@ -870,110 +871,19 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
                 </Select>
               </div>
 
-              {/* Grid de Apostilas Organizado */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Grid de Apostilas Organizado no Estilo Notion Gallery */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
                 {visibleItems.map((a) => (
-                  <motion.div
+                  <AdminNotionGalleryCard
                     key={a.id}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="group"
-                  >
-                    <div className={cn(
-                      "relative p-4 rounded-2xl border transition-all duration-300",
-                      (a as any).isPlaceholder 
-                        ? "bg-primary/5 border-dashed border-primary/30" 
-                        : "bg-white/5 border-white/10 hover:border-primary/40 hover:bg-white/10 shadow-lg hover:shadow-primary/5"
-                    )}>
-                      <div className="flex justify-between items-start mb-2">
-                        <div className="flex items-center gap-2">
-                          <Checkbox 
-                            checked={selected.has(a.id)} 
-                            onCheckedChange={() => toggleSelectOne(a.id)}
-                            className="h-4 w-4 rounded border-white/20 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-                          />
-                          <Badge variant="outline" className={cn(
-                            "text-[10px] py-0 px-1.5 uppercase tracking-tighter",
-                            (a as any).isPlaceholder ? "bg-primary/20 text-primary border-primary/20" : 
-                            a.status === 'liberada' ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : 
-                            a.status === 'em_manutencao' ? "bg-amber-500/10 text-amber-500 border-amber-500/20" : 
-                            "bg-destructive/10 text-destructive border-destructive/20"
-                          )}>
-                            {(a as any).isPlaceholder ? 'Grade Acadêmica' : 
-                             a.status === 'liberada' ? 'Liberada' : 
-                             a.status === 'em_manutencao' ? 'Manutenção' : 'Bloqueada'}
-                          </Badge>
-                        </div>
-                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Button size="icon" variant="ghost" className="h-7 w-7 rounded-lg" onClick={(e) => { e.stopPropagation(); handleEdit(a); }}>
-                            <Edit className="h-3.5 w-3.5" />
-                          </Button>
-                          {!(a as any).isPlaceholder && (
-                            <Button 
-                              size="icon" 
-                              variant="ghost" 
-                              className="h-7 w-7 rounded-lg text-destructive hover:bg-destructive/10" 
-                              onClick={(e) => { e.stopPropagation(); setDeleteTarget(a); }}
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                      
-                      <h3 className="font-semibold text-sm line-clamp-1 mb-1 group-hover:text-primary transition-colors">
-                        {a.title}
-                      </h3>
-                      <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-                        <span className="truncate max-w-[120px]">{a.category || 'Sem Categoria'}</span>
-                        <span>•</span>
-                        <span>{new Date(a.created_at).toLocaleDateString('pt-BR')}</span>
-                      </div>
-                      
-                      {!(a as any).isPlaceholder && (
-                        <div className="mt-4 pt-3 border-t border-white/5 flex justify-between items-center gap-2">
-                          <Select 
-                            value={a.status || (a.published ? 'liberada' : 'bloqueada')} 
-                            onValueChange={(v) => handleStatusChange(a, v as any)}
-                            disabled={busyId === a.id}
-                          >
-                            <SelectTrigger className="h-7 w-[120px] bg-white/5 border-white/10 rounded-lg text-[9px] font-bold uppercase tracking-wider">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent className="bg-popover/90 backdrop-blur-xl border-white/10 rounded-xl">
-                              <SelectItem value="liberada" className="text-[10px] text-emerald-500 font-bold">LIBERADA</SelectItem>
-                              <SelectItem value="bloqueada" className="text-[10px] text-destructive font-bold">BLOQUEADA</SelectItem>
-                              <SelectItem value="em_manutencao" className="text-[10px] text-amber-500 font-bold">MANUTENÇÃO</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          
-                          <Button 
-                            variant="default" 
-                            size="sm" 
-                            className="h-8 rounded-xl px-4 text-xs font-bold gap-2"
-                            onClick={(e) => { e.stopPropagation(); handleEdit(a); }}
-                          >
-                            <Edit className="h-3 w-3" /> Editar
-                          </Button>
-                        </div>
-                      )}
-                      
-                      {(a as any).isPlaceholder && (
-                        <div className="mt-4 pt-3 border-t border-dashed border-primary/20">
-                          <Button 
-                            variant="default" 
-                            size="sm" 
-                            className="w-full h-10 rounded-xl px-4 text-xs font-bold gap-2 gradient-primary text-primary-foreground shadow-lg shadow-primary/20 hover:scale-[1.02] transition-transform"
-                            onClick={(e) => { e.stopPropagation(); handleEdit(a); }}
-                            disabled={busyId === a.id}
-                          >
-                            {busyId === a.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-                            INICIAR APOSTILA AGORA
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  </motion.div>
+                    item={a}
+                    selected={selected.has(a.id)}
+                    onSelect={toggleSelectOne}
+                    onEdit={handleEdit}
+                    onDelete={setDeleteTarget}
+                    onStatusChange={handleStatusChange}
+                    busyId={busyId}
+                  />
                 ))}
               </div>
               
