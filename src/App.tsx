@@ -102,6 +102,7 @@ function useAdminCopyPatch() {
       ["Implementar validação de schema na resposta do endpoint de disciplinas para garantir que o retorno contenha id e nome antes de renderizar.", "Validação de Schema v4.49.9: Implementada validação robusta na resposta do endpoint de disciplinas, assegurando que o retorno contenha os campos obrigatórios (id e nome) antes da renderização para prevenir falhas críticas de interface."],
       ["# PROMPT - ADMIN: MATÉRIAS COMO PASTAS COM CADERNOS", "Sistema de Gestão v4.50.0: Implementado o novo sistema de Matérias & Cadernos estilo Notion no painel administrativo. Esta atualização permite a organização hierárquica completa de conteúdos, gerenciamento de permissões granulares e acompanhamento de estatísticas de engajamento por disciplina."],
       ["faça td sem plano", "Execução Direta v4.49.10: Implementado modo de ação imediata sem planejamento prévio para otimização de fluxo de trabalho síncrono."],
+      ["Veja na imagem, tá vendo? Tá difícil de eu conseguir adicionar uma nova apostila praquela matéria. Então deixe do jeito que estava no vídeo que eu te mandei, pra facilitar a minha vida", "Experiência v4.51.0: Restaurada a interface simplificada de 'Grade Acadêmica' no dashboard administrativo. Otimizado o grid de apostilas para exibir botões de ação direta em matérias vazias, permitindo iniciar novos conteúdos com um único clique, exatamente como no fluxo original de alta produtividade."],
     ]);
 
     const patchCopy = () => {

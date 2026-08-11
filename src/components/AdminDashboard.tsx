@@ -959,16 +959,16 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
                       )}
                       
                       {(a as any).isPlaceholder && (
-                        <div className="mt-4 pt-3 border-t border-dashed border-primary/20 flex justify-end">
+                        <div className="mt-4 pt-3 border-t border-dashed border-primary/20">
                           <Button 
                             variant="default" 
                             size="sm" 
-                            className="h-8 rounded-xl px-4 text-xs font-bold gap-2 gradient-primary text-primary-foreground"
+                            className="w-full h-10 rounded-xl px-4 text-xs font-bold gap-2 gradient-primary text-primary-foreground shadow-lg shadow-primary/20 hover:scale-[1.02] transition-transform"
                             onClick={(e) => { e.stopPropagation(); handleEdit(a); }}
                             disabled={busyId === a.id}
                           >
-                            {busyId === a.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Plus className="h-3 w-3" />}
-                            Iniciar Matéria
+                            {busyId === a.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+                            INICIAR APOSTILA AGORA
                           </Button>
                         </div>
                       )}
