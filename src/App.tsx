@@ -68,6 +68,7 @@ const OAuthConsentPage = lazy(() => import("./pages/OAuthConsentPage"));
 const TransparencyPage = lazy(() => import("./pages/TransparencyPage"));
 const SupportProjectPage = lazy(() => import("./pages/SupportProjectPage"));
 const SchedulePage = lazy(() => import("./pages/SchedulePage"));
+const NotebookPage = lazy(() => import("./pages/NotebookPage"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -151,6 +152,7 @@ const App = () => {
                       <Route path="/apostila/:id" element={<PageTransition><ApostilaPage /></PageTransition>} />
                       <Route path="/apostila/:id/read" element={<PageTransition><ApostilaReaderPage /></PageTransition>} />
                       <Route path="/materia/:category" element={<PageTransition><SubjectPage /></PageTransition>} />
+                      <Route path="/caderno/:notebookId" element={<PageTransition><NotebookPage /></PageTransition>} />
                       <Route path="/exercicios" element={<PageTransition><ExerciciosIndexPage /></PageTransition>} />
                       <Route path="/exercicios/:id" element={<PageTransition><ExercisesPage /></PageTransition>} />
                       <Route path="/review/:resultId" element={<PageTransition><ReviewPage /></PageTransition>} />
