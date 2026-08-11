@@ -176,7 +176,7 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
               {/* Card estilo Notion Gallery View (Gaveta) */}
               <button
                 onClick={() => openSubject(category)}
-                className="group relative flex flex-col rounded-3xl border border-border/40 bg-card/40 backdrop-blur-sm overflow-hidden transition-all duration-700 hover:border-primary/50 hover:shadow-[0_30px_60px_-15px_rgba(168,85,247,0.25)] hover:-translate-y-2 active:scale-[0.98] aspect-video"
+                className="group relative flex flex-col rounded-3xl border border-border/40 bg-card/40 backdrop-blur-sm overflow-hidden transition-all duration-700 hover:border-primary/50 hover:shadow-[0_30px_60px_-15px_rgba(168,85,247,0.25)] hover:-translate-y-2 active:scale-[0.98] aspect-video sm:aspect-auto sm:h-56"
               >
                 {/* Background da Matéria (Capa da primeira apostila) */}
                 <div className="absolute inset-0">
