@@ -109,9 +109,13 @@ function useAdminCopyPatch() {
   }, []);
 }
 
+const BMCWidgetLoader = () => {
+  useBMCWidget();
+  return null;
+};
+
 const App = () => {
   useAdminCopyPatch();
-  useBMCWidget();
   const [splashDone, setSplashDone] = useState(false);
 
   return (
@@ -124,6 +128,7 @@ const App = () => {
               <Sonner />
               <BrowserRouter>
                 {!splashDone && <SplashScreen onComplete={() => setSplashDone(true)} />}
+                <BMCWidgetLoader />
                 <RANamePrompt />
                 <AdPopup />
                 <AdDraftPreviewOverlay />
