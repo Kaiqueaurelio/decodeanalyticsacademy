@@ -130,21 +130,32 @@ export function NotionSubjectDetail({ subject }: Props) {
       />
 
       {/* Content Sections */}
-      <div className="space-y-6">
-        <div className="flex items-center gap-3 border-b border-border/40 pb-4">
-          <h2 className="text-xl font-display font-black tracking-tight uppercase">Conteúdo & Tópicos</h2>
-          <Badge variant="outline" className="text-[10px] font-black">{subject.contentSections.length} Módulos</Badge>
+      <div className="space-y-8 pb-12">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-6">
+          <div className="flex items-center gap-4">
+            <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20 shadow-inner">
+              <Layers className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-display font-black tracking-tight uppercase">Módulos de Estudo</h2>
+              <p className="text-xs text-muted-foreground font-medium">Conteúdo acadêmico estruturado por tópicos</p>
+            </div>
+          </div>
+          <Badge variant="outline" className="text-[11px] font-black py-1 px-3 bg-background/50 border-primary/20 self-start sm:self-auto">
+            {subject.contentSections.length} Módulos Disponíveis
+          </Badge>
         </div>
 
-        <div className="grid grid-cols-1 gap-1">
+        <div className="grid grid-cols-1 gap-4">
           {subject.contentSections.map((section, idx) => (
-            <NotionTopicAccordion
-              key={section.id}
-              id={section.id}
-              title={section.title}
-              isExpandedByDefault={idx === 0}
-              documents={section.documents}
-            />
+            <div key={section.id} className="bg-card/30 rounded-2xl border border-border/40 p-2 shadow-sm hover:shadow-md transition-all duration-300">
+              <NotionTopicAccordion
+                id={section.id}
+                title={section.title}
+                isExpandedByDefault={idx === 0}
+                documents={section.documents}
+              />
+            </div>
           ))}
         </div>
       </div>
