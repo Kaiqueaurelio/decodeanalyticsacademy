@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { 
   User, 
   Clock, 
@@ -9,7 +9,11 @@ import {
   Circle,
   PlayCircle,
   ArrowLeft,
-  BookOpen
+  BookOpen,
+  Menu,
+  X,
+  ChevronRight,
+  Info
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -17,6 +21,8 @@ import { NotionPropertyGrid } from './NotionPropertyGrid';
 import { NotionTopicAccordion } from './NotionTopicAccordion';
 import { Badge } from '@/components/ui/badge';
 import { getSubjectColor } from '@/lib/subject-colors';
+import { cn } from '@/lib/utils';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface DocumentNode {
   id: string;
@@ -54,6 +60,7 @@ interface Props {
 export function NotionSubjectDetail({ subject }: Props) {
   const color = getSubjectColor(subject.title);
   const navigate = useNavigate();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const properties = useMemo(() => [
     { icon: PlayCircle, label: 'Tipo de Aula', value: <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20">{subject.classType}</Badge> },
@@ -66,97 +73,248 @@ export function NotionSubjectDetail({ subject }: Props) {
       icon: subject.status === 'Concluído' ? CheckCircle2 : Circle, 
       label: 'Status', 
       value: (
-        <span className={`inline-flex items-center gap-1.5 ${subject.status === 'Concluído' ? 'text-emerald-500' : 'text-amber-500'}`}>
-          <span className={`h-2 w-2 rounded-full ${subject.status === 'Concluído' ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'}`} />
+        <span className={cn(
+          "inline-flex items-center gap-1.5 font-bold",
+          subject.status === 'Concluído' ? 'text-emerald-500' : 'text-amber-500'
+        )}>
+          <span className={cn(
+            "h-2 w-2 rounded-full",
+            subject.status === 'Concluído' ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'
+          )} />
           {subject.status}
         </span>
       )
     },
   ], [subject]);
 
+  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+
   return (
-    <div className="w-full max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      {/* Action Bar */}
-      <div className="flex items-center justify-between">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate('/dashboard')}
-          className="gap-1.5 text-xs hover:bg-accent/10 transition-all rounded-full px-4"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" /> Painel de Controle
-        </Button>
+    <div className="w-full max-w-5xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-24">
+      {/* Notion-style Header Bar */}
+      <div className="flex items-center justify-between py-2 border-b border-border/10">
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleSidebar}
+            className="hover:bg-accent/10 rounded-lg text-muted-foreground"
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+          <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground overflow-hidden">
+            <span className="hover:text-foreground cursor-pointer transition-colors whitespace-nowrap" onClick={() => navigate('/dashboard')}>Dashboard</span>
+            <ChevronRight className="h-3 w-3 shrink-0" />
+            <span className="text-foreground truncate font-bold">{subject.title}</span>
+          </div>
+        </div>
 
-        <Button
-          onClick={subject.onOpenNotebook}
-          className="gap-2 bg-primary hover:bg-primary/90 text-white rounded-full px-6 shadow-xl shadow-primary/20 transition-all hover:-translate-y-0.5"
-        >
-          <BookOpen className="h-4 w-4" /> Abrir Caderno Digital
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={subject.onOpenNotebook}
+            variant="ghost"
+            size="sm"
+            className="hidden sm:flex gap-2 text-xs font-bold text-muted-foreground hover:text-primary transition-all rounded-lg"
+          >
+            <BookOpen className="h-4 w-4" /> Caderno
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-muted-foreground hover:text-foreground rounded-lg"
+          >
+            <Info className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
 
-      {/* Cover Header */}
-      <div className="relative h-64 sm:h-80 w-full rounded-3xl overflow-hidden border border-border/40 group shadow-2xl">
-        {subject.coverImage ? (
-          <img 
-            src={subject.coverImage} 
-            alt={subject.title} 
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
-          />
-        ) : (
-          <div 
-            className="w-full h-full opacity-40" 
-            style={{ backgroundColor: color }}
-          />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
+      {/* Cover Header - Pure Notion Style */}
+      <div className="relative w-full group overflow-hidden">
+        <div className="h-48 sm:h-64 w-full overflow-hidden rounded-xl border border-border/20 shadow-lg">
+          {subject.coverImage ? (
+            <img 
+              src={subject.coverImage} 
+              alt={subject.title} 
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
+            />
+          ) : (
+            <div 
+              className="w-full h-full opacity-60" 
+              style={{ background: `linear-gradient(135deg, ${color}44 0%, ${color}22 100%)` }}
+            />
+          )}
+        </div>
         
-        <div className="absolute inset-x-8 bottom-8">
-          <div className="space-y-2">
-            <Badge className="bg-primary/20 text-primary border-primary/30 backdrop-blur-md uppercase tracking-widest text-[10px] font-black">
-              Disciplina Acadêmica
-            </Badge>
-            <h1 className="text-3xl sm:text-5xl font-display font-black tracking-tight text-white drop-shadow-2xl">
-              {subject.title}
-            </h1>
-          </div>
+        {/* Subject Icon/Emoji Place - Overlapping cover */}
+        <div className="absolute -bottom-10 left-8 h-20 w-20 sm:h-24 sm:w-24 bg-card rounded-2xl border-4 border-background shadow-2xl flex items-center justify-center transform group-hover:scale-105 transition-transform duration-300">
+           <div 
+            className="text-4xl sm:text-5xl"
+            style={{ color }}
+           >
+             {subject.title.charAt(0)}
+           </div>
         </div>
       </div>
 
-      {/* Properties Table */}
-      <NotionPropertyGrid 
-        properties={properties} 
-        progressValue={subject.progressValue} 
-      />
-
-      {/* Content Sections */}
-      <div className="space-y-8 pb-12">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/40 pb-6">
-          <div className="flex items-center gap-4">
-            <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20 shadow-inner">
-              <Layers className="h-6 w-6 text-primary" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-display font-black tracking-tight uppercase">Módulos de Estudo</h2>
-              <p className="text-xs text-muted-foreground font-medium">Conteúdo acadêmico estruturado por tópicos</p>
-            </div>
+      <div className="pt-10 px-2 space-y-6">
+        <div>
+          <h1 className="text-4xl sm:text-5xl font-display font-black tracking-tighter text-foreground mb-4">
+            {subject.title}
+          </h1>
+          <div className="flex flex-wrap gap-2">
+            <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 font-bold px-3">
+              {subject.semester}
+            </Badge>
+            <Badge variant="outline" className="text-muted-foreground border-border/40 font-bold px-3">
+              {subject.formationAxis}
+            </Badge>
           </div>
-          <Badge variant="outline" className="text-[11px] font-black py-1 px-3 bg-background/50 border-primary/20 self-start sm:self-auto">
-            {subject.contentSections.length} Módulos Disponíveis
-          </Badge>
         </div>
 
-        <div className="grid grid-cols-1 gap-4">
-          {subject.contentSections.map((section, idx) => (
-            <div key={section.id} className="bg-card/30 rounded-2xl border border-border/40 p-2 shadow-sm hover:shadow-md transition-all duration-300">
+        {/* Callout Section (Notion Style) */}
+        <div 
+          className="flex items-start gap-4 p-4 rounded-xl border border-border/40 bg-accent/5"
+          style={{ borderLeftColor: color, borderLeftWidth: '4px' }}
+        >
+          <div className="mt-1 h-8 w-8 rounded-lg flex items-center justify-center bg-card shadow-sm shrink-0">
+            <Info className="h-4 w-4" style={{ color }} />
+          </div>
+          <div className="space-y-1">
+            <p className="text-sm font-bold text-foreground">Visão Geral da Disciplina</p>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Bem-vindo ao módulo de {subject.title}. Aqui você encontrará todos os materiais, 
+              resumos e exercícios estruturados para o seu melhor aproveitamento acadêmico.
+            </p>
+          </div>
+        </div>
+
+        {/* Properties Table */}
+        <div className="space-y-2">
+          <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/50 px-2">Propriedades</h3>
+          <NotionPropertyGrid 
+            properties={properties} 
+            progressValue={subject.progressValue} 
+          />
+        </div>
+
+        {/* Content Sections */}
+        <div className="space-y-6">
+          <div className="flex items-center justify-between border-b border-border/10 pb-2 px-2">
+            <h2 className="text-lg font-black tracking-tight flex items-center gap-2">
+              <Layers className="h-4 w-4 text-primary" />
+              Conteúdo Programático
+            </h2>
+            <Badge variant="ghost" className="text-[10px] font-bold text-muted-foreground/60">
+              {subject.contentSections.length} módulos
+            </Badge>
+          </div>
+
+          <div className="grid grid-cols-1 gap-2">
+            {subject.contentSections.map((section, idx) => (
               <NotionTopicAccordion
+                key={section.id}
                 id={section.id}
                 title={section.title}
                 isExpandedByDefault={idx === 0}
                 documents={section.documents}
               />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Overlay Sidebar Menu (Retrátil) */}
+      <div 
+        className={cn(
+          "fixed inset-0 bg-background/80 backdrop-blur-sm z-[100] transition-opacity duration-300",
+          isSidebarOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+        )}
+        onClick={toggleSidebar}
+      />
+      
+      <div 
+        className={cn(
+          "fixed top-0 left-0 bottom-0 w-[280px] bg-card border-r border-border/40 z-[101] shadow-2xl transition-transform duration-300 ease-out",
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
+        <div className="flex flex-col h-full">
+          <div className="p-4 border-b border-border/10 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-black">
+                D
+              </div>
+              <span className="text-sm font-black tracking-tight">Decode Academy</span>
             </div>
-          ))}
+            <Button variant="ghost" size="icon" onClick={toggleSidebar} className="h-8 w-8 rounded-lg">
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+          
+          <ScrollArea className="flex-1 px-2 py-4">
+            <div className="space-y-6">
+              <div className="space-y-1">
+                <h4 className="px-3 text-[10px] font-black text-muted-foreground/40 uppercase tracking-widest">Navegação</h4>
+                <Button 
+                  variant="ghost" 
+                  className="w-full justify-start gap-3 text-sm font-bold text-muted-foreground hover:text-foreground hover:bg-accent/5 rounded-lg"
+                  onClick={() => navigate('/dashboard')}
+                >
+                  <MapIcon className="h-4 w-4" /> Painel Geral
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  className="w-full justify-start gap-3 text-sm font-bold text-foreground bg-accent/10 rounded-lg"
+                >
+                  <BookOpen className="h-4 w-4 text-primary" /> Esta Matéria
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  className="w-full justify-start gap-3 text-sm font-bold text-muted-foreground hover:text-foreground hover:bg-accent/5 rounded-lg"
+                  onClick={() => navigate('/horarios')}
+                >
+                  <Clock className="h-4 w-4" /> Minha Grade
+                </Button>
+              </div>
+
+              <div className="space-y-1">
+                <h4 className="px-3 text-[10px] font-black text-muted-foreground/40 uppercase tracking-widest">Favoritos</h4>
+                <div className="px-3 py-2 text-xs text-muted-foreground/50 italic">
+                  Nenhum item fixado.
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <h4 className="px-3 text-[10px] font-black text-muted-foreground/40 uppercase tracking-widest">Módulos</h4>
+                {subject.contentSections.map(section => (
+                  <Button 
+                    key={section.id}
+                    variant="ghost" 
+                    className="w-full justify-start gap-3 text-[11px] font-bold text-muted-foreground hover:text-foreground hover:bg-accent/5 rounded-lg truncate"
+                    onClick={() => {
+                      toggleSidebar();
+                      document.getElementById(section.id)?.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                  >
+                    <div className="h-1.5 w-1.5 rounded-full bg-primary/40 shrink-0" />
+                    {section.title}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          </ScrollArea>
+          
+          <div className="p-4 border-t border-border/10 bg-accent/5">
+            <div className="flex items-center gap-3">
+              <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-black">
+                {subject.professor.charAt(0)}
+              </div>
+              <div className="flex flex-col overflow-hidden">
+                <span className="text-xs font-bold truncate">{subject.professor}</span>
+                <span className="text-[10px] text-muted-foreground">Responsável</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
