@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { ArrowRight, FileText, ClipboardList, Beaker, PenLine, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
