@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Plus, FileText, Trash2, Edit2, Save } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@supabase/supabase-js';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { AppHeader } from '@/components/AppHeader';
@@ -33,7 +33,7 @@ export default function NotebookPage() {
     const { data: notebook } = await supabase
       .from('notebooks')
       .select('title')
-      .eq('id', notebookId)
+      .eq('id', notebookId as string)
       .single();
     
     if (notebook) setNotebookTitle(notebook.title);
@@ -41,12 +41,12 @@ export default function NotebookPage() {
     const { data: pagesData } = await supabase
       .from('notebook_pages')
       .select('*')
-      .eq('notebook_id', notebookId)
+      .eq('notebook_id', notebookId as string)
       .order('position', { ascending: true });
 
     if (pagesData) {
       setPages(pagesData);
-      if (pagesData.length > 0 && !currentPageId) {
+      if (pagesData.length > 0 && !currentPageId as string) {
         setCurrentPageId(pagesData[0].id);
       }
     }
@@ -54,8 +54,8 @@ export default function NotebookPage() {
   };
 
   useEffect(() => {
-    if (currentPageId) {
-      fetchPageContent(currentPageId);
+    if (currentPageId as string) {
+      fetchPageContent(currentPageId as string);
     }
   }, [currentPageId]);
 
@@ -63,7 +63,7 @@ export default function NotebookPage() {
     const { data: contents } = await supabase
       .from('notebook_page_contents')
       .select('*')
-      .eq('page_id', pageId)
+      .eq('page_id', pageId as string)
       .order('position', { ascending: true });
 
     if (contents) {
@@ -78,7 +78,7 @@ export default function NotebookPage() {
   };
 
   const createPage = async () => {
-    if (!notebookId) return;
+    if (!notebookId as string) return;
     const { data: newPage } = await supabase
       .from('notebook_pages')
       .insert({
@@ -97,11 +97,11 @@ export default function NotebookPage() {
   };
 
   const saveContent = async () => {
-    if (!currentPageId) return;
+    if (!currentPageId as string) return;
     setSaving(true);
     try {
       // Simplificado: deleta e reinseri para manter ordem (em prod usaríamos upsert com lógica de posição)
-      await supabase.from('notebook_page_contents').delete().eq('page_id', currentPageId);
+      await (supabase as any).from('notebook_page_contents').delete().eq('page_id', currentPageId as string);
       
       const toInsert = pageBlocks.map((b, idx) => ({
         page_id: currentPageId,
@@ -110,8 +110,8 @@ export default function NotebookPage() {
         position: idx
       }));
 
-      if (toInsert.length > 0) {
-        await supabase.from('notebook_page_contents').insert(toInsert);
+      if ((toInsert.length > 0 as any) {
+        await (supabase as any).from('notebook_page_contents').insert(toInsert);
       }
       toast.success('Alterações salvas');
     } catch (e) {
@@ -123,7 +123,7 @@ export default function NotebookPage() {
 
   if (loading) return <div className="h-screen flex items-center justify-center"><GlitchLoader text="Abrindo Caderno..." /></div>;
 
-  const activePage = pages.find(p => p.id === currentPageId);
+  const activePage = pages.find(p => p.id === currentPageId as string);
 
   return (
     <div className="min-h-screen bg-background pb-20">
