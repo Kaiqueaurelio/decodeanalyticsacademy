@@ -1,4 +1,4 @@
-import React, { Suspense, lazy } from "react";
+import React, { Suspense, lazy, useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -111,17 +111,18 @@ function useAdminCopyPatch() {
 const App = () => {
   useAdminCopyPatch();
   useBMCWidget();
+  const [splashDone, setSplashDone] = useState(false);
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="dark">
+      <ThemeProvider>
         <AuthProvider>
           <AudioPlayerProvider>
             <TooltipProvider>
               <Toaster />
               <Sonner />
               <BrowserRouter>
-                <SplashScreen />
+                {!splashDone && <SplashScreen onComplete={() => setSplashDone(true)} />}
                 <RANamePrompt />
                 <AdPopup />
                 <AdDraftPreviewOverlay />
@@ -174,9 +175,9 @@ const App = () => {
                       <Route path="/schedule" element={<PageTransition><SchedulePage /></PageTransition>} />
                       
                       {/* Admin Routes */}
-                      <Route path="/admin" element={<ProtectedRoute requireAdmin><PageTransition><AdminPage /></PageTransition></ProtectedRoute>} />
-                      <Route path="/admin/biblioteca" element={<ProtectedRoute requireAdmin><PageTransition><AdminBibliotecaPage /></PageTransition></ProtectedRoute>} />
-                      <Route path="/admin/apostilas/:id" element={<ProtectedRoute requireAdmin><PageTransition><AdminApostilaWorkbench /></PageTransition></ProtectedRoute>} />
+                      <Route path="/admin" element={<ProtectedRoute adminOnly><PageTransition><AdminPage /></PageTransition></ProtectedRoute>} />
+                      <Route path="/admin/biblioteca" element={<ProtectedRoute adminOnly><PageTransition><AdminBibliotecaPage /></PageTransition></ProtectedRoute>} />
+                      <Route path="/admin/apostilas/:id" element={<ProtectedRoute adminOnly><PageTransition><AdminApostilaWorkbench /></PageTransition></ProtectedRoute>} />
                     </Route>
 
                     {/* Dev/Visual Routes */}
