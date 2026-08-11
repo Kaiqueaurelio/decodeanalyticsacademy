@@ -132,16 +132,7 @@ export default function SubjectPage() {
     <div className="min-h-screen bg-background pb-20">
       <AppHeader />
       <main className="mx-auto w-full max-w-6xl px-3 sm:px-6">
-        <div className="py-6">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate('/dashboard')}
-            className="gap-1.5 text-xs hover:bg-accent/10 mb-6"
-          >
-            <ArrowLeft className="h-3.5 w-3.5" /> Voltar ao Dashboard
-          </Button>
-
+        <div className="py-8">
           {loading ? (
             <div className="flex flex-col items-center justify-center py-32 space-y-4">
               <GlitchLoader text="Carregando Disciplina..." />
