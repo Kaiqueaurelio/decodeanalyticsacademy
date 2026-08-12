@@ -105,6 +105,8 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
   const adminLoaderRef = useRef<HTMLDivElement>(null);
   // Pasta aberta no grid por categoria
   const [openCategory, setOpenCategory] = useState<string | null>(null);
+  const totalEngagement = useMemo(() => engagement.reduce((acc, curr) => acc + curr.apostilas + curr.exercises, 0), [engagement]);
+
 
   // Seleção em lote
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -873,7 +875,7 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
               </div>
 
               {/* Grid de Apostilas estilo Notion Gallery */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 px-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-3 px-1">
                 {visibleItems.map((a) => (
                   <AdminNotionGalleryCard
                     key={a.id}
