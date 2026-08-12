@@ -149,7 +149,7 @@ export function AdminNotionGalleryCard({
 
           {/* Ações Rápidas Flutuantes */}
           <div className="absolute top-1/2 -translate-y-1/2 right-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            <Button size="icon" variant="ghost" className="h-7 w-7 rounded-lg hover:bg-white/10" onClick={() => onEdit(item)}>
+            <Button size="icon" variant="ghost" className="h-7 w-7 rounded-lg hover:bg-white/10 active:scale-95 touch-manipulation" onClick={() => onEdit(item)}>
               <Edit className="h-3.5 w-3.5 text-muted-foreground" />
             </Button>
             {!isPlaceholder && (

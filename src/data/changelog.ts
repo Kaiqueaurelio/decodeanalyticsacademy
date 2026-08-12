@@ -32,7 +32,7 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.71.0',
+    version: '4.71.5',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
@@ -43,6 +43,16 @@ export function getBuildInfo() {
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: '4.71.5',
+    date: '2026-08-12',
+    title: 'Otimização Mobile & Edição Pro',
+    changes: [
+      { kind: 'improvement', text: 'Melhorada a visibilidade do botão "Colar Inteligente" em telas pequenas (v4.71.5).' },
+      { kind: 'improvement', text: 'Otimizado o scroll e área de toque do Editor Ribbon para dispositivos móveis.' },
+      { kind: 'fix', text: 'Ajustada a sensibilidade de toque nos cards de galeria administrativa.' },
+    ],
+  },
   {
     version: '4.71.0',
     date: '2026-08-12',
