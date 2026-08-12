@@ -1278,10 +1278,8 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
                   <SelectValue placeholder="Escolha o semestre" />
                 </SelectTrigger>
                 <SelectContent className="bg-popover/90 backdrop-blur-xl border-white/10 rounded-xl">
-                  {[1,2,3,4,5,6,7,8].map(s => (
-                    <SelectItem key={s} value={s.toString()}>{s === 0 ? 'Grade Comum / Bônus' : `${s}º Semestre`}</SelectItem>
-                  ))}
-                  <SelectItem value="0">Material Bônus / ENEM</SelectItem>
+                  {[0,1,2,3,4,5,6,7,8].map(s => (
+                    <SelectItem key={s} value={s.toString()}>{s === 0 ? 'Bônus / ENEM' : `${s}º Semestre`}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
