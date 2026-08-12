@@ -733,20 +733,17 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
           {/* Aba de Comando Rápido */}
           <Card className="border-primary/10 bg-card/20 backdrop-blur-md overflow-hidden">
             <CardHeader className="pb-4">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <BookOpen className="h-5 w-5 text-primary" />
-                  Acervo Administrativo
+              <div className="flex flex-col gap-1.5">
+                <CardTitle className="text-xl font-bold tracking-tight">
+                  Gerenciar Apostilas
                 </CardTitle>
-                <div className="flex items-center gap-2">
-                  <Button size="sm" variant="ghost" onClick={clearFilters} className={cn("h-8 text-[10px] uppercase tracking-wider", !hasFilters && "hidden")}>
-                    Limpar Filtros
-                  </Button>
-                  <Badge variant="secondary" className="bg-primary/10 text-primary hover:bg-primary/20 transition-colors cursor-pointer">
-                    {filtered.length} Apostilas
-                  </Badge>
-                </div>
+                <CardDescription className="text-[10px] text-muted-foreground/60 flex items-center gap-2">
+                  {filtered.length} apostilas cadastradas · v4.1.0
+                </CardDescription>
               </div>
+                <div className="flex items-center gap-2">
+                  {/* Espaço para o buscador se for movido para o header no futuro */}
+                </div>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Barra de Busca e Ações */}
@@ -874,7 +871,7 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
               </div>
 
               {/* Grid de Apostilas estilo Notion Gallery */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 px-1">
                 {visibleItems.map((a) => (
                   <AdminNotionGalleryCard
                     key={a.id}
