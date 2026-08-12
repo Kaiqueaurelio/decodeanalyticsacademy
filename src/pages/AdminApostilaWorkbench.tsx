@@ -145,13 +145,39 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       return;
     }
 
-    setTitle(ap.title || '');
-    setCategory(ap.category || '');
-    const restoredContent = ap.content || (ap as any).content_backup || '';
-    setContent(restoredContent);
+    // Verificar backup local antes de carregar do banco
+    const backupKey = `apostila_backup_${apostilaId}`;
+    const localBackupRaw = localStorage.getItem(backupKey);
+    let localBackup = null;
+    try {
+      if (localBackupRaw) localBackup = JSON.parse(localBackupRaw);
+    } catch (e) {
+      console.error('Erro ao ler backup local:', e);
+    }
+
+    if (localBackup && ap && new Date(localBackup.timestamp) > new Date(ap.updated_at)) {
+      toast.info('Recuperamos uma versão não salva localmente.', {
+        description: `Última alteração local em ${new Date(localBackup.timestamp).toLocaleTimeString()}`,
+        action: {
+          label: 'Descartar',
+          onClick: () => localStorage.removeItem(backupKey)
+        }
+      });
+      setTitle(localBackup.title || '');
+      setCategory(localBackup.category || '');
+      setContent(localBackup.content || '');
+      setSemester(localBackup.semester ?? null);
+      setCourse(localBackup.course ?? []);
+    } else {
+      setTitle(ap.title || '');
+      setCategory(ap.category || '');
+      const restoredContent = ap.content || (ap as any).content_backup || '';
+      setContent(restoredContent);
+      setSemester((ap as any).semester ?? null);
+      setCourse(((ap as any).course as CourseCode[] | null) ?? []);
+    }
+
     setPublished(!!ap.published);
-    setSemester((ap as any).semester ?? null);
-    setCourse(((ap as any).course as CourseCode[] | null) ?? []);
     setCoverUrl(((ap as any).cover_url as string | null) ?? null);
     setExerciseCount(count || 0);
 
@@ -191,10 +217,22 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     const t = window.setTimeout(() => {
       doSave();
     }, AUTOSAVE_MS);
+    
+    // Backup local em caso de falha no mobile
+    const backupKey = `apostila_backup_${id}`;
+    localStorage.setItem(backupKey, JSON.stringify({
+      title,
+      category,
+      content,
+      semester,
+      course,
+      timestamp: new Date().toISOString()
+    }));
+
     return () => window.clearTimeout(t);
   }, [title, category, content, semester, course]);
 
-  const doSave = async () => {
+  const doSave = async (isManual = false) => {
     if (!id || !dirtyRef.current) return;
     setSaving(true);
 
@@ -235,9 +273,20 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
 
     setSaving(false);
     if (error) {
-      toast.error('Erro ao salvar');
+      console.error('Erro ao salvar:', error);
+      toast.error('Falha na sincronização. Edição mantida localmente.', {
+        description: 'Verifique sua conexão. Tentaremos salvar novamente em instantes.',
+        action: isManual ? {
+          label: 'Tentar Agora',
+          onClick: () => doSave(true)
+        } : undefined,
+        duration: 5000,
+      });
       return;
     }
+    
+    // Limpar backup se salvou com sucesso
+    localStorage.removeItem(`apostila_backup_${id}`);
     dirtyRef.current = false;
     if (content.trim().length > 0) setPublished(true);
     setLastSavedAt(new Date());
