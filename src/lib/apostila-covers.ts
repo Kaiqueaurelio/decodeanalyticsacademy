@@ -31,6 +31,8 @@ const COVERS: Record<string, string> = {
   'aps': UNSPLASH('photo-1573164574572-cb89e39749b4'),
   'atividade prática': UNSPLASH('photo-1573164574572-cb89e39749b4'),
   'estudos disciplinares': UNSPLASH('photo-1456513080510-7bf3a84b82f8'),
+  'pesquisa operacional': UNSPLASH('photo-1460925895917-afdab827c52f'),
+  'pesquisa computacional': UNSPLASH('photo-1460925895917-afdab827c52f'),
   // outras
   'banco de dados': UNSPLASH('photo-1544383835-bda2bc66a55d'),
   'estrutura de dados': UNSPLASH('photo-1555949963-aa79dcee981c'),
