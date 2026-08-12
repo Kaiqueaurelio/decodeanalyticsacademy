@@ -116,10 +116,10 @@ export function ApostilaHealthBar({
             variant="ghost" 
             size="sm" 
             onClick={onPasteOpen}
-            className="h-8 text-xs gap-2 rounded-lg hover:bg-accent text-primary font-bold"
+            className="h-8 text-xs gap-1.5 rounded-lg hover:bg-accent text-primary font-bold px-2 sm:px-3"
           >
-            <ClipboardPaste className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Colar Inteligente</span>
+            <ClipboardPaste className="h-3.5 w-3.5 shrink-0" />
+            <span className="hidden xs:inline">Colar Inteligente</span>
           </Button>
 
           <Button 
