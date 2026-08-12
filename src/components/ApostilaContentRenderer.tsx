@@ -718,24 +718,26 @@ function CalloutBlock({ kind, title, content }: { kind: 'info' | 'tip' | 'warnin
       : { bg: 'bg-primary/5', border: 'border-primary/40', text: 'text-foreground', icon: 'text-primary' };
 
   return (
-    <aside className={cn("my-6 p-4 rounded-xl border flex gap-4 transition-all duration-300 hover:shadow-sm", colors.bg, colors.border)}>
-      <div className={cn("mt-0.5 h-8 w-8 rounded-lg flex items-center justify-center bg-card shadow-sm shrink-0", colors.border, "border-[0.5px]")}>
-        <Icon className={cn("h-4 w-4", colors.icon)} />
+    <aside className={cn("my-6 p-5 rounded-2xl border flex gap-4 transition-all duration-300 hover:shadow-md", colors.bg, colors.border)}>
+      <div className={cn("mt-0.5 h-10 w-10 rounded-xl flex items-center justify-center bg-card shadow-sm shrink-0", colors.border, "border-[0.5px]")}>
+        <Icon className={cn("h-5 w-5", colors.icon)} />
       </div>
-      <div className="space-y-1 flex-1 min-w-0">
-        <p className={cn("text-[10px] font-black uppercase tracking-[0.2em]", colors.text)}>{title}</p>
-        <p className="text-[14px] leading-relaxed text-foreground/80 m-0" dangerouslySetInnerHTML={renderInline(content)} />
+      <div className="space-y-1.5 flex-1 min-w-0">
+        <p className={cn("text-[11px] font-black uppercase tracking-[0.2em] opacity-80", colors.text)}>{title}</p>
+        <p className="text-[15px] leading-relaxed text-foreground/90 m-0 font-medium" dangerouslySetInnerHTML={renderInline(content)} />
       </div>
     </aside>
+
   );
 }
 
 function QuoteBlock({ content }: { content: string }) {
   return (
     <blockquote
-      className="my-8 pl-6 border-l-4 border-primary/20 italic text-foreground/70 text-[16px] leading-relaxed font-medium"
+      className="my-10 pl-8 pr-4 py-2 border-l-4 border-primary/30 italic text-foreground/80 text-[17px] leading-loose font-medium bg-primary/5 rounded-r-2xl"
       dangerouslySetInnerHTML={renderInline(content)}
     />
+
   );
 }
 
@@ -744,9 +746,10 @@ function ListBlock({ items, ordered }: { items: string[]; ordered: boolean }) {
     return (
       <ol className="my-6 ml-2 space-y-3 list-none counter-reset-decode">
         {items.map((it, idx) => (
-          <li key={idx} className="pl-10 relative text-[15px] leading-relaxed text-foreground/90 group">
-            <span className="absolute left-0 top-[0.1em] w-7 h-7 rounded-lg bg-accent/5 border border-border/40 text-muted-foreground font-display font-bold text-[11px] flex items-center justify-center group-hover:bg-primary/5 group-hover:text-primary transition-colors">
+          <li key={idx} className="pl-12 relative text-[16px] leading-relaxed text-foreground/90 group py-1">
+            <span className="absolute left-0 top-[0.1em] w-8 h-8 rounded-xl bg-accent/10 border border-border/40 text-muted-foreground font-display font-black text-[12px] flex items-center justify-center group-hover:bg-primary/10 group-hover:text-primary transition-all duration-300 shadow-sm">
               {idx + 1}
+
             </span>
             <span dangerouslySetInnerHTML={renderInline(it)} />
           </li>
