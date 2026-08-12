@@ -20,7 +20,7 @@ const turndown = new TurndownService({
 });
 
 // Preserva nossas tags inline customizadas (cor, realce, sublinhado, sub/sup, alinhamento)
-turndown.keep(['u', 'mark', 'sub', 'sup', 'span', 'div', 'small']);
+turndown.keep(['u', 'mark', 'sub', 'sup', 'span', 'div', 'small', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'ul', 'ol', 'li']);
 
 // Imagens: gera <img> quando há width/align/float/margin, senão markdown puro
 turndown.addRule('imageWithAttrs', {
