@@ -984,20 +984,24 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
 
       {/* Confirm individual delete */}
       <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
-        <AlertDialogContent>
+        <AlertDialogContent className="rounded-[2rem] border-primary/20 bg-card/95 backdrop-blur-xl">
           <AlertDialogHeader>
-            <AlertDialogTitle>Excluir apostila?</AlertDialogTitle>
-            <AlertDialogDescription>
-              <strong>{deleteTarget?.title}</strong> será removida permanentemente. Esta ação não pode ser desfeita.
+            <AlertDialogTitle className="text-2xl font-black tracking-tighter">Excluir Apostila?</AlertDialogTitle>
+            <AlertDialogDescription className="text-muted-foreground font-medium">
+              Esta ação não pode ser desfeita. O material "<strong>{deleteTarget?.title}</strong>" será removido permanentemente.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
+          <AlertDialogFooter className="gap-2">
+            <AlertDialogCancel className="rounded-xl font-bold">Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
               onClick={confirmDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90 font-black"
             >
-              Excluir
+              {busyId === deleteTarget?.id ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Confirmar Exclusão'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
