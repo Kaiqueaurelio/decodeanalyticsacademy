@@ -337,7 +337,7 @@ export function MarkdownEditor({
   }
 
   return (
-    <div className={cn('rounded-lg border border-border bg-card overflow-hidden flex flex-col', className)}>
+    <div className={cn('rounded-lg border border-border bg-card overflow-hidden flex flex-col h-full sm:h-auto', className)}>
       <EditorTopbar
         words={stats.words}
         zoom={zoom}
