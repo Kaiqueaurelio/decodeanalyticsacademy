@@ -1005,21 +1005,21 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
 
       {/* Confirm bulk delete */}
       <AlertDialog open={bulkDeleteOpen} onOpenChange={setBulkDeleteOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="bg-popover/90 backdrop-blur-2xl border-white/10 rounded-3xl">
           <AlertDialogHeader>
-            <AlertDialogTitle>Excluir {selected.size} apostila(s)?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Todas as apostilas selecionadas serão removidas permanentemente. Esta ação não pode ser desfeita.
+            <AlertDialogTitle className="text-2xl font-black tracking-tighter">Excluir em Lote</AlertDialogTitle>
+            <AlertDialogDescription className="text-muted-foreground font-medium">
+              Você está prestes a excluir permanentemente {selected.size} apostila(s). Esta ação não pode ser desfeita.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={bulkBusy}>Cancelar</AlertDialogCancel>
+          <AlertDialogFooter className="gap-2">
+            <AlertDialogCancel disabled={bulkBusy} className="rounded-xl font-bold">Cancelar</AlertDialogCancel>
             <AlertDialogAction
               onClick={bulkDelete}
               disabled={bulkBusy}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl font-black"
             >
-              {bulkBusy ? 'Excluindo...' : 'Excluir tudo'}
+              {bulkBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Excluir Tudo'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
