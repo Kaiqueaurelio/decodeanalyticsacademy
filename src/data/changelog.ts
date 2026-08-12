@@ -32,7 +32,7 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.66.0',
+    version: '4.69.5',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
@@ -43,6 +43,15 @@ export function getBuildInfo() {
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: '4.69.5',
+    date: '2026-08-12',
+    title: 'Correção de Capa & Metadados',
+    changes: [
+      { kind: 'fix', text: 'Resolvido o problema da capa ausente na matéria "Pesquisa Computacional" através da atualização do mapa de assets estilo Notion.' },
+      { kind: 'improvement', text: 'Sincronizados metadados de versão e integridade visual no changelog global.' },
+    ],
+  },
   {
     version: '4.66.0',
     date: '2026-08-12',
