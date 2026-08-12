@@ -115,6 +115,13 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
       teacher: apostila.teacher,
     }, theme);
 
+  const fallbackCoverFor = (apostila: ApostilaSummary) => buildCoverDataUri({
+    title: apostila.title,
+    category: apostila.category,
+    semester: apostila.semester,
+    teacher: apostila.teacher,
+  }, theme);
+
   return (
     <div className="space-y-12">
       {groups.slice(0, visibleGroups).map(([category, items]) => {
@@ -183,7 +190,8 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
                   {mainCover ? (
                     <img
                       src={mainCover}
-                      alt={category} 
+                      alt={category}
+                      onError={(event) => { event.currentTarget.src = fallbackCoverFor(items[0]); }}
                       className="h-full w-full object-cover opacity-30 group-hover:opacity-50 group-hover:scale-105 transition-all duration-700"
                     />
                   ) : (
@@ -208,7 +216,7 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
                           style={{ transitionDelay: `${idx * 50}ms` }}
                         >
                           {coverFor(item) ? (
-                            <img src={coverFor(item)} alt="" className="h-full w-full object-cover" />
+                            <img src={coverFor(item)} alt="" onError={(event) => { event.currentTarget.src = fallbackCoverFor(item); }} className="h-full w-full object-cover" />
                           ) : (
                             <div className="h-full w-full opacity-60" style={{ backgroundColor: color }} />
                           )}

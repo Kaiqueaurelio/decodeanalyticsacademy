@@ -28,7 +28,7 @@ import { getSubjectColor } from '@/lib/subject-colors';
 
 import {
   ArrowLeft, Search, Save, Eye, PenTool, Wand2, Loader2, Menu, FileText,
-  ListChecks, PanelRightClose, ExternalLink, GraduationCap, ImageIcon, PanelRightOpen, X,
+  ListChecks, PanelRightClose, ExternalLink, GraduationCap, ImageIcon, PanelRightOpen, X, Maximize2, Minimize2,
 } from 'lucide-react';
 import { invokeFunction } from '@/lib/invoke-function';
 import { toast } from 'sonner';
@@ -86,6 +86,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
   const [rightTab, setRightTab] = useState<'materials' | 'preview' | 'exercises'>('materials');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [rightOpen, setRightOpen] = useState(false);
+  const [editorExpanded, setEditorExpanded] = useState(false);
 
   const dirtyRef = useRef(false);
   const initialLoadRef = useRef(true);
@@ -494,7 +495,22 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         )}
 
         {/* Notion Canvas Editor */}
-        <main className="flex-1 min-w-0 bg-background relative flex flex-col h-full overflow-hidden">
+        <main className={cn(
+          "flex-1 min-w-0 bg-background relative flex flex-col h-full overflow-hidden",
+          editorExpanded && "fixed inset-0 z-[70] h-[100dvh]"
+        )}>
+          <div className="absolute right-3 top-3 z-50">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-9 gap-1.5 bg-background/95 shadow-sm"
+              onClick={() => setEditorExpanded((current) => !current)}
+              aria-label={editorExpanded ? 'Sair da edição expandida' : 'Expandir área de edição'}
+            >
+              {editorExpanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+              <span className="hidden sm:inline">{editorExpanded ? 'Sair da expansão' : 'Expandir'}</span>
+            </Button>
+          </div>
           <div className="flex-1 overflow-y-auto w-full custom-scrollbar">
             <div className="max-w-[900px] mx-auto flex flex-col">
               <div className="relative pt-10 sm:pt-20 pb-20 sm:pb-10 px-4 sm:px-16">
