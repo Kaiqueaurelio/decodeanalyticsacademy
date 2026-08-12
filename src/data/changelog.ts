@@ -32,7 +32,7 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.69.5',
+    version: '4.70.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
@@ -43,6 +43,16 @@ export function getBuildInfo() {
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: '4.70.0',
+    date: '2026-08-12',
+    title: 'Módulo Bônus: Canivete Suíço do Estudante',
+    changes: [
+      { kind: 'feature', text: 'Integrada a nova disciplina bônus "Canivete Suíço do Estudante" com materiais exclusivos do Notion.' },
+      { kind: 'feature', text: 'Adicionado "Dicionário do Programador" ao acervo acadêmico.' },
+      { kind: 'content', text: 'Sincronização de links externos e capas temáticas para conteúdos de produtividade.' },
+    ],
+  },
   {
     version: '4.69.5',
     date: '2026-08-12',

@@ -33,6 +33,8 @@ const COVERS: Record<string, string> = {
   'estudos disciplinares': UNSPLASH('photo-1456513080510-7bf3a84b82f8'),
   'pesquisa operacional': UNSPLASH('photo-1460925895917-afdab827c52f'),
   'pesquisa computacional': UNSPLASH('photo-1460925895917-afdab827c52f'),
+  'canivete suíço do estudante': UNSPLASH('photo-1484480974693-6ca0a78fb36b'), // checklist/tools
+  'dicionário do programador': UNSPLASH('photo-1516414447565-b14be0adc13e'), // library/dictionary
   // outras
   'banco de dados': UNSPLASH('photo-1544383835-bda2bc66a55d'),
   'estrutura de dados': UNSPLASH('photo-1555949963-aa79dcee981c'),
