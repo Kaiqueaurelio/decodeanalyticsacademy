@@ -497,6 +497,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
             <div className="max-w-[900px] mx-auto flex flex-col">
               <div className="relative pt-10 sm:pt-20 pb-20 sm:pb-10 px-4 sm:px-16">
 
+
               <div 
                 className="absolute top-0 left-0 right-0 h-48 opacity-10 blur-3xl -z-10"
                 style={{ background: `linear-gradient(to bottom, ${getSubjectColor(category)}, transparent)` }}
