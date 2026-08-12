@@ -294,13 +294,6 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       prev.map((p) => (p.id === id ? { ...p, title: title.trim() || 'Sem título', category, semester, course: course.length ? course : null, updated_at: new Date().toISOString() } : p))
     );
   };
-    dirtyRef.current = false;
-    if (content.trim().length > 0) setPublished(true);
-    setLastSavedAt(new Date());
-    setApostilas((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, title: title.trim() || 'Sem título', category, semester, course: course.length ? course : null, updated_at: new Date().toISOString() } : p))
-    );
-  };
 
   const handleRestoreVersion = (version: { title: string; content: string }) => {
     setTitle(version.title);
