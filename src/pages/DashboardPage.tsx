@@ -70,10 +70,10 @@ export default function DashboardPage() {
   // Lógica de processamento de apostilas (filtro + placeholders de semestres futuros)
   const apostilas = useMemo(() => {
     // 1. Filtragem por semestre se selecionado
-    // Se selecionado, mostra apenas o semestre (incluindo 0/Geral).
+    // Bônus é transversal e deve continuar acessível em qualquer semestre.
     // Se NÃO selecionado, retorna tudo publicado.
     const list = selectedSemester
-      ? apostilasRaw.filter(a => (a.semester === selectedSemester || a.semester === 0) && a.published)
+      ? apostilasRaw.filter(a => (a.semester === selectedSemester || a.semester === 0 || a.category === 'Bônus') && a.published)
       : apostilasRaw.filter(a => a.published);
 
     // 2. Placeholder para disciplinas da grade (1º ao 8º)
