@@ -38,7 +38,8 @@ function isItemActive(pathname: string, hash: string, to: string) {
 export function MobileBottomNav() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
+  const location = locationHook(); // useLocation() would be clearer but keeping structure
+  const locationState = useLocation();
   const { isOpen: open, setOpen } = useSidebar();
   const { unreadCount } = useNotifications();
   const { data: profile } = useUserProfile(user?.id);
@@ -49,7 +50,7 @@ export function MobileBottomNav() {
   // Não exibir na landing, login, reset-password e termos (rotas públicas)
   const hiddenRoutes = ['/', '/login', '/reset-password', '/termos'];
   if (!user) return null;
-  if (hiddenRoutes.includes(location.pathname)) return null;
+  if (hiddenRoutes.includes(locationState.pathname)) return null;
 
   const handleNavigate = (to: string) => (event: MouseEvent<HTMLAnchorElement>) => {
     const [path, hash] = to.split('#');
@@ -61,7 +62,7 @@ export function MobileBottomNav() {
     window.setTimeout(() => {
       const el = document.getElementById(hash);
       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, location.pathname === path ? 40 : 180);
+    }, locationState.pathname === path ? 40 : 180);
   };
 
   return (
@@ -73,7 +74,7 @@ export function MobileBottomNav() {
       >
         <div className={cn("mx-auto grid max-w-md gap-1", isAdmin ? "grid-cols-7" : "grid-cols-6")}>
           {mainItems.map((item) => {
-            const active = isItemActive(location.pathname, location.hash, item.to);
+            const active = isItemActive(locationState.pathname, locationState.hash, item.to);
             return (
               <NavLink
                 key={item.to}
@@ -93,6 +94,21 @@ export function MobileBottomNav() {
 
             );
           })}
+
+          {isAdmin && (
+            <NavLink
+              to="/admin"
+              className={cn(
+                'flex min-h-[54px] flex-col items-center justify-center gap-1 rounded-xl px-1 text-[10px] font-semibold leading-none transition-colors touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+                locationState.pathname.startsWith('/admin')
+                  ? 'bg-accent/12 text-accent'
+                  : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
+              )}
+            >
+              <ShieldCheck className="h-[19px] w-[19px]" strokeWidth={locationState.pathname.startsWith('/admin') ? 2.6 : 2.2} />
+              <span className="max-w-full truncate">Admin</span>
+            </NavLink>
+          )}
 
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
@@ -131,4 +147,8 @@ export function MobileBottomNav() {
       </nav>
     </>
   );
+}
+
+function locationHook() {
+  return useLocation();
 }
