@@ -1,7 +1,7 @@
 import { type MouseEvent } from 'react';
 import { useSidebar } from '@/hooks/useSidebar';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { Activity, BookOpen, GraduationCap, Home, Library, Menu, PenLine, Trophy } from 'lucide-react';
+import { Activity, BookOpen, GraduationCap, Home, Library, Menu, PenLine, ShieldCheck, Trophy } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { SidebarContent } from '@/components/dashboard/StudentSidebar';
@@ -38,17 +38,19 @@ function isItemActive(pathname: string, hash: string, to: string) {
 export function MobileBottomNav() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
+  const location = locationHook(); // useLocation() would be clearer but keeping structure
+  const locationState = useLocation();
   const { isOpen: open, setOpen } = useSidebar();
   const { unreadCount } = useNotifications();
   const { data: profile } = useUserProfile(user?.id);
+  const isAdmin = profile?.is_admin || user?.email === 'decoanalytics@outlook.com.br';
   const isEnemOnly = profile?.content_scope === 'enem_only';
   const mainItems = isEnemOnly ? enemItems : fullItems;
 
   // Não exibir na landing, login, reset-password e termos (rotas públicas)
   const hiddenRoutes = ['/', '/login', '/reset-password', '/termos'];
   if (!user) return null;
-  if (hiddenRoutes.includes(location.pathname)) return null;
+  if (hiddenRoutes.includes(locationState.pathname)) return null;
 
   const handleNavigate = (to: string) => (event: MouseEvent<HTMLAnchorElement>) => {
     const [path, hash] = to.split('#');
@@ -60,7 +62,7 @@ export function MobileBottomNav() {
     window.setTimeout(() => {
       const el = document.getElementById(hash);
       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, location.pathname === path ? 40 : 180);
+    }, locationState.pathname === path ? 40 : 180);
   };
 
   return (
@@ -70,9 +72,9 @@ export function MobileBottomNav() {
         className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background/95 px-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] pt-2 shadow-[0_-18px_45px_-30px_hsl(var(--foreground)/0.35)] backdrop-blur-xl md:hidden"
         aria-label="Navegacao principal mobile"
       >
-        <div className="mx-auto grid max-w-md grid-cols-6 gap-1">
+        <div className={cn("mx-auto grid max-w-md gap-1", isAdmin ? "grid-cols-7" : "grid-cols-6")}>
           {mainItems.map((item) => {
-            const active = isItemActive(location.pathname, location.hash, item.to);
+            const active = isItemActive(locationState.pathname, locationState.hash, item.to);
             return (
               <NavLink
                 key={item.to}
@@ -92,6 +94,21 @@ export function MobileBottomNav() {
 
             );
           })}
+
+          {isAdmin && (
+            <NavLink
+              to="/admin"
+              className={cn(
+                'flex min-h-[54px] flex-col items-center justify-center gap-1 rounded-xl px-1 text-[10px] font-semibold leading-none transition-colors touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+                locationState.pathname.startsWith('/admin')
+                  ? 'bg-accent/12 text-accent'
+                  : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
+              )}
+            >
+              <ShieldCheck className="h-[19px] w-[19px]" strokeWidth={locationState.pathname.startsWith('/admin') ? 2.6 : 2.2} />
+              <span className="max-w-full truncate">Admin</span>
+            </NavLink>
+          )}
 
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
@@ -130,4 +147,8 @@ export function MobileBottomNav() {
       </nav>
     </>
   );
+}
+
+function locationHook() {
+  return useLocation();
 }
