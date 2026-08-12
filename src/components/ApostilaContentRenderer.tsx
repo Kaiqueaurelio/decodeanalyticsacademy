@@ -100,7 +100,7 @@ function renderInline(input: string): { __html: string } {
     .replace(/(?<![*\w])\*(?!\s)([^*\n]+?)\*(?!\w)/g, '<em>$1</em>')
     .replace(/~~([^~\n]+)~~/g, '<s>$1</s>')
     .replace(/==([^=\n]+)==/g, '<mark>$1</mark>')
-    .replace(/`([^`\n]+)`/g, '<code class="px-1 py-0.5 rounded bg-muted text-primary text-[0.92em] font-mono">$1</code>')
+    .replace(/`([^`\n]+)`/g, '<code class="px-1 py-0.5 rounded-md bg-muted text-primary text-[0.92em] font-mono border border-border/20 shadow-sm">$1</code>')
     .replace(/^\s*#{1,6}\s+/gm, '');
 
   // 2. Sanitização final do HTML gerado (markdown + tags HTML cruas no input)
@@ -365,6 +365,7 @@ function parseBlocks(rawInput: string): Block[] {
         } else {
           blocks.push({ type: 'paragraph', content: t });
         }
+
       }
       paragraph = [];
     };
@@ -718,24 +719,26 @@ function CalloutBlock({ kind, title, content }: { kind: 'info' | 'tip' | 'warnin
       : { bg: 'bg-primary/5', border: 'border-primary/40', text: 'text-foreground', icon: 'text-primary' };
 
   return (
-    <aside className={cn("my-6 p-4 rounded-xl border flex gap-4 transition-all duration-300 hover:shadow-sm", colors.bg, colors.border)}>
-      <div className={cn("mt-0.5 h-8 w-8 rounded-lg flex items-center justify-center bg-card shadow-sm shrink-0", colors.border, "border-[0.5px]")}>
-        <Icon className={cn("h-4 w-4", colors.icon)} />
+    <aside className={cn("my-6 p-5 rounded-2xl border flex gap-4 transition-all duration-300 hover:shadow-md", colors.bg, colors.border)}>
+      <div className={cn("mt-0.5 h-10 w-10 rounded-xl flex items-center justify-center bg-card shadow-sm shrink-0", colors.border, "border-[0.5px]")}>
+        <Icon className={cn("h-5 w-5", colors.icon)} />
       </div>
-      <div className="space-y-1 flex-1 min-w-0">
-        <p className={cn("text-[10px] font-black uppercase tracking-[0.2em]", colors.text)}>{title}</p>
-        <p className="text-[14px] leading-relaxed text-foreground/80 m-0" dangerouslySetInnerHTML={renderInline(content)} />
+      <div className="space-y-1.5 flex-1 min-w-0">
+        <p className={cn("text-[11px] font-black uppercase tracking-[0.2em] opacity-80", colors.text)}>{title}</p>
+        <p className="text-[15px] leading-relaxed text-foreground/90 m-0 font-medium" dangerouslySetInnerHTML={renderInline(content)} />
       </div>
     </aside>
+
   );
 }
 
 function QuoteBlock({ content }: { content: string }) {
   return (
     <blockquote
-      className="my-8 pl-6 border-l-4 border-primary/20 italic text-foreground/70 text-[16px] leading-relaxed font-medium"
+      className="my-10 pl-8 pr-4 py-2 border-l-4 border-primary/30 italic text-foreground/80 text-[17px] leading-loose font-medium bg-primary/5 rounded-r-2xl"
       dangerouslySetInnerHTML={renderInline(content)}
     />
+
   );
 }
 
@@ -744,9 +747,10 @@ function ListBlock({ items, ordered }: { items: string[]; ordered: boolean }) {
     return (
       <ol className="my-6 ml-2 space-y-3 list-none counter-reset-decode">
         {items.map((it, idx) => (
-          <li key={idx} className="pl-10 relative text-[15px] leading-relaxed text-foreground/90 group">
-            <span className="absolute left-0 top-[0.1em] w-7 h-7 rounded-lg bg-accent/5 border border-border/40 text-muted-foreground font-display font-bold text-[11px] flex items-center justify-center group-hover:bg-primary/5 group-hover:text-primary transition-colors">
+          <li key={idx} className="pl-12 relative text-[16px] leading-relaxed text-foreground/90 group py-1">
+            <span className="absolute left-0 top-[0.1em] w-8 h-8 rounded-xl bg-accent/10 border border-border/40 text-muted-foreground font-display font-black text-[12px] flex items-center justify-center group-hover:bg-primary/10 group-hover:text-primary transition-all duration-300 shadow-sm">
               {idx + 1}
+
             </span>
             <span dangerouslySetInnerHTML={renderInline(it)} />
           </li>
@@ -757,9 +761,10 @@ function ListBlock({ items, ordered }: { items: string[]; ordered: boolean }) {
   return (
     <ul className="my-6 ml-2 space-y-3">
       {items.map((it, idx) => (
-        <li key={idx} className="pl-8 relative text-[15px] leading-relaxed text-foreground/90 group">
-          <span className="absolute left-1 top-[0.65em] w-2 h-2 rounded-full bg-primary/30 group-hover:bg-primary transition-colors" />
-          <span dangerouslySetInnerHTML={renderInline(it)} />
+        <li key={idx} className="pl-10 relative text-[16px] leading-relaxed text-foreground/90 group py-1">
+          <span className="absolute left-1 top-[0.6em] w-2.5 h-2.5 rounded-full border-2 border-primary/30 group-hover:bg-primary group-hover:border-primary transition-all duration-300 shadow-sm" />
+          <span dangerouslySetInnerHTML={renderInline(it)} className="font-medium" />
+
         </li>
       ))}
     </ul>
@@ -768,8 +773,9 @@ function ListBlock({ items, ordered }: { items: string[]; ordered: boolean }) {
 
 function TableBlock({ header, rows }: { header: string[]; rows: string[][] }) {
   return (
-    <div className="my-8 overflow-x-auto rounded-xl border border-border/40 bg-card/30 shadow-sm">
-      <table className="w-full text-[14px] border-collapse">
+    <div className="my-10 overflow-x-auto rounded-2xl border border-border/40 bg-card/40 shadow-xl backdrop-blur-sm">
+      <table className="w-full text-[15px] border-collapse">
+
         <thead>
           <tr className="bg-accent/5">
             {header.map((h, i) => (
@@ -818,16 +824,17 @@ function HeadingBlock({ level, content, id, active }: { level: number; content: 
   const activeCls = active ? 'apostila-heading-active' : '';
   if (level === 1) {
     return (
-      <h1 id={id} data-active={active || undefined} className={cn('font-display text-4xl sm:text-5xl font-black mt-12 mb-6 text-foreground tracking-tighter leading-tight scroll-mt-24', activeCls)}>
+      <h1 id={id} data-active={active || undefined} className={cn('font-display text-4xl sm:text-6xl font-black mt-16 mb-8 text-foreground tracking-tighter leading-tight scroll-mt-24', activeCls)}>
         {text}
       </h1>
     );
   }
   if (level === 2) {
     return (
-      <h2 id={id} data-active={active || undefined} className={cn('font-display text-2xl sm:text-3xl font-black mt-10 mb-4 text-foreground tracking-tighter leading-tight scroll-mt-24 border-b border-border/10 pb-2', activeCls)}>
+      <h2 id={id} data-active={active || undefined} className={cn('font-display text-2xl sm:text-4xl font-black mt-12 mb-5 text-foreground tracking-tighter leading-tight scroll-mt-24 border-b-2 border-primary/20 pb-3', activeCls)}>
         {text}
       </h2>
+
     );
   }
   if (level === 3) {
@@ -978,7 +985,7 @@ export function ApostilaContentRenderer({ content, activeHeadingId }: Props) {
   }, [blocks]);
 
   return (
-    <article className="apostila-prose max-w-[68ch] mx-auto w-full min-w-0 px-1 sm:px-0 text-[15.5px] sm:text-[16px] leading-[1.7] tracking-normal text-foreground/95">
+    <article className="apostila-prose max-w-[72ch] mx-auto w-full min-w-0 px-1 sm:px-0 text-[16px] sm:text-[17.5px] leading-[1.8] tracking-normal text-foreground/95">
       <ApostilaTOC items={tocItems} activeId={activeHeadingId} />
       {blocks.map((b, i) => {
         switch (b.type) {
@@ -1004,7 +1011,7 @@ export function ApostilaContentRenderer({ content, activeHeadingId }: Props) {
           case 'divider':
             return (
               <div key={i} className="my-8 flex items-center justify-center" aria-hidden>
-                <span className="h-px w-24 bg-border/60" />
+                <span className="h-px w-32 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
               </div>
             );
           case 'paragraph':
@@ -1012,7 +1019,7 @@ export function ApostilaContentRenderer({ content, activeHeadingId }: Props) {
             return (
               <p
                 key={i}
-                className="mb-5 last:mb-0 text-foreground/90"
+                className="mb-6 last:mb-0 text-foreground/95 font-medium tracking-tight"
                 dangerouslySetInnerHTML={renderInline(b.content)}
               />
             );
