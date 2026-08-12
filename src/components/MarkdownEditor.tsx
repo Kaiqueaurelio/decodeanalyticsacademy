@@ -470,7 +470,7 @@ export function MarkdownEditor({
           {viewMode === 'preview' ? (
             <div
               className="flex-1 overflow-auto"
-              style={{ maxHeight: 'calc(100vh - 220px)', minHeight: rows ? `${rows * 26}px` : '520px' }}
+              style={{ maxHeight: '100%', minHeight: rows ? `${rows * 26}px` : '520px' }}
             >
               <StudentPreview content={value} />
             </div>
