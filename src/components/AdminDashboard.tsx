@@ -873,8 +873,8 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
                 </Select>
               </div>
 
-              {/* Grid de Apostilas Organizado no Estilo Notion Gallery */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+              {/* Grid de Apostilas estilo Notion Gallery */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-2">
                 {visibleItems.map((a) => (
                   <AdminNotionGalleryCard
                     key={a.id}
@@ -882,7 +882,7 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
                     selected={selected.has(a.id)}
                     onSelect={toggleSelectOne}
                     onEdit={handleEdit}
-                    onDelete={setDeleteTarget}
+                    onDelete={(item) => setDeleteTarget(item)}
                     onStatusChange={handleStatusChange}
                     busyId={busyId}
                   />
