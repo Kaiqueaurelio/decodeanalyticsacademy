@@ -100,7 +100,7 @@ function renderInline(input: string): { __html: string } {
     .replace(/(?<![*\w])\*(?!\s)([^*\n]+?)\*(?!\w)/g, '<em>$1</em>')
     .replace(/~~([^~\n]+)~~/g, '<s>$1</s>')
     .replace(/==([^=\n]+)==/g, '<mark>$1</mark>')
-    .replace(/`([^`\n]+)`/g, '<code class="px-1 py-0.5 rounded bg-muted text-primary text-[0.92em] font-mono">$1</code>')
+    .replace(/`([^`\n]+)`/g, '<code class="px-1 py-0.5 rounded-md bg-muted text-primary text-[0.92em] font-mono border border-border/20 shadow-sm">$1</code>')
     .replace(/^\s*#{1,6}\s+/gm, '');
 
   // 2. Sanitização final do HTML gerado (markdown + tags HTML cruas no input)
