@@ -325,8 +325,6 @@ export function EditorRibbon({ editor, onInsertImage, onSave, saveStatus = 'idle
             </Group>
           </>
         )}
-        </div>
-      </div>
 
         {tab === 'layout' && (
           <>
@@ -410,6 +408,7 @@ export function EditorRibbon({ editor, onInsertImage, onSave, saveStatus = 'idle
             </Group>
           </>
         )}
+        </div>
       </div>
     </div>
   );
