@@ -1,18 +1,23 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { 
   FileText, 
   CheckCircle2, 
-  Circle, 
-  Clock, 
   ChevronRight, 
   Edit, 
   Trash2, 
   Plus,
   Loader2,
-  Lock,
   FolderOpen
 } from 'lucide-react';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { cn } from '@/lib/utils';
+import { getSubjectColor } from '@/lib/subject-colors';
+import { getApostilaCover } from '@/lib/apostila-covers';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -43,9 +48,7 @@ export function AdminNotionGalleryCard({
 }: AdminNotionGalleryCardProps) {
   const isPlaceholder = item.isPlaceholder || item.id.startsWith('placeholder');
   const color = getSubjectColor(item.category || 'Geral');
-  
-  const statusLabel = item.status === 'liberada' ? 'Publicada' : 
-                     item.status === 'em_manutencao' ? 'Manutenção' : 'Bloqueada';
+  const coverUrl = useMemo(() => getApostilaCover(item.category, item.id), [item.category, item.id]);
 
   return (
     <motion.div
@@ -61,14 +64,21 @@ export function AdminNotionGalleryCard({
         )}
       >
         {/* Notion Gallery Image (Capa) - Agora Lateral Esquerda */}
-        <div className="relative h-full w-24 sm:w-32 overflow-hidden bg-[#1A1B1E] flex items-center justify-center shrink-0 border-r border-white/5">
+        <div className="relative h-full w-24 sm:w-32 overflow-hidden bg-[#1A1B1E] shrink-0 border-r border-white/5">
+          <img 
+            src={coverUrl} 
+            alt={item.title}
+            className="absolute inset-0 w-full h-full object-cover opacity-50 transition-transform duration-700 group-hover:scale-110"
+          />
           <div 
-            className="absolute inset-0 opacity-10"
+            className="absolute inset-0 opacity-20"
             style={{ 
-              background: `linear-gradient(135deg, ${color}22 0%, ${color}44 100%)`,
+              background: `linear-gradient(135deg, ${color}44 0%, transparent 100%)`,
             }}
           />
-          <FolderOpen className={cn("h-8 w-8 relative z-10 transition-transform duration-500 group-hover:scale-110", isPlaceholder ? "text-muted-foreground/20" : "text-[#EAB308]/90")} />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <FolderOpen className={cn("h-8 w-8 relative z-10 transition-transform duration-500 group-hover:scale-110", isPlaceholder ? "text-muted-foreground/20" : "text-[#EAB308]/90")} />
+          </div>
           
           {/* Checkbox de Seleção */}
           <div className="absolute top-3 left-3 z-10">
