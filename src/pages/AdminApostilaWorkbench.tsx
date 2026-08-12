@@ -85,6 +85,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
   const [reviewOpen, setReviewOpen] = useState(false);
   const [rightTab, setRightTab] = useState<'materials' | 'preview' | 'exercises'>('materials');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [rightOpen, setRightOpen] = useState(false);
   const [editorExpanded, setEditorExpanded] = useState(false);
 
@@ -369,7 +370,14 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
           <Button size="sm" variant="ghost" className="h-7 px-2 -ml-2 gap-1.5 text-xs font-bold text-muted-foreground hover:text-foreground" onClick={() => onBack ? onBack() : navigate('/admin')}>
             <ArrowLeft className="h-3.5 w-3.5" /> Admin
           </Button>
-          <Button variant="ghost" size="icon" className="h-7 w-7 lg:hidden" onClick={() => setSidebarOpen(false)}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7"
+            onClick={() => { setSidebarOpen(false); setSidebarCollapsed(true); }}
+            title="Recolher lista de apostilas"
+            aria-label="Recolher lista de apostilas"
+          >
             <X className="h-4 w-4" />
           </Button>
         </div>
@@ -413,12 +421,22 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
   const RightPanel = (
     <div className="flex flex-col h-full bg-card border-l border-border">
       <Tabs value={rightTab} onValueChange={(v: any) => setRightTab(v)} className="flex-1 flex flex-col h-full overflow-hidden">
-        <div className="px-3 pt-3">
+        <div className="flex items-center gap-1 px-3 pt-3">
           <TabsList className="w-full grid grid-cols-3 h-8 bg-muted/50 p-1">
             <TabsTrigger value="materials" className="text-[10px] font-bold">Arquivos</TabsTrigger>
             <TabsTrigger value="preview" className="text-[10px] font-bold">Preview</TabsTrigger>
             <TabsTrigger value="exercises" className="text-[10px] font-bold">Questões</TabsTrigger>
           </TabsList>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 shrink-0"
+            onClick={() => setRightOpen(false)}
+            title="Recolher painel"
+            aria-label="Recolher painel"
+          >
+            <X className="h-4 w-4" />
+          </Button>
         </div>
         <ScrollArea className="flex-1">
           <TabsContent value="materials" className="m-0 p-4 space-y-4">
@@ -471,7 +489,8 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         lastSavedAt={lastSavedAt}
         onSave={doSave}
         onTogglePublish={togglePublish}
-        onPreview={() => setRightTab('preview')}
+        onPreview={() => { setRightTab('preview'); setRightOpen(true); }}
+        onOpenPanel={() => { setRightTab('materials'); setRightOpen(true); }}
         wordCount={stats.words}
         exerciseCount={exerciseCount}
         materialCount={linkedMaterials.length}
@@ -480,8 +499,9 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       <div className="flex flex-1 min-h-0 overflow-hidden relative">
         {/* Sidebar Desktop/Mobile */}
         <div className={cn(
-          "fixed inset-y-0 left-0 z-50 w-64 transform transition-transform duration-300 ease-in-out bg-background lg:relative lg:translate-x-0 lg:block shrink-0",
-          sidebarOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full lg:translate-x-0"
+          "fixed inset-y-0 left-0 z-50 w-64 overflow-hidden transform transition-all duration-300 ease-in-out bg-background lg:relative shrink-0",
+          sidebarOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full",
+          sidebarCollapsed ? "lg:w-0 lg:-translate-x-full" : "lg:translate-x-0"
         )}>
           {SidebarList}
         </div>
@@ -499,6 +519,19 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
           "flex-1 min-w-0 bg-background relative flex flex-col h-full overflow-hidden",
           editorExpanded && "fixed inset-0 z-[70] h-[100dvh]"
         )}>
+          <Button
+            variant="outline"
+            size="icon"
+            className={cn(
+              "absolute left-3 top-3 z-50 h-9 w-9 bg-background/95 shadow-sm",
+              !sidebarCollapsed && "hidden lg:hidden",
+            )}
+            onClick={() => { setSidebarCollapsed(false); setSidebarOpen(true); }}
+            title="Abrir lista de apostilas"
+            aria-label="Abrir lista de apostilas"
+          >
+            <Menu className="h-4 w-4" />
+          </Button>
           <div className="absolute right-3 top-3 z-50 hidden sm:block">
             <Button
               variant="outline"

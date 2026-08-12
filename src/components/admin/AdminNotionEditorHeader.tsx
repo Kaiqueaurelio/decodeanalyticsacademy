@@ -29,6 +29,7 @@ interface ApostilaHealthBarProps {
   onSave: () => void;
   onTogglePublish: () => void;
   onPreview: () => void;
+  onOpenPanel: () => void;
   wordCount: number;
   exerciseCount: number;
   materialCount: number;
@@ -41,6 +42,7 @@ export function ApostilaHealthBar({
   onSave,
   onTogglePublish,
   onPreview,
+  onOpenPanel,
   wordCount,
   exerciseCount,
   materialCount
@@ -148,7 +150,14 @@ export function ApostilaHealthBar({
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 rounded-lg"
+            onClick={onOpenPanel}
+            title="Abrir materiais e mídia"
+            aria-label="Abrir materiais e mídia"
+          >
             <MoreVertical className="h-4 w-4" />
           </Button>
         </div>
