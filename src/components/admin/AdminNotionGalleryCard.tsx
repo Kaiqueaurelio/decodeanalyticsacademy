@@ -55,20 +55,20 @@ export function AdminNotionGalleryCard({
     >
       <div 
         className={cn(
-          "relative flex flex-col rounded-xl overflow-hidden border transition-all duration-300 bg-card shadow-sm",
-          selected ? "ring-2 ring-primary border-primary" : "border-border/60 hover:border-primary/40 hover:shadow-md",
+          "relative flex items-center rounded-xl overflow-hidden border transition-all duration-300 bg-[#121214] shadow-sm h-32",
+          selected ? "ring-2 ring-primary border-primary" : "border-white/5 hover:border-white/10 hover:shadow-md",
           isPlaceholder && "opacity-80 grayscale-[0.2]"
         )}
       >
-        {/* Notion Gallery Image (Capa) */}
-        <div className="relative aspect-[16/9] w-full overflow-hidden bg-[#1A1A1A] flex items-center justify-center">
+        {/* Notion Gallery Image (Capa) - Agora Lateral Esquerda */}
+        <div className="relative h-full w-24 sm:w-32 overflow-hidden bg-[#1A1B1E] flex items-center justify-center shrink-0 border-r border-white/5">
           <div 
-            className="absolute inset-0 opacity-20"
+            className="absolute inset-0 opacity-10"
             style={{ 
               background: `linear-gradient(135deg, ${color}22 0%, ${color}44 100%)`,
             }}
           />
-          <FolderOpen className={cn("h-10 w-10 relative z-10 transition-transform duration-500 group-hover:scale-110", isPlaceholder ? "text-muted-foreground/20" : "text-[#D4D4D8]/80")} />
+          <FolderOpen className={cn("h-8 w-8 relative z-10 transition-transform duration-500 group-hover:scale-110", isPlaceholder ? "text-muted-foreground/20" : "text-[#EAB308]/90")} />
           
           {/* Tags estilo Notion no topo da imagem */}
           <div className="absolute top-2.5 right-2.5 flex flex-col items-end gap-1.5 pointer-events-none">
@@ -100,8 +100,8 @@ export function AdminNotionGalleryCard({
           </div>
         </div>
 
-        {/* Notion Card Content */}
-        <div className="p-3 space-y-2.5">
+        {/* Notion Card Content - Agora Direita */}
+        <div className="flex-1 p-4 space-y-2 flex flex-col justify-center min-w-0">
           <div className="flex items-center justify-between gap-2 min-h-[24px]">
             <h3 className="text-[13px] font-bold leading-tight line-clamp-1 group-hover:text-primary transition-colors">
               {item.title.replace(/^\[GRADE\]\s*/i, '').replace(/_/g, ' ')}
