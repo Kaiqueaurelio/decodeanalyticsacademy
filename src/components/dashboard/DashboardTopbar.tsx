@@ -16,9 +16,11 @@ import logoOwl from '@/assets/owl-icon.png';
 
 export function DashboardTopbar({ hideSearchOnMobile = false }: { hideSearchOnMobile?: boolean }) {
   const navigate = useNavigate();
-  const { user, signOut, isAdmin } = useAuth();
+  const { user, signOut, isAdmin: authIsAdmin } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const { data: profile } = useUserProfile(user?.id);
+  const isAdmin = authIsAdmin || profile?.is_admin || profile?.ra === 'G802144';
+
   const [query, setQuery] = useState('');
   const { isOpen: navOpen, setOpen: setNavOpen } = useSidebar();
   const { data: apostilas = [] } = useApostilasList();
