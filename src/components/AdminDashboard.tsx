@@ -873,8 +873,8 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
                 </Select>
               </div>
 
-              {/* Grid de Apostilas Organizado no Estilo Notion Gallery */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+              {/* Grid de Apostilas estilo Notion Gallery */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-2">
                 {visibleItems.map((a) => (
                   <AdminNotionGalleryCard
                     key={a.id}
@@ -882,7 +882,7 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
                     selected={selected.has(a.id)}
                     onSelect={toggleSelectOne}
                     onEdit={handleEdit}
-                    onDelete={setDeleteTarget}
+                    onDelete={(item) => setDeleteTarget(item)}
                     onStatusChange={handleStatusChange}
                     busyId={busyId}
                   />
@@ -984,20 +984,20 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
 
       {/* Confirm individual delete */}
       <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
-        <AlertDialogContent>
+        <AlertDialogContent className="rounded-[2rem] border-primary/20 bg-card/95 backdrop-blur-xl">
           <AlertDialogHeader>
-            <AlertDialogTitle>Excluir apostila?</AlertDialogTitle>
-            <AlertDialogDescription>
-              <strong>{deleteTarget?.title}</strong> será removida permanentemente. Esta ação não pode ser desfeita.
+            <AlertDialogTitle className="text-2xl font-black tracking-tighter">Excluir Apostila?</AlertDialogTitle>
+            <AlertDialogDescription className="text-muted-foreground font-medium">
+              Esta ação não pode ser desfeita. O material "<strong>{deleteTarget?.title}</strong>" será removido permanentemente.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
+          <AlertDialogFooter className="gap-2">
+            <AlertDialogCancel className="rounded-xl font-bold">Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
               onClick={confirmDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90 font-black"
             >
-              Excluir
+              {busyId === deleteTarget?.id ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Confirmar Exclusão'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -1005,21 +1005,21 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
 
       {/* Confirm bulk delete */}
       <AlertDialog open={bulkDeleteOpen} onOpenChange={setBulkDeleteOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="bg-popover/90 backdrop-blur-2xl border-white/10 rounded-3xl">
           <AlertDialogHeader>
-            <AlertDialogTitle>Excluir {selected.size} apostila(s)?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Todas as apostilas selecionadas serão removidas permanentemente. Esta ação não pode ser desfeita.
+            <AlertDialogTitle className="text-2xl font-black tracking-tighter">Excluir em Lote</AlertDialogTitle>
+            <AlertDialogDescription className="text-muted-foreground font-medium">
+              Você está prestes a excluir permanentemente {selected.size} apostila(s). Esta ação não pode ser desfeita.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={bulkBusy}>Cancelar</AlertDialogCancel>
+          <AlertDialogFooter className="gap-2">
+            <AlertDialogCancel disabled={bulkBusy} className="rounded-xl font-bold">Cancelar</AlertDialogCancel>
             <AlertDialogAction
               onClick={bulkDelete}
               disabled={bulkBusy}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl font-black"
             >
-              {bulkBusy ? 'Excluindo...' : 'Excluir tudo'}
+              {bulkBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Excluir Tudo'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -1210,25 +1210,6 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
         </DialogContent>
       </Dialog>
 
-      <AlertDialog open={bulkDeleteOpen} onOpenChange={setBulkDeleteOpen}>
-        <AlertDialogContent className="bg-popover/90 backdrop-blur-2xl border-white/10 rounded-3xl">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Excluir em Lote</AlertDialogTitle>
-            <AlertDialogDescription>
-              Você está prestes a excluir permanentemente {selected.size} apostila(s). Esta ação não pode ser desfeita.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="rounded-xl">Cancelar</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={bulkDelete} 
-              className="bg-destructive hover:bg-destructive/90 text-destructive-foreground rounded-xl"
-            >
-              Excluir Tudo
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
 
       <Dialog open={bulkSemesterOpen} onOpenChange={setBulkSemesterOpen}>
         <DialogContent className="bg-popover/90 backdrop-blur-2xl border-white/10 rounded-3xl">
