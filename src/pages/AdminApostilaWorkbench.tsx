@@ -1,20 +1,5 @@
 /**
- * AdminApostilaWorkbench — tela única de edição de uma apostila.
- *
- * Layout (desktop ≥ lg):
- *   ┌─────────────────────────────────────────────────────────────┐
- *   │ HealthBar (status, palavras, exercícios, materiais, publicar) │
- *   ├──────────────┬──────────────────────────────┬──────────────────┤
- *   │ Apostilas    │  Editor (MarkdownEditor)     │ Painel direito   │
- *   │ (lista +     │                              │ (Materiais /     │
- *   │  busca)      │                              │  Preview /       │
- *   │              │                              │  Exercícios /    │
- *   │              │                              │  Validação)      │
- *   └──────────────┴──────────────────────────────┴──────────────────┘
- *
- * Mobile: lista vira drawer, painel direito vira sheet inferior.
- * Melhora: Arrastar e soltar para materiais, reordenação de seções e
- * Histórico de Versões para desfazer alterações.
+ * AdminApostilaWorkbench — tela única de edição de uma apostila (Notion Pro Style).
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -38,12 +23,13 @@ import { autoLinkApostila } from '@/lib/auto-link-materials';
 import { ApostilaContentRenderer } from '@/components/ApostilaContentRenderer';
 import { guessSemesterFromCategory, SEMESTER_OPTIONS, COURSE_OPTIONS, type CourseCode } from '@/lib/subject-semester-map';
 import { ensureApostilaExists } from '@/lib/create-placeholder-apostila';
+import { Badge } from '@/components/ui/badge';
+import { getSubjectColor } from '@/lib/subject-colors';
 
 import {
   ArrowLeft, Search, Save, Eye, PenTool, Wand2, Loader2, Menu, FileText,
   ListChecks, PanelRightClose, ExternalLink, GraduationCap, ImageIcon, PanelRightOpen,
 } from 'lucide-react';
-import { getSubjectColor } from '@/lib/subject-colors';
 import { invokeFunction } from '@/lib/invoke-function';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -84,7 +70,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
   const [semester, setSemester] = useState<number | null>(null);
   const [course, setCourse] = useState<CourseCode[]>([]);
 
-  // Materiais e exercícios (apenas contagem na health bar; full no painel direito)
+  // Materiais e exercícios
   const [linkedMaterials, setLinkedMaterials] = useState<LinkedMaterialItem[]>([]);
   const [exerciseCount, setExerciseCount] = useState(0);
 
@@ -116,13 +102,11 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     })();
   }, []);
 
-  // === Carregar apostila atual + materiais + count exercícios ===
+  // === Carregar apostila atual ===
   const loadApostila = async (apostilaId: string) => {
     setLoading(true);
     initialLoadRef.current = true;
     const results = await Promise.allSettled([
-      // Usa o mesmo registro completo consumido pela página do aluno. A seleção
-      // parcial fazia o Workbench abrir algumas apostilas grandes sem conteúdo.
       supabase.from('apostilas').select('*').eq('id', apostilaId).maybeSingle(),
       supabase.from('apostila_materials').select('id, sort_order, material_id').eq('apostila_id', apostilaId).order('sort_order'),
       supabase.from('exercises').select('id', { count: 'exact', head: true }).eq('apostila_id', apostilaId),
@@ -145,7 +129,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
           await loadApostila(realId);
           return;
         } catch (err: any) {
-          console.error('Erro ao resolver placeholder no Workbench:', err);
+          console.error('Erro ao resolver placeholder:', err);
         }
       }
       toast.error('Apostila não encontrada');
@@ -156,9 +140,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
 
     setTitle(ap.title || '');
     setCategory(ap.category || '');
-    // Nunca abra uma apostila vazia quando há uma cópia de recuperação do texto.
-    // Isso também impede que o autosave grave um rascunho por cima do conteúdo.
-    const restoredContent = ap.content || (ap as { content_backup?: string | null }).content_backup || '';
+    const restoredContent = ap.content || (ap as any).content_backup || '';
     setContent(restoredContent);
     setPublished(!!ap.published);
     setSemester((ap as any).semester ?? null);
@@ -166,7 +148,6 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     setCoverUrl(((ap as any).cover_url as string | null) ?? null);
     setExerciseCount(count || 0);
 
-    // Hidrata títulos dos materiais
     if (links && links.length) {
       const ids = links.map((l: any) => l.material_id);
       const { data: mats } = await supabase.from('materials').select('id, title, type').in('id', ids);
@@ -190,7 +171,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
 
   useEffect(() => { if (id) loadApostila(id); }, [id]);
 
-  // === Autosave (debounced) ===
+  // === Autosave ===
   useEffect(() => {
     if (initialLoadRef.current || !id) return;
     dirtyRef.current = true;
@@ -198,27 +179,23 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       doSave();
     }, AUTOSAVE_MS);
     return () => window.clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [title, category, content, semester, course]);
 
   const doSave = async () => {
     if (!id || !dirtyRef.current) return;
     setSaving(true);
 
-    // Antes de atualizar, criamos uma versão no histórico se houver conteúdo anterior
     const { data: currentApostila } = await supabase
       .from('apostilas')
       .select('title, content')
       .eq('id', id)
       .single();
 
-    // Proteção contra perda de conteúdo: se por uma falha de carregamento o
-    // editor vier vazio, ele jamais pode sobrescrever uma apostila existente.
     if (currentApostila?.content?.trim() && !content.trim()) {
       setContent(currentApostila.content);
       dirtyRef.current = false;
       setSaving(false);
-      toast.error('O conteúdo não foi carregado; a apostila foi preservada e recarregada.');
+      toast.error('Conteúdo preservado para evitar perda.');
       return;
     }
 
@@ -260,42 +237,16 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     setTitle(version.title);
     setContent(version.content);
     dirtyRef.current = true;
-    toast.success('Versão carregada! Salve para confirmar.');
+    toast.success('Versão restaurada!');
   };
 
-  // Sugere semestre automaticamente quando a categoria muda e ainda não há semestre
-  useEffect(() => {
-    if (!category || semester) return;
-    const guess = guessSemesterFromCategory(category);
-    if (guess) setSemester(guess);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [category]);
-
-  // Ctrl+S manual
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
-        e.preventDefault();
-        doSave();
-      }
-    };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [title, category, content, semester, course, id]);
-
-  // === Publicar / despublicar ===
   const togglePublish = async () => {
     if (!id) return;
-    
-    // Se estiver rascunho e for publicar, abre a revisão final
     if (!published) {
       setReviewOpen(true);
       return;
     }
-
-    const next = !published;
-    await executeTogglePublish(next);
+    await executeTogglePublish(false);
   };
 
   const executeTogglePublish = async (next: boolean) => {
@@ -305,12 +256,11 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       setPublished(!next);
       toast.error('Falha ao alterar status');
     } else {
-      toast.success(next ? 'Apostila publicada' : 'Voltou para rascunho');
+      toast.success(next ? 'Publicada' : 'Rascunho');
       setApostilas((prev) => prev.map((p) => (p.id === id ? { ...p, published: next } : p)));
     }
   };
 
-  // === Materiais — recarrega após mudanças ===
   const reloadMaterials = async () => {
     if (!id) return;
     const { data: links } = await supabase
@@ -329,430 +279,228 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         })
         .filter(Boolean) as LinkedMaterialItem[]
     );
-    // Material vinculado também é conteúdo. Sem isso, uma apostila criada
-    // pela grade ficava disponível só no admin mesmo após receber arquivos.
-    await supabase.from('apostilas').update({ published: true }).eq('id', id);
-    setPublished(true);
   };
 
-  const removeLink = async (linkId: string) => {
-    await supabase.from('apostila_materials').delete().eq('id', linkId);
-    setLinkedMaterials((prev) => prev.filter((m) => m.id !== linkId));
-    toast.success('Material removido');
-  };
-
-  const handleAutoLink = async () => {
-    if (!id) return;
-    setAutoLinking(true);
-    try {
-      const r = await autoLinkApostila(id);
-      if (r.linked > 0) {
-        toast.success(`${r.linked} material(is) vinculado(s)!`);
-        reloadMaterials();
-      } else {
-        toast.info('Nenhum match automático. Abrindo seleção manual...');
-        setManualLinkOpen(true);
-      }
-    } catch {
-      toast.error('Erro ao auto-vincular');
-    } finally {
-      setAutoLinking(false);
-    }
-  };
-
-  // === Smart paste handler ===
   const handlePasteApply = (text: string, mode: 'append' | 'replace') => {
-    // Se o texto parecer uma transcrição bruta (parágrafos longos sem formatação), 
-    // podemos sugerir o uso da Ella para estruturar melhor.
-    const isLikelyRawTranscript = text.length > 500 && !text.includes('#') && !text.includes('|');
-    
     setContent((prev) => mode === 'append' ? (prev ? prev + '\n\n' + text : text) : text);
-    
-    if (isLikelyRawTranscript) {
-      toast.info('Texto longo detectado. Use o botão "Estruturar com Ella" se precisar de uma organização mais profissional.', {
-        duration: 5000,
-        action: {
-          label: 'Estruturar',
-          onClick: () => {
-             // Dispara o evento que a Ella escuta para estruturação
-             window.dispatchEvent(new CustomEvent('ella:prompt', { 
-               detail: { prompt: `Estruture esta transcrição que acabei de colar na apostila, criando títulos, tópicos e melhorando a fluidez acadêmica: ${text.slice(0, 1000)}...` } 
-             }));
-          }
-        }
-      });
-    } else {
-      toast.success(mode === 'append' ? 'Conteúdo inserido' : 'Conteúdo substituído');
-    }
+    toast.success('Texto inserido!');
   };
 
-  // === Gerar capa com IA ===
   const handleGenerateCover = async () => {
     if (!id) return;
     if (dirtyRef.current) await doSave();
     setGeneratingCover(true);
-    const tId = toast.loading('Gerando capa com IA…');
     const { data, error } = await invokeFunction<{ cover_url: string }>('generate-apostila-cover', {
       body: { apostilaId: id },
-      errorTitle: 'Falha ao gerar capa',
     });
     setGeneratingCover(false);
-    toast.dismiss(tId);
     if (error || !data?.cover_url) return;
     setCoverUrl(data.cover_url);
-    toast.success('Capa gerada e salva!');
+    toast.success('Capa gerada!');
   };
 
-
-  // === Filtro lista ===
-  const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    if (!q) return apostilas;
-    return apostilas.filter((a) =>
-      a.title.toLowerCase().includes(q) || a.category.toLowerCase().includes(q)
-    );
-  }, [apostilas, search]);
-
-  const baseSortOrder = linkedMaterials.length > 0
-    ? Math.max(...linkedMaterials.map((m) => m.sort_order)) + 1
-    : 0;
-
-  if (!id) return null;
-
-  // === Sidebar (lista) ===
   const SidebarList = (
     <div className="flex flex-col h-full bg-card border-r border-border">
       <div className="p-3 border-b border-border space-y-2">
         <Button size="sm" variant="ghost" className="h-7 px-2 -ml-2 gap-1.5 text-xs" onClick={() => onBack ? onBack() : navigate('/admin')}>
-          <ArrowLeft className="h-3.5 w-3.5" /> {onBack ? 'Fechar Editor' : 'Voltar ao Admin'}
+          <ArrowLeft className="h-3.5 w-3.5" /> Voltar ao Admin
         </Button>
         <div className="relative">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar apostilas…"
+            placeholder="Buscar..."
             className="pl-8 h-8 text-xs"
           />
         </div>
       </div>
       <ScrollArea className="flex-1">
-        <ul className="p-2 space-y-0.5">
+        <div className="p-2 space-y-1">
           {filtered.map((a) => (
-            <li key={a.id}>
-              <button
-                onClick={() => { navigate(`/admin/apostilas/${a.id}`); setSidebarOpen(false); }}
-                className={cn(
-                  'w-full text-left px-2 py-1.5 rounded-md text-xs transition-colors',
-                  a.id === id ? 'bg-primary/15 text-primary font-semibold' : 'hover:bg-muted/60',
-                )}
-              >
-                <div className="flex items-center gap-1.5">
-                  <span className={cn('h-1.5 w-1.5 rounded-full shrink-0', a.published ? 'bg-emerald-500' : 'bg-amber-500')} />
-                  <span className="truncate">{a.title}</span>
-                </div>
-                <span className="text-[10px] text-muted-foreground ml-3.5 line-clamp-1">{a.category}</span>
-              </button>
-            </li>
+            <button
+              key={a.id}
+              onClick={() => navigate(`/admin/apostilas/${a.id}`)}
+              className={cn(
+                "w-full text-left px-3 py-2 rounded-lg text-xs transition-colors flex items-center justify-between group",
+                id === a.id ? "bg-primary/10 text-primary font-bold" : "hover:bg-accent"
+              )}
+            >
+              <span className="truncate flex-1">{a.title}</span>
+              {!a.published && <Badge variant="outline" className="text-[8px] h-3.5 px-1 ml-2 opacity-50">Draft</Badge>}
+            </button>
           ))}
-          {filtered.length === 0 && (
-            <p className="text-xs text-muted-foreground text-center py-4">Nenhuma apostila</p>
-          )}
-        </ul>
+        </div>
       </ScrollArea>
     </div>
   );
 
-  // === Painel direito ===
   const RightPanel = (
     <div className="flex flex-col h-full bg-card border-l border-border">
-      <Tabs value={rightTab} onValueChange={(v) => setRightTab(v as any)} className="flex flex-col h-full">
-        <TabsList className="grid grid-cols-3 m-2">
-          <TabsTrigger value="materials" className="text-xs gap-1"><FileText className="h-3 w-3" /> Materiais & Mídia</TabsTrigger>
-          <TabsTrigger value="preview" className="text-xs gap-1"><Eye className="h-3 w-3" /> Preview</TabsTrigger>
-          <TabsTrigger value="exercises" className="text-xs gap-1"><ListChecks className="h-3 w-3" /> Questões</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="materials" className="flex-1 overflow-hidden p-3 pt-0 m-0">
-          <div className="space-y-2">
-            <MaterialsDropZone
-              apostilaId={id}
-              baseSortOrder={baseSortOrder}
-              onUploaded={reloadMaterials}
-            />
-            <div className="grid grid-cols-2 gap-2">
-              <Button size="sm" variant="outline" className="h-7 text-xs gap-1.5" onClick={handleAutoLink} disabled={autoLinking}>
-                {autoLinking ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wand2 className="h-3 w-3" />}
-                Auto-vincular
-              </Button>
-              <Button size="sm" variant="outline" className="h-7 text-xs gap-1.5" onClick={() => setManualLinkOpen(true)}>
-                <Search className="h-3 w-3" /> Da biblioteca
-              </Button>
-            </div>
-            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider pt-2">
-              Vinculados ({linkedMaterials.length}) — arraste para reordenar
-            </p>
-            <ScrollArea className="h-[calc(100vh-380px)]">
-              <SortableMaterialsList
-                items={linkedMaterials}
-                onReorder={setLinkedMaterials}
-                onRemove={removeLink}
-              />
-            </ScrollArea>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="preview" className="flex-1 overflow-hidden m-0">
-          <ScrollArea className="h-full">
-            <div className="p-4">
-              <h2 className="text-xl font-bold mb-1">{title || 'Sem título'}</h2>
-              <p className="text-xs text-muted-foreground mb-4">{category}</p>
+      <Tabs value={rightTab} onValueChange={(v: any) => setRightTab(v)} className="flex-1 flex flex-col h-full overflow-hidden">
+        <div className="px-3 pt-3">
+          <TabsList className="w-full grid grid-cols-3 h-8 bg-muted/50 p-1">
+            <TabsTrigger value="materials" className="text-[10px] font-bold">Arquivos</TabsTrigger>
+            <TabsTrigger value="preview" className="text-[10px] font-bold">Preview</TabsTrigger>
+            <TabsTrigger value="exercises" className="text-[10px] font-bold">Questões</TabsTrigger>
+          </TabsList>
+        </div>
+        <ScrollArea className="flex-1">
+          <TabsContent value="materials" className="m-0 p-4 space-y-4">
+            <MaterialsDropZone apostilaId={id as string} onUploaded={reloadMaterials} />
+            <SortableMaterialsList items={linkedMaterials} onRemove={async (lid) => {
+              await supabase.from('apostila_materials').delete().eq('id', lid);
+              setLinkedMaterials(prev => prev.filter(m => m.id !== lid));
+            }} />
+          </TabsContent>
+          <TabsContent value="preview" className="m-0 bg-background/50">
+            <div className="p-6">
               <ApostilaContentRenderer content={content} />
             </div>
-          </ScrollArea>
-        </TabsContent>
-
-        <TabsContent value="exercises" className="flex-1 overflow-hidden m-0 p-3">
-          <div className="text-xs space-y-2">
-            <p className="text-muted-foreground">
-              Esta apostila tem <strong>{exerciseCount}</strong> exercício(s) cadastrado(s).
-            </p>
-            <Button
-              size="sm"
-              variant="outline"
-              className="w-full gap-1.5"
-              onClick={() => navigate('/admin?tab=apostilas')}
-            >
-              <ExternalLink className="h-3 w-3" />
-              Gerenciar no Admin clássico
-            </Button>
-            <p className="text-[10px] text-muted-foreground">
-              A criação/edição de exercícios continua no Admin clássico por enquanto.
-              Em breve será integrada aqui.
-            </p>
-          </div>
-        </TabsContent>
+          </TabsContent>
+          <TabsContent value="exercises" className="m-0 p-4">
+             <div className="space-y-4">
+               <div className="p-4 rounded-xl border border-dashed border-border/50 text-center space-y-2">
+                 <p className="text-xs text-muted-foreground">Gestão de exercícios em breve integrada aqui.</p>
+               </div>
+             </div>
+          </TabsContent>
+        </ScrollArea>
       </Tabs>
     </div>
   );
 
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return apostilas.filter(a => a.title.toLowerCase().includes(q) || a.category.toLowerCase().includes(q));
+  }, [apostilas, search]);
+
+  const stats = useMemo(() => {
+    const words = content.trim() ? content.trim().split(/\s+/).length : 0;
+    return { words };
+  }, [content]);
+
+  if (loading) return (
+    <div className="h-screen flex items-center justify-center bg-background">
+      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+    </div>
+  );
+
   return (
-    <div className="flex flex-col h-dvh bg-background">
+    <div className="flex flex-col h-screen bg-background overflow-hidden">
       <ApostilaHealthBar
-        content={content}
-        exerciseCount={exerciseCount}
-        materialCount={linkedMaterials.length}
+        title={title}
         published={published}
         saving={saving}
         lastSavedAt={lastSavedAt}
+        onSave={doSave}
         onTogglePublish={togglePublish}
-        onFocusExercises={() => { setRightTab('exercises'); setRightOpen(true); }}
-        onFocusMaterials={() => { setRightTab('materials'); setRightOpen(true); }}
-      />
-
-      {/* Toolbar do Workbench — Otimizado para Mobile */}
-      <div className="sticky top-0 z-40 flex items-center gap-2 px-3 py-1.5 border-b border-border bg-card/95 backdrop-blur-md shadow-sm overflow-x-auto scrollbar-none">
-
-        <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-          <SheetTrigger asChild>
-            <Button size="sm" variant="ghost" className="h-7 w-7 p-0 lg:w-auto lg:px-2.5 lg:gap-1.5 text-xs">
-              <Menu className="h-4 w-4" /> <span className="hidden lg:inline">Apostilas</span>
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="w-72 p-0">{SidebarList}</SheetContent>
-        </Sheet>
-
-        <div className="flex-1 flex flex-col min-w-[120px]">
-          <Input
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Título da apostila"
-            className="h-6 text-sm font-bold border-0 bg-transparent focus-visible:ring-0 px-1 truncate shadow-none"
-          />
-          <div className="flex items-center gap-2 px-1">
-            <input
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              placeholder="Disciplina"
-              className="text-[9px] font-black uppercase text-muted-foreground/60 tracking-widest bg-transparent border-none p-0 focus:ring-0 truncate max-w-[100px] placeholder:text-muted-foreground/30"
-            />
-          </div>
-        </div>
-
-
-
-        {/* Semestre */}
-        <Select
-          value={semester ? String(semester) : 'none'}
-          onValueChange={(v) => setSemester(v === 'none' ? null : Number(v))}
-        >
-          <SelectTrigger className="h-7 text-[11px] w-[110px] gap-1">
-            <GraduationCap className="h-3 w-3 text-primary" />
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="none">Todos sem.</SelectItem>
-            {SEMESTER_OPTIONS.map((s) => (
-              <SelectItem key={s} value={String(s)}>{s}º semestre</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        {/* Cursos (chips multi-select) */}
-        <div className="hidden md:flex items-center gap-0.5 rounded-md border border-border/60 p-0.5">
-          {COURSE_OPTIONS.map((c) => {
-            const active = course.includes(c);
-            return (
-              <button
-                key={c}
-                type="button"
-                onClick={() => setCourse((prev) => active ? prev.filter((x) => x !== c) : [...prev, c])}
-                title={active ? `Remover ${c}` : `Incluir ${c}`}
-                className={cn(
-                  'px-1.5 py-0.5 text-[10px] font-semibold rounded transition-colors',
-                  active ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground',
-                )}
-              >
-                {c}
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="ml-auto flex items-center gap-1.5 shrink-0">
-          <Button 
-            size="sm" 
-            variant="ghost" 
-            className="h-8 w-8 p-0"
-            onClick={handleGenerateCover}
-            disabled={generatingCover}
-            title="Capa IA"
-          >
-            {generatingCover ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ImageIcon className="h-4 w-4 text-primary" />}
-          </Button>
-          {coverUrl && (
-
-            <a
-              href={coverUrl}
-              target="_blank"
-              rel="noreferrer"
-              title="Ver capa atual"
-              className="h-7 w-10 rounded border border-border overflow-hidden shrink-0 hover:ring-2 hover:ring-primary/40 transition"
-            >
-              <img src={coverUrl} alt="" className="h-full w-full object-cover" />
-            </a>
-          )}
-          <Button
-            size="sm"
-            variant="outline"
-            className="h-7 gap-1.5 text-xs"
-            onClick={handleGenerateCover}
-            disabled={generatingCover}
-            title="Gerar capa com IA baseada no tema da apostila"
-          >
-            {generatingCover ? <Loader2 className="h-3 w-3 animate-spin" /> : <ImageIcon className="h-3 w-3 text-primary" />}
-            {coverUrl ? 'Regerar capa' : 'Gerar capa IA'}
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            className="h-7 gap-1.5 text-xs"
-            onClick={async () => {
-              if (dirtyRef.current) await doSave();
-              const tId = toast.loading('Estruturando em módulos e lições…');
-              const { data, error } = await invokeFunction<{ modules: number; chapters: number; lessons: number }>(
-                'parse-apostila-lessons',
-                { body: { apostila_id: id, replace: true } },
-              );
-              toast.dismiss(tId);
-              if (error) return toast.error(`Falha: ${error.message}`);
-              toast.success(`Estrutura pronta: ${data?.modules} módulos · ${data?.chapters} capítulos · ${data?.lessons} lições`);
-            }}
-            title="Divide o conteúdo em módulos → capítulos → lições para o modo de estudo"
-          >
-            <FileText className="h-3 w-3 text-primary" /> Estruturar em lições
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            className="h-7 gap-1.5 text-xs"
-            onClick={async () => {
-              const n = Number(window.prompt('Quantas questões ENEM gerar? (1-20)', '10') || '0');
-              if (!n || n < 1) return;
-              const tId = toast.loading(`Gerando ${n} questão(ões) estilo ENEM…`);
-              const { data, error } = await invokeFunction<{ inserted: number }>(
-                'generate-enem-exercises',
-                { body: { apostila_id: id, count: n } },
-              );
-              toast.dismiss(tId);
-              if (error) return toast.error(`Falha: ${error.message}`);
-              toast.success(`${data?.inserted ?? n} questão(ões) ENEM adicionada(s)`);
-            }}
-            title="Gera questões autênticas estilo ENEM (5 alternativas, contextualização, explicação dos distratores)"
-          >
-            <Wand2 className="h-3 w-3 text-primary" /> Questões ENEM
-          </Button>
-          <ApostilaVersionHistory apostilaId={id} onRestore={handleRestoreVersion} />
-          <Button size="sm" variant="outline" className="h-7 gap-1.5 text-xs" onClick={() => setPasteOpen(true)}>
-            <PenTool className="h-3 w-3 text-primary" /> Colar inteligente
-          </Button>
-          <Button size="sm" variant="outline" className="h-7 gap-1.5 text-xs" onClick={() => window.open(`/apostila/${id}`, '_blank')}>
-            <Eye className="h-3 w-3" /> Ver como aluno
-          </Button>
-          <Button size="sm" className="h-7 gap-1.5 text-xs" onClick={doSave} disabled={saving}>
-            {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3" />}
-            Salvar
-          </Button>
-          <Sheet open={rightOpen} onOpenChange={setRightOpen}>
-            <SheetTrigger asChild>
-              <Button size="sm" variant="ghost" className="lg:hidden h-7 gap-1.5 text-xs">
-                <PanelRightClose className="h-3.5 w-3.5" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-80 p-0">{RightPanel}</SheetContent>
-          </Sheet>
-        </div>
-      </div>
-
-      {/* Conteúdo principal: 3 colunas (≥lg) ou apenas editor (mobile) */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-[260px_1fr_360px] overflow-hidden">
-        <div className="hidden lg:block overflow-hidden">{SidebarList}</div>
-
-        <div className="overflow-auto bg-muted/10">
-          {loading ? (
-            <div className="flex items-center justify-center h-full">
-              <Loader2 className="h-6 w-6 animate-spin text-primary" />
-            </div>
-          ) : (
-            <MarkdownEditor
-              value={content}
-              onChange={setContent}
-              placeholder="Comece a escrever a apostila ou use o botão 'Colar inteligente'…"
-              onSave={doSave}
-              showWordCount
-            />
-          )}
-        </div>
-
-        <div className="hidden lg:block overflow-hidden">{RightPanel}</div>
-      </div>
-
-      <SmartPasteDialog open={pasteOpen} onOpenChange={setPasteOpen} onApply={handlePasteApply} />
-      <ManualLinkMaterialsDialog
-        open={manualLinkOpen}
-        onOpenChange={setManualLinkOpen}
-        apostilaId={id}
-        onLinked={reloadMaterials}
-      />
-      <FinalReviewDialog
-        open={reviewOpen}
-        onOpenChange={setReviewOpen}
-        onConfirm={() => executeTogglePublish(true)}
-        title={title}
-        content={content}
+        onPreview={() => setRightTab('preview')}
+        wordCount={stats.words}
         exerciseCount={exerciseCount}
         materialCount={linkedMaterials.length}
       />
+      
+      <div className="flex flex-1 min-h-0 overflow-hidden">
+        {/* Sidebar Desktop */}
+        <div className="hidden lg:block w-64 shrink-0">{SidebarList}</div>
+
+        {/* Notion Canvas Editor */}
+        <main className="flex-1 min-w-0 bg-background relative overflow-y-auto">
+          <div className="max-w-[900px] mx-auto min-h-full flex flex-col">
+            <div className="relative pt-20 pb-10 px-8 sm:px-16">
+              <div 
+                className="absolute top-0 left-0 right-0 h-48 opacity-10 blur-3xl -z-10"
+                style={{ background: `linear-gradient(to bottom, ${getSubjectColor(category)}, transparent)` }}
+              />
+              
+              <div className="space-y-6">
+                <div className="h-20 w-20 flex items-center justify-center rounded-2xl bg-accent/30 text-4xl group-hover:bg-accent/50 transition-colors cursor-pointer">📚</div>
+
+                <div className="space-y-4">
+                  <input
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="Título da Página"
+                    className="w-full bg-transparent border-none text-4xl sm:text-5xl font-black focus:ring-0 placeholder:text-muted-foreground/20 p-0"
+                  />
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 py-4 border-y border-border/10">
+                    <div className="flex items-center gap-4 py-1.5">
+                      <div className="flex items-center gap-2 w-32 text-muted-foreground/50 text-[10px] font-black uppercase tracking-widest shrink-0">
+                        <ListChecks className="h-3.5 w-3.5" />
+                        <span>Status</span>
+                      </div>
+                      <Badge variant="outline" className={cn(
+                        "text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md",
+                        published ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                      )}>
+                        {published ? 'PUBLICADA' : 'RASCUNHO'}
+                      </Badge>
+                    </div>
+
+                    <div className="flex items-center gap-4 py-1.5">
+                      <div className="flex items-center gap-2 w-32 text-muted-foreground/50 text-[10px] font-black uppercase tracking-widest shrink-0">
+                        <GraduationCap className="h-3.5 w-3.5" />
+                        <span>Semestre</span>
+                      </div>
+                      <select
+                        value={semester || ''}
+                        onChange={(e) => setSemester(e.target.value ? Number(e.target.value) : null)}
+                        className="bg-transparent border-none p-0 text-xs font-bold focus:ring-0 cursor-pointer text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        <option value="">Não definido</option>
+                        {[1, 2, 3, 4, 5, 6, 7, 8].map(s => (
+                          <option key={s} value={s}>{s}º semestre</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="flex items-center gap-4 py-1.5">
+                      <div className="flex items-center gap-2 w-32 text-muted-foreground/50 text-[10px] font-black uppercase tracking-widest shrink-0">
+                        <FileText className="h-3.5 w-3.5" />
+                        <span>Matéria</span>
+                      </div>
+                      <input
+                        value={category}
+                        onChange={(e) => setCategory(e.target.value)}
+                        placeholder="Nome da disciplina"
+                        className="bg-transparent border-none p-0 text-xs font-bold focus:ring-0 w-full text-muted-foreground hover:text-foreground transition-colors"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex-1 px-8 sm:px-16 pb-32">
+              <MarkdownEditor
+                value={content}
+                onChange={setContent}
+                onSave={doSave}
+                placeholder="Comece a escrever ou digite '/' para comandos..."
+                className="min-h-[500px] border-none shadow-none bg-transparent"
+              />
+            </div>
+          </div>
+
+          <Button
+            variant="outline"
+            size="icon"
+            className={cn("fixed right-6 bottom-6 z-40 h-10 w-10 rounded-full bg-background shadow-lg", rightOpen && "rotate-180")}
+            onClick={() => setRightOpen(!rightOpen)}
+          >
+            <PanelRightClose className="h-5 w-5" />
+          </Button>
+        </main>
+
+        {/* Right Panel Desktop */}
+        <div className={cn("hidden lg:block w-80 shrink-0 transition-all", !rightOpen && "w-0 opacity-0")}>{RightPanel}</div>
+      </div>
+
+      <SmartPasteDialog open={pasteOpen} onOpenChange={setPasteOpen} onApply={handlePasteApply} />
+      <ManualLinkMaterialsDialog open={manualLinkOpen} onOpenChange={setManualLinkOpen} apostilaId={id as string} onLinked={reloadMaterials} />
+      <FinalReviewDialog open={reviewOpen} onOpenChange={setReviewOpen} onConfirm={() => executeTogglePublish(true)} title={title} content={content} exerciseCount={exerciseCount} materialCount={linkedMaterials.length} />
     </div>
   );
 }
