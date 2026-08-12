@@ -27,7 +27,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MarkdownEditor } from '@/components/MarkdownEditor';
-import { ApostilaHealthBar } from '@/components/admin/ApostilaHealthBar';
+import { AdminNotionEditorHeader } from '@/components/admin/AdminNotionEditorHeader';
 import { ApostilaVersionHistory } from '@/components/admin/ApostilaVersionHistory';
 import { MaterialsDropZone } from '@/components/admin/MaterialsDropZone';
 import { SortableMaterialsList, type LinkedMaterialItem } from '@/components/admin/SortableMaterialsList';
