@@ -82,8 +82,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const [adminRes, profileRes] = await Promise.all([
         supabase.from('user_roles').select('role').eq('user_id', userId).eq('role', 'admin').maybeSingle(),
-        supabase.from('profiles').select('is_blocked').eq('user_id', userId).maybeSingle(),
+        supabase.from('profiles').select('is_blocked, email').eq('user_id', userId).maybeSingle(),
       ]);
+      // Note: is_admin is handled via user_roles or metadata, not a column in profiles
+
+
 
       if ((adminRes.error || profileRes.error) && attempt < 1) {
         return await new Promise<boolean>((resolve) => {
@@ -93,9 +96,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (!mountedRef.current) return false;
 
-      const profileIsAdmin = Boolean((profileRes.data as any)?.is_admin);
-      const adminValue = Boolean(adminRes.data) || profileIsAdmin || user?.email === 'decodeanalytics@outlook.com.br';
+      const adminValue = Boolean(adminRes.data) || user?.email === 'decodeanalytics@outlook.com.br' || (profileRes.data as any)?.email === 'decodeanalytics@outlook.com.br';
       const blockedValue = Boolean((profileRes.data as { is_blocked?: boolean } | null)?.is_blocked);
+
 
 
 
