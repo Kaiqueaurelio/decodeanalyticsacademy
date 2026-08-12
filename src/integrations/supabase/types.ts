@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      access_logs: {
+        Row: {
+          created_at: string | null
+          id: string
+          ip_address: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       activity_logs: {
         Row: {
           action: Database["public"]["Enums"]["activity_action"]
@@ -112,6 +136,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      admin_audit_logs: {
+        Row: {
+          action: string
+          admin_id: string | null
+          created_at: string | null
+          details: Json | null
+          id: string
+          target_user_id: string | null
+        }
+        Insert: {
+          action: string
+          admin_id?: string | null
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          target_user_id?: string | null
+        }
+        Update: {
+          action?: string
+          admin_id?: string | null
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          target_user_id?: string | null
+        }
+        Relationships: []
       }
       ads: {
         Row: {

@@ -50,11 +50,10 @@ function sanitizeHtml(html: string): string {
     ALLOWED_TAGS: [
       'u', 'mark', 'sub', 'sup', 'span', 'div', 'strong', 'em', 'b', 'i', 's', 'small', 'br', 'a', 'p',
       'table', 'thead', 'tbody', 'tr', 'th', 'td', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-      'code', 'pre', 'blockquote', 'img'
+      'code', 'pre', 'blockquote', 'img', 'hr'
     ],
-    ALLOWED_ATTR: ['style', 'class', 'href', 'target', 'rel', 'src', 'alt', 'width', 'align', 'data-float', 'data-mx', 'data-my'],
+    ALLOWED_ATTR: ['style', 'class', 'href', 'target', 'rel', 'src', 'alt', 'width', 'height', 'align', 'data-float', 'data-mx', 'data-my', 'data-align', 'border', 'cellpadding', 'cellspacing'],
     ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto|tel):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
-    // Permite apenas estilos específicos para evitar bypass de UI
     FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover', 'onfocus', 'onblur', 'formaction'],
   });
 }

@@ -44,6 +44,7 @@ import { ActivityChart } from '@/components/ActivityChart';
 import { ImageUploadButton } from '@/components/ImageUploadButton';
 import { AnnouncementsAdmin } from '@/components/AnnouncementsAdmin';
 import { CalendarEventsAdmin } from '@/components/CalendarEventsAdmin';
+import { AdminUserManagement } from '@/components/admin/AdminUserManagement';
 import { ApostilaMaterialsManager } from '@/components/ApostilaMaterialsManager';
 import { ensureApostilaExists } from '@/lib/create-placeholder-apostila';
 
@@ -1733,6 +1734,9 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
               />
             )}
 
+            {/* USERS */}
+            {tab === 'users' && <AdminUserManagement />}
+
             {/* APOSTILAS */}
             {tab === 'cc-apostilas' && (
               <div className="flex-1 overflow-y-auto">
@@ -1753,7 +1757,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                 />
               </div>
             )}
-                {tab === 'apostilas' && (
+            {tab === 'apostilas' && (
               <div className="space-y-6">
                 {/* Import Card */}
                 <Card className="overflow-hidden bg-card/40 backdrop-blur-md border-primary/20 shadow-xl" data-import-card>
