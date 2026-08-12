@@ -58,12 +58,12 @@ export function AdminUserManagement() {
       
       // Se for admin, inserir
       if (newRole === 'admin') {
-        const { error } = await supabase.from('user_roles').insert({ user_id: userId, role: 'admin' });
+        const { error } = await supabase.from('user_roles').insert({ user_id: userId, role: 'admin' } as any);
         if (error) throw error;
       }
 
       // Logar a ação
-      await supabase.from('admin_audit_logs').insert({
+      await (supabase.from('admin_audit_logs') as any).insert({
         admin_id: currentUser?.id,
         action: `update_role_${newRole}`,
         target_user_id: userId,
