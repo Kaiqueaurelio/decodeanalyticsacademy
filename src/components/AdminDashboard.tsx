@@ -139,7 +139,9 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
         supabase.from('ads').select('id', { count: 'exact', head: true }),
         supabase.from('apostilas')
           .select('id,title,category,published,created_at,updated_at,semester,course,cover_url,teacher,content,status')
-          .order('title', { ascending: true }) // Agora ordenado por título por padrão para facilitar a busca visual
+          .order('semester', { ascending: true }) // Ordenado por semestre primeiro
+          .order('title', { ascending: true })
+
           .limit(1000), // Garantir que carregamos o suficiente para os Placeholders e Grid
 
         supabase.rpc('get_student_rankings', { _limit: 10 }),
@@ -285,7 +287,7 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
   // Reset paginação quando filtros mudam
   useEffect(() => { setVisibleCount(PAGE_SIZE); }, [search, statusFilter, categoryFilter, dateFrom, dateUntil, sortKey]);
 
-  const visibleItems = filtered.slice(0, visibleCount);
+  const visibleItems = useMemo(() => filtered.slice(0, visibleCount), [filtered, visibleCount]);
   const hasMore = visibleCount < filtered.length;
 
   // Rolagem infinita no acervo administrativo
