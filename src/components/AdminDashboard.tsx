@@ -292,6 +292,27 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
   const visibleItems = useMemo(() => filtered.slice(0, visibleCount), [filtered, visibleCount]);
   const hasMore = visibleCount < filtered.length;
 
+  // A listagem principal representa disciplinas, e não uma sequência confusa de
+  // apostilas. A apostila só é exibida depois que o administrador abre a pasta.
+  const folders = useMemo(() => {
+    const grouped = new Map<string, ApostilaRow[]>();
+    for (const apostila of filtered) {
+      const name = apostila.category?.trim() || 'Sem disciplina';
+      const items = grouped.get(name) || [];
+      items.push(apostila);
+      grouped.set(name, items);
+    }
+    return [...grouped.entries()]
+      .map(([name, items]) => ({
+        name,
+        items: items.sort((a, b) => a.title.localeCompare(b.title, 'pt-BR')),
+        semester: (items[0] as any)?.semester as number | null | undefined,
+      }))
+      .sort((a, b) => (a.semester || 99) - (b.semester || 99) || a.name.localeCompare(b.name, 'pt-BR'));
+  }, [filtered]);
+
+  const openedFolder = folders.find((folder) => folder.name === openCategory) || null;
+
   // Rolagem infinita no acervo administrativo
   useEffect(() => {
     if (!hasMore) return;
@@ -874,8 +895,42 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
                 </Select>
               </div>
 
-              {/* Grid de Apostilas estilo Notion Gallery */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-3 px-1">
+              {/* Fluxo simples: disciplina (pasta) primeiro, apostila depois. */}
+              {openedFolder ? (
+                <section className="rounded-2xl border border-primary/30 bg-card/70 p-4 sm:p-5">
+                  <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-border/60 pb-4">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary"><FolderOpen className="h-5 w-5" /></div>
+                      <div className="min-w-0"><p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Caderno da matéria</p><h3 className="truncate text-base font-bold">{openedFolder.name}</h3></div>
+                    </div>
+                    <Button variant="outline" size="sm" onClick={() => setOpenCategory(null)}>Voltar às matérias</Button>
+                  </div>
+                  <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+                    {openedFolder.items.map((a) => {
+                      const placeholder = (a as any).isPlaceholder || a.id.startsWith('placeholder');
+                      return <button key={a.id} type="button" onClick={() => handleEdit(a)} className="group min-h-40 rounded-xl border border-border/70 bg-muted/20 p-4 text-left transition hover:border-primary/50 hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                        <div className="flex items-start justify-between gap-2"><FileText className="mt-0.5 h-5 w-5 shrink-0 text-primary" /><Badge variant={a.published ? 'default' : 'secondary'} className="text-[10px]">{placeholder ? 'Criar' : a.published ? 'Publicada' : 'Oculta'}</Badge></div>
+                        <h4 className="mt-7 line-clamp-2 text-sm font-semibold group-hover:text-primary">{a.title.replace(/^\[GRADE\]\s*/i, '')}</h4>
+                        <p className="mt-2 text-[11px] text-muted-foreground">{placeholder ? 'Clique para começar o material' : 'Clique para abrir e editar'}</p>
+                      </button>;
+                    })}
+                  </div>
+                </section>
+              ) : (
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                  {folders.map((folder) => {
+                    const published = folder.items.filter((item) => item.published).length;
+                    return <button key={folder.name} type="button" onClick={() => setOpenCategory(folder.name)} className="group flex min-h-28 items-center gap-3 rounded-xl border border-border/70 bg-card/50 p-4 text-left transition hover:border-primary/50 hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary"><FolderOpen className="h-5 w-5" /></span>
+                      <span className="min-w-0 flex-1"><span className="flex items-center gap-2"><span className="truncate text-sm font-semibold">{folder.name}</span><Badge variant="secondary" className="text-[9px]">{folder.items.length} {folder.items.length === 1 ? 'apostila' : 'apostilas'}</Badge></span><span className="mt-1 block text-[11px] text-muted-foreground">{published} publicada{published === 1 ? '' : 's'}{folder.semester ? ` · ${folder.semester}º semestre` : ''}</span></span>
+                      <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-primary" />
+                    </button>;
+                  })}
+                </div>
+              )}
+
+              {/* Mantido temporariamente no DOM para preservar ações em lote, mas não exibido. */}
+              <div className="hidden">
                 {visibleItems.map((a) => (
                   <AdminNotionGalleryCard
                     key={a.id}
@@ -890,7 +945,7 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
                 ))}
               </div>
               
-              {hasMore && (
+              {false && hasMore && (
                 <div ref={adminLoaderRef} className="py-10 flex justify-center">
                   <div className="h-6 w-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                 </div>
