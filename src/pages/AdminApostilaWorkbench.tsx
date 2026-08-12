@@ -561,7 +561,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
               </div>
             </div>
 
-            <div className="flex-1 px-4 sm:px-16 pb-32">
+            <div className="flex-1 px-4 sm:px-16 pb-32 h-[calc(100vh-160px)] sm:h-auto overflow-y-auto">
               <MarkdownEditor
                 value={content}
                 onChange={setContent}
