@@ -38,6 +38,33 @@ serve(async (req) => {
 
     const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
+    // === Autorização: espelha a RLS "Authenticated can view published apostilas (scoped)" ===
+    const { data: apMeta } = await admin
+      .from("apostilas")
+      .select("published, category")
+      .eq("id", apostila_id)
+      .maybeSingle();
+
+    const { data: isAdmin } = await admin.rpc("has_role", {
+      _user_id: userData.user.id,
+      _role: "admin",
+    });
+
+    if (!isAdmin) {
+      const { data: scope } = await admin.rpc("get_content_scope", { _user_id: userData.user.id });
+      const cat = (apMeta?.category ?? null) as string | null;
+      const enemCats = ["ENEM", "Simulados ENEM"];
+      const allowed =
+        !!apMeta?.published &&
+        ((scope === "full" && (cat === null || !enemCats.includes(cat))) ||
+          (scope === "enem_only" && cat !== null && enemCats.includes(cat)));
+      if (!allowed) {
+        return new Response(JSON.stringify({ error: "Acesso negado a este material." }), {
+          status: 403, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
+        });
+      }
+    }
+
     // Cache hit?
     if (!force) {
       const { data: cached } = await admin

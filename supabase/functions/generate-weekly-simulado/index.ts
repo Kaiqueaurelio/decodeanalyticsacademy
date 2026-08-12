@@ -85,13 +85,26 @@ serve(async (req) => {
       (pomos ?? []).map((p: any) => p.apostila_id).filter(Boolean)
     );
 
-    // 4) Pool de exercícios objetivos publicados
-    const { data: pool } = await admin
+    // 4) Pool de exercícios objetivos publicados (respeitando o content_scope do aluno)
+    const { data: scope } = await admin.rpc("get_content_scope", { _user_id: userId });
+    const ENEM_CATS = ["ENEM", "Simulados ENEM"];
+
+    let poolQuery = admin
       .from("exercises")
       .select("id, question, options, correct_answer, explanation, apostila_id, type, apostilas!inner(id, title, category, published)")
       .eq("type", "multiple_choice")
-      .eq("apostilas.published", true)
-      .limit(500);
+      .eq("apostilas.published", true);
+
+    if (scope === "enem_only") {
+      poolQuery = poolQuery.in("apostilas.category", ENEM_CATS);
+    } else {
+      poolQuery = poolQuery.or(
+        `category.is.null,category.not.in.(${ENEM_CATS.map((c) => `"${c}"`).join(",")})`,
+        { foreignTable: "apostilas" },
+      );
+    }
+
+    const { data: pool } = await poolQuery.limit(500);
 
     if (!pool || pool.length === 0) {
       return new Response(JSON.stringify({ error: "Ainda não há exercícios suficientes no banco para montar um simulado." }), {
