@@ -8,7 +8,8 @@ import {
   FileText,
   ShieldCheck,
   MoreVertical,
-  Check
+  Check,
+  Menu
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
