@@ -1,0 +1,38 @@
+# Decode Analytics Academy (DAA)
+
+Academic environment focused on Technology (Computer Science, Information Systems, Computer Engineering). White-label platform for academic materials, PWA, and AI-assisted learning.
+
+## Technical Stack
+- Frontend: React 18, Vite 5, TypeScript 5, Tailwind CSS v3.
+- State Management: TanStack Query (React Query).
+- Backend: Lovable Cloud (Supabase) - RLS enabled.
+- PWA: Offline cache (NetworkOnly policy for updates), dedicated service worker.
+- Styling: High-Tech Dark aesthetic (#050508, Cyan #00f0ff, Purple #a855f7).
+
+## Project Structure
+- `src/pages`: Main application routes (Dashboard, Admin, Subjects, Readers).
+- `src/components`: UI components, Notion-style blocks, study tools.
+- `src/lib`: Core logic, curriculum maps (`subject-semester-map.ts`), Supabase client.
+- `src/data/changelog.ts`: Detailed version history and audit logs.
+
+## Core Features
+- Digital Notebook: Block-based editor (Notion-style) for student notes.
+- Academic Grid: Automated mapping of UNIP subjects from 1st to 8th semester.
+- PWA/Offline: Advanced caching for study materials.
+- Admin Workbench: Fullscreen Notion-style editor for creating and auditing handouts.
+- Security: Dynamic watermarking, print blocking, and strict RLS policies.
+
+## Development Principles
+- Mobile-First: All features must be fully responsive (optimized for 100dvh).
+- No Generic AI Aesthetic: Avoid purple/indigo gradients; use cyan/purple high-tech tokens.
+- Academic Focus: No hacking/pentest references unless academic (Security courses).
+
+## Branding & Attribution
+- Developed by: Kaique Aurelio & Decode Analytics.
+- Status: Always free academic project.
+
+## Key Routes
+- `/dashboard`: Main student hub.
+- `/admin`: Management panel for handouts, users, and health monitoring.
+- `/subject/:name`: Detailed view of handouts and modules for a specific subject.
+- `/apostila/:id`: Advanced reader with focus mode and annotations.

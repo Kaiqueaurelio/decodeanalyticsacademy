@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Core Pages -->
+  <url>
+    <loc>https://decodeanalyticsacademy.lovable.app/</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://decodeanalyticsacademy.lovable.app/login</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://decodeanalyticsacademy.lovable.app/dashboard</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://decodeanalyticsacademy.lovable.app/biblioteca</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://decodeanalyticsacademy.lovable.app/news</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://decodeanalyticsacademy.lovable.app/simulados</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://decodeanalyticsacademy.lovable.app/courses</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://decodeanalyticsacademy.lovable.app/transparency</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://decodeanalyticsacademy.lovable.app/support</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- Academic Semesters -->
+  <url><loc>https://decodeanalyticsacademy.lovable.app/dashboard?semester=1</loc><priority>0.7</priority></url>
+  <url><loc>https://decodeanalyticsacademy.lovable.app/dashboard?semester=2</loc><priority>0.7</priority></url>
+  <url><loc>https://decodeanalyticsacademy.lovable.app/dashboard?semester=3</loc><priority>0.7</priority></url>
+  <url><loc>https://decodeanalyticsacademy.lovable.app/dashboard?semester=4</loc><priority>0.7</priority></url>
+  <url><loc>https://decodeanalyticsacademy.lovable.app/dashboard?semester=5</loc><priority>0.7</priority></url>
+  <url><loc>https://decodeanalyticsacademy.lovable.app/dashboard?semester=6</loc><priority>0.7</priority></url>
+  <url><loc>https://decodeanalyticsacademy.lovable.app/dashboard?semester=7</loc><priority>0.7</priority></url>
+  <url><loc>https://decodeanalyticsacademy.lovable.app/dashboard?semester=8</loc><priority>0.7</priority></url>
+
+  <!-- Subject Pages (UNIP CC Curriculum) -->
+  <url><loc>https://decodeanalyticsacademy.lovable.app/subject/Logica%20de%20Programacao</loc><priority>0.6</priority></url>
+  <url><loc>https://decodeanalyticsacademy.lovable.app/subject/Matematica%20Discreta</loc><priority>0.6</priority></url>
+  <url><loc>https://decodeanalyticsacademy.lovable.app/subject/Estrutura%20de%20Dados</loc><priority>0.6</priority></url>
+  <url><loc>https://decodeanalyticsacademy.lovable.app/subject/Inteligencia%20Artificial</loc><priority>0.6</priority></url>
+  <url><loc>https://decodeanalyticsacademy.lovable.app/subject/Redes%20de%20Computadores</loc><priority>0.6</priority></url>
+  <url><loc>https://decodeanalyticsacademy.lovable.app/subject/Sistemas%20Operacionais</loc><priority>0.6</priority></url>
+</urlset>
