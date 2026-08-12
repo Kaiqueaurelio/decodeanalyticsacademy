@@ -44,7 +44,7 @@ export function AdminNotionGalleryCard({
   const isPlaceholder = item.isPlaceholder || item.id.startsWith('placeholder');
   const color = getSubjectColor(item.category || 'Geral');
   
-  const statusLabel = item.status === 'liberada' ? 'Em progresso' : 
+  const statusLabel = item.status === 'liberada' ? 'Publicada' : 
                      item.status === 'em_manutencao' ? 'Manutenção' : 'Bloqueada';
 
   return (
@@ -61,34 +61,20 @@ export function AdminNotionGalleryCard({
         )}
       >
         {/* Notion Gallery Image (Capa) */}
-        <div className="relative aspect-[16/9] w-full overflow-hidden bg-[#1A1A1A]">
+        <div className="relative aspect-[16/9] w-full overflow-hidden bg-[#1A1A1A] flex items-center justify-center">
           <div 
-            className="absolute inset-0 opacity-40 transition-transform duration-500 group-hover:scale-105"
+            className="absolute inset-0 opacity-20"
             style={{ 
               background: `linear-gradient(135deg, ${color}22 0%, ${color}44 100%)`,
-              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='${color.replace('#', '%23')}' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4v-4H4v4H0v2h4v4h2v-4h4v-2H6zm30 0v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
             }}
           />
+          <FolderOpen className={cn("h-10 w-10 relative z-10 transition-transform duration-500 group-hover:scale-110", isPlaceholder ? "text-muted-foreground/20" : "text-[#D4D4D8]/80")} />
           
           {/* Tags estilo Notion no topo da imagem */}
           <div className="absolute top-2.5 right-2.5 flex flex-col items-end gap-1.5 pointer-events-none">
-             <Badge className="bg-background/80 backdrop-blur-md text-foreground border border-border/50 text-[9px] font-bold px-1.5 py-0 rounded-md w-fit shadow-sm">
-                {item.semester ? `${item.semester}º Sem.` : 'Livre'}
+             <Badge className="bg-[#27272A]/80 backdrop-blur-md text-foreground border border-white/10 text-[9px] font-bold px-1.5 py-0 rounded-md w-fit shadow-sm">
+                1 APOSTILA
              </Badge>
-             
-             <div className={cn(
-               "flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9px] font-bold shadow-sm backdrop-blur-md",
-               item.status === 'liberada' ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20" :
-               item.status === 'em_manutencao' ? "bg-amber-500/10 text-amber-500 border border-amber-500/20" :
-               "bg-destructive/10 text-destructive border border-destructive/20"
-             )}>
-                <span className={cn("h-1 w-1 rounded-full animate-pulse", 
-                  item.status === 'liberada' ? "bg-emerald-500" :
-                  item.status === 'em_manutencao' ? "bg-amber-500" :
-                  "bg-destructive"
-                )} />
-                <span>{statusLabel.toUpperCase()}</span>
-             </div>
           </div>
 
 
@@ -116,25 +102,27 @@ export function AdminNotionGalleryCard({
 
         {/* Notion Card Content */}
         <div className="p-3 space-y-2.5">
-          <div className="flex items-start gap-2 min-h-[36px]">
-            <FolderOpen className={cn("h-4 w-4 mt-0.5 shrink-0", isPlaceholder ? "text-muted-foreground/40" : "text-primary/70")} />
-            <h3 className="text-[12px] font-semibold leading-tight line-clamp-2 group-hover:text-primary transition-colors capitalize">
-              {item.title.replace(/^\[GRADE\]\s*/i, '').replace(/_/g, ' ').toLowerCase()}
+          <div className="flex items-center justify-between gap-2 min-h-[24px]">
+            <h3 className="text-[13px] font-bold leading-tight line-clamp-1 group-hover:text-primary transition-colors">
+              {item.title.replace(/^\[GRADE\]\s*/i, '').replace(/_/g, ' ')}
             </h3>
+            <ChevronRight className="h-4 w-4 text-muted-foreground/40 shrink-0" />
           </div>
 
           {/* Metadata/Properties Grid estilo Notion */}
-          <div className="grid grid-cols-2 gap-x-2 gap-y-1.5 py-1 border-t border-border/40">
-            <div className="flex flex-col gap-0.5">
-              <span className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground/50">Tipo</span>
-              <span className="text-[9px] font-medium truncate">{item.category || 'Geral'}</span>
+          <div className="grid grid-cols-1 gap-y-1.5 py-1 border-t border-border/40">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[10px] text-muted-foreground/60">Status</span>
+              <span className={cn(
+                "text-[10px] font-bold",
+                item.published ? "text-emerald-500" : "text-amber-500"
+              )}>
+                {item.published ? '1 publicada' : '0 publicadas'}
+              </span>
             </div>
-            <div className="flex flex-col gap-0.5">
-              <span className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground/50">Progresso</span>
-              <div className="flex items-center gap-1.5">
-                <Progress value={isPlaceholder ? 0 : 35} className="h-1 flex-1" />
-                <span className="text-[8px] font-bold">{isPlaceholder ? '0%' : '35%'}</span>
-              </div>
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[10px] text-muted-foreground/60">Exercícios</span>
+              <span className="text-[10px] font-bold">0 exercícios</span>
             </div>
           </div>
 
