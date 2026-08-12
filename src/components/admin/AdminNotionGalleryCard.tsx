@@ -83,7 +83,8 @@ export function AdminNotionGalleryCard({
         {/* Notion Card Content - Agora Direita */}
         <div className="flex-1 p-4 space-y-1.5 flex flex-col justify-center min-w-0 pr-10 relative">
           <div className="flex items-center justify-between gap-2 min-h-[24px]">
-            <h3 className="text-[13px] font-bold leading-tight line-clamp-1 group-hover:text-primary transition-colors">
+            <h3 className="text-[13px] font-bold leading-tight line-clamp-1 group-hover:text-primary transition-colors flex items-center gap-2">
+              <span className="text-muted-foreground/40 shrink-0">#</span>
               {item.title.replace(/^\[GRADE\]\s*/i, '').replace(/_/g, ' ')}
             </h3>
             <div className="flex items-center gap-1">
@@ -95,22 +96,26 @@ export function AdminNotionGalleryCard({
           </div>
 
           {/* Metadata/Properties Grid estilo Notion */}
-          <div className="grid grid-cols-1 gap-y-1 py-1 border-t border-white/5">
-            <div className="flex items-center justify-start gap-3 text-[10px]">
-              <span className={cn(
-                "font-bold",
-                item.published ? "text-emerald-500" : "text-amber-500"
-              )}>
+          <div className="flex flex-col gap-1 py-1 border-t border-white/5">
+            <div className="flex items-center justify-start gap-2 text-[10px]">
+              <div className="h-4 w-4 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0">
+                <CheckCircle2 className="h-2.5 w-2.5 text-emerald-500" />
+              </div>
+              <span className="font-bold text-emerald-500">
                 {item.published ? '1 publicada' : '0 publicadas'}
               </span>
-              <span className="text-muted-foreground/40">·</span>
+            </div>
+            <div className="flex items-center justify-start gap-2 text-[10px]">
+              <div className="h-4 w-4 rounded-full bg-white/5 flex items-center justify-center shrink-0">
+                <FileText className="h-2.5 w-2.5 text-muted-foreground/60" />
+              </div>
               <span className="font-bold text-muted-foreground/60">0 exercícios</span>
             </div>
           </div>
 
 
           {!isPlaceholder ? (
-            <div className="flex items-center gap-2 pt-1.5 border-t border-white/5">
+            <div className="flex items-center justify-between gap-2 pt-1.5 border-t border-white/5">
               <Select 
                 value={item.status || (item.published ? 'liberada' : 'bloqueada')} 
                 onValueChange={(v) => onStatusChange(item, v as any)}
@@ -125,6 +130,9 @@ export function AdminNotionGalleryCard({
                   <SelectItem value="em_manutencao" className="text-[10px] font-bold text-amber-500">MANUTENÇÃO</SelectItem>
                 </SelectContent>
               </Select>
+              <Badge variant="outline" className="h-6 text-[9px] border-white/5 bg-white/5 text-muted-foreground px-2 font-bold">
+                {item.semester ? `${item.semester}º SEM` : 'UNIP'}
+              </Badge>
             </div>
           ) : (
             <Button 

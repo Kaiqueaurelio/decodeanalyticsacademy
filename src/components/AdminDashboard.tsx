@@ -106,6 +106,8 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
   // Pasta aberta no grid por categoria
   const [openCategory, setOpenCategory] = useState<string | null>(null);
 
+
+
   // Seleção em lote
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
@@ -139,7 +141,9 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
         supabase.from('ads').select('id', { count: 'exact', head: true }),
         supabase.from('apostilas')
           .select('id,title,category,published,created_at,updated_at,semester,course,cover_url,teacher,content,status')
-          .order('title', { ascending: true }) // Agora ordenado por título por padrão para facilitar a busca visual
+          .order('semester', { ascending: true }) // Ordenado por semestre primeiro
+          .order('title', { ascending: true })
+
           .limit(1000), // Garantir que carregamos o suficiente para os Placeholders e Grid
 
         supabase.rpc('get_student_rankings', { _limit: 10 }),
@@ -285,7 +289,7 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
   // Reset paginação quando filtros mudam
   useEffect(() => { setVisibleCount(PAGE_SIZE); }, [search, statusFilter, categoryFilter, dateFrom, dateUntil, sortKey]);
 
-  const visibleItems = filtered.slice(0, visibleCount);
+  const visibleItems = useMemo(() => filtered.slice(0, visibleCount), [filtered, visibleCount]);
   const hasMore = visibleCount < filtered.length;
 
   // Rolagem infinita no acervo administrativo
@@ -871,7 +875,7 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
               </div>
 
               {/* Grid de Apostilas estilo Notion Gallery */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 px-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-3 px-1">
                 {visibleItems.map((a) => (
                   <AdminNotionGalleryCard
                     key={a.id}
