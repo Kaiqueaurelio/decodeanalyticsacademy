@@ -51,6 +51,8 @@ export function AdminUserManagement() {
   const updateRole = async (userId: string, newRole: string) => {
     setUpdatingId(userId);
     try {
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+
       // Deletar roles existentes
       await supabase.from('user_roles').delete().eq('user_id', userId);
       
@@ -59,6 +61,14 @@ export function AdminUserManagement() {
         const { error } = await supabase.from('user_roles').insert({ user_id: userId, role: 'admin' });
         if (error) throw error;
       }
+
+      // Logar a ação
+      await supabase.from('admin_audit_logs').insert({
+        admin_id: currentUser?.id,
+        action: `update_role_${newRole}`,
+        target_user_id: userId,
+        details: { newRole }
+      });
       
       toast.success('Permissão atualizada com sucesso');
       fetchUsers();

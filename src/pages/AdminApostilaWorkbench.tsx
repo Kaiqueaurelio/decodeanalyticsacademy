@@ -432,8 +432,10 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
             />
           </TabsContent>
           <TabsContent value="preview" className="m-0 bg-background/50">
-            <div className="p-6">
-              <ApostilaContentRenderer content={content} />
+            <div className="p-6 bg-white dark:bg-[#1a1c1e] min-h-[800px] shadow-inner">
+              <div className="max-w-[800px] mx-auto bg-card shadow-2xl p-12 min-h-[1056px] border border-border/40">
+                <ApostilaContentRenderer content={content} />
+              </div>
             </div>
           </TabsContent>
           <TabsContent value="exercises" className="m-0 p-4">
