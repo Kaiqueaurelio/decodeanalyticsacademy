@@ -365,6 +365,7 @@ function parseBlocks(rawInput: string): Block[] {
         } else {
           blocks.push({ type: 'paragraph', content: t });
         }
+
       }
       paragraph = [];
     };
@@ -760,9 +761,10 @@ function ListBlock({ items, ordered }: { items: string[]; ordered: boolean }) {
   return (
     <ul className="my-6 ml-2 space-y-3">
       {items.map((it, idx) => (
-        <li key={idx} className="pl-8 relative text-[15px] leading-relaxed text-foreground/90 group">
-          <span className="absolute left-1 top-[0.65em] w-2 h-2 rounded-full bg-primary/30 group-hover:bg-primary transition-colors" />
-          <span dangerouslySetInnerHTML={renderInline(it)} />
+        <li key={idx} className="pl-10 relative text-[16px] leading-relaxed text-foreground/90 group py-1">
+          <span className="absolute left-1 top-[0.6em] w-2.5 h-2.5 rounded-full border-2 border-primary/30 group-hover:bg-primary group-hover:border-primary transition-all duration-300 shadow-sm" />
+          <span dangerouslySetInnerHTML={renderInline(it)} className="font-medium" />
+
         </li>
       ))}
     </ul>
@@ -771,8 +773,9 @@ function ListBlock({ items, ordered }: { items: string[]; ordered: boolean }) {
 
 function TableBlock({ header, rows }: { header: string[]; rows: string[][] }) {
   return (
-    <div className="my-8 overflow-x-auto rounded-xl border border-border/40 bg-card/30 shadow-sm">
-      <table className="w-full text-[14px] border-collapse">
+    <div className="my-10 overflow-x-auto rounded-2xl border border-border/40 bg-card/40 shadow-xl backdrop-blur-sm">
+      <table className="w-full text-[15px] border-collapse">
+
         <thead>
           <tr className="bg-accent/5">
             {header.map((h, i) => (
@@ -821,16 +824,17 @@ function HeadingBlock({ level, content, id, active }: { level: number; content: 
   const activeCls = active ? 'apostila-heading-active' : '';
   if (level === 1) {
     return (
-      <h1 id={id} data-active={active || undefined} className={cn('font-display text-4xl sm:text-5xl font-black mt-12 mb-6 text-foreground tracking-tighter leading-tight scroll-mt-24', activeCls)}>
+      <h1 id={id} data-active={active || undefined} className={cn('font-display text-4xl sm:text-6xl font-black mt-16 mb-8 text-foreground tracking-tighter leading-tight scroll-mt-24', activeCls)}>
         {text}
       </h1>
     );
   }
   if (level === 2) {
     return (
-      <h2 id={id} data-active={active || undefined} className={cn('font-display text-2xl sm:text-3xl font-black mt-10 mb-4 text-foreground tracking-tighter leading-tight scroll-mt-24 border-b border-border/10 pb-2', activeCls)}>
+      <h2 id={id} data-active={active || undefined} className={cn('font-display text-2xl sm:text-4xl font-black mt-12 mb-5 text-foreground tracking-tighter leading-tight scroll-mt-24 border-b-2 border-primary/20 pb-3', activeCls)}>
         {text}
       </h2>
+
     );
   }
   if (level === 3) {
