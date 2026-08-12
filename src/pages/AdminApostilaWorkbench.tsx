@@ -491,6 +491,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         onTogglePublish={togglePublish}
         onPreview={() => { setRightTab('preview'); setRightOpen(true); }}
         onOpenPanel={() => { setRightTab('materials'); setRightOpen(true); }}
+        onPasteOpen={() => setPasteOpen(true)}
         wordCount={stats.words}
         exerciseCount={exerciseCount}
         materialCount={linkedMaterials.length}
