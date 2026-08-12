@@ -396,7 +396,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
                 id === a.id ? "bg-primary text-primary-foreground font-black shadow-md shadow-primary/20" : "hover:bg-accent/50 text-muted-foreground hover:text-foreground"
               )}
             >
-              <span className="truncate flex-1">{a.title.replace(/_/g, ' ')}</span>
+              <span className="truncate flex-1 capitalize">{a.title.replace(/_/g, ' ').toLowerCase()}</span>
               {!a.published && <Badge variant="outline" className={cn("text-[8px] h-3.5 px-1 ml-2", id === a.id ? "border-primary-foreground/40 text-primary-foreground" : "opacity-50")}>Draft</Badge>}
             </button>
           ))}

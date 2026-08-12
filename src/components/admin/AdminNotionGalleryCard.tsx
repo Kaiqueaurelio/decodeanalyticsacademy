@@ -118,8 +118,8 @@ export function AdminNotionGalleryCard({
         <div className="p-3 space-y-2.5">
           <div className="flex items-start gap-2 min-h-[36px]">
             <FolderOpen className={cn("h-4 w-4 mt-0.5 shrink-0", isPlaceholder ? "text-muted-foreground/40" : "text-primary/70")} />
-            <h3 className="text-[12px] font-semibold leading-tight line-clamp-2 group-hover:text-primary transition-colors">
-              {item.title.replace(/^\[GRADE\]\s*/i, '').replace(/_/g, ' ')}
+            <h3 className="text-[12px] font-semibold leading-tight line-clamp-2 group-hover:text-primary transition-colors capitalize">
+              {item.title.replace(/^\[GRADE\]\s*/i, '').replace(/_/g, ' ').toLowerCase()}
             </h3>
           </div>
 

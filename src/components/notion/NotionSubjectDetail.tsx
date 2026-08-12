@@ -105,7 +105,7 @@ export function NotionSubjectDetail({ subject }: Props) {
           <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground overflow-hidden">
             <span className="hover:text-foreground cursor-pointer transition-colors whitespace-nowrap" onClick={() => navigate('/dashboard')}>Dashboard</span>
             <ChevronRight className="h-3 w-3 shrink-0" />
-            <span className="text-foreground truncate font-bold">{subject.title.replace(/_/g, ' ')}</span>
+            <span className="text-foreground truncate font-bold capitalize">{subject.title.replace(/_/g, ' ').toLowerCase()}</span>
           </div>
         </div>
 
@@ -158,8 +158,8 @@ export function NotionSubjectDetail({ subject }: Props) {
 
       <div className="pt-10 px-2 space-y-6">
         <div>
-          <h1 className="text-4xl sm:text-5xl font-display font-black tracking-tighter text-foreground mb-4">
-            {subject.title.replace(/_/g, ' ')}
+          <h1 className="text-4xl sm:text-5xl font-display font-black tracking-tighter text-foreground mb-4 capitalize">
+            {subject.title.replace(/_/g, ' ').toLowerCase()}
           </h1>
           <div className="flex flex-wrap gap-2">
             <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 font-bold px-3">
@@ -182,7 +182,7 @@ export function NotionSubjectDetail({ subject }: Props) {
           <div className="space-y-1">
             <p className="text-sm font-bold text-foreground">Visão Geral da Disciplina</p>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Bem-vindo ao módulo de {subject.title.replace(/_/g, ' ')}. Aqui você encontrará todos os materiais, 
+              Bem-vindo ao módulo de <span className="capitalize">{subject.title.replace(/_/g, ' ').toLowerCase()}</span>. Aqui você encontrará todos os materiais, 
               resumos e exercícios estruturados para o seu melhor aproveitamento acadêmico.
             </p>
           </div>

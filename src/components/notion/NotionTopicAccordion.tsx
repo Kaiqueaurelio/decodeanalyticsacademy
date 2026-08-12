@@ -76,10 +76,10 @@ export function NotionTopicAccordion({
              {isExpanded ? '📂' : '📁'}
            </div>
            <span className={cn(
-             "text-sm font-bold tracking-tight transition-colors",
+             "text-sm font-bold tracking-tight transition-colors capitalize",
              isExpanded ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
            )}>
-             {title.replace(/_/g, ' ')}
+             {title.replace(/_/g, ' ').toLowerCase()}
            </span>
         </div>
       </button>
