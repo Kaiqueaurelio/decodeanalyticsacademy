@@ -945,11 +945,6 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
                 ))}
               </div>
               
-              {false && hasMore && (
-                <div ref={adminLoaderRef} className="py-10 flex justify-center">
-                  <div className="h-6 w-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                </div>
-              )}
             </CardContent>
           </Card>
         </div>
