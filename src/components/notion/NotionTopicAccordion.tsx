@@ -79,7 +79,7 @@ export function NotionTopicAccordion({
              "text-sm font-bold tracking-tight transition-colors",
              isExpanded ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
            )}>
-             {title}
+             {title.replace(/_/g, ' ')}
            </span>
         </div>
       </button>
