@@ -95,6 +95,9 @@ export function MarkdownEditor({
     return Number.isFinite(v) && v > 0.4 && v < 2.5 ? v : 1;
   });
   const [autoFit, setAutoFit] = useState<number | null>(null);
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== 'undefined' && window.innerWidth < 768,
+  );
   const [tocCollapsed, setTocCollapsed] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
     return window.innerWidth < 1024 || window.localStorage.getItem(TOC_KEY) === '1';
@@ -111,6 +114,15 @@ export function MarkdownEditor({
   const [viewMode, setViewMode] = useState<'edit' | 'preview' | 'split'>('edit');
   const [mobileTocOpen, setMobileTocOpen] = useState(false);
   const [mobileInspectorOpen, setMobileInspectorOpen] = useState(false);
+
+  // Mobile nÃ£o Ã© uma folha A4 reduzida. Mantemos um layout de escrita fluido,
+  // com caracteres em tamanho de leitura e a Ã¡rea de toque ocupando a tela.
+  useEffect(() => {
+    const syncViewport = () => setIsMobile(window.innerWidth < 768);
+    syncViewport();
+    window.addEventListener('resize', syncViewport);
+    return () => window.removeEventListener('resize', syncViewport);
+  }, []);
 
   const setZoom = useCallback((z: number) => {
     setZoomState(z);
@@ -139,6 +151,10 @@ export function MarkdownEditor({
     const computeFit = () => {
       if (typeof window === 'undefined') return;
       const w = window.innerWidth;
+      if (w < 768) {
+        setAutoFit(null);
+        return;
+      }
       // Em desktop largo sem split, deixa o usuário controlar o zoom
       if (w >= 1024 && viewMode !== 'split') { setAutoFit(null); return; }
       const canvasW = canvasRef.current?.clientWidth ?? w;
@@ -152,7 +168,7 @@ export function MarkdownEditor({
     return () => window.removeEventListener('resize', computeFit);
   }, [viewMode, focusMode]);
 
-  const effectiveZoom = autoFit ?? zoom;
+  const effectiveZoom = isMobile ? 1 : (autoFit ?? zoom);
 
   const editor = useEditor({
     extensions: [
@@ -337,7 +353,11 @@ export function MarkdownEditor({
   }
 
   return (
-    <div className={cn('rounded-lg border border-border bg-card overflow-hidden flex flex-col h-[100dvh] sm:h-auto sm:min-h-[500px]', className)}>
+    <div className={cn(
+      'apostila-markdown-editor rounded-lg border border-border bg-card overflow-hidden flex flex-col',
+      isMobile ? 'h-full min-h-0' : 'h-[100dvh] sm:h-auto sm:min-h-[500px]',
+      className,
+    )}>
       <EditorTopbar
         words={stats.words}
         zoom={zoom}
@@ -507,14 +527,14 @@ export function MarkdownEditor({
                     className="px-2 sm:px-4 py-2 mx-auto"
                     style={{
                       // Em mobile/tablet/split, usa largura escalada para evitar scroll horizontal
-                      width: autoFit !== null ? '100%' : `calc(${794 * effectiveZoom}px + 2rem)`,
+                      width: isMobile || autoFit !== null ? '100%' : `calc(${794 * effectiveZoom}px + 2rem)`,
                       minWidth: '100%',
                     }}
                   >
                     <div
                       className="editor-page-shell mx-auto"
                       style={{
-                        transform: `scale(${effectiveZoom})`,
+                        transform: isMobile ? 'none' : `scale(${effectiveZoom})`,
                         transformOrigin: 'top center',
                       }}
                       onClick={(e) => e.stopPropagation()}

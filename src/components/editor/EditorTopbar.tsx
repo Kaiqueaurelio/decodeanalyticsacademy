@@ -50,7 +50,7 @@ export function EditorTopbar({ words, zoom, setZoom, status = 'idle', onToggleFo
       </div>
 
       <div className="flex items-center gap-1">
-        <div className="flex items-center rounded-md border border-border bg-background">
+        <div className="hidden sm:flex items-center rounded-md border border-border bg-background">
           <Button
             type="button"
             size="icon"
@@ -97,7 +97,7 @@ export function EditorTopbar({ words, zoom, setZoom, status = 'idle', onToggleFo
           type="button"
           size="icon"
           variant="ghost"
-          className="h-6 w-6"
+          className="hidden sm:inline-flex h-6 w-6"
           onClick={() => window.print()}
           title="Imprimir"
         >
