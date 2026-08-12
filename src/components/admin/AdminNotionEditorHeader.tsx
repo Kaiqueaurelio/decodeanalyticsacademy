@@ -9,7 +9,8 @@ import {
   ShieldCheck,
   MoreVertical,
   Check,
-  Menu
+  Menu,
+  ClipboardPaste
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -33,6 +34,7 @@ interface ApostilaHealthBarProps {
   wordCount: number;
   exerciseCount: number;
   materialCount: number;
+  onPasteOpen: () => void;
 }
 
 export function ApostilaHealthBar({
@@ -45,7 +47,8 @@ export function ApostilaHealthBar({
   onOpenPanel,
   wordCount,
   exerciseCount,
-  materialCount
+  materialCount,
+  onPasteOpen
 }: ApostilaHealthBarProps) {
   const timeStr = lastSavedAt ? lastSavedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : null;
 
@@ -107,6 +110,16 @@ export function ApostilaHealthBar({
           >
             <Eye className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">Preview</span>
+          </Button>
+
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={onPasteOpen}
+            className="h-8 text-xs gap-2 rounded-lg hover:bg-accent text-primary font-bold"
+          >
+            <ClipboardPaste className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Colar Inteligente</span>
           </Button>
 
           <Button 
