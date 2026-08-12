@@ -82,8 +82,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const [adminRes, profileRes] = await Promise.all([
         supabase.from('user_roles').select('role').eq('user_id', userId).eq('role', 'admin').maybeSingle(),
-        supabase.from('profiles').select('is_blocked').eq('user_id', userId).maybeSingle(),
+        supabase.from('profiles').select('is_blocked, email, is_admin').eq('user_id', userId).maybeSingle(),
       ]);
+
 
       if ((adminRes.error || profileRes.error) && attempt < 1) {
         return await new Promise<boolean>((resolve) => {
