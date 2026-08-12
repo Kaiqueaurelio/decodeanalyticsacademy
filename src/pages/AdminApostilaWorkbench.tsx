@@ -499,7 +499,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
           "flex-1 min-w-0 bg-background relative flex flex-col h-full overflow-hidden",
           editorExpanded && "fixed inset-0 z-[70] h-[100dvh]"
         )}>
-          <div className="absolute right-3 top-3 z-50">
+          <div className="absolute right-3 top-3 z-50 hidden sm:block">
             <Button
               variant="outline"
               size="sm"
@@ -511,27 +511,27 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
               <span className="hidden sm:inline">{editorExpanded ? 'Sair da expansão' : 'Expandir'}</span>
             </Button>
           </div>
-          <div className="flex-1 overflow-y-auto w-full custom-scrollbar">
-            <div className="max-w-[900px] mx-auto flex flex-col">
-              <div className="relative pt-10 sm:pt-20 pb-20 sm:pb-10 px-4 sm:px-16">
+          <div className="flex flex-1 min-h-0 flex-col overflow-hidden w-full">
+            <div className="w-full max-w-[900px] mx-auto flex flex-col shrink-0">
+              <div className="relative px-3 py-3 sm:pt-20 sm:pb-10 sm:px-16">
                 <div 
                   className="absolute top-0 left-0 right-0 h-48 opacity-10 blur-3xl -z-10"
                   style={{ background: `linear-gradient(to bottom, ${getSubjectColor(category)}, transparent)` }}
                 />
                 
-                <div className="space-y-6">
+                <div className="space-y-3 sm:space-y-6">
 
-                <div className="h-20 w-20 flex items-center justify-center rounded-2xl bg-accent/30 text-4xl group-hover:bg-accent/50 transition-colors cursor-pointer">📚</div>
+                <div className="hidden sm:flex h-20 w-20 items-center justify-center rounded-2xl bg-accent/30 text-4xl group-hover:bg-accent/50 transition-colors cursor-pointer">📚</div>
 
                 <div className="space-y-4">
                   <input
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="Título da Página"
-                    className="w-full bg-transparent border-none text-4xl sm:text-5xl font-black focus:ring-0 placeholder:text-muted-foreground/20 p-0"
+                    className="w-full bg-transparent border-none text-xl sm:text-5xl font-black focus:ring-0 placeholder:text-muted-foreground/20 p-0"
                   />
                   
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 py-4 border-y border-border/10">
+                  <div className="hidden sm:grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 py-4 border-y border-border/10">
                     <div className="flex items-center gap-4 py-1.5">
                       <div className="flex items-center gap-2 w-32 text-muted-foreground/50 text-[10px] font-black uppercase tracking-widest shrink-0">
                         <ListChecks className="h-3.5 w-3.5" />
@@ -579,13 +579,13 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
               </div>
             </div>
 
-            <div className="flex-1 px-4 sm:px-16 pb-32 h-[calc(100vh-160px)] sm:h-auto overflow-y-auto">
+            <div className="flex flex-1 min-h-0 flex-col px-0 sm:px-16 sm:pb-32">
               <MarkdownEditor
                 value={content}
                 onChange={setContent}
                 onSave={doSave}
                 placeholder="Comece a escrever ou digite '/' para comandos..."
-                className="min-h-[500px] border-none shadow-none bg-transparent"
+                className="flex-1 min-h-0 border-none shadow-none bg-transparent"
               />
               </div>
             </div>
@@ -594,7 +594,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
           <Button
             variant="outline"
             size="icon"
-            className={cn("fixed right-6 bottom-6 z-40 h-10 w-10 rounded-full bg-background shadow-lg", rightOpen && "rotate-180")}
+            className={cn("hidden sm:inline-flex fixed right-6 bottom-6 z-40 h-10 w-10 rounded-full bg-background shadow-lg", rightOpen && "rotate-180")}
             onClick={() => setRightOpen(!rightOpen)}
           >
             <PanelRightClose className="h-5 w-5" />
