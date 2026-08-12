@@ -148,7 +148,7 @@ export function NotionSubjectDetail({ subject }: Props) {
         {/* Subject Icon/Emoji Place - Overlapping cover */}
         <div className="absolute -bottom-10 left-8 h-20 w-20 sm:h-24 sm:w-24 bg-card rounded-2xl border-4 border-background shadow-2xl flex items-center justify-center transform group-hover:scale-105 transition-transform duration-300">
            <div 
-            className="text-4xl sm:text-5xl"
+            className="text-4xl sm:text-5xl drop-shadow-sm"
             style={{ color }}
            >
              {subject.title.charAt(0)}
@@ -174,7 +174,7 @@ export function NotionSubjectDetail({ subject }: Props) {
         {/* Callout Section (Notion Style) */}
         <div 
           className="flex items-start gap-4 p-4 rounded-xl border border-border/40 bg-accent/5"
-          style={{ borderLeftColor: color, borderLeftWidth: '4px' }}
+          style={{ borderLeftColor: color, borderLeftWidth: '4px', boxShadow: `inset 4px 0 0 0 ${color}22` }}
         >
           <div className="mt-1 h-8 w-8 rounded-lg flex items-center justify-center bg-card shadow-sm shrink-0">
             <Info className="h-4 w-4" style={{ color }} />
