@@ -55,7 +55,11 @@ export function ApostilaHealthBar({
           variant="ghost" 
           size="icon" 
           className="lg:hidden h-8 w-8 text-muted-foreground mr-1"
-          onClick={() => (window as any).toggleAdminSidebar?.()}
+          onClick={() => {
+            if (typeof (window as any).toggleAdminSidebar === 'function') {
+              (window as any).toggleAdminSidebar();
+            }
+          }}
         >
           <Menu className="h-4 w-4" />
         </Button>
