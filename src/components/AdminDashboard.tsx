@@ -1210,25 +1210,6 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
         </DialogContent>
       </Dialog>
 
-      <AlertDialog open={bulkDeleteOpen} onOpenChange={setBulkDeleteOpen}>
-        <AlertDialogContent className="bg-popover/90 backdrop-blur-2xl border-white/10 rounded-3xl">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Excluir em Lote</AlertDialogTitle>
-            <AlertDialogDescription>
-              Você está prestes a excluir permanentemente {selected.size} apostila(s). Esta ação não pode ser desfeita.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="rounded-xl">Cancelar</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={bulkDelete} 
-              className="bg-destructive hover:bg-destructive/90 text-destructive-foreground rounded-xl"
-            >
-              Excluir Tudo
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
 
       <Dialog open={bulkSemesterOpen} onOpenChange={setBulkSemesterOpen}>
         <DialogContent className="bg-popover/90 backdrop-blur-2xl border-white/10 rounded-3xl">
