@@ -492,9 +492,11 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         )}
 
         {/* Notion Canvas Editor */}
-        <main className="flex-1 min-w-0 bg-background relative overflow-y-auto sm:overflow-visible">
-          <div className="max-w-[900px] mx-auto min-h-full sm:min-h-0 flex flex-col">
-            <div className="relative pt-10 sm:pt-20 pb-10 px-4 sm:px-16">
+        <main className="flex-1 min-w-0 bg-background relative flex flex-col h-full overflow-hidden">
+          <div className="flex-1 overflow-y-auto w-full custom-scrollbar">
+            <div className="max-w-[900px] mx-auto flex flex-col">
+              <div className="relative pt-10 sm:pt-20 pb-20 sm:pb-10 px-4 sm:px-16">
+
               <div 
                 className="absolute top-0 left-0 right-0 h-48 opacity-10 blur-3xl -z-10"
                 style={{ background: `linear-gradient(to bottom, ${getSubjectColor(category)}, transparent)` }}
