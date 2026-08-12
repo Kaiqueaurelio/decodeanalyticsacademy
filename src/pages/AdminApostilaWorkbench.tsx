@@ -27,7 +27,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MarkdownEditor } from '@/components/MarkdownEditor';
-import { AdminNotionEditorHeader } from '@/components/admin/AdminNotionEditorHeader';
+import { ApostilaHealthBar } from '@/components/admin/AdminNotionEditorHeader';
 import { ApostilaVersionHistory } from '@/components/admin/ApostilaVersionHistory';
 import { MaterialsDropZone } from '@/components/admin/MaterialsDropZone';
 import { SortableMaterialsList, type LinkedMaterialItem } from '@/components/admin/SortableMaterialsList';
@@ -41,8 +41,9 @@ import { ensureApostilaExists } from '@/lib/create-placeholder-apostila';
 
 import {
   ArrowLeft, Search, Save, Eye, PenTool, Wand2, Loader2, Menu, FileText,
-  ListChecks, PanelRightClose, ExternalLink, GraduationCap, ImageIcon,
+  ListChecks, PanelRightClose, ExternalLink, GraduationCap, ImageIcon, PanelRightOpen,
 } from 'lucide-react';
+import { getSubjectColor } from '@/lib/subject-colors';
 import { invokeFunction } from '@/lib/invoke-function';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
