@@ -92,9 +92,9 @@ export function EditorRibbon({ editor, onInsertImage, onSave, saveStatus = 'idle
 
 
   return (
-    <div className="word-ribbon overflow-x-auto scrollbar-none bg-card">
+    <div className="word-ribbon bg-card shrink-0">
       {/* Abas */}
-      <div className="word-tabs flex-nowrap min-w-max px-2">
+      <div className="word-tabs flex-nowrap min-w-max px-2 overflow-x-auto scrollbar-none">
         <button type="button" className="word-tab word-file-tab hidden sm:inline-flex" title="Arquivo">Arquivo</button>
         <button type="button" className={cn('word-tab', tab === 'home' && 'active')} onClick={() => setTab('home')}>Página Inicial</button>
         <button type="button" className={cn('word-tab', tab === 'insert' && 'active')} onClick={() => setTab('insert')}>Inserir</button>
@@ -103,7 +103,8 @@ export function EditorRibbon({ editor, onInsertImage, onSave, saveStatus = 'idle
       </div>
 
       {/* Corpo do ribbon */}
-      <div className="word-ribbon-body min-w-max overflow-x-auto scrollbar-none">
+      <div className="word-ribbon-body overflow-x-auto scrollbar-none touch-pan-x">
+        <div className="flex min-w-max">
         {tab === 'home' && (
           <>
             <Group label="Arquivo">
@@ -407,6 +408,7 @@ export function EditorRibbon({ editor, onInsertImage, onSave, saveStatus = 'idle
             </Group>
           </>
         )}
+        </div>
       </div>
     </div>
   );
