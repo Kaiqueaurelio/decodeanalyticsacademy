@@ -19,14 +19,6 @@ import { cn } from '@/lib/utils';
 import { getSubjectColor } from '@/lib/subject-colors';
 import { getApostilaCover } from '@/lib/apostila-covers';
 
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Progress } from '@/components/ui/progress';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { cn } from '@/lib/utils';
-import { getSubjectColor } from '@/lib/subject-colors';
-
 interface AdminNotionGalleryCardProps {
   item: any;
   selected: boolean;
