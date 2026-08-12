@@ -32,7 +32,7 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.70.0',
+    version: '4.71.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
@@ -43,6 +43,16 @@ export function getBuildInfo() {
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: '4.71.0',
+    date: '2026-08-12',
+    title: 'Restauração de Ferramentas Administrativas Pro',
+    changes: [
+      { kind: 'fix', text: 'Restaurada a funcionalidade "Colar Inteligente" e ferramentas de edição avançada no Workbench de apostilas.' },
+      { kind: 'improvement', text: 'Unificação da barra de status administrativa com atalhos para produtividade e colagem estruturada.' },
+      { kind: 'fix', text: 'Corrigida regressão visual no cabeçalho do editor Notion Pro.' },
+    ],
+  },
   {
     version: '4.70.0',
     date: '2026-08-12',
