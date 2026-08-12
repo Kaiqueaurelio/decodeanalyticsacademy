@@ -28,7 +28,7 @@ import { getSubjectColor } from '@/lib/subject-colors';
 
 import {
   ArrowLeft, Search, Save, Eye, PenTool, Wand2, Loader2, Menu, FileText,
-  ListChecks, PanelRightClose, ExternalLink, GraduationCap, ImageIcon, PanelRightOpen,
+  ListChecks, PanelRightClose, ExternalLink, GraduationCap, ImageIcon, PanelRightOpen, X,
 } from 'lucide-react';
 import { invokeFunction } from '@/lib/invoke-function';
 import { toast } from 'sonner';
@@ -178,6 +178,12 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
 
   useEffect(() => { if (id) loadApostila(id); }, [id]);
 
+  // Global toggle for components
+  useEffect(() => {
+    (window as any).toggleAdminSidebar = () => setSidebarOpen(prev => !prev);
+    return () => { delete (window as any).toggleAdminSidebar; };
+  }, []);
+
   // === Autosave ===
   useEffect(() => {
     if (initialLoadRef.current || !id) return;
@@ -307,11 +313,16 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
   };
 
   const SidebarList = (
-    <div className="flex flex-col h-full bg-card border-r border-border">
-      <div className="p-3 border-b border-border space-y-2">
-        <Button size="sm" variant="ghost" className="h-7 px-2 -ml-2 gap-1.5 text-xs" onClick={() => onBack ? onBack() : navigate('/admin')}>
-          <ArrowLeft className="h-3.5 w-3.5" /> Voltar ao Admin
-        </Button>
+    <div className="flex flex-col h-full bg-card border-r border-border shadow-inner">
+      <div className="p-3 border-b border-border space-y-3">
+        <div className="flex items-center justify-between">
+          <Button size="sm" variant="ghost" className="h-7 px-2 -ml-2 gap-1.5 text-xs font-bold text-muted-foreground hover:text-foreground" onClick={() => onBack ? onBack() : navigate('/admin')}>
+            <ArrowLeft className="h-3.5 w-3.5" /> Admin
+          </Button>
+          <Button variant="ghost" size="icon" className="h-7 w-7 lg:hidden" onClick={() => setSidebarOpen(false)}>
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
         <div className="relative">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
           <Input
@@ -327,14 +338,17 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
           {filteredApostilas.map((a) => (
             <button
               key={a.id}
-              onClick={() => navigate(`/admin/apostilas/${a.id}`)}
+              onClick={() => {
+                navigate(`/admin/apostilas/${a.id}`);
+                setSidebarOpen(false);
+              }}
               className={cn(
-                "w-full text-left px-3 py-2 rounded-lg text-xs transition-colors flex items-center justify-between group",
-                id === a.id ? "bg-primary/10 text-primary font-bold" : "hover:bg-accent"
+                "w-full text-left px-3 py-2.5 rounded-lg text-xs transition-all flex items-center justify-between group",
+                id === a.id ? "bg-primary text-primary-foreground font-black shadow-md shadow-primary/20" : "hover:bg-accent/50 text-muted-foreground hover:text-foreground"
               )}
             >
               <span className="truncate flex-1">{a.title}</span>
-              {!a.published && <Badge variant="outline" className="text-[8px] h-3.5 px-1 ml-2 opacity-50">Draft</Badge>}
+              {!a.published && <Badge variant="outline" className={cn("text-[8px] h-3.5 px-1 ml-2", id === a.id ? "border-primary-foreground/40 text-primary-foreground" : "opacity-50")}>Draft</Badge>}
             </button>
           ))}
         </div>
@@ -411,14 +425,27 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         materialCount={linkedMaterials.length}
       />
       
-      <div className="flex flex-1 min-h-0 overflow-hidden">
-        {/* Sidebar Desktop */}
-        <div className="hidden lg:block w-64 shrink-0">{SidebarList}</div>
+      <div className="flex flex-1 min-h-0 overflow-hidden relative">
+        {/* Sidebar Desktop/Mobile */}
+        <div className={cn(
+          "fixed inset-y-0 left-0 z-50 w-64 transform transition-transform duration-300 ease-in-out bg-background lg:relative lg:translate-x-0 lg:block shrink-0",
+          sidebarOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full lg:translate-x-0"
+        )}>
+          {SidebarList}
+        </div>
+
+        {/* Overlay para mobile sidebar */}
+        {sidebarOpen && (
+          <div 
+            className="fixed inset-0 bg-black/50 z-40 lg:hidden backdrop-blur-sm"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
 
         {/* Notion Canvas Editor */}
         <main className="flex-1 min-w-0 bg-background relative overflow-y-auto">
           <div className="max-w-[900px] mx-auto min-h-full flex flex-col">
-            <div className="relative pt-20 pb-10 px-8 sm:px-16">
+            <div className="relative pt-10 sm:pt-20 pb-10 px-4 sm:px-16">
               <div 
                 className="absolute top-0 left-0 right-0 h-48 opacity-10 blur-3xl -z-10"
                 style={{ background: `linear-gradient(to bottom, ${getSubjectColor(category)}, transparent)` }}
@@ -483,7 +510,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
               </div>
             </div>
 
-            <div className="flex-1 px-8 sm:px-16 pb-32">
+            <div className="flex-1 px-4 sm:px-16 pb-32">
               <MarkdownEditor
                 value={content}
                 onChange={setContent}
@@ -504,8 +531,12 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
           </Button>
         </main>
 
-        {/* Right Panel Desktop */}
-        <div className={cn("hidden lg:block w-80 shrink-0 transition-all", !rightOpen && "w-0 opacity-0")}>{RightPanel}</div>
+        {/* Right Panel Desktop/Mobile Drawer */}
+        <Sheet open={rightOpen} onOpenChange={setRightOpen}>
+          <SheetContent side="right" className="p-0 w-full sm:w-[400px] border-l-0 sm:border-l border-border">
+            {RightPanel}
+          </SheetContent>
+        </Sheet>
       </div>
 
       <SmartPasteDialog open={pasteOpen} onOpenChange={setPasteOpen} onApply={handlePasteApply} />

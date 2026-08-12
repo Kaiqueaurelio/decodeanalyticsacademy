@@ -52,6 +52,7 @@ import { useEditorOutline } from '@/components/editor/useEditorOutline';
 import { useActiveHeading } from '@/components/editor/useActiveHeading';
 import { useSyncedScroll } from '@/components/editor/useSyncedScroll';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Eye, Pencil, ListTree, Wand2, Columns2, Video, ImageIcon } from 'lucide-react';
 
 interface Props {
@@ -348,12 +349,11 @@ export function MarkdownEditor({
 
       {/* Toggle Editar / Split / Visualizar como aluno — Mobile Responsive */}
       <div className="flex items-center gap-1 px-2 py-1 border-b border-border bg-muted/40 overflow-x-auto scrollbar-none sticky top-0 z-20">
-
         <button
           type="button"
           onClick={() => setViewMode('edit')}
           className={cn(
-            'inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-md transition-colors shrink-0',
+            'inline-flex items-center gap-1.5 text-[10px] sm:text-[11px] font-bold px-2.5 py-1 rounded-md transition-colors shrink-0',
             viewMode === 'edit'
               ? 'bg-background text-foreground shadow-sm border border-border'
               : 'text-muted-foreground hover:text-foreground',
@@ -362,6 +362,37 @@ export function MarkdownEditor({
         >
           <Pencil className="h-3 w-3" /> Editar
         </button>
+        
+        {/* Mobile-only tools triggers */}
+        <div className="flex sm:hidden items-center gap-1 border-l border-border/40 pl-1 ml-1">
+          <Sheet open={mobileTocOpen} onOpenChange={setMobileTocOpen}>
+            <SheetTrigger asChild>
+              <button className="text-[10px] font-bold px-2 py-1 rounded-md text-muted-foreground hover:bg-accent/10">
+                <ListTree className="h-3 w-3" />
+              </button>
+            </SheetTrigger>
+            <SheetContent side="left" className="p-0 w-[280px]">
+               <EditorTOC editor={editor} collapsed={false} onToggle={() => setMobileTocOpen(false)} />
+            </SheetContent>
+          </Sheet>
+          
+          <Sheet open={mobileInspectorOpen} onOpenChange={setMobileInspectorOpen}>
+            <SheetTrigger asChild>
+              <button className="text-[10px] font-bold px-2 py-1 rounded-md text-muted-foreground hover:bg-accent/10">
+                <Wand2 className="h-3 w-3" />
+              </button>
+            </SheetTrigger>
+            <SheetContent side="right" className="p-0 w-[280px]">
+               <div className="flex flex-col h-full bg-card">
+                  <div className="p-4 border-b border-border font-bold text-xs uppercase tracking-widest">Propriedades</div>
+                  <ScrollArea className="flex-1 p-4">
+                    <EditorInspectorBody editor={editor} stats={stats} sel={useEditorSelection(editor)} />
+                  </ScrollArea>
+               </div>
+            </SheetContent>
+          </Sheet>
+        </div>
+
         <button
           type="button"
           onClick={() => setViewMode('split')}
@@ -379,14 +410,14 @@ export function MarkdownEditor({
           type="button"
           onClick={() => setViewMode('preview')}
           className={cn(
-            'inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-md transition-colors shrink-0',
+            'inline-flex items-center gap-1.5 text-[10px] sm:text-[11px] font-bold px-2.5 py-1 rounded-md transition-colors shrink-0',
             viewMode === 'preview'
               ? 'bg-background text-primary shadow-sm border border-primary/40'
               : 'text-muted-foreground hover:text-foreground',
           )}
           title="Ver como o aluno"
         >
-          <Eye className="h-3 w-3" /> Visualizar como aluno
+          <Eye className="h-3 w-3" /> Visualizar
         </button>
       </div>
 

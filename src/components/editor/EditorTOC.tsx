@@ -31,7 +31,7 @@ export function EditorTOC({ editor, collapsed, onToggle }: Props) {
   }
 
   return (
-    <aside className="hidden md:flex w-56 lg:w-64 shrink-0 flex-col border-r border-border bg-muted/20">
+    <aside className="flex w-full md:w-56 lg:w-64 shrink-0 flex-col border-r border-border bg-muted/20">
       <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-muted/40">
         <div className="flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-wide text-muted-foreground">
           <ListTree className="h-3.5 w-3.5" />
