@@ -1499,6 +1499,21 @@ html {
 
   .editor-page-shell { margin: 4px auto 12px; }
 
+  /* A folha A4 reduzida vira uma miniatura ilegível no celular. */
+  .editor-canvas > div {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+  }
+
+  .editor-page-shell {
+    width: 100% !important;
+    max-width: 100% !important;
+    transform: none !important;
+  }
+
   .editor-canvas {
     background-image: none;
     overflow-y: auto;
@@ -1506,6 +1521,8 @@ html {
 
   /* Sombra mais sutil em mobile */
   .editor-page {
+    width: 100%;
+    max-width: 100%;
     box-shadow:
       0 0 0 1px rgba(0,0,0,0.08),
       0 1px 3px rgba(0,0,0,0.12);
