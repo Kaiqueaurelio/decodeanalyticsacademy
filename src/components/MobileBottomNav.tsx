@@ -43,7 +43,7 @@ export function MobileBottomNav() {
   const { isOpen: open, setOpen } = useSidebar();
   const { unreadCount } = useNotifications();
   const { data: profile } = useUserProfile(user?.id);
-  const isAdmin = profile?.is_admin || user?.email === 'decoanalytics@outlook.com.br';
+  const isAdmin = profile?.is_admin || user?.email === 'decodeanalytics@outlook.com.br' || profile?.ra === 'G802144';
   const isEnemOnly = profile?.content_scope === 'enem_only';
   const mainItems = isEnemOnly ? enemItems : fullItems;
 

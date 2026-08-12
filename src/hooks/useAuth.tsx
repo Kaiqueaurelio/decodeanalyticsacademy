@@ -93,8 +93,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (!mountedRef.current) return false;
 
-      const adminValue = Boolean(adminRes.data);
+      const profileIsAdmin = Boolean((profileRes.data as any)?.is_admin);
+      const adminValue = Boolean(adminRes.data) || profileIsAdmin || user?.email === 'decodeanalytics@outlook.com.br';
       const blockedValue = Boolean((profileRes.data as { is_blocked?: boolean } | null)?.is_blocked);
+
+
 
       setIsAdmin(adminValue);
       setIsBlocked(blockedValue);
