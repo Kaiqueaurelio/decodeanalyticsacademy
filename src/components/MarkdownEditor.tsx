@@ -158,8 +158,8 @@ export function MarkdownEditor({
     extensions: [
       StarterKit.configure({
         heading: { levels: [1, 2, 3] },
-        paragraph: { HTMLAttributes: { class: 'leading-relaxed mobile-friendly-p' } },
-        codeBlock: { HTMLAttributes: { class: 'rounded bg-muted p-3 font-mono text-sm overflow-x-auto' } },
+        paragraph: { HTMLAttributes: { class: 'leading-relaxed text-[15px] mb-4 text-foreground/90' } },
+        codeBlock: { HTMLAttributes: { class: 'rounded-xl bg-[#22272e] p-4 font-mono text-[13px] overflow-x-auto border border-border/40 text-emerald-400 leading-relaxed my-6' } },
 
       }),
       Underline,

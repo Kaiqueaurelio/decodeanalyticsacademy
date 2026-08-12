@@ -32,17 +32,27 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.49.9',
+    version: '4.66.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.49.9-release',
-    commitMessage: 'Release v4.49.9: Student Dashboard Critical Fix & Validation'
+    commit: 'v4.66.0-release',
+    commitMessage: 'Release v4.66.0: Notion Pro Universal UI Standardization'
   };
 }
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: '4.66.0',
+    date: '2026-08-12',
+    title: 'Padronização Universal Notion Pro',
+    changes: [
+      { kind: 'improvement', text: 'Unificada a linguagem visual Notion Pro em toda a experiência de apostilas, incluindo tipografia, blocos de conteúdo e editor administrativo.' },
+      { kind: 'feature', text: 'Redesenho completo de Callouts, Listas, Tabelas e Cabeçalhos para fidelidade 100% ao estilo Notion.' },
+      { kind: 'improvement', text: 'Sincronização WYSIWYG entre o editor do administrador e o renderizador do aluno (v4.66.0).' },
+    ],
+  },
   {
     version: '4.49.9',
     date: '2026-08-11',

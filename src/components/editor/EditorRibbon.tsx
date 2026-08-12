@@ -31,8 +31,8 @@ import { TableGridPicker } from '@/components/editor/TableGridPicker';
 const TEXT_COLORS = [
   { name: 'Automático', value: '' },
   { name: 'Preto', value: '#000000' },
-  { name: 'Azul Word', value: '#2B579A' },
-  { name: 'Vermelho', value: '#C00000' },
+  { name: 'Azul Notion', value: '#2B579A' },
+  { name: 'Vermelho', value: '#DF323B' },
   { name: 'Verde', value: '#107C10' },
   { name: 'Laranja', value: '#D83B01' },
   { name: 'Roxo', value: '#5C2D91' },
@@ -46,8 +46,8 @@ const HIGHLIGHT_COLORS = [
   { name: 'Azul', value: '#0070C0' },
 ];
 
-const FONTS = ['Aptos', 'Calibri', 'Arial', 'Times New Roman', 'Georgia', 'Courier New', 'Verdana'];
-const SIZES = [8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 28, 36, 48, 72];
+const FONTS = ['Inter', 'Space Grotesk', 'Aptos', 'Calibri', 'Arial', 'Times New Roman', 'Georgia', 'Courier New', 'Verdana'];
+const SIZES = [8, 9, 10, 11, 12, 14, 15, 16, 18, 20, 24, 28, 30, 36, 48, 72];
 
 type RibbonTab = 'home' | 'insert' | 'layout' | 'review';
 
@@ -60,8 +60,8 @@ interface Props {
 
 export function EditorRibbon({ editor, onInsertImage, onSave, saveStatus = 'idle' }: Props) {
   const [tab, setTab] = useState<RibbonTab>('home');
-  const [font, setFont] = useState('Aptos');
-  const [size, setSize] = useState('11pt');
+  const [font, setFont] = useState('Inter');
+  const [size, setSize] = useState('15pt');
   const [tableOpen, setTableOpen] = useState(false);
 
   const applyFont = (f: string) => {
@@ -258,10 +258,10 @@ export function EditorRibbon({ editor, onInsertImage, onSave, saveStatus = 'idle
 
             <Group label="Estilos">
               <div className="word-group-content" style={{ gap: 4 }}>
-                <StyleChip label="Normal" preview="11pt" onClick={() => editor.chain().focus().setParagraph().run()} active={editor.isActive('paragraph')} />
-                <StyleChip label="Título 1" preview="20pt" blue onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} active={editor.isActive('heading', { level: 1 })} />
-                <StyleChip label="Título 2" preview="16pt" blue onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} active={editor.isActive('heading', { level: 2 })} />
-                <StyleChip label="Título 3" preview="13pt" blue onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} active={editor.isActive('heading', { level: 3 })} />
+                <StyleChip label="Normal" preview="15pt" onClick={() => editor.chain().focus().setParagraph().run()} active={editor.isActive('paragraph')} />
+                <StyleChip label="Título 1" preview="30pt" blue onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} active={editor.isActive('heading', { level: 1 })} />
+                <StyleChip label="Título 2" preview="24pt" blue onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} active={editor.isActive('heading', { level: 2 })} />
+                <StyleChip label="Título 3" preview="18pt" blue onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} active={editor.isActive('heading', { level: 3 })} />
               </div>
             </Group>
           </>

@@ -711,23 +711,21 @@ function AudioBlock({ label, url }: { label: string; url: string }) {
 
 function CalloutBlock({ kind, title, content }: { kind: 'info' | 'tip' | 'warning'; title: string; content: string }) {
   const Icon = kind === 'tip' ? Lightbulb : kind === 'warning' ? AlertTriangle : Info;
-  const tone =
-    kind === 'warning'
-      ? 'border-l-destructive bg-destructive/5 text-destructive'
+  const colors = 
+    kind === 'warning' 
+      ? { bg: 'bg-destructive/5', border: 'border-destructive/40', text: 'text-destructive', icon: 'text-destructive' }
       : kind === 'tip'
-      ? 'border-l-accent bg-accent/10 text-accent-foreground'
-      : 'border-l-primary bg-primary/5 text-foreground/90';
-  const labelTone =
-    kind === 'warning' ? 'text-destructive' : kind === 'tip' ? 'text-accent-foreground' : 'text-primary';
+      ? { bg: 'bg-emerald-500/5', border: 'border-emerald-500/40', text: 'text-emerald-500', icon: 'text-emerald-500' }
+      : { bg: 'bg-primary/5', border: 'border-primary/40', text: 'text-foreground', icon: 'text-primary' };
 
   return (
-    <aside className={`my-5 rounded-r-lg border-l-4 ${tone} px-4 py-3 flex gap-3`}>
-      <Icon className={`h-4 w-4 mt-0.5 shrink-0 ${labelTone}`} />
-      <div className="flex-1 min-w-0">
-        <div className={`font-mono-label text-[10px] uppercase tracking-wider mb-1 ${labelTone}`}>
-          {title}
-        </div>
-        <p className="text-[14.5px] leading-[1.65] text-foreground/90 m-0" dangerouslySetInnerHTML={renderInline(content)} />
+    <aside className={cn("my-6 p-4 rounded-xl border flex gap-4 transition-all duration-300 hover:shadow-sm", colors.bg, colors.border)}>
+      <div className={cn("mt-0.5 h-8 w-8 rounded-lg flex items-center justify-center bg-card shadow-sm shrink-0", colors.border, "border-[0.5px]")}>
+        <Icon className={cn("h-4 w-4", colors.icon)} />
+      </div>
+      <div className="space-y-1 flex-1 min-w-0">
+        <p className={cn("text-[10px] font-black uppercase tracking-[0.2em]", colors.text)}>{title}</p>
+        <p className="text-[14px] leading-relaxed text-foreground/80 m-0" dangerouslySetInnerHTML={renderInline(content)} />
       </div>
     </aside>
   );
@@ -736,7 +734,7 @@ function CalloutBlock({ kind, title, content }: { kind: 'info' | 'tip' | 'warnin
 function QuoteBlock({ content }: { content: string }) {
   return (
     <blockquote
-      className="my-6 pl-5 border-l-[3px] border-primary/50 italic text-foreground/80 text-[15px] leading-[1.7]"
+      className="my-8 pl-6 border-l-4 border-primary/20 italic text-foreground/70 text-[16px] leading-relaxed font-medium"
       dangerouslySetInnerHTML={renderInline(content)}
     />
   );
@@ -745,10 +743,10 @@ function QuoteBlock({ content }: { content: string }) {
 function ListBlock({ items, ordered }: { items: string[]; ordered: boolean }) {
   if (ordered) {
     return (
-      <ol className="my-4 ml-1 space-y-1.5 list-none counter-reset-decode">
+      <ol className="my-6 ml-2 space-y-3 list-none counter-reset-decode">
         {items.map((it, idx) => (
-          <li key={idx} className="pl-8 relative text-[15.5px] sm:text-[16px] leading-[1.65] text-foreground/90">
-            <span className="absolute left-0 top-[0.15em] w-5 h-5 rounded-full bg-primary/12 text-primary font-mono-label text-[10px] flex items-center justify-center">
+          <li key={idx} className="pl-10 relative text-[15px] leading-relaxed text-foreground/90 group">
+            <span className="absolute left-0 top-[0.1em] w-7 h-7 rounded-lg bg-accent/5 border border-border/40 text-muted-foreground font-display font-bold text-[11px] flex items-center justify-center group-hover:bg-primary/5 group-hover:text-primary transition-colors">
               {idx + 1}
             </span>
             <span dangerouslySetInnerHTML={renderInline(it)} />
@@ -758,10 +756,10 @@ function ListBlock({ items, ordered }: { items: string[]; ordered: boolean }) {
     );
   }
   return (
-    <ul className="my-4 ml-1 space-y-1.5">
+    <ul className="my-6 ml-2 space-y-3">
       {items.map((it, idx) => (
-        <li key={idx} className="pl-5 relative text-[15.5px] sm:text-[16px] leading-[1.65] text-foreground/90">
-          <span className="absolute left-0 top-[0.7em] w-1.5 h-1.5 rounded-full bg-primary" />
+        <li key={idx} className="pl-8 relative text-[15px] leading-relaxed text-foreground/90 group">
+          <span className="absolute left-1 top-[0.65em] w-2 h-2 rounded-full bg-primary/30 group-hover:bg-primary transition-colors" />
           <span dangerouslySetInnerHTML={renderInline(it)} />
         </li>
       ))}
@@ -771,14 +769,14 @@ function ListBlock({ items, ordered }: { items: string[]; ordered: boolean }) {
 
 function TableBlock({ header, rows }: { header: string[]; rows: string[][] }) {
   return (
-    <div className="my-6 overflow-x-auto rounded-lg border border-border/50">
-      <table className="w-full text-[13px] border-collapse">
+    <div className="my-8 overflow-x-auto rounded-xl border border-border/40 bg-card/30 shadow-sm">
+      <table className="w-full text-[14px] border-collapse">
         <thead>
-          <tr className="bg-muted/60">
+          <tr className="bg-accent/5">
             {header.map((h, i) => (
               <th
                 key={i}
-                className="text-left px-3 py-2 font-semibold text-foreground/90 border-b border-border/50"
+                className="text-left px-4 py-3 font-bold text-[10px] uppercase tracking-[0.2em] text-muted-foreground border-b border-border/40"
                 dangerouslySetInnerHTML={renderInline(h)}
               />
             ))}
@@ -786,11 +784,11 @@ function TableBlock({ header, rows }: { header: string[]; rows: string[][] }) {
         </thead>
         <tbody>
           {rows.map((row, ri) => (
-            <tr key={ri} className={ri % 2 === 0 ? 'bg-background' : 'bg-muted/20'}>
+            <tr key={ri} className="hover:bg-accent/5 transition-colors">
               {row.map((cell, ci) => (
                 <td
                   key={ci}
-                  className="px-3 py-2 text-foreground/80 border-b border-border/30 align-top"
+                  className="px-4 py-3 text-foreground/80 border-b border-border/20 align-top leading-relaxed"
                   dangerouslySetInnerHTML={renderInline(cell)}
                 />
               ))}
@@ -819,24 +817,31 @@ function slugify(text: string): string {
 function HeadingBlock({ level, content, id, active }: { level: number; content: string; id?: string; active?: boolean }) {
   const text = cleanInlineText(content);
   const activeCls = active ? 'apostila-heading-active' : '';
-  if (level <= 2) {
+  if (level === 1) {
     return (
-      <h3 id={id} data-active={active || undefined} className={cn('font-display text-[20px] sm:text-[22px] font-semibold mt-10 mb-3 text-foreground tracking-tight leading-[1.3] scroll-mt-24', activeCls)}>
+      <h1 id={id} data-active={active || undefined} className={cn('font-display text-4xl sm:text-5xl font-black mt-12 mb-6 text-foreground tracking-tighter leading-tight scroll-mt-24', activeCls)}>
         {text}
-      </h3>
+      </h1>
+    );
+  }
+  if (level === 2) {
+    return (
+      <h2 id={id} data-active={active || undefined} className={cn('font-display text-2xl sm:text-3xl font-black mt-10 mb-4 text-foreground tracking-tighter leading-tight scroll-mt-24 border-b border-border/10 pb-2', activeCls)}>
+        {text}
+      </h2>
     );
   }
   if (level === 3) {
     return (
-      <h4 id={id} data-active={active || undefined} className={cn('font-display text-[16px] sm:text-[17px] font-semibold mt-7 mb-2.5 text-foreground/95 tracking-tight leading-snug scroll-mt-24', activeCls)}>
+      <h3 id={id} data-active={active || undefined} className={cn('font-display text-xl sm:text-2xl font-bold mt-8 mb-3 text-foreground tracking-tight leading-snug scroll-mt-24', activeCls)}>
         {text}
-      </h4>
+      </h3>
     );
   }
   return (
-    <h5 id={id} data-active={active || undefined} className={cn('font-mono-label text-[12px] font-semibold mt-6 mb-2 text-primary/90 uppercase tracking-[0.12em] scroll-mt-24', activeCls)}>
+    <h4 id={id} data-active={active || undefined} className={cn('font-display text-[10px] font-black mt-6 mb-2 text-primary uppercase tracking-[0.2em] scroll-mt-24', activeCls)}>
       {text}
-    </h5>
+    </h4>
   );
 }
 
