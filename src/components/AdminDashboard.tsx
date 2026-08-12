@@ -105,7 +105,7 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
   const adminLoaderRef = useRef<HTMLDivElement>(null);
   // Pasta aberta no grid por categoria
   const [openCategory, setOpenCategory] = useState<string | null>(null);
-  const totalEngagement = useMemo(() => engagement.reduce((acc, curr) => acc + curr.apostilas + curr.exercises, 0), [engagement]);
+
 
 
   // Seleção em lote
