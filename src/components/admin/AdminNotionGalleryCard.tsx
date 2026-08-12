@@ -70,14 +70,6 @@ export function AdminNotionGalleryCard({
           />
           <FolderOpen className={cn("h-8 w-8 relative z-10 transition-transform duration-500 group-hover:scale-110", isPlaceholder ? "text-muted-foreground/20" : "text-[#EAB308]/90")} />
           
-          {/* Tags estilo Notion no topo da imagem */}
-          <div className="absolute top-2.5 right-2.5 flex flex-col items-end gap-1.5 pointer-events-none">
-             <Badge className="bg-[#27272A]/80 backdrop-blur-md text-foreground border border-white/10 text-[9px] font-bold px-1.5 py-0 rounded-md w-fit shadow-sm">
-                1 APOSTILA
-             </Badge>
-          </div>
-
-
           {/* Checkbox de Seleção */}
           <div className="absolute top-3 left-3 z-10">
             <Checkbox 
@@ -86,55 +78,45 @@ export function AdminNotionGalleryCard({
               className="h-4 w-4 bg-background/80 backdrop-blur-sm border-white/20 data-[state=checked]:bg-primary"
             />
           </div>
-
-          {/* Ações Rápidas */}
-          <div className="absolute top-3 right-3 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-            <Button size="icon" variant="secondary" className="h-7 w-7 rounded-lg bg-background/80 backdrop-blur-sm" onClick={() => onEdit(item)}>
-              <Edit className="h-3.5 w-3.5" />
-            </Button>
-            {!isPlaceholder && (
-              <Button size="icon" variant="destructive" className="h-7 w-7 rounded-lg" onClick={() => onDelete(item)}>
-                <Trash2 className="h-3.5 w-3.5" />
-              </Button>
-            )}
-          </div>
         </div>
 
         {/* Notion Card Content - Agora Direita */}
-        <div className="flex-1 p-4 space-y-2 flex flex-col justify-center min-w-0">
+        <div className="flex-1 p-4 space-y-1.5 flex flex-col justify-center min-w-0 pr-10 relative">
           <div className="flex items-center justify-between gap-2 min-h-[24px]">
             <h3 className="text-[13px] font-bold leading-tight line-clamp-1 group-hover:text-primary transition-colors">
               {item.title.replace(/^\[GRADE\]\s*/i, '').replace(/_/g, ' ')}
             </h3>
-            <ChevronRight className="h-4 w-4 text-muted-foreground/40 shrink-0" />
+            <div className="flex items-center gap-1">
+               <Badge className="bg-[#27272A]/80 text-foreground border border-white/10 text-[8px] font-bold px-1.5 py-0 rounded-md shrink-0">
+                  1 APOSTILA
+               </Badge>
+               <ChevronRight className="h-4 w-4 text-muted-foreground/40 shrink-0" />
+            </div>
           </div>
 
           {/* Metadata/Properties Grid estilo Notion */}
-          <div className="grid grid-cols-1 gap-y-1.5 py-1 border-t border-border/40">
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-[10px] text-muted-foreground/60">Status</span>
+          <div className="grid grid-cols-1 gap-y-1 py-1 border-t border-white/5">
+            <div className="flex items-center justify-start gap-3 text-[10px]">
               <span className={cn(
-                "text-[10px] font-bold",
+                "font-bold",
                 item.published ? "text-emerald-500" : "text-amber-500"
               )}>
                 {item.published ? '1 publicada' : '0 publicadas'}
               </span>
-            </div>
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-[10px] text-muted-foreground/60">Exercícios</span>
-              <span className="text-[10px] font-bold">0 exercícios</span>
+              <span className="text-muted-foreground/40">·</span>
+              <span className="font-bold text-muted-foreground/60">0 exercícios</span>
             </div>
           </div>
 
 
           {!isPlaceholder ? (
-            <div className="flex items-center justify-between gap-2 pt-2 border-t border-border/40">
+            <div className="flex items-center gap-2 pt-1.5 border-t border-white/5">
               <Select 
                 value={item.status || (item.published ? 'liberada' : 'bloqueada')} 
                 onValueChange={(v) => onStatusChange(item, v as any)}
                 disabled={busyId === item.id}
               >
-                <SelectTrigger className="h-7 w-full bg-accent/5 border-border/40 rounded-lg text-[9px] font-black uppercase tracking-wider">
+                <SelectTrigger className="h-6 w-32 bg-white/5 border-white/5 rounded-lg text-[9px] font-black uppercase tracking-wider">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -146,14 +128,26 @@ export function AdminNotionGalleryCard({
             </div>
           ) : (
             <Button 
-              className="w-full h-9 rounded-xl text-[11px] font-black gap-2 gradient-primary text-primary-foreground shadow-lg shadow-primary/10"
+              className="w-full h-8 rounded-lg text-[10px] font-black gap-2 gradient-primary text-primary-foreground mt-1"
               onClick={() => onEdit(item)}
               disabled={busyId === item.id}
             >
-              {busyId === item.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
-              INICIAR AGORA
+              {busyId === item.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Plus className="h-3 w-3" />}
+              INICIAR
             </Button>
           )}
+
+          {/* Ações Rápidas Flutuantes */}
+          <div className="absolute top-1/2 -translate-y-1/2 right-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <Button size="icon" variant="ghost" className="h-7 w-7 rounded-lg hover:bg-white/10" onClick={() => onEdit(item)}>
+              <Edit className="h-3.5 w-3.5 text-muted-foreground" />
+            </Button>
+            {!isPlaceholder && (
+              <Button size="icon" variant="ghost" className="h-7 w-7 rounded-lg hover:bg-destructive/20 hover:text-destructive" onClick={() => onDelete(item)}>
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
+            )}
+          </div>
         </div>
       </div>
     </motion.div>
