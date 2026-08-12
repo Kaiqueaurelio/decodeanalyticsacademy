@@ -1734,6 +1734,9 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
               />
             )}
 
+            {/* USERS */}
+            {tab === 'users' && <AdminUserManagement />}
+
             {/* APOSTILAS */}
             {tab === 'cc-apostilas' && (
               <div className="flex-1 overflow-y-auto">
@@ -1754,7 +1757,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                 />
               </div>
             )}
-                {tab === 'apostilas' && (
+            {tab === 'apostilas' && (
               <div className="space-y-6">
                 {/* Import Card */}
                 <Card className="overflow-hidden bg-card/40 backdrop-blur-md border-primary/20 shadow-xl" data-import-card>
