@@ -90,6 +90,13 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
   const dirtyRef = useRef(false);
   const initialLoadRef = useRef(true);
 
+  // Filter logic for sidebar
+  const filteredApostilas = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return apostilas;
+    return apostilas.filter(a => a.title.toLowerCase().includes(q) || a.category.toLowerCase().includes(q));
+  }, [apostilas, search]);
+
   // === Carregar lista lateral ===
   useEffect(() => {
     (async () => {
@@ -317,7 +324,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       </div>
       <ScrollArea className="flex-1">
         <div className="p-2 space-y-1">
-          {filtered.map((a) => (
+          {filteredApostilas.map((a) => (
             <button
               key={a.id}
               onClick={() => navigate(`/admin/apostilas/${a.id}`)}
@@ -335,6 +342,10 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     </div>
   );
 
+  const baseSortOrder = linkedMaterials.length > 0
+    ? Math.max(...linkedMaterials.map((m) => m.sort_order)) + 1
+    : 0;
+
   const RightPanel = (
     <div className="flex flex-col h-full bg-card border-l border-border">
       <Tabs value={rightTab} onValueChange={(v: any) => setRightTab(v)} className="flex-1 flex flex-col h-full overflow-hidden">
@@ -347,11 +358,15 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         </div>
         <ScrollArea className="flex-1">
           <TabsContent value="materials" className="m-0 p-4 space-y-4">
-            <MaterialsDropZone apostilaId={id as string} onUploaded={reloadMaterials} />
-            <SortableMaterialsList items={linkedMaterials} onRemove={async (lid) => {
-              await supabase.from('apostila_materials').delete().eq('id', lid);
-              setLinkedMaterials(prev => prev.filter(m => m.id !== lid));
-            }} />
+            <MaterialsDropZone apostilaId={id as string} baseSortOrder={baseSortOrder} onUploaded={reloadMaterials} />
+            <SortableMaterialsList 
+              items={linkedMaterials} 
+              onReorder={setLinkedMaterials}
+              onRemove={async (lid) => {
+                await supabase.from('apostila_materials').delete().eq('id', lid);
+                setLinkedMaterials(prev => prev.filter(m => m.id !== lid));
+              }} 
+            />
           </TabsContent>
           <TabsContent value="preview" className="m-0 bg-background/50">
             <div className="p-6">
@@ -369,11 +384,6 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       </Tabs>
     </div>
   );
-
-  const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    return apostilas.filter(a => a.title.toLowerCase().includes(q) || a.category.toLowerCase().includes(q));
-  }, [apostilas, search]);
 
   const stats = useMemo(() => {
     const words = content.trim() ? content.trim().split(/\s+/).length : 0;
