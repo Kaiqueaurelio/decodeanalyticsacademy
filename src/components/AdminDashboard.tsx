@@ -1002,10 +1002,6 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
 
       {/* Confirm bulk delete */}
       <AlertDialog open={bulkDeleteOpen} onOpenChange={setBulkDeleteOpen}>
