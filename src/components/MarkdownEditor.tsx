@@ -53,7 +53,7 @@ import { useActiveHeading } from '@/components/editor/useActiveHeading';
 import { useSyncedScroll } from '@/components/editor/useSyncedScroll';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Eye, Pencil, ListTree, Wand2, Columns2, Video, ImageIcon } from 'lucide-react';
+import { Eye, Pencil, ListTree, Wand2, Columns2, Video, ImageIcon, Bold, Heading2, List, Redo2, Save, Undo2 } from 'lucide-react';
 
 interface Props {
   value: string;
@@ -441,8 +441,56 @@ export function MarkdownEditor({
         </button>
       </div>
 
+      {/* Barra curta para toque: no celular, as ações de escrita não ficam escondidas no ribbon. */}
+      {viewMode === 'edit' && (
+        <div className="sm:hidden flex items-center gap-1 overflow-x-auto border-b border-border bg-background px-2 py-1.5 shadow-sm">
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().undo().run()}
+            className="mobile-editor-action"
+            title="Desfazer"
+            aria-label="Desfazer"
+          ><Undo2 /></button>
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().redo().run()}
+            className="mobile-editor-action"
+            title="Refazer"
+            aria-label="Refazer"
+          ><Redo2 /></button>
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().toggleBold().run()}
+            className={cn('mobile-editor-action font-bold', editor.isActive('bold') && 'is-active')}
+            title="Negrito"
+            aria-label="Negrito"
+          ><Bold /></button>
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+            className={cn('mobile-editor-action', editor.isActive('heading', { level: 2 }) && 'is-active')}
+            title="Título de seção"
+            aria-label="Título de seção"
+          ><Heading2 /></button>
+          <button
+            type="button"
+            onClick={() => editor.chain().focus().toggleBulletList().run()}
+            className={cn('mobile-editor-action', editor.isActive('bulletList') && 'is-active')}
+            title="Lista"
+            aria-label="Lista"
+          ><List /></button>
+          <button
+            type="button"
+            onClick={() => { onSave?.(); setStatus('saved'); }}
+            className="mobile-editor-action ml-auto text-primary"
+            title="Salvar"
+            aria-label="Salvar alterações"
+          ><Save /></button>
+        </div>
+      )}
+
       {(viewMode === 'edit' || viewMode === 'split') && (!focusMode || window.innerWidth >= 768) && (
-        <div className="flex flex-col border-b border-border">
+        <div className="hidden sm:flex flex-col border-b border-border">
           <EditorRibbon editor={editor} onInsertImage={insertImage} onSave={onSave} saveStatus={status} />
           <div className="flex items-center gap-4 px-4 py-1.5 bg-primary/5 border-t border-primary/10 overflow-x-auto scrollbar-none">
             <span className="text-[10px] font-bold text-primary uppercase tracking-widest flex items-center gap-1">

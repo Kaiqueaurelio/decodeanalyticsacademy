@@ -1499,6 +1499,28 @@ html {
 
   .editor-page-shell { margin: 4px auto 12px; }
 
+  .mobile-editor-action {
+    display: inline-flex;
+    width: 2.5rem;
+    height: 2.5rem;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid transparent;
+    border-radius: 0.5rem;
+    color: hsl(var(--muted-foreground));
+    background: transparent;
+    touch-action: manipulation;
+  }
+
+  .mobile-editor-action svg { width: 1rem; height: 1rem; }
+  .mobile-editor-action:active,
+  .mobile-editor-action.is-active {
+    color: hsl(var(--primary));
+    background: hsl(var(--primary) / 0.12);
+    border-color: hsl(var(--primary) / 0.3);
+  }
+
   /* A folha A4 reduzida vira uma miniatura ilegível no celular. */
   .editor-canvas > div {
     width: 100% !important;
