@@ -985,7 +985,7 @@ export function ApostilaContentRenderer({ content, activeHeadingId }: Props) {
   }, [blocks]);
 
   return (
-    <article className="apostila-prose max-w-[68ch] mx-auto w-full min-w-0 px-1 sm:px-0 text-[15.5px] sm:text-[16px] leading-[1.7] tracking-normal text-foreground/95">
+    <article className="apostila-prose max-w-[72ch] mx-auto w-full min-w-0 px-1 sm:px-0 text-[16px] sm:text-[17.5px] leading-[1.8] tracking-normal text-foreground/95">
       <ApostilaTOC items={tocItems} activeId={activeHeadingId} />
       {blocks.map((b, i) => {
         switch (b.type) {
@@ -1011,7 +1011,7 @@ export function ApostilaContentRenderer({ content, activeHeadingId }: Props) {
           case 'divider':
             return (
               <div key={i} className="my-8 flex items-center justify-center" aria-hidden>
-                <span className="h-px w-24 bg-border/60" />
+                <span className="h-px w-32 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
               </div>
             );
           case 'paragraph':
@@ -1019,7 +1019,7 @@ export function ApostilaContentRenderer({ content, activeHeadingId }: Props) {
             return (
               <p
                 key={i}
-                className="mb-5 last:mb-0 text-foreground/90"
+                className="mb-6 last:mb-0 text-foreground/95 font-medium tracking-tight"
                 dangerouslySetInnerHTML={renderInline(b.content)}
               />
             );
