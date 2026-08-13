@@ -12,8 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MarkdownEditor } from '@/components/MarkdownEditor';
-import { ApostilaHealthBar } from '@/components/admin/ApostilaHealthBar';
-
+import { ApostilaHealthBar } from '@/components/admin/AdminNotionEditorHeader';
 import { ApostilaVersionHistory } from '@/components/admin/ApostilaVersionHistory';
 import { MaterialsDropZone } from '@/components/admin/MaterialsDropZone';
 import { SortableMaterialsList, type LinkedMaterialItem } from '@/components/admin/SortableMaterialsList';
@@ -245,10 +244,10 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
   useEffect(() => { if (id) loadApostila(id); }, [id]);
 
   useEffect(() => {
-    const handleKeyAdd = (e: any) => {
+    const handleKeyAdd = () => {
       // Tenta sugerir um número baseado no conteúdo atual
-      const contentToAnalyze = content || '';
-      const matches = contentToAnalyze.match(/^#\s+(\d+(?:\.\d+)*)/gm);
+      // Regex para encontrar headings H1 style que começam com números (ex: "# 1.1 Introdução")
+      const matches = content.match(/^#\s+(\d+(?:\.\d+)*)/gm);
       let suggested = '';
       if (matches && matches.length > 0) {
         const lastHeading = matches[matches.length - 1];
@@ -578,6 +577,32 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
 
   return (
     <div className="flex flex-col h-screen bg-background overflow-hidden relative">
+      <ApostilaHealthBar
+        title={title}
+        published={published}
+        saving={saving}
+        lastSavedAt={lastSavedAt}
+        onSave={() => doSave(true)}
+        onTogglePublish={togglePublish}
+        onPreview={() => { setRightTab('preview'); setRightOpen(true); }}
+        onOpenPanel={() => { setRightTab('materials'); setRightOpen(true); }}
+        wordCount={content.trim() ? content.trim().split(/\s+/).length : 0}
+        exerciseCount={exerciseCount}
+        materialCount={linkedMaterials.length}
+        onPasteOpen={() => setPasteOpen(true)}
+        onAddPage={() => {
+          // Tenta sugerir um número baseado no conteúdo atual
+          const matches = content.match(/#\s+(\d+\.?\d*)/g);
+          if (matches) {
+            const lastNum = parseFloat(matches[matches.length - 1].replace('# ', ''));
+            if (!isNaN(lastNum)) {
+              setSuggestedSectionTitle(`${(lastNum + 0.1).toFixed(1)} `);
+            }
+          }
+          setAddSectionOpen(true);
+        }}
+      />
+      
       <div className="flex flex-1 min-h-0 overflow-hidden relative">
 
 
@@ -629,28 +654,10 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
             </Button>
           </div>
           <div className="flex-1 flex flex-col min-h-0 relative bg-background overflow-hidden">
-            <ApostilaHealthBar
-              title={title}
-              content={content}
-              published={published}
-              saving={saving}
-              lastSavedAt={lastSavedAt}
-              onSave={() => doSave(true)}
-              onTogglePublish={togglePublish}
-              onPreview={() => window.open(`/apostilas/${id}`, '_blank')}
-              onOpenPanel={() => setRightOpen(!rightOpen)}
-              exerciseCount={exerciseCount}
-              materialCount={linkedMaterials.length}
-              onPasteOpen={() => setPasteOpen(true)}
-              onAddPage={() => {
-                const event = new CustomEvent('open-quick-add-section');
-                window.dispatchEvent(event);
-              }}
-            />
+
 
 
             <div ref={scrollContainerRef} className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar group/workbench scroll-smooth pb-20">
-
             {/* Indicador de Rolagem Lateral (Desktop e Mobile) */}
             <div className="fixed right-1 sm:right-2 top-24 bottom-24 w-1.5 sm:w-2.5 z-[100] pointer-events-none opacity-80 sm:opacity-100">
               <div className="w-full h-full bg-primary/10 rounded-full overflow-hidden border border-primary/20 backdrop-blur-[2px]">

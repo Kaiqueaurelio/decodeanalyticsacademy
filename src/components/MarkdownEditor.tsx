@@ -53,25 +53,7 @@ import { useActiveHeading } from '@/components/editor/useActiveHeading';
 import { useSyncedScroll } from '@/components/editor/useSyncedScroll';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Button } from '@/components/ui/button';
-import { 
-  Eye, 
-  Pencil, 
-  ListTree, 
-  Wand2, 
-  Columns2, 
-  Video, 
-  ImageIcon, 
-  Bold, 
-  Heading2, 
-  List, 
-  Redo2, 
-  Save, 
-  Undo2,
-  Check,
-  Cloud,
-  Printer
-} from 'lucide-react';
+import { Eye, Pencil, ListTree, Wand2, Columns2, Video, ImageIcon, Bold, Heading2, List, Redo2, Save, Undo2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Props {
@@ -337,8 +319,8 @@ export function MarkdownEditor({
       if (key === 's') {
         e.preventDefault();
         onSave?.();
+        setStatus('saved');
       } else if (key === 'p' || key === 'eye') {
-
         e.preventDefault();
         setViewMode(viewMode === 'preview' ? 'edit' : 'preview');
       } else if (key === 'k') {
@@ -399,67 +381,21 @@ export function MarkdownEditor({
       isMobile ? 'h-auto min-h-[600px]' : 'h-[100dvh] sm:h-auto sm:min-h-[500px]',
       className,
     )}>
-      <div className="flex flex-col sticky top-0 z-[100] border-b border-border shadow-sm hidden">
-        {/* Hibridized Integrated Toolbar - Hidden to use global HealthBar */}
-        <div className="flex items-center justify-between px-3 py-1.5 bg-muted/90 backdrop-blur-md border-b border-border/40">
+      <EditorRibbon
+        editor={editor}
+        onInsertImage={insertImage}
+        onSave={onSave}
+        saveStatus={status}
+      />
 
-          <div className="flex items-center gap-3 overflow-hidden">
-            <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground whitespace-nowrap mr-2 border-r border-border/40 pr-3">
-              <span className="font-bold text-foreground">DECODE ACADEMY</span>
-              <span className="text-muted-foreground/30">/</span>
-              <span className="truncate max-w-[120px]">Edição de Apostila</span>
-            </div>
-            
-            <div className="flex items-center gap-2">
-              {status === 'saved' ? (
-                <span className="flex items-center gap-1.5 text-[10px] text-emerald-500 font-bold">
-                  <Check className="h-3 w-3" /> Salvo
-                </span>
-              ) : (
-                <span className="flex items-center gap-1.5 text-[10px] text-amber-500 animate-pulse">
-                  <Cloud className="h-3 w-3" /> {status === 'unsaved' ? 'Não salvo' : 'Sincronizando...'}
-                </span>
-              )}
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <span className="hidden sm:inline text-[10px] text-muted-foreground px-2 py-0.5 rounded-full bg-background/50 border border-border/40">
-              {stats.words.toLocaleString('pt-BR')} palavras
-            </span>
-            
-            <div className="h-4 w-[1px] bg-border/40" />
-
-            <div className="flex items-center gap-1">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7 rounded-md"
-                onClick={onSave}
-                title="Salvar agora (Ctrl+S)"
-              >
-                <Save className="h-3.5 w-3.5 text-emerald-600" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7 rounded-md"
-                onClick={() => window.print()}
-                title="Imprimir (Ctrl+P)"
-              >
-                <Printer className="h-3.5 w-3.5" />
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        <EditorRibbon
-          editor={editor}
-          onInsertImage={insertImage}
-          onSave={onSave}
-          saveStatus={status}
-        />
-      </div>
+      <EditorTopbar
+        words={stats.words}
+        zoom={zoom}
+        setZoom={setZoom}
+        status={status}
+        focusMode={focusMode}
+        onToggleFocus={() => setFocusMode((f) => !f)}
+      />
 
       {/* Toggle Editar / Split / Visualizar como aluno — Mobile Responsive */}
       <div className="flex items-center gap-1 px-2 py-1 border-b border-border bg-muted/40 overflow-x-auto scrollbar-none sticky top-0 z-20">

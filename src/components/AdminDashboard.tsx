@@ -968,13 +968,12 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
                         </span>
                       </button>
                       
-                      <div className="flex items-center gap-1 shrink-0 relative z-10">
+                      <div className="flex items-center gap-1 shrink-0">
                         <Button
                           size="icon"
                           variant="ghost"
-                          className="h-8 w-8 rounded-lg text-emerald-500 hover:bg-emerald-500/10 cursor-pointer pointer-events-auto"
+                          className="h-8 w-8 rounded-lg text-emerald-500 hover:bg-emerald-500/10 opacity-100 transition-opacity"
                           onClick={(e) => {
-                            e.preventDefault();
                             e.stopPropagation();
                             setQuickCreateCategory(folder.name);
                             setQuickCreateSemester(folder.semester || null);

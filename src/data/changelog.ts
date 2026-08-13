@@ -32,40 +32,17 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.94.0',
+    version: '4.91.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.94.0-release',
-    commitMessage: 'Release v4.94.0: Restore Unified HealthBar and Sticky Ribbon for administrative editing'
-
+    commit: 'v4.91.0-release',
+    commitMessage: 'Release v4.91.0: Multi-location Add Page button and transversal bonus content visibility'
   };
 }
 
 
 export const CHANGELOG: Release[] = [
-  {
-    version: "4.94.0",
-    date: "13/08/2026",
-    title: "Restauração dos Menus Administrativos",
-    changes: [
-      { kind: 'fix', text: 'Restaurada a visibilidade da ApostilaHealthBar no topo do Workbench' },
-      { kind: 'improvement', text: 'Sticky EditorRibbon: barra de ferramentas fixa abaixo do status administrativo' },
-      { kind: 'improvement', text: 'Interface unificada para melhor fluxo de edição em dispositivos móveis' },
-      { kind: 'improvement', text: 'Otimização de métricas em tempo real (palavras, seções, exercícios)' }
-    ]
-  },
-
-  {
-    version: "4.93.0",
-    date: "13/08/2026",
-    title: "Interface Unificada (Híbrida)",
-    changes: [
-      { kind: 'improvement', text: "Removida a duplicidade de barras de ferramentas no Workbench." },
-      { kind: 'improvement', text: "Unificado o sistema de breadcrumbs (Notion) com o Ribbon de ações (Office) em uma única interface híbrida." },
-      { kind: 'improvement', text: "Otimizado o espaço vertical para focar na escrita e edição." },
-    ]
-  },
   {
     version: "4.91.0",
     date: "13/08/2026",
