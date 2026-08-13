@@ -809,22 +809,6 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const [showQuickCreate, setShowQuickCreate] = useState(false);
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
-      const cmdOrCtrl = isMac ? e.metaKey : e.ctrlKey;
-      
-      if (cmdOrCtrl && e.altKey && e.key.toLowerCase() === 'n') {
-        e.preventDefault();
-        setShowQuickCreate(true);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
 
   // Manual create
   const [manualTitle, setManualTitle] = useState('');
