@@ -92,7 +92,7 @@ export function EditorRibbon({ editor, onInsertImage, onSave, saveStatus = 'idle
 
 
   return (
-    <div className="word-ribbon bg-card shrink-0">
+    <div className="word-ribbon bg-card shrink-0 sticky top-0 z-[100] border-b border-border shadow-sm">
       {/* Abas */}
       <div className="word-tabs flex-nowrap min-w-max px-2 overflow-x-auto scrollbar-none flex">
         <button type="button" className="word-tab word-file-tab inline-flex" title="Arquivo">Arquivo</button>
