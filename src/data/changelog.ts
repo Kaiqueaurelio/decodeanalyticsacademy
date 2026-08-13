@@ -43,6 +43,15 @@ export function getBuildInfo() {
 
 
 export const CHANGELOG: Release[] = [
+    version: "4.88.0",
+    date: "13/08/2026",
+    title: "Auditoria Global e Estabilização de Botões",
+    changes: [
+      { kind: 'fix', text: 'Restaurada a funcionalidade do botão de "Nova Apostila" em todo o painel administrativo.' },
+      { kind: 'improvement', text: 'Unificação do fluxo de criação rápida via QuickCreateApostilaDialog em todas as abas do admin.' },
+      { kind: 'improvement', text: 'Auditoria técnica completa para garantir que todas as funções de edição e estruturação estão operacionais.' }
+    ]
+  },
   {
     version: "4.87.0",
     date: "13/08/2026",

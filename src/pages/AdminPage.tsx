@@ -421,7 +421,7 @@ function OverviewTab({ apostilas, exercises, allAnswers, materials, users, setTa
                 ))}
               </SelectContent>
             </Select>
-            <Button variant="outline" size="sm" className="h-10 rounded-2xl gap-2" onClick={() => setTab('apostilas')}>
+            <Button variant="outline" size="sm" className="h-10 rounded-2xl gap-2" onClick={() => setShowQuickCreate(true)}>
               <Plus className="h-4 w-4" /> Nova Apostila
             </Button>
           </div>
