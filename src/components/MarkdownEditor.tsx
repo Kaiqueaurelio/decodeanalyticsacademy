@@ -355,7 +355,7 @@ export function MarkdownEditor({
   return (
     <div className={cn(
       'apostila-markdown-editor rounded-lg border border-border bg-card overflow-hidden flex flex-col',
-      isMobile ? 'h-full min-h-0' : 'h-[100dvh] sm:h-auto sm:min-h-[500px]',
+      isMobile ? 'h-auto min-h-[600px]' : 'h-[100dvh] sm:h-auto sm:min-h-[500px]',
       className,
     )}>
       <EditorTopbar

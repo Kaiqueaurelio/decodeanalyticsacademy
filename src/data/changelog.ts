@@ -44,6 +44,15 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '4.74.0',
+    date: '2026-08-13',
+    title: 'Correção de Rolagem Mobile',
+    changes: [
+      { kind: 'fix', text: 'Habilitada rolagem vertical no Workbench administrativo em dispositivos móveis.' },
+      { kind: 'improvement', text: 'Otimização da altura mínima do editor para melhor experiência de escrita no celular.' },
+    ]
+  },
+  {
     version: '4.73.0',
     date: '2026-08-13',
     title: 'Otimização Visual do Workbench',
@@ -52,6 +61,7 @@ export const CHANGELOG: Release[] = [
       { kind: 'improvement', text: 'Estabilização definitiva da barra de status e ferramentas Notion Pro no Workbench.' },
     ]
   },
+
   {
     version: '4.72.0',
     date: '2026-08-13',

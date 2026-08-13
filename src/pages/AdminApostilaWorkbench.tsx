@@ -545,7 +545,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
               <span className="hidden sm:inline">{editorExpanded ? 'Sair da expansão' : 'Expandir'}</span>
             </Button>
           </div>
-          <div className="flex flex-1 min-h-0 flex-col overflow-hidden w-full">
+          <div className="flex-1 flex flex-col min-h-0 relative overflow-y-auto overflow-x-hidden">
             <div className="w-full max-w-[900px] mx-auto flex flex-col shrink-0">
               <div className="relative px-3 py-3 sm:pt-12 sm:pb-8 sm:px-16">
                 <div 
