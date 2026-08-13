@@ -246,14 +246,25 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
   useEffect(() => {
     const handleKeyAdd = () => {
       // Tenta sugerir um número baseado no conteúdo atual
-      const matches = content.match(/#\s+(\d+\.?\d*)/g);
+      // Regex para encontrar headings H1 style que começam com números (ex: "# 1.1 Introdução")
+      const matches = content.match(/^#\s+(\d+(?:\.\d+)*)/gm);
       let suggested = '';
-      if (matches) {
-        const lastNum = parseFloat(matches[matches.length - 1].replace('# ', ''));
-        if (!isNaN(lastNum)) {
-          suggested = `${(lastNum + 0.1).toFixed(1)} `;
+      if (matches && matches.length > 0) {
+        const lastHeading = matches[matches.length - 1];
+        const lastNumStr = lastHeading.replace(/^#\s+/, '');
+        const parts = lastNumStr.split('.');
+        
+        if (parts.length > 0) {
+          const lastPart = parseInt(parts[parts.length - 1]);
+          if (!isNaN(lastPart)) {
+            parts[parts.length - 1] = (lastPart + 1).toString();
+            suggested = parts.join('.');
+          }
         }
+      } else {
+        suggested = '1.1';
       }
+      
       setSuggestedSectionTitle(suggested);
       setAddSectionOpen(true);
     };
@@ -471,26 +482,27 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
   );
 
   const handleQuickAddSection = (sectionTitle: string, type: string) => {
-    let newContent = '';
+    let prefix = '# ';
+    if (type === 'subsection') prefix = '## ';
     
-    if (type === 'section') {
-      newContent = `\n\n# ${sectionTitle}\n\nEscreva o conteúdo da nova seção aqui...\n`;
-    } else if (type === 'subsection') {
-      newContent = `\n\n## ${sectionTitle}\n\nEscreva o conteúdo da subseção aqui...\n`;
-    } else if (type === 'template') {
-      newContent = `\n\n# ${sectionTitle}\n\n### Introdução\n...\n\n### Desenvolvimento\n...\n\n### Exercícios Práticos\n...\n\n### Conclusão\n...\n`;
-    } else {
-      newContent = `\n\n# ${sectionTitle}\n\n`;
+    let newContent = `\n\n${prefix}${sectionTitle}\n\n`;
+    if (type === 'template') {
+      newContent += `**Introdução:** ...\n\n**Desenvolvimento:** ...\n\n**Conclusão/Exercícios:** ...\n`;
     }
-
+    
     setContent(prev => prev + newContent);
-    toast.success('✓ Nova página adicionada ao final');
+    toast.success(`✓ Página "${sectionTitle}" criada com sucesso`);
     
     // Rola para o final do editor após um pequeno delay para o state atualizar
     setTimeout(() => {
       const editorElement = document.querySelector('.ProseMirror');
       if (editorElement) {
         editorElement.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      } else if (scrollContainerRef.current) {
+        scrollContainerRef.current.scrollTo({
+          top: scrollContainerRef.current.scrollHeight,
+          behavior: 'smooth'
+        });
       }
     }, 100);
   };

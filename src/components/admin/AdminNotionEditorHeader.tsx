@@ -215,16 +215,18 @@ export function ApostilaHealthBar({
             <RotateCcw className="h-3.5 w-3.5" />
             Regredir Capa
           </Button>
+
           <Button 
             variant="outline" 
             size="sm" 
             onClick={onAddPage}
-            className="h-8 gap-1.5 px-3 text-[10px] font-black uppercase border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10 bg-emerald-500/5 transition-all group active:scale-95"
+            className="h-10 gap-2 px-4 text-[11px] font-black uppercase border-emerald-500/30 text-emerald-600 hover:bg-emerald-700 hover:text-white bg-emerald-500/5 transition-all group active:scale-95 animate-pulse hover:animate-none shadow-[0_0_15px_rgba(16,185,129,0.1)] hover:shadow-[0_0_20px_rgba(16,185,129,0.3)]"
             title="Adicionar Nova Página/Seção (Ctrl+Shift+P)"
           >
-            <FilePlus2 className="h-3.5 w-3.5 group-hover:animate-pulse" />
-            + Add Página
+            <FilePlus2 className="h-4 w-4" />
+            + PAGE
           </Button>
+
           <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" title="Reordenar Seções">
             <Link2 className="h-4 w-4" />
           </Button>

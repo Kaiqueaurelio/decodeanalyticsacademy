@@ -29,7 +29,7 @@ export function QuickAddSectionDialog({
   onConfirm,
   suggestedTitle = ''
 }: QuickAddSectionDialogProps) {
-  const [title, setTitle] = useState(suggestedTitle);
+  const [title, setTitle] = useState(suggestedTitle || '1.2');
   const [type, setType] = useState<'section' | 'subsection' | 'blank' | 'template'>('section');
   const [loading, setLoading] = useState(false);
 
