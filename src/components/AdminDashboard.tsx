@@ -118,6 +118,10 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
   const [targetSemester, setTargetSemester] = useState<string>('1');
   const [busyId, setBusyId] = useState<string | null>(null);
   const [bulkBusy, setBulkBusy] = useState(false);
+  const [showQuickCreate, setShowQuickCreate] = useState(false);
+  const [quickCreateCategory, setQuickCreateCategory] = useState<string | null>(null);
+  const [quickCreateSemester, setQuickCreateSemester] = useState<number | null>(null);
+
 
   // Detalhe do aluno
   const [studentDetail, setStudentDetail] = useState<any | null>(null);
@@ -739,8 +743,20 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
                         </div>
                         <p className="text-sm text-muted-foreground">Tudo certo! Nenhuma inconsistência encontrada.</p>
                       </div>
-                    )}
-                  </div>
+        )}
+
+        <QuickCreateApostilaDialog
+          open={showQuickCreate}
+          onOpenChange={setShowQuickCreate}
+          initialCategory={quickCreateCategory || undefined}
+          initialSemester={quickCreateSemester !== null ? quickCreateSemester.toString() : undefined}
+          onCreated={() => {
+            load();
+            setShowQuickCreate(false);
+          }}
+        />
+      </div>
+
                 </div>
               </ScrollArea>
               <div className="p-4 border-t border-white/5 bg-white/5">
