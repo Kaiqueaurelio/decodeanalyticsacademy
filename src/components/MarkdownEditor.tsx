@@ -54,6 +54,7 @@ import { useSyncedScroll } from '@/components/editor/useSyncedScroll';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Eye, Pencil, ListTree, Wand2, Columns2, Video, ImageIcon, Bold, Heading2, List, Redo2, Save, Undo2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface Props {
   value: string;
@@ -319,9 +320,9 @@ export function MarkdownEditor({
         e.preventDefault();
         onSave?.();
         setStatus('saved');
-      } else if (key === 'p') {
+      } else if (key === 'p' || key === 'eye') {
         e.preventDefault();
-        window.print();
+        setViewMode(viewMode === 'preview' ? 'edit' : 'preview');
       } else if (key === 'k') {
         e.preventDefault();
         const previous = editor.getAttributes('link').href as string | undefined;
@@ -329,8 +330,26 @@ export function MarkdownEditor({
         if (url === null) return;
         if (url === '') editor.chain().focus().unsetLink().run();
         else editor.chain().focus().extendMarkRange('link').setLink({ href: url, target: '_blank' }).run();
+      } else if (key === 'b') {
+        e.preventDefault();
+        editor.chain().focus().toggleBold().run();
+      } else if (key === 'i') {
+        e.preventDefault();
+        editor.chain().focus().toggleItalic().run();
+      } else if (key === 'l') {
+        e.preventDefault();
+        editor.chain().focus().toggleBulletList().run();
+      } else if (key === 'e') {
+        e.preventDefault();
+        // Inserir template ENEM
+        editor.chain().focus().insertContent('### Questão ENEM\n\n**Texto Base:** ...\n\n**Pergunta:** ...\n\n- [ ] A) ...\n- [ ] B) ...\n- [ ] C) ...\n- [ ] D) ...\n- [ ] E) ...').run();
+      } else if (e.altKey && (key === '1' || key === '2' || key === '3')) {
+        e.preventDefault();
+        editor.chain().focus().toggleHeading({ level: parseInt(key) as 1 | 2 | 3 }).run();
+      } else if (key === '/') {
+        e.preventDefault();
+        toast.info("Atalhos: Ctrl+S (Salvar), Ctrl+K (Link), Ctrl+Alt+1/2/3 (Headings), Ctrl+B (Bold), Ctrl+I (Italic), Ctrl+L (Lista), Ctrl+E (Questão ENEM)");
       } else if (key === 'z') {
-        // Redundância de Undo/Redo para mobile (iPhone 11)
         if (e.shiftKey) {
           e.preventDefault();
           editor.chain().focus().redo().run();
