@@ -30,7 +30,7 @@ import { getSubjectColor } from '@/lib/subject-colors';
 import {
   ArrowLeft, Search, Save, Eye, PenTool, Wand2, Loader2, Menu, FileText,
   ListChecks, PanelRightClose, ExternalLink, GraduationCap, ImageIcon, PanelRightOpen, X, Maximize2, Minimize2,
-  FilePlus2
+  FilePlus2, Plus
 } from 'lucide-react';
 import { invokeFunction } from '@/lib/invoke-function';
 import { toast } from 'sonner';
@@ -603,6 +603,17 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         }}
       />
       
+      {/* BARRA DE ADIÇÃO RÁPIDA (OPCIONAL/ESTILO NOTION) */}
+      <div className="w-full bg-background border-b border-border/40 px-4 py-2 flex justify-center">
+        <button 
+          onClick={() => setAddSectionOpen(true)}
+          className="w-full max-w-4xl group flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed border-border/40 text-muted-foreground/60 hover:text-emerald-600 hover:border-emerald-500/30 hover:bg-emerald-500/5 transition-all font-bold text-xs"
+        >
+          <Plus className="h-4 w-4 group-hover:rotate-90 transition-transform" />
+          ADICIONAR NOVA PÁGINA NESTE CADERNO
+        </button>
+      </div>
+      
       <div className="flex flex-1 min-h-0 overflow-hidden relative">
 
 
@@ -625,9 +636,20 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
 
         {/* Notion Canvas Editor */}
         <main className={cn(
-          "flex-1 min-w-0 bg-background relative flex flex-col h-full overflow-hidden",
+          "flex-1 min-w-0 bg-background relative flex flex-col h-full overflow-hidden group/editor",
           editorExpanded && "fixed inset-0 z-[70] h-[100dvh]"
         )}>
+          {/* BOTÃO FLUTUANTE DE NOVA PÁGINA (ESTILO NOTION) */}
+          <button
+            onClick={() => setAddSectionOpen(true)}
+            className="absolute right-8 bottom-8 z-[80] flex items-center justify-center h-14 w-14 rounded-full bg-emerald-600 text-white shadow-[0_8px_30px_rgba(16,185,129,0.4)] hover:bg-emerald-700 hover:scale-110 active:scale-95 transition-all duration-300 group/float border-4 border-background"
+            title="Adicionar Nova Página (Ctrl+Shift+P)"
+          >
+            <Plus className="h-6 w-6 group-hover/float:rotate-90 transition-transform duration-300" />
+            <div className="absolute right-full mr-4 px-3 py-1.5 rounded-lg bg-emerald-800 text-white text-[10px] font-black uppercase tracking-widest opacity-0 group-hover/float:opacity-100 transition-opacity pointer-events-none shadow-xl whitespace-nowrap border border-emerald-500/30">
+              Nova Página
+            </div>
+          </button>
           <Button
             variant="outline"
             size="icon"
