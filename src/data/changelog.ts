@@ -32,17 +32,25 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.77.0',
+    version: '4.78.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.77.0-release',
-    commitMessage: 'Release v4.77.0: Enhanced Scroll Visibility'
+    commit: 'v4.78.0-release',
+    commitMessage: 'Release v4.78.0: Project Management Content Update'
   };
 }
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: '4.78.0',
+    date: '2026-08-13',
+    title: 'Atualização de Conteúdo Acadêmico',
+    changes: [
+      { kind: 'content', text: 'Atualizado o conteúdo da apostila de Gestão de Projetos I com material acadêmico detalhado sobre fundamentos, PMI/PMBOK e aplicação prática.' },
+    ]
+  },
   {
     version: '4.77.0',
     date: '2026-08-13',
