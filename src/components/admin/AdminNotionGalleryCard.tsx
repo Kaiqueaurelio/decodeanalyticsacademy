@@ -90,21 +90,6 @@ export function AdminNotionGalleryCard({
                 <span className="text-muted-foreground/40 shrink-0">#</span>
                 {item.title.replace(/^\[GRADE\]\s*/i, '').replace(/_/g, ' ')}
               </h3>
-              {!isPlaceholder && (
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    // Garante que a apostila existe e abre o workbench
-                    onEdit(item);
-                    // Dispara o evento de "Nova Página" após um delay para o workbench carregar
-                    setTimeout(() => window.dispatchEvent(new CustomEvent('open-quick-add-section')), 600);
-                  }}
-                  className="flex items-center gap-1 text-[10px] font-black text-emerald-500 hover:text-emerald-400 mt-1 transition-all bg-emerald-500/10 px-2 py-0.5 rounded-md w-fit border border-emerald-500/20 hover:scale-105 active:scale-95 shadow-[0_0_10px_rgba(16,185,129,0.1)]"
-                >
-                  <Plus className="h-3 w-3" />
-                  NOVA PÁGINA
-                </button>
-              )}
             </div>
             <div className="flex items-center gap-1 shrink-0">
                <Badge className="bg-[#27272A]/80 text-foreground border border-white/10 text-[8px] font-bold px-1.5 py-0 rounded-md shrink-0">
@@ -113,6 +98,22 @@ export function AdminNotionGalleryCard({
                <ChevronRight className="h-4 w-4 text-muted-foreground/40 shrink-0" />
             </div>
           </div>
+
+          {!isPlaceholder && (
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                // Garante que a apostila existe e abre o workbench
+                onEdit(item);
+                // Dispara o evento de "Nova Página" após um delay para o workbench carregar
+                setTimeout(() => window.dispatchEvent(new CustomEvent('open-quick-add-section')), 600);
+              }}
+              className="flex items-center gap-1.5 text-[10px] font-black text-emerald-500 hover:text-emerald-400 my-1 transition-all bg-emerald-500/10 hover:bg-emerald-500/20 px-3 py-1 rounded-full w-fit border border-emerald-500/20 hover:scale-105 active:scale-95 shadow-[0_0_15px_rgba(16,185,129,0.15)] group/btn"
+            >
+              <Plus className="h-3.5 w-3.5 transition-transform group-hover/btn:rotate-90" />
+              NOVA PÁGINA
+            </button>
+          )}
 
           {/* Metadata/Properties Grid estilo Notion */}
           <div className="flex flex-col gap-1 py-1 border-t border-white/5">

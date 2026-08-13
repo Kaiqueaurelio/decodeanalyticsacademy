@@ -160,10 +160,10 @@ export function ApostilaCoverCard({ apostila, status = 'em-progresso', progress 
                   toast.error('Erro ao abrir apostila: ' + (err?.message || 'Tente novamente.'));
                 }
               }}
-              className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.4)] border border-emerald-500/50 text-white hover:scale-110 active:scale-95 transition-all z-30"
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.5)] border border-emerald-500/50 text-white hover:scale-110 active:scale-95 transition-all z-30 group/plus"
               title="Adicionar Nova Página (Somente Administrador)"
             >
-              <Plus className="h-4.5 w-4.5" />
+              <Plus className="h-5 w-5 transition-transform group-hover/plus:rotate-90" />
             </button>
             <button
               onClick={async (e) => {
