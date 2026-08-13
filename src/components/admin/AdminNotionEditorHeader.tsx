@@ -59,87 +59,107 @@ export function ApostilaHealthBar({
   materialCount,
   onPasteOpen
 }: ApostilaHealthBarProps) {
+  const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false);
+
   return (
     <div className="flex flex-col border-b border-border/60 bg-muted/30 backdrop-blur-sm sticky top-0 z-50">
-      {/* Top Bar: Notion Style Breadcrumbs & Main Actions */}
+      {/* Top Bar: Notion Style Breadcrumbs & Auto-save Status */}
       <div className="h-14 flex items-center justify-between px-2 sm:px-4 border-b border-border/40 bg-card/80 backdrop-blur-md">
         <div className="flex items-center gap-1 sm:gap-2 overflow-hidden">
           <Button 
             variant="ghost" 
             size="icon" 
-            className="lg:hidden h-8 w-8 text-muted-foreground mr-1"
+            className="h-8 w-8 text-muted-foreground mr-1"
             onClick={() => {
               if (typeof (window as any).toggleAdminSidebar === 'function') {
                 (window as any).toggleAdminSidebar();
               }
+              setSidebarCollapsed(!sidebarCollapsed);
             }}
           >
-            <Menu className="h-4 w-4" />
+            {sidebarCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
           </Button>
           <div className="flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-xs text-muted-foreground whitespace-nowrap">
-            <span className="hidden sm:inline hover:bg-accent px-1.5 py-0.5 rounded cursor-pointer transition-colors">Admin</span>
+            <span className="hidden sm:inline hover:bg-accent px-1.5 py-0.5 rounded cursor-pointer transition-colors" onClick={() => window.location.href='/admin'}>Admin</span>
             <span className="hidden sm:inline text-muted-foreground/30">/</span>
             <span className="hover:bg-accent px-1.5 py-0.5 rounded cursor-pointer transition-colors font-bold max-w-[150px] truncate">{title || 'Edição'}</span>
+            <span className="hidden sm:inline text-muted-foreground/30">/</span>
+            <span className="text-muted-foreground/60">Conteúdo</span>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          {saving && <span className="text-[10px] text-muted-foreground animate-pulse mr-2 hidden sm:inline">Salvando…</span>}
-          {!saving && lastSavedAt && (
-            <span className="text-[10px] text-muted-foreground mr-2 hidden sm:inline">
-              Salvo às {lastSavedAt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-            </span>
-          )}
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            {saving ? (
+              <span className="flex items-center gap-1.5 text-[10px] text-muted-foreground animate-pulse">
+                <Clock className="h-3 w-3" />
+                Salvando...
+              </span>
+            ) : lastSavedAt ? (
+              <span className="flex items-center gap-1.5 text-[10px] text-emerald-500 font-bold animate-in fade-in duration-500">
+                <Check className="h-3 w-3" />
+                Salvo
+                <span className="text-muted-foreground font-normal ml-1">
+                  ({lastSavedAt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })})
+                </span>
+              </span>
+            ) : null}
+          </div>
 
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={onPreview}
-            className="h-8 text-xs gap-2 rounded-lg hover:bg-accent"
-          >
-            <Eye className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Preview</span>
-          </Button>
+          <div className="h-4 w-[1px] bg-border/40 hidden sm:block" />
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button 
-                variant={published ? "default" : "secondary"}
-                size="sm"
-                className={cn(
-                  "h-8 text-[10px] font-black uppercase tracking-wider gap-1.5 px-3 rounded-md shadow-sm transition-all",
-                  published 
-                    ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/30 hover:bg-emerald-500/20" 
-                    : "bg-amber-500/10 text-amber-600 border border-amber-500/30 hover:bg-amber-500/20"
-                )}
-              >
-                {published ? <ShieldCheck className="h-3.5 w-3.5" /> : <AlertCircle className="h-3.5 w-3.5" />}
-                {published ? 'Publicada' : 'Rascunho'}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem onClick={onTogglePublish} className="text-xs font-bold gap-2">
-                {published ? (
-                  <>
-                    <EyeOff className="h-3.5 w-3.5" /> Despublicar apostila
-                  </>
-                ) : (
-                  <>
-                    <ShieldCheck className="h-3.5 w-3.5" /> Publicar agora
-                  </>
-                )}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="flex items-center gap-1">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={onPreview}
+              className="h-8 text-xs gap-2 rounded-lg hover:bg-accent"
+              title="Pré-visualizar (Ctrl+P)"
+            >
+              <Eye className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Preview</span>
+            </Button>
 
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 rounded-lg"
-            onClick={onOpenPanel}
-          >
-            <MoreVertical className="h-4 w-4" />
-          </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant={published ? "default" : "secondary"}
+                  size="sm"
+                  className={cn(
+                    "h-8 text-[10px] font-black uppercase tracking-wider gap-1.5 px-3 rounded-md shadow-sm transition-all",
+                    published 
+                      ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/30 hover:bg-emerald-500/20" 
+                      : "bg-amber-500/10 text-amber-600 border border-amber-500/30 hover:bg-amber-500/20"
+                  )}
+                >
+                  {published ? <ShieldCheck className="h-3.5 w-3.5" /> : <AlertCircle className="h-3.5 w-3.5" />}
+                  {published ? 'Publicada' : 'Rascunho'}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem onClick={onTogglePublish} className="text-xs font-bold gap-2">
+                  {published ? (
+                    <>
+                      <Eye className="h-3.5 w-3.5 opacity-50" /> Despublicar apostila
+                    </>
+                  ) : (
+                    <>
+                      <ShieldCheck className="h-3.5 w-3.5" /> Publicar agora
+                    </>
+                  )}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 rounded-lg"
+              onClick={onOpenPanel}
+            >
+              <MoreVertical className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -157,15 +177,15 @@ export function ApostilaHealthBar({
           </div>
           <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium border bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30">
             <FileText className="h-3 w-3" />
-            95 palavras
+            {wordCount} palavras
           </div>
           <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium border bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30">
             <ListChecks className="h-3 w-3" />
-            0 exercícios
+            {exerciseCount} exercícios
           </div>
           <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium border bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30">
             <Paperclip className="h-3 w-3" />
-            2 materiais
+            {materialCount} materiais
           </div>
         </div>
 
@@ -175,6 +195,7 @@ export function ApostilaHealthBar({
             size="sm" 
             onClick={onSave}
             className="h-8 text-[11px] font-black uppercase tracking-widest gap-2 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 shadow-md shadow-emerald-600/20"
+            title="Forçar Salvar (Ctrl+S)"
           >
             <Save className="h-3.5 w-3.5" />
             SALVAR
@@ -182,57 +203,62 @@ export function ApostilaHealthBar({
         </div>
       </div>
 
-      {/* Secondary Admin Toolbar (Image 93 bottom row) */}
+      {/* Secondary Admin Toolbar - ORGANIZED IN 3 GROUPS */}
       <div className="flex items-center gap-1 px-3 py-1.5 overflow-x-auto scrollbar-none whitespace-nowrap bg-background/95 backdrop-blur-sm border-t border-border/40">
-        <Button variant="ghost" size="sm" className="h-8 gap-1.5 px-2.5 text-[11px] font-bold border border-border/50 bg-background/80">
-          <Menu className="h-3.5 w-3.5" />
-          <span className="truncate max-w-[100px]">{title || 'Construa seu...'}</span>
-        </Button>
         
-        <div className="flex items-center gap-1 ml-1 px-2 py-0.5 rounded border border-border/50 bg-background/80 text-[10px] font-black">
-          {/* Pode ser vinculado a uma contagem de capítulos dinâmica se disponível */}
-          1.
+        {/* GRUPO 1 - ESTRUTURA */}
+        <div className="flex items-center gap-1 pr-3 border-r border-border/40">
+          <Button variant="outline" size="sm" className="h-8 gap-1.5 px-3 text-[10px] font-black uppercase border-primary/30 text-primary hover:bg-primary/5 bg-background/50">
+            <RotateCcw className="h-3.5 w-3.5" />
+            Regredir Capa
+          </Button>
+          <Button variant="outline" size="sm" className="h-8 gap-1.5 px-3 text-[10px] font-black uppercase border-primary/30 text-primary hover:bg-primary/5 bg-background/50">
+            <PlusCircle className="h-3.5 w-3.5" />
+            Add Lição
+          </Button>
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" title="Reordenar Seções">
+            <Link2 className="h-4 w-4" />
+          </Button>
         </div>
 
-        <div className="flex items-center gap-1 ml-1">
-          {['CC', 'SI', 'EC'].map(c => (
-            <Badge key={c} variant="outline" className="text-[9px] font-black h-5 px-1.5 border-border/50 bg-background/80">{c}</Badge>
-          ))}
-        </div>
-
-        <Button variant="ghost" size="icon" className="h-8 w-8 text-primary/70">
-          <ImageIcon className="h-4 w-4" />
-        </Button>
-
-        <div className="h-6 w-10 rounded-sm border border-border/50 bg-[#1e1e2e] mr-2" />
-
-        <div className="flex items-center gap-1 border-l border-border/40 pl-2">
+        {/* GRUPO 2 - CONTEÚDO */}
+        <div className="flex items-center gap-1 px-3 border-r border-border/40">
           <Button 
-            variant="outline" 
+            variant="ghost" 
             size="sm" 
-            className="h-8 gap-1.5 px-3 text-[10px] font-black uppercase border-primary/30 text-primary hover:bg-primary/5 bg-background/50"
-            onClick={() => {}}
+            onClick={onPasteOpen}
+            className="h-8 gap-1.5 px-3 text-[10px] font-black uppercase text-primary hover:bg-primary/5"
+            title="Colar Inteligente (Ctrl+V context)"
           >
-            <ImageIcon className="h-3.5 w-3.5" />
-            Regerar capa
+            <ClipboardPaste className="h-3.5 w-3.5" />
+            Colar Inteligente
           </Button>
 
           <Button 
             variant="outline" 
             size="sm" 
             className="h-8 gap-1.5 px-3 text-[10px] font-black uppercase border-primary/30 text-primary hover:bg-primary/5 bg-background/50"
-          >
-            <FileText className="h-3.5 w-3.5" />
-            Estruturar em lições
-          </Button>
-
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="h-8 gap-1.5 px-3 text-[10px] font-black uppercase border-primary/30 text-primary hover:bg-primary/5 bg-background/50"
+            title="Adicionar Questão ENEM (Ctrl+E)"
           >
             <Wand2 className="h-3.5 w-3.5 text-primary" />
-            Questões ENEM
+            Adicionar ENEM
+          </Button>
+
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-primary/70" title="Anexar Materiais">
+            <Paperclip className="h-4 w-4" />
+          </Button>
+        </div>
+
+        {/* GRUPO 3 - PUBLICAÇÃO */}
+        <div className="flex items-center gap-1 pl-3">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={onPreview}
+            className="h-8 gap-1.5 px-3 text-[10px] font-black uppercase text-amber-500 hover:bg-amber-500/10"
+          >
+            <Eye className="h-3.5 w-3.5" />
+            Pré-visualizar
           </Button>
 
           <Button 
@@ -247,21 +273,25 @@ export function ApostilaHealthBar({
           <Button 
             variant="ghost" 
             size="sm" 
-            onClick={onPasteOpen}
-            className="h-8 gap-1.5 px-3 text-[10px] font-black uppercase text-primary hover:bg-primary/5"
+            onClick={onSave}
+            className="h-8 gap-1.5 px-3 text-[10px] font-black uppercase text-emerald-600 hover:bg-emerald-500/10"
           >
-            <ClipboardPaste className="h-3.5 w-3.5" />
-            Colar Inteligente
+            <CheckCircle2 className="h-3.5 w-3.5" />
+            Salvar
           </Button>
-          
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={onPreview}
-            className="h-8 gap-1.5 px-3 text-[10px] font-black uppercase text-amber-500 hover:bg-amber-500/10"
-          >
-            <Eye className="h-3.5 w-3.5" />
-            Ver como aluno
+        </div>
+
+        {/* Course Badges & Subject Info */}
+        <div className="ml-auto flex items-center gap-2">
+          <div className="flex items-center gap-1">
+            {['CC', 'SI', 'EC'].map(c => (
+              <Badge key={c} variant="outline" className="text-[9px] font-black h-5 px-1.5 border-border/50 bg-background/80">{c}</Badge>
+            ))}
+          </div>
+          <div className="h-6 w-[1px] bg-border/40 mx-1" />
+          <Button variant="ghost" size="sm" className="h-8 gap-1.5 px-2.5 text-[11px] font-bold border border-border/50 bg-background/80">
+            <Menu className="h-3.5 w-3.5" />
+            <span className="truncate max-w-[100px]">{title || 'Apostila'}</span>
           </Button>
         </div>
       </div>
