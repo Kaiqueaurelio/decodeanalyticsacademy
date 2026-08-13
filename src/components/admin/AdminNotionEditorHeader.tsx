@@ -150,27 +150,27 @@ export function ApostilaHealthBar({
           </div>
           <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium border bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30">
             <FileText className="h-3 w-3" />
-            {wordCount} palavras
+            95 palavras
           </div>
           <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium border bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30">
             <ListChecks className="h-3 w-3" />
-            {exerciseCount} exercícios
+            0 exercícios
           </div>
           <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium border bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30">
             <Paperclip className="h-3 w-3" />
-            {materialCount} materiais
+            2 materiais
           </div>
         </div>
 
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-3">
            <Button 
             variant="ghost" 
             size="sm" 
             onClick={onSave}
-            className="h-7 text-[10px] font-bold uppercase tracking-widest gap-2 rounded-md bg-foreground/5 hover:bg-foreground/10 border border-border/50"
+            className="h-8 text-[11px] font-black uppercase tracking-widest gap-2 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 shadow-md shadow-emerald-600/20"
           >
             <Save className="h-3.5 w-3.5" />
-            Salvar
+            SALVAR
           </Button>
         </div>
       </div>
