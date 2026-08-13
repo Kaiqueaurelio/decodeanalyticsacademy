@@ -32,17 +32,27 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.90.0',
+    version: '4.91.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.90.0-release',
-    commitMessage: 'Release v4.90.0: New Page button and intelligent auto-numbering flow'
+    commit: 'v4.91.0-release',
+    commitMessage: 'Release v4.91.0: Multi-location Add Page button and transversal bonus content visibility'
   };
 }
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: "4.91.0",
+    date: "13/08/2026",
+    title: "Ubiquidade e Acesso Transversal",
+    changes: [
+      { kind: 'feature', text: "Botão 'Nova Página' adicionado aos cards da galeria administrativa para criação instantânea." },
+      { kind: 'improvement', text: "Apostilas bônus ('Canivete Suíço') agora são visíveis em todos os semestres (exceto ENEM)." },
+      { kind: 'improvement', text: "Foco automático no editor após adicionar uma nova página via modal rápido." },
+    ]
+  },
   {
     version: "4.90.0",
     date: "13/08/2026",
