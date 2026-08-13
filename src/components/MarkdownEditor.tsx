@@ -380,7 +380,7 @@ export function MarkdownEditor({
           )}
           title="Editar conteúdo"
         >
-          <Pencil className="h-3 w-3" /> Editar
+          <Pencil className="h-3.5 w-3.5" /> <span className="inline">Editar</span>
         </button>
         
         {/* Mobile-only tools triggers */}
