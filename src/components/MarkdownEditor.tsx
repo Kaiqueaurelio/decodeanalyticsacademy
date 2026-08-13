@@ -381,21 +381,66 @@ export function MarkdownEditor({
       isMobile ? 'h-auto min-h-[600px]' : 'h-[100dvh] sm:h-auto sm:min-h-[500px]',
       className,
     )}>
-      <EditorRibbon
-        editor={editor}
-        onInsertImage={insertImage}
-        onSave={onSave}
-        saveStatus={status}
-      />
+      <div className="flex flex-col sticky top-0 z-[100] border-b border-border shadow-sm">
+        {/* Hibridized Integrated Toolbar */}
+        <div className="flex items-center justify-between px-3 py-1.5 bg-muted/90 backdrop-blur-md border-b border-border/40">
+          <div className="flex items-center gap-3 overflow-hidden">
+            <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground whitespace-nowrap mr-2 border-r border-border/40 pr-3">
+              <span className="font-bold text-foreground">DECODE ACADEMY</span>
+              <span className="text-muted-foreground/30">/</span>
+              <span className="truncate max-w-[120px]">Edição de Apostila</span>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              {status === 'saved' ? (
+                <span className="flex items-center gap-1.5 text-[10px] text-emerald-500 font-bold">
+                  <Check className="h-3 w-3" /> Salvo
+                </span>
+              ) : (
+                <span className="flex items-center gap-1.5 text-[10px] text-amber-500 animate-pulse">
+                  <Cloud className="h-3 w-3" /> {status === 'unsaved' ? 'Não salvo' : 'Sincronizando...'}
+                </span>
+              )}
+            </div>
+          </div>
 
-      <EditorTopbar
-        words={stats.words}
-        zoom={zoom}
-        setZoom={setZoom}
-        status={status}
-        focusMode={focusMode}
-        onToggleFocus={() => setFocusMode((f) => !f)}
-      />
+          <div className="flex items-center gap-2">
+            <span className="hidden sm:inline text-[10px] text-muted-foreground px-2 py-0.5 rounded-full bg-background/50 border border-border/40">
+              {stats.words.toLocaleString('pt-BR')} palavras
+            </span>
+            
+            <div className="h-4 w-[1px] bg-border/40" />
+
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 rounded-md"
+                onClick={onSave}
+                title="Salvar agora (Ctrl+S)"
+              >
+                <Save className="h-3.5 w-3.5 text-emerald-600" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 rounded-md"
+                onClick={() => window.print()}
+                title="Imprimir (Ctrl+P)"
+              >
+                <Printer className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        <EditorRibbon
+          editor={editor}
+          onInsertImage={insertImage}
+          onSave={onSave}
+          saveStatus={status}
+        />
+      </div>
 
       {/* Toggle Editar / Split / Visualizar como aluno — Mobile Responsive */}
       <div className="flex items-center gap-1 px-2 py-1 border-b border-border bg-muted/40 overflow-x-auto scrollbar-none sticky top-0 z-20">
