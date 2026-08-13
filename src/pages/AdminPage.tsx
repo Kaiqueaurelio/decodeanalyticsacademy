@@ -382,6 +382,8 @@ function OverviewTab({ apostilas, exercises, allAnswers, materials, users, setTa
     danger:  { wrap: 'bg-destructive/10', icon: 'text-destructive', ring: 'group-hover:ring-destructive/30' },
   };
 
+  const [showQuickCreate, setShowQuickCreate] = useState(false);
+
   if (loading) {
     return (
       <div className="space-y-6">
