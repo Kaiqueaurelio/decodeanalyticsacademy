@@ -12,7 +12,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MarkdownEditor } from '@/components/MarkdownEditor';
-// Removed: ApostilaHealthBar (Integrated into Editor)
+import { ApostilaHealthBar } from '@/components/admin/ApostilaHealthBar';
+
 import { ApostilaVersionHistory } from '@/components/admin/ApostilaVersionHistory';
 import { MaterialsDropZone } from '@/components/admin/MaterialsDropZone';
 import { SortableMaterialsList, type LinkedMaterialItem } from '@/components/admin/SortableMaterialsList';
