@@ -10,7 +10,7 @@ import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 import type { Editor, Range } from '@tiptap/core';
 import {
   Heading1, Heading2, Heading3, List, ListOrdered, Quote, Code2, Image as ImageIcon,
-  Table as TableIcon, Minus, CheckSquare, Pilcrow, type LucideIcon,
+  Table as TableIcon, Minus, CheckSquare, Pilcrow, Video, Info, AlertTriangle, Wand2, type LucideIcon,
 } from 'lucide-react';
 
 export interface SlashItem {
