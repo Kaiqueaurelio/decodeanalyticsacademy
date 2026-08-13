@@ -27,7 +27,9 @@ import { SEMESTER_OPTIONS } from '@/lib/subject-semester-map';
 interface QuickCreateApostilaDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onCreated?: () => void;
 }
+
 
 export function QuickCreateApostilaDialog({ open, onOpenChange }: QuickCreateApostilaDialogProps) {
   const navigate = useNavigate();
