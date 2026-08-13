@@ -44,9 +44,19 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '4.75.0',
+    date: '2026-08-13',
+    title: 'Navegação & Visibilidade no Editor',
+    changes: [
+      { kind: 'improvement', text: 'Adicionada barra de rolagem personalizada e indicadora de posição no Workbench administrativo.' },
+      { kind: 'improvement', text: 'Melhorada a visibilidade da rolagem para facilitar a navegação em materiais extensos.' },
+    ]
+  },
+  {
     version: '4.74.0',
     date: '2026-08-13',
     title: 'Correção de Rolagem Mobile',
+
     changes: [
       { kind: 'fix', text: 'Habilitada rolagem vertical no Workbench administrativo em dispositivos móveis.' },
       { kind: 'improvement', text: 'Otimização da altura mínima do editor para melhor experiência de escrita no celular.' },
