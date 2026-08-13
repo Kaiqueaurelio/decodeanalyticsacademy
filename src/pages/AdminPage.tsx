@@ -48,7 +48,7 @@ import { CalendarEventsAdmin } from '@/components/CalendarEventsAdmin';
 import { AdminUserManagement } from '@/components/admin/AdminUserManagement';
 import { ApostilaMaterialsManager } from '@/components/ApostilaMaterialsManager';
 import { ensureApostilaExists } from '@/lib/create-placeholder-apostila';
-import { QuickCreateApostilaDialog } from '@/components/admin/QuickCreateApostilaDialog';
+
 
 
 import { AppendLinkDialog } from '@/components/AppendLinkDialog';
