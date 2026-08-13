@@ -52,7 +52,7 @@ export const CHANGELOG: Release[] = [
         kind: 'fix',
         title: 'Barra de Ferramentas Administrativa',
         description: 'Reintegração da ApostilaHealthBar e EditorRibbon para acesso imediato ao Colar Inteligente e formatação Office em todos os dispositivos.'
-      }
+      } as any
     ]
   },
   {
