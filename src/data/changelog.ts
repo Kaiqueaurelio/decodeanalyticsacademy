@@ -32,17 +32,27 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.91.0',
+    version: '4.92.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.91.0-release',
-    commitMessage: 'Release v4.91.0: Multi-location Add Page button and transversal bonus content visibility'
+    commit: 'v4.92.0-release',
+    commitMessage: 'Release v4.92.0: Access for special user Juliana and ENEM content restriction'
   };
 }
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: "4.92.0",
+    date: "13/08/2026",
+    title: "Acesso Especial e Restrições de Conteúdo",
+    changes: [
+      { kind: 'feature', text: "Implementado acesso para usuário especial 'Juliana' com escopo de conteúdo restrito." },
+      { kind: 'security', text: "Adicionado suporte para 'no_enem' no content_scope, ocultando matérias ENEM para perfis específicos." },
+      { kind: 'improvement', text: "Fluxo de login unificado para aceitar identificadores especiais via ra-auth." },
+    ]
+  },
   {
     version: "4.91.0",
     date: "13/08/2026",

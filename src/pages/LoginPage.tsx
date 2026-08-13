@@ -157,8 +157,9 @@ export default function LoginPage() {
     if (!id) { toast.error('Informe seu RA ou e-mail.'); return; }
 
     const isEmail = looksLikeEmail(id);
+    const isSpecial = id === 'Juliana';
 
-    if (!isEmail && !isValidRa(id)) {
+    if (!isEmail && !isValidRa(id) && !isSpecial) {
       const errorMsg = 'Use um e-mail válido ou seu RA (6 a 13 letras/números). Se o erro persistir, procure a secretaria para validar seu vínculo.';
       toast.error(errorMsg, {
         duration: 6000,
@@ -168,7 +169,7 @@ export default function LoginPage() {
     }
 
     setLoading(true);
-    const effectiveEmail = isEmail ? id.toLowerCase() : buildRaEmail(id);
+    const effectiveEmail = isEmail ? id.toLowerCase() : isSpecial ? id : buildRaEmail(id);
 
     if (isSignUp) {
       if (!isEmail) {
@@ -212,8 +213,8 @@ export default function LoginPage() {
       return;
     }
 
-    // --- Login por RA: autenticado no servidor, sem expor o e-mail do aluno ---
-    if (!isEmail) {
+    // --- Login por RA ou Especial: autenticado no servidor ---
+    if (!isEmail || isSpecial) {
       const { data, message, code } = await callRaAuth({ mode: 'signin', ra: id, password });
       if (!data?.session) {
         setLoading(false);

@@ -63,6 +63,10 @@ export function useApostilasList(options: ApostilasListOptions = {}) {
         q = q.in('category', ['ENEM']);
       }
 
+      if (!isAdmin && scope === 'no_enem') {
+        q = q.neq('category', 'ENEM');
+      }
+
       const { data, error } = await q
         .order('category')
         .order('created_at', { ascending: false });
