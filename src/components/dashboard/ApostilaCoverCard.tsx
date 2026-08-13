@@ -153,6 +153,23 @@ export function ApostilaCoverCard({ apostila, status = 'em-progresso', progress 
                 e.stopPropagation();
                 try {
                   const realId = await ensureApostilaExists(apostila as any);
+                  navigate(`/admin/apostilas/${realId}`);
+                  // Dispara o evento de "Nova Página" após a navegação
+                  setTimeout(() => window.dispatchEvent(new CustomEvent('open-quick-add-section')), 500);
+                } catch (err: any) {
+                  toast.error('Erro ao abrir apostila: ' + (err?.message || 'Tente novamente.'));
+                }
+              }}
+              className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.4)] border border-emerald-500/50 text-white hover:scale-110 active:scale-95 transition-all"
+              title="Adicionar Nova Página (Somente Administrador)"
+            >
+              <Plus className="h-4.5 w-4.5" />
+            </button>
+            <button
+              onClick={async (e) => {
+                e.stopPropagation();
+                try {
+                  const realId = await ensureApostilaExists(apostila as any);
                   navigate(`/admin/apostilas/${realId}`, { state: { editMetadata: true } });
                 } catch (err: any) {
                   toast.error('Erro ao abrir configurações: ' + (err?.message || 'Tente novamente.'));
