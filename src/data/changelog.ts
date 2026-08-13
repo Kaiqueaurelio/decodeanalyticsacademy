@@ -32,17 +32,27 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.91.0',
+    version: '4.92.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.91.0-release',
-    commitMessage: 'Release v4.91.0: Multi-location Add Page button and transversal bonus content visibility'
+    commit: 'v4.92.0-release',
+    commitMessage: 'Release v4.92.0: Folder quick-add button fix and visual refinements'
   };
 }
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: "4.92.0",
+    date: "13/08/2026",
+    title: "Interatividade e Visibilidade Refinada",
+    changes: [
+      { kind: 'fix', text: "Corrigida a interatividade do botão '+' nas pastas de matérias do painel administrativo." },
+      { kind: 'improvement', text: "Otimizada estabilidade do processamento de conteúdo no Workbench." },
+      { kind: 'improvement', text: "Implementada ocultação do selo de plataforma via CSS global." },
+    ]
+  },
   {
     version: "4.91.0",
     date: "13/08/2026",
