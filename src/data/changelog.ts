@@ -32,17 +32,27 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.92.0',
+    version: '4.93.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.92.0-release',
-    commitMessage: 'Release v4.92.0: Access for special user Juliana and ENEM content restriction'
+    commit: 'v4.93.0-release',
+    commitMessage: 'Release v4.93.0: Enhanced "New Page" UX in editor with floating button and inline zone'
   };
 }
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: "4.93.0",
+    date: "13/08/2026",
+    title: "Hiper-Facilitação de Estrutura",
+    changes: [
+      { kind: 'feature', text: "Adicionado botão flutuante 'Nova Página' de alta visibilidade no canto inferior do editor." },
+      { kind: 'improvement', text: "Implementada zona de adição rápida pontilhada entre o cabeçalho e o conteúdo." },
+      { kind: 'improvement', text: "Otimizada a visibilidade da ação de estruturação em dispositivos móveis." },
+    ]
+  },
   {
     version: "4.92.0",
     date: "13/08/2026",
