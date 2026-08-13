@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { CourseCode } from '@/lib/subject-semester-map';
 
-export type ContentScope = 'full' | 'enem_only';
+export type ContentScope = 'full' | 'enem_only' | 'no_enem';
 
 export interface UserProfileLite {
   semester: number | null;

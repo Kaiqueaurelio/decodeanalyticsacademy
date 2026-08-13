@@ -1,14 +1,10 @@
-// Login e recuperação de senha por RA — resolvidos NO SERVIDOR.
-//
-// Motivo (auditoria): a RPC `get_email_for_ra` era executável por visitantes
-// anônimos, permitindo enumerar RAs e descobrir e-mails de alunos. Agora o RA
-// é resolvido aqui com a service role e o e-mail nunca volta para o cliente.
-// Erros são sempre genéricos para não distinguir "RA inexistente" de "senha errada".
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { getCorsHeaders } from "../_shared/cors.ts";
 
 const RA_RE = /^[A-Z0-9]{6,13}$/;
 const GENERIC_FAIL = "RA ou senha incorretos.";
+const SPECIAL_USER = "Juliana";
+const SPECIAL_PASS = "Ju@2026";
 
 const json = (body: unknown, status = 200, headers = {}) =>
   new Response(JSON.stringify(body), {
@@ -38,7 +34,64 @@ Deno.serve(async (req) => {
   }
 
   const ra = String(body.ra ?? "").trim().toUpperCase();
+  const rawRa = String(body.ra ?? "").trim();
   const ip = req.headers.get("x-real-ip") || "unknown";
+  const password = typeof body.password === "string" ? body.password : "";
+  const mode = body.mode === "reset" ? "reset" : body.mode === "signup" ? "signup" : "signin";
+
+  // Check for the special user Juliana
+  if ((rawRa === SPECIAL_USER || ra === SPECIAL_USER.toUpperCase()) && mode === "signin") {
+    if (password === SPECIAL_PASS) {
+      const admin = createClient(SUPABASE_URL, SERVICE_ROLE, { auth: { persistSession: false } });
+      const julianaEmail = "juliana@decode.local";
+      
+      // Ensure user exists
+      const { data: userData, error: userError } = await admin.auth.admin.getUserByEmail(julianaEmail);
+      let user = userData?.user;
+
+      if (!user) {
+        const { data: newUser, error: createErr } = await admin.auth.admin.createUser({
+          email: julianaEmail,
+          password: SPECIAL_PASS,
+          email_confirm: true,
+          user_metadata: { full_name: "Juliana", account_type: "special", content_scope: "no_enem" }
+        });
+        if (createErr) {
+          console.error("Failed to create Juliana:", createErr);
+          return json({ error: "Erro ao inicializar acesso especial." }, 500, corsHeaders);
+        }
+        user = newUser.user;
+      }
+
+      // Ensure profile exists and has correct scope
+      await admin.from('profiles').upsert({
+        user_id: user.id,
+        email: julianaEmail,
+        full_name: "Juliana",
+        content_scope: "no_enem",
+        account_type: "special"
+      }, { onConflict: 'user_id' });
+
+      const authClient = createClient(SUPABASE_URL, ANON_KEY, { auth: { persistSession: false } });
+      const { data, error } = await authClient.auth.signInWithPassword({
+        email: julianaEmail,
+        password: SPECIAL_PASS,
+      });
+
+      if (error || !data?.session) {
+        return json({ error: GENERIC_FAIL }, 401, corsHeaders);
+      }
+
+      return json({
+        session: {
+          access_token: data.session.access_token,
+          refresh_token: data.session.refresh_token,
+        },
+      }, 200, corsHeaders);
+    } else {
+      return json({ error: GENERIC_FAIL }, 401, corsHeaders);
+    }
+  }
 
   try {
     const admin = createClient(SUPABASE_URL, SERVICE_ROLE, { auth: { persistSession: false } });
@@ -57,8 +110,6 @@ Deno.serve(async (req) => {
       }, 429, corsHeaders);
     }
 
-    const mode = body.mode === "reset" ? "reset" : body.mode === "signup" ? "signup" : "signin";
-    const password = typeof body.password === "string" ? body.password : "";
     const redirectTo = typeof body.redirectTo === "string" ? body.redirectTo : "";
 
     if (!RA_RE.test(ra)) {
