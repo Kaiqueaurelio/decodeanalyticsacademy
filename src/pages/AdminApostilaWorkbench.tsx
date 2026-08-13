@@ -578,7 +578,23 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
               <span className="hidden sm:inline">{editorExpanded ? 'Sair da expansão' : 'Expandir'}</span>
             </Button>
           </div>
-          <div ref={scrollContainerRef} className="flex-1 flex flex-col min-h-0 relative overflow-y-auto overflow-x-hidden custom-scrollbar group/workbench scroll-smooth pb-20">
+          <div className="flex-1 flex flex-col min-h-0 relative bg-background overflow-hidden">
+            <ApostilaHealthBar
+              title={title}
+              published={published}
+              saving={saving}
+              lastSavedAt={lastSavedAt}
+              onSave={() => doSave(true)}
+              onTogglePublish={togglePublish}
+              onPreview={() => setRightTab('preview')}
+              onOpenPanel={() => setRightOpen(true)}
+              wordCount={content.trim() ? content.trim().split(/\s+/).length : 0}
+              exerciseCount={exerciseCount}
+              materialCount={linkedMaterials.length}
+              onPasteOpen={() => setPasteOpen(true)}
+            />
+
+            <div ref={scrollContainerRef} className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar group/workbench scroll-smooth pb-20">
             {/* Indicador de Rolagem Lateral (Desktop e Mobile) */}
             <div className="fixed right-1 sm:right-2 top-24 bottom-24 w-1.5 sm:w-2.5 z-[100] pointer-events-none opacity-80 sm:opacity-100">
               <div className="w-full h-full bg-primary/10 rounded-full overflow-hidden border border-primary/20 backdrop-blur-[2px]">
@@ -668,6 +684,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
               />
             </div>
           </div>
+        </div>
 
           <Button
             variant="outline"

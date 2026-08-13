@@ -358,6 +358,13 @@ export function MarkdownEditor({
       isMobile ? 'h-auto min-h-[600px]' : 'h-[100dvh] sm:h-auto sm:min-h-[500px]',
       className,
     )}>
+      <EditorRibbon
+        editor={editor}
+        onInsertImage={insertImage}
+        onSave={onSave}
+        saveStatus={status}
+      />
+
       <EditorTopbar
         words={stats.words}
         zoom={zoom}
