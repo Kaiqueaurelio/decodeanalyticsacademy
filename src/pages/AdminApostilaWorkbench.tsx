@@ -684,6 +684,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
               />
             </div>
           </div>
+        </div>
 
           <Button
             variant="outline"
