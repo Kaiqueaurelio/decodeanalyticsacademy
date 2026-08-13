@@ -498,13 +498,15 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       const editorElement = document.querySelector('.ProseMirror');
       if (editorElement) {
         editorElement.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        // Tenta focar no editor para que o usuário possa digitar imediatamente
+        (editorElement as HTMLElement).focus();
       } else if (scrollContainerRef.current) {
         scrollContainerRef.current.scrollTo({
           top: scrollContainerRef.current.scrollHeight,
           behavior: 'smooth'
         });
       }
-    }, 100);
+    }, 150);
   };
 
   const baseSortOrder = linkedMaterials.length > 0

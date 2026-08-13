@@ -85,11 +85,27 @@ export function AdminNotionGalleryCard({
         {/* Notion Card Content - Agora Direita */}
         <div className="flex-1 p-4 space-y-1.5 flex flex-col justify-center min-w-0 pr-10 relative">
           <div className="flex items-center justify-between gap-2 min-h-[24px]">
-            <h3 className="text-[13px] font-bold leading-tight line-clamp-1 group-hover:text-primary transition-colors flex items-center gap-2">
-              <span className="text-muted-foreground/40 shrink-0">#</span>
-              {item.title.replace(/^\[GRADE\]\s*/i, '').replace(/_/g, ' ')}
-            </h3>
-            <div className="flex items-center gap-1">
+            <div className="flex flex-col min-w-0 flex-1">
+              <h3 className="text-[13px] font-bold leading-tight line-clamp-1 group-hover:text-primary transition-colors flex items-center gap-2">
+                <span className="text-muted-foreground/40 shrink-0">#</span>
+                {item.title.replace(/^\[GRADE\]\s*/i, '').replace(/_/g, ' ')}
+              </h3>
+              {!isPlaceholder && (
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit(item); // Ou uma função específica para abrir o modal de nova página
+                    // Se quisermos abrir o modal de nova página direto, poderíamos disparar o evento
+                    window.dispatchEvent(new CustomEvent('open-quick-add-section'));
+                  }}
+                  className="flex items-center gap-1 text-[9px] font-bold text-emerald-500 hover:text-emerald-400 mt-0.5 transition-colors w-fit"
+                >
+                  <Plus className="h-3 w-3" />
+                  NOVA PÁGINA
+                </button>
+              )}
+            </div>
+            <div className="flex items-center gap-1 shrink-0">
                <Badge className="bg-[#27272A]/80 text-foreground border border-white/10 text-[8px] font-bold px-1.5 py-0 rounded-md shrink-0">
                   1 APOSTILA
                </Badge>
