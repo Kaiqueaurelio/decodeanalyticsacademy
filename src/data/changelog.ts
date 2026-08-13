@@ -44,6 +44,15 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: "4.86.0",
+    date: "13/08/2026",
+    title: "Visibilidade do Botão de Criação Rápida",
+    changes: [
+      { kind: 'fix', text: 'Botão de Adicionar Caderno (Plus) agora é permanentemente visível nos cards de matéria para facilitar o acesso.' },
+      { kind: 'improvement', text: 'Ajuste de opacidade para garantir que a ação de criação rápida esteja sempre disponível ao administrador.' }
+    ]
+  },
+  {
     version: "4.85.0",
     date: "13/08/2026",
     title: "Criação Rápida Contextual",
