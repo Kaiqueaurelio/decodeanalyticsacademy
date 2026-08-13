@@ -32,17 +32,40 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.80.0',
+    version: '4.81.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.80.0-release',
-    commitMessage: 'Release v4.80.0: Notion Pro Toolbar High-Fidelity Refinement'
+    commit: 'v4.81.0-release',
+    commitMessage: 'Release v4.81.0: Notion Pro High-Fidelity Interactive Workbench'
   };
 }
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: '4.81.0',
+    date: '2026-08-13',
+    title: 'Notion Pro High-Fidelity Interactive Workbench',
+    changes: [
+      {
+        kind: 'improvement',
+        text: 'Implementação de cabeçalho interativo com status de pendências fixo (v4.81.0).'
+      },
+      {
+        kind: 'improvement',
+        text: 'Barra de ferramentas administrativa horizontal com atalhos de IA, ENEM e visualização como aluno.'
+      },
+      {
+        kind: 'feature',
+        text: 'Sistema de salvamento automático a cada 30 segundos para maior segurança.'
+      },
+      {
+        kind: 'improvement',
+        text: 'Otimização de responsividade mobile e indicador de progresso dinâmico.'
+      }
+    ]
+  },
   {
     version: '4.80.0',
     date: '2026-08-13',
