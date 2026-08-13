@@ -70,8 +70,41 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
   const [semester, setSemester] = useState<number | null>(null);
   const [course, setCourse] = useState<CourseCode[]>([]);
 
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      const indicator = document.getElementById('scroll-indicator');
+      if (!indicator) return;
+
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      const scrollPercent = (scrollTop / (scrollHeight - clientHeight)) * 100;
+      const thumbHeight = (clientHeight / scrollHeight) ? (clientHeight / scrollHeight) * 100 : 0;
+      
+      indicator.style.height = `${Math.max(thumbHeight, 10)}%`;
+      indicator.style.marginTop = `${(scrollPercent * (100 - Math.max(thumbHeight, 10))) / 100}%`;
+    };
+
+    container.addEventListener('scroll', handleScroll);
+    window.addEventListener('resize', handleScroll);
+    
+    // Initial update
+    setTimeout(handleScroll, 500);
+
+    return () => {
+      container.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleScroll);
+    };
+  }, [loading, content]);
+
+
+
   // Materiais e exercícios
   const [linkedMaterials, setLinkedMaterials] = useState<LinkedMaterialItem[]>([]);
+
   const [exerciseCount, setExerciseCount] = useState(0);
 
   // UI
@@ -545,7 +578,17 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
               <span className="hidden sm:inline">{editorExpanded ? 'Sair da expansão' : 'Expandir'}</span>
             </Button>
           </div>
-          <div className="flex-1 flex flex-col min-h-0 relative overflow-y-auto overflow-x-hidden">
+          <div ref={scrollContainerRef} className="flex-1 flex flex-col min-h-0 relative overflow-y-auto overflow-x-hidden custom-scrollbar group/workbench scroll-smooth">
+            <div className="fixed right-4 top-24 bottom-24 w-1.5 z-50 pointer-events-none hidden sm:block">
+              <div className="w-full h-full bg-border/10 rounded-full overflow-hidden">
+                <div 
+                  id="scroll-indicator"
+                  className="w-full bg-primary/40 rounded-full transition-all duration-150"
+                  style={{ height: '0%', marginTop: '0%' }}
+                />
+              </div>
+            </div>
+
             <div className="w-full max-w-[900px] mx-auto flex flex-col shrink-0">
               <div className="relative px-3 py-3 sm:pt-12 sm:pb-8 sm:px-16">
                 <div 
