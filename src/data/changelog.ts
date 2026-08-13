@@ -44,6 +44,20 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: "4.84.0",
+    date: "13/08/2026",
+    title: "Criação Rápida Contextual",
+    author: "Kaique Aurelio & Decode Analytics",
+    changes: [
+      "Relocação do botão 'Novo Caderno' para dentro de cada pasta de disciplina no dashboard administrativo.",
+      "Preenchimento automático de categoria e semestre ao criar apostila a partir de uma disciplina.",
+      "Remoção do botão flutuante global para evitar poluição visual no admin.",
+      "Melhoria na UX de organização de conteúdos acadêmicos."
+    ],
+    type: "feature"
+  },
+
+  {
     version: '4.83.0',
     date: '2026-08-13',
     title: 'Criação Rápida de Cadernos',
