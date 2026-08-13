@@ -32,17 +32,27 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.73.0',
+    version: '4.77.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.73.0-release',
-    commitMessage: 'Release v4.73.0: Workbench Visual Optimization'
+    commit: 'v4.77.0-release',
+    commitMessage: 'Release v4.77.0: Enhanced Scroll Visibility'
   };
 }
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: '4.77.0',
+    date: '2026-08-13',
+    title: 'Visibilidade de Navegação Universal',
+    changes: [
+      { kind: 'improvement', text: 'Implementado indicador de rolagem lateral neon para dispositivos móveis no editor administrativo.' },
+      { kind: 'improvement', text: 'Aumentado o contraste da barra de rolagem e do indicador de posição para garantir orientação espacial clara.' },
+      { kind: 'fix', text: 'Corrigida falha de percepção de scroll em materiais extensos através de feedback visual persistente.' },
+    ]
+  },
   {
     version: '4.76.0',
     date: '2026-08-13',

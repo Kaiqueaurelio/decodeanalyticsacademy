@@ -578,12 +578,13 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
               <span className="hidden sm:inline">{editorExpanded ? 'Sair da expansão' : 'Expandir'}</span>
             </Button>
           </div>
-          <div ref={scrollContainerRef} className="flex-1 flex flex-col min-h-0 relative overflow-y-auto overflow-x-hidden custom-scrollbar group/workbench scroll-smooth">
-            <div className="fixed right-2 top-24 bottom-24 w-2 z-50 pointer-events-none hidden sm:block">
-              <div className="w-full h-full bg-primary/5 rounded-full overflow-hidden border border-primary/10">
+          <div ref={scrollContainerRef} className="flex-1 flex flex-col min-h-0 relative overflow-y-auto overflow-x-hidden custom-scrollbar group/workbench scroll-smooth pb-20">
+            {/* Indicador de Rolagem Lateral (Desktop e Mobile) */}
+            <div className="fixed right-1 sm:right-2 top-24 bottom-24 w-1.5 sm:w-2.5 z-[100] pointer-events-none opacity-80 sm:opacity-100">
+              <div className="w-full h-full bg-primary/10 rounded-full overflow-hidden border border-primary/20 backdrop-blur-[2px]">
                 <div 
                   id="scroll-indicator"
-                  className="w-full bg-primary rounded-full transition-all duration-150 shadow-[0_0_10px_rgba(var(--primary),0.5)]"
+                  className="w-full bg-primary rounded-full transition-all duration-200 shadow-[0_0_15px_rgba(var(--primary),0.8)] border border-white/20"
                   style={{ height: '0%', marginTop: '0%' }}
                 />
               </div>
