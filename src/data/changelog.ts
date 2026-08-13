@@ -32,17 +32,27 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.84.0',
+    version: '4.85.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.83.0-release',
-    commitMessage: 'Release v4.83.0: Quick Create Cadernos Feature'
+    commit: 'v4.85.0-release',
+    commitMessage: 'Release v4.85.0: Contextual Quick Create in Folders'
   };
 }
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: "4.85.0",
+    date: "13/08/2026",
+    title: "Criação Rápida Contextual",
+    changes: [
+      { kind: 'feature', text: 'Integração do botão Novo Caderno dentro da visualização de matérias e pastas no AdminDashboard.' },
+      { kind: 'improvement', text: 'Melhoria na UX de criação contextual com preenchimento automático de categoria e semestre.' },
+      { kind: 'improvement', text: 'Refinamento visual dos cards de pasta no painel administrativo com ícone Plus flutuante.' }
+    ]
+  },
   {
     version: "4.84.0",
     date: "13/08/2026",

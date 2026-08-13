@@ -922,7 +922,20 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
                       <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary"><FolderOpen className="h-5 w-5" /></div>
                       <div className="min-w-0"><p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Caderno da matéria</p><h3 className="truncate text-base font-bold">{openedFolder.name}</h3></div>
                     </div>
-                    <Button variant="outline" size="sm" onClick={() => setOpenCategory(null)}>Voltar às matérias</Button>
+                    <div className="flex items-center gap-2">
+                      <Button 
+                        onClick={() => {
+                          setQuickCreateCategory(openedFolder.name);
+                          setQuickCreateSemester(openedFolder.semester || null);
+                          setShowQuickCreate(true);
+                        }} 
+                        className="rounded-xl shadow-lg shadow-primary/20 gap-2 bg-emerald-600 hover:bg-emerald-500 text-white"
+                        size="sm"
+                      >
+                        <Plus className="h-4 w-4" /> Novo Caderno
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={() => setOpenCategory(null)} className="rounded-xl">Voltar às matérias</Button>
+                    </div>
                   </div>
                   <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
                     {openedFolder.items.map((a) => {
@@ -939,11 +952,43 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
                   {folders.map((folder) => {
                     const published = folder.items.filter((item) => item.published).length;
-                    return <button key={folder.name} type="button" onClick={() => setOpenCategory(folder.name)} className="group flex min-h-28 items-center gap-3 rounded-xl border border-border/70 bg-card/50 p-4 text-left transition hover:border-primary/50 hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-                      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary"><FolderOpen className="h-5 w-5" /></span>
-                      <span className="min-w-0 flex-1"><span className="flex items-center gap-2"><span className="truncate text-sm font-semibold">{folder.name}</span><Badge variant="secondary" className="text-[9px]">{folder.items.length} {folder.items.length === 1 ? 'apostila' : 'apostilas'}</Badge></span><span className="mt-1 block text-[11px] text-muted-foreground">{published} publicada{published === 1 ? '' : 's'}{folder.semester ? ` · ${folder.semester}º semestre` : ''}</span></span>
-                      <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-primary" />
-                    </button>;
+                    return <div key={folder.name} className="group relative flex min-h-28 items-center gap-3 rounded-xl border border-border/70 bg-card/50 p-4 text-left transition hover:border-primary/50 hover:bg-primary/5 focus-within:ring-2 focus-within:ring-primary">
+                      <button 
+                        type="button" 
+                        onClick={() => setOpenCategory(folder.name)} 
+                        className="flex-1 flex items-center gap-3 text-left focus:outline-none"
+                      >
+                        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary"><FolderOpen className="h-5 w-5" /></span>
+                        <span className="min-w-0 flex-1">
+                          <span className="flex items-center gap-2">
+                            <span className="truncate text-sm font-semibold">{folder.name}</span>
+                            <Badge variant="secondary" className="text-[9px]">{folder.items.length} {folder.items.length === 1 ? 'apostila' : 'apostilas'}</Badge>
+                          </span>
+                          <span className="mt-1 block text-[11px] text-muted-foreground">{published} publicada{published === 1 ? '' : 's'}{folder.semester ? ` · ${folder.semester}º semestre` : ''}</span>
+                        </span>
+                      </button>
+                      
+                      <div className="flex items-center gap-1 shrink-0">
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-8 w-8 rounded-lg text-emerald-500 hover:bg-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setQuickCreateCategory(folder.name);
+                            setQuickCreateSemester(folder.semester || null);
+                            setShowQuickCreate(true);
+                          }}
+                          title="Adicionar Caderno"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                        <ChevronRight 
+                          className="h-4 w-4 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-primary cursor-pointer" 
+                          onClick={() => setOpenCategory(folder.name)}
+                        />
+                      </div>
+                    </div>;
                   })}
                 </div>
               )}
