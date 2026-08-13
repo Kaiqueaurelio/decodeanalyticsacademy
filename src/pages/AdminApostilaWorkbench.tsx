@@ -520,17 +520,18 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         published={published}
         saving={saving}
         lastSavedAt={lastSavedAt}
-        onSave={doSave}
+        onSave={() => doSave(true)}
         onTogglePublish={togglePublish}
         onPreview={() => { setRightTab('preview'); setRightOpen(true); }}
         onOpenPanel={() => { setRightTab('materials'); setRightOpen(true); }}
-        onPasteOpen={() => setPasteOpen(true)}
-        wordCount={stats.words}
+        wordCount={content.trim() ? content.trim().split(/\s+/).length : 0}
         exerciseCount={exerciseCount}
         materialCount={linkedMaterials.length}
+        onPasteOpen={() => setPasteOpen(true)}
       />
       
       <div className="flex flex-1 min-h-0 overflow-hidden relative">
+
         {/* Sidebar Desktop/Mobile */}
         <div className={cn(
           "fixed inset-y-0 left-0 z-50 w-64 overflow-hidden transform transition-all duration-300 ease-in-out bg-background lg:relative shrink-0",
@@ -579,20 +580,8 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
             </Button>
           </div>
           <div className="flex-1 flex flex-col min-h-0 relative bg-background overflow-hidden">
-            <ApostilaHealthBar
-              title={title}
-              published={published}
-              saving={saving}
-              lastSavedAt={lastSavedAt}
-              onSave={() => doSave(true)}
-              onTogglePublish={togglePublish}
-              onPreview={() => setRightTab('preview')}
-              onOpenPanel={() => setRightOpen(true)}
-              wordCount={content.trim() ? content.trim().split(/\s+/).length : 0}
-              exerciseCount={exerciseCount}
-              materialCount={linkedMaterials.length}
-              onPasteOpen={() => setPasteOpen(true)}
-            />
+
+
 
             <div ref={scrollContainerRef} className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar group/workbench scroll-smooth pb-20">
             {/* Indicador de Rolagem Lateral (Desktop e Mobile) */}

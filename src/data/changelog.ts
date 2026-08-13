@@ -32,17 +32,36 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.79.0',
+    version: '4.80.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.79.0-release',
-    commitMessage: 'Release v4.79.0: Notion Pro Editor Restoration'
+    commit: 'v4.80.0-release',
+    commitMessage: 'Release v4.80.0: Notion Pro Toolbar High-Fidelity Refinement'
   };
 }
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: '4.80.0',
+    date: '2026-08-13',
+    title: 'Refinamento High-Fidelity Notion Pro',
+    changes: [
+      {
+        kind: 'improvement',
+        text: 'Reestruturação da barra de ferramentas administrativa em 3 camadas: Navegação (Notion breadcrumbs), Métricas (Saúde da apostila) e Ações Rápidas (Barra secundária com atalhos de IA e capa).'
+      },
+      {
+        kind: 'improvement',
+        text: 'Estilização 1:1 baseada na imagem de referência, incluindo chips de pendências coloridos, badges de curso e botões de ação com bordas suaves e fundos semi-transparentes.'
+      },
+      {
+        kind: 'fix',
+        text: 'Correção da posição da barra de ferramentas, agora fixa no topo do workbench para acesso persistente durante a edição.'
+      }
+    ]
+  },
   {
     version: '4.79.0',
     date: '2026-08-13',
@@ -50,11 +69,11 @@ export const CHANGELOG: Release[] = [
     changes: [
       {
         kind: 'fix',
-        title: 'Barra de Ferramentas Administrativa',
-        description: 'Reintegração da ApostilaHealthBar e EditorRibbon para acesso imediato ao Colar Inteligente e formatação Office em todos os dispositivos.'
-      } as any
+        text: 'Reintegração da ApostilaHealthBar e EditorRibbon para acesso imediato ao Colar Inteligente e formatação Office em todos os dispositivos.'
+      }
     ]
   },
+
   {
     version: '4.78.0',
     date: '2026-08-13',
