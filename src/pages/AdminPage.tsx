@@ -349,10 +349,11 @@ function AdminSidebar({ tab, setTab, stats, sidebarOpen, setSidebarOpen }: {
 
 
 // ─── Overview Tab ───────────────────────────────────────────────
-function OverviewTab({ apostilas, exercises, allAnswers, materials, users, setTab, loading, filterSemester, setFilterSemester }: {
+function OverviewTab({ apostilas, exercises, allAnswers, materials, users, setTab, loading, filterSemester, setFilterSemester, setShowQuickCreate }: {
   apostilas: Apostila[]; exercises: Record<string, Exercise[]>; allAnswers: any[];
   materials: Material[]; users: any[]; setTab: (t: Tab) => void; loading?: boolean;
   filterSemester: string; setFilterSemester: (s: string) => void;
+  setShowQuickCreate: (show: boolean) => void;
 }) {
   const navigate = useNavigate();
   const totalExercises = Object.values(exercises).flat().length;
