@@ -31,7 +31,7 @@ interface QuickCreateApostilaDialogProps {
 }
 
 
-export function QuickCreateApostilaDialog({ open, onOpenChange }: QuickCreateApostilaDialogProps) {
+export function QuickCreateApostilaDialog({ open, onOpenChange, onCreated }: QuickCreateApostilaDialogProps) {
   const navigate = useNavigate();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
