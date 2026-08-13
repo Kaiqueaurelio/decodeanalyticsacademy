@@ -11,7 +11,14 @@ import {
   Check,
   Menu,
   ClipboardPaste,
-  ListChecks
+  ListChecks,
+  RotateCcw,
+  PlusCircle,
+  Link2,
+  Paperclip,
+  Wand2,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
