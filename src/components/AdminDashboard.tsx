@@ -940,11 +940,45 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
                   <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
                     {openedFolder.items.map((a) => {
                       const placeholder = (a as any).isPlaceholder || a.id.startsWith('placeholder');
-                      return <button key={a.id} type="button" onClick={() => handleEdit(a)} className="group min-h-40 rounded-xl border border-border/70 bg-muted/20 p-4 text-left transition hover:border-primary/50 hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
-                        <div className="flex items-start justify-between gap-2"><FileText className="mt-0.5 h-5 w-5 shrink-0 text-primary" /><Badge variant={a.published ? 'default' : 'secondary'} className="text-[10px]">{placeholder ? 'Criar' : a.published ? 'Publicada' : 'Oculta'}</Badge></div>
-                        <h4 className="mt-7 line-clamp-2 text-sm font-semibold group-hover:text-primary">{a.title.replace(/^\[GRADE\]\s*/i, '')}</h4>
-                        <p className="mt-2 text-[11px] text-muted-foreground">{placeholder ? 'Clique para começar o material' : 'Clique para abrir e editar'}</p>
-                      </button>;
+                      return <div key={a.id} className="group relative flex flex-col min-h-44 rounded-xl border border-border/70 bg-muted/20 overflow-hidden transition hover:border-primary/50 hover:bg-primary/5 focus-within:ring-2 focus-within:ring-primary shadow-sm">
+                        <button 
+                          type="button" 
+                          onClick={() => handleEdit(a)} 
+                          className="flex-1 p-4 text-left focus-visible:outline-none"
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <FileText className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                            <Badge variant={a.published ? 'default' : 'secondary'} className="text-[10px]">
+                              {placeholder ? 'Criar' : a.published ? 'Publicada' : 'Oculta'}
+                            </Badge>
+                          </div>
+                          <h4 className="mt-7 line-clamp-2 text-sm font-semibold group-hover:text-primary leading-tight">
+                            {a.title.replace(/^\[GRADE\]\s*/i, '')}
+                          </h4>
+                          <p className="mt-2 text-[11px] text-muted-foreground">
+                            {placeholder ? 'Clique para começar o material' : 'Clique para abrir e editar'}
+                          </p>
+                        </button>
+                        
+                        {!placeholder && (
+                          <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-1 group-hover:translate-y-0">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-9 px-3 text-[10px] font-black uppercase tracking-wider gap-2 bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white border border-emerald-500/20 rounded-lg shadow-lg shadow-emerald-500/10"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleEdit(a);
+                                // A lógica para abrir o modal de nova página no editor é disparada por evento global no workbench
+                                setTimeout(() => window.dispatchEvent(new CustomEvent('open-quick-add-section')), 100);
+                              }}
+                            >
+                              <Plus className="h-3.5 w-3.5" />
+                              Nova Página
+                            </Button>
+                          </div>
+                        )}
+                      </div>;
                     })}
                   </div>
                 </section>
