@@ -32,7 +32,8 @@ import {
   Link as LinkIcon, Loader2, AlertCircle, Edit, Download, File, Image, Video, Music, FileSpreadsheet, Presentation,
   Users, ShieldBan, ShieldCheck, ShieldAlert, Search, Menu, X, Activity, GraduationCap, FolderOpen, Settings, RefreshCw,
   Sun, Moon, FileUp, PenTool, Wand2, Megaphone, Combine, Calendar as CalIcon, MessageSquare, MessageSquareQuote, Link2, FileDown, MoreHorizontal, Paperclip, Rss, Info, ExternalLink, ChevronRight, History, Store,
-  Sparkles, Check, CheckSquare
+  Sparkles, Check, CheckSquare,
+  BookPlus
 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -47,6 +48,8 @@ import { CalendarEventsAdmin } from '@/components/CalendarEventsAdmin';
 import { AdminUserManagement } from '@/components/admin/AdminUserManagement';
 import { ApostilaMaterialsManager } from '@/components/ApostilaMaterialsManager';
 import { ensureApostilaExists } from '@/lib/create-placeholder-apostila';
+
+
 
 import { AppendLinkDialog } from '@/components/AppendLinkDialog';
 import { autoLinkAll, autoLinkApostila } from '@/lib/auto-link-materials';
@@ -85,6 +88,7 @@ import { ApostilaExportDialog } from '@/components/admin/ApostilaExportDialog';
 import { TaskManager } from '@/components/admin/TaskManager';
 import { DeploymentStatusPanel } from '@/components/admin/DeploymentStatusPanel';
 import { ApostilaHealthDashboard } from '@/components/admin/ApostilaHealthDashboard';
+import { QuickCreateApostilaDialog } from '@/components/admin/QuickCreateApostilaDialog';
 
 type Apostila = Tables<'apostilas'>;
 type Exercise = Tables<'exercises'>;
@@ -790,6 +794,23 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
   const [batchUrls, setBatchUrls] = useState('');
   const [batchProgress, setBatchProgress] = useState<{ current: number; total: number; results: { url: string; title: string; status: 'ok' | 'error'; error?: string }[] }>({ current: 0, total: 0, results: [] });
   const [batchRunning, setBatchRunning] = useState(false);
+  const [showQuickCreate, setShowQuickCreate] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+      const cmdOrCtrl = isMac ? e.metaKey : e.ctrlKey;
+      
+      if (cmdOrCtrl && e.altKey && e.key.toLowerCase() === 'n') {
+        e.preventDefault();
+        setShowQuickCreate(true);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
 
   // Manual create
   const [manualTitle, setManualTitle] = useState('');
@@ -1212,7 +1233,6 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
       setRefreshing(false);
     }
   };
-
 
 
   const handleBatchImport = async () => {
@@ -3698,9 +3718,27 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
         open={!!exportingApostila}
         onOpenChange={(v) => { if (!v) setExportingApostila(null); }}
       />
+      <QuickCreateApostilaDialog 
+        open={showQuickCreate} 
+        onOpenChange={setShowQuickCreate} 
+        onCreated={loadAll} 
+      />
+
+      {/* Botão flutuante Quick Create */}
+      <div className="fixed bottom-6 right-6 z-50">
+        <Button
+          onClick={() => setShowQuickCreate(true)}
+          className="h-14 w-14 sm:w-auto sm:px-6 rounded-full gradient-primary text-primary-foreground shadow-2xl shadow-primary/40 flex items-center justify-center gap-2 group transition-all duration-300 hover:scale-105 active:scale-95 animate-pulse-subtle"
+          aria-label="Criar nova apostila"
+        >
+          <BookPlus className="h-6 w-6 group-hover:rotate-12 transition-transform duration-300" />
+          <span className="hidden sm:inline font-bold tracking-tight">Novo Caderno</span>
+        </Button>
+      </div>
     </CategoriesCtx.Provider>
   );
 }
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Admin: redefinir senha de um usuário
@@ -3847,3 +3885,4 @@ function AdminPasswordResetMenu({ user }: { user: { user_id: string; email: stri
     </>
   );
 }
+

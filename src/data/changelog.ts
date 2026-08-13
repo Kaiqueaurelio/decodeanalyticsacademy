@@ -32,17 +32,36 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.82.0',
+    version: '4.83.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.82.0-release',
-    commitMessage: 'Release v4.82.0: Notion Pro UX Hyper-Optimization'
+    commit: 'v4.83.0-release',
+    commitMessage: 'Release v4.83.0: Quick Create Cadernos Feature'
   };
 }
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: '4.83.0',
+    date: '2026-08-13',
+    title: 'Criação Rápida de Cadernos',
+    changes: [
+      {
+        kind: 'feature',
+        text: 'Implementado botão flutuante pulsante de "Novo Caderno" com acesso rápido em todo o painel admin.'
+      },
+      {
+        kind: 'feature',
+        text: 'Adicionado modal de criação rápida com suporte a templates e atalho global (Ctrl+Alt+N).'
+      },
+      {
+        kind: 'improvement',
+        text: 'Otimizado o fluxo de criação para permitir início imediato de novas apostilas em menos de 10 segundos.'
+      }
+    ]
+  },
   {
     version: '4.82.0',
     date: '2026-08-13',
