@@ -244,10 +244,10 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
   useEffect(() => { if (id) loadApostila(id); }, [id]);
 
   useEffect(() => {
-    const handleKeyAdd = () => {
+    const handleKeyAdd = (e: any) => {
       // Tenta sugerir um número baseado no conteúdo atual
-      // Regex para encontrar headings H1 style que começam com números (ex: "# 1.1 Introdução")
-      const matches = content.match(/^#\s+(\d+(?:\.\d+)*)/gm);
+      const contentToAnalyze = content || '';
+      const matches = contentToAnalyze.match(/^#\s+(\d+(?:\.\d+)*)/gm);
       let suggested = '';
       if (matches && matches.length > 0) {
         const lastHeading = matches[matches.length - 1];
