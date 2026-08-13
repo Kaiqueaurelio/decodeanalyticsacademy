@@ -577,32 +577,6 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
 
   return (
     <div className="flex flex-col h-screen bg-background overflow-hidden relative">
-      <ApostilaHealthBar
-        title={title}
-        published={published}
-        saving={saving}
-        lastSavedAt={lastSavedAt}
-        onSave={() => doSave(true)}
-        onTogglePublish={togglePublish}
-        onPreview={() => { setRightTab('preview'); setRightOpen(true); }}
-        onOpenPanel={() => { setRightTab('materials'); setRightOpen(true); }}
-        wordCount={content.trim() ? content.trim().split(/\s+/).length : 0}
-        exerciseCount={exerciseCount}
-        materialCount={linkedMaterials.length}
-        onPasteOpen={() => setPasteOpen(true)}
-        onAddPage={() => {
-          // Tenta sugerir um número baseado no conteúdo atual
-          const matches = content.match(/#\s+(\d+\.?\d*)/g);
-          if (matches) {
-            const lastNum = parseFloat(matches[matches.length - 1].replace('# ', ''));
-            if (!isNaN(lastNum)) {
-              setSuggestedSectionTitle(`${(lastNum + 0.1).toFixed(1)} `);
-            }
-          }
-          setAddSectionOpen(true);
-        }}
-      />
-      
       <div className="flex flex-1 min-h-0 overflow-hidden relative">
 
 

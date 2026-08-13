@@ -53,7 +53,25 @@ import { useActiveHeading } from '@/components/editor/useActiveHeading';
 import { useSyncedScroll } from '@/components/editor/useSyncedScroll';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Eye, Pencil, ListTree, Wand2, Columns2, Video, ImageIcon, Bold, Heading2, List, Redo2, Save, Undo2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { 
+  Eye, 
+  Pencil, 
+  ListTree, 
+  Wand2, 
+  Columns2, 
+  Video, 
+  ImageIcon, 
+  Bold, 
+  Heading2, 
+  List, 
+  Redo2, 
+  Save, 
+  Undo2,
+  Check,
+  Cloud,
+  Printer
+} from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Props {
