@@ -246,14 +246,25 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
   useEffect(() => {
     const handleKeyAdd = () => {
       // Tenta sugerir um número baseado no conteúdo atual
-      const matches = content.match(/#\s+(\d+\.?\d*)/g);
+      // Regex para encontrar headings H1 style que começam com números (ex: "# 1.1 Introdução")
+      const matches = content.match(/^#\s+(\d+(?:\.\d+)*)/gm);
       let suggested = '';
-      if (matches) {
-        const lastNum = parseFloat(matches[matches.length - 1].replace('# ', ''));
-        if (!isNaN(lastNum)) {
-          suggested = `${(lastNum + 0.1).toFixed(1)} `;
+      if (matches && matches.length > 0) {
+        const lastHeading = matches[matches.length - 1];
+        const lastNumStr = lastHeading.replace(/^#\s+/, '');
+        const parts = lastNumStr.split('.');
+        
+        if (parts.length > 0) {
+          const lastPart = parseInt(parts[parts.length - 1]);
+          if (!isNaN(lastPart)) {
+            parts[parts.length - 1] = (lastPart + 1).toString();
+            suggested = parts.join('.');
+          }
         }
+      } else {
+        suggested = '1.1';
       }
+      
       setSuggestedSectionTitle(suggested);
       setAddSectionOpen(true);
     };
