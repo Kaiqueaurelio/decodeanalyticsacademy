@@ -515,9 +515,23 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
 
   return (
     <div className="flex flex-col h-screen bg-background overflow-hidden">
-
+      <ApostilaHealthBar
+        title={title}
+        published={published}
+        saving={saving}
+        lastSavedAt={lastSavedAt}
+        onSave={() => doSave(true)}
+        onTogglePublish={togglePublish}
+        onPreview={() => { setRightTab('preview'); setRightOpen(true); }}
+        onOpenPanel={() => { setRightTab('materials'); setRightOpen(true); }}
+        wordCount={content.trim() ? content.trim().split(/\s+/).length : 0}
+        exerciseCount={exerciseCount}
+        materialCount={linkedMaterials.length}
+        onPasteOpen={() => setPasteOpen(true)}
+      />
       
       <div className="flex flex-1 min-h-0 overflow-hidden relative">
+
         {/* Sidebar Desktop/Mobile */}
         <div className={cn(
           "fixed inset-y-0 left-0 z-50 w-64 overflow-hidden transform transition-all duration-300 ease-in-out bg-background lg:relative shrink-0",
