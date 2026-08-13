@@ -547,66 +547,66 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
           </div>
           <div className="flex flex-1 min-h-0 flex-col overflow-hidden w-full">
             <div className="w-full max-w-[900px] mx-auto flex flex-col shrink-0">
-              <div className="relative px-3 py-3 sm:pt-20 sm:pb-10 sm:px-16">
+              <div className="relative px-3 py-3 sm:pt-12 sm:pb-8 sm:px-16">
                 <div 
                   className="absolute top-0 left-0 right-0 h-48 opacity-10 blur-3xl -z-10"
                   style={{ background: `linear-gradient(to bottom, ${getSubjectColor(category)}, transparent)` }}
                 />
                 
-                <div className="space-y-3 sm:space-y-6">
-
-                <div className="hidden sm:flex h-20 w-20 items-center justify-center rounded-2xl bg-accent/30 text-4xl group-hover:bg-accent/50 transition-colors cursor-pointer">📚</div>
-
                 <div className="space-y-4">
-                  <input
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    placeholder="Título da Página"
-                    className="w-full bg-transparent border-none text-xl sm:text-5xl font-black focus:ring-0 placeholder:text-muted-foreground/20 p-0"
-                  />
-                  
-                  <div className="hidden sm:grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 py-4 border-y border-border/10">
-                    <div className="flex items-center gap-4 py-1.5">
-                      <div className="flex items-center gap-2 w-32 text-muted-foreground/50 text-[10px] font-black uppercase tracking-widest shrink-0">
-                        <ListChecks className="h-3.5 w-3.5" />
-                        <span>Status</span>
-                      </div>
-                      <Badge variant="outline" className={cn(
-                        "text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md",
-                        published ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : "bg-amber-500/10 text-amber-500 border-amber-500/20"
-                      )}>
-                        {published ? 'PUBLICADA' : 'RASCUNHO'}
-                      </Badge>
-                    </div>
+                  <div className="hidden sm:flex h-12 w-12 items-center justify-center rounded-xl bg-accent/30 text-2xl group-hover:bg-accent/50 transition-colors cursor-pointer">📚</div>
 
-                    <div className="flex items-center gap-4 py-1.5">
-                      <div className="flex items-center gap-2 w-32 text-muted-foreground/50 text-[10px] font-black uppercase tracking-widest shrink-0">
-                        <GraduationCap className="h-3.5 w-3.5" />
-                        <span>Semestre</span>
+                  <div className="space-y-2">
+                    <input
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      placeholder="Título da Página"
+                      className="w-full bg-transparent border-none text-xl sm:text-4xl font-black focus:ring-0 placeholder:text-muted-foreground/20 p-0"
+                    />
+                    
+                    <div className="hidden sm:flex flex-wrap items-center gap-x-8 gap-y-2 py-3 border-y border-border/10">
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-1.5 text-muted-foreground/50 text-[10px] font-black uppercase tracking-widest shrink-0">
+                          <ListChecks className="h-3 w-3" />
+                          <span>Status</span>
+                        </div>
+                        <Badge variant="outline" className={cn(
+                          "text-[9px] font-black uppercase tracking-wider px-1.5 py-0 rounded-md",
+                          published ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                        )}>
+                          {published ? 'PUBLICADA' : 'RASCUNHO'}
+                        </Badge>
                       </div>
-                      <select
-                        value={semester || ''}
-                        onChange={(e) => setSemester(e.target.value ? Number(e.target.value) : null)}
-                        className="bg-transparent border-none p-0 text-xs font-bold focus:ring-0 cursor-pointer text-muted-foreground hover:text-foreground transition-colors"
-                      >
-                        <option value="">Não definido</option>
-                        {[1, 2, 3, 4, 5, 6, 7, 8].map(s => (
-                          <option key={s} value={s}>{s}º semestre</option>
-                        ))}
-                      </select>
-                    </div>
 
-                    <div className="flex items-center gap-4 py-1.5">
-                      <div className="flex items-center gap-2 w-32 text-muted-foreground/50 text-[10px] font-black uppercase tracking-widest shrink-0">
-                        <FileText className="h-3.5 w-3.5" />
-                        <span>Matéria</span>
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-1.5 text-muted-foreground/50 text-[10px] font-black uppercase tracking-widest shrink-0">
+                          <GraduationCap className="h-3 w-3" />
+                          <span>Semestre</span>
+                        </div>
+                        <select
+                          value={semester || ''}
+                          onChange={(e) => setSemester(e.target.value ? Number(e.target.value) : null)}
+                          className="bg-transparent border-none p-0 text-[11px] font-bold focus:ring-0 cursor-pointer text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                          <option value="">Não definido</option>
+                          {[1, 2, 3, 4, 5, 6, 7, 8].map(s => (
+                            <option key={s} value={s}>{s}º semestre</option>
+                          ))}
+                        </select>
                       </div>
-                      <input
-                        value={category}
-                        onChange={(e) => setCategory(e.target.value)}
-                        placeholder="Nome da disciplina"
-                        className="bg-transparent border-none p-0 text-xs font-bold focus:ring-0 w-full text-muted-foreground hover:text-foreground transition-colors"
-                      />
+
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-1.5 text-muted-foreground/50 text-[10px] font-black uppercase tracking-widest shrink-0">
+                          <FileText className="h-3 w-3" />
+                          <span>Matéria</span>
+                        </div>
+                        <input
+                          value={category}
+                          onChange={(e) => setCategory(e.target.value)}
+                          placeholder="Nome da disciplina"
+                          className="bg-transparent border-none p-0 text-[11px] font-bold focus:ring-0 min-w-[150px] text-muted-foreground hover:text-foreground transition-colors"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -621,7 +621,6 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
                 placeholder="Comece a escrever ou digite '/' para comandos..."
                 className="flex-1 min-h-0 border-none shadow-none bg-transparent"
               />
-              </div>
             </div>
           </div>
 
