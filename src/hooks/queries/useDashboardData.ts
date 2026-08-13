@@ -73,10 +73,15 @@ export function useApostilasList(options: ApostilasListOptions = {}) {
 
       if (error) throw error;
 
-      return ((data || []) as ApostilaSummary[]).map((apostila) => ({
-        ...apostila,
-        semester: apostila.semester ?? guessSemesterFromCategory(apostila.category) ?? null,
-      }));
+      return ((data || []) as ApostilaSummary[]).map((apostila) => {
+        const semester = apostila.semester ?? guessSemesterFromCategory(apostila.category) ?? null;
+        // Se for Bônus ou Canivete Suíço, forçamos a visibilidade em todos os semestres (semester: 0)
+        const isBonus = (apostila.category === 'Bônus' || apostila.category === 'Canivete Suíço do Estudante');
+        return {
+          ...apostila,
+          semester: isBonus ? 0 : semester,
+        };
+      });
     },
   });
 }
