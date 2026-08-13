@@ -44,7 +44,7 @@ interface ApostilaLite {
   course: CourseCode[] | null;
 }
 
-const AUTOSAVE_MS = 1500;
+const AUTOSAVE_MS = 30000;
 
 interface WorkbenchProps {
   overrideId?: string;
