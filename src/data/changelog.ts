@@ -32,17 +32,30 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.93.0',
+    version: '4.94.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.93.0-release',
-    commitMessage: 'Release v4.93.0: Unified Hybrid Toolbar and Editor UI cleanup'
+    commit: 'v4.94.0-release',
+    commitMessage: 'Release v4.94.0: Restore Unified HealthBar and Sticky Ribbon for administrative editing'
+
   };
 }
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: "4.94.0",
+    date: "13/08/2026",
+    title: "Restauração dos Menus Administrativos",
+    changes: [
+      { kind: 'fix', text: 'Restaurada a visibilidade da ApostilaHealthBar no topo do Workbench' },
+      { kind: 'improvement', text: 'Sticky EditorRibbon: barra de ferramentas fixa abaixo do status administrativo' },
+      { kind: 'improvement', text: 'Interface unificada para melhor fluxo de edição em dispositivos móveis' },
+      { kind: 'improvement', text: 'Otimização de métricas em tempo real (palavras, seções, exercícios)' }
+    ]
+  },
+
   {
     version: "4.93.0",
     date: "13/08/2026",

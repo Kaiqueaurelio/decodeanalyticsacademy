@@ -12,7 +12,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MarkdownEditor } from '@/components/MarkdownEditor';
-// Removed: ApostilaHealthBar (Integrated into Editor)
+import { ApostilaHealthBar } from '@/components/admin/ApostilaHealthBar';
+
 import { ApostilaVersionHistory } from '@/components/admin/ApostilaVersionHistory';
 import { MaterialsDropZone } from '@/components/admin/MaterialsDropZone';
 import { SortableMaterialsList, type LinkedMaterialItem } from '@/components/admin/SortableMaterialsList';
@@ -628,10 +629,28 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
             </Button>
           </div>
           <div className="flex-1 flex flex-col min-h-0 relative bg-background overflow-hidden">
-
+            <ApostilaHealthBar
+              title={title}
+              content={content}
+              published={published}
+              saving={saving}
+              lastSavedAt={lastSavedAt}
+              onSave={() => doSave(true)}
+              onTogglePublish={togglePublish}
+              onPreview={() => window.open(`/apostilas/${id}`, '_blank')}
+              onOpenPanel={() => setRightOpen(!rightOpen)}
+              exerciseCount={exerciseCount}
+              materialCount={linkedMaterials.length}
+              onPasteOpen={() => setPasteOpen(true)}
+              onAddPage={() => {
+                const event = new CustomEvent('open-quick-add-section');
+                window.dispatchEvent(event);
+              }}
+            />
 
 
             <div ref={scrollContainerRef} className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar group/workbench scroll-smooth pb-20">
+
             {/* Indicador de Rolagem Lateral (Desktop e Mobile) */}
             <div className="fixed right-1 sm:right-2 top-24 bottom-24 w-1.5 sm:w-2.5 z-[100] pointer-events-none opacity-80 sm:opacity-100">
               <div className="w-full h-full bg-primary/10 rounded-full overflow-hidden border border-primary/20 backdrop-blur-[2px]">

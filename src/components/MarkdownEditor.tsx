@@ -337,8 +337,8 @@ export function MarkdownEditor({
       if (key === 's') {
         e.preventDefault();
         onSave?.();
-        setStatus('saved');
       } else if (key === 'p' || key === 'eye') {
+
         e.preventDefault();
         setViewMode(viewMode === 'preview' ? 'edit' : 'preview');
       } else if (key === 'k') {
@@ -399,9 +399,10 @@ export function MarkdownEditor({
       isMobile ? 'h-auto min-h-[600px]' : 'h-[100dvh] sm:h-auto sm:min-h-[500px]',
       className,
     )}>
-      <div className="flex flex-col sticky top-0 z-[100] border-b border-border shadow-sm">
-        {/* Hibridized Integrated Toolbar */}
+      <div className="flex flex-col sticky top-0 z-[100] border-b border-border shadow-sm hidden">
+        {/* Hibridized Integrated Toolbar - Hidden to use global HealthBar */}
         <div className="flex items-center justify-between px-3 py-1.5 bg-muted/90 backdrop-blur-md border-b border-border/40">
+
           <div className="flex items-center gap-3 overflow-hidden">
             <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground whitespace-nowrap mr-2 border-r border-border/40 pr-3">
               <span className="font-bold text-foreground">DECODE ACADEMY</span>
