@@ -52,37 +52,6 @@ interface WorkbenchProps {
 }
 
 export default function AdminApostilaWorkbench({ overrideId, onBack }: WorkbenchProps = {}) {
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const container = scrollContainerRef.current;
-    if (!container) return;
-
-    const handleScroll = () => {
-      const indicator = document.getElementById('scroll-indicator');
-      if (!indicator) return;
-
-      const { scrollTop, scrollHeight, clientHeight } = container;
-      const scrollPercent = (scrollTop / (scrollHeight - clientHeight)) * 100;
-      const thumbHeight = (clientHeight / scrollHeight) * 100;
-      
-      indicator.style.height = `${Math.max(thumbHeight, 10)}%`;
-      indicator.style.marginTop = `${(scrollPercent * (100 - Math.max(thumbHeight, 10))) / 100}%`;
-    };
-
-    container.addEventListener('scroll', handleScroll);
-    window.addEventListener('resize', handleScroll);
-    
-    // Initial update
-    setTimeout(handleScroll, 500);
-
-    return () => {
-      container.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('resize', handleScroll);
-    };
-  }, [loading, content]);
-
-
   const { id: routeId } = useParams<{ id: string }>();
   const id = overrideId || routeId;
   const navigate = useNavigate();
@@ -101,8 +70,41 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
   const [semester, setSemester] = useState<number | null>(null);
   const [course, setCourse] = useState<CourseCode[]>([]);
 
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      const indicator = document.getElementById('scroll-indicator');
+      if (!indicator) return;
+
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      const scrollPercent = (scrollTop / (scrollHeight - clientHeight)) * 100;
+      const thumbHeight = (clientHeight / scrollHeight) ? (clientHeight / scrollHeight) * 100 : 0;
+      
+      indicator.style.height = `${Math.max(thumbHeight, 10)}%`;
+      indicator.style.marginTop = `${(scrollPercent * (100 - Math.max(thumbHeight, 10))) / 100}%`;
+    };
+
+    container.addEventListener('scroll', handleScroll);
+    window.addEventListener('resize', handleScroll);
+    
+    // Initial update
+    setTimeout(handleScroll, 500);
+
+    return () => {
+      container.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleScroll);
+    };
+  }, [loading, content]);
+
+
+
   // Materiais e exercícios
   const [linkedMaterials, setLinkedMaterials] = useState<LinkedMaterialItem[]>([]);
+
   const [exerciseCount, setExerciseCount] = useState(0);
 
   // UI
