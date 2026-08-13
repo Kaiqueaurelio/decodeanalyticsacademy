@@ -19,6 +19,7 @@ import { SortableMaterialsList, type LinkedMaterialItem } from '@/components/adm
 import { SmartPasteDialog } from '@/components/admin/SmartPasteDialog';
 import { FinalReviewDialog } from '@/components/admin/FinalReviewDialog';
 import { ManualLinkMaterialsDialog } from '@/components/ManualLinkMaterialsDialog';
+import { QuickAddSectionDialog } from '@/components/admin/QuickAddSectionDialog';
 import { autoLinkApostila } from '@/lib/auto-link-materials';
 import { ApostilaContentRenderer } from '@/components/ApostilaContentRenderer';
 import { guessSemesterFromCategory, SEMESTER_OPTIONS, COURSE_OPTIONS, type CourseCode } from '@/lib/subject-semester-map';
@@ -29,6 +30,7 @@ import { getSubjectColor } from '@/lib/subject-colors';
 import {
   ArrowLeft, Search, Save, Eye, PenTool, Wand2, Loader2, Menu, FileText,
   ListChecks, PanelRightClose, ExternalLink, GraduationCap, ImageIcon, PanelRightOpen, X, Maximize2, Minimize2,
+  FilePlus2
 } from 'lucide-react';
 import { invokeFunction } from '@/lib/invoke-function';
 import { toast } from 'sonner';
@@ -121,6 +123,8 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [rightOpen, setRightOpen] = useState(false);
   const [editorExpanded, setEditorExpanded] = useState(false);
+  const [addSectionOpen, setAddSectionOpen] = useState(false);
+  const [suggestedSectionTitle, setSuggestedSectionTitle] = useState('');
 
   const dirtyRef = useRef(false);
   const initialLoadRef = useRef(true);
@@ -238,6 +242,25 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
   };
 
   useEffect(() => { if (id) loadApostila(id); }, [id]);
+
+  useEffect(() => {
+    const handleKeyAdd = () => {
+      // Tenta sugerir um número baseado no conteúdo atual
+      const matches = content.match(/#\s+(\d+\.?\d*)/g);
+      let suggested = '';
+      if (matches) {
+        const lastNum = parseFloat(matches[matches.length - 1].replace('# ', ''));
+        if (!isNaN(lastNum)) {
+          suggested = `${(lastNum + 0.1).toFixed(1)} `;
+        }
+      }
+      setSuggestedSectionTitle(suggested);
+      setAddSectionOpen(true);
+    };
+    
+    window.addEventListener('open-quick-add-section' as any, handleKeyAdd);
+    return () => window.removeEventListener('open-quick-add-section' as any, handleKeyAdd);
+  }, [content]);
 
   // Global toggle for components
   useEffect(() => {
@@ -447,6 +470,31 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     </div>
   );
 
+  const handleQuickAddSection = (sectionTitle: string, type: string) => {
+    let newContent = '';
+    
+    if (type === 'section') {
+      newContent = `\n\n# ${sectionTitle}\n\nEscreva o conteúdo da nova seção aqui...\n`;
+    } else if (type === 'subsection') {
+      newContent = `\n\n## ${sectionTitle}\n\nEscreva o conteúdo da subseção aqui...\n`;
+    } else if (type === 'template') {
+      newContent = `\n\n# ${sectionTitle}\n\n### Introdução\n...\n\n### Desenvolvimento\n...\n\n### Exercícios Práticos\n...\n\n### Conclusão\n...\n`;
+    } else {
+      newContent = `\n\n# ${sectionTitle}\n\n`;
+    }
+
+    setContent(prev => prev + newContent);
+    toast.success('✓ Nova página adicionada ao final');
+    
+    // Rola para o final do editor após um pequeno delay para o state atualizar
+    setTimeout(() => {
+      const editorElement = document.querySelector('.ProseMirror');
+      if (editorElement) {
+        editorElement.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      }
+    }, 100);
+  };
+
   const baseSortOrder = linkedMaterials.length > 0
     ? Math.max(...linkedMaterials.map((m) => m.sort_order)) + 1
     : 0;
@@ -528,6 +576,17 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         exerciseCount={exerciseCount}
         materialCount={linkedMaterials.length}
         onPasteOpen={() => setPasteOpen(true)}
+        onAddPage={() => {
+          // Tenta sugerir um número baseado no conteúdo atual
+          const matches = content.match(/#\s+(\d+\.?\d*)/g);
+          if (matches) {
+            const lastNum = parseFloat(matches[matches.length - 1].replace('# ', ''));
+            if (!isNaN(lastNum)) {
+              setSuggestedSectionTitle(`${(lastNum + 0.1).toFixed(1)} `);
+            }
+          }
+          setAddSectionOpen(true);
+        }}
       />
       
       <div className="flex flex-1 min-h-0 overflow-hidden relative">
@@ -698,6 +757,23 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       <SmartPasteDialog open={pasteOpen} onOpenChange={setPasteOpen} onApply={handlePasteApply} />
       <ManualLinkMaterialsDialog open={manualLinkOpen} onOpenChange={setManualLinkOpen} apostilaId={id as string} onLinked={reloadMaterials} />
       <FinalReviewDialog open={reviewOpen} onOpenChange={setReviewOpen} onConfirm={() => executeTogglePublish(true)} title={title} content={content} exerciseCount={exerciseCount} materialCount={linkedMaterials.length} />
+
+      <QuickAddSectionDialog 
+        open={addSectionOpen} 
+        onOpenChange={setAddSectionOpen} 
+        onConfirm={handleQuickAddSection}
+        suggestedTitle={suggestedSectionTitle}
+      />
+
+      {/* Floating Action Button for Mobile */}
+      <div className="fixed bottom-6 right-6 sm:hidden z-50">
+        <Button 
+          onClick={() => setAddSectionOpen(true)}
+          className="h-14 w-14 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/40 group active:scale-95"
+        >
+          <FilePlus2 className="h-6 w-6 group-hover:scale-110 transition-transform" />
+        </Button>
+      </div>
     </div>
   );
 }

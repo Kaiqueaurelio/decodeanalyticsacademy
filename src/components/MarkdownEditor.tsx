@@ -343,6 +343,10 @@ export function MarkdownEditor({
         e.preventDefault();
         // Inserir template ENEM
         editor.chain().focus().insertContent('### Questão ENEM\n\n**Texto Base:** ...\n\n**Pergunta:** ...\n\n- [ ] A) ...\n- [ ] B) ...\n- [ ] C) ...\n- [ ] D) ...\n- [ ] E) ...').run();
+      } else if (mod && e.shiftKey && key === 'p') {
+        e.preventDefault();
+        // Dispara o evento customizado que o Workbench está ouvindo
+        window.dispatchEvent(new CustomEvent('open-quick-add-section'));
       } else if (e.altKey && (key === '1' || key === '2' || key === '3')) {
         e.preventDefault();
         editor.chain().focus().toggleHeading({ level: parseInt(key) as 1 | 2 | 3 }).run();
