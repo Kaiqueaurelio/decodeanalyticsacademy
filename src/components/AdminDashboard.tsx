@@ -31,6 +31,8 @@ import { BY_SEMESTER, canonicalSubjectKey, subjectKey } from '@/lib/subject-seme
 import { ensureApostilaExists } from '@/lib/create-placeholder-apostila';
 import { logMaintenance } from '@/lib/maintenance-logger';
 import { AdminNotionGalleryCard } from './admin/AdminNotionGalleryCard';
+import { QuickCreateApostilaDialog } from './admin/QuickCreateApostilaDialog';
+
 
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
@@ -118,6 +120,10 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
   const [targetSemester, setTargetSemester] = useState<string>('1');
   const [busyId, setBusyId] = useState<string | null>(null);
   const [bulkBusy, setBulkBusy] = useState(false);
+  const [showQuickCreate, setShowQuickCreate] = useState(false);
+  const [quickCreateCategory, setQuickCreateCategory] = useState<string | null>(null);
+  const [quickCreateSemester, setQuickCreateSemester] = useState<number | null>(null);
+
   const [showQuickCreate, setShowQuickCreate] = useState(false);
   const [quickCreateCategory, setQuickCreateCategory] = useState<string | null>(null);
   const [quickCreateSemester, setQuickCreateSemester] = useState<number | null>(null);
