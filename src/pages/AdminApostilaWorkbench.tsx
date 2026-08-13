@@ -30,6 +30,7 @@ import { getSubjectColor } from '@/lib/subject-colors';
 import {
   ArrowLeft, Search, Save, Eye, PenTool, Wand2, Loader2, Menu, FileText,
   ListChecks, PanelRightClose, ExternalLink, GraduationCap, ImageIcon, PanelRightOpen, X, Maximize2, Minimize2,
+  FilePlus2
 } from 'lucide-react';
 import { invokeFunction } from '@/lib/invoke-function';
 import { toast } from 'sonner';
