@@ -32,17 +32,37 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.87.0',
+    version: '4.89.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.87.0-release',
-    commitMessage: 'Release v4.87.0: Quick Add Section/Page'
+    commit: 'v4.89.0-release',
+    commitMessage: 'Release v4.89.0: Removal of legacy editor modals and redirection to Workbench'
   };
 }
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: "4.89.0",
+    date: "13/08/2026",
+    title: "Unificação de Fluxos e Limpeza de Legado",
+    changes: [
+      { kind: 'improvement', text: 'Removidos diálogos de edição legados em favor do Workbench de Apostilas (Notion Pro).' },
+      { kind: 'improvement', text: 'Redirecionamento automático de todas as ações de "Editar" para o editor em tela cheia.' },
+      { kind: 'fix', text: 'Eliminação de conflitos entre múltiplos modais de edição abertos simultaneamente.' }
+    ]
+  },
+  {
+    version: "4.88.0",
+    date: "13/08/2026",
+    title: "Auditoria Global e Estabilização de Botões",
+    changes: [
+      { kind: 'fix', text: 'Restaurada a funcionalidade do botão de "Nova Apostila" em todo o painel administrativo.' },
+      { kind: 'improvement', text: 'Unificação do fluxo de criação rápida via QuickCreateApostilaDialog em todas as abas do admin.' },
+      { kind: 'improvement', text: 'Auditoria técnica completa para garantir que todas as funções de edição e estruturação estão operacionais.' }
+    ]
+  },
   {
     version: "4.87.0",
     date: "13/08/2026",

@@ -805,7 +805,7 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
                   <Button variant="outline" size="sm" onClick={handleExportAcervo} className="rounded-xl gap-2 border-primary/20">
                     <FileDown className="h-4 w-4" /> Exportar
                   </Button>
-                  <Button onClick={() => handleQuickCreate('text')} className="rounded-xl shadow-lg shadow-primary/20 gap-2">
+                  <Button onClick={() => setShowQuickCreate(true)} className="rounded-xl shadow-lg shadow-primary/20 gap-2">
                     <Plus className="h-4 w-4" /> Novo Conteúdo
                   </Button>
                   {selected.size > 0 && (
@@ -1359,6 +1359,13 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
           </div>
         </DialogContent>
       </Dialog>
+      <QuickCreateApostilaDialog 
+        open={showQuickCreate} 
+        onOpenChange={setShowQuickCreate} 
+        onCreated={load}
+        initialCategory={quickCreateCategory || undefined}
+        initialSemester={quickCreateSemester?.toString()}
+      />
     </div>
   );
 }
