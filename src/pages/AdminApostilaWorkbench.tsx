@@ -579,15 +579,16 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
             </Button>
           </div>
           <div ref={scrollContainerRef} className="flex-1 flex flex-col min-h-0 relative overflow-y-auto overflow-x-hidden custom-scrollbar group/workbench scroll-smooth">
-            <div className="fixed right-4 top-24 bottom-24 w-1.5 z-50 pointer-events-none hidden sm:block">
-              <div className="w-full h-full bg-border/10 rounded-full overflow-hidden">
+            <div className="fixed right-2 top-24 bottom-24 w-2 z-50 pointer-events-none hidden sm:block">
+              <div className="w-full h-full bg-primary/5 rounded-full overflow-hidden border border-primary/10">
                 <div 
                   id="scroll-indicator"
-                  className="w-full bg-primary/40 rounded-full transition-all duration-150"
+                  className="w-full bg-primary rounded-full transition-all duration-150 shadow-[0_0_10px_rgba(var(--primary),0.5)]"
                   style={{ height: '0%', marginTop: '0%' }}
                 />
               </div>
             </div>
+
 
             <div className="w-full max-w-[900px] mx-auto flex flex-col shrink-0">
               <div className="relative px-3 py-3 sm:pt-12 sm:pb-8 sm:px-16">
