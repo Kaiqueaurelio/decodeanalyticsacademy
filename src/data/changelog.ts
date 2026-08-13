@@ -32,25 +32,25 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.92.0',
+    version: '4.93.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.92.0-release',
-    commitMessage: 'Release v4.92.0: Folder quick-add button fix and visual refinements'
+    commit: 'v4.93.0-release',
+    commitMessage: 'Release v4.93.0: Unified Hybrid Toolbar and Editor UI cleanup'
   };
 }
 
 
 export const CHANGELOG: Release[] = [
   {
-    version: "4.92.0",
+    version: "4.93.0",
     date: "13/08/2026",
-    title: "Interatividade e Visibilidade Refinada",
+    title: "Interface Unificada (Híbrida)",
     changes: [
-      { kind: 'fix', text: "Corrigida a interatividade do botão '+' nas pastas de matérias do painel administrativo." },
-      { kind: 'improvement', text: "Otimizada estabilidade do processamento de conteúdo no Workbench." },
-      { kind: 'improvement', text: "Implementada ocultação do selo de plataforma via CSS global." },
+      { kind: 'improvement', text: "Removida a duplicidade de barras de ferramentas no Workbench." },
+      { kind: 'improvement', text: "Unificado o sistema de breadcrumbs (Notion) com o Ribbon de ações (Office) em uma única interface híbrida." },
+      { kind: 'improvement', text: "Otimizado o espaço vertical para focar na escrita e edição." },
     ]
   },
   {
