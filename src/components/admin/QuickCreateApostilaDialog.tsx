@@ -81,6 +81,8 @@ export function QuickCreateApostilaDialog({ open, onOpenChange, onCreated }: Qui
       toast.success('✓ Caderno criado com sucesso');
       onOpenChange(false);
       reset();
+      if (onCreated) onCreated();
+
       
       // Pequeno delay para o modal fechar suavemente
       setTimeout(() => {
