@@ -32,17 +32,28 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.89.0',
+    version: '4.90.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.89.0-release',
-    commitMessage: 'Release v4.89.0: Removal of legacy editor modals and redirection to Workbench'
+    commit: 'v4.90.0-release',
+    commitMessage: 'Release v4.90.0: New Page button and intelligent auto-numbering flow'
   };
 }
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: "4.90.0",
+    date: "13/08/2026",
+    title: "Edição Rápida e Navegação Inteligente",
+    changes: [
+      { kind: 'feature', text: "Botão '+ PAGE' pulsante de alta visibilidade na toolbar do editor." },
+      { kind: 'feature', text: "Auto-numeração inteligente de seções (1.1, 1.2) baseada no conteúdo atual." },
+      { kind: 'improvement', text: "Feedback visual aprimorado e rolagem automática para novas seções." },
+      { kind: 'improvement', text: "Atalho global Ctrl+Shift+P para adicionar conteúdo instantaneamente." },
+    ]
+  },
   {
     version: "4.89.0",
     date: "13/08/2026",

@@ -482,26 +482,27 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
   );
 
   const handleQuickAddSection = (sectionTitle: string, type: string) => {
-    let newContent = '';
+    let prefix = '# ';
+    if (type === 'subsection') prefix = '## ';
     
-    if (type === 'section') {
-      newContent = `\n\n# ${sectionTitle}\n\nEscreva o conteúdo da nova seção aqui...\n`;
-    } else if (type === 'subsection') {
-      newContent = `\n\n## ${sectionTitle}\n\nEscreva o conteúdo da subseção aqui...\n`;
-    } else if (type === 'template') {
-      newContent = `\n\n# ${sectionTitle}\n\n### Introdução\n...\n\n### Desenvolvimento\n...\n\n### Exercícios Práticos\n...\n\n### Conclusão\n...\n`;
-    } else {
-      newContent = `\n\n# ${sectionTitle}\n\n`;
+    let newContent = `\n\n${prefix}${sectionTitle}\n\n`;
+    if (type === 'template') {
+      newContent += `**Introdução:** ...\n\n**Desenvolvimento:** ...\n\n**Conclusão/Exercícios:** ...\n`;
     }
-
+    
     setContent(prev => prev + newContent);
-    toast.success('✓ Nova página adicionada ao final');
+    toast.success(`✓ Página "${sectionTitle}" criada com sucesso`);
     
     // Rola para o final do editor após um pequeno delay para o state atualizar
     setTimeout(() => {
       const editorElement = document.querySelector('.ProseMirror');
       if (editorElement) {
         editorElement.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      } else if (scrollContainerRef.current) {
+        scrollContainerRef.current.scrollTo({
+          top: scrollContainerRef.current.scrollHeight,
+          behavior: 'smooth'
+        });
       }
     }, 100);
   };
