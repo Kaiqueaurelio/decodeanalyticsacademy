@@ -32,17 +32,26 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.72.0',
+    version: '4.73.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.66.0-release',
-    commitMessage: 'Release v4.66.0: Notion Pro Universal UI Standardization'
+    commit: 'v4.73.0-release',
+    commitMessage: 'Release v4.73.0: Workbench Visual Optimization'
   };
 }
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: '4.73.0',
+    date: '2026-08-13',
+    title: 'Otimização Visual do Workbench',
+    changes: [
+      { kind: 'improvement', text: 'Redução de espaçamentos excessivos no editor administrativo para melhor aproveitamento de tela.' },
+      { kind: 'improvement', text: 'Estabilização definitiva da barra de status e ferramentas Notion Pro no Workbench.' },
+    ]
+  },
   {
     version: '4.72.0',
     date: '2026-08-13',
