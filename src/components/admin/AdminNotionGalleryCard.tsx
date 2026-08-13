@@ -94,11 +94,12 @@ export function AdminNotionGalleryCard({
                 <button 
                   onClick={(e) => {
                     e.stopPropagation();
-                    onEdit(item); // Ou uma função específica para abrir o modal de nova página
-                    // Se quisermos abrir o modal de nova página direto, poderíamos disparar o evento
-                    window.dispatchEvent(new CustomEvent('open-quick-add-section'));
+                    // Garante que a apostila existe e abre o workbench
+                    onEdit(item);
+                    // Dispara o evento de "Nova Página" após um delay para o workbench carregar
+                    setTimeout(() => window.dispatchEvent(new CustomEvent('open-quick-add-section')), 600);
                   }}
-                  className="flex items-center gap-1 text-[9px] font-bold text-emerald-500 hover:text-emerald-400 mt-0.5 transition-colors w-fit"
+                  className="flex items-center gap-1 text-[10px] font-black text-emerald-500 hover:text-emerald-400 mt-1 transition-all bg-emerald-500/10 px-2 py-0.5 rounded-md w-fit border border-emerald-500/20 hover:scale-105 active:scale-95 shadow-[0_0_10px_rgba(16,185,129,0.1)]"
                 >
                   <Plus className="h-3 w-3" />
                   NOVA PÁGINA
