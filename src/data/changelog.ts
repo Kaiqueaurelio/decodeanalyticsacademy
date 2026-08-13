@@ -32,17 +32,18 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.87.0',
+    version: '4.88.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.87.0-release',
-    commitMessage: 'Release v4.87.0: Quick Add Section/Page'
+    commit: 'v4.88.0-release',
+    commitMessage: 'Release v4.88.0: Global Audit and Button Stabilization'
   };
 }
 
 
 export const CHANGELOG: Release[] = [
+  {
     version: "4.88.0",
     date: "13/08/2026",
     title: "Auditoria Global e Estabilização de Botões",
