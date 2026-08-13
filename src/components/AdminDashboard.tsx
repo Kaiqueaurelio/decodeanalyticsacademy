@@ -972,7 +972,7 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
                         <Button
                           size="icon"
                           variant="ghost"
-                          className="h-8 w-8 rounded-lg text-emerald-500 hover:bg-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="h-8 w-8 rounded-lg text-emerald-500 hover:bg-emerald-500/10 opacity-100 transition-opacity"
                           onClick={(e) => {
                             e.stopPropagation();
                             setQuickCreateCategory(folder.name);
