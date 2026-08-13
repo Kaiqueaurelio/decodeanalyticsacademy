@@ -114,6 +114,38 @@ const items: SlashItem[] = [
     keywords: ['hr', 'divisor', 'linha', 'separador'],
     command: ({ editor, range }) => editor.chain().focus().deleteRange(range).setHorizontalRule().run(),
   },
+  {
+    title: 'Questão ENEM',
+    description: 'Template de questão',
+    icon: Wand2,
+    keywords: ['enem', 'exercicio', 'questao'],
+    command: ({ editor, range }) => editor.chain().focus().deleteRange(range).insertContent('### Questão ENEM\n\n**Texto Base:** ...\n\n**Pergunta:** ...\n\n- [ ] A) ...\n- [ ] B) ...\n- [ ] C) ...\n- [ ] D) ...\n- [ ] E) ...').run(),
+  },
+  {
+    title: 'Nota informativa',
+    description: 'Box destacado azul',
+    icon: Info,
+    keywords: ['nota', 'info', 'callout'],
+    command: ({ editor, range }) => editor.chain().focus().deleteRange(range).insertContent('> [!info] Nota Informativa\n> Digite aqui o conteúdo da sua nota...').run(),
+  },
+  {
+    title: 'Aviso / Alerta',
+    description: 'Box destacado amarelo',
+    icon: AlertTriangle,
+    keywords: ['aviso', 'warning', 'alerta', 'callout'],
+    command: ({ editor, range }) => editor.chain().focus().deleteRange(range).insertContent('> [!warning] Aviso\n> Digite aqui o aviso importante...').run(),
+  },
+  {
+    title: 'Vídeo',
+    description: 'Inserir link de vídeo',
+    icon: Video,
+    keywords: ['video', 'youtube', 'player'],
+    command: ({ editor, range }) => {
+      const url = window.prompt('URL do vídeo (YouTube/Vimeo)');
+      if (!url) return;
+      editor.chain().focus().deleteRange(range).insertContent(`\n[Vídeo: ${url}]\n`).run();
+    },
+  },
 ];
 
 interface MenuProps {
