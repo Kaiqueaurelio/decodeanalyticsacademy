@@ -515,20 +515,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
 
   return (
     <div className="flex flex-col h-screen bg-background overflow-hidden">
-      <ApostilaHealthBar
-        title={title}
-        published={published}
-        saving={saving}
-        lastSavedAt={lastSavedAt}
-        onSave={doSave}
-        onTogglePublish={togglePublish}
-        onPreview={() => { setRightTab('preview'); setRightOpen(true); }}
-        onOpenPanel={() => { setRightTab('materials'); setRightOpen(true); }}
-        onPasteOpen={() => setPasteOpen(true)}
-        wordCount={stats.words}
-        exerciseCount={exerciseCount}
-        materialCount={linkedMaterials.length}
-      />
+
       
       <div className="flex flex-1 min-h-0 overflow-hidden relative">
         {/* Sidebar Desktop/Mobile */}
@@ -586,13 +573,14 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
               lastSavedAt={lastSavedAt}
               onSave={() => doSave(true)}
               onTogglePublish={togglePublish}
-              onPreview={() => setRightTab('preview')}
-              onOpenPanel={() => setRightOpen(true)}
+              onPreview={() => { setRightTab('preview'); setRightOpen(true); }}
+              onOpenPanel={() => { setRightTab('materials'); setRightOpen(true); }}
               wordCount={content.trim() ? content.trim().split(/\s+/).length : 0}
               exerciseCount={exerciseCount}
               materialCount={linkedMaterials.length}
               onPasteOpen={() => setPasteOpen(true)}
             />
+
 
             <div ref={scrollContainerRef} className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar group/workbench scroll-smooth pb-20">
             {/* Indicador de Rolagem Lateral (Desktop e Mobile) */}
