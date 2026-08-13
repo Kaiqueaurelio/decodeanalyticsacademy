@@ -32,17 +32,40 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.81.0',
+    version: '4.82.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.81.0-release',
-    commitMessage: 'Release v4.81.0: Notion Pro High-Fidelity Interactive Workbench'
+    commit: 'v4.82.0-release',
+    commitMessage: 'Release v4.82.0: Notion Pro UX Hyper-Optimization'
   };
 }
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: '4.82.0',
+    date: '2026-08-13',
+    title: 'Notion Pro UX Hyper-Optimization',
+    changes: [
+      {
+        kind: 'feature',
+        text: 'Auto-save inteligente a cada 1 segundo com feedback visual de sucesso no cabeçalho (v4.82.0).'
+      },
+      {
+        kind: 'improvement',
+        text: 'Reorganização da toolbar em 3 grupos funcionais: Estrutura, Conteúdo e Publicação.'
+      },
+      {
+        kind: 'feature',
+        text: 'Implementação de atalhos de teclado avançados (Ctrl+S, Ctrl+Alt+1-3, Ctrl+E, Ctrl+/) e Snippets de "/" (Slack style).'
+      },
+      {
+        kind: 'improvement',
+        text: 'Refinamento de Breadcrumbs clicáveis e controle de sidebar colapsável para maximizar a área de edição.'
+      }
+    ]
+  },
   {
     version: '4.81.0',
     date: '2026-08-13',
