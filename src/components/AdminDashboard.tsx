@@ -124,9 +124,6 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
   const [quickCreateCategory, setQuickCreateCategory] = useState<string | null>(null);
   const [quickCreateSemester, setQuickCreateSemester] = useState<number | null>(null);
 
-  const [showQuickCreate, setShowQuickCreate] = useState(false);
-  const [quickCreateCategory, setQuickCreateCategory] = useState<string | null>(null);
-  const [quickCreateSemester, setQuickCreateSemester] = useState<number | null>(null);
 
 
   // Detalhe do aluno

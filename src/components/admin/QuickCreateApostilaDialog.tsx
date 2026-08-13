@@ -28,23 +28,39 @@ interface QuickCreateApostilaDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onCreated?: () => void;
+  initialCategory?: string;
+  initialSemester?: string;
 }
 
 
-export function QuickCreateApostilaDialog({ open, onOpenChange, onCreated }: QuickCreateApostilaDialogProps) {
+export function QuickCreateApostilaDialog({ 
+  open, 
+  onOpenChange, 
+  onCreated,
+  initialCategory,
+  initialSemester
+}: QuickCreateApostilaDialogProps) {
   const navigate = useNavigate();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [semester, setSemester] = useState<string>('1');
-  const [category, setCategory] = useState('Computação');
+  const [semester, setSemester] = useState<string>(initialSemester || '1');
+  const [category, setCategory] = useState(initialCategory || 'Computação');
   const [template, setTemplate] = useState<'blank' | 'template' | 'import'>('blank');
   const [loading, setLoading] = useState(false);
+
+  // Sincroniza estados iniciais quando o modal abre
+  React.useEffect(() => {
+    if (open) {
+      if (initialCategory) setCategory(initialCategory);
+      if (initialSemester) setSemester(initialSemester);
+    }
+  }, [open, initialCategory, initialSemester]);
 
   const reset = () => {
     setTitle('');
     setDescription('');
-    setSemester('1');
-    setCategory('Computação');
+    setSemester(initialSemester || '1');
+    setCategory(initialCategory || 'Computação');
     setTemplate('blank');
   };
 
@@ -106,7 +122,7 @@ export function QuickCreateApostilaDialog({ open, onOpenChange, onCreated }: Qui
             Novo Caderno
           </DialogTitle>
           <DialogDescription>
-            Crie um novo material acadêmico rapidamente.
+            Crie um novo material acadêmico rapidamente para {category}.
           </DialogDescription>
         </DialogHeader>
 
@@ -163,6 +179,9 @@ export function QuickCreateApostilaDialog({ open, onOpenChange, onCreated }: Qui
                   <SelectItem value="Matemática">Matemática</SelectItem>
                   <SelectItem value="Sistemas">Sistemas</SelectItem>
                   <SelectItem value="Geral">Geral</SelectItem>
+                  {initialCategory && !['Computação', 'ENEM', 'Matemática', 'Sistemas', 'Geral'].includes(initialCategory) && (
+                    <SelectItem value={initialCategory}>{initialCategory}</SelectItem>
+                  )}
                 </SelectContent>
               </Select>
             </div>
