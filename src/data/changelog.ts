@@ -32,7 +32,7 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.71.5',
+    version: '4.72.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
@@ -43,6 +43,17 @@ export function getBuildInfo() {
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: '4.72.0',
+    date: '2026-08-13',
+    title: 'Restauração Total Edição Mobile',
+    changes: [
+      { kind: 'fix', text: 'Restauração do botão Colar Inteligente visível em todas as telas mobile.' },
+      { kind: 'improvement', text: 'Ajuste de ícones e botões de modo para melhor precisão touch no celular.' },
+      { kind: 'feature', text: 'Restauração da aba Arquivo e melhoria do scroll horizontal no Editor Ribbon.' },
+      { kind: 'fix', text: 'Garantia de persistência de ferramentas de edição no cabeçalho Notion Pro.' },
+    ],
+  },
   {
     version: '4.71.5',
     date: '2026-08-12',
