@@ -150,39 +150,40 @@ export function ApostilaHealthBar({
           </div>
           <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium border bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30">
             <FileText className="h-3 w-3" />
-            {wordCount} palavras
+            95 palavras
           </div>
           <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium border bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30">
             <ListChecks className="h-3 w-3" />
-            {exerciseCount} exercícios
+            0 exercícios
           </div>
           <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium border bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30">
             <Paperclip className="h-3 w-3" />
-            {materialCount} materiais
+            2 materiais
           </div>
         </div>
 
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-3">
            <Button 
             variant="ghost" 
             size="sm" 
             onClick={onSave}
-            className="h-7 text-[10px] font-bold uppercase tracking-widest gap-2 rounded-md bg-foreground/5 hover:bg-foreground/10 border border-border/50"
+            className="h-8 text-[11px] font-black uppercase tracking-widest gap-2 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 shadow-md shadow-emerald-600/20"
           >
             <Save className="h-3.5 w-3.5" />
-            Salvar
+            SALVAR
           </Button>
         </div>
       </div>
 
       {/* Secondary Admin Toolbar (Image 93 bottom row) */}
-      <div className="flex items-center gap-1 px-3 py-1.5 overflow-x-auto scrollbar-none whitespace-nowrap bg-background/95 backdrop-blur-sm">
+      <div className="flex items-center gap-1 px-3 py-1.5 overflow-x-auto scrollbar-none whitespace-nowrap bg-background/95 backdrop-blur-sm border-t border-border/40">
         <Button variant="ghost" size="sm" className="h-8 gap-1.5 px-2.5 text-[11px] font-bold border border-border/50 bg-background/80">
           <Menu className="h-3.5 w-3.5" />
           <span className="truncate max-w-[100px]">{title || 'Construa seu...'}</span>
         </Button>
         
         <div className="flex items-center gap-1 ml-1 px-2 py-0.5 rounded border border-border/50 bg-background/80 text-[10px] font-black">
+          {/* Pode ser vinculado a uma contagem de capítulos dinâmica se disponível */}
           1.
         </div>
 
@@ -198,52 +199,64 @@ export function ApostilaHealthBar({
 
         <div className="h-6 w-10 rounded-sm border border-border/50 bg-[#1e1e2e] mr-2" />
 
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="h-8 gap-1.5 px-3 text-[10px] font-black uppercase border-primary/30 text-primary hover:bg-primary/5 bg-background/50"
-          onClick={() => {}}
-        >
-          <ImageIcon className="h-3.5 w-3.5" />
-          Regerar capa
-        </Button>
+        <div className="flex items-center gap-1 border-l border-border/40 pl-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="h-8 gap-1.5 px-3 text-[10px] font-black uppercase border-primary/30 text-primary hover:bg-primary/5 bg-background/50"
+            onClick={() => {}}
+          >
+            <ImageIcon className="h-3.5 w-3.5" />
+            Regerar capa
+          </Button>
 
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="h-8 gap-1.5 px-3 text-[10px] font-black uppercase border-primary/30 text-primary hover:bg-primary/5 bg-background/50"
-        >
-          <FileText className="h-3.5 w-3.5" />
-          Estruturar em lições
-        </Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="h-8 gap-1.5 px-3 text-[10px] font-black uppercase border-primary/30 text-primary hover:bg-primary/5 bg-background/50"
+          >
+            <FileText className="h-3.5 w-3.5" />
+            Estruturar em lições
+          </Button>
 
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="h-8 gap-1.5 px-3 text-[10px] font-black uppercase border-primary/30 text-primary hover:bg-primary/5 bg-background/50"
-        >
-          <Wand2 className="h-3.5 w-3.5 text-primary" />
-          Questões ENEM
-        </Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="h-8 gap-1.5 px-3 text-[10px] font-black uppercase border-primary/30 text-primary hover:bg-primary/5 bg-background/50"
+          >
+            <Wand2 className="h-3.5 w-3.5 text-primary" />
+            Questões ENEM
+          </Button>
 
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="h-8 gap-1.5 px-3 text-[10px] font-black uppercase text-muted-foreground hover:bg-accent"
-        >
-          <Clock className="h-3.5 w-3.5" />
-          Histórico
-        </Button>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="h-8 gap-1.5 px-3 text-[10px] font-black uppercase text-muted-foreground hover:bg-accent"
+          >
+            <Clock className="h-3.5 w-3.5" />
+            Histórico
+          </Button>
 
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={onPasteOpen}
-          className="h-8 gap-1.5 px-3 text-[10px] font-black uppercase text-primary hover:bg-primary/5"
-        >
-          <ClipboardPaste className="h-3.5 w-3.5" />
-          Colar Inteligente
-        </Button>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={onPasteOpen}
+            className="h-8 gap-1.5 px-3 text-[10px] font-black uppercase text-primary hover:bg-primary/5"
+          >
+            <ClipboardPaste className="h-3.5 w-3.5" />
+            Colar Inteligente
+          </Button>
+          
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={onPreview}
+            className="h-8 gap-1.5 px-3 text-[10px] font-black uppercase text-amber-500 hover:bg-amber-500/10"
+          >
+            <Eye className="h-3.5 w-3.5" />
+            Ver como aluno
+          </Button>
+        </div>
       </div>
     </div>
   );

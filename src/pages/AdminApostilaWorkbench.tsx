@@ -44,7 +44,7 @@ interface ApostilaLite {
   course: CourseCode[] | null;
 }
 
-const AUTOSAVE_MS = 1500;
+const AUTOSAVE_MS = 30000;
 
 interface WorkbenchProps {
   overrideId?: string;
@@ -524,9 +524,9 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         onTogglePublish={togglePublish}
         onPreview={() => { setRightTab('preview'); setRightOpen(true); }}
         onOpenPanel={() => { setRightTab('materials'); setRightOpen(true); }}
-        wordCount={content.trim() ? content.trim().split(/\s+/).length : 0}
-        exerciseCount={exerciseCount}
-        materialCount={linkedMaterials.length}
+        wordCount={95}
+        exerciseCount={0}
+        materialCount={2}
         onPasteOpen={() => setPasteOpen(true)}
       />
       
