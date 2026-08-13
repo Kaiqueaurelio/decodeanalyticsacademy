@@ -32,17 +32,29 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.78.0',
+    version: '4.79.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.78.0-release',
-    commitMessage: 'Release v4.78.0: Project Management Content Update'
+    commit: 'v4.79.0-release',
+    commitMessage: 'Release v4.79.0: Notion Pro Editor Restoration'
   };
 }
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: '4.79.0',
+    date: '2026-08-13',
+    title: 'Restauração Notion Pro Editor',
+    changes: [
+      {
+        kind: 'fix',
+        title: 'Barra de Ferramentas Administrativa',
+        description: 'Reintegração da ApostilaHealthBar e EditorRibbon para acesso imediato ao Colar Inteligente e formatação Office em todos os dispositivos.'
+      }
+    ]
+  },
   {
     version: '4.78.0',
     date: '2026-08-13',
