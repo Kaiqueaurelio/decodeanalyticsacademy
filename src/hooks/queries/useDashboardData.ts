@@ -76,7 +76,7 @@ export function useApostilasList(options: ApostilasListOptions = {}) {
       return ((data || []) as ApostilaSummary[]).map((apostila) => {
         const semester = apostila.semester ?? guessSemesterFromCategory(apostila.category) ?? null;
         // Se for Bônus ou Canivete Suíço, forçamos a visibilidade em todos os semestres (semester: 0)
-        const isBonus = (apostila.category === 'Bônus' || apostila.category === 'Canivete Suíço do Estudante');
+        const isBonus = (apostila.category === 'Bônus' || apostila.category === 'Canivete Suíço do Estudante' || apostila.category?.includes('Bônus'));
         return {
           ...apostila,
           semester: isBonus ? 0 : semester,

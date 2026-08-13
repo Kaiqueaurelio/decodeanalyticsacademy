@@ -73,7 +73,7 @@ export default function DashboardPage() {
     // Bônus é transversal e deve continuar acessível em qualquer semestre.
     // Se NÃO selecionado, retorna tudo publicado.
     const list = selectedSemester
-      ? apostilasRaw.filter(a => (a.semester === selectedSemester || a.semester === 0 || a.category === 'Bônus' || a.category === 'Canivete Suíço do Estudante') && a.published)
+      ? apostilasRaw.filter(a => (a.semester === selectedSemester || a.semester === 0 || a.category === 'Bônus' || a.category === 'Canivete Suíço do Estudante' || a.category?.includes('Bônus')) && a.published)
       : apostilasRaw.filter(a => a.published);
 
     // 2. Placeholder para disciplinas da grade (1º ao 8º)
