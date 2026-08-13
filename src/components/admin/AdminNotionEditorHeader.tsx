@@ -18,7 +18,8 @@ import {
   Paperclip,
   Wand2,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  FilePlus2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -43,6 +44,7 @@ interface ApostilaHealthBarProps {
   exerciseCount: number;
   materialCount: number;
   onPasteOpen: () => void;
+  onAddPage: () => void;
 }
 
 export function ApostilaHealthBar({
@@ -57,7 +59,8 @@ export function ApostilaHealthBar({
   wordCount,
   exerciseCount,
   materialCount,
-  onPasteOpen
+  onPasteOpen,
+  onAddPage
 }: ApostilaHealthBarProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false);
 
@@ -212,9 +215,15 @@ export function ApostilaHealthBar({
             <RotateCcw className="h-3.5 w-3.5" />
             Regredir Capa
           </Button>
-          <Button variant="outline" size="sm" className="h-8 gap-1.5 px-3 text-[10px] font-black uppercase border-primary/30 text-primary hover:bg-primary/5 bg-background/50">
-            <PlusCircle className="h-3.5 w-3.5" />
-            Add Lição
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={onAddPage}
+            className="h-8 gap-1.5 px-3 text-[10px] font-black uppercase border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10 bg-emerald-500/5 transition-all group active:scale-95"
+            title="Adicionar Nova Página/Seção (Ctrl+Shift+P)"
+          >
+            <FilePlus2 className="h-3.5 w-3.5 group-hover:animate-pulse" />
+            + Add Página
           </Button>
           <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" title="Reordenar Seções">
             <Link2 className="h-4 w-4" />

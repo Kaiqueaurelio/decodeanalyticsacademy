@@ -32,17 +32,29 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.85.0',
+    version: '4.87.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.85.0-release',
-    commitMessage: 'Release v4.85.0: Contextual Quick Create in Folders'
+    commit: 'v4.87.0-release',
+    commitMessage: 'Release v4.87.0: Quick Add Section/Page'
   };
 }
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: "4.87.0",
+    date: "13/08/2026",
+    title: "Criação Rápida de Páginas/Seções",
+    changes: [
+      { kind: 'feature', text: 'Adicionado botão "+ Add Página" na toolbar do editor para criação instantânea de divisões.' },
+      { kind: 'feature', text: 'Implementado modal de adição rápida com suporte a Seções, Subseções e Templates de estrutura.' },
+      { kind: 'feature', text: 'Adicionado atalho global Ctrl+Shift+P para abrir o diálogo de nova página.' },
+      { kind: 'improvement', text: 'Implementado botão flutuante mobile para adição de conteúdo sem sair do fluxo de escrita.' },
+      { kind: 'improvement', text: 'Sugestão automática de numeração de seção baseada no conteúdo atual.' }
+    ]
+  },
   {
     version: "4.86.0",
     date: "13/08/2026",

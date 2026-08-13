@@ -19,6 +19,7 @@ import { SortableMaterialsList, type LinkedMaterialItem } from '@/components/adm
 import { SmartPasteDialog } from '@/components/admin/SmartPasteDialog';
 import { FinalReviewDialog } from '@/components/admin/FinalReviewDialog';
 import { ManualLinkMaterialsDialog } from '@/components/ManualLinkMaterialsDialog';
+import { QuickAddSectionDialog } from '@/components/admin/QuickAddSectionDialog';
 import { autoLinkApostila } from '@/lib/auto-link-materials';
 import { ApostilaContentRenderer } from '@/components/ApostilaContentRenderer';
 import { guessSemesterFromCategory, SEMESTER_OPTIONS, COURSE_OPTIONS, type CourseCode } from '@/lib/subject-semester-map';
@@ -121,6 +122,8 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [rightOpen, setRightOpen] = useState(false);
   const [editorExpanded, setEditorExpanded] = useState(false);
+  const [addSectionOpen, setAddSectionOpen] = useState(false);
+  const [suggestedSectionTitle, setSuggestedSectionTitle] = useState('');
 
   const dirtyRef = useRef(false);
   const initialLoadRef = useRef(true);
@@ -238,6 +241,25 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
   };
 
   useEffect(() => { if (id) loadApostila(id); }, [id]);
+
+  useEffect(() => {
+    const handleKeyAdd = () => {
+      // Tenta sugerir um número baseado no conteúdo atual
+      const matches = content.match(/#\s+(\d+\.?\d*)/g);
+      let suggested = '';
+      if (matches) {
+        const lastNum = parseFloat(matches[matches.length - 1].replace('# ', ''));
+        if (!isNaN(lastNum)) {
+          suggested = `${(lastNum + 0.1).toFixed(1)} `;
+        }
+      }
+      setSuggestedSectionTitle(suggested);
+      setAddSectionOpen(true);
+    };
+    
+    window.addEventListener('open-quick-add-section' as any, handleKeyAdd);
+    return () => window.removeEventListener('open-quick-add-section' as any, handleKeyAdd);
+  }, [content]);
 
   // Global toggle for components
   useEffect(() => {
@@ -528,6 +550,17 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         exerciseCount={exerciseCount}
         materialCount={linkedMaterials.length}
         onPasteOpen={() => setPasteOpen(true)}
+        onAddPage={() => {
+          // Tenta sugerir um número baseado no conteúdo atual
+          const matches = content.match(/#\s+(\d+\.?\d*)/g);
+          if (matches) {
+            const lastNum = parseFloat(matches[matches.length - 1].replace('# ', ''));
+            if (!isNaN(lastNum)) {
+              setSuggestedSectionTitle(`${(lastNum + 0.1).toFixed(1)} `);
+            }
+          }
+          setAddSectionOpen(true);
+        }}
       />
       
       <div className="flex flex-1 min-h-0 overflow-hidden relative">
