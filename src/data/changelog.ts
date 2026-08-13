@@ -44,9 +44,19 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: '4.76.0',
+    date: '2026-08-13',
+    title: 'Destaque de Rolagem Administrativa',
+    changes: [
+      { kind: 'improvement', text: 'Aumentado o contraste e a espessura da barra de rolagem no editor para máxima visibilidade.' },
+      { kind: 'improvement', text: 'Indicador lateral de posição agora utiliza brilho neon e trilha contrastante.' },
+    ]
+  },
+  {
     version: '4.75.0',
     date: '2026-08-13',
     title: 'Navegação & Visibilidade no Editor',
+
     changes: [
       { kind: 'improvement', text: 'Adicionada barra de rolagem personalizada e indicadora de posição no Workbench administrativo.' },
       { kind: 'improvement', text: 'Melhorada a visibilidade da rolagem para facilitar a navegação em materiais extensos.' },
