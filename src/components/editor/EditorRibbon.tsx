@@ -95,8 +95,8 @@ export function EditorRibbon({ editor, onInsertImage, onSave, saveStatus = 'idle
     <div className="word-ribbon bg-card shrink-0">
       {/* Abas */}
       <div className="word-tabs flex-nowrap min-w-max px-2 overflow-x-auto scrollbar-none flex">
-        <button type="button" className="word-tab word-file-tab hidden sm:inline-flex" title="Arquivo">Arquivo</button>
-        <button type="button" className={cn('word-tab whitespace-nowrap px-3', tab === 'home' && 'active')} onClick={() => setTab('home')}>Início</button>
+        <button type="button" className="word-tab word-file-tab inline-flex" title="Arquivo">Arquivo</button>
+        <button type="button" className={cn('word-tab whitespace-nowrap px-3 active', tab === 'home' && 'active')} onClick={() => setTab('home')}>Início</button>
         <button type="button" className={cn('word-tab whitespace-nowrap px-3', tab === 'insert' && 'active')} onClick={() => setTab('insert')}>Inserir</button>
         <button type="button" className={cn('word-tab whitespace-nowrap px-3', tab === 'layout' && 'active')} onClick={() => setTab('layout')}>Layout</button>
         <button type="button" className={cn('word-tab whitespace-nowrap px-3', tab === 'review' && 'active')} onClick={() => setTab('review')}>Revisão</button>
