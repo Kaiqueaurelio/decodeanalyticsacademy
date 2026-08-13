@@ -3864,23 +3864,7 @@ function AdminPasswordResetMenu({ user }: { user: { user_id: string; email: stri
           </div>
         </DialogContent>
       </Dialog>
-    <QuickCreateApostilaDialog 
-      open={showQuickCreate} 
-      onOpenChange={setShowQuickCreate} 
-      onCreated={loadAll} 
-    />
-
-    {/* Botão flutuante Quick Create */}
-    <div className="fixed bottom-6 right-6 z-50">
-      <Button
-        onClick={() => setShowQuickCreate(true)}
-        className="h-14 w-14 sm:w-auto sm:px-6 rounded-full gradient-primary text-primary-foreground shadow-2xl shadow-primary/40 flex items-center justify-center gap-2 group transition-all duration-300 hover:scale-105 active:scale-95 animate-pulse-subtle"
-        aria-label="Criar nova apostila"
-      >
-        <BookPlus className="h-6 w-6 group-hover:rotate-12 transition-transform duration-300" />
-        <span className="hidden sm:inline font-bold tracking-tight">Novo Caderno</span>
-      </Button>
-    </div>
-  </>
-);
+    </>
+  );
 }
+
