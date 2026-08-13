@@ -10,7 +10,8 @@ import {
   MoreVertical,
   Check,
   Menu,
-  ClipboardPaste
+  ClipboardPaste,
+  ListChecks
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -38,6 +39,7 @@ interface ApostilaHealthBarProps {
 }
 
 export function ApostilaHealthBar({
+  title,
   published,
   saving,
   lastSavedAt,
@@ -50,12 +52,10 @@ export function ApostilaHealthBar({
   materialCount,
   onPasteOpen
 }: ApostilaHealthBarProps) {
-  const timeStr = lastSavedAt ? lastSavedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : null;
-
   return (
-    <div className="flex flex-col border-b border-border/60 bg-muted/30 backdrop-blur-sm">
+    <div className="flex flex-col border-b border-border/60 bg-muted/30 backdrop-blur-sm sticky top-0 z-50">
       {/* Top Bar: Notion Style Breadcrumbs & Main Actions */}
-      <div className="h-14 flex items-center justify-between px-2 sm:px-4 border-b border-border/40">
+      <div className="h-14 flex items-center justify-between px-2 sm:px-4 border-b border-border/40 bg-card/80 backdrop-blur-md">
         <div className="flex items-center gap-1 sm:gap-2 overflow-hidden">
           <Button 
             variant="ghost" 
@@ -137,7 +137,7 @@ export function ApostilaHealthBar({
       </div>
 
       {/* Health Bar / Metrics: Exactly like image-93.png */}
-      <div className="flex flex-wrap items-center gap-2 px-3 py-2 bg-muted/10">
+      <div className="flex flex-wrap items-center gap-2 px-3 py-2 bg-muted/20 border-b border-border/40">
         <div className="flex items-center gap-1.5 mr-2">
           <AlertCircle className="h-4 w-4 text-amber-500" />
           <span className="text-[11px] font-bold uppercase tracking-tight">Pendências detectadas</span>
@@ -167,7 +167,7 @@ export function ApostilaHealthBar({
             variant="ghost" 
             size="sm" 
             onClick={onSave}
-            className="h-7 text-[10px] font-bold uppercase tracking-widest gap-2 rounded-md bg-foreground/5 hover:bg-foreground/10"
+            className="h-7 text-[10px] font-bold uppercase tracking-widest gap-2 rounded-md bg-foreground/5 hover:bg-foreground/10 border border-border/50"
           >
             <Save className="h-3.5 w-3.5" />
             Salvar
@@ -176,7 +176,7 @@ export function ApostilaHealthBar({
       </div>
 
       {/* Secondary Admin Toolbar (Image 93 bottom row) */}
-      <div className="flex items-center gap-1 px-3 py-1.5 border-t border-border/40 overflow-x-auto scrollbar-none whitespace-nowrap bg-background/50">
+      <div className="flex items-center gap-1 px-3 py-1.5 overflow-x-auto scrollbar-none whitespace-nowrap bg-background/95 backdrop-blur-sm">
         <Button variant="ghost" size="sm" className="h-8 gap-1.5 px-2.5 text-[11px] font-bold border border-border/50 bg-background/80">
           <Menu className="h-3.5 w-3.5" />
           <span className="truncate max-w-[100px]">{title || 'Construa seu...'}</span>
@@ -196,12 +196,12 @@ export function ApostilaHealthBar({
           <ImageIcon className="h-4 w-4" />
         </Button>
 
-        <div className="h-6 w-10 rounded border border-border/50 bg-muted/30 mr-2" />
+        <div className="h-6 w-10 rounded-sm border border-border/50 bg-[#1e1e2e] mr-2" />
 
         <Button 
           variant="outline" 
           size="sm" 
-          className="h-8 gap-1.5 px-3 text-[10px] font-black uppercase border-primary/30 text-primary hover:bg-primary/5"
+          className="h-8 gap-1.5 px-3 text-[10px] font-black uppercase border-primary/30 text-primary hover:bg-primary/5 bg-background/50"
           onClick={() => {}}
         >
           <ImageIcon className="h-3.5 w-3.5" />
@@ -211,7 +211,7 @@ export function ApostilaHealthBar({
         <Button 
           variant="outline" 
           size="sm" 
-          className="h-8 gap-1.5 px-3 text-[10px] font-black uppercase border-primary/30 text-primary hover:bg-primary/5"
+          className="h-8 gap-1.5 px-3 text-[10px] font-black uppercase border-primary/30 text-primary hover:bg-primary/5 bg-background/50"
         >
           <FileText className="h-3.5 w-3.5" />
           Estruturar em lições
@@ -220,7 +220,7 @@ export function ApostilaHealthBar({
         <Button 
           variant="outline" 
           size="sm" 
-          className="h-8 gap-1.5 px-3 text-[10px] font-black uppercase border-primary/30 text-primary hover:bg-primary/5"
+          className="h-8 gap-1.5 px-3 text-[10px] font-black uppercase border-primary/30 text-primary hover:bg-primary/5 bg-background/50"
         >
           <Wand2 className="h-3.5 w-3.5 text-primary" />
           Questões ENEM
@@ -263,10 +263,4 @@ const Wand2 = ({ className }: { className?: string }) => (
 
 const ImageIcon = ({ className }: { className?: string }) => (
   <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
-);
-  );
-}
-
-const EyeOff = ({ className }: { className?: string }) => (
-  <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.52 13.52 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
 );
