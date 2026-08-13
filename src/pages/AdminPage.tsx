@@ -3723,6 +3723,11 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
       />
       {/* Floating Quick Create Button REMOVED from global to be inside folder headers */}
 
+      <QuickCreateApostilaDialog 
+        open={showQuickCreate} 
+        onOpenChange={setShowQuickCreate} 
+        onCreated={loadAll}
+      />
     </CategoriesCtx.Provider>
   );
 }
