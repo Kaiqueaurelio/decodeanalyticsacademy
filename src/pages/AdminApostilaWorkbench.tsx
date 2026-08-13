@@ -631,6 +631,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
           <div className="flex-1 flex flex-col min-h-0 relative bg-background overflow-hidden">
             <ApostilaHealthBar
               title={title}
+              content={content}
               published={published}
               saving={saving}
               lastSavedAt={lastSavedAt}
@@ -638,7 +639,6 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
               onTogglePublish={togglePublish}
               onPreview={() => window.open(`/apostilas/${id}`, '_blank')}
               onOpenPanel={() => setRightOpen(!rightOpen)}
-              wordCount={content.split(/\s+/).filter(Boolean).length}
               exerciseCount={exerciseCount}
               materialCount={linkedMaterials.length}
               onPasteOpen={() => setPasteOpen(true)}
@@ -647,6 +647,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
                 window.dispatchEvent(event);
               }}
             />
+
 
             <div ref={scrollContainerRef} className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar group/workbench scroll-smooth pb-20">
 
