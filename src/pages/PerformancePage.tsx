@@ -144,13 +144,13 @@ export default function PerformancePage() {
 
   // Stats por grupo canônico
   const byGroup = useMemo(() => {
-    const acc: Record<CanonicalGroup, { hits: number; errors: number; total: number; accuracy: number }> = {
-      Programação: { hits: 0, errors: 0, total: 0, accuracy: 0 },
-      Redes: { hits: 0, errors: 0, total: 0, accuracy: 0 },
-      IA: { hits: 0, errors: 0, total: 0, accuracy: 0 },
-      Segurança: { hits: 0, errors: 0, total: 0, accuracy: 0 },
-      Cloud: { hits: 0, errors: 0, total: 0, accuracy: 0 },
-      Outros: { hits: 0, errors: 0, total: 0, accuracy: 0 },
+    const acc: Record<CanonicalGroup, { hits: number; errors: number; total: number; accuracy: number; trend: number }> = {
+      Programação: { hits: 0, errors: 0, total: 0, accuracy: 0, trend: 0 },
+      Redes: { hits: 0, errors: 0, total: 0, accuracy: 0, trend: 0 },
+      IA: { hits: 0, errors: 0, total: 0, accuracy: 0, trend: 0 },
+      Segurança: { hits: 0, errors: 0, total: 0, accuracy: 0, trend: 0 },
+      Cloud: { hits: 0, errors: 0, total: 0, accuracy: 0, trend: 0 },
+      Outros: { hits: 0, errors: 0, total: 0, accuracy: 0, trend: 0 },
     };
     perApostila.forEach((r) => {
       acc[r.group].hits += r.hits;
