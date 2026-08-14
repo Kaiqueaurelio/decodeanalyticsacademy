@@ -32,12 +32,12 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.99.4',
+    version: '4.99.5',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.99.4-release',
-    commitMessage: 'Release v4.99.4: KaTeX/MD robust conversion for theoretical computer science formulas'
+    commit: 'v4.99.5-release',
+    commitMessage: 'Release v4.99.5: Enhanced KaTeX robustness for scientific notation and academic formulas'
   };
 }
 
