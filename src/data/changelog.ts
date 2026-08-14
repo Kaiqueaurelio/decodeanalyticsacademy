@@ -32,17 +32,36 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.99.4',
+    version: '4.99.5',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.99.4-release',
-    commitMessage: 'Release v4.99.4: KaTeX/MD robust conversion for theoretical computer science formulas'
+    commit: 'v4.99.5-release',
+    commitMessage: 'Release v4.99.5: Enhanced KaTeX robustness for scientific notation and academic formulas'
   };
 }
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: "4.99.5",
+    date: "14/08/2026",
+    title: "Excelência em Notação Científica",
+    changes: [
+      {
+        kind: "fix",
+        text: "Implementada heurística de detecção ultra-robusta para fórmulas matemáticas, garantindo renderização de variáveis isoladas ($n$), notação de complexidade ($O(log n)$) e funções acadêmicas."
+      },
+      {
+        kind: "improvement",
+        text: "Sincronização da lógica de parser entre o renderizador principal e a biblioteca de utilitários KaTeX para consistência total."
+      },
+      {
+        kind: "fix",
+        text: "Normalização da detecção de delimitadores $...$ para evitar falsos positivos em textos comuns enquanto prioriza termos científicos."
+      }
+    ]
+  },
   {
     version: "4.99.4",
     date: "14/08/2026",
