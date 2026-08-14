@@ -54,7 +54,7 @@ export function ApostilaHealthBar({
   const { stats } = report;
 
   const sectionsOk = stats.h2Count >= 4 && stats.h2Count <= 8;
-  const wordsOk = stats.words >= 800 && stats.words <= 3500;
+  const wordsOk = stats.words >= 300 && stats.words <= 5000;
   const exercisesOk = exerciseCount >= 5;
   const materialsOk = materialCount >= 1;
 

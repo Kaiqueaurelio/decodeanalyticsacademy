@@ -74,10 +74,11 @@ export default function PerformancePage() {
     const now = new Date();
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-    const [{ data: apostilas }, { data: exercises }, { data: answers }] = await Promise.all([
+    const [{ data: apostilas }, { data: exercises }, { data: answers }, { data: streak }] = await Promise.all([
       supabase.from('apostilas').select('id, title, category').eq('published', true),
       supabase.from('exercises').select('id, apostila_id'),
       supabase.from('answers').select('exercise_id, is_correct, created_at').eq('user_id', user!.id),
+      supabase.from('study_streaks').select('current_streak').eq('user_id', user!.id).maybeSingle(),
     ]);
 
     const exByApostila: Record<string, string[]> = {};
@@ -188,6 +189,7 @@ export default function PerformancePage() {
     { icon: Flame, label: 'Sequência', value: gamification.streak?.current_streak || 0, suffix: 'd', color: 'text-orange-500', bg: 'bg-orange-500/10' },
     { icon: Rocket, label: 'XP total', value: gamification.xp?.xp_points || 0, color: 'text-primary', bg: 'bg-primary/10' },
     { icon: Award, label: 'Nível', value: gamification.xp?.level || 1, color: 'text-accent', bg: 'bg-accent/10' },
+    { icon: Zap, label: 'Fogo', value: streak?.current_streak || 0, color: 'text-orange-500', bg: 'bg-orange-500/10' },
     { icon: TrendingUp, label: 'Tendência', value: stats.lastWeekHits, suffix: ' acertos', color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
   ];
 
