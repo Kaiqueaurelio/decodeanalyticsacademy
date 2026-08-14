@@ -22,68 +22,116 @@ export interface ValidationReport {
  */
 export function validateApostilaStructure(content: string): ValidationReport {
   const issues: ValidationIssue[] = [];
-  const lines = content.split('\n');
+  const lines = (content || '').split('\n');
   
-  // 1. Hierarquia de Títulos
-  let hasH1 = false;
-  let lastHeadingLevel = 0;
+  const headings: Array<{ level: number; text: string; index: number }> = [];
+  let inFence = false;
   
-  lines.forEach((line, index) => {
-    const headingMatch = line.match(/^(#{1,6})\s+(.+)$/);
-    if (headingMatch) {
-      const level = headingMatch[1].length;
-      
-      if (level === 1) hasH1 = true;
-      
-      // Regra: Não pular níveis (ex: H1 -> H3 sem H2)
-      if (lastHeadingLevel > 0 && level > lastHeadingLevel + 1) {
-        issues.push({
-          type: 'error',
-          message: `Salto de hierarquia detectado: H${lastHeadingLevel} seguido de H${level}.`,
-          blockIndex: index,
-          suggestion: `Adicione um título H${lastHeadingLevel + 1} antes deste H${level}.`
-        });
-      }
-      
-      lastHeadingLevel = level;
+  lines.forEach((raw, index) => {
+    const line = raw.trimEnd();
+    if (/^(```|~~~)/.test(line.trim())) { 
+      inFence = !inFence; 
+      return; 
+    }
+    if (inFence) return;
+    
+    const m = /^(#{1,6})\s+(.+?)\s*#*\s*$/.exec(line);
+    if (m) {
+      headings.push({ level: m[1].length, text: m[2].trim(), index });
     }
 
-    // 2. Acessibilidade de Imagens
+    // Acessibilidade de Imagens
     const imgMatch = line.match(/!\[(.*?)\]\((.*?)\)/);
     if (imgMatch) {
       const altText = imgMatch[1].trim();
       if (!altText) {
         issues.push({
-          type: 'warning',
+          severity: 'warning',
+          code: 'alt-missing',
           message: 'Imagem sem texto alternativo (alt text).',
           blockIndex: index,
-          suggestion: 'Adicione uma descrição breve dentro dos colchetes ![Descrição].'
+          hint: 'Adicione uma descrição breve dentro dos colchetes ![Descrição].'
         });
       }
     }
-
-    // 3. Tabelas sem cabeçalho (simplificado)
-    if (line.includes('|') && index > 0 && !lines[index-1].includes('|') && !lines[index+1]?.includes('|-')) {
-       // Possível tabela começando sem a linha de separação correta ou cabeçalho
-    }
   });
 
-  if (!hasH1) {
+  const h2 = headings.filter((h) => h.level === 2);
+  const h3Total = headings.filter((h) => h.level === 3).length;
+
+  // Identifica H2 sem H3 entre ele e o próximo H2.
+  const h2WithoutH3: string[] = [];
+  for (let i = 0; i < headings.length; i++) {
+    const cur = headings[i];
+    if (cur.level !== 2) continue;
+    let hasH3 = false;
+    for (let j = i + 1; j < headings.length; j++) {
+      if (headings[j].level === 2) break;
+      if (headings[j].level === 3) { hasH3 = true; break; }
+    }
+    if (!hasH3) h2WithoutH3.push(cur.text);
+  }
+
+  // 1) Quantidade de H2
+  if (h2.length === 0) {
     issues.push({
-      type: 'error',
-      message: 'A apostila não possui um título principal (H1).',
-      suggestion: 'Adicione um título começando com # no início do documento.'
+      severity: 'error',
+      code: 'no-h2',
+      message: 'Nenhuma seção principal (H2) encontrada.',
+      hint: 'Use "## Título da seção" para criar as seções principais.',
+    });
+  } else if (h2.length < EXPECTED_H2) {
+    issues.push({
+      severity: 'error',
+      code: 'h2-too-few',
+      message: `Encontradas ${h2.length} seções H2 (esperado ${EXPECTED_H2}).`,
+      hint: `Faltam ${EXPECTED_H2 - h2.length} seção(ões). Adicione com "## Nome da seção".`,
     });
   }
 
-  // Cálculo de score
-  const errors = issues.filter(i => i.type === 'error').length;
-  const warnings = issues.filter(i => i.type === 'warning').length;
-  const score = Math.max(0, 100 - (errors * 20) - (warnings * 5));
+  // 2) Hierarquia (Salto de níveis)
+  let lastLevel = 0;
+  headings.forEach(h => {
+    if (lastLevel > 0 && h.level > lastLevel + 1) {
+      issues.push({
+        severity: 'error',
+        code: 'heading-jump',
+        message: `Salto de hierarquia: H${lastLevel} seguido de H${h.level}.`,
+        blockIndex: h.index,
+        hint: `Adicione um título H${lastLevel + 1} antes deste H${h.level}.`
+      });
+    }
+    lastLevel = h.level;
+  });
+
+  if (h2WithoutH3.length > 0) {
+    issues.push({
+      severity: 'warning',
+      code: 'h2-without-h3',
+      message: `${h2WithoutH3.length} seção(ões) sem subtópicos (H3).`,
+      hint: 'Adicione "### Subtítulo" para facilitar a leitura.',
+    });
+  }
+
+  const words = countWords(content);
+  if (words < 300) {
+    issues.push({
+      severity: 'error',
+      code: 'too-short',
+      message: `Conteúdo muito curto (${words} palavras).`,
+      hint: 'Apostilas do padrão têm cerca de 1.500 palavras.',
+    });
+  }
 
   return {
-    ok: errors === 0,
-    score,
-    issues
+    ok: !issues.some(i => i.severity === 'error'),
+    issues,
+    stats: {
+      h2Count: h2.length,
+      h3Count: h3Total,
+      h2WithoutH3,
+      words,
+      expectedH2: EXPECTED_H2,
+    },
   };
 }

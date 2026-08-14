@@ -92,7 +92,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
       { id: 'diagnostics', label: 'Diagnóstico', short: 'Diag.', icon: AlertCircle, desc: 'Logs de runtime e falhas por rota', keywords: 'erro log debug' },
       { id: 'smoke', label: 'Testes', short: 'Testes', icon: CheckCircle, desc: 'Checklist automático de estabilidade', keywords: 'teste smoke checklist' },
       { id: 'changelog', label: 'Histórico de Versões', short: 'Histórico', icon: History, desc: 'Tudo que mudou na plataforma', keywords: 'changelog versao novidades' },
-      { id: 'diagnostics', label: 'Saúde & Estabilidade', short: 'Estabilidade', icon: Activity, desc: 'Monitoramento de rede e performance', keywords: 'status saude performance rede deploy estabilidade' },
+      { id: 'performance', label: 'Saúde & Estabilidade', short: 'Estabilidade', icon: Activity, desc: 'Monitoramento de rede e performance', keywords: 'status saude performance rede deploy estabilidade' },
     ],
   },
 ];
