@@ -80,12 +80,16 @@ function renderInline(input: string): { __html: string } {
       mathPlaceholders.push(renderMathToHTML(String(tex).trim(), false));
       return `\u0000MATH${mathPlaceholders.length - 1}\u0000`;
     })
-    .replace(/(^|[^\\$])\$([^\n$]{1,200}?)\$(?!\d)/g, (full, pre, tex) => {
+    .replace(/(^|[^\\$])\$([^\n$]+?)\$(?!\d)/g, (full, pre, tex) => {
       const t = String(tex).trim();
+      if (!t) return full;
       const looksMath =
         /[\\^_={}]|\\frac|\\sqrt|\\sum|\\int|\\pi|\\alpha|\\beta|\\theta|\\cdot|\\times|\\div|\\le|\\ge|\\ne|\\to|\\infty/.test(t)
-        || /[A-Za-z][\^_]/.test(t)
-        || /[\^_]\{?[A-Za-z0-9]/.test(t);
+        || /^[a-zA-Z]$/.test(t)
+        || /^[a-zA-Z][\^_]/.test(t)
+        || /^O\(.+\)$/.test(t)
+        || /[><=]=?/.test(t)
+        || /\d+[a-zA-Z]/.test(t);
       if (!looksMath) return full;
       mathPlaceholders.push(renderMathToHTML(t, false));
       return `${pre}\u0000MATH${mathPlaceholders.length - 1}\u0000`;
