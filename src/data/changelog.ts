@@ -32,17 +32,28 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.99.6',
+    version: '4.99.7',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.99.6-release',
-    commitMessage: 'Release v4.99.6: Provisioned apostila_pages table and fixed quick add page functionality'
+    commit: 'v4.99.7-release',
+    commitMessage: 'Release v4.99.7: Integrated visual diagrams in Theory of Computation apostila'
   };
 }
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: "4.99.7",
+    date: "14/08/2026",
+    title: "Visualização Teórica Enriquecida",
+    changes: [
+      {
+        kind: 'feature',
+        text: 'Integração de diagramas de estados e modelos computacionais na apostila de Aspectos Teóricos da Computação.'
+      }
+    ]
+  },
   {
     version: "4.99.6",
     date: "14/08/2026",
