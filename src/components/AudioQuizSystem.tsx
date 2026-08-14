@@ -96,7 +96,6 @@ export function AudioQuizSystem({ aula, quiz, onComplete }: AudioQuizSystemProps
       } else if (q.type === 'open') {
         // Simple heuristic for open answers (non-empty)
         if (userAnswer && userAnswer.length > 5) score += q.points;
-      }
       } else if (q.type === 'multiple-select') {
         const correctIds = q.options.filter((o: any) => o.correta).map((o: any) => o.id);
         const userIds = userAnswer || [];
