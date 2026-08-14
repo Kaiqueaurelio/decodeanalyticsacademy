@@ -377,7 +377,7 @@ export function MarkdownEditor({
 
   return (
     <div className={cn(
-      'apostila-markdown-editor rounded-lg border border-border bg-card overflow-hidden flex flex-col isolate',
+      'apostila-markdown-editor rounded-lg border border-border bg-card overflow-hidden flex flex-col isolate relative',
       isMobile ? 'h-auto min-h-[600px]' : 'h-[100dvh] sm:h-auto sm:min-h-[500px]',
       className,
     )}>
@@ -396,6 +396,9 @@ export function MarkdownEditor({
         focusMode={focusMode}
         onToggleFocus={() => setFocusMode((f) => !f)}
       />
+
+
+
 
       {/* Toggle Editar / Split / Visualizar como aluno — Mobile Responsive */}
       <div className="flex items-center gap-1 px-2 py-1 border-b border-border bg-muted/40 overflow-x-auto scrollbar-none sticky top-0 z-20">

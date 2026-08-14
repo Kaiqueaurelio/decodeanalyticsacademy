@@ -603,7 +603,8 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         }}
       />
       
-      {/* BARRA DE ADIÇÃO RÁPIDA (Removido o botão duplicado central) */}
+
+
 
       
       <div className="flex flex-1 min-h-0 overflow-hidden relative">
@@ -659,7 +660,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
             </Button>
           </div>
           <div className="flex-1 flex flex-col min-h-0 relative bg-background overflow-hidden">
-            <div ref={scrollContainerRef} className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar group/workbench scroll-smooth pb-20 pt-10">
+            <div ref={scrollContainerRef} className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar group/workbench scroll-smooth pb-20">
             {/* Indicador de Rolagem Lateral (Desktop e Mobile) */}
             <div className="fixed right-1 sm:right-2 top-24 bottom-24 w-1.5 sm:w-2.5 z-[100] pointer-events-none opacity-80 sm:opacity-100">
               <div className="w-full h-full bg-primary/10 rounded-full overflow-hidden border border-primary/20 backdrop-blur-[2px]">
