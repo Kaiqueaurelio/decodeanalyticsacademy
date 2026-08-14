@@ -2264,6 +2264,7 @@ export type Database = {
           id: string
           image_url: string | null
           is_required: boolean | null
+          match_options: Json | null
           options: Json | null
           points: number | null
           position: number
@@ -2279,6 +2280,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_required?: boolean | null
+          match_options?: Json | null
           options?: Json | null
           points?: number | null
           position?: number
@@ -2294,6 +2296,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_required?: boolean | null
+          match_options?: Json | null
           options?: Json | null
           points?: number | null
           position?: number
