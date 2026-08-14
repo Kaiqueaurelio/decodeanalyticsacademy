@@ -2,7 +2,7 @@
  * AdminApostilaWorkbench — tela única de edição de uma apostila (Notion Pro Style).
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -26,6 +26,9 @@ import { guessSemesterFromCategory, SEMESTER_OPTIONS, COURSE_OPTIONS, type Cours
 import { ensureApostilaExists } from '@/lib/create-placeholder-apostila';
 import { Badge } from '@/components/ui/badge';
 import { getSubjectColor } from '@/lib/subject-colors';
+import { parseApostilaContent } from '@/lib/apostila-parser';
+import { type ApostilaPage } from '@/lib/apostila-pages';
+import { NewApostilaPageButton } from '@/components/NewApostilaPageButton';
 
 import {
   ArrowLeft, Search, Save, Eye, PenTool, Wand2, Loader2, Menu, FileText,
@@ -55,7 +58,9 @@ interface WorkbenchProps {
 
 export default function AdminApostilaWorkbench({ overrideId, onBack }: WorkbenchProps = {}) {
   const { id: routeId } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
   const id = overrideId || routeId;
+  const selectedPageId = searchParams.get('page');
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -125,6 +130,11 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
   const [editorExpanded, setEditorExpanded] = useState(false);
   const [addSectionOpen, setAddSectionOpen] = useState(false);
   const [suggestedSectionTitle, setSuggestedSectionTitle] = useState('');
+  const [pages, setPages] = useState<ApostilaPage[]>([]);
+
+  useEffect(() => {
+    if (searchParams.get('expanded') === '1') setEditorExpanded(true);
+  }, [searchParams]);
 
   const dirtyRef = useRef(false);
   const initialLoadRef = useRef(true);
@@ -220,6 +230,13 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     setCoverUrl(((ap as any).cover_url as string | null) ?? null);
     setExerciseCount(count || 0);
 
+    const { data: pageRows } = await (supabase.from('apostila_pages' as any) as any)
+      .select('*').eq('apostila_id', apostilaId).order('position');
+    const loadedPages = (pageRows || []) as ApostilaPage[];
+    setPages(loadedPages);
+    const selectedPage = loadedPages.find((page) => page.id === selectedPageId);
+    if (selectedPage) setContent(selectedPage.content || '');
+
     if (links && links.length) {
       const ids = links.map((l: any) => l.material_id);
       const { data: mats } = await supabase.from('materials').select('id, title, type').in('id', ids);
@@ -241,7 +258,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     setTimeout(() => { initialLoadRef.current = false; }, 100);
   };
 
-  useEffect(() => { if (id) loadApostila(id); }, [id]);
+  useEffect(() => { if (id) loadApostila(id); }, [id, selectedPageId]);
 
   useEffect(() => {
     const handleKeyAdd = () => {
@@ -304,6 +321,17 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
   const doSave = async (isManual = false) => {
     if (!id || !dirtyRef.current) return;
     setSaving(true);
+
+    if (selectedPageId) {
+      const { error } = await (supabase.from('apostila_pages' as any) as any)
+        .update({ content }).eq('id', selectedPageId).eq('apostila_id', id);
+      setSaving(false);
+      if (error) { toast.error('Não foi possível salvar esta página.'); return; }
+      setPages((current) => current.map((page) => page.id === selectedPageId ? { ...page, content, updated_at: new Date().toISOString() } : page));
+      dirtyRef.current = false;
+      setLastSavedAt(new Date());
+      return;
+    }
 
     const { data: currentApostila } = await supabase
       .from('apostilas')
@@ -413,8 +441,12 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
   };
 
   const handlePasteApply = (text: string, mode: 'append' | 'replace') => {
-    setContent((prev) => mode === 'append' ? (prev ? prev + '\n\n' + text : text) : text);
-    toast.success('Texto inserido!');
+    const structured = parseApostilaContent(text)
+      .map((section) => `${'#'.repeat(section.level)} ${section.title}\n\n${section.content.trim()}`.trim())
+      .filter(Boolean)
+      .join('\n\n');
+    setContent((prev) => mode === 'append' ? (prev ? `${prev}\n\n${structured}` : structured) : structured);
+    toast.success('Texto estruturado e inserido.');
   };
 
   const handleGenerateCover = async () => {
@@ -741,6 +773,20 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
             </div>
 
             <div className="flex flex-1 min-h-0 flex-col px-0 sm:px-16 sm:pb-32">
+              {editorExpanded && (
+                <div className="flex shrink-0 items-center gap-2 overflow-x-auto border-y border-border bg-card px-3 py-2">
+                  <Button size="sm" variant={!selectedPageId ? 'secondary' : 'ghost'} className="h-8 shrink-0 text-xs" onClick={() => navigate(`/admin/apostilas/${id}`)}>
+                    Página principal
+                  </Button>
+                  {pages.map((page) => (
+                    <Button key={page.id} size="sm" variant={selectedPageId === page.id ? 'secondary' : 'ghost'}
+                      className="h-8 shrink-0 text-xs" onClick={() => navigate(`/admin/apostilas/${id}?page=${page.id}&expanded=1`)}>
+                      {new Date(page.created_at).toLocaleDateString('pt-BR')} · {page.title}
+                    </Button>
+                  ))}
+                  {id && <NewApostilaPageButton apostilaId={id} />}
+                </div>
+              )}
               <MarkdownEditor
                 value={content}
                 onChange={setContent}

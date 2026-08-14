@@ -52,6 +52,7 @@ import { ensureApostilaExists } from '@/lib/create-placeholder-apostila';
 
 
 import { AppendLinkDialog } from '@/components/AppendLinkDialog';
+import { NewApostilaPageButton } from '@/components/NewApostilaPageButton';
 import { autoLinkAll, autoLinkApostila } from '@/lib/auto-link-materials';
 import { MergeApostilasDialog } from '@/components/MergeApostilasDialog';
 import { TestimonialsAdmin } from '@/components/TestimonialsAdmin';
@@ -2280,6 +2281,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                                 {/* Secondary actions — desktop only */}
                                 <div className="hidden sm:flex items-center gap-1">
                                   <ApostilaMaterialsManager apostilaId={a.id} apostilaTitle={a.title} />
+                                  <NewApostilaPageButton apostilaId={a.id} />
                                   <AppendLinkDialog
                                     apostilaId={a.id}
                                     apostilaTitle={a.title}
