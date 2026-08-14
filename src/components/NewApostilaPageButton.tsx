@@ -15,6 +15,11 @@ export function NewApostilaPageButton({ apostilaId, compact = false }: { apostil
       toast.success('Nova página criada.');
       navigate(`/admin/apostilas/${apostilaId}?page=${page.id}&expanded=1`);
     } catch (error: any) {
+      const message = String(error?.message || '');
+      if (/apostila_pages|schema cache|does not exist|PGRST205/i.test(message)) {
+        toast.error('O recurso Nova Página ainda não foi ativado no banco de produção.');
+        return;
+      }
       toast.error(error?.message || 'Não foi possível criar a página.');
     }
   };
