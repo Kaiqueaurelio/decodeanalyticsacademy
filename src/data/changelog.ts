@@ -44,6 +44,25 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: "4.99.5",
+    date: "14/08/2026",
+    title: "Excelência em Notação Científica",
+    changes: [
+      {
+        kind: "fix",
+        text: "Implementada heurística de detecção ultra-robusta para fórmulas matemáticas, garantindo renderização de variáveis isoladas ($n$), notação de complexidade ($O(log n)$) e funções acadêmicas."
+      },
+      {
+        kind: "improvement",
+        text: "Sincronização da lógica de parser entre o renderizador principal e a biblioteca de utilitários KaTeX para consistência total."
+      },
+      {
+        kind: "fix",
+        text: "Normalização da detecção de delimitadores $...$ para evitar falsos positivos em textos comuns enquanto prioriza termos científicos."
+      }
+    ]
+  },
+  {
     version: "4.99.4",
     date: "14/08/2026",
     title: "Renderização Matemática Avançada",
