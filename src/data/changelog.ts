@@ -32,12 +32,12 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.99.2',
+    version: '4.99.3',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.99.2-release',
-    commitMessage: 'Release v4.99.2: Reformatação profunda e suporte a KaTeX na apostila de Aspectos Teóricos'
+    commit: 'v4.99.3-release',
+    commitMessage: 'Release v4.99.3: Refinamento final de formatação e clareza visual na apostila de Aspectos Teóricos'
   };
 }
 
