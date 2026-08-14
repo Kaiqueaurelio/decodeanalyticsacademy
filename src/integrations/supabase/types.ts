@@ -2255,6 +2255,142 @@ export type Database = {
         }
         Relationships: []
       }
+      quiz_questions: {
+        Row: {
+          correct_answer: Json | null
+          created_at: string
+          description: string | null
+          explanation: string | null
+          id: string
+          image_url: string | null
+          is_required: boolean | null
+          options: Json | null
+          points: number | null
+          position: number
+          question: string
+          quiz_id: string
+          type: string
+        }
+        Insert: {
+          correct_answer?: Json | null
+          created_at?: string
+          description?: string | null
+          explanation?: string | null
+          id?: string
+          image_url?: string | null
+          is_required?: boolean | null
+          options?: Json | null
+          points?: number | null
+          position?: number
+          question: string
+          quiz_id: string
+          type: string
+        }
+        Update: {
+          correct_answer?: Json | null
+          created_at?: string
+          description?: string | null
+          explanation?: string | null
+          id?: string
+          image_url?: string | null
+          is_required?: boolean | null
+          options?: Json | null
+          points?: number | null
+          position?: number
+          question?: string
+          quiz_id?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_questions_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "quizzes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quiz_submissions: {
+        Row: {
+          answers: Json
+          created_at: string
+          id: string
+          passed: boolean
+          quiz_id: string
+          score: number
+          time_spent: number | null
+          total_points: number
+          user_id: string
+        }
+        Insert: {
+          answers?: Json
+          created_at?: string
+          id?: string
+          passed?: boolean
+          quiz_id: string
+          score?: number
+          time_spent?: number | null
+          total_points?: number
+          user_id: string
+        }
+        Update: {
+          answers?: Json
+          created_at?: string
+          id?: string
+          passed?: boolean
+          quiz_id?: string
+          score?: number
+          time_spent?: number | null
+          total_points?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_submissions_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "quizzes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quizzes: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          max_attempts: number | null
+          min_score_percent: number | null
+          show_immediate_feedback: boolean | null
+          time_limit: number | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          max_attempts?: number | null
+          min_score_percent?: number | null
+          show_immediate_feedback?: boolean | null
+          time_limit?: number | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          max_attempts?: number | null
+          min_score_percent?: number | null
+          show_immediate_feedback?: boolean | null
+          time_limit?: number | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       reading_progress: {
         Row: {
           book_id: string
