@@ -2248,9 +2248,9 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                       <Card key={a.id} className="hover-lift card-alternate">
 
                           <CardContent className="p-3 sm:p-5">
-                            <div className="flex flex-col sm:flex-row sm:items-center gap-3 min-w-0">
-                              <div className="flex items-start sm:items-center gap-3 min-w-0 flex-1">
-                                <span className={`h-3 w-3 rounded-full shrink-0 mt-1.5 sm:mt-0 ${a.published ? 'bg-[hsl(var(--success))]' : 'bg-muted-foreground'}`} />
+                            <div className="flex flex-col lg:flex-row lg:items-center gap-3 min-w-0">
+                              <div className="flex items-start lg:items-center gap-3 min-w-0 flex-1">
+                                <span className={`h-3 w-3 rounded-full shrink-0 mt-1.5 lg:mt-0 ${a.published ? 'bg-[hsl(var(--success))]' : 'bg-muted-foreground'}`} />
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-start gap-2 flex-wrap">
                                     <h4 className="font-medium text-sm break-words leading-snug min-w-0 flex-1">{a.title}</h4>
@@ -2277,9 +2277,9 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                                   </div>
                                 </div>
                               </div>
-                              <div className="flex items-center gap-1 sm:flex-nowrap shrink-0 justify-end pl-6 sm:pl-0">
+                              <div className="flex w-full lg:w-auto items-center gap-1 shrink-0 justify-end pl-6 lg:pl-0">
                                 {/* Secondary actions — desktop only */}
-                                <div className="hidden sm:flex items-center gap-1">
+                                <div className="hidden lg:flex items-center gap-1">
                                   <ApostilaMaterialsManager apostilaId={a.id} apostilaTitle={a.title} />
                                   <NewApostilaPageButton apostilaId={a.id} />
                                   <AppendLinkDialog
@@ -2305,7 +2305,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                                 <Button
                                     size="sm"
                                     variant="default"
-                                    className="hidden sm:inline-flex h-8 px-2.5 text-xs gap-1.5 gradient-primary text-primary-foreground"
+                                    className="hidden lg:inline-flex h-8 px-2.5 text-xs gap-1.5 gradient-primary text-primary-foreground"
                                     onClick={async () => {
                                       if ((a as any).isPlaceholder || a.id.startsWith('placeholder')) {
                                         try {
@@ -2323,7 +2323,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                                   >
                                     {(a as any).isPlaceholder ? <><Plus className="h-3.5 w-3.5" /> Começar</> : <><PenTool className="h-3.5 w-3.5" /> Workbench</>}
                                   </Button>
-                                  <Button size="icon" variant="ghost" className="hidden sm:inline-flex h-8 w-8" onClick={async () => { 
+                                  <Button size="icon" variant="ghost" className="hidden lg:inline-flex h-8 w-8" onClick={async () => { 
                                     if ((a as any).isPlaceholder || a.id.startsWith('placeholder')) {
                                       try {
                                         const realId = await ensureApostilaExists(a as any);
@@ -2347,7 +2347,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                                   {/* Kebab — mobile only, agrupa secundárias + editar */}
                                   <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                      <Button size="icon" variant="ghost" className="sm:hidden h-8 w-8" title="Mais ações">
+                                      <Button size="icon" variant="ghost" className="lg:hidden h-8 w-8" title="Mais ações">
                                         <MoreHorizontal className="h-4 w-4" />
                                       </Button>
                                     </DropdownMenuTrigger>
