@@ -48,19 +48,16 @@ export function replaceMathDelimiters(input: string): string {
     const t = tex.trim();
     if (!t) return full;
     
-    // Heurística expandida: 
-    // - Símbolos matemáticos (\, ^, _, =, {, })
-    // - Letras sozinhas ou em pares que costumam ser variáveis (x, n, i, j, P, Q, M, O)
-    // - Notação de complexidade Big O: O(1), O(n), O(log n)
-    // - Operadores lógicos e relacionais
+    // Heurística expandida para detectar fórmulas matemáticas
     const looksMath = 
       /[\\^_={}]|\\frac|\\sqrt|\\sum|\\int|\\pi|\\alpha|\\beta|\\theta|\\cdot|\\times|\\div|\\le|\\ge|\\ne|\\to|\\infty/.test(t) ||
-      /^[a-zA-Z]$/.test(t) || 
-      /^[a-zA-Z][\^_]/.test(t) ||
+      /^[a-zA-Z\d]$/.test(t) || 
+      /^[a-zA-Z\d][\^_]/.test(t) ||
       /^O\(.+\)$/.test(t) ||
       /[><=]=?/.test(t) ||
-      /\d+[a-zA-Z]/.test(t) || // 2n, 3x
-      /[+\-*/]{2,}/.test(t);
+      /\d+[a-zA-Z]/.test(t) || 
+      /[+\-*/]{2,}/.test(t) ||
+      /^[a-zA-Z]\(.*\)$/.test(t); // f(x), O(n)
 
     if (!looksMath) return full;
     return pre + renderMathToHTML(t, false);
