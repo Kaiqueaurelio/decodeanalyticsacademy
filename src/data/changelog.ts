@@ -32,17 +32,28 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.93.0',
+    version: '4.94.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.93.0-release',
-    commitMessage: 'Release v4.93.0: Enhanced "New Page" UX in editor with floating button and inline zone'
+    commit: 'v4.94.0-release',
+    commitMessage: 'Release v4.94.0: Atualização de conteúdo - Aspectos Teóricos da Computação'
   };
 }
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: "4.94.0",
+    date: "13/08/2026",
+    title: "Atualização de Conteúdo Acadêmico",
+    changes: [
+      {
+        kind: "content",
+        text: "Atualizado o material de 'Aspectos Teóricos da Computação' com conteúdo estruturado sobre Máquinas de Estado, Mealy/Moore e Máquinas de Turing."
+      }
+    ]
+  },
   {
     version: "4.93.0",
     date: "13/08/2026",
