@@ -6,6 +6,7 @@ import { AppImage } from '@/components/ui/app-image';
 import { highlightCode } from '@/lib/shiki-highlighter';
 import { cn } from '@/lib/utils';
 import { renderMathToHTML } from '@/lib/math-render';
+import { ProfessionalAudioPlayer } from './ProfessionalAudioPlayer';
 
 /**
  * Limpa marcadores markdown inline (negrito, itálico, código inline, links etc.)
@@ -702,15 +703,12 @@ function ImageBlock({
 
 function AudioBlock({ label, url }: { label: string; url: string }) {
   return (
-    <figure className="my-6 rounded-xl border border-primary/25 bg-primary/5 px-3 py-3 sm:px-4 sm:py-3.5 flex flex-col gap-2">
-      <div className="flex items-center gap-2 text-xs font-medium text-primary">
-        <Volume2 className="h-3.5 w-3.5" />
-        {label}
-      </div>
-      <audio controls preload="none" src={url} className="w-full h-9">
-        Seu navegador não suporta áudio.
-      </audio>
-    </figure>
+    <ProfessionalAudioPlayer 
+      url={url} 
+      label={label || "Áudio da Aula"}
+      title={label !== "Áudio explicativo" ? label : undefined}
+      persistProgress={true}
+    />
   );
 }
 

@@ -32,17 +32,37 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.99.8',
+    version: '5.0.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.99.8-release',
-    commitMessage: 'Release v4.99.8: Added interactive audio lesson to Theory of Computation apostila'
+    commit: 'v5.0.0-release',
+    commitMessage: 'Release v5.0.0: Professional Audio Player Integration'
   };
 }
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: "5.0.0",
+    date: "14/08/2026",
+    title: "Experiência de Áudio Profissional",
+    major: true,
+    changes: [
+      {
+        kind: 'feature',
+        text: 'Lançamento do Professional Audio Player embutido nas apostilas, com controles de velocidade (2x), progresso arrastável e persistência automática.'
+      },
+      {
+        kind: 'improvement',
+        text: 'Implementação de atalhos de teclado globais para controle de áudio (Espaço para Play/Pause, Setas para Volume/Seek).'
+      },
+      {
+        kind: 'feature',
+        text: 'Persistência de progresso individual por áudio e volume global no navegador do aluno.'
+      }
+    ]
+  },
   {
     version: "4.99.8",
     date: "14/08/2026",
