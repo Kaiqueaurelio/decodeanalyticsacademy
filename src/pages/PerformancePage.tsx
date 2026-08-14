@@ -62,7 +62,7 @@ export default function PerformancePage() {
   const gamification = useGamification();
   const [loading, setLoading] = useState(true);
   const [perApostila, setPerApostila] = useState<ApostilaStat[]>([]);
-  const [stats, setStats] = useState({ hits: 0, errors: 0, total: 0 });
+  const [stats, setStats] = useState({ hits: 0, errors: 0, total: 0, lastWeekHits: 0 });
 
   useEffect(() => {
     if (!user) return;
@@ -71,10 +71,13 @@ export default function PerformancePage() {
 
   const load = async () => {
     setLoading(true);
+    const now = new Date();
+    const lastWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
     const [{ data: apostilas }, { data: exercises }, { data: answers }] = await Promise.all([
       supabase.from('apostilas').select('id, title, category').eq('published', true),
       supabase.from('exercises').select('id, apostila_id'),
-      supabase.from('answers').select('exercise_id, is_correct').eq('user_id', user!.id),
+      supabase.from('answers').select('exercise_id, is_correct, created_at').eq('user_id', user!.id),
     ]);
 
     const exByApostila: Record<string, string[]> = {};
@@ -88,14 +91,22 @@ export default function PerformancePage() {
     const byApostila: Record<string, { hits: number; errors: number; answered: Set<string> }> = {};
     let hits = 0;
     let errors = 0;
+    let lastWeekHits = 0;
+    const now = new Date();
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
     (answers || []).forEach((a) => {
       const apId = apIdByExercise[a.exercise_id];
+      const createdAt = new Date(a.created_at);
+      const isLastWeek = createdAt >= sevenDaysAgo;
+
       if (!apId) return;
       if (!byApostila[apId]) byApostila[apId] = { hits: 0, errors: 0, answered: new Set() };
       byApostila[apId].answered.add(a.exercise_id);
       if (a.is_correct) {
         byApostila[apId].hits++;
         hits++;
+        if (isLastWeek) lastWeekHits++;
       } else {
         byApostila[apId].errors++;
         errors++;
@@ -127,7 +138,7 @@ export default function PerformancePage() {
     });
 
     setPerApostila(rows);
-    setStats({ hits, errors, total: hits + errors });
+    setStats({ hits, errors, total: hits + errors, lastWeekHits });
     setLoading(false);
   };
 
@@ -179,6 +190,7 @@ export default function PerformancePage() {
     { icon: Flame, label: 'Sequência', value: gamification.streak?.current_streak || 0, suffix: 'd', color: 'text-orange-500', bg: 'bg-orange-500/10' },
     { icon: Rocket, label: 'XP total', value: gamification.xp?.xp_points || 0, color: 'text-primary', bg: 'bg-primary/10' },
     { icon: Award, label: 'Nível', value: gamification.xp?.level || 1, color: 'text-accent', bg: 'bg-accent/10' },
+    { icon: TrendingUp, label: 'Tendência', value: stats.lastWeekHits, suffix: ' acertos', color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
   ];
 
   return (
