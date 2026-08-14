@@ -754,6 +754,47 @@ export type Database = {
           },
         ]
       }
+      apostila_pages: {
+        Row: {
+          apostila_id: string
+          content: string
+          created_at: string
+          created_by: string | null
+          id: string
+          position: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          apostila_id: string
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          position?: number
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          apostila_id?: string
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          position?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "apostila_pages_apostila_id_fkey"
+            columns: ["apostila_id"]
+            isOneToOne: false
+            referencedRelation: "apostilas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       apostila_shares: {
         Row: {
           apostila_id: string
