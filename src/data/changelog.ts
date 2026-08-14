@@ -32,17 +32,32 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.97.0',
+    version: '4.98.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.97.0-release',
-    commitMessage: 'Release v4.97.0: Reestruturação da apostila de Aspectos Teóricos da Computação'
+    commit: 'v4.98.0-release',
+    commitMessage: 'Release v4.98.0: Limpeza da interface do Workbench e correção de elementos duplicados'
   };
 }
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: "4.98.0",
+    date: "14/08/2026",
+    title: "Limpeza Visual do Workbench",
+    changes: [
+      {
+        kind: "fix",
+        text: "Remoção de elementos de interface duplicados e correção do espaçamento excessivo no editor (pt-10 removido)."
+      },
+      {
+        kind: "improvement",
+        text: "Otimização do z-index e isolamento do editor para evitar sobreposições em dispositivos móveis."
+      }
+    ]
+  },
   {
     version: "4.97.0",
     date: "14/08/2026",
