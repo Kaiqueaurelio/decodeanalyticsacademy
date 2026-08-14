@@ -32,17 +32,36 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.95.0',
+    version: '4.96.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.95.0-release',
-    commitMessage: 'Release v4.95.0: Otimização de UI/UX no Workbench e correção do QuickCreate'
+    commit: 'v4.96.0-release',
+    commitMessage: 'Release v4.96.0: Correção de sobreposição no Workbench em modo expansão'
   };
 }
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: "4.96.0",
+    date: "14/08/2026",
+    title: "Otimização de Empilhamento & UX",
+    changes: [
+      {
+        kind: "fix",
+        text: "Corrigida sobreposição visual no Workbench: botões de controle e barra de ferramentas agora respeitam o empilhamento correto (z-index) no modo expansão."
+      },
+      {
+        kind: "improvement",
+        text: "Adicionado espaçamento superior (padding-top) na área de conteúdo do editor para evitar conflitos com a toolbar persistente."
+      },
+      {
+        kind: "improvement",
+        text: "Isolamento de contexto visual no editor (isolate) para garantir integridade da interface em todos os níveis de zoom."
+      }
+    ]
+  },
   {
     version: "4.95.0",
     date: "14/08/2026",
