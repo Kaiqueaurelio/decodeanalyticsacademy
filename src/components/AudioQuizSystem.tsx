@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2, Trophy, ArrowRight, RotateCcw, ClipboardCheck, Clock } from 'lucide-react';
+import { CheckCircle2, Trophy, ArrowRight, RotateCcw, ClipboardCheck, Clock, GripVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Card } from '@/components/ui/card';
 import { ProfessionalAudioPlayer } from './ProfessionalAudioPlayer';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
@@ -28,6 +29,7 @@ interface Question {
   is_required: boolean;
   points: number;
   options: any[];
+  match_options?: any[];
   correct_answer?: any;
   image_url?: string;
   explanation?: string;
@@ -69,12 +71,37 @@ export function AudioQuizSystem({ aula, quiz, onComplete }: AudioQuizSystemProps
     setAnswers(prev => ({ ...prev, [questionId]: answer }));
   };
 
+  const handleMultipleSelect = (questionId: string, optionId: string, checked: boolean) => {
+    setAnswers(prev => {
+      const current = prev[questionId] || [];
+      if (checked) {
+        return { ...prev, [questionId]: [...current, optionId] };
+      } else {
+        return { ...prev, [questionId]: current.filter((id: string) => id !== optionId) };
+      }
+    });
+  };
+
+  const handleOrderChange = (questionId: string, newOrder: any[]) => {
+    setAnswers(prev => ({ ...prev, [questionId]: newOrder }));
+  };
+
+  const handleMatchChange = (questionId: string, leftId: string, rightId: string) => {
+    setAnswers(prev => {
+      const current = prev[questionId] || {};
+      return { ...prev, [questionId]: { ...current, [leftId]: rightId } };
+    });
+  };
+
   const currentQuestion = quiz.questions[currentQuestionIdx];
   const totalQuestions = quiz.questions.length;
   const progress = ((currentQuestionIdx + 1) / totalQuestions) * 100;
 
   const isCurrentQuestionAnswered = currentQuestion?.is_required 
-    ? answers[currentQuestion.id] !== undefined && answers[currentQuestion.id] !== ''
+    ? answers[currentQuestion.id] !== undefined && 
+      answers[currentQuestion.id] !== '' && 
+      (Array.isArray(answers[currentQuestion.id]) ? answers[currentQuestion.id].length > 0 : true) &&
+      (currentQuestion.type === 'matching' ? Object.keys(answers[currentQuestion.id] || {}).length === currentQuestion.options.length : true)
     : true;
 
   const calculateScore = () => {
@@ -92,8 +119,21 @@ export function AudioQuizSystem({ aula, quiz, onComplete }: AudioQuizSystemProps
       } else if (q.type === 'open') {
         // Simple heuristic for open answers (non-empty)
         if (userAnswer && userAnswer.length > 5) score += q.points;
+      } else if (q.type === 'multiple-select') {
+        const correctIds = q.options.filter((o: any) => o.correta).map((o: any) => o.id);
+        const userIds = userAnswer || [];
+        if (correctIds.length === userIds.length && correctIds.every((id: string) => userIds.includes(id))) {
+          score += q.points;
+        }
+      } else if (q.type === 'ordering') {
+        const userOrder = userAnswer || [];
+        const isCorrect = userOrder.every((item: any, idx: number) => item.ordem_correta === idx + 1);
+        if (isCorrect) score += q.points;
+      } else if (q.type === 'matching') {
+        const userMatches = userAnswer || {};
+        const correctMatches = q.options.every((opt: any) => userMatches[opt.id] === opt.match_id);
+        if (correctMatches) score += q.points;
       }
-      // TODO: Implement logic for ordering and matching
     });
 
     return { score, totalPoints };
@@ -284,6 +324,108 @@ export function AudioQuizSystem({ aula, quiz, onComplete }: AudioQuizSystemProps
                     <div className="flex justify-end text-[10px] text-muted-foreground font-mono">
                       {answers[currentQuestion.id]?.length || 0} caracteres
                     </div>
+                  </div>
+                )}
+
+                {currentQuestion.type === 'multiple-select' && (
+                  <div className="grid gap-3">
+                    {currentQuestion.options.map((opt: any) => (
+                      <div
+                        key={opt.id}
+                        className={cn(
+                          "flex items-center space-x-3 p-4 rounded-xl border border-primary/10 bg-primary/5 cursor-pointer transition-all hover:bg-primary/10",
+                          (answers[currentQuestion.id] || []).includes(opt.id) && "border-primary bg-primary/20"
+                        )}
+                        onClick={() => handleMultipleSelect(currentQuestion.id, opt.id, !(answers[currentQuestion.id] || []).includes(opt.id))}
+                      >
+                        <Checkbox
+                          id={opt.id}
+                          checked={(answers[currentQuestion.id] || []).includes(opt.id)}
+                          onCheckedChange={(checked) => handleMultipleSelect(currentQuestion.id, opt.id, !!checked)}
+                        />
+                        <Label htmlFor={opt.id} className="font-medium cursor-pointer flex-1">
+                          {opt.texto}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {currentQuestion.type === 'ordering' && (
+                  <div className="space-y-3">
+                    <p className="text-xs text-muted-foreground mb-4">Clique e arraste ou use os botões para ordenar:</p>
+                    {(answers[currentQuestion.id] || currentQuestion.options).map((opt: any, idx: number) => (
+                      <div
+                        key={opt.id}
+                        className="flex items-center gap-3 p-4 rounded-xl border border-primary/10 bg-primary/5"
+                      >
+                        <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center font-bold text-xs">
+                          {idx + 1}
+                        </div>
+                        <span className="flex-1 font-medium">{opt.texto}</span>
+                        <div className="flex flex-col gap-1">
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-6 w-6"
+                            disabled={idx === 0}
+                            onClick={() => {
+                              const newOrder = [...(answers[currentQuestion.id] || currentQuestion.options)];
+                              [newOrder[idx - 1], newOrder[idx]] = [newOrder[idx], newOrder[idx - 1]];
+                              handleOrderChange(currentQuestion.id, newOrder);
+                            }}
+                          >
+                            <ArrowRight className="w-3 h-3 -rotate-90" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-6 w-6"
+                            disabled={idx === currentQuestion.options.length - 1}
+                            onClick={() => {
+                              const newOrder = [...(answers[currentQuestion.id] || currentQuestion.options)];
+                              [newOrder[idx + 1], newOrder[idx]] = [newOrder[idx], newOrder[idx + 1]];
+                              handleOrderChange(currentQuestion.id, newOrder);
+                            }}
+                          >
+                            <ArrowRight className="w-3 h-3 rotate-90" />
+                          </Button>
+                        </div>
+                        <GripVertical className="w-4 h-4 text-muted-foreground/30" />
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {currentQuestion.type === 'matching' && (
+                  <div className="space-y-6">
+                    {currentQuestion.options.map((opt: any) => (
+                      <div key={opt.id} className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+                        <div className="p-4 rounded-xl border border-primary/20 bg-primary/5 font-bold text-sm">
+                          {opt.texto}
+                        </div>
+                        <RadioGroup
+                          value={answers[currentQuestion.id]?.[opt.id]}
+                          onValueChange={(val) => handleMatchChange(currentQuestion.id, opt.id, val)}
+                          className="flex flex-wrap gap-2"
+                        >
+                          {currentQuestion.match_options.map((mOpt: any) => (
+                            <div key={mOpt.id} className="relative">
+                              <RadioGroupItem value={mOpt.id} id={`${opt.id}-${mOpt.id}`} className="peer sr-only" />
+                              <Label
+                                htmlFor={`${opt.id}-${mOpt.id}`}
+                                className={cn(
+                                  "px-3 py-2 rounded-lg border border-primary/10 bg-primary/5 text-xs cursor-pointer transition-all hover:bg-primary/10 peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/20",
+                                  answers[currentQuestion.id]?.[opt.id] === mOpt.id && "border-primary bg-primary/20 text-primary"
+                                )}
+                              >
+                                {mOpt.texto}
+                              </Label>
+                            </div>
+                          ))}
+                        </RadioGroup>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
