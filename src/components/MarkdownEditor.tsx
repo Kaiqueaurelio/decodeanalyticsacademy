@@ -399,6 +399,7 @@ export function MarkdownEditor({
       />
 
 
+
       {/* Toggle Editar / Split / Visualizar como aluno — Mobile Responsive */}
       <div className="flex items-center gap-1 px-2 py-1 border-b border-border bg-muted/40 overflow-x-auto scrollbar-none sticky top-0 z-20">
         <button
