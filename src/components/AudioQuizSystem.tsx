@@ -71,6 +71,28 @@ export function AudioQuizSystem({ aula, quiz, onComplete }: AudioQuizSystemProps
     setAnswers(prev => ({ ...prev, [questionId]: answer }));
   };
 
+  const handleMultipleSelect = (questionId: string, optionId: string, checked: boolean) => {
+    setAnswers(prev => {
+      const current = prev[questionId] || [];
+      if (checked) {
+        return { ...prev, [questionId]: [...current, optionId] };
+      } else {
+        return { ...prev, [questionId]: current.filter((id: string) => id !== optionId) };
+      }
+    });
+  };
+
+  const handleOrderChange = (questionId: string, newOrder: any[]) => {
+    setAnswers(prev => ({ ...prev, [questionId]: newOrder }));
+  };
+
+  const handleMatchChange = (questionId: string, leftId: string, rightId: string) => {
+    setAnswers(prev => {
+      const current = prev[questionId] || {};
+      return { ...prev, [questionId]: { ...current, [leftId]: rightId } };
+    });
+  };
+
   const currentQuestion = quiz.questions[currentQuestionIdx];
   const totalQuestions = quiz.questions.length;
   const progress = ((currentQuestionIdx + 1) / totalQuestions) * 100;
