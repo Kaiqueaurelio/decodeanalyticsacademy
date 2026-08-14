@@ -66,7 +66,7 @@ import { extractTextFromFile } from '@/lib/file-extract';
 import { markdownToHtml } from '@/lib/markdown-html';
 import { MarkdownEditor } from '@/components/MarkdownEditor';
 import { StructureValidationDialog } from '@/components/admin/StructureValidationDialog';
-import { validateApostilaStructure, type ValidationReport } from '@/lib/apostilaValidation';
+import { validateApostilaStructure, type ValidationReport } from '@/lib/validators/workbookValidator';
 import { PerformanceMetrics } from '@/components/PerformanceMetrics';
 import { SmokeTestsPanel } from '@/components/SmokeTestsPanel';
 import { DiagnosticsPanel } from '@/components/DiagnosticsPanel';

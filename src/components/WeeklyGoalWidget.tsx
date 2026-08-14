@@ -15,6 +15,7 @@ export function WeeklyGoalWidget() {
   const { user } = useAuth();
   const [count, setCount] = useState(0);
   const [weeklyGoal, setWeeklyGoal] = useState(getWeeklyGoal);
+  const [streakInfo, setStreakInfo] = useState({ current: 0, lastDate: '' });
 
   useEffect(() => {
     const handleStorage = () => setWeeklyGoal(getWeeklyGoal());
@@ -27,12 +28,26 @@ export function WeeklyGoalWidget() {
     const weekAgo = new Date();
     weekAgo.setDate(weekAgo.getDate() - 7);
 
-    supabase
-      .from('answers')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', user.id)
-      .gte('created_at', weekAgo.toISOString())
-      .then(({ count: c }) => setCount(c || 0));
+    Promise.all([
+      supabase
+        .from('answers')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .gte('created_at', weekAgo.toISOString()),
+      supabase
+        .from('study_streaks')
+        .select('current_streak, last_study_date')
+        .eq('user_id', user.id)
+        .maybeSingle()
+    ]).then(([{ count: c }, { data: streak }]) => {
+      setCount(c || 0);
+      if (streak) {
+        setStreakInfo({ 
+          current: streak.current_streak, 
+          lastDate: streak.last_study_date 
+        });
+      }
+    });
   }, [user]);
 
   const WEEKLY_GOAL = weeklyGoal;
@@ -79,15 +94,25 @@ export function WeeklyGoalWidget() {
           </div>
         </div>
       </div>
-      <p className="text-center text-xs text-muted-foreground mt-3">
-        {isComplete ? (
-          <span className="text-success font-medium flex items-center justify-center gap-1">
-            <PartyPopper className="h-3.5 w-3.5" /> Meta concluída!
-          </span>
-        ) : (
-          `Faltam ${WEEKLY_GOAL - count} exercícios para completar`
+      <div className="mt-3 space-y-2">
+        <p className="text-center text-xs text-muted-foreground">
+          {isComplete ? (
+            <span className="text-success font-medium flex items-center justify-center gap-1">
+              <PartyPopper className="h-3.5 w-3.5" /> Meta concluída!
+            </span>
+          ) : (
+            `Faltam ${WEEKLY_GOAL - count} exercícios para completar`
+          )}
+        </p>
+        {streakInfo.current > 0 && (
+          <div className="flex items-center justify-center gap-1.5 pt-1 border-t border-border/40">
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Fogo:</span>
+            <span className="text-xs font-bold text-orange-500 flex items-center gap-0.5">
+              🔥 {streakInfo.current} dias
+            </span>
+          </div>
         )}
-      </p>
+      </div>
     </Card>
   );
 }
