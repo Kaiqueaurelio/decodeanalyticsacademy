@@ -381,7 +381,6 @@ export function MarkdownEditor({
       isMobile ? 'h-auto min-h-[600px]' : 'h-[100dvh] sm:h-auto sm:min-h-[500px]',
       className,
     )}>
-
       <EditorRibbon
         editor={editor}
         onInsertImage={insertImage}
@@ -397,6 +396,7 @@ export function MarkdownEditor({
         focusMode={focusMode}
         onToggleFocus={() => setFocusMode((f) => !f)}
       />
+
 
 
 
