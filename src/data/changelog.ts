@@ -32,17 +32,32 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.96.0',
+    version: '4.97.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.96.0-release',
-    commitMessage: 'Release v4.96.0: Correção de sobreposição no Workbench em modo expansão'
+    commit: 'v4.97.0-release',
+    commitMessage: 'Release v4.97.0: Reestruturação da apostila de Aspectos Teóricos da Computação'
   };
 }
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: "4.97.0",
+    date: "14/08/2026",
+    title: "Reformatação Estrutural Acadêmica",
+    changes: [
+      {
+        kind: "content",
+        text: "Reestruturação completa da apostila 'Aspectos Teóricos da Computação' com nova hierarquia visual, suporte a fórmulas KaTeX e tabelas de complexidade."
+      },
+      {
+        kind: "improvement",
+        text: "Adicionada seção de exercícios de fixação e dicas contextuais (callouts) para melhor aprendizado."
+      }
+    ]
+  },
   {
     version: "4.96.0",
     date: "14/08/2026",
