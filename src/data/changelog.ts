@@ -32,17 +32,32 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.98.0',
+    version: '4.99.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.98.0-release',
-    commitMessage: 'Release v4.98.0: Limpeza da interface do Workbench e correção de elementos duplicados'
+    commit: 'v4.99.0-release',
+    commitMessage: 'Release v4.99.0: Correção final de elementos duplicados e limpeza da interface do Workbench'
   };
 }
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: "4.99.0",
+    date: "14/08/2026",
+    title: "Limpeza de Interface & UX Final",
+    changes: [
+      {
+        kind: "fix",
+        text: "Remoção definitiva de toolbars duplicadas e botões sobrepostos no modo expansão do Workbench."
+      },
+      {
+        kind: "improvement",
+        text: "Ajuste de espaçamento vertical (padding) para garantir que o conteúdo não seja cortado pela barra de ferramentas fixa."
+      }
+    ]
+  },
   {
     version: "4.98.0",
     date: "14/08/2026",
