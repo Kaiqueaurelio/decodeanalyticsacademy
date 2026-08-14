@@ -7,6 +7,9 @@ import { highlightCode } from '@/lib/shiki-highlighter';
 import { cn } from '@/lib/utils';
 import { renderMathToHTML } from '@/lib/math-render';
 import { ProfessionalAudioPlayer } from './ProfessionalAudioPlayer';
+import { AudioQuizSystem } from './AudioQuizSystem';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 /**
  * Limpa marcadores markdown inline (negrito, itálico, código inline, links etc.)
@@ -136,7 +139,8 @@ type Block =
       marginX?: number;
       marginY?: number;
     }
-  | { type: 'audio'; label: string; url: string }
+  | { type: 'audio'; label: string; url: string; quizId?: string }
+  | { type: 'audio-quiz'; aulaId: string; quizId: string }
   | { type: 'divider' };
 
 const AUDIO_RE = /\.(mp3|wav|ogg|m4a|aac|webm)(\?.*)?$/i;
@@ -365,13 +369,13 @@ function parseBlocks(rawInput: string): Block[] {
     const flushParagraph = () => {
       const t = paragraph.join('\n').trim();
       if (t) {
-        // Se o parágrafo for apenas um link ou texto dentro de um span/div com style, mantemos o HTML
-        if (t.startsWith('<') && t.endsWith('>')) {
-          blocks.push({ type: 'paragraph', content: t });
+        // Detecção de AudioQuiz: [quiz:QUIZ_ID] na linha
+        const quizMatch = t.match(/^\[quiz:([a-f\d-]+)\]$/i);
+        if (quizMatch) {
+          blocks.push({ type: 'audio-quiz', aulaId: 'inline-aula', quizId: quizMatch[1] });
         } else {
           blocks.push({ type: 'paragraph', content: t });
         }
-
       }
       paragraph = [];
     };
@@ -712,6 +716,47 @@ function AudioBlock({ label, url }: { label: string; url: string }) {
   );
 }
 
+function AudioQuizBlock({ aulaId, quizId }: { aulaId: string; quizId: string }) {
+  const { data: quizData, isLoading } = useQuery({
+    queryKey: ['quiz', quizId],
+    queryFn: async () => {
+      const { data: quiz, error: quizError } = await supabase
+        .from('quizzes')
+        .select('*')
+        .eq('id', quizId)
+        .single();
+      
+      if (quizError) throw quizError;
+
+      const { data: questions, error: qError } = await supabase
+        .from('quiz_questions')
+        .select('*')
+        .eq('quiz_id', quizId)
+        .order('position', { ascending: true });
+
+      if (qError) throw qError;
+
+      return { ...quiz, questions };
+    },
+    enabled: !!quizId
+  });
+
+  if (isLoading) return <div className="animate-pulse h-40 bg-primary/5 rounded-xl border border-primary/10" />;
+  if (!quizData) return null;
+
+  return (
+    <AudioQuizSystem 
+      aula={{
+        id: aulaId,
+        titulo: quizData.title,
+        audioUrl: '', // Será extraído do bloco de áudio anterior se necessário ou deixado vazio para pular
+        questaoId: quizId
+      }}
+      quiz={quizData as any}
+    />
+  );
+}
+
 function CalloutBlock({ kind, title, content }: { kind: 'info' | 'tip' | 'warning'; title: string; content: string }) {
   const Icon = kind === 'tip' ? Lightbulb : kind === 'warning' ? AlertTriangle : Info;
   const colors = 
@@ -1006,6 +1051,7 @@ export function ApostilaContentRenderer({ content, activeHeadingId }: Props) {
             />
           );
           case 'audio': return <AudioBlock key={i} label={b.label} url={b.url} />;
+          case 'audio-quiz': return <AudioQuizBlock key={i} aulaId={b.aulaId} quizId={b.quizId} />;
           case 'callout': return <CalloutBlock key={i} kind={b.kind} title={b.title} content={b.content} />;
           case 'quote': return <QuoteBlock key={i} content={b.content} />;
           case 'list': return <ListBlock key={i} items={b.items} ordered={b.ordered} />;
@@ -1019,11 +1065,12 @@ export function ApostilaContentRenderer({ content, activeHeadingId }: Props) {
             );
           case 'paragraph':
           default: {
+            const isParagraph = b.type === 'paragraph';
             return (
               <p
                 key={i}
                 className="mb-6 last:mb-0 text-foreground/95 font-medium tracking-tight"
-                dangerouslySetInnerHTML={renderInline(b.content)}
+                dangerouslySetInnerHTML={renderInline(isParagraph ? b.content : '')}
               />
             );
           }

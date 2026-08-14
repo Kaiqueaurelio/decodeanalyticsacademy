@@ -28,6 +28,7 @@ interface ProfessionalAudioPlayerProps {
   chapters?: Chapter[];
   persistProgress?: boolean;
   autoplay?: boolean;
+  onEnded?: () => void;
 }
 
 export function ProfessionalAudioPlayer({
@@ -36,7 +37,8 @@ export function ProfessionalAudioPlayer({
   title,
   chapters = [],
   persistProgress = true,
-  autoplay = false
+  autoplay = false,
+  onEnded
 }: ProfessionalAudioPlayerProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -201,6 +203,7 @@ export function ProfessionalAudioPlayer({
           setDuration(e.currentTarget.duration);
           setIsLoading(false);
         }}
+        onEnded={onEnded}
         onWaiting={() => setIsLoading(true)}
         onPlaying={() => setIsLoading(false)}
         onError={() => {
