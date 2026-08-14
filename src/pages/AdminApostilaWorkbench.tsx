@@ -793,15 +793,8 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         suggestedTitle={suggestedSectionTitle}
       />
 
-      {/* Floating Action Button for Mobile */}
-      <div className="fixed bottom-6 right-6 sm:hidden z-50">
-        <Button 
-          onClick={() => setAddSectionOpen(true)}
-          className="h-14 w-14 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/40 group active:scale-95"
-        >
-          <FilePlus2 className="h-6 w-6 group-hover:scale-110 transition-transform" />
-        </Button>
-      </div>
+      {/* FAB Mobile Removido para evitar sobreposição */}
+
     </div>
   );
 }
