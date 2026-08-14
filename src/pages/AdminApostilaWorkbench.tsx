@@ -603,16 +603,8 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         }}
       />
       
-      {/* BARRA DE ADIÇÃO RÁPIDA (OPCIONAL/ESTILO NOTION) */}
-      <div className="w-full bg-background border-b border-border/40 px-4 py-2 flex justify-center">
-        <button 
-          onClick={() => setAddSectionOpen(true)}
-          className="w-full max-w-4xl group flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed border-border/40 text-muted-foreground/60 hover:text-emerald-600 hover:border-emerald-500/30 hover:bg-emerald-500/5 transition-all font-bold text-xs"
-        >
-          <Plus className="h-4 w-4 group-hover:rotate-90 transition-transform" />
-          ADICIONAR NOVA PÁGINA NESTE CADERNO
-        </button>
-      </div>
+      {/* BARRA DE ADIÇÃO RÁPIDA (Removido o botão duplicado central) */}
+
       
       <div className="flex flex-1 min-h-0 overflow-hidden relative">
 
