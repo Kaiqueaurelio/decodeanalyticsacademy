@@ -153,7 +153,10 @@ export function QuickCreateApostilaDialog({
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
               <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Semestre</Label>
-              <Select value={semester} onValueChange={setSemester}>
+              <Select 
+                value={semester === null ? 'none' : semester.toString()} 
+                onValueChange={(v) => setSemester(v)}
+              >
                 <SelectTrigger className="bg-background/50 border-primary/20">
                   <SelectValue placeholder="Selecione" />
                 </SelectTrigger>
@@ -168,22 +171,13 @@ export function QuickCreateApostilaDialog({
               </Select>
             </div>
             <div className="grid gap-2">
-              <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Categoria</Label>
-              <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger className="bg-background/50 border-primary/20">
-                  <SelectValue placeholder="Selecione" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Computação">Computação</SelectItem>
-                  <SelectItem value="ENEM">ENEM</SelectItem>
-                  <SelectItem value="Matemática">Matemática</SelectItem>
-                  <SelectItem value="Sistemas">Sistemas</SelectItem>
-                  <SelectItem value="Geral">Geral</SelectItem>
-                  {initialCategory && !['Computação', 'ENEM', 'Matemática', 'Sistemas', 'Geral'].includes(initialCategory) && (
-                    <SelectItem value={initialCategory}>{initialCategory}</SelectItem>
-                  )}
-                </SelectContent>
-              </Select>
+              <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Categoria / Matéria</Label>
+              <Input
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                placeholder="ex: Cálculo I"
+                className="bg-background/50 border-primary/20 focus:border-primary transition-all h-10"
+              />
             </div>
           </div>
 
