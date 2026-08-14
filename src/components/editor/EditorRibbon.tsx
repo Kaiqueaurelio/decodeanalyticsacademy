@@ -92,9 +92,9 @@ export function EditorRibbon({ editor, onInsertImage, onSave, saveStatus = 'idle
 
 
   return (
-    <div className="word-ribbon bg-card shrink-0">
+    <div className="word-ribbon bg-card shrink-0 relative z-30">
       {/* Abas */}
-      <div className="word-tabs flex-nowrap min-w-max px-2 overflow-x-auto scrollbar-none flex">
+      <div className="word-tabs flex-nowrap min-w-max px-2 overflow-x-auto scrollbar-none flex relative z-40">
         <button type="button" className="word-tab word-file-tab inline-flex" title="Arquivo">Arquivo</button>
         <button type="button" className={cn('word-tab whitespace-nowrap px-3 active', tab === 'home' && 'active')} onClick={() => setTab('home')}>Início</button>
         <button type="button" className={cn('word-tab whitespace-nowrap px-3', tab === 'insert' && 'active')} onClick={() => setTab('insert')}>Inserir</button>
