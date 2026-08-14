@@ -603,7 +603,8 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         }}
       />
       
-      {/* BARRA DE ADIÇÃO RÁPIDA (Removido o botão duplicado central) */}
+
+
 
       
       <div className="flex flex-1 min-h-0 overflow-hidden relative">
