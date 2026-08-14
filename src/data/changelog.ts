@@ -32,17 +32,32 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.99.5',
+    version: '4.99.6',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.99.5-release',
-    commitMessage: 'Release v4.99.5: Enhanced KaTeX robustness for scientific notation and academic formulas'
+    commit: 'v4.99.6-release',
+    commitMessage: 'Release v4.99.6: Provisioned apostila_pages table and fixed quick add page functionality'
   };
 }
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: "4.99.6",
+    date: "14/08/2026",
+    title: "Infraestrutura de Páginas de Caderno",
+    changes: [
+      {
+        kind: 'feature',
+        text: 'Provisionamento da tabela apostila_pages no banco de dados para suporte a cadernos multi-páginas.'
+      },
+      {
+        kind: 'fix',
+        text: 'Correção na funcionalidade de Adição Rápida de Páginas garantindo persistência no backend.'
+      }
+    ]
+  },
   {
     version: "4.99.5",
     date: "14/08/2026",
