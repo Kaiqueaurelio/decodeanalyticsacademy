@@ -136,7 +136,8 @@ type Block =
       marginX?: number;
       marginY?: number;
     }
-  | { type: 'audio'; label: string; url: string }
+  | { type: 'audio'; label: string; url: string; quizId?: string }
+  | { type: 'audio-quiz'; aulaId: string; quizId: string }
   | { type: 'divider' };
 
 const AUDIO_RE = /\.(mp3|wav|ogg|m4a|aac|webm)(\?.*)?$/i;

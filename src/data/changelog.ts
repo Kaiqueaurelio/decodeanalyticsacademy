@@ -32,17 +32,37 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '5.0.0',
+    version: '5.1.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v5.0.0-release',
-    commitMessage: 'Release v5.0.0: Professional Audio Player Integration'
+    commit: 'v5.1.0-release',
+    commitMessage: 'Release v5.1.0: Integrated Audio Quiz System'
   };
 }
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: "5.1.0",
+    date: "14/08/2026",
+    title: "Audioaula Interativa com Quiz",
+    major: true,
+    changes: [
+      {
+        kind: 'feature',
+        text: 'Lançamento do sistema AudioQuiz: questionários interativos que surgem automaticamente ao final de cada audioaula.'
+      },
+      {
+        kind: 'improvement',
+        text: 'Suporte a múltiplos tipos de questões: Múltipla Escolha, Verdadeiro/Falso e Respostas Abertas.'
+      },
+      {
+        kind: 'feature',
+        text: 'Persistência de resultados e scores de quiz no banco de dados para acompanhamento de desempenho.'
+      }
+    ]
+  },
   {
     version: "5.0.0",
     date: "14/08/2026",
