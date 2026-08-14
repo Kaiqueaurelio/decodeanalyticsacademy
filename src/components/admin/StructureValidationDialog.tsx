@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, CheckCircle2, XCircle, Hash, ListTree, FileText } from 'lucide-react';
-import type { ValidationReport } from '@/lib/apostilaValidation';
+import type { ValidationReport } from '@/lib/validators/workbookValidator';
 import { cn } from '@/lib/utils';
 
 interface Props {

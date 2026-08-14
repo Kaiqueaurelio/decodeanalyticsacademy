@@ -18,7 +18,7 @@ import {
   AlertCircle,
   Layout
 } from 'lucide-react';
-import { validateApostilaStructure } from '@/lib/apostilaValidation';
+import { validateApostilaStructure } from '@/lib/validators/workbookValidator';
 import { cn } from '@/lib/utils';
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 

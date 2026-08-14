@@ -5,7 +5,7 @@
  */
 import { CheckCircle2, AlertTriangle, FileText, ListChecks, Paperclip, Eye, EyeOff } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { validateApostilaStructure } from '@/lib/apostilaValidation';
+import { validateApostilaStructure } from '@/lib/validators/workbookValidator';
 import { Button } from '@/components/ui/button';
 
 interface Props {
@@ -54,7 +54,7 @@ export function ApostilaHealthBar({
   const { stats } = report;
 
   const sectionsOk = stats.h2Count >= 4 && stats.h2Count <= 8;
-  const wordsOk = stats.words >= 800 && stats.words <= 3500;
+  const wordsOk = stats.words >= 300 && stats.words <= 5000;
   const exercisesOk = exerciseCount >= 5;
   const materialsOk = materialCount >= 1;
 
