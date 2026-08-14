@@ -34,22 +34,35 @@ export function replaceMathDelimiters(input: string): string {
   if (!input) return input;
   let out = input;
 
-  // Bloco $$...$$ e \[...\]
+  // 1. Bloco $$...$$ e \[...\]
   out = out.replace(/\$\$([\s\S]+?)\$\$/g, (_m, tex) => renderMathToHTML(tex.trim(), true));
   out = out.replace(/\\\[([\s\S]+?)\\\]/g, (_m, tex) => renderMathToHTML(tex.trim(), true));
 
-  // Inline \(...\)
+  // 2. Inline \(...\)
   out = out.replace(/\\\(([\s\S]+?)\\\)/g, (_m, tex) => renderMathToHTML(tex.trim(), false));
 
-  // Inline $...$ — exige caractere "matemático" para evitar pegar valores em moeda como "$10 e $20".
-  // Aceita: $a^2$, $\frac{1}{2}$, $x_i$, $E=mc^2$ etc.
-  out = out.replace(/(^|[^\\$])\$([^\n$]{1,200}?)\$(?!\d)/g, (full, pre, tex) => {
+  // 3. Inline $...$ — exige caractere "matemático" para evitar pegar valores em moeda como "$10 e $20".
+  // A regex agora é mais agressiva para capturar fórmulas em Aspectos Teóricos.
+  // Procura por $fórmula$ onde fórmula não contém novas linhas.
+  out = out.replace(/(^|[^\\$])\$([^\n$]+?)\$(?!\d)/g, (full, pre, tex) => {
     const t = tex.trim();
-    // Heurística: precisa parecer matemática (símbolo, barra invertida, =, ^, _, fração, sqrt etc.)
-    if (!/[\\^_={}]|\\frac|\\sqrt|\\sum|\\int|\\pi|\\alpha|\\beta|\\theta|\\cdot|\\times|\\div|\\le|\\ge|\\ne|\\to|\\infty/.test(t)
-        && !/[a-zA-Z][\^_]/.test(t)) {
-      return full;
-    }
+    if (!t) return full;
+    
+    // Heurística expandida: 
+    // - Símbolos matemáticos (\, ^, _, =, {, })
+    // - Letras sozinhas ou em pares que costumam ser variáveis (x, n, i, j, P, Q, M, O)
+    // - Notação de complexidade Big O: O(1), O(n), O(log n)
+    // - Operadores lógicos e relacionais
+    const looksMath = 
+      /[\\^_={}]|\\frac|\\sqrt|\\sum|\\int|\\pi|\\alpha|\\beta|\\theta|\\cdot|\\times|\\div|\\le|\\ge|\\ne|\\to|\\infty/.test(t) ||
+      /^[a-zA-Z]$/.test(t) || 
+      /^[a-zA-Z][\^_]/.test(t) ||
+      /^O\(.+\)$/.test(t) ||
+      /[><=]=?/.test(t) ||
+      /\d+[a-zA-Z]/.test(t) || // 2n, 3x
+      /[+\-*/]{2,}/.test(t);
+
+    if (!looksMath) return full;
     return pre + renderMathToHTML(t, false);
   });
 

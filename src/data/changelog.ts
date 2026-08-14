@@ -32,17 +32,32 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.99.3',
+    version: '4.99.4',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.99.3-release',
-    commitMessage: 'Release v4.99.3: Refinamento final de formatação e clareza visual na apostila de Aspectos Teóricos'
+    commit: 'v4.99.4-release',
+    commitMessage: 'Release v4.99.4: KaTeX/MD robust conversion for theoretical computer science formulas'
   };
 }
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: "4.99.4",
+    date: "14/08/2026",
+    title: "Renderização Matemática Avançada",
+    changes: [
+      {
+        kind: "fix",
+        text: "Melhorada a detecção de fórmulas KaTeX inline ($x$, $O(n)$) para garantir exibição correta em Aspectos Teóricos da Computação."
+      },
+      {
+        kind: "improvement",
+        text: "Heurística de reconhecimento matemático robusta para notações acadêmicas complexas."
+      }
+    ]
+  },
   {
     version: "4.99.3",
     date: "14/08/2026",
