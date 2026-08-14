@@ -3,18 +3,40 @@
  * Verifica hierarquia H1-H3, acessibilidade (alt text) e integridade de tabelas.
  */
 
+export type IssueSeverity = 'error' | 'warning';
+
 export interface ValidationIssue {
-  type: 'error' | 'warning';
+  severity: IssueSeverity;
+  code: string;
   message: string;
+  /** Sugestão curta de como resolver. */
+  hint?: string;
   blockIndex?: number;
-  blockType?: string;
-  suggestion?: string;
 }
 
 export interface ValidationReport {
   ok: boolean;
-  score: number; // 0-100
   issues: ValidationIssue[];
+  stats: {
+    h2Count: number;
+    h3Count: number;
+    h2WithoutH3: string[];
+    words: number;
+    expectedH2: number;
+  };
+}
+
+const EXPECTED_H2 = 6;
+
+function countWords(content: string): number {
+  const stripped = (content || '')
+    .replace(/```[\s\S]*?```/g, ' ')
+    .replace(/`[^`]*`/g, ' ')
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, ' ')
+    .replace(/\[[^\]]*\]\([^)]*\)/g, ' ')
+    .replace(/[#>*_~`-]/g, ' ');
+  const words = stripped.trim().split(/\s+/).filter(Boolean);
+  return words.length;
 }
 
 /**
