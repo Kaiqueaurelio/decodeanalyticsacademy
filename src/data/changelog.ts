@@ -32,17 +32,36 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.94.0',
+    version: '4.95.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.94.0-release',
-    commitMessage: 'Release v4.94.0: Atualização de conteúdo - Aspectos Teóricos da Computação'
+    commit: 'v4.95.0-release',
+    commitMessage: 'Release v4.95.0: Otimização de UI/UX no Workbench e correção do QuickCreate'
   };
 }
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: "4.95.0",
+    date: "14/08/2026",
+    title: "Refinamento de UX & Cleanup de UI",
+    changes: [
+      {
+        kind: "fix",
+        text: "Remoção de botões flutuantes e zonas de adição duplicadas no Workbench para evitar poluição visual."
+      },
+      {
+        kind: "improvement",
+        text: "Melhoria no QuickCreateDialog: Categoria agora permite entrada livre via Input para facilitar a criação de matérias específicas."
+      },
+      {
+        kind: "fix",
+        text: "Correção na lógica de seleção de semestre no diálogo de criação rápida."
+      }
+    ]
+  },
   {
     version: "4.94.0",
     date: "13/08/2026",
