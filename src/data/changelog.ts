@@ -32,17 +32,32 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.99.0',
+    version: '4.99.2',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.99.0-release',
-    commitMessage: 'Release v4.99.0: Correção final de elementos duplicados e limpeza da interface do Workbench'
+    commit: 'v4.99.2-release',
+    commitMessage: 'Release v4.99.2: Reformatação profunda e suporte a KaTeX na apostila de Aspectos Teóricos'
   };
 }
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: "4.99.2",
+    date: "14/08/2026",
+    title: "Otimização Acadêmica Extrema",
+    changes: [
+      {
+        kind: "content",
+        text: "Reescrita completa da apostila 'Aspectos Teóricos da Computação' com estruturação lógica rigorosa e suporte a KaTeX."
+      },
+      {
+        kind: "fix",
+        text: "Correção na identificação de blocos MD e normalização de fórmulas matemáticas para renderização correta."
+      }
+    ]
+  },
   {
     version: "4.99.0",
     date: "14/08/2026",
