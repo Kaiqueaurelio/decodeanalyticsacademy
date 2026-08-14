@@ -32,17 +32,44 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '5.1.0',
+    version: '5.2.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v5.1.0-release',
-    commitMessage: 'Release v5.1.0: Integrated Audio Quiz System'
+    commit: 'v5.2.0-security-patch',
+    commitMessage: 'Release v5.2.0: Critical Security Patch (5 Fixes)'
   };
 }
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: "5.2.0",
+    date: "14/08/2026",
+    title: "Security Hardening (Patch)",
+    changes: [
+      {
+        kind: 'security',
+        text: 'Resolvida vulnerabilidade de bypass em resumos de apostilas não publicadas.'
+      },
+      {
+        kind: 'security',
+        text: 'Implementada proteção contra vazamento de gabaritos em exercícios e simulados via Column-Level Security.'
+      },
+      {
+        kind: 'security',
+        text: 'Restringido o acesso a configurações globais do aplicativo apenas para administradores.'
+      },
+      {
+        kind: 'security',
+        text: 'Endurecidas as políticas de escopo para simulados ENEM, impedindo acesso lateral de usuários não autorizados.'
+      },
+      {
+        kind: 'fix',
+        text: 'Revisão de todas as funções SECURITY DEFINER para evitar ataques de schema shadowing.'
+      }
+    ]
+  },
   {
     version: "5.1.0",
     date: "14/08/2026",
