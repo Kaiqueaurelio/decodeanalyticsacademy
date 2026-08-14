@@ -72,7 +72,7 @@ export default function PerformancePage() {
   const load = async () => {
     setLoading(true);
     const now = new Date();
-    const lastWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
     const [{ data: apostilas }, { data: exercises }, { data: answers }] = await Promise.all([
       supabase.from('apostilas').select('id, title, category').eq('published', true),
@@ -92,8 +92,6 @@ export default function PerformancePage() {
     let hits = 0;
     let errors = 0;
     let lastWeekHits = 0;
-    const now = new Date();
-    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
     (answers || []).forEach((a) => {
       const apId = apIdByExercise[a.exercise_id];
