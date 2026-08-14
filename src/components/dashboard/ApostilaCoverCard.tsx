@@ -132,22 +132,7 @@ export function ApostilaCoverCard({ apostila, status = 'em-progresso', progress 
           />
         </div>
         {isAdmin && (
-          <div className="absolute top-2 left-2 z-20 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-[-10px] group-hover:translate-x-0">
-            <button
-              onClick={async (e) => {
-                e.stopPropagation();
-                try {
-                  const realId = await ensureApostilaExists(apostila as any);
-                  navigate(`/admin/apostilas/${realId}`);
-                } catch (err: any) {
-                  toast.error('Erro ao abrir apostila: ' + (err?.message || 'Tente novamente.'));
-                }
-              }}
-              className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary shadow-[0_0_20px_rgba(168,85,247,0.4)] border border-primary/50 text-white hover:scale-110 active:scale-95 transition-all"
-              title="Editar Conteúdo (Somente Administrador)"
-            >
-              <PenTool className="h-4.5 w-4.5" />
-            </button>
+          <div className="absolute top-2 right-2 z-20 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-[10px] group-hover:translate-x-0">
             <button
               onClick={async (e) => {
                 e.stopPropagation();
@@ -164,6 +149,21 @@ export function ApostilaCoverCard({ apostila, status = 'em-progresso', progress 
               title="Adicionar Nova Página (Somente Administrador)"
             >
               <Plus className="h-5 w-5 transition-transform group-hover/plus:rotate-90" />
+            </button>
+            <button
+              onClick={async (e) => {
+                e.stopPropagation();
+                try {
+                  const realId = await ensureApostilaExists(apostila as any);
+                  navigate(`/admin/apostilas/${realId}`);
+                } catch (err: any) {
+                  toast.error('Erro ao abrir apostila: ' + (err?.message || 'Tente novamente.'));
+                }
+              }}
+              className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary shadow-[0_0_20px_rgba(168,85,247,0.4)] border border-primary/50 text-white hover:scale-110 active:scale-95 transition-all"
+              title="Editar Conteúdo (Somente Administrador)"
+            >
+              <PenTool className="h-4.5 w-4.5" />
             </button>
             <button
               onClick={async (e) => {
