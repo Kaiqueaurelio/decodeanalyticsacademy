@@ -32,17 +32,32 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '4.99.7',
+    version: '4.99.8',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v4.99.7-release',
-    commitMessage: 'Release v4.99.7: Integrated visual diagrams in Theory of Computation apostila'
+    commit: 'v4.99.8-release',
+    commitMessage: 'Release v4.99.8: Added interactive audio lesson to Theory of Computation apostila'
   };
 }
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: "4.99.8",
+    date: "14/08/2026",
+    title: "Aula Interativa Multimídia",
+    changes: [
+      {
+        kind: 'content',
+        text: 'Integração de áudio explicativo "Como os robôs e videogames pensam" na apostila de Aspectos Teóricos da Computação.'
+      },
+      {
+        kind: 'improvement',
+        text: 'Adicionada sinalização de material interativo para melhor orientação do aluno.'
+      }
+    ]
+  },
   {
     version: "4.99.7",
     date: "14/08/2026",
