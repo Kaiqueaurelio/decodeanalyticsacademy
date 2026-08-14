@@ -32,26 +32,47 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '5.2.0',
+    version: '5.3.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v5.2.0-security-patch',
-    commitMessage: 'Release v5.2.0: Critical Security Patch (5 Fixes)'
+    commit: 'v5.3.0-performance-audit',
+    commitMessage: 'Release v5.3.0: Full Technical Audit, Student Performance & Structural Validation'
   };
 }
 
 
 export const CHANGELOG: Release[] = [
   {
+    version: "5.3.0",
+    date: "14/08/2026",
+    title: "Performance & Auditoria Pro",
+    major: true,
+    changes: [
+      {
+        kind: 'feature',
+        text: 'Lançamento do Painel de Performance do Aluno: métricas detalhadas de acertos, erros, XP e evolução por área acadêmica.'
+      },
+      {
+        kind: 'security',
+        text: 'Painel de Auditoria Ella consolidado: rastreamento completo de ações de IA com logs de autorização e exportação CSV/PDF.'
+      },
+      {
+        kind: 'improvement',
+        text: 'Monitoramento técnico de performance em tempo real com diagnóstico de latência de rede e erros de runtime.'
+      },
+      {
+        kind: 'fix',
+        text: 'Sistema de Validação Estrutural de Apostilas: correção automática de hierarquia de títulos, tabelas e acessibilidade.'
+      }
+    ]
+  },
+  {
     version: "5.2.0",
     date: "14/08/2026",
     title: "Security Hardening (Patch)",
     changes: [
-      {
-        kind: 'security',
-        text: 'Resolvida vulnerabilidade de bypass em resumos de apostilas não publicadas.'
-      },
+...
       {
         kind: 'security',
         text: 'Implementada proteção contra vazamento de gabaritos em exercícios e simulados via Column-Level Security.'
