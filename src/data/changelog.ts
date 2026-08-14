@@ -44,6 +44,17 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: "4.99.7",
+    date: "14/08/2026",
+    title: "Visualização Teórica Enriquecida",
+    changes: [
+      {
+        kind: 'feature',
+        text: 'Integração de diagramas de estados e modelos computacionais na apostila de Aspectos Teóricos da Computação.'
+      }
+    ]
+  },
+  {
     version: "4.99.6",
     date: "14/08/2026",
     title: "Infraestrutura de Páginas de Caderno",
