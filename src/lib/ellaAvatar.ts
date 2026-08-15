@@ -60,14 +60,27 @@ const isPortableUrl = (u: string) => {
 
 export const getEllaAvatarUrl = () => {
   try {
-    LEGACY_KEYS.forEach((k) => localStorage.getItem(k) && localStorage.removeItem(k));
+    if (typeof window === 'undefined') return DEFAULT_ELLA_AVATAR;
+
+    // Limpeza profunda de chaves legadas e v11
+    LEGACY_KEYS.forEach((k) => {
+      if (localStorage.getItem(k)) {
+        localStorage.removeItem(k);
+      }
+    });
+
     const stored = localStorage.getItem(ELLA_AVATAR_STORAGE_KEY);
+    
+    // Se temos uma URL válida e ela é portátil/segura, usamos ela
     if (stored && isValidHttp(stored) && isPortableUrl(stored)) return stored;
-    if (stored && !isPortableUrl(stored)) localStorage.removeItem(ELLA_AVATAR_STORAGE_KEY);
-    // Force new avatar if v6 is not set yet
-    if (!stored) {
-      localStorage.setItem(ELLA_AVATAR_STORAGE_KEY, DEFAULT_ELLA_AVATAR);
+    
+    // Se a URL armazenada for inválida ou insegura, removemos
+    if (stored && !isPortableUrl(stored)) {
+      localStorage.removeItem(ELLA_AVATAR_STORAGE_KEY);
     }
+
+    // Se não há nada no storage, ou se limpamos, garantimos que o padrão esteja lá
+    // Mas retornamos a URL padrão COM cache busting para garantir carregamento.
     return DEFAULT_ELLA_AVATAR;
   } catch {
     return DEFAULT_ELLA_AVATAR;
