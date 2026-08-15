@@ -38,6 +38,25 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: "5.9.1",
+    date: "15/08/2026",
+    title: "Content Integrity Final Recovery",
+    changes: [
+      {
+        kind: 'content',
+        text: 'Restauração integral e profunda de "Aspectos Teóricos da Computação": 24 capítulos, imagens de alta resolução, áudios explicativos e exercícios originais.'
+      },
+      {
+        kind: 'security',
+        text: 'Protocolo de Auditoria 360: Identificação e remoção de 7 instâncias duplicadas que causavam instabilidade no banco de dados.'
+      },
+      {
+        kind: 'fix',
+        text: 'Sincronização de Faculdade: Restabelecida a integridade de Redes de Computadores, IA e Sistemas Operacionais com multimídia.'
+      }
+    ]
+  },
+  {
     version: "5.9.0",
     date: "15/08/2026",
     title: "Content Integrity Restoration",
