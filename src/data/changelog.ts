@@ -27,18 +27,33 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '5.9.3',
+    version: '5.9.4',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: '2026-08-15T04:25:00Z',
-    commit: 'v5.9.3-audit-ui-db',
-    commitMessage: 'Release v5.9.3: Ella UI Fix and Database Integrity Audit'
+    commit: 'v5.9.4-security-hardening',
+    commitMessage: 'Release v5.9.4: Security Hardening (RLS & Access Control)'
   };
 }
 
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: "5.9.4",
+    date: "15/08/2026",
+    title: "Security Hardening & Access Control",
+    changes: [
+      {
+        kind: 'security',
+        text: 'Hardening de RLS: Corrigido vazamento de dados em exercícios, páginas de apostilas e quizzes, garantindo que o acesso respeite o status de publicação e o escopo do aluno.'
+      },
+      {
+        kind: 'security',
+        text: 'Proteção de Conteúdo: Implementada validação rigorosa de visibilidade para evitar que materiais não publicados sejam acessíveis via API por usuários autenticados.'
+      }
+    ]
+  },
   {
     version: "5.9.3",
     date: "15/08/2026",
