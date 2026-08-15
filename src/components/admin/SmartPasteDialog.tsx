@@ -48,7 +48,7 @@ export function SmartPasteDialog({ open, onOpenChange, onApply }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex max-h-[95dvh] w-[calc(100vw-1rem)] max-w-4xl flex-col gap-3 overflow-hidden p-3 sm:p-6 sm:max-h-[92dvh]">
+      <DialogContent className="flex max-h-[92dvh] w-[calc(100vw-1rem)] max-w-4xl flex-col gap-3 overflow-hidden p-3 sm:p-6 sm:max-h-[90dvh] bg-card border-primary/20">
         <DialogHeader className="space-y-1 pr-8 shrink-0">
           <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
             <PenTool className="h-4 w-4 text-primary" />
@@ -110,7 +110,7 @@ export function SmartPasteDialog({ open, onOpenChange, onApply }: Props) {
           </div>
         </div>
 
-        <div className="grid flex-1 min-h-[40vh] grid-cols-1 gap-3 lg:grid-cols-2 overflow-y-auto pr-1 sm:overflow-visible sm:pr-0">
+        <div className="grid flex-1 min-h-0 grid-cols-1 gap-3 lg:grid-cols-2 overflow-y-auto pr-1 sm:overflow-visible sm:pr-0 z-0">
           <div className="flex flex-col min-h-[300px] lg:min-h-0">
             <Label className="mb-1 text-[10px] uppercase tracking-wider text-muted-foreground">Texto original</Label>
             <Textarea
@@ -139,7 +139,7 @@ export function SmartPasteDialog({ open, onOpenChange, onApply }: Props) {
           </div>
         </div>
 
-        <DialogFooter className="grid shrink-0 grid-cols-2 gap-2 sm:flex sm:justify-end">
+        <DialogFooter className="grid shrink-0 grid-cols-2 gap-2 sm:flex sm:justify-end z-10 bg-card/50 backdrop-blur-sm pt-2">
           <Button variant="outline" onClick={() => onOpenChange(false)} className="h-10 sm:h-9">Cancelar</Button>
           <Button
             disabled={!result.cleaned}
