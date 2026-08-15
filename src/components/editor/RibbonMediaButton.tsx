@@ -24,6 +24,10 @@ export function RibbonMediaButton({ onMediaInserted, apostilaId }: Props) {
   const [acceptType, setAcceptType] = useState<string>('*/*');
 
   const handleUpload = async (file: File) => {
+    if (!apostilaId) {
+      toast.error('ID da apostila não encontrado.');
+      return;
+    }
     setUploading(true);
     const tId = toast.loading(`Enviando ${file.name}...`);
 
@@ -45,8 +49,38 @@ export function RibbonMediaButton({ onMediaInserted, apostilaId }: Props) {
       let markdown = '';
       let type: 'audio' | 'video' | 'file' = 'file';
       
+      const matType = file.type.startsWith('audio/') 
+        ? 'audio' 
+        : file.type.startsWith('video/') 
+          ? 'video' 
+          : 'other';
+
+      // Criar entrada na tabela materials e vincular à apostila
+      const { data: material, error: matError } = await supabase
+        .from('materials')
+        .insert({
+          title: file.name,
+          file_url: url,
+          type: matType as any,
+        })
+        .select()
+        .single();
+
+      if (matError) throw matError;
+
+      // Vincular na tabela de junção apostila_materials
+      const { error: linkError } = await supabase
+        .from('apostila_materials')
+        .insert({
+          apostila_id: apostilaId,
+          material_id: material.id,
+          sort_order: 999
+        });
+
+      if (linkError) throw linkError;
+
       if (file.type.startsWith('audio/')) {
-        markdown = `[Áudio: ${url}]`;
+        markdown = `<audio-player src="${url}" title="${file.name}" />`;
         type = 'audio';
       } else if (file.type.startsWith('video/')) {
         markdown = `\n[Vídeo: ${url}]\n`;
