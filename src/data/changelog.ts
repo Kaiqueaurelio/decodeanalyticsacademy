@@ -39,6 +39,22 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: "5.9.2",
+    date: "15/08/2026",
+    title: "Ella Portrait Global Sync",
+    changes: [
+      {
+        kind: 'fix',
+        text: 'Ella Portrait Sync v5.9.2: Sincronização final do avatar da Ella Ribeiro em todo o ecossistema com purga total de cache e reforço de carregamento.'
+      },
+      {
+        kind: 'improvement',
+        text: 'Implementação de versionamento v13 para ativos estáticos, garantindo atualização visual imediata sem necessidade de limpeza manual de cache.'
+      }
+    ]
+  },
+  {
+
     version: "5.9.1",
     date: "15/08/2026",
     title: "Content Integrity Final Recovery",
