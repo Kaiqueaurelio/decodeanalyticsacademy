@@ -27,16 +27,27 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '5.6.2',
+    version: '5.6.3',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v5.4.0-audit-360',
-    commitMessage: 'Release v5.3.0: Full Technical Audit, Student Performance & Structural Validation'
+    commit: 'v5.6.3-ella-final',
+    commitMessage: 'Release v5.6.3: Forced Ella Avatar Synchronization (v9) with Aggressive Cache-Busting'
   };
 }
 
 export const CHANGELOG: Release[] = [
+  {
+    version: "5.6.3",
+    date: "15/08/2026",
+    title: "Ella Final Portrait Sync",
+    changes: [
+      {
+        kind: 'fix',
+        text: 'Substituição forçada do asset da Ella para a versão final (v4 asset / v9 system) com cache-busting temporal para garantir atualização em todos os clientes.'
+      }
+    ]
+  },
   {
     version: "5.6.2",
     date: "15/08/2026",
