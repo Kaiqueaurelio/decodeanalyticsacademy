@@ -1625,6 +1625,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
     calendar: { title: 'Calendário Acadêmico', desc: 'Importe cronogramas e gerencie provas/trabalhos' },
     testimonials: { title: 'Depoimentos', desc: 'Aprove ou rejeite depoimentos dos alunos' },
     ai: { title: 'Provedor do Assistente', desc: 'Provedor padrão ou sua chave própria (Google)' },
+    'ella-settings': { title: 'Identidade da Ella', desc: 'Gerencie o avatar e visual da assistente' },
     performance: { title: 'Performance', desc: 'Métricas de carregamento e erros de rede' },
     smoke: { title: 'Testes de Fumaça', desc: 'Checklist automático para validar a estabilidade do sistema' },
     diagnostics: { title: 'Diagnóstico', desc: 'Logs de runtime, falhas de carregamento e desempenho por rota' },
