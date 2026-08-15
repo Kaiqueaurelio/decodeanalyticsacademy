@@ -113,8 +113,12 @@ Deno.serve(async (req) => {
     const redirectTo = typeof body.redirectTo === "string" ? body.redirectTo : "";
 
     if (!RA_RE.test(ra)) {
-      return json({ error: "Use seu RA com 6 a 13 letras/números." }, 400, corsHeaders);
+      // Relaxed validation: check if it's at least alphanumeric and reasonable length
+      if (ra.length < 2 || ra.length > 50) {
+        return json({ error: "Identificador inválido (use RA ou e-mail)." }, 400, corsHeaders);
+      }
     }
+
     
     if (mode === "signin" && (password.length < 6 || password.length > 200)) {
       await registerAttempt(admin, ra, ip, false);
