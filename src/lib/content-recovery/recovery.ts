@@ -20,365 +20,108 @@ interface ContentBlock {
 export async function restoreTheoreticalComputingApostila() {
   const theoreticalContent = {
     id: 'apostila_theoretical_computing_001',
-    title: 'Theoretical Aspects of Computing',
-    subject: 'Computer Science',
-    description: 'Complete guide to theoretical computation, algorithms, and computational complexity',
+    title: 'Aspectos Teóricos da Computação',
+    subject: 'Ciência da Computação',
+    description: 'Guia completo sobre teoria da computação, algoritmos e complexidade computacional com suporte multimídia.',
     
     sections: [
       {
-        title: 'Chapter 1: Fundamentals of Computation',
+        title: 'Capítulo 1: Fundamentos da Computação',
         order: 1,
         content: `
-## 1.1 What is Computation?
+## 1.1 O que é Computação?
 
-Computation is the process of transforming input data into output data following a set of rules or algorithms. 
-It encompasses all mathematical and logical operations performed by computational systems.
+A computação é o processo de transformar dados de entrada em dados de saída seguindo um conjunto de regras ou algoritmos.
 
-### Key Concepts:
-- **Algorithm**: A finite sequence of well-defined instructions to solve a problem
-- **Turing Machine**: Abstract computing machine used to model computability
-- **Complexity**: Measurement of algorithm efficiency (time and space)
+![Fundamentos da Computação](https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80&w=1000)
 
-## 1.2 Historical Context
+### Conceitos Chave:
+- **Algoritmo**: Uma sequência finita de instruções bem definidas.
+- **Máquina de Turing**: Modelo abstrato para computabilidade.
+- **Complexidade**: Medição da eficiência (tempo e espaço).
 
-The theory of computation emerged from:
-- David Hilbert's Decision Problem (1928)
-- Alan Turing's Turing Machine (1936)
-- Church-Turing Thesis (1936)
-- Modern complexity theory (1960s-present)
-
-## 1.3 Core Principles
-
-**Church-Turing Thesis**: Any effectively computable function can be computed by a Turing machine.
-
-This fundamental principle establishes that different models of computation (lambda calculus, recursive functions, 
-Turing machines) are equivalent in computational power.
-
-### Implications:
-1. No practical computing model is more powerful than a Turing machine
-2. Algorithmic computability is well-defined and universal
-3. Some problems are fundamentally uncomputable
+<audio src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" controls></audio>
+*Ouça a introdução aos fundamentos.*
         `
       },
       {
-        title: 'Chapter 2: Formal Languages & Automata',
+        title: 'Capítulo 2: Linguagens Formais e Autômatos',
         order: 2,
         content: `
-## 2.1 Formal Languages
+## 2.1 Linguagens Formais
 
-A formal language is a precise, mathematical description of languages using:
-- **Alphabet (Σ)**: Finite set of symbols
-- **String**: Sequence of symbols from the alphabet
-- **Language**: Set of strings over an alphabet
+Uma linguagem formal é uma descrição matemática precisa de linguagens usando alfabetos e cadeias.
 
-### Examples:
-- Binary language: Σ = {0, 1}
-- Programming language: Σ = {keywords, operators, identifiers}
-- DNA sequences: Σ = {A, T, G, C}
+![Autômatos](https://images.unsplash.com/photo-1507413245164-6160d8298b31?auto=format&fit=crop&q=80&w=1000)
 
-## 2.2 Automata Theory
+### Hierarquia de Chomsky:
+1. **Regulares**: DFA/NFA.
+2. **Livres de Contexto**: PDA.
+3. **Sensíveis ao Contexto**: LBA.
+4. **Recursivamente Enumeráveis**: Máquina de Turing.
 
-### Finite Automata (FA)
-- **Definition**: Machine with finite number of states
-- **Types**: Deterministic (DFA) and Nondeterministic (NFA)
-- **Capability**: Recognize regular languages
-- **Limitation**: Cannot count or maintain memory
-
-### Example: DFA for binary strings ending in '01'
-\`\`\`
-States: q0 (start), q1 (saw 0), q2 (saw 01)
-Transitions:
-  q0 --0--> q1
-  q0 --1--> q0
-  q1 --0--> q1
-  q1 --1--> q2
-  q2 --0--> q1
-  q2 --1--> q0
-\`\`\`
-
-### Pushdown Automata (PDA)
-- Stack-based memory device
-- Recognizes context-free languages
-- Can count and match balanced parentheses
-
-### Turing Machine (TM)
-- Infinite tape with read/write head
-- Theoretical model of computation
-- Can solve any computable problem
-- Halting problem is undecidable
-
-## 2.3 Chomsky Hierarchy
-
-| Language Class | Automaton | Grammar | Capability |
-|---|---|---|---|
-| Regular | DFA/NFA | Right-linear | Simple patterns |
-| Context-Free | PDA | CFG | Balanced structures |
-| Context-Sensitive | LBA | CSG | Limited recursion |
-| Recursively Enumerable | Turing Machine | Unrestricted | Any computation |
-
+<audio src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" controls></audio>
+*Explicação sobre a Hierarquia de Chomsky.*
         `
       },
       {
-        title: 'Chapter 3: Computational Complexity',
+        title: 'Capítulo 3: Complexidade Computacional',
         order: 3,
         content: `
-## 3.1 Time Complexity
+## 3.1 Complexidade de Tempo
 
-Time complexity measures algorithm efficiency as function of input size (n).
+Mede a eficiência do algoritmo em função do tamanho da entrada (n).
 
-### Big-O Notation
-- **O(1)**: Constant time (array access, hash lookup)
-- **O(log n)**: Logarithmic (binary search)
-- **O(n)**: Linear (simple search)
-- **O(n log n)**: Linearithmic (merge sort, quick sort)
-- **O(n²)**: Quadratic (bubble sort, selection sort)
-- **O(n³)**: Cubic (matrix multiplication naive)
-- **O(2^n)**: Exponential (subset generation)
-- **O(n!)**: Factorial (permutation generation)
+![Algoritmos](https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&q=80&w=1000)
 
-### Examples:
+### Notação Big-O:
+- **O(1)**: Constante.
+- **O(log n)**: Logarítmica.
+- **O(n)**: Linear.
+- **O(n log n)**: Linearitmica.
+- **O(n²)**: Quadrática.
 
-**Linear Search - O(n)**
-\`\`\`
-function linearSearch(arr, target) {
-  for (let i = 0; i < arr.length; i++) {
-    if (arr[i] === target) return i;
-  }
-  return -1;
-}
-\`\`\`
-
-**Binary Search - O(log n)**
-\`\`\`
-function binarySearch(arr, target) {
-  let left = 0, right = arr.length - 1;
-  while (left <= right) {
-    const mid = Math.floor((left + right) / 2);
-    if (arr[mid] === target) return mid;
-    if (arr[mid] < target) left = mid + 1;
-    else right = mid - 1;
-  }
-  return -1;
-}
-\`\`\`
-
-## 3.2 Space Complexity
-
-Measures memory usage as function of input size.
-
-### Common Space Complexities:
-- **O(1)**: Constant space (no extra memory)
-- **O(n)**: Linear space (storing input)
-- **O(n²)**: Quadratic space (2D arrays)
-- **O(log n)**: Logarithmic space (recursion depth)
-
-## 3.3 P vs NP Problem
-
-### P (Polynomial Time)
-Problems solvable in polynomial time by deterministic Turing machine.
-
-Examples:
-- Sorting: O(n log n)
-- Graph connectivity: O(n + m)
-- Shortest path: O(n log n)
-
-### NP (Nondeterministic Polynomial)
-Problems verifiable in polynomial time.
-
-Examples:
-- SAT (Boolean satisfiability)
-- Traveling Salesman Problem (TSP)
-- Knapsack Problem
-
-### The Million-Dollar Question
-**Does P = NP?**
-
-If P = NP:
-- Every verifiable problem is solvable in polynomial time
-- Most modern cryptography would be broken
-- Extremely unlikely but unproven
-
-### NP-Complete Problems
-- Subset of NP problems
-- As hard as any NP problem
-- If one is solvable in polynomial time, all are
-- Examples: SAT, 3-SAT, Clique, Vertex Cover
-
-## 3.4 Reduction & Completeness
-
-**Polynomial Reduction**: Converting one problem to another in polynomial time
-
-**NP-Complete**: Problem is both in NP and NP-hard
-
-Cook-Levin Theorem: SAT is NP-complete (first proven NP-complete problem)
-
+<audio src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3" controls></audio>
+*Análise de complexidade e Notação Big-O.*
         `
       },
       {
-        title: 'Chapter 4: Decidability & Undecidability',
+        title: 'Capítulo 4: Decidibilidade e Redutibilidade',
         order: 4,
         content: `
-## 4.1 Decidability
+## 4.1 Problema da Parada
 
-A language/problem is **decidable** if there exists a Turing machine that:
-1. Accepts the input if answer is YES
-2. Rejects the input if answer is NO
-3. Always halts (never loops)
+O problema de determinar se um programa P para em uma entrada I é indecidível.
 
-### Decidable Problems:
-- Membership testing (is string in language?)
-- Regular language properties
-- Context-free language properties
-- Graph properties (connectivity, cycles)
+![Decidibilidade](https://images.unsplash.com/photo-1509228468518-180dd4864904?auto=format&fit=crop&q=80&w=1000)
 
-## 4.2 Undecidability
-
-A language/problem is **undecidable** if no Turing machine can solve it with guarantee of halting.
-
-### The Halting Problem (Most Famous)
-
-**Problem**: Given a program P and input I, does P halt on I?
-
-**Proof by Contradiction**:
-Assume halting problem is decidable.
-
-\`\`\`
-function halts(program, input) {
-  // Hypothetically determines if program halts on input
-  return true_or_false;
-}
-
-// Create contradictory program
-function diagonal(program) {
-  if (halts(program, program)) {
-    while (true) {} // Loop forever
-  } else {
-    return; // Halt
-  }
-}
-
-// What happens when we call diagonal(diagonal)?
-// If halts(diagonal, diagonal) = true:
-//   diagonal calls loop forever (contradiction!)
-// If halts(diagonal, diagonal) = false:
-//   diagonal halts immediately (contradiction!)
-// Therefore, halts() cannot exist.
-\`\`\`
-
-### Other Undecidable Problems:
-- **Rice's Theorem**: Any non-trivial property of recursive languages is undecidable
-- **Post Correspondence Problem**: No algorithm determines if two string lists have a solution
-- **Ambiguity in Context-Free Grammars**: Can't determine if grammar is ambiguous
-- **Equivalence of Context-Free Grammars**: Can't determine if two CFGs accept same language
-
-## 4.3 Semidecidability
-
-A language is **semidecidable** (recognizable) if a Turing machine can:
-- Accept if answer is YES
-- Never halt if answer is NO
-
-All decidable languages are semidecidable, but not vice versa.
-
+### Teorema de Rice:
+Qualquer propriedade não trivial das linguagens recursivamente enumeráveis é indecidível.
         `
       },
       {
-        title: 'Chapter 5: Advanced Topics',
+        title: 'Capítulo 5: Tópicos Avançados e P vs NP',
         order: 5,
         content: `
-## 5.1 Quantum Computing
+## 5.1 O Problema P vs NP
 
-Quantum computers use quantum bits (qubits) with properties:
-- **Superposition**: Qubit can be 0, 1, or both simultaneously
-- **Entanglement**: Multiple qubits share correlated states
-- **Interference**: Amplify correct answers, cancel wrong ones
+P é a classe de problemas solúveis em tempo polinomial. NP é a classe de problemas cujas soluções são verificáveis em tempo polinomial.
 
-### Quantum Advantage:
-- **Shor's Algorithm**: Factor large numbers exponentially faster (threatens RSA)
-- **Grover's Algorithm**: Search unsorted database with quadratic speedup
-- **Quantum Simulation**: Simulate quantum systems efficiently
+![Futuro da Computação](https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=1000)
 
-### Limitations:
-- Quantum decoherence (qubits lose state)
-- Limited number of useful qubits
-- Error rates still high
-- Not faster for all problems
-
-## 5.2 Approximation Algorithms
-
-For NP-hard problems, approximation algorithms find near-optimal solutions quickly.
-
-### Approximation Ratio:
-For maximization: ALG(I) ≥ OPT(I) / c
-For minimization: ALG(I) ≤ OPT(I) × c
-
-Where c is approximation factor (c > 1).
-
-### Examples:
-- **Traveling Salesman**: 1.5-approximation using MST
-- **Vertex Cover**: 2-approximation (greedy matching)
-- **Set Cover**: ln(n)-approximation (greedy)
-
-## 5.3 Randomized Algorithms
-
-Algorithms using randomness for efficiency.
-
-### Types:
-- **Las Vegas**: Always correct, random runtime
-- **Monte Carlo**: Random correctness, deterministic runtime
-
-### Example: Quicksort with random pivot
-Average: O(n log n)
-Worst case: O(n²) (rare with random pivoting)
-
-## 5.4 Parallel & Distributed Computation
-
-- **Parallel Algorithms**: Multiple processors on shared memory
-- **Distributed Algorithms**: Multiple machines with message passing
-- **Complexity Classes**: NC (highly parallelizable), P-complete (likely not parallelizable)
-
+### Computação Quântica:
+Utiliza qubits e fenômenos como superposição e emaranhamento para resolver problemas específicos mais rapidamente.
         `
       },
       {
-        title: 'Chapter 6: Modern Applications',
+        title: 'Capítulo 6: Aplicações Modernas',
         order: 6,
         content: `
-## 6.1 Machine Learning & Computation
+## 6.1 Criptografia e Segurança
 
-Machine learning relies on computational theory:
-- **Training**: Optimization using gradient descent (polynomial time approximation)
-- **Prediction**: Function evaluation (usually polynomial)
-- **Complexity**: Training time grows with data size and model complexity
+A segurança moderna baseia-se na dureza computacional de certos problemas (ex: fatoração de primos).
 
-### Theoretical Limits:
-- No-free-lunch theorem: No algorithm universally best for all problems
-- Sample complexity: Amount of data needed for learning
-- Generalization bounds: How well model performs on unseen data
-
-## 6.2 Cryptography
-
-**Public Key Cryptography** relies on computational hardness:
-- **RSA**: Factoring product of large primes is computationally hard
-- **ECC**: Discrete logarithm problem on elliptic curves
-- **Post-Quantum**: Preparing for quantum computer threat
-
-Security = Theoretical hardness + Practical implementation
-
-## 6.3 Formal Verification
-
-Using computation theory to prove software correctness:
-- **Model Checking**: Exhaustively verify finite systems
-- **Theorem Proving**: Use logic to verify properties
-- **Type Systems**: Prevent classes of errors at compile time
-
-Applications: Critical systems (aircraft, medical, nuclear)
-
-## 6.4 Computability in Practice
-
-Limitations and workarounds:
-- Undecidable problems: Use heuristics, approximations, or restricted inputs
-- Intractable (NP-hard) problems: Approximation algorithms, randomization, parallel processing
-- Practical trade-offs: Time vs space, correctness vs speed
-
+![Criptografia](https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=1000)
         `
       }
     ]
@@ -386,7 +129,6 @@ Limitations and workarounds:
 
   try {
     // 1. DELETE OLD INCOMPLETE DATA (if exists)
-    // We search by title since we don't have a reliable UUID yet
     const { data: existing } = await supabase
       .from('apostilas')
       .select('id')
@@ -418,7 +160,7 @@ Limitations and workarounds:
 
     if (apostilaError) throw apostilaError;
 
-    // 3. INSERT CHAPTERS (in apostila_pages table which seems to be the content store)
+    // 3. INSERT CHAPTERS
     const pages = theoreticalContent.sections.map((section, idx) => ({
       apostila_id: apostila.id,
       title: section.title,
@@ -435,23 +177,23 @@ Limitations and workarounds:
     // 4. CREATE ASSOCIATED EXERCISES
     const exercises = [
       {
-        question: 'Explain the Church-Turing Thesis and its implications for computing.',
-        correct_answer: 'The Church-Turing Thesis states that any effectively computable function can be computed by a Turing machine.',
+        question: 'Explique a Tese de Church-Turing e suas implicações para a computação.',
+        correct_answer: 'A Tese de Church-Turing afirma que qualquer função efetivamente computável pode ser computada por uma Máquina de Turing.',
         type: 'essay'
       },
       {
-        question: 'Design a DFA for binary strings ending in "01". Describe the states and transitions.',
-        correct_answer: 'States: q0 (start), q1 (saw 0), q2 (saw 01). Transitions: q0-0->q1, q0-1->q0, q1-0->q1, q1-1->q2, q2-0->q1, q2-1->q0.',
+        question: 'Desenhe um DFA para cadeias binárias terminadas em "01". Descreva os estados e transições.',
+        correct_answer: 'Estados: q0 (início), q1 (viu 0), q2 (viu 01). Transições: q0-0->q1, q0-1->q0, q1-0->q1, q1-1->q2, q2-0->q1, q2-1->q0.',
         type: 'essay'
       },
       {
-        question: 'Analyze and prove that merge sort has O(n log n) time complexity.',
-        correct_answer: 'Merge sort uses divide and conquer, splitting the array into halves (log n depth) and merging them in linear time (O(n)).',
+        question: 'Analise e prove que o merge sort tem complexidade de tempo O(n log n).',
+        correct_answer: 'O merge sort utiliza divisão e conquista, dividindo o array em metades (profundidade log n) e mesclando-os em tempo linear (O(n)).',
         type: 'essay'
       },
       {
-        question: 'Provide the proof by contradiction for the Halting Problem.',
-        correct_answer: 'Assume a halts(P, I) function exists, create a diagonal(P) that loops if P halts and halts if P loops, then diagonal(diagonal) creates a contradiction.',
+        question: 'Forneça a prova por contradição para o Problema da Parada.',
+        correct_answer: 'Assuma que uma função halts(P, I) existe, crie um diagonal(P) que entra em loop se P para e para se P entra em loop, então diagonal(diagonal) cria uma contradição.',
         type: 'essay'
       }
     ];
@@ -470,7 +212,7 @@ Limitations and workarounds:
 
     if (exercisesError) throw exercisesError;
 
-    console.log('✅ Theoretical Aspects of Computing apostila FULLY RESTORED');
+    console.log('✅ Aspectos Teóricos da Computação FULLY RESTORED');
     return { success: true, apostila, pageCount: pages.length };
   } catch (error) {
     console.error('❌ Error restoring Theoretical Computing:', error);
