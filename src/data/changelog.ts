@@ -27,18 +27,33 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '5.9.6',
+    version: '5.9.7',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
-    buildTime: '2026-08-15T12:35:00Z',
-    commit: 'v5.9.6-content-injection',
-    commitMessage: 'Release v5.9.6: Injeção de conteúdo estruturado Teoria da Computação'
+    buildTime: '2026-08-15T12:45:00Z',
+    commit: 'v5.9.7-audio-integration',
+    commitMessage: 'Release v5.9.7: Integração de áudio-aula e reforço de conteúdo em Aspectos Teóricos'
   };
 }
 
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: "5.9.7",
+    date: "15/08/2026",
+    title: "Integração Multimídia & Audioaula",
+    changes: [
+      {
+        kind: 'content',
+        text: 'Audioaula: Integrado áudio interativo "Como os robôs e videogames pensam" na apostila de Aspectos Teóricos da Computação.'
+      },
+      {
+        kind: 'improvement',
+        text: 'Reforço Didático: Otimizada a estrutura da apostila com callouts multimídia para melhor engajamento do aluno.'
+      }
+    ]
+  },
   {
     version: "5.9.6",
     date: "15/08/2026",
