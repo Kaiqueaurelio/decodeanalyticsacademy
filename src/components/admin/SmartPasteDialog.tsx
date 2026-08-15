@@ -60,7 +60,7 @@ export function SmartPasteDialog({ open, onOpenChange, onApply }: Props) {
         </DialogHeader>
 
         <div className="grid gap-2 rounded-lg border border-border bg-muted/20 p-2 sm:grid-cols-[1fr_auto] sm:items-center">
-          <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap items-center">
             <Button size="sm" variant="outline" onClick={handlePaste} className="h-9 justify-center gap-1.5 text-xs sm:h-8">
               <ClipboardPaste className="h-3.5 w-3.5" />
               Colar
@@ -81,29 +81,31 @@ export function SmartPasteDialog({ open, onOpenChange, onApply }: Props) {
             >
               Substituir
             </Button>
-            <div className="flex items-center justify-center gap-1.5 rounded-md border border-border bg-background px-2 text-[11px] text-muted-foreground sm:h-8">
+            <div className="flex items-center justify-center gap-1.5 rounded-md border border-border bg-background px-2 text-[10px] text-muted-foreground sm:h-8 col-span-2 sm:col-auto">
               <FileText className="h-3 w-3" />
               {stats.words.toLocaleString('pt-BR')} palavras
             </div>
           </div>
 
-          <div className="grid gap-2 sm:flex sm:items-center sm:justify-end">
-            <label
-              className={cn(
-                'flex items-center justify-between gap-3 rounded-md border px-3 py-2 text-xs sm:h-8 sm:py-0',
-                !smartHeadings ? 'border-primary/40 bg-primary/10 text-primary' : 'border-border bg-background',
-              )}
-            >
-              <span>Preservar texto</span>
-              <Switch checked={!smartHeadings} onCheckedChange={(checked) => setSmartHeadings(!checked)} />
-            </label>
-            <label className="flex items-center justify-between gap-3 rounded-md border border-border bg-background px-3 py-2 text-xs sm:h-8 sm:py-0">
-              <span className="flex items-center gap-1.5"><Wand2 className="h-3 w-3" /> Inferir títulos</span>
-              <Switch checked={smartHeadings} onCheckedChange={setSmartHeadings} />
-            </label>
-            <div className="flex items-center gap-2 px-1">
-              <Switch id="clean-u" checked={cleanUrls} onCheckedChange={setCleanUrls} />
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
+            <div className="flex gap-2 w-full sm:w-auto">
+              <label
+                className={cn(
+                  'flex flex-1 items-center justify-between gap-3 rounded-md border px-3 py-2 text-xs sm:h-8 sm:py-0',
+                  !smartHeadings ? 'border-primary/40 bg-primary/10 text-primary' : 'border-border bg-background',
+                )}
+              >
+                <span>Preservar</span>
+                <Switch checked={!smartHeadings} onCheckedChange={(checked) => setSmartHeadings(!checked)} />
+              </label>
+              <label className="flex flex-1 items-center justify-between gap-3 rounded-md border border-border bg-background px-3 py-2 text-xs sm:h-8 sm:py-0">
+                <span className="flex items-center gap-1.5">Inferir</span>
+                <Switch checked={smartHeadings} onCheckedChange={setSmartHeadings} />
+              </label>
+            </div>
+            <div className="flex items-center justify-between sm:justify-end gap-2 px-1 border rounded-md p-2 sm:border-none sm:p-0">
               <Label htmlFor="clean-u" className="text-xs cursor-pointer">Limpar URLs</Label>
+              <Switch id="clean-u" checked={cleanUrls} onCheckedChange={setCleanUrls} />
             </div>
           </div>
         </div>
