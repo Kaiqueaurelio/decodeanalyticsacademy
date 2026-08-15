@@ -40,6 +40,21 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: "5.9.4",
+    date: "15/08/2026",
+    title: "Security Hardening & Access Control",
+    changes: [
+      {
+        kind: 'security',
+        text: 'Hardening de RLS: Corrigido vazamento de dados em exercícios, páginas de apostilas e quizzes, garantindo que o acesso respeite o status de publicação e o escopo do aluno.'
+      },
+      {
+        kind: 'security',
+        text: 'Proteção de Conteúdo: Implementada validação rigorosa de visibilidade para evitar que materiais não publicados sejam acessíveis via API por usuários autenticados.'
+      }
+    ]
+  },
+  {
     version: "5.9.3",
     date: "15/08/2026",
     title: "Ella UI & DB Integrity Audit",
