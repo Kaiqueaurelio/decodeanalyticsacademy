@@ -74,10 +74,66 @@ function useAdminCopyPatch() {
   }, [user]);
 }
 
-const App = () => {
+const AppContent = () => {
   const [splashDone, setSplashDone] = React.useState(false);
   useAdminCopyPatch();
 
+  return (
+    <>
+      {splashDone ? (
+        <>
+          <RANamePrompt />
+          <AdPopup />
+          <AdDraftPreviewOverlay />
+          <EllaSidebar />
+          <PersistentAdSpot />
+        </>
+      ) : (
+        <SplashScreen onComplete={() => setSplashDone(true)} />
+      )}
+      
+      <Suspense fallback={<PageSkeleton />}>
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/anuncie" element={<AnunciePage />} />
+          <Route path="/termos" element={<TermsPage />} />
+          <Route path="/transparencia" element={<TransparencyPage />} />
+          <Route path="/oauth/callback" element={<OAuthConsentPage />} />
+          <Route path="/offline" element={<OfflinePage />} />
+          <Route path="/apoio" element={<SupportProjectPage />} />
+
+          {/* App Routes (Protected) */}
+          <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+          <Route path="/apostila/:id" element={<ProtectedRoute><ApostilaPage /></ProtectedRoute>} />
+          <Route path="/reader/:id" element={<ProtectedRoute><ApostilaReaderPage /></ProtectedRoute>} />
+          <Route path="/materia/:id" element={<ProtectedRoute><SubjectPage /></ProtectedRoute>} />
+          <Route path="/caderno/:notebookId" element={<ProtectedRoute><NotebookPage /></ProtectedRoute>} />
+          <Route path="/simulado/:id" element={<ProtectedRoute><SimuladoPage /></ProtectedRoute>} />
+          <Route path="/exercises/:id" element={<ProtectedRoute><ExercisesPage /></ProtectedRoute>} />
+          <Route path="/exercicios" element={<ProtectedRoute><ExerciciosIndexPage /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+          <Route path="/biblioteca" element={<ProtectedRoute><BibliotecaPage /></ProtectedRoute>} />
+          <Route path="/livros" element={<ProtectedRoute><PlayBooksPage /></ProtectedRoute>} />
+          <Route path="/cursos" element={<ProtectedRoute><CoursesPage /></ProtectedRoute>} />
+          <Route path="/materiais" element={<ProtectedRoute><MaterialsPage /></ProtectedRoute>} />
+          <Route path="/video/:id" element={<ProtectedRoute><VideoPlayerPage /></ProtectedRoute>} />
+          
+          {/* Admin Routes (Protected) */}
+          <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
+          <Route path="/admin/apostilas/:id" element={<ProtectedRoute><AdminApostilaWorkbench /></ProtectedRoute>} />
+
+          {/* Fallback */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Suspense>
+    </>
+  );
+};
+
+const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
@@ -87,55 +143,7 @@ const App = () => {
               <Toaster />
               <Sonner />
               <BrowserRouter>
-                {splashDone ? (
-                  <>
-                    <RANamePrompt />
-                    <AdPopup />
-                    <AdDraftPreviewOverlay />
-                    <EllaSidebar />
-                    <PersistentAdSpot />
-                  </>
-                ) : (
-                  <SplashScreen onComplete={() => setSplashDone(true)} />
-                )}
-                
-                <Suspense fallback={<PageSkeleton />}>
-                  <Routes>
-                    {/* Public Routes */}
-                    <Route path="/" element={<LandingPage />} />
-                    <Route path="/login" element={<LoginPage />} />
-                    <Route path="/reset-password" element={<ResetPasswordPage />} />
-                    <Route path="/anuncie" element={<AnunciePage />} />
-                    <Route path="/termos" element={<TermsPage />} />
-                    <Route path="/transparencia" element={<TransparencyPage />} />
-                    <Route path="/oauth/callback" element={<OAuthConsentPage />} />
-                    <Route path="/offline" element={<OfflinePage />} />
-                    <Route path="/apoio" element={<SupportProjectPage />} />
-
-                    {/* App Routes (Protected) */}
-                    <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-                    <Route path="/apostila/:id" element={<ProtectedRoute><ApostilaPage /></ProtectedRoute>} />
-                    <Route path="/reader/:id" element={<ProtectedRoute><ApostilaReaderPage /></ProtectedRoute>} />
-                    <Route path="/materia/:id" element={<ProtectedRoute><SubjectPage /></ProtectedRoute>} />
-                    <Route path="/caderno/:notebookId" element={<ProtectedRoute><NotebookPage /></ProtectedRoute>} />
-                    <Route path="/simulado/:id" element={<ProtectedRoute><SimuladoPage /></ProtectedRoute>} />
-                    <Route path="/exercises/:id" element={<ProtectedRoute><ExercisesPage /></ProtectedRoute>} />
-                    <Route path="/exercicios" element={<ProtectedRoute><ExerciciosIndexPage /></ProtectedRoute>} />
-                    <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-                    <Route path="/biblioteca" element={<ProtectedRoute><BibliotecaPage /></ProtectedRoute>} />
-                    <Route path="/livros" element={<ProtectedRoute><PlayBooksPage /></ProtectedRoute>} />
-                    <Route path="/cursos" element={<ProtectedRoute><CoursesPage /></ProtectedRoute>} />
-                    <Route path="/materiais" element={<ProtectedRoute><MaterialsPage /></ProtectedRoute>} />
-                    <Route path="/video/:id" element={<ProtectedRoute><VideoPlayerPage /></ProtectedRoute>} />
-                    
-                    {/* Admin Routes (Protected) */}
-                    <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
-                    <Route path="/admin/apostilas/:id" element={<ProtectedRoute><AdminApostilaWorkbench /></ProtectedRoute>} />
-
-                    {/* Fallback */}
-                    <Route path="*" element={<Navigate to="/" replace />} />
-                  </Routes>
-                </Suspense>
+                <AppContent />
               </BrowserRouter>
             </TooltipProvider>
           </AudioPlayerProvider>
