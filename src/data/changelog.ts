@@ -31,8 +31,8 @@ export function getBuildInfo() {
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: '2026-08-15T04:25:00Z',
-    commit: 'v5.9.3-audit-ui-db',
-    commitMessage: 'Release v5.9.3: Ella UI Fix and Database Integrity Audit'
+    commit: 'v5.9.4-security-hardening',
+    commitMessage: 'Release v5.9.4: Security Hardening (RLS & Access Control)'
   };
 }
 
