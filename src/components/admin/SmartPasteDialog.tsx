@@ -59,7 +59,7 @@ export function SmartPasteDialog({ open, onOpenChange, onApply }: Props) {
           </p>
         </DialogHeader>
 
-        <div className="grid gap-2 rounded-lg border border-border bg-muted/20 p-2 sm:grid-cols-[1fr_auto] sm:items-center">
+        <div className="grid shrink-0 gap-2 rounded-lg border border-border bg-muted/20 p-2 sm:grid-cols-[1fr_auto] sm:items-center">
           <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap items-center">
             <Button size="sm" variant="outline" onClick={handlePaste} className="h-9 justify-center gap-1.5 text-xs sm:h-8">
               <ClipboardPaste className="h-3.5 w-3.5" />
