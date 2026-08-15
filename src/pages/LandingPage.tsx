@@ -10,12 +10,7 @@ import {
   ChevronRight, Download, Smartphone, Layers, Rocket, Target,
   BarChart3, PenLine, Flame, TrendingUp, CheckCircle, Play,
 } from 'lucide-react';
-import logoAvif1x from '@/assets/owl-icon-72.avif';
-import logoAvif2x from '@/assets/owl-icon-144.avif';
-import logoWebp1x from '@/assets/owl-icon-72.webp';
-import logoWebp2x from '@/assets/owl-icon-144.webp';
-import logoPng1x from '@/assets/owl-icon-72.webp';
-import logoPng2x from '@/assets/owl-icon-144.webp';
+import logoDark from '@/assets/owl-icon.png';
 import heroPoster from '@/assets/hero-bg-poster.jpg.asset.json';
 import heroPosterWebp from '@/assets/hero-bg-poster.webp.asset.json';
 import heroPosterAvif from '@/assets/hero-bg-poster.avif.asset.json';
