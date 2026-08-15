@@ -1039,6 +1039,7 @@ export type Database = {
           semester: number | null
           source_type: string | null
           status: Database["public"]["Enums"]["apostila_status"] | null
+          subject: string | null
           teacher: string | null
           title: string
           updated_at: string
@@ -1059,6 +1060,7 @@ export type Database = {
           semester?: number | null
           source_type?: string | null
           status?: Database["public"]["Enums"]["apostila_status"] | null
+          subject?: string | null
           teacher?: string | null
           title: string
           updated_at?: string
@@ -1079,6 +1081,7 @@ export type Database = {
           semester?: number | null
           source_type?: string | null
           status?: Database["public"]["Enums"]["apostila_status"] | null
+          subject?: string | null
           teacher?: string | null
           title?: string
           updated_at?: string
@@ -1496,6 +1499,39 @@ export type Database = {
           privacy_version?: string
           terms_version?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      content_backups: {
+        Row: {
+          backup_name: string | null
+          backup_timestamp: string | null
+          content_block_count: number | null
+          created_at: string | null
+          exercise_count: number | null
+          file_size_bytes: number | null
+          id: string
+          workbook_count: number | null
+        }
+        Insert: {
+          backup_name?: string | null
+          backup_timestamp?: string | null
+          content_block_count?: number | null
+          created_at?: string | null
+          exercise_count?: number | null
+          file_size_bytes?: number | null
+          id?: string
+          workbook_count?: number | null
+        }
+        Update: {
+          backup_name?: string | null
+          backup_timestamp?: string | null
+          content_block_count?: number | null
+          created_at?: string | null
+          exercise_count?: number | null
+          file_size_bytes?: number | null
+          id?: string
+          workbook_count?: number | null
         }
         Relationships: []
       }
@@ -3184,6 +3220,47 @@ export type Database = {
           week_start?: string
         }
         Relationships: []
+      }
+      workbook_content_integrity: {
+        Row: {
+          content_hash: string | null
+          id: string
+          is_complete: boolean | null
+          last_verified: string | null
+          missing_chapters: number | null
+          missing_exercises: number | null
+          status: string | null
+          workbook_id: string
+        }
+        Insert: {
+          content_hash?: string | null
+          id?: string
+          is_complete?: boolean | null
+          last_verified?: string | null
+          missing_chapters?: number | null
+          missing_exercises?: number | null
+          status?: string | null
+          workbook_id: string
+        }
+        Update: {
+          content_hash?: string | null
+          id?: string
+          is_complete?: boolean | null
+          last_verified?: string | null
+          missing_chapters?: number | null
+          missing_exercises?: number | null
+          status?: string | null
+          workbook_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workbook_content_integrity_workbook_id_fkey"
+            columns: ["workbook_id"]
+            isOneToOne: false
+            referencedRelation: "apostilas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
