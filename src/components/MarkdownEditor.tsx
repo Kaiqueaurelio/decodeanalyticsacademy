@@ -273,8 +273,18 @@ export function MarkdownEditor({
   );
 
   const insertMedia = useCallback(
-    (md: string) => {
+    (md: string, type?: 'audio' | 'video' | 'file') => {
       if (!editor) return;
+      
+      if (type === 'audio') {
+        // Encontra o link no markdown "[Áudio: url]"
+        const match = md.match(/\[Áudio:\s*([^\]]+)\]/);
+        if (match) {
+          editor.chain().focus().insertContent(`<audio-player src="${match[1]}" title="Áudio da Aula" />`).run();
+          return;
+        }
+      }
+      
       editor.chain().focus().insertContent(md).run();
     },
     [editor],

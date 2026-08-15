@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 interface Props {
-  onMediaInserted: (markdown: string) => void;
+  onMediaInserted: (markdown: string, type?: 'audio' | 'video' | 'file') => void;
   apostilaId: string;
 }
 
@@ -43,15 +43,20 @@ export function RibbonMediaButton({ onMediaInserted, apostilaId }: Props) {
       const url = urlData.publicUrl;
 
       let markdown = '';
+      let type: 'audio' | 'video' | 'file' = 'file';
+      
       if (file.type.startsWith('audio/')) {
-        markdown = `\n[Áudio: ${url}]\n`;
+        markdown = `[Áudio: ${url}]`;
+        type = 'audio';
       } else if (file.type.startsWith('video/')) {
         markdown = `\n[Vídeo: ${url}]\n`;
+        type = 'video';
       } else {
         markdown = `\n[Arquivo: ${file.name}](${url})\n`;
+        type = 'file';
       }
-
-      onMediaInserted(markdown);
+      
+      onMediaInserted(markdown, type);
       toast.success('Mídia enviada e inserida!', { id: tId });
     } catch (err: any) {
       console.error('Erro no upload de mídia:', err);

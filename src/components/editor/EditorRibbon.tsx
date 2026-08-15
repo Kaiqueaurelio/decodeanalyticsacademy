@@ -55,7 +55,7 @@ type RibbonTab = 'home' | 'insert' | 'layout' | 'review';
 interface Props {
   editor: Editor;
   onInsertImage: (md: string, opts?: { tempUrl?: string; finalUrl?: string }) => void;
-  onInsertMedia?: (md: string) => void;
+  onInsertMedia?: (md: string, type?: 'audio' | 'video' | 'file') => void;
   apostilaId?: string;
   onSave?: () => void;
   saveStatus?: 'saved' | 'unsaved' | 'idle';
@@ -123,7 +123,15 @@ export function EditorRibbon({ editor, onInsertImage, onInsertMedia, apostilaId,
               <button
                 className="word-btn word-btn-tall"
                 title="Imprimir (Ctrl+P)"
-                onClick={() => window.print()}
+                onClick={() => {
+                  const printEvent = new KeyboardEvent('keydown', {
+                    key: 'p',
+                    ctrlKey: true,
+                    bubbles: true,
+                    cancelable: true
+                  });
+                  window.dispatchEvent(printEvent);
+                }}
               >
                 <Printer />
                 <span>Imprimir</span>
