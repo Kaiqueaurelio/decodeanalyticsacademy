@@ -48,18 +48,18 @@ export function SmartPasteDialog({ open, onOpenChange, onApply }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex max-h-[92dvh] w-[calc(100vw-1rem)] max-w-4xl flex-col gap-3 overflow-hidden p-3 sm:p-6">
-        <DialogHeader className="space-y-1 pr-8">
+      <DialogContent className="flex max-h-[95dvh] w-[calc(100vw-1rem)] max-w-4xl flex-col gap-3 overflow-hidden p-3 sm:p-6 sm:max-h-[92dvh]">
+        <DialogHeader className="space-y-1 pr-8 shrink-0">
           <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
             <PenTool className="h-4 w-4 text-primary" />
             Colar e organizar
           </DialogTitle>
-          <p className="text-xs text-muted-foreground">
+          <p className="hidden text-xs text-muted-foreground sm:block">
             Cole seu texto, Markdown ou transcrições de aula. O app organizará a formatação e permitirá a continuação do seu trabalho.
           </p>
         </DialogHeader>
 
-        <div className="grid gap-2 rounded-lg border border-border bg-muted/20 p-2 sm:grid-cols-[1fr_auto] sm:items-center">
+        <div className="grid shrink-0 gap-2 rounded-lg border border-border bg-muted/20 p-2 sm:grid-cols-[1fr_auto] sm:items-center">
           <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap items-center">
             <Button size="sm" variant="outline" onClick={handlePaste} className="h-9 justify-center gap-1.5 text-xs sm:h-8">
               <ClipboardPaste className="h-3.5 w-3.5" />
@@ -110,19 +110,19 @@ export function SmartPasteDialog({ open, onOpenChange, onApply }: Props) {
           </div>
         </div>
 
-        <div className="grid flex-1 min-h-0 grid-cols-1 gap-3 lg:grid-cols-2">
-          <div className="flex min-h-0 flex-col">
+        <div className="grid flex-1 min-h-[40vh] grid-cols-1 gap-3 lg:grid-cols-2 overflow-y-auto pr-1 sm:overflow-visible sm:pr-0">
+          <div className="flex flex-col min-h-[300px] lg:min-h-0">
             <Label className="mb-1 text-[10px] uppercase tracking-wider text-muted-foreground">Texto original</Label>
             <Textarea
               value={raw}
               onChange={(e) => setRaw(e.target.value)}
               placeholder="Cole aqui seu texto, Markdown, material do Word, PDF, Notion ou Google Docs..."
-              className="min-h-[34dvh] flex-1 resize-none text-sm leading-relaxed sm:min-h-[360px]"
+              className="min-h-[250px] flex-1 resize-none text-sm leading-relaxed sm:min-h-[360px]"
             />
           </div>
-          <div className="flex min-h-0 flex-col">
+          <div className="flex flex-col min-h-[300px] lg:min-h-0">
             <Label className="mb-1 text-[10px] uppercase tracking-wider text-muted-foreground">Como será inserido</Label>
-            <ScrollArea className="min-h-[30dvh] flex-1 rounded-md border border-border bg-muted/20 sm:min-h-[360px]">
+            <ScrollArea className="min-h-[250px] flex-1 rounded-md border border-border bg-muted/20 sm:min-h-[360px]">
               <pre className="whitespace-pre-wrap break-words p-3 text-xs leading-relaxed font-mono">
                 {result.cleaned || <span className="text-muted-foreground">— vazio —</span>}
               </pre>
@@ -139,7 +139,7 @@ export function SmartPasteDialog({ open, onOpenChange, onApply }: Props) {
           </div>
         </div>
 
-        <DialogFooter className="grid grid-cols-2 gap-2 sm:flex sm:justify-end">
+        <DialogFooter className="grid shrink-0 grid-cols-2 gap-2 sm:flex sm:justify-end">
           <Button variant="outline" onClick={() => onOpenChange(false)} className="h-10 sm:h-9">Cancelar</Button>
           <Button
             disabled={!result.cleaned}
