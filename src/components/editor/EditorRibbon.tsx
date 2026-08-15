@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { RibbonImageButton } from '@/components/editor/RibbonImageButton';
+import { RibbonMediaButton } from '@/components/editor/RibbonMediaButton';
 import { TableGridPicker } from '@/components/editor/TableGridPicker';
 
 const TEXT_COLORS = [
@@ -54,11 +55,13 @@ type RibbonTab = 'home' | 'insert' | 'layout' | 'review';
 interface Props {
   editor: Editor;
   onInsertImage: (md: string, opts?: { tempUrl?: string; finalUrl?: string }) => void;
+  onInsertMedia?: (md: string) => void;
+  apostilaId?: string;
   onSave?: () => void;
   saveStatus?: 'saved' | 'unsaved' | 'idle';
 }
 
-export function EditorRibbon({ editor, onInsertImage, onSave, saveStatus = 'idle' }: Props) {
+export function EditorRibbon({ editor, onInsertImage, onInsertMedia, apostilaId, onSave, saveStatus = 'idle' }: Props) {
   const [tab, setTab] = useState<RibbonTab>('home');
   const [font, setFont] = useState('Inter');
   const [size, setSize] = useState('15pt');
@@ -294,6 +297,9 @@ export function EditorRibbon({ editor, onInsertImage, onSave, saveStatus = 'idle
             </Group>
             <Group label="Ilustrações">
               <RibbonImageButton onImageInserted={onInsertImage} />
+              {onInsertMedia && apostilaId && (
+                <RibbonMediaButton onMediaInserted={onInsertMedia} apostilaId={apostilaId} />
+              )}
             </Group>
             <Group label="Links">
               <button className="word-btn word-btn-tall" title="Inserir link (Ctrl+K)" data-active={editor.isActive('link')} onClick={insertLink}>
