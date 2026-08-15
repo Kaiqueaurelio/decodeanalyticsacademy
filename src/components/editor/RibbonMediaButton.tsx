@@ -73,6 +73,36 @@ export function RibbonMediaButton({ onMediaInserted, apostilaId }: Props) {
 
       if (linkError) throw linkError;
 
+      const matType = file.type.startsWith('audio/') 
+        ? 'audio' 
+        : file.type.startsWith('video/') 
+          ? 'video' 
+          : 'other';
+
+      // Criar entrada na tabela materials e vincular à apostila
+      const { data: material, error: matError } = await supabase
+        .from('materials')
+        .insert({
+          title: file.name,
+          file_url: url,
+          type: matType as any,
+        })
+        .select()
+        .single();
+
+      if (matError) throw matError;
+
+      // Vincular na tabela de junção apostila_materials
+      const { error: linkError } = await supabase
+        .from('apostila_materials')
+        .insert({
+          apostila_id: apostilaId,
+          material_id: material.id,
+          sort_order: 999
+        });
+
+      if (linkError) throw linkError;
+
       if (file.type.startsWith('audio/')) {
         markdown = `<audio-player src="${url}" title="${file.name}" />`;
         type = 'audio';
