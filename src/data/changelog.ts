@@ -31,16 +31,16 @@ export function getBuildInfo() {
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: '2026-08-15T02:14:24Z',
-    commit: 'v5.8.0-brand-recovery',
-    commitMessage: 'Release v5.8.0: Restored original logo identity across landing page'
+    commit: 'v5.8.1-ella-avatar-landing',
+    commitMessage: 'Release v5.8.1: Updated Ella avatar on landing page with official asset'
   };
 }
 
 export const CHANGELOG: Release[] = [
   {
-    version: "5.8.0",
+    version: "5.8.1",
     date: "15/08/2026",
-    title: "Brand Integrity Recovery",
+    title: "Brand & Identity Sync",
     major: true,
     changes: [
       {
