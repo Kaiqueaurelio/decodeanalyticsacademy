@@ -27,7 +27,7 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '5.5.1',
+    version: '5.6.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
@@ -37,6 +37,26 @@ export function getBuildInfo() {
 }
 
 export const CHANGELOG: Release[] = [
+  {
+    version: "5.6.0",
+    date: "15/08/2026",
+    title: "Ella AI Security Hardening (Prompt Injection)",
+    major: true,
+    changes: [
+      {
+        kind: 'security',
+        text: 'Implementação da especificação de segurança contra injeção de prompt (Prompt Injection Security Specification).'
+      },
+      {
+        kind: 'improvement',
+        text: 'Novo gate de auditoria e telemetria de segurança com classificação de severidade granulada (low, medium, high, critical).'
+      },
+      {
+        kind: 'feature',
+        text: 'Suite de testes adversariais para detecção de injeção de prompt e tentativas de escalada de privilégio.'
+      }
+    ]
+  },
   {
     version: "5.5.1",
     date: "15/08/2026",
