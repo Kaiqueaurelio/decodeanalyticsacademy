@@ -14,7 +14,7 @@ import {
   Quote,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import ellaAvatar from '@/assets/ella-avatar.jpg';
+import ellaAvatarLanding from '@/assets/ella-avatar-landing.png.asset.json';
 
 const CAPABILITIES = [
   {
@@ -182,7 +182,7 @@ export function EllaFeatureSection() {
                 />
                 <div className="relative h-full w-full overflow-hidden rounded-full border-2 border-primary/30 bg-card">
                   <img
-                    src={ellaAvatar}
+                    src={ellaAvatarLanding.url}
                     alt="Ella Ribeiro"
                     className="h-full w-full object-cover"
                     loading="lazy"

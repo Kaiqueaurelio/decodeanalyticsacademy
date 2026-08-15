@@ -27,7 +27,7 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '5.8.0',
+    version: '5.8.1',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: '2026-08-15T02:14:24Z',
@@ -45,7 +45,11 @@ export const CHANGELOG: Release[] = [
     changes: [
       {
         kind: 'improvement',
-        text: 'Restauração da identidade visual clássica (logo original) em toda a Landing Page, revertendo ícones otimizados para manter o branding desejado.'
+        text: 'Identidade Visual: Atualização do avatar da Ella Ribeiro na Landing Page com nova imagem oficial v5.8.1.'
+      },
+      {
+        kind: 'improvement',
+        text: 'Brand Integrity Recovery: Restauração da identidade visual clássica (logo original) em toda a Landing Page.'
       }
     ]
   },
