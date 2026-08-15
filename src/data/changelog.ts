@@ -27,14 +27,15 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '5.9.1',
+    version: '5.9.2',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
-    buildTime: '2026-08-15T04:15:00Z',
-    commit: 'v5.9.1-final-recovery',
-    commitMessage: 'Release v5.9.1: Final content recovery & integrity restoration'
+    buildTime: '2026-08-15T04:20:00Z',
+    commit: 'v5.9.2-ella-portrait-sync',
+    commitMessage: 'Release v5.9.2: Ella Portrait Sync and aggressive cache-busting'
   };
 }
+
 
 export const CHANGELOG: Release[] = [
   {
