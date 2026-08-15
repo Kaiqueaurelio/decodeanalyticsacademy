@@ -91,6 +91,7 @@ import { DeploymentStatusPanel } from '@/components/admin/DeploymentStatusPanel'
 import { QuickCreateApostilaDialog } from '@/components/admin/QuickCreateApostilaDialog';
 import { ApostilaCloningDashboard } from '@/components/admin/ApostilaCloningDashboard';
 import { ApostilaHealthDashboard } from '@/components/admin/ApostilaHealthDashboard';
+import { EllaSettings } from '@/components/admin/EllaSettings';
 
 type Apostila = Tables<'apostilas'>;
 type Exercise = Tables<'exercises'>;
@@ -221,7 +222,7 @@ function PhotoroomStudio() {
   );
 }
 
-type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements' | 'calendar' | 'testimonials' | 'ai' | 'performance' | 'smoke' | 'diagnostics' | 'ads' | 'ads-chat' | 'social' | 'rss' | 'courses' | 'changelog' | 'leads' | 'ella-audit' | 'security-alerts' | 'sponsors' | 'tasks' | 'photoroom' | 'edit' | 'review' | 'enem-apostilas' | 'cc-apostilas' | 'health-dashboard' | 'cloning-dashboard';
+type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements' | 'calendar' | 'testimonials' | 'ai' | 'ella-settings' | 'performance' | 'smoke' | 'diagnostics' | 'ads' | 'ads-chat' | 'social' | 'rss' | 'courses' | 'changelog' | 'leads' | 'ella-audit' | 'security-alerts' | 'sponsors' | 'tasks' | 'photoroom' | 'edit' | 'review' | 'enem-apostilas' | 'cc-apostilas' | 'health-dashboard' | 'cloning-dashboard';
 
 const ACCEPT_MAP: Record<string, string> = {
   pdf: '.pdf', image: 'image/*', gif: '.gif,image/gif',
