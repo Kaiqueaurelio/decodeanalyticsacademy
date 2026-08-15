@@ -27,7 +27,7 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '5.5.0',
+    version: '5.5.1',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
@@ -37,6 +37,21 @@ export function getBuildInfo() {
 }
 
 export const CHANGELOG: Release[] = [
+  {
+    version: "5.5.1",
+    date: "15/08/2026",
+    title: "Ella AI System Prompt Update",
+    changes: [
+      {
+        kind: 'improvement',
+        text: 'Nova especificação de Prompt de Sistema para a Ella AI, focada em excelência acadêmica e operacional.'
+      },
+      {
+        kind: 'security',
+        text: 'Reforço nas diretrizes de defesa contra injeção de prompt e controle de autoridade.'
+      }
+    ]
+  },
   {
     version: "5.5.0",
     date: "15/08/2026",
