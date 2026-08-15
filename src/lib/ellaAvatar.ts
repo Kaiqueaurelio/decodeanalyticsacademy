@@ -69,12 +69,13 @@ export const getEllaAvatarUrl = () => {
       localStorage.removeItem(ELLA_AVATAR_STORAGE_KEY);
     }
 
-    // Adiciona cache busting v12 + timestamp único
+    // Adiciona cache busting v13 + timestamp único
     const separator = finalUrl.includes('?') ? '&' : '?';
-    return `${finalUrl}${separator}v=12&t=${Date.now()}`;
+    return `${finalUrl}${separator}v=13&t=${Date.now()}`;
   } catch {
-    return `${DEFAULT_ELLA_AVATAR}?v=12&t=${Date.now()}`;
+    return `${DEFAULT_ELLA_AVATAR}?v=13&t=${Date.now()}`;
   }
+
 };
 
 // Expõe a URL do avatar como CSS var para pseudo-elementos
