@@ -27,7 +27,7 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '5.6.0',
+    version: '5.6.1',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
@@ -37,6 +37,17 @@ export function getBuildInfo() {
 }
 
 export const CHANGELOG: Release[] = [
+  {
+    version: "5.6.1",
+    date: "15/08/2026",
+    title: "Ella AI Portrait Refresh",
+    changes: [
+      {
+        kind: 'improvement',
+        text: 'Atualização da foto de perfil da Ella para a versão final com badge acadêmico e corte circular otimizado.'
+      }
+    ]
+  },
   {
     version: "5.6.0",
     date: "15/08/2026",
