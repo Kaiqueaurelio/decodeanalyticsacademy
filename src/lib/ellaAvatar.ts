@@ -11,6 +11,7 @@ const LEGACY_KEYS = [
   'decode_ella_avatar_url_v3',
   'decode_ella_avatar_url_v4',
   'decode_ella_avatar_url_v5',
+<<<<<<< HEAD
   'decode_ella_avatar_url_v6',
   'decode_ella_avatar_url_v7',
   'decode_ella_avatar_url_v8',
