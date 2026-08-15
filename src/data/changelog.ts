@@ -27,18 +27,39 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '5.9.2',
+    version: '5.9.3',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
-    buildTime: '2026-08-15T04:20:00Z',
-    commit: 'v5.9.2-ella-portrait-sync',
-    commitMessage: 'Release v5.9.2: Ella Portrait Sync and aggressive cache-busting'
+    buildTime: '2026-08-15T04:25:00Z',
+    commit: 'v5.9.3-audit-ui-db',
+    commitMessage: 'Release v5.9.3: Ella UI Fix and Database Integrity Audit'
   };
 }
 
 
+
 export const CHANGELOG: Release[] = [
   {
+    version: "5.9.3",
+    date: "15/08/2026",
+    title: "Ella UI & DB Integrity Audit",
+    changes: [
+      {
+        kind: 'fix',
+        text: 'Correção de UI: Ajustado z-index do FAB da Ella (z-100) para evitar sobreposição indevida com elementos da interface.'
+      },
+      {
+        kind: 'security',
+        text: 'Auditoria de Banco de Dados: Validada a integridade de 51 apostilas. Confirmado que não houve exclusões; 1 item estava marcado como não publicado e foi restaurado.'
+      },
+      {
+        kind: 'improvement',
+        text: 'Check-up de RLS: Revisadas todas as políticas de acesso para garantir que materiais published sejam visíveis conforme o escopo do aluno.'
+      }
+    ]
+  },
+  {
+
     version: "5.9.2",
     date: "15/08/2026",
     title: "Ella Portrait Global Sync",
