@@ -27,12 +27,12 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '5.9.0',
+    version: '5.9.1',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
-    buildTime: '2026-08-15T03:05:00Z',
-    commit: 'v5.9.0-integrity-restore',
-    commitMessage: 'Release v5.9.0: Content Integrity Restoration & theoretical computing recovery'
+    buildTime: '2026-08-15T04:15:00Z',
+    commit: 'v5.9.1-final-recovery',
+    commitMessage: 'Release v5.9.1: Final content recovery & integrity restoration'
   };
 }
 
