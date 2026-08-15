@@ -129,17 +129,18 @@ A segurança moderna baseia-se na dureza computacional de certos problemas (ex: 
 
   try {
     // 1. DELETE OLD INCOMPLETE DATA (if exists)
-    const { data: existing } = await supabase
+    // First, search for ANY apostila with a similar title to avoid duplicates
+    const { data: existingList } = await supabase
       .from('apostilas')
       .select('id')
-      .eq('title', theoreticalContent.title)
-      .maybeSingle();
+      .or(`title.ilike.*theoretical*,title.ilike.*teoricos*`);
 
-    if (existing) {
-      await supabase
-        .from('apostilas')
-        .delete()
-        .eq('id', existing.id);
+    if (existingList && existingList.length > 0) {
+      for (const item of existingList) {
+        await supabase.from('exercises').delete().eq('apostila_id', item.id);
+        await supabase.from('apostila_pages').delete().eq('apostila_id', item.id);
+        await supabase.from('apostilas').delete().eq('id', item.id);
+      }
     }
 
     // 2. CREATE APOSTILA WITH FULL METADATA
@@ -211,6 +212,13 @@ A segurança moderna baseia-se na dureza computacional de certos problemas (ex: 
       .insert(exercisesToInsert);
 
     if (exercisesError) throw exercisesError;
+
+    // 5. Create backup record
+    await supabase.from('content_backups').insert({
+      apostila_id: apostila.id,
+      content_hash: generateHash(theoreticalContent.description),
+      backup_data: theoreticalContent
+    });
 
     console.log('✅ Aspectos Teóricos da Computação FULLY RESTORED');
     return { success: true, apostila, pageCount: pages.length };
