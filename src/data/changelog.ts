@@ -27,16 +27,36 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '5.6.3',
+    version: '5.7.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v5.6.3-ella-final',
-    commitMessage: 'Release v5.6.3: Forced Ella Avatar Synchronization (v9) with Aggressive Cache-Busting'
+    commit: 'v5.7.0-ella-dynamic-identity',
+    commitMessage: 'Release v5.7.0: Dynamic Ella Identity System with Backend Sync and Cache-Busting v10'
   };
 }
 
 export const CHANGELOG: Release[] = [
+  {
+    version: "5.7.0",
+    date: "15/08/2026",
+    title: "Ella Dynamic Identity & Admin Panel",
+    major: true,
+    changes: [
+      {
+        kind: 'feature',
+        text: 'Implementado painel de gerenciamento dinâmico da Ella no admin, permitindo upload de novo avatar sem alteração de código.'
+      },
+      {
+        kind: 'improvement',
+        text: 'Sistema de versionamento v10 com cache-busting agressivo para garantir propagação instantânea da nova identidade visual.'
+      },
+      {
+        kind: 'security',
+        text: 'Restrição de URLs portáteis para o avatar da Ella, garantindo integridade visual em diferentes domínios de deploy.'
+      }
+    ]
+  },
   {
     version: "5.6.3",
     date: "15/08/2026",
