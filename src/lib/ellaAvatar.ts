@@ -45,6 +45,10 @@ export const getEllaAvatarUrl = () => {
     const stored = localStorage.getItem(ELLA_AVATAR_STORAGE_KEY);
     if (stored && isValidHttp(stored) && isPortableUrl(stored)) return stored;
     if (stored && !isPortableUrl(stored)) localStorage.removeItem(ELLA_AVATAR_STORAGE_KEY);
+    // Force new avatar if v6 is not set yet
+    if (!stored) {
+      localStorage.setItem(ELLA_AVATAR_STORAGE_KEY, DEFAULT_ELLA_AVATAR);
+    }
     return DEFAULT_ELLA_AVATAR;
   } catch {
     return DEFAULT_ELLA_AVATAR;
