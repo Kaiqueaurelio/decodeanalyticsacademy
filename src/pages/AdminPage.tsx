@@ -1761,8 +1761,8 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                 setFilterSemester={setFilterSemester}
               />
             )}
-            {tab === 'cloning-dashboard' && <ApostilaCloningDashboard />}
             {tab === 'health-dashboard' && <ApostilaHealthDashboard />}
+            {tab === 'cloning-dashboard' && <ApostilaCloningDashboard />}
 
             {/* USERS */}
             {tab === 'users' && <AdminUserManagement />}
