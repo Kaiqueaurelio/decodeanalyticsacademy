@@ -27,16 +27,31 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '5.9.8',
+    version: '5.9.9',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
-    buildTime: '2026-08-15T12:56:00Z',
-    commit: 'v5.9.8-interactive-media',
-    commitMessage: 'Release v5.9.8: Aula Interativa de Robótica e Games em Aspectos Teóricos'
+    buildTime: '2026-08-15T13:10:00Z',
+    commit: 'v5.9.9-content-restoration',
+    commitMessage: 'Release v5.9.9: Restauração definitiva de conteúdo teórico e multimídia'
   };
 }
 
 export const CHANGELOG: Release[] = [
+  {
+    version: "5.9.9",
+    date: "15/08/2026",
+    title: "Restauração: Aspectos Teóricos",
+    changes: [
+      {
+        kind: 'fix',
+        text: 'Conteúdo: Restauração definitiva do texto estruturado e componentes multimídia (áudio-quiz e guia visual) na apostila de Aspectos Teóricos da Computação.'
+      },
+      {
+        kind: 'content',
+        text: 'Sincronização: Garantida a publicação da apostila e persistência dos dados no banco.'
+      }
+    ]
+  },
   {
     version: "5.9.8",
     date: "15/08/2026",
