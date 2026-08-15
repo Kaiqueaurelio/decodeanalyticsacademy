@@ -34,7 +34,7 @@ export default function LoginPage() {
   const looksLikeEmail = (v: string) => /@/.test(v.trim());
   const normalizeRa = (raValue: string) => raValue.trim().toUpperCase();
   const buildRaEmail = (raValue: string) => `${normalizeRa(raValue).toLowerCase()}@${RA_DOMAIN}`;
-  const isValidRa = (raValue: string) => /^[A-Z0-9]{6,13}$/.test(normalizeRa(raValue));
+  const isValidRa = (raValue: string) => raValue.trim().length >= 2 && raValue.trim().length <= 50;
   /**
    * Login/recuperação por RA são resolvidos no backend (edge function `ra-auth`).
    * O e-mail do aluno nunca trafega para o cliente — isso evita enumeração de RA
@@ -160,7 +160,7 @@ export default function LoginPage() {
     const isSpecial = id === 'Juliana';
 
     if (!isEmail && !isValidRa(id) && !isSpecial) {
-      const errorMsg = 'Use um e-mail válido ou seu RA (6 a 13 letras/números). Se o erro persistir, procure a secretaria para validar seu vínculo.';
+      const errorMsg = 'Use um e-mail válido ou seu RA. Se o erro persistir, procure a secretaria para validar seu vínculo.';
       toast.error(errorMsg, {
         duration: 6000,
         icon: <AlertTriangle className="h-4 w-4 text-warning" />
@@ -301,7 +301,7 @@ export default function LoginPage() {
 
     const isEmail = looksLikeEmail(id);
     if (!isEmail && !isValidRa(id)) {
-      toast.error('Use um e-mail válido ou seu RA (6 a 13 letras/números).');
+      toast.error('Use um e-mail válido ou seu RA.');
       return;
     }
 
