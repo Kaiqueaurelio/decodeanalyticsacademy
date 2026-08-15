@@ -27,11 +27,11 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '5.3.0',
+    version: '5.4.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v5.3.0-performance-audit',
+    commit: 'v5.4.0-audit-360',
     commitMessage: 'Release v5.3.0: Full Technical Audit, Student Performance & Structural Validation'
   };
 }
