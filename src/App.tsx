@@ -126,10 +126,11 @@ function useAdminCopyPatch() {
   }, []);
 }
 
-const BMCWidgetLoader = () => {
+const BMCWidgetLoader = React.memo(() => {
   useBMCWidget();
   return null;
-};
+});
+BMCWidgetLoader.displayName = "BMCWidgetLoader";
 
 const App = () => {
   useAdminCopyPatch();
@@ -144,13 +145,18 @@ const App = () => {
               <Toaster />
               <Sonner />
               <BrowserRouter>
-                {!splashDone && <SplashScreen onComplete={() => setSplashDone(true)} />}
-                <BMCWidgetLoader />
-                <RANamePrompt />
-                <AdPopup />
-                <AdDraftPreviewOverlay />
-                <EllaSidebar />
-                <PersistentAdSpot />
+                {splashDone ? (
+                  <>
+                    <BMCWidgetLoader />
+                    <RANamePrompt />
+                    <AdPopup />
+                    <AdDraftPreviewOverlay />
+                    <EllaSidebar />
+                    <PersistentAdSpot />
+                  </>
+                ) : (
+                  <SplashScreen onComplete={() => setSplashDone(true)} />
+                )}
                 
                 <Suspense fallback={<PageSkeleton />}>
                   <Routes>

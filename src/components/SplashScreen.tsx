@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, memo } from 'react';
 import logoDecode from '@/assets/owl-icon.png';
 
 interface SplashScreenProps {
@@ -6,7 +6,7 @@ interface SplashScreenProps {
   duration?: number;
 }
 
-export function SplashScreen({ onComplete, duration = 2500 }: SplashScreenProps) {
+export const SplashScreen = memo(({ onComplete, duration = 2500 }: SplashScreenProps) => {
   const [opacity, setOpacity] = useState(1);
 
   useEffect(() => {
@@ -131,4 +131,5 @@ export function SplashScreen({ onComplete, duration = 2500 }: SplashScreenProps)
       `}</style>
     </div>
   );
-}
+});
+SplashScreen.displayName = "SplashScreen";

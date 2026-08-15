@@ -40,7 +40,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
       { id: 'apostilas', label: 'Apostilas', short: 'Acervo', icon: BookOpen, desc: 'Gerenciar e publicar apostilas', countKey: 'apostilas', keywords: 'materia disciplina texto importar acervo' },
       { id: 'tasks', label: 'Gerenciador de Tarefas', short: 'Tarefas', icon: CheckSquare, desc: 'Organize suas atividades administrativas', keywords: 'tarefas checklist todo afazeres' },
       { id: 'photoroom', label: 'Estúdio Visual', short: 'Estúdio', icon: Sparkles, desc: 'Remova fundos e otimize imagens', keywords: 'imagem foto fundo remover studio photoroom' },
-      { id: 'cloning-dashboard', label: 'Dashboard de Clonagem', short: 'Clonagem', icon: Copy, desc: 'Listagem e status de apostilas geradas', keywords: 'clone geracao ia status progresso' },
+      { id: 'cloning-dashboard', label: 'Auditoria 360º', short: 'Auditoria', icon: Copy, desc: 'Listagem e status de apostilas geradas', keywords: 'clone geracao ia status progresso auditoria erro bugs' },
     ],
   },
   {
