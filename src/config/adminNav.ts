@@ -7,7 +7,7 @@ import {
 
 export type AdminTabId =
   | 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements'
-  | 'calendar' | 'testimonials' | 'ai' | 'performance' | 'smoke' | 'diagnostics'
+  | 'calendar' | 'testimonials' | 'ai' | 'ella-settings' | 'performance' | 'smoke' | 'diagnostics'
   | 'ads' | 'ads-chat' | 'social' | 'rss' | 'courses' | 'changelog' | 'leads'
   | 'ella-audit' | 'security-alerts' | 'sponsors' | 'tasks' | 'photoroom' | 'edit' | 'review'
   | 'enem-apostilas' | 'cc-apostilas' | 'health-dashboard' | 'cloning-dashboard';
@@ -81,6 +81,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     label: 'Assistente',
     items: [
       { id: 'ai', label: 'Configurar Assistente', short: 'Assistente', icon: MessageSquare, desc: 'Provedor padrão ou chave própria', keywords: 'ella provedor chave modelo' },
+      { id: 'ella-settings', label: 'Identidade da Ella', short: 'Identidade', icon: Sparkles, desc: 'Gerencie o avatar e visual da Ella', keywords: 'ella avatar foto imagem identidade visual' },
       { id: 'ella-audit', label: 'Auditoria da Ella', short: 'Auditoria', icon: ShieldCheck, desc: 'Ações pedidas, permissões e resultados', keywords: 'ella log auditoria permissao' },
     ],
   },
