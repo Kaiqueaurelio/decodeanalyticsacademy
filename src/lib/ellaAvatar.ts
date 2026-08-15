@@ -26,14 +26,10 @@ const getBaseAvatarUrl = () => {
   return '/ella-avatar.png';
 };
 
-export const DEFAULT_ELLA_AVATAR = `${getBaseAvatarUrl()}?v=12&t=${Date.now()}`;
-export const ELLA_AVATAR_FALLBACK = `/ella-avatar.png?v=12&t=${Date.now()}`;
-
-if (typeof document !== 'undefined') {
-  try {
-    document.documentElement.style.setProperty('--ella-avatar-url', `url('${DEFAULT_ELLA_AVATAR}')`);
-  } catch {}
-}
+// Removemos o timestamp fixo da constante para permitir que ele seja gerado no momento do uso,
+// garantindo que cada carregamento seja "fresco" se necessário.
+export const DEFAULT_ELLA_AVATAR = getBaseAvatarUrl();
+export const ELLA_AVATAR_FALLBACK = '/ella-avatar.png';
 
 const isValidHttp = (u: string) => /^https?:\/\//i.test(u);
 
@@ -63,18 +59,26 @@ export const getEllaAvatarUrl = () => {
 
     const stored = localStorage.getItem(ELLA_AVATAR_STORAGE_KEY);
     
+    let finalUrl = DEFAULT_ELLA_AVATAR;
+    
     // Se temos uma URL personalizada no storage, validamos
     if (stored && isValidHttp(stored) && isPortableUrl(stored)) {
-      return stored;
-    }
-    
-    // Caso contrário, removemos qualquer lixo e retornamos o padrão
-    if (stored) {
+      finalUrl = stored;
+    } else if (stored) {
       localStorage.removeItem(ELLA_AVATAR_STORAGE_KEY);
     }
 
-    return DEFAULT_ELLA_AVATAR;
+    // Adiciona cache busting v12 + timestamp único
+    const separator = finalUrl.includes('?') ? '&' : '?';
+    return `${finalUrl}${separator}v=12&t=${Date.now()}`;
   } catch {
-    return DEFAULT_ELLA_AVATAR;
+    return `${DEFAULT_ELLA_AVATAR}?v=12&t=${Date.now()}`;
   }
 };
+
+// Expõe a URL do avatar como CSS var para pseudo-elementos
+if (typeof document !== 'undefined') {
+  try {
+    document.documentElement.style.setProperty('--ella-avatar-url', `url('${getEllaAvatarUrl()}')`);
+  } catch {}
+}
