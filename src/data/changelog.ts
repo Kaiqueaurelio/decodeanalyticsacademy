@@ -27,18 +27,33 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '5.9.4',
+    version: '5.9.5',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: '2026-08-15T04:25:00Z',
-    commit: 'v5.9.4-security-hardening',
-    commitMessage: 'Release v5.9.4: Security Hardening (RLS & Access Control)'
+    commit: 'v5.9.5-rls-hardening-final',
+    commitMessage: 'Release v5.9.5: Multi-point RLS Hardening (Pages, Exercises, Chapters, Quizzes)'
   };
 }
 
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: "5.9.5",
+    date: "15/08/2026",
+    title: "RLS Hardening & Cross-Table Security",
+    changes: [
+      {
+        kind: 'security',
+        text: 'Correção de Vazamento Multi-ponto: Reforçadas as políticas RLS para páginas, exercícios, capítulos e quizzes, impedindo o bypass de visibilidade por usuários autenticados.'
+      },
+      {
+        kind: 'security',
+        text: 'Integridade de Acesso: Corrigida a lógica de junção redundante em capítulos e endurecido o isolamento de escopo (content_scope) em todo o banco de dados.'
+      }
+    ]
+  },
   {
     version: "5.9.4",
     date: "15/08/2026",
@@ -47,10 +62,6 @@ export const CHANGELOG: Release[] = [
       {
         kind: 'security',
         text: 'Hardening de RLS: Corrigido vazamento de dados em exercícios, páginas de apostilas e quizzes, garantindo que o acesso respeite o status de publicação e o escopo do aluno.'
-      },
-      {
-        kind: 'security',
-        text: 'Proteção de Conteúdo: Implementada validação rigorosa de visibilidade para evitar que materiais não publicados sejam acessíveis via API por usuários autenticados.'
       }
     ]
   },
