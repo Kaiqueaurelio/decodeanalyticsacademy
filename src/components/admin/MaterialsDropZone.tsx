@@ -117,8 +117,7 @@ export function MaterialsDropZone({ apostilaId, baseSortOrder, onUploaded, class
           title, 
           type: type as any, 
           file_path: path, 
-          created_by: user.id, 
-          apostila_id: apostilaId,
+          created_by: user.id,
           public: true
         } as any).select().single();
         if (insErr) {
