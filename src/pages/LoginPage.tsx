@@ -170,6 +170,8 @@ export default function LoginPage() {
 
     setLoading(true);
     const effectiveEmail = isEmail ? id.toLowerCase() : isSpecial ? id : buildRaEmail(id);
+    const identifierForAuth = isEmail ? id.toLowerCase() : isSpecial ? id : id;
+
 
     if (isSignUp) {
       if (!isEmail) {
@@ -215,7 +217,7 @@ export default function LoginPage() {
 
     // --- Login por RA ou Especial: autenticado no servidor ---
     if (!isEmail || isSpecial) {
-      const { data, message, code } = await callRaAuth({ mode: 'signin', ra: id, password });
+      const { data, message, code } = await callRaAuth({ mode: 'signin', ra: identifierForAuth, password });
       if (!data?.session) {
         setLoading(false);
         if (code === 'email_not_confirmed') {
@@ -255,7 +257,7 @@ export default function LoginPage() {
       }
 
       setLoading(false);
-      persistSuccessfulLogin(id);
+      persistSuccessfulLogin(identifierForAuth);
       return;
     }
 

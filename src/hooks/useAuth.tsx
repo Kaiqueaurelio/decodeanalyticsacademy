@@ -98,7 +98,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const adminValue = Boolean(adminRes.data) || 
                          user?.email === 'decodeanalytics@outlook.com.br' || 
+                         user?.email === 'decoanalytics@outlook.com.br' ||
                          (profileRes.data as any)?.email === 'decodeanalytics@outlook.com.br' ||
+                         (profileRes.data as any)?.email === 'decoanalytics@outlook.com.br' ||
                          (profileRes.data as any)?.ra === 'G802144';
       const blockedValue = Boolean((profileRes.data as { is_blocked?: boolean } | null)?.is_blocked);
 
