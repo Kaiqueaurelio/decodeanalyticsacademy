@@ -578,7 +578,11 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
               <div className="p-4">
                 <SortableMaterialsList 
                   items={linkedMaterials} 
-                  onRefresh={reloadMaterials}
+                  onReorder={setLinkedMaterials}
+                  onRemove={async (lid) => {
+                    await supabase.from('apostila_materials').delete().eq('id', lid);
+                    setLinkedMaterials(prev => prev.filter(m => m.id !== lid));
+                  }}
                 />
               </div>
             </ScrollArea>
