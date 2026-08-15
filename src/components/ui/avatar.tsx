@@ -25,21 +25,16 @@ const AvatarImage = React.forwardRef<
     if (src) setFailed(false);
   }, [src]);
 
-  if (!src || failed) {
-    return (
-      <span className={cn("flex h-full w-full items-center justify-center rounded-full bg-muted", className)}>
-        {props.children}
-      </span>
-    );
-  }
-
+  // Se o src estiver vazio ou falhar, o AvatarPrimitive.Fallback assume.
+  // Não retornamos null aqui para permitir que o Fallback funcione nativamente.
   return (
     <AvatarPrimitive.Image
       ref={ref}
       src={src}
       referrerPolicy="no-referrer"
-      className={cn("aspect-square h-full w-full object-cover", className)}
+      className={cn("aspect-square h-full w-full object-cover", className, (failed || !src) && "hidden")}
       onError={(event) => {
+        console.error("Avatar failed to load:", src);
         setFailed(true);
         onError?.(event);
       }}
