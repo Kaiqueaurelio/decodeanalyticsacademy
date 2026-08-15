@@ -318,6 +318,7 @@ const KIND_TITLE: Record<SecurityNotificationKind, string> = {
   authz_denied: "Tentativa de ação não registrada",
   privilege_escalation: "Tentativa de escalada de privilégio",
   scope_violation: "Acesso fora do escopo de conteúdo",
+  prompt_injection_detected: "Injeção de prompt detectada",
 };
 
 /** Classifica uma recusa do gate para gerar o alerta certo ao administrador. */
@@ -326,14 +327,14 @@ export function classifyDenial(name: unknown, ctx: AuthzCtx, reason?: string): S
   const known = typeof name === "string" && (STUDENT_TOOLS.has(name) || ADMIN_TOOLS.has(name));
 
   let kind: SecurityNotificationKind = "authz_denied";
-  let severity: SecuritySeverity = "warn";
+  let severity: SecuritySeverity = "low";
 
   if (known && typeof name === "string" && ADMIN_TOOLS.has(name) && !ctx.isAdmin) {
     kind = "privilege_escalation";
     severity = "critical";
   } else if (known && typeof name === "string" && ENEM_BLOCKED_TOOLS.has(name) && ctx.contentScope !== "full") {
     kind = "scope_violation";
-    severity = "warn";
+    severity = "medium";
   }
 
   return {
