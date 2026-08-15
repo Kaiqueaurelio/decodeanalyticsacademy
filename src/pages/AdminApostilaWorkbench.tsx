@@ -565,33 +565,43 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
             <X className="h-4 w-4" />
           </Button>
         </div>
-        <ScrollArea className="flex-1">
-          <TabsContent value="materials" className="m-0 p-4 space-y-4">
-            <MaterialsDropZone apostilaId={id as string} baseSortOrder={baseSortOrder} onUploaded={reloadMaterials} />
-            <SortableMaterialsList 
-              items={linkedMaterials} 
-              onReorder={setLinkedMaterials}
-              onRemove={async (lid) => {
-                await supabase.from('apostila_materials').delete().eq('id', lid);
-                setLinkedMaterials(prev => prev.filter(m => m.id !== lid));
-              }} 
-            />
+        <div className="flex-1 overflow-hidden relative">
+          <TabsContent value="materials" className="absolute inset-0 m-0 flex flex-col">
+            <div className="p-4 border-b border-border/40 bg-muted/20">
+              <MaterialsDropZone 
+                apostilaId={id as string} 
+                baseSortOrder={linkedMaterials.length} 
+                onUploaded={reloadMaterials} 
+              />
+            </div>
+            <ScrollArea className="flex-1">
+              <div className="p-4">
+                <SortableMaterialsList 
+                  items={linkedMaterials} 
+                  onReorder={setLinkedMaterials}
+                  onRemove={async (lid) => {
+                    await supabase.from('apostila_materials').delete().eq('id', lid);
+                    setLinkedMaterials(prev => prev.filter(m => m.id !== lid));
+                  }}
+                />
+              </div>
+            </ScrollArea>
           </TabsContent>
-          <TabsContent value="preview" className="m-0 bg-background/50">
-            <div className="p-6 bg-white dark:bg-[#1a1c1e] min-h-[800px] shadow-inner">
+          <TabsContent value="preview" className="absolute inset-0 m-0 bg-background/50 overflow-auto">
+            <div className="p-6 bg-white dark:bg-[#1a1c1e] min-h-full shadow-inner">
               <div className="max-w-[800px] mx-auto bg-card shadow-2xl p-12 min-h-[1056px] border border-border/40">
                 <ApostilaContentRenderer content={content} />
               </div>
             </div>
           </TabsContent>
-          <TabsContent value="exercises" className="m-0 p-4">
+          <TabsContent value="exercises" className="absolute inset-0 m-0 p-4 overflow-auto">
              <div className="space-y-4">
                <div className="p-4 rounded-xl border border-dashed border-border/50 text-center space-y-2">
                  <p className="text-xs text-muted-foreground">Gestão de exercícios em breve integrada aqui.</p>
                </div>
              </div>
           </TabsContent>
-        </ScrollArea>
+        </div>
       </Tabs>
     </div>
   );
