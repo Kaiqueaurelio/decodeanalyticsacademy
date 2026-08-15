@@ -30,9 +30,9 @@ export function getBuildInfo() {
     version: '5.8.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
-    buildTime: new Date().toISOString(),
-    commit: 'v5.7.2-ella-avatar-fix',
-    commitMessage: 'Release v5.7.2: Fixed Ella Avatar synchronization with aggressive v12 cache-busting'
+    buildTime: '2026-08-15T02:14:24Z',
+    commit: 'v5.8.0-brand-recovery',
+    commitMessage: 'Release v5.8.0: Restored original logo identity across landing page'
   };
 }
 
