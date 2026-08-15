@@ -95,7 +95,7 @@ export function ApostilaCloningDashboard() {
         <div>
           <h2 className="text-2xl font-bold flex items-center gap-2">
             <Copy className="h-6 w-6 text-primary" />
-            Dashboard de Auditoria & Qualidade 360º
+            Auditoria & Qualidade 360º
           </h2>
           <p className="text-sm text-muted-foreground">Monitoramento de erros, status de geração e integridade de conteúdo</p>
         </div>

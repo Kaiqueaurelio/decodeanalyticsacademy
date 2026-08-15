@@ -88,9 +88,9 @@ import { AdminSponsorsManager } from '@/components/admin/AdminSponsorsManager';
 import { ApostilaExportDialog } from '@/components/admin/ApostilaExportDialog';
 import { TaskManager } from '@/components/admin/TaskManager';
 import { DeploymentStatusPanel } from '@/components/admin/DeploymentStatusPanel';
-import { ApostilaHealthDashboard } from '@/components/admin/ApostilaHealthDashboard';
 import { QuickCreateApostilaDialog } from '@/components/admin/QuickCreateApostilaDialog';
 import { ApostilaCloningDashboard } from '@/components/admin/ApostilaCloningDashboard';
+import { ApostilaHealthDashboard } from '@/components/admin/ApostilaHealthDashboard';
 
 type Apostila = Tables<'apostilas'>;
 type Exercise = Tables<'exercises'>;
