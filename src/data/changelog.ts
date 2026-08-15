@@ -38,6 +38,18 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: "5.8.0",
+    date: "15/08/2026",
+    title: "Brand Integrity Recovery",
+    major: true,
+    changes: [
+      {
+        kind: 'improvement',
+        text: 'Restauração da identidade visual clássica (logo original) em toda a Landing Page, revertendo ícones otimizados para manter o branding desejado.'
+      }
+    ]
+  },
+  {
     version: "5.7.2",
     date: "15/08/2026",
     title: "Ella Identity Critical Fix",
