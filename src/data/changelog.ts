@@ -38,6 +38,30 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: "5.4.0",
+    date: "15/08/2026",
+    title: "Auditoria & Qualidade 360º",
+    major: true,
+    changes: [
+      {
+        kind: 'feature',
+        text: 'Lançamento do Prompt de Auditoria Completa: sistema estruturado para identificação de erros funcionais, visuais e de segurança com catalogação por severidade.'
+      },
+      {
+        kind: 'improvement',
+        text: 'Implementação de rigorosa validação de apostilas: garantia de hierarquia de títulos, contraste de leitura e integridade de fórmulas/tabelas em todos os dispositivos.'
+      },
+      {
+        kind: 'fix',
+        text: 'Correção de responsividade global: eliminados transbordamentos laterais em dispositivos móveis e otimizada a navegação em telas pequenas.'
+      },
+      {
+        kind: 'security',
+        text: 'Revisão completa de fluxos de autenticação e sessões, garantindo zero exposição indevida de dados sensíveis durante a auditoria.'
+      }
+    ]
+  },
+  {
     version: "5.3.0",
     date: "14/08/2026",
     title: "Performance & Auditoria Pro",
