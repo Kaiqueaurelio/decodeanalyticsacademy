@@ -86,13 +86,13 @@ export function DashboardTopbar({ hideSearchOnMobile = false }: { hideSearchOnMo
               variant="outline"
               size="sm"
               onClick={() => navigate('/admin')}
-              className="hidden lg:flex h-9 px-3 gap-2 border-accent/40 text-accent hover:bg-accent/10 hover:border-accent font-bold text-xs rounded-xl shadow-sm shadow-accent/5"
+              className="hidden min-[1150px]:flex h-9 px-3 gap-2 border-accent/40 text-accent hover:bg-accent/10 hover:border-accent font-bold text-xs rounded-xl shadow-sm shadow-accent/5"
             >
               <ShieldCheck strokeWidth={2.5} className="h-4 w-4" />
               <span>Painel Admin</span>
             </Button>
             
-            <div className="hidden min-[1100px]:flex items-center gap-1 bg-muted/40 p-1 rounded-xl border border-border/40">
+            <div className="hidden min-[1300px]:flex items-center gap-1 bg-muted/40 p-1 rounded-xl border border-border/40">
               <Button
                 variant="ghost"
                 size="sm"
@@ -119,7 +119,7 @@ export function DashboardTopbar({ hideSearchOnMobile = false }: { hideSearchOnMo
               variant="outline"
               size="sm"
               onClick={() => navigate('/admin')}
-              className="lg:hidden h-9 w-9 p-0 border-accent/50 text-accent hover:bg-accent/10 rounded-xl"
+              className="min-[1150px]:hidden h-9 w-9 p-0 border-accent/50 text-accent hover:bg-accent/10 rounded-xl"
               aria-label="Painel Admin"
             >
               <ShieldCheck strokeWidth={2.5} className="h-[18px] w-[18px]" />
@@ -127,7 +127,7 @@ export function DashboardTopbar({ hideSearchOnMobile = false }: { hideSearchOnMo
           </div>
         )}
 
-        <form onSubmit={submit} className={`flex-1 max-w-2xl relative ${hideSearchOnMobile ? 'hidden sm:block' : ''}`}>
+        <form onSubmit={submit} className={`flex-1 max-w-2xl relative ${hideSearchOnMobile ? 'hidden md:block' : ''}`}>
           <Search strokeWidth={2.5} className="absolute left-3.5 top-1/2 -translate-y-1/2 h-[16px] w-[16px] text-muted-foreground pointer-events-none" />
           <input
             type="text"
@@ -135,7 +135,7 @@ export function DashboardTopbar({ hideSearchOnMobile = false }: { hideSearchOnMo
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Buscar apostila ou disciplina"
             aria-label="Buscar apostila ou disciplina"
-            className="w-full h-10 sm:h-11 pl-10 pr-3 sm:pr-4 rounded-xl sm:rounded-2xl bg-card/60 border border-border text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 focus:bg-card transition-all"
+            className="w-full h-10 md:h-11 pl-10 pr-3 md:pr-4 rounded-xl md:rounded-2xl bg-card/60 border border-border text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 focus:bg-card transition-all"
           />
         </form>
 
