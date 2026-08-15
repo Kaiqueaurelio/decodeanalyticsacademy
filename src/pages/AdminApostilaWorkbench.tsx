@@ -791,6 +791,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
                 value={content}
                 onChange={setContent}
                 onSave={doSave}
+                apostilaId={id}
                 placeholder="Comece a escrever ou digite '/' para comandos..."
                 className="flex-1 min-h-0 border-none shadow-none bg-transparent"
               />

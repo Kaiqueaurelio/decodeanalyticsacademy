@@ -114,7 +114,7 @@ export function MaterialsDropZone({ apostilaId, baseSortOrder, onUploaded, class
 
         const title = file.name.replace(/\.[^.]+$/, '').slice(0, 200) || baseName;
         const { data: mat, error: insErr } = await supabase.from('materials').insert({
-          title, type: type as any, file_path: path, created_by: user.id,
+          title, type: type as any, file_path: path, created_by: user.id, apostila_id: apostilaId
         } as any).select().single();
         if (insErr) {
           console.error('[MaterialsDropZone] insert material error', insErr);

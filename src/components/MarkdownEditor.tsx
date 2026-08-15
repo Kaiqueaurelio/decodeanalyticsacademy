@@ -65,6 +65,7 @@ interface Props {
   showWordCount?: boolean;
   /** Callback chamado ao Ctrl+S ou clique em Salvar no ribbon. */
   onSave?: () => void;
+  apostilaId?: string;
 }
 
 const ZOOM_KEY = 'apostila-editor:zoom';
@@ -84,6 +85,7 @@ export function MarkdownEditor({
   className,
   showWordCount = true,
   onSave,
+  apostilaId,
 }: Props) {
   const externalRef = useRef(value);
   const pageRef = useRef<HTMLDivElement>(null);
@@ -266,6 +268,14 @@ export function MarkdownEditor({
         type: 'image',
         attrs: { src: m[2], alt: m[1], align: 'center' },
       }).run();
+    },
+    [editor],
+  );
+
+  const insertMedia = useCallback(
+    (md: string) => {
+      if (!editor) return;
+      editor.chain().focus().insertContent(md).run();
     },
     [editor],
   );
@@ -517,7 +527,14 @@ export function MarkdownEditor({
 
       {(viewMode === 'edit' || viewMode === 'split') && (!focusMode || window.innerWidth >= 768) && (
         <div className="hidden sm:flex flex-col border-b border-border">
-          <EditorRibbon editor={editor} onInsertImage={insertImage} onSave={onSave} saveStatus={status} />
+          <EditorRibbon 
+            editor={editor} 
+            onInsertImage={insertImage} 
+            onInsertMedia={insertMedia}
+            apostilaId={apostilaId}
+            onSave={onSave} 
+            saveStatus={status} 
+          />
           <div className="flex items-center gap-4 px-4 py-1.5 bg-primary/5 border-t border-primary/10 overflow-x-auto scrollbar-none">
             <span className="text-[10px] font-bold text-primary uppercase tracking-widest flex items-center gap-1">
               <Wand2 className="h-3 w-3" /> Atalhos Rápidos:
