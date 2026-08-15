@@ -5,7 +5,7 @@ import ellaAvatarBundled from "@/assets/ella-avatar-v4.png.asset.json";
  * v9: Retrato final consolidado (badge acadêmico ciano, fundo escuro).
  * Cache-busting agressivo para garantir propagação instantânea.
  */
-export const ELLA_AVATAR_STORAGE_KEY = 'decode_ella_avatar_url_v9';
+export const ELLA_AVATAR_STORAGE_KEY = 'decode_ella_avatar_url_v10';
 const LEGACY_KEYS = [
   'decode_ella_avatar_url',
   'decode_ella_avatar_url_v2',
@@ -15,13 +15,14 @@ const LEGACY_KEYS = [
   'decode_ella_avatar_url_v6',
   'decode_ella_avatar_url_v7',
   'decode_ella_avatar_url_v8',
+  'decode_ella_avatar_url_v9',
 ];
 
 const getBaseAvatarUrl = () => (ellaAvatarBundled as any).url || '/ella-avatar.png';
-export const DEFAULT_ELLA_AVATAR = `${getBaseAvatarUrl()}?v=9&t=${Date.now()}`;
+export const DEFAULT_ELLA_AVATAR = `${getBaseAvatarUrl()}?v=10&t=${Date.now()}`;
 
 // Fallback estático servido pelo próprio host
-export const ELLA_AVATAR_FALLBACK = `/ella-avatar.png?v=9&t=${Date.now()}`;
+export const ELLA_AVATAR_FALLBACK = `/ella-avatar.png?v=10&t=${Date.now()}`;
 
 // Expõe a URL do avatar como CSS var para pseudo-elementos (::before em AdsChatBuilder).
 if (typeof document !== 'undefined') {

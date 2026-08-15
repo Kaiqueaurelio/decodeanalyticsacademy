@@ -91,6 +91,7 @@ import { DeploymentStatusPanel } from '@/components/admin/DeploymentStatusPanel'
 import { QuickCreateApostilaDialog } from '@/components/admin/QuickCreateApostilaDialog';
 import { ApostilaCloningDashboard } from '@/components/admin/ApostilaCloningDashboard';
 import { ApostilaHealthDashboard } from '@/components/admin/ApostilaHealthDashboard';
+import { EllaSettings } from '@/components/admin/EllaSettings';
 
 type Apostila = Tables<'apostilas'>;
 type Exercise = Tables<'exercises'>;
@@ -221,7 +222,7 @@ function PhotoroomStudio() {
   );
 }
 
-type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements' | 'calendar' | 'testimonials' | 'ai' | 'performance' | 'smoke' | 'diagnostics' | 'ads' | 'ads-chat' | 'social' | 'rss' | 'courses' | 'changelog' | 'leads' | 'ella-audit' | 'security-alerts' | 'sponsors' | 'tasks' | 'photoroom' | 'edit' | 'review' | 'enem-apostilas' | 'cc-apostilas' | 'health-dashboard' | 'cloning-dashboard';
+type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements' | 'calendar' | 'testimonials' | 'ai' | 'ella-settings' | 'performance' | 'smoke' | 'diagnostics' | 'ads' | 'ads-chat' | 'social' | 'rss' | 'courses' | 'changelog' | 'leads' | 'ella-audit' | 'security-alerts' | 'sponsors' | 'tasks' | 'photoroom' | 'edit' | 'review' | 'enem-apostilas' | 'cc-apostilas' | 'health-dashboard' | 'cloning-dashboard';
 
 const ACCEPT_MAP: Record<string, string> = {
   pdf: '.pdf', image: 'image/*', gif: '.gif,image/gif',
@@ -1624,6 +1625,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
     calendar: { title: 'Calendário Acadêmico', desc: 'Importe cronogramas e gerencie provas/trabalhos' },
     testimonials: { title: 'Depoimentos', desc: 'Aprove ou rejeite depoimentos dos alunos' },
     ai: { title: 'Provedor do Assistente', desc: 'Provedor padrão ou sua chave própria (Google)' },
+    'ella-settings': { title: 'Identidade da Ella', desc: 'Gerencie o avatar e visual da assistente' },
     performance: { title: 'Performance', desc: 'Métricas de carregamento e erros de rede' },
     smoke: { title: 'Testes de Fumaça', desc: 'Checklist automático para validar a estabilidade do sistema' },
     diagnostics: { title: 'Diagnóstico', desc: 'Logs de runtime, falhas de carregamento e desempenho por rota' },
@@ -3535,6 +3537,11 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                 <CoverDesignEditor />
                 <SplashDownloader />
               </div>
+            )}
+
+            {/* ELLA SETTINGS */}
+            {tab === 'ella-settings' && (
+              <EllaSettings />
             )}
 
             {/* PERFORMANCE */}
