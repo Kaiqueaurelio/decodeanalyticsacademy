@@ -1,0 +1,1 @@
+ALTER TABLE public.apostila_pages DISABLE ROW LEVEL SECURITY;
