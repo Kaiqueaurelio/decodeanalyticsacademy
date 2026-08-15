@@ -90,6 +90,7 @@ import { TaskManager } from '@/components/admin/TaskManager';
 import { DeploymentStatusPanel } from '@/components/admin/DeploymentStatusPanel';
 import { ApostilaHealthDashboard } from '@/components/admin/ApostilaHealthDashboard';
 import { QuickCreateApostilaDialog } from '@/components/admin/QuickCreateApostilaDialog';
+import { ApostilaCloningDashboard } from '@/components/admin/ApostilaCloningDashboard';
 
 type Apostila = Tables<'apostilas'>;
 type Exercise = Tables<'exercises'>;
@@ -220,7 +221,7 @@ function PhotoroomStudio() {
   );
 }
 
-type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements' | 'calendar' | 'testimonials' | 'ai' | 'performance' | 'smoke' | 'diagnostics' | 'ads' | 'ads-chat' | 'social' | 'rss' | 'courses' | 'changelog' | 'leads' | 'ella-audit' | 'security-alerts' | 'sponsors' | 'tasks' | 'photoroom' | 'edit' | 'review' | 'enem-apostilas' | 'cc-apostilas' | 'health-dashboard';
+type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements' | 'calendar' | 'testimonials' | 'ai' | 'performance' | 'smoke' | 'diagnostics' | 'ads' | 'ads-chat' | 'social' | 'rss' | 'courses' | 'changelog' | 'leads' | 'ella-audit' | 'security-alerts' | 'sponsors' | 'tasks' | 'photoroom' | 'edit' | 'review' | 'enem-apostilas' | 'cc-apostilas' | 'health-dashboard' | 'cloning-dashboard';
 
 const ACCEPT_MAP: Record<string, string> = {
   pdf: '.pdf', image: 'image/*', gif: '.gif,image/gif',
@@ -1641,6 +1642,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
     'enem-apostilas': { title: 'Apostilas ENEM', desc: 'Gerenciamento de materiais exclusivos do ENEM' },
     'cc-apostilas': { title: 'Ciência da Computação', desc: 'Gerenciamento da grade acadêmica da faculdade' },
     'health-dashboard': { title: 'Saúde das Apostilas', desc: 'Status operacional e histórico de manutenções' },
+    'cloning-dashboard': { title: 'Dashboard de Clonagem', desc: 'Listagem e status de apostilas geradas e histórico' },
   };
 
 
@@ -1759,6 +1761,8 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                 setFilterSemester={setFilterSemester}
               />
             )}
+            {tab === 'cloning-dashboard' && <ApostilaCloningDashboard />}
+            {tab === 'health-dashboard' && <ApostilaHealthDashboard />}
 
             {/* USERS */}
             {tab === 'users' && <AdminUserManagement />}

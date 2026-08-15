@@ -2,7 +2,7 @@ import {
   BarChart3, BookOpen, PenLine, FolderOpen, GraduationCap, Users, Megaphone,
   Calendar as CalIcon, MessageSquareQuote, MessageSquare, Activity, CheckCircle,
   AlertCircle, History, ShieldCheck, ShieldAlert, Rss, Store, HandCoins, Heart,
-  Sparkles, CheckSquare, type LucideIcon,
+  Sparkles, CheckSquare, Copy, type LucideIcon,
 } from 'lucide-react';
 
 export type AdminTabId =
@@ -10,7 +10,7 @@ export type AdminTabId =
   | 'calendar' | 'testimonials' | 'ai' | 'performance' | 'smoke' | 'diagnostics'
   | 'ads' | 'ads-chat' | 'social' | 'rss' | 'courses' | 'changelog' | 'leads'
   | 'ella-audit' | 'security-alerts' | 'sponsors' | 'tasks' | 'photoroom' | 'edit' | 'review'
-  | 'enem-apostilas' | 'cc-apostilas' | 'health-dashboard';
+  | 'enem-apostilas' | 'cc-apostilas' | 'health-dashboard' | 'cloning-dashboard';
 
 export type AdminNavItem = {
   id: AdminTabId;
@@ -40,6 +40,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
       { id: 'apostilas', label: 'Apostilas', short: 'Acervo', icon: BookOpen, desc: 'Gerenciar e publicar apostilas', countKey: 'apostilas', keywords: 'materia disciplina texto importar acervo' },
       { id: 'tasks', label: 'Gerenciador de Tarefas', short: 'Tarefas', icon: CheckSquare, desc: 'Organize suas atividades administrativas', keywords: 'tarefas checklist todo afazeres' },
       { id: 'photoroom', label: 'Estúdio Visual', short: 'Estúdio', icon: Sparkles, desc: 'Remova fundos e otimize imagens', keywords: 'imagem foto fundo remover studio photoroom' },
+      { id: 'cloning-dashboard', label: 'Dashboard de Clonagem', short: 'Clonagem', icon: Copy, desc: 'Listagem e status de apostilas geradas', keywords: 'clone geracao ia status progresso' },
     ],
   },
   {

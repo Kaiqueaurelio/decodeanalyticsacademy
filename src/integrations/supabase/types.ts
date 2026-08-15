@@ -487,6 +487,60 @@ export type Database = {
         }
         Relationships: []
       }
+      apostila_generation_jobs: {
+        Row: {
+          apostila_id: string | null
+          created_at: string
+          created_by: string | null
+          error_message: string | null
+          id: string
+          progress: number | null
+          source_apostila_id: string | null
+          status: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          apostila_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          error_message?: string | null
+          id?: string
+          progress?: number | null
+          source_apostila_id?: string | null
+          status: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          apostila_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          error_message?: string | null
+          id?: string
+          progress?: number | null
+          source_apostila_id?: string | null
+          status?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "apostila_generation_jobs_apostila_id_fkey"
+            columns: ["apostila_id"]
+            isOneToOne: false
+            referencedRelation: "apostilas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "apostila_generation_jobs_source_apostila_id_fkey"
+            columns: ["source_apostila_id"]
+            isOneToOne: false
+            referencedRelation: "apostilas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       apostila_lesson_bookmarks: {
         Row: {
           created_at: string
@@ -859,6 +913,44 @@ export type Database = {
           summary_md?: string | null
         }
         Relationships: []
+      }
+      apostila_version_history: {
+        Row: {
+          apostila_id: string | null
+          changes_summary: string | null
+          content_snapshot: Json | null
+          created_at: string
+          created_by: string | null
+          id: string
+          version_label: string | null
+        }
+        Insert: {
+          apostila_id?: string | null
+          changes_summary?: string | null
+          content_snapshot?: Json | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          version_label?: string | null
+        }
+        Update: {
+          apostila_id?: string | null
+          changes_summary?: string | null
+          content_snapshot?: Json | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          version_label?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "apostila_version_history_apostila_id_fkey"
+            columns: ["apostila_id"]
+            isOneToOne: false
+            referencedRelation: "apostilas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       apostila_versions: {
         Row: {
