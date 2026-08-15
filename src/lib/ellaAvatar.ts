@@ -1,11 +1,10 @@
 import ellaAvatarBundled from "@/assets/ella-avatar-v4.png.asset.json";
 
 /**
- * ELLA AVATAR IDENTITY SYSTEM - v5.7.2
- * v12: Correção crítica de sincronização. Purga total de cache v1-v11.
- * Cache-busting agressivo para garantir propagação instantânea.
+ * ELLA AVATAR IDENTITY SYSTEM - v5.9.2
+ * v13: Sincronização global e purga agressiva de cache CDN/Local.
  */
-export const ELLA_AVATAR_STORAGE_KEY = 'decode_ella_avatar_url_v12';
+export const ELLA_AVATAR_STORAGE_KEY = 'decode_ella_avatar_url_v13';
 const LEGACY_KEYS = [
   'decode_ella_avatar_url',
   'decode_ella_avatar_url_v2',
@@ -18,7 +17,9 @@ const LEGACY_KEYS = [
   'decode_ella_avatar_url_v9',
   'decode_ella_avatar_url_v10',
   'decode_ella_avatar_url_v11',
+  'decode_ella_avatar_url_v12',
 ];
+
 
 const getBaseAvatarUrl = () => {
   const bundledUrl = (ellaAvatarBundled as any).url;
