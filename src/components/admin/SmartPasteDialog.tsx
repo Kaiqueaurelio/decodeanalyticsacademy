@@ -110,19 +110,19 @@ export function SmartPasteDialog({ open, onOpenChange, onApply }: Props) {
           </div>
         </div>
 
-        <div className="grid flex-1 min-h-0 grid-cols-1 gap-3 lg:grid-cols-2">
-          <div className="flex min-h-0 flex-col">
+        <div className="grid flex-1 min-h-[40vh] grid-cols-1 gap-3 lg:grid-cols-2 overflow-y-auto pr-1 sm:overflow-visible sm:pr-0">
+          <div className="flex flex-col min-h-[300px] lg:min-h-0">
             <Label className="mb-1 text-[10px] uppercase tracking-wider text-muted-foreground">Texto original</Label>
             <Textarea
               value={raw}
               onChange={(e) => setRaw(e.target.value)}
               placeholder="Cole aqui seu texto, Markdown, material do Word, PDF, Notion ou Google Docs..."
-              className="min-h-[34dvh] flex-1 resize-none text-sm leading-relaxed sm:min-h-[360px]"
+              className="min-h-[250px] flex-1 resize-none text-sm leading-relaxed sm:min-h-[360px]"
             />
           </div>
-          <div className="flex min-h-0 flex-col">
+          <div className="flex flex-col min-h-[300px] lg:min-h-0">
             <Label className="mb-1 text-[10px] uppercase tracking-wider text-muted-foreground">Como será inserido</Label>
-            <ScrollArea className="min-h-[30dvh] flex-1 rounded-md border border-border bg-muted/20 sm:min-h-[360px]">
+            <ScrollArea className="min-h-[250px] flex-1 rounded-md border border-border bg-muted/20 sm:min-h-[360px]">
               <pre className="whitespace-pre-wrap break-words p-3 text-xs leading-relaxed font-mono">
                 {result.cleaned || <span className="text-muted-foreground">— vazio —</span>}
               </pre>
