@@ -8,13 +8,13 @@ import { TooltipProvider } from '@radix-ui/react-tooltip';
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as Sonner } from '@/components/ui/sonner';
 import { useAuth } from '@/hooks/useAuth';
-import PageSkeleton from '@/components/PageSkeleton';
-import SplashScreen from '@/components/SplashScreen';
-import RANamePrompt from '@/components/auth/RANamePrompt';
-import AdPopup from '@/components/AdPopup';
-import AdDraftPreviewOverlay from '@/components/admin/AdDraftPreviewOverlay';
+import { PageSkeleton } from '@/components/PageSkeleton';
+import { SplashScreen } from '@/components/SplashScreen';
+import { RANamePrompt } from '@/components/RANamePrompt';
+import { AdPopup } from '@/components/AdPopup';
+import { AdDraftPreviewOverlay } from '@/components/admin/AdDraftPreviewOverlay';
 import { EllaSidebar } from '@/components/ella/EllaSidebar';
-import PersistentAdSpot from '@/components/PersistentAdSpot';
+import { PersistentAdSpot } from '@/components/PersistentAdSpot';
 
 // Lazy load pages
 const LandingPage = lazy(() => import('@/pages/LandingPage'));
