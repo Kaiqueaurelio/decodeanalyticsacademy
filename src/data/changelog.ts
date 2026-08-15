@@ -27,7 +27,7 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '5.9.9',
+    version: '5.9.10',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: '2026-08-15T13:10:00Z',
@@ -37,6 +37,21 @@ export function getBuildInfo() {
 }
 
 export const CHANGELOG: Release[] = [
+  {
+    version: "5.9.10",
+    date: "15/08/2026",
+    title: "Mídia Unificada & Fix de Vínculos",
+    changes: [
+      {
+        kind: 'feature',
+        text: 'Mídia: Implementação do RibbonMediaButton para upload de áudio, vídeo e documentos diretamente no editor de apostilas.'
+      },
+      {
+        kind: 'fix',
+        text: 'Vínculos: Correção na associação automática de materiais via DropZone, garantindo que o ID da apostila seja registrado.'
+      }
+    ]
+  },
   {
     version: "5.9.9",
     date: "15/08/2026",
