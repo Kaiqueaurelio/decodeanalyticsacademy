@@ -10,7 +10,7 @@ const LEGACY_KEYS = [
   'decode_ella_avatar_url_v4',
 ];
 
-export const DEFAULT_ELLA_AVATAR = (ellaAvatarBundled as string) || '/ella-avatar.png';
+export const DEFAULT_ELLA_AVATAR = (ellaAvatarBundled as any).url || '/ella-avatar.png';
 
 // Fallback estático servido pelo próprio host (usado em onError das <img>).
 export const ELLA_AVATAR_FALLBACK = '/ella-avatar.png';
