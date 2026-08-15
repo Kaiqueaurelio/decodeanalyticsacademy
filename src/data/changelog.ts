@@ -27,18 +27,35 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '5.8.5',
+    version: '5.9.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
-    buildTime: '2026-08-15T02:52:00Z',
-    commit: 'v5.8.5-auth-resolver',
-    commitMessage: 'Release v5.8.5: Final fix for G802144 authentication and ID normalization'
-
-
+    buildTime: '2026-08-15T03:05:00Z',
+    commit: 'v5.9.0-integrity-restore',
+    commitMessage: 'Release v5.9.0: Content Integrity Restoration & theoretical computing recovery'
   };
 }
 
 export const CHANGELOG: Release[] = [
+  {
+    version: "5.9.0",
+    date: "15/08/2026",
+    title: "Content Integrity Restoration",
+    changes: [
+      {
+        kind: 'security',
+        text: 'Implementação do sistema de Auditoria 360 e Recuperação de Integridade de Conteúdo.'
+      },
+      {
+        kind: 'content',
+        text: 'Restauração completa da apostila "Aspectos Teóricos da Computação" (metadados, páginas e exercícios).'
+      },
+      {
+        kind: 'improvement',
+        text: 'Adição de coluna "subject" na tabela de apostilas para melhor categorização acadêmica.'
+      }
+    ]
+  },
   {
     version: "5.8.2",
     date: "15/08/2026",
