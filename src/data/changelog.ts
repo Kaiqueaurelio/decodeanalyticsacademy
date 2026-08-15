@@ -27,16 +27,31 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '5.8.1',
+    version: '5.8.2',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
-    buildTime: '2026-08-15T02:14:24Z',
-    commit: 'v5.8.1-ella-avatar-landing',
-    commitMessage: 'Release v5.8.1: Updated Ella avatar on landing page with official asset'
+    buildTime: '2026-08-15T02:25:00Z',
+    commit: 'v5.8.2-ra-login-fix',
+    commitMessage: 'Release v5.8.2: Critical fix for RA login with associated external emails'
   };
 }
 
 export const CHANGELOG: Release[] = [
+  {
+    version: "5.8.2",
+    date: "15/08/2026",
+    title: "Critical Auth & RA Sync",
+    changes: [
+      {
+        kind: 'fix',
+        text: 'Correção crítica no login via RA: implementada resolução de e-mail associado para usuários híbridos (ex: administradores com e-mail externo).'
+      },
+      {
+        kind: 'security',
+        text: 'Reforço na Edge Function ra-auth para garantir autenticação robusta contra mapeamentos complexos de perfis.'
+      }
+    ]
+  },
   {
     version: "5.8.1",
     date: "15/08/2026",
