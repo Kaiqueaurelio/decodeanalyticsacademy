@@ -27,12 +27,13 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '5.8.2',
+    version: '5.8.3',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
-    buildTime: '2026-08-15T02:25:00Z',
-    commit: 'v5.8.2-ra-login-fix',
-    commitMessage: 'Release v5.8.2: Critical fix for RA login with associated external emails'
+    buildTime: '2026-08-15T02:37:12Z',
+    commit: 'v5.8.3-ra-validation-relaxed',
+    commitMessage: 'Release v5.8.3: Relaxed RA validation length constraints and updated internal changelog'
+
   };
 }
 
