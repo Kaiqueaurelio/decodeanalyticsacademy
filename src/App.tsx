@@ -145,13 +145,18 @@ const App = () => {
               <Toaster />
               <Sonner />
               <BrowserRouter>
-                {!splashDone && <SplashScreen onComplete={() => setSplashDone(true)} />}
-                <BMCWidgetLoader />
-                <RANamePrompt />
-                <AdPopup />
-                <AdDraftPreviewOverlay />
-                <EllaSidebar />
-                <PersistentAdSpot />
+                {splashDone ? (
+                  <>
+                    <BMCWidgetLoader />
+                    <RANamePrompt />
+                    <AdPopup />
+                    <AdDraftPreviewOverlay />
+                    <EllaSidebar />
+                    <PersistentAdSpot />
+                  </>
+                ) : (
+                  <SplashScreen onComplete={() => setSplashDone(true)} />
+                )}
                 
                 <Suspense fallback={<PageSkeleton />}>
                   <Routes>
