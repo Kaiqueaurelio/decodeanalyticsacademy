@@ -441,12 +441,13 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
   };
 
   const handlePasteApply = (text: string, mode: 'append' | 'replace') => {
-    const structured = parseApostilaContent(text)
-      .map((section) => `${'#'.repeat(section.level)} ${section.title}\n\n${section.content.trim()}`.trim())
-      .filter(Boolean)
-      .join('\n\n');
-    setContent((prev) => mode === 'append' ? (prev ? `${prev}\n\n${structured}` : structured) : structured);
-    toast.success('Texto estruturado e inserido.');
+    if (mode === 'append' && content.trim()) {
+      // Formatação no estilo continuação se já houver texto
+      setContent((prev) => `${prev}\n\n${text}`);
+    } else {
+      setContent(text);
+    }
+    toast.success(mode === 'append' ? 'Conteúdo adicionado.' : 'Conteúdo substituído.');
   };
 
   const handleGenerateCover = async () => {
