@@ -48,7 +48,7 @@ export function SmartPasteDialog({ open, onOpenChange, onApply }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex max-h-[92dvh] w-[calc(100vw-1rem)] max-w-4xl flex-col gap-3 overflow-hidden p-3 sm:p-6">
+      <DialogContent className="flex max-h-[95dvh] w-[calc(100vw-1rem)] max-w-4xl flex-col gap-3 overflow-hidden p-3 sm:p-6 sm:max-h-[92dvh]">
         <DialogHeader className="space-y-1 pr-8">
           <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
             <PenTool className="h-4 w-4 text-primary" />
