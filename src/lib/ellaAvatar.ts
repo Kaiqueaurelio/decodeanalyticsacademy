@@ -1,13 +1,15 @@
-import ellaAvatarBundled from "@/assets/ella-avatar-v2.png.asset.json";
+import ellaAvatarBundled from "@/assets/ella-avatar-v3.png.asset.json";
 
-// v6: retrato oficial da Ella. Empacotado pelo Vite + cópia estática em /public
+// v7: retrato oficial da Ella (perfil circular com badge). Empacotado pelo Vite + cópia estática em /public
 // para funcionar em qualquer host (Vercel, PWA, Capacitor).
-export const ELLA_AVATAR_STORAGE_KEY = 'decode_ella_avatar_url_v6';
+export const ELLA_AVATAR_STORAGE_KEY = 'decode_ella_avatar_url_v7';
 const LEGACY_KEYS = [
   'decode_ella_avatar_url',
   'decode_ella_avatar_url_v2',
   'decode_ella_avatar_url_v3',
   'decode_ella_avatar_url_v4',
+  'decode_ella_avatar_url_v5',
+  'decode_ella_avatar_url_v6',
 ];
 
 export const DEFAULT_ELLA_AVATAR = (ellaAvatarBundled as any).url || '/ella-avatar.png';
