@@ -25,25 +25,31 @@ export function EllaSidebar() {
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
-        <Button
-          aria-label="Abrir Ella"
-          className={cn(
-            "fixed z-[100] right-4 bottom-20 sm:bottom-28 md:bottom-6 h-14 w-14 rounded-full shadow-[0_8px_30px_rgba(168,85,247,0.3)] p-0 overflow-hidden bg-background",
-            "ring-2 ring-primary/60 hover:scale-110 transition-all duration-300 active:scale-95",
-            "border-2 border-background"
-          )}
-          size="icon"
-        >
-
-          <Avatar className="h-full w-full">
-            <AvatarImage src={getEllaAvatarUrl()} alt="Ella Ribeiro" className="object-cover" />
-            <AvatarFallback className="bg-gradient-to-br from-primary to-accent">
-              <Wand2 className="h-6 w-6 text-primary-foreground" />
-            </AvatarFallback>
-          </Avatar>
-        </Button>
-      </SheetTrigger>
+      <motion.div
+        drag
+        dragMomentum={false}
+        className="fixed z-[100] right-4 bottom-20 sm:bottom-28 md:bottom-6"
+        whileDrag={{ scale: 1.1 }}
+      >
+        <SheetTrigger asChild>
+          <Button
+            aria-label="Abrir Ella"
+            className={cn(
+              "h-14 w-14 rounded-full shadow-[0_8px_30px_rgba(168,85,247,0.3)] p-0 overflow-hidden bg-background cursor-grab active:cursor-grabbing",
+              "ring-2 ring-primary/60 hover:scale-110 transition-all duration-300 active:scale-95",
+              "border-2 border-background"
+            )}
+            size="icon"
+          >
+            <Avatar className="h-full w-full pointer-events-none">
+              <AvatarImage src={getEllaAvatarUrl()} alt="Ella Ribeiro" className="object-cover" />
+              <AvatarFallback className="bg-gradient-to-br from-primary to-accent">
+                <Wand2 className="h-6 w-6 text-primary-foreground" />
+              </AvatarFallback>
+            </Avatar>
+          </Button>
+        </SheetTrigger>
+      </motion.div>
       <SheetContent side="right" className="w-full sm:max-w-md p-0 flex flex-col">
         <EllaChat contextHint={contextHint} compact onAfterAction={() => { /* could refetch */ }} />
       </SheetContent>
