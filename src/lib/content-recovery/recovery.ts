@@ -386,20 +386,27 @@ Limitations and workarounds:
 
   try {
     // 1. DELETE OLD INCOMPLETE DATA (if exists)
-    // We use the ID apostila_theoretical_computing_001
-    await supabase
+    // We search by title since we don't have a reliable UUID yet
+    const { data: existing } = await supabase
       .from('apostilas')
-      .delete()
-      .eq('id', theoreticalContent.id);
+      .select('id')
+      .eq('title', theoreticalContent.title)
+      .maybeSingle();
+
+    if (existing) {
+      await supabase
+        .from('apostilas')
+        .delete()
+        .eq('id', existing.id);
+    }
 
     // 2. CREATE APOSTILA WITH FULL METADATA
     const { data: apostila, error: apostilaError } = await supabase
       .from('apostilas')
       .insert({
-        id: theoreticalContent.id,
         title: theoreticalContent.title,
         category: theoreticalContent.subject, 
-        subject: theoreticalContent.subject, // Restored column
+        subject: theoreticalContent.subject,
         cover_url: 'https://images.unsplash.com/photo-1509228468518-180dd4864904?q=80&w=1000',
         published: true,
         semester: 5,
