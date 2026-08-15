@@ -369,10 +369,18 @@ function parseBlocks(rawInput: string): Block[] {
     const flushParagraph = () => {
       const t = paragraph.join('\n').trim();
       if (t) {
-        // Detecção de AudioQuiz: [quiz:QUIZ_ID] na linha
+        // Detecção de AudioQuiz: [quiz:QUIZ_ID] ou <audio-player ... /> na linha
         const quizMatch = t.match(/^\[quiz:([a-f\d-]+)\]$/i);
+        const playerMatch = t.match(/^<audio-player\s+src="([^"]+)"(?:\s+title="([^"]+)")?\s*\/>$/i);
+        
         if (quizMatch) {
           blocks.push({ type: 'audio-quiz', aulaId: 'inline-aula', quizId: quizMatch[1] });
+        } else if (playerMatch) {
+          blocks.push({ 
+            type: 'audio', 
+            label: playerMatch[2] || 'Áudio da Aula', 
+            url: playerMatch[1] 
+          });
         } else {
           blocks.push({ type: 'paragraph', content: t });
         }
