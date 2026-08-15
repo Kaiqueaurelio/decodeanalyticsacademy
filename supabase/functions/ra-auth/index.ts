@@ -122,15 +122,22 @@ Deno.serve(async (req) => {
     }
 
     // Resolve o e-mail do RA sem devolvê-lo ao cliente.
-    const { data: email, error: rpcError } = await admin.rpc("get_email_for_ra", { _ra: ra });
-    if (rpcError) {
-      console.error("ra-auth: falha ao resolver RA", rpcError.message);
-      return json({ error: "Não foi possível validar seu RA agora. Tente novamente." }, 503, corsHeaders);
+    // Try both RPC and direct query to profiles for robustness
+    let resolvedEmail: string | null = null;
+    
+    const { data: rpcEmail, error: rpcError } = await admin.rpc("get_email_for_ra", { _ra: ra });
+    if (!rpcError && typeof rpcEmail === "string") {
+      resolvedEmail = rpcEmail;
+    } else {
+      const { data: profileData } = await admin.from('profiles').select('email').eq('ra', ra).maybeSingle();
+      if (profileData?.email) {
+        resolvedEmail = profileData.email;
+      }
     }
     
-    const resolvedEmail = typeof email === "string" && email
-      ? email
-      : `${ra.toLowerCase()}@ra.unip.local`;
+    if (!resolvedEmail) {
+      resolvedEmail = `${ra.toLowerCase()}@ra.unip.local`;
+    }
 
     if (mode === "reset") {
       const { error } = await admin.auth.resetPasswordForEmail(resolvedEmail, {
