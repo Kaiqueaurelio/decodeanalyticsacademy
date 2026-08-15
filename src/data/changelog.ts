@@ -27,12 +27,13 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '5.8.3',
+    version: '5.8.4',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
-    buildTime: '2026-08-15T02:37:12Z',
-    commit: 'v5.8.3-ra-validation-relaxed',
-    commitMessage: 'Release v5.8.3: Relaxed RA validation length constraints and updated internal changelog'
+    buildTime: '2026-08-15T02:44:12Z',
+    commit: 'v5.8.4-admin-auth-hardened',
+    commitMessage: 'Release v5.8.4: Hardened admin authentication for G802144 and relaxed RA pattern matching'
+
 
   };
 }
@@ -61,8 +62,13 @@ export const CHANGELOG: Release[] = [
     changes: [
       {
         kind: 'fix',
+        text: 'Privilégios Administrativos v5.8.4: Reforçada a validação de acesso para o administrador G802144 e relaxamento do padrão de RA no backend.'
+      },
+      {
+        kind: 'fix',
         text: 'Autenticação Flexível v5.8.3: Corrigida a restrição de caracteres no login por RA (agora aceita 2-50 caracteres).'
       },
+
       {
         kind: 'security',
         text: 'Otimização na Edge Function ra-auth para validação elástica de identificadores acadêmicos.'

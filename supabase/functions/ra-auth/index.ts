@@ -113,11 +113,14 @@ Deno.serve(async (req) => {
     const redirectTo = typeof body.redirectTo === "string" ? body.redirectTo : "";
 
     if (!RA_RE.test(ra)) {
-      // Relaxed validation: check if it's at least alphanumeric and reasonable length
-      if (ra.length < 2 || ra.length > 50) {
+      // Identificadores conhecidos que não seguem o padrão RA padrão (ex: G802144)
+      const isKnownLegacyRa = /^[A-Z0-9]{7,13}$/i.test(ra);
+      
+      if (!isKnownLegacyRa && (ra.length < 2 || ra.length > 50)) {
         return json({ error: "Identificador inválido (use RA ou e-mail)." }, 400, corsHeaders);
       }
     }
+
 
     
     if (mode === "signin" && (password.length < 6 || password.length > 200)) {
