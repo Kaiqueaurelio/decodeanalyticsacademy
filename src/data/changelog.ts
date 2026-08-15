@@ -27,12 +27,12 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '5.8.4',
+    version: '5.8.5',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
-    buildTime: '2026-08-15T02:44:12Z',
-    commit: 'v5.8.4-admin-auth-hardened',
-    commitMessage: 'Release v5.8.4: Hardened admin authentication for G802144 and relaxed RA pattern matching'
+    buildTime: '2026-08-15T02:52:00Z',
+    commit: 'v5.8.5-auth-resolver',
+    commitMessage: 'Release v5.8.5: Final fix for G802144 authentication and ID normalization'
 
 
   };

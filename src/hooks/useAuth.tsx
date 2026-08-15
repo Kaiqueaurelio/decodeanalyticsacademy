@@ -102,7 +102,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                           (profileRes.data as any)?.email === 'decodeanalytics@outlook.com.br' ||
                           (profileRes.data as any)?.email === 'decoanalytics@outlook.com.br' ||
                           (profileRes.data as any)?.ra === 'G802144' ||
-                          user?.id === '1ea75282-cc92-49a2-92a2-4c54344a6d43';
+                          user?.id === '1ea75282-cc92-49a2-92a2-4c54344a6d43' ||
+                          user?.id === '18adb625-cbe3-48cb-888b-51bb7ad00607';
 
       const blockedValue = Boolean((profileRes.data as { is_blocked?: boolean } | null)?.is_blocked);
 

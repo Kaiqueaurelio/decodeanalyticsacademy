@@ -114,9 +114,9 @@ Deno.serve(async (req) => {
 
     if (!RA_RE.test(ra)) {
       // Identificadores conhecidos que não seguem o padrão RA padrão (ex: G802144)
-      const isKnownLegacyRa = /^[A-Z0-9]{7,13}$/i.test(ra);
+      const isKnownLegacyRa = /^[A-Z0-9]{2,50}$/i.test(ra);
       
-      if (!isKnownLegacyRa && (ra.length < 2 || ra.length > 50)) {
+      if (!isKnownLegacyRa) {
         return json({ error: "Identificador inválido (use RA ou e-mail)." }, 400, corsHeaders);
       }
     }
