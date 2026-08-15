@@ -27,7 +27,7 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '5.6.1',
+    version: '5.6.2',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
@@ -37,6 +37,21 @@ export function getBuildInfo() {
 }
 
 export const CHANGELOG: Release[] = [
+  {
+    version: "5.6.2",
+    date: "15/08/2026",
+    title: "Ella Asset Cache-Busting",
+    changes: [
+      {
+        kind: 'fix',
+        text: 'Implementação de versionamento v8 e cache-busting (?v=8) para garantir o carregamento imediato do novo retrato da Ella.'
+      },
+      {
+        kind: 'improvement',
+        text: 'Limpeza automática de chaves legadas de armazenamento local (v1-v7) para otimizar o estado do navegador.'
+      }
+    ]
+  },
   {
     version: "5.6.1",
     date: "15/08/2026",
