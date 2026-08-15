@@ -27,7 +27,7 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '5.7.2',
+    version: '5.8.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
