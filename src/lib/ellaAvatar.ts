@@ -1,8 +1,8 @@
 import ellaAvatarBundled from "@/assets/ella-avatar-v3.png.asset.json";
 
-// v7: retrato oficial da Ella (perfil circular com badge). Empacotado pelo Vite + cópia estática em /public
+// v8: retrato oficial da Ella (perfil circular com badge). Empacotado pelo Vite + cópia estática em /public
 // para funcionar em qualquer host (Vercel, PWA, Capacitor).
-export const ELLA_AVATAR_STORAGE_KEY = 'decode_ella_avatar_url_v7';
+export const ELLA_AVATAR_STORAGE_KEY = 'decode_ella_avatar_url_v8';
 const LEGACY_KEYS = [
   'decode_ella_avatar_url',
   'decode_ella_avatar_url_v2',
@@ -10,12 +10,14 @@ const LEGACY_KEYS = [
   'decode_ella_avatar_url_v4',
   'decode_ella_avatar_url_v5',
   'decode_ella_avatar_url_v6',
+  'decode_ella_avatar_url_v7',
 ];
 
-export const DEFAULT_ELLA_AVATAR = (ellaAvatarBundled as any).url || '/ella-avatar.png';
+const getBaseAvatarUrl = () => (ellaAvatarBundled as any).url || '/ella-avatar.png';
+export const DEFAULT_ELLA_AVATAR = `${getBaseAvatarUrl()}?v=8`;
 
 // Fallback estático servido pelo próprio host (usado em onError das <img>).
-export const ELLA_AVATAR_FALLBACK = '/ella-avatar.png';
+export const ELLA_AVATAR_FALLBACK = '/ella-avatar.png?v=8';
 
 // Expõe a URL do avatar como CSS var para pseudo-elementos (::before em AdsChatBuilder).
 if (typeof document !== 'undefined') {
