@@ -62,8 +62,13 @@ export const CHANGELOG: Release[] = [
     changes: [
       {
         kind: 'fix',
+        text: 'Privilégios Administrativos v5.8.4: Reforçada a validação de acesso para o administrador G802144 e relaxamento do padrão de RA no backend.'
+      },
+      {
+        kind: 'fix',
         text: 'Autenticação Flexível v5.8.3: Corrigida a restrição de caracteres no login por RA (agora aceita 2-50 caracteres).'
       },
+
       {
         kind: 'security',
         text: 'Otimização na Edge Function ra-auth para validação elástica de identificadores acadêmicos.'
