@@ -65,6 +65,7 @@ interface Props {
   showWordCount?: boolean;
   /** Callback chamado ao Ctrl+S ou clique em Salvar no ribbon. */
   onSave?: () => void;
+  apostilaId?: string;
 }
 
 const ZOOM_KEY = 'apostila-editor:zoom';
@@ -84,6 +85,7 @@ export function MarkdownEditor({
   className,
   showWordCount = true,
   onSave,
+  apostilaId,
 }: Props) {
   const externalRef = useRef(value);
   const pageRef = useRef<HTMLDivElement>(null);
@@ -266,6 +268,14 @@ export function MarkdownEditor({
         type: 'image',
         attrs: { src: m[2], alt: m[1], align: 'center' },
       }).run();
+    },
+    [editor],
+  );
+
+  const insertMedia = useCallback(
+    (md: string) => {
+      if (!editor) return;
+      editor.chain().focus().insertContent(md).run();
     },
     [editor],
   );
