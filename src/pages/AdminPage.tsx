@@ -1762,6 +1762,8 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
               />
             )}
 
+            {tab === 'cloning-dashboard' && <ApostilaCloningDashboard />}
+
             {/* USERS */}
             {tab === 'users' && <AdminUserManagement />}
 
