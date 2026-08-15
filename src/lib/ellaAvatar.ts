@@ -8,6 +8,8 @@ const LEGACY_KEYS = [
   'decode_ella_avatar_url_v2',
   'decode_ella_avatar_url_v3',
   'decode_ella_avatar_url_v4',
+  'decode_ella_avatar_url_v5',
+  'decode_ella_avatar_url_v6',
 ];
 
 export const DEFAULT_ELLA_AVATAR = (ellaAvatarBundled as any).url || '/ella-avatar.png';
