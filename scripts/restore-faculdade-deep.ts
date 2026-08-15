@@ -88,19 +88,20 @@ async function runRestoration() {
     if (existing) {
       apostilaId = existing.id;
       console.log(`Found existing ID: ${apostilaId}. Updating metadata...`);
-      await supabase.from('apostilas').update({
+      const { error: updateError } = await supabase.from('apostilas').update({
         subject: item.subject,
         category: item.subject,
         semester: item.semester,
         published: true
       }).eq('id', apostilaId);
+      
+      if (updateError) console.error(`Error updating ${item.title}:`, updateError);
 
-      // Limpar conteúdo antigo para restauração limpa
       await supabase.from('apostila_pages').delete().eq('apostila_id', apostilaId);
       await supabase.from('exercises').delete().eq('apostila_id', apostilaId);
     } else {
-      console.log(`Creating new apostila entry...`);
-      const { data: newApostila } = await supabase.from('apostilas').insert({
+      console.log(`Creating new apostila entry for: ${item.title}`);
+      const { data: newApostila, error: insertError } = await supabase.from('apostilas').insert({
         title: item.title,
         subject: item.subject,
         category: item.subject,
@@ -108,6 +109,11 @@ async function runRestoration() {
         published: true,
         cover_url: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1000'
       }).select().single();
+      
+      if (insertError) {
+        console.error(`Error inserting ${item.title}:`, insertError);
+        continue;
+      }
       apostilaId = newApostila.id;
     }
 
