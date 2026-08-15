@@ -126,10 +126,11 @@ function useAdminCopyPatch() {
   }, []);
 }
 
-const BMCWidgetLoader = () => {
+const BMCWidgetLoader = React.memo(() => {
   useBMCWidget();
   return null;
-};
+});
+BMCWidgetLoader.displayName = "BMCWidgetLoader";
 
 const App = () => {
   useAdminCopyPatch();
