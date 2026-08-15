@@ -3539,6 +3539,11 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
               </div>
             )}
 
+            {/* ELLA SETTINGS */}
+            {tab === 'ella-settings' && (
+              <EllaSettings />
+            )}
+
             {/* PERFORMANCE */}
             {tab === 'performance' && (
               <PerformanceMetrics />
