@@ -403,7 +403,7 @@ Limitations and workarounds:
         cover_url: 'https://images.unsplash.com/photo-1509228468518-180dd4864904?q=80&w=1000',
         published: true,
         semester: 5,
-        created_by: 'admin',
+        created_by: '1ea75282-cc92-49a2-92a2-4c54344a6d43',
         content: theoreticalContent.description
       })
       .select()
