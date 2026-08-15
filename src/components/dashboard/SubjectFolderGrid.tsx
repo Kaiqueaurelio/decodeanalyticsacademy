@@ -179,7 +179,7 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
               </div>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {/* Card estilo Notion Gallery View (Gaveta) */}
               <button
                 onClick={() => openSubject(category)}
