@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "./recovery-client";
 
 interface BackupConfig {
   frequency: 'hourly' | 'daily' | 'weekly';
