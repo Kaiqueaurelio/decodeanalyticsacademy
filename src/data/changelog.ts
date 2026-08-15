@@ -27,7 +27,7 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '5.4.0',
+    version: '5.5.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
@@ -37,6 +37,21 @@ export function getBuildInfo() {
 }
 
 export const CHANGELOG: Release[] = [
+  {
+    version: "5.5.0",
+    date: "15/08/2026",
+    title: "Visual Identity Evolution",
+    changes: [
+      {
+        kind: 'improvement',
+        text: 'Atualização do avatar oficial da Ella Ribeiro para uma identidade visual mais profissional e executiva.'
+      },
+      {
+        kind: 'fix',
+        text: 'Restaurados privilégios de administrador para as contas mestre (G802144 e decoanalytics) e corrigida a validação de login via RA.'
+      }
+    ]
+  },
   {
     version: "5.4.0",
     date: "15/08/2026",
