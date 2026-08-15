@@ -27,16 +27,27 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '5.7.0',
+    version: '5.7.1',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v5.7.0-ella-dynamic-identity',
-    commitMessage: 'Release v5.7.0: Dynamic Ella Identity System with Backend Sync and Cache-Busting v10'
+    commit: 'v5.7.1-ella-force-sync',
+    commitMessage: 'Release v5.7.1: Forced Ella Identity Synchronization v11 with Storage Purge'
   };
 }
 
 export const CHANGELOG: Release[] = [
+  {
+    version: "5.7.1",
+    date: "15/08/2026",
+    title: "Ella Identity Forced Sync",
+    changes: [
+      {
+        kind: 'fix',
+        text: 'Sincronização forçada v11 do avatar da Ella com limpeza profunda de cache local para garantir a versão final.'
+      }
+    ]
+  },
   {
     version: "5.7.0",
     date: "15/08/2026",
