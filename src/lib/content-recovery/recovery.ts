@@ -213,13 +213,6 @@ A segurança moderna baseia-se na dureza computacional de certos problemas (ex: 
 
     if (exercisesError) throw exercisesError;
 
-    // 5. Create backup record
-    await supabase.from('content_backups').insert({
-      apostila_id: apostila.id,
-      content_hash: generateHash(theoreticalContent.description),
-      backup_data: theoreticalContent
-    });
-
     console.log('✅ Aspectos Teóricos da Computação FULLY RESTORED');
     return { success: true, apostila, pageCount: pages.length };
   } catch (error) {
