@@ -18,30 +18,14 @@ Avatar.displayName = AvatarPrimitive.Root.displayName;
 const AvatarImage = React.forwardRef<
   React.ElementRef<typeof AvatarPrimitive.Image>,
   React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Image>
->(({ className, onError, src, ...props }, ref) => {
-  const [failed, setFailed] = React.useState(false);
-
-  React.useEffect(() => {
-    if (src) setFailed(false);
-  }, [src]);
-
-  // Se o src estiver vazio ou falhar, o AvatarPrimitive.Fallback assume.
-  // Não retornamos null aqui para permitir que o Fallback funcione nativamente.
-  return (
-    <AvatarPrimitive.Image
-      ref={ref}
-      src={src}
-      referrerPolicy="no-referrer"
-      className={cn("aspect-square h-full w-full object-cover", className, (failed || !src) && "hidden")}
-      onError={(event) => {
-        console.error("Avatar failed to load:", src);
-        setFailed(true);
-        onError?.(event);
-      }}
-      {...props}
-    />
-  );
-});
+>(({ className, src, ...props }, ref) => (
+  <AvatarPrimitive.Image
+    ref={ref}
+    src={src}
+    className={cn("aspect-square h-full w-full object-cover", className)}
+    {...props}
+  />
+));
 AvatarImage.displayName = AvatarPrimitive.Image.displayName;
 
 const AvatarFallback = React.forwardRef<
