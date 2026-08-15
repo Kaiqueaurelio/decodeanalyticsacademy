@@ -27,18 +27,29 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '5.9.5',
+    version: '5.9.6',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
-    buildTime: '2026-08-15T04:25:00Z',
-    commit: 'v5.9.5-rls-hardening-final',
-    commitMessage: 'Release v5.9.5: Multi-point RLS Hardening (Pages, Exercises, Chapters, Quizzes)'
+    buildTime: '2026-08-15T12:35:00Z',
+    commit: 'v5.9.6-content-injection',
+    commitMessage: 'Release v5.9.6: Injeção de conteúdo estruturado Teoria da Computação'
   };
 }
 
 
 
 export const CHANGELOG: Release[] = [
+  {
+    version: "5.9.6",
+    date: "15/08/2026",
+    title: "Injeção de Conteúdo Estruturado",
+    changes: [
+      {
+        kind: 'content',
+        text: 'Teoria da Computação: Injeção do texto estruturado completo na apostila de Aspectos Teóricos da Computação.'
+      }
+    ]
+  },
   {
     version: "5.9.5",
     date: "15/08/2026",
