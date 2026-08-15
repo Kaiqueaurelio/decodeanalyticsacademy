@@ -27,16 +27,27 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '5.7.1',
+    version: '5.7.2',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v5.7.1-ella-force-sync',
-    commitMessage: 'Release v5.7.1: Forced Ella Identity Synchronization v11 with Storage Purge'
+    commit: 'v5.7.2-ella-avatar-fix',
+    commitMessage: 'Release v5.7.2: Fixed Ella Avatar synchronization with aggressive v12 cache-busting'
   };
 }
 
 export const CHANGELOG: Release[] = [
+  {
+    version: "5.7.2",
+    date: "15/08/2026",
+    title: "Ella Identity Critical Fix",
+    changes: [
+      {
+        kind: 'fix',
+        text: 'Correção crítica da sincronização do avatar da Ella Ribeiro (v12) com purga total de cache legado e reforço no carregamento de assets.'
+      }
+    ]
+  },
   {
     version: "5.7.1",
     date: "15/08/2026",

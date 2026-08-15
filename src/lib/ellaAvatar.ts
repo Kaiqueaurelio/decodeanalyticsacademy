@@ -5,7 +5,7 @@ import ellaAvatarBundled from "@/assets/ella-avatar-v4.png.asset.json";
  * v9: Retrato final consolidado (badge acadêmico ciano, fundo escuro).
  * Cache-busting agressivo para garantir propagação instantânea.
  */
-export const ELLA_AVATAR_STORAGE_KEY = 'decode_ella_avatar_url_v11';
+export const ELLA_AVATAR_STORAGE_KEY = 'decode_ella_avatar_url_v12';
 const LEGACY_KEYS = [
   'decode_ella_avatar_url',
   'decode_ella_avatar_url_v2',
@@ -17,13 +17,22 @@ const LEGACY_KEYS = [
   'decode_ella_avatar_url_v8',
   'decode_ella_avatar_url_v9',
   'decode_ella_avatar_url_v10',
+  'decode_ella_avatar_url_v11',
 ];
 
-const getBaseAvatarUrl = () => (ellaAvatarBundled as any).url || '/ella-avatar.png';
-export const DEFAULT_ELLA_AVATAR = `${getBaseAvatarUrl()}?v=11&t=${Date.now()}`;
+const getBaseAvatarUrl = () => {
+  // Se for um build de produção no Lovable, o asset JSON tem a URL correta
+  const bundledUrl = (ellaAvatarBundled as any).url;
+  if (bundledUrl) return bundledUrl;
+  
+  // Fallback para desenvolvimento local ou se o asset falhar
+  return '/ella-avatar.png';
+};
+
+export const DEFAULT_ELLA_AVATAR = `${getBaseAvatarUrl()}?v=12&t=${Date.now()}`;
 
 // Fallback estático servido pelo próprio host
-export const ELLA_AVATAR_FALLBACK = `/ella-avatar.png?v=11&t=${Date.now()}`;
+export const ELLA_AVATAR_FALLBACK = `/ella-avatar.png?v=12&t=${Date.now()}`;
 
 // Expõe a URL do avatar como CSS var para pseudo-elementos (::before em AdsChatBuilder).
 if (typeof document !== 'undefined') {

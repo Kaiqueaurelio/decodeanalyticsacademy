@@ -22,10 +22,16 @@ const AvatarImage = React.forwardRef<
   const [failed, setFailed] = React.useState(false);
 
   React.useEffect(() => {
-    setFailed(false);
+    if (src) setFailed(false);
   }, [src]);
 
-  if (!src || failed) return null;
+  if (!src || failed) {
+    return (
+      <span className={cn("flex h-full w-full items-center justify-center rounded-full bg-muted", className)}>
+        {props.children}
+      </span>
+    );
+  }
 
   return (
     <AvatarPrimitive.Image
