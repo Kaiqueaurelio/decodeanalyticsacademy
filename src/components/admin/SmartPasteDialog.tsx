@@ -139,7 +139,7 @@ export function SmartPasteDialog({ open, onOpenChange, onApply }: Props) {
           </div>
         </div>
 
-        <DialogFooter className="grid grid-cols-2 gap-2 sm:flex sm:justify-end">
+        <DialogFooter className="grid shrink-0 grid-cols-2 gap-2 sm:flex sm:justify-end">
           <Button variant="outline" onClick={() => onOpenChange(false)} className="h-10 sm:h-9">Cancelar</Button>
           <Button
             disabled={!result.cleaned}
