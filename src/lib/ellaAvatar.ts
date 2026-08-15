@@ -1,10 +1,10 @@
-import ellaAvatarBundled from "@/assets/ella-avatar-v4.png.asset.json";
+import ellaAvatarBundled from "@/assets/ella-avatar-v5.png";
 
 /**
  * ELLA AVATAR IDENTITY SYSTEM - v5.9.2
  * v13: Sincronização global e purga agressiva de cache CDN/Local.
  */
-export const ELLA_AVATAR_STORAGE_KEY = 'decode_ella_avatar_url_v14';
+export const ELLA_AVATAR_STORAGE_KEY = 'decode_ella_avatar_url_v15';
 const LEGACY_KEYS = [
   'decode_ella_avatar_url',
   'decode_ella_avatar_url_v2',
@@ -19,16 +19,11 @@ const LEGACY_KEYS = [
   'decode_ella_avatar_url_v11',
   'decode_ella_avatar_url_v12',
   'decode_ella_avatar_url_v13',
+  'decode_ella_avatar_url_v14',
 ];
 
-const LOVABLE_ASSET_ORIGIN = 'https://decodeanalyticsacademy.lovable.app';
-
 const getBaseAvatarUrl = () => {
-  const bundledUrl = String((ellaAvatarBundled as any).url || '');
-  // Assets /__l5e são relativos ao Lovable e quebravam na Vercel.
-  if (bundledUrl.startsWith('/__l5e/')) return `${LOVABLE_ASSET_ORIGIN}${bundledUrl}`;
-  if (bundledUrl) return bundledUrl;
-  return `${LOVABLE_ASSET_ORIGIN}/__l5e/assets-v1/2f751895-a6a4-4faa-865d-22d187123c1d/ella-avatar-v4.png`;
+  return ellaAvatarBundled as string;
 };
 
 // Removemos o timestamp fixo da constante para permitir que ele seja gerado no momento do uso,
