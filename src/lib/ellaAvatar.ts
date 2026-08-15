@@ -1,11 +1,11 @@
 import ellaAvatarBundled from "@/assets/ella-avatar-v4.png.asset.json";
 
 /**
- * ELLA AVATAR IDENTITY SYSTEM - v5.6.3
- * v9: Retrato final consolidado (badge acadêmico ciano, fundo escuro).
+ * ELLA AVATAR IDENTITY SYSTEM - v5.7.2
+ * v12: Correção crítica de sincronização. Purga total de cache v1-v11.
  * Cache-busting agressivo para garantir propagação instantânea.
  */
-export const ELLA_AVATAR_STORAGE_KEY = 'decode_ella_avatar_url_v11';
+export const ELLA_AVATAR_STORAGE_KEY = 'decode_ella_avatar_url_v12';
 const LEGACY_KEYS = [
   'decode_ella_avatar_url',
   'decode_ella_avatar_url_v2',
@@ -17,25 +17,22 @@ const LEGACY_KEYS = [
   'decode_ella_avatar_url_v8',
   'decode_ella_avatar_url_v9',
   'decode_ella_avatar_url_v10',
+  'decode_ella_avatar_url_v11',
 ];
 
-const getBaseAvatarUrl = () => (ellaAvatarBundled as any).url || '/ella-avatar.png';
-export const DEFAULT_ELLA_AVATAR = `${getBaseAvatarUrl()}?v=11&t=${Date.now()}`;
+const getBaseAvatarUrl = () => {
+  const bundledUrl = (ellaAvatarBundled as any).url;
+  if (bundledUrl) return bundledUrl;
+  return '/ella-avatar.png';
+};
 
-// Fallback estático servido pelo próprio host
-export const ELLA_AVATAR_FALLBACK = `/ella-avatar.png?v=11&t=${Date.now()}`;
-
-// Expõe a URL do avatar como CSS var para pseudo-elementos (::before em AdsChatBuilder).
-if (typeof document !== 'undefined') {
-  try {
-    document.documentElement.style.setProperty('--ella-avatar-url', `url('${DEFAULT_ELLA_AVATAR}')`);
-  } catch {}
-}
+// Removemos o timestamp fixo da constante para permitir que ele seja gerado no momento do uso,
+// garantindo que cada carregamento seja "fresco" se necessário.
+export const DEFAULT_ELLA_AVATAR = getBaseAvatarUrl();
+export const ELLA_AVATAR_FALLBACK = '/ella-avatar.png';
 
 const isValidHttp = (u: string) => /^https?:\/\//i.test(u);
 
-// URLs salvas apontando para hosts de preview/CDN interno quebram em outros
-// domínios (ex.: Vercel). Só aceitamos storage do backend ou o próprio host.
 const isPortableUrl = (u: string) => {
   try {
     const parsed = new URL(u);
@@ -51,16 +48,37 @@ const isPortableUrl = (u: string) => {
 
 export const getEllaAvatarUrl = () => {
   try {
-    LEGACY_KEYS.forEach((k) => localStorage.getItem(k) && localStorage.removeItem(k));
-    const stored = localStorage.getItem(ELLA_AVATAR_STORAGE_KEY);
-    if (stored && isValidHttp(stored) && isPortableUrl(stored)) return stored;
-    if (stored && !isPortableUrl(stored)) localStorage.removeItem(ELLA_AVATAR_STORAGE_KEY);
-    // Force new avatar if v6 is not set yet
-    if (!stored) {
-      localStorage.setItem(ELLA_AVATAR_STORAGE_KEY, DEFAULT_ELLA_AVATAR);
+    if (typeof window === 'undefined') return DEFAULT_ELLA_AVATAR;
+
+    // Purga agressiva de chaves legadas
+    for (const key of LEGACY_KEYS) {
+      if (localStorage.getItem(key)) {
+        localStorage.removeItem(key);
+      }
     }
-    return DEFAULT_ELLA_AVATAR;
+
+    const stored = localStorage.getItem(ELLA_AVATAR_STORAGE_KEY);
+    
+    let finalUrl = DEFAULT_ELLA_AVATAR;
+    
+    // Se temos uma URL personalizada no storage, validamos
+    if (stored && isValidHttp(stored) && isPortableUrl(stored)) {
+      finalUrl = stored;
+    } else if (stored) {
+      localStorage.removeItem(ELLA_AVATAR_STORAGE_KEY);
+    }
+
+    // Adiciona cache busting v12 + timestamp único
+    const separator = finalUrl.includes('?') ? '&' : '?';
+    return `${finalUrl}${separator}v=12&t=${Date.now()}`;
   } catch {
-    return DEFAULT_ELLA_AVATAR;
+    return `${DEFAULT_ELLA_AVATAR}?v=12&t=${Date.now()}`;
   }
 };
+
+// Expõe a URL do avatar como CSS var para pseudo-elementos
+if (typeof document !== 'undefined') {
+  try {
+    document.documentElement.style.setProperty('--ella-avatar-url', `url('${getEllaAvatarUrl()}')`);
+  } catch {}
+}
