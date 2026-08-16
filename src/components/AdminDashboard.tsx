@@ -89,6 +89,7 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
   const [stats, setStats] = useState({
     apostilas: 0, exercises: 0, users: 0, comments: 0, likes: 0, ads: 0,
   });
+  const [fixedApostilas, setFixedApostilas] = useState<Record<string, string>>({});
   const [apostilas, setApostilas] = useState<ApostilaRow[]>([]);
   const [rankings, setRankings] = useState<Ranking[]>([]);
   const [engagement, setEngagement] = useState<{ day: string; apostilas: number; exercises: number }[]>([]);
@@ -139,7 +140,7 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
     try {
       const since = new Date(Date.now() - 6 * 86400000);
       since.setHours(0, 0, 0, 0);
-      const [a, e, u, c, l, ad, list, rank, views, answers] = await Promise.all([
+      const [a, e, u, c, l, ad, list, rank, views, answers, fixedData] = await Promise.all([
         supabase.from('apostilas').select('id', { count: 'exact', head: true }),
         supabase.from('exercises').select('id', { count: 'exact', head: true }),
         supabase.from('profiles').select('id', { count: 'exact', head: true }),
@@ -156,7 +157,14 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
         supabase.rpc('get_student_rankings', { _limit: 10 }),
         supabase.from('apostila_views').select('viewed_at').gte('viewed_at', since.toISOString()).limit(5000),
         supabase.from('answers').select('created_at').gte('created_at', since.toISOString()).limit(5000),
+        supabase.from('fixed_apostilas').select('semester, subject_key, apostila_id'),
       ]);
+      
+      const fixedMap: Record<string, string> = {};
+      (fixedData.data || []).forEach((f: any) => {
+        fixedMap[`${f.semester}-${f.subject_key}`] = f.apostila_id;
+      });
+      setFixedApostilas(fixedMap);
       setStats({
         apostilas: a.count || 0,
         exercises: e.count || 0,
