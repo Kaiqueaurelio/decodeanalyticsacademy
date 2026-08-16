@@ -34,6 +34,7 @@ import { BookOpen, Search, X, PenLine, ShieldCheck } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { NewUpdatePopup } from '@/components/NewUpdatePopup';
+import { McpSyncButton } from '@/components/dashboard/McpSyncButton';
 
 
 
@@ -269,7 +270,12 @@ export default function DashboardPage() {
             </div>
           )}
 
-          <ContinueWhereLeftCard />
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <ContinueWhereLeftCard />
+            <div className="flex shrink-0">
+              <McpSyncButton />
+            </div>
+          </div>
 
           {/* Dashboard Summary Bar */}
           <div className="flex flex-wrap items-center gap-4 pb-2 border-b border-border/10 overflow-x-auto scrollbar-none">
