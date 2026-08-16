@@ -561,9 +561,9 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
     } catch (err: any) {
       console.error(err);
       toast.error('Erro ao remover fixação');
-    } finally {
-      setBulkBusy(false);
     }
+  };
+
 
   // Detalhe do aluno
   const openStudent = async (r: Ranking) => {
