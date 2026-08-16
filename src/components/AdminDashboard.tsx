@@ -813,8 +813,9 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
                       </div>
                     )}
                   </div>
-
+                </div>
               </ScrollArea>
+
               <div className="p-4 border-t border-white/5 bg-white/5">
                 <Button variant="outline" className="w-full text-xs gap-2 rounded-xl" onClick={() => onNavigate('apostilas')}>
                   Gerenciar Acervo Acadêmico
