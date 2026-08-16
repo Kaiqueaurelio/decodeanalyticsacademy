@@ -30,7 +30,7 @@ export function McpSyncButton() {
       // 2. Chamar o endpoint para sincronização
       // Nota: O MCP responde a JSON-RPC. Aqui simulamos uma chamada de sincronização
       // que o backend deve interpretar para atualizar dados do aluno.
-      const response = await fetch(endpoint, {
+      const response = await fetch(String(endpoint), {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
