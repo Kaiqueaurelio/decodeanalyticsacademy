@@ -68,10 +68,23 @@ serve(async (req) => {
     const daysUntil = Math.max(0, Math.ceil((examDate.getTime() - today.getTime()) / 86400000));
 
     // 2) Apostilas relacionadas (match por subject/category fuzzy)
-    const { data: allApostilas } = await admin
+    const { data: scope } = await admin.rpc("get_content_scope", { _user_id: userId });
+    const ENEM_CATS = ["ENEM", "Simulados ENEM"];
+
+    let apostilasQuery = admin
       .from("apostilas")
       .select("id,title,category")
       .eq("published", true);
+
+    if (scope === "enem_only") {
+      apostilasQuery = apostilasQuery.in("category", ENEM_CATS);
+    } else {
+      apostilasQuery = apostilasQuery.or(
+        `category.is.null,category.not.in.(${ENEM_CATS.map((c) => `"${c}"`).join(",")})`,
+      );
+    }
+
+    const { data: allApostilas } = await apostilasQuery;
 
     const subj = (ev.subject || ev.title || "").toLowerCase();
     const matching = (allApostilas ?? []).filter((a) => {
