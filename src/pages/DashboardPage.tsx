@@ -60,6 +60,20 @@ export default function DashboardPage() {
   }, [profile?.semester]);
 
   const { data: apostilasRaw = [], isLoading: loadingApostilas } = useApostilasList({ semester: selectedSemester });
+  const { data: fixedApostilasData } = useQuery({
+    queryKey: ['fixed-apostilas'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('fixed_apostilas').select('semester, subject_key, apostila_id');
+      if (error) throw error;
+      const map: Record<string, string> = {};
+      data.forEach(f => {
+        map[`${f.semester}-${f.subject_key}`] = f.apostila_id;
+      });
+      return map;
+    },
+    staleTime: 1000 * 60 * 5 // 5 min
+  });
+  const fixedApostilas = fixedApostilasData || {};
   const { data: exerciseCounts = {} } = useExerciseCounts();
   const { data: statsData, isLoading: loadingStats } = useDashboardStats(user?.id);
   const stats = statsData || { total: 0, hits: 0, errors: 0, byApostila: {} };
@@ -72,14 +86,20 @@ export default function DashboardPage() {
     // 1. Filtragem por semestre se selecionado
     // Bônus e Canivete Suíço são transversais e devem aparecer em todos os semestres.
     const list = selectedSemester
-      ? apostilasRaw.filter(a => (
-          a.semester === selectedSemester || 
-          a.semester === 0 || 
-          a.category === 'Bônus' || 
-          a.category === 'Canivete Suíço do Estudante' || 
-          a.category?.toLowerCase().includes('bonus') ||
-          a.category?.toLowerCase().includes('canivete')
-        ) && a.published)
+      ? apostilasRaw.filter(a => {
+          const sKey = canonicalSubjectKey(a.category);
+          const isFixedForThisSemester = fixedApostilas[`${selectedSemester}-${sKey}`] === a.id;
+          
+          return (
+            a.semester === selectedSemester || 
+            a.semester === 0 || 
+            a.category === 'Bônus' || 
+            a.category === 'Canivete Suíço do Estudante' || 
+            a.category?.toLowerCase().includes('bonus') ||
+            a.category?.toLowerCase().includes('canivete') ||
+            isFixedForThisSemester
+          ) && a.published;
+        })
       : apostilasRaw.filter(a => a.published);
 
     // 2. Placeholder para disciplinas da grade (1º ao 8º)
