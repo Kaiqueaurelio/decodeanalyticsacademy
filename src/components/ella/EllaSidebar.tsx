@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { Wand2 } from "lucide-react";
-import { motion, useDragControls } from "framer-motion";
+import { motion } from "framer-motion";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -16,6 +16,7 @@ export function EllaSidebar() {
   const { user } = useAuth();
   const location = useLocation();
   const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   if (!user) return null;
   if (HIDDEN_ROUTES.includes(location.pathname)) return null;
@@ -24,13 +25,16 @@ export function EllaSidebar() {
   const contextHint = `Usuário está em ${location.pathname}${location.search}`;
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <motion.div
-        drag
-        dragMomentum={false}
-        className="fixed z-[100] right-4 bottom-20 sm:bottom-28 md:bottom-6"
-        whileDrag={{ scale: 1.1 }}
-      >
+    <div ref={containerRef} className="fixed inset-0 pointer-events-none z-[100]">
+      <Sheet open={open} onOpenChange={setOpen}>
+        <motion.div
+          drag
+          dragConstraints={containerRef}
+          dragElastic={0.1}
+          dragMomentum={false}
+          className="fixed pointer-events-auto right-4 bottom-20 sm:bottom-28 md:bottom-6"
+          whileDrag={{ scale: 1.1 }}
+        >
         <SheetTrigger asChild>
           <Button
             aria-label="Abrir Ella"
@@ -49,10 +53,11 @@ export function EllaSidebar() {
             </Avatar>
           </Button>
         </SheetTrigger>
-      </motion.div>
-      <SheetContent side="right" className="w-full sm:max-w-md p-0 flex flex-col">
-        <EllaChat contextHint={contextHint} compact onAfterAction={() => { /* could refetch */ }} />
-      </SheetContent>
-    </Sheet>
+        </motion.div>
+        <SheetContent side="right" className="w-full sm:max-w-md p-0 flex flex-col pointer-events-auto">
+          <EllaChat contextHint={contextHint} compact onAfterAction={() => { /* could refetch */ }} />
+        </SheetContent>
+      </Sheet>
+    </div>
   );
 }
