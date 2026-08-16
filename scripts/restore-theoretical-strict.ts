@@ -1,4 +1,4 @@
-import { supabase } from "../src/lib/content-recovery/recovery-client";
+import { supabase } from "./content-recovery/recovery-client";
 
 /**
  * Script de restauração de segurança para Aspectos Teóricos da Computação.
@@ -24,7 +24,7 @@ async function restoreTheoreticalStrict() {
   }
 
   // Agora re-executamos a restauração profunda para garantir conteúdo full
-  const { restoreTheoreticalComputingApostila } = await import('../src/lib/content-recovery/recovery');
+  const { restoreTheoreticalComputingApostila } = await import('./content-recovery/recovery');
   await restoreTheoreticalComputingApostila();
   
   console.log("✅ Restauração Estrita Concluída.");

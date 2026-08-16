@@ -1,5 +1,5 @@
 
-import { supabase } from "../src/lib/content-recovery/recovery-client";
+import { supabase } from "./content-recovery/recovery-client";
 
 /**
  * Script de restauração profunda e limpeza de duplicatas.
@@ -24,7 +24,7 @@ async function finalRestoration() {
   }
 
   // 2. Restaurar Aspectos Teóricos com Mídia
-  const { restoreTheoreticalComputingApostila } = await import('../src/lib/content-recovery/recovery');
+  const { restoreTheoreticalComputingApostila } = await import('./content-recovery/recovery');
   await restoreTheoreticalComputingApostila();
   console.log("✅ Aspectos Teóricos da Computação: Restaurado.");
 

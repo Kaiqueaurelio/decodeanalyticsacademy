@@ -1,4 +1,4 @@
-import { supabase } from "../src/lib/content-recovery/recovery-client";
+import { supabase } from "./content-recovery/recovery-client";
 
 async function deepAudit() {
   console.log("🔍 Iniciando Auditoria Profunda de Conteúdo...");
