@@ -1,21 +1,20 @@
 import { createClient } from '@supabase/supabase-js';
 
-const SUPABASE_URL = process.env.VITE_SUPABASE_URL || '';
-const SUPABASE_SERVICE_ROLE_KEY = process.env.VITE_SUPABASE_SERVICE_ROLE_KEY || '';
+// Server-side/script-only client. This file MUST stay outside of src/ so that
+// Vite never bundles it (and never inlines the service-role key) into the
+// browser bundle. Secrets here are read from non-VITE_ env vars only.
+const SUPABASE_URL = process.env.SUPABASE_URL || '';
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
 if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-  // If service role is missing, we might still fail, but we'll try anon key if injected.
-  // Actually, for scripts, I should try to get the service role key if available.
-  console.warn("VITE_SUPABASE_SERVICE_ROLE_KEY is missing. Falling back to anon key.");
+  throw new Error(
+    'Missing SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY. These recovery scripts must be run server-side with script-only environment variables.',
+  );
 }
 
-export const supabase = createClient(
-  SUPABASE_URL,
-  SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_PUBLISHABLE_KEY || '',
-  {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-    },
-  }
-);
+export const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+  auth: {
+    persistSession: false,
+    autoRefreshToken: false,
+  },
+});
