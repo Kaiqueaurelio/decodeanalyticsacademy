@@ -1,7 +1,7 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { Wand2 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, useAnimationControls } from "framer-motion";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -17,6 +17,21 @@ export function EllaSidebar() {
   const location = useLocation();
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const controls = useAnimationControls();
+
+  useEffect(() => {
+    const handleResize = () => {
+      // Forçar re-alinhamento ao viewport em caso de redimensionamento ou rotação
+      controls.start({ x: 0, y: 0, transition: { type: "spring", stiffness: 300, damping: 30 } });
+    };
+
+    window.addEventListener("resize", handleResize);
+    window.addEventListener("orientationchange", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("orientationchange", handleResize);
+    };
+  }, [controls]);
 
   if (!user) return null;
   if (HIDDEN_ROUTES.includes(location.pathname)) return null;
@@ -29,6 +44,7 @@ export function EllaSidebar() {
       <Sheet open={open} onOpenChange={setOpen}>
         <motion.div
           drag
+          animate={controls}
           dragConstraints={containerRef}
           dragElastic={0.1}
           dragMomentum={false}
