@@ -34,6 +34,7 @@ import { AdminNotionGalleryCard } from './admin/AdminNotionGalleryCard';
 import { QuickCreateApostilaDialog } from './admin/QuickCreateApostilaDialog';
 
 
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from 'recharts';
