@@ -826,6 +826,7 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
           </Card>
         </div>
 
+
         {/* Acervo Administrativo e Ranking */}
         <div className="lg:col-span-2 space-y-8">
           {/* Aba de Comando Rápido */}
