@@ -10,7 +10,7 @@ export type AdminTabId =
   | 'calendar' | 'testimonials' | 'ai' | 'ella-settings' | 'performance' | 'smoke' | 'diagnostics'
   | 'ads' | 'ads-chat' | 'social' | 'rss' | 'courses' | 'changelog' | 'leads'
   | 'ella-audit' | 'security-alerts' | 'sponsors' | 'tasks' | 'photoroom' | 'edit' | 'review'
-  | 'enem-apostilas' | 'cc-apostilas' | 'health-dashboard' | 'cloning-dashboard';
+  | 'enem-apostilas' | 'cc-apostilas' | 'health-dashboard' | 'cloning-dashboard' | 'mcp-settings';
 
 export type AdminNavItem = {
   id: AdminTabId;
@@ -95,6 +95,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
       { id: 'smoke', label: 'Testes', short: 'Testes', icon: CheckCircle, desc: 'Checklist automático de estabilidade', keywords: 'teste smoke checklist' },
       { id: 'changelog', label: 'Histórico de Versões', short: 'Histórico', icon: History, desc: 'Tudo que mudou na plataforma', keywords: 'changelog versao novidades' },
       { id: 'performance', label: 'Saúde & Estabilidade', short: 'Estabilidade', icon: Activity, desc: 'Monitoramento de rede e performance', keywords: 'status saude performance rede deploy estabilidade' },
+      { id: 'mcp-settings', label: 'Integração MCP', short: 'MCP', icon: Link2, desc: 'Status e URL do endpoint de integração acadêmica', keywords: 'mcp api endpoint integracao external' },
     ],
   },
 ];

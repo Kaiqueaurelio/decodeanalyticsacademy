@@ -92,6 +92,7 @@ import { QuickCreateApostilaDialog } from '@/components/admin/QuickCreateApostil
 import { ApostilaCloningDashboard } from '@/components/admin/ApostilaCloningDashboard';
 import { ApostilaHealthDashboard } from '@/components/admin/ApostilaHealthDashboard';
 import { EllaSettings } from '@/components/admin/EllaSettings';
+import { McpSettings } from '@/components/admin/McpSettings';
 
 type Apostila = Tables<'apostilas'>;
 type Exercise = Tables<'exercises'>;
@@ -3603,6 +3604,11 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
             {/* COURSES */}
             {tab === 'courses' && (
               <FreeCoursesManager />
+            )}
+
+            {/* MCP SETTINGS */}
+            {tab === 'mcp-settings' && (
+              <McpSettings />
             )}
             </div>
           </main>
