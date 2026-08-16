@@ -34,6 +34,7 @@ import { AdminNotionGalleryCard } from './admin/AdminNotionGalleryCard';
 import { QuickCreateApostilaDialog } from './admin/QuickCreateApostilaDialog';
 
 
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from 'recharts';
@@ -89,6 +90,7 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
   const [stats, setStats] = useState({
     apostilas: 0, exercises: 0, users: 0, comments: 0, likes: 0, ads: 0,
   });
+  const [fixedApostilas, setFixedApostilas] = useState<Record<string, string>>({});
   const [apostilas, setApostilas] = useState<ApostilaRow[]>([]);
   const [rankings, setRankings] = useState<Ranking[]>([]);
   const [engagement, setEngagement] = useState<{ day: string; apostilas: number; exercises: number }[]>([]);
@@ -139,7 +141,7 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
     try {
       const since = new Date(Date.now() - 6 * 86400000);
       since.setHours(0, 0, 0, 0);
-      const [a, e, u, c, l, ad, list, rank, views, answers] = await Promise.all([
+      const [a, e, u, c, l, ad, list, rank, views, answers, fixedData] = await Promise.all([
         supabase.from('apostilas').select('id', { count: 'exact', head: true }),
         supabase.from('exercises').select('id', { count: 'exact', head: true }),
         supabase.from('profiles').select('id', { count: 'exact', head: true }),
@@ -156,7 +158,14 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
         supabase.rpc('get_student_rankings', { _limit: 10 }),
         supabase.from('apostila_views').select('viewed_at').gte('viewed_at', since.toISOString()).limit(5000),
         supabase.from('answers').select('created_at').gte('created_at', since.toISOString()).limit(5000),
+        supabase.from('fixed_apostilas').select('semester, subject_key, apostila_id'),
       ]);
+      
+      const fixedMap: Record<string, string> = {};
+      (fixedData.data || []).forEach((f: any) => {
+        fixedMap[`${f.semester}-${f.subject_key}`] = f.apostila_id;
+      });
+      setFixedApostilas(fixedMap);
       setStats({
         apostilas: a.count || 0,
         exercises: e.count || 0,
@@ -488,17 +497,73 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
     if (ids.length === 0) return;
     const sem = parseInt(targetSemester, 10);
     if (isNaN(sem)) return;
-
     setBulkBusy(true);
     const { error } = await supabase.from('apostilas').update({ semester: sem }).in('id', ids);
     setBulkBusy(false);
-
     if (error) { toast.error('Erro: ' + error.message); return; }
-    setApostilas((prev) => prev.map((x) => selected.has(x.id) ? { ...x, semester: sem } : x));
-    toast.success(`${ids.length} apostila(s) movidas para o ${sem}º semestre`);
+    setApostilas((prev) => prev.map((x) => selected.has(x.id) ? { ...x, semester: sem } as any : x));
+    toast.success(`${ids.length} apostila(s) movidas para o semestre ${sem}`);
     clearSelection();
     setBulkSemesterOpen(false);
   };
+
+  const handleFixApostila = async (apostilaId: string, semester: number, category: string) => {
+    const sKey = canonicalSubjectKey(category);
+    if (!sKey) return;
+    
+    setBulkBusy(true);
+    try {
+      const { error } = await supabase
+        .from('fixed_apostilas')
+        .upsert(
+          { 
+            semester, 
+            subject_key: sKey, 
+            apostila_id: apostilaId 
+          }, 
+          { onConflict: 'semester,subject_key' }
+        );
+      
+      if (error) throw error;
+      
+      setFixedApostilas(prev => ({
+        ...prev,
+        [`${semester}-${sKey}`]: apostilaId
+      }));
+      toast.success('Apostila fixada para esta matéria!');
+    } catch (err: any) {
+      console.error(err);
+      toast.error('Erro ao fixar apostila: ' + err.message);
+    } finally {
+      setBulkBusy(false);
+    }
+  };
+
+  const handleUnfixApostila = async (semester: number, category: string) => {
+    const sKey = canonicalSubjectKey(category);
+    if (!sKey) return;
+    
+    setBulkBusy(true);
+    try {
+      const { error } = await supabase
+        .from('fixed_apostilas')
+        .delete()
+        .match({ semester, subject_key: sKey });
+      
+      if (error) throw error;
+      
+      setFixedApostilas(prev => {
+        const next = { ...prev };
+        delete next[`${semester}-${sKey}`];
+        return next;
+      });
+      toast.success('Fixação removida');
+    } catch (err: any) {
+      console.error(err);
+      toast.error('Erro ao remover fixação');
+    }
+  };
+
 
   // Detalhe do aluno
   const openStudent = async (r: Ranking) => {
@@ -746,22 +811,11 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
                         </div>
                         <p className="text-sm text-muted-foreground">Tudo certo! Nenhuma inconsistência encontrada.</p>
                       </div>
-        )}
-
-        <QuickCreateApostilaDialog
-          open={showQuickCreate}
-          onOpenChange={setShowQuickCreate}
-          initialCategory={quickCreateCategory || undefined}
-          initialSemester={quickCreateSemester !== null ? quickCreateSemester.toString() : undefined}
-          onCreated={() => {
-            load();
-            setShowQuickCreate(false);
-          }}
-        />
-      </div>
-
+                    )}
+                  </div>
                 </div>
               </ScrollArea>
+
               <div className="p-4 border-t border-white/5 bg-white/5">
                 <Button variant="outline" className="w-full text-xs gap-2 rounded-xl" onClick={() => onNavigate('apostilas')}>
                   Gerenciar Acervo Acadêmico
@@ -771,6 +825,7 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
             </CardContent>
           </Card>
         </div>
+
 
         {/* Acervo Administrativo e Ranking */}
         <div className="lg:col-span-2 space-y-8">
@@ -1003,6 +1058,56 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
                       </button>
                       
                       <div className="flex items-center gap-1 shrink-0">
+                        {/* Seletor de Fixação */}
+                        {folder.semester && folder.items.length > 0 && (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className={cn(
+                                  "h-8 w-8 rounded-lg transition-all",
+                                  fixedApostilas[`${folder.semester}-${canonicalSubjectKey(folder.name)}`] 
+                                    ? "text-yellow-500 bg-yellow-500/10" 
+                                    : "text-muted-foreground hover:bg-white/5"
+                                )}
+                                title="Fixar Apostila"
+                              >
+                                <ShieldCheck className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-56 bg-popover/90 backdrop-blur-xl border-white/10">
+                              <DropdownMenuLabel className="text-[10px] uppercase font-bold text-muted-foreground">Fixar para {folder.name}</DropdownMenuLabel>
+                              <DropdownMenuSeparator className="bg-white/5" />
+                              <ScrollArea className="h-[200px]">
+                                {folder.items.map(item => (
+                                  <DropdownMenuItem 
+                                    key={item.id} 
+                                    className="text-xs cursor-pointer flex items-center justify-between"
+                                    onClick={() => handleFixApostila(item.id, folder.semester!, folder.name)}
+                                  >
+                                    <span className="truncate mr-2">{item.title}</span>
+                                    {fixedApostilas[`${folder.semester}-${canonicalSubjectKey(folder.name)}`] === item.id && (
+                                      <Check className="h-3 w-3 text-yellow-500 shrink-0" />
+                                    )}
+                                  </DropdownMenuItem>
+                                ))}
+                              </ScrollArea>
+                              {fixedApostilas[`${folder.semester}-${canonicalSubjectKey(folder.name)}`] && (
+                                <>
+                                  <DropdownMenuSeparator className="bg-white/5" />
+                                  <DropdownMenuItem 
+                                    className="text-xs text-destructive cursor-pointer"
+                                    onClick={() => handleUnfixApostila(folder.semester!, folder.name)}
+                                  >
+                                    Remover Fixação
+                                  </DropdownMenuItem>
+                                </>
+                              )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        )}
+
                         <Button
                           size="icon"
                           variant="ghost"

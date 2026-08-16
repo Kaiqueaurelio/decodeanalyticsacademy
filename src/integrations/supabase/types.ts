@@ -1716,6 +1716,38 @@ export type Database = {
           },
         ]
       }
+      fixed_apostilas: {
+        Row: {
+          apostila_id: string
+          created_at: string
+          id: string
+          semester: number
+          subject_key: string
+        }
+        Insert: {
+          apostila_id: string
+          created_at?: string
+          id?: string
+          semester: number
+          subject_key: string
+        }
+        Update: {
+          apostila_id?: string
+          created_at?: string
+          id?: string
+          semester?: number
+          subject_key?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fixed_apostilas_apostila_id_fkey"
+            columns: ["apostila_id"]
+            isOneToOne: false
+            referencedRelation: "apostilas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       flashcards: {
         Row: {
           apostila_id: string | null
