@@ -57,11 +57,24 @@ serve(async (req) => {
       .in("event_type", ["prova", "trabalho", "entrega"])
       .order("event_date", { ascending: true });
 
-    // Apostilas publicadas
-    const { data: apostilas } = await adminClient
+    // Apostilas publicadas, respeitando o escopo de conteúdo do aluno
+    const { data: scope } = await adminClient.rpc("get_content_scope", { _user_id: userId });
+    const ENEM_CATS = ["ENEM", "Simulados ENEM"];
+
+    let apostilasQuery = adminClient
       .from("apostilas")
       .select("id,title,category")
       .eq("published", true);
+
+    if (scope === "enem_only") {
+      apostilasQuery = apostilasQuery.in("category", ENEM_CATS);
+    } else {
+      apostilasQuery = apostilasQuery.or(
+        `category.is.null,category.not.in.(${ENEM_CATS.map((c) => `"${c}"`).join(",")})`,
+      );
+    }
+
+    const { data: apostilas } = await apostilasQuery;
 
     // Apostilas que o usuário já concluiu
     const { data: completions } = await adminClient
