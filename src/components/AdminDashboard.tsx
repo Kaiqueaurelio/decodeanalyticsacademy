@@ -811,21 +811,9 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
                         </div>
                         <p className="text-sm text-muted-foreground">Tudo certo! Nenhuma inconsistência encontrada.</p>
                       </div>
-        )}
+                    )}
+                  </div>
 
-        <QuickCreateApostilaDialog
-          open={showQuickCreate}
-          onOpenChange={setShowQuickCreate}
-          initialCategory={quickCreateCategory || undefined}
-          initialSemester={quickCreateSemester !== null ? quickCreateSemester.toString() : undefined}
-          onCreated={() => {
-            load();
-            setShowQuickCreate(false);
-          }}
-        />
-      </div>
-
-                </div>
               </ScrollArea>
               <div className="p-4 border-t border-white/5 bg-white/5">
                 <Button variant="outline" className="w-full text-xs gap-2 rounded-xl" onClick={() => onNavigate('apostilas')}>
