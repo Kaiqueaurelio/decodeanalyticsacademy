@@ -70,10 +70,16 @@ export default function DashboardPage() {
   // Lógica de processamento de apostilas (filtro + placeholders de semestres futuros)
   const apostilas = useMemo(() => {
     // 1. Filtragem por semestre se selecionado
-    // Bônus é transversal e deve continuar acessível em qualquer semestre.
-    // Se NÃO selecionado, retorna tudo publicado.
+    // Bônus e Canivete Suíço são transversais e devem aparecer em todos os semestres.
     const list = selectedSemester
-      ? apostilasRaw.filter(a => (a.semester === selectedSemester || a.semester === 0 || a.category === 'Bônus' || a.category === 'Canivete Suíço do Estudante' || a.category?.includes('Bônus')) && a.published)
+      ? apostilasRaw.filter(a => (
+          a.semester === selectedSemester || 
+          a.semester === 0 || 
+          a.category === 'Bônus' || 
+          a.category === 'Canivete Suíço do Estudante' || 
+          a.category?.toLowerCase().includes('bonus') ||
+          a.category?.toLowerCase().includes('canivete')
+        ) && a.published)
       : apostilasRaw.filter(a => a.published);
 
     // 2. Placeholder para disciplinas da grade (1º ao 8º)
@@ -151,6 +157,8 @@ export default function DashboardPage() {
   useEffect(() => {
     if (selectedSemester !== null) {
       localStorage.setItem('selectedSemestre', selectedSemester.toString());
+    } else {
+      localStorage.removeItem('selectedSemestre');
     }
   }, [selectedSemester]);
 
