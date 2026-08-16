@@ -32,10 +32,18 @@ export function EllaSidebar() {
           dragConstraints={containerRef}
           dragElastic={0.1}
           dragMomentum={false}
-          className="fixed pointer-events-auto right-4 bottom-20 sm:bottom-28 md:bottom-6"
+          className="fixed pointer-events-auto right-4 bottom-20 sm:bottom-28 md:bottom-6 touch-none"
           whileDrag={{ scale: 1.1 }}
+          tabIndex={0}
+          role="button"
+          aria-label="Ella AI Assistant"
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              setOpen(true);
+            }
+          }}
         >
-        <SheetTrigger asChild>
+          <SheetTrigger asChild>
           <Button
             aria-label="Abrir Ella"
             className={cn(
