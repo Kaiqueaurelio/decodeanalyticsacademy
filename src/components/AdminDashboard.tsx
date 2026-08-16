@@ -1011,6 +1011,56 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
                       </button>
                       
                       <div className="flex items-center gap-1 shrink-0">
+                        {/* Seletor de Fixação */}
+                        {folder.semester && folder.items.length > 0 && (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className={cn(
+                                  "h-8 w-8 rounded-lg transition-all",
+                                  fixedApostilas[`${folder.semester}-${canonicalSubjectKey(folder.name)}`] 
+                                    ? "text-yellow-500 bg-yellow-500/10" 
+                                    : "text-muted-foreground hover:bg-white/5"
+                                )}
+                                title="Fixar Apostila"
+                              >
+                                <ShieldCheck className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-56 bg-popover/90 backdrop-blur-xl border-white/10">
+                              <DropdownMenuLabel className="text-[10px] uppercase font-bold text-muted-foreground">Fixar para {folder.name}</DropdownMenuLabel>
+                              <DropdownMenuSeparator className="bg-white/5" />
+                              <ScrollArea className="h-[200px]">
+                                {folder.items.map(item => (
+                                  <DropdownMenuItem 
+                                    key={item.id} 
+                                    className="text-xs cursor-pointer flex items-center justify-between"
+                                    onClick={() => handleFixApostila(item.id, folder.semester!, folder.name)}
+                                  >
+                                    <span className="truncate mr-2">{item.title}</span>
+                                    {fixedApostilas[`${folder.semester}-${canonicalSubjectKey(folder.name)}`] === item.id && (
+                                      <Check className="h-3 w-3 text-yellow-500 shrink-0" />
+                                    )}
+                                  </DropdownMenuItem>
+                                ))}
+                              </ScrollArea>
+                              {fixedApostilas[`${folder.semester}-${canonicalSubjectKey(folder.name)}`] && (
+                                <>
+                                  <DropdownMenuSeparator className="bg-white/5" />
+                                  <DropdownMenuItem 
+                                    className="text-xs text-destructive cursor-pointer"
+                                    onClick={() => handleUnfixApostila(folder.semester!, folder.name)}
+                                  >
+                                    Remover Fixação
+                                  </DropdownMenuItem>
+                                </>
+                              )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        )}
+
                         <Button
                           size="icon"
                           variant="ghost"
