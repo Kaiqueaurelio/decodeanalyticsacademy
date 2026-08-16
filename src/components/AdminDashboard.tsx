@@ -564,18 +564,6 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
     } finally {
       setBulkBusy(false);
     }
-  };
-
-    setBulkBusy(true);
-    const { error } = await supabase.from('apostilas').update({ semester: sem }).in('id', ids);
-    setBulkBusy(false);
-
-    if (error) { toast.error('Erro: ' + error.message); return; }
-    setApostilas((prev) => prev.map((x) => selected.has(x.id) ? { ...x, semester: sem } : x));
-    toast.success(`${ids.length} apostila(s) movidas para o ${sem}º semestre`);
-    clearSelection();
-    setBulkSemesterOpen(false);
-  };
 
   // Detalhe do aluno
   const openStudent = async (r: Ranking) => {
