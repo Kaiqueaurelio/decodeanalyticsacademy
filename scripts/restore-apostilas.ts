@@ -1,5 +1,5 @@
-import { restoreTheoreticalComputingApostila, verifyAllApostilasIntegrity, repairAllCorruptedApostilas } from '../src/lib/content-recovery/recovery';
-import { backupManager } from '../src/lib/content-recovery/backup-manager';
+import { restoreTheoreticalComputingApostila, verifyAllApostilasIntegrity, repairAllCorruptedApostilas } from './content-recovery/recovery';
+import { backupManager } from './content-recovery/backup-manager';
 
 async function main() {
   console.log('╔════════════════════════════════════════╗');

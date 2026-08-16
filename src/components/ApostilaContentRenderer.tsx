@@ -736,11 +736,9 @@ function AudioQuizBlock({ aulaId, quizId }: { aulaId: string; quizId: string }) 
       
       if (quizError) throw quizError;
 
+      // Questões carregadas via RPC segura (sem gabarito antes do envio)
       const { data: questions, error: qError } = await supabase
-        .from('quiz_questions')
-        .select('*')
-        .eq('quiz_id', quizId)
-        .order('position', { ascending: true });
+        .rpc('get_quiz_questions', { _quiz_id: quizId });
 
       if (qError) throw qError;
 

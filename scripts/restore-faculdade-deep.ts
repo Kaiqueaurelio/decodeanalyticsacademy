@@ -1,4 +1,4 @@
-import { supabase } from "../src/lib/content-recovery/recovery-client";
+import { supabase } from "./content-recovery/recovery-client";
 
 const FACULDADE_CONTENT = [
   {

@@ -3373,6 +3373,7 @@ export type Database = {
           xp_points: number
         }[]
       }
+      get_quiz_questions: { Args: { _quiz_id: string }; Returns: Json }
       get_student_detail: { Args: { _user_id: string }; Returns: Json }
       get_student_rankings: {
         Args: { _limit?: number }
@@ -3414,6 +3415,10 @@ export type Database = {
       maximize_user_gamification: {
         Args: { _user_id: string }
         Returns: undefined
+      }
+      submit_quiz: {
+        Args: { _answers: Json; _quiz_id: string; _time_spent?: number }
+        Returns: Json
       }
       update_materials_order: { Args: { payload: Json }; Returns: undefined }
     }

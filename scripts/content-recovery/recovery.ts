@@ -1,5 +1,5 @@
 import { supabase } from "./recovery-client";
-import { subjectKey } from "@/lib/curriculum-subjects";
+import { subjectKey } from "../../src/lib/curriculum-subjects";
 
 interface WorkbookMetadata {
   id: string;

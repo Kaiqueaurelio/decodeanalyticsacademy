@@ -104,72 +104,38 @@ export function AudioQuizSystem({ aula, quiz, onComplete }: AudioQuizSystemProps
       (currentQuestion.type === 'matching' ? Object.keys(answers[currentQuestion.id] || {}).length === currentQuestion.options.length : true)
     : true;
 
-  const calculateScore = () => {
-    let score = 0;
-    let totalPoints = 0;
-
-    quiz.questions.forEach(q => {
-      totalPoints += q.points;
-      const userAnswer = answers[q.id];
-      
-      if (q.type === 'multiple-choice' || q.type === 'true-false') {
-        if (userAnswer === q.correct_answer) {
-          score += q.points;
-        }
-      } else if (q.type === 'open') {
-        // Simple heuristic for open answers (non-empty)
-        if (userAnswer && userAnswer.length > 5) score += q.points;
-      } else if (q.type === 'multiple-select') {
-        const correctIds = q.options.filter((o: any) => o.correta).map((o: any) => o.id);
-        const userIds = userAnswer || [];
-        if (correctIds.length === userIds.length && correctIds.every((id: string) => userIds.includes(id))) {
-          score += q.points;
-        }
-      } else if (q.type === 'ordering') {
-        const userOrder = userAnswer || [];
-        const isCorrect = userOrder.every((item: any, idx: number) => item.ordem_correta === idx + 1);
-        if (isCorrect) score += q.points;
-      } else if (q.type === 'matching') {
-        const userMatches = userAnswer || {};
-        const correctMatches = q.options.every((opt: any) => userMatches[opt.id] === opt.match_id);
-        if (correctMatches) score += q.points;
-      }
-    });
-
-    return { score, totalPoints };
-  };
-
   const submitQuiz = async () => {
     if (!user) return;
     setIsSubmitting(true);
     const end = Date.now();
     setEndTime(end);
 
-    const { score, totalPoints } = calculateScore();
-    const percent = (score / totalPoints) * 100;
-    const passed = percent >= quiz.min_score_percent;
-
-    const result = {
-      user_id: user.id,
-      quiz_id: quiz.id,
-      score,
-      total_points: totalPoints,
-      answers,
-      time_spent: Math.floor((end - startTime) / 1000),
-      passed,
-    };
+    // Normaliza respostas para IDs (a correção é feita no servidor)
+    const payload: Record<string, any> = {};
+    quiz.questions.forEach((q) => {
+      const value = answers[q.id];
+      if (value === undefined) return;
+      if (q.type === 'ordering' && Array.isArray(value)) {
+        payload[q.id] = value.map((item: any) => (typeof item === 'string' ? item : item?.id));
+      } else {
+        payload[q.id] = value;
+      }
+    });
 
     try {
-      const { error } = await supabase
-        .from('quiz_submissions')
-        .insert(result);
+      const { data, error } = await supabase.rpc('submit_quiz', {
+        _quiz_id: quiz.id,
+        _answers: payload,
+        _time_spent: Math.floor((end - startTime) / 1000),
+      });
 
       if (error) throw error;
 
+      const result = data as any;
       setFinalResult(result);
       setStep('result');
       if (onComplete) onComplete(result);
-      toast.success(passed ? "Parabéns! Você passou!" : "Quiz finalizado.");
+      toast.success(result?.passed ? "Parabéns! Você passou!" : "Quiz finalizado.");
     } catch (err) {
       console.error("Erro ao salvar quiz:", err);
       toast.error("Erro ao salvar suas respostas.");
