@@ -92,6 +92,7 @@ import { QuickCreateApostilaDialog } from '@/components/admin/QuickCreateApostil
 import { ApostilaCloningDashboard } from '@/components/admin/ApostilaCloningDashboard';
 import { ApostilaHealthDashboard } from '@/components/admin/ApostilaHealthDashboard';
 import { EllaSettings } from '@/components/admin/EllaSettings';
+import { McpSettings } from '@/components/admin/McpSettings';
 
 type Apostila = Tables<'apostilas'>;
 type Exercise = Tables<'exercises'>;
@@ -222,7 +223,7 @@ function PhotoroomStudio() {
   );
 }
 
-type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements' | 'calendar' | 'testimonials' | 'ai' | 'ella-settings' | 'performance' | 'smoke' | 'diagnostics' | 'ads' | 'ads-chat' | 'social' | 'rss' | 'courses' | 'changelog' | 'leads' | 'ella-audit' | 'security-alerts' | 'sponsors' | 'tasks' | 'photoroom' | 'edit' | 'review' | 'enem-apostilas' | 'cc-apostilas' | 'health-dashboard' | 'cloning-dashboard';
+type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements' | 'calendar' | 'testimonials' | 'ai' | 'ella-settings' | 'performance' | 'smoke' | 'diagnostics' | 'ads' | 'ads-chat' | 'social' | 'rss' | 'courses' | 'changelog' | 'leads' | 'ella-audit' | 'security-alerts' | 'sponsors' | 'tasks' | 'photoroom' | 'edit' | 'review' | 'enem-apostilas' | 'cc-apostilas' | 'health-dashboard' | 'cloning-dashboard' | 'mcp-settings';
 
 const ACCEPT_MAP: Record<string, string> = {
   pdf: '.pdf', image: 'image/*', gif: '.gif,image/gif',
@@ -1645,6 +1646,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
     'cc-apostilas': { title: 'Ciência da Computação', desc: 'Gerenciamento da grade acadêmica da faculdade' },
     'health-dashboard': { title: 'Saúde das Apostilas', desc: 'Status operacional e histórico de manutenções' },
     'cloning-dashboard': { title: 'Auditoria & Qualidade 360º', desc: 'Monitoramento de erros, status de geração e integridade de conteúdo' },
+    'mcp-settings': { title: 'Integração MCP', desc: 'Status e URL do endpoint de integração acadêmica externa' },
   };
 
 
@@ -3603,6 +3605,11 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
             {/* COURSES */}
             {tab === 'courses' && (
               <FreeCoursesManager />
+            )}
+
+            {/* MCP SETTINGS */}
+            {tab === 'mcp-settings' && (
+              <McpSettings />
             )}
             </div>
           </main>
