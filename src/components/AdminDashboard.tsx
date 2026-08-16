@@ -497,6 +497,74 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
     if (ids.length === 0) return;
     const sem = parseInt(targetSemester, 10);
     if (isNaN(sem)) return;
+    setBulkBusy(true);
+    const { error } = await supabase.from('apostilas').update({ semester: sem }).in('id', ids);
+    setBulkBusy(false);
+    if (error) { toast.error('Erro: ' + error.message); return; }
+    setApostilas((prev) => prev.map((x) => selected.has(x.id) ? { ...x, semester: sem } as any : x));
+    toast.success(`${ids.length} apostila(s) movidas para o semestre ${sem}`);
+    clearSelection();
+    setBulkSemesterOpen(false);
+  };
+
+  const handleFixApostila = async (apostilaId: string, semester: number, category: string) => {
+    const sKey = canonicalSubjectKey(category);
+    if (!sKey) return;
+    
+    setBulkBusy(true);
+    try {
+      const { error } = await supabase
+        .from('fixed_apostilas')
+        .upsert(
+          { 
+            semester, 
+            subject_key: sKey, 
+            apostila_id: apostilaId 
+          }, 
+          { onConflict: 'semester,subject_key' }
+        );
+      
+      if (error) throw error;
+      
+      setFixedApostilas(prev => ({
+        ...prev,
+        [`${semester}-${sKey}`]: apostilaId
+      }));
+      toast.success('Apostila fixada para esta matéria!');
+    } catch (err: any) {
+      console.error(err);
+      toast.error('Erro ao fixar apostila: ' + err.message);
+    } finally {
+      setBulkBusy(false);
+    }
+  };
+
+  const handleUnfixApostila = async (semester: number, category: string) => {
+    const sKey = canonicalSubjectKey(category);
+    if (!sKey) return;
+    
+    setBulkBusy(true);
+    try {
+      const { error } = await supabase
+        .from('fixed_apostilas')
+        .delete()
+        .match({ semester, subject_key: sKey });
+      
+      if (error) throw error;
+      
+      setFixedApostilas(prev => {
+        const next = { ...prev };
+        delete next[`${semester}-${sKey}`];
+        return next;
+      });
+      toast.success('Fixação removida');
+    } catch (err: any) {
+      console.error(err);
+      toast.error('Erro ao remover fixação');
+    } finally {
+      setBulkBusy(false);
+    }
+  };
 
     setBulkBusy(true);
     const { error } = await supabase.from('apostilas').update({ semester: sem }).in('id', ids);
