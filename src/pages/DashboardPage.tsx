@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { DashboardSkeleton } from "@/components/dashboard/DashboardSkeleton";
 
 import { toast } from 'sonner';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useGamification } from '@/hooks/useGamification';
