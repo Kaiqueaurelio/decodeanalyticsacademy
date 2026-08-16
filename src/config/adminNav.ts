@@ -2,7 +2,7 @@ import {
   BarChart3, BookOpen, PenLine, FolderOpen, GraduationCap, Users, Megaphone,
   Calendar as CalIcon, MessageSquareQuote, MessageSquare, Activity, CheckCircle,
   AlertCircle, History, ShieldCheck, ShieldAlert, Rss, Store, HandCoins, Heart,
-  Sparkles, CheckSquare, Copy, type LucideIcon,
+  Sparkles, CheckSquare, Copy, Link2, type LucideIcon,
 } from 'lucide-react';
 
 export type AdminTabId =

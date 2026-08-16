@@ -31,7 +31,7 @@ export function McpSettings() {
       if (error) throw error;
       
       const defaultUrl = `${window.location.origin.replace(/\.lovable\.app$/, '.supabase.co')}/functions/v1/mcp`;
-      setUrl(data?.value || defaultUrl);
+      setUrl(String(data?.value || defaultUrl));
     } catch (err) {
       console.error('Error loading MCP settings:', err);
     } finally {
