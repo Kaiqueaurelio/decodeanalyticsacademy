@@ -96,9 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (!mountedRef.current) return false;
 
-      const adminValue = Boolean(adminRes.data) || 
-                          user?.email === 'decodeanalytics@outlook.com.br' || 
-                          user?.email === 'decoanalytics@outlook.com.br';
+      const adminValue = Boolean(adminRes.data);
 
       const blockedValue = Boolean((profileRes.data as { is_blocked?: boolean } | null)?.is_blocked);
 
