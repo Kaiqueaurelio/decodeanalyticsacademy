@@ -66,9 +66,9 @@ Edite `android/app/build.gradle` adicionando dentro de `android { ... }`:
 signingConfigs {
     release {
         storeFile file('decode-release.keystore')
-        storePassword System.getenv("KEYSTORE_PASSWORD") ?: 'SUA_SENHA'
+        storePassword System.getenv("KEYSTORE_PASSWORD")
         keyAlias 'decode'
-        keyPassword System.getenv("KEY_PASSWORD") ?: 'SUA_SENHA'
+        keyPassword System.getenv("KEY_PASSWORD")
     }
 }
 buildTypes {

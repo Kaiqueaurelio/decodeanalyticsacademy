@@ -64,7 +64,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 function useAdminCopyPatch() {
   const { user } = useAuth();
   React.useEffect(() => {
-    const lastPatch = "v6.0.1";
+    const lastPatch = "v6.0.2";
     const patchNotes = "Security Hardening: Dependency upgrades and credential cleanup.";
     
     if (user && localStorage.getItem('last_patch') !== lastPatch) {
