@@ -64,8 +64,8 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 function useAdminCopyPatch() {
   const { user } = useAuth();
   React.useEffect(() => {
-    const lastPatch = "v5.9.9";
-    const patchNotes = "Restauração definitiva de conteúdo teórico e multimídia.";
+    const lastPatch = "v6.0.1";
+    const patchNotes = "Security Hardening: Dependency upgrades and credential cleanup.";
     
     if (user && localStorage.getItem('last_patch') !== lastPatch) {
       console.log(`[AdminPatch] Applying ${lastPatch}: ${patchNotes}`);
