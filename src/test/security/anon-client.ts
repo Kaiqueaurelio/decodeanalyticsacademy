@@ -3,9 +3,7 @@
  * Usa apenas a chave publica (anon) — nunca a service role.
  */
 const URL = process.env.VITE_SUPABASE_URL || "https://gynguskgysompgcajunc.supabase.co";
-const ANON =
-  process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd5bmd1c2tneXNvbXBnY2FqdW5jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2MTIxODAsImV4cCI6MjA5MTE4ODE4MH0.LidDO7DzGz4MHV0-azsjSNRLVUvZicxfLpmt4WStCoM";
+const ANON = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || "";
 
 export interface RestResult {
   status: number;
