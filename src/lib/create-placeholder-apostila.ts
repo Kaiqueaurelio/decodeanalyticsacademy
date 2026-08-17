@@ -21,12 +21,16 @@ export function parsePlaceholderId(id: string): { semester: number; index: numbe
   // placeholder-6-1 -> parts: ['placeholder', '6', '1']
   // placeholder-admin-6-1 -> parts: ['placeholder', 'admin', '6', '1']
   // placeholder-admin-dash-6-1 -> parts: ['placeholder', 'admin', 'dash', '6', '1']
+  // placeholder-admin-6-0 -> parts: ['placeholder', 'admin', '6', '0']
+  
+  // Extraímos os números na ordem em que aparecem
   const numParts = parts.map(p => parseInt(p, 10)).filter(n => !isNaN(n));
+  
   if (numParts.length >= 2) {
     const semester = numParts[0];
     const index = numParts[1];
     const subjects = BY_SEMESTER[semester];
-    const title = subjects && subjects[index] ? subjects[index] : null;
+    const title = subjects && subjects[index] !== undefined ? subjects[index] : null;
     return { semester, index, title };
   }
   return null;

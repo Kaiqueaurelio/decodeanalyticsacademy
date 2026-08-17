@@ -10,8 +10,21 @@ export function NewApostilaPageButton({ apostilaId, compact = false }: { apostil
   const navigate = useNavigate();
   const create = async () => {
     if (!user) return toast.error('Faça login novamente para criar a página.');
+    
+    // Se a apostila for um placeholder, precisamos garantir que ela exista antes de criar uma página
+    let targetApostilaId = apostilaId;
+    if (apostilaId.startsWith('placeholder')) {
+      try {
+        const { ensureApostilaExists } = await import('@/lib/create-placeholder-apostila');
+        targetApostilaId = await ensureApostilaExists({ id: apostilaId, title: '' });
+      } catch (err) {
+        console.error('Erro ao converter placeholder antes de criar página:', err);
+        return toast.error('Salve a apostila primeiro antes de adicionar páginas.');
+      }
+    }
+
     try {
-      const page = await createApostilaPage(apostilaId, user.id);
+      const page = await createApostilaPage(targetApostilaId, user.id);
       toast.success('Nova página criada.');
       // O navigate ja estava configurado para ir para a nova página, 
       // mas o usuário sente que "fica na página antiga". 
