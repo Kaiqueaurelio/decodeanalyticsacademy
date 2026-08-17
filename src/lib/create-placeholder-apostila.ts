@@ -17,18 +17,19 @@ export function parsePlaceholderId(id: string): { semester: number; index: numbe
   if (!id || !id.startsWith('placeholder')) return null;
 
   const parts = id.split('-');
-  // Exemplos de ID:
-  // placeholder-6-1 -> parts: ['placeholder', '6', '1']
-  // placeholder-admin-6-1 -> parts: ['placeholder', 'admin', '6', '1']
-  // placeholder-admin-dash-6-1 -> parts: ['placeholder', 'admin', 'dash', '6', '1']
-  // placeholder-admin-6-0 -> parts: ['placeholder', 'admin', '6', '0']
+  // O formato pode ser:
+  // placeholder-6-1 -> [placeholder, 6, 1]
+  // placeholder-admin-6-1 -> [placeholder, admin, 6, 1]
+  // placeholder-admin-dash-6-1 -> [placeholder, admin, dash, 6, 1]
   
-  // Extraímos os números na ordem em que aparecem
-  const numParts = parts.map(p => parseInt(p, 10)).filter(n => !isNaN(n));
+  // Pegamos os dois últimos números, que representam semestre e index na Grade Acadêmica
+  const numParts = parts.filter(p => /^\d+$/.test(p)).map(p => parseInt(p, 10));
   
   if (numParts.length >= 2) {
-    const semester = numParts[0];
-    const index = numParts[1];
+    // Pegamos os dois últimos
+    const index = numParts[numParts.length - 1];
+    const semester = numParts[numParts.length - 2];
+    
     const subjects = BY_SEMESTER[semester];
     const title = subjects && subjects[index] !== undefined ? subjects[index] : null;
     return { semester, index, title };
