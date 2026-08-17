@@ -65,9 +65,15 @@ export function McpSettings() {
     setChecking(true);
     setStatus(null);
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
       const response = await fetch(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': session ? `Bearer ${session.access_token}` : '',
+          'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || ''
+        },
         body: JSON.stringify({
           jsonrpc: "2.0",
           method: "notifications/initialized",
@@ -78,10 +84,18 @@ export function McpSettings() {
       if (response.ok) {
         setStatus({ ok: true, message: 'Endpoint respondendo corretamente.' });
       } else {
-        setStatus({ ok: false, message: `Erro HTTP: ${response.status}` });
+        const errorData = await response.json().catch(() => ({}));
+        const details = errorData.error || response.statusText || `Erro HTTP: ${response.status}`;
+        setStatus({ 
+          ok: false, 
+          message: response.status === 401 
+            ? 'Não autorizado: O endpoint exige autenticação válida de administrador.' 
+            : details
+        });
       }
     } catch (err) {
-      setStatus({ ok: false, message: 'Não foi possível conectar ao endpoint.' });
+      console.error('MCP Check Error:', err);
+      setStatus({ ok: false, message: 'Não foi possível conectar ao endpoint. Verifique a URL e sua conexão.' });
     } finally {
       setChecking(false);
     }
