@@ -195,7 +195,7 @@ export default function DashboardPage() {
         // await (supabase.rpc as any)('complete_semesters_six_to_eight', { _user_id: user.id });
         
         // Maximizar para administrador
-        if (profile?.is_admin || user.email === 'decoanalytics@outlook.com.br') {
+        if (profile?.is_admin) {
           // Maximizar para administrador (XP real: 9900/Lv99/365d)
           await (supabase.rpc as any)('maximize_user_gamification', { _user_id: user.id });
           gamification.loadAll();
