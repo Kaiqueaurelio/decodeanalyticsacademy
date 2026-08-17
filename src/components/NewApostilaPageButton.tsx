@@ -13,7 +13,8 @@ export function NewApostilaPageButton({ apostilaId, compact = false }: { apostil
     try {
       const page = await createApostilaPage(apostilaId, user.id);
       toast.success('Nova página criada.');
-      navigate(`/admin/apostilas/${apostilaId}?page=${page.id}&expanded=1`);
+      navigate(`/admin/apostilas/${apostilaId}?page=${page.id}&expanded=1`, { replace: false });
+      window.location.reload();
     } catch (error: any) {
       const message = String(error?.message || '');
       if (/apostila_pages|schema cache|does not exist|PGRST205/i.test(message)) {
