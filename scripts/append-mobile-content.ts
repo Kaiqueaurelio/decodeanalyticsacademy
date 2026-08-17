@@ -341,7 +341,7 @@ async function run() {
     .from('apostila_pages')
     .select('*')
     .eq('apostila_id', apostilaId)
-    .order('order_index', { ascending: false })
+    .order('index', { ascending: false })
     .limit(1);
 
   if (fetchError) {
@@ -371,7 +371,7 @@ async function run() {
         apostila_id: apostilaId,
         title: "Shell Script - Continuação",
         content: newContent,
-        order_index: 0
+        index: 0
       });
 
     if (insertError) {
