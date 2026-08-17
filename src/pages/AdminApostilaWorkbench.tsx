@@ -235,7 +235,10 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     const loadedPages = (pageRows || []) as ApostilaPage[];
     setPages(loadedPages);
     const selectedPage = loadedPages.find((page) => page.id === selectedPageId);
-    if (selectedPage) setContent(selectedPage.content || '');
+    if (selectedPage) {
+      setContent(selectedPage.content || '');
+      setTitle(selectedPage.title || ''); // Update title for pages too
+    }
 
     if (links && links.length) {
       const ids = links.map((l: any) => l.material_id);
