@@ -326,6 +326,12 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     setSaving(true);
 
     if (selectedPageId) {
+      // Se estamos em uma página, não salvamos se o ID for placeholder (não deveria acontecer se o NewApostilaPageButton for bloqueado, mas segurança extra)
+      if (selectedPageId.startsWith('placeholder')) {
+        setSaving(false);
+        return;
+      }
+
       const { error } = await (supabase.from('apostila_pages' as any) as any)
         .update({ 
           content,
@@ -333,7 +339,11 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         }).eq('id', selectedPageId).eq('apostila_id', id);
       
       setSaving(false);
-      if (error) { toast.error('Não foi possível salvar esta página.'); return; }
+      if (error) { 
+        console.error('Erro ao salvar página:', error);
+        toast.error('Não foi possível salvar esta página.'); 
+        return; 
+      }
       
       setPages((current) => current.map((page) => 
         page.id === selectedPageId 
