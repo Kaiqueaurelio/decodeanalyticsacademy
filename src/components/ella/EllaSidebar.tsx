@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import { Wand2 } from "lucide-react";
 import { motion, useAnimationControls } from "framer-motion";
@@ -18,6 +18,16 @@ export function EllaSidebar() {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const controls = useAnimationControls();
+
+  const [avatarUrl, setAvatarUrl] = useState(getEllaAvatarUrl());
+  
+  // Refresh avatar periodically to pick up changes
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setAvatarUrl(getEllaAvatarUrl());
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const handleResize = () => {
@@ -70,7 +80,7 @@ export function EllaSidebar() {
             size="icon"
           >
             <Avatar className="h-full w-full pointer-events-none">
-              <AvatarImage src={getEllaAvatarUrl()} alt="Ella Ribeiro" className="object-cover" />
+              <AvatarImage src={avatarUrl} alt="Ella Ribeiro" className="object-cover" />
               <AvatarFallback className="bg-gradient-to-br from-primary to-accent">
                 <Wand2 className="h-6 w-6 text-primary-foreground" />
               </AvatarFallback>
