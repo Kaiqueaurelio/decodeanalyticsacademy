@@ -235,7 +235,10 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     const loadedPages = (pageRows || []) as ApostilaPage[];
     setPages(loadedPages);
     const selectedPage = loadedPages.find((page) => page.id === selectedPageId);
-    if (selectedPage) setContent(selectedPage.content || '');
+    if (selectedPage) {
+      setContent(selectedPage.content || '');
+      setTitle(selectedPage.title || ''); // Update title for pages too
+    }
 
     if (links && links.length) {
       const ids = links.map((l: any) => l.material_id);
@@ -324,10 +327,20 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
 
     if (selectedPageId) {
       const { error } = await (supabase.from('apostila_pages' as any) as any)
-        .update({ content }).eq('id', selectedPageId).eq('apostila_id', id);
+        .update({ 
+          content,
+          title: title.trim() || 'Nova Página'
+        }).eq('id', selectedPageId).eq('apostila_id', id);
+      
       setSaving(false);
       if (error) { toast.error('Não foi possível salvar esta página.'); return; }
-      setPages((current) => current.map((page) => page.id === selectedPageId ? { ...page, content, updated_at: new Date().toISOString() } : page));
+      
+      setPages((current) => current.map((page) => 
+        page.id === selectedPageId 
+          ? { ...page, content, title: title.trim() || 'Nova Página', updated_at: new Date().toISOString() } 
+          : page
+      ));
+      
       dirtyRef.current = false;
       setLastSavedAt(new Date());
       return;
