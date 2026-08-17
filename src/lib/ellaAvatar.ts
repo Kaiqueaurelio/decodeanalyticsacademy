@@ -1,4 +1,5 @@
 import ellaAvatarBundled from "@/assets/ella-avatar-v5.png";
+import ellaAvatarLanding from '@/assets/ella-avatar-landing.png.asset.json';
 
 /**
  * ELLA AVATAR IDENTITY SYSTEM - v5.9.2
@@ -23,6 +24,10 @@ const LEGACY_KEYS = [
 ];
 
 const getBaseAvatarUrl = () => {
+  // Preferir a versão do asset landing que é a imagem oficial v5.8.1
+  if (ellaAvatarLanding && (ellaAvatarLanding as any).url) {
+    return (ellaAvatarLanding as any).url;
+  }
   return ellaAvatarBundled as string;
 };
 
