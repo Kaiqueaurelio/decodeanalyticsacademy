@@ -19,7 +19,7 @@ export function DashboardTopbar({ hideSearchOnMobile = false }: { hideSearchOnMo
   const { user, signOut, isAdmin: authIsAdmin } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const { data: profile } = useUserProfile(user?.id);
-  const isAdmin = authIsAdmin || profile?.is_admin || profile?.ra === 'G802144';
+  const isAdmin = authIsAdmin || profile?.is_admin;
 
   const [query, setQuery] = useState('');
   const { isOpen: navOpen, setOpen: setNavOpen } = useSidebar();
