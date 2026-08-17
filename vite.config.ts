@@ -38,11 +38,19 @@ export default defineConfig(({ mode }) => ({
         runtimeCaching: [
           {
             urlPattern: ({ request }) => request.mode === "navigate",
-            handler: "NetworkOnly", // OBRIGATÓRIO: Sempre buscar o novo index.html da rede
+            handler: "NetworkFirst", // Tenta rede, volta para cache se offline
+            options: {
+              cacheName: "decode-html-v3",
+              expiration: { maxEntries: 5, maxAgeSeconds: 24 * 60 * 60 },
+            }
           },
           {
             urlPattern: ({ request }) => request.destination === "script",
-            handler: "NetworkOnly", // OBRIGATÓRIO: Sempre buscar novos chunks da rede
+            handler: "NetworkFirst", // Tenta rede, volta para cache se offline
+            options: {
+              cacheName: "decode-scripts-v3",
+              expiration: { maxEntries: 50, maxAgeSeconds: 24 * 60 * 60 },
+            }
           },
           {
             urlPattern: ({ request }) => request.destination === "style",
