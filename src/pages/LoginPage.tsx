@@ -157,7 +157,7 @@ export default function LoginPage() {
     if (!id) { toast.error('Informe seu RA ou e-mail.'); return; }
 
     const isEmail = looksLikeEmail(id);
-    const isSpecial = id === 'Juliana';
+    const isSpecial = id === 'Juliana' || id === 'decoanalytics@outlook.com.br';
 
     if (!isEmail && !isValidRa(id) && !isSpecial) {
       const errorMsg = 'Use um e-mail válido ou seu RA. Se o erro persistir, procure a secretaria para validar seu vínculo.';
