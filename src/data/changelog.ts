@@ -27,6 +27,16 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: "6.6.1",
+    date: "18/08/2026",
+    title: "Login Runaway & Acesso Restaurado",
+    changes: [
+      { kind: "fix", text: "Botões do login agora se movimentam fielmente ao estilo Runaway da referência" },
+      { kind: "fix", text: "Fluxos de autenticação por RA e e-mail estabilizados" },
+      { kind: "improvement", text: "Redirecionamento correto para o painel administrativo ou dashboard do aluno" }
+    ]
+  },
+  {
     version: "6.6.0",
     date: "18/08/2026",
     title: "Estabilidade Total & Ella v18",
