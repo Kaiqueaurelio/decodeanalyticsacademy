@@ -400,7 +400,10 @@ Retorne APENAS chamando a funcao return_apostila.`;
           tool_choice: { type: "function", function: { name: "return_apostila" } },
         }),
       });
-      if (!aiResponse.ok) return { __status: aiResponse.status };
+      if (!aiResponse.ok) {
+        console.error("Lovable AI extract-content error", aiResponse.status, (await aiResponse.text()).slice(0, 300));
+        return { __status: aiResponse.status };
+      }
       const aiData = await aiResponse.json();
       const choice = aiData.choices?.[0];
       const toolCall = choice?.message?.tool_calls?.[0];
