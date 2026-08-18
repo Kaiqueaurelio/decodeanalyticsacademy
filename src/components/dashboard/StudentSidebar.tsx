@@ -41,7 +41,9 @@ import {
   Heart,
   Coffee,
   CalendarRange,
+  Briefcase,
 } from 'lucide-react';
+
 
 import logoOwl from '@/assets/owl-icon.png';
 import { Button } from '@/components/ui/button';
@@ -93,7 +95,9 @@ const menuGroups: { label: string; items: MenuItem[] }[] = [
       { to: '/performance', icon: Activity, label: 'Desempenho' },
       { to: '/tira-duvida', icon: HelpCircle, label: 'Tira-dúvidas', hideForEnem: true },
       { to: '/comunidade', icon: MessagesSquare, label: 'Comunidade', unipOnly: true },
+      { to: '/vagas', icon: Briefcase, label: 'Vagas e Estágios' },
     ],
+
   },
   {
     label: 'Conta',
