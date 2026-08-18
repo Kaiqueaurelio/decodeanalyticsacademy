@@ -60,7 +60,7 @@ export function GradeCalculatorWidget() {
           <div className="h-12 animate-pulse bg-muted/30 rounded" />
         ) : stats.total === 0 ? (
           <p className="text-xs text-muted-foreground text-center py-2">
-            Toque para calcular suas notas UNIP
+            Toque para calcular suas notas acadêmicas
           </p>
         ) : (
           <div className="grid grid-cols-3 gap-2 text-center">

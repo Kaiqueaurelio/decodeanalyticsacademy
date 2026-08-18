@@ -17,7 +17,7 @@ Academic environment focused on Technology (Computer Science, Information System
 
 ## Core Features
 - Digital Notebook: Block-based editor (Notion-style) for student notes.
-- Academic Grid: Automated mapping of UNIP subjects from 1st to 8th semester.
+- Academic Grid: Automated mapping of academic subjects from 1st to 8th semester.
 - PWA/Offline: Advanced caching for study materials.
 - Admin Workbench: Fullscreen Notion-style editor for creating and auditing handouts.
 - Security: Dynamic watermarking, print blocking, and strict RLS policies.

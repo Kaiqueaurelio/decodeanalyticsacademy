@@ -57,7 +57,7 @@
   <url><loc>https://decodeanalyticsacademy.lovable.app/dashboard?semester=7</loc><priority>0.7</priority></url>
   <url><loc>https://decodeanalyticsacademy.lovable.app/dashboard?semester=8</loc><priority>0.7</priority></url>
 
-  <!-- Subject Pages (UNIP CC Curriculum) -->
+  <!-- Subject Pages (Computer Science Curriculum) -->
   <url><loc>https://decodeanalyticsacademy.lovable.app/subject/Logica%20de%20Programacao</loc><priority>0.6</priority></url>
   <url><loc>https://decodeanalyticsacademy.lovable.app/subject/Matematica%20Discreta</loc><priority>0.6</priority></url>
   <url><loc>https://decodeanalyticsacademy.lovable.app/subject/Estrutura%20de%20Dados</loc><priority>0.6</priority></url>
