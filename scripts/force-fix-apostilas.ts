@@ -1,10 +1,10 @@
 import { createClient } from "@supabase/supabase-js";
 
-const SUPABASE_URL = "https://gynguskgysompgcajunc.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd5bmd1c2tneXNvbXBnY2FqdW5jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2MTIxODAsImV4cCI6MjA5MTE4ODE4MH0.LidDO7DzGz4MHV0-azsjSNRLVUvZicxfLpmt4WStCoM";
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
 
-const email = "decoanalytics@outlook.com.br";
-const password = "Aurelio0496@@##";
+const email = process.env.ADMIN_EMAIL;
+const password = process.env.ADMIN_PASSWORD;
 
 async function main() {
   const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);

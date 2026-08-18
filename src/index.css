@@ -2,6 +2,7 @@
    pelo preload scanner). Manter o @import aqui atrasava o primeiro texto. */
 
 @import './styles/de-ai-overrides.css';
+@import './styles/landing-motion.css';
 
 @tailwind base;
 @tailwind components;

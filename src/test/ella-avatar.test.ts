@@ -11,7 +11,7 @@ describe('Ella avatar URL stability', () => {
     const second = getEllaAvatarUrl();
 
     expect(first).toBe(second);
-    expect(first).toContain('ella_v=17');
+    expect(first).toContain('ella_v=18');
   });
 
   it('keeps a configured custom avatar stable', () => {
@@ -23,6 +23,6 @@ describe('Ella avatar URL stability', () => {
 
     expect(first).toBe(second);
     expect(first).toContain('https://example.com/ella-avatar.png?v=custom');
-    expect(first).toContain('ella_v=17');
+    expect(first).toContain('ella_v=18');
   });
 });

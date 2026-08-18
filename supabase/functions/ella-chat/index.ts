@@ -637,8 +637,12 @@ async function runToolBody(name: string, args: any, admin: ReturnType<typeof cre
     switch (name) {
       case "search_app": {
         const table = args.entity;
+        const allowedTables = ["apostilas", "exercises", "calendar_events", "announcements", "materials", "free_courses"];
+        if (!allowedTables.includes(table)) {
+          return { ok: false, error: "Invalid entity for search" };
+        }
         const limit = Math.min(args.limit ?? 10, 25);
-        const col = table === "calendar_events" ? "title" : "title";
+        const col = "title";
         const q = await admin.from(table).select("id, " + col).ilike(col, `%${args.query}%`).limit(limit);
         return { ok: !q.error, results: q.data ?? [], error: q.error?.message };
       }
