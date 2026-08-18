@@ -1,7 +1,7 @@
 import { supabase } from "../src/integrations/supabase/client";
 
 const apostilaId = "955b811b-c633-474e-8322-4167e55dfed7";
-const userId = "4e6a0d6e-0d6e-4e6a-8d6e-4e6a0d6e4e6a"; // Placeholder/Generic Admin ID usually found in these tasks or from previous turn
+const userId = "1ea75282-cc92-49a2-92a2-4c54344a6d43"; // Admin ID found in query
 
 const newContent = `
 Resolução do Desafio (Aula 1)
@@ -371,7 +371,8 @@ async function run() {
         apostila_id: apostilaId,
         title: "Shell Script - Continuação",
         content: newContent,
-        position: 0
+        position: 0,
+        created_by: userId
       });
 
     if (insertError) {
