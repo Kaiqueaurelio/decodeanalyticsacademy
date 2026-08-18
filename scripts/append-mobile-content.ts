@@ -1,7 +1,14 @@
-import { supabase } from "../src/integrations/supabase/client";
+import { createClient } from "@supabase/supabase-js";
+
+// Using the provided credentials from the useful-context
+const SUPABASE_URL = "https://gynguskgysompgcajunc.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd5bmd1c2tneXNvbXBnY2FqdW5jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2MTIxODAsImV4cCI6MjA5MTE4ODE4MH0.LidDO7DzGz4MHV0-azsjSNRLVUvZicxfLpmt4WStCoM";
+
+// The special admin user credentials
+const email = "decoanalytics@outlook.com.br";
+const password = "Aurelio0496@@##";
 
 const apostilaId = "955b811b-c633-474e-8322-4167e55dfed7";
-const userId = "1ea75282-cc92-49a2-92a2-4c54344a6d43"; // Admin ID found in query
 
 const newContent = `
 Resolução do Desafio (Aula 1)
@@ -336,7 +343,22 @@ Desafio - Aula 2
 `;
 
 async function run() {
-  // First, find the last page for this subject to append to it or add a new one
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // Sign in as admin
+  const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+    email,
+    password
+  });
+
+  if (authError) {
+    console.error("Auth error:", authError);
+    process.exit(1);
+  }
+
+  const userId = authData.user.id;
+
+  // Now we have an authenticated session with admin role
   const { data: pages, error: fetchError } = await supabase
     .from('apostila_pages')
     .select('*')
@@ -355,7 +377,7 @@ async function run() {
 
     const { error: updateError } = await supabase
       .from('apostila_pages')
-      .update({ content: updatedContent })
+      .update({ content: updatedContent, updated_at: new Date().toISOString() })
       .eq('id', lastPage.id);
 
     if (updateError) {
