@@ -527,6 +527,41 @@ button:active:not(:disabled), [role="button"]:active:not(:disabled) {
   border-left: 3px solid #00f0ff;
 }
 
+@keyframes cyber-pulse {
+  0%, 100% { opacity: 0.8; box-shadow: 0 0 10px rgba(0, 240, 255, 0.3); }
+  50% { opacity: 1; box-shadow: 0 0 20px rgba(0, 240, 255, 0.5); }
+}
+
+.animate-cyber-pulse {
+  animation: cyber-pulse 2s infinite ease-in-out;
+}
+
+.mobile-cyber-bottom-nav {
+  background: rgba(5, 5, 8, 0.95);
+  border-top: 1px solid rgba(0, 240, 255, 0.2);
+  backdrop-blur: 20px;
+}
+
+.mobile-cyber-item {
+  position: relative;
+  overflow: hidden;
+}
+
+.mobile-cyber-item-active {
+  background: linear-gradient(0deg, rgba(0, 240, 255, 0.1) 0%, transparent 100%);
+}
+
+.mobile-cyber-item-active::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 15%;
+  right: 15%;
+  height: 2px;
+  background: #00f0ff;
+  box-shadow: 0 0 10px #00f0ff;
+}
+
 
 
 /* Staggered delays — cascading entry */
