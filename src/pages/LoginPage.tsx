@@ -169,8 +169,8 @@ export default function LoginPage() {
     }
 
     setLoading(true);
-    const effectiveEmail = isEmail ? id.toLowerCase() : isSpecial ? id : buildRaEmail(id);
-    const identifierForAuth = isEmail ? id.toLowerCase() : isSpecial ? id : id;
+    const effectiveEmail = isEmail ? id.toLowerCase() : isSpecial ? id.toLowerCase() : buildRaEmail(id);
+    const identifierForAuth = isEmail ? id.toLowerCase() : isSpecial ? id.toLowerCase() : id;
 
 
     if (isSignUp) {
