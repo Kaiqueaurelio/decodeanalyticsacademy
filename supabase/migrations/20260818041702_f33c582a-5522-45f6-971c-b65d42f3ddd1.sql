@@ -1,0 +1,1 @@
+update apostilas set semester = 6, published = true where id = '955b811b-c633-474e-8322-4167e55dfed7'; update apostilas set semester = 6, published = true where id = 'b3331340-8327-45d4-a990-85a86745156b';
