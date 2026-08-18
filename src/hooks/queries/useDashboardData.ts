@@ -56,6 +56,7 @@ export function useApostilasList(options: ApostilasListOptions = {}) {
         .select(APOSTILA_LIST_COLUMNS);
 
       if (!isAdmin) {
+        // Alunos veem apenas publicadas
         q = q.eq('published', true);
       }
 
