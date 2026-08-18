@@ -37,7 +37,7 @@ import { NewUpdatePopup } from '@/components/NewUpdatePopup';
 import { McpSyncButton } from '@/components/dashboard/McpSyncButton';
 
 
-
+const EMPTY_FIXED_APOSTILAS: Record<string, string> = {};
 
 export default function DashboardPage() {
   const { user, isAdmin } = useAuth();
@@ -62,7 +62,7 @@ export default function DashboardPage() {
   }, [profile?.semester]);
 
   const { data: apostilasRaw = [], isLoading: loadingApostilas } = useApostilasList({ semester: selectedSemester });
-  const { data: fixedApostilasData } = useQuery({
+  const { data: fixedApostilasData, isLoading: loadingFixedApostilas } = useQuery({
     queryKey: ['fixed-apostilas'],
     queryFn: async () => {
       const { data, error } = await supabase.from('fixed_apostilas').select('semester, subject_key, apostila_id');
@@ -75,11 +75,11 @@ export default function DashboardPage() {
     },
     staleTime: 1000 * 60 * 5 // 5 min
   });
-  const fixedApostilas = fixedApostilasData || {};
+  const fixedApostilas = fixedApostilasData ?? EMPTY_FIXED_APOSTILAS;
   const { data: exerciseCounts = {} } = useExerciseCounts();
   const { data: statsData, isLoading: loadingStats } = useDashboardStats(user?.id);
   const stats = statsData || { total: 0, hits: 0, errors: 0, byApostila: {} };
-  const loading = loadingApostilas || loadingStats;
+  const loading = loadingApostilas || loadingStats || loadingFixedApostilas;
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [query, setQuery] = useState('');
 
@@ -172,7 +172,7 @@ export default function DashboardPage() {
     }
 
     return list;
-  }, [apostilasRaw, selectedSemester]);
+  }, [apostilasRaw, selectedSemester, fixedApostilas]);
   
   
 

@@ -6,14 +6,16 @@ import { PageSkeleton } from '@/components/PageSkeleton';
 import { useAuth } from '@/hooks/useAuth';
 import { guessSemesterFromCategory } from '@/lib/subject-semester-map';
 
-function keepMostComplete(apostilas: any[]) {
-  if (apostilas.length === 0) return [];
-  const sorted = [...apostilas].sort((a, b) => {
-    const aContentLen = (a.content || '').length;
-    const bContentLen = (b.content || '').length;
-    return bContentLen - aContentLen;
+function sortApostilasDeterministically(apostilas: any[]) {
+  return [...apostilas].sort((a, b) => {
+    const contentDiff = (b.content || '').length - (a.content || '').length;
+    if (contentDiff !== 0) return contentDiff;
+
+    const updatedDiff = String(b.updated_at || '').localeCompare(String(a.updated_at || ''));
+    if (updatedDiff !== 0) return updatedDiff;
+
+    return String(a.id).localeCompare(String(b.id));
   });
-  return [sorted[0]];
 }
 
 function subjectKey(s: string) {
@@ -51,7 +53,7 @@ const SubjectPage = () => {
 
       const { data: allApostilas, error } = await supabase
         .from('apostilas')
-        .select('id, title, category, cover_url, semester, source_type, content')
+        .select('id, title, category, cover_url, semester, source_type, content, updated_at')
         .eq('published', true);
 
       if (error) {
@@ -90,7 +92,7 @@ const SubjectPage = () => {
         semester: row.semester ?? guessSemesterFromCategory(row.category) ?? guessSemesterFromCategory(decodedCategory) ?? 1,
       }));
 
-      setRows(keepMostComplete(normalizedRows));
+      setRows(sortApostilasDeterministically(normalizedRows));
       setLoading(false);
     })();
     return () => {
@@ -99,21 +101,14 @@ const SubjectPage = () => {
   }, [decodedCategory]);
 
   const handleOpenApostila = (subject: any) => {
-    const isMobileSubject = subject.title.toLowerCase().includes('mobile') || subject.category.toLowerCase().includes('mobile');
-    const shellScriptPageId = '59895af2-f618-4713-92de-408b5c27b513';
-    
-    if (isMobileSubject) {
-      navigate(`/apostila/${subject.id}?page=${shellScriptPageId}`);
-    } else {
-      navigate(`/apostila/${subject.id}`);
-    }
+    navigate(`/apostila/${subject.id}`);
   };
 
   if (loading) return <PageSkeleton />;
 
   const subjectData = rows[0] ? {
     id: rows[0].id,
-    title: rows[0].title,
+    title: decodedCategory || rows[0].category || rows[0].title,
     coverImage: rows[0].cover_url,
     classType: rows[0].source_type === 'enem' ? 'ENEM' : 'Graduação',
     workloadHours: 80,
@@ -127,17 +122,15 @@ const SubjectPage = () => {
     contentSections: [
       {
         id: 'main-content',
-        title: 'Material de Estudo',
-        documents: [
-          { 
-            id: 'caderno-estudos', 
-            title: 'Caderno de Estudos', 
-            type: 'exam_review' as const, 
-            onClick: () => handleOpenApostila(rows[0]) 
-          }
-        ]
-      }
-    ]
+        title: 'Materiais de Estudo',
+        documents: rows.map((row) => ({
+          id: row.id,
+          title: row.title || 'Caderno de Estudos',
+          type: 'exam_review' as const,
+          onClick: () => handleOpenApostila(row),
+        })),
+      },
+    ],
   } : {
     id: 'placeholder',
     title: decodedCategory || 'Disciplina',
