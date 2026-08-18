@@ -61,7 +61,15 @@ export default function DashboardPage() {
     }
   }, [profile?.semester]);
 
-  const { data: apostilasRaw = [], isLoading: loadingApostilas } = useApostilasList({ semester: selectedSemester });
+  const { data: apostilasRaw = [], isLoading: loadingApostilas, isError: errorApostilas } = useApostilasList({ semester: selectedSemester });
+  
+  useEffect(() => {
+    if (errorApostilas) {
+      console.error("[DashboardPage] Erro ao carregar apostilas");
+      toast.error("Erro ao carregar materiais. Tente recarregar a página.");
+    }
+  }, [errorApostilas]);
+
   const { data: fixedApostilasData, isLoading: loadingFixedApostilas } = useQuery({
     queryKey: ['fixed-apostilas'],
     queryFn: async () => {

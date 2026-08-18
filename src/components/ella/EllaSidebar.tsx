@@ -25,7 +25,7 @@ export function EllaSidebar() {
   useEffect(() => {
     const interval = setInterval(() => {
       setAvatarUrl(getEllaAvatarUrl());
-    }, 2000); // Intervalo reduzido para maior reatividade na atualização visual
+    }, 10000); // Aumentado para 10s para estabilidade visual
     return () => clearInterval(interval);
   }, []);
 

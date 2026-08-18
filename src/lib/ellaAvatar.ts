@@ -84,16 +84,16 @@ export const getEllaAvatarUrl = () => {
       localStorage.removeItem(ELLA_AVATAR_STORAGE_KEY);
     }
 
-    // Cache busting agressivo v17
+    // Cache busting v18 - Apenas se houver URL personalizada
     if (finalUrl.startsWith('data:')) {
       return finalUrl;
     }
     
-    // Adiciona timestamp e flag de bust para evitar cache persistente do navegador/service worker
+    // Removido Date.now() a cada chamada para evitar piscadas (estabilidade v18)
     const separator = finalUrl.includes('?') ? '&' : '?';
-    return `${finalUrl}${separator}ella_bust=${Date.now()}&v=17`;
+    return `${finalUrl}${separator}v=18`;
   } catch {
-    return `${DEFAULT_ELLA_AVATAR}?v=17&t=${Date.now()}`;
+    return DEFAULT_ELLA_AVATAR;
   }
 
 };
