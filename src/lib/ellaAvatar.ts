@@ -5,7 +5,7 @@ import ellaAvatarLanding from '@/assets/ella-avatar-landing.png.asset.json';
  * ELLA AVATAR IDENTITY SYSTEM - v5.9.2
  * v13: Sincronização global e purga agressiva de cache CDN/Local.
  */
-export const ELLA_AVATAR_STORAGE_KEY = 'decode_ella_avatar_url_v15';
+export const ELLA_AVATAR_STORAGE_KEY = 'decode_ella_avatar_url_v16';
 const LEGACY_KEYS = [
   'decode_ella_avatar_url',
   'decode_ella_avatar_url_v2',
@@ -21,6 +21,7 @@ const LEGACY_KEYS = [
   'decode_ella_avatar_url_v12',
   'decode_ella_avatar_url_v13',
   'decode_ella_avatar_url_v14',
+  'decode_ella_avatar_url_v15',
 ];
 
 const getBaseAvatarUrl = () => {
@@ -91,7 +92,7 @@ export const getEllaAvatarUrl = () => {
     }
 
     const separator = finalUrl.includes('?') ? '&' : '?';
-    return `${finalUrl}${separator}ella_v=17`;
+    return `${finalUrl}${separator}ella_v=18`;
   } catch {
     return DEFAULT_ELLA_AVATAR;
   }
