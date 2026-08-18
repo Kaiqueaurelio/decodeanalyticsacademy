@@ -14,7 +14,7 @@ import logoDark from '@/assets/owl-icon.png';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function LoginPage() {
-  const { signIn, signUp, user, loading: authLoading, status, isSessionHydrated } = useAuth();
+  const { signIn, signUp, user, isAdmin, roleChecked, loading: authLoading, status, isSessionHydrated } = useAuth();
   const navigate = useNavigate();
   const savedIdentifier = localStorage.getItem('decode_remember_identifier')
     || localStorage.getItem('decode_remember_email')
@@ -67,17 +67,18 @@ export default function LoginPage() {
   const authSettling = authLoading || !isSessionHydrated || status === 'loading' || status === 'hydrating';
 
   useEffect(() => {
-    if (authSettling || status !== 'authenticated' || !user) return;
+    if (authSettling || status !== 'authenticated' || !user || !roleChecked) return;
     const params = new URLSearchParams(window.location.search);
     const nextParam = params.get('next');
     const isSafeNext = nextParam && nextParam.startsWith('/') && !nextParam.startsWith('//');
     if (isSafeNext) {
-      navigate(nextParam!, { replace: true });
+      navigate(nextParam, { replace: true });
       return;
     }
     const lastRoute = localStorage.getItem('decode_last_route');
-    navigate(lastRoute && lastRoute !== '/' && lastRoute !== '/login' ? lastRoute : '/dashboard', { replace: true });
-  }, [authSettling, status, user, navigate]);
+    const validLastRoute = lastRoute && lastRoute !== '/' && lastRoute !== '/login';
+    navigate(validLastRoute ? lastRoute : isAdmin ? '/admin' : '/dashboard', { replace: true });
+  }, [authSettling, status, user, roleChecked, isAdmin, navigate]);
 
   useEffect(() => {
     if (!awaitingSession || authSettling) return;
@@ -419,9 +420,10 @@ export default function LoginPage() {
                       <div className="space-y-3"><div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.12em] text-white/35"><span>{loginHint}</span><span className="text-[#d7ff4f]">{filledLoginFields}/2</span></div><div className="h-1 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-[#d7ff4f] shadow-[0_0_14px_#d7ff4f] transition-all duration-500" style={{ width: `${filledLoginFields * 50}%` }} /></div></div>
 
                       {unverifiedEmail && !isSignUp ? <Button type="submit" disabled={loading} className="min-h-12 w-full rounded-full bg-[#d7ff4f] font-semibold text-[#10150f] hover:bg-[#e5ff8b]">{loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Entrar</Button> : (
-                        <div ref={runawayDockRef} onPointerMove={handleRunawayPointerMove} onPointerLeave={resetRunawayOffset} className="relative flex min-h-[84px] items-center justify-center overflow-visible rounded-2xl border border-white/[0.06] bg-black/[0.12]">
+                        <div ref={runawayDockRef} onPointerMove={handleRunawayPointerMove} onPointerLeave={resetRunawayOffset} className="relative flex min-h-[84px] items-center justify-center overflow-hidden rounded-full border border-white/[0.06] bg-black/[0.22] px-3">
                           <div className="pointer-events-none absolute inset-x-8 top-1/2 h-px -translate-y-1/2 bg-gradient-to-r from-transparent via-[#d7ff4f]/20 to-transparent" />
-                          <Button ref={runawayButtonRef} type="submit" style={{ transform: `translate3d(${runawayOffset.x}px, ${runawayOffset.y}px, 0)` }} className="relative z-10 min-h-12 w-full rounded-full border border-[#d7ff4f]/70 bg-[#d7ff4f] font-semibold text-[#10150f] shadow-[0_0_25px_rgba(215,255,79,0.16)] transition-[transform,box-shadow,background-color] duration-300 ease-out hover:bg-[#e5ff8b] hover:shadow-[0_0_35px_rgba(215,255,79,0.28)] disabled:cursor-not-allowed disabled:opacity-70" disabled={loading || awaitingSession || isLocked} aria-label="Entrar no Decode Analytics Academy">{(loading || awaitingSession) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}{isLocked ? <><Lock className="mr-2 h-4 w-4" /> Conta bloqueada</> : isSignUp ? 'Criar conta' : awaitingSession ? 'Entrando...' : 'Log in'}</Button>
+                          <div aria-hidden="true" className="pointer-events-none absolute left-1/2 top-1/2 h-12 w-[7.5rem] -translate-x-1/2 -translate-y-1/2 rounded-full border border-dashed border-[#d7ff4f]/25" />
+                          <Button ref={runawayButtonRef} type="submit" style={{ transform: `translate3d(${runawayOffset.x}px, ${runawayOffset.y}px, 0)` }} className="relative z-10 min-h-12 w-[7.5rem] shrink-0 rounded-full border border-[#d7ff4f]/70 bg-[#d7ff4f] px-4 font-semibold text-[#10150f] shadow-[0_0_25px_rgba(215,255,79,0.16)] transition-[transform,box-shadow,background-color] duration-300 ease-out hover:bg-[#e5ff8b] hover:shadow-[0_0_35px_rgba(215,255,79,0.28)] disabled:cursor-not-allowed disabled:opacity-70" disabled={loading || awaitingSession || isLocked} aria-label="Entrar no Decode Analytics Academy">{(loading || awaitingSession) && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}{isLocked ? <><Lock className="mr-1 h-4 w-4" /> Bloqueada</> : isSignUp ? 'Criar conta' : awaitingSession ? 'Entrando...' : 'Log in'}</Button>
                         </div>
                       )}
 
