@@ -33,8 +33,8 @@ Deno.serve(async (req) => {
     return json({ error: "Requisição inválida." }, 400, corsHeaders);
   }
 
-  const ra = String(body.ra ?? "").trim().toUpperCase();
-  const rawRa = String(body.ra ?? "").trim();
+  const rawRa = String(body.ra ?? "").replace(/[\u200B-\u200D\uFEFF]/g, "").trim();
+  const ra = rawRa.replace(/[\s._-]/g, "").toUpperCase();
   const ip = req.headers.get("x-real-ip") || "unknown";
   const password = typeof body.password === "string" ? body.password : "";
   const mode = body.mode === "reset" ? "reset" : body.mode === "signup" ? "signup" : "signin";

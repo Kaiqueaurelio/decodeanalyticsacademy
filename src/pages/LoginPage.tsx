@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { buildRaEmail, isEmailIdentifier, isSpecialIdentifier, isValidEmail, isValidRa, normalizeIdentifier, normalizeRa } from '@/lib/login-identifiers';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -30,11 +31,7 @@ export default function LoginPage() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [isReset, setIsReset] = useState(false);
 
-  const RA_DOMAIN = 'ra.unip.local';
-  const looksLikeEmail = (v: string) => /@/.test(v.trim());
-  const normalizeRa = (raValue: string) => raValue.trim().toUpperCase();
-  const buildRaEmail = (raValue: string) => `${normalizeRa(raValue).toLowerCase()}@${RA_DOMAIN}`;
-  const isValidRa = (raValue: string) => raValue.trim().length >= 2 && raValue.trim().length <= 50;
+  const looksLikeEmail = isEmailIdentifier;
   /**
    * Login/recuperação por RA são resolvidos no backend (edge function `ra-auth`).
    * O e-mail do aluno nunca trafega para o cliente — isso evita enumeração de RA
@@ -72,7 +69,8 @@ export default function LoginPage() {
   const [rememberMe, setRememberMe] = useState(!!savedIdentifier);
   const [awaitingSession, setAwaitingSession] = useState(false);
   const passwordRef = useRef<HTMLInputElement>(null);
-  const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const TERMS_VERSION = '4.18.1';
+  const [agreedToTerms, setAgreedToTerms] = useState(() => localStorage.getItem(`decode_terms_accepted_${TERMS_VERSION}`) === 'true');
 
 
   const authSettling = authLoading || !isSessionHydrated || status === 'loading' || status === 'hydrating';
@@ -98,6 +96,18 @@ export default function LoginPage() {
       setAwaitingSession(false);
     }
   }, [awaitingSession, authSettling, status, user]);
+
+  useEffect(() => {
+    if (!awaitingSession) return;
+    const timeout = window.setTimeout(() => {
+      if (status !== 'authenticated' || !user) {
+        setAwaitingSession(false);
+        setLoading(false);
+        toast.error('A sessão não foi confirmada. Tente entrar novamente.', { duration: 5000 });
+      }
+    }, 12000);
+    return () => window.clearTimeout(timeout);
+  }, [awaitingSession, status, user]);
 
   const triggerShake = () => {
     setShaking(true);
@@ -153,11 +163,16 @@ export default function LoginPage() {
       return;
     }
 
-    const id = identifier.trim();
+    const id = normalizeIdentifier(identifier);
     if (!id) { toast.error('Informe seu RA ou e-mail.'); return; }
 
     const isEmail = looksLikeEmail(id);
-    const isSpecial = id.toLowerCase() === 'juliana' || id.toLowerCase() === 'decoanalytics@outlook.com.br' || id.toLowerCase() === 'decianalytics@outlook.com.br';
+    const isSpecial = isSpecialIdentifier(id);
+
+    if (isEmail && !isValidEmail(id)) {
+      toast.error('Informe um e-mail válido, como aluno@exemplo.com.');
+      return;
+    }
 
     if (!isEmail && !isValidRa(id) && !isSpecial) {
       const errorMsg = 'Use um e-mail válido ou seu RA. Se o erro persistir, procure a secretaria para validar seu vínculo.';
@@ -169,8 +184,9 @@ export default function LoginPage() {
     }
 
     setLoading(true);
-    const effectiveEmail = isEmail ? id.toLowerCase() : isSpecial ? id.toLowerCase() : buildRaEmail(id);
-    const identifierForAuth = isEmail ? id.toLowerCase() : isSpecial ? id.toLowerCase() : id;
+    const normalizedRa = normalizeRa(id);
+    const effectiveEmail = isEmail ? id.toLowerCase() : isSpecial ? id.toLowerCase() : buildRaEmail(normalizedRa);
+    const identifierForAuth = isEmail ? id.toLowerCase() : isSpecial ? id.toLowerCase() : normalizedRa;
 
 
     if (isSignUp) {
@@ -296,7 +312,7 @@ export default function LoginPage() {
         console.error('Falha ao logar compliance (Email):', err);
       }
       setLoading(false);
-      persistSuccessfulLogin(id);
+      persistSuccessfulLogin(isEmail ? id.toLowerCase() : normalizeRa(id));
     }
 
   };
@@ -304,10 +320,14 @@ export default function LoginPage() {
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    const id = email.trim();
+    const id = normalizeIdentifier(email);
     if (!id) { toast.error('Digite seu RA ou e-mail'); return; }
 
     const isEmail = looksLikeEmail(id);
+    if (isEmail && !isValidEmail(id)) {
+      toast.error('Informe um e-mail válido.');
+      return;
+    }
     if (!isEmail && !isValidRa(id)) {
       toast.error('Use um e-mail válido ou seu RA.');
       return;
@@ -326,7 +346,7 @@ export default function LoginPage() {
     if (!isEmail) {
       const { data, message } = await callRaAuth({
         mode: 'reset',
-        ra: id,
+        ra: normalizeRa(id),
         redirectTo: `${window.location.origin}/reset-password`,
       });
       setLoading(false);
@@ -507,9 +527,9 @@ export default function LoginPage() {
                         onChange={(e) => {
                           const v = e.target.value;
                           if (looksLikeEmail(v)) {
-                            setIdentifier(v.trim());
+                            setIdentifier(normalizeIdentifier(v));
                           } else {
-                            setIdentifier(v.replace(/[^A-Za-z0-9@._-]/g, '').toUpperCase());
+                            setIdentifier(normalizeRa(v).replace(/[^A-Z0-9]/g, ''));
                           }
                           setUnverifiedEmail(false);
                         }}
@@ -574,7 +594,12 @@ export default function LoginPage() {
                         <Checkbox 
                           id="terms" 
                           checked={agreedToTerms} 
-                          onCheckedChange={(v) => setAgreedToTerms(!!v)}
+                          onCheckedChange={(v) => {
+                            const accepted = !!v;
+                            setAgreedToTerms(accepted);
+                            if (accepted) localStorage.setItem(`decode_terms_accepted_${TERMS_VERSION}`, 'true');
+                            else localStorage.removeItem(`decode_terms_accepted_${TERMS_VERSION}`);
+                          }}
                           className="mt-0.5"
                         />
                         <Label htmlFor="terms" className="text-[11px] leading-relaxed text-muted-foreground cursor-pointer select-none">
