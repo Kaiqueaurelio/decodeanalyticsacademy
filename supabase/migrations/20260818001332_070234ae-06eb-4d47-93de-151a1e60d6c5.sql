@@ -1,0 +1,2 @@
+UPDATE public.apostilas SET status = 'liberada', published = true WHERE title ILIKE '%Sistemas Operacionais%';
+UPDATE public.apostilas SET status = 'liberada', published = true WHERE title ILIKE '%Aspectos Teoricos%';
