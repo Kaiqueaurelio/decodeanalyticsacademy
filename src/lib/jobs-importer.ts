@@ -14,7 +14,38 @@ import { supabase } from "@/integrations/supabase/client";
  * 
  * Descrição da vaga...
  */
-export async function parseAndImportJobsFromMd(content: string) {
+export async function parseAndImportJobsFromMd(content: string, useAi: boolean = false) {
+  if (useAi) {
+    try {
+      const { data, error } = await supabase.functions.invoke('ella-chat', {
+        body: { 
+          message: `Extraia as vagas de emprego do seguinte texto Markdown e retorne estritamente um JSON array de objetos com as chaves: title, company_name, location, type (apenas 'job' ou 'internship'), application_link, salary_range, description. Se não houver link, use '#'.\n\nTexto:\n${content}`,
+          mode: 'json'
+        }
+      });
+
+      if (error) throw error;
+      
+      const jobs = Array.isArray(data?.response) ? data.response : [];
+      const importedJobs = [];
+
+      for (const jobData of jobs) {
+        if (jobData.title && jobData.application_link !== '#') {
+          const { data: inserted, error: insertErr } = await supabase.from('jobs').insert([{
+            ...jobData,
+            is_active: true,
+            published_at: new Date().toISOString()
+          }]).select();
+          if (!insertErr && inserted) importedJobs.push(inserted[0]);
+        }
+      }
+      return importedJobs;
+    } catch (err) {
+      console.error('Erro na extração via IA:', err);
+      // Fallback para regex se a IA falhar
+    }
+  }
+
   const jobBlocks = content.split(/^##\s+/m).filter(block => block.trim().length > 0);
   const importedJobs = [];
 
@@ -23,7 +54,6 @@ export async function parseAndImportJobsFromMd(content: string) {
     const title = lines[0].trim();
     const body = lines.slice(1).join('\n');
 
-    // Regex simples para extrair campos comuns
     const companyMatch = body.match(/\*\*Empresa:\*\*\s*(.*)/i) || body.match(/Empresa:\s*(.*)/i);
     const locationMatch = body.match(/\*\*Local:\*\*\s*(.*)/i) || body.match(/Local:\s*(.*)/i);
     const typeMatch = body.match(/\*\*Tipo:\*\*\s*(.*)/i) || body.match(/Tipo:\s*(.*)/i);
