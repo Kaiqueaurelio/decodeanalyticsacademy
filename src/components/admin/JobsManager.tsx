@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Briefcase, Plus, Trash2, Edit, ExternalLink, Building2, MapPin, Loader2, FileUp, Sparkles } from 'lucide-react';
+import { Briefcase, Plus, Trash2, Edit, ExternalLink, Building2, MapPin, Loader2, FileUp, Sparkles, ChevronDown, ChevronUp, Search, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 import { parseAndImportJobsFromMd } from '@/lib/jobs-importer';
 
@@ -36,6 +36,9 @@ export default function JobsManager() {
   const [isImporting, setIsImporting] = useState(false);
   const [importContent, setImportContent] = useState('');
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+  const [useAiImport, setUseAiImport] = useState(false);
+  const [expandedJobId, setExpandedJobId] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     fetchJobs();
@@ -132,47 +135,117 @@ export default function JobsManager() {
         </div>
       </div>
 
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input 
+          placeholder="Filtrar por título, empresa ou local..." 
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="pl-10 bg-card/50 rounded-xl border-primary/10"
+        />
+      </div>
+
       {loading ? (
         <div className="flex justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {jobs.map(job => (
-            <Card key={job.id} className="border-primary/10 bg-card/50 overflow-hidden">
-              <CardHeader className="p-4 pb-2">
-                <div className="flex justify-between items-start">
-                  <Badge variant={job.is_active ? 'default' : 'secondary'} className="text-[9px] uppercase tracking-wider">
-                    {job.is_active ? 'Ativa' : 'Inativa'}
-                  </Badge>
-                  <div className="flex gap-1">
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setEditingJob(job); setIsDialogOpen(true); }}>
-                      <Edit className="h-3.5 w-3.5" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleDelete(job.id)}>
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
-                </div>
-                <CardTitle className="text-base mt-2 truncate">{job.title}</CardTitle>
-                <CardDescription className="flex items-center gap-1.5 text-xs">
-                  <Building2 className="h-3 w-3" /> {job.company_name}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="p-4 pt-0 text-xs space-y-3">
-                <div className="flex items-center gap-1.5 text-muted-foreground">
-                  <MapPin className="h-3 w-3" /> {job.location || 'Remoto'}
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="text-[10px] py-0">{job.type === 'internship' ? 'Estágio' : 'Emprego'}</Badge>
-                  {job.salary_range && <span className="text-primary/70 font-mono">{job.salary_range}</span>}
-                </div>
-                <Button variant="link" className="p-0 h-auto text-[11px] text-accent gap-1" onClick={() => window.open(job.application_link, '_blank')}>
-                  Ver link de candidatura <ExternalLink className="h-3 w-3" />
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
+        <div className="bg-card/50 border border-primary/10 rounded-2xl overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-primary/10 bg-muted/30">
+                  <th className="p-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">Status</th>
+                  <th className="p-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">Vaga / Empresa</th>
+                  <th className="p-4 text-xs font-bold uppercase tracking-wider text-muted-foreground hidden md:table-cell">Local / Tipo</th>
+                  <th className="p-4 text-xs font-bold uppercase tracking-wider text-muted-foreground text-right">Ações</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-primary/5">
+                {jobs
+                  .filter(job => 
+                    job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    job.company_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    (job.location || '').toLowerCase().includes(searchTerm.toLowerCase())
+                  )
+                  .map(job => (
+                  <React.Fragment key={job.id}>
+                    <tr className="hover:bg-primary/5 transition-colors group cursor-pointer" onClick={() => setExpandedJobId(expandedJobId === job.id ? null : job.id)}>
+                      <td className="p-4">
+                        <Badge variant={job.is_active ? 'default' : 'secondary'} className="text-[9px] uppercase">
+                          {job.is_active ? 'Ativa' : 'Inativa'}
+                        </Badge>
+                      </td>
+                      <td className="p-4">
+                        <div className="font-bold text-sm text-foreground">{job.title}</div>
+                        <div className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Building2 className="h-3 w-3" /> {job.company_name}
+                        </div>
+                      </td>
+                      <td className="p-4 hidden md:table-cell text-xs">
+                        <div className="flex items-center gap-1.5 text-muted-foreground">
+                          <MapPin className="h-3 w-3" /> {job.location || 'Remoto'}
+                        </div>
+                        <div className="mt-1">
+                          <Badge variant="outline" className="text-[10px] py-0">{job.type === 'internship' ? 'Estágio' : 'Emprego'}</Badge>
+                        </div>
+                      </td>
+                      <td className="p-4 text-right">
+                        <div className="flex justify-end gap-1">
+                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); setEditingJob(job); setIsDialogOpen(true); }}>
+                            <Edit className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={(e) => { e.stopPropagation(); handleDelete(job.id); }}>
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            {expandedJobId === job.id ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                    {expandedJobId === job.id && (
+                      <tr className="bg-primary/5">
+                        <td colSpan={4} className="p-6 border-t border-primary/5">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-4">
+                              <h4 className="text-xs font-bold uppercase text-primary flex items-center gap-2">
+                                <Eye className="h-3.5 w-3.5" /> Detalhes da Vaga
+                              </h4>
+                              <div className="text-sm text-foreground/80 leading-relaxed whitespace-pre-wrap bg-background/50 p-4 rounded-xl border border-primary/5">
+                                {job.description}
+                              </div>
+                            </div>
+                            <div className="space-y-4">
+                              <h4 className="text-xs font-bold uppercase text-primary">Informações Adicionais</h4>
+                              <div className="space-y-3">
+                                {job.salary_range && (
+                                  <div className="flex justify-between items-center text-xs p-2 bg-background/30 rounded-lg">
+                                    <span className="text-muted-foreground">Salário:</span>
+                                    <span className="font-mono text-primary">{job.salary_range}</span>
+                                  </div>
+                                )}
+                                <div className="flex justify-between items-center text-xs p-2 bg-background/30 rounded-lg">
+                                  <span className="text-muted-foreground">Publicada em:</span>
+                                  <span>{new Date(job.published_at).toLocaleDateString('pt-BR')}</span>
+                                </div>
+                                <Button 
+                                  className="w-full gap-2 rounded-xl"
+                                  onClick={() => window.open(job.application_link, '_blank')}
+                                >
+                                  Ir para Link de Candidatura <ExternalLink className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
@@ -243,9 +316,21 @@ export default function JobsManager() {
           <div className="space-y-4 py-4">
             <div className="bg-primary/5 rounded-2xl p-4 border border-primary/10">
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Cole abaixo o conteúdo em Markdown. Cada vaga deve começar com <code className="text-primary font-bold">## Título</code>. 
-                O sistema tentará extrair Empresa, Local, Tipo, Link e Salário automaticamente.
+                Cole abaixo o conteúdo em Markdown. No <b>Modo IA</b>, você pode colar qualquer texto desestruturado.
+                No modo padrão, cada vaga deve começar com <code className="text-primary font-bold">## Título</code>.
               </p>
+              <div className="flex items-center gap-2 pt-2">
+                <input 
+                  type="checkbox" 
+                  id="use-ai-toggle" 
+                  checked={useAiImport} 
+                  onChange={(e) => setUseAiImport(e.target.checked)}
+                  className="w-4 h-4 accent-primary"
+                />
+                <Label htmlFor="use-ai-toggle" className="text-xs cursor-pointer flex items-center gap-1.5">
+                  <Sparkles className="h-3 w-3 text-primary" /> Usar Inteligência da Ella (Extração Flexível)
+                </Label>
+              </div>
             </div>
             <div className="space-y-2">
               <Label>Conteúdo Markdown</Label>
@@ -264,7 +349,7 @@ export default function JobsManager() {
                 if (!importContent.trim()) return;
                 setIsImporting(true);
                 try {
-                  const imported = await parseAndImportJobsFromMd(importContent);
+                  const imported = await parseAndImportJobsFromMd(importContent, useAiImport);
                   if (imported.length > 0) {
                     toast.success(`${imported.length} vagas importadas com sucesso!`);
                     setIsImportDialogOpen(false);

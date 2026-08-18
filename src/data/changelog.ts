@@ -27,6 +27,17 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: "6.5.0",
+    date: "2026-08-18",
+    title: "Gestão Híbrida v2 & Ella AI Jobs",
+    major: true,
+    changes: [
+      { kind: 'feature', text: 'Importação Inteligente: Use a Ella para extrair vagas de qualquer texto desestruturado.' },
+      { kind: 'improvement', text: 'Admin UI: Nova lista detalhada com visualização rápida da descrição e filtros avançados.' },
+      { kind: 'fix', text: 'Remoção de duplicidades na navegação administrativa.' },
+    ],
+  },
+  {
     version: "6.4.1",
     date: "2026-08-18",
     title: "Gestão Híbrida de Vagas & Importação MD",
