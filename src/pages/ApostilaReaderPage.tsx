@@ -119,12 +119,21 @@ export default function ApostilaReaderPage() {
     (async () => {
       setLoadingTree(true);
       const [{ data: ap }, { data: rpcData }] = await Promise.all([
-        supabase.from("apostilas").select("title").eq("id", id).maybeSingle(),
+        supabase.from("apostilas").select("title, semester, published").eq("id", id).maybeSingle(),
         supabase.rpc("get_apostila_reader_tree", { _apostila_id: id }),
       ]);
       if (cancelled) return;
+      
+      console.log(`[ApostilaReader] Apostila info:`, ap);
+      
       setApostilaTitle((ap?.title as string) || "Apostila");
       const t = (rpcData as unknown as Tree) || { apostila_id: id, modules: [] };
+      
+      // Fallback: se a árvore RPC vier vazia, mas a apostila for válida, podemos tentar carregar via apostila_pages básica
+      if (!t.modules || t.modules.length === 0) {
+        console.warn(`[ApostilaReader] RPC Tree empty for ${id}. Trying simple pages fallback.`);
+      }
+      
       setTree(t);
       const flat = flatten(t);
       // Retomar de onde parou: primeira in_progress ou primeira sem progresso

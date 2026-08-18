@@ -65,13 +65,16 @@ const SubjectPage = () => {
         const apTitleKey = subjectKey(ap.title || '');
         const apCatKey = subjectKey(ap.category || '');
         
-        // Match por ID (UUID)
+        // 1. Match por ID (UUID)
         if (apId === targetId) return true;
         
-        // Match exato de chaves
-        if (apTitleKey === targetKey || apCatKey === targetKey) return true;
+        // 2. Match por categoria exata (deve bater com o folder do dashboard)
+        if (apCatKey === targetKey) return true;
+
+        // 3. Match por título exato
+        if (apTitleKey === targetKey) return true;
         
-        // Match parcial resiliente para Mobile / Sistemas Operacionais
+        // 4. Match parcial resiliente para Mobile / Sistemas Operacionais
         const isMobileOrSO = targetKey.includes('mobile') || targetKey.includes('sistemasoperacionais') || targetKey.includes('operacionais');
         if (isMobileOrSO) {
           if (apTitleKey.includes('mobile') || apTitleKey.includes('operacionais') || apCatKey.includes('mobile')) return true;
@@ -80,7 +83,7 @@ const SubjectPage = () => {
         return (targetKey.length > 5 && (apTitleKey.includes(targetKey) || apCatKey.includes(targetKey)));
       });
 
-      console.log(`[SubjectPage] Total apostilas fetched: ${allApostilas?.length}. Matches found: ${matches.length}`);
+      console.log(`[SubjectPage] Total apostilas fetched: ${allApostilas?.length}. Matches found: ${matches.length}. Target key: ${targetKey}`);
 
       const normalizedRows = matches.map((row) => ({
         ...row,
