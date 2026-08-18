@@ -54,13 +54,24 @@ export default function SubjectPage() {
 
       if (!alive) return;
 
-      // Filtra por match de título/categoria
+      // Filtra por match de título/categoria (normalizando espaços e acentos)
       const matches = (allApostilas || []).filter(ap => {
         const apTitleKey = subjectKey(ap.title || '');
         const apCatKey = subjectKey(ap.category || '');
-        return apTitleKey === targetKey || apCatKey === targetKey || 
-               (targetKey.length > 5 && (apTitleKey.includes(targetKey) || apCatKey.includes(targetKey)));
+        
+        // Match exato (normalizado)
+        if (apTitleKey === targetKey || apCatKey === targetKey) return true;
+        
+        // Match parcial inteligente para nomes compostos
+        if (targetKey.length > 5) {
+          if (apTitleKey.includes(targetKey) || targetKey.includes(apTitleKey)) return true;
+          if (apCatKey.includes(targetKey) || targetKey.includes(apCatKey)) return true;
+        }
+
+        return false;
       });
+
+      console.log(`[SubjectPage] matches for ${decodedCategory}:`, matches.map(m => m.title));
 
       const normalizedRows = matches.map((row) => ({
         ...row,
