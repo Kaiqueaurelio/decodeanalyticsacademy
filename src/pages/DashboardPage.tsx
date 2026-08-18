@@ -35,6 +35,8 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { NewUpdatePopup } from '@/components/NewUpdatePopup';
 import { McpSyncButton } from '@/components/dashboard/McpSyncButton';
+import { FeaturedJobsWidget } from '@/components/dashboard/FeaturedJobsWidget';
+
 
 
 const EMPTY_FIXED_APOSTILAS: Record<string, string> = {};
@@ -279,8 +281,14 @@ export default function DashboardPage() {
           )}
 
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <ContinueWhereLeftCard />
+            <div className="flex-1 space-y-4">
+              <ContinueWhereLeftCard />
+              <Reveal from="bottom" delay={5}>
+                <FeaturedJobsWidget />
+              </Reveal>
+            </div>
             <div className="flex shrink-0">
+
               <McpSyncButton />
             </div>
           </div>

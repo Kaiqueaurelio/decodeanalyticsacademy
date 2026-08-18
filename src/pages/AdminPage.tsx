@@ -3354,6 +3354,13 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
               </div>
             )}
 
+            {/* JOBS & INTERNSHIPS */}
+            {tab === 'jobs' && (
+              <div id="jobs-section" className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <JobsManager />
+              </div>
+            )}
+
             {/* USERS */}
             {tab === 'users' && (
               <div id="users-section" className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
