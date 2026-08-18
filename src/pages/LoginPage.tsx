@@ -23,25 +23,20 @@ export default function LoginPage() {
     || localStorage.getItem('decode_remember_email')
     || localStorage.getItem('decode_remember_ra')
     || '';
-  /** Identificador unico: pode ser RA ou e-mail. Detectamos pela presenca de "@". */
+  
   const [identifier, setIdentifier] = useState(savedIdentifier);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [isForgotRa, setIsForgotRa] = useState(false);
   const [password, setPassword] = useState('');
-  const [email, setEmail] = useState(''); // usado apenas no fluxo de reset por e-mail
+  const [email, setEmail] = useState(''); 
   const [isSignUp, setIsSignUp] = useState(false);
   const [isReset, setIsReset] = useState(false);
 
   const looksLikeEmail = isEmailIdentifier;
-  /**
-   * Login/recuperação por RA são resolvidos no backend (edge function `ra-auth`).
-   * O e-mail do aluno nunca trafega para o cliente — isso evita enumeração de RA
-   * e vazamento de dado pessoal para visitantes não autenticados.
-   */
+
   const callRaAuth = async (payload: Record<string, unknown>) => {
     const { data, error } = await supabase.functions.invoke('ra-auth', { body: payload });
     if (error) {
-      // O SDK devolve FunctionsHttpError sem o corpo; tentamos ler a mensagem real.
       let message = 'Não consegui validar seu RA no servidor. Verifique sua conexão ou tente novamente.';
       const res = (error as any)?.context as Response | undefined;
       if (res && typeof res.json === 'function') {
@@ -49,17 +44,14 @@ export default function LoginPage() {
           const body = await res.clone().json();
           if (body?.error) message = body.error;
           return { data: null, message, code: body?.code as string | undefined };
-        } catch { /* mantém mensagem padrão */ }
+        } catch { }
       }
       return { data: null, message, code: undefined };
     }
     return { data, message: null as string | null, code: undefined };
   };
 
-
-  /** Detecta se o identificador atual esta no formato de e-mail apos o usuario digitar. */
   const usingEmail = looksLikeEmail(identifier);
-
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loginAttempts, setLoginAttempts] = useState(0);
@@ -73,12 +65,10 @@ export default function LoginPage() {
   const TERMS_VERSION = '4.18.1';
   const [agreedToTerms, setAgreedToTerms] = useState(() => localStorage.getItem(`decode_terms_accepted_${TERMS_VERSION}`) === 'true');
 
-
   const authSettling = authLoading || !isSessionHydrated || status === 'loading' || status === 'hydrating';
 
   useEffect(() => {
     if (authSettling || status !== 'authenticated' || !user) return;
-    // Preserve OAuth consent (or other) return URL when present.
     const params = new URLSearchParams(window.location.search);
     const nextParam = params.get('next');
     const isSafeNext = nextParam && nextParam.startsWith('/') && !nextParam.startsWith('//');
@@ -159,7 +149,6 @@ export default function LoginPage() {
       return;
     }
     if (isLocked) {
-
       setShowLockModal(true);
       return;
     }
@@ -189,10 +178,8 @@ export default function LoginPage() {
     const effectiveEmail = isEmail ? id.toLowerCase() : isSpecial ? id.toLowerCase() : buildRaEmail(normalizedRa);
     const identifierForAuth = isEmail ? id.toLowerCase() : isSpecial ? id.toLowerCase() : normalizedRa;
 
-
     if (isSignUp) {
       if (!isEmail) {
-        // Cadastro por RA: liberado na hora, sem verificacao de e-mail.
         const { data, message, code } = await callRaAuth({ mode: 'signup', ra: normalizeRa(id), password });
         setLoading(false);
         if (!data?.created) {
@@ -232,7 +219,6 @@ export default function LoginPage() {
       return;
     }
 
-    // --- Login por RA ou Especial: autenticado no servidor ---
     if (!isEmail || isSpecial) {
       const { data, message, code } = await callRaAuth({ mode: 'signin', ra: identifierForAuth, password });
       
@@ -245,12 +231,7 @@ export default function LoginPage() {
           return;
         }
         
-        // Fallback redundante para Juliana e Admin se a Edge Function falhar silenciosamente
-        if (identifierForAuth.toLowerCase() === 'juliana' && password === 'Ju@2026') {
-           console.warn("[Login] Juliana bypass fallback triggered.");
-        }
-        
-        setLoading(false); // Garante que o botão pare de girar se não houver sessão
+        setLoading(false); 
         registerLoginFailure(true);
         if (message) toast.error(message);
         return;
@@ -267,7 +248,6 @@ export default function LoginPage() {
         return;
       }
 
-      // Log compliance for RA login
       try {
         const { data: { user: currentUser } } = await supabase.auth.getUser();
         if (currentUser) {
@@ -286,7 +266,6 @@ export default function LoginPage() {
       return;
     }
 
-
     const { error } = await signIn(effectiveEmail, password);
     if (error) {
       setLoading(false);
@@ -299,7 +278,6 @@ export default function LoginPage() {
       }
       registerLoginFailure(false);
     } else {
-      // Log compliance for Email login
       try {
         const { data: { user: currentUser } } = await supabase.auth.getUser();
         if (currentUser) {
@@ -315,9 +293,7 @@ export default function LoginPage() {
       setLoading(false);
       persistSuccessfulLogin(isEmail ? id.toLowerCase() : normalizeRa(id));
     }
-
   };
-
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -343,7 +319,6 @@ export default function LoginPage() {
       setShowLockModal(false);
     };
 
-    // RA: o e-mail é resolvido no servidor e nunca volta para o cliente.
     if (!isEmail) {
       const { data, message } = await callRaAuth({
         mode: 'reset',
@@ -375,20 +350,12 @@ export default function LoginPage() {
     }
   };
 
-
-  const highlights = [
-    { icon: BookOpen, text: 'Apostilas estruturadas por IA' },
-    { icon: BarChart3, text: 'Dashboard de desempenho' },
-    { icon: Shield, text: 'Conteudo protegido' },
-  ];
-
   return (
     <LoginSplitLayout>
-      <div className="relative group">
-        {/* Border Animation */}
+      <div className="relative group w-full">
         <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500 to-purple-600 rounded-lg blur opacity-20 group-hover:opacity-40 transition duration-1000 group-hover:duration-200" />
         
-        <div className="relative overflow-hidden rounded-lg bg-[#0a0a0f] p-6 shadow-2xl ring-1 ring-white/10 sm:p-8 space-y-6">
+        <div className={`relative overflow-hidden rounded-lg bg-[#0a0a0f] p-6 shadow-2xl ring-1 ring-white/10 sm:p-8 space-y-6 ${shaking ? 'animate-shake' : ''}`}>
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-cyan-500 to-transparent" />
           
           <div className="text-center space-y-3">
@@ -422,264 +389,223 @@ export default function LoginPage() {
             </p>
           </div>
 
-              <div className="text-center space-y-2">
-                <h1 className="text-xl font-bold">
-                  {isReset ? 'Recuperar Senha' : isForgotRa ? 'Esqueci meu RA' : isSignUp ? 'Criar Conta' : isLocked ? 'Conta Bloqueada' : 'Entrar'}
-                </h1>
-                <p className="text-xs text-muted-foreground">
-                  {isReset
-                    ? 'Digite seu RA ou e-mail para recuperacao'
-                    : isForgotRa
-                    ? 'Recuperação de Identificador Acadêmico'
-                    : isSignUp
-                    ? 'Crie sua conta para comecar'
-                    : isLocked
-                    ? 'Redefina sua senha para desbloquear'
-                    : 'Acesse sua conta da Decode Analytics Academy'}
-                </p>
+          <div className="space-y-4">
+            {isForgotRa ? (
+              <div className="space-y-4">
+                <div className="rounded-lg border border-cyan-500/20 bg-cyan-500/5 p-4 space-y-3">
+                  <p className="text-xs leading-relaxed text-gray-400">
+                    Caso tenha esquecido seu Registro Acadêmico (RA), você pode encontrá-lo no seu portal da UNIP ou no comprovante de matrícula.
+                  </p>
+                  <div className="space-y-2">
+                    <Button 
+                      variant="outline" 
+                      className="w-full text-xs gap-2 border-white/10 text-white hover:bg-white/5"
+                      onClick={() => window.open('https://www.unip.br', '_blank')}
+                    >
+                      <BookOpen className="h-3.5 w-3.5" />
+                      Acessar Portal UNIP
+                    </Button>
+                    <Button 
+                      className="w-full text-xs gap-2 bg-cyan-600 hover:bg-cyan-500 text-white"
+                      onClick={() => window.location.href = 'mailto:decodeanalytics@outlook.com.br?subject=Recuperação de RA - Decode Academy'}
+                    >
+                      <Shield className="h-3.5 w-3.5" />
+                      Falar com Suporte Decode
+                    </Button>
+                  </div>
+                </div>
+                <button type="button" onClick={() => setIsForgotRa(false)} className="w-full text-center text-sm text-gray-500 hover:text-white smooth-all uppercase tracking-tighter font-mono">
+                  &lt; Back to Terminal
+                </button>
               </div>
-
-              {isForgotRa ? (
-                <div className="space-y-4">
-                  <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-3">
-                    <p className="text-xs leading-relaxed text-foreground/80">
-                      Caso tenha esquecido seu Registro Acadêmico (RA), você pode encontrá-lo no seu portal da UNIP ou no comprovante de matrícula.
-                    </p>
-                    <div className="space-y-2">
-                      <Button 
-                        variant="outline" 
-                        className="w-full text-xs gap-2"
-                        onClick={() => window.open('https://www.unip.br', '_blank')}
+            ) : isReset ? (
+              <form onSubmit={handleResetPassword} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="resetEmail" className="text-xs font-mono text-cyan-500 uppercase tracking-widest">Identity Identifier</Label>
+                  <Input 
+                    id="resetEmail" 
+                    type="text" 
+                    required 
+                    value={email} 
+                    onChange={e => setEmail(e.target.value)} 
+                    placeholder="G802144 ou seu@email.com"
+                    className="bg-black/40 border-white/10 text-white font-mono"
+                  />
+                </div>
+                <Button type="submit" className="w-full bg-cyan-600 hover:bg-cyan-500" disabled={loading}>
+                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Send Protocol Link
+                </Button>
+                <button type="button" onClick={() => setIsReset(false)} className="w-full text-center text-sm text-gray-500 hover:text-white smooth-all uppercase tracking-tighter font-mono">
+                  &lt; Cancel Access
+                </button>
+              </form>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="identifier" className="text-xs font-mono text-cyan-500 uppercase tracking-widest flex items-center gap-2">
+                      <User className="w-3 h-3" /> User Identity (RA/Email)
+                    </Label>
+                    {!isSignUp && (
+                      <button 
+                        type="button" 
+                        onClick={() => setIsForgotRa(true)}
+                        className="text-[10px] text-cyan-400 hover:underline font-mono uppercase"
                       >
-                        <BookOpen className="h-3.5 w-3.5" />
-                        Acessar Portal UNIP
-                      </Button>
-                      <Button 
-                        className="w-full text-xs gap-2"
-                        onClick={() => window.location.href = 'mailto:decodeanalytics@outlook.com.br?subject=Recuperação de RA - Decode Academy'}
-                      >
-                        <Shield className="h-3.5 w-3.5" />
-                        Falar com Suporte Decode
-                      </Button>
+                        Recovery?
+                      </button>
+                    )}
+                  </div>
+                  <div className="relative">
+                    <Input
+                      id="identifier"
+                      type="text"
+                      placeholder="G000000 ou aluno@decode.com"
+                      value={identifier}
+                      onChange={(e) => setIdentifier(e.target.value)}
+                      className="bg-black/40 border-white/10 text-white placeholder:text-white/20 focus:border-cyan-500/50 focus:ring-cyan-500/20 font-mono transition-all pr-10 h-11"
+                      required
+                    />
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 text-cyan-500/30">
+                      <Terminal className="w-4 h-4" />
                     </div>
                   </div>
-                  <button type="button" onClick={() => setIsForgotRa(false)} className="w-full text-center text-sm text-muted-foreground hover:text-foreground smooth-all">
-                    Voltar ao login
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="password" className="text-xs font-mono text-cyan-500 uppercase tracking-widest flex items-center gap-2">
+                    <Lock className="w-3 h-3" /> Access Key
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      ref={passwordRef}
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="bg-black/40 border-white/10 text-white placeholder:text-white/20 focus:border-cyan-500/50 focus:ring-cyan-500/20 font-mono transition-all pr-10 h-11"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-cyan-400 transition-colors"
+                    >
+                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                  
+                  <AnimatePresence>
+                    {loginAttempts > 0 && !isLocked && (
+                      <motion.p
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        className="text-[11px] text-red-500 font-mono mt-1"
+                      >
+                        [ERR] Attempt {loginAttempts}/3 failed
+                      </motion.p>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                <div className="space-y-3 pt-2">
+                  <div className="flex items-start gap-2 rounded-md border border-white/5 bg-white/5 p-2.5">
+                    <Checkbox 
+                      id="terms" 
+                      checked={agreedToTerms} 
+                      onCheckedChange={(v) => {
+                        const accepted = !!v;
+                        setAgreedToTerms(accepted);
+                        if (accepted) localStorage.setItem(`decode_terms_accepted_${TERMS_VERSION}`, 'true');
+                        else localStorage.removeItem(`decode_terms_accepted_${TERMS_VERSION}`);
+                      }}
+                      className="mt-0.5 border-white/20 data-[state=checked]:bg-cyan-500"
+                    />
+                    <Label htmlFor="terms" className="text-[11px] leading-relaxed text-gray-500 cursor-pointer select-none">
+                      Concordo com os <button type="button" onClick={() => navigate('/terms')} className="text-cyan-400 hover:underline">Termos</button> e a <button type="button" onClick={() => navigate('/transparency')} className="text-cyan-400 hover:underline">Privacidade</button>.
+                    </Label>
+                  </div>
+                </div>
+
+                {unverifiedEmail && !isSignUp ? (
+                  <EvasiveButton email={email} disabled={loading} className="w-full bg-cyan-600 hover:bg-cyan-500 h-11 uppercase font-mono tracking-widest">
+                    {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Verify Identity
+                  </EvasiveButton>
+                ) : (
+                  <Button
+                    type="submit"
+                    disabled={loading || authSettling || isLocked}
+                    className="w-full relative group overflow-hidden bg-cyan-600 hover:bg-cyan-500 text-white font-bold uppercase tracking-widest h-11 border-none transition-all shadow-[0_0_15px_rgba(0,240,255,0.3)] active:scale-[0.98]"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
+                    {loading ? (
+                      <div className="flex items-center gap-2">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span className="font-mono">Processing...</span>
+                      </div>
+                    ) : (
+                      <span className="font-mono">{isSignUp ? 'Initialize' : 'Authorize'}</span>
+                    )}
+                  </Button>
+                )}
+
+                <div className="flex items-center justify-between gap-x-2 pt-2">
+                  <label className="flex cursor-pointer items-center gap-2">
+                    <Checkbox
+                      checked={rememberMe}
+                      onCheckedChange={(v) => setRememberMe(!!v)}
+                      className="h-3 w-3 border-white/20 data-[state=checked]:bg-cyan-500"
+                    />
+                    <span className="text-[10px] text-gray-500 font-mono uppercase">Stay session</span>
+                  </label>
+                  <button type="button" onClick={() => setIsReset(true)} className="text-[10px] text-gray-500 hover:text-cyan-400 font-mono uppercase">
+                    Lost Key?
                   </button>
                 </div>
-              ) : isReset ? (
-                <form onSubmit={handleResetPassword} className="space-y-4">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="resetEmail" className="text-xs text-muted-foreground">RA ou e-mail</Label>
-                    <Input id="resetEmail" type="text" required value={email} onChange={e => setEmail(e.target.value)} placeholder="G802144 ou seu@email.com" />
-                  </div>
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Enviar Link
-                  </Button>
-                  <button type="button" onClick={() => setIsReset(false)} className="w-full text-center text-sm text-muted-foreground hover:text-foreground smooth-all">
-                    Voltar ao login
-                  </button>
-                </form>
-              ) : (
-                <>
-                  <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="space-y-1.5">
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor="identifier" className="text-xs text-muted-foreground">
-                          RA ou e-mail
-                        </Label>
-                        {!isSignUp && (
-                          <button 
-                            type="button" 
-                            onClick={() => setIsForgotRa(true)}
-                            className="text-[10px] text-primary hover:underline font-medium"
-                          >
-                            Esqueci meu RA
-                          </button>
-                        )}
-                      </div>
-                      <Input
-                        id="identifier"
-                        type="text"
-                        inputMode="email"
-                        autoComplete="username"
-                        required
-                        value={identifier}
-                        onChange={(e) => {
-                          const v = e.target.value;
-                          if (looksLikeEmail(v)) {
-                            setIdentifier(normalizeIdentifier(v));
-                          } else {
-                            setIdentifier(normalizeRa(v).replace(/[^A-Z0-9]/g, ''));
-                          }
-                          setUnverifiedEmail(false);
-                        }}
-                        placeholder="Ex: G802144 ou seu@email.com"
-                        maxLength={120}
-                        className="border-border/80 bg-background/90 text-foreground placeholder:text-muted-foreground/85"
-                      />
-                      <p className="text-[10px] text-muted-foreground/70 leading-snug">
-                        {usingEmail
-                          ? 'Detectamos um e-mail. Login com verificacao por e-mail.'
-                          : identifier.length > 0
-                            ? 'Detectamos um RA. Login direto, sem verificacao.'
-                            : 'Digite seu RA da UNIP ou seu e-mail cadastrado.'}
-                      </p>
-                      {isSignUp && !usingEmail && identifier.length > 0 && (
-                        <p className="text-[10px] text-warning/80 leading-snug">
-                          Cadastro por RA e rapido, mas voce nao podera recuperar a senha por e-mail.
-                        </p>
-                      )}
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label htmlFor="password" className="text-xs text-muted-foreground">Senha</Label>
-                      <div className={`relative ${shaking ? 'animate-shake' : ''}`}>
-                        <Input
-                          ref={passwordRef}
-                          id="password"
-                          type={showPassword ? 'text' : 'password'}
-                          autoComplete="current-password"
-                          required
-                          value={password}
-                          onChange={e => setPassword(e.target.value)}
-                          placeholder="--------"
-                          className={`border-border/80 bg-background/90 pr-10 text-foreground placeholder:text-muted-foreground/85 ${loginAttempts > 0 ? 'border-destructive focus-visible:ring-destructive' : ''}`}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
-                          className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground hover:text-foreground smooth-all"
-                        >
-                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                        </button>
-                      </div>
-                      <AnimatePresence>
-                        {loginAttempts > 0 && !isLocked && (
-                          <motion.p
-                            key="login-attempts"
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            exit={{ opacity: 0, height: 0 }}
-                            className="text-[11px] text-destructive flex items-center gap-1 mt-1"
-                          >
-                            <AlertTriangle className="h-3 w-3" />
-                            Tentativa {loginAttempts} de 3
-                          </motion.p>
-                        )}
-                      </AnimatePresence>
-                    </div>
+              </form>
+            )}
 
-                    <div className="space-y-3 pt-2">
-                      <div className="flex items-start gap-2 rounded-md border border-border/40 bg-muted/30 p-2.5">
-                        <Checkbox 
-                          id="terms" 
-                          checked={agreedToTerms} 
-                          onCheckedChange={(v) => {
-                            const accepted = !!v;
-                            setAgreedToTerms(accepted);
-                            if (accepted) localStorage.setItem(`decode_terms_accepted_${TERMS_VERSION}`, 'true');
-                            else localStorage.removeItem(`decode_terms_accepted_${TERMS_VERSION}`);
-                          }}
-                          className="mt-0.5"
-                        />
-                        <Label htmlFor="terms" className="text-[11px] leading-relaxed text-muted-foreground cursor-pointer select-none">
-                          Eu li e concordo com os{' '}
-                          <button type="button" onClick={() => navigate('/terms')} className="text-primary hover:underline font-medium">Termos de Uso</button>
-                          {' '}e a{' '}
-                          <button type="button" onClick={() => navigate('/transparency')} className="text-primary hover:underline font-medium">Política de Privacidade</button>.
-                        </Label>
-                      </div>
-                    </div>
-
-                    {unverifiedEmail && !isSignUp ? (
-
-                      <EvasiveButton email={email} disabled={loading} className="w-full">
-                        {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        Entrar
-                      </EvasiveButton>
-                    ) : (
-                      <Button type="submit" className="w-full min-h-11" disabled={loading || awaitingSession || isLocked}>
-                        {(loading || awaitingSession) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        {isLocked ? (
-                          <><Lock className="mr-2 h-4 w-4" /> Conta Bloqueada</>
-                        ) : isSignUp ? 'Criar conta' : awaitingSession ? 'Entrando...' : 'Entrar'}
-                      </Button>
-                    )}
-
-                    {!isSignUp && (
-                      <div className="space-y-1.5">
-                        <div className="flex flex-wrap items-center justify-between gap-x-2">
-                          <label className="flex min-h-11 cursor-pointer items-center gap-2 py-1">
-                            <Checkbox
-                              checked={rememberMe}
-                              onCheckedChange={(v) => {
-                                setRememberMe(!!v);
-                                if (v) {
-                                  localStorage.setItem('decode_stay_logged_in', 'true');
-                                } else {
-                                  localStorage.removeItem('decode_stay_logged_in');
-                                }
-                              }}
-                              className="h-4 w-4"
-                            />
-                            <span className="text-xs text-muted-foreground">Permanecer conectado</span>
-                          </label>
-                          <button type="button" onClick={() => setIsReset(true)} className="min-h-11 px-1 text-xs text-muted-foreground hover:text-foreground smooth-all">
-                            {isLocked ? 'Redefinir senha' : 'Esqueceu a senha?'}
-                          </button>
-                        </div>
-                        {rememberMe && (
-                          <p className="text-[10px] text-muted-foreground/70 leading-snug pl-6">
-                            Você continuará logado mesmo após fechar o navegador, a menos que saia manualmente da conta.
-                          </p>
-                        )}
-                      </div>
-                    )}
-                  </form>
-                  <div className="relative">
-                    <div className="absolute inset-0 flex items-center"><span className="w-full" style={{ borderTop: '1px solid hsl(var(--border))' }} /></div>
-                    <div className="relative flex justify-center text-xs uppercase"><span className="bg-card px-2 text-muted-foreground font-mono-label text-[10px] tracking-widest">ou</span></div>
-                  </div>
-                  <Button type="button" variant="outline" className="w-full border-border/80 bg-background/80 font-sans text-sm normal-case tracking-normal text-foreground hover:bg-muted" onClick={() => { setIsSignUp(!isSignUp); setUnverifiedEmail(false); setLoginAttempts(0); }}>
-                    {isSignUp ? 'Ja tenho conta' : 'Criar conta'}
-                  </Button>
-                </>
-              )}
+            <div className="relative py-2">
+              <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-white/5" /></div>
+              <div className="relative flex justify-center text-[10px] uppercase"><span className="bg-[#0a0a0f] px-2 text-gray-600 font-mono tracking-widest">System Link</span></div>
             </div>
-            <p className="mt-4 text-center font-mono-label text-[11px] uppercase tracking-wider text-muted-foreground">
-              Desenvolvido por: Kaique Aurelio &amp; Decode Analytics
-            </p>
-          </motion.div>
+
+            <Button 
+              type="button" 
+              variant="outline" 
+              className="w-full border-white/10 bg-white/5 text-xs font-mono uppercase tracking-wider text-white hover:bg-white/10" 
+              onClick={() => setIsSignUp(!isSignUp)}
+            >
+              {isSignUp ? 'Back to Terminal' : 'Request Enrollment'}
+            </Button>
+          </div>
         </div>
+
+        <p className="mt-6 text-center font-mono text-[9px] uppercase tracking-[0.2em] text-gray-600">
+          Developed by: Kaique Aurelio & Decode Analytics
+        </p>
       </div>
 
       <Dialog open={showLockModal} onOpenChange={setShowLockModal}>
-        <DialogContent className="max-w-sm">
+        <DialogContent className="max-w-sm bg-[#0a0a0f] border-red-900/50">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-base text-destructive">
+            <DialogTitle className="flex items-center gap-2 text-base text-red-500 uppercase font-mono tracking-tighter">
               <Lock className="h-5 w-5" />
-              Conta Bloqueada
+              Access Denied
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Para desbloquear, redefina sua senha por e-mail.
+            <p className="text-sm text-gray-400 font-mono">
+              Identity suspended due to too many failed protocol attempts. Manual override required.
             </p>
-            <Button onClick={() => { setShowLockModal(false); setIsReset(true); }} className="w-full">
-              Redefinir Senha por Email
+            <Button onClick={() => { setShowLockModal(false); setIsReset(true); }} className="w-full bg-red-600 hover:bg-red-500">
+              Protocol Reset
             </Button>
-            <button
-              type="button"
-              onClick={() => setShowLockModal(false)}
-              className="w-full text-center text-sm text-muted-foreground hover:text-foreground smooth-all"
-            >
-              Fechar
-            </button>
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+    </LoginSplitLayout>
   );
 }
