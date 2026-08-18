@@ -3299,6 +3299,31 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_list_exercises: {
+        Args: never
+        Returns: {
+          allow_image_upload: boolean
+          apostila_id: string
+          correct_answer: string
+          created_at: string
+          expected_answer: Json
+          explanation: string | null
+          id: string
+          min_chars: number
+          options: Json
+          question: string
+          question_type: string
+          reference_answer: string | null
+          sort_order: number
+          type: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "exercises"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       answer_simulado_question: {
         Args: { _answer_id: string; _selected_answer: string }
         Returns: Json
@@ -3364,6 +3389,7 @@ export type Database = {
       get_dashboard_stats: { Args: { _user_id: string }; Returns: Json }
       get_email_for_ra: { Args: { _ra: string }; Returns: string }
       get_exercise_counts: { Args: never; Returns: Json }
+      get_exercise_reveal: { Args: { _exercise_id: string }; Returns: Json }
       get_public_leaderboard: {
         Args: { _limit?: number }
         Returns: {
