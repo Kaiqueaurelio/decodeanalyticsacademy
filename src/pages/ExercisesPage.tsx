@@ -21,7 +21,7 @@ import type { Tables } from '@/integrations/supabase/types';
 
 // Nunca carregamos `correct_answer` no cliente: a correção é feita pelo servidor
 // (RPC check_exercise_answer) e a alternativa correta só é revelada após responder.
-type Exercise = Omit<Tables<'exercises'>, 'correct_answer'>;
+type Exercise = Omit<Tables<'exercises'>, 'correct_answer' | 'explanation' | 'reference_answer' | 'expected_answer'>;
 
 type AnswerState = {
   selected: string;
@@ -43,6 +43,8 @@ export default function ExercisesPage() {
 
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [answers, setAnswers] = useState<Record<string, AnswerState | null>>({});
+  // Gabarito/explicação nunca vêm na listagem: só chegam do servidor após responder.
+  const [reveals, setReveals] = useState<Record<string, { explanation: string | null; reference_answer: string | null }>>({});
   const [essayAnswers, setEssayAnswers] = useState<Record<string, EssayAnswer>>({});
   const [title, setTitle] = useState('');
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -68,7 +70,7 @@ export default function ExercisesPage() {
     setLoading(true);
     Promise.all([
       supabase.from('apostilas').select('title').eq('id', id).single(),
-      supabase.from('exercises').select('id, question, options, explanation, apostila_id, created_at, type, question_type, min_chars, reference_answer, sort_order, expected_answer, allow_image_upload').eq('apostila_id', id),
+      supabase.from('exercises').select('id, question, options, apostila_id, created_at, type, question_type, min_chars, sort_order, allow_image_upload').eq('apostila_id', id),
       supabase.from('answers').select('exercise_id, selected_answer, is_correct').eq('user_id', user.id),
     ]).then(([apostila, exercisesRes, answersRes]) => {
       if (apostila.data) setTitle(apostila.data.title);
@@ -142,6 +144,7 @@ export default function ExercisesPage() {
 
     const result = data as { is_correct: boolean; correct_answer: string; explanation: string | null };
     setAnswers(prev => ({ ...prev, [exerciseId]: { selected, correct: result.is_correct, correctAnswer: result.correct_answer } }));
+    setReveals(prev => ({ ...prev, [exerciseId]: { explanation: result.explanation ?? null, reference_answer: null } }));
 
     gamification.addXP(result.is_correct ? 10 : 3);
     gamification.updateStreak();
@@ -165,6 +168,9 @@ export default function ExercisesPage() {
     const essay = essayAnswers[exerciseId];
     if (!essay?.text?.trim()) { toast.error('Escreva sua resposta antes de enviar.'); return; }
     setAnswers(prev => ({ ...prev, [exerciseId]: { selected: essay.text, correct: true } }));
+    (supabase as any).rpc('get_exercise_reveal', { _exercise_id: exerciseId }).then(({ data }: any) => {
+      if (data) setReveals(prev => ({ ...prev, [exerciseId]: { explanation: data.explanation ?? null, reference_answer: data.reference_answer ?? null } }));
+    });
     gamification.addXP(15);
     gamification.updateStreak();
     toast.success('Dissertativa enviada. +15 XP');
@@ -515,12 +521,12 @@ export default function ExercisesPage() {
                       )}
 
                       {/* Explanation */}
-                      {ans && ex.explanation && (
+                      {ans && (reveals[ex.id]?.explanation || reveals[ex.id]?.reference_answer) && (
                         <div className="mt-3 p-3 rounded-lg bg-accent/10 border border-accent/20">
                           <p className="font-semibold text-[10px] text-accent mb-1 flex items-center gap-1">
                             <Wand2 className="h-3 w-3" /> {type === 'essay' ? 'Resposta Modelo' : 'Explicação'}
                           </p>
-                          <p className="text-muted-foreground text-xs leading-relaxed whitespace-pre-line">{ex.explanation}</p>
+                          <p className="text-muted-foreground text-xs leading-relaxed whitespace-pre-line">{reveals[ex.id]?.explanation || reveals[ex.id]?.reference_answer}</p>
                         </div>
                       )}
 
@@ -677,7 +683,7 @@ export default function ExercisesPage() {
                                 </p>
                                 <p className="text-sm text-foreground/80 leading-relaxed whitespace-pre-line">{answered.selected}</p>
                               </div>
-                              {currentExercise.explanation && (
+                              {(reveals[currentExercise.id]?.explanation || reveals[currentExercise.id]?.reference_answer) && (
                                 <Button size="sm" variant="outline" className="gap-1.5 w-full"
                                   onClick={() => toggleModelAnswer(currentExercise.id)}>
                                   {essay.showModel ? <><EyeOff className="h-3.5 w-3.5" /> Ocultar Resposta Modelo</> : <><Eye className="h-3.5 w-3.5" /> Ver Resposta Modelo</>}
@@ -689,13 +695,13 @@ export default function ExercisesPage() {
                       )}
 
                       {/* Explanation */}
-                      {answered && currentExercise.explanation && (type === 'multiple_choice' || essay.showModel) && (
+                      {answered && (reveals[currentExercise.id]?.explanation || reveals[currentExercise.id]?.reference_answer) && (type === 'multiple_choice' || essay.showModel) && (
                         <div className="mt-4 p-4 rounded-xl bg-accent/10 border border-accent/20 animate-fade-in">
                           <p className="font-semibold text-xs text-accent mb-1.5 flex items-center gap-1">
                             <Wand2 className="h-3 w-3" />
                             {type === 'essay' ? 'Resposta Modelo' : 'Explicação'}
                           </p>
-                          <p className="text-muted-foreground text-xs leading-relaxed whitespace-pre-line">{currentExercise.explanation}</p>
+                          <p className="text-muted-foreground text-xs leading-relaxed whitespace-pre-line">{reveals[currentExercise.id]?.explanation || reveals[currentExercise.id]?.reference_answer}</p>
                         </div>
                       )}
                     </div>
