@@ -69,10 +69,12 @@ export function MobileBottomNav() {
     <>
       <div aria-hidden className="h-24 md:hidden" />
       <nav
-        className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background/95 px-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] pt-2 shadow-[0_-18px_45px_-30px_hsl(var(--foreground)/0.35)] backdrop-blur-xl md:hidden"
+        className="fixed inset-x-0 bottom-0 z-50 mobile-cyber-bottom-nav px-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] pt-2 shadow-[0_-10px_30px_rgba(0,0,0,0.5)] md:hidden font-mono"
         aria-label="Navegacao principal mobile"
       >
-        <div className={cn("mx-auto grid max-w-md gap-1", isAdmin ? "grid-cols-7" : "grid-cols-6")}>
+        <div className="absolute inset-0 cyber-grid opacity-10 pointer-events-none" />
+        
+        <div className={cn("mx-auto grid max-w-md gap-1 relative z-10", isAdmin ? "grid-cols-7" : "grid-cols-6")}>
           {mainItems.map((item) => {
             const active = isItemActive(locationState.pathname, locationState.hash, item.to);
             return (
@@ -82,16 +84,15 @@ export function MobileBottomNav() {
                 onClick={handleNavigate(item.to)}
                 aria-current={active ? 'page' : undefined}
                 className={cn(
-                  'flex min-h-[54px] flex-col items-center justify-center gap-1 rounded-xl px-1 text-[10px] font-semibold leading-none transition-colors touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+                  'flex min-h-[54px] flex-col items-center justify-center gap-1 rounded-xl px-1 text-[9px] font-bold uppercase tracking-tighter transition-all touch-manipulation mobile-cyber-item',
                   active
-                    ? 'bg-primary/12 text-primary'
-                    : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
+                    ? 'mobile-cyber-item-active text-cyan-400'
+                    : 'text-gray-500 hover:text-cyan-300'
                 )}
               >
-                <item.icon className="h-[19px] w-[19px]" strokeWidth={active ? 2.6 : 2.2} />
+                <item.icon className={cn("h-[18px] w-[18px]", active ? "animate-cyber-pulse" : "")} strokeWidth={active ? 2.5 : 2} />
                 <span className="max-w-full truncate">{item.label}</span>
               </NavLink>
-
             );
           })}
 
@@ -99,13 +100,13 @@ export function MobileBottomNav() {
             <NavLink
               to="/admin"
               className={cn(
-                'flex min-h-[54px] flex-col items-center justify-center gap-1 rounded-xl px-1 text-[10px] font-semibold leading-none transition-colors touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+                'flex min-h-[54px] flex-col items-center justify-center gap-1 rounded-xl px-1 text-[9px] font-bold uppercase tracking-tighter transition-all touch-manipulation mobile-cyber-item',
                 locationState.pathname.startsWith('/admin')
-                  ? 'bg-accent/12 text-accent'
-                  : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
+                  ? 'mobile-cyber-item-active text-purple-400'
+                  : 'text-gray-500 hover:text-purple-300'
               )}
             >
-              <ShieldCheck className="h-[19px] w-[19px]" strokeWidth={locationState.pathname.startsWith('/admin') ? 2.6 : 2.2} />
+              <ShieldCheck className={cn("h-[18px] w-[18px]", locationState.pathname.startsWith('/admin') ? "animate-pulse" : "")} strokeWidth={2} />
               <span className="max-w-full truncate">Admin</span>
             </NavLink>
           )}
@@ -114,15 +115,15 @@ export function MobileBottomNav() {
             <SheetTrigger asChild>
               <Button
                 variant="ghost"
-                className="relative flex min-h-[54px] h-auto flex-col items-center justify-center gap-1 rounded-xl px-1 text-[10px] font-semibold leading-none text-muted-foreground hover:bg-muted/60 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background touch-manipulation"
+                className="relative flex min-h-[54px] h-auto flex-col items-center justify-center gap-1 rounded-xl px-1 text-[9px] font-bold uppercase tracking-tighter text-gray-500 hover:text-cyan-300 transition-all touch-manipulation mobile-cyber-item"
                 aria-label={unreadCount > 0 ? `Abrir menu completo — ${unreadCount} notificações não lidas` : 'Abrir menu completo'}
                 aria-haspopup="dialog"
                 aria-expanded={open}
               >
                 <div className="relative">
-                  <Menu className="h-[19px] w-[19px]" strokeWidth={2.2} />
+                  <Menu className="h-[18px] w-[18px]" strokeWidth={2} />
                   {unreadCount > 0 && (
-                    <span className="absolute -right-1.5 -top-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold text-primary-foreground shadow-sm ring-2 ring-background">
+                    <span className="absolute -right-2 -top-2 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-cyan-500 px-1 text-[8px] font-black text-black shadow-[0_0_10px_#00f0ff]">
                       {unreadCount > 9 ? '9+' : unreadCount}
                     </span>
                   )}
