@@ -27,6 +27,17 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: "6.6.0",
+    date: "18/08/2026",
+    title: "Estabilidade Total & Ella v18",
+    changes: [
+      { kind: "fix", text: "Fim do loading infinito no login via RA/Email" },
+      { kind: "improvement", text: "Ella: Cache-busting v18 e fallback automático de imagem" },
+      { kind: "security", text: "Admin: Normalização de permissões para G802144" },
+      { kind: "improvement", text: "UX: Purga de cache de avatar legado no storage" }
+    ]
+  },
+  {
     version: "6.5.0",
     date: "2026-08-18",
     title: "Gestão Híbrida v2 & Ella AI Jobs",

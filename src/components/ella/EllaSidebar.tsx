@@ -87,9 +87,11 @@ export function EllaSidebar() {
                 src={avatarUrl} 
                 alt="Ella Ribeiro" 
                 className="object-cover"
-                onError={(e) => {
-                  console.warn("Avatar load error, retrying with default");
-                  (e.currentTarget as HTMLImageElement).src = "/ella-avatar.png";
+                onLoadingStatusChange={(status) => {
+                  if (status === 'error') {
+                    console.warn("Avatar load error, forcing fallback");
+                    setAvatarUrl("/ella-avatar.png");
+                  }
                 }}
               />
               <AvatarFallback className="bg-gradient-to-br from-primary to-accent">
