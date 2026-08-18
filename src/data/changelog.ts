@@ -27,6 +27,17 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: "6.4.1",
+    date: "2026-08-18",
+    title: "Gestão Híbrida de Vagas & Importação MD",
+    major: true,
+    changes: [
+      { kind: 'feature', text: 'Novo Importador MD: Publique dezenas de vagas em segundos via Markdown.' },
+      { kind: 'improvement', text: 'Refinamento do Dashboard: Melhor visibilidade das oportunidades de carreira.' },
+      { kind: 'fix', text: 'Correção de botões duplicados no Gestor de Vagas.' },
+    ],
+  },
+  {
     version: "6.2.0",
     date: "2026-08-18",
     title: "Estabilidade & Resiliência Acadêmica v2",
@@ -49,7 +60,7 @@ export const CHANGELOG: Release[] = [
 
 export function getBuildInfo() {
   return {
-    version: '6.2.0',
+    version: '6.4.1',
     environment: 'production',
     host: 'lovable.app',
     buildTime: new Date().toISOString(),
