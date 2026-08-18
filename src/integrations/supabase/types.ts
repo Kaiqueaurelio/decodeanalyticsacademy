@@ -1861,6 +1861,60 @@ export type Database = {
         }
         Relationships: []
       }
+      jobs: {
+        Row: {
+          application_link: string
+          company_logo_url: string | null
+          company_name: string
+          created_at: string | null
+          created_by: string | null
+          description: string
+          id: string
+          is_active: boolean
+          location: string | null
+          published_at: string | null
+          requirements: string | null
+          salary_range: string | null
+          title: string
+          type: Database["public"]["Enums"]["job_type"]
+          updated_at: string | null
+        }
+        Insert: {
+          application_link: string
+          company_logo_url?: string | null
+          company_name: string
+          created_at?: string | null
+          created_by?: string | null
+          description: string
+          id?: string
+          is_active?: boolean
+          location?: string | null
+          published_at?: string | null
+          requirements?: string | null
+          salary_range?: string | null
+          title: string
+          type?: Database["public"]["Enums"]["job_type"]
+          updated_at?: string | null
+        }
+        Update: {
+          application_link?: string
+          company_logo_url?: string | null
+          company_name?: string
+          created_at?: string | null
+          created_by?: string | null
+          description?: string
+          id?: string
+          is_active?: boolean
+          location?: string | null
+          published_at?: string | null
+          requirements?: string | null
+          salary_range?: string | null
+          title?: string
+          type?: Database["public"]["Enums"]["job_type"]
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       maintenance_logs: {
         Row: {
           action: string
@@ -3458,6 +3512,7 @@ export type Database = {
         | "unauthorized_access"
       apostila_status: "liberada" | "bloqueada" | "em_manutencao"
       app_role: "admin" | "user"
+      job_type: "job" | "internship" | "freelance"
       material_type:
         | "pdf"
         | "image"
@@ -3607,6 +3662,7 @@ export const Constants = {
       ],
       apostila_status: ["liberada", "bloqueada", "em_manutencao"],
       app_role: ["admin", "user"],
+      job_type: ["job", "internship", "freelance"],
       material_type: [
         "pdf",
         "image",
