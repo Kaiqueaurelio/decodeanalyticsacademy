@@ -1,51 +1,43 @@
-import { useMemo, useEffect, useState } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { AppHeader } from '@/components/AppHeader';
-import { Button } from '@/components/ui/button';
-import { getSubjectColor } from '@/lib/subject-colors';
-import { canonicalSubjectKey, guessSemesterFromCategory, subjectKey } from '@/lib/subject-semester-map';
 import { NotionSubjectDetail } from '@/components/notion/NotionSubjectDetail';
-import { GlitchLoader } from '@/components/GlitchLoader';
+import { PageSkeleton } from '@/components/PageSkeleton';
+import { useAuth } from '@/hooks/useAuth';
+import { guessSemesterFromCategory } from '@/lib/subject-semester-map';
 
-interface ApostilaRow {
-  id: string;
-  title: string;
-  category: string | null;
-  cover_url: string | null;
-  semester: number | null;
-  source_type: string | null;
-  content: string | null;
+function keepMostComplete(apostilas: any[]) {
+  if (apostilas.length === 0) return [];
+  const sorted = [...apostilas].sort((a, b) => {
+    const aContentLen = (a.content || '').length;
+    const bContentLen = (b.content || '').length;
+    return bContentLen - aContentLen;
+  });
+  return [sorted[0]];
 }
 
-function keepMostComplete(rows: ApostilaRow[]) {
-  const unique = new Map<string, ApostilaRow>();
-  for (const row of rows) {
-    const title = subjectKey(row.title);
-    const key = `${title}::${canonicalSubjectKey(row.category)}`;
-    const current = unique.get(key);
-    if (!current || (row.content || '').length > (current.content || '').length) unique.set(key, row);
-  }
-  return [...unique.values()];
+function subjectKey(s: string) {
+  return s.toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]/g, '');
 }
 
-export default function SubjectPage() {
-  const { user } = useAuth();
+const SubjectPage = () => {
   const { category = '' } = useParams();
   const decodedCategory = decodeURIComponent(category).trim();
   console.log(`[SubjectPage] Rendered for category: "${decodedCategory}"`);
   const navigate = useNavigate();
-
-  const [rows, setRows] = useState<ApostilaRow[]>([]);
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
+  const [rows, setRows] = useState<any[]>([]);
 
   useEffect(() => {
     let alive = true;
     (async () => {
       setLoading(true);
       const targetKey = subjectKey(decodedCategory);
+      const targetId = decodedCategory.toLowerCase(); // Se for um UUID
       
       const { data: allApostilas } = await supabase
         .from('apostilas')
@@ -60,7 +52,7 @@ export default function SubjectPage() {
         const apCatKey = subjectKey(ap.category || '');
         
         // Match por ID (UUID)
-        if (apId === targetKey) return true;
+        if (apId === targetId) return true;
         
         // Match exato de chaves
         if (apTitleKey === targetKey || apCatKey === targetKey) return true;
@@ -74,14 +66,12 @@ export default function SubjectPage() {
         return (targetKey.length > 5 && (apTitleKey.includes(targetKey) || apCatKey.includes(targetKey)));
       });
 
-
       console.log(`[SubjectPage] Total apostilas fetched: ${allApostilas?.length}. Matches found: ${matches.length}`);
-      
+
       const normalizedRows = matches.map((row) => ({
         ...row,
         semester: row.semester ?? guessSemesterFromCategory(row.category) ?? guessSemesterFromCategory(decodedCategory) ?? 1,
       }));
-
 
       setRows(keepMostComplete(normalizedRows));
       setLoading(false);
@@ -91,117 +81,68 @@ export default function SubjectPage() {
     };
   }, [decodedCategory]);
 
-  const subjectData = useMemo(() => {
-    const matchedRow = rows.find(r => subjectKey(r.category || '') === subjectKey(decodedCategory) || subjectKey(r.title) === subjectKey(decodedCategory));
-    const semesterNum = matchedRow?.semester || guessSemesterFromCategory(decodedCategory) || 1;
+  const handleOpenApostila = (subject: any) => {
+    const isMobileSubject = subject.title.toLowerCase().includes('mobile') || subject.category.toLowerCase().includes('mobile');
     
-    const teacherMap: Record<string, string> = {
-      'Sistemas Operacionais e Mobile': 'Prof. Anderson Lima',
-      'Calculo Numerico Computacional': 'Prof. Jorge Amaral',
-      'Pesquisa Operacional': 'Prof. Dr. Ricardo Silva',
-      'Arquitetura de Computadores Modernos': 'Prof. Roberto Santos',
-      'Inteligencia Artificial': 'Prof. Fabiano Gomes',
-      'Redes de Computadores': 'Prof. Sergio Murilo',
-      'Banco de Dados': 'Prof. Carlos Oliveira',
-      'Engenharia de Software': 'Profa. Ana Paula',
-    };
+    // Check for explicit "Aprendendo Shell Script" page
+    const shellScriptPageId = '59895af2-f618-4713-92de-408b5c27b513';
+    
+    if (isMobileSubject) {
+      navigate(`/apostila/${subject.id}?page=${shellScriptPageId}`);
+    } else {
+      navigate(`/apostila/${subject.id}`);
+    }
+  };
 
-    const handleOpenNotebook = async () => {
-      if (!user) return;
-      
-      const { data: existing } = await supabase
-        .from('notebooks' as any)
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('subject_id', decodedCategory)
-        .maybeSingle();
+  if (loading) return <PageSkeleton />;
 
-      if (existing) {
-        navigate(`/caderno/${(existing as any).id}`);
-      } else {
-        const { data: created } = await supabase
-          .from('notebooks' as any)
-          .insert({
-            user_id: user.id,
-            subject_id: decodedCategory,
-            title: decodedCategory,
-            semester: `${semesterNum}º Semestre`,
-            status: 'Em progresso'
-          })
-          .select()
-          .single();
-        
-        if (created) {
-          navigate(`/caderno/${(created as any).id}`);
-        }
-      }
-    };
-
-    return {
-      id: decodedCategory,
-      title: decodedCategory,
-      coverImage: rows.find(r => r.cover_url)?.cover_url || null,
-      classType: 'Híbrido',
-      workloadHours: 80,
-      thematicAxis: 'Computação',
-      formationAxis: 'Ciência da Computação',
-      professor: teacherMap[decodedCategory] || 'Professor da Disciplina',
-      semester: `${semesterNum}º Semestre`,
-      status: (rows.length > 0 ? 'Em progresso' : 'A cursar') as 'Em progresso' | 'A cursar',
-      progressValue: rows.length > 0 ? 35 : 0,
-      onOpenNotebook: handleOpenNotebook,
-      contentSections: rows.length > 0 
-        ? rows.map(r => ({
-          id: r.id,
-          title: r.title,
-          documents: [
-            { 
-              id: `${r.id}-content`, 
-              title: 'Caderno de Estudos', 
-              type: 'note' as const, 
-              onClick: () => {
-                const targetPage = r.id === '955b811b-c633-474e-8322-4167e55dfed7' 
-                  ? '?page=59895af2-f618-4713-92de-408b5c27b513' 
-                  : '';
-                navigate(`/apostila/${r.id}${targetPage}`);
-              } 
-            },
-            { id: `${r.id}-summary`, title: 'Resumo para Prova', type: 'summary' as const, onClick: () => navigate(`/apostila/${r.id}/read`) },
-            { id: `${r.id}-exercises`, title: 'Lista de Exercícios', type: 'exam_review' as const, onClick: () => navigate(`/exercicios/${r.id}`) }
-          ]
-        }))
-        : [
-          {
-            id: 'placeholder-intro',
-            title: '1. Introdução e Conceitos Base',
-            documents: [
-              { id: 'placeholder-doc-1', title: 'Cronograma da Disciplina', type: 'calendar' as const },
-              { id: 'placeholder-doc-2', title: 'Notas de Aula (Em breve)', type: 'note' as const }
-            ]
-          },
-          {
-            id: 'placeholder-materials',
-            title: '2. Materiais Complementares',
-            documents: []
+  const subjectData = rows[0] ? {
+    id: rows[0].id,
+    title: rows[0].title,
+    coverImage: rows[0].cover_url,
+    classType: rows[0].source_type === 'enem' ? 'ENEM' : 'Graduação',
+    workloadHours: 80,
+    thematicAxis: 'Tecnologia da Informação',
+    formationAxis: rows[0].category,
+    professor: 'Prof. Coordenador',
+    semester: `${rows[0].semester}º Semestre`,
+    status: 'Em progresso' as const,
+    progressValue: 15,
+    onOpenNotebook: () => handleOpenApostila(rows[0]),
+    contentSections: [
+      {
+        id: 'main-content',
+        title: 'Material de Estudo',
+        documents: [
+          { 
+            id: 'caderno-estudos', 
+            title: 'Caderno de Estudos', 
+            type: 'exam_review' as const, 
+            onClick: () => handleOpenApostila(rows[0]) 
           }
         ]
-    };
-  }, [decodedCategory, rows, navigate, user]);
+      }
+    ]
+  } : {
+    id: 'placeholder',
+    title: decodedCategory,
+    coverImage: null,
+    classType: 'Graduação',
+    workloadHours: 0,
+    thematicAxis: 'Não catalogado',
+    formationAxis: 'Placeholder',
+    professor: 'Não atribuído',
+    semester: 'A cursar',
+    status: 'A cursar' as const,
+    progressValue: 0,
+    contentSections: []
+  };
 
   return (
-    <div className="min-h-screen bg-background pb-20">
-      <AppHeader />
-      <main className="mx-auto w-full max-w-6xl px-3 sm:px-6">
-        <div className="py-8">
-          {loading ? (
-            <div className="flex flex-col items-center justify-center py-32 space-y-4">
-              <GlitchLoader text="Carregando Disciplina..." />
-            </div>
-          ) : (
-            <NotionSubjectDetail subject={subjectData as any} />
-          )}
-        </div>
-      </main>
+    <div className="min-h-screen bg-background p-4 sm:p-8">
+      <NotionSubjectDetail subject={subjectData} />
     </div>
   );
-}
+};
+
+export default SubjectPage;
