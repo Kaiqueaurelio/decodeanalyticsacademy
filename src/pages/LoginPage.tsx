@@ -11,7 +11,7 @@ import { Loader2, ArrowLeft, Eye, EyeOff, BookOpen, BarChart3, Shield, AlertTria
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import logoDark from '@/assets/owl-icon.png';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useMotionValue, useSpring } from 'framer-motion';
 
 export default function LoginPage() {
   const { signIn, signUp, user, isAdmin, roleChecked, loading: authLoading, status, isSessionHydrated } = useAuth();
@@ -31,20 +31,29 @@ export default function LoginPage() {
 
   const looksLikeEmail = isEmailIdentifier;
   const callRaAuth = async (payload: Record<string, unknown>) => {
-    const { data, error } = await supabase.functions.invoke('ra-auth', { body: payload });
-    if (error) {
-      let message = 'Não consegui validar seu RA no servidor. Verifique sua conexão ou tente novamente.';
-      const res = (error as any)?.context as Response | undefined;
-      if (res && typeof res.json === 'function') {
-        try {
-          const body = await res.clone().json();
-          if (body?.error) message = body.error;
-          return { data: null, message, code: body?.code as string | undefined };
-        } catch { /* mantém mensagem padrão */ }
+    try {
+      const { data, error } = await supabase.functions.invoke('ra-auth', { body: payload });
+      if (error) {
+        let message = 'Não consegui validar seu RA no servidor. Verifique sua conexão ou tente novamente.';
+        const res = (error as any)?.context as Response | undefined;
+        if (res && typeof res.json === 'function') {
+          try {
+            const body = await res.clone().json();
+            if (body?.error) message = body.error;
+            return { data: null, message, code: body?.code as string | undefined };
+          } catch { /* mantém mensagem padrão */ }
+        }
+        return { data: null, message, code: undefined };
       }
-      return { data: null, message, code: undefined };
+      return { data, message: null as string | null, code: undefined };
+    } catch (error) {
+      console.error('Falha de rede no ra-auth:', error);
+      return {
+        data: null,
+        message: 'Não foi possível conectar ao serviço de autenticação por RA. Tente novamente em instantes.',
+        code: 'network_error',
+      };
     }
-    return { data, message: null as string | null, code: undefined };
   };
 
   const usingEmail = looksLikeEmail(identifier);
@@ -60,7 +69,10 @@ export default function LoginPage() {
   const passwordRef = useRef<HTMLInputElement>(null);
   const runawayDockRef = useRef<HTMLDivElement>(null);
   const runawayButtonRef = useRef<HTMLButtonElement>(null);
-  const [runawayOffset, setRunawayOffset] = useState({ x: 0, y: 0 });
+  const runawayX = useMotionValue(0);
+  const runawayY = useMotionValue(0);
+  const runawaySpringX = useSpring(runawayX, { stiffness: 420, damping: 24, mass: 0.55 });
+  const runawaySpringY = useSpring(runawayY, { stiffness: 420, damping: 24, mass: 0.55 });
   const TERMS_VERSION = '4.18.1';
   const [agreedToTerms, setAgreedToTerms] = useState(() => localStorage.getItem(`decode_terms_accepted_${TERMS_VERSION}`) === 'true');
 
@@ -225,10 +237,19 @@ export default function LoginPage() {
       return;
     }
 
-    const { error } = await signIn(effectiveEmail, password);
-    if (error) {
+    let signInError: Error | null = null;
+    try {
+      ({ error: signInError } = await signIn(effectiveEmail, password));
+    } catch (error) {
+      console.error('Falha de rede no login por e-mail:', error);
       setLoading(false);
-      if (error.message?.toLowerCase().includes('email not confirmed')) {
+      setAwaitingSession(false);
+      toast.error('Não foi possível conectar ao serviço de autenticação. Tente novamente em instantes.');
+      return;
+    }
+    if (signInError) {
+      setLoading(false);
+      if (signInError.message?.toLowerCase().includes('email not confirmed')) {
         setAwaitingSession(false);
         setUnverifiedEmail(true);
         setEmail(effectiveEmail);
@@ -284,51 +305,65 @@ export default function LoginPage() {
 
   const filledLoginFields = Number(Boolean(normalizeIdentifier(identifier))) + Number(Boolean(password));
   const loginHint = filledLoginFields === 0
-    ? 'Dois campos para preencher antes de o botão ficar parado.'
+    ? 'Two fields to fill before it stands still.'
     : filledLoginFields === 1
-      ? 'Falta um. O botão está desacelerando.'
-      : 'Acesso liberado. Pode entrar.';
+      ? 'One to go — it is slowing down.'
+      : 'Locked in. Go on then.';
 
   const runawayStrength = filledLoginFields === 0 ? 1 : filledLoginFields === 1 ? 0.42 : 0;
 
-  const handleRunawayPointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
-    if (runawayStrength === 0 || event.pointerType === 'touch') return;
+  const evadeFromPointer = (clientX: number, clientY: number, pointerType: string) => {
+    if (runawayStrength === 0 || pointerType === 'touch') return;
     const dock = runawayDockRef.current;
     const button = runawayButtonRef.current;
     if (!dock || !button) return;
 
     const dockRect = dock.getBoundingClientRect();
     const buttonRect = button.getBoundingClientRect();
-    const cursorX = event.clientX - dockRect.left;
-    const cursorY = event.clientY - dockRect.top;
-    const buttonCenterX = buttonRect.left - dockRect.left + buttonRect.width / 2;
-    const buttonCenterY = buttonRect.top - dockRect.top + buttonRect.height / 2;
+    const cursorX = clientX - dockRect.left;
+    const cursorY = clientY - dockRect.top;
+    const buttonCenterX = dockRect.width / 2 + runawayX.get();
+    const buttonCenterY = dockRect.height / 2 + runawayY.get();
     const distanceX = cursorX - buttonCenterX;
     const distanceY = cursorY - buttonCenterY;
-    const distance = Math.hypot(distanceX, distanceY);
-    const triggerDistance = Math.max(105, buttonRect.width * 0.9);
+    const distance = Math.hypot(distanceX, distanceY) || 1;
+    const triggerDistance = Math.max(108, buttonRect.width * 0.78);
 
     if (distance > triggerDistance) return;
 
-    const directionX = distanceX === 0 ? (Math.random() > 0.5 ? 1 : -1) : -distanceX / distance;
-    const directionY = distanceY === 0 ? -1 : -distanceY / distance;
-    const maxX = Math.max(0, (dockRect.width - buttonRect.width) / 2 - 8);
-    const maxY = Math.max(0, (dockRect.height - buttonRect.height) / 2 - 6);
-    const push = Math.min(92, Math.max(42, triggerDistance - distance + 28)) * runawayStrength;
+    const now = performance.now();
+    const angle = Math.atan2(distanceY, distanceX) + Math.PI + Math.sin(now / 75) * 0.32;
+    const push = Math.min(118, Math.max(48, triggerDistance - distance + 34)) * runawayStrength;
+    const maxX = Math.max(0, (dockRect.width - buttonRect.width) / 2 - 10);
+    const maxY = Math.max(0, (dockRect.height - buttonRect.height) / 2 - 8);
+    const targetX = Math.max(-maxX, Math.min(maxX, Math.cos(angle) * push));
+    const targetY = Math.max(-maxY, Math.min(maxY, Math.sin(angle) * push * 0.72));
 
-    setRunawayOffset({
-      x: Math.max(-maxX, Math.min(maxX, directionX * push)),
-      y: Math.max(-maxY, Math.min(maxY, directionY * push * 0.72)),
-    });
+    runawayX.set(targetX);
+    runawayY.set(targetY);
+  };
+
+  const handleRunawayPointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    evadeFromPointer(event.clientX, event.clientY, event.pointerType);
+  };
+
+  const handleRunawayPointerEnter = (event: React.PointerEvent<HTMLButtonElement>) => {
+    evadeFromPointer(event.clientX, event.clientY, event.pointerType);
   };
 
   const resetRunawayOffset = () => {
-    if (runawayStrength === 0) setRunawayOffset({ x: 0, y: 0 });
+    if (runawayStrength === 0) {
+      runawayX.set(0);
+      runawayY.set(0);
+    }
   };
 
   useEffect(() => {
-    if (runawayStrength === 0) setRunawayOffset({ x: 0, y: 0 });
-  }, [runawayStrength]);
+    if (runawayStrength === 0) {
+      runawayX.set(0);
+      runawayY.set(0);
+    }
+  }, [runawayStrength, runawayX, runawayY]);
 
   return (
     <div className="relative min-h-dvh overflow-hidden bg-[#0b0f0d] text-[#effff2] selection:bg-[#d7ff4f]/30">
@@ -423,7 +458,10 @@ export default function LoginPage() {
                         <div ref={runawayDockRef} onPointerMove={handleRunawayPointerMove} onPointerLeave={resetRunawayOffset} className="relative flex min-h-[84px] items-center justify-center overflow-hidden rounded-full border border-white/[0.06] bg-black/[0.22] px-3">
                           <div className="pointer-events-none absolute inset-x-8 top-1/2 h-px -translate-y-1/2 bg-gradient-to-r from-transparent via-[#d7ff4f]/20 to-transparent" />
                           <div aria-hidden="true" className="pointer-events-none absolute left-1/2 top-1/2 h-12 w-[7.5rem] -translate-x-1/2 -translate-y-1/2 rounded-full border border-dashed border-[#d7ff4f]/25" />
-                          <Button ref={runawayButtonRef} type="submit" style={{ transform: `translate3d(${runawayOffset.x}px, ${runawayOffset.y}px, 0)` }} className="relative z-10 min-h-12 w-[7.5rem] shrink-0 rounded-full border border-[#d7ff4f]/70 bg-[#d7ff4f] px-4 font-semibold text-[#10150f] shadow-[0_0_25px_rgba(215,255,79,0.16)] transition-[transform,box-shadow,background-color] duration-300 ease-out hover:bg-[#e5ff8b] hover:shadow-[0_0_35px_rgba(215,255,79,0.28)] disabled:cursor-not-allowed disabled:opacity-70" disabled={loading || awaitingSession || isLocked} aria-label="Entrar no Decode Analytics Academy">{(loading || awaitingSession) && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}{isLocked ? <><Lock className="mr-1 h-4 w-4" /> Bloqueada</> : isSignUp ? 'Criar conta' : awaitingSession ? 'Entrando...' : 'Log in'}</Button>
+                          <motion.div style={{ x: runawaySpringX, y: runawaySpringY }} className="flex w-full justify-center">
+                            <Button ref={runawayButtonRef} type="submit" onPointerEnter={handleRunawayPointerEnter} className="relative z-10 min-h-12 w-[7.5rem] shrink-0 rounded-full border border-[#d7ff4f]/70 bg-[#d7ff4f] px-4 font-semibold text-[#10150f] shadow-[0_0_25px_rgba(215,255,79,0.16)] transition-[box-shadow,background-color] duration-300 ease-out hover:bg-[#e5ff8b] hover:shadow-[0_0_35px_rgba(215,255,79,0.28)] disabled:cursor-not-allowed disabled:opacity-70" disabled={loading || awaitingSession || isLocked} aria-label="Entrar no Decode Analytics Academy">
+{(loading || awaitingSession) && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}{isLocked ? <><Lock className="mr-1 h-4 w-4" /> Bloqueada</> : isSignUp ? 'Criar conta' : awaitingSession ? 'Entrando...' : 'Log in'}</Button>
+                          </motion.div>
                         </div>
                       )}
 
