@@ -15,12 +15,15 @@ export function EllaSettings() {
   const [uploading, setUploading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
-  // Sincroniza o estado local se o avatar mudar globalmente
+  // O componente atualiza a própria prévia após salvar; as outras telas recebem um evento.
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentAvatar(getEllaAvatarUrl());
-    }, 2000);
-    return () => clearInterval(interval);
+    const refreshAvatar = () => setCurrentAvatar(getEllaAvatarUrl());
+    window.addEventListener('ella-avatar-changed', refreshAvatar);
+    window.addEventListener('storage', refreshAvatar);
+    return () => {
+      window.removeEventListener('ella-avatar-changed', refreshAvatar);
+      window.removeEventListener('storage', refreshAvatar);
+    };
   }, []);
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -65,6 +68,7 @@ export function EllaSettings() {
       if (typeof document !== 'undefined') {
         document.documentElement.style.setProperty('--ella-avatar-url', `url('${finalUrl}')`);
       }
+      window.dispatchEvent(new CustomEvent('ella-avatar-changed'));
 
       toast.success('Avatar da Ella atualizado com sucesso!');
     } catch (err: any) {
@@ -82,6 +86,7 @@ export function EllaSettings() {
     if (typeof document !== 'undefined') {
       document.documentElement.style.setProperty('--ella-avatar-url', `url('${defaultUrl}')`);
     }
+    window.dispatchEvent(new CustomEvent('ella-avatar-changed'));
     toast.success('Avatar resetado para o padrão do sistema');
   };
 
@@ -96,6 +101,7 @@ export function EllaSettings() {
     if (typeof document !== 'undefined') {
       document.documentElement.style.setProperty('--ella-avatar-url', `url('${newUrl}')`);
     }
+    window.dispatchEvent(new CustomEvent('ella-avatar-changed'));
     
     setTimeout(() => {
       setRefreshing(false);

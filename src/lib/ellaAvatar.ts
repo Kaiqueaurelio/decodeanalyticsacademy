@@ -84,14 +84,14 @@ export const getEllaAvatarUrl = () => {
       localStorage.removeItem(ELLA_AVATAR_STORAGE_KEY);
     }
 
-    // Cache busting v18 - Apenas se houver URL personalizada
-    if (finalUrl.startsWith('data:')) {
+    // O avatar é um asset estável. Não use Date.now() aqui: isso mudava o src
+    // a cada renderização e forçava o navegador a baixar uma imagem nova.
+    if (finalUrl.startsWith('data:') || finalUrl.includes('ella_v=')) {
       return finalUrl;
     }
-    
-    // Removido Date.now() a cada chamada para evitar piscadas (estabilidade v18)
+
     const separator = finalUrl.includes('?') ? '&' : '?';
-    return `${finalUrl}${separator}v=18`;
+    return `${finalUrl}${separator}ella_v=17`;
   } catch {
     return DEFAULT_ELLA_AVATAR;
   }
@@ -102,5 +102,7 @@ export const getEllaAvatarUrl = () => {
 if (typeof document !== 'undefined') {
   try {
     document.documentElement.style.setProperty('--ella-avatar-url', `url('${getEllaAvatarUrl()}')`);
-  } catch {}
+  } catch {
+    // O helper também é importado em contextos sem DOM, como testes e SSR.
+  }
 }

@@ -31,6 +31,7 @@ import { BY_SEMESTER, canonicalSubjectKey, subjectKey } from '@/lib/subject-seme
 import { ensureApostilaExists } from '@/lib/create-placeholder-apostila';
 import { logMaintenance } from '@/lib/maintenance-logger';
 import { AdminNotionGalleryCard } from './admin/AdminNotionGalleryCard';
+import { NewApostilaPageButton } from './NewApostilaPageButton';
 import { QuickCreateApostilaDialog } from './admin/QuickCreateApostilaDialog';
 
 
@@ -1017,20 +1018,10 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
                         
                         {!placeholder && (
                           <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-1 group-hover:translate-y-0">
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="h-9 px-3 text-[10px] font-black uppercase tracking-wider gap-2 bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white border border-emerald-500/20 rounded-lg shadow-lg shadow-emerald-500/10"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleEdit(a);
-                                // A lógica para abrir o modal de nova página no editor é disparada por evento global no workbench
-                                setTimeout(() => window.dispatchEvent(new CustomEvent('open-quick-add-section')), 100);
-                              }}
-                            >
-                              <Plus className="h-3.5 w-3.5" />
-                              Nova Página
-                            </Button>
+                            <NewApostilaPageButton
+                              apostilaId={a.id}
+                              className="h-9 px-3 text-[10px] font-black uppercase tracking-wider gap-2 !border-emerald-500/20 !bg-emerald-500/10 !text-emerald-500 hover:!bg-emerald-500 hover:!text-white rounded-lg shadow-lg shadow-emerald-500/10"
+                            />
                           </div>
                         )}
                       </div>;

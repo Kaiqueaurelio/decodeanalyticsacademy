@@ -45,6 +45,8 @@ interface Lesson {
   content_status: string;
   progress_status: "in_progress" | "completed" | null;
   bookmarked: boolean;
+  // Conteúdo local usado quando a página vem de apostila_pages, sem lição estruturada.
+  content_md?: string;
 }
 interface Chapter {
   id: string;
@@ -68,6 +70,67 @@ interface Tree {
 }
 
 type FlatLesson = Lesson & { moduleTitle: string; chapterTitle: string };
+
+type ApostilaPageRow = {
+  id: string;
+  title: string;
+  content: string;
+  position: number;
+};
+
+function buildPagesModule(apostilaId: string, pages: ApostilaPageRow[]): ModuleT | null {
+  if (pages.length === 0) return null;
+
+  return {
+    id: `pages-module-${apostilaId}`,
+    title: 'Páginas da apostila',
+    description: 'Conteúdo criado no editor de páginas',
+    order_index: Number.MAX_SAFE_INTEGER,
+    estimated_minutes: null,
+    chapters: [{
+      id: `pages-chapter-${apostilaId}`,
+      title: 'Conteúdo adicional',
+      summary: null,
+      order_index: Number.MAX_SAFE_INTEGER,
+      estimated_minutes: null,
+      lessons: pages.map((page, index) => ({
+        id: `page:${page.id}`,
+        title: page.title || `Página ${index + 1}`,
+        order_index: page.position ?? index,
+        estimated_minutes: null,
+        difficulty: null,
+        content_status: 'ready',
+        progress_status: null,
+        bookmarked: false,
+        content_md: page.content || '',
+      })),
+    }],
+  };
+}
+
+function buildTreeFromPages(apostilaId: string, pages: ApostilaPageRow[]): Tree {
+  const pagesModule = buildPagesModule(apostilaId, pages);
+  return {
+    apostila_id: apostilaId,
+    modules: pagesModule ? [pagesModule] : [],
+  };
+}
+
+function mergePagesIntoTree(tree: Tree, apostilaId: string, pages: ApostilaPageRow[]): Tree {
+  const pagesModule = buildPagesModule(apostilaId, pages);
+  if (!pagesModule) return tree;
+
+  // A RPC pode retornar módulos estruturados e, ao mesmo tempo, existir conteúdo
+  // criado pelo editor em apostila_pages. As páginas não podem desaparecer só
+  // porque a árvore estruturada já possui pelo menos um módulo.
+  const alreadyIncluded = tree.modules.some((module) => module.id === pagesModule.id);
+  if (alreadyIncluded) return tree;
+
+  return {
+    ...tree,
+    modules: [...tree.modules, pagesModule],
+  };
+}
 
 function flatten(tree: Tree): FlatLesson[] {
   const out: FlatLesson[] = [];
@@ -118,22 +181,30 @@ export default function ApostilaReaderPage() {
     let cancelled = false;
     (async () => {
       setLoadingTree(true);
-      const [{ data: ap }, { data: rpcData }] = await Promise.all([
+      const [{ data: ap }, { data: rpcData }, { data: pageRows }] = await Promise.all([
         supabase.from("apostilas").select("title, semester, published").eq("id", id).maybeSingle(),
         supabase.rpc("get_apostila_reader_tree", { _apostila_id: id }),
+        (supabase.from("apostila_pages" as any) as any)
+          .select("id, title, content, position")
+          .eq("apostila_id", id)
+          .order("position", { ascending: true })
+          .order("created_at", { ascending: true }),
       ]);
       if (cancelled) return;
       
       console.log(`[ApostilaReader] Apostila info:`, ap);
       
       setApostilaTitle((ap?.title as string) || "Apostila");
-      const t = (rpcData as unknown as Tree) || { apostila_id: id, modules: [] };
-      
-      // Fallback: se a árvore RPC vier vazia, mas a apostila for válida, podemos tentar carregar via apostila_pages básica
-      if (!t.modules || t.modules.length === 0) {
-        console.warn(`[ApostilaReader] RPC Tree empty for ${id}. Trying simple pages fallback.`);
+      const rpcTree = (rpcData as unknown as Tree) || { apostila_id: id, modules: [] };
+      const savedPages = (pageRows || []) as ApostilaPageRow[];
+      const t = savedPages.length > 0
+        ? mergePagesIntoTree(rpcTree, id, savedPages)
+        : (rpcTree.modules?.length > 0 ? rpcTree : buildTreeFromPages(id, savedPages));
+
+      if (rpcTree.modules?.length === 0 && savedPages.length === 0) {
+        console.warn(`[ApostilaReader] No structured lessons or saved pages found for ${id}.`);
       }
-      
+
       setTree(t);
       const flat = flatten(t);
       // Retomar de onde parou: primeira in_progress ou primeira sem progresso
@@ -170,6 +241,21 @@ export default function ApostilaReaderPage() {
     let cancelled = false;
     (async () => {
       setLessonLoading(true);
+
+      // Páginas criadas pelo editor ficam em apostila_pages e usam IDs sintéticos
+      // no fallback do leitor; não devem ser consultadas em apostila_lessons.
+      if (selectedLessonId.startsWith('page:')) {
+        setLessonContent(currentLesson?.content_md || '');
+        const { data: pageUserData } = await supabase.auth.getUser();
+        const pageUserId = pageUserData?.user?.id;
+        if (pageUserId) {
+          setNoteText(localStorage.getItem(`apostila_page_note_${pageUserId}_${selectedLessonId.slice(5)}`) || '');
+        }
+        setLessonLoading(false);
+        contentRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+
       const { data: lesson } = await supabase
         .from("apostila_lessons")
         .select("content_md")
@@ -230,6 +316,14 @@ export default function ApostilaReaderPage() {
     const userId = userData?.user?.id;
     if (!userId) return;
     const nextStatus = currentLesson.progress_status === "completed" ? "in_progress" : "completed";
+    if (selectedLessonId.startsWith('page:')) {
+      setTree((t) => updateLessonInTree(t, selectedLessonId, (l) => ({
+        ...l,
+        progress_status: nextStatus as "completed" | "in_progress",
+      })));
+      toast.success(nextStatus === "completed" ? "Página concluída" : "Página marcada como em progresso");
+      return;
+    }
     await supabase.from("apostila_lesson_progress").upsert(
       {
         user_id: userId,
@@ -261,6 +355,13 @@ export default function ApostilaReaderPage() {
     const { data: userData } = await supabase.auth.getUser();
     const userId = userData?.user?.id;
     if (!userId) return;
+    if (selectedLessonId.startsWith('page:')) {
+      setTree((t) => updateLessonInTree(t, selectedLessonId, (l) => ({
+        ...l,
+        bookmarked: !l.bookmarked,
+      })));
+      return;
+    }
     if (currentLesson.bookmarked) {
       await supabase
         .from("apostila_lesson_bookmarks")
@@ -284,6 +385,17 @@ export default function ApostilaReaderPage() {
     const userId = userData?.user?.id;
     if (!userId) return;
     setNoteSaving(true);
+    if (selectedLessonId.startsWith('page:')) {
+      try {
+        localStorage.setItem(`apostila_page_note_${userId}_${selectedLessonId.slice(5)}`, noteText);
+        setNoteSaving(false);
+        toast.success("Nota salva neste dispositivo");
+      } catch {
+        setNoteSaving(false);
+        toast.error("Não foi possível salvar a nota nesta página");
+      }
+      return;
+    }
     const { error } = await supabase.from("apostila_lesson_notes").upsert(
       {
         user_id: userId,

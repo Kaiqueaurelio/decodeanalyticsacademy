@@ -18,6 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { cn } from '@/lib/utils';
 import { getSubjectColor } from '@/lib/subject-colors';
 import { getApostilaCover } from '@/lib/apostila-covers';
+import { NewApostilaPageButton } from '@/components/NewApostilaPageButton';
 
 interface AdminNotionGalleryCardProps {
   item: any;
@@ -153,19 +154,11 @@ export function AdminNotionGalleryCard({
           {/* Ações Rápidas Flutuantes */}
           <div className="absolute top-1/2 -translate-y-1/2 right-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-20">
             {!isPlaceholder && (
-              <Button 
-                size="icon" 
-                variant="ghost" 
-                className="h-8 w-8 rounded-full bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white border border-emerald-500/20 active:scale-95 shadow-[0_0_15px_rgba(16,185,129,0.15)]"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onEdit(item);
-                  setTimeout(() => window.dispatchEvent(new CustomEvent('open-quick-add-section')), 600);
-                }}
-                title="Nova Página"
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
+              <NewApostilaPageButton
+                apostilaId={item.id}
+                compact
+                className="h-8 w-8 rounded-full !border-emerald-500/20 !bg-emerald-500/10 text-emerald-500 hover:!bg-emerald-500 hover:!text-white active:scale-95 shadow-[0_0_15px_rgba(16,185,129,0.15)]"
+              />
             )}
             <Button size="icon" variant="ghost" className="h-7 w-7 rounded-lg hover:bg-white/10 active:scale-95 touch-manipulation" onClick={() => onEdit(item)}>
               <Edit className="h-3.5 w-3.5 text-muted-foreground" />

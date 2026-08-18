@@ -138,6 +138,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
 
   const dirtyRef = useRef(false);
   const initialLoadRef = useRef(true);
+  const loadRequestRef = useRef(0);
 
   // Filter logic for sidebar
   const filteredApostilas = useMemo(() => {
@@ -160,6 +161,9 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
 
   // === Carregar apostila atual ===
   const loadApostila = async (apostilaId: string) => {
+    const requestId = ++loadRequestRef.current;
+    const isCurrentRequest = () => loadRequestRef.current === requestId;
+
     setLoading(true);
     initialLoadRef.current = true;
     const results = await Promise.allSettled([
@@ -171,6 +175,8 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     const apRes = results[0].status === 'fulfilled' ? results[0].value : { data: null, error: new Error('Network error') };
     const linksRes = results[1].status === 'fulfilled' ? results[1].value : { data: [], error: null };
     const countRes = results[2].status === 'fulfilled' ? results[2].value : { count: 0 };
+
+    if (!isCurrentRequest()) return;
 
     const ap = apRes.data;
     const links = linksRes.data;
@@ -236,6 +242,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
 
     const { data: pageRows } = await (supabase.from('apostila_pages' as any) as any)
       .select('*').eq('apostila_id', apostilaId).order('position');
+    if (!isCurrentRequest()) return;
     const loadedPages = (pageRows || []) as ApostilaPage[];
     setPages(loadedPages);
     
@@ -271,7 +278,9 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     }
 
     setLoading(false);
-    setTimeout(() => { initialLoadRef.current = false; }, 100);
+    window.setTimeout(() => {
+      if (isCurrentRequest()) initialLoadRef.current = false;
+    }, 100);
   };
 
   useEffect(() => { if (id) loadApostila(id); }, [id, selectedPageId]);
@@ -358,14 +367,35 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         return; 
       }
       
-      setPages((current) => current.map((page) => 
-        page.id === selectedPageId 
-          ? { ...page, content, title: title.trim() || 'Nova Página', updated_at: new Date().toISOString() } 
+      const savedAt = new Date().toISOString();
+      setPages((current) => current.map((page) =>
+        page.id === selectedPageId
+          ? { ...page, content, title: title.trim() || 'Nova Página', updated_at: savedAt }
           : page
       ));
-      
+
+      // O RLS do leitor só libera apostila_pages quando a apostila-pai está publicada.
+      // Ao salvar conteúdo real numa página, publique a apostila sem sobrescrever o
+      // conteúdo principal ou qualquer outro campo editável.
+      if (content.trim().length > 0) {
+        const { error: publishError } = await supabase
+          .from('apostilas')
+          .update({ published: true, updated_at: savedAt })
+          .eq('id', id);
+
+        if (publishError) {
+          console.error('Página salva, mas não foi possível publicar a apostila-pai:', publishError);
+          toast.warning('Página salva, mas a apostila ainda está oculta para alunos. Publique-a no botão de status.');
+        } else {
+          setPublished(true);
+          setApostilas((current) => current.map((apostila) =>
+            apostila.id === id ? { ...apostila, published: true, updated_at: savedAt } : apostila
+          ));
+        }
+      }
+
       dirtyRef.current = false;
-      setLastSavedAt(new Date());
+      setLastSavedAt(new Date(savedAt));
       return;
     }
 

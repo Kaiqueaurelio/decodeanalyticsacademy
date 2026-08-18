@@ -44,7 +44,7 @@ export function DashboardTopbar({ hideSearchOnMobile = false }: { hideSearchOnMo
             <Button
               variant="ghost"
               size="icon"
-              className="h-11 w-11 rounded-xl focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              className="h-11 w-11 rounded-xl lg:hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               aria-label="Abrir menu de navegação"
               aria-haspopup="dialog"
               aria-expanded={navOpen}

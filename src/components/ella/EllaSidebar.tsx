@@ -19,14 +19,17 @@ export function EllaSidebar() {
   const containerRef = useRef<HTMLDivElement>(null);
   const controls = useAnimationControls();
 
-  const [avatarUrl, setAvatarUrl] = useState(getEllaAvatarUrl());
-  
-  // Refresh avatar periodically to pick up changes
+  const [avatarUrl, setAvatarUrl] = useState(() => getEllaAvatarUrl());
+
+  // Atualiza apenas quando o administrador troca o avatar ou outra aba altera o storage.
   useEffect(() => {
-    const interval = setInterval(() => {
-      setAvatarUrl(getEllaAvatarUrl());
-    }, 10000); // Aumentado para 10s para estabilidade visual
-    return () => clearInterval(interval);
+    const refreshAvatar = () => setAvatarUrl(getEllaAvatarUrl());
+    window.addEventListener('ella-avatar-changed', refreshAvatar);
+    window.addEventListener('storage', refreshAvatar);
+    return () => {
+      window.removeEventListener('ella-avatar-changed', refreshAvatar);
+      window.removeEventListener('storage', refreshAvatar);
+    };
   }, []);
 
   useEffect(() => {

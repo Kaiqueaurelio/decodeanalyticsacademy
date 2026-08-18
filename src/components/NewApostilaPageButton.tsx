@@ -5,10 +5,15 @@ import { useNavigate } from 'react-router-dom';
 import { createApostilaPage } from '@/lib/apostila-pages';
 import { toast } from 'sonner';
 
-export function NewApostilaPageButton({ apostilaId, compact = false }: { apostilaId: string; compact?: boolean }) {
+export function NewApostilaPageButton({
+  apostilaId,
+  compact = false,
+  className = '',
+}: { apostilaId: string; compact?: boolean; className?: string }) {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const create = async () => {
+  const create = async (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
     if (!user) return toast.error('Faça login novamente para criar a página.');
     
     // Se a apostila for um placeholder, precisamos garantir que ela exista antes de criar uma página
@@ -41,7 +46,7 @@ export function NewApostilaPageButton({ apostilaId, compact = false }: { apostil
   };
   return (
     <Button size={compact ? 'icon' : 'sm'} variant="outline" onClick={create}
-      className={compact ? 'h-8 w-8 text-primary' : 'h-8 gap-1.5 border-primary/60 text-primary hover:bg-primary/10'}
+      className={`${compact ? 'h-8 w-8 text-primary' : 'h-8 gap-1.5 border-primary/60 text-primary hover:bg-primary/10'} ${className}`}
       title="Nova Página">
       <FilePlus2 className="h-3.5 w-3.5" />
       {!compact && <span>Nova Página</span>}

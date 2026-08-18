@@ -84,11 +84,13 @@ export default function ApostilaPage({ tab, setTab }: Props) {
   const isMobile = useIsMobile();
   const { isAdmin, user } = useAuth();
   const [apostila, setApostila] = useState<Tables<'apostilas'> | null>(null);
+  const [extraPages, setExtraPages] = useState<Array<{ id: string; title: string; content: string; position: number }>>([]);
   const [exerciseCount, setExerciseCount] = useState(0);
   const [focusMode, setFocusMode] = useState(false);
   const [activeSection, setActiveSection] = useState<string>('');
   const [showTocMobile, setShowTocMobile] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [chatOpen, setChatOpen] = useState(false);
@@ -98,17 +100,32 @@ export default function ApostilaPage({ tab, setTab }: Props) {
 
   useEffect(() => {
     if (!id) return;
+    let cancelled = false;
     setLoading(true);
+    setLoadError(null);
     Promise.all([
       supabase.from('apostilas').select('*').eq('id', id).single(),
       supabase.from('exercises').select('id').eq('apostila_id', id),
-    ]).then(([{ data: ap }, { data: exs }]) => {
+      (supabase.from('apostila_pages' as any) as any)
+        .select('id, title, content, position')
+        .eq('apostila_id', id)
+        .order('position', { ascending: true })
+        .order('created_at', { ascending: true }),
+    ]).then(([{ data: ap }, { data: exs }, { data: pageResult }]) => {
+      if (cancelled) return;
       setApostila(ap);
+      setExtraPages((pageResult || []) as Array<{ id: string; title: string; content: string; position: number }>);
       setExerciseCount(exs?.length || 0);
+      setLoading(false);
+    }).catch((error) => {
+      if (cancelled) return;
+      console.error('[ApostilaPage] Erro ao carregar apostila:', error);
+      setLoadError(error instanceof Error ? error.message : 'Não foi possível carregar esta apostila.');
       setLoading(false);
     });
     gamification.addXP(5);
     gamification.updateStreak();
+    return () => { cancelled = true; };
   }, [id]);
 
   // Scroll progress
@@ -121,7 +138,16 @@ export default function ApostilaPage({ tab, setTab }: Props) {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const sections = useMemo(() => parseContent(apostila?.content || null), [apostila?.content]);
+  const combinedContent = useMemo(() => {
+    const mainContent = apostila?.content || '';
+    const pagesContent = extraPages
+      .filter((page) => page.content?.trim())
+      .map((page) => `\n\n## ${page.title || 'Nova Página'}\n\n${page.content}`)
+      .join('\n');
+    return [mainContent, pagesContent].filter(Boolean).join('\n');
+  }, [apostila?.content, extraPages]);
+
+  const sections = useMemo(() => parseContent(combinedContent || null), [combinedContent]);
 
   /**
    * Normaliza as seções para evitar capítulos "mortos":
@@ -269,7 +295,18 @@ export default function ApostilaPage({ tab, setTab }: Props) {
     );
   }
 
-  if (!apostila) return null;
+  if (loadError || !apostila) {
+    return (
+      <div className="min-h-dvh bg-background flex items-center justify-center p-6">
+        <div className="max-w-md text-center space-y-4">
+          <AlertTriangle className="h-10 w-10 mx-auto text-destructive" />
+          <h1 className="text-xl font-bold">Não foi possível carregar a apostila</h1>
+          <p className="text-sm text-muted-foreground">{loadError || 'A apostila não foi encontrada ou não está publicada.'}</p>
+          <Button variant="outline" onClick={() => navigate('/dashboard')}>Voltar ao dashboard</Button>
+        </div>
+      </div>
+    );
+  }
 
   const tocContent = (
     <nav className="space-y-0.5">

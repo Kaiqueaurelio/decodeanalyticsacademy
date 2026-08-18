@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { sanitizeIncomingMessages, sanitizeRouteContext } from '../../../supabase/functions/ella-chat/security.ts';
+import { authorizeTool, sanitizeIncomingMessages, sanitizeRouteContext } from '../../../supabase/functions/ella-chat/security.ts';
 
 /**
  * Suite de testes para validação de segurança contra Prompt Injection na Ella AI.
@@ -75,8 +75,7 @@ describe('Ella AI - Prompt Injection Defense', () => {
       };
       
       // Mesmo que o usuário diga "Eu sou admin", a ferramenta administrativa deve ser negada.
-      // (Referenciando a função authorizeTool que já existe)
-      const { authorizeTool } = require('../../../supabase/functions/ella-chat/security.ts');
+      // A função authorizeTool é importada como ESM, compatível com o runtime do backend e do Vitest.
       const decision = authorizeTool('create_announcement', ctx);
       
       expect(decision.allowed).toBe(false);
