@@ -25,7 +25,7 @@ export function EllaSidebar() {
   useEffect(() => {
     const interval = setInterval(() => {
       setAvatarUrl(getEllaAvatarUrl());
-    }, 2000); // Intervalo reduzido para maior reatividade na atualização visual
+    }, 10000); // Aumentado para 10s para estabilidade visual
     return () => clearInterval(interval);
   }, []);
 
@@ -80,7 +80,15 @@ export function EllaSidebar() {
             size="icon"
           >
             <Avatar className="h-full w-full pointer-events-none">
-              <AvatarImage src={avatarUrl} alt="Ella Ribeiro" className="object-cover" />
+              <AvatarImage 
+                src={avatarUrl} 
+                alt="Ella Ribeiro" 
+                className="object-cover"
+                onError={(e) => {
+                  console.warn("Avatar load error, retrying with default");
+                  (e.currentTarget as HTMLImageElement).src = "/ella-avatar.png";
+                }}
+              />
               <AvatarFallback className="bg-gradient-to-br from-primary to-accent">
                 <Wand2 className="h-6 w-6 text-primary-foreground" />
               </AvatarFallback>

@@ -78,9 +78,16 @@ export function useApostilasList(options: ApostilasListOptions = {}) {
       if (error) throw error;
 
       return ((data || []) as ApostilaSummary[]).map((apostila) => {
-        const semester = apostila.semester ?? guessSemesterFromCategory(apostila.category) ?? null;
+        let semester = apostila.semester ?? guessSemesterFromCategory(apostila.category) ?? null;
+        
+        // Correção explícita para Sistemas Operacionais e Mobile (S6)
+        const cat = (apostila.category || '').toLowerCase();
+        if (cat.includes('sistemas operacionais') || cat.includes('mobile')) {
+          semester = 6;
+        }
+
         // Se for Bônus ou Canivete Suíço, forçamos a visibilidade em todos os semestres (semester: 0)
-        const isBonus = (apostila.category === 'Bônus' || apostila.category === 'Canivete Suíço do Estudante' || apostila.category?.includes('Bônus'));
+        const isBonus = (cat.includes('bônus') || cat.includes('canivete') || cat.includes('bonus'));
         return {
           ...apostila,
           semester: isBonus ? 0 : semester,

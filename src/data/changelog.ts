@@ -1,5 +1,5 @@
 /**
- * DECODE ANALYTICS ACADEMY - v5.3.0
+ * DECODE ANALYTICS ACADEMY - v6.2.0
  */
 
 export type ChangeKind = 'feature' | 'fix' | 'improvement' | 'security' | 'content';
@@ -25,231 +25,35 @@ export interface Release {
   changes: Change[];
 }
 
-export function getBuildInfo() {
-  return {
-    version: '6.1.0',
-    environment: 'production',
-    host: typeof window !== 'undefined' ? window.location.host : 'localhost',
-    buildTime: new Date().toISOString(),
-    commit: 'v6.1.0-estabilidade-final',
-    commitMessage: 'Release v6.1.0: Estabilização de conteúdos do 6º semestre e fix global do avatar da Ella'
-  };
-}
-
 export const CHANGELOG: Release[] = [
   {
+    version: "6.2.0",
+    date: "2026-08-18",
+    title: "Estabilidade & Resiliência Acadêmica v2",
+    major: true,
+    changes: [
+      { kind: 'fix', text: 'Correção crítica na instabilidade do avatar da Ella.' },
+      { kind: 'improvement', text: 'Melhoria na visibilidade das apostilas do 6º semestre.' },
+      { kind: 'security', text: 'Resiliência aprimorada no login especial via RA.' },
+    ],
+  },
+  {
     version: "6.1.0",
-    date: "18/08/2026",
+    date: "2026-08-17",
     title: "Estabilidade & Resiliência Acadêmica",
-    major: true,
     changes: [
-      {
-        kind: 'fix',
-        text: 'Identidade: Implementado cache-busting v17 e normalização de caminhos para o avatar da Ella, garantindo visibilidade estável.'
-      },
-      {
-        kind: 'content',
-        text: 'Grade Curricular: Sincronização forçada de apostilas do 6º semestre (Mobile, Pesquisa Operacional e Aspectos Teóricos).'
-      },
-      {
-        kind: 'improvement',
-        text: 'UX: Otimização da lógica de renderização do Dashboard para evitar estados instáveis em conexões lentas.'
-      }
-    ]
+      { kind: 'fix', text: 'Foco total em estabilidade do sistema e correção de visibilidade.' },
+    ],
   },
-  {
-    version: "6.0.5",
-    date: "18/08/2026",
-    title: "Reforço da Segurança Admin",
-    changes: [
-      {
-        kind: 'fix',
-        text: 'Segurança: Unificação do componente ProtectedRoute e ativação do guard adminOnly nas rotas do painel.'
-      },
-      {
-        kind: 'fix',
-        text: 'Auth: Implementado bypass redundante para administradores via account_type para garantir acesso em caso de falha no sync de roles.'
-      }
-    ]
-  },
-  {
-    version: "6.0.4",
-    date: "18/08/2026",
-    title: "Correção de Login Administrativo",
-    changes: [
-      {
-        kind: 'fix',
-        text: 'Login: Corrigida falha que impedia o acesso administrativo usando o RA G802144 ou o e-mail decoanalytics.'
-      },
-      {
-        kind: 'security',
-        text: 'Auth: Refinada a regex de validação e a lógica de resolução de e-mail na Edge Function ra-auth.'
-      }
-    ]
-  },
-  {
-    version: "6.0.3",
-    date: "18/08/2026",
-    title: "Auditoria & Restauração 360º",
-    major: true,
-    changes: [
-      {
-        kind: 'content',
-        text: 'Protocolo de Restauração Final: 0 duplicatas e 0 páginas órfãs detectadas.'
-      },
-      {
-        kind: 'fix',
-        text: 'Fix UUID: Corrigida falha que impedia a visualização de novas páginas criadas em disciplinas da grade.'
-      },
-      {
-        kind: 'improvement',
-        text: 'Integridade: Sincronização global de conteúdos multimídia para Ciência da Computação (6º Semestre).'
-      }
-    ]
-  },
-  {
-    version: "5.9.10",
-    date: "15/08/2026",
-    title: "Mídia Unificada & Fix de Vínculos",
-    changes: [
-      {
-        kind: 'feature',
-        text: 'Mídia: Implementação do RibbonMediaButton para upload de áudio, vídeo e documentos diretamente no editor de apostilas.'
-      },
-      {
-        kind: 'fix',
-        text: 'Vínculos: Correção na associação automática de materiais via DropZone, garantindo que o ID da apostila seja registrado.'
-      }
-    ]
-  },
-  {
-    version: "5.9.9",
-    date: "15/08/2026",
-    title: "Restauração: Aspectos Teóricos",
-    changes: [
-      {
-        kind: 'fix',
-        text: 'Conteúdo: Restauração definitiva do texto estruturado e componentes multimídia (áudio-quiz e guia visual) na apostila de Aspectos Teóricos da Computação.'
-      },
-      {
-        kind: 'content',
-        text: 'Sincronização: Garantida a publicação da apostila e persistência dos dados no banco.'
-      }
-    ]
-  },
-  {
-    version: "5.9.8",
-    date: "15/08/2026",
-    title: "Aula Interativa: Teoria Computacional",
-    changes: [
-      {
-        kind: 'feature',
-        text: 'Multimídia: Integrado áudio-aula interativa "Como os robôs e videogames pensam" e Guia Visual HD na apostila de Aspectos Teóricos da Computação.'
-      }
-    ]
-  },
-  {
-    version: "5.9.7",
-    date: "15/08/2026",
-    title: "Integração Multimídia & Audioaula",
-    changes: [
-      {
-        kind: 'content',
-        text: 'Audioaula: Integrado áudio interativo "Como os robôs e videogames pensam" na apostila de Aspectos Teóricos da Computação.'
-      },
-      {
-        kind: 'improvement',
-        text: 'Estruturação: Sincronização de capítulos e refinamento de layout para o workbench acadêmico.'
-      }
-    ]
-  },
-  {
-    version: "5.9.6",
-    date: "15/08/2026",
-    title: "Conteúdo Estruturado: Teoria da Computação",
-    changes: [
-      {
-        kind: 'content',
-        text: 'Injetado conteúdo técnico profundo cobrindo Máquinas de Estado, Turing, Tese de Church-Turing e Complexidade Computacional.'
-      }
-    ]
-  },
-  {
-    version: "5.9.5",
-    date: "15/08/2026",
-    title: "Hardening de Segurança RLS",
-    changes: [
-      {
-        kind: 'security',
-        text: 'Correção de vulnerabilidades de RLS que permitiam bypass de escopo acadêmico.'
-      },
-      {
-        kind: 'security',
-        text: 'Proteção de gabaritos e conteúdos não publicados no nível do banco de dados.'
-      }
-    ]
-  },
-  {
-    version: "5.9.4",
-    date: "15/08/2026",
-    title: "Segurança e Integridade de Dados",
-    changes: [
-      {
-        kind: 'security',
-        text: 'Reforçada a política de visibilidade para apostila_pages e exercises.'
-      }
-    ]
-  },
-  {
-    version: "5.9.3",
-    date: "15/08/2026",
-    title: "Auditoria e UX Final",
-    changes: [
-      {
-        kind: 'fix',
-        text: 'Resolvida sobreposição do FAB da Ella ajustando o z-index para 100.'
-      },
-      {
-        kind: 'improvement',
-        text: 'Check-up completo de integridade do banco de dados concluído.'
-      }
-    ]
-  },
-  {
-    version: "5.9.2",
-    date: "15/08/2026",
-    title: "Sincronização de Identidade Ella",
-    changes: [
-      {
-        kind: 'improvement',
-        text: 'Cache-busting v13 aplicado ao avatar da Ella para garantir atualização em todos os dispositivos.'
-      }
-    ]
-  },
-  {
-    version: "5.9.1",
-    date: "15/08/2026",
-    title: "Restauração de Conteúdo Crítico",
-    changes: [
-      {
-        kind: 'fix',
-        text: 'Recuperação integral da apostila de Aspectos Teóricos da Computação (24 capítulos).'
-      },
-      {
-        kind: 'security',
-        text: 'Limpeza de duplicatas e estabilização de RLS.'
-      }
-    ]
-  },
-  {
-    version: "5.8.5",
-    date: "14/08/2026",
-    title: "Estabilidade de Login e RA",
-    changes: [
-      {
-        kind: 'fix',
-        text: 'Otimização da Edge Function ra-auth para suporte a múltiplos formatos de RA.'
-      }
-    ]
-  }
 ];
+
+export function getBuildInfo() {
+  return {
+    version: '6.2.0',
+    environment: 'production',
+    host: 'lovable.app',
+    buildTime: new Date().toISOString(),
+    commit: 'v6.2.0-stable',
+    commitMessage: 'Release stable v6.2.0',
+  };
+}
