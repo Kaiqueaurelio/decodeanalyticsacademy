@@ -1650,7 +1650,9 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
     'health-dashboard': { title: 'Saúde das Apostilas', desc: 'Status operacional e histórico de manutenções' },
     'cloning-dashboard': { title: 'Auditoria & Qualidade 360º', desc: 'Monitoramento de erros, status de geração e integridade de conteúdo' },
     'mcp-settings': { title: 'Integração MCP', desc: 'Status e URL do endpoint de integração acadêmica externa' },
+    'jobs': { title: 'Vagas e Estágios', desc: 'Gerencie oportunidades de carreira para os alunos' },
   };
+
 
 
   return (
