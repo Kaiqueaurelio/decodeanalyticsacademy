@@ -34,8 +34,10 @@ function keepMostComplete(rows: ApostilaRow[]) {
 export default function SubjectPage() {
   const { user } = useAuth();
   const { category = '' } = useParams();
-  const decodedCategory = decodeURIComponent(category);
+  const decodedCategory = decodeURIComponent(category).trim();
+  console.log(`[SubjectPage] Rendered for category: "${decodedCategory}"`);
   const navigate = useNavigate();
+
   const [rows, setRows] = useState<ApostilaRow[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -68,10 +70,13 @@ export default function SubjectPage() {
         return (targetKey.length > 5 && (apTitleKey.includes(targetKey) || apCatKey.includes(targetKey)));
       });
 
+      console.log(`[SubjectPage] Total apostilas fetched: ${allApostilas?.length}. Matches found: ${matches.length}`);
+      
       const normalizedRows = matches.map((row) => ({
         ...row,
         semester: row.semester ?? guessSemesterFromCategory(row.category) ?? guessSemesterFromCategory(decodedCategory) ?? 1,
       }));
+
 
       setRows(keepMostComplete(normalizedRows));
       setLoading(false);
