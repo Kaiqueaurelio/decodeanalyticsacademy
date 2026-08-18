@@ -41,7 +41,7 @@ import {
   Heart,
   Coffee,
   CalendarRange,
-  Briefcase,
+  BriefcaseBusiness
 } from 'lucide-react';
 
 
@@ -89,13 +89,13 @@ const menuGroups: { label: string; items: MenuItem[] }[] = [
   {
     label: 'Ferramentas',
     items: [
+      { to: '/vagas', icon: BriefcaseBusiness, label: 'Vagas de Emprego' },
       { to: '/noticias', icon: Newspaper, label: 'Notícias Tech', unipOnly: true },
       { to: '/calculadora', icon: Calculator, label: 'Calculadora', hideForEnem: true },
       { to: '/horarios', icon: CalendarRange, label: 'Horário Escolar', unipOnly: true },
       { to: '/performance', icon: Activity, label: 'Desempenho' },
       { to: '/tira-duvida', icon: HelpCircle, label: 'Tira-dúvidas', hideForEnem: true },
       { to: '/comunidade', icon: MessagesSquare, label: 'Comunidade', unipOnly: true },
-      { to: '/vagas', icon: Briefcase, label: 'Vagas e Estágios' },
     ],
 
   },
@@ -114,6 +114,7 @@ const adminMenuItems = [
   { to: '/admin', icon: LayoutDashboard, label: 'Resumo' },
   { to: '/admin?tab=apostilas', icon: BookOpen, label: 'Apostilas' },
   { to: '/admin?tab=tasks', icon: CheckSquare, label: 'Minhas Tarefas' },
+  { to: '/admin?tab=jobs', icon: BriefcaseBusiness, label: 'Vagas de Emprego' },
 ];
 
 const railItems = [

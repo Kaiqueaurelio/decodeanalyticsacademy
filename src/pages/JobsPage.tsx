@@ -1,141 +1,123 @@
-import React, { useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Search, Briefcase, MapPin, ExternalLink, Building2, GraduationCap } from 'lucide-react';
 import { AppHeader } from '@/components/AppHeader';
+import { Watermark } from '@/components/Watermark';
+import { AdBanner } from '@/components/AdBanner';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
+import { BriefcaseBusiness, Building2, CheckCircle2, ExternalLink, Filter, Globe2, Loader2, MapPin, Search, Sparkles, WalletCards } from 'lucide-react';
 
-interface Job {
+type JobType = 'job' | 'internship' | 'freelance';
+type Job = {
   id: string;
   title: string;
   company_name: string;
   company_logo_url: string | null;
+  description: string;
+  requirements: string | null;
   location: string | null;
-  type: 'job' | 'internship' | 'freelance';
+  type: JobType;
   salary_range: string | null;
   application_link: string;
-  published_at: string;
+  is_active: boolean;
+  published_at: string | null;
+};
+
+const JOB_TYPE_LABELS: Record<JobType, string> = {
+  job: 'Emprego',
+  internship: 'Estágio',
+  freelance: 'Freelance',
+};
+
+function isValidApplicationUrl(value: string): boolean {
+  try {
+    const url = new URL(value.trim());
+    return url.protocol === 'https:' || url.protocol === 'http:';
+  } catch {
+    return false;
+  }
 }
 
 export default function JobsPage() {
+  const navigate = useNavigate();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
+  const [query, setQuery] = useState('');
+  const [typeFilter, setTypeFilter] = useState<'all' | JobType>('all');
+  const [selected, setSelected] = useState<Job | null>(null);
 
   useEffect(() => {
-    fetchJobs();
-  }, []);
-
-  const fetchJobs = async () => {
-    try {
-      const { data, error } = await supabase
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await (supabase as any)
         .from('jobs')
-        .select('*')
+        .select('id,title,company_name,company_logo_url,description,requirements,location,type,salary_range,application_link,is_active,published_at')
         .eq('is_active', true)
         .order('published_at', { ascending: false });
-
-      if (error) throw error;
-      setJobs(data as Job[]);
-    } catch (err) {
-      console.error('Erro ao buscar vagas:', err);
-    } finally {
+      if (cancelled) return;
+      if (error) console.error('[JobsPage] Erro ao carregar vagas:', error);
+      setJobs((data as Job[]) || []);
       setLoading(false);
-    }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  const filteredJobs = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+    return jobs.filter((job) => {
+      const searchable = `${job.title} ${job.company_name} ${job.description} ${job.requirements || ''} ${job.location || ''}`.toLowerCase();
+      return (!normalizedQuery || searchable.includes(normalizedQuery)) && (typeFilter === 'all' || job.type === typeFilter);
+    });
+  }, [jobs, query, typeFilter]);
+
+  const openApplication = (job: Job) => {
+    if (!isValidApplicationUrl(job.application_link)) return;
+    window.open(job.application_link, '_blank', 'noopener,noreferrer');
   };
 
-  const filteredJobs = jobs.filter(job => 
-    job.title.toLowerCase().includes(search.toLowerCase()) || 
-    job.company_name.toLowerCase().includes(search.toLowerCase())
-  );
+  const stats = [
+    { label: 'Oportunidades abertas', value: jobs.length, icon: BriefcaseBusiness },
+    { label: 'Empresas divulgando', value: new Set(jobs.map((job) => job.company_name)).size, icon: Building2 },
+    { label: 'Vagas de estágio', value: jobs.filter((job) => job.type === 'internship').length, icon: Globe2 },
+  ];
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="relative min-h-dvh bg-background selection:bg-primary/20">
+      <Watermark />
       <AppHeader />
-      
-      <main className="max-w-5xl mx-auto px-4 py-8 space-y-8">
-        <div className="flex flex-col space-y-4">
-          <h1 className="text-3xl font-display font-black tracking-tight flex items-center gap-3">
-            <Briefcase className="h-8 w-8 text-primary" />
-            Vagas e Oportunidades
-          </h1>
-          <p className="text-muted-foreground">Encontre as melhores vagas de emprego e estágio curadas pela Decode Academy.</p>
+      <main className="relative z-10 mx-auto w-full max-w-7xl px-4 pb-20 pt-4 sm:px-6 lg:px-8">
+        <div className="mb-5 flex items-center justify-between gap-3">
+          <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')} className="text-xs">Voltar</Button>
+          <Badge variant="secondary" className="h-7 gap-1.5 px-3 text-[11px]"><CheckCircle2 className="h-3.5 w-3.5 text-primary" /> Oportunidades profissionais</Badge>
         </div>
-
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input 
-            placeholder="Buscar por cargo ou empresa..." 
-            className="pl-10 rounded-xl bg-card/50 border-primary/20"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-
-        {loading ? (
-          <div className="space-y-4">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="h-24 bg-card animate-pulse rounded-2xl border border-border" />
-            ))}
+        <section className="mb-6 overflow-hidden rounded-2xl border border-primary/20 bg-card/80 p-5 shadow-sm sm:p-7">
+          <div className="grid gap-6 lg:grid-cols-[1fr_340px] lg:items-end">
+            <div className="space-y-4">
+              <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-primary"><BriefcaseBusiness className="h-3.5 w-3.5" /> Vagas para tecnologia</div>
+              <h1 className="font-display text-3xl font-bold leading-tight tracking-tight sm:text-4xl">Encontre sua próxima oportunidade</h1>
+              <p className="max-w-2xl text-sm leading-6 text-muted-foreground">Vagas de emprego, estágio e freelance para estudantes e profissionais de Ciência da Computação. A candidatura acontece diretamente no site oficial da empresa.</p>
+            </div>
+            <div className="rounded-xl border border-border/70 bg-muted/25 p-4"><div className="flex items-start gap-3"><Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-primary" /><p className="text-xs leading-5 text-muted-foreground">Confira os requisitos e clique em “Candidatar-se” para continuar no processo seletivo da empresa anunciante.</p></div></div>
           </div>
-        ) : filteredJobs.length === 0 ? (
-          <div className="text-center py-20 bg-card/50 rounded-3xl border border-dashed border-border">
-            <p className="text-muted-foreground">Nenhuma vaga encontrada para sua busca no momento.</p>
+        </section>
+        <div className="mb-6 grid gap-3 sm:grid-cols-3">{stats.map((stat) => <Card key={stat.label} className="rounded-xl border-border/70 bg-card/70 p-4"><div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary"><stat.icon className="h-4 w-4" /></div><div><div className="text-xl font-bold leading-none">{stat.value}</div><div className="mt-1 text-xs text-muted-foreground">{stat.label}</div></div></div></Card>)}</div>
+        <section className="mb-6 rounded-2xl border border-border/80 bg-card/70 p-4 shadow-sm sm:p-5">
+          <div className="mb-3 flex items-center gap-2 text-sm font-semibold"><Filter className="h-4 w-4 text-primary" /> Encontrar uma vaga</div>
+          <div className="grid gap-3 md:grid-cols-[1fr_200px]">
+            <div className="relative"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar cargo, empresa, local ou requisito" className="pl-9" /></div>
+            <select value={typeFilter} onChange={(event) => setTypeFilter(event.target.value as 'all' | JobType)} className="h-10 rounded-md border border-input bg-background px-3 text-sm"><option value="all">Todos os tipos</option>{Object.entries(JOB_TYPE_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
           </div>
-        ) : (
-          <div className="space-y-4">
-            {filteredJobs.map(job => (
-              <Card key={job.id} className="group border-primary/10 bg-card/40 backdrop-blur-sm hover:border-primary/40 hover:bg-card/60 transition-all rounded-2xl overflow-hidden">
-                <CardContent className="p-5 flex items-center gap-5">
-                  <div className="h-14 w-14 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0 overflow-hidden">
-                    {job.company_logo_url ? (
-                      <img src={job.company_logo_url} alt={job.company_name} className="h-full w-full object-contain" />
-                    ) : (
-                      <Building2 className="h-6 w-6 text-primary" />
-                    )}
-                  </div>
-                  
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-bold text-lg leading-tight truncate">{job.title}</h3>
-                      <Badge variant={job.type === 'internship' ? 'secondary' : 'default'} className="text-[10px] uppercase font-black tracking-tighter shrink-0">
-                        {job.type === 'internship' ? 'Estágio' : 'Efetivo'}
-                      </Badge>
-                    </div>
-                    
-                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
-                      <div className="flex items-center gap-1.5">
-                        <Building2 className="h-3.5 w-3.5" />
-                        {job.company_name}
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <MapPin className="h-3.5 w-3.5" />
-                        {job.location || 'Remoto'}
-                      </div>
-                      {job.salary_range && (
-                        <div className="font-mono text-[11px] text-primary/80">
-                          {job.salary_range}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="shrink-0 rounded-xl gap-2 border-primary/30 hover:bg-primary hover:text-primary-foreground group-hover:border-primary transition-all"
-                    onClick={() => window.open(job.application_link, '_blank')}
-                  >
-                    Candidatar-se
-                    <ExternalLink className="h-3.5 w-3.5" />
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
+        </section>
+        {loading ? <div className="flex items-center justify-center gap-2 py-16 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Carregando oportunidades...</div> : filteredJobs.length === 0 ? <div className="rounded-2xl border border-dashed border-border p-14 text-center"><BriefcaseBusiness className="mx-auto mb-3 h-10 w-10 text-primary/40" /><p className="text-sm font-medium">Nenhuma vaga encontrada</p><p className="mt-1 text-xs text-muted-foreground">Tente mudar a busca ou volte mais tarde para conferir novas oportunidades.</p></div> : <section className="grid gap-4 lg:grid-cols-2">{filteredJobs.map((job) => <article key={job.id} className="rounded-2xl border border-border bg-card/80 p-4 shadow-sm transition-colors hover:border-primary/35 sm:p-5"><div className="flex gap-3 sm:gap-4"><div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary sm:h-12 sm:w-12">{job.company_logo_url ? <img src={job.company_logo_url} alt={job.company_name} className="h-10 w-10 rounded-lg object-contain sm:h-11 sm:w-11" /> : <BriefcaseBusiness className="h-5 w-5" />}</div><div className="min-w-0 flex-1 space-y-3"><div className="flex flex-wrap items-center gap-1.5"><Badge variant="outline" className="h-5 rounded-full px-2 text-[10px]">{JOB_TYPE_LABELS[job.type]}</Badge>{job.type === 'internship' && <Badge variant="secondary" className="h-5 rounded-full px-2 text-[10px]">Entrada para estudantes</Badge>}</div><div><h2 className="text-base font-bold leading-snug sm:text-lg">{job.title}</h2><p className="mt-1 text-xs font-medium text-primary">{job.company_name}</p></div><div className="grid grid-cols-1 gap-2 text-xs text-muted-foreground sm:grid-cols-2"><span className="inline-flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5 text-primary" /> {job.location || 'Remoto'}</span><span className="inline-flex items-center gap-1.5"><WalletCards className="h-3.5 w-3.5 text-primary" /> {job.salary_range || 'Salário a combinar'}</span></div><p className="line-clamp-3 text-xs leading-5 text-muted-foreground sm:text-sm">{job.description}</p><div className="flex flex-wrap items-center gap-2 pt-1"><Button size="sm" className="h-8 gap-1.5 text-xs" disabled={!isValidApplicationUrl(job.application_link)} onClick={() => openApplication(job)}><ExternalLink className="h-3.5 w-3.5" /> Candidatar-se</Button><Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => setSelected(job)}>Ver detalhes</Button></div></div></div></article>)}</section>}
+        <div className="mt-8"><AdBanner position="inline" /></div>
       </main>
+      <Dialog open={!!selected} onOpenChange={(open) => !open && setSelected(null)}><DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">{selected && <><DialogHeader><DialogTitle className="pr-6 text-xl">{selected.title}</DialogTitle><p className="text-sm text-primary">{selected.company_name} · {selected.location || 'Remoto'}</p></DialogHeader><div className="space-y-4 text-sm"><div className="flex flex-wrap gap-2"><Badge variant="outline">{JOB_TYPE_LABELS[selected.type]}</Badge><Badge variant="outline">{selected.salary_range || 'Salário a combinar'}</Badge></div><Separator /><div className="whitespace-pre-wrap leading-6 text-muted-foreground">{selected.description}</div>{selected.requirements && <div><h3 className="mb-2 font-semibold text-foreground">Requisitos</h3><div className="whitespace-pre-wrap leading-6 text-muted-foreground">{selected.requirements}</div></div>}</div><DialogFooter><Button variant="outline" onClick={() => setSelected(null)}>Fechar</Button><Button disabled={!isValidApplicationUrl(selected.application_link)} onClick={() => openApplication(selected)} className="gap-1.5"><ExternalLink className="h-4 w-4" /> Candidatar-se no site da empresa</Button></DialogFooter></>}</DialogContent></Dialog>
     </div>
   );
 }

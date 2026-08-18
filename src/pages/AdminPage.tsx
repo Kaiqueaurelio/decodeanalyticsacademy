@@ -3612,6 +3612,11 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
               <FreeCoursesManager />
             )}
 
+            {/* JOBS */}
+            {tab === 'jobs' && (
+              <JobsManager />
+            )}
+
             {/* MCP SETTINGS */}
             {tab === 'mcp-settings' && (
               <McpSettings />

@@ -32,6 +32,7 @@ const ProfilePage = lazy(() => import('@/pages/ProfilePage'));
 const BibliotecaPage = lazy(() => import('@/pages/BibliotecaPage'));
 const PlayBooksPage = lazy(() => import('@/pages/PlayBooksPage'));
 const CoursesPage = lazy(() => import('@/pages/CoursesPage'));
+const JobsPage = lazy(() => import('@/pages/JobsPage'));
 const MaterialsPage = lazy(() => import('@/pages/MaterialsPage'));
 const VideoPlayerPage = lazy(() => import('@/pages/VideoPlayerPage'));
 const AdminPage = lazy(() => import('@/pages/AdminPage'));
@@ -55,7 +56,6 @@ const SupportProjectPage = lazy(() => import('@/pages/SupportProjectPage'));
   const SchedulePage = lazy(() => import('@/pages/SchedulePage'));
   const TiraDuvidaPage = lazy(() => import('@/pages/TiraDuvidaPage'));
   const AdminBibliotecaPage = lazy(() => import('@/pages/AdminBibliotecaPage'));
-  const JobsPage = lazy(() => import('@/pages/JobsPage'));
 
 
 const queryClient = new QueryClient({
@@ -126,6 +126,7 @@ const AppContent = () => {
           <Route path="/biblioteca" element={<ProtectedRoute><BibliotecaPage /></ProtectedRoute>} />
           <Route path="/livros" element={<ProtectedRoute><PlayBooksPage /></ProtectedRoute>} />
           <Route path="/cursos" element={<ProtectedRoute><CoursesPage /></ProtectedRoute>} />
+          <Route path="/vagas" element={<JobsPage />} />
           <Route path="/materiais" element={<ProtectedRoute><MaterialsPage /></ProtectedRoute>} />
           <Route path="/video/:id" element={<ProtectedRoute><VideoPlayerPage /></ProtectedRoute>} />
           <Route path="/calculadora" element={<ProtectedRoute><CalculadoraPage /></ProtectedRoute>} />
@@ -139,13 +140,13 @@ const AppContent = () => {
           <Route path="/review" element={<ProtectedRoute><ReviewPage /></ProtectedRoute>} />
           <Route path="/horarios" element={<ProtectedRoute><SchedulePage /></ProtectedRoute>} />
           <Route path="/tira-duvida" element={<ProtectedRoute><TiraDuvidaPage /></ProtectedRoute>} />
-          <Route path="/vagas" element={<ProtectedRoute><JobsPage /></ProtectedRoute>} />
           <Route path="/tira-duvidas" element={<Navigate to="/tira-duvida" replace />} />
 
           <Route path="/simulado" element={<ProtectedRoute><SimuladoPage /></ProtectedRoute>} />
           <Route path="/apoie" element={<Navigate to="/apoio" replace />} />
           <Route path="/apostilas" element={<Navigate to="/dashboard#apostilas" replace />} />
           <Route path="/community" element={<Navigate to="/comunidade" replace />} />
+          <Route path="/jobs" element={<Navigate to="/vagas" replace />} />
           <Route path="/desempenho" element={<Navigate to="/performance" replace />} />
           <Route path="/materials" element={<Navigate to="/materiais" replace />} />
           <Route path="/messages" element={<Navigate to="/comunidade" replace />} />
