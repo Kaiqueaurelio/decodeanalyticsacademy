@@ -61,7 +61,7 @@ export function DashboardTopbar({ hideSearchOnMobile = false }: { hideSearchOnMo
               <SheetTitle>Menu de navegação</SheetTitle>
               <SheetDescription>Use Tab para navegar e Esc para fechar.</SheetDescription>
             </SheetHeader>
-            <SidebarContent mode="full" onNavigate={() => setNavOpen(false)} />
+            <SidebarContent onNavigate={() => setNavOpen(false)} />
           </SheetContent>
         </Sheet>
 
