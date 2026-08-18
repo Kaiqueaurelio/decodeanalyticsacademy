@@ -180,6 +180,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       if (apostilaId && apostilaId.startsWith('placeholder')) {
         try {
           const realId = await ensureApostilaExists({ id: apostilaId, title: '' });
+          // Redireciona para o ID real e limpa o parâmetro 'page' para carregar a nova estrutura
           navigate(`/admin/apostilas/${realId}`, { replace: true });
           return;
         } catch (err: any) {
@@ -237,10 +238,19 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       .select('*').eq('apostila_id', apostilaId).order('position');
     const loadedPages = (pageRows || []) as ApostilaPage[];
     setPages(loadedPages);
+    
+    // Se temos um selectedPageId, carregamos o conteúdo dele.
+    // IMPORTANTE: Se o selectedPageId for um ID de página que acabamos de criar,
+    // ele deve estar na lista carregada.
     const selectedPage = loadedPages.find((page) => page.id === selectedPageId);
     if (selectedPage) {
       setContent(selectedPage.content || '');
-      setTitle(selectedPage.title || ''); // Update title for pages too
+      setTitle(selectedPage.title || ''); 
+    } else if (selectedPageId) {
+       // Se o ID da página não foi encontrado (ex: cache ou reload no placeholder), 
+       // limpamos o parâmetro para evitar confusão visual.
+       const newUrl = window.location.pathname;
+       window.history.replaceState({}, '', newUrl);
     }
 
     if (links && links.length) {
