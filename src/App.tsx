@@ -55,6 +55,8 @@ const SupportProjectPage = lazy(() => import('@/pages/SupportProjectPage'));
   const SchedulePage = lazy(() => import('@/pages/SchedulePage'));
   const TiraDuvidaPage = lazy(() => import('@/pages/TiraDuvidaPage'));
   const AdminBibliotecaPage = lazy(() => import('@/pages/AdminBibliotecaPage'));
+  const JobsPage = lazy(() => import('@/pages/JobsPage'));
+
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -137,7 +139,9 @@ const AppContent = () => {
           <Route path="/review" element={<ProtectedRoute><ReviewPage /></ProtectedRoute>} />
           <Route path="/horarios" element={<ProtectedRoute><SchedulePage /></ProtectedRoute>} />
           <Route path="/tira-duvida" element={<ProtectedRoute><TiraDuvidaPage /></ProtectedRoute>} />
+          <Route path="/vagas" element={<ProtectedRoute><JobsPage /></ProtectedRoute>} />
           <Route path="/tira-duvidas" element={<Navigate to="/tira-duvida" replace />} />
+
           <Route path="/simulado" element={<ProtectedRoute><SimuladoPage /></ProtectedRoute>} />
           <Route path="/apoie" element={<Navigate to="/apoio" replace />} />
           <Route path="/apostilas" element={<Navigate to="/dashboard#apostilas" replace />} />
