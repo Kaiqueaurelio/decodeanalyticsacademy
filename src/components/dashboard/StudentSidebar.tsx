@@ -1,483 +1,165 @@
 import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import BuyMeCoffeeButton from '@/components/BuyMeCoffeeButton';
-
+import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Home,
-  BookOpen,
-  ClipboardList,
-  PenLine,
-  FileText,
-  MessagesSquare,
-  User,
-  Sheet as SheetIcon,
-  Library,
-  Calculator,
-  ShieldCheck,
-  GraduationCap,
-  MoreHorizontal,
-  Bell,
-  LayoutDashboard,
-  Package,
-  Users,
-  TrendingUp,
-  Globe,
-  BarChart3,
-  Store,
-  LifeBuoy,
-  PanelLeftClose,
-  ChevronsLeft,
-  Layers,
-  Target,
-  Activity,
-  HelpCircle,
-  Trophy,
-  NotebookPen,
-  RotateCcw,
-  LogOut,
-  Newspaper,
-  CheckSquare,
-  HeartHandshake,
-  Heart,
-  Coffee,
-  CalendarRange,
-  BriefcaseBusiness
+  Home, BookOpen, ClipboardList, PenLine, FileText, GraduationCap, Library, 
+  Layers, RotateCcw, Trophy, NotebookPen, BriefcaseBusiness, Newspaper, 
+  Calculator, CalendarRange, Activity, HelpCircle, MessagesSquare, User, 
+  Heart, LogOut, LayoutDashboard, CheckSquare, ShieldCheck, ChevronsLeft,
+  Search, Terminal, Cpu
 } from 'lucide-react';
-
-
-import logoOwl from '@/assets/owl-icon.png';
-import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserProfile } from '@/hooks/queries/useUserProfile';
+import logoOwl from '@/assets/owl-icon.png';
+import { Button } from '@/components/ui/button';
+import { GlitchText } from './GlitchText';
 
-const SIDEBAR_WIDTHS = {
-  full: '260px',
-  rail: '260px',
-  hidden: '72px',
-} as const;
-
-type SidebarMode = keyof typeof SIDEBAR_WIDTHS;
-
-// unipOnly = item pensado para alunos UNIP (currículo, turma, materiais da faculdade);
-// hideForEnem = ferramenta extra que não pertence ao foco ENEM (calculadora de médias, etc);
-// ambos são escondidos para usuários com content_scope = 'enem_only'.
-type MenuItem = { to: string; icon: any; label: string; unipOnly?: boolean; hideForEnem?: boolean };
-
-const menuGroups: { label: string; items: MenuItem[] }[] = [
+const menuGroups = [
   {
     label: 'Principal',
     items: [
       { to: '/dashboard', icon: Home, label: 'Início' },
-      { to: '/dashboard#minhas-disciplinas', icon: BookOpen, label: 'Minhas Disciplinas', unipOnly: true },
-      { to: '/dashboard#atividades', icon: ClipboardList, label: 'Atividades', unipOnly: true },
+      { to: '/dashboard#minhas-disciplinas', icon: BookOpen, label: 'Minhas Disciplinas' },
+      { to: '/dashboard#atividades', icon: ClipboardList, label: 'Atividades' },
     ],
   },
   {
     label: 'Estudos',
     items: [
       { to: '/dashboard#apostilas', icon: FileText, label: 'Apostilas' },
-      { to: '/cursos', icon: GraduationCap, label: 'Cursos', unipOnly: true },
       { to: '/exercicios', icon: PenLine, label: 'Exercícios' },
-      { to: '/biblioteca', icon: Library, label: 'Biblioteca', unipOnly: true },
-      { to: '/livros', icon: SheetIcon, label: 'Livros', unipOnly: true },
-      { to: '/flashcards', icon: Layers, label: 'Flashcards', hideForEnem: true },
-      { to: '/review', icon: RotateCcw, label: 'Revisão' },
       { to: '/simulado', icon: Trophy, label: 'Simulado' },
-      { to: '/plano-de-estudos', icon: NotebookPen, label: 'Plano de Estudos' },
+      { to: '/plano-de-estudos', icon: NotebookPen, label: 'Plano' },
     ],
   },
   {
-    label: 'Ferramentas',
+    label: 'Networking',
     items: [
-      { to: '/vagas', icon: BriefcaseBusiness, label: 'Vagas de Emprego' },
-      { to: '/noticias', icon: Newspaper, label: 'Notícias Tech', unipOnly: true },
-      { to: '/calculadora', icon: Calculator, label: 'Calculadora', hideForEnem: true },
-      { to: '/horarios', icon: CalendarRange, label: 'Horário Escolar', unipOnly: true },
-      { to: '/performance', icon: Activity, label: 'Desempenho' },
-      { to: '/tira-duvida', icon: HelpCircle, label: 'Tira-dúvidas', hideForEnem: true },
-      { to: '/comunidade', icon: MessagesSquare, label: 'Comunidade', unipOnly: true },
-    ],
-
-  },
-  {
-    label: 'Conta',
-    items: [
-      { to: '/profile', icon: User, label: 'Meu Perfil' },
-      { to: '/apoie', icon: Heart, label: 'Apoie a Missão ☕' },
+      { to: '/vagas', icon: BriefcaseBusiness, label: 'Vagas & Estágios' },
+      { to: '/noticias', icon: Newspaper, label: 'News Tech' },
     ],
   },
-
 ];
 
-
-const adminMenuItems = [
-  { to: '/admin', icon: LayoutDashboard, label: 'Resumo' },
-  { to: '/admin?tab=apostilas', icon: BookOpen, label: 'Apostilas' },
-  { to: '/admin?tab=tasks', icon: CheckSquare, label: 'Minhas Tarefas' },
-  { to: '/admin?tab=jobs', icon: BriefcaseBusiness, label: 'Vagas de Emprego' },
-];
-
-const railItems = [
-  { to: '/dashboard#notificacoes', icon: Bell, label: 'Avisos' },
-  { to: '/dashboard', icon: LayoutDashboard, label: 'Painel' },
-  { to: '/cursos', icon: Package, label: 'Cursos' },
-  { to: '/admin', icon: Users, label: 'Usuários', adminOnly: true },
-  { to: '/admin/financeiro', icon: TrendingUp, label: 'Finanças', adminOnly: true },
-  { to: '/admin/relatorios', icon: BarChart3, label: 'Relatórios', adminOnly: true },
-  { to: '/livros', icon: Store, label: 'Loja' },
-  { to: '/dashboard#apostilas', icon: GraduationCap, label: 'Academy' },
-  { to: '/dashboard#mais', icon: MoreHorizontal, label: 'Mais' },
-  { to: '/comunidade', icon: LifeBuoy, label: 'Suporte' },
-];
-
-function setDashboardHash(id: string) {
-  window.history.replaceState(null, '', `/dashboard#${id}`);
-}
-
-function findDashboardSection(id: string) {
-  return document.getElementById(id) || document.querySelector(`[data-sidebar-section="${id}"]`);
-}
-
-function scrollToDashboardSection(id: string, navigate: ReturnType<typeof useNavigate>) {
-  const scroll = () => {
-    const el = findDashboardSection(id);
-    if (!el) return false;
-
-    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    setDashboardHash(id);
-    return true;
-  };
-
-  const retryScroll = () => {
-    requestAnimationFrame(() => {
-      if (scroll()) return;
-      window.setTimeout(scroll, 120);
-      window.setTimeout(scroll, 320);
-      window.setTimeout(scroll, 700);
-    });
-  };
-
-  if (window.location.pathname !== '/dashboard') {
-    navigate(`/dashboard#${id}`);
-    retryScroll();
-    return;
-  }
-
-  if (!scroll()) retryScroll();
-}
-
-function isRouteActive(currentPath: string, currentHash: string, to: string) {
-  const [path, hash] = to.split('#');
-  if (hash) return currentPath === path && currentHash === `#${hash}`;
-  if (to === '/dashboard') return currentPath === '/dashboard' && !currentHash;
-  return currentPath === path || currentPath.startsWith(`${path}/`);
-}
-
-function useSidebarNavigation(onNavigate?: () => void) {
-  const navigate = useNavigate();
-
-  const open = (to: string) => {
-    const [path, hash] = to.split('#');
-    if (path === '/dashboard' && hash) {
-      scrollToDashboardSection(hash, navigate);
-    } else {
-      navigate(to);
-    }
-    
-    // Pequeno delay para garantir que a navegação iniciou antes de fechar o sheet
-    // Isso ajuda a evitar "trancamento" visual se o dispositivo for lento
-    requestAnimationFrame(() => {
-      onNavigate?.();
-    });
-  };
-
-  return { navigate, open };
-}
-
-export function SidebarContent({
-  mode = 'full',
-  setMode,
-  onNavigate,
-  hideBottomNavDuplicates = false,
-}: {
-  mode?: Exclude<SidebarMode, 'hidden'>;
-  setMode?: (mode: SidebarMode) => void;
-  onNavigate?: () => void;
-  hideBottomNavDuplicates?: boolean;
-}) {
+export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const location = useLocation();
+  const navigate = useNavigate();
   const { isAdmin, signOut, user } = useAuth();
   const { data: profile } = useUserProfile(user?.id);
-  const isEnemOnly = profile?.content_scope === 'enem_only';
-  const { navigate, open } = useSidebarNavigation(onNavigate);
-  const visibleRailItems = railItems.filter((item) => !item.adminOnly || isAdmin);
-  const railMenuItems = mode === 'full' ? visibleRailItems.slice(0, isAdmin ? 7 : 6) : visibleRailItems;
-  // Rotas já presentes na bottom nav mobile — quando aberta como Sheet, evitar duplicar
-  const BOTTOM_NAV_ROUTES = new Set([
-    '/dashboard',
-    '/dashboard#apostilas',
-    '/exercicios',
-    '/cursos',
-    '/biblioteca',
-  ]);
-  const filteredGroups = menuGroups
-    .map((g) => ({
-      ...g,
-      items: g.items.filter((it) => {
-        if (isEnemOnly && (it.unipOnly || it.hideForEnem)) return false;
-        if (hideBottomNavDuplicates && BOTTOM_NAV_ROUTES.has(it.to)) return false;
-        return true;
-      }),
-    }))
-    .filter((g) => g.items.length > 0);
-  const isFull = true;
-  const canToggle = typeof setMode === 'function';
-  const showRail = false;
+
+  const isActive = (to: string) => {
+    const [path, hash] = to.split('#');
+    if (hash) return location.pathname === path && location.hash === `#${hash}`;
+    return location.pathname === path;
+  };
+
+  const handleNav = (to: string) => {
+    navigate(to);
+    onNavigate?.();
+  };
 
   return (
-    <div className="relative flex h-full min-h-0 w-full overflow-hidden bg-gradient-to-b from-background via-background to-card/60 text-foreground">
-      {/* Ambient glow */}
-      <div className="pointer-events-none absolute inset-0 opacity-60">
-        <div className="absolute -top-20 -left-16 h-64 w-64 rounded-full bg-primary/15 blur-3xl" />
-        <div className="absolute bottom-0 -right-16 h-64 w-64 rounded-full bg-accent/12 blur-3xl" />
-      </div>
-      {/* Right divider */}
-      <div className="pointer-events-none absolute inset-y-0 right-0 w-px bg-gradient-to-b from-transparent via-primary/25 to-transparent" />
-
-      {isFull && (
-        <div className="relative flex min-h-0 min-w-0 flex-1 flex-col">
-          {/* Header / Brand */}
-          <div className="flex items-center justify-between border-b border-border/60 px-4 py-4">
-            <button
-              type="button"
-              onClick={() => open('/dashboard')}
-              className="group flex min-w-0 items-center gap-3 text-left transition"
-              aria-label="Ir para o dashboard"
-            >
-              <span className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-background ring-1 ring-primary/40 transition-all duration-300 group-hover:ring-primary/70 group-hover:shadow-[0_0_24px_hsl(var(--primary)/0.35)]">
-                <img src={logoOwl} alt="Decode Analytics Academy" className="h-8 w-8 object-contain" />
-                <span className="absolute -inset-px rounded-xl bg-gradient-to-br from-primary/0 via-primary/0 to-accent/20 opacity-0 transition-opacity group-hover:opacity-100" />
-              </span>
-              <span className="min-w-0">
-                <span className="block font-display text-[13px] font-extrabold tracking-tight text-foreground">
-                  DECODE ANALYTICS ACADEMY
-                </span>
-                <span className="block font-mono text-[9px] font-semibold uppercase tracking-[0.32em] text-muted-foreground">
-                  Academy By Kaique Aurelio
-                </span>
-              </span>
-            </button>
-            {canToggle && (
-              <button
-                type="button"
-                onClick={() => setMode!('hidden')}
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border text-muted-foreground transition hover:border-primary/50 hover:text-primary hover:bg-primary/5"
-                aria-label="Esconder menu lateral"
-                title="Esconder menu lateral"
-              >
-                <ChevronsLeft className="h-4 w-4" />
-              </button>
-            )}
+    <div className="flex flex-col h-full bg-[#050508] text-white border-r border-white/5 relative overflow-hidden font-mono">
+      {/* Background Cyber Effects */}
+      <div className="absolute inset-0 cyber-grid opacity-20 pointer-events-none" />
+      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-cyan-500 to-transparent opacity-50" />
+      
+      {/* Header */}
+      <div className="p-6 relative z-10 border-b border-white/5 bg-black/20 backdrop-blur-sm">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center relative group overflow-hidden">
+            <div className="absolute inset-0 bg-cyan-400/5 animate-pulse" />
+            <img src={logoOwl} alt="Logo" className="w-7 h-7 relative z-10 brightness-110" />
           </div>
-
-          {/* Nav groups */}
-          <nav className="flex-1 min-h-0 space-y-6 overflow-y-auto overscroll-contain px-3 pt-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] [scrollbar-width:thin] scrollbar-none">
-            {filteredGroups.map((group) => (
-              <div key={group.label}>
-                <div className="flex items-center gap-2 px-3 pb-2">
-                  <span className="h-px flex-1 bg-gradient-to-r from-border to-transparent" />
-                  <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.28em] text-muted-foreground/70">
-                    {group.label}
-                  </span>
-                  <span className="h-px flex-[3] bg-gradient-to-l from-border to-transparent" />
-                </div>
-                <div className="space-y-0.5">
-                  {group.items.map((it) => {
-                    const active = isRouteActive(location.pathname, location.hash, it.to);
-                    const Icon = it.icon;
-                    return (
-                      <button
-                        key={it.to}
-                        type="button"
-                        onClick={() => open(it.to)}
-                        aria-current={active ? 'page' : undefined}
-                        className={`group relative flex min-h-[44px] w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-[13px] font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background
-                          ${active
-                            ? 'bg-primary/10 text-foreground'
-                            : 'text-muted-foreground hover:bg-muted/40 hover:text-foreground'}`}
-                      >
-                        {active && (
-                          <span className="absolute left-0 top-1/2 h-6 w-[3px] -translate-y-1/2 rounded-r-full bg-gradient-to-b from-primary to-accent shadow-[0_0_10px_hsl(var(--primary)/0.6)]" />
-                        )}
-                        <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-all
-                          ${active
-                            ? 'bg-primary/15 text-primary ring-1 ring-primary/30'
-                            : 'text-muted-foreground/80 group-hover:bg-muted/60 group-hover:text-foreground'}`}
-                        >
-                          <Icon strokeWidth={active ? 2.4 : 1.9} className="h-[15px] w-[15px]" />
-                        </span>
-                        <span className="truncate">{it.label}</span>
-                      </button>
-                    );
-                  })}
-                  
-                  {group.label === 'Principal' && (
-                    <div className="mt-4 px-3 py-3 rounded-xl bg-gradient-to-br from-primary/10 to-accent/10 border border-primary/20 space-y-2 mx-1 shadow-inner shadow-primary/5">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-primary drop-shadow-sm">Estágio Pro</span>
-                        <span className="text-[10px] font-black text-foreground">LVL 99</span>
-                      </div>
-                      <div className="h-1.5 w-full bg-background/50 rounded-full overflow-hidden border border-border/10">
-                        <div 
-                          className="h-full bg-gradient-to-r from-primary to-accent w-[100%] rounded-full shadow-[0_0_12px_hsl(var(--primary)/0.5)] transition-all duration-1000" 
-                        />
-                      </div>
-                      <div className="flex justify-between items-center text-[8px] text-muted-foreground font-mono uppercase tracking-tighter">
-                        <span>MAX XP</span>
-                        <span>Mestre da Decode</span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-
-            {isAdmin && (
-              <div>
-                <div className="flex items-center gap-2 px-3 pb-2">
-                  <span className="h-px flex-1 bg-gradient-to-r from-accent/40 to-transparent" />
-                  <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.28em] text-accent/80">
-                    Administração
-                  </span>
-                  <span className="h-px flex-[3] bg-gradient-to-l from-accent/40 to-transparent" />
-                </div>
-                <div className="space-y-0.5">
-                  {adminMenuItems.map((it) => {
-                    const active = isRouteActive(location.pathname, location.hash, it.to);
-                    const Icon = it.icon;
-                    return (
-                      <button
-                        key={`${it.label}-${it.to}`}
-                        type="button"
-                        onClick={() => open(it.to)}
-                        aria-current={active ? 'page' : undefined}
-                        className={`group relative flex min-h-[44px] w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-[13px] font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background
-                          ${active
-                            ? 'bg-accent/10 text-foreground'
-                            : 'text-muted-foreground hover:bg-muted/40 hover:text-foreground'}`}
-                      >
-                        {active && (
-                          <span className="absolute left-0 top-1/2 h-6 w-[3px] -translate-y-1/2 rounded-r-full bg-accent shadow-[0_0_10px_hsl(var(--accent)/0.6)]" />
-                        )}
-                        <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-all
-                          ${active
-                            ? 'bg-accent/15 text-accent ring-1 ring-accent/30'
-                            : 'text-muted-foreground/80 group-hover:bg-muted/60 group-hover:text-foreground'}`}
-                        >
-                          <Icon strokeWidth={active ? 2.4 : 1.9} className="h-[15px] w-[15px]" />
-                        </span>
-                        <span className="truncate">{it.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => open('/admin')}
-                  className={`mt-2 group flex min-h-[44px] w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-[13px] font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background
-                    ${location.pathname.startsWith('/admin')
-                      ? 'bg-gradient-to-r from-accent/20 to-accent/5 text-foreground ring-1 ring-accent/40'
-                      : 'text-accent hover:bg-accent/10'}`}
-                >
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent/15 text-accent ring-1 ring-accent/30">
-                    <ShieldCheck strokeWidth={2.4} className="h-[15px] w-[15px]" />
-                  </span>
-                  <span className="truncate">Painel Admin</span>
-                </button>
-              </div>
-            )}
-
-            <div className="pt-1">
-              <button
-                type="button"
-                onClick={() => {
-                  signOut();
-                  onNavigate?.();
-                }}
-                className="group flex min-h-[44px] w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-[13px] font-medium text-muted-foreground transition-all hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-              >
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground/80 group-hover:bg-destructive/15 group-hover:text-destructive">
-                  <LogOut strokeWidth={1.9} className="h-[15px] w-[15px]" />
-                </span>
-                <span className="truncate">Sair da conta</span>
-              </button>
-            </div>
-
-            {/* Buy Me a Coffee Card */}
-            <div className="relative rounded-lg border border-primary/20 bg-primary/5 p-4 mx-1 z-10">
-              <div className="mb-1 flex items-center gap-1.5">
-                <Coffee className="h-3.5 w-3.5 text-primary" strokeWidth={2} aria-hidden="true" />
-                <h4 className="text-xs font-bold tracking-tight text-foreground uppercase">Apoie a Missão</h4>
-              </div>
-              <p className="text-[10px] leading-relaxed text-muted-foreground">Ajude a manter nossa plataforma gratuita para todos.</p>
-              
-              <div className="mt-3 flex flex-col gap-2 relative z-20">
-                <BuyMeCoffeeButton size="small" showText={false} className="w-full justify-start relative z-30" />
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-8 w-full rounded-md text-[10px] font-black uppercase tracking-tighter text-primary hover:bg-primary/10 border border-primary/10"
-                  onClick={() => {
-                    navigate('/apoie');
-                    onNavigate?.();
-                  }}
-                >
-                  Saber Mais
-                </Button>
-              </div>
-            </div>
-
-            {/* Focus card */}
-            <div className="relative rounded-lg border border-border bg-card p-4 mx-1">
-              <div className="mb-1 flex items-center gap-1.5">
-                <Target className="h-3.5 w-3.5 text-primary" strokeWidth={2} aria-hidden="true" />
-                <h4 className="text-xs font-bold tracking-tight text-foreground uppercase">Mantenha o foco</h4>
-              </div>
-              <p className="text-[11px] leading-relaxed text-muted-foreground">Acompanhe metas e atividades pendentes do dia.</p>
-              <Button
-                size="sm"
-                variant="secondary"
-                className="mt-3 h-9 w-full rounded-md text-[11px] font-semibold"
-                onClick={() => {
-                  scrollToDashboardSection('atividades', navigate);
-                  onNavigate?.();
-                }}
-              >
-                Ver metas
-              </Button>
-            </div>
-
-          </nav>
+          <div className="flex flex-col">
+            <span className="text-sm font-black tracking-tighter text-white">DECODE ACADEMY</span>
+            <span className="text-[8px] text-cyan-500/60 tracking-[0.2em] uppercase">Auth: Authorized</span>
+          </div>
         </div>
-      )}
+      </div>
 
+      {/* Search Protocol */}
+      <div className="px-4 py-4 relative z-10">
+        <div className="relative group">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-cyan-500/40" />
+          <input 
+            type="text" 
+            placeholder="[BUSCAR DISCIPLINA]" 
+            className="w-full bg-black/40 border border-white/5 rounded-md py-2 pl-9 pr-3 text-[10px] text-cyan-100 placeholder:text-cyan-500/20 focus:border-cyan-500/40 focus:ring-1 focus:ring-cyan-500/10 transition-all uppercase tracking-widest"
+          />
+        </div>
+      </div>
+
+      {/* Menu */}
+      <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-6 relative z-10 scrollbar-none">
+        {menuGroups.map((group) => (
+          <div key={group.label} className="space-y-1">
+            <div className="px-3 flex items-center gap-2 mb-2">
+              <span className="text-[9px] font-bold text-cyan-500/40 uppercase tracking-[0.3em]">{group.label}</span>
+              <div className="h-px flex-1 bg-gradient-to-r from-cyan-500/20 to-transparent" />
+            </div>
+            {group.items.map((item) => {
+              const active = isActive(item.to);
+              return (
+                <button
+                  key={item.to}
+                  onClick={() => handleNav(item.to)}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-md transition-all group relative overflow-hidden ${
+                    active ? 'cyber-button-active text-cyan-400' : 'text-gray-500 hover:text-cyan-300 hover:bg-white/5'
+                  }`}
+                >
+                  <item.icon className={`w-4 h-4 transition-transform group-hover:scale-110 ${active ? 'text-cyan-400' : 'text-gray-600'}`} />
+                  <span className="text-[11px] font-bold uppercase tracking-wider">{item.label}</span>
+                  {active && (
+                    <motion.div 
+                      layoutId="active-indicator"
+                      className="absolute right-2 w-1 h-1 bg-cyan-400 rounded-full shadow-[0_0_8px_#00f0ff]" 
+                    />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        ))}
+
+        {isAdmin && (
+          <div className="pt-4 space-y-1">
+            <div className="px-3 flex items-center gap-2 mb-2">
+              <span className="text-[9px] font-bold text-purple-500/40 uppercase tracking-[0.3em]">System Admin</span>
+              <div className="h-px flex-1 bg-gradient-to-r from-purple-500/20 to-transparent" />
+            </div>
+            <button
+              onClick={() => handleNav('/admin')}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-purple-400 hover:bg-purple-500/5 transition-all group border border-purple-500/10"
+            >
+              <ShieldCheck className="w-4 h-4" />
+              <span className="text-[11px] font-bold uppercase tracking-wider text-purple-300">Terminal Root</span>
+            </button>
+          </div>
+        )}
+      </nav>
+
+      {/* Footer Profile */}
+      <div className="p-4 border-t border-white/5 bg-black/40 relative z-10">
+        <div className="flex items-center gap-3 p-2 rounded-lg bg-white/5 border border-white/5">
+          <div className="w-8 h-8 rounded bg-gradient-to-br from-cyan-500 to-purple-600 flex items-center justify-center text-[10px] font-black text-white shadow-[0_0_10px_rgba(0,240,255,0.2)]">
+            {profile?.full_name?.substring(0, 2).toUpperCase() || 'AD'}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-[10px] font-bold text-white truncate uppercase tracking-tighter">
+              {profile?.full_name || user?.email}
+            </p>
+            <p className="text-[8px] text-cyan-500/60 font-mono uppercase tracking-[0.1em]">Access Level: 4</p>
+          </div>
+          <button onClick={() => signOut()} className="p-1.5 text-gray-500 hover:text-red-400 transition-colors">
+            <LogOut className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
 
-/**
- * Menu unificado: em qualquer largura de tela o menu é o mesmo drawer
- * (aberto pelo botão do topo ou pela barra inferior no celular).
- * Não existe mais uma sidebar fixa diferente no desktop.
- */
 export function StudentSidebar() {
-  useEffect(() => {
-    document.documentElement.style.setProperty('--student-sidebar-width', '0px');
-    return () => {
-      document.documentElement.style.removeProperty('--student-sidebar-width');
-    };
-  }, []);
-
-  return null;
+  return null; // A sidebar é agora controlada pelo Topbar/Sheet no DashboardPage
 }
