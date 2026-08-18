@@ -280,7 +280,7 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
             title: `[GRADE] ${subject}`,
             category: subject,
             semester: semNum,
-            published: false,
+            published: true,
             created_at: new Date(2000, 0, 1).toISOString(), // Antigo para ficar no fim se ordenado por desc
             updated_at: new Date(2000, 0, 1).toISOString(),
             isPlaceholder: true
