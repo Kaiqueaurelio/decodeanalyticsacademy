@@ -58,6 +58,9 @@ export default function LoginPage() {
   const [rememberMe, setRememberMe] = useState(!!savedIdentifier);
   const [awaitingSession, setAwaitingSession] = useState(false);
   const passwordRef = useRef<HTMLInputElement>(null);
+  const runawayDockRef = useRef<HTMLDivElement>(null);
+  const runawayButtonRef = useRef<HTMLButtonElement>(null);
+  const [runawayOffset, setRunawayOffset] = useState({ x: 0, y: 0 });
   const TERMS_VERSION = '4.18.1';
   const [agreedToTerms, setAgreedToTerms] = useState(() => localStorage.getItem(`decode_terms_accepted_${TERMS_VERSION}`) === 'true');
 
@@ -280,10 +283,51 @@ export default function LoginPage() {
 
   const filledLoginFields = Number(Boolean(normalizeIdentifier(identifier))) + Number(Boolean(password));
   const loginHint = filledLoginFields === 0
-    ? 'Preencha os dois campos para liberar o acesso.'
+    ? 'Dois campos para preencher antes de o botão ficar parado.'
     : filledLoginFields === 1
-      ? 'Mais um campo. O acesso está quase pronto.'
-      : 'Tudo pronto. Você pode entrar.';
+      ? 'Falta um. O botão está desacelerando.'
+      : 'Acesso liberado. Pode entrar.';
+
+  const runawayStrength = filledLoginFields === 0 ? 1 : filledLoginFields === 1 ? 0.42 : 0;
+
+  const handleRunawayPointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (runawayStrength === 0 || event.pointerType === 'touch') return;
+    const dock = runawayDockRef.current;
+    const button = runawayButtonRef.current;
+    if (!dock || !button) return;
+
+    const dockRect = dock.getBoundingClientRect();
+    const buttonRect = button.getBoundingClientRect();
+    const cursorX = event.clientX - dockRect.left;
+    const cursorY = event.clientY - dockRect.top;
+    const buttonCenterX = buttonRect.left - dockRect.left + buttonRect.width / 2;
+    const buttonCenterY = buttonRect.top - dockRect.top + buttonRect.height / 2;
+    const distanceX = cursorX - buttonCenterX;
+    const distanceY = cursorY - buttonCenterY;
+    const distance = Math.hypot(distanceX, distanceY);
+    const triggerDistance = Math.max(105, buttonRect.width * 0.9);
+
+    if (distance > triggerDistance) return;
+
+    const directionX = distanceX === 0 ? (Math.random() > 0.5 ? 1 : -1) : -distanceX / distance;
+    const directionY = distanceY === 0 ? -1 : -distanceY / distance;
+    const maxX = Math.max(0, (dockRect.width - buttonRect.width) / 2 - 8);
+    const maxY = Math.max(0, (dockRect.height - buttonRect.height) / 2 - 6);
+    const push = Math.min(92, Math.max(42, triggerDistance - distance + 28)) * runawayStrength;
+
+    setRunawayOffset({
+      x: Math.max(-maxX, Math.min(maxX, directionX * push)),
+      y: Math.max(-maxY, Math.min(maxY, directionY * push * 0.72)),
+    });
+  };
+
+  const resetRunawayOffset = () => {
+    if (runawayStrength === 0) setRunawayOffset({ x: 0, y: 0 });
+  };
+
+  useEffect(() => {
+    if (runawayStrength === 0) setRunawayOffset({ x: 0, y: 0 });
+  }, [runawayStrength]);
 
   return (
     <div className="relative min-h-dvh overflow-hidden bg-[#0b0f0d] text-[#effff2] selection:bg-[#d7ff4f]/30">
@@ -374,7 +418,12 @@ export default function LoginPage() {
 
                       <div className="space-y-3"><div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.12em] text-white/35"><span>{loginHint}</span><span className="text-[#d7ff4f]">{filledLoginFields}/2</span></div><div className="h-1 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-[#d7ff4f] shadow-[0_0_14px_#d7ff4f] transition-all duration-500" style={{ width: `${filledLoginFields * 50}%` }} /></div></div>
 
-                      {unverifiedEmail && !isSignUp ? <Button type="submit" disabled={loading} className="min-h-12 w-full rounded-full bg-[#d7ff4f] font-semibold text-[#10150f] hover:bg-[#e5ff8b]">{loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Entrar</Button> : <Button type="submit" className="min-h-12 w-full rounded-full border border-[#d7ff4f]/70 bg-[#d7ff4f] font-semibold text-[#10150f] shadow-[0_0_25px_rgba(215,255,79,0.16)] transition hover:bg-[#e5ff8b] hover:shadow-[0_0_35px_rgba(215,255,79,0.28)]" disabled={loading || awaitingSession || isLocked}>{(loading || awaitingSession) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}{isLocked ? <><Lock className="mr-2 h-4 w-4" /> Conta bloqueada</> : isSignUp ? 'Criar conta' : awaitingSession ? 'Entrando...' : 'Log in'}</Button>}
+                      {unverifiedEmail && !isSignUp ? <Button type="submit" disabled={loading} className="min-h-12 w-full rounded-full bg-[#d7ff4f] font-semibold text-[#10150f] hover:bg-[#e5ff8b]">{loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Entrar</Button> : (
+                        <div ref={runawayDockRef} onPointerMove={handleRunawayPointerMove} onPointerLeave={resetRunawayOffset} className="relative flex min-h-[84px] items-center justify-center overflow-visible rounded-2xl border border-white/[0.06] bg-black/[0.12]">
+                          <div className="pointer-events-none absolute inset-x-8 top-1/2 h-px -translate-y-1/2 bg-gradient-to-r from-transparent via-[#d7ff4f]/20 to-transparent" />
+                          <Button ref={runawayButtonRef} type="submit" style={{ transform: `translate3d(${runawayOffset.x}px, ${runawayOffset.y}px, 0)` }} className="relative z-10 min-h-12 w-full rounded-full border border-[#d7ff4f]/70 bg-[#d7ff4f] font-semibold text-[#10150f] shadow-[0_0_25px_rgba(215,255,79,0.16)] transition-[transform,box-shadow,background-color] duration-300 ease-out hover:bg-[#e5ff8b] hover:shadow-[0_0_35px_rgba(215,255,79,0.28)] disabled:cursor-not-allowed disabled:opacity-70" disabled={loading || awaitingSession || isLocked} aria-label="Entrar no Decode Analytics Academy">{(loading || awaitingSession) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}{isLocked ? <><Lock className="mr-2 h-4 w-4" /> Conta bloqueada</> : isSignUp ? 'Criar conta' : awaitingSession ? 'Entrando...' : 'Log in'}</Button>
+                        </div>
+                      )}
 
                       {!isSignUp && <div className="flex flex-wrap items-center justify-between gap-2"><label className="flex min-h-10 cursor-pointer items-center gap-2 text-xs text-white/45"><Checkbox checked={rememberMe} onCheckedChange={(v) => { setRememberMe(!!v); if (v) localStorage.setItem('decode_stay_logged_in', 'true'); else localStorage.removeItem('decode_stay_logged_in'); }} className="h-4 w-4 border-white/25 data-[state=checked]:border-[#d7ff4f] data-[state=checked]:bg-[#d7ff4f]" /> Permanecer conectado</label><button type="button" onClick={() => setIsReset(true)} className="min-h-10 px-1 text-xs text-white/45 transition hover:text-[#d7ff4f]">{isLocked ? 'Redefinir senha' : 'Esqueceu a senha?'}</button></div>}
                     </form>
