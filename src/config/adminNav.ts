@@ -2,15 +2,17 @@ import {
   BarChart3, BookOpen, PenLine, FolderOpen, GraduationCap, Users, Megaphone,
   Calendar as CalIcon, MessageSquareQuote, MessageSquare, Activity, CheckCircle,
   AlertCircle, History, ShieldCheck, ShieldAlert, Rss, Store, HandCoins, Heart,
-  Sparkles, CheckSquare, Copy, Link2, type LucideIcon,
+  Sparkles, CheckSquare, Copy, Link2, Briefcase, type LucideIcon,
 } from 'lucide-react';
 
+
 export type AdminTabId =
-  | 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements'
+  | 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'jobs' | 'announcements'
   | 'calendar' | 'testimonials' | 'ai' | 'ella-settings' | 'performance' | 'smoke' | 'diagnostics'
   | 'ads' | 'ads-chat' | 'social' | 'rss' | 'courses' | 'changelog' | 'leads'
   | 'ella-audit' | 'security-alerts' | 'sponsors' | 'tasks' | 'photoroom' | 'edit' | 'review'
   | 'enem-apostilas' | 'cc-apostilas' | 'health-dashboard' | 'cloning-dashboard' | 'mcp-settings';
+
 
 export type AdminNavItem = {
   id: AdminTabId;
@@ -60,8 +62,10 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     label: 'Alunos e Comunidade',
     items: [
       { id: 'users', label: 'Usuários', short: 'Alunos', icon: Users, desc: 'Contas, permissões e bloqueios', countKey: 'users', keywords: 'aluno conta senha bloquear admin' },
+      { id: 'jobs', label: 'Vagas e Estágios', short: 'Vagas', icon: Briefcase, desc: 'Gerenciar oportunidades de carreira', keywords: 'vaga emprego estagio trampo job' },
       { id: 'announcements', label: 'Avisos', short: 'Avisos', icon: Megaphone, desc: 'Mural de avisos para os alunos', keywords: 'mural comunicado notificacao' },
       { id: 'testimonials', label: 'Depoimentos', short: 'Depoim.', icon: MessageSquareQuote, desc: 'Aprove ou rejeite depoimentos', keywords: 'feedback avaliacao' },
+
       { id: 'social', label: 'Social', short: 'Social', icon: Heart, desc: 'Curtidas, comentários e engajamento', keywords: 'curtida comentario engajamento' },
       { id: 'rss', label: 'Feeds RSS', short: 'RSS', icon: Rss, desc: 'Fontes de notícias exibidas no app', keywords: 'noticias feed fonte' },
     ],
