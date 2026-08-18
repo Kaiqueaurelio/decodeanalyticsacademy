@@ -1,5 +1,5 @@
 import {
-  BarChart3, BookOpen, BriefcaseBusiness, PenLine, FolderOpen, GraduationCap, Users, Megaphone,
+  BarChart3, BookOpen, PenLine, FolderOpen, GraduationCap, Users, Megaphone,
   Calendar as CalIcon, MessageSquareQuote, MessageSquare, Activity, CheckCircle,
   AlertCircle, History, ShieldCheck, ShieldAlert, Rss, Store, HandCoins, Heart,
   Sparkles, CheckSquare, Copy, Link2, Briefcase, type LucideIcon,
@@ -10,7 +10,7 @@ export type AdminTabId =
   | 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'jobs' | 'announcements'
   | 'calendar' | 'testimonials' | 'ai' | 'ella-settings' | 'performance' | 'smoke' | 'diagnostics'
   | 'ads' | 'ads-chat' | 'social' | 'rss' | 'courses' | 'changelog' | 'leads'
-  | 'ella-audit' | 'security-alerts' | 'sponsors' | 'tasks' | 'photoroom' | 'edit' | 'review' | 'jobs'
+  | 'ella-audit' | 'security-alerts' | 'sponsors' | 'tasks' | 'photoroom' | 'edit' | 'review'
   | 'enem-apostilas' | 'cc-apostilas' | 'health-dashboard' | 'cloning-dashboard' | 'mcp-settings';
 
 
@@ -54,7 +54,6 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
       { id: 'exercises', label: 'Exercícios', short: 'Exercícios', icon: PenLine, desc: 'Questões, gabaritos e importação em lote', countKey: 'exercises', keywords: 'questoes prova gabarito' },
       { id: 'materials', label: 'Materiais', short: 'Materiais', icon: FolderOpen, desc: 'PDFs, vídeos, slides e planilhas', countKey: 'materials', keywords: 'arquivo upload pdf video' },
       { id: 'courses', label: 'Cursos Gratuitos', short: 'Cursos', icon: GraduationCap, desc: 'Cursos externos exibidos aos alunos', keywords: 'curso externo horas complementares' },
-      { id: 'jobs', label: 'Vagas de Emprego', short: 'Vagas', icon: BriefcaseBusiness, desc: 'Oportunidades e links oficiais de candidatura', keywords: 'emprego estágio trabalho oportunidade carreira empresa candidatura' },
       { id: 'calendar', label: 'Calendário', short: 'Agenda', icon: CalIcon, desc: 'Provas, trabalhos e cronogramas', keywords: 'prova data agenda cronograma' },
     ],
   },
