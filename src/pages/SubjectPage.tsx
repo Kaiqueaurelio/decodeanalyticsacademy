@@ -154,7 +154,6 @@ export default function SubjectPage() {
       progressValue: rows.length > 0 ? 35 : 0,
       onOpenNotebook: handleOpenNotebook,
       contentSections: rows.length > 0 
-
         ? rows.map(r => ({
           id: r.id,
           title: r.title,
