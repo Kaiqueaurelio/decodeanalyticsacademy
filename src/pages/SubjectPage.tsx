@@ -55,20 +55,25 @@ export default function SubjectPage() {
       if (!alive) return;
 
       const matches = (allApostilas || []).filter(ap => {
+        const apId = ap.id.toLowerCase();
         const apTitleKey = subjectKey(ap.title || '');
         const apCatKey = subjectKey(ap.category || '');
         
-        // Match exato
+        // Match por ID (UUID)
+        if (apId === targetKey) return true;
+        
+        // Match exato de chaves
         if (apTitleKey === targetKey || apCatKey === targetKey) return true;
         
         // Match parcial resiliente para Mobile / Sistemas Operacionais
-        const isMobileOrSO = targetKey.includes('mobile') || targetKey.includes('sistemas operacionais') || targetKey.includes('operacionais');
+        const isMobileOrSO = targetKey.includes('mobile') || targetKey.includes('sistemasoperacionais') || targetKey.includes('operacionais');
         if (isMobileOrSO) {
           if (apTitleKey.includes('mobile') || apTitleKey.includes('operacionais') || apCatKey.includes('mobile')) return true;
         }
 
         return (targetKey.length > 5 && (apTitleKey.includes(targetKey) || apCatKey.includes(targetKey)));
       });
+
 
       console.log(`[SubjectPage] Total apostilas fetched: ${allApostilas?.length}. Matches found: ${matches.length}`);
       
