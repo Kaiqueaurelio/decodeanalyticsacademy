@@ -12,7 +12,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useUserProfile } from '@/hooks/queries/useUserProfile';
 import logoOwl from '@/assets/owl-icon.png';
 import { Button } from '@/components/ui/button';
-import { GlitchText } from './GlitchText';
+import { GlitchText } from '@/components/login/GlitchText';
 
 const menuGroups = [
   {
