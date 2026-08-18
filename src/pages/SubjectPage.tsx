@@ -159,7 +159,17 @@ export default function SubjectPage() {
           id: r.id,
           title: r.title,
           documents: [
-            { id: `${r.id}-content`, title: 'Caderno de Estudos', type: 'note' as const, onClick: () => navigate(`/apostila/${r.id}?page=59895af2-f618-4713-92de-408b5c27b513`) },
+            { 
+              id: `${r.id}-content`, 
+              title: 'Caderno de Estudos', 
+              type: 'note' as const, 
+              onClick: () => {
+                const targetPage = r.id === '955b811b-c633-474e-8322-4167e55dfed7' 
+                  ? '?page=59895af2-f618-4713-92de-408b5c27b513' 
+                  : '';
+                navigate(`/apostila/${r.id}${targetPage}`);
+              } 
+            },
             { id: `${r.id}-summary`, title: 'Resumo para Prova', type: 'summary' as const, onClick: () => navigate(`/apostila/${r.id}/read`) },
             { id: `${r.id}-exercises`, title: 'Lista de Exercícios', type: 'exam_review' as const, onClick: () => navigate(`/exercicios/${r.id}`) }
           ]
