@@ -44,8 +44,7 @@ export default function SubjectPage() {
     (async () => {
       setLoading(true);
       const targetKey = subjectKey(decodedCategory);
-      const targetSemester = guessSemesterFromCategory(decodedCategory);
-
+      
       const { data: allApostilas } = await supabase
         .from('apostilas')
         .select('id, title, category, cover_url, semester, source_type, content')
@@ -57,22 +56,18 @@ export default function SubjectPage() {
         const apTitleKey = subjectKey(ap.title || '');
         const apCatKey = subjectKey(ap.category || '');
         
-        // Match exato
-        if (apTitleKey === targetKey || apCatKey === targetKey) return true;
-        
-        // Match parcial para Mobile / SO
-        const searchTerms = ['mobile', 'sistemas operacionais', 'so', 'operacionais'];
-        if (searchTerms.some(term => targetKey.includes(term)) && 
-            searchTerms.some(term => apTitleKey.includes(term) || apCatKey.includes(term))) {
-          return true;
+        // Mobile special case
+        if (targetKey.includes('mobile') || targetKey.includes('operacionais')) {
+          if (apTitleKey.includes('mobile') || apTitleKey.includes('operacionais')) return true;
         }
 
-        return false;
+        return apTitleKey === targetKey || apCatKey === targetKey || 
+               (targetKey.length > 5 && (apTitleKey.includes(targetKey) || apCatKey.includes(targetKey)));
       });
 
       const normalizedRows = matches.map((row) => ({
         ...row,
-        semester: row.semester ?? guessSemesterFromCategory(row.category) ?? targetSemester ?? null,
+        semester: row.semester ?? guessSemesterFromCategory(row.category) ?? guessSemesterFromCategory(decodedCategory) ?? 1,
       }));
 
       setRows(keepMostComplete(normalizedRows));
