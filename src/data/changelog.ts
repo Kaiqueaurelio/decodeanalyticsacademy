@@ -27,16 +27,36 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '5.9.10',
+    version: '6.0.3',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
-    buildTime: '2026-08-15T13:10:00Z',
-    commit: 'v5.9.9-content-restoration',
-    commitMessage: 'Release v5.9.9: Restauração definitiva de conteúdo teórico e multimídia'
+    buildTime: new Date().toISOString(),
+    commit: 'v6.0.3-integrity-restored',
+    commitMessage: 'Release v6.0.3: Restauração Final de Conteúdo e Auditoria 360º concluída'
   };
 }
 
 export const CHANGELOG: Release[] = [
+  {
+    version: "6.0.3",
+    date: "18/08/2026",
+    title: "Auditoria & Restauração 360º",
+    major: true,
+    changes: [
+      {
+        kind: 'content',
+        text: 'Protocolo de Restauração Final: 0 duplicatas e 0 páginas órfãs detectadas.'
+      },
+      {
+        kind: 'fix',
+        text: 'Fix UUID: Corrigida falha que impedia a visualização de novas páginas criadas em disciplinas da grade.'
+      },
+      {
+        kind: 'improvement',
+        text: 'Integridade: Sincronização global de conteúdos multimídia para Ciência da Computação (6º Semestre).'
+      }
+    ]
+  },
   {
     version: "5.9.10",
     date: "15/08/2026",
