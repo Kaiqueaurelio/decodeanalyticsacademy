@@ -13,33 +13,47 @@ export const CHANGE_KIND_LABEL: Record<ChangeKind, string> = {
 };
 
 export interface Change {
+  kind: ChangeKind;
+  text: string;
+}
+
+export interface Release {
   version: string;
   date: string;
   title: string;
-  description: string;
-  author: string;
+  major?: boolean;
+  changes: Change[];
 }
 
-export const changelog: Change[] = [
+export const CHANGELOG: Release[] = [
   {
     version: "6.2.0",
     date: "2026-08-18",
     title: "Estabilidade & Resiliência Acadêmica v2",
-    description: "Correção crítica na instabilidade do avatar da Ella, visibilidade das apostilas do 6º semestre e resiliência no login especial.",
-    author: "Kaique Aurelio & Decode Analytics",
+    major: true,
+    changes: [
+      { kind: 'fix', text: 'Correção crítica na instabilidade do avatar da Ella.' },
+      { kind: 'improvement', text: 'Melhoria na visibilidade das apostilas do 6º semestre.' },
+      { kind: 'security', text: 'Resiliência aprimorada no login especial via RA.' },
+    ],
   },
   {
     version: "6.1.0",
     date: "2026-08-17",
     title: "Estabilidade & Resiliência Acadêmica",
-    description: "Foco total em estabilidade do sistema, correção de visibilidade de apostilas e bypass de RA administrativo.",
-    author: "Kaique Aurelio & Decode Analytics",
+    changes: [
+      { kind: 'fix', text: 'Foco total em estabilidade do sistema e correção de visibilidade.' },
+    ],
   },
-  {
-    version: "6.0.5",
-    date: "2026-08-16",
-    title: "Privilégios Administrativos Resilientes",
-    description: "Implementado bypass de segurança para usuários DecoAnalytics e G802144 garantindo acesso admin.",
-    author: "Kaique Aurelio & Decode Analytics",
-  }
 ];
+
+export function getBuildInfo() {
+  return {
+    version: '6.2.0',
+    environment: 'production',
+    host: 'lovable.app',
+    buildTime: new Date().toISOString(),
+    commit: 'v6.2.0-stable',
+    commitMessage: 'Release stable v6.2.0',
+  };
+}
