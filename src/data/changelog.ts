@@ -27,16 +27,31 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '6.0.3',
+    version: '6.0.4',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v6.0.3-integrity-restored',
-    commitMessage: 'Release v6.0.3: Restauração Final de Conteúdo e Auditoria 360º concluída'
+    commit: 'v6.0.4-auth-fix',
+    commitMessage: 'Release v6.0.4: Correção crítica no login administrativo via RA e e-mail'
   };
 }
 
 export const CHANGELOG: Release[] = [
+  {
+    version: "6.0.4",
+    date: "18/08/2026",
+    title: "Correção de Login Administrativo",
+    changes: [
+      {
+        kind: 'fix',
+        text: 'Login: Corrigida falha que impedia o acesso administrativo usando o RA G802144 ou o e-mail decoanalytics.'
+      },
+      {
+        kind: 'security',
+        text: 'Auth: Refinada a regex de validação e a lógica de resolução de e-mail na Edge Function ra-auth.'
+      }
+    ]
+  },
   {
     version: "6.0.3",
     date: "18/08/2026",
