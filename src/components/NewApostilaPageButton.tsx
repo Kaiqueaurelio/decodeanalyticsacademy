@@ -4,15 +4,26 @@ import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { createApostilaPage } from '@/lib/apostila-pages';
 import { toast } from 'sonner';
-import { FilePlus2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-export function NewApostilaPageButton({ apostilaId, compact = false }: { apostilaId: string; compact?: boolean }) {
+export function NewApostilaPageButton({
+  apostilaId,
+  compact = false,
+  className,
+}: {
+  apostilaId: string;
+  compact?: boolean;
+  className?: string;
+}) {
   const { user } = useAuth();
   const navigate = useNavigate();
+
   const create = async () => {
-    if (!user) return toast.error('Faça login novamente para criar a página.');
-    
-    // Se a apostila for um placeholder, precisamos garantir que ela exista antes de criar uma página
+    if (!user) {
+      toast.error('Faça login novamente para criar a página.');
+      return;
+    }
+
     let targetApostilaId = apostilaId;
     if (apostilaId.startsWith('placeholder')) {
       try {
@@ -20,30 +31,42 @@ export function NewApostilaPageButton({ apostilaId, compact = false }: { apostil
         targetApostilaId = await ensureApostilaExists({ id: apostilaId, title: '' });
       } catch (err) {
         console.error('Erro ao converter placeholder antes de criar página:', err);
-        return toast.error('Salve a apostila primeiro antes de adicionar páginas.');
+        toast.error('Salve a apostila primeiro antes de adicionar páginas.');
+        return;
       }
     }
 
     try {
       const page = await createApostilaPage(targetApostilaId, user.id);
       toast.success('Nova página criada.');
-      // O navigate ja estava configurado para ir para a nova página, 
-      // mas o usuário sente que "fica na página antiga". 
-      // Garantimos o redirecionamento imediato para o editor da nova página.
-      navigate(`/admin/apostilas/${apostilaId}?page=${page.id}&expanded=1`);
+      // Use o ID resolvido para não voltar ao placeholder e perder a página recém-criada.
+      navigate(`/admin/apostilas/${targetApostilaId}?page=${page.id}&expanded=1`);
     } catch (error: any) {
       const message = String(error?.message || '');
-      if (/apostila_pages|schema cache|does not exist|PGRST205/i.test(message)) {
-        toast.error('O recurso Nova Página ainda não foi ativado no banco de produção.');
+      if (/row-level security|permission denied|42501/i.test(message)) {
+        toast.error('Sua conta não tem permissão de administrador para criar páginas.');
         return;
       }
-      toast.error(error?.message || 'Não foi possível criar a página.');
+      if (/apostila_pages|schema cache|does not exist|PGRST205/i.test(message)) {
+        toast.error('A tabela de páginas ainda não foi aplicada no banco de produção.');
+        return;
+      }
+      toast.error(message || 'Não foi possível criar a página.');
+      console.error('Erro ao criar página:', error);
     }
   };
+
   return (
-    <Button size={compact ? 'icon' : 'sm'} variant="outline" onClick={create}
-      className={compact ? 'h-8 w-8 text-primary' : 'h-8 gap-1.5 border-primary/60 text-primary hover:bg-primary/10'}
-      title="Nova Página">
+    <Button
+      size={compact ? 'icon' : 'sm'}
+      variant="outline"
+      onClick={create}
+      className={cn(
+        compact ? 'h-8 w-8 text-primary' : 'h-8 gap-1.5 border-primary/60 text-primary hover:bg-primary/10',
+        className,
+      )}
+      title="Nova Página"
+    >
       <FilePlus2 className="h-3.5 w-3.5" />
       {!compact && <span>Nova Página</span>}
     </Button>

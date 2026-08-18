@@ -27,7 +27,7 @@ import { ensureApostilaExists } from '@/lib/create-placeholder-apostila';
 import { Badge } from '@/components/ui/badge';
 import { getSubjectColor } from '@/lib/subject-colors';
 import { parseApostilaContent } from '@/lib/apostila-parser';
-import { type ApostilaPage } from '@/lib/apostila-pages';
+import { createApostilaPage, type ApostilaPage } from '@/lib/apostila-pages';
 import { NewApostilaPageButton } from '@/components/NewApostilaPageButton';
 
 import {
@@ -472,6 +472,29 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     );
   };
 
+  const handleCreatePage = async () => {
+    if (!id || !user) {
+      toast.error('Faça login novamente para criar uma página.');
+      return;
+    }
+
+    try {
+      const page = await createApostilaPage(id, user.id);
+      toast.success('Nova página criada.');
+      navigate(`/admin/apostilas/${id}?page=${page.id}&expanded=1`);
+    } catch (error: any) {
+      const message = String(error?.message || '');
+      if (/row-level security|permission denied|42501/i.test(message)) {
+        toast.error('Sua conta não tem permissão de administrador para criar páginas.');
+      } else if (/apostila_pages|schema cache|does not exist|PGRST205/i.test(message)) {
+        toast.error('A tabela de páginas ainda não foi aplicada no banco de produção.');
+      } else {
+        toast.error(message || 'Não foi possível criar a página.');
+      }
+      console.error('Erro ao criar página:', error);
+    }
+  };
+
   const handlePasteApply = (text: string, mode: 'append' | 'replace') => {
     if (mode === 'append' && content.trim()) {
       // Formatação no estilo continuação se já houver texto
@@ -665,17 +688,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         exerciseCount={exerciseCount}
         materialCount={linkedMaterials.length}
         onPasteOpen={() => setPasteOpen(true)}
-        onAddPage={() => {
-          // Tenta sugerir um número baseado no conteúdo atual
-          const matches = content.match(/#\s+(\d+\.?\d*)/g);
-          if (matches) {
-            const lastNum = parseFloat(matches[matches.length - 1].replace('# ', ''));
-            if (!isNaN(lastNum)) {
-              setSuggestedSectionTitle(`${(lastNum + 0.1).toFixed(1)} `);
-            }
-          }
-          setAddSectionOpen(true);
-        }}
+        onAddPage={handleCreatePage}
       />
       
 

@@ -10,6 +10,7 @@ import { useAuth } from '@/hooks/useAuth';
 import type { ApostilaSummary } from '@/hooks/queries/useDashboardData';
 
 import { ensureApostilaExists } from '@/lib/create-placeholder-apostila';
+import { NewApostilaPageButton } from '@/components/NewApostilaPageButton';
 
 interface Props {
   apostila: ApostilaSummary;
@@ -133,23 +134,13 @@ export function ApostilaCoverCard({ apostila, status = 'em-progresso', progress 
         </div>
         {isAdmin && (
           <div className="absolute top-2 right-2 z-20 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-[10px] group-hover:translate-x-0">
-            <button
-              onClick={async (e) => {
-                e.stopPropagation();
-                try {
-                  const realId = await ensureApostilaExists(apostila as any);
-                  navigate(`/admin/apostilas/${realId}`);
-                  // Dispara o evento de "Nova Página" após a navegação
-                  setTimeout(() => window.dispatchEvent(new CustomEvent('open-quick-add-section')), 500);
-                } catch (err: any) {
-                  toast.error('Erro ao abrir apostila: ' + (err?.message || 'Tente novamente.'));
-                }
-              }}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.5)] border border-emerald-500/50 text-white hover:scale-110 active:scale-95 transition-all z-30 group/plus"
-              title="Adicionar Nova Página (Somente Administrador)"
-            >
-              <Plus className="h-5 w-5 transition-transform group-hover/plus:rotate-90" />
-            </button>
+            <span onClick={(e) => e.stopPropagation()}>
+              <NewApostilaPageButton
+                apostilaId={apostila.id}
+                compact
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500 text-white shadow-[0_0_20px_rgba(16,185,129,0.5)] border border-emerald-500/50 hover:scale-110 active:scale-95 transition-all z-30"
+              />
+            </span>
             <button
               onClick={async (e) => {
                 e.stopPropagation();

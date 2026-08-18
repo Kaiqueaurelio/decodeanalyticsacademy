@@ -54,10 +54,10 @@ export function QuickAddSectionDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FilePlus2 className="h-5 w-5 text-emerald-500" />
-            Nova Página / Seção
+            Nova Seção
           </DialogTitle>
           <DialogDescription>
-            Adicione rapidamente uma nova divisão ao seu caderno.
+            Adicione rapidamente uma nova seção ao conteúdo principal da apostila.
           </DialogDescription>
         </DialogHeader>
 
