@@ -84,14 +84,16 @@ export const getEllaAvatarUrl = () => {
       localStorage.removeItem(ELLA_AVATAR_STORAGE_KEY);
     }
 
-    // Adiciona cache busting v13 + timestamp único apenas se não for data URL ou asset local do Vite
-    if (finalUrl.startsWith('data:') || finalUrl.startsWith('/src/assets/')) {
+    // Cache busting agressivo v17
+    if (finalUrl.startsWith('data:')) {
       return finalUrl;
     }
+    
+    // Adiciona timestamp e flag de bust para evitar cache persistente do navegador/service worker
     const separator = finalUrl.includes('?') ? '&' : '?';
-    return `${finalUrl}${separator}v=16&t=${Date.now()}`;
+    return `${finalUrl}${separator}ella_bust=${Date.now()}&v=17`;
   } catch {
-    return `${DEFAULT_ELLA_AVATAR}?v=13&t=${Date.now()}`;
+    return `${DEFAULT_ELLA_AVATAR}?v=17&t=${Date.now()}`;
   }
 
 };

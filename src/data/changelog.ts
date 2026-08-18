@@ -27,16 +27,36 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '6.0.5',
+    version: '6.1.0',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v6.0.5-admin-guard-fix',
-    commitMessage: 'Release v6.0.5: Correção final do acesso administrativo e proteção de rotas'
+    commit: 'v6.1.0-estabilidade-final',
+    commitMessage: 'Release v6.1.0: Estabilização de conteúdos do 6º semestre e fix global do avatar da Ella'
   };
 }
 
 export const CHANGELOG: Release[] = [
+  {
+    version: "6.1.0",
+    date: "18/08/2026",
+    title: "Estabilidade & Resiliência Acadêmica",
+    major: true,
+    changes: [
+      {
+        kind: 'fix',
+        text: 'Identidade: Implementado cache-busting v17 e normalização de caminhos para o avatar da Ella, garantindo visibilidade estável.'
+      },
+      {
+        kind: 'content',
+        text: 'Grade Curricular: Sincronização forçada de apostilas do 6º semestre (Mobile, Pesquisa Operacional e Aspectos Teóricos).'
+      },
+      {
+        kind: 'improvement',
+        text: 'UX: Otimização da lógica de renderização do Dashboard para evitar estados instáveis em conexões lentas.'
+      }
+    ]
+  },
   {
     version: "6.0.5",
     date: "18/08/2026",
