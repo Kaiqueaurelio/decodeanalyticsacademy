@@ -46,6 +46,23 @@ export default function SubjectPage() {
       const targetKey = subjectKey(decodedCategory);
       const targetSemester = guessSemesterFromCategory(decodedCategory);
 
+      // Busca a disciplina ignorando o semestre inicialmente para ser resiliente
+      const { data: allApostilas } = await supabase
+        .from('apostilas')
+        .select('id, title, category, cover_url, semester, source_type, content')
+        .eq('published', true);
+
+      // Filtra por match de título/categoria
+      const matches = (allApostilas || []).filter(ap => {
+        const apKey = subjectKey(ap.title || '');
+        const catKey = subjectKey(ap.category || '');
+        return apKey === targetKey || catKey === targetKey || (targetKey.length > 5 && (apKey.includes(targetKey) || catKey.includes(targetKey)));
+      });
+
+      // Se encontrar matches específicos, prioriza o semestre real do banco
+      const detectedSemester = matches.length > 0 ? matches[0].semester : targetSemester;
+
+
       const { data } = await supabase
         .from('apostilas')
         .select('id, title, category, cover_url, semester, source_type, content')
@@ -57,7 +74,7 @@ export default function SubjectPage() {
       const normalizedRows = ((data as ApostilaRow[]) || [])
         .map((row) => ({
           ...row,
-          semester: row.semester ?? guessSemesterFromCategory(row.category) ?? null,
+          semester: row.semester ?? guessSemesterFromCategory(row.category) ?? detectedSemester ?? null,
         }))
         .filter((row) => {
           const rowKey = subjectKey(row.category || '');
@@ -76,7 +93,8 @@ export default function SubjectPage() {
   }, [decodedCategory]);
 
   const subjectData = useMemo(() => {
-    const semesterNum = guessSemesterFromCategory(decodedCategory) || 1;
+    const matchedRow = rows.find(r => subjectKey(r.category || '') === subjectKey(decodedCategory) || subjectKey(r.title) === subjectKey(decodedCategory));
+    const semesterNum = matchedRow?.semester || guessSemesterFromCategory(decodedCategory) || 1;
     
     // Mapeamento de professores (mock centralizado para demonstração do estilo Notion)
     const teacherMap: Record<string, string> = {
