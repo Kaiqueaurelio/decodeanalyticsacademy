@@ -17,6 +17,7 @@ function keepMostComplete(apostilas: any[]) {
 }
 
 function subjectKey(s: string) {
+  if (!s) return '';
   return s.toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
@@ -24,9 +25,11 @@ function subjectKey(s: string) {
 }
 
 const SubjectPage = () => {
-  const { category = '' } = useParams();
-  const decodedCategory = decodeURIComponent(category).trim();
-  console.log(`[SubjectPage] Rendered for category: "${decodedCategory}"`);
+  // O parâmetro na rota é :id, mas em outros lugares é referenciado como category
+  const { id = '' } = useParams();
+  const decodedCategory = decodeURIComponent(id).trim();
+  console.log(`[SubjectPage] Rendered for ID/Category: "${decodedCategory}"`);
+  
   const navigate = useNavigate();
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
@@ -35,14 +38,25 @@ const SubjectPage = () => {
   useEffect(() => {
     let alive = true;
     (async () => {
+      if (!decodedCategory) {
+        setLoading(false);
+        return;
+      }
+
       setLoading(true);
       const targetKey = subjectKey(decodedCategory);
-      const targetId = decodedCategory.toLowerCase(); // Se for um UUID
+      const targetId = decodedCategory.toLowerCase();
       
-      const { data: allApostilas } = await supabase
+      console.log(`[SubjectPage] Fetching apostilas... Target: "${targetKey}" or ID "${targetId}"`);
+
+      const { data: allApostilas, error } = await supabase
         .from('apostilas')
         .select('id, title, category, cover_url, semester, source_type, content')
         .eq('published', true);
+
+      if (error) {
+        console.error("[SubjectPage] Error fetching apostilas:", error);
+      }
 
       if (!alive) return;
 
@@ -83,8 +97,6 @@ const SubjectPage = () => {
 
   const handleOpenApostila = (subject: any) => {
     const isMobileSubject = subject.title.toLowerCase().includes('mobile') || subject.category.toLowerCase().includes('mobile');
-    
-    // Check for explicit "Aprendendo Shell Script" page
     const shellScriptPageId = '59895af2-f618-4713-92de-408b5c27b513';
     
     if (isMobileSubject) {
@@ -125,7 +137,7 @@ const SubjectPage = () => {
     ]
   } : {
     id: 'placeholder',
-    title: decodedCategory,
+    title: decodedCategory || 'Disciplina',
     coverImage: null,
     classType: 'Graduação',
     workloadHours: 0,
