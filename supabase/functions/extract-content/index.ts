@@ -354,7 +354,7 @@ Retorne APENAS chamando a funcao return_apostila.`;
     // ===== Google AI Studio direto (JSON mode) =====
     // Retorna { __status } em caso de erro HTTP para permitir fallback inteligente.
     const callGoogle = async (): Promise<any | { __status: number } | null> => {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${encodeURIComponent(googleApiKey!)}`;
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent?key=${encodeURIComponent(googleApiKey!)}`;
       const resp = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -400,7 +400,10 @@ Retorne APENAS chamando a funcao return_apostila.`;
           tool_choice: { type: "function", function: { name: "return_apostila" } },
         }),
       });
-      if (!aiResponse.ok) return { __status: aiResponse.status };
+      if (!aiResponse.ok) {
+        console.error("Lovable AI extract-content error", aiResponse.status, (await aiResponse.text()).slice(0, 300));
+        return { __status: aiResponse.status };
+      }
       const aiData = await aiResponse.json();
       const choice = aiData.choices?.[0];
       const toolCall = choice?.message?.tool_calls?.[0];
