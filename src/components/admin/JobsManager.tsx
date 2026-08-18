@@ -73,9 +73,10 @@ export default function JobsManager() {
       } else {
         const { error } = await supabase
           .from('jobs')
-          .insert([editingJob]);
+          .insert([editingJob as any]);
         if (error) throw error;
         toast.success('Vaga criada com sucesso');
+
       }
       setIsDialogOpen(false);
       fetchJobs();
