@@ -177,17 +177,20 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     const count = countRes.count;
 
     if (!ap) {
-      if (apostilaId && (apostilaId.startsWith('placeholder') || (apostilas && apostilas.some(a => a.id === apostilaId)))) {
+      if (apostilaId && apostilaId.startsWith('placeholder')) {
         try {
-          const matched = apostilas.find(a => a.id === apostilaId);
-          const realId = await ensureApostilaExists(matched || { id: apostilaId, title: '' });
+          const realId = await ensureApostilaExists({ id: apostilaId, title: '' });
           navigate(`/admin/apostilas/${realId}`, { replace: true });
-          await loadApostila(realId);
           return;
         } catch (err: any) {
           console.error('Erro ao resolver placeholder:', err);
+          toast.error('Erro ao criar disciplina a partir da grade.');
+          if (onBack) onBack(); else navigate('/admin');
+          return;
         }
       }
+      
+      // Se não for placeholder mas não encontrou, talvez seja um erro de carregamento
       toast.error('Apostila não encontrada');
       if (onBack) onBack();
       else navigate('/admin');
