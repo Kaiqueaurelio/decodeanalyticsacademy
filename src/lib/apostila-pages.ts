@@ -20,11 +20,10 @@ export async function createApostilaPage(apostilaId: string, userId: string) {
 
   const position = existing?.[0]?.position ?? -1;
   const date = new Intl.DateTimeFormat('pt-BR').format(new Date());
-  const apostilaIdForInsert = apostilaId.startsWith('placeholder') ? null : apostilaId;
   
   const { data, error } = await (supabase.from('apostila_pages' as any) as any)
     .insert({ 
-      apostila_id: apostilaIdForInsert, 
+      apostila_id: apostilaId, 
       title: `Nova Página — ${date}`, 
       content: '', 
       position: position + 1, 

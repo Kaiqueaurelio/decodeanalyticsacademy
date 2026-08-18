@@ -17,9 +17,9 @@ export function NewApostilaPageButton({ apostilaId, compact = false }: { apostil
       try {
         const { ensureApostilaExists } = await import('@/lib/create-placeholder-apostila');
         targetApostilaId = await ensureApostilaExists({ id: apostilaId, title: '' });
-      } catch (err) {
+      } catch (err: any) {
         console.error('Erro ao converter placeholder antes de criar página:', err);
-        return toast.error('Salve a apostila primeiro antes de adicionar páginas.');
+        return toast.error(err.message || 'Salve a apostila primeiro antes de adicionar páginas.');
       }
     }
 

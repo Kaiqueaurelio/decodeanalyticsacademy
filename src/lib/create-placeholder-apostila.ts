@@ -68,12 +68,17 @@ export async function ensureApostilaExists(item: PlaceholderApostilaItem): Promi
   const course = item.course ?? [];
   const teacher = item.teacher ?? null;
 
-  // Verifica se já existe uma apostila com esse título e categoria no banco (para evitar duplicidade)
-  const { data: existing } = await supabase
+  // Verifica se já existe uma apostila com esse título e semestre no banco (para evitar duplicidade)
+  const query = supabase
     .from('apostilas')
     .select('id')
-    .eq('title', cleanTitle)
-    .maybeSingle();
+    .eq('title', cleanTitle);
+    
+  if (semester !== null) {
+    query.eq('semester', semester);
+  }
+
+  const { data: existing } = await query.maybeSingle();
 
   if (existing?.id) {
     return existing.id;
