@@ -46,7 +46,6 @@ export default function SubjectPage() {
       const targetKey = subjectKey(decodedCategory);
       const targetSemester = guessSemesterFromCategory(decodedCategory);
 
-      // Busca a disciplina ignorando o semestre inicialmente para ser resiliente
       const { data: allApostilas } = await supabase
         .from('apostilas')
         .select('id, title, category, cover_url, semester, source_type, content')
@@ -54,24 +53,22 @@ export default function SubjectPage() {
 
       if (!alive) return;
 
-      // Filtra por match de título/categoria (normalizando espaços e acentos)
       const matches = (allApostilas || []).filter(ap => {
         const apTitleKey = subjectKey(ap.title || '');
         const apCatKey = subjectKey(ap.category || '');
         
-        // Match exato (normalizado)
+        // Match exato
         if (apTitleKey === targetKey || apCatKey === targetKey) return true;
         
-        // Match parcial inteligente para nomes compostos
-        if (targetKey.length > 5) {
-          if (apTitleKey.includes(targetKey) || targetKey.includes(apTitleKey)) return true;
-          if (apCatKey.includes(targetKey) || targetKey.includes(apCatKey)) return true;
+        // Match parcial para Mobile / SO
+        const searchTerms = ['mobile', 'sistemas operacionais', 'so', 'operacionais'];
+        if (searchTerms.some(term => targetKey.includes(term)) && 
+            searchTerms.some(term => apTitleKey.includes(term) || apCatKey.includes(term))) {
+          return true;
         }
 
         return false;
       });
-
-      console.log(`[SubjectPage] matches for ${decodedCategory}:`, matches.map(m => m.title));
 
       const normalizedRows = matches.map((row) => ({
         ...row,
