@@ -393,7 +393,7 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
   const handleTogglePublish = async (a: ApostilaRow) => {
     setBusyId(a.id);
     const nextPublished = !a.published;
-    const nextStatus = nextPublished ? 'liberada' : 'bloqueada';
+    const nextStatus = nextPublished ? 'liberada' : 'bloqueada'; // Manter a opção de bloquear manualmente se desejar, mas padrão será liberada
     
     const { error } = await supabase
       .from('apostilas')
