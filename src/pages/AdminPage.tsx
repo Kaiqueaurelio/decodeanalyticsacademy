@@ -927,7 +927,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
     setRefreshing(true);
     const [{ data: ap }, { data: ex }, { data: ans }, { data: mats }, { data: cats }, { data: profs }] = await Promise.all([
       supabase.from('apostilas').select('*').order('created_at', { ascending: false }),
-      supabase.from('exercises').select('*'),
+      (supabase as any).rpc('admin_list_exercises'),
       supabase.from('answers').select('*'),
       supabase.from('materials').select('*').order('created_at', { ascending: false }),
       supabase.from('categories').select('*').order('sort_order', { ascending: true }),
