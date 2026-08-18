@@ -329,7 +329,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     setSaving(true);
 
     if (selectedPageId) {
-      // Se estamos em uma página, não salvamos se o ID for placeholder (não deveria acontecer se o NewApostilaPageButton for bloqueado, mas segurança extra)
+      // Se estamos em uma página, salvamos. O selectedPageId deve ser um UUID real.
       if (selectedPageId.startsWith('placeholder')) {
         setSaving(false);
         return;
