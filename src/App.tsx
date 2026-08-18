@@ -10,6 +10,7 @@ import { Toaster as Sonner } from '@/components/ui/sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { PageSkeleton } from '@/components/PageSkeleton';
 import { SplashScreen } from '@/components/SplashScreen';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { RANamePrompt } from '@/components/RANamePrompt';
 import { AdPopup } from '@/components/AdPopup';
 import { AdDraftPreviewOverlay } from '@/components/admin/AdDraftPreviewOverlay';
@@ -52,14 +53,7 @@ const queryClient = new QueryClient({
   },
 });
 
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
-  
-  if (loading) return <PageSkeleton />;
-  if (!user) return <Navigate to="/login" replace />;
-  
-  return <>{children}</>;
-}
+// O componente ProtectedRoute agora é importado de @/components/ProtectedRoute
 
 function useAdminCopyPatch() {
   const { user } = useAuth();
@@ -122,8 +116,8 @@ const AppContent = () => {
           <Route path="/video/:id" element={<ProtectedRoute><VideoPlayerPage /></ProtectedRoute>} />
           
           {/* Admin Routes (Protected) */}
-          <Route path="/admin" element={<ProtectedRoute><AdminPage /></ProtectedRoute>} />
-          <Route path="/admin/apostilas/:id" element={<ProtectedRoute><AdminApostilaWorkbench /></ProtectedRoute>} />
+          <Route path="/admin" element={<ProtectedRoute adminOnly><AdminPage /></ProtectedRoute>} />
+          <Route path="/admin/apostilas/:id" element={<ProtectedRoute adminOnly><AdminApostilaWorkbench /></ProtectedRoute>} />
 
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
