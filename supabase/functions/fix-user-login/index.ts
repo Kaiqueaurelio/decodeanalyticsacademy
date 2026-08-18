@@ -1,44 +1,39 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { getCorsHeaders } from "../_shared/cors.ts";
 
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+Deno.serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
-const admin = createClient(SUPABASE_URL, SERVICE_ROLE, { auth: { persistSession: false } });
+  const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+  const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const admin = createClient(SUPABASE_URL, SERVICE_ROLE, { auth: { persistSession: false } });
 
-async function fixUser() {
   const email = 'decoanalytics@outlook.com.br';
   const ra = 'G802144';
+  const userId = '1ea75282-cc92-49a2-92a2-4c54344a6d43';
 
-  console.log(`Fixing user: ${email} / RA: ${ra}`);
+  const results = [];
 
-  // 1. Confirm email in auth.users
-  const { data: userUpdate, error: authErr } = await admin.auth.admin.updateUserById(
-    '1ea75282-cc92-49a2-92a2-4c54344a6d43',
-    { email_confirm: true }
-  );
-  
-  if (authErr) console.error("Error confirming email:", authErr);
-  else console.log("Email confirmed for 1ea75282-cc92-49a2-92a2-4c54344a6d43");
+  try {
+    // 1. Confirm email
+    const { error: authErr } = await admin.auth.admin.updateUserById(userId, { email_confirm: true });
+    results.push({ action: "confirm_email", success: !authErr, error: authErr });
 
-  // 2. Clear auth attempts
-  const { error: delErr } = await admin.from('auth_attempts').delete().or(`identifier.eq.${ra},identifier.eq.${email}`);
-  if (delErr) console.error("Error clearing attempts:", delErr);
-  else console.log("Auth attempts cleared.");
+    // 2. Clear attempts
+    const { error: delErr } = await admin.from('auth_attempts').delete().or(`identifier.eq.${ra},identifier.eq.${email}`);
+    results.push({ action: "clear_attempts", success: !delErr, error: delErr });
 
-  // 3. Ensure profile is correct
-  const { error: profErr } = await admin.from('profiles').update({ ra, account_type: 'admin' }).eq('user_id', '1ea75282-cc92-49a2-92a2-4c54344a6d43');
-  if (profErr) console.error("Error updating profile:", profErr);
-  else console.log("Profile updated.");
+    // 3. Update profile
+    const { error: profErr } = await admin.from('profiles').update({ ra, account_type: 'admin' }).eq('user_id', userId);
+    results.push({ action: "update_profile", success: !profErr, error: profErr });
 
-  // 4. Ensure user_roles is correct
-  const { data: roles } = await admin.from('user_roles').select('*').eq('user_id', '1ea75282-cc92-49a2-92a2-4c54344a6d43').eq('role', 'admin');
-  if (!roles || roles.length === 0) {
-    const { error: roleErr } = await admin.from('user_roles').insert({ user_id: '1ea75282-cc92-49a2-92a2-4c54344a6d43', role: 'admin' });
-    if (roleErr) console.error("Error inserting role:", roleErr);
-    else console.log("Admin role inserted.");
-  } else {
-    console.log("Admin role already exists.");
+    // 4. Update role
+    const { error: roleErr } = await admin.from('user_roles').upsert({ user_id: userId, role: 'admin' }, { onConflict: 'user_id, role' });
+    results.push({ action: "update_role", success: !roleErr, error: roleErr });
+
+    return new Response(JSON.stringify({ ok: true, results }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  } catch (e) {
+    return new Response(JSON.stringify({ ok: false, error: e.message }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
-}
-
-fixUser();
+});
