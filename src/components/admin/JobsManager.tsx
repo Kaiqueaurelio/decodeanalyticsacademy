@@ -8,8 +8,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Briefcase, Plus, Trash2, Edit, ExternalLink, Building2, MapPin, Loader2 } from 'lucide-react';
+import { Briefcase, Plus, Trash2, Edit, ExternalLink, Building2, MapPin, Loader2, FileUp, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
+import { parseAndImportJobsFromMd } from '@/lib/jobs-importer';
 
 interface Job {
   id: string;
@@ -32,6 +33,9 @@ export default function JobsManager() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingJob, setEditingJob] = useState<Partial<Job> | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+  const [importContent, setImportContent] = useState('');
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
 
   useEffect(() => {
     fetchJobs();
@@ -106,7 +110,7 @@ export default function JobsManager() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h2 className="text-2xl font-bold font-display tracking-tight flex items-center gap-2">
             <Briefcase className="h-6 w-6 text-primary" />
@@ -114,9 +118,18 @@ export default function JobsManager() {
           </h2>
           <p className="text-muted-foreground text-sm">Publique oportunidades de carreira para os alunos.</p>
         </div>
-        <Button onClick={() => { setEditingJob({ type: 'job', is_active: true }); setIsDialogOpen(true); }} className="rounded-xl gap-2">
-          <Plus className="h-4 w-4" /> Nova Vaga
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button 
+            variant="outline" 
+            onClick={() => setIsImportDialogOpen(true)} 
+            className="rounded-xl gap-2 border-primary/20 hover:bg-primary/5"
+          >
+            <FileUp className="h-4 w-4" /> Importar MD
+          </Button>
+          <Button onClick={() => { setEditingJob({ type: 'job', is_active: true }); setIsDialogOpen(true); }} className="rounded-xl gap-2">
+            <Plus className="h-4 w-4" /> Nova Vaga
+          </Button>
+        </div>
       </div>
 
       {loading ? (
@@ -214,6 +227,63 @@ export default function JobsManager() {
             <Button onClick={handleSave} disabled={isSaving}>
               {isSaving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
               {editingJob?.id ? 'Atualizar' : 'Publicar Vaga'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
+        <DialogContent className="max-w-2xl rounded-3xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileUp className="h-5 w-5 text-primary" />
+              Importação em Lote (MD)
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="bg-primary/5 rounded-2xl p-4 border border-primary/10">
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Cole abaixo o conteúdo em Markdown. Cada vaga deve começar com <code className="text-primary font-bold">## Título</code>. 
+                O sistema tentará extrair Empresa, Local, Tipo, Link e Salário automaticamente.
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label>Conteúdo Markdown</Label>
+              <Textarea 
+                value={importContent} 
+                onChange={e => setImportContent(e.target.value)} 
+                placeholder="## Desenvolvedor Fullstack&#10;Empresa: Decode Analytics&#10;Link: https://decode.com/vaga&#10;..."
+                className="h-64 font-mono text-xs"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setIsImportDialogOpen(false)}>Cancelar</Button>
+            <Button 
+              onClick={async () => {
+                if (!importContent.trim()) return;
+                setIsImporting(true);
+                try {
+                  const imported = await parseAndImportJobsFromMd(importContent);
+                  if (imported.length > 0) {
+                    toast.success(`${imported.length} vagas importadas com sucesso!`);
+                    setIsImportDialogOpen(false);
+                    setImportContent('');
+                    fetchJobs();
+                  } else {
+                    toast.error("Nenhuma vaga válida encontrada no conteúdo.");
+                  }
+                } catch (err) {
+                  toast.error("Erro ao processar importação.");
+                } finally {
+                  setIsImporting(false);
+                }
+              }} 
+              disabled={isImporting || !importContent.trim()}
+              className="gap-2"
+            >
+              {isImporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+              Importar Vagas
             </Button>
           </DialogFooter>
         </DialogContent>
