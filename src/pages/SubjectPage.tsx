@@ -56,13 +56,16 @@ export default function SubjectPage() {
         const apTitleKey = subjectKey(ap.title || '');
         const apCatKey = subjectKey(ap.category || '');
         
-        // Mobile special case
-        if (targetKey.includes('mobile') || targetKey.includes('operacionais')) {
-          if (apTitleKey.includes('mobile') || apTitleKey.includes('operacionais')) return true;
+        // Match exato
+        if (apTitleKey === targetKey || apCatKey === targetKey) return true;
+        
+        // Match parcial resiliente para Mobile / Sistemas Operacionais
+        const isMobileOrSO = targetKey.includes('mobile') || targetKey.includes('sistemas operacionais') || targetKey.includes('operacionais');
+        if (isMobileOrSO) {
+          if (apTitleKey.includes('mobile') || apTitleKey.includes('operacionais') || apCatKey.includes('mobile')) return true;
         }
 
-        return apTitleKey === targetKey || apCatKey === targetKey || 
-               (targetKey.length > 5 && (apTitleKey.includes(targetKey) || apCatKey.includes(targetKey)));
+        return (targetKey.length > 5 && (apTitleKey.includes(targetKey) || apCatKey.includes(targetKey)));
       });
 
       const normalizedRows = matches.map((row) => ({
@@ -82,7 +85,6 @@ export default function SubjectPage() {
     const matchedRow = rows.find(r => subjectKey(r.category || '') === subjectKey(decodedCategory) || subjectKey(r.title) === subjectKey(decodedCategory));
     const semesterNum = matchedRow?.semester || guessSemesterFromCategory(decodedCategory) || 1;
     
-    // Mapeamento de professores (mock centralizado para demonstração do estilo Notion)
     const teacherMap: Record<string, string> = {
       'Sistemas Operacionais e Mobile': 'Prof. Anderson Lima',
       'Calculo Numerico Computacional': 'Prof. Jorge Amaral',
@@ -97,7 +99,6 @@ export default function SubjectPage() {
     const handleOpenNotebook = async () => {
       if (!user) return;
       
-      // Tenta encontrar ou criar o caderno para esta disciplina
       const { data: existing } = await supabase
         .from('notebooks' as any)
         .select('id')
@@ -175,7 +176,7 @@ export default function SubjectPage() {
           }
         ]
     };
-  }, [decodedCategory, rows, navigate]);
+  }, [decodedCategory, rows, navigate, user]);
 
   return (
     <div className="min-h-screen bg-background pb-20">
