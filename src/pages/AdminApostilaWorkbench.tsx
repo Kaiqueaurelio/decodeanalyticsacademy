@@ -350,6 +350,15 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
           ? { ...page, content, title: title.trim() || 'Nova Página', updated_at: new Date().toISOString() } 
           : page
       ));
+
+      if (content.trim().length > 0 && !published) {
+        const { error: publishError } = await supabase
+          .from('apostilas')
+          .update({ published: true })
+          .eq('id', id);
+        if (!publishError) setPublished(true);
+        else console.error('Página salva, mas não foi possível publicar a apostila:', publishError);
+      }
       
       dirtyRef.current = false;
       setLastSavedAt(new Date());

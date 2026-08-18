@@ -162,7 +162,7 @@ export function useContinueWhereLeft(limit = 3) {
             lessonTitle: info.lessonTitle,
             completedLessons: info.completed,
             totalLessons: info.total,
-            href: `/apostila/${apostilaId}/read?lesson=${encodeURIComponent(info.lessonId)}`,
+            href: `/reader/${apostilaId}?lesson=${encodeURIComponent(info.lessonId)}`,
           });
         }
 

@@ -70,6 +70,42 @@ function cleanText(input: string): string {
 
 const parseContent = parseApostilaContent;
 
+interface ApostilaPageRow {
+  id: string;
+  title: string;
+  content: string;
+  position: number;
+  created_at: string;
+}
+
+function normalizePageText(value: string) {
+  return cleanText(value).trim().toLowerCase().replace(/\s+/g, ' ');
+}
+
+function mergeApostilaPages(mainContent: string, pages: ApostilaPageRow[]) {
+  const baseContent = mainContent.trim();
+  const seenContents = new Set<string>();
+  if (baseContent) seenContents.add(baseContent);
+
+  const pageBlocks = pages
+    .filter((page) => page.content.trim() || page.title.trim())
+    .filter((page) => {
+      const pageContent = page.content.trim();
+      if (pageContent && seenContents.has(pageContent)) return false;
+      if (pageContent) seenContents.add(pageContent);
+      return true;
+    })
+    .map((page) => {
+      const title = page.title.trim() || 'Nova Página';
+      const content = page.content.trim();
+      const firstHeading = content.match(/^\s*#{1,3}\s+(.+?)\s*$/m)?.[1] || '';
+      const hasOwnHeading = normalizePageText(firstHeading) === normalizePageText(title);
+      return hasOwnHeading ? content : `# ${title}\n\n${content}`;
+    });
+
+  return [baseContent, ...pageBlocks].filter(Boolean).join('\n\n');
+}
+
 interface Props {
   tab?: string;
   setTab?: (tab: any) => void;
@@ -94,7 +130,7 @@ export default function ApostilaPage({ tab, setTab }: Props) {
   const [chatOpen, setChatOpen] = useState(false);
   const [exportingPdf, setExportingPdf] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-
+  const [pages, setPages] = useState<ApostilaPageRow[]>([]);
 
   useEffect(() => {
     if (!id) return;
@@ -102,8 +138,15 @@ export default function ApostilaPage({ tab, setTab }: Props) {
     Promise.all([
       supabase.from('apostilas').select('*').eq('id', id).single(),
       supabase.from('exercises').select('id').eq('apostila_id', id),
-    ]).then(([{ data: ap }, { data: exs }]) => {
+      supabase
+        .from('apostila_pages')
+        .select('id, title, content, position, created_at')
+        .eq('apostila_id', id)
+        .order('position', { ascending: true })
+        .order('created_at', { ascending: true }),
+    ]).then(([{ data: ap }, { data: exs }, { data: pageRows }]) => {
       setApostila(ap);
+      setPages((pageRows || []) as ApostilaPageRow[]);
       setExerciseCount(exs?.length || 0);
       setLoading(false);
     });
@@ -121,7 +164,11 @@ export default function ApostilaPage({ tab, setTab }: Props) {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const sections = useMemo(() => parseContent(apostila?.content || null), [apostila?.content]);
+  const renderedContent = useMemo(
+    () => mergeApostilaPages(apostila?.content || '', pages),
+    [apostila?.content, pages],
+  );
+  const sections = useMemo(() => parseContent(renderedContent || null), [renderedContent]);
 
   /**
    * Normaliza as seções para evitar capítulos "mortos":
@@ -336,7 +383,7 @@ export default function ApostilaPage({ tab, setTab }: Props) {
             <Button
               variant="default"
               size="sm"
-              onClick={() => navigate(`/apostila/${apostila?.id}/read`)}
+              onClick={() => navigate(`/reader/${apostila?.id}`)}
               className="text-xs gap-1.5 hover-lift"
               title="Abrir no leitor estruturado (módulos, lições, progresso)"
             >
@@ -585,7 +632,7 @@ export default function ApostilaPage({ tab, setTab }: Props) {
                     </span>
                   )}
                   <span className="flex items-center gap-1.5 text-primary/70">
-                    ~{Math.max(1, Math.round((apostila.content?.length || 0) / 1200))} min de leitura
+                    ~{Math.max(1, Math.round((renderedContent.length || 0) / 1200))} min de leitura
                   </span>
                 </div>
 
@@ -594,7 +641,7 @@ export default function ApostilaPage({ tab, setTab }: Props) {
                   <SpeakButton
                     size="lg"
                     label="Ouvir apostila"
-                    getText={() => `${apostila.title}. ${apostila.content || ''}`}
+                    getText={() => `${apostila.title}. ${renderedContent}`}
                   />
                   <ApostilaSummaryDialog apostilaId={id!} apostilaTitle={apostila.title} />
                 </div>
@@ -677,7 +724,7 @@ export default function ApostilaPage({ tab, setTab }: Props) {
               {/* Rendered sections — editorial layout */}
               <div id="conteudo-principal" className="space-y-10 scroll-mt-24">
                 <ApostilaPreview
-                  content={apostila.content || ''}
+                  content={renderedContent}
                   apostilaTitle={apostila.title}
                   apostilaId={id!}
                   isLoggedIn={!!user}

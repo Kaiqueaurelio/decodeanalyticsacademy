@@ -6,16 +6,6 @@ import { PageSkeleton } from '@/components/PageSkeleton';
 import { useAuth } from '@/hooks/useAuth';
 import { guessSemesterFromCategory } from '@/lib/subject-semester-map';
 
-function keepMostComplete(apostilas: any[]) {
-  if (apostilas.length === 0) return [];
-  const sorted = [...apostilas].sort((a, b) => {
-    const aContentLen = (a.content || '').length;
-    const bContentLen = (b.content || '').length;
-    return bContentLen - aContentLen;
-  });
-  return [sorted[0]];
-}
-
 function subjectKey(s: string) {
   if (!s) return '';
   return s.toLowerCase()
@@ -51,7 +41,7 @@ const SubjectPage = () => {
 
       const { data: allApostilas, error } = await supabase
         .from('apostilas')
-        .select('id, title, category, cover_url, semester, source_type, content')
+        .select('id, title, category, cover_url, semester, source_type, content, updated_at, created_at')
         .eq('published', true);
 
       if (error) {
@@ -90,7 +80,7 @@ const SubjectPage = () => {
         semester: row.semester ?? guessSemesterFromCategory(row.category) ?? guessSemesterFromCategory(decodedCategory) ?? 1,
       }));
 
-      setRows(keepMostComplete(normalizedRows));
+      setRows(normalizedRows);
       setLoading(false);
     })();
     return () => {
@@ -98,46 +88,38 @@ const SubjectPage = () => {
     };
   }, [decodedCategory]);
 
-  const handleOpenApostila = (subject: any) => {
-    const isMobileSubject = subject.title.toLowerCase().includes('mobile') || subject.category.toLowerCase().includes('mobile');
-    const shellScriptPageId = '59895af2-f618-4713-92de-408b5c27b513';
-    
-    if (isMobileSubject) {
-      navigate(`/apostila/${subject.id}?page=${shellScriptPageId}`);
-    } else {
-      navigate(`/apostila/${subject.id}`);
-    }
+  const handleOpenApostila = (apostila: any) => {
+    navigate(`/apostila/${apostila.id}`);
   };
 
   if (loading) return <PageSkeleton />;
 
-  const subjectData = rows[0] ? {
-    id: rows[0].id,
-    title: rows[0].title,
-    coverImage: rows[0].cover_url,
-    classType: rows[0].source_type === 'enem' ? 'ENEM' : 'Graduação',
+  const primaryApostila = rows[0];
+  const subjectData = primaryApostila ? {
+    id: primaryApostila.id,
+    title: primaryApostila.title,
+    coverImage: primaryApostila.cover_url,
+    classType: primaryApostila.source_type === 'enem' ? 'ENEM' : 'Graduação',
     workloadHours: 80,
     thematicAxis: 'Tecnologia da Informação',
-    formationAxis: rows[0].category,
+    formationAxis: primaryApostila.category,
     professor: 'Prof. Coordenador',
-    semester: `${rows[0].semester}º Semestre`,
+    semester: `${primaryApostila.semester}º Semestre`,
     status: 'Em progresso' as const,
     progressValue: 15,
-    onOpenNotebook: () => handleOpenApostila(rows[0]),
+    onOpenNotebook: () => handleOpenApostila(primaryApostila),
     contentSections: [
       {
         id: 'main-content',
-        title: 'Material de Estudo',
-        documents: [
-          { 
-            id: 'caderno-estudos', 
-            title: 'Caderno de Estudos', 
-            type: 'exam_review' as const, 
-            onClick: () => handleOpenApostila(rows[0]) 
-          }
-        ]
-      }
-    ]
+        title: rows.length > 1 ? 'Apostilas e cadernos' : 'Material de Estudo',
+        documents: rows.map((apostila) => ({
+          id: apostila.id,
+          title: apostila.title,
+          type: 'exam_review' as const,
+          onClick: () => handleOpenApostila(apostila),
+        })),
+      },
+    ],
   } : {
     id: 'placeholder',
     title: decodedCategory || 'Disciplina',

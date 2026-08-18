@@ -2262,9 +2262,20 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-start gap-2 flex-wrap">
                                     <h4 className="font-medium text-sm break-words leading-snug min-w-0 flex-1">{a.title}</h4>
-                                    <Badge variant={a.published ? 'default' : 'secondary'} className="text-[10px] shrink-0">
+                                    <Button
+                                      type="button"
+                                      size="sm"
+                                      variant="ghost"
+                                      className="h-6 shrink-0 gap-1 px-1.5 text-[10px]"
+                                      onClick={(event) => {
+                                        event.stopPropagation();
+                                        void togglePublish(a.id, a.published);
+                                      }}
+                                      title={a.published ? 'Ocultar apostila' : 'Publicar apostila'}
+                                    >
+                                      {a.published ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
                                       {a.published ? 'Publicada' : 'Oculta'}
-                                    </Badge>
+                                    </Button>
                                     {semBadge && (
                                       <Badge variant="outline" className="text-[10px] shrink-0 border-primary/40 text-primary">
                                         {semBadge}
@@ -2364,6 +2375,10 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                                       <DropdownMenuSeparator />
                                       {!(a as any).isPlaceholder && (
                                         <>
+                                          <DropdownMenuItem onClick={() => void togglePublish(a.id, a.published)}>
+                                            {a.published ? <EyeOff className="h-3.5 w-3.5 mr-2" /> : <Eye className="h-3.5 w-3.5 mr-2" />}
+                                            {a.published ? 'Ocultar apostila' : 'Publicar apostila'}
+                                          </DropdownMenuItem>
                                           <DropdownMenuItem onClick={() => setShowMaterialsFor(a.id)}>
                                             <Paperclip className="h-3.5 w-3.5 mr-2" /> Materiais vinculados
                                           </DropdownMenuItem>

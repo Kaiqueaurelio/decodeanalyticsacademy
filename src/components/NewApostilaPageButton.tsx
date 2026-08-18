@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { createApostilaPage } from '@/lib/apostila-pages';
 import { toast } from 'sonner';
+import { FilePlus2 } from 'lucide-react';
 
 export function NewApostilaPageButton({ apostilaId, compact = false }: { apostilaId: string; compact?: boolean }) {
   const { user } = useAuth();
