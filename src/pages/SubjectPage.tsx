@@ -52,37 +52,20 @@ export default function SubjectPage() {
         .select('id, title, category, cover_url, semester, source_type, content')
         .eq('published', true);
 
-      // Filtra por match de título/categoria
-      const matches = (allApostilas || []).filter(ap => {
-        const apKey = subjectKey(ap.title || '');
-        const catKey = subjectKey(ap.category || '');
-        return apKey === targetKey || catKey === targetKey || (targetKey.length > 5 && (apKey.includes(targetKey) || catKey.includes(targetKey)));
-      });
-
-      // Se encontrar matches específicos, prioriza o semestre real do banco
-      const detectedSemester = matches.length > 0 ? matches[0].semester : targetSemester;
-
-
-      const { data } = await supabase
-        .from('apostilas')
-        .select('id, title, category, cover_url, semester, source_type, content')
-        .eq('published', true)
-        .order('title', { ascending: true });
-
       if (!alive) return;
 
-      const normalizedRows = ((data as ApostilaRow[]) || [])
-        .map((row) => ({
-          ...row,
-          semester: row.semester ?? guessSemesterFromCategory(row.category) ?? detectedSemester ?? null,
-        }))
-        .filter((row) => {
-          const rowKey = subjectKey(row.category || '');
-          if (rowKey === targetKey) return true;
-          if (targetSemester && row.semester === targetSemester && rowKey.includes(targetKey)) return true;
-          if (!rowKey && row.title.toLowerCase().includes(targetKey)) return true;
-          return false;
-        });
+      // Filtra por match de título/categoria
+      const matches = (allApostilas || []).filter(ap => {
+        const apTitleKey = subjectKey(ap.title || '');
+        const apCatKey = subjectKey(ap.category || '');
+        return apTitleKey === targetKey || apCatKey === targetKey || 
+               (targetKey.length > 5 && (apTitleKey.includes(targetKey) || apCatKey.includes(targetKey)));
+      });
+
+      const normalizedRows = matches.map((row) => ({
+        ...row,
+        semester: row.semester ?? guessSemesterFromCategory(row.category) ?? targetSemester ?? null,
+      }));
 
       setRows(keepMostComplete(normalizedRows));
       setLoading(false);
