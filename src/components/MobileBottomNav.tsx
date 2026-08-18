@@ -139,7 +139,7 @@ export function MobileBottomNav() {
                 <SheetTitle>Menu completo</SheetTitle>
                 <SheetDescription>Use Tab para navegar e Esc para fechar.</SheetDescription>
               </SheetHeader>
-              <SidebarContent mode="full" onNavigate={() => setOpen(false)} />
+              <SidebarContent onNavigate={() => setOpen(false)} />
             </SheetContent>
           </Sheet>
 
