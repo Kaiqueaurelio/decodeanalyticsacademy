@@ -97,6 +97,7 @@ export async function ensureApostilaExists(item: PlaceholderApostilaItem): Promi
       status: 'liberada',
       source_type: 'grade',
       content: '',
+      updated_at: new Date().toISOString()
     })
     .select('id')
     .single();

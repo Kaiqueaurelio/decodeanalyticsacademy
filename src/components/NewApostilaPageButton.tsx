@@ -28,8 +28,8 @@ export function NewApostilaPageButton({ apostilaId, compact = false }: { apostil
       toast.success('Nova página criada.');
       // O navigate ja estava configurado para ir para a nova página, 
       // mas o usuário sente que "fica na página antiga". 
-      // Garantimos o redirecionamento imediato para o editor da nova página.
-      navigate(`/admin/apostilas/${apostilaId}?page=${page.id}&expanded=1`);
+      // Redireciona para o ID real da apostila (targetApostilaId) em vez do placeholder
+      navigate(`/admin/apostilas/${targetApostilaId}?page=${page.id}&expanded=1`);
     } catch (error: any) {
       const message = String(error?.message || '');
       if (/apostila_pages|schema cache|does not exist|PGRST205/i.test(message)) {
