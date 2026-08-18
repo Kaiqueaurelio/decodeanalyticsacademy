@@ -27,16 +27,31 @@ export interface Release {
 
 export function getBuildInfo() {
   return {
-    version: '6.0.4',
+    version: '6.0.5',
     environment: 'production',
     host: typeof window !== 'undefined' ? window.location.host : 'localhost',
     buildTime: new Date().toISOString(),
-    commit: 'v6.0.4-auth-fix',
-    commitMessage: 'Release v6.0.4: Correção crítica no login administrativo via RA e e-mail'
+    commit: 'v6.0.5-admin-guard-fix',
+    commitMessage: 'Release v6.0.5: Correção final do acesso administrativo e proteção de rotas'
   };
 }
 
 export const CHANGELOG: Release[] = [
+  {
+    version: "6.0.5",
+    date: "18/08/2026",
+    title: "Reforço da Segurança Admin",
+    changes: [
+      {
+        kind: 'fix',
+        text: 'Segurança: Unificação do componente ProtectedRoute e ativação do guard adminOnly nas rotas do painel.'
+      },
+      {
+        kind: 'fix',
+        text: 'Auth: Implementado bypass redundante para administradores via account_type para garantir acesso em caso de falha no sync de roles.'
+      }
+    ]
+  },
   {
     version: "6.0.4",
     date: "18/08/2026",
