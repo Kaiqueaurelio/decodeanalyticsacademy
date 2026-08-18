@@ -113,8 +113,8 @@ Deno.serve(async (req) => {
     const redirectTo = typeof body.redirectTo === "string" ? body.redirectTo : "";
 
     if (!RA_RE.test(ra)) {
-      // Identificadores conhecidos que não seguem o padrão RA padrão (ex: G802144)
-      const isKnownLegacyRa = /^[A-Z0-9]{2,50}$/i.test(ra);
+      // Identificadores conhecidos que não seguem o padrão RA padrão (ex: G802144 ou e-mail decoanalytics)
+      const isKnownLegacyRa = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(ra) || /^[A-Z0-9]{2,50}$/i.test(ra);
       
       if (!isKnownLegacyRa) {
         return json({ error: "Identificador inválido (use RA ou e-mail)." }, 400, corsHeaders);
@@ -132,13 +132,20 @@ Deno.serve(async (req) => {
     // Try both RPC and direct query to profiles for robustness
     let resolvedEmail: string | null = null;
     
-    const { data: rpcEmail, error: rpcError } = await admin.rpc("get_email_for_ra", { _ra: ra });
-    if (!rpcError && typeof rpcEmail === "string") {
-      resolvedEmail = rpcEmail;
+    // Prioridade 1: Busca por RA exato no perfil
+    const { data: profileByRa } = await admin.from('profiles').select('email').eq('ra', ra).maybeSingle();
+    if (profileByRa?.email) {
+      resolvedEmail = profileByRa.email;
     } else {
-      const { data: profileData } = await admin.from('profiles').select('email').eq('ra', ra).maybeSingle();
-      if (profileData?.email) {
-        resolvedEmail = profileData.email;
+      // Prioridade 2: Se 'ra' já for um e-mail válido, usa ele diretamente
+      if (/@/.test(ra)) {
+        resolvedEmail = ra.toLowerCase();
+      } else {
+        // Prioridade 3: RPC de resolução legado
+        const { data: rpcEmail, error: rpcError } = await admin.rpc("get_email_for_ra", { _ra: ra });
+        if (!rpcError && typeof rpcEmail === "string") {
+          resolvedEmail = rpcEmail;
+        }
       }
     }
     
