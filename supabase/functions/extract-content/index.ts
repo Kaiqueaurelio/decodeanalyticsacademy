@@ -354,7 +354,7 @@ Retorne APENAS chamando a funcao return_apostila.`;
     // ===== Google AI Studio direto (JSON mode) =====
     // Retorna { __status } em caso de erro HTTP para permitir fallback inteligente.
     const callGoogle = async (): Promise<any | { __status: number } | null> => {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${encodeURIComponent(googleApiKey!)}`;
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent?key=${encodeURIComponent(googleApiKey!)}`;
       const resp = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

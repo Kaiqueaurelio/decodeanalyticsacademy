@@ -90,7 +90,7 @@ Hoje é ${today}. Retorne datas no formato YYYY-MM-DD. Se houver hora, inclua em
         return null;
       }
 
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${encodeURIComponent(GOOGLE_AI_API_KEY!)}`;
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent?key=${encodeURIComponent(GOOGLE_AI_API_KEY!)}`;
       const resp = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -136,7 +136,7 @@ Hoje é ${today}. Retorne datas no formato YYYY-MM-DD. Se houver hora, inclua em
         method: "POST",
         headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "google/gemini-2.5-pro",
+          model: "google/gemini-3-pro-preview",
           messages: [
             { role: "system", content: sysPrompt },
             { role: "user", content: userContent },
