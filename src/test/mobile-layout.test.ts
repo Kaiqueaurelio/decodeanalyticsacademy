@@ -70,17 +70,11 @@ describe('navegação mobile', () => {
     expect(bottomNav).toContain('env(safe-area-inset-bottom)');
   });
 
-  it('o drawer lateral nunca passa da largura da tela', () => {
-    // Drawer unificado: mesma largura no mobile e no desktop
-    [bottomNav, topbar].forEach((file) => {
-      const matches = [...file.matchAll(/w-\[min\((\d+)vw,\s*(\d+)px\)\]/g)];
-      expect(matches.length).toBeGreaterThan(0);
-      matches.forEach((m) => {
-        expect(Number(m[1])).toBeLessThanOrEqual(100);
-        expect(Number(m[2])).toBeLessThanOrEqual(360);
-      });
-      expect(file).toContain('h-dvh');
-    });
+  it('a barra Meniscus é fluida e não força largura fixa no celular', () => {
+    expect(bottomNav).toContain('max-w-[430px]');
+    expect(bottomNav).toContain('w-full');
+    expect(bottomNav).toContain('rounded-[38px]');
+    expect(bottomNav).not.toMatch(/w-\[min\(/);
   });
 
   it('o menu lateral continua acessível pelo topo no mobile', () => {
@@ -96,7 +90,7 @@ describe('navegação mobile', () => {
   it('a navegação não depende só de hover (foco visível e estado atual)', () => {
     expect(bottomNav).toContain('focus-visible:ring-2');
     expect(bottomNav).toContain("aria-current={active ? 'page' : undefined}");
-    expect(read('src/components/dashboard/StudentSidebar.tsx')).toContain('focus-visible:ring-2');
+    expect(topbar).toContain('focus-visible:ring-2');
   });
 });
 

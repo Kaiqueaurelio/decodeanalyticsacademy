@@ -160,14 +160,21 @@ describe('menu mobile — contrato do código', () => {
     expect(closeIndex).toBeLessThan(childrenIndex);
   });
 
-  it('os gatilhos do menu declaram haspopup/expanded', () => {
-    for (const file of [
-      'src/components/MobileBottomNav.tsx',
-      'src/components/dashboard/DashboardTopbar.tsx',
-    ]) {
-      const source = read(file);
-      expect(source).toContain('aria-haspopup="dialog"');
-      expect(source).toMatch(/aria-expanded=\{\w+\}/);
-    }
+  it('o menu Meniscus declara tabs acessíveis e suporta teclado/arraste', () => {
+    const source = read('src/components/MobileBottomNav.tsx');
+    expect(source).toContain('role="tablist"');
+    expect(source).toContain('role="tab"');
+    expect(source).toContain('aria-selected={active}');
+    expect(source).toContain('aria-current={active ? \'page\' : undefined}');
+    expect(source).toContain('onPointerDown={handlePointerDown}');
+    expect(source).toContain('onPointerMove={handlePointerMove}');
+    expect(source).toContain("event.key === 'ArrowRight'");
+    expect(source).toContain("event.key === 'ArrowLeft'");
+  });
+
+  it('o menu lateral do topo continua declarando o estado do drawer', () => {
+    const source = read('src/components/dashboard/DashboardTopbar.tsx');
+    expect(source).toContain('aria-haspopup="dialog"');
+    expect(source).toMatch(/aria-expanded=\{\w+\}/);
   });
 });
