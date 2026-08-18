@@ -157,7 +157,7 @@ export default function LoginPage() {
     if (!id) { toast.error('Informe seu RA ou e-mail.'); return; }
 
     const isEmail = looksLikeEmail(id);
-    const isSpecial = id === 'Juliana' || id === 'decoanalytics@outlook.com.br';
+    const isSpecial = id.toLowerCase() === 'juliana' || id.toLowerCase() === 'decoanalytics@outlook.com.br' || id.toLowerCase() === 'decianalytics@outlook.com.br';
 
     if (!isEmail && !isValidRa(id) && !isSpecial) {
       const errorMsg = 'Use um e-mail válido ou seu RA. Se o erro persistir, procure a secretaria para validar seu vínculo.';
@@ -230,9 +230,10 @@ export default function LoginPage() {
         
         // Fallback redundante para Juliana e Admin se a Edge Function falhar silenciosamente
         if (identifierForAuth.toLowerCase() === 'juliana' && password === 'Ju@2026') {
-           console.warn("[Login] Juliana bypass fallback triggered (EF failed).");
+           console.warn("[Login] Juliana bypass fallback triggered.");
         }
         
+        setLoading(false); // Garante que o botão pare de girar se não houver sessão
         registerLoginFailure(true);
         if (message) toast.error(message);
         return;
