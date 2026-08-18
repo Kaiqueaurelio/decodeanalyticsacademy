@@ -8,12 +8,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { EvasiveButton } from '@/components/EvasiveButton';
-import { Loader2, ArrowLeft, Eye, EyeOff, BookOpen, BarChart3, Shield, AlertTriangle, Lock } from 'lucide-react';
+import { Loader2, ArrowLeft, Eye, EyeOff, BookOpen, BarChart3, Shield, AlertTriangle, Lock, User, Terminal } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import logoDark from '@/assets/owl-icon.png';
-import loginHero from '@/assets/login-hero.jpg';
 import { motion, AnimatePresence } from 'framer-motion';
+import { LoginSplitLayout } from '@/components/login/LoginSplitLayout';
+import { GlitchText } from '@/components/login/GlitchText';
 
 export default function LoginPage() {
   const { signIn, signUp, user, loading: authLoading, status, isSessionHydrated } = useAuth();
@@ -382,63 +383,44 @@ export default function LoginPage() {
   ];
 
   return (
-    <div className="flex min-h-dvh bg-background relative overflow-hidden selection:bg-primary/20">
-      <div className="flex flex-1 flex-col">
-        <div className="relative w-full h-[42vh] min-h-[280px] max-h-[420px] overflow-hidden">
-          <img
-            src={loginHero}
-            alt="Estudante de tecnologia Decode Analytics"
-            className="absolute inset-0 w-full h-full object-cover object-center"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-primary/10 via-background/30 to-background" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_hsl(var(--primary)/0.25),_transparent_60%)]" />
-
-          <div className="absolute top-0 left-0 right-0 px-4 pt-5 flex items-center justify-between z-10">
-              <button onClick={() => navigate('/')} className="flex items-center gap-1.5 rounded-full border border-border/70 bg-background/80 px-3 py-1.5 text-xs text-foreground shadow-sm backdrop-blur-md smooth-all hover:bg-background">
-              <ArrowLeft className="h-3.5 w-3.5" /> Voltar
-            </button>
-              <span className="font-mono-label rounded-full border border-border/70 bg-background/80 px-3 py-1.5 text-[10px] uppercase tracking-widest text-foreground shadow-sm backdrop-blur-md">
-                Decode Analytics Academy
-            </span>
-          </div>
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.85, y: 10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ type: 'spring', stiffness: 260, damping: 22, delay: 0.1 }}
-            className="absolute inset-0 flex items-center justify-center pointer-events-none"
-          >
-            <div className="relative h-24 w-24 sm:h-28 sm:w-28">
+    <LoginSplitLayout>
+      <div className="relative group">
+        {/* Border Animation */}
+        <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500 to-purple-600 rounded-lg blur opacity-20 group-hover:opacity-40 transition duration-1000 group-hover:duration-200" />
+        
+        <div className="relative overflow-hidden rounded-lg bg-[#0a0a0f] p-6 shadow-2xl ring-1 ring-white/10 sm:p-8 space-y-6">
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-cyan-500 to-transparent" />
+          
+          <div className="text-center space-y-3">
+            <motion.div
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="mx-auto w-16 h-16 relative"
+            >
               <img
                 src={logoDark}
-                alt="Logo da coruja"
-                className="h-full w-full object-contain drop-shadow-[0_0_30px_rgba(0,240,255,0.55)]"
-                style={{ imageRendering: 'auto' }}
+                alt="Logo"
+                className="h-full w-full object-contain relative z-10"
               />
-            </div>
-          </motion.div>
-
-          <div className="absolute bottom-0 left-0 right-0 px-6 pb-5 z-10">
-            <motion.h1
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.25, type: 'spring', stiffness: 240, damping: 22 }}
-              className="font-display text-3xl sm:text-4xl leading-tight text-foreground drop-shadow-[0_2px_20px_hsl(var(--background))]"
-            >
-              Area do(a) <span className="text-gradient-animated">Aluno(a)</span>
-            </motion.h1>
+              <div className="absolute inset-0 bg-cyan-500/20 blur-xl rounded-full" />
+            </motion.div>
+            
+            <h1 className="text-2xl font-bold tracking-tighter text-white uppercase">
+              <GlitchText text={isReset ? 'Recuperar' : isForgotRa ? 'RA Recovery' : isSignUp ? 'New User' : isLocked ? 'Locked' : 'Authentication'} />
+            </h1>
+            
+            <p className="text-xs text-cyan-500/60 font-mono uppercase tracking-widest">
+              {isReset
+                ? 'Security Protocol: Reset'
+                : isForgotRa
+                ? 'Identity Recovery'
+                : isSignUp
+                ? 'Create credentials'
+                : isLocked
+                ? 'Access Suspended'
+                : 'Terminal Access v6.5.1'}
+            </p>
           </div>
-        </div>
-
-        <div className="flex flex-1 items-start justify-center px-4 sm:px-6 pt-6 pb-8">
-          <motion.div
-            className="w-full max-w-sm"
-            initial={{ opacity: 0, scale: 0.96, y: 16 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ type: 'spring', stiffness: 260, damping: 20, delay: 0.15 }}
-          >
-            <div className="relative overflow-hidden rounded-lg bg-card p-6 shadow-sm ring-1 ring-border/70 sm:p-8 space-y-5">
-              <div className="absolute top-0 left-0 right-0 h-px bg-primary" />
 
               <div className="text-center space-y-2">
                 <h1 className="text-xl font-bold">
