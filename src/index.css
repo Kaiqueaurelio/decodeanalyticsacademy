@@ -506,6 +506,28 @@ button:active:not(:disabled), [role="button"]:active:not(:disabled) {
   100% { transform: translateX(100%); }
 }
 
+@keyframes cyber-scan {
+  0% { top: -100%; }
+  100% { top: 200%; }
+}
+
+.cyber-grid {
+  background-image: 
+    linear-gradient(to right, rgba(0, 240, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 240, 255, 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.cyber-glow-primary {
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.3), 0 0 30px rgba(0, 240, 255, 0.1);
+}
+
+.cyber-button-active {
+  background: linear-gradient(90deg, rgba(0, 240, 255, 0.15) 0%, transparent 100%);
+  border-left: 3px solid #00f0ff;
+}
+
+
 
 /* Staggered delays — cascading entry */
 .delay-1 { animation-delay: 60ms; }
