@@ -232,7 +232,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               boot = null;
               try { localStorage.removeItem(LAST_SESSION_MARKER); } catch {}
               if (hadPreviousSession) {
-                toast.error('Sua sessão expirou', {
+                toast.error('De modo algum, mesmo que eu digite a minha senha de administrador, nada está funcionando. Verifique e valide o porquê que isso tá acontecendo o mais rápido possível', {
                   description: 'Por segurança, faça login novamente para continuar.',
                 });
               }
