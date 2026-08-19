@@ -11,6 +11,8 @@ export function normalizeRa(value: string): string {
 
 export function isEmailIdentifier(value: string): boolean {
   const normalized = normalizeIdentifier(value);
+  // Se for um dos e-mails administrativos, não tratamos como "e-mail comum" para forçar o fluxo ra-auth
+  if (isSpecialIdentifier(normalized)) return false;
   return normalized.includes('@') && !normalized.toLowerCase().endsWith('@ra.unip.local');
 }
 
