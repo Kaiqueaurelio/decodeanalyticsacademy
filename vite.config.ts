@@ -19,7 +19,7 @@ export default defineConfig(({ mode }) => ({
     react(),
     mcpPlugin(),
     mode === "development" && componentTagger(),
-    VitePWA({
+    mode === "production" && VitePWA({
       registerType: "autoUpdate",
       devOptions: { enabled: false },
       includeAssets: ["favicon.ico", "robots.txt", "icon-192.png", "icon-512.png"],
