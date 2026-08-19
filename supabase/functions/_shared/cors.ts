@@ -6,6 +6,7 @@ import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors'
  */
 const ALLOWED_ORIGINS = [
   'https://decodeanalyticsacademy.lovable.app',
+  'https://decodeanalyticsacademy.vercel.app',
   'https://id-preview--4dd1aec2-9175-4ae9-9401-8637f1ffe1a2.lovable.app',
   'http://localhost:8080',
   'http://localhost:5173',
