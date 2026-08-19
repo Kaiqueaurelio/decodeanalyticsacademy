@@ -173,9 +173,8 @@ export default function LoginPage() {
     const normalizedRa = normalizeRa(id);
     const effectiveEmail = isEmail ? id.toLowerCase() : isSpecial ? id.toLowerCase() : buildRaEmail(normalizedRa);
     // Identificador para o processamento da Edge Function:
-    // Se for email admin ou Juliana, enviamos exatamente como o usuário digitou (normalizado)
-    // Caso contrário, enviamos o RA para o fluxo padrão.
-    const identifierForAuth = isSpecial ? id : (isEmail ? id.toLowerCase() : normalizedRa);
+    // Se for email admin ou Juliana, enviamos exatamente como o usuário digitou (limpo)
+    const identifierForAuth = isSpecial ? id.trim() : (isEmail ? id.toLowerCase().trim() : normalizedRa);
 
     if (isSignUp) {
       if (!isEmail) {
