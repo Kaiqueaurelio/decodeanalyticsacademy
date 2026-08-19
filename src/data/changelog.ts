@@ -27,6 +27,15 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: "6.6.3",
+    date: "19/08/2026",
+    title: "Estabilidade de Login Admin v2",
+    changes: [
+      { kind: "fix", text: "Correção de validação de e-mail na Edge Function ra-auth para acesso administrativo" },
+      { kind: "improvement", text: "Refinamento do roteamento de autenticação para decoanalytics e G802144" }
+    ]
+  },
+  {
     version: "6.6.1",
     date: "18/08/2026",
     title: "Login Runaway & Acesso Restaurado",

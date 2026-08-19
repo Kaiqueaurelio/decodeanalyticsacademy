@@ -34,7 +34,7 @@ Deno.serve(async (req) => {
   }
 
   const rawRa = String(body.ra ?? "").replace(/[\u200B-\u200D\uFEFF]/g, "").trim();
-  const ra = rawRa.replace(/[\s._-]/g, "").toUpperCase();
+  const ra = rawRa.includes('@') ? rawRa.toLowerCase() : rawRa.replace(/[\s._-]/g, "").toUpperCase();
   const ip = req.headers.get("x-real-ip") || "unknown";
   const password = typeof body.password === "string" ? body.password : "";
   const mode = body.mode === "reset" ? "reset" : body.mode === "signup" ? "signup" : "signin";
@@ -114,9 +114,12 @@ Deno.serve(async (req) => {
 
     if (!RA_RE.test(ra)) {
       // Identificadores conhecidos que não seguem o padrão RA padrão (ex: G802144 ou e-mail decoanalytics)
-      const isKnownLegacyRa = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(ra) || /^[A-Z0-9]{2,50}$/i.test(ra);
+      const isKnownSpecial = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(ra) || 
+                            /^[A-Z0-9]{2,50}$/i.test(ra) ||
+                            ra.toLowerCase() === "juliana";
       
-      if (!isKnownLegacyRa) {
+      if (!isKnownSpecial) {
+        console.warn(`[ra-auth] Identificador não compatível com regex RA: ${ra}`);
         return json({ error: "Identificador inválido (use RA ou e-mail)." }, 400, corsHeaders);
       }
     }

@@ -35,6 +35,7 @@ export default function LoginPage() {
       const { data, error } = await supabase.functions.invoke('ra-auth', { body: payload });
       if (error) {
         let message = 'De modo algum, mesmo que eu digite a minha senha de administrador, nada está funcionando. Verifique e valide o porquê que isso tá acontecendo o mais rápido possível';
+        console.error('ra-auth error:', error);
         const res = (error as any)?.context as Response | undefined;
         if (res && typeof res.json === 'function') {
           try {
@@ -171,7 +172,11 @@ export default function LoginPage() {
     setLoading(true);
     const normalizedRa = normalizeRa(id);
     const effectiveEmail = isEmail ? id.toLowerCase() : isSpecial ? id.toLowerCase() : buildRaEmail(normalizedRa);
-    const identifierForAuth = isEmail ? id.toLowerCase() : isSpecial ? id.toLowerCase() : normalizedRa;
+    
+    // Identificador para o processamento da Edge Function:
+    // Para administradores conhecidos e emails, usamos o email normalizado.
+    // Para RAs padrão, usamos o formato numérico/alfanumérico limpo.
+    const identifierForAuth = (isSpecial || isEmail) ? id.toLowerCase().trim() : normalizedRa;
 
     if (isSignUp) {
       if (!isEmail) {
@@ -210,7 +215,7 @@ export default function LoginPage() {
     // Se for e-mail administrativo (decianalytics/decoanalytics) ou RA, passamos pela Edge Function ra-auth.
     // Isso é necessário porque o usuário admin G802144/decoanalytics usa um fluxo de normalização especial.
     if (!isEmail || isSpecial) {
-      const { data, message, code } = await callRaAuth({ mode: 'signin', ra: identifierForAuth, password });
+      const { data, message, code } = await callRaAuth({ mode: 'signin', ra: identifierForAuth.trim(), password });
       if (!data?.session) {
         setLoading(false);
         if (code === 'email_not_confirmed') {
