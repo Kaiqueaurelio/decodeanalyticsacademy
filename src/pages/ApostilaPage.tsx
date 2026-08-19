@@ -68,6 +68,56 @@ function cleanText(input: string): string {
 
 const parseContent = parseApostilaContent;
 
+type StructuredLessonRow = {
+  id: string;
+  title: string;
+  content_md: string;
+  order_index: number;
+  chapter_id: string;
+};
+
+function isPlaceholderApostilaContent(content?: string | null): boolean {
+  const normalized = (content || '').trim().toLowerCase();
+  if (!normalized) return true;
+  return [
+    'conteúdo em processamento',
+    'material em fase de estruturação',
+    'este conteúdo está sendo estruturado',
+  ].some((marker) => normalized.includes(marker));
+}
+
+function buildStructuredContent(tree: unknown, lessons: StructuredLessonRow[]): string {
+  const root = tree as {
+    modules?: Array<{
+      title?: string;
+      chapters?: Array<{
+        title?: string;
+        lessons?: Array<{ id?: string; title?: string }>;
+      }>;
+    }>;
+  };
+  const lessonById = new Map(lessons.map((lesson) => [lesson.id, lesson]));
+  const chunks: string[] = [];
+
+  for (const module of root?.modules || []) {
+    for (const chapter of module.chapters || []) {
+      for (const lessonRef of chapter.lessons || []) {
+        const lesson = lessonRef.id ? lessonById.get(lessonRef.id) : undefined;
+        const content = lesson?.content_md?.trim();
+        if (!content) continue;
+        chunks.push([
+          module.title ? `# ${module.title}` : '',
+          chapter.title ? `## ${chapter.title}` : '',
+          lessonRef.title || lesson.title ? `### ${lessonRef.title || lesson.title}` : '',
+          content,
+        ].filter(Boolean).join('\n\n'));
+      }
+    }
+  }
+
+  return chunks.join('\n\n');
+}
+
 interface Props {
   tab?: string;
   setTab?: (tab: any) => void;
@@ -83,6 +133,7 @@ export default function ApostilaPage({ tab, setTab }: Props) {
   const { isAdmin, user } = useAuth();
   const [apostila, setApostila] = useState<Tables<'apostilas'> | null>(null);
   const [extraPages, setExtraPages] = useState<Array<{ id: string; title: string; content: string; position: number }>>([]);
+  const [structuredContent, setStructuredContent] = useState('');
   const [exerciseCount, setExerciseCount] = useState(0);
   const [focusMode, setFocusMode] = useState(false);
   const [activeSection, setActiveSection] = useState<string>('');
@@ -99,28 +150,62 @@ export default function ApostilaPage({ tab, setTab }: Props) {
   useEffect(() => {
     if (!id) return;
     let cancelled = false;
-    setLoading(true);
-    setLoadError(null);
-    Promise.all([
-      supabase.from('apostilas').select('*').eq('id', id).single(),
-      supabase.from('exercises').select('id').eq('apostila_id', id),
-      (supabase.from('apostila_pages' as any) as any)
-        .select('id, title, content, position')
-        .eq('apostila_id', id)
-        .order('position', { ascending: true })
-        .order('created_at', { ascending: true }),
-    ]).then(([{ data: ap }, { data: exs }, { data: pageResult }]) => {
-      if (cancelled) return;
-      setApostila(ap);
-      setExtraPages((pageResult || []) as Array<{ id: string; title: string; content: string; position: number }>);
-      setExerciseCount(exs?.length || 0);
-      setLoading(false);
-    }).catch((error) => {
-      if (cancelled) return;
-      console.error('[ApostilaPage] Erro ao carregar apostila:', error);
-      setLoadError(error instanceof Error ? error.message : 'Não foi possível carregar esta apostila.');
-      setLoading(false);
-    });
+
+    setStructuredContent('');
+    (async () => {
+      setLoading(true);
+      setLoadError(null);
+      try {
+        const [apostilaResult, exercisesResult, pagesResult, treeResult] = await Promise.all([
+          supabase.from('apostilas').select('*').eq('id', id).single(),
+          supabase.from('exercises').select('id').eq('apostila_id', id),
+          (supabase.from('apostila_pages' as any) as any)
+            .select('id, title, content, position')
+            .eq('apostila_id', id)
+            .order('position', { ascending: true })
+            .order('created_at', { ascending: true }),
+          supabase.rpc('get_apostila_reader_tree', { _apostila_id: id }),
+        ]);
+        if (cancelled) return;
+
+        const ap = apostilaResult.data;
+        const pageRows = (pagesResult.data || []) as Array<{ id: string; title: string; content: string; position: number }>;
+        setApostila(ap);
+        setExtraPages(pageRows);
+        setExerciseCount(exercisesResult.data?.length || 0);
+
+        const hasPlaceholder = isPlaceholderApostilaContent(ap?.content);
+        if (hasPlaceholder && treeResult.data) {
+          const tree = treeResult.data as {
+            modules?: Array<{ chapters?: Array<{ lessons?: Array<{ id?: string }> }> }>;
+          };
+          const lessonIds = (tree.modules || [])
+            .flatMap((module) => module.chapters || [])
+            .flatMap((chapter) => chapter.lessons || [])
+            .map((lesson) => lesson.id)
+            .filter((lessonId): lessonId is string => Boolean(lessonId));
+
+          if (lessonIds.length > 0) {
+            const { data: lessons } = await supabase
+              .from('apostila_lessons')
+              .select('id, title, content_md, order_index, chapter_id')
+              .in('id', lessonIds);
+            if (!cancelled) {
+              setStructuredContent(buildStructuredContent(treeResult.data, (lessons || []) as StructuredLessonRow[]));
+            }
+          }
+        } else if (!cancelled) {
+          setStructuredContent('');
+        }
+      } catch (error) {
+        if (cancelled) return;
+        console.error('[ApostilaPage] Erro ao carregar apostila:', error);
+        setLoadError(error instanceof Error ? error.message : 'Não foi possível carregar esta apostila.');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+
     gamification.addXP(5);
     gamification.updateStreak();
     return () => { cancelled = true; };
@@ -137,13 +222,15 @@ export default function ApostilaPage({ tab, setTab }: Props) {
   }, []);
 
   const combinedContent = useMemo(() => {
-    const mainContent = apostila?.content || '';
+    const mainContent = isPlaceholderApostilaContent(apostila?.content)
+      ? structuredContent
+      : (apostila?.content || '');
     const pagesContent = extraPages
       .filter((page) => page.content?.trim())
       .map((page) => `\n\n## ${page.title || 'Nova Página'}\n\n${page.content}`)
       .join('\n');
     return [mainContent, pagesContent].filter(Boolean).join('\n');
-  }, [apostila?.content, extraPages]);
+  }, [apostila?.content, extraPages, structuredContent]);
 
   const sections = useMemo(() => parseContent(combinedContent || null), [combinedContent]);
 
@@ -373,7 +460,7 @@ export default function ApostilaPage({ tab, setTab }: Props) {
             <Button
               variant="default"
               size="sm"
-              onClick={() => navigate(`/apostila/${apostila?.id}/read`)}
+              onClick={() => navigate(`/reader/${apostila?.id}`)}
               className="text-xs gap-1.5 hover-lift"
               title="Abrir no leitor estruturado (módulos, lições, progresso)"
             >
@@ -622,7 +709,7 @@ export default function ApostilaPage({ tab, setTab }: Props) {
                     </span>
                   )}
                   <span className="flex items-center gap-1.5 text-primary/70">
-                    ~{Math.max(1, Math.round((apostila.content?.length || 0) / 1200))} min de leitura
+                    ~{Math.max(1, Math.round((combinedContent.length || 0) / 1200))} min de leitura
                   </span>
                 </div>
 
@@ -631,7 +718,7 @@ export default function ApostilaPage({ tab, setTab }: Props) {
                   <SpeakButton
                     size="lg"
                     label="Ouvir apostila"
-                    getText={() => `${apostila.title}. ${apostila.content || ''}`}
+                    getText={() => `${apostila.title}. ${combinedContent}`}
                   />
                   <ApostilaSummaryDialog apostilaId={id!} apostilaTitle={apostila.title} />
                 </div>
@@ -714,7 +801,7 @@ export default function ApostilaPage({ tab, setTab }: Props) {
               {/* Rendered sections — editorial layout */}
               <div id="conteudo-principal" className="space-y-10 scroll-mt-24">
                 <ApostilaPreview
-                  content={apostila.content || ''}
+                  content={combinedContent}
                   apostilaTitle={apostila.title}
                   apostilaId={id!}
                   isLoggedIn={!!user}
