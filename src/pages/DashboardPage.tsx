@@ -268,7 +268,7 @@ export default function DashboardPage() {
 
       <StudentSidebar />
 
-      <div className="flex flex-col min-h-screen transition-[padding] duration-300 ease-out">
+      <div className="flex min-h-screen flex-col transition-[padding] duration-300 ease-out lg:pl-72">
         <DashboardTopbar hideSearchOnMobile={true} />
 
         <main className="flex-1 px-3 sm:px-6 lg:px-8 py-6 space-y-8 max-w-[1600px] w-full mx-auto animate-content-show pt-12 pb-24">

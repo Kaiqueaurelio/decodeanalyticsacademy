@@ -161,5 +161,12 @@ export function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 }
 
 export function StudentSidebar() {
-  return null; // A sidebar é agora controlada pelo Topbar/Sheet no DashboardPage
+  return (
+    <aside
+      aria-label="Navegação principal"
+      className="fixed inset-y-0 left-0 z-30 hidden w-72 lg:flex"
+    >
+      <SidebarContent />
+    </aside>
+  );
 }
