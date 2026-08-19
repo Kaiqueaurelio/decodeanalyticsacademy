@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Briefcase, Plus, Trash2, Edit, ExternalLink, Building2, MapPin, Loader2, FileUp, Sparkles, ChevronDown, ChevronUp, Search, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 import { parseAndImportJobsFromMd } from '@/lib/jobs-importer';
+import { formatJobDescription } from '@/lib/job-formatter';
 
 interface Job {
   id: string;
@@ -213,9 +214,41 @@ export default function JobsManager() {
                                 <Eye className="h-4 w-4" />
                                 <h4 className="text-xs font-bold uppercase tracking-wider">Descrição Detalhada</h4>
                               </div>
-                              <div className="text-sm text-foreground/90 leading-relaxed whitespace-pre-wrap bg-card/50 p-6 rounded-2xl border border-primary/10 shadow-inner">
-                                {job.description}
-                              </div>
+                              {(() => {
+                                const details = formatJobDescription(job.description);
+                                return (
+                                  <div className="space-y-4 text-xs text-foreground/95">
+                                    <div className="bg-background/60 p-4 rounded-2xl border border-primary/10 space-y-2 shadow-sm">
+                                      <span className="font-extrabold text-primary uppercase text-[10px] tracking-wider block">Resumo e Visão Geral</span>
+                                      <p className="leading-relaxed text-sm text-foreground">{details.overview}</p>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 gap-3">
+                                      <div className="bg-background/40 p-4 rounded-2xl border border-primary/10 shadow-sm">
+                                        <span className="font-extrabold text-primary uppercase text-[10px] tracking-wider block mb-2 flex items-center gap-1.5">
+                                          <Sparkles className="h-3 w-3" /> Principais Atividades
+                                        </span>
+                                        <ul className="list-disc pl-4 space-y-1.5 text-foreground/80 leading-normal">
+                                          {details.responsibilities.map((r, i) => (
+                                            <li key={i}>{r}</li>
+                                          ))}
+                                        </ul>
+                                      </div>
+
+                                      <div className="bg-background/40 p-4 rounded-2xl border border-primary/10 shadow-sm">
+                                        <span className="font-extrabold text-primary uppercase text-[10px] tracking-wider block mb-2 flex items-center gap-1.5">
+                                          <Briefcase className="h-3 w-3" /> O que Esperamos (Requisitos)
+                                        </span>
+                                        <ul className="list-disc pl-4 space-y-1.5 text-foreground/80 leading-normal">
+                                          {details.requirements.map((req, i) => (
+                                            <li key={i}>{req}</li>
+                                          ))}
+                                        </ul>
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })()}
                               
                               {job.requirements && (
                                 <div className="mt-6 space-y-3">
