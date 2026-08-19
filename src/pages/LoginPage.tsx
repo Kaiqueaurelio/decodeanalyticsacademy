@@ -4,14 +4,17 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { buildRaEmail, isEmailIdentifier, isSpecialIdentifier, isValidEmail, isValidRa, normalizeIdentifier, normalizeRa } from '@/lib/login-identifiers';
 import { Button } from '@/components/ui/button';
+import { AsyncButton } from '@/components/ui/async-button';
 import { Input } from '@/components/ui/input';
+import { PasswordInput } from '@/components/ui/password-input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Loader2, ArrowLeft, Eye, EyeOff, BookOpen, BarChart3, Shield, AlertTriangle, Lock, Mail, KeyRound, Terminal, Code2, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, BookOpen, BarChart3, Shield, AlertTriangle, Lock, Mail, KeyRound, Terminal, Code2 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import logoDark from '@/assets/owl-icon.png';
 import { motion, AnimatePresence, useMotionValue, useSpring } from 'framer-motion';
+import { motionTokens, type AsyncStatus } from '@/lib/motion';
 
 export default function LoginPage() {
   const { signIn, signUp, user, isAdmin, roleChecked, loading: authLoading, status, isSessionHydrated } = useAuth();
@@ -36,12 +39,13 @@ export default function LoginPage() {
       if (error) {
         let message = 'De modo algum, mesmo que eu digite a minha senha de administrador, nada está funcionando. Verifique e valide o porquê que isso tá acontecendo o mais rápido possível';
         console.error('ra-auth error:', error);
-        const res = (error as any)?.context as Response | undefined;
-        if (res && typeof res.json === 'function') {
+        const context = (error as { context?: unknown }).context;
+        const res = context instanceof Response ? context : undefined;
+        if (res) {
           try {
-            const body = await res.clone().json();
-            if (body?.error) message = body.error;
-            return { data: null, message, code: body?.code as string | undefined };
+            const body = await res.clone().json() as { error?: unknown; code?: unknown };
+            if (typeof body.error === 'string') message = body.error;
+            return { data: null, message, code: typeof body.code === 'string' ? body.code : undefined };
           } catch { /* mantém mensagem padrão */ }
         }
         return { data: null, message, code: undefined };
@@ -59,7 +63,8 @@ export default function LoginPage() {
 
   const usingEmail = looksLikeEmail(identifier);
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<AsyncStatus>('idle');
+  const submitStatusResetRef = useRef<number | null>(null);
   const [loginAttempts, setLoginAttempts] = useState(0);
   const [isLocked, setIsLocked] = useState(false);
   const [shaking, setShaking] = useState(false);
@@ -79,19 +84,54 @@ export default function LoginPage() {
 
   const authSettling = authLoading || !isSessionHydrated || status === 'loading' || status === 'hydrating';
 
+  const scheduleSubmitStatusReset = () => {
+    if (submitStatusResetRef.current !== null) window.clearTimeout(submitStatusResetRef.current);
+    submitStatusResetRef.current = window.setTimeout(() => {
+      setSubmitStatus('idle');
+      submitStatusResetRef.current = null;
+    }, motionTokens.duration.success);
+  };
+
+  const showTransientError = () => {
+    setSubmitStatus('error');
+    scheduleSubmitStatusReset();
+  };
+
+  const showTransientSuccess = () => {
+    setSubmitStatus('success');
+    scheduleSubmitStatusReset();
+  };
+
+  useEffect(() => {
+    return () => {
+      if (submitStatusResetRef.current !== null) window.clearTimeout(submitStatusResetRef.current);
+    };
+  }, []);
+
   useEffect(() => {
     if (authSettling || status !== 'authenticated' || !user || !roleChecked) return;
-    const params = new URLSearchParams(window.location.search);
-    const nextParam = params.get('next');
-    const isSafeNext = nextParam && nextParam.startsWith('/') && !nextParam.startsWith('//');
-    if (isSafeNext) {
-      navigate(nextParam, { replace: true });
+
+    const completeNavigation = () => {
+      const params = new URLSearchParams(window.location.search);
+      const nextParam = params.get('next');
+      const isSafeNext = nextParam && nextParam.startsWith('/') && !nextParam.startsWith('//');
+      if (isSafeNext) {
+        navigate(nextParam, { replace: true });
+        return;
+      }
+      const lastRoute = localStorage.getItem('decode_last_route');
+      const validLastRoute = lastRoute && lastRoute !== '/' && lastRoute !== '/login';
+      navigate(validLastRoute ? lastRoute : isAdmin ? '/admin' : '/dashboard', { replace: true });
+    };
+
+    if (submitStatus !== 'success') {
+      completeNavigation();
       return;
     }
-    const lastRoute = localStorage.getItem('decode_last_route');
-    const validLastRoute = lastRoute && lastRoute !== '/' && lastRoute !== '/login';
-    navigate(validLastRoute ? lastRoute : isAdmin ? '/admin' : '/dashboard', { replace: true });
-  }, [authSettling, status, user, roleChecked, isAdmin, navigate]);
+
+    const timeout = window.setTimeout(completeNavigation, motionTokens.duration.success);
+    return () => window.clearTimeout(timeout);
+  }, [authSettling, status, user, roleChecked, isAdmin, navigate, submitStatus]);
 
   useEffect(() => {
     if (!awaitingSession || authSettling) return;
@@ -123,11 +163,14 @@ export default function LoginPage() {
     localStorage.removeItem('decode_remember_email');
     localStorage.removeItem('decode_remember_ra');
     localStorage.removeItem('decode_auth_method');
+    setSubmitStatus('success');
     toast.success('Login realizado.');
     setAwaitingSession(true);
   };
 
   const registerLoginFailure = (usedPseudoEmail: boolean) => {
+    setSubmitStatus('error');
+    showTransientError();
     setAwaitingSession(false);
     const newAttempts = loginAttempts + 1;
     setLoginAttempts(newAttempts);
@@ -146,25 +189,30 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitStatus('loading');
     if (!agreedToTerms) {
+      showTransientError();
       toast.error('Você precisa aceitar os Termos de Uso e a Política de Privacidade.');
       return;
     }
     if (isLocked) {
+      setSubmitStatus('disabled');
       setShowLockModal(true);
       return;
     }
 
     const id = normalizeIdentifier(identifier);
-    if (!id) { toast.error('Informe seu RA ou e-mail.'); return; }
+    if (!id) { showTransientError(); toast.error('Informe seu RA ou e-mail.'); return; }
     const isEmail = looksLikeEmail(id);
     const isSpecial = isSpecialIdentifier(id);
 
     if (isEmail && !isValidEmail(id)) {
+      showTransientError();
       toast.error('Informe um e-mail válido, como aluno@exemplo.com.');
       return;
     }
     if (!isEmail && !isValidRa(id) && !isSpecial) {
+      showTransientError();
       toast.error('Use um e-mail válido ou seu RA. Se o erro persistir, procure a secretaria para validar seu vínculo.', { duration: 6000 });
       return;
     }
@@ -183,6 +231,7 @@ export default function LoginPage() {
         const { data, message, code } = await callRaAuth({ mode: 'signup', ra: normalizedRa, password });
         setLoading(false);
         if (!data?.created) {
+          showTransientError();
           toast.error(code === 'already_registered' ? 'Este RA já está cadastrado. Faça login.' : (message || 'Não foi possível criar sua conta agora.'));
           if (code === 'already_registered') setIsSignUp(false);
           return;
@@ -190,11 +239,13 @@ export default function LoginPage() {
         if (data?.session?.access_token) {
           const { error: setErr } = await supabase.auth.setSession({ access_token: data.session.access_token, refresh_token: data.session.refresh_token });
           if (!setErr) {
+            showTransientSuccess();
             toast.success('Conta criada e acesso liberado.');
             navigate('/dashboard');
             return;
           }
         }
+        showTransientSuccess();
         toast.success('Conta criada. Faça login com seu RA.');
         setIsSignUp(false);
         return;
@@ -203,8 +254,10 @@ export default function LoginPage() {
       const { error } = await signUp(effectiveEmail, password);
       setLoading(false);
       if (error) {
+        showTransientError();
         toast.error(error.message);
       } else {
+        showTransientSuccess();
         toast.success('Conta criada. Verifique seu e-mail para ativar.');
         setUnverifiedEmail(true);
         setIsSignUp(false);
@@ -276,14 +329,16 @@ export default function LoginPage() {
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitStatus('loading');
     const id = normalizeIdentifier(email);
-    if (!id) { toast.error('Digite seu RA ou e-mail'); return; }
+    if (!id) { showTransientError(); toast.error('Digite seu RA ou e-mail'); return; }
     const isEmail = looksLikeEmail(id);
-    if (isEmail && !isValidEmail(id)) { toast.error('Informe um e-mail válido.'); return; }
-    if (!isEmail && !isValidRa(id)) { toast.error('Use um e-mail válido ou seu RA.'); return; }
+    if (isEmail && !isValidEmail(id)) { showTransientError(); toast.error('Informe um e-mail válido.'); return; }
+    if (!isEmail && !isValidRa(id)) { showTransientError(); toast.error('Use um e-mail válido ou seu RA.'); return; }
 
     setLoading(true);
     const finish = () => {
+      showTransientSuccess();
       toast.success('Se o cadastro existir, enviamos o e-mail de recuperação.');
       setIsReset(false);
       setIsLocked(false);
@@ -294,7 +349,7 @@ export default function LoginPage() {
     if (!isEmail) {
       const { data, message } = await callRaAuth({ mode: 'reset', ra: normalizeRa(id), redirectTo: `${window.location.origin}/reset-password` });
       setLoading(false);
-      if (!data) { toast.error(message ?? 'Não consegui enviar a recuperação agora. Tente novamente.'); return; }
+      if (!data) { showTransientError(); toast.error(message ?? 'Não consegui enviar a recuperação agora. Tente novamente.'); return; }
       finish();
       return;
     }
@@ -302,10 +357,11 @@ export default function LoginPage() {
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(id.toLowerCase(), { redirectTo: `${window.location.origin}/reset-password` });
       setLoading(false);
-      if (error) { toast.error('Não foi possível enviar o e-mail agora. Tente novamente em instantes.'); return; }
+      if (error) { showTransientError(); toast.error('Não foi possível enviar o e-mail agora. Tente novamente em instantes.'); return; }
       finish();
     } catch {
       setLoading(false);
+      showTransientError();
       toast.error('Falha de rede ao enviar a recuperação. Verifique sua conexão.');
     }
   };
@@ -318,6 +374,13 @@ export default function LoginPage() {
       : 'Locked in. Go on then.';
 
   const runawayStrength = filledLoginFields === 0 ? 1 : filledLoginFields === 1 ? 0.42 : 0;
+  const loginButtonStatus: AsyncStatus = isLocked
+    ? 'disabled'
+    : submitStatus === 'success'
+      ? 'success'
+      : awaitingSession
+        ? 'loading'
+        : submitStatus;
 
   const evadeFromPointer = (clientX: number, clientY: number, pointerType: string) => {
     if (runawayStrength === 0 || pointerType === 'touch') return;
@@ -447,26 +510,34 @@ export default function LoginPage() {
                 ) : isReset ? (
                   <form onSubmit={handleResetPassword} className="space-y-5">
                     <div className="space-y-2"><Label htmlFor="resetEmail" className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/45">RA ou e-mail</Label><div className="relative"><Mail className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/35" aria-hidden="true" /><Input id="resetEmail" type="text" required value={email} onChange={e => setEmail(e.target.value)} placeholder="G802144 ou seu@email.com" className="min-h-12 border-white/10 bg-black/20 pl-11 text-white placeholder:text-white/25 focus-visible:border-[#d7ff4f] focus-visible:ring-[#d7ff4f]/25" /></div></div>
-                    <Button type="submit" className="min-h-12 w-full rounded-full bg-[#d7ff4f] font-semibold text-[#10150f] hover:bg-[#e5ff8b]" disabled={loading}>{loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Enviar link</Button>
+                    <AsyncButton
+                      type="submit"
+                      status={submitStatus}
+                      idleLabel="Enviar link"
+                      loadingLabel="Enviando…"
+                      successLabel="Enviado"
+                      errorLabel="Tentar novamente"
+                      className="min-h-12 w-full rounded-full bg-[#d7ff4f] font-semibold text-[#10150f] hover:bg-[#e5ff8b]"
+                    />
                     <button type="button" onClick={() => setIsReset(false)} className="min-h-10 w-full text-center text-sm text-white/45 transition hover:text-[#d7ff4f]">Voltar ao login</button>
                   </form>
                 ) : (
                   <>
                     <form onSubmit={handleSubmit} className="space-y-5">
                       <div className="space-y-2"><div className="flex items-center justify-between"><Label htmlFor="identifier" className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/45">RA ou e-mail</Label>{!isSignUp && <button type="button" onClick={() => setIsForgotRa(true)} className="min-h-9 text-[10px] font-medium text-[#d7ff4f] transition hover:text-white">Esqueci meu RA</button>}</div><div className="relative"><Mail className={`pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 ${usingEmail ? 'text-[#d7ff4f]' : 'text-white/35'}`} aria-hidden="true" /><Input id="identifier" name="identifier" type="text" inputMode="email" autoComplete="username" required value={identifier} onChange={(e) => { const v = e.target.value; setIdentifier(looksLikeEmail(v) ? normalizeIdentifier(v) : normalizeRa(v).replace(/[^A-Z0-9]/g, '')); setUnverifiedEmail(false); }} placeholder="G802144 ou seu@email.com" maxLength={120} className="min-h-12 border-white/10 bg-black/20 pl-11 text-white placeholder:text-white/25 focus-visible:border-[#d7ff4f] focus-visible:ring-[#d7ff4f]/25" /></div><p className="text-[10px] text-white/35">{usingEmail ? 'E-mail detectado. Login com verificação por e-mail.' : identifier.length > 0 ? 'RA detectado. Login direto.' : 'Digite seu RA ou seu e-mail cadastrado.'}</p></div>
-                      <div className="space-y-2"><Label htmlFor="password" className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/45">Senha</Label><div className={`relative ${shaking ? 'animate-shake' : ''}`}><KeyRound className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/35" aria-hidden="true" /><Input ref={passwordRef} id="password" name="password" type={showPassword ? 'text' : 'password'} autoComplete="current-password" required value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" className={`min-h-12 border-white/10 bg-black/20 pl-11 pr-12 text-white placeholder:text-white/25 focus-visible:border-[#d7ff4f] focus-visible:ring-[#d7ff4f]/25 ${loginAttempts > 0 ? 'border-red-400/70 focus-visible:ring-red-400/25' : ''}`} /><button type="button" onClick={() => setShowPassword(!showPassword)} aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'} className="absolute right-1 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-lg text-white/35 transition hover:text-[#d7ff4f]">{showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</button></div><AnimatePresence>{loginAttempts > 0 && !isLocked && <motion.p key="login-attempts" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="flex items-center gap-1 text-[11px] text-red-300"><AlertTriangle className="h-3 w-3" aria-hidden="true" /> Tentativa {loginAttempts} de 3</motion.p>}</AnimatePresence></div>
+                      <div className="space-y-2"><Label htmlFor="password" className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/45">Senha</Label><div className={`relative ${shaking ? 'animate-shake' : ''}`}><KeyRound className="pointer-events-none absolute left-3.5 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-white/35" aria-hidden="true" /><PasswordInput ref={passwordRef} id="password" name="password" autoComplete="current-password" required value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" className={`min-h-12 border-white/10 bg-black/20 pl-11 pr-12 text-white placeholder:text-white/25 focus-visible:border-[#d7ff4f] focus-visible:ring-[#d7ff4f]/25 ${loginAttempts > 0 ? 'border-red-400/70 focus-visible:ring-red-400/25' : ''}`} toggleClassName="text-white/35 hover:text-[#d7ff4f]" /></div><AnimatePresence>{loginAttempts > 0 && !isLocked && <motion.p key="login-attempts" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="flex items-center gap-1 text-[11px] text-red-300"><AlertTriangle className="h-3 w-3" aria-hidden="true" /> Tentativa {loginAttempts} de 3</motion.p>}</AnimatePresence></div>
 
                       <div className="flex items-start gap-2 rounded-xl border border-white/10 bg-white/[0.025] p-3"><Checkbox id="terms" checked={agreedToTerms} onCheckedChange={(v) => { const accepted = !!v; setAgreedToTerms(accepted); if (accepted) localStorage.setItem(`decode_terms_accepted_${TERMS_VERSION}`, 'true'); else localStorage.removeItem(`decode_terms_accepted_${TERMS_VERSION}`); }} className="mt-0.5 border-white/25 data-[state=checked]:border-[#d7ff4f] data-[state=checked]:bg-[#d7ff4f] data-[state=checked]:text-[#10150f]" /><Label htmlFor="terms" className="cursor-pointer select-none text-[11px] leading-relaxed text-white/45">Eu li e concordo com os <button type="button" onClick={() => navigate('/terms')} className="text-[#d7ff4f] hover:underline">Termos de Uso</button> e a <button type="button" onClick={() => navigate('/transparency')} className="text-[#d7ff4f] hover:underline">Política de Privacidade</button>.</Label></div>
 
                       <div className="space-y-3"><div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.12em] text-white/35"><span>{loginHint}</span><span className="text-[#d7ff4f]">{filledLoginFields}/2</span></div><div className="h-1 overflow-hidden rounded-full bg-white/10"><div className="h-full rounded-full bg-[#d7ff4f] shadow-[0_0_14px_#d7ff4f] transition-all duration-500" style={{ width: `${filledLoginFields * 50}%` }} /></div></div>
 
-                      {unverifiedEmail && !isSignUp ? <Button type="submit" disabled={loading} className="min-h-12 w-full rounded-full bg-[#d7ff4f] font-semibold text-[#10150f] hover:bg-[#e5ff8b]">{loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Entrar</Button> : (
+                      {unverifiedEmail && !isSignUp ? <AsyncButton type="submit" status={loginButtonStatus} idleLabel="Entrar" loadingLabel="Entrando…" successLabel="Sucesso" errorLabel="Tentar novamente" className="min-h-12 w-full rounded-full bg-[#d7ff4f] font-semibold text-[#10150f] hover:bg-[#e5ff8b]" /> : (
                         <div ref={runawayDockRef} onPointerMove={handleRunawayPointerMove} onPointerLeave={resetRunawayOffset} className="relative flex min-h-[84px] items-center justify-center overflow-hidden rounded-full border border-white/[0.06] bg-black/[0.22] px-3">
                           <div className="pointer-events-none absolute inset-x-8 top-1/2 h-px -translate-y-1/2 bg-gradient-to-r from-transparent via-[#d7ff4f]/20 to-transparent" />
                           <div aria-hidden="true" className="pointer-events-none absolute left-1/2 top-1/2 h-12 w-[7.5rem] -translate-x-1/2 -translate-y-1/2 rounded-full border border-dashed border-[#d7ff4f]/25" />
                           <motion.div style={{ x: runawaySpringX, y: runawaySpringY }} className="flex w-full justify-center">
-                            <Button ref={runawayButtonRef} type="submit" onPointerEnter={handleRunawayPointerEnter} className="relative z-10 min-h-12 w-[7.5rem] shrink-0 rounded-full border border-[#d7ff4f]/70 bg-[#d7ff4f] px-4 font-semibold text-[#10150f] shadow-[0_0_25px_rgba(215,255,79,0.16)] transition-[box-shadow,background-color] duration-300 ease-out hover:bg-[#e5ff8b] hover:shadow-[0_0_35px_rgba(215,255,79,0.28)] disabled:cursor-not-allowed disabled:opacity-70" disabled={loading || awaitingSession || isLocked} aria-label="Entrar no Decode Analytics Academy">
-{(loading || awaitingSession) && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}{isLocked ? <><Lock className="mr-1 h-4 w-4" /> Bloqueada</> : isSignUp ? 'Criar conta' : awaitingSession ? 'Entrando...' : 'Log in'}</Button>
+                                                      <AsyncButton ref={runawayButtonRef} type="submit" onPointerEnter={handleRunawayPointerEnter} status={loginButtonStatus} idleLabel={isLocked ? <><Lock className="mr-1 h-4 w-4" /> Bloqueada</> : isSignUp ? 'Criar conta' : 'Log in'} loadingLabel={isSignUp ? 'Criando…' : 'Entrando…'} successLabel={isSignUp ? 'Conta criada' : 'Sucesso'} errorLabel="Tentar novamente" className="relative z-10 min-h-12 w-[7.5rem] min-w-0 shrink-0 rounded-full border border-[#d7ff4f]/70 bg-[#d7ff4f] px-4 font-semibold text-[#10150f] shadow-[0_0_25px_rgba(215,255,79,0.16)] hover:bg-[#e5ff8b] hover:shadow-[0_0_35px_rgba(215,255,79,0.28)]" aria-label="Entrar no Decode Analytics Academy" />
+
                           </motion.div>
                         </div>
                       )}

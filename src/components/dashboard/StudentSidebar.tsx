@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import {
   Home, BookOpen, ClipboardList, PenLine, FileText, GraduationCap, Library, 
   Layers, RotateCcw, Trophy, NotebookPen, BriefcaseBusiness, Newspaper, 
@@ -46,6 +46,7 @@ export function SidebarContent({ onNavigate, collapsed = false }: { onNavigate?:
   const navigate = useNavigate();
   const { isAdmin, signOut, user } = useAuth();
   const { data: profile } = useUserProfile(user?.id);
+  const prefersReducedMotion = useReducedMotion();
 
   const isActive = (to: string) => {
     const [path, hash] = to.split('#');
@@ -96,20 +97,33 @@ export function SidebarContent({ onNavigate, collapsed = false }: { onNavigate?:
       <nav className="flex-1 overflow-y-auto px-2 py-2 space-y-6 relative z-10 scrollbar-none">
         {menuGroups.map((group) => (
           <div key={group.label} className="space-y-1">
-            {!collapsed && (
-              <div className="px-3 flex items-center gap-2 mb-2">
-                <span className="text-[9px] font-bold text-cyan-500/40 uppercase tracking-[0.3em]">{group.label}</span>
-                <div className="h-px flex-1 bg-gradient-to-r from-cyan-500/20 to-transparent" />
-              </div>
-            )}
+            <AnimatePresence initial={false}>
+              {!collapsed && (
+                <motion.div
+                  initial={prefersReducedMotion ? false : { opacity: 0, height: 0 }}
+                  animate={prefersReducedMotion ? undefined : { opacity: 1, height: 'auto' }}
+                  exit={prefersReducedMotion ? undefined : { opacity: 0, height: 0 }}
+                  transition={prefersReducedMotion ? undefined : { duration: 0.18 }}
+                  className="px-3 flex items-center gap-2 mb-2 overflow-hidden"
+                >
+                  <span className="text-[9px] font-bold text-cyan-500/40 uppercase tracking-[0.3em]">{group.label}</span>
+                  <div className="h-px flex-1 bg-gradient-to-r from-cyan-500/20 to-transparent" />
+                </motion.div>
+              )}
+            </AnimatePresence>
             {group.items.map((item) => {
               const active = isActive(item.to);
               return (
-                <button
+                <motion.button
                   key={item.to}
+                  type="button"
                   onClick={() => handleNav(item.to)}
                   title={collapsed ? item.label : undefined}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-md transition-all group relative overflow-hidden ${collapsed ? 'justify-center' : ''} ${
+                  aria-current={active ? 'page' : undefined}
+                  whileHover={prefersReducedMotion ? undefined : { x: 2 }}
+                  whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
+                  transition={prefersReducedMotion ? undefined : { duration: 0.15 }}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-md transition-[color,background-color,transform,box-shadow] duration-200 group relative overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/50 ${collapsed ? 'justify-center' : ''} ${
                     active ? 'cyber-button-active text-cyan-400' : 'text-gray-500 hover:text-cyan-300 hover:bg-white/5'
                   }`}
                 >
@@ -121,7 +135,7 @@ export function SidebarContent({ onNavigate, collapsed = false }: { onNavigate?:
                       className="absolute right-2 w-1 h-1 bg-cyan-400 rounded-full shadow-[0_0_8px_#00f0ff]" 
                     />
                   )}
-                </button>
+                </motion.button>
               );
             })}
           </div>
@@ -129,16 +143,24 @@ export function SidebarContent({ onNavigate, collapsed = false }: { onNavigate?:
 
         {isAdmin && (
           <div className="pt-4 space-y-1">
-            {!collapsed && (
-              <div className="px-3 flex items-center gap-2 mb-2">
-                <span className="text-[9px] font-bold text-purple-500/40 uppercase tracking-[0.3em]">System Admin</span>
-                <div className="h-px flex-1 bg-gradient-to-r from-purple-500/20 to-transparent" />
-              </div>
-            )}
+            <AnimatePresence initial={false}>
+              {!collapsed && (
+                <motion.div
+                  initial={prefersReducedMotion ? false : { opacity: 0, height: 0 }}
+                  animate={prefersReducedMotion ? undefined : { opacity: 1, height: 'auto' }}
+                  exit={prefersReducedMotion ? undefined : { opacity: 0, height: 0 }}
+                  transition={prefersReducedMotion ? undefined : { duration: 0.18 }}
+                  className="px-3 flex items-center gap-2 mb-2 overflow-hidden"
+                >
+                  <span className="text-[9px] font-bold text-purple-500/40 uppercase tracking-[0.3em]">System Admin</span>
+                  <div className="h-px flex-1 bg-gradient-to-r from-purple-500/20 to-transparent" />
+                </motion.div>
+              )}
+            </AnimatePresence>
             <button
               onClick={() => handleNav('/admin')}
               title={collapsed ? 'Terminal Root' : undefined}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-purple-400 hover:bg-purple-500/5 transition-all group border border-purple-500/10 ${collapsed ? 'justify-center' : ''}`}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-purple-400 hover:bg-purple-500/5 transition-[color,background-color,transform,box-shadow] duration-200 group border border-purple-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/50 motion-safe:hover:-translate-y-px motion-safe:active:scale-[0.98] ${collapsed ? 'justify-center' : ''}`}
             >
               <ShieldCheck className="w-4 h-4 shrink-0" />
               <span className={collapsed ? 'sr-only' : 'text-[11px] font-bold uppercase tracking-wider text-purple-300'}>Terminal Root</span>
@@ -184,7 +206,7 @@ export function StudentSidebar({ collapsed, onToggle }: { collapsed: boolean; on
         aria-label={collapsed ? 'Expandir menu de navegação' : 'Recolher menu de navegação'}
         aria-pressed={collapsed}
         title={collapsed ? 'Expandir menu' : 'Recolher menu'}
-        className="absolute -right-3 top-20 z-40 hidden h-8 w-8 rounded-full border-primary/40 bg-background/95 shadow-lg shadow-primary/10 lg:inline-flex"
+        className="absolute -right-3 top-20 z-40 hidden h-8 w-8 rounded-full border-primary/40 bg-background/95 shadow-lg shadow-primary/10 transition-[transform,box-shadow,background-color] duration-200 motion-safe:hover:scale-105 motion-safe:hover:shadow-primary/20 motion-safe:active:scale-95 focus-visible:ring-2 focus-visible:ring-primary/50 lg:inline-flex"
       >
         {collapsed ? <ChevronsRight className="h-4 w-4" /> : <ChevronsLeft className="h-4 w-4" />}
       </Button>

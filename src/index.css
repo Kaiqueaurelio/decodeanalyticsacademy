@@ -119,6 +119,11 @@ html[data-admin-mode="true"] ::-moz-selection {
     --success-foreground: 0 0% 100%;
     --warning: 32 92% 36%;
     --warning-foreground: 222 47% 8%;
+    --duration-fast: 150ms;
+    --duration-normal: 220ms;
+    --duration-slow: 350ms;
+    --duration-success: 650ms;
+    --ease-standard: cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .dark {

@@ -33,6 +33,7 @@ import { useUserProfile } from '@/hooks/queries/useUserProfile';
 import { BY_SEMESTER, canonicalSubjectKey } from '@/lib/subject-semester-map';
 import { CANONICAL_GROUPS, groupByCanonical, type CanonicalGroup } from '@/lib/subjectGroups';
 import { BookOpen, Search, X, PenLine, ShieldCheck } from 'lucide-react';
+import { motion, useReducedMotion } from 'framer-motion';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { NewUpdatePopup } from '@/components/NewUpdatePopup';
@@ -46,6 +47,7 @@ const EMPTY_FIXED_APOSTILAS: Record<string, string> = {};
 export default function DashboardPage() {
   const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
+  const prefersReducedMotion = useReducedMotion();
   const gamification = useGamification();
   const examFocus = useExamFocus();
   const { data: profile } = useUserProfile(user?.id);
@@ -315,7 +317,12 @@ export default function DashboardPage() {
       <div className={`flex min-h-screen flex-col transition-[padding] duration-300 ease-out ${sidebarCollapsed ? 'lg:pl-[72px]' : 'lg:pl-72'}`}>
         <DashboardTopbar hideSearchOnMobile={true} />
 
-        <main className="flex-1 px-3 sm:px-6 lg:px-8 py-6 space-y-8 max-w-[1600px] w-full mx-auto animate-content-show pt-12 pb-24">
+        <motion.main
+          initial={prefersReducedMotion ? false : { opacity: 0, y: 10 }}
+          animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
+          transition={prefersReducedMotion ? undefined : { duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+          className="flex-1 px-3 sm:px-6 lg:px-8 py-6 space-y-8 max-w-[1600px] w-full mx-auto animate-content-show pt-12 pb-24"
+        >
           {isAdmin && (
             <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-accent/10 px-3 py-1 border border-accent/20">
               <ShieldCheck className="h-3 w-3 text-accent" />
@@ -567,7 +574,7 @@ export default function DashboardPage() {
               <span className="font-medium tracking-wide">Desenvolvido por: Kaique Aurelio &amp; Decode Analytics</span>
             </div>
           </footer>
-        </main>
+        </motion.main>
       </div>
 
       <AdSidebar />
