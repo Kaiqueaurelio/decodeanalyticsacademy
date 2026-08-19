@@ -314,7 +314,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const stayLoggedIn = localStorage.getItem('decode_stay_logged_in') === 'true';
         if (!stayLoggedIn) {
           try { localStorage.removeItem(LAST_SESSION_MARKER); } catch {}
-          toast.error('Sua sessão expirou', {
+          toast.error('De modo algum, mesmo que eu digite a minha senha de administrador, nada está funcionando. Verifique e valide o porquê que isso tá acontecendo o mais rápido possível', {
             description: 'Faça login novamente para continuar.',
           });
           await supabase.auth.signOut().catch(() => {});
