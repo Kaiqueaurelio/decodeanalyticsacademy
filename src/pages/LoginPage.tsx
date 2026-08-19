@@ -34,7 +34,7 @@ export default function LoginPage() {
     try {
       const { data, error } = await supabase.functions.invoke('ra-auth', { body: payload });
       if (error) {
-        let message = 'Não consegui validar seu RA no servidor. Verifique sua conexão ou tente novamente.';
+        let message = 'De modo algum, mesmo que eu digite a minha senha de administrador, nada está funcionando. Verifique e valide o porquê que isso tá acontecendo o mais rápido possível';
         const res = (error as any)?.context as Response | undefined;
         if (res && typeof res.json === 'function') {
           try {
@@ -227,7 +227,7 @@ export default function LoginPage() {
       if (sessionError) {
         setLoading(false);
         setAwaitingSession(false);
-        toast.error('Não consegui iniciar sua sessão. Tente novamente.');
+        toast.error('De modo algum, mesmo que eu digite a minha senha de administrador, nada está funcionando. Verifique e valide o porquê que isso tá acontecendo o mais rápido possível');
         return;
       }
       try {

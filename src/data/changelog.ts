@@ -31,6 +31,7 @@ export const CHANGELOG: Release[] = [
     date: "18/08/2026",
     title: "Login Runaway & Acesso Restaurado",
     changes: [
+      { kind: "fix", text: "Estabilização das mensagens de erro administrativas para conformidade com auditoria visual" },
       { kind: "fix", text: "Botões do login agora se movimentam fielmente ao estilo Runaway da referência" },
       { kind: "fix", text: "Fluxos de autenticação por RA e e-mail estabilizados" },
       { kind: "improvement", text: "Redirecionamento correto para o painel administrativo ou dashboard do aluno" }
