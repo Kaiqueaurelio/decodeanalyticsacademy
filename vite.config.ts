@@ -8,6 +8,7 @@ import { mcpPlugin } from "@lovable.dev/mcp-js/stacks/supabase/vite";
 export default defineConfig(({ mode }) => ({
   server: {
     host: true,
+    allowedHosts: [".manus.computer"],
     port: 8080,
     hmr: {
       host: process.env.VITE_HMR_HOST || undefined,

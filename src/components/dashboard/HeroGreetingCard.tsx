@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { Card } from '@/components/ui/card';
-import { Sparkles, Trophy, Target, Zap, PenLine, Settings, Users, Layout } from 'lucide-react';
+import { Sparkles, Trophy, Target, Zap, PenLine, Settings, Users, Layout, ArrowRight, MessageCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -14,7 +14,7 @@ interface HeroGreetingCardProps {
 export function HeroGreetingCard({ name, overallProgress, totalApostilas, totalAnswered }: HeroGreetingCardProps) {
   const navigate = useNavigate();
   const { isAdmin } = useAuth();
-  const firstName = name.split(' ')[0];
+  const firstName = name.trim().split(' ')[0] || 'estudante';
   const hour = new Date().getHours();
   
   const greeting = useMemo(() => {
@@ -24,14 +24,25 @@ export function HeroGreetingCard({ name, overallProgress, totalApostilas, totalA
   }, [hour]);
 
   const motivation = useMemo(() => {
-    if (overallProgress > 80) return "Você está quase lá! Continue com esse ritmo incrível.";
-    if (overallProgress > 50) return "Ótimo progresso! Metade do caminho já foi percorrida.";
+    if (overallProgress > 80) return "Você está quase lá. Continue consolidando o que já aprendeu.";
+    if (overallProgress > 50) return "Seu ritmo está consistente. Use o próximo bloco para fechar uma lacuna.";
     if (totalAnswered > 0) return "Cada exercício resolvido aproxima você do seu objetivo.";
-    return "Que tal começar o dia resolvendo alguns exercícios?";
+    return "Comece com um exercício curto e transforme o estudo em ritmo.";
   }, [overallProgress, totalAnswered]);
 
+  const dailyFocus = overallProgress === 0
+    ? 'Começar com 1 exercício'
+    : overallProgress < 60
+      ? 'Avançar mais 10%'
+      : 'Consolidar o ritmo';
+  const nextStep = totalAnswered === 0
+    ? 'Resolver seu primeiro exercício'
+    : overallProgress < 40
+      ? 'Ler uma apostila'
+      : 'Revisar seus erros';
+
   return (
-    <div className="relative overflow-hidden rounded-[2rem] border border-primary/20 bg-card p-6 sm:p-8 shadow-2xl shadow-primary/5">
+    <div className="relative overflow-hidden rounded-[2rem] border border-primary/20 bg-gradient-to-br from-card via-card to-primary/5 p-6 shadow-2xl shadow-primary/5 sm:p-8">
       {/* Background patterns and glows */}
       <div className="absolute top-0 right-0 -mr-20 -mt-20 h-64 w-64 rounded-full bg-primary/10 blur-[80px]" />
       <div className="absolute bottom-0 left-0 -ml-20 -mb-20 h-64 w-64 rounded-full bg-accent/10 blur-[80px]" />
@@ -40,7 +51,7 @@ export function HeroGreetingCard({ name, overallProgress, totalApostilas, totalA
         <div className="space-y-4 max-w-xl">
           <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 border border-primary/20">
             <Sparkles className="h-3.5 w-3.5 text-primary" />
-            <span className="text-[10px] font-bold uppercase tracking-wider text-primary">Ambiente de Alta Performance</span>
+                <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-primary">Seu centro de estudos</span>
           </div>
           
           <div className="space-y-1">
@@ -57,21 +68,41 @@ export function HeroGreetingCard({ name, overallProgress, totalApostilas, totalA
               <Zap className="h-4 w-4 text-warning fill-warning/20" />
               <div className="flex flex-col">
                 <span className="text-[10px] font-bold text-muted-foreground uppercase leading-none">Meta Diária</span>
-                <span className="text-xs font-bold text-foreground">85% Completa</span>
+                <span className="text-xs font-bold text-foreground">{dailyFocus}</span>
               </div>
             </div>
             <div className="flex items-center gap-2 bg-muted/30 px-3 py-2 rounded-xl border border-border/40">
               <Target className="h-4 w-4 text-primary" />
               <div className="flex flex-col">
                 <span className="text-[10px] font-bold text-muted-foreground uppercase leading-none">Próxima Aula</span>
-                <span className="text-xs font-bold text-foreground">Sistemas Distribuídos</span>
+                <span className="text-xs font-bold text-foreground">{nextStep}</span>
               </div>
             </div>
+          </div>
+
+          <div className="flex flex-wrap gap-2 pt-1">
+            <button
+              type="button"
+              onClick={() => document.getElementById('minhas-disciplinas')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+              className="inline-flex items-center gap-2 rounded-xl bg-primary px-3.5 py-2.5 text-xs font-bold text-primary-foreground shadow-lg shadow-primary/20 transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            >
+              <PenLine className="h-3.5 w-3.5" />
+              Abrir trilha de estudo
+              <ArrowRight className="h-3.5 w-3.5" />
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate('/ella')}
+              className="inline-flex items-center gap-2 rounded-xl border border-border/70 bg-background/50 px-3.5 py-2.5 text-xs font-bold text-foreground transition-colors hover:border-primary/40 hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            >
+              <MessageCircle className="h-3.5 w-3.5 text-accent" />
+              Falar com Ella
+            </button>
           </div>
         </div>
 
         {isAdmin && (
-          <div className="flex flex-col gap-3 p-4 rounded-2xl bg-accent/5 border border-accent/20 backdrop-blur-sm self-start md:self-center">
+          <div className="flex flex-col gap-3 rounded-2xl border border-accent/20 bg-accent/5 p-4 backdrop-blur-sm self-start md:self-center">
             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-accent mb-1 flex items-center gap-2">
               <Settings className="h-3 w-3" />
               Painel de Gestão Rápida

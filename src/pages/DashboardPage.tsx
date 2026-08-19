@@ -22,6 +22,7 @@ import { AdSidebar } from '@/components/AdSidebar';
 import { Watermark } from '@/components/Watermark';
 import { Reveal } from '@/components/Reveal';
 import { GamificationWidget } from '@/components/gamification/GamificationWidget';
+import { OverallProgressCard } from '@/components/OverallProgressCard';
 import { ExamCalendarWidget } from '@/components/ExamCalendarWidget';
 import { OnboardingTour } from '@/components/OnboardingTour';
 import { TermsFooterLink } from '@/components/TermsFooterLink';
@@ -30,6 +31,7 @@ import { StudyHeatmap } from '@/components/gamification/StudyHeatmap';
 import { useApostilasList, useExerciseCounts, useDashboardStats, type ApostilaSummary } from '@/hooks/queries/useDashboardData';
 import { useUserProfile } from '@/hooks/queries/useUserProfile';
 import { BY_SEMESTER, canonicalSubjectKey } from '@/lib/subject-semester-map';
+import { CANONICAL_GROUPS, groupByCanonical, type CanonicalGroup } from '@/lib/subjectGroups';
 import { BookOpen, Search, X, PenLine, ShieldCheck } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -183,7 +185,7 @@ export default function DashboardPage() {
           teacher: teacherMap[subject] || 'Professor da Disciplina'
         }));
 
-      return [...list, ...placeholders] as any as ApostilaSummary[];
+      return [...list, ...placeholders] as unknown as ApostilaSummary[];
     }
 
     return list;
@@ -212,7 +214,12 @@ export default function DashboardPage() {
         // Maximizar para administrador
         if (profile?.is_admin) {
           // Maximizar para administrador (XP real: 9900/Lv99/365d)
-          await (supabase.rpc as any)('maximize_user_gamification', { _user_id: user.id });
+          const callAdminRpc = supabase.rpc as unknown as (
+            functionName: string,
+            args: { _user_id: string },
+          ) => Promise<{ error: Error | null }>;
+          const { error: maximizeError } = await callAdminRpc('maximize_user_gamification', { _user_id: user.id });
+          if (maximizeError) throw maximizeError;
           gamification.loadAll();
         }
       } catch (e) {
@@ -256,14 +263,43 @@ export default function DashboardPage() {
 
   const totalExercises = Object.values(exerciseCounts).reduce((sum, count) => sum + count, 0);
   const answeredExercises = stats.hits + stats.errors;
-  const overallProgress = totalExercises > 0 ? Math.round((answeredExercises / totalExercises) * 100) : 0;
-  const heatmapData = stats.byApostila ? Object.entries(stats.byApostila).map(([_, s]: any) => ({
-    date: new Date().toISOString().split('T')[0], // Fallback para data atual se não houver timestamp no stats
-    count: (s.hits || 0) + (s.errors || 0)
-  })) : [];
+  const overallProgress = totalExercises > 0 ? Math.min(100, Math.round((answeredExercises / totalExercises) * 100)) : 0;
+  const heatmapData = stats.byApostila ? Object.entries(stats.byApostila).map(([_, summary]) => {
+    const itemStats = summary as { hits?: number; errors?: number };
+    return {
+      date: new Date().toISOString().split('T')[0], // Fallback para data atual se não houver timestamp no stats
+      count: (itemStats.hits || 0) + (itemStats.errors || 0),
+    };
+  }) : [];
   
   const disciplinesTotal = Math.max(new Set(apostilas.map((a) => a.category || 'Geral')).size, 10);
   const apostilasIniciadas = Object.keys(stats.byApostila).length;
+  const overallAccuracy = answeredExercises > 0 ? Math.round((stats.hits / answeredExercises) * 100) : 0;
+
+  const groupedApostilas = useMemo(() => groupByCanonical(apostilas), [apostilas]);
+  const groupProgress = useMemo(() => {
+    const progress = {} as Record<CanonicalGroup, number>;
+
+    CANONICAL_GROUPS.forEach((group) => {
+      const groupItems = groupedApostilas[group];
+      const answered = groupItems.reduce((sum, apostila) => {
+        const itemStats = stats.byApostila[apostila.id];
+        return sum + (itemStats?.hits || 0) + (itemStats?.errors || 0);
+      }, 0);
+      const total = groupItems.reduce((sum, apostila) => sum + (exerciseCounts[apostila.id] || 0), 0);
+      progress[group] = total > 0 ? Math.min(100, Math.round((answered / total) * 100)) : 0;
+    });
+
+    return progress;
+  }, [exerciseCounts, groupedApostilas, stats.byApostila]);
+
+  const groupCounts = useMemo(() => {
+    const counts = {} as Record<CanonicalGroup, number>;
+    CANONICAL_GROUPS.forEach((group) => {
+      counts[group] = groupedApostilas[group].length;
+    });
+    return counts;
+  }, [groupedApostilas]);
 
   return (
     <div className="min-h-screen bg-background relative selection:bg-primary/20 overflow-x-hidden">
@@ -339,15 +375,6 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
-              <AdBanner position="inline" />
-            </div>
-            <div className="flex shrink-0 items-center justify-center p-2 rounded-2xl bg-primary/5 border border-primary/10">
-              <BuyMeCoffeeButton variant="minimal" size="small" showText={false} />
-            </div>
-          </div>
-
           <Reveal from="bottom" delay={10}>
             <HeroGreetingCard
               name={profile?.full_name || ''}
@@ -358,19 +385,38 @@ export default function DashboardPage() {
           </Reveal>
 
           <Reveal from="bottom" delay={15}>
+            <OverallProgressCard
+              overallProgress={overallProgress}
+              overallAccuracy={overallAccuracy}
+              groupProgress={groupProgress}
+              groupCounts={groupCounts}
+              totalApostilas={Array.isArray(apostilas) ? apostilas.length : 0}
+            />
+          </Reveal>
+
+          <Reveal from="bottom" delay={20}>
             <GamificationWidget />
           </Reveal>
 
+          <div className="flex flex-col gap-4 sm:flex-row">
+            <div className="min-w-0 flex-1">
+              <AdBanner position="inline" />
+            </div>
+            <div className="flex shrink-0 items-center justify-center rounded-2xl border border-primary/10 bg-primary/5 p-2 sm:w-16">
+              <BuyMeCoffeeButton variant="minimal" size="small" showText={false} />
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
             <div className="lg:col-span-8 space-y-5">
-              <Reveal from="bottom" delay={20}>
+              <Reveal from="bottom" delay={25}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <StudyHeatmap data={heatmapData} />
                 </div>
               </Reveal>
 
               <div id="atividades">
-                <Reveal from="bottom" delay={25}>
+                <Reveal from="bottom" delay={30}>
                   <ActivitiesToDoSection
                     apostilas={Array.isArray(apostilas) ? apostilas : []}
                     exerciseCounts={exerciseCounts || {}}
@@ -379,7 +425,7 @@ export default function DashboardPage() {
                 </Reveal>
               </div>
 
-              <Reveal from="bottom" delay={30}>
+              <Reveal from="bottom" delay={35}>
                 <RecommendedExercisesSection 
                   apostilas={Array.isArray(apostilas) ? apostilas : []} 
                   exerciseCounts={exerciseCounts || {}} 
@@ -388,7 +434,7 @@ export default function DashboardPage() {
             </div>
 
             <div className="lg:col-span-4 space-y-5">
-              <Reveal from="bottom" delay={20}>
+              <Reveal from="bottom" delay={25}>
                 <div className="space-y-5">
                   <HallOfFame />
                   <div className="rounded-2xl border border-border bg-card p-5">
@@ -400,7 +446,7 @@ export default function DashboardPage() {
                 </div>
               </Reveal>
               
-              <Reveal from="bottom" delay={40}>
+              <Reveal from="bottom" delay={45}>
                 <div className="rounded-2xl border border-border bg-gradient-to-br from-card to-accent/5 p-5">
                   <header className="flex items-center gap-2 mb-4">
                     <div className="h-8 w-8 rounded-lg bg-accent/20 text-accent flex items-center justify-center">

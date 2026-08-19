@@ -39,8 +39,9 @@ export const isValidEmail = isEmailIdentifier;
 export function isRaIdentifier(value: string): boolean {
   const normalized = normalizeIdentifier(value);
   if (isSpecialIdentifier(normalized)) return true;
-  // Padrão RA UNIP: Letras e números, geralmente 6-15 caracteres
-  return /^[A-Z0-9]{6,15}$/i.test(normalized) || normalized.toLowerCase().startsWith('g');
+  // Padrão de RA: somente letras e números, geralmente 6–15 caracteres.
+  // Identificadores especiais já foram tratados acima; não aceitar sufixos ou símbolos extras.
+  return /^[A-Z0-9]{6,15}$/i.test(normalized);
 }
 
 /**
