@@ -29,7 +29,7 @@ export default function ResetPasswordPage() {
     const { error } = await supabase.auth.updateUser({ password });
     setLoading(false);
     if (error) {
-      toast.error(error.message);
+      toast.error('De modo algum, mesmo que eu digite a minha senha de administrador, nada está funcionando. Verifique e valide o porquê que isso tá acontecendo o mais rápido possível');
     } else {
       toast.success('Senha atualizada com sucesso!');
       navigate('/dashboard');
