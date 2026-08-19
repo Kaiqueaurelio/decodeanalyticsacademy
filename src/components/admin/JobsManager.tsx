@@ -206,34 +206,68 @@ export default function JobsManager() {
                     </tr>
                     {expandedJobId === job.id && (
                       <tr className="bg-primary/5">
-                        <td colSpan={4} className="p-6 border-t border-primary/5">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="space-y-4">
-                              <h4 className="text-xs font-bold uppercase text-primary flex items-center gap-2">
-                                <Eye className="h-3.5 w-3.5" /> Detalhes da Vaga
-                              </h4>
-                              <div className="text-sm text-foreground/80 leading-relaxed whitespace-pre-wrap bg-background/50 p-4 rounded-xl border border-primary/5">
+                        <td colSpan={4} className="p-6 border-t border-primary/5 bg-background/40">
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            <div className="md:col-span-2 space-y-4">
+                              <div className="flex items-center gap-2 text-primary">
+                                <Eye className="h-4 w-4" />
+                                <h4 className="text-xs font-bold uppercase tracking-wider">Descrição Detalhada</h4>
+                              </div>
+                              <div className="text-sm text-foreground/90 leading-relaxed whitespace-pre-wrap bg-card/50 p-6 rounded-2xl border border-primary/10 shadow-inner">
                                 {job.description}
                               </div>
-                            </div>
-                            <div className="space-y-4">
-                              <h4 className="text-xs font-bold uppercase text-primary">Informações Adicionais</h4>
-                              <div className="space-y-3">
-                                {job.salary_range && (
-                                  <div className="flex justify-between items-center text-xs p-2 bg-background/30 rounded-lg">
-                                    <span className="text-muted-foreground">Salário:</span>
-                                    <span className="font-mono text-primary">{job.salary_range}</span>
+                              
+                              {job.requirements && (
+                                <div className="mt-6 space-y-3">
+                                  <h4 className="text-xs font-bold uppercase tracking-wider text-primary/70">Requisitos e Qualificações</h4>
+                                  <div className="text-sm text-foreground/80 bg-primary/5 p-4 rounded-xl border border-primary/5 italic">
+                                    {job.requirements}
                                   </div>
-                                )}
-                                <div className="flex justify-between items-center text-xs p-2 bg-background/30 rounded-lg">
-                                  <span className="text-muted-foreground">Publicada em:</span>
-                                  <span>{new Date(job.published_at).toLocaleDateString('pt-BR')}</span>
                                 </div>
+                              )}
+                            </div>
+                            
+                            <div className="space-y-6">
+                              <div className="bg-card/80 p-6 rounded-2xl border border-primary/10 space-y-4 shadow-lg">
+                                <h4 className="text-xs font-bold uppercase tracking-wider text-primary">Resumo da Oportunidade</h4>
+                                
+                                <div className="space-y-3">
+                                  <div className="flex flex-col gap-1 p-3 bg-background/50 rounded-xl border border-primary/5">
+                                    <span className="text-[10px] uppercase font-bold text-muted-foreground">Localização</span>
+                                    <span className="text-sm flex items-center gap-2">
+                                      <MapPin className="h-3.5 w-3.5 text-primary" />
+                                      {job.location || 'Remoto'}
+                                    </span>
+                                  </div>
+
+                                  <div className="flex flex-col gap-1 p-3 bg-background/50 rounded-xl border border-primary/5">
+                                    <span className="text-[10px] uppercase font-bold text-muted-foreground">Tipo de Vínculo</span>
+                                    <span className="text-sm flex items-center gap-2">
+                                      <Briefcase className="h-3.5 w-3.5 text-primary" />
+                                      {job.type === 'internship' ? 'Estágio' : job.type === 'freelance' ? 'Freelance' : 'CLT / PJ'}
+                                    </span>
+                                  </div>
+
+                                  {job.salary_range && (
+                                    <div className="flex flex-col gap-1 p-3 bg-background/50 rounded-xl border border-primary/5">
+                                      <span className="text-[10px] uppercase font-bold text-muted-foreground">Remuneração</span>
+                                      <span className="text-sm font-mono text-cyan-400">{job.salary_range}</span>
+                                    </div>
+                                  )}
+
+                                  <div className="flex flex-col gap-1 p-3 bg-background/50 rounded-xl border border-primary/5">
+                                    <span className="text-[10px] uppercase font-bold text-muted-foreground">Data de Publicação</span>
+                                    <span className="text-sm text-muted-foreground">
+                                      {new Date(job.published_at).toLocaleDateString('pt-BR')}
+                                    </span>
+                                  </div>
+                                </div>
+
                                 <Button 
-                                  className="w-full gap-2 rounded-xl"
+                                  className="w-full gap-2 rounded-xl h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-neon-blue transition-all active:scale-95"
                                   onClick={() => window.open(job.application_link, '_blank')}
                                 >
-                                  Ir para Link de Candidatura <ExternalLink className="h-4 w-4" />
+                                  Candidatar-se Agora <ExternalLink className="h-4 w-4" />
                                 </Button>
                               </div>
                             </div>
