@@ -92,6 +92,11 @@ export default function DashboardPage() {
   const loading = loadingApostilas || loadingStats || loadingFixedApostilas;
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [query, setQuery] = useState('');
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => localStorage.getItem('decode_sidebar_collapsed') === 'true');
+
+  useEffect(() => {
+    localStorage.setItem('decode_sidebar_collapsed', String(sidebarCollapsed));
+  }, [sidebarCollapsed]);
 
   // Lógica de processamento de apostilas (filtro + placeholders de semestres futuros)
   const apostilas = useMemo(() => {
@@ -266,9 +271,12 @@ export default function DashboardPage() {
       <NewUpdatePopup />
       {showOnboarding && <OnboardingTour onComplete={handleOnboardingComplete} />}
 
-      <StudentSidebar />
+      <StudentSidebar
+        collapsed={sidebarCollapsed}
+        onToggle={() => setSidebarCollapsed((current) => !current)}
+      />
 
-      <div className="flex min-h-screen flex-col transition-[padding] duration-300 ease-out lg:pl-72">
+      <div className={`flex min-h-screen flex-col transition-[padding] duration-300 ease-out ${sidebarCollapsed ? 'lg:pl-[72px]' : 'lg:pl-72'}`}>
         <DashboardTopbar hideSearchOnMobile={true} />
 
         <main className="flex-1 px-3 sm:px-6 lg:px-8 py-6 space-y-8 max-w-[1600px] w-full mx-auto animate-content-show pt-12 pb-24">
