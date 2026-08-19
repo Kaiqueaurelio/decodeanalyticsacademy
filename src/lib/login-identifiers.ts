@@ -30,5 +30,5 @@ export function buildRaEmail(value: string): string {
 
 export function isSpecialIdentifier(value: string): boolean {
   const normalized = normalizeIdentifier(value).toLowerCase();
-  return normalized === 'juliana' || normalized === 'decoanalytics@outlook.com.br' || normalized === 'decianalytics@outlook.com.br';
+  return normalized === 'juliana' || normalized === 'decoanalytics@outlook.com.br' || normalized === 'decianalytics@outlook.com.br' || normalized === 'g802144';
 }
