@@ -53,7 +53,6 @@ import { ensureApostilaExists } from '@/lib/create-placeholder-apostila';
 
 
 import { AppendLinkDialog } from '@/components/AppendLinkDialog';
-import { NewApostilaPageButton } from '@/components/NewApostilaPageButton';
 import { autoLinkAll, autoLinkApostila } from '@/lib/auto-link-materials';
 import { MergeApostilasDialog } from '@/components/MergeApostilasDialog';
 import { TestimonialsAdmin } from '@/components/TestimonialsAdmin';
@@ -61,8 +60,6 @@ import { AIProviderSettings } from '@/components/AIProviderSettings';
 import { ShareLinkSettings } from '@/components/ShareLinkSettings';
 import { SplashDownloader } from '@/components/admin/SplashDownloader';
 import { CoverDesignEditor } from '@/components/admin/CoverDesignEditor';
-import { exportApostilaToPDF } from '@/lib/apostila-pdf';
-import { parseApostilaContent } from '@/lib/apostila-parser';
 import { extractTextFromFile } from '@/lib/file-extract';
 import { markdownToHtml } from '@/lib/markdown-html';
 import { MarkdownEditor } from '@/components/MarkdownEditor';
@@ -96,6 +93,10 @@ import { EllaSettings } from '@/components/admin/EllaSettings';
 import { McpSettings } from '@/components/admin/McpSettings';
 import JobsManager from '@/components/admin/JobsManager';
 
+
+const LazyNewApostilaPageButton = React.lazy(() =>
+  import('@/components/NewApostilaPageButton').then((module) => ({ default: module.NewApostilaPageButton })),
+);
 
 type Apostila = Tables<'apostilas'>;
 type Exercise = Tables<'exercises'>;
@@ -1298,6 +1299,10 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
   const downloadApostilaPdf = async (a: Apostila) => {
     const t = toast.loading(`Gerando PDF de "${a.title}"…`);
     try {
+      const [{ exportApostilaToPDF }, { parseApostilaContent }] = await Promise.all([
+        import('@/lib/apostila-pdf'),
+        import('@/lib/apostila-parser'),
+      ]);
       const sections = parseApostilaContent(a.content || '');
       await exportApostilaToPDF({
         title: a.title,
@@ -2294,7 +2299,9 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                                 {/* Secondary actions — desktop only */}
                                 <div className="hidden lg:flex items-center gap-1">
                                   <ApostilaMaterialsManager apostilaId={a.id} apostilaTitle={a.title} />
-                                  <NewApostilaPageButton apostilaId={a.id} />
+                                  <React.Suspense fallback={null}>
+                                    <LazyNewApostilaPageButton apostilaId={a.id} />
+                                  </React.Suspense>
                                   <AppendLinkDialog
                                     apostilaId={a.id}
                                     apostilaTitle={a.title}

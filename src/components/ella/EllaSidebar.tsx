@@ -6,7 +6,9 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/useAuth";
-import { EllaChat } from "./EllaChat";
+import { lazy, Suspense } from "react";
+
+const EllaChat = lazy(() => import("./EllaChat").then((module) => ({ default: module.EllaChat })));
 import { getEllaAvatarUrl } from "@/lib/ellaAvatar";
 import { cn } from "@/lib/utils";
 
@@ -102,7 +104,15 @@ export function EllaSidebar() {
         </SheetTrigger>
         </motion.div>
         <SheetContent side="right" className="w-full sm:max-w-md p-0 flex flex-col pointer-events-auto">
-          <EllaChat contextHint={contextHint} compact onAfterAction={() => { /* could refetch */ }} />
+          <Suspense
+            fallback={
+              <div className="flex min-h-32 items-center justify-center text-sm text-muted-foreground" role="status">
+                Carregando a Ella…
+              </div>
+            }
+          >
+            <EllaChat contextHint={contextHint} compact onAfterAction={() => { /* could refetch */ }} />
+          </Suspense>
         </SheetContent>
       </Sheet>
     </div>

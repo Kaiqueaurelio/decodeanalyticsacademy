@@ -1,16 +1,27 @@
-import { Trophy, Zap, Flame, Star, Target, Crown, Award, BookOpen, GraduationCap, PenTool } from 'lucide-react';
+import { Trophy, Zap, Flame, Star, Crown, Award } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
 import { useGamification } from '@/hooks/useGamification';
-import { Reveal } from '@/components/Reveal';
 
 export function GamificationWidget() {
-  const { xp, streak, earnedBadgeIds, badges, xpForNextLevel } = useGamification();
+  const { xp, streak, earnedBadgeIds, badges, xpForNextLevel, loading } = useGamification();
+  const currentLevelXP = Math.max(0, (xp.level - 1) * 100);
   const nextLevelXP = xpForNextLevel(xp.level);
-  const progressXP = Math.round((xp.xp_points % 100)); // Simples progresso para o próximo nível
+  const levelRange = Math.max(1, nextLevelXP - currentLevelXP);
+  const levelProgressXP = Math.max(0, Math.min(xp.xp_points - currentLevelXP, levelRange));
+  const progressXP = Math.round((levelProgressXP / levelRange) * 100);
+
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3" aria-label="Carregando progresso">
+        {[1, 2, 3].map((item) => (
+          <div key={item} className="h-32 animate-pulse rounded-2xl border border-border bg-card/70" />
+        ))}
+      </div>
+    );
+  }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
       {/* XP e Nível */}
       <div className="relative overflow-hidden rounded-2xl border border-border bg-card p-4 group transition-all hover:shadow-[0_0_20px_rgba(168,85,247,0.15)]">
         <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
@@ -27,10 +38,14 @@ export function GamificationWidget() {
         </div>
         <div className="space-y-2">
           <div className="flex justify-between text-[10px] font-bold uppercase text-muted-foreground">
-            <span>{xp.xp_points % 100} / 100 XP</span>
+            <span>{levelProgressXP} / {levelRange} XP</span>
             <span>Prox. Nível</span>
           </div>
-          <Progress value={progressXP} className="h-2 bg-primary/10" />
+          <Progress
+            value={progressXP}
+            className="h-2 bg-primary/10"
+            aria-label={`${levelProgressXP} de ${levelRange} XP para o próximo nível`}
+          />
         </div>
       </div>
 
@@ -71,7 +86,7 @@ export function GamificationWidget() {
             </div>
           </div>
         </div>
-        <div className="flex flex-wrap gap-1">
+        <div className="flex flex-wrap gap-1" aria-label="Conquistas recentes">
           {badges.slice(0, 4).map(badge => (
             <div 
               key={badge.id} 

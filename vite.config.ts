@@ -30,9 +30,10 @@ export default defineConfig(({ mode }) => ({
         clientsClaim: true,
         cleanupOutdatedCaches: true,
         navigateFallbackDenylist: [/^\/~oauth/, /^\/api/, /^\/\.lovable\/oauth/, /^\/functions\/v1/],
-        // Precacheamos apenas recursos que garantidamente mudam de nome (hash) ou ativos
-        // estáticos globais. Ignoramos index.html para evitar o "App Shell" antigo.
-        globPatterns: ["**/*.{css,ico,svg,woff2,png}", "assets/*.js"],
+        // O app usa code splitting por rota. Não precachear todos os chunks JS
+        // evita baixar dezenas de megabytes no primeiro acesso; scripts e imagens
+        // continuam disponíveis via as estratégias de runtime abaixo.
+        globPatterns: ["**/*.css", "**/*.{ico,svg,woff2}"],
         globIgnores: ["index.html", "sw.js", "workbox-*.js"],
         maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
         runtimeCaching: [

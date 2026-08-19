@@ -26,8 +26,6 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { ActionSheet, type ActionItem } from '@/components/ActionSheet';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
-import { exportApostilaToPDF } from '@/lib/apostila-pdf';
-import { exportApostilaToDOCX } from '@/lib/apostila-docx';
 import {
   ArrowLeft, BookOpen, PenLine, Eye, List, X, MoreHorizontal,
   ChevronUp, StickyNote, Layers, Wand2, MessageSquare, Share2, CheckCircle2, Copy, Volume2,
@@ -217,6 +215,7 @@ export default function ApostilaPage({ tab, setTab }: Props) {
     setExportingPdf(true);
     const t = toast.loading('Gerando PDF da apostila…');
     try {
+      const { exportApostilaToPDF } = await import('@/lib/apostila-pdf');
       await exportApostilaToPDF({
         title: apostila.title,
         category: apostila.category,
@@ -236,6 +235,7 @@ export default function ApostilaPage({ tab, setTab }: Props) {
     setExportingPdf(true);
     const t = toast.loading('Gerando DOCX da apostila…');
     try {
+      const { exportApostilaToDOCX } = await import('@/lib/apostila-docx');
       await exportApostilaToDOCX({
         title: apostila.title,
         category: apostila.category,
