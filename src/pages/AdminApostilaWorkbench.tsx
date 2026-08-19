@@ -27,7 +27,7 @@ import { ensureApostilaExists } from '@/lib/create-placeholder-apostila';
 import { Badge } from '@/components/ui/badge';
 import { getSubjectColor } from '@/lib/subject-colors';
 import { parseApostilaContent } from '@/lib/apostila-parser';
-import { type ApostilaPage } from '@/lib/apostila-pages';
+import { type ApostilaPage, upsertApostilaPage } from '@/lib/apostila-pages';
 import { NewApostilaPageButton } from '@/components/NewApostilaPageButton';
 
 import {
@@ -354,11 +354,15 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         return;
       }
 
-      const { error } = await (supabase.from('apostila_pages' as any) as any)
-        .update({ 
+      const { data: savedPage, error } = await (supabase.from('apostila_pages' as any) as any)
+        .update({
           content,
           title: title.trim() || 'Nova Página'
-        }).eq('id', selectedPageId).eq('apostila_id', id);
+        })
+        .eq('id', selectedPageId)
+        .eq('apostila_id', id)
+        .select('*')
+        .single();
       
       setSaving(false);
       if (error) { 
@@ -368,11 +372,16 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       }
       
       const savedAt = new Date().toISOString();
-      setPages((current) => current.map((page) =>
-        page.id === selectedPageId
-          ? { ...page, content, title: title.trim() || 'Nova Página', updated_at: savedAt }
-          : page
-      ));
+      const pageToDisplay = (savedPage as ApostilaPage | null) ?? {
+        id: selectedPageId,
+        apostila_id: id,
+        title: title.trim() || 'Nova Página',
+        content,
+        position: pages.length,
+        created_at: savedAt,
+        updated_at: savedAt,
+      };
+      setPages((current) => upsertApostilaPage(current, pageToDisplay));
 
       // O RLS do leitor só libera apostila_pages quando a apostila-pai está publicada.
       // Ao salvar conteúdo real numa página, publique a apostila sem sobrescrever o

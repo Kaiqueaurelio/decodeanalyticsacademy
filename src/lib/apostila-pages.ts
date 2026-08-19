@@ -10,6 +10,14 @@ export interface ApostilaPage {
   updated_at: string;
 }
 
+export function upsertApostilaPage(pages: ApostilaPage[], savedPage: ApostilaPage) {
+  const exists = pages.some((page) => page.id === savedPage.id);
+  const next = exists
+    ? pages.map((page) => page.id === savedPage.id ? savedPage : page)
+    : [...pages, savedPage];
+  return next.sort((a, b) => a.position - b.position);
+}
+
 export async function createApostilaPage(apostilaId: string, userId: string) {
   const { data: existing, error: readError } = await (supabase.from('apostila_pages' as any) as any)
     .select('position')
