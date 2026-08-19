@@ -207,6 +207,8 @@ export default function LoginPage() {
       return;
     }
 
+    // Se for e-mail administrativo (decianalytics/decoanalytics) ou RA, passamos pela Edge Function ra-auth.
+    // Isso é necessário porque o usuário admin G802144/decoanalytics usa um fluxo de normalização especial.
     if (!isEmail || isSpecial) {
       const { data, message, code } = await callRaAuth({ mode: 'signin', ra: identifierForAuth, password });
       if (!data?.session) {
@@ -231,7 +233,7 @@ export default function LoginPage() {
       try {
         const { data: { user: currentUser } } = await supabase.auth.getUser();
         if (currentUser) await supabase.from('compliance_logs').insert({ user_id: currentUser.id, terms_version: TERMS_VERSION, privacy_version: TERMS_VERSION });
-      } catch (err) { console.error('Falha ao logar compliance (RA):', err); }
+      } catch (err) { console.error('Falha ao logar compliance (RA/Admin):', err); }
       setLoading(false);
       persistSuccessfulLogin(identifierForAuth);
       return;

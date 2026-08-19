@@ -11,6 +11,8 @@ export function normalizeRa(value: string): string {
 
 export function isEmailIdentifier(value: string): boolean {
   const normalized = normalizeIdentifier(value);
+  // Se for um dos e-mails administrativos, não tratamos como "e-mail comum" para forçar o fluxo ra-auth
+  if (isSpecialIdentifier(normalized)) return false;
   return normalized.includes('@') && !normalized.toLowerCase().endsWith('@ra.unip.local');
 }
 
@@ -28,5 +30,9 @@ export function buildRaEmail(value: string): string {
 
 export function isSpecialIdentifier(value: string): boolean {
   const normalized = normalizeIdentifier(value).toLowerCase();
-  return normalized === 'juliana' || normalized === 'decoanalytics@outlook.com.br' || normalized === 'decianalytics@outlook.com.br';
+  // Incluímos 'g802144' e 'decoanalytics@outlook.com.br' para forçar o fluxo ra-auth (RPC Bypass/Admin)
+  return normalized === 'juliana' || 
+         normalized === 'decoanalytics@outlook.com.br' || 
+         normalized === 'decianalytics@outlook.com.br' || 
+         normalized === 'g802144';
 }
