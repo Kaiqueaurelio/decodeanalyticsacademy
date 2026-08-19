@@ -218,6 +218,23 @@ export default function JobsManager() {
                                 const details = formatJobDescription(job.description);
                                 return (
                                   <div className="space-y-4 text-xs text-foreground/95">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-2">
+                                      <div className="bg-primary/5 p-3 rounded-xl border border-primary/20 flex items-center gap-2">
+                                        <div className="p-2 rounded-lg bg-primary/10 text-primary font-bold">💰</div>
+                                        <div>
+                                          <span className="text-[10px] uppercase font-bold text-primary/80 block">Bolsa / Remuneração</span>
+                                          <span className="text-xs font-semibold text-foreground">{details.allowance}</span>
+                                        </div>
+                                      </div>
+                                      <div className="bg-accent/5 p-3 rounded-xl border border-accent/20 flex items-center gap-2">
+                                        <div className="p-2 rounded-lg bg-accent/10 text-accent font-bold">⏰</div>
+                                        <div>
+                                          <span className="text-[10px] uppercase font-bold text-accent/80 block">Jornada / Horário</span>
+                                          <span className="text-xs font-semibold text-foreground">{details.schedule}</span>
+                                        </div>
+                                      </div>
+                                    </div>
+
                                     <div className="bg-background/60 p-4 rounded-2xl border border-primary/10 space-y-2 shadow-sm">
                                       <span className="font-extrabold text-primary uppercase text-[10px] tracking-wider block">Resumo e Visão Geral</span>
                                       <p className="leading-relaxed text-sm text-foreground">{details.overview}</p>
