@@ -1,36 +1,59 @@
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const RA_RE = /^[A-Z0-9]{6,13}$/;
-
+/**
+ * Normaliza o identificador removendo espaços e caracteres invisíveis.
+ */
 export function normalizeIdentifier(value: string): string {
-  return value.replace(/[\u200B-\u200D\uFEFF]/g, '').trim();
+  return (value || "").replace(/[\u200B-\u200D\uFEFF]/g, "").trim();
 }
 
+/**
+ * Normaliza especificamente um RA removendo hífens, pontos e espaços.
+ */
 export function normalizeRa(value: string): string {
-  return normalizeIdentifier(value).replace(/[\s._-]/g, '').toUpperCase();
+  return normalizeIdentifier(value).replace(/[\s._-]/g, "").toUpperCase();
 }
 
+/**
+ * Constrói o e-mail fictício para login por RA no Supabase Auth.
+ */
+export function buildRaEmail(ra: string): string {
+  const cleanRa = normalizeRa(ra).toLowerCase();
+  return `${cleanRa}@ra.unip.local`;
+}
+
+/**
+ * Verifica se o identificador é um e-mail.
+ */
 export function isEmailIdentifier(value: string): boolean {
   const normalized = normalizeIdentifier(value);
-  // Se for um dos e-mails administrativos, não tratamos como "e-mail comum" para forçar o fluxo ra-auth
-  if (isSpecialIdentifier(normalized)) return false;
   return normalized.includes('@') && !normalized.toLowerCase().endsWith('@ra.unip.local');
 }
 
-export function isValidEmail(value: string): boolean {
-  return EMAIL_RE.test(normalizeIdentifier(value));
+/**
+ * Alias para isEmailIdentifier para manter compatibilidade com testes e outros componentes.
+ */
+export const isValidEmail = isEmailIdentifier;
+
+/**
+ * Verifica se o identificador é um RA (Registro Acadêmico).
+ */
+export function isRaIdentifier(value: string): boolean {
+  const normalized = normalizeIdentifier(value);
+  if (isSpecialIdentifier(normalized)) return true;
+  // Padrão RA UNIP: Letras e números, geralmente 6-15 caracteres
+  return /^[A-Z0-9]{6,15}$/i.test(normalized) || normalized.toLowerCase().startsWith('g');
 }
 
-export function isValidRa(value: string): boolean {
-  return RA_RE.test(normalizeRa(value));
-}
+/**
+ * Alias para isRaIdentifier para manter compatibilidade com testes e outros componentes.
+ */
+export const isValidRa = isRaIdentifier;
 
-export function buildRaEmail(value: string): string {
-  return `${normalizeRa(value).toLowerCase()}@ra.unip.local`;
-}
-
+/**
+ * Lista de identificadores que requerem processamento especial via ra-auth
+ */
 export function isSpecialIdentifier(value: string): boolean {
   const normalized = normalizeIdentifier(value).toLowerCase();
-  // Incluímos 'g802144' e 'decoanalytics@outlook.com.br' para forçar o fluxo ra-auth (RPC Bypass/Admin)
+  // 'g802144' e 'decoanalytics@outlook.com.br' precisam do ra-auth para mapeamento/RPC
   return normalized === 'juliana' || 
          normalized === 'decoanalytics@outlook.com.br' || 
          normalized === 'decianalytics@outlook.com.br' || 
