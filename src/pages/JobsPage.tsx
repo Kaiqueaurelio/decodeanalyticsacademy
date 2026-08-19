@@ -10,6 +10,8 @@ import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
+import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { BriefcaseBusiness, Building2, CheckCircle2, ExternalLink, Filter, Globe2, Loader2, MapPin, Search, Sparkles, WalletCards } from 'lucide-react';
 
@@ -24,7 +26,7 @@ type Job = {
   location: string | null;
   type: JobType;
   salary_range: string | null;
-  application_link: string;
+  application_link: string | null;
   is_active: boolean;
   published_at: string | null;
 };
@@ -35,7 +37,8 @@ const JOB_TYPE_LABELS: Record<JobType, string> = {
   freelance: 'Freelance',
 };
 
-function isValidApplicationUrl(value: string): boolean {
+function isValidApplicationUrl(value: string | null | undefined): boolean {
+  if (!value) return false;
   try {
     const url = new URL(value.trim());
     return url.protocol === 'https:' || url.protocol === 'http:';
@@ -46,6 +49,7 @@ function isValidApplicationUrl(value: string): boolean {
 
 export default function JobsPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');
@@ -54,19 +58,34 @@ export default function JobsPage() {
 
   useEffect(() => {
     let cancelled = false;
+    setLoading(true);
     (async () => {
-      const { data, error } = await (supabase as any)
-        .from('jobs')
-        .select('id,title,company_name,company_logo_url,description,requirements,location,type,salary_range,application_link,is_active,published_at')
-        .eq('is_active', true)
-        .order('published_at', { ascending: false });
+      const publicFields = 'id,title,company_name,company_logo_url,description,requirements,location,type,salary_range,is_active,published_at';
+      const authenticatedFields = `${publicFields},application_link`;
+      const result = user
+        ? await (supabase as any)
+            .from('jobs')
+            .select(authenticatedFields)
+            .eq('is_active', true)
+            .order('published_at', { ascending: false })
+        : await (supabase as any).rpc('get_public_jobs');
+
       if (cancelled) return;
-      if (error) console.error('[JobsPage] Erro ao carregar vagas:', error);
-      setJobs((data as Job[]) || []);
+      if (result.error) {
+        console.error('[JobsPage] Erro ao carregar vagas:', result.error);
+        setJobs([]);
+      } else {
+        const rows = (result.data || []) as Job[];
+        setJobs(user ? rows : rows.map((job) => ({ ...job, application_link: null })));
+      }
       setLoading(false);
     })();
     return () => { cancelled = true; };
-  }, []);
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!user) setSelected(null);
+  }, [user]);
 
   const filteredJobs = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -76,9 +95,34 @@ export default function JobsPage() {
     });
   }, [jobs, query, typeFilter]);
 
+  const requireLogin = (action: 'details' | 'application') => {
+    toast.info(action === 'details' ? 'Entre para ver os detalhes completos' : 'Entre para se candidatar', {
+      description: 'As oportunidades ficam públicas; a autenticação é necessária para continuar.',
+      action: {
+        label: 'Entrar',
+        onClick: () => navigate('/login', { state: { from: '/vagas', intendedAction: action } }),
+      },
+    });
+  };
+
   const openApplication = (job: Job) => {
-    if (!isValidApplicationUrl(job.application_link)) return;
+    if (!user) {
+      requireLogin('application');
+      return;
+    }
+    if (!isValidApplicationUrl(job.application_link)) {
+      toast.error('Esta vaga não possui um link de candidatura válido no momento.');
+      return;
+    }
     window.open(job.application_link, '_blank', 'noopener,noreferrer');
+  };
+
+  const openDetails = (job: Job) => {
+    if (!user) {
+      requireLogin('details');
+      return;
+    }
+    setSelected(job);
   };
 
   const stats = [
@@ -114,7 +158,7 @@ export default function JobsPage() {
             <select value={typeFilter} onChange={(event) => setTypeFilter(event.target.value as 'all' | JobType)} className="h-10 rounded-md border border-input bg-background px-3 text-sm"><option value="all">Todos os tipos</option>{Object.entries(JOB_TYPE_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
           </div>
         </section>
-        {loading ? <div className="flex items-center justify-center gap-2 py-16 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Carregando oportunidades...</div> : filteredJobs.length === 0 ? <div className="rounded-2xl border border-dashed border-border p-14 text-center"><BriefcaseBusiness className="mx-auto mb-3 h-10 w-10 text-primary/40" /><p className="text-sm font-medium">Nenhuma vaga encontrada</p><p className="mt-1 text-xs text-muted-foreground">Tente mudar a busca ou volte mais tarde para conferir novas oportunidades.</p></div> : <section className="grid gap-4 lg:grid-cols-2">{filteredJobs.map((job) => <article key={job.id} className="rounded-2xl border border-border bg-card/80 p-4 shadow-sm transition-colors hover:border-primary/35 sm:p-5"><div className="flex gap-3 sm:gap-4"><div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary sm:h-12 sm:w-12">{job.company_logo_url ? <img src={job.company_logo_url} alt={job.company_name} className="h-10 w-10 rounded-lg object-contain sm:h-11 sm:w-11" /> : <BriefcaseBusiness className="h-5 w-5" />}</div><div className="min-w-0 flex-1 space-y-3"><div className="flex flex-wrap items-center gap-1.5"><Badge variant="outline" className="h-5 rounded-full px-2 text-[10px]">{JOB_TYPE_LABELS[job.type]}</Badge>{job.type === 'internship' && <Badge variant="secondary" className="h-5 rounded-full px-2 text-[10px]">Entrada para estudantes</Badge>}</div><div><h2 className="text-base font-bold leading-snug sm:text-lg">{job.title}</h2><p className="mt-1 text-xs font-medium text-primary">{job.company_name}</p></div><div className="grid grid-cols-1 gap-2 text-xs text-muted-foreground sm:grid-cols-2"><span className="inline-flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5 text-primary" /> {job.location || 'Remoto'}</span><span className="inline-flex items-center gap-1.5"><WalletCards className="h-3.5 w-3.5 text-primary" /> {job.salary_range || 'Salário a combinar'}</span></div><p className="line-clamp-3 text-xs leading-5 text-muted-foreground sm:text-sm">{job.description}</p><div className="flex flex-wrap items-center gap-2 pt-1"><Button size="sm" className="h-8 gap-1.5 text-xs" disabled={!isValidApplicationUrl(job.application_link)} onClick={() => openApplication(job)}><ExternalLink className="h-3.5 w-3.5" /> Candidatar-se</Button><Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => setSelected(job)}>Ver detalhes</Button></div></div></div></article>)}</section>}
+        {loading ? <div className="flex items-center justify-center gap-2 py-16 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Carregando oportunidades...</div> : filteredJobs.length === 0 ? <div className="rounded-2xl border border-dashed border-border p-14 text-center"><BriefcaseBusiness className="mx-auto mb-3 h-10 w-10 text-primary/40" /><p className="text-sm font-medium">Nenhuma vaga encontrada</p><p className="mt-1 text-xs text-muted-foreground">Tente mudar a busca ou volte mais tarde para conferir novas oportunidades.</p></div> : <section className="grid gap-4 lg:grid-cols-2">{filteredJobs.map((job) => <article key={job.id} className="rounded-2xl border border-border bg-card/80 p-4 shadow-sm transition-colors hover:border-primary/35 sm:p-5"><div className="flex gap-3 sm:gap-4"><div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary sm:h-12 sm:w-12">{job.company_logo_url ? <img src={job.company_logo_url} alt={job.company_name} className="h-10 w-10 rounded-lg object-contain sm:h-11 sm:w-11" /> : <BriefcaseBusiness className="h-5 w-5" />}</div><div className="min-w-0 flex-1 space-y-3"><div className="flex flex-wrap items-center gap-1.5"><Badge variant="outline" className="h-5 rounded-full px-2 text-[10px]">{JOB_TYPE_LABELS[job.type]}</Badge>{job.type === 'internship' && <Badge variant="secondary" className="h-5 rounded-full px-2 text-[10px]">Entrada para estudantes</Badge>}</div><div><h2 className="text-base font-bold leading-snug sm:text-lg">{job.title}</h2><p className="mt-1 text-xs font-medium text-primary">{job.company_name}</p></div><div className="grid grid-cols-1 gap-2 text-xs text-muted-foreground sm:grid-cols-2"><span className="inline-flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5 text-primary" /> {job.location || 'Remoto'}</span><span className="inline-flex items-center gap-1.5"><WalletCards className="h-3.5 w-3.5 text-primary" /> {job.salary_range || 'Salário a combinar'}</span></div><p className="line-clamp-3 text-xs leading-5 text-muted-foreground sm:text-sm">{job.description}</p><div className="flex flex-wrap items-center gap-2 pt-1"><Button size="sm" className="h-8 gap-1.5 text-xs" onClick={() => openApplication(job)}><ExternalLink className="h-3.5 w-3.5" /> Candidatar-se</Button><Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => openDetails(job)}>Saiba mais</Button></div></div></div></article>)}</section>}
         <div className="mt-8"><AdBanner position="inline" /></div>
       </main>
       <Dialog open={!!selected} onOpenChange={(open) => !open && setSelected(null)}><DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">{selected && <><DialogHeader><DialogTitle className="pr-6 text-xl">{selected.title}</DialogTitle><p className="text-sm text-primary">{selected.company_name} · {selected.location || 'Remoto'}</p></DialogHeader><div className="space-y-4 text-sm"><div className="flex flex-wrap gap-2"><Badge variant="outline">{JOB_TYPE_LABELS[selected.type]}</Badge><Badge variant="outline">{selected.salary_range || 'Salário a combinar'}</Badge></div><Separator /><div className="whitespace-pre-wrap leading-6 text-muted-foreground">{selected.description}</div>{selected.requirements && <div><h3 className="mb-2 font-semibold text-foreground">Requisitos</h3><div className="whitespace-pre-wrap leading-6 text-muted-foreground">{selected.requirements}</div></div>}</div><DialogFooter><Button variant="outline" onClick={() => setSelected(null)}>Fechar</Button><Button disabled={!isValidApplicationUrl(selected.application_link)} onClick={() => openApplication(selected)} className="gap-1.5"><ExternalLink className="h-4 w-4" /> Candidatar-se no site da empresa</Button></DialogFooter></>}</DialogContent></Dialog>
