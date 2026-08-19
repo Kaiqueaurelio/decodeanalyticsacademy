@@ -209,7 +209,7 @@ export default function LoginPage() {
 
     // Se for e-mail administrativo (decianalytics/decoanalytics) ou RA, passamos pela Edge Function ra-auth.
     // Isso é necessário porque o usuário admin G802144/decoanalytics usa um fluxo de normalização especial.
-    if (isSpecial || !isEmail) {
+    if (!isEmail || isSpecial) {
       const { data, message, code } = await callRaAuth({ mode: 'signin', ra: identifierForAuth, password });
       if (!data?.session) {
         setLoading(false);
