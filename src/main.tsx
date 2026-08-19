@@ -4,6 +4,7 @@ import "./index.css";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { installPerfMonitor } from "./lib/perf-monitor";
 import { installRuntimeLogger } from "./lib/runtime-logs";
+import { checkAndCleanOldCaches } from "./lib/cacheBuster";
 
 // Remove credenciais antigas que foram salvas em base64 pelo fluxo "lembrar-me".
 // O app pode lembrar apenas o identificador; senha deve ficar com o navegador/gerenciador de senhas.
@@ -22,6 +23,7 @@ import { installRuntimeLogger } from "./lib/runtime-logs";
 })();
 
 installRuntimeLogger();
+checkAndCleanOldCaches();
 installPerfMonitor();
 
 window.addEventListener("error", (event) => {

@@ -40,7 +40,7 @@ export default defineConfig(({ mode }) => ({
             urlPattern: ({ request }) => request.mode === "navigate",
             handler: "NetworkFirst", // Tenta rede, volta para cache se offline
             options: {
-              cacheName: "decode-html-v3",
+              cacheName: "decode-html-v4",
               expiration: { maxEntries: 5, maxAgeSeconds: 24 * 60 * 60 },
             }
           },
@@ -48,7 +48,7 @@ export default defineConfig(({ mode }) => ({
             urlPattern: ({ request }) => request.destination === "script",
             handler: "NetworkFirst", // Tenta rede, volta para cache se offline
             options: {
-              cacheName: "decode-scripts-v3",
+              cacheName: "decode-scripts-v4",
               expiration: { maxEntries: 50, maxAgeSeconds: 24 * 60 * 60 },
             }
           },
@@ -56,7 +56,7 @@ export default defineConfig(({ mode }) => ({
             urlPattern: ({ request }) => request.destination === "style",
             handler: "StaleWhileRevalidate",
             options: {
-              cacheName: "decode-css-v3",
+              cacheName: "decode-css-v4",
               expiration: {
                 maxEntries: 30,
                 maxAgeSeconds: 60 * 60,
@@ -67,7 +67,7 @@ export default defineConfig(({ mode }) => ({
             urlPattern: ({ request }) => request.destination === "image",
             handler: "CacheFirst",
             options: {
-              cacheName: "decode-images-v3",
+              cacheName: "decode-images-v4",
               expiration: {
                 maxEntries: 120,
                 maxAgeSeconds: 7 * 24 * 60 * 60,
