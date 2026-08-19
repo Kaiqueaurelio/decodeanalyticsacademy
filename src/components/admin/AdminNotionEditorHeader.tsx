@@ -22,8 +22,8 @@ import {
   FilePlus2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { COURSE_OPTIONS, type CourseCode } from '@/lib/subject-semester-map';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -45,6 +45,8 @@ interface ApostilaHealthBarProps {
   materialCount: number;
   onPasteOpen: () => void;
   onAddPage: () => void;
+  course?: CourseCode[];
+  onCourseChange?: (course: CourseCode[]) => void;
 }
 
 export function ApostilaHealthBar({
@@ -60,7 +62,9 @@ export function ApostilaHealthBar({
   exerciseCount,
   materialCount,
   onPasteOpen,
-  onAddPage
+  onAddPage,
+  course = [],
+  onCourseChange,
 }: ApostilaHealthBarProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false);
 
@@ -292,12 +296,37 @@ export function ApostilaHealthBar({
           </Button>
         </div>
 
-        {/* Course Badges & Subject Info */}
+        {/* Cursos associados à apostila */}
         <div className="ml-auto flex items-center gap-2">
-          <div className="flex items-center gap-1">
-            {['CC', 'SI', 'EC'].map(c => (
-              <Badge key={c} variant="outline" className="text-[9px] font-black h-5 px-1.5 border-border/50 bg-background/80">{c}</Badge>
-            ))}
+          <div className="flex items-center gap-1" aria-label="Cursos associados à apostila">
+            {COURSE_OPTIONS.map((courseCode) => {
+              const selected = course.includes(courseCode);
+              return (
+                <Button
+                  key={courseCode}
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  aria-label={`Curso ${courseCode}`}
+                  aria-pressed={selected}
+                  title={selected ? `Remover ${courseCode} desta apostila` : `Associar ${courseCode} a esta apostila`}
+                  onClick={() => {
+                    const nextCourse = selected
+                      ? course.filter((item) => item !== courseCode)
+                      : [...course, courseCode];
+                    onCourseChange?.(nextCourse);
+                  }}
+                  className={cn(
+                    'h-7 min-w-10 px-2 text-[10px] font-black transition-colors',
+                    selected
+                      ? 'border-primary bg-primary text-primary-foreground hover:bg-primary/90'
+                      : 'border-border/50 bg-background/80 hover:border-primary/60 hover:bg-primary/10',
+                  )}
+                >
+                  {courseCode}
+                </Button>
+              );
+            })}
           </div>
           <div className="h-6 w-[1px] bg-border/40 mx-1" />
           <Button variant="ghost" size="sm" className="h-8 gap-1.5 px-2.5 text-[11px] font-bold border border-border/50 bg-background/80">

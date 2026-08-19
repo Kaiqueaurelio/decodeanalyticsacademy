@@ -22,7 +22,7 @@ import { ManualLinkMaterialsDialog } from '@/components/ManualLinkMaterialsDialo
 import { QuickAddSectionDialog } from '@/components/admin/QuickAddSectionDialog';
 import { autoLinkApostila } from '@/lib/auto-link-materials';
 import { ApostilaContentRenderer } from '@/components/ApostilaContentRenderer';
-import { guessSemesterFromCategory, SEMESTER_OPTIONS, COURSE_OPTIONS, type CourseCode } from '@/lib/subject-semester-map';
+import { guessSemesterFromCategory, SEMESTER_OPTIONS, type CourseCode } from '@/lib/subject-semester-map';
 import { ensureApostilaExists } from '@/lib/create-placeholder-apostila';
 import { Badge } from '@/components/ui/badge';
 import { getSubjectColor } from '@/lib/subject-colors';
@@ -698,6 +698,8 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         wordCount={content.trim() ? content.trim().split(/\s+/).length : 0}
         exerciseCount={exerciseCount}
         materialCount={linkedMaterials.length}
+        course={course}
+        onCourseChange={setCourse}
         onPasteOpen={() => setPasteOpen(true)}
         onAddPage={() => {
           // Tenta sugerir um número baseado no conteúdo atual
