@@ -223,3 +223,162 @@
   content-visibility: auto;
   contain-intrinsic-size: auto 640px;
 }
+
+/* Login inspirado no vídeo de referência: terminal escuro, cyan neon e card compacto. */
+body:has(#identifier) {
+  background: #050b0d;
+}
+
+body:has(#identifier) > #root [class*="bg-[#0b0f0d]"] {
+  background:
+    radial-gradient(circle at 50% 26%, rgba(0, 245, 239, 0.14), transparent 34%),
+    radial-gradient(circle at 14% 16%, rgba(0, 245, 239, 0.08), transparent 28%),
+    linear-gradient(180deg, #04090b 0%, #071313 54%, #05090a 100%) !important;
+}
+
+body:has(#identifier) > #root [class*="selection:bg-[#d7ff4f]"] {
+  color: #f4fffd !important;
+}
+
+body:has(#identifier) > #root [class*="#d7ff4f"] {
+  color: #18f7f0 !important;
+}
+
+body:has(#identifier) > #root [class*="bg-[#d7ff4f]"] {
+  background-color: #18f7f0 !important;
+  color: #061011 !important;
+}
+
+body:has(#identifier) > #root [class*="hover:bg-[#e5ff8b]"]:hover {
+  background-color: #8ffffb !important;
+}
+
+body:has(#identifier) > #root [class*="border-[#d7ff4f]"] {
+  border-color: rgba(24, 247, 240, 0.58) !important;
+}
+
+body:has(#identifier) > #root [class*="focus-visible:border-[#d7ff4f]"]:focus-visible {
+  border-color: #18f7f0 !important;
+  box-shadow: 0 0 0 2px rgba(24, 247, 240, 0.18), 0 0 28px rgba(24, 247, 240, 0.16) !important;
+}
+
+body:has(#identifier) main > header {
+  position: relative;
+  max-width: 1120px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  border-radius: 0 0 16px 16px;
+  background: rgba(8, 17, 19, 0.82);
+  box-shadow: 0 18px 70px rgba(0, 0, 0, 0.28);
+}
+
+body:has(#identifier) main > header::before {
+  content: "";
+  width: 38px;
+  height: 10px;
+  margin-right: 10px;
+  flex: 0 0 auto;
+  background: radial-gradient(circle, #ff5f57 0 3px, transparent 3.5px), radial-gradient(circle, #ffbd2e 0 3px, transparent 3.5px), radial-gradient(circle, #28c840 0 3px, transparent 3.5px);
+  background-position: 0 50%, 14px 50%, 28px 50%;
+  background-repeat: no-repeat;
+}
+
+body:has(#identifier) main > header span:last-child {
+  text-transform: lowercase;
+  letter-spacing: 0.12em;
+}
+
+body:has(#identifier) main > div.grid {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+  grid-template-columns: minmax(0, 1fr) !important;
+  align-content: center;
+  gap: 1.1rem !important;
+  padding-top: 1.5rem !important;
+}
+
+body:has(#identifier) section.hidden.lg\:block {
+  display: block !important;
+  max-width: 100% !important;
+  text-align: center;
+}
+
+body:has(#identifier) section.hidden.lg\:block > div:first-child {
+  justify-content: center;
+  margin-bottom: 0.75rem !important;
+  color: rgba(24, 247, 240, 0.86) !important;
+}
+
+body:has(#identifier) section.hidden.lg\:block > div:nth-child(2) {
+  justify-content: center;
+}
+
+body:has(#identifier) section.hidden.lg\:block > div:nth-child(2) > div:first-child,
+body:has(#identifier) section.hidden.lg\:block > p,
+body:has(#identifier) section.hidden.lg\:block .mt-12 {
+  display: none !important;
+}
+
+body:has(#identifier) section.hidden.lg\:block h1 {
+  font-size: clamp(2.35rem, 8vw, 4.7rem) !important;
+  line-height: 0.92 !important;
+  letter-spacing: 0 !important;
+  text-align: center;
+  text-shadow: 0 10px 36px rgba(0, 0, 0, 0.42);
+}
+
+body:has(#identifier) section.hidden.lg\:block h1 span {
+  color: #18f7f0 !important;
+  text-shadow: 0 0 26px rgba(24, 247, 240, 0.36) !important;
+}
+
+body:has(#identifier) section.w-full {
+  max-width: 512px;
+  margin: 0 auto;
+}
+
+body:has(#identifier) section.w-full > div:first-child {
+  border-radius: 22px !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  background: linear-gradient(180deg, rgba(30, 47, 48, 0.9), rgba(12, 25, 23, 0.96)) !important;
+  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.46), 0 0 60px rgba(24, 247, 240, 0.09) !important;
+}
+
+body:has(#identifier) input {
+  border-radius: 12px !important;
+  background: rgba(2, 12, 13, 0.64) !important;
+}
+
+body:has(#identifier) #identifier:focus,
+body:has(#identifier) #password:focus,
+body:has(#identifier) #resetEmail:focus {
+  border-color: rgba(24, 247, 240, 0.82) !important;
+  box-shadow: 0 0 0 2px rgba(24, 247, 240, 0.12), inset 0 0 0 1px rgba(24, 247, 240, 0.14), 0 0 22px rgba(24, 247, 240, 0.18) !important;
+}
+
+body:has(#identifier) [class*="shadow-[0_0_14px_#d7ff4f]"] {
+  box-shadow: 0 0 18px rgba(24, 247, 240, 0.7) !important;
+}
+
+body:has(#identifier) [class*="shadow-[0_0_25px"] {
+  box-shadow: 0 0 26px rgba(24, 247, 240, 0.2) !important;
+}
+
+@media (max-width: 640px) {
+  body:has(#identifier) main {
+    padding-left: 0.9rem !important;
+    padding-right: 0.9rem !important;
+  }
+
+  body:has(#identifier) main > header {
+    font-size: 8px;
+    gap: 0.65rem;
+  }
+
+  body:has(#identifier) section.hidden.lg\:block h1 {
+    font-size: clamp(2.6rem, 14vw, 4.1rem) !important;
+  }
+}
