@@ -49,7 +49,7 @@ export function useSocialFeatures(apostilaId: string) {
           .select('*')
           .eq('apostila_id', apostilaId)
           .eq('user_id', user.id)
-          .single();
+          .maybeSingle();
 
         setUserLiked(!!userLike);
       }

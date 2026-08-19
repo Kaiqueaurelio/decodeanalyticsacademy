@@ -47,6 +47,9 @@ BEGIN
 END $$;
 
 -- 2. Ensure secure RPC function to check exercise answer
+-- The return type changed from the legacy JSON contract, so drop the old overload first.
+DROP FUNCTION IF EXISTS public.check_exercise_answer(UUID, TEXT);
+
 CREATE OR REPLACE FUNCTION public.check_exercise_answer(
     p_exercise_id UUID,
     p_user_answer TEXT
@@ -86,5 +89,5 @@ BEGIN
     SELECT v_is_correct, v_correct_answer, v_explanation, v_reference_answer;
 END $$;
 
+REVOKE ALL ON FUNCTION public.check_exercise_answer(UUID, TEXT) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.check_exercise_answer(UUID, TEXT) TO authenticated;
-GRANT EXECUTE ON FUNCTION public.check_exercise_answer(UUID, TEXT) TO anon;

@@ -21,8 +21,10 @@ import {
 // Provedor único e obrigatório: API oficial do Google (endpoint OpenAI-compatível,
 // com suporte a tool calling e streaming). Nenhum outro provedor é usado.
 const GOOGLE_URL = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
-const GOOGLE_MODEL = "gemini-2.0-flash";
-const GOOGLE_FALLBACK_MODEL = "gemini-1.5-flash";
+// Modelos estáveis documentados pelo Google para a compatibilidade OpenAI.
+// O fallback lite reduz custo/latência quando o modelo principal está indisponível.
+const GOOGLE_MODEL = "gemini-2.5-flash";
+const GOOGLE_FALLBACK_MODEL = "gemini-2.5-flash-lite";
 
 type ChatMsg = {
   role: "system" | "user" | "assistant" | "tool";
@@ -1118,8 +1120,8 @@ Proibido: mencionar "IA", "modelo de linguagem", "Lovable", "Gemini" ou qualquer
         }),
       });
 
-    // Chamada resiliente: tenta o modelo principal, cai para o secundário do Google
-    // e remove o parâmetro de raciocínio se o endpoint reclamar (400).
+    // Chamada resiliente: tenta o modelo principal, cai para o secundário estável
+    // do Google e remove o parâmetro de raciocínio se o endpoint reclamar (400).
     const requestModel = async (stream: boolean): Promise<Response | { errorStatus: number; errorText: string }> => {
       let res = await callModel(currentModel, stream);
       if (res.status === 400 && effort) {

@@ -21,26 +21,23 @@ export const HallOfFame = () => {
   useEffect(() => {
     const fetchRanking = async () => {
       try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select(`
-            full_name,
-            avatar_url,
-            user_xp (xp_points, level),
-            study_streaks (current_streak)
-          `)
-          .order('user_xp(xp_points)', { ascending: false })
-          .limit(5);
+        // Use o RPC seguro: a relação PostgREST profiles -> user_xp não é
+        // garantida em todos os ambientes e expunha uma consulta 400.
+        const { data, error } = await supabase.rpc('get_public_leaderboard', { _limit: 5 });
 
         if (error) throw error;
 
-        const formattedData = (data || []).map((item: any) => ({
-          full_name: item.full_name || 'Estudante Anônimo',
-          xp_points: item.user_xp?.[0]?.xp_points || 0,
-          level: item.user_xp?.[0]?.level || 1,
-          avatar_url: item.avatar_url,
-          current_streak: item.study_streaks?.[0]?.current_streak || 0
-        })).filter(u => u.xp_points > 0);
+        const formattedData = (data || [])
+          .map((item) => ({
+            full_name: item.full_name || 'Estudante Anônimo',
+            xp_points: item.xp_points || 0,
+            level: item.level || 1,
+            // O RPC público não retorna avatar nem streak; manter fallback
+            // neutro evita novas consultas amplas em tabelas protegidas.
+            avatar_url: null,
+            current_streak: 0,
+          }))
+          .filter((u) => u.xp_points > 0);
 
         setRanking(formattedData);
       } catch (err) {

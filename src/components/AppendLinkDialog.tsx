@@ -85,15 +85,16 @@ export function AppendLinkDialog({ apostilaId, apostilaTitle, currentContent, tr
         mergedContent = `${mergedContent}\n\n---\n\n## ${newTitle}\n\n_Fonte: ${url}_\n\n${newContent}`.trim();
 
         if (newExercises.length > 0) {
-          const { error: exErr } = await supabase.from('exercises').insert(
-            newExercises.map((ex: any) => ({
+          const results = await Promise.all(newExercises.map((ex: any) => (supabase as any).rpc('admin_create_exercise', {
+            _payload: {
               apostila_id: apostilaId,
               question: ex.question,
               options: ex.options,
               correct_answer: ex.correct_answer,
               explanation: ex.explanation || null,
-            }))
-          );
+            },
+          })));
+          const exErr = results.find((result: any) => result.error)?.error;
           if (exErr) console.warn('[AppendLink] erro ao salvar exercícios:', exErr);
           else totalNewExercises += newExercises.length;
         }

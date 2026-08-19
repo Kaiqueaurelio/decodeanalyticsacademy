@@ -10,12 +10,15 @@ async def main():
         context = await browser.new_context(viewport={"width": 1280, "height": 1800})
         page = await context.new_page()
 
-        # Tentar autenticar como o aluno de teste se possível, ou usar o admin
-        # O usuário decoanalytics@outlook.com.br / Aurelio0496@@## é admin
-        
+        # Credenciais nunca ficam versionadas; forneça-as apenas no ambiente de execução.
+        admin_email = os.environ.get('TEST_ADMIN_EMAIL')
+        admin_password = os.environ.get('TEST_ADMIN_PASSWORD')
+        if not admin_email or not admin_password:
+            raise RuntimeError('Defina TEST_ADMIN_EMAIL e TEST_ADMIN_PASSWORD para executar este teste.')
+
         await page.goto("http://localhost:8080/login")
-        await page.fill('input[type="email"]', 'decoanalytics@outlook.com.br')
-        await page.fill('input[type="password"]', 'Aurelio0496@@##')
+        await page.fill('input[type="email"]', admin_email)
+        await page.fill('input[type="password"]', admin_password)
         await page.click('button[type="submit"]')
         
         # Esperar carregar o dashboard

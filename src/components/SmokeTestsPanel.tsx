@@ -112,17 +112,19 @@ export function SmokeTestsPanel() {
       return { ok: true, message: `"${data.title}" renderizável (${len} chars).` };
     });
 
-    // 4) Exercícios
+    // 4) Exercícios — usa somente a contagem segura; respostas e explicações
+    // nunca devem ser lidas pelo checklist do navegador.
     await runOne('exercises', async () => {
-      const { data, error, count } = await supabase
-        .from('exercises')
-        .select('id, question, options, correct_answer', { count: 'exact', head: false })
-        .limit(3);
+      const { data, error } = await supabase.rpc('get_exercise_counts');
       if (error) return { ok: false, message: error.message };
-      if (!count || count === 0) return { ok: false, skip: true, message: 'Nenhum exercício cadastrado.' };
-      const broken = (data || []).filter(e => !e.question || !e.correct_answer);
-      if (broken.length) return { ok: false, message: `${broken.length} exercício(s) com campos faltando.` };
-      return { ok: true, message: `${count} exercício(s) — amostra válida.` };
+
+      const counts = data && typeof data === 'object' && !Array.isArray(data)
+        ? Object.values(data as Record<string, number>)
+        : [];
+      const total = counts.reduce((sum, value) => sum + Number(value || 0), 0);
+
+      if (total === 0) return { ok: false, skip: true, message: 'Nenhum exercício cadastrado.' };
+      return { ok: true, message: `${total} exercício(s) contabilizado(s) via RPC seguro.` };
     });
 
     // 5) Dashboard — consultas-base

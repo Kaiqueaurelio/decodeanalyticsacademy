@@ -137,8 +137,6 @@ function CategorySelect({ value, onValueChange, placeholder }: { value: string; 
   );
 }
 
-const PH_API_URL = 'https://sdk.photoroom.com/v1/segment';
-
 function PhotoroomStudio() {
   const [file, setFile] = useState<File | null>(null);
   const [processing, setProcessing] = useState(false);
@@ -148,25 +146,27 @@ function PhotoroomStudio() {
     if (!file) return;
     setProcessing(true);
     try {
-      const formData = new FormData();
-      formData.append('image_file', file);
-      
-      const response = await fetch(PH_API_URL, {
-        method: 'POST',
-        headers: {
-          'x-api-key': 'sk_pr_default_e56c0ee2e1dcae4788205851cc3508744c44627e',
-        },
-        body: formData,
+      const base64Data = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          if (typeof reader.result === 'string') resolve(reader.result);
+          else reject(new Error('Não foi possível ler a imagem.'));
+        };
+        reader.onerror = () => reject(new Error('Não foi possível ler a imagem.'));
+        reader.readAsDataURL(file);
       });
 
-      if (!response.ok) throw new Error('Falha no processamento Photoroom');
-      
-      const blob = await response.blob();
-      setResult(URL.createObjectURL(blob));
+      const { data, error } = await supabase.functions.invoke('photoroom-segment', {
+        body: { fileName: file.name, contentType: file.type, base64Data },
+      });
+      if (error) throw error;
+      if (!data?.dataUrl) throw new Error(data?.error || 'Falha no processamento Photoroom');
+
+      setResult(data.dataUrl);
       toast.success('Imagem processada com sucesso!');
     } catch (error) {
       console.error(error);
-      toast.error('Erro ao processar imagem via Photoroom.');
+      toast.error(error instanceof Error ? error.message : 'Erro ao processar imagem via Photoroom.');
     } finally {
       setProcessing(false);
     }
@@ -948,6 +948,32 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
     setRefreshing(false);
   };
 
+  type AdminExercisePayload = {
+    apostila_id: string;
+    question: string;
+    options?: unknown;
+    correct_answer?: string;
+    explanation?: string | null;
+    reference_answer?: string | null;
+    type?: string;
+    question_type?: string;
+    min_chars?: number;
+    sort_order?: number;
+    allow_image_upload?: boolean;
+  };
+
+  const adminCreateExercise = async (payload: AdminExercisePayload) => {
+    return (supabase as any).rpc('admin_create_exercise', { _payload: payload });
+  };
+
+  const adminDeleteExercise = async (exerciseId: string) => {
+    return (supabase as any).rpc('admin_delete_exercise', { _exercise_id: exerciseId });
+  };
+
+  const adminDeleteExercisesForApostila = async (apostilaId: string) => {
+    return (supabase as any).rpc('admin_delete_exercises_for_apostila', { _apostila_id: apostilaId });
+  };
+
   // ─── Handlers ──────────────────────────────────
   const handleFileDrop = useCallback((file: File) => {
     if (file.size === 0) { toast.error('Arquivo vazio (0 bytes).'); return; }
@@ -1034,10 +1060,11 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
     }).select().single();
     if (error) throw error;
     if (importExercises.length > 0 && newApostila) {
-      const { error: exErr } = await supabase.from('exercises').insert(importExercises.map(ex => ({
+      const results = await Promise.all(importExercises.map(ex => adminCreateExercise({
         apostila_id: newApostila.id, question: ex.question, options: ex.options,
         correct_answer: ex.correct_answer, explanation: ex.explanation || null,
       })));
+      const exErr = results.find((result: any) => result.error)?.error;
       if (exErr) console.warn('Falha ao salvar exercícios:', exErr);
     }
     toast.success(`Apostila salva com ${importExercises.length} exercícios!`);
@@ -1269,7 +1296,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
         }).select().single();
         if (insertErr) throw insertErr;
         if (data.exercises?.length > 0 && newApostila) {
-          await supabase.from('exercises').insert(data.exercises.map((ex: any) => ({
+          await Promise.all(data.exercises.map((ex: any) => adminCreateExercise({
             apostila_id: newApostila.id, question: ex.question, options: ex.options,
             correct_answer: ex.correct_answer, explanation: ex.explanation || null,
           })));
@@ -1320,7 +1347,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
   const deleteApostila = async (id: string) => {
     // Remove dependências antes para evitar foreign-key
     const [exDel, matDel, apDel] = await Promise.all([
-      supabase.from('exercises').delete().eq('apostila_id', id),
+      adminDeleteExercisesForApostila(id),
       supabase.from('apostila_materials').delete().eq('apostila_id', id),
       Promise.resolve(null),
     ]);
@@ -1357,7 +1384,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
 
   const addExercise = async () => {
     if (!selectedApostila || !exQuestion.trim()) return;
-    const { error } = await supabase.from('exercises').insert({
+    const { error } = await adminCreateExercise({
       apostila_id: selectedApostila, question: exQuestion,
       options: exOptions, correct_answer: exCorrect, explanation: exExplanation || null,
     });
@@ -1507,7 +1534,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
     setBulkExerciseImporting(true);
     let ok = 0;
     for (const ex of parsed) {
-      const { error } = await supabase.from('exercises').insert({
+      const { error } = await adminCreateExercise({
         apostila_id: selectedApostila, question: ex.question,
         options: ex.options, correct_answer: ex.correct, explanation: ex.explanation || null,
       });
@@ -1519,7 +1546,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
   };
 
   const deleteExercise = async (id: string) => {
-    const { error } = await supabase.from('exercises').delete().eq('id', id);
+    const { error } = await adminDeleteExercise(id);
     if (error) {
       console.error('[deleteExercise] erro:', error);
       toast.error('Falha ao excluir exercício: ' + error.message);
@@ -2533,7 +2560,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                           <div><Label className="text-xs">Explicação (opcional)</Label><Textarea value={exExplanation} onChange={e => setExExplanation(e.target.value)} rows={2} /></div>
                           <Button onClick={() => {
                             if (!exQuestion.trim()) return;
-                            supabase.from('exercises').insert({
+                            adminCreateExercise({
                               apostila_id: a.id, question: exQuestion, options: exOptions,
                               correct_answer: exCorrect, explanation: exExplanation || null,
                             }).then(({ error }) => {
@@ -2576,7 +2603,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                             const parsed = parseBulkExercises(bulkExerciseText);
                             if (parsed.length === 0) { toast.error('Nenhum exercício detectado.'); return; }
                             setBulkExerciseImporting(true);
-                            Promise.all(parsed.map(ex => supabase.from('exercises').insert({
+                            Promise.all(parsed.map(ex => adminCreateExercise({
                               apostila_id: a.id, question: ex.question, options: ex.options,
                               correct_answer: ex.correct, explanation: ex.explanation || null,
                             }))).then(results => {
@@ -2671,7 +2698,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                                 <Button className="flex-1 gradient-primary text-primary-foreground" onClick={async () => {
                                   let ok = 0;
                                   for (const ex of aiExercises) {
-                                    const { error } = await supabase.from('exercises').insert({
+                                    const { error } = await adminCreateExercise({
                                       apostila_id: a.id, question: ex.question, options: ex.options,
                                       correct_answer: ex.correct_answer, explanation: ex.explanation || null,
                                     });
@@ -2795,7 +2822,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                               <Textarea value={exExplanation} onChange={e => setExExplanation(e.target.value)} placeholder="Explicação (opcional)" rows={2} />
                               <Button onClick={() => {
                                 if (!exQuestion.trim() || !editingApostila) return;
-                                supabase.from('exercises').insert({
+                                adminCreateExercise({
                                   apostila_id: editingApostila.id, question: exQuestion, options: exOptions,
                                   correct_answer: exCorrect, explanation: exExplanation || null,
                                 }).then(({ error }) => {
@@ -2822,7 +2849,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                                 if (!editingApostila) return;
                                 const parsed = parseBulkExercises(editBulkText);
                                 if (parsed.length === 0) { toast.error('Nenhum exercício detectado.'); return; }
-                                Promise.all(parsed.map(ex => supabase.from('exercises').insert({
+                                Promise.all(parsed.map(ex => adminCreateExercise({
                                   apostila_id: editingApostila.id, question: ex.question, options: ex.options,
                                   correct_answer: ex.correct, explanation: ex.explanation || null,
                                 }))).then(results => {
@@ -2910,7 +2937,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                                       if (!editingApostila) return;
                                       let ok = 0;
                                       for (const ex of editAiExercises) {
-                                        const { error } = await supabase.from('exercises').insert({
+                                        const { error } = await adminCreateExercise({
                                           apostila_id: editingApostila.id, question: ex.question, options: ex.options,
                                           correct_answer: ex.correct_answer, explanation: ex.explanation || null,
                                         });
@@ -3090,7 +3117,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                                   <Button className="flex-1 gradient-primary text-primary-foreground" onClick={async () => {
                                     let ok = 0;
                                     for (const ex of aiExercises) {
-                                      const { error } = await supabase.from('exercises').insert({
+                                      const { error } = await adminCreateExercise({
                                         apostila_id: selectedApostila, question: ex.question, options: ex.options,
                                         correct_answer: ex.correct_answer, explanation: ex.explanation || null,
                                       });
