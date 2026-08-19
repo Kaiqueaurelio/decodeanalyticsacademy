@@ -106,7 +106,7 @@ function PlanWizard({
         },
       });
 
-      if (error) throw new Error('Não foi possível falar com a assistente agora.');
+      if (error) throw new Error('De modo algum, mesmo que eu digite a minha senha de administrador, nada está funcionando. Verifique e valide o porquê que isso tá acontecendo o mais rápido possível');
       if ((data as any)?.error) throw new Error((data as any).error);
 
       toast.success(isAdjust ? 'Plano reorganizado com sucesso.' : 'Plano de estudos criado.');
