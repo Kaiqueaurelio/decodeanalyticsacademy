@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
-import { Send, Loader2, MessageCircle, CheckCircle2, AlertCircle, ClipboardList } from "lucide-react";
+import { Send, Loader2, MessageCircle, CheckCircle2, AlertCircle, ClipboardList, Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -11,6 +11,8 @@ import { getEllaAvatarUrl } from "@/lib/ellaAvatar";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { VoiceMicButton } from "./VoiceMicButton";
+import { SpeakButton } from "../SpeakButton";
 
 type Msg = { role: "user" | "assistant"; content: string; actions?: any[] };
 
@@ -264,20 +266,27 @@ export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps)
                 ) : (
                   <p className="whitespace-pre-wrap">{m.content}</p>
                 )}
-                {m.role === "assistant" && !!m.content && i === messages.length - 1 && !loading && (
-                  <div className="mt-3 pt-2 border-t border-border/40">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={askStudyPlan}
-                      className="h-9 gap-2 text-xs"
-                    >
-                      <ClipboardList className="h-3.5 w-3.5" strokeWidth={1.75} />
-                      Virar plano de estudos
-                    </Button>
-                  </div>
-                )}
+{m.role === "assistant" && !!m.content && !loading && (
+                    <div className="mt-3 pt-2 border-t border-border/40 flex flex-wrap gap-2">
+                      <SpeakButton 
+                        getText={() => m.content} 
+                        size="sm" 
+                        label="Ouvir Resposta"
+                      />
+                      {i === messages.length - 1 && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={askStudyPlan}
+                          className="h-9 gap-2 text-xs rounded-full font-bold"
+                        >
+                          <ClipboardList className="h-3.5 w-3.5" strokeWidth={1.75} />
+                          Virar plano de estudos
+                        </Button>
+                      )}
+                    </div>
+                  )}
                 {m.actions && m.actions.length > 0 && (
                   <div className="mt-2 space-y-1">
                     {m.actions.map((a, idx) => (
@@ -314,17 +323,26 @@ export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps)
 
       <div className="border-t border-border/50 p-3">
         <div className="relative flex items-end gap-2">
+          <VoiceMicButton 
+            onTranscript={(text) => {
+              setInput(text);
+              // Opcional: enviar automaticamente após a voz
+              // setTimeout(() => send(text), 500);
+            }}
+            disabled={loading}
+            className="shrink-0 h-11 w-11 rounded-xl"
+          />
           <Textarea
             ref={taRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={onKeyDown}
-            placeholder={isAdmin ? "Peça para a Ella criar, editar, navegar…" : "Tire uma dúvida ou peça um exemplo…"}
+            placeholder={isAdmin ? "Fale ou digite para a Ella..." : "Tire uma dúvida por voz ou texto..."}
             rows={1}
-            className="min-h-[44px] max-h-32 resize-none pr-12"
+            className="min-h-[44px] max-h-32 resize-none pr-12 rounded-xl"
             disabled={loading}
           />
-          <Button size="icon" onClick={() => send()} disabled={!input.trim() || loading} className="shrink-0 h-11 w-11" aria-label="Botão">
+          <Button size="icon" onClick={() => send()} disabled={!input.trim() || loading} className="shrink-0 h-11 w-11 rounded-xl" aria-label="Enviar">
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
           </Button>
         </div>
