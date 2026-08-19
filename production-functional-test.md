@@ -61,3 +61,7 @@ A seção Testes carregou corretamente e identificou a sessão administrativa de
 ## Resultado do checklist de fumaça
 
 A execução terminou às 21:18:36 com **4 OK, 1 falha e 0 pulados**. Login/Sessão passou em 408 ms, confirmando a sessão administrativa de teste autenticada. Clonagem por link passou em 2508 ms, mas com aviso da Edge Function. Renderização de apostila passou em 222 ms e carregou `APOSTILA BUSCA HEURÍSTICA 22/04/26` com 14.128 caracteres. Exercícios falhou em 175 ms com `permission denied for table exercises`. Dashboard passou em 204 ms, retornando 52 apostilas, 23 concluídas e streak 1. A falha de exercícios confirma que o checklist ainda tenta acesso direto a uma tabela protegida e deve ser adaptado a uma RPC/view segura, sem enfraquecer o RLS.
+
+## Rechecagem de deployment após o commit 08ee5d21
+
+O commit `08ee5d21333c296e324806d8fc4ac4fd7f743a13` foi confirmado no branch `main` do GitHub. A Vercel criou o deployment `dpl_A8awDjeVE6f4MXuKqx2wY91kYDRW`, com o SHA correto e aliases `decodeanalyticsacademy-decode-analytics-s-projects.vercel.app` e `decodeanalyticsacademy-git-main-decode-analytics-s-projects.vercel.app`, mas o estado permanece `BLOCKED`. A resposta da plataforma aponta para a documentação de configuração de conta/equipe, não para uma falha de build. A proteção efetiva consultada no projeto está com Password Protection, SSO e Trusted IPs desativados; portanto, o bloqueio não foi resolvido por essas configurações e ainda impede afirmar que o domínio de produção está servindo esse commit.
