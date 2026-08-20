@@ -22,7 +22,9 @@ import {
   Minimize2,
   Volume2,
   VolumeX,
+  ShieldAlert
 } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -35,6 +37,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import logoOwl from "@/assets/owl-icon.png";
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { isPlaceholderPageContent, normalizeContentForComparison } from '@/lib/content-formatting';
+import { Badge } from "@/components/ui/badge";
+
 
 
 interface Lesson {
@@ -170,6 +174,9 @@ export default function ApostilaReaderPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [apostilaTitle, setApostilaTitle] = useState<string>("");
+  const [apostilaStatus, setApostilaStatus] = useState<string>("liberada");
+  const [hasInconsistency, setHasInconsistency] = useState(false);
+
   const [tree, setTree] = useState<Tree | null>(null);
   const [loadingTree, setLoadingTree] = useState(true);
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
@@ -202,15 +209,17 @@ export default function ApostilaReaderPage() {
     let cancelled = false;
     (async () => {
       setLoadingTree(true);
-      const [{ data: ap }, { data: rpcData }, { data: pageRows }] = await Promise.all([
-        supabase.from("apostilas").select("title, semester, published").eq("id", id).maybeSingle(),
+      const [{ data: ap }, { data: rpcData }, { data: pageRows }, { data: auditLogs }] = await Promise.all([
+        supabase.from("apostilas").select("title, semester, published, status").eq("id", id).maybeSingle(),
         supabase.rpc("get_apostila_reader_tree", { _apostila_id: id }),
         (supabase.from("apostila_pages" as any) as any)
           .select("id, title, content, position")
           .eq("apostila_id", id)
           .order("position", { ascending: true })
           .order("created_at", { ascending: true }),
+        supabase.from("audit_logs").select("id").eq("resource_id", id).eq("event_type", "apostila_date_inconsistency").limit(1)
       ]);
+
       
       if (cancelled) return;
 
@@ -223,6 +232,9 @@ export default function ApostilaReaderPage() {
       console.log(`[ApostilaReader] Apostila info:`, ap);
       
       setApostilaTitle((ap?.title as string) || "Apostila");
+      setApostilaStatus((ap as any)?.status || (ap?.published ? 'liberada' : 'bloqueada'));
+      setHasInconsistency((auditLogs?.length || 0) > 0);
+
       const rpcTree = (rpcData as unknown as Tree) || { apostila_id: id, modules: [] };
       const savedPages = sanitizedPages as ApostilaPageRow[];
       const t = savedPages.length > 0
@@ -481,8 +493,24 @@ export default function ApostilaReaderPage() {
   }
 
   return (
-    <div className="flex h-screen w-full bg-background text-foreground overflow-hidden flex-col md:flex-row">
+    <div className="flex h-screen w-full bg-background text-foreground overflow-hidden flex-col md:flex-row relative">
+      {(apostilaStatus === 'em_manutencao' || hasInconsistency) && (
+        <div className="absolute top-0 left-0 right-0 z-[60] bg-amber-500/90 backdrop-blur-md text-black py-2 px-4 flex items-center justify-between animate-in fade-in slide-in-from-top duration-500">
+          <div className="flex items-center gap-2 overflow-hidden">
+            <ShieldAlert className="h-4 w-4 shrink-0 animate-pulse" />
+            <span className="text-[11px] font-black uppercase tracking-wider truncate">
+              {apostilaStatus === 'em_manutencao' 
+                ? "Este conteúdo está passando por uma revisão de qualidade."
+                : "Inconsistência cronológica detectada. Aguarde a correção do instrutor."}
+            </span>
+          </div>
+          <Badge variant="outline" className="border-black/20 text-[9px] font-bold bg-white/20 whitespace-nowrap ml-2">
+            MODO DE LEITURA RESTRITO
+          </Badge>
+        </div>
+      )}
       {/* Logo persistente — sempre visível durante a leitura (Desktop) */}
+
       <div className="pointer-events-none fixed bottom-4 right-4 z-30 hidden max-w-[min(22rem,calc(100vw-2rem))] items-center gap-3 rounded-2xl border border-primary/40 bg-background/90 px-4 py-3 shadow-[0_0_30px_-5px_hsl(var(--primary)/0.4)] backdrop-blur-xl lg:flex xl:bottom-6 xl:right-6 xl:gap-4 xl:px-5 xl:py-4">
         <img
           src={logoOwl}

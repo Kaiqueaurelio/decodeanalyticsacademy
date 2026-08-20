@@ -63,6 +63,7 @@ export function ApostilaCoverCard({ apostila, status = 'em-progresso', progress 
         : null;
 
   const isPlaceholder = (apostila as any).isPlaceholder === true || !apostila.source_type;
+  const statusApostila = (apostila as any).status || (apostila.published ? 'liberada' : 'bloqueada');
   
   // Data prevista se for placeholder
   const availabilityDate = (apostila as any).availability_date || "Em breve";
@@ -76,8 +77,19 @@ export function ApostilaCoverCard({ apostila, status = 'em-progresso', progress 
       });
       return;
     }
+    
+    if (statusApostila === 'bloqueada' && !isAdmin) {
+      e.preventDefault();
+      toast.error("Conteúdo Bloqueado", {
+        description: "Este material foi bloqueado temporariamente para revisão de integridade.",
+        icon: <Lock className="h-4 w-4" />,
+      });
+      return;
+    }
+
     navigate(`/apostila/${apostila.id}`);
   };
+
 
   return (
     <div
@@ -210,10 +222,21 @@ export function ApostilaCoverCard({ apostila, status = 'em-progresso', progress 
             <span className="inline-flex items-center rounded-md px-1.5 py-0.5 text-[9px] font-bold bg-primary/10 text-primary uppercase tracking-tight">
               {semester}
             </span>
+            {statusApostila === 'em_manutencao' && (
+              <Badge variant="outline" className="h-5 text-[8px] border-amber-500/30 bg-amber-500/10 text-amber-500 font-black animate-pulse">
+                EM VALIDAÇÃO
+              </Badge>
+            )}
+            {statusApostila === 'bloqueada' && (
+              <Badge variant="outline" className="h-5 text-[8px] border-red-500/30 bg-red-500/10 text-red-500 font-black">
+                BLOQUEADO
+              </Badge>
+            )}
           </div>
           {percent !== null && (
             <span className="text-[10px] font-black text-primary/80">{percent}%</span>
           )}
+
         </div>
 
         {percent !== null && !isPlaceholder && (
