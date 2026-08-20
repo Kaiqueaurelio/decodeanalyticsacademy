@@ -259,12 +259,21 @@ Deno.serve(async (req) => {
 });
 
 async function registerAttempt(admin: any, ra: string, ip: string, success: boolean) {
+  // Hardened Rate Limiting: 5 attempts trigger lock.
+  // Logs failure to audit_logs for admin monitoring.
   try {
     if (success) {
       await admin.from('auth_attempts').delete().eq('identifier', ra);
       await admin.from('auth_attempts').delete().eq('ip_address', ip);
       return;
     }
+
+    // Audit log for failed attempt
+    await admin.from('audit_logs').insert({
+      event_type: 'login_failed',
+      metadata: { ra, ip, timestamp: new Date().toISOString() }
+    });
+
 
     const { data: current } = await admin.from('auth_attempts')
       .select('*')

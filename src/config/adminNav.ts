@@ -1,126 +1,106 @@
-import {
-  BarChart3, BookOpen, PenLine, FolderOpen, GraduationCap, Users, Megaphone,
-  Calendar as CalIcon, MessageSquareQuote, MessageSquare, Activity, CheckCircle,
-  AlertCircle, History, ShieldCheck, ShieldAlert, Rss, Store, HandCoins, Heart,
-  Sparkles, CheckSquare, Copy, Link2, Briefcase, type LucideIcon,
+import { type AdminNavGroup } from '@/types/admin';
+import { 
+  LayoutDashboard, 
+  BookOpen, 
+  Users, 
+  MessageSquare, 
+  ShieldCheck, 
+  Terminal, 
+  FileText,
+  AlertTriangle,
+  History,
+  Briefcase,
+  Rss,
+  Play,
+  Share2,
+  Database,
+  BarChart3,
+  ListCheck
 } from 'lucide-react';
 
-
-export type AdminTabId =
-  | 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'jobs' | 'announcements'
-  | 'calendar' | 'testimonials' | 'ai' | 'ella-settings' | 'performance' | 'smoke' | 'diagnostics'
-  | 'ads' | 'ads-chat' | 'social' | 'rss' | 'courses' | 'changelog' | 'leads'
-  | 'ella-audit' | 'security-alerts' | 'sponsors' | 'tasks' | 'photoroom' | 'edit' | 'review'
-  | 'enem-apostilas' | 'cc-apostilas' | 'health-dashboard' | 'cloning-dashboard' | 'mcp-settings';
-
-
-export type AdminNavItem = {
-  id: AdminTabId;
-  label: string;
-  short: string;
-  icon: LucideIcon;
-  desc: string;
-  /** Palavras extras para a busca do menu. */
-  keywords?: string;
-  /** Chave do contador exibido no menu. */
-  countKey?: 'apostilas' | 'exercises' | 'materials' | 'users' | 'securityAlerts';
-};
-
-export type AdminNavGroup = {
-  id: string;
-  label: string;
-  items: AdminNavItem[];
-};
+export type AdminTabId = 
+  | 'overview'
+  | 'apostilas'
+  | 'exercises'
+  | 'materials'
+  | 'users'
+  | 'announcements'
+  | 'calendar'
+  | 'testimonials'
+  | 'ai'
+  | 'ella-settings'
+  | 'performance'
+  | 'smoke'
+  | 'diagnostics'
+  | 'ads'
+  | 'ads-chat'
+  | 'social'
+  | 'rss'
+  | 'courses'
+  | 'changelog'
+  | 'leads'
+  | 'ella-audit'
+  | 'security-alerts'
+  | 'sponsors'
+  | 'tasks'
+  | 'photoroom'
+  | 'edit'
+  | 'review'
+  | 'enem-apostilas'
+  | 'cc-apostilas'
+  | 'health-dashboard'
+  | 'cloning-dashboard'
+  | 'mcp-settings'
+  | 'jobs'
+  | 'academic-audit';
 
 export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
   {
-    id: 'inicio',
-    label: 'Início',
+    id: 'main',
+    label: 'Principal',
     items: [
-      { id: 'overview', label: 'Painel Operacional', short: 'Geral', icon: BarChart3, desc: 'Resumo completo da plataforma', keywords: 'dashboard home painel resumo' },
-      { id: 'health-dashboard', label: 'Saúde das Apostilas', short: 'Saúde', icon: Activity, desc: 'Status operacional e histórico', keywords: 'saude dashboard status manutencao historico' },
-      { id: 'apostilas', label: 'Apostilas', short: 'Acervo', icon: BookOpen, desc: 'Gerenciar e publicar apostilas', countKey: 'apostilas', keywords: 'materia disciplina texto importar acervo' },
-      { id: 'tasks', label: 'Gerenciador de Tarefas', short: 'Tarefas', icon: CheckSquare, desc: 'Organize suas atividades administrativas', keywords: 'tarefas checklist todo afazeres' },
-      { id: 'photoroom', label: 'Estúdio Visual', short: 'Estúdio', icon: Sparkles, desc: 'Remova fundos e otimize imagens', keywords: 'imagem foto fundo remover studio photoroom' },
-      { id: 'cloning-dashboard', label: 'Auditoria 360º', short: 'Auditoria', icon: Copy, desc: 'Listagem e status de apostilas geradas', keywords: 'clone geracao ia status progresso auditoria erro bugs' },
-    ],
+      { id: 'overview', label: 'Dashboard', icon: LayoutDashboard, desc: 'Visão geral do sistema' },
+      { id: 'cc-apostilas', label: 'Centro de Criação', icon: BookOpen, desc: 'Gerenciar apostilas e conteúdos' },
+      { id: 'users', label: 'Usuários', icon: Users, desc: 'Gestão de alunos e acessos', countKey: 'users' },
+      { id: 'jobs', label: 'Vagas e Estágios', icon: Briefcase, desc: 'Gestão de oportunidades' },
+    ]
   },
   {
-    id: 'conteudo',
-    label: 'Conteúdo',
-    items: [
-      { id: 'enem-apostilas', label: 'Apostilas ENEM', short: 'ENEM', icon: GraduationCap, desc: 'Apenas materiais do ENEM', keywords: 'enem vestibular simulado' },
-      { id: 'cc-apostilas', label: 'Ciência da Computação', short: 'CC', icon: BookOpen, desc: 'Materiais da grade acadêmica CC', keywords: 'faculdade unip cc ciencia computacao' },
-      { id: 'exercises', label: 'Exercícios', short: 'Exercícios', icon: PenLine, desc: 'Questões, gabaritos e importação em lote', countKey: 'exercises', keywords: 'questoes prova gabarito' },
-      { id: 'materials', label: 'Materiais', short: 'Materiais', icon: FolderOpen, desc: 'PDFs, vídeos, slides e planilhas', countKey: 'materials', keywords: 'arquivo upload pdf video' },
-      { id: 'courses', label: 'Cursos Gratuitos', short: 'Cursos', icon: GraduationCap, desc: 'Cursos externos exibidos aos alunos', keywords: 'curso externo horas complementares' },
-      { id: 'calendar', label: 'Calendário', short: 'Agenda', icon: CalIcon, desc: 'Provas, trabalhos e cronogramas', keywords: 'prova data agenda cronograma' },
-    ],
-  },
-  {
-    id: 'comunidade',
-    label: 'Alunos e Comunidade',
-    items: [
-      { id: 'users', label: 'Usuários', short: 'Alunos', icon: Users, desc: 'Contas, permissões e bloqueios', countKey: 'users', keywords: 'aluno conta senha bloquear admin' },
-      { id: 'jobs', label: 'Vagas e Estágios', short: 'Vagas', icon: Briefcase, desc: 'Gerenciar oportunidades de carreira', keywords: 'vaga emprego estagio trampo job' },
-      { id: 'announcements', label: 'Avisos', short: 'Avisos', icon: Megaphone, desc: 'Mural de avisos para os alunos', keywords: 'mural comunicado notificacao' },
-      { id: 'testimonials', label: 'Depoimentos', short: 'Depoim.', icon: MessageSquareQuote, desc: 'Aprove ou rejeite depoimentos', keywords: 'feedback avaliacao' },
-
-      { id: 'social', label: 'Social', short: 'Social', icon: Heart, desc: 'Curtidas, comentários e engajamento', keywords: 'curtida comentario engajamento' },
-      { id: 'rss', label: 'Feeds RSS', short: 'RSS', icon: Rss, desc: 'Fontes de notícias exibidas no app', keywords: 'noticias feed fonte' },
-    ],
-  },
-  {
-    id: 'monetizacao',
-    label: 'Monetização',
-    items: [
-      { id: 'ads', label: 'Anúncios', short: 'Anúncios', icon: Megaphone, desc: 'Banners, popups e agendamento', keywords: 'banner popup campanha propaganda' },
-      { id: 'sponsors', label: 'Parceiros', short: 'Marcas', icon: Store, desc: 'Marcas e logos do Media Kit', keywords: 'parceria marca logo media kit' },
-      { id: 'leads', label: 'Leads de Parceria', short: 'Leads', icon: HandCoins, desc: 'Briefings recebidos e contatos', keywords: 'interessado contato briefing venda' },
-      { id: 'ads-chat', label: 'Criativos de Anúncio', short: 'Criativos', icon: Sparkles, desc: 'Gere criativos e textos de campanha', keywords: 'copy criativo gerar anuncio' },
-    ],
-  },
-  {
-    id: 'assistente',
-    label: 'Assistente',
-    items: [
-      { id: 'ai', label: 'Configurar Assistente', short: 'Assistente', icon: MessageSquare, desc: 'Provedor padrão ou chave própria', keywords: 'ella provedor chave modelo' },
-      { id: 'ella-settings', label: 'Identidade da Ella', short: 'Identidade', icon: Sparkles, desc: 'Gerencie o avatar e visual da Ella', keywords: 'ella avatar foto imagem identidade visual' },
-      { id: 'ella-audit', label: 'Auditoria da Ella', short: 'Auditoria', icon: ShieldCheck, desc: 'Ações pedidas, permissões e resultados', keywords: 'ella log auditoria permissao' },
-    ],
-  },
-  {
-    id: 'sistema',
+    id: 'system',
     label: 'Sistema',
     items: [
-      { id: 'security-alerts', label: 'Alertas de Segurança', short: 'Segurança', icon: ShieldAlert, desc: 'Tentativas recusadas pelo servidor', countKey: 'securityAlerts', keywords: 'seguranca alerta bloqueio' },
-      { id: 'performance', label: 'Performance', short: 'Perf.', icon: Activity, desc: 'Carregamento e erros de rede', keywords: 'velocidade metrica lentidao' },
-      { id: 'diagnostics', label: 'Diagnóstico', short: 'Diag.', icon: AlertCircle, desc: 'Logs de runtime e falhas por rota', keywords: 'erro log debug' },
-      { id: 'smoke', label: 'Testes', short: 'Testes', icon: CheckCircle, desc: 'Checklist automático de estabilidade', keywords: 'teste smoke checklist' },
-      { id: 'changelog', label: 'Histórico de Versões', short: 'Histórico', icon: History, desc: 'Tudo que mudou na plataforma', keywords: 'changelog versao novidades' },
-      { id: 'mcp-settings', label: 'Integração MCP', short: 'MCP', icon: Link2, desc: 'Status e URL do endpoint de integração acadêmica', keywords: 'mcp api endpoint integracao external' },
-    ],
+      { id: 'ella-audit', label: 'Auditoria Ella', icon: MessageSquare, desc: 'Logs de interações da IA' },
+      { id: 'academic-audit', label: 'Auditoria Acadêmica', icon: ListCheck, desc: 'Logs de estudos e gabaritos' },
+      { id: 'security-alerts', label: 'Segurança', icon: AlertTriangle, desc: 'Alertas e bloqueios', countKey: 'securityAlerts' },
+      { id: 'mcp-settings', label: 'Terminal / MCP', icon: Terminal, desc: 'Configurações avançadas' },
+      { id: 'changelog', label: 'Histórico', icon: History, desc: 'Versões do aplicativo' },
+    ]
   },
+  {
+    id: 'marketing',
+    label: 'Marketing & Conteúdo',
+    items: [
+      { id: 'leads', label: 'Leads', icon: Share2, desc: 'Interessados e parcerias' },
+      { id: 'sponsors', label: 'Patrocinadores', icon: ShieldCheck, desc: 'Gestão de marcas' },
+      { id: 'ads', label: 'Anúncios', icon: Play, desc: 'Publicidade interna' },
+      { id: 'rss', label: 'Fontes RSS', icon: Rss, desc: 'Agregador de notícias' },
+    ]
+  }
 ];
 
-export const ADMIN_NAV_ITEMS: AdminNavItem[] = ADMIN_NAV_GROUPS.flatMap(g => g.items);
-
 export const ADMIN_NAV_BY_ID = Object.fromEntries(
-  ADMIN_NAV_ITEMS.map(i => [i.id, i]),
-) as Record<AdminTabId, AdminNavItem>;
-
-/** Atalhos exibidos na barra inferior do celular. */
-export const ADMIN_MOBILE_QUICK: AdminTabId[] = ['overview', 'apostilas', 'exercises', 'materials'];
+  ADMIN_NAV_GROUPS.flatMap(g => g.items.map(i => [i.id, i]))
+);
 
 export function filterAdminNav(query: string): AdminNavGroup[] {
-  const q = query.trim().toLowerCase();
-  if (!q) return ADMIN_NAV_GROUPS;
-  return ADMIN_NAV_GROUPS
-    .map(g => ({
-      ...g,
-      items: g.items.filter(i =>
-        `${i.label} ${i.short} ${i.desc} ${i.keywords ?? ''}`.toLowerCase().includes(q),
-      ),
-    }))
-    .filter(g => g.items.length > 0);
+  if (!query) return ADMIN_NAV_GROUPS;
+  const q = query.toLowerCase();
+  return ADMIN_NAV_GROUPS.map(group => ({
+    ...group,
+    items: group.items.filter(item => 
+      item.label.toLowerCase().includes(q) || 
+      item.id.toLowerCase().includes(q) ||
+      (item.desc && item.desc.toLowerCase().includes(q))
+    )
+  })).filter(group => group.items.length > 0);
 }

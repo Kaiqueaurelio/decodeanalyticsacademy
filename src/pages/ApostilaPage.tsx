@@ -267,11 +267,28 @@ export default function ApostilaPage({ tab, setTab }: Props) {
   }, []);
 
   const contentBlocks = useMemo<ApostilaContentBlock[]>(() => {
+    // Verificação de segurança: garante que aulas de dias diferentes não se misturem
+    // se houver padrões de data detectados no conteúdo ou títulos das páginas.
+    const sortedExtraPages = [...extraPages].sort((a, b) => {
+      // Prioridade total para a posição manual
+      if (a.position !== b.position) return a.position - b.position;
+      
+      // Fallback para detecção de data no título (ex: "Aula - 19/08/2026")
+      const dateA = a.title.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+      const dateB = b.title.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+      if (dateA && dateB) {
+        const dA = new Date(`${dateA[3]}-${dateA[2]}-${dateA[1]}`);
+        const dB = new Date(`${dateB[3]}-${dateB[2]}-${dateB[1]}`);
+        return dA.getTime() - dB.getTime();
+      }
+      return 0;
+    });
+
     const mainContent = isPlaceholderApostilaContent(apostila?.content)
       ? structuredContent
       : (apostila?.content || '');
     const mainKey = normalizeContentForComparison(mainContent);
-    const distinctPages = mergeDistinctPages(extraPages).filter((page) => {
+    const distinctPages = mergeDistinctPages(sortedExtraPages).filter((page) => {
       const pageKey = normalizeContentForComparison(page.content || '');
       if (isPlaceholderPageContent(page.content || '')) return false;
       // Verificação rigorosa para evitar páginas que já existem no conteúdo principal

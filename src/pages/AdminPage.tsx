@@ -92,6 +92,7 @@ import { ApostilaHealthDashboard } from '@/components/admin/ApostilaHealthDashbo
 import { EllaSettings } from '@/components/admin/EllaSettings';
 import { McpSettings } from '@/components/admin/McpSettings';
 import JobsManager from '@/components/admin/JobsManager';
+import { AcademicAuditPanel } from '@/components/admin/AcademicAuditPanel';
 
 
 const LazyNewApostilaPageButton = React.lazy(() =>
@@ -227,7 +228,7 @@ function PhotoroomStudio() {
   );
 }
 
-type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements' | 'calendar' | 'testimonials' | 'ai' | 'ella-settings' | 'performance' | 'smoke' | 'diagnostics' | 'ads' | 'ads-chat' | 'social' | 'rss' | 'courses' | 'changelog' | 'leads' | 'ella-audit' | 'security-alerts' | 'sponsors' | 'tasks' | 'photoroom' | 'edit' | 'review' | 'enem-apostilas' | 'cc-apostilas' | 'health-dashboard' | 'cloning-dashboard' | 'mcp-settings' | 'jobs';
+type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements' | 'calendar' | 'testimonials' | 'ai' | 'ella-settings' | 'performance' | 'smoke' | 'diagnostics' | 'ads' | 'ads-chat' | 'social' | 'rss' | 'courses' | 'changelog' | 'leads' | 'ella-audit' | 'security-alerts' | 'sponsors' | 'tasks' | 'photoroom' | 'edit' | 'review' | 'enem-apostilas' | 'cc-apostilas' | 'health-dashboard' | 'cloning-dashboard' | 'mcp-settings' | 'jobs' | 'academic-audit';
 
 const ACCEPT_MAP: Record<string, string> = {
   pdf: '.pdf', image: 'image/*', gif: '.gif,image/gif',
@@ -1683,6 +1684,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
     'cloning-dashboard': { title: 'Auditoria & Qualidade 360º', desc: 'Monitoramento de erros, status de geração e integridade de conteúdo' },
     'mcp-settings': { title: 'Integração MCP', desc: 'Status e URL do endpoint de integração acadêmica externa' },
     'jobs': { title: 'Vagas e Estágios', desc: 'Gerencie oportunidades de carreira para os alunos' },
+    'academic-audit': { title: 'Auditoria Acadêmica', desc: 'Logs de acessos a gabaritos, respostas e submissões' },
   };
 
 
@@ -3610,12 +3612,17 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
               <EllaAuditPanel />
             )}
 
+            {tab === 'academic-audit' && (
+              <AcademicAuditPanel />
+            )}
+
             {tab === 'security-alerts' && (
               <SecurityAlertsPanel />
             )}
 
             {tab === 'leads' && <SponsorLeadsPanel />}
             {tab === 'sponsors' && <AdminSponsorsManager />}
+
 
 
 

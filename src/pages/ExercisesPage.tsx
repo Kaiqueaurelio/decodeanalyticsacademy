@@ -14,8 +14,9 @@ import { Textarea } from '@/components/ui/textarea';
 import {
   ArrowLeft, ArrowRight, CheckCircle, XCircle, Trophy, RotateCcw, Timer,
   BookOpen, Wand2, ChevronLeft, ChevronRight, Eye, EyeOff, PenLine,
-  BarChart3, Clock, Target, Rocket, Award, Send, ListChecks, Filter
+  BarChart3, Clock, Target, Rocket, Award, Send, ListChecks, Filter, FileDown
 } from 'lucide-react';
+import { fetchAndGenerateApostilaReport } from '@/lib/student-reports';
 import { toast } from 'sonner';
 import { logSecurityEvent } from '@/lib/audit-logger';
 import type { Tables } from '@/integrations/supabase/types';
@@ -171,12 +172,22 @@ export default function ExercisesPage() {
     if (!essay?.text?.trim()) { toast.error('Escreva sua resposta antes de enviar.'); return; }
     setAnswers(prev => ({ ...prev, [exerciseId]: { selected: essay.text, correct: true } }));
     logSecurityEvent('essay_answer_submitted', exerciseId);
-    (supabase as any).rpc('get_exercise_reveal', { _exercise_id: exerciseId }).then(({ data }: any) => {
-      if (data) {
-        setReveals(prev => ({ ...prev, [exerciseId]: { explanation: data.explanation ?? null, reference_answer: data.reference_answer ?? null } }));
-        logSecurityEvent('essay_model_answer_revealed', exerciseId);
+    
+    // Use an immediate IIFE or separate function to fetch and log reveal
+    (async () => {
+      const { data, error } = await (supabase as any).rpc('get_exercise_reveal', { _exercise_id: exerciseId });
+      if (!error && data) {
+        setReveals(prev => ({ 
+          ...prev, 
+          [exerciseId]: { 
+            explanation: data.explanation ?? null, 
+            reference_answer: data.reference_answer ?? null 
+          } 
+        }));
+        await logSecurityEvent('essay_model_answer_revealed', exerciseId);
       }
-    });
+    })();
+    
     gamification.addXP(15);
     gamification.updateStreak();
     toast.success('Dissertativa enviada. +15 XP');
@@ -388,10 +399,14 @@ export default function ExercisesPage() {
                   </p>
                 )}
 
-                <div className="flex gap-2 justify-center">
+                <div className="flex flex-wrap gap-2 justify-center">
                   <Button size="sm" variant="outline" onClick={() => { setShowResults(false); setReviewMode(true); setReviewFilter('all'); setTimedMode(false); }}
                     className="gap-1.5">
-                    <ListChecks className="h-3.5 w-3.5" /> Revisão
+                    <ListChecks className="h-3.5 w-3.5" /> Revisar Questões
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => user && id && fetchAndGenerateApostilaReport(id, user.id)}
+                    className="gap-1.5 text-primary border-primary/30 hover:bg-primary/5">
+                    <FileDown className="h-3.5 w-3.5" /> Baixar Relatório (PDF)
                   </Button>
                   <Button size="sm" variant="outline" onClick={() => { setShowResults(false); setCurrentIndex(0); setTimedMode(false); }}
                     className="gap-1.5">
