@@ -38,6 +38,15 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: "6.7.2",
+    date: "20/08/2026",
+    title: "Controles de Seleção no Smart Paste",
+    changes: [
+      { kind: "feature", text: "Adicionados botões de atalho: Selecionar Tudo, Limpar e Resetar Seleção no modal Smart Paste" },
+      { kind: "improvement", text: "Interface aprimorada com ícones minimalistas para gestão rápida de trechos de texto" }
+    ]
+  },
+  {
     version: "6.7.1",
     date: "20/08/2026",
     title: "Seleção Inteligente no Smart Paste",
