@@ -25,11 +25,36 @@ export function SmartPasteDialog({ open, onOpenChange, onApply }: Props) {
   const [raw, setRaw] = useState('');
   const [smartHeadings, setSmartHeadings] = useState(false);
   const [cleanUrls, setCleanUrls] = useState(true);
-  const [mode, setMode] = useState<'append' | 'replace'>('append');
+  const [mode, setMode] = useState<'append' | 'replace' | 'selection'>('append');
+  const [selectedText, setSelectedText] = useState('');
+  const textareaRef = useMemo(() => ({ current: null as HTMLTextAreaElement | null }), []);
 
-  useEffect(() => { if (!open) { setRaw(''); setSmartHeadings(false); setMode('append'); } }, [open]);
 
-  const result = raw ? cleanPastedContent(raw, { smartHeadings, cleanUrls }) : { cleaned: '', changes: [] };
+  useEffect(() => { 
+    if (!open) { 
+      setRaw(''); 
+      setSmartHeadings(false); 
+      setMode('append'); 
+      setSelectedText('');
+    } 
+  }, [open]);
+
+  const handleTextSelection = () => {
+    if (textareaRef.current) {
+      const start = textareaRef.current.selectionStart;
+      const end = textareaRef.current.selectionEnd;
+      if (start !== end) {
+        const selection = raw.substring(start, end);
+        setSelectedText(selection);
+        setMode('selection');
+      }
+    }
+  };
+
+
+  const textToClean = mode === 'selection' && selectedText ? selectedText : raw;
+  const result = textToClean ? cleanPastedContent(textToClean, { smartHeadings, cleanUrls }) : { cleaned: '', changes: [] };
+
   const stats = useMemo(() => {
     const text = result.cleaned || raw;
     const words = text.trim() ? text.trim().split(/\s+/).length : 0;
@@ -77,10 +102,22 @@ export function SmartPasteDialog({ open, onOpenChange, onApply }: Props) {
               size="sm"
               variant={mode === 'replace' ? 'default' : 'outline'}
               className="h-9 justify-center text-xs sm:h-8"
-              onClick={() => setMode('replace')}
+              onClick={() => { setMode('replace'); setSelectedText(''); }}
             >
               Substituir
             </Button>
+            {selectedText && (
+              <Button
+                size="sm"
+                variant={mode === 'selection' ? 'default' : 'outline'}
+                className="h-9 justify-center gap-1.5 text-xs sm:h-8 border-ciano/30 text-ciano"
+                onClick={() => setMode('selection')}
+              >
+                <Scissors className="h-3.5 w-3.5" />
+                Usar Seleção
+              </Button>
+            )}
+
             <div className="flex items-center justify-center gap-1.5 rounded-md border border-border bg-background px-2 text-[10px] text-muted-foreground sm:h-8 col-span-2 sm:col-auto">
               <FileText className="h-3 w-3" />
               {stats.words.toLocaleString('pt-BR')} palavras
@@ -112,13 +149,19 @@ export function SmartPasteDialog({ open, onOpenChange, onApply }: Props) {
 
         <div className="grid flex-1 min-h-0 grid-cols-1 gap-3 lg:grid-cols-2 overflow-y-auto pr-1 sm:overflow-visible sm:pr-0 z-0">
           <div className="flex flex-col min-h-[300px] lg:min-h-0">
-            <Label className="mb-1 text-[10px] uppercase tracking-wider text-muted-foreground">Texto original</Label>
+            <Label className="mb-1 text-[10px] uppercase tracking-wider text-muted-foreground flex justify-between">
+              <span>Texto original</span>
+              {selectedText && <span className="text-ciano">Seleção ativa</span>}
+            </Label>
             <Textarea
+              ref={(el) => { textareaRef.current = el; }}
               value={raw}
               onChange={(e) => setRaw(e.target.value)}
-              placeholder="Cole aqui seu texto, Markdown, material do Word, PDF, Notion ou Google Docs..."
-              className="min-h-[250px] flex-1 resize-none text-sm leading-relaxed sm:min-h-[360px]"
+              onSelect={handleTextSelection}
+              placeholder="Cole aqui seu texto... selecione uma parte para processar apenas o trecho."
+              className="min-h-[250px] flex-1 resize-none text-sm leading-relaxed sm:min-h-[360px] selection:bg-primary/30"
             />
+
           </div>
           <div className="flex flex-col min-h-[300px] lg:min-h-0">
             <Label className="mb-1 text-[10px] uppercase tracking-wider text-muted-foreground">Como será inserido</Label>
@@ -144,9 +187,10 @@ export function SmartPasteDialog({ open, onOpenChange, onApply }: Props) {
           <Button
             disabled={!result.cleaned}
             className="h-10 sm:h-9"
-            onClick={() => { onApply(result.cleaned, mode); onOpenChange(false); }}
+            onClick={() => { onApply(result.cleaned, mode === 'selection' ? 'append' : mode); onOpenChange(false); }}
           >
-            {mode === 'append' ? 'Inserir' : 'Substituir'}
+            {mode === 'append' ? 'Inserir' : mode === 'replace' ? 'Substituir' : 'Inserir Seleção'}
+
           </Button>
         </DialogFooter>
       </DialogContent>
