@@ -629,7 +629,6 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
     downloadStudentPerformancePdf(data || {}, {
       full_name: studentDetail?.ranking?.full_name,
       ra: studentDetail?.ranking?.ra,
-      avatar_url: studentDetail?.ranking?.avatar_url,
     });
     toast.success('Relatório PDF gerado.');
   };
