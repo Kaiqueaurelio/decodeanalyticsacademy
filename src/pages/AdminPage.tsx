@@ -94,6 +94,7 @@ import { McpSettings } from '@/components/admin/McpSettings';
 import JobsManager from '@/components/admin/JobsManager';
 import { AcademicAuditPanel } from '@/components/admin/AcademicAuditPanel';
 import { ApostilaValidationDashboard } from '@/components/admin/ApostilaValidationDashboard';
+import { recordApostilaOperation, runApostilaChronologyValidation } from '@/lib/apostila-diagnostics';
 
 
 
@@ -1060,12 +1061,23 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
   };
 
   /** Insere efetivamente a apostila importada (extraído para permitir bypass do diálogo de duplicatas). */
-  const insertImportApostila = useCallback(async () => {
+  const insertImportApostila = useCallback(async (operationSource: 'import_create' | 'clone_create' = 'import_create') => {
     const currentUser = user;
     if (!currentUser) {
       toast.error('Sessão expirou. Faça login novamente.');
       return;
     }
+    const operationId = typeof crypto !== 'undefined' && 'randomUUID' in crypto
+      ? crypto.randomUUID()
+      : `apostila-create-${Date.now()}`;
+    void recordApostilaOperation({
+      operationId,
+      operationType: operationSource,
+      phase: 'insert',
+      status: 'started',
+      metadata: { title: importTitle.trim(), sourceType: importMode },
+    });
+
     const isNotion = importUrl.includes('notion.site') || importUrl.includes('notion.so');
     const sourceType = importMode === 'text' ? 'text' : isNotion ? 'notion' : 'link';
     const { data: newApostila, error } = await supabase.from('apostilas').insert({
@@ -1074,7 +1086,10 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
       file_url: importMode === 'text' ? null : isNotion ? null : importUrl, created_by: currentUser.id, published: true,
       semester: guessSemesterFromCategory(importTopic),
     }).select().single();
-    if (error) throw error;
+    if (error) {
+      void recordApostilaOperation({ operationId, operationType: operationSource, phase: 'insert', status: 'failed', errorCode: error.code || 'apostila_insert_failed', errorMessage: error.message });
+      throw error;
+    }
     if (importExercises.length > 0 && newApostila) {
       const results = await Promise.all(importExercises.map(ex => adminCreateExercise({
         apostila_id: newApostila.id, question: ex.question, options: ex.options,
@@ -1083,15 +1098,31 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
       const exErr = results.find((result: any) => result.error)?.error;
       if (exErr) console.warn('Falha ao salvar exercícios:', exErr);
     }
+
+    const validation = await runApostilaChronologyValidation(newApostila.id, operationSource);
+    void recordApostilaOperation({
+      operationId,
+      apostilaId: newApostila.id,
+      operationType: operationSource,
+      phase: 'insert',
+      status: 'succeeded',
+      affectedRecordIds: [newApostila.id],
+      metadata: { title: newApostila.title, validationStatus: validation?.status || 'not_available', issueCount: validation?.issue_count || 0 },
+    });
+    if (validation?.status === 'error') toast.warning('A nova apostila foi criada com alerta cronológico. Revise antes de disponibilizar aos alunos.');
     toast.success(`Apostila salva com ${importExercises.length} exercícios!`);
     resetImportForm(); setFilterSemester('all'); loadAll();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [importUrl, importMode, importTitle, importContent, importTopic, importExercises]);
 
   /** Salva direto o texto já formatado, sem passar pela etapa de estruturação com IA. */
-  const insertReadyTextApostila = useCallback(async () => {
+  const insertReadyTextApostila = useCallback(async (operationSource: 'ready_text_create' | 'clone_create' = 'ready_text_create') => {
     if (!user) return;
-    const { error } = await supabase.from('apostilas').insert({
+    const operationId = typeof crypto !== 'undefined' && 'randomUUID' in crypto
+      ? crypto.randomUUID()
+      : `ready-text-${Date.now()}`;
+    void recordApostilaOperation({ operationId, operationType: operationSource, phase: 'insert', status: 'started', metadata: { title: importTitle.trim() } });
+    const { data: newApostila, error } = await supabase.from('apostilas').insert({
       title: importTitle.trim(),
       content: importRawText,
       category: importTopic || 'Geral',
@@ -1100,8 +1131,14 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
       published: true,
       file_url: null,
       semester: guessSemesterFromCategory(importTopic),
-    });
-    if (error) throw error;
+    }).select().single();
+    if (error) {
+      void recordApostilaOperation({ operationId, operationType: operationSource, phase: 'insert', status: 'failed', errorCode: error.code || 'ready_text_insert_failed', errorMessage: error.message });
+      throw error;
+    }
+    const validation = await runApostilaChronologyValidation(newApostila.id, operationSource);
+    void recordApostilaOperation({ operationId, apostilaId: newApostila.id, operationType: operationSource, phase: 'insert', status: 'succeeded', affectedRecordIds: [newApostila.id], metadata: { validationStatus: validation?.status || 'not_available', issueCount: validation?.issue_count || 0 } });
+    if (validation?.status === 'error') toast.warning('A nova apostila foi criada com alerta cronológico. Revise antes de disponibilizar aos alunos.');
     toast.success('Apostila formatada salva com sucesso!');
     resetImportForm();
     setFilterSemester('all');
@@ -1137,12 +1174,12 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
           setDuplicateMatch(dup);
           // Guarda a ação para ser executada após decisão do admin
           setPendingSave(() => async () => {
-            await insertImportApostila();
+            await insertImportApostila('clone_create');
           });
           setCloning(false);
           return;
         }
-        await insertImportApostila();
+        await insertImportApostila('import_create');
       } catch (err: any) {
         console.error('[handleSaveImport] erro:', err);
         const msg = err?.message || err?.error_description || err?.details || 'Erro desconhecido';
@@ -1169,12 +1206,12 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
         if (dup) {
           setDuplicateMatch(dup);
           setPendingSave(() => async () => {
-            await insertReadyTextApostila();
+            await insertReadyTextApostila('clone_create');
           });
           setCloning(false);
           return;
         }
-        await insertReadyTextApostila();
+        await insertReadyTextApostila('ready_text_create');
       } catch (err: any) {
         console.error('[handleSaveReadyText] erro:', err);
         const msg = err?.message || err?.error_description || err?.details || 'Erro desconhecido';
@@ -1184,14 +1221,25 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
     });
   };
 
-  const insertManualApostila = useCallback(async () => {
+  const insertManualApostila = useCallback(async (operationSource: 'manual_create' | 'clone_create' = 'manual_create') => {
     if (!user) return;
-    const { error } = await supabase.from('apostilas').insert({
+    const operationId = typeof crypto !== 'undefined' && 'randomUUID' in crypto
+      ? crypto.randomUUID()
+      : `manual-create-${Date.now()}`;
+    void recordApostilaOperation({ operationId, operationType: operationSource, phase: 'insert', status: 'started', metadata: { title: manualTitle.trim() } });
+    const { data: newApostila, error } = await supabase.from('apostilas').insert({
       title: manualTitle.trim(), content: manualContent,
       category: manualCategory || 'Geral', source_type: 'manual', created_by: user.id, published: true,
       semester: guessSemesterFromCategory(manualCategory),
-    });
-    if (error) { toast.error('Erro ao criar'); return; }
+    }).select().single();
+    if (error) {
+      void recordApostilaOperation({ operationId, operationType: operationSource, phase: 'insert', status: 'failed', errorCode: error.code || 'manual_insert_failed', errorMessage: error.message });
+      toast.error('Erro ao criar');
+      return;
+    }
+    const validation = await runApostilaChronologyValidation(newApostila.id, operationSource);
+    void recordApostilaOperation({ operationId, apostilaId: newApostila.id, operationType: operationSource, phase: 'insert', status: 'succeeded', affectedRecordIds: [newApostila.id], metadata: { validationStatus: validation?.status || 'not_available', issueCount: validation?.issue_count || 0 } });
+    if (validation?.status === 'error') toast.warning('A nova apostila foi criada com alerta cronológico. Revise antes de disponibilizar aos alunos.');
     toast.success('Apostila criada!');
     setManualTitle(''); setManualContent(''); setManualCategory(''); setShowManualForm(false); setFilterSemester('all'); loadAll();
   }, [user, manualTitle, manualContent, manualCategory]);
@@ -1203,21 +1251,65 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
       const dup = await findDuplicateApostila(manualContent, manualTitle);
       if (dup) {
         setDuplicateMatch(dup);
-        setPendingSave(() => async () => { await insertManualApostila(); });
+        setPendingSave(() => async () => { await insertManualApostila('clone_create'); });
         return;
       }
-      await insertManualApostila();
+      await insertManualApostila('manual_create');
     });
   };
 
   /** Atualiza uma apostila existente com o melhor conteúdo (chamado a partir do diálogo). */
   const replaceExistingWithBetter = useCallback(async (newContent: string) => {
     if (!duplicateMatch) return;
+    const apostilaId = duplicateMatch.apostila.id;
+    const operationId = typeof crypto !== 'undefined' && 'randomUUID' in crypto
+      ? crypto.randomUUID()
+      : `clone-replace-${Date.now()}`;
+
+    void recordApostilaOperation({
+      operationId,
+      apostilaId,
+      operationType: 'apostila_clone_replace',
+      phase: 'update',
+      status: 'started',
+      metadata: { source: 'duplicate_dialog', newContentLength: newContent.length },
+    });
+
     const { error } = await supabase
       .from('apostilas')
       .update({ content: newContent, published: true, updated_at: new Date().toISOString() })
-      .eq('id', duplicateMatch.apostila.id);
-    if (error) { toast.error('Erro ao atualizar: ' + error.message); return; }
+      .eq('id', apostilaId);
+    if (error) {
+      void recordApostilaOperation({
+        operationId,
+        apostilaId,
+        operationType: 'apostila_clone_replace',
+        phase: 'update',
+        status: 'failed',
+        errorCode: error.code || 'clone_replace_failed',
+        errorMessage: error.message,
+      });
+      toast.error('Erro ao atualizar: ' + error.message);
+      return;
+    }
+
+    const validation = await runApostilaChronologyValidation(apostilaId, 'clone_replace');
+    void recordApostilaOperation({
+      operationId,
+      apostilaId,
+      operationType: 'apostila_clone_replace',
+      phase: 'update',
+      status: 'succeeded',
+      affectedRecordIds: [apostilaId],
+      metadata: {
+        source: 'duplicate_dialog',
+        validationStatus: validation?.status || 'not_available',
+        issueCount: validation?.issue_count || 0,
+      },
+    });
+    if (validation?.status === 'error') {
+      toast.warning('A atualização foi salva, mas gerou um alerta cronológico. A publicação deve ser revisada no Diagnóstico Acadêmico.');
+    }
     toast.success(`"${duplicateMatch.apostila.title}" foi atualizada com a versão melhor formatada.`);
     // Limpa formulário ativo (importação ou manual)
     resetImportForm();
@@ -1228,12 +1320,34 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
   /** Acrescenta texto à apostila encontrada sem perder o conteúdo já salvo. */
   const appendToExistingApostila = useCallback(async (newContent: string) => {
     if (!duplicateMatch) return;
+    const apostilaId = duplicateMatch.apostila.id;
+    const operationId = typeof crypto !== 'undefined' && 'randomUUID' in crypto
+      ? crypto.randomUUID()
+      : `clone-append-${Date.now()}`;
     const existing = duplicateMatch.apostila.content || '';
     const compact = (text: string) => text.replace(/\s+/g, ' ').trim().toLocaleLowerCase();
     const existingCompact = compact(existing);
     const newCompact = compact(newContent);
 
+    void recordApostilaOperation({
+      operationId,
+      apostilaId,
+      operationType: 'apostila_clone_append',
+      phase: 'update',
+      status: 'started',
+      metadata: { source: 'duplicate_dialog', newContentLength: newContent.length },
+    });
+
     if (!newCompact || newCompact === existingCompact) {
+      void recordApostilaOperation({
+        operationId,
+        apostilaId,
+        operationType: 'apostila_clone_append',
+        phase: 'update',
+        status: 'blocked',
+        errorCode: 'duplicate_content',
+        errorMessage: 'O conteúdo informado já está presente na apostila.',
+      });
       toast.info('Esse conteúdo já está presente na apostila existente.');
       return;
     }
@@ -1246,8 +1360,38 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
     const { error } = await supabase
       .from('apostilas')
       .update({ content, published: true, updated_at: new Date().toISOString() })
-      .eq('id', duplicateMatch.apostila.id);
-    if (error) { toast.error('Erro ao adicionar conteúdo: ' + error.message); return; }
+      .eq('id', apostilaId);
+    if (error) {
+      void recordApostilaOperation({
+        operationId,
+        apostilaId,
+        operationType: 'apostila_clone_append',
+        phase: 'update',
+        status: 'failed',
+        errorCode: error.code || 'clone_append_failed',
+        errorMessage: error.message,
+      });
+      toast.error('Erro ao adicionar conteúdo: ' + error.message);
+      return;
+    }
+
+    const validation = await runApostilaChronologyValidation(apostilaId, 'clone_append');
+    void recordApostilaOperation({
+      operationId,
+      apostilaId,
+      operationType: 'apostila_clone_append',
+      phase: 'update',
+      status: 'succeeded',
+      affectedRecordIds: [apostilaId],
+      metadata: {
+        source: 'duplicate_dialog',
+        validationStatus: validation?.status || 'not_available',
+        issueCount: validation?.issue_count || 0,
+      },
+    });
+    if (validation?.status === 'error') {
+      toast.warning('O conteúdo foi anexado, mas gerou um alerta cronológico. Revise antes de disponibilizar aos alunos.');
+    }
 
     toast.success(`Conteúdo adicionado a "${duplicateMatch.apostila.title}".`);
     resetImportForm();

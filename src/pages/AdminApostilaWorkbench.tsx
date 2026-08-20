@@ -27,7 +27,8 @@ import { ensureApostilaExists } from '@/lib/create-placeholder-apostila';
 import { Badge } from '@/components/ui/badge';
 import { getSubjectColor } from '@/lib/subject-colors';
 import { parseApostilaContent } from '@/lib/apostila-parser';
-import { createApostilaPage, type ApostilaPage, upsertApostilaPage } from '@/lib/apostila-pages';
+import { createApostilaPage, type ApostilaPage, upsertApostilaPage, validateApostilaChronology } from '@/lib/apostila-pages';
+import { recordApostilaOperation, runApostilaChronologyValidation } from '@/lib/apostila-diagnostics';
 import { NewApostilaPageButton } from '@/components/NewApostilaPageButton';
 
 import {
@@ -358,39 +359,61 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
   const persistChanges = async (isManual = false) => {
     if (!id || !dirtyRef.current) return;
     setSaving(true);
-    
-    console.log(`[Workbench] Persisting changes for ${selectedPageId ? 'page ' + selectedPageId : 'main apostila ' + id}`);
 
-    // Verificação automática de integridade de data (Anti-Mistura)
-    const datePattern = /(\d{2})\/(\d{2})\/(\d{4})/;
-    const titleDate = title.match(datePattern);
-    const contentDates = content.match(new RegExp(datePattern, 'g'));
-    
-    if (titleDate && contentDates) {
-      const foreignDates = contentDates.filter(d => d !== titleDate[0]);
-      if (foreignDates.length > 0) {
-        console.warn(`[Workbench] Date inconsistency detected: Page is ${titleDate[0]}, but content has ${foreignDates.join(', ')}`);
-        toast.warning(`Atenção: A página é datada de ${titleDate[0]}, mas o conteúdo cita ${foreignDates.join(', ')}. Verifique se não há mistura de aulas.`, {
-          duration: 6000
-        });
-        
-        // Registrar log de inconsistência para o painel de diagnóstico
-        await supabase.from('audit_logs').insert({
-          event_type: 'apostila_date_inconsistency',
-          resource_id: id,
-          metadata: {
-            page_id: selectedPageId || 'main',
-            title_date: titleDate[0],
-            found_dates: foreignDates,
-            title
-          }
-        });
-      }
+    const operationId = typeof crypto !== 'undefined' && 'randomUUID' in crypto
+      ? crypto.randomUUID()
+      : `save-${Date.now()}`;
+    const operationType = selectedPageId ? 'page_update' : 'apostila_update';
+    const snapshots = selectedPageId
+      ? pages.map((page) => page.id === selectedPageId ? { ...page, title, content } : page)
+      : pages;
+    const chronology = validateApostilaChronology({ title, content, pages: snapshots });
+
+    void recordApostilaOperation({
+      operationId,
+      apostilaId: id,
+      pageId: selectedPageId,
+      operationType,
+      phase: 'save',
+      status: 'started',
+      metadata: {
+        isManual,
+        title,
+        position: selectedPageId ? snapshots.find((page) => page.id === selectedPageId)?.position ?? null : null,
+        chronologyStatus: chronology.status,
+        chronologyIssueCodes: chronology.issues.map((issue) => issue.code),
+      },
+    });
+
+    console.log(`[Workbench] Persisting ${operationType}`, {
+      operationId,
+      apostilaId: id,
+      pageId: selectedPageId || null,
+      chronology,
+    });
+
+    if (chronology.issues.length > 0) {
+      console.warn('[Workbench] Inconsistência cronológica detectada:', chronology);
+      toast.warning(
+        chronology.issues[0].message + ' A operação será registrada para revisão administrativa.',
+        { duration: 6000 },
+      );
     }
 
     if (selectedPageId) {
       if (selectedPageId.startsWith('placeholder')) {
-        console.error('[Workbench] Cannot save to placeholder page ID');
+        console.error('[Workbench] Cannot save to placeholder page ID', { operationId, selectedPageId });
+        void recordApostilaOperation({
+          operationId,
+          apostilaId: id,
+          pageId: selectedPageId,
+          operationType,
+          phase: 'save',
+          status: 'blocked',
+          errorCode: 'placeholder_page_id',
+          errorMessage: 'Uma página placeholder não pode receber autosave.',
+          metadata: { selectedPageId },
+        });
         setSaving(false);
         return;
       }
@@ -406,10 +429,21 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         .single();
       
       setSaving(false);
-      if (error) { 
+      if (error) {
         console.error('[Workbench] Error saving page:', error);
-        toast.error('Não foi possível salvar esta página.'); 
-        return; 
+        void recordApostilaOperation({
+          operationId,
+          apostilaId: id,
+          pageId: selectedPageId,
+          operationType,
+          phase: 'save',
+          status: 'failed',
+          errorCode: error.code || 'page_update_failed',
+          errorMessage: error.message,
+          metadata: { chronologyStatus: chronology.status },
+        });
+        toast.error('Não foi possível salvar esta página.');
+        return;
       }
       
       console.log('[Workbench] Page saved successfully:', savedPage.id);
@@ -426,20 +460,51 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       setPages((current) => upsertApostilaPage(current, pageToDisplay));
 
       if (content.trim().length > 0) {
+        const shouldPublish = chronology.status !== 'error';
         const { error: publishError } = await supabase
           .from('apostilas')
-          .update({ published: true, updated_at: savedAt })
+          .update({ published: shouldPublish, updated_at: savedAt })
           .eq('id', id);
 
         if (publishError) {
-          console.error('[Workbench] Failed to auto-publish parent apostila:', publishError);
+          console.error('[Workbench] Failed to update parent apostila visibility:', publishError);
+          void recordApostilaOperation({
+            operationId,
+            apostilaId: id,
+            pageId: selectedPageId,
+            operationType,
+            phase: 'publish_guard',
+            status: 'failed',
+            errorCode: publishError.code || 'parent_visibility_update_failed',
+            errorMessage: publishError.message,
+            affectedRecordIds: [savedPage.id],
+            metadata: { chronologyStatus: chronology.status },
+          });
         } else {
-          setPublished(true);
+          setPublished(shouldPublish);
           setApostilas((current) => current.map((apostila) =>
-            apostila.id === id ? { ...apostila, published: true, updated_at: savedAt } : apostila
+            apostila.id === id ? { ...apostila, published: shouldPublish, updated_at: savedAt } : apostila
           ));
+          if (!shouldPublish) {
+            toast.error('A página foi salva como rascunho porque a cronologia apresenta inconsistências.');
+          }
         }
       }
+
+      void recordApostilaOperation({
+        operationId,
+        apostilaId: id,
+        pageId: selectedPageId,
+        operationType,
+        phase: 'save',
+        status: 'succeeded',
+        affectedRecordIds: [savedPage.id, id],
+        metadata: {
+          chronologyStatus: chronology.status,
+          chronologyIssueCodes: chronology.issues.map((issue) => issue.code),
+          position: savedPage.position,
+        },
+      });
 
       dirtyRef.current = false;
       localStorage.removeItem(`apostila_backup_${id}_${selectedPageId}`);
@@ -458,6 +523,16 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       setContent(currentApostila.content);
       dirtyRef.current = false;
       setSaving(false);
+      void recordApostilaOperation({
+        operationId,
+        apostilaId: id,
+        operationType,
+        phase: 'save',
+        status: 'blocked',
+        errorCode: 'content_wipe_prevented',
+        errorMessage: 'O conteúdo carregado seria substituído por vazio; a operação foi bloqueada.',
+        metadata: { currentContentLength: currentApostila.content.length },
+      });
       toast.error('Conteúdo preservado para evitar perda.');
       return;
     }
@@ -477,7 +552,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         title: title.trim() || 'Sem título',
         category,
         content,
-        published: content.trim().length > 0 ? true : published,
+        published: content.trim().length > 0 && chronology.status !== 'error' ? true : published,
         semester,
         course: course.length ? course : null,
       })
@@ -486,6 +561,16 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     setSaving(false);
     if (error) {
       console.error('Erro ao salvar:', error);
+      void recordApostilaOperation({
+        operationId,
+        apostilaId: id,
+        operationType,
+        phase: 'save',
+        status: 'failed',
+        errorCode: error.code || 'apostila_update_failed',
+        errorMessage: error.message,
+        metadata: { chronologyStatus: chronology.status },
+      });
       toast.error('Falha na sincronização. Edição mantida localmente.', {
         description: 'Verifique sua conexão. Tentaremos salvar novamente em instantes.',
         action: isManual ? {
@@ -501,8 +586,21 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       // são removidos no ramo específico de página após o salvamento.
       localStorage.removeItem(`apostila_backup_${id}_main`);
 
+    void recordApostilaOperation({
+      operationId,
+      apostilaId: id,
+      operationType,
+      phase: 'save',
+      status: 'succeeded',
+      affectedRecordIds: [id],
+      metadata: {
+        chronologyStatus: chronology.status,
+        chronologyIssueCodes: chronology.issues.map((issue) => issue.code),
+      },
+    });
+
     dirtyRef.current = false;
-    if (content.trim().length > 0) setPublished(true);
+    if (content.trim().length > 0 && chronology.status !== 'error') setPublished(true);
     setLastSavedAt(new Date());
     setApostilas((prev) =>
       prev.map((p) => (p.id === id ? { ...p, title: title.trim() || 'Sem título', category, semester, course: course.length ? course : null, updated_at: new Date().toISOString() } : p))
@@ -541,12 +639,72 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
   };
 
   const executeTogglePublish = async (next: boolean) => {
+    if (!id) return;
+    const operationId = typeof crypto !== 'undefined' && 'randomUUID' in crypto
+      ? crypto.randomUUID()
+      : `publish-${Date.now()}`;
+
+    void recordApostilaOperation({
+      operationId,
+      apostilaId: id,
+      operationType: 'publish_toggle',
+      phase: 'validation',
+      status: 'started',
+      metadata: { requestedPublished: next },
+    });
+
+    if (next) {
+      const validation = await runApostilaChronologyValidation(id, 'publish_gate');
+      if (validation?.status === 'error') {
+        void recordApostilaOperation({
+          operationId,
+          apostilaId: id,
+          operationType: 'publish_toggle',
+          phase: 'validation',
+          status: 'blocked',
+          errorCode: 'chronology_validation_failed',
+          errorMessage: 'A publicação foi bloqueada por inconsistências cronológicas.',
+          metadata: {
+            validationStatus: validation.status,
+            issueCount: validation.issue_count,
+            issues: validation.issues,
+          },
+        });
+        toast.error('Publicação bloqueada: corrija as inconsistências cronológicas no Diagnóstico Acadêmico.');
+        return;
+      }
+      if (!validation) {
+        toast.warning('Validação server-side indisponível; a publicação seguirá com registro local.');
+      } else if (validation.status === 'warning') {
+        toast.warning('Apostila publicada com avisos cronológicos. Revise o Diagnóstico Acadêmico.');
+      }
+    }
+
     setPublished(next);
     const { error } = await supabase.from('apostilas').update({ published: next }).eq('id', id);
     if (error) {
       setPublished(!next);
+      void recordApostilaOperation({
+        operationId,
+        apostilaId: id,
+        operationType: 'publish_toggle',
+        phase: 'update',
+        status: 'failed',
+        errorCode: error.code || 'publish_update_failed',
+        errorMessage: error.message,
+        metadata: { requestedPublished: next },
+      });
       toast.error('Falha ao alterar status');
     } else {
+      void recordApostilaOperation({
+        operationId,
+        apostilaId: id,
+        operationType: 'publish_toggle',
+        phase: 'update',
+        status: 'succeeded',
+        affectedRecordIds: [id],
+        metadata: { published: next },
+      });
       toast.success(next ? 'Publicada' : 'Rascunho');
       setApostilas((prev) => prev.map((p) => (p.id === id ? { ...p, published: next } : p)));
     }
@@ -745,6 +903,18 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       return;
     }
 
+    const operationId = typeof crypto !== 'undefined' && 'randomUUID' in crypto
+      ? crypto.randomUUID()
+      : `page-create-${Date.now()}`;
+    void recordApostilaOperation({
+      operationId,
+      apostilaId: id,
+      operationType: 'page_create',
+      phase: 'insert',
+      status: 'started',
+      metadata: { selectedPageId, dirtyBeforeCreate: dirtyRef.current },
+    });
+
     try {
       // Aguarda qualquer autosave já iniciado antes de trocar de página.
       if (saveInFlightRef.current) await saveInFlightRef.current;
@@ -753,7 +923,19 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       if (dirtyRef.current) {
         await doSave(true);
         if (dirtyRef.current) {
-          toast.error('Não foi possível salvar a página atual. A nova página não foi criada.');
+          const message = 'Não foi possível salvar a página atual. A nova página não foi criada.';
+          void recordApostilaOperation({
+            operationId,
+            apostilaId: id,
+            pageId: selectedPageId,
+            operationType: 'page_create',
+            phase: 'precondition',
+            status: 'blocked',
+            errorCode: 'current_page_save_failed',
+            errorMessage: message,
+            metadata: { selectedPageId, dirtyBeforeCreate: true },
+          });
+          toast.error(message);
           return;
         }
       }
@@ -790,12 +972,49 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       setContent(newPage.content || '');
       
       // Navigate to the new page
-      navigate(`/admin/apostilas/${id}?page=${newPage.id}&expanded=1`, { replace: true });
+      const nextUrl = `/admin/apostilas/${id}?page=${newPage.id}&expanded=1`;
+      navigate(nextUrl, { replace: true });
+      const validation = await runApostilaChronologyValidation(id, 'page_create');
+      void recordApostilaOperation({
+        operationId,
+        apostilaId: id,
+        pageId: newPage.id,
+        operationType: 'page_create',
+        phase: 'insert',
+        status: 'succeeded',
+        affectedRecordIds: [newPage.id, id],
+        metadata: {
+          position: newPage.position,
+          nextUrl,
+          validationStatus: validation?.status || 'not_available',
+          issueCount: validation?.issue_count || validation?.issues?.length || 0,
+        },
+      });
+      if (validation?.status === 'error') {
+        toast.warning('A página foi criada, mas o diagnóstico encontrou uma inconsistência cronológica.');
+      }
       
       toast.success('Nova página criada e carregada no editor.');
     } catch (error: any) {
-      console.error('Erro ao criar página da apostila:', error);
+      console.error('Erro ao criar página da apostila:', {
+        operationId,
+        apostilaId: id,
+        pageId: selectedPageId,
+        errorCode: error?.code || 'page_create_failed',
+        errorMessage: error?.message || 'Erro desconhecido',
+      });
       const message = String(error?.message || '');
+      void recordApostilaOperation({
+        operationId,
+        apostilaId: id,
+        pageId: selectedPageId,
+        operationType: 'page_create',
+        phase: 'insert',
+        status: 'failed',
+        errorCode: error?.code || 'page_create_failed',
+        errorMessage: message || 'Erro desconhecido',
+        metadata: { selectedPageId, dirtyBeforeCreate: dirtyRef.current },
+      });
       if (/apostila_pages|schema cache|does not exist|PGRST205/i.test(message)) {
         toast.error('A criação de páginas não está habilitada no banco de produção.');
       } else if (/row-level security|permission denied|42501/i.test(message)) {

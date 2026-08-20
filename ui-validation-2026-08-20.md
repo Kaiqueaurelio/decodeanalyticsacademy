@@ -36,3 +36,22 @@ Durante a revisão do SQL foi identificado e corrigido um risco de aplicação d
 Também foram removidos os rótulos visíveis “Aluno UNIP” das funções de criação/login e da página de perfil. O domínio técnico legado `ra.unip.local` foi preservado somente como compatibilidade interna para contas RA já existentes; ele não é exibido como portal, link ou branding na interface.
 
 Após esses ajustes, TypeScript, build Vite, Vitest (11 arquivos e 63 testes) e `git diff --check` passaram novamente. O build manteve apenas o warning já conhecido de chunks acima de 500 kB e os testes mantiveram apenas avisos deprecados não bloqueantes.
+
+
+## Implementação adicional — diagnóstico cronológico e observabilidade do Workbench
+
+Foi adicionada a migração `20260820100000_apostila_chronology_diagnostics.sql`. Ela cria execuções de validação, issues com severidade e metadados, alertas abertos para correção preventiva e logs operacionais do Workbench com `operation_id`, fase, status, IDs afetados, código de erro, mensagem e metadados. O conteúdo integral das aulas não é persistido nesses registros; a evidência fica limitada a títulos, datas detectadas, posições e identificadores.
+
+A validação server-side verifica conteúdo principal com múltiplas datas, divergência entre título e conteúdo, página sem data no título, página com mais de uma data, divergência de data em página e ordem cronológica invertida. O parser SQL trata datas impossíveis sem abortar a transação. Triggers em `apostilas` e `apostila_pages` executam a validação após inserção ou edição, criando alertas para inconsistências que precisam ser revisadas antes da publicação.
+
+O Workbench agora registra o início, bloqueio, sucesso ou falha da criação de uma página. O log inclui a página atual, a página criada, a posição escolhida, a URL de navegação, o resultado da validação e o erro retornado pelo banco quando houver falha. O autosave e a publicação também mantêm validação local determinística e guarda server-side quando a função estiver disponível.
+
+O painel administrativo `ApostilaValidationDashboard` exibe resumo das validações, últimas execuções, alertas abertos, evidências e operações recentes. As rotinas administrativas de criação, substituição, anexação e importação de apostilas também disparam rastreamento e validação pós-mutação, permitindo identificar clonagens e edições com cronologia incompatível.
+
+### Evidência dos testes finais
+
+A suíte dedicada `src/test/apostila-chronology.test.ts` cobre normalização de datas, conteúdo principal com múltiplas aulas, divergência entre título e conteúdo, ordem invertida, sequência válida, atualização isolada de página, criação na próxima posição e propagação de erro de leitura. O resultado final foi **12 arquivos de teste aprovados e 71 testes aprovados**. O TypeScript passou sem erros, o build Vite/PWA foi concluído com sucesso e `git diff --check` não encontrou whitespace inválido. Permanecem apenas os avisos preexistentes de chunks maiores que 500 kB e avisos de `act(...)` em testes antigos do menu.
+
+### Aplicação em produção
+
+A migração precisa ser aplicada no projeto Supabase de produção antes que o painel leia os dados persistidos, os triggers sejam executados, os logs server-side sejam gravados e os alertas automáticos fiquem ativos. O frontend degrada de forma segura enquanto a migração não estiver aplicada: a validação local continua disponível e a indisponibilidade do RPC é registrada no console, sem impedir o uso normal das apostilas.
