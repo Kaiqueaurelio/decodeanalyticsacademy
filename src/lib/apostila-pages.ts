@@ -33,18 +33,6 @@ export interface ChronologyValidationReport {
   dates: string[];
 }
 
-export interface ApostilaSeparationResult {
-  status: 'succeeded' | 'blocked' | 'error';
-  code?: string;
-  apostila_id?: string;
-  section_count?: number;
-  detected_dates?: string[];
-  created_page_ids?: string[];
-  reused_page_ids?: string[];
-  remaining_content_length?: number | null;
-  message?: string;
-}
-
 const DATE_PATTERN = /\b([0-3]\d)[/.-]([01]\d)[/.-]((?:19|20)\d{2})\b/g;
 
 function toIsoDate(day: string, month: string, year: string): string | null {
@@ -69,14 +57,17 @@ export function extractChronologyDates(text: string | null | undefined): string[
   return [...dates].sort();
 }
 
-export function extractApostilaPageDate(page: Pick<ApostilaPage, 'title' | 'content'>): string | null {
-  return extractChronologyDates(`${page.title || ''}\n${page.content || ''}`)[0] || null;
+export function extractApostilaPageDate(input: { title?: string | null; content?: string | null }): string | null {
+  const titleDates = extractChronologyDates(input.title);
+  if (titleDates.length === 1) return titleDates[0];
+  const contentDates = extractChronologyDates(input.content);
+  return contentDates.length === 1 ? contentDates[0] : null;
 }
 
-export function formatApostilaDate(date: string | null | undefined): string {
-  if (!date) return 'Data pendente';
-  const parsed = new Date(`${date}T00:00:00Z`);
-  return Number.isNaN(parsed.getTime()) ? date : parsed.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
+export function formatApostilaDate(isoDate: string | null | undefined): string {
+  if (!isoDate) return 'Data pendente';
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(isoDate);
+  return match ? `${match[3]}/${match[2]}/${match[1]}` : isoDate;
 }
 
 export function validateApostilaChronology(input: {
@@ -201,6 +192,19 @@ export async function createApostilaPage(apostilaId: string, userId: string) {
   return data as ApostilaPage;
 }
 
+export interface ApostilaSeparationResult {
+  status: 'succeeded' | 'blocked' | 'error';
+  code?: string;
+  message?: string;
+  apostila_id?: string;
+  section_count?: number;
+  detected_dates?: string[];
+  created_page_ids?: string[];
+  reused_page_ids?: string[];
+  remaining_content_length?: number | null;
+}
+
+/** Executa a separação autorizada, versionada e idempotente no banco. */
 export async function separateApostilaByDate(apostilaId: string, userId?: string | null) {
   const { data, error } = await (supabase.rpc as any)('separate_apostila_pages_by_date', {
     _apostila_id: apostilaId,
@@ -209,3 +213,70 @@ export async function separateApostilaByDate(apostilaId: string, userId?: string
   if (error) throw error;
   return (data || { status: 'error', code: 'empty_response' }) as ApostilaSeparationResult;
 }
+
+export interface ApostilaSplitPreviewPage {
+  title: string;
+  content: string;
+  date?: string;
+}
+
+function buildDateSplitPreview(content: string): ApostilaSplitPreviewPage[] {
+  const pages: ApostilaSplitPreviewPage[] = [];
+  let current: ApostilaSplitPreviewPage | null = null;
+  const lines = content.replace(/\r\n?/g, '\n').split('\n');
+  for (const line of lines) {
+    const date = extractChronologyDates(line)[0];
+    const isAnchor = /^\s*(?:#{1,6}\s+|aula\b|encontro\b|data\b)/i.test(line);
+    if (date && isAnchor) {
+      if (current) current.content = current.content.trim();
+      const title = line.replace(/^\s*#{1,6}\s*/, '').replace(/^\*+|\*+$/g, '').trim() || `Aula - ${date}`;
+      current = { title, content: line, date };
+      pages.push(current);
+    } else if (current) {
+      current.content += `\n${line}`;
+    }
+  }
+  return pages.filter((page) => page.content.trim().length > 0);
+}
+
+/** Compatibilidade do Workbench: prévia local e execução pelo RPC seguro. */
+export async function splitApostilaByDate(
+  apostilaId: string,
+  options: { dryRun?: boolean; contentOverride?: string } = {},
+): Promise<{
+  success: boolean;
+  pages_created: number;
+  dates: string[];
+  preview?: ApostilaSplitPreviewPage[];
+  message?: string;
+}> {
+  if (options.dryRun) {
+    let content = options.contentOverride;
+    if (content === undefined) {
+      const { data, error } = await (supabase.from('apostilas' as any) as any)
+        .select('content')
+        .eq('id', apostilaId)
+        .maybeSingle();
+      if (error) throw error;
+      content = data?.content || '';
+    }
+    const preview = buildDateSplitPreview(content || '');
+    const dates = [...new Set(preview.map((page) => page.date).filter(Boolean) as string[])].sort();
+    return {
+      success: preview.length >= 2,
+      pages_created: preview.length,
+      dates,
+      preview,
+      message: preview.length >= 2 ? undefined : 'Não foram encontradas duas seções ancoradas por data.',
+    };
+  }
+
+  const result = await separateApostilaByDate(apostilaId);
+  return {
+    success: result.status === 'succeeded',
+    pages_created: result.section_count || 0,
+    dates: result.detected_dates || [],
+    message: result.message || result.code,
+  };
+}
+

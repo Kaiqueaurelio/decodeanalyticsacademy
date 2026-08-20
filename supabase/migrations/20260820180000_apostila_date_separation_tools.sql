@@ -1,5 +1,9 @@
 -- Ferramentas administrativas para separar conteúdo importado por data de aula.
 -- A operação é transacional, idempotente e preserva o conteúdo original em apostila_versions.
+-- As versões legadas split_apostila_by_date apagavam páginas e não exigiam admin;
+-- são removidas para impedir que o cliente escolha um caminho inseguro.
+DROP FUNCTION IF EXISTS public.split_apostila_by_date(uuid, boolean, text);
+DROP FUNCTION IF EXISTS public.split_apostila_by_date(uuid);
 
 CREATE OR REPLACE FUNCTION public.separate_apostila_pages_by_date(
   _apostila_id uuid,

@@ -22,7 +22,7 @@ export default defineConfig(({ mode }) => {
   plugins: [
     {
       name: 'decode-build-version',
-      transformIndexHtml(html) {
+      transformIndexHtml(html: string) {
         return html.replaceAll('__DECODE_BUILD_VERSION__', buildVersion);
       },
     },

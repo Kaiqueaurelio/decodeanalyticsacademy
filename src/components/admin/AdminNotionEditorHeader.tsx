@@ -19,8 +19,11 @@ import {
   Wand2,
   ChevronLeft,
   ChevronRight,
-  FilePlus2
+  FilePlus2,
+  Scissors,
+  Loader2
 } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { COURSE_OPTIONS, type CourseCode } from '@/lib/subject-semester-map';
@@ -35,11 +38,13 @@ interface ApostilaHealthBarProps {
   title: string;
   published: boolean;
   saving: boolean;
+  splitting?: boolean;
   lastSavedAt: Date | null;
   onSave: () => void;
   onTogglePublish: () => void;
   onPreview: () => void;
   onOpenPanel: () => void;
+  onSplitByDate?: () => void;
   wordCount: number;
   exerciseCount: number;
   materialCount: number;
@@ -49,15 +54,18 @@ interface ApostilaHealthBarProps {
   onCourseChange?: (course: CourseCode[]) => void;
 }
 
+
 export function ApostilaHealthBar({
   title,
   published,
   saving,
+  splitting,
   lastSavedAt,
   onSave,
   onTogglePublish,
   onPreview,
   onOpenPanel,
+  onSplitByDate,
   wordCount,
   exerciseCount,
   materialCount,
@@ -66,6 +74,7 @@ export function ApostilaHealthBar({
   course = [],
   onCourseChange,
 }: ApostilaHealthBarProps) {
+
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false);
 
   return (
@@ -215,10 +224,17 @@ export function ApostilaHealthBar({
         
         {/* GRUPO 1 - ESTRUTURA */}
         <div className="flex items-center gap-1 pr-3 border-r border-border/40">
-          <Button variant="outline" size="sm" className="h-8 gap-1.5 px-3 text-[10px] font-black uppercase border-primary/30 text-primary hover:bg-primary/5 bg-background/50">
-            <RotateCcw className="h-3.5 w-3.5" />
-            Regredir Capa
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={onSplitByDate}
+            disabled={splitting}
+            className="h-8 gap-1.5 px-3 text-[10px] font-black uppercase border-primary/30 text-primary hover:bg-primary/5 bg-background/50"
+          >
+            {splitting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Scissors className="h-3.5 w-3.5" />}
+            Separar por Data
           </Button>
+
 
           <Button 
             variant="outline" 
