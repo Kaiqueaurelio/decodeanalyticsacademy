@@ -851,22 +851,44 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     }, 150);
   };
 
-  const handleSplitByDate = async () => {
+  const handleSplitByDate = async (contentOverride?: string, forceExecute = false) => {
     if (!id || splitting) return;
     
+    // Se for Smart Paste ou Manual e não for execução forçada, mostra prévia
+    if (!forceExecute) {
+      if (contentOverride) {
+        const dates = extractChronologyDates(contentOverride);
+        if (dates.length <= 1) return; 
+      }
+      
+      setSplitting(true);
+      try {
+        const result = await splitApostilaByDate(id, { dryRun: true, contentOverride });
+        if (result.success && result.preview) {
+          setSplitPreviewData({ 
+            pages: result.preview, 
+            totalDates: result.dates.length 
+          });
+          setSplitPreviewOpen(true);
+          return;
+        }
+      } catch (err: any) {
+        console.error('Erro na prévia:', err);
+      } finally {
+        setSplitting(false);
+      }
+    }
+
     setSplitting(true);
     const loadingToast = toast.loading('Separando aulas por data...');
-    
     try {
-      const result = await splitApostilaByDate(id);
-      
+      const result = await splitApostilaByDate(id, { contentOverride });
       if (result.success) {
         toast.dismiss(loadingToast);
         toast.success(`Sucesso! ${result.pages_created} páginas criadas.`, {
           description: `Datas encontradas: ${result.dates.join(', ')}`
         });
-        
-        // Recarregar a apostila para mostrar as novas páginas
+        setSplitPreviewOpen(false);
         void loadApostila(id);
       } else {
         toast.dismiss(loadingToast);
@@ -879,6 +901,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       setSplitting(false);
     }
   };
+
 
   const baseSortOrder = linkedMaterials.length > 0
 
