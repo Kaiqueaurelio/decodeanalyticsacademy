@@ -279,7 +279,9 @@ export default function ApostilaPage({ tab, setTab }: Props) {
       if (dateA && dateB) {
         const dA = new Date(`${dateA[3]}-${dateA[2]}-${dateA[1]}`);
         const dB = new Date(`${dateB[3]}-${dateB[2]}-${dateB[1]}`);
-        return dA.getTime() - dB.getTime();
+        if (!isNaN(dA.getTime()) && !isNaN(dB.getTime())) {
+          return dA.getTime() - dB.getTime();
+        }
       }
       return 0;
     });
@@ -293,7 +295,18 @@ export default function ApostilaPage({ tab, setTab }: Props) {
       if (isPlaceholderPageContent(page.content || '')) return false;
       // Verificação rigorosa para evitar páginas que já existem no conteúdo principal
       if (!pageKey) return false;
-      if (mainKey.includes(pageKey) || pageKey.includes(mainKey)) return false;
+      
+      // Bloqueio de mistura de datas: se a página tiver uma data no título, 
+      // não deve ser fundida se o conteúdo principal já contiver essa data 
+      // mas referindo-se a um contexto diferente.
+      const pageDate = page.title.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+      if (pageDate && mainContent.includes(pageDate[0]) && !mainContent.includes(pageKey)) {
+        // Se a data existe no principal mas o conteúdo da página não está lá,
+        // tratamos como conteúdo distinto obrigatoriamente.
+      } else if (mainKey.includes(pageKey) || pageKey.includes(mainKey)) {
+        return false;
+      }
+      
       return true;
     });
 

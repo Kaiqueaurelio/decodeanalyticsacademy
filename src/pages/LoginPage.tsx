@@ -179,8 +179,26 @@ export default function LoginPage() {
     triggerShake();
     if (newAttempts >= 5) {
       setIsLocked(true);
-      setLockoutTimeLeft(300);
+      const lockDuration = 300; // 5 minutos
+      setLockoutTimeLeft(lockDuration);
+      
+      // Persistir falha no log de auditoria via Edge Function
+      void callRaAuth({ mode: 'log_failure', ra: identifier, reason: 'max_attempts_reached' });
+      
       toast.error('Muitas tentativas inválidas. Conta bloqueada temporariamente.');
+      
+      // Iniciar timer de desbloqueio visual
+      const timer = setInterval(() => {
+        setLockoutTimeLeft(prev => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            setIsLocked(false);
+            setLoginAttempts(0);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
     } else {
       toast.error(
         usedPseudoEmail
