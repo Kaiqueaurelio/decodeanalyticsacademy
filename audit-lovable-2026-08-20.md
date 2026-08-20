@@ -235,3 +235,24 @@ No Modo estudo local autenticado, a entrada principal carregou o título origina
 Foram executados no checkout corrigido `tsc --noEmit --pretty false`, `vite build` e `vitest run --reporter=dot`. Os três comandos foram concluídos com sucesso; a suíte terminou com 11 arquivos de teste aprovados e 63 testes aprovados. Os avisos de `act(...)` e depreciação `punycode` já existentes não causaram falhas. A restauração de dados foi feita separadamente do código, e os artefatos temporários de depuração foram removidos antes do commit.
 
 Conclusão final: o campo principal foi restaurado para a versão histórica limpa com igualdade exata, enquanto o conteúdo novo de 19/08 permanece preservado na página persistida independente. A evidência anterior que registrava 7.886 caracteres no campo principal fica supersedida por esta seção final.
+
+
+## Correção solicitada pelo usuário — conteúdo novo preservado na página — 20/08/2026
+
+A interpretação anterior estava incompleta: restaurar a apostila principal para a versão limpa não era suficiente, porque os textos novos de 19/08 precisavam continuar disponíveis na página nova. A operação foi corrigida sem apagar esses textos.
+
+A fonte exata foi o snapshot histórico `faa8c4ed-1ab0-41f9-94d0-9552240a48a0`, criado em 20/08/2026 às 00:42:37 UTC, com 49.879 caracteres. Esse snapshot contém, no mesmo bloco novo, `Programação linear & Métodos Gráficos`, `Dia: 19/08/2026`, `As Equipes do Projeto`, `Parte 2` e `O Gerador de Energia`. Ele foi copiado integralmente para a página persistida `812c2375-dc09-460e-a964-1bba36d586ba`.
+
+| Verificação | Resultado |
+|---|---|
+| Conteúdo da página antes da correção | 41.990 caracteres; começava em `Parte 2 - Continuação`, portanto faltava o bloco inicial de 19/08 |
+| Backup antes da atualização | `apostila_versions` ID `3c23668c-bbe6-4b5c-8644-47cd5c073610`, preservando exatamente os 41.990 caracteres anteriores |
+| Conteúdo da página depois da correção | 49.879 caracteres, igualdade exata com o snapshot histórico completo |
+| Conteúdo novo preservado | Sim: a página agora contém o bloco inicial, `Parte 2` e o gerador de energia |
+| Apostila principal | Permanece com 52.798 caracteres e igualdade exata com a versão limpa `55b33e2d-3b51-4225-a86e-87166ed1e649`; não contém `19/08/2026` |
+
+## Validação final da correção solicitada
+
+No Modo estudo, a entrada principal continuou exibindo a apostila original, sem o bloco de 19/08. Ao selecionar `Parte 2 — Continuação (19/08/2026)`, a página nova passou a começar por `Programação linear & Métodos Gráficos`, mostrar `Dia: 19/08/2026` e `1. As Equipes do Projeto`, e conter também `Parte 2` e `O Gerador de Energia`. Na página de detalhes, a página adicional foi renderizada junto ao conteúdo principal, sem estado vazio.
+
+Conclusão corrigida: nenhum texto novo foi removido. A apostila original está preservada no campo principal, e o conteúdo completo que havia sido colocado nela foi transferido para a página independente, com backup do estado anterior e igualdade exata com o histórico.
