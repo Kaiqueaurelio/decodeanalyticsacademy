@@ -224,7 +224,7 @@ export default function ApostilaReaderPage() {
       
       setApostilaTitle((ap?.title as string) || "Apostila");
       const rpcTree = (rpcData as unknown as Tree) || { apostila_id: id, modules: [] };
-      const savedPages = (pageRows || []) as ApostilaPageRow[];
+      const savedPages = sanitizedPages as ApostilaPageRow[];
       const t = savedPages.length > 0
         ? mergePagesIntoTree(rpcTree, id, savedPages)
         : (rpcTree.modules?.length > 0 ? rpcTree : buildTreeFromPages(id, savedPages));
