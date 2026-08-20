@@ -158,3 +158,8 @@ Em 20/08/2026, os dois endereços oficiais foram consultados sem autenticação:
 ## Verificação do painel Supabase
 
 A URL do painel de migrações foi aberta em modo somente leitura. Após o carregamento, o Supabase redirecionou para `/dashboard/sign-in`, portanto não havia sessão autenticada disponível neste navegador para consultar ou aplicar as migrações. Nenhuma alteração foi executada no banco. O estado já observado anteriormente permanece: as migrações auditadas precisam ser confirmadas no projeto `gynguskgysompgcajunc` por uma sessão administrativa do Supabase.
+
+
+### Atualização do estado Vercel após os commits documentais
+
+Após os pushes `46bd578b` e `4c6a29d0`, a integração Git da Vercel detectou ambos os SHAs e criou os deployments `dpl_HDXkbZmba3wSSDY18K8QeWxMPECo` e `dpl_1oGavUgnS3p9dVwF2JVYJWpHiS5Y`. Os dois retornaram `state: BLOCKED` e `target: production`. A publicação do código no GitHub está confirmada; a promoção em produção continua bloqueada pela configuração/conta da Vercel, não por falha dos gates locais.
