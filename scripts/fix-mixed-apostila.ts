@@ -8,7 +8,6 @@ const supabase = createClient(
 async function fixApostila() {
   const pageId = '812c2375-dc09-460e-a964-1bba36d586ba';
   
-  // 1. Get the mixed content
   const { data: page, error: fetchError } = await supabase
     .from('apostila_pages')
     .select('content, apostila_id')
@@ -31,38 +30,34 @@ async function fixApostila() {
   const [part1, part2Raw] = content.split(marker);
   const part2 = marker + part2Raw;
   
-  console.log('Split complete. Part 1 length:', part1.length, 'Part 2 length:', part2.length);
-  
-  // 2. Update existing page with Part 1 (19/08)
-  const { error: updateError } = await supabase
+  // Update page positions first to make space
+  await supabase.rpc('increment_page_positions', { _apostila_id: page.apostila_id, _from_position: 1 });
+
+  // Update existing page with Part 1
+  await supabase
     .from('apostila_pages')
     .update({ 
       content: part1.trim(),
-      title: 'Aula - 19/08/2026 (Parte 1)'
+      title: 'Aula - 19/08/2026 (Parte 1)',
+      position: 1
     })
     .eq('id', pageId);
     
-  if (updateError) {
-    console.error('Error updating page 1:', updateError);
-    return;
-  }
-  
-  // 3. Create new page with Part 2 (Continuação)
+  // Insert Part 2
   const { error: insertError } = await supabase
     .from('apostila_pages')
     .insert({
       apostila_id: page.apostila_id,
       title: 'Aula - 19/08/2026 (Continuação)',
       content: part2.trim(),
-      position: 1.5 // Will be between 1 and 2
+      position: 2
     });
     
   if (insertError) {
     console.error('Error inserting page 2:', insertError);
-    return;
+  } else {
+    console.log('Apostila content separated successfully with integer positions.');
   }
-  
-  console.log('Apostila content separated successfully.');
 }
 
 fixApostila();
