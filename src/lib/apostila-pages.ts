@@ -180,9 +180,19 @@ export async function createApostilaPage(apostilaId: string, userId: string) {
 }
 
 /** Executa a separação automática por data via RPC */
-export async function splitApostilaByDate(apostilaId: string): Promise<{ success: boolean; pages_created: number; dates: string[] }> {
+export async function splitApostilaByDate(
+  apostilaId: string, 
+  options: { dryRun?: boolean; contentOverride?: string } = {}
+): Promise<{ 
+  success: boolean; 
+  pages_created: number; 
+  dates: string[];
+  preview?: Array<{ title: string; content: string; date?: string }>;
+}> {
   const { data, error } = await supabase.rpc('split_apostila_by_date', {
-    _apostila_id: apostilaId
+    _apostila_id: apostilaId,
+    _dry_run: options.dryRun || false,
+    _content_override: options.contentOverride || null
   });
   
   if (error) {
@@ -190,6 +200,7 @@ export async function splitApostilaByDate(apostilaId: string): Promise<{ success
     throw error;
   }
   
-  return data as { success: boolean; pages_created: number; dates: string[] };
+  return data as any;
 }
+
 
