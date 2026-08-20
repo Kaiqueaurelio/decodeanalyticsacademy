@@ -69,3 +69,35 @@ A consulta autenticada encontrou **52 apostilas** e páginas persistidas em gran
 A comparação normalizada encontrou **40 candidatos** em que o conteúdo da página persistida já aparece integralmente dentro do conteúdo principal da mesma apostila. Exemplos confirmados: `APOSTILA BUSCA HEURÍSTICA 22/04/26` (14.128 caracteres), `Do zero ao Multiplayer unity` (178.796), `Busca A estrela 29/04/26` (44.020), `Preparo para a APS` (41.297), `resumo NP2 Autômatos` (24.920), `NP2 Teoria dos Grafos` (16.144), `Processamento de Imagem e Visao Computacional` (276.215) e `Fundamentos de Processamento de Imagens Digitais` (40.485). Em todos esses exemplos, a página se chama `Introdução e Resumo` e tem o mesmo tamanho do conteúdo principal ou é um trecho completo dele.
 
 Esse padrão parece ser histórico do acervo: muitas apostilas foram criadas com uma página inicial persistida contendo o mesmo material que também foi colocado em `apostilas.content`. Já a apostila de Pesquisa Operacional tem uma página placeholder, enquanto o conteúdo de 19/08/2026 está somente no campo principal.
+
+
+## Separação realizada
+
+Após identificar o marcador editorial `## **Parte 2 - Continuação**`, foi criado um backup em `apostila_versions` com ID `faa8c4ed-1ab0-41f9-94d0-9552240a48a0` antes de qualquer alteração.
+
+A operação autorizada separou o registro de Pesquisa Operacional sem apagar dados:
+
+| Registro | Resultado |
+|---|---|
+| `apostilas.content` | Mantidos 7.886 caracteres, encerrando no resumo final da primeira parte. |
+| `apostila_pages` | A página existente foi atualizada para `Parte 2 — Continuação (19/08/2026)` com 41.990 caracteres. |
+| Conteúdo original | Preservado integralmente no backup antes da separação. |
+
+A atualização foi transacional na prática: se a segunda gravação falhasse, o script restauraria o conteúdo principal original.
+
+
+## Verificação visual
+
+A rota direta `/apostilas/{id}` na publicação Loveable redirecionou para a landing page, então a verificação visual precisa seguir a navegação interna autenticada. A sessão permanece restaurada no navegador e o botão `Acessar apostilas` está visível na landing page.
+
+
+## Confirmação visual após a separação
+
+A rota autenticada correta é `/apostila/b132f212-5ede-4522-92d3-b0ead2cd8ce2`. A publicação carregou o conteúdo da apostila e exibiu o índice com a primeira parte terminando no resumo final, seguida pelas seções da continuação. O conteúdo principal agora termina antes do marcador `Parte 2`, enquanto a página salva aparece com o título `Parte 2 — Continuação (19/08/2026)` no armazenamento.
+
+Observação: a tela de detalhes foi projetada para apresentar o conteúdo principal e as páginas adicionais em uma única leitura contínua, com títulos de seção. A verificação do “Modo estudo” ainda será feita para confirmar a separação como lição/página navegável.
+
+
+## Confirmação final no Modo estudo
+
+No leitor estruturado, a página aparece separadamente na seção `PÁGINAS DA APOSTILA` como `Parte 2 — Continuação (19/08/2026)`. Ao selecioná-la, o cabeçalho muda para `Páginas da apostila · Conteúdo adicional` e o conteúdo começa em `Parte 2 - Continuação`, seguido pelo material do gerador, terceirização, programação linear e demais tópicos da aula de 19/08. A página 1 não é exibida dentro desse bloco.
