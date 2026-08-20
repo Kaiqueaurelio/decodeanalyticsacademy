@@ -157,3 +157,81 @@ A consulta autenticada dos registros temporários encontrou somente dois IDs cri
 
 
 A limpeza pós-teste foi concluída com sucesso: os registros `17b22df1-a514-491d-9994-143704b5e8a2` e `2f1df076-a55f-4af8-8f74-a71a6872ed02` foram removidos; ambos haviam sido criados exclusivamente para validar criação, navegação e isolamento. A página principal e a página real `Parte 2 — Continuação (19/08/2026)` não foram alteradas.
+
+
+Teste ponta a ponta adicional: em 20/08/2026, o botão `+ PÁGINA` criou e abriu a página `a65b7259-f538-46d2-bcd9-1761193fb68b`, com título `Nova Página — 20/08/2026`, 0 palavras e rota `?page=a65b7259-f538-46d2-bcd9-1761193fb68b&expanded=1`. Um marcador controlado `TESTE_APOSTILA_2026_08_20_ISOLAMENTO` foi inserido exclusivamente nesse editor para validar persistência e isolamento.
+
+
+## Teste ponta a ponta adicional — 20/08/2026
+
+A nova página de teste foi criada com o ID `a65b7259-f538-46d2-bcd9-1761193fb68b`, abriu pela URL `?page=a65b7259-f538-46d2-bcd9-1761193fb68b&expanded=1`, recebeu o marcador `TESTE_APOSTILA_2026_08_20_ISOLAMENTO`, e o marcador permaneceu após recarregar a rota.
+
+Ao abrir a página real `Parte 2 — Continuação (19/08/2026)`, a busca pelo marcador não encontrou texto, confirmando isolamento da nova página em relação à Parte 2. Ao voltar à nova página, o marcador continuou presente.
+
+Ao abrir a página principal, o conteúdo exibido começa por `Programação linear & Métodos Gráficos` e `Dia: 19/08/2026`, confirmando que o registro principal ainda contém material de 19/08. Portanto, a criação e o autosave da nova página estão isolados, mas a separação editorial do conteúdo histórico precisa ser revisada antes de afirmar que a apostila inteira está totalmente separada.
+
+
+### Resultado final do teste ponta a ponta
+
+O registro temporário `a65b7259-f538-46d2-bcd9-1761193fb68b` foi encontrado com título `Nova Página — 20/08/2026`, conteúdo de 41 caracteres e data de criação `2026-08-20T03:17:19.740004+00:00`. O teste confirmou criação, navegação para o novo ID, autosave, recarga e isolamento: o marcador não apareceu na Parte 2 de 19/08 nem na página principal, e retornou ao voltar para a nova página. Após a validação, o registro foi removido com DELETE autenticado, status 200, e a consulta posterior retornou `after: []`. Nenhuma página real foi removida.
+
+
+## Verificação atual da movimentação — 20/08/2026
+
+Consulta autenticada somente leitura ao projeto `gynguskgysompgcajunc`:
+
+| Registro | Resultado atual |
+|---|---|
+| `apostilas.content` | 7.886 caracteres; contém `Programação linear`, `Dia: 19/08/2026` e `As Equipes do Projeto`. Não contém `Parte 2` nem `O Gerador de Energia`. |
+| `apostila_pages` | 1 página real: `Parte 2 — Continuação (19/08/2026)`, ID `812c2375-dc09-460e-a964-1bba36d586ba`, 41.990 caracteres. Contém `Parte 2`, `O Gerador de Energia` e `Programação linear`, mas não contém `As Equipes do Projeto` nem o marcador exato `Dia: 19/08/2026`. |
+
+Conclusão técnica: a Parte 2 foi movida para uma página persistida separada, mas o conteúdo principal ainda contém um bloco de 19/08 (`Programação linear`, `Dia: 19/08/2026`, `As Equipes do Projeto`). Portanto, a movimentação foi parcial em relação à expectativa de deixar a página principal somente com a página anterior; ainda não é possível afirmar que a apostila está totalmente limpa de conteúdo de 19/08.
+
+
+## Verificação visual no Modo estudo — 20/08/2026
+
+O leitor local carregou a apostila e mostrou no menu lateral `Páginas da apostila > Conteúdo adicional` separadamente da seção `Introdução e Resumo`. A página atualmente selecionada é `Visão geral`, cujo conteúdo é uma apostila geral de Excel, Power BI, Pesquisa Operacional e Gestão de Projetos. A separação estrutural existe no leitor, mas a confirmação da Parte 2 exige selecionar `Conteúdo adicional`; o conteúdo principal exibido no leitor não é o bloco `Parte 2`.
+
+
+### Confirmação visual da página movida
+
+No Modo estudo, `Conteúdo adicional` aparece separado da seção `Introdução`. Ao selecionar `Parte 2 — Continuação (19/08/2026)`, o cabeçalho mudou para `Páginas da apostila · Conteúdo adicional` e o conteúdo iniciou por `Parte 2 - Continuação`, seguido de `O Gerador de Energia e Redundância de Sistemas`. Isso confirma que a página movida existe e abre no lugar correto como página independente.
+
+A consulta anterior e a leitura da página principal, contudo, mostram que o conteúdo principal ainda contém `Programação linear`, `Dia: 19/08/2026` e `As Equipes do Projeto`. Portanto, a Parte 2 foi movida corretamente, mas a remoção completa de todos os blocos de 19/08 do conteúdo principal ainda não foi concluída.
+
+
+## Auditoria histórica para separação exata — 20/08/2026
+
+A consulta autenticada retornou 87 versões da apostila `b132f212-5ede-4522-92d3-b0ead2cd8ce2`.
+
+A última versão limpa identificável antes do conteúdo de 19/08 é `55b33e2d-3b51-4225-a86e-87166ed1e649`, criada em 07/08/2026 às 04:30:56 UTC, com 52.798 caracteres e sem os marcadores `19/08/2026`, `Parte 2` ou `Gerador de Energia`. A versão anterior do mesmo momento tinha 57.577 caracteres e parece ser um snapshot intermediário; a versão de 52.798 é a última versão estabilizada antes da substituição.
+
+A primeira versão nova surgiu em 19/08/2026 às 22:48:59 UTC com 7.374 caracteres e começando por `Programação linear & Métodos Gráficos`. A primeira versão que contém o bloco de continuação e `Gerador de Energia` é `...` no índice histórico 33, às 23:00:39 UTC, com 17.366 caracteres. O conteúdo cresceu por autosaves até a versão `cd01b174-4702-46c4-b63c-fed82eff0d84`, criada em 20/08/2026 às 00:11:37 UTC, com 49.759 caracteres.
+
+Comparação dos registros atuais: `apostilas.content` tem 7.886 caracteres, começa por `Programação linear & Métodos Gráficos` e contém `Dia: 19/08/2026`; a página `812c2375-dc09-460e-a964-1bba36d586ba` tem 41.990 caracteres, começa por `Parte 2 — Continuação` e contém `Gerador de Energia`, sem o marcador de data explícito. A página salva está corretamente separada, mas o conteúdo principal atual ainda é o bloco inicial de 19/08.
+
+O RPC `get_apostila_reader_tree` atualmente retorna lições estruturadas sem conteúdo (`length: 0`), portanto a restauração deve usar a versão histórica limpa de 52.798 caracteres, não o RPC vazio. Nenhuma alteração de dados foi executada nesta auditoria.
+
+
+## Restauração histórica definitiva — 20/08/2026
+
+A separação foi concluída com base no histórico autenticado, sem reconstrução manual e sem truncamento aproximado. Antes da alteração, o conteúdo atual de `apostilas.content` foi preservado integralmente em `apostila_versions` no registro `57e25e20-f439-4e24-ac77-d061072dbe9f`, com 7.886 caracteres. A restauração só prosseguiu depois de confirmar que o estado anterior tinha exatamente 7.886 caracteres, que a versão limpa escolhida existia e que a página real de 19/08 correspondia ao ID e ao título esperados.
+
+A versão restaurada foi `55b33e2d-3b51-4225-a86e-87166ed1e649`, criada em 07/08/2026 às 04:30:56 UTC, com 52.798 caracteres. O conteúdo foi copiado integralmente para `apostilas.content`; ele começa por `Introdução às Ferramentas de Análise de Dados e Gestão de Projetos Operacionais`, seguido de `Excel | Power BI | Pesquisa Operacional`, e não contém o marcador `19/08/2026`. A operação foi confirmada por igualdade exata entre o conteúdo salvo e o conteúdo da versão histórica.
+
+| Registro validado | Estado após a restauração |
+|---|---|
+| `apostilas.content` | 52.798 caracteres, versão limpa de 07/08/2026, sem `19/08/2026` |
+| Backup pré-restauração | ID `57e25e20-f439-4e24-ac77-d061072dbe9f`, 7.886 caracteres, conteúdo anterior preservado |
+| Página `apostila_pages` | ID `812c2375-dc09-460e-a964-1bba36d586ba`, título `Parte 2 — Continuação (19/08/2026)`, 41.990 caracteres |
+| Integridade da página separada | Conteúdo, título e associação à apostila permaneceram exatamente iguais antes e depois da restauração |
+
+## Validação visual final após a restauração
+
+No Modo estudo local autenticado, a entrada principal carregou o título original e o cabeçalho `Excel | Power BI | Pesquisa Operacional`, sem exibir `19/08/2026` e sem mensagem de conteúdo vazio. Ao selecionar explicitamente `page:812c2375-dc09-460e-a964-1bba36d586ba`, o leitor exibiu `Páginas da apostila · Conteúdo adicional`, o título `Parte 2 — Continuação (19/08/2026)` e o conteúdo iniciado por `Parte 2 - Continuação` e `O Gerador de Energia e Redundância de Sistemas`. Na página de detalhes `/apostila/b132f212-5ede-4522-92d3-b0ead2cd8ce2`, o conteúdo principal e a página adicional foram renderizados, sem estado em branco.
+
+## Gates técnicos finais
+
+Foram executados no checkout corrigido `tsc --noEmit --pretty false`, `vite build` e `vitest run --reporter=dot`. Os três comandos foram concluídos com sucesso; a suíte terminou com 11 arquivos de teste aprovados e 63 testes aprovados. Os avisos de `act(...)` e depreciação `punycode` já existentes não causaram falhas. A restauração de dados foi feita separadamente do código, e os artefatos temporários de depuração foram removidos antes do commit.
+
+Conclusão final: o campo principal foi restaurado para a versão histórica limpa com igualdade exata, enquanto o conteúdo novo de 19/08 permanece preservado na página persistida independente. A evidência anterior que registrava 7.886 caracteres no campo principal fica supersedida por esta seção final.
