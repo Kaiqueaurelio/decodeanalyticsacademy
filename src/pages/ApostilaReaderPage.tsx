@@ -22,8 +22,10 @@ import {
   Minimize2,
   Volume2,
   VolumeX,
-  ShieldAlert
+  ShieldAlert,
+  Calendar
 } from "lucide-react";
+
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,8 +38,14 @@ import { Separator } from "@/components/ui/separator";
 import { useQueryClient } from "@tanstack/react-query";
 import logoOwl from "@/assets/owl-icon.png";
 import { useSoundEffects } from '@/hooks/useSoundEffects';
+import { useAuth } from "@/hooks/useAuth";
 import { isPlaceholderPageContent, normalizeContentForComparison } from '@/lib/content-formatting';
 import { Badge } from "@/components/ui/badge";
+import { extractChronologyDates } from "@/lib/apostila-pages";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+
+
 
 
 
@@ -74,7 +82,7 @@ interface Tree {
   modules: ModuleT[];
 }
 
-type FlatLesson = Lesson & { moduleTitle: string; chapterTitle: string };
+type FlatLesson = Lesson & { moduleTitle: string; chapterTitle: string; date?: string | null };
 
 type ApostilaPageRow = {
   id: string;
@@ -162,7 +170,9 @@ function flatten(tree: Tree): FlatLesson[] {
   for (const m of tree.modules) {
     for (const c of m.chapters) {
       for (const l of c.lessons) {
-        out.push({ ...l, moduleTitle: m.title, chapterTitle: c.title });
+        const dateMatch = extractChronologyDates(l.title)[0] || extractChronologyDates(l.content_md)[0] || null;
+        out.push({ ...l, moduleTitle: m.title, chapterTitle: c.title, date: dateMatch });
+
       }
     }
   }
@@ -178,8 +188,12 @@ export default function ApostilaReaderPage() {
   const [hasInconsistency, setHasInconsistency] = useState(false);
 
   const [tree, setTree] = useState<Tree | null>(null);
+  const [selectedDate, setSelectedDate] = useState<string>("all");
   const [loadingTree, setLoadingTree] = useState(true);
+
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
+  const { isAdmin } = useAuth();
+
   const [lessonContent, setLessonContent] = useState<string>("");
   const [lessonLoading, setLessonLoading] = useState(false);
   const [tocOpen, setTocOpen] = useState(false);
@@ -234,6 +248,14 @@ export default function ApostilaReaderPage() {
       setApostilaTitle((ap?.title as string) || "Apostila");
       setApostilaStatus((ap as any)?.status || (ap?.published ? 'liberada' : 'bloqueada'));
       setHasInconsistency((auditLogs?.length || 0) > 0);
+      
+      if (ap?.status === 'em_manutencao' && !isAdmin) {
+        toast.info("Material em revisão", {
+          description: "Este conteúdo está sendo re-organizado para melhor leitura.",
+          duration: 5000
+        });
+      }
+
 
       const rpcTree = (rpcData as unknown as Tree) || { apostila_id: id, modules: [] };
       const savedPages = sanitizedPages as ApostilaPageRow[];
@@ -247,6 +269,7 @@ export default function ApostilaReaderPage() {
 
       setTree(t);
       const flat = flatten(t);
+      
       // Retomar de onde parou: primeira in_progress ou primeira sem progresso
       const requestedLesson = searchParams.get("lesson");
       const resume =
@@ -254,7 +277,12 @@ export default function ApostilaReaderPage() {
         flat.find((l) => l.progress_status === "in_progress") ||
         flat.find((l) => !l.progress_status) ||
         flat[0];
-      if (resume) setSelectedLessonId(resume.id);
+      if (resume) {
+        setSelectedLessonId(resume.id);
+        // Se a lição retomada tiver data, seleciona ela no filtro
+        if (resume.date) setSelectedDate(resume.date);
+      }
+
       setLoadingTree(false);
     })();
     return () => {
@@ -263,10 +291,25 @@ export default function ApostilaReaderPage() {
   }, [id, searchParams]);
 
   const flat = useMemo(() => (tree ? flatten(tree) : []), [tree]);
-  const currentIndex = flat.findIndex((l) => l.id === selectedLessonId);
-  const currentLesson = currentIndex >= 0 ? flat[currentIndex] : null;
-  const prevLesson = currentIndex > 0 ? flat[currentIndex - 1] : null;
-  const nextLesson = currentIndex >= 0 && currentIndex < flat.length - 1 ? flat[currentIndex + 1] : null;
+  
+  const availableDates = useMemo(() => {
+    const dates = new Set<string>();
+    flat.forEach(l => {
+      if (l.date) dates.add(l.date);
+    });
+    return Array.from(dates).sort();
+  }, [flat]);
+
+  const filteredFlat = useMemo(() => {
+    if (selectedDate === "all") return flat;
+    return flat.filter(l => l.date === selectedDate || !l.date); // Mostra o conteúdo da data ou sem data (geral)
+  }, [flat, selectedDate]);
+
+  const currentIndex = filteredFlat.findIndex((l) => l.id === selectedLessonId);
+  const currentLesson = currentIndex >= 0 ? filteredFlat[currentIndex] : null;
+  const prevLesson = currentIndex > 0 ? filteredFlat[currentIndex - 1] : null;
+  const nextLesson = currentIndex >= 0 && currentIndex < filteredFlat.length - 1 ? filteredFlat[currentIndex + 1] : null;
+
 
   const totalLessons = flat.length;
   const completedLessons = flat.filter((l) => l.progress_status === "completed").length;
@@ -604,13 +647,35 @@ export default function ApostilaReaderPage() {
             <Menu className="h-5 w-5" />
           </button>
           <div className="min-w-0 flex-1">
-            <div className="truncate text-[11px] uppercase tracking-wider text-muted-foreground">
+            <div className="truncate text-[11px] uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+              <span>{currentLesson?.moduleTitle} · {currentLesson?.chapterTitle}</span>
+              {currentLesson?.date && (
+                <Badge variant="outline" className="h-3.5 text-[8px] py-0 border-primary/30 text-primary">
+                  {currentLesson.date}
+                </Badge>
+              )}
+            </div>
+            <div className="truncate font-display text-base font-semibold flex items-center gap-3">
+              <span className="truncate">{currentLesson?.title || "Selecione uma lição"}</span>
+              
+              {availableDates.length > 1 && (
+                <div className="hidden sm:block ml-2 w-32 shrink-0">
+                  <Select value={selectedDate} onValueChange={setSelectedDate}>
+                    <SelectTrigger className="h-7 text-[10px] bg-card/50 border-primary/20">
+                      <SelectValue placeholder="Filtrar data" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todas as aulas</SelectItem>
+                      {availableDates.map(date => (
+                        <SelectItem key={date} value={date}>{date}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
-              {currentLesson?.moduleTitle} · {currentLesson?.chapterTitle}
             </div>
-            <div className="truncate font-display text-base font-semibold">
-              {currentLesson?.title || "Selecione uma lição"}
-            </div>
+
           </div>
           <button
             className="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-accent"

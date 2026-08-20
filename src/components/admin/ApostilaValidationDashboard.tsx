@@ -17,6 +17,8 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
+import { Download, FileDown } from 'lucide-react';
+
 
 interface DashboardSummary {
   total_runs: number;
@@ -180,6 +182,51 @@ export function ApostilaValidationDashboard() {
     await loadDashboard();
   };
 
+  const exportSeparationHistory = () => {
+    if (operations.length === 0) {
+      toast.error('Nenhum histórico disponível para exportação.');
+      return;
+    }
+
+    const splitOps = operations.filter(op => 
+      op.operation_type === 'apostila_content_split' || 
+      (op.metadata && (op.metadata as any).operationType === 'page_update')
+    );
+
+    if (splitOps.length === 0) {
+      toast.info('Nenhuma operação de separação encontrada no log atual.');
+    }
+
+    const headers = ['Data', 'Apostila', 'Operação', 'Fase', 'Status', 'Páginas/Impacto', 'Erro'];
+    const rows = splitOps.map(op => [
+      formatDate(op.created_at),
+      op.apostila_title || op.apostila_id || 'N/A',
+      op.operation_type,
+      op.phase,
+      op.status,
+      op.affected_record_ids?.length || (op.metadata as any)?.pages_created || 0,
+      op.error_message || ''
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `historico-separacao-${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast.success('Histórico exportado com sucesso.');
+  };
+
+
   return (
     <div className="space-y-6">
       <Card className="border-primary/20 bg-card/50 backdrop-blur-sm">
@@ -194,10 +241,17 @@ export function ApostilaValidationDashboard() {
                 Validação cronológica por data, evidências de correção, alertas preventivos e operações do Workbench.
               </CardDescription>
             </div>
-            <Button variant="outline" size="sm" onClick={() => void loadDashboard()} disabled={loading}>
-              <RefreshCw className={loading ? 'mr-2 h-4 w-4 animate-spin' : 'mr-2 h-4 w-4'} />
-              Atualizar
-            </Button>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button variant="outline" size="sm" onClick={exportSeparationHistory} className="border-primary/30 hover:bg-primary/10">
+                <FileDown className="mr-2 h-4 w-4" />
+                Exportar Histórico (CSV)
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => void loadDashboard()} disabled={loading}>
+                <RefreshCw className={loading ? 'mr-2 h-4 w-4 animate-spin' : 'mr-2 h-4 w-4'} />
+                Atualizar
+              </Button>
+            </div>
+
           </div>
         </CardHeader>
         <CardContent className="space-y-4">

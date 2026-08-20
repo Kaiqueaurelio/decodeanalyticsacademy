@@ -27,15 +27,17 @@ import { ensureApostilaExists } from '@/lib/create-placeholder-apostila';
 import { Badge } from '@/components/ui/badge';
 import { getSubjectColor } from '@/lib/subject-colors';
 import { parseApostilaContent } from '@/lib/apostila-parser';
-import { createApostilaPage, type ApostilaPage, upsertApostilaPage, validateApostilaChronology } from '@/lib/apostila-pages';
+import { createApostilaPage, type ApostilaPage, upsertApostilaPage, validateApostilaChronology, splitApostilaByDate } from '@/lib/apostila-pages';
 import { recordApostilaOperation, runApostilaChronologyValidation } from '@/lib/apostila-diagnostics';
+
 import { NewApostilaPageButton } from '@/components/NewApostilaPageButton';
 
 import {
   ArrowLeft, Search, Save, Eye, PenTool, Wand2, Loader2, Menu, FileText,
   ListChecks, PanelRightClose, ExternalLink, GraduationCap, ImageIcon, PanelRightOpen, X, Maximize2, Minimize2,
-  FilePlus2, Plus
+  FilePlus2, Plus, Scissors
 } from 'lucide-react';
+
 import { invokeFunction } from '@/lib/invoke-function';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -123,6 +125,8 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
   const [autoLinking, setAutoLinking] = useState(false);
   const [generatingCover, setGeneratingCover] = useState(false);
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
+  const [splitting, setSplitting] = useState(false);
+
   const [reviewOpen, setReviewOpen] = useState(false);
   const [rightTab, setRightTab] = useState<'materials' | 'preview' | 'exercises'>('materials');
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -832,7 +836,37 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     }, 150);
   };
 
+  const handleSplitByDate = async () => {
+    if (!id || splitting) return;
+    
+    setSplitting(true);
+    const loadingToast = toast.loading('Separando aulas por data...');
+    
+    try {
+      const result = await splitApostilaByDate(id);
+      
+      if (result.success) {
+        toast.dismiss(loadingToast);
+        toast.success(`Sucesso! ${result.pages_created} páginas criadas.`, {
+          description: `Datas encontradas: ${result.dates.join(', ')}`
+        });
+        
+        // Recarregar a apostila para mostrar as novas páginas
+        void loadApostila(id);
+      } else {
+        toast.dismiss(loadingToast);
+        toast.error('Não foi possível separar:', { description: (result as any).message });
+      }
+    } catch (err: any) {
+      toast.dismiss(loadingToast);
+      toast.error('Erro técnico ao processar separação.', { description: err.message });
+    } finally {
+      setSplitting(false);
+    }
+  };
+
   const baseSortOrder = linkedMaterials.length > 0
+
     ? Math.max(...linkedMaterials.map((m) => m.sort_order)) + 1
     : 0;
 
@@ -1048,11 +1082,13 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         title={title}
         published={published}
         saving={saving}
+        splitting={splitting}
         lastSavedAt={lastSavedAt}
         onSave={() => doSave(true)}
         onTogglePublish={togglePublish}
         onPreview={() => { setRightTab('preview'); setRightOpen(true); }}
         onOpenPanel={() => { setRightTab('materials'); setRightOpen(true); }}
+        onSplitByDate={handleSplitByDate}
         wordCount={content.trim() ? content.trim().split(/\s+/).length : 0}
         exerciseCount={exerciseCount}
         materialCount={linkedMaterials.length}
@@ -1061,6 +1097,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         onPasteOpen={() => setPasteOpen(true)}
         onAddPage={handleCreatePersistedPage}
       />
+
       
 
 

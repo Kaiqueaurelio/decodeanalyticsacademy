@@ -178,3 +178,18 @@ export async function createApostilaPage(apostilaId: string, userId: string) {
   if (error) throw error;
   return data as ApostilaPage;
 }
+
+/** Executa a separação automática por data via RPC */
+export async function splitApostilaByDate(apostilaId: string): Promise<{ success: boolean; pages_created: number; dates: string[] }> {
+  const { data, error } = await supabase.rpc('split_apostila_by_date', {
+    _apostila_id: apostilaId
+  });
+  
+  if (error) {
+    console.error('[ApostilaPages] Erro ao separar por data:', error);
+    throw error;
+  }
+  
+  return data as { success: boolean; pages_created: number; dates: string[] };
+}
+

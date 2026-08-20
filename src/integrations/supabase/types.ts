@@ -3523,6 +3523,7 @@ export type Database = {
         Args: { _user_id: string }
         Returns: undefined
       }
+      split_apostila_by_date: { Args: { _apostila_id: string }; Returns: Json }
       submit_quiz: {
         Args: { _answers: Json; _quiz_id: string; _time_spent?: number }
         Returns: Json
