@@ -942,15 +942,19 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
 
       const newPage = await createApostilaPage(id, user.id);
       
-      // Update local state and editor immediately
+      // Update local state immediately
       setPages((current) => upsertApostilaPage(current, newPage));
-      
-      // Forces re-render of the tabs list in expanded mode
-      setLoading(true);
-      setTimeout(() => setLoading(false), 50);
       
       // Crucial: reset loadRequestRef to ignore any pending loads that might overwrite our state
       loadRequestRef.current++; 
+      
+      // Forces re-render of the editor by resetting the loading state
+      setLoading(true);
+      
+      // Pre-set content to avoid flicker or old content showing
+      setTitle(newPage.title || 'Nova Página');
+      setContent('');
+      dirtyRef.current = false;
       
       // Update sidebar list if needed
       if (newPage.title) {
@@ -966,14 +970,14 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       }
 
       
-      dirtyRef.current = false;
-      initialLoadRef.current = false; // Set to false to allow editor to sync with new state
-      setTitle(newPage.title || 'Nova Página');
-      setContent(newPage.content || '');
+      initialLoadRef.current = false;
       
       // Navigate to the new page
       const nextUrl = `/admin/apostilas/${id}?page=${newPage.id}&expanded=1`;
       navigate(nextUrl, { replace: true });
+      
+      // End loading after navigation
+      setTimeout(() => setLoading(false), 100);
       const validation = await runApostilaChronologyValidation(id, 'page_create');
       void recordApostilaOperation({
         operationId,
