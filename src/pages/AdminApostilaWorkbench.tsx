@@ -331,7 +331,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     return () => { delete (window as any).toggleAdminSidebar; };
   }, []);
 
-  // === Autosave ===
+  // === Autosave & Diagnostics ===
   useEffect(() => {
     if (initialLoadRef.current || !id) return;
     dirtyRef.current = true;
@@ -339,7 +339,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       doSave();
     }, AUTOSAVE_MS);
     
-    // Backup local com escopo: nunca reutilize a edição de uma página em outra.
+    // Backup local com escopo
     const backupScope = selectedPageId || 'main';
     const backupKey = `apostila_backup_${id}_${backupScope}`;
     localStorage.setItem(backupKey, JSON.stringify({
@@ -358,6 +358,8 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
   const persistChanges = async (isManual = false) => {
     if (!id || !dirtyRef.current) return;
     setSaving(true);
+    
+    console.log(`[Workbench] Persisting changes for ${selectedPageId ? 'page ' + selectedPageId : 'main apostila ' + id}`);
 
     // Verificação automática de integridade de data (Anti-Mistura)
     const datePattern = /(\d{2})\/(\d{2})\/(\d{4})/;
@@ -367,15 +369,28 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     if (titleDate && contentDates) {
       const foreignDates = contentDates.filter(d => d !== titleDate[0]);
       if (foreignDates.length > 0) {
+        console.warn(`[Workbench] Date inconsistency detected: Page is ${titleDate[0]}, but content has ${foreignDates.join(', ')}`);
         toast.warning(`Atenção: A página é datada de ${titleDate[0]}, mas o conteúdo cita ${foreignDates.join(', ')}. Verifique se não há mistura de aulas.`, {
           duration: 6000
+        });
+        
+        // Registrar log de inconsistência para o painel de diagnóstico
+        await supabase.from('audit_logs').insert({
+          event_type: 'apostila_date_inconsistency',
+          resource_id: id,
+          metadata: {
+            page_id: selectedPageId || 'main',
+            title_date: titleDate[0],
+            found_dates: foreignDates,
+            title
+          }
         });
       }
     }
 
     if (selectedPageId) {
-      // Se estamos em uma página, salvamos. O selectedPageId deve ser um UUID real.
       if (selectedPageId.startsWith('placeholder')) {
+        console.error('[Workbench] Cannot save to placeholder page ID');
         setSaving(false);
         return;
       }
@@ -392,11 +407,12 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       
       setSaving(false);
       if (error) { 
-        console.error('Erro ao salvar página:', error);
+        console.error('[Workbench] Error saving page:', error);
         toast.error('Não foi possível salvar esta página.'); 
         return; 
       }
       
+      console.log('[Workbench] Page saved successfully:', savedPage.id);
       const savedAt = new Date().toISOString();
       const pageToDisplay = (savedPage as ApostilaPage | null) ?? {
         id: selectedPageId,
@@ -409,7 +425,6 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       };
       setPages((current) => upsertApostilaPage(current, pageToDisplay));
 
-      // O RLS do leitor só libera apostila_pages quando a apostila-pai está publicada.
       if (content.trim().length > 0) {
         const { error: publishError } = await supabase
           .from('apostilas')
@@ -417,7 +432,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
           .eq('id', id);
 
         if (publishError) {
-          console.error('Página salva, mas não foi possível publicar a apostila-pai:', publishError);
+          console.error('[Workbench] Failed to auto-publish parent apostila:', publishError);
         } else {
           setPublished(true);
           setApostilas((current) => current.map((apostila) =>
@@ -431,6 +446,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       setLastSavedAt(new Date(savedAt));
       return;
     }
+
 
     const { data: currentApostila } = await supabase
       .from('apostilas')

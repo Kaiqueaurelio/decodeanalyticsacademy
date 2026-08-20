@@ -210,8 +210,11 @@ export function AcademicAuditPanel() {
                 <SelectItem value="essay_answer_submitted">Dissertativa Enviada</SelectItem>
                 <SelectItem value="essay_model_answer_revealed">Gabarito Revelado</SelectItem>
                 <SelectItem value="login_failed">Falha de Login</SelectItem>
+                <SelectItem value="apostila_date_inconsistency">Inconsistência de Data</SelectItem>
+                <SelectItem value="apostila_page_created">Nova Página Criada</SelectItem>
               </SelectContent>
             </Select>
+
           </div>
         </div>
 
