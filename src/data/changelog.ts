@@ -27,7 +27,19 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: "6.6.9",
+    date: "20/08/2026",
+    title: "Comunicação de Integridade & Status Acadêmico",
+    changes: [
+      { kind: "feature", text: "Alertas de Status: Alunos agora visualizam selos 'Em Validação' ou 'Bloqueado' no Dashboard e no Leitor" },
+      { kind: "improvement", text: "UX Híbrida: Banner persistente no topo do leitor informa sobre manutenções de qualidade ou inconsistências detectadas" },
+      { kind: "security", text: "Bloqueio de Acesso: Apostilas marcadas como 'Bloqueada' pelo admin impedem a abertura por alunos, exibindo feedback claro" },
+      { kind: "content", text: "Mensagens de Auditoria: Notificações técnicas automáticas quando o sistema de auditoria detecta mistura de aulas" }
+    ]
+  },
+  {
     version: "6.6.8",
+
     date: "20/08/2026",
     title: "Diagnóstico Acadêmico & Logs de Integridade",
     changes: [

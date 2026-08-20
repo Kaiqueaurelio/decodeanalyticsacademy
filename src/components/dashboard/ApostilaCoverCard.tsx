@@ -1,4 +1,4 @@
-import { FileText, Lock, PenTool, Edit3, Settings, CheckCircle2, Circle } from 'lucide-react';
+import { FileText, Lock, PenTool, Edit3, Settings, CheckCircle2, Circle, ShieldAlert } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -11,6 +11,8 @@ import type { ApostilaSummary } from '@/hooks/queries/useDashboardData';
 
 import { ensureApostilaExists } from '@/lib/create-placeholder-apostila';
 import { NewApostilaPageButton } from '@/components/NewApostilaPageButton';
+import { Badge } from '@/components/ui/badge';
+
 
 interface Props {
   apostila: ApostilaSummary;
