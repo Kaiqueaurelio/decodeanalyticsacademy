@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { PenTool, ClipboardPaste, FileText, Wand2 } from 'lucide-react';
+import { PenTool, ClipboardPaste, FileText, Wand2, Scissors } from 'lucide-react';
 import { cleanPastedContent } from '@/lib/paste-cleaner';
 import { cn } from '@/lib/utils';
 
