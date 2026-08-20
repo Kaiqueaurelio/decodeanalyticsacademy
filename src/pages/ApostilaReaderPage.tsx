@@ -22,8 +22,10 @@ import {
   Minimize2,
   Volume2,
   VolumeX,
-  ShieldAlert
+  ShieldAlert,
+  Calendar
 } from "lucide-react";
+
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,6 +40,9 @@ import logoOwl from "@/assets/owl-icon.png";
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { isPlaceholderPageContent, normalizeContentForComparison } from '@/lib/content-formatting';
 import { Badge } from "@/components/ui/badge";
+import { extractChronologyDates } from "@/lib/apostila-pages";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 
 
 
@@ -74,7 +79,7 @@ interface Tree {
   modules: ModuleT[];
 }
 
-type FlatLesson = Lesson & { moduleTitle: string; chapterTitle: string };
+type FlatLesson = Lesson & { moduleTitle: string; chapterTitle: string; date?: string | null };
 
 type ApostilaPageRow = {
   id: string;
@@ -162,7 +167,9 @@ function flatten(tree: Tree): FlatLesson[] {
   for (const m of tree.modules) {
     for (const c of m.chapters) {
       for (const l of c.lessons) {
-        out.push({ ...l, moduleTitle: m.title, chapterTitle: c.title });
+        const dateMatch = extractChronologyDates(l.title)[0] || extractChronologyDates(l.content_md)[0] || null;
+        out.push({ ...l, moduleTitle: m.title, chapterTitle: c.title, date: dateMatch });
+
       }
     }
   }
@@ -178,7 +185,9 @@ export default function ApostilaReaderPage() {
   const [hasInconsistency, setHasInconsistency] = useState(false);
 
   const [tree, setTree] = useState<Tree | null>(null);
+  const [selectedDate, setSelectedDate] = useState<string>("all");
   const [loadingTree, setLoadingTree] = useState(true);
+
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
   const [lessonContent, setLessonContent] = useState<string>("");
   const [lessonLoading, setLessonLoading] = useState(false);
@@ -263,10 +272,25 @@ export default function ApostilaReaderPage() {
   }, [id, searchParams]);
 
   const flat = useMemo(() => (tree ? flatten(tree) : []), [tree]);
-  const currentIndex = flat.findIndex((l) => l.id === selectedLessonId);
-  const currentLesson = currentIndex >= 0 ? flat[currentIndex] : null;
-  const prevLesson = currentIndex > 0 ? flat[currentIndex - 1] : null;
-  const nextLesson = currentIndex >= 0 && currentIndex < flat.length - 1 ? flat[currentIndex + 1] : null;
+  
+  const availableDates = useMemo(() => {
+    const dates = new Set<string>();
+    flat.forEach(l => {
+      if (l.date) dates.add(l.date);
+    });
+    return Array.from(dates).sort();
+  }, [flat]);
+
+  const filteredFlat = useMemo(() => {
+    if (selectedDate === "all") return flat;
+    return flat.filter(l => l.date === selectedDate || !l.date); // Mostra o conteúdo da data ou sem data (geral)
+  }, [flat, selectedDate]);
+
+  const currentIndex = filteredFlat.findIndex((l) => l.id === selectedLessonId);
+  const currentLesson = currentIndex >= 0 ? filteredFlat[currentIndex] : null;
+  const prevLesson = currentIndex > 0 ? filteredFlat[currentIndex - 1] : null;
+  const nextLesson = currentIndex >= 0 && currentIndex < filteredFlat.length - 1 ? filteredFlat[currentIndex + 1] : null;
+
 
   const totalLessons = flat.length;
   const completedLessons = flat.filter((l) => l.progress_status === "completed").length;

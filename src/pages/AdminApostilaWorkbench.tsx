@@ -27,15 +27,17 @@ import { ensureApostilaExists } from '@/lib/create-placeholder-apostila';
 import { Badge } from '@/components/ui/badge';
 import { getSubjectColor } from '@/lib/subject-colors';
 import { parseApostilaContent } from '@/lib/apostila-parser';
-import { createApostilaPage, type ApostilaPage, upsertApostilaPage, validateApostilaChronology } from '@/lib/apostila-pages';
+import { createApostilaPage, type ApostilaPage, upsertApostilaPage, validateApostilaChronology, splitApostilaByDate } from '@/lib/apostila-pages';
 import { recordApostilaOperation, runApostilaChronologyValidation } from '@/lib/apostila-diagnostics';
+
 import { NewApostilaPageButton } from '@/components/NewApostilaPageButton';
 
 import {
   ArrowLeft, Search, Save, Eye, PenTool, Wand2, Loader2, Menu, FileText,
   ListChecks, PanelRightClose, ExternalLink, GraduationCap, ImageIcon, PanelRightOpen, X, Maximize2, Minimize2,
-  FilePlus2, Plus
+  FilePlus2, Plus, Scissors
 } from 'lucide-react';
+
 import { invokeFunction } from '@/lib/invoke-function';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -123,6 +125,8 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
   const [autoLinking, setAutoLinking] = useState(false);
   const [generatingCover, setGeneratingCover] = useState(false);
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
+  const [splitting, setSplitting] = useState(false);
+
   const [reviewOpen, setReviewOpen] = useState(false);
   const [rightTab, setRightTab] = useState<'materials' | 'preview' | 'exercises'>('materials');
   const [sidebarOpen, setSidebarOpen] = useState(false);
