@@ -27,6 +27,20 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: "6.6.6",
+    date: "20/08/2026",
+    title: "Auditoria Acadêmica & Relatórios de Desempenho",
+    major: true,
+    changes: [
+      { kind: "feature", text: "Novo Painel de Auditoria Acadêmica no Admin com exportação PDF" },
+      { kind: "feature", text: "Relatórios de Desempenho em PDF para alunos ao finalizar exercícios" },
+      { kind: "security", text: "Rate limiting de 5 tentativas e bloqueio temporário de login" },
+      { kind: "security", text: "Logs de falha de login integrados à auditoria do sistema" },
+      { kind: "improvement", text: "Ordenação cronológica inteligente de aulas por data no título" },
+      { kind: "fix", text: "Estabilização da criação de páginas no Workbench Administrativo" }
+    ]
+  },
+  {
     version: "6.6.5",
     date: "20/08/2026",
     title: "Content Organization & Security Hardening",
