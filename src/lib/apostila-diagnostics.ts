@@ -20,6 +20,7 @@ export interface ChronologyValidationResult extends ChronologyValidationReport {
   run_id?: string;
   apostila_id?: string;
   alert_count?: number;
+  issue_count?: number;
 }
 
 function newOperationId() {
