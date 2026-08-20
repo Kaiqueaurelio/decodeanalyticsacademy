@@ -35,7 +35,8 @@ export const CHANGELOG: Release[] = [
       { kind: "feature", text: "Auditoria: Paginação, busca avançada por metadados e filtros expandidos no admin" },
       { kind: "feature", text: "Relatórios: Exportação de desempenho em formato CSV (estudante e admin)" },
       { kind: "security", text: "Integridade: Sistema Anti-Mistura v2 com detecção de inconsistência de datas em apostilas" },
-      { kind: "fix", text: "Workbench: Correção de race-conditions na sincronização de novas páginas" }
+      { kind: "fix", text: "Workbench: Estabilização definitiva do botão '+ PÁGINA' com sincronização forçada de estado" },
+      { kind: "improvement", text: "Auditoria Técnica: Verificação 360º de fluxos de login, segurança de gabaritos e renderização mobile" }
     ]
   },
   {
