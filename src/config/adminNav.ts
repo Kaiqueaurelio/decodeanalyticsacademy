@@ -19,50 +19,88 @@ import {
 } from 'lucide-react';
 
 export type AdminTabId = 
-  | 'dashboard'
+  | 'overview'
   | 'apostilas'
-  | 'cc-apostilas'
+  | 'exercises'
+  | 'materials'
   | 'users'
-  | 'ella-audit'
-  | 'academic-audit'
-  | 'security-alerts'
-  | 'leads'
-  | 'sponsors'
+  | 'announcements'
+  | 'calendar'
+  | 'testimonials'
+  | 'ai'
+  | 'ella-settings'
+  | 'performance'
+  | 'smoke'
+  | 'diagnostics'
   | 'ads'
   | 'ads-chat'
+  | 'social'
   | 'rss'
+  | 'courses'
   | 'changelog'
-  | 'jobs'
+  | 'leads'
+  | 'ella-audit'
+  | 'security-alerts'
+  | 'sponsors'
+  | 'tasks'
+  | 'photoroom'
+  | 'edit'
+  | 'review'
+  | 'enem-apostilas'
+  | 'cc-apostilas'
+  | 'health-dashboard'
+  | 'cloning-dashboard'
   | 'mcp-settings'
-  | 'tasks';
+  | 'jobs'
+  | 'academic-audit';
 
 export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
   {
-    title: 'Principal',
+    id: 'main',
+    label: 'Principal',
     items: [
-      { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-      { id: 'cc-apostilas', label: 'Centro de Criação', icon: BookOpen },
-      { id: 'users', label: 'Usuários', icon: Users },
-      { id: 'jobs', label: 'Vagas e Estágios', icon: Briefcase },
+      { id: 'overview', label: 'Dashboard', icon: LayoutDashboard, desc: 'Visão geral do sistema' },
+      { id: 'cc-apostilas', label: 'Centro de Criação', icon: BookOpen, desc: 'Gerenciar apostilas e conteúdos' },
+      { id: 'users', label: 'Usuários', icon: Users, desc: 'Gestão de alunos e acessos', countKey: 'users' },
+      { id: 'jobs', label: 'Vagas e Estágios', icon: Briefcase, desc: 'Gestão de oportunidades' },
     ]
   },
   {
-    title: 'Sistema',
+    id: 'system',
+    label: 'Sistema',
     items: [
-      { id: 'ella-audit', label: 'Auditoria Ella', icon: MessageSquare },
-      { id: 'academic-audit', label: 'Auditoria Acadêmica', icon: ListCheck },
-      { id: 'security-alerts', label: 'Alertas de Segurança', icon: AlertTriangle },
-      { id: 'mcp-settings', label: 'Terminal / MCP', icon: Terminal },
-      { id: 'changelog', label: 'Histórico', icon: History },
+      { id: 'ella-audit', label: 'Auditoria Ella', icon: MessageSquare, desc: 'Logs de interações da IA' },
+      { id: 'academic-audit', label: 'Auditoria Acadêmica', icon: ListCheck, desc: 'Logs de estudos e gabaritos' },
+      { id: 'security-alerts', label: 'Segurança', icon: AlertTriangle, desc: 'Alertas e bloqueios', countKey: 'securityAlerts' },
+      { id: 'mcp-settings', label: 'Terminal / MCP', icon: Terminal, desc: 'Configurações avançadas' },
+      { id: 'changelog', label: 'Histórico', icon: History, desc: 'Versões do aplicativo' },
     ]
   },
   {
-    title: 'Marketing & Conteúdo',
+    id: 'marketing',
+    label: 'Marketing & Conteúdo',
     items: [
-      { id: 'leads', label: 'Leads de Patrocínio', icon: Share2 },
-      { id: 'sponsors', label: 'Patrocinadores', icon: ShieldCheck },
-      { id: 'ads', label: 'Gestor de Anúncios', icon: Play },
-      { id: 'rss', label: 'Fontes RSS', icon: Rss },
+      { id: 'leads', label: 'Leads', icon: Share2, desc: 'Interessados e parcerias' },
+      { id: 'sponsors', label: 'Patrocinadores', icon: ShieldCheck, desc: 'Gestão de marcas' },
+      { id: 'ads', label: 'Anúncios', icon: Play, desc: 'Publicidade interna' },
+      { id: 'rss', label: 'Fontes RSS', icon: Rss, desc: 'Agregador de notícias' },
     ]
   }
 ];
+
+export const ADMIN_NAV_BY_ID = Object.fromEntries(
+  ADMIN_NAV_GROUPS.flatMap(g => g.items.map(i => [i.id, i]))
+);
+
+export function filterAdminNav(query: string): AdminNavGroup[] {
+  if (!query) return ADMIN_NAV_GROUPS;
+  const q = query.toLowerCase();
+  return ADMIN_NAV_GROUPS.map(group => ({
+    ...group,
+    items: group.items.filter(item => 
+      item.label.toLowerCase().includes(q) || 
+      item.id.toLowerCase().includes(q) ||
+      (item.desc && item.desc.toLowerCase().includes(q))
+    )
+  })).filter(group => group.items.length > 0);
+}
