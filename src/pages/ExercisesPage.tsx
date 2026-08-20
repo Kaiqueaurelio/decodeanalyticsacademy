@@ -408,8 +408,6 @@ export default function ExercisesPage() {
                     className="gap-1.5 text-primary border-primary/30 hover:bg-primary/5">
                     <FileDown className="h-3.5 w-3.5" /> Baixar Relatório (PDF)
                   </Button>
-                    <ListChecks className="h-3.5 w-3.5" /> Revisão
-                  </Button>
                   <Button size="sm" variant="outline" onClick={() => { setShowResults(false); setCurrentIndex(0); setTimedMode(false); }}
                     className="gap-1.5">
                     <RotateCcw className="h-3.5 w-3.5" /> Refazer
