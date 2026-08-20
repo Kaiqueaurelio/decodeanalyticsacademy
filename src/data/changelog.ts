@@ -25,6 +25,17 @@ export interface Release {
   changes: Change[];
 }
 
+export function getBuildInfo() {
+  return {
+    version: CHANGELOG[0]?.version || "0.0.0",
+    environment: "production",
+    host: typeof window !== 'undefined' ? window.location.hostname : 'unknown',
+    buildTime: new Date().toISOString(),
+    commit: "main",
+    commitMessage: "Automated Build"
+  };
+}
+
 export const CHANGELOG: Release[] = [
   {
     version: "6.6.8",
