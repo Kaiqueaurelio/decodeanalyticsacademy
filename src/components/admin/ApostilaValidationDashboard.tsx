@@ -36,7 +36,7 @@ export function ApostilaValidationDashboard() {
     if (error) {
       toast.error('Erro ao carregar diagnóstico de validação');
     } else {
-      setLogs(data as InconsistencyLog[]);
+      setLogs((data as any) as InconsistencyLog[]);
     }
     setLoading(false);
   };

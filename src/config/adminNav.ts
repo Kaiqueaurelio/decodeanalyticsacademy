@@ -52,7 +52,9 @@ export type AdminTabId =
   | 'cloning-dashboard'
   | 'mcp-settings'
   | 'jobs'
-  | 'academic-audit';
+  | 'academic-audit'
+  | 'apostila-validation';
+
 
 export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
   {
@@ -72,6 +74,8 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
       { id: 'ella-audit', label: 'Auditoria Ella', icon: MessageSquare, desc: 'Logs de interações da IA' },
       { id: 'academic-audit', label: 'Auditoria Acadêmica', icon: ListCheck, desc: 'Logs de estudos e gabaritos' },
       { id: 'security-alerts', label: 'Segurança', icon: AlertTriangle, desc: 'Alertas e bloqueios', countKey: 'securityAlerts' },
+      { id: 'apostila-validation', label: 'Diagnóstico Acadêmico', icon: ShieldCheck, desc: 'Validação de integridade' },
+
       { id: 'mcp-settings', label: 'Terminal / MCP', icon: Terminal, desc: 'Configurações avançadas' },
       { id: 'changelog', label: 'Histórico', icon: History, desc: 'Versões do aplicativo' },
     ]
