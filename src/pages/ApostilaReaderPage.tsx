@@ -189,6 +189,8 @@ export default function ApostilaReaderPage() {
   const [loadingTree, setLoadingTree] = useState(true);
 
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
+  const { isAdmin } = useAuth();
+
   const [lessonContent, setLessonContent] = useState<string>("");
   const [lessonLoading, setLessonLoading] = useState(false);
   const [tocOpen, setTocOpen] = useState(false);
