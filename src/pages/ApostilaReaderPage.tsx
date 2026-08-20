@@ -127,7 +127,15 @@ function mergePagesIntoTree(tree: Tree, apostilaId: string, pages: ApostilaPageR
   const distinctPages = pages.filter((page) => {
     if (isPlaceholderPageContent(page.content || '')) return false;
     const key = normalizeContentForComparison(page.content || '');
-    if (!key || existingKeys.has(key)) return false;
+    if (!key) return false;
+    if (existingKeys.has(key)) return false;
+    
+    // Verificação adicional: evita que a página seja uma subseção ou repetição do que já está na árvore
+    // (Pode ocorrer se o RPC retornar partes do conteúdo que o editor também salvou)
+    for (const existing of existingKeys) {
+      if (existing.includes(key) || key.includes(existing)) return false;
+    }
+    
     existingKeys.add(key);
     return true;
   });

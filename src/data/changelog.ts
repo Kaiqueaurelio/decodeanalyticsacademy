@@ -27,6 +27,15 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: "6.6.4",
+    date: "20/08/2026",
+    title: "Correção de Integridade de Conteúdo",
+    changes: [
+      { kind: "fix", text: "Resolução de duplicidade de páginas na apostila de Gestão de Projetos Operacionais" },
+      { kind: "improvement", text: "Otimização do algoritmo de merge de páginas no leitor de apostilas" }
+    ]
+  },
+  {
     version: "6.6.3",
     date: "19/08/2026",
     title: "Estabilidade de Login Admin v2",
