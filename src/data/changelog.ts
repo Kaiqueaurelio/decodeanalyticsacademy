@@ -27,6 +27,17 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: "6.6.5",
+    date: "20/08/2026",
+    title: "Content Organization & Security Hardening",
+    changes: [
+      { kind: "security", text: "Implementação de logs de auditoria (audit_logs) para monitoramento de acessos sensíveis" },
+      { kind: "fix", text: "Correção na criação de novas páginas no Workbench Administrativo" },
+      { kind: "content", text: "Organização cronológica das aulas na apostila de Gestão de Projetos Operacionais" },
+      { kind: "security", text: "Hardening de segurança em ExercisesPage para auditoria de respostas" }
+    ]
+  },
+  {
     version: "6.6.4",
     date: "20/08/2026",
     title: "Correção de Integridade de Conteúdo",

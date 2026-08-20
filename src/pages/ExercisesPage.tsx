@@ -17,6 +17,7 @@ import {
   BarChart3, Clock, Target, Rocket, Award, Send, ListChecks, Filter
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { logSecurityEvent } from '@/lib/audit-logger';
 import type { Tables } from '@/integrations/supabase/types';
 
 // Nunca carregamos `correct_answer` no cliente: a correção é feita pelo servidor
@@ -145,6 +146,7 @@ export default function ExercisesPage() {
     const result = data as { is_correct: boolean; correct_answer: string; explanation: string | null };
     setAnswers(prev => ({ ...prev, [exerciseId]: { selected, correct: result.is_correct, correctAnswer: result.correct_answer } }));
     setReveals(prev => ({ ...prev, [exerciseId]: { explanation: result.explanation ?? null, reference_answer: null } }));
+    logSecurityEvent('exercise_answered', exerciseId, { correct: result.is_correct });
 
     gamification.addXP(result.is_correct ? 10 : 3);
     gamification.updateStreak();
@@ -168,8 +170,12 @@ export default function ExercisesPage() {
     const essay = essayAnswers[exerciseId];
     if (!essay?.text?.trim()) { toast.error('Escreva sua resposta antes de enviar.'); return; }
     setAnswers(prev => ({ ...prev, [exerciseId]: { selected: essay.text, correct: true } }));
+    logSecurityEvent('essay_answer_submitted', exerciseId);
     (supabase as any).rpc('get_exercise_reveal', { _exercise_id: exerciseId }).then(({ data }: any) => {
-      if (data) setReveals(prev => ({ ...prev, [exerciseId]: { explanation: data.explanation ?? null, reference_answer: data.reference_answer ?? null } }));
+      if (data) {
+        setReveals(prev => ({ ...prev, [exerciseId]: { explanation: data.explanation ?? null, reference_answer: data.reference_answer ?? null } }));
+        logSecurityEvent('essay_model_answer_revealed', exerciseId);
+      }
     });
     gamification.addXP(15);
     gamification.updateStreak();
