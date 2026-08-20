@@ -27,6 +27,17 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: "6.6.8",
+    date: "20/08/2026",
+    title: "Diagnóstico Acadêmico & Logs de Integridade",
+    changes: [
+      { kind: "feature", text: "Novo Painel de Diagnóstico Acadêmico no Admin para visualização de inconsistências de datas" },
+      { kind: "improvement", text: "Workbench: Logs detalhados no console e no sistema de auditoria para criação de páginas e detecção de mistura de aulas" },
+      { kind: "security", text: "Alertas Preventivos: Notificações visuais e logs persistentes ao detectar datas divergentes entre título e conteúdo" },
+      { kind: "improvement", text: "Nav: Nova aba 'Diagnóstico Acadêmico' no menu de Sistema do Admin" }
+    ]
+  },
+  {
     version: "6.6.7",
     date: "20/08/2026",
     title: "Estabilidade & Auditoria Avançada",
@@ -39,6 +50,7 @@ export const CHANGELOG: Release[] = [
       { kind: "improvement", text: "Auditoria Técnica: Verificação 360º de fluxos de login, segurança de gabaritos e renderização mobile" }
     ]
   },
+
   {
     version: "6.6.6",
     date: "20/08/2026",
