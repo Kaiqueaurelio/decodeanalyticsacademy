@@ -27,8 +27,10 @@ import { ensureApostilaExists } from '@/lib/create-placeholder-apostila';
 import { Badge } from '@/components/ui/badge';
 import { getSubjectColor } from '@/lib/subject-colors';
 import { parseApostilaContent } from '@/lib/apostila-parser';
-import { createApostilaPage, type ApostilaPage, upsertApostilaPage, validateApostilaChronology, splitApostilaByDate } from '@/lib/apostila-pages';
+import { createApostilaPage, type ApostilaPage, upsertApostilaPage, validateApostilaChronology, splitApostilaByDate, extractChronologyDates } from '@/lib/apostila-pages';
 import { recordApostilaOperation, runApostilaChronologyValidation } from '@/lib/apostila-diagnostics';
+import { ApostilaSplitPreview } from '@/components/admin/ApostilaSplitPreview';
+
 
 import { NewApostilaPageButton } from '@/components/NewApostilaPageButton';
 
@@ -126,6 +128,9 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
   const [generatingCover, setGeneratingCover] = useState(false);
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
   const [splitting, setSplitting] = useState(false);
+  const [splitPreviewOpen, setSplitPreviewOpen] = useState(false);
+  const [splitPreviewData, setSplitPreviewData] = useState<{ pages: any[]; totalDates: number }>({ pages: [], totalDates: 0 });
+
 
   const [reviewOpen, setReviewOpen] = useState(false);
   const [rightTab, setRightTab] = useState<'materials' | 'preview' | 'exercises'>('materials');
@@ -333,8 +338,19 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
   // Global toggle for components
   useEffect(() => {
     (window as any).toggleAdminSidebar = () => setSidebarOpen(prev => !prev);
-    return () => { delete (window as any).toggleAdminSidebar; };
-  }, []);
+    (window as any).triggerSplitByDate = (apostilaId: string, content?: string) => {
+      if (content) {
+        void handleSplitByDate(content);
+      } else {
+        void handleSplitByDate();
+      }
+    };
+    return () => { 
+      delete (window as any).toggleAdminSidebar;
+      delete (window as any).triggerSplitByDate;
+    };
+  }, [id]);
+
 
   // === Autosave & Diagnostics ===
   useEffect(() => {
