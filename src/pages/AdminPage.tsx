@@ -3612,14 +3612,15 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
               <EllaAuditPanel />
             )}
 
+            {tab === 'academic-audit' && (
+              <AcademicAuditPanel />
+            )}
+
             {tab === 'security-alerts' && (
               <SecurityAlertsPanel />
             )}
 
             {tab === 'leads' && <SponsorLeadsPanel />}
-            {tab === 'ella-audit' && <EllaAuditPanel />}
-            {tab === 'academic-audit' && <AcademicAuditPanel />}
-            {tab === 'security-alerts' && <SecurityAlertsPanel />}
             {tab === 'sponsors' && <AdminSponsorsManager />}
 
 
