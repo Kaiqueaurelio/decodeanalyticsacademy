@@ -1052,11 +1052,13 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         title={title}
         published={published}
         saving={saving}
+        splitting={splitting}
         lastSavedAt={lastSavedAt}
         onSave={() => doSave(true)}
         onTogglePublish={togglePublish}
         onPreview={() => { setRightTab('preview'); setRightOpen(true); }}
         onOpenPanel={() => { setRightTab('materials'); setRightOpen(true); }}
+        onSplitByDate={handleSplitByDate}
         wordCount={content.trim() ? content.trim().split(/\s+/).length : 0}
         exerciseCount={exerciseCount}
         materialCount={linkedMaterials.length}
@@ -1064,6 +1066,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         onCourseChange={setCourse}
         onPasteOpen={() => setPasteOpen(true)}
         onAddPage={handleCreatePersistedPage}
+
       />
       
 

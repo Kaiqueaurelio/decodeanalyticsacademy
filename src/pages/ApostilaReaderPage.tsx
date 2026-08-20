@@ -243,6 +243,14 @@ export default function ApostilaReaderPage() {
       setApostilaTitle((ap?.title as string) || "Apostila");
       setApostilaStatus((ap as any)?.status || (ap?.published ? 'liberada' : 'bloqueada'));
       setHasInconsistency((auditLogs?.length || 0) > 0);
+      
+      if (ap?.status === 'em_manutencao' && !isAdmin) {
+        toast.info("Material em revisão", {
+          description: "Este conteúdo está sendo re-organizado para melhor leitura.",
+          duration: 5000
+        });
+      }
+
 
       const rpcTree = (rpcData as unknown as Tree) || { apostila_id: id, modules: [] };
       const savedPages = sanitizedPages as ApostilaPageRow[];
