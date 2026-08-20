@@ -747,6 +747,10 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       // Update local state and editor immediately
       setPages((current) => upsertApostilaPage(current, newPage));
       
+      // Forces re-render of the tabs list in expanded mode
+      setLoading(true);
+      setTimeout(() => setLoading(false), 50);
+      
       // Crucial: reset loadRequestRef to ignore any pending loads that might overwrite our state
       loadRequestRef.current++; 
       

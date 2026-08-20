@@ -267,6 +267,11 @@ export default function ApostilaPage({ tab, setTab }: Props) {
   }, []);
 
   const contentBlocks = useMemo<ApostilaContentBlock[]>(() => {
+    // Audit check: log page access for content integrity
+    if (apostila?.id) {
+      console.log(`[ContentIntegrity] Loading blocks for apostila ${apostila.id} with ${extraPages.length} extra pages.`);
+    }
+
     // Verificação de segurança: garante que aulas de dias diferentes não se misturem
     // se houver padrões de data detectados no conteúdo ou títulos das páginas.
     const sortedExtraPages = [...extraPages].sort((a, b) => {

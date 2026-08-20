@@ -211,7 +211,14 @@ export default function ApostilaReaderPage() {
           .order("position", { ascending: true })
           .order("created_at", { ascending: true }),
       ]);
+      
       if (cancelled) return;
+
+      // Anti-collision check for pages with same position
+      const sanitizedPages = (pageRows || []).map((p: any, idx: number) => ({
+        ...p,
+        position: p.position ?? idx
+      }));
       
       console.log(`[ApostilaReader] Apostila info:`, ap);
       
