@@ -6,6 +6,7 @@ import { AppImage } from '@/components/ui/app-image';
 import { highlightCode } from '@/lib/shiki-highlighter';
 import { cn } from '@/lib/utils';
 import { renderMathToHTML } from '@/lib/math-render';
+import { normalizeRichContent } from '@/lib/content-formatting';
 import { ProfessionalAudioPlayer } from './ProfessionalAudioPlayer';
 import { AudioQuizSystem } from './AudioQuizSystem';
 import { useQuery } from '@tanstack/react-query';
@@ -64,6 +65,10 @@ function sanitizeHtml(html: string): string {
 
 function renderInline(input: string): { __html: string } {
   if (!input) return { __html: '' };
+
+  // Alguns conteúdos antigos foram salvos com tags/entidades literais, por exemplo
+  // `&lt;u&gt;Título&lt;/u&gt;`. Decodificamos antes do markdown e sanitizamos no final.
+  input = normalizeRichContent(input);
 
   // Se o input já parece ser HTML sanitizado (com tags span/div/style injetadas pelo editor)
   // precisamos tomar cuidado para não escapar as tags HTML válidas que o editor usa

@@ -33,7 +33,8 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { useQueryClient } from "@tanstack/react-query";
 import logoOwl from "@/assets/owl-icon.png";
-import { useSoundEffects } from "@/hooks/useSoundEffects";
+import { useSoundEffects } from '@/hooks/useSoundEffects';
+import { normalizeContentForComparison } from '@/lib/content-formatting';
 
 
 interface Lesson {
@@ -117,12 +118,23 @@ function buildTreeFromPages(apostilaId: string, pages: ApostilaPageRow[]): Tree 
 }
 
 function mergePagesIntoTree(tree: Tree, apostilaId: string, pages: ApostilaPageRow[]): Tree {
-  const pagesModule = buildPagesModule(apostilaId, pages);
+  const existingKeys = new Set(
+    tree.modules.flatMap((module) => module.chapters.flatMap((chapter) => chapter.lessons))
+      .map((lesson) => normalizeContentForComparison(lesson.content_md || ''))
+      .filter(Boolean),
+  );
+
+  const distinctPages = pages.filter((page) => {
+    const key = normalizeContentForComparison(page.content || '');
+    if (!key || existingKeys.has(key)) return false;
+    existingKeys.add(key);
+    return true;
+  });
+  const pagesModule = buildPagesModule(apostilaId, distinctPages);
   if (!pagesModule) return tree;
 
-  // A RPC pode retornar módulos estruturados e, ao mesmo tempo, existir conteúdo
-  // criado pelo editor em apostila_pages. As páginas não podem desaparecer só
-  // porque a árvore estruturada já possui pelo menos um módulo.
+  // O RPC pode retornar módulos estruturados e também existir conteúdo criado
+  // pelo editor em apostila_pages. Só anexamos páginas que ainda não estão na árvore.
   const alreadyIncluded = tree.modules.some((module) => module.id === pagesModule.id);
   if (alreadyIncluded) return tree;
 

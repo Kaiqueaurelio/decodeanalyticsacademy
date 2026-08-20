@@ -34,6 +34,7 @@ import {
 import type { Tables } from '@/integrations/supabase/types';
 
 import { parseApostilaContent, type ApostilaSection as Section } from '@/lib/apostila-parser';
+import { mergeDistinctPages, normalizeContentForComparison, stripInlineMarkup } from '@/lib/content-formatting';
 
 /**
  * Remove sintaxe markdown residual (negrito, itálico, código, links etc.)
@@ -225,11 +226,20 @@ export default function ApostilaPage({ tab, setTab }: Props) {
     const mainContent = isPlaceholderApostilaContent(apostila?.content)
       ? structuredContent
       : (apostila?.content || '');
-    const pagesContent = extraPages
-      .filter((page) => page.content?.trim())
-      .map((page) => `\n\n## ${page.title || 'Nova Página'}\n\n${page.content}`)
+    const mainKey = normalizeContentForComparison(mainContent);
+    const distinctPages = mergeDistinctPages(extraPages).filter((page) => {
+      const pageKey = normalizeContentForComparison(page.content || '');
+      // Conteúdo antigo pode existir simultaneamente em apostilas.content e
+      // apostila_pages. Não renderizamos a mesma página duas vezes.
+      return Boolean(pageKey) && !(pageKey.length >= 120 && mainKey.includes(pageKey));
+    });
+    const pagesContent = distinctPages
+      .map((page, index) => {
+        const title = stripInlineMarkup(page.title || '') || `Página ${index + 1}`;
+        return `\n\n# ${title}\n\n${page.content.trim()}`;
+      })
       .join('\n');
-    return [mainContent, pagesContent].filter(Boolean).join('\n');
+    return [mainContent.trim(), pagesContent].filter(Boolean).join('\n');
   }, [apostila?.content, extraPages, structuredContent]);
 
   const sections = useMemo(() => parseContent(combinedContent || null), [combinedContent]);
@@ -242,7 +252,7 @@ export default function ApostilaPage({ tab, setTab }: Props) {
    */
   const organizedSections = useMemo(() => {
     return sections.map((section, index) => {
-      const displayTitle = cleanText(section.title || '').trim();
+      const displayTitle = cleanText(stripInlineMarkup(section.title || '')).trim();
       const contentPreview = (section.content || '')
         .replace(/!\[[^\]]*\]\([^)]+\)/g, ' ')
         .replace(/[`#>*_~\-]/g, ' ')
@@ -253,13 +263,13 @@ export default function ApostilaPage({ tab, setTab }: Props) {
       let hasChildren = false;
       for (let i = index + 1; i < sections.length; i++) {
         if ((sections[i].level || 1) <= (section.level || 1)) break;
-        if (cleanText(sections[i].title || '').trim().length >= 2) {
+        if (cleanText(stripInlineMarkup(sections[i].title || '')).trim().length >= 2) {
           hasChildren = true;
           break;
         }
       }
 
-      const previousTitle = index > 0 ? cleanText(sections[index - 1].title || '').trim().toLowerCase() : '';
+      const previousTitle = index > 0 ? cleanText(stripInlineMarkup(sections[index - 1].title || '')).trim().toLowerCase() : '';
       const currentTitle = displayTitle.toLowerCase();
       const isRepeated = !!currentTitle && currentTitle === previousTitle;
       const isPlaceholder = displayTitle.length < 2 || isRepeated || (!hasContent && !hasChildren);
