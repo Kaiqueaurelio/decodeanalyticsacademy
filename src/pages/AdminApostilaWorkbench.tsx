@@ -666,7 +666,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
           errorMessage: 'A publicação foi bloqueada por inconsistências cronológicas.',
           metadata: {
             validationStatus: validation.status,
-            issueCount: validation.issue_count,
+            alertCount: validation.alert_count,
             issues: validation.issues,
           },
         });
@@ -991,7 +991,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
           position: newPage.position,
           nextUrl,
           validationStatus: validation?.status || 'not_available',
-          issueCount: validation?.issue_count || validation?.issues?.length || 0,
+          alertCount: validation?.alert_count || 0,
         },
       });
       if (validation?.status === 'error') {
