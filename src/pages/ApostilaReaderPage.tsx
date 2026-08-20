@@ -22,7 +22,8 @@ import {
   Minimize2,
   Volume2,
   VolumeX,
-  ShieldAlert
+  ShieldAlert,
+  CalendarDays
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -38,6 +39,7 @@ import logoOwl from "@/assets/owl-icon.png";
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { isPlaceholderPageContent, normalizeContentForComparison } from '@/lib/content-formatting';
 import { Badge } from "@/components/ui/badge";
+import { extractChronologyDates, formatApostilaDate } from '@/lib/apostila-pages';
 
 
 
@@ -176,6 +178,7 @@ export default function ApostilaReaderPage() {
   const [apostilaTitle, setApostilaTitle] = useState<string>("");
   const [apostilaStatus, setApostilaStatus] = useState<string>("liberada");
   const [hasInconsistency, setHasInconsistency] = useState(false);
+  const [selectedDateFilter, setSelectedDateFilter] = useState('all');
 
   const [tree, setTree] = useState<Tree | null>(null);
   const [loadingTree, setLoadingTree] = useState(true);
@@ -263,10 +266,29 @@ export default function ApostilaReaderPage() {
   }, [id, searchParams]);
 
   const flat = useMemo(() => (tree ? flatten(tree) : []), [tree]);
-  const currentIndex = flat.findIndex((l) => l.id === selectedLessonId);
-  const currentLesson = currentIndex >= 0 ? flat[currentIndex] : null;
-  const prevLesson = currentIndex > 0 ? flat[currentIndex - 1] : null;
-  const nextLesson = currentIndex >= 0 && currentIndex < flat.length - 1 ? flat[currentIndex + 1] : null;
+  const lessonDate = (lesson: FlatLesson) => {
+    if (!lesson.id.startsWith('page:')) return null;
+    return extractChronologyDates(`${lesson.title}\n${lesson.content_md || ''}`)[0] || 'pending';
+  };
+  const dateOptions = useMemo(() => {
+    const values = new Set(flat.map(lessonDate).filter(Boolean) as string[]);
+    return [...values].sort((a, b) => a === 'pending' ? 1 : b === 'pending' ? -1 : a.localeCompare(b));
+  }, [flat]);
+  const visibleFlat = useMemo(() => selectedDateFilter === 'all'
+    ? flat
+    : flat.filter((lesson) => lessonDate(lesson) === selectedDateFilter), [flat, selectedDateFilter]);
+  const visibleLessonIds = useMemo(() => new Set(visibleFlat.map((lesson) => lesson.id)), [visibleFlat]);
+  const navigationFlat = selectedDateFilter === 'all' ? flat : visibleFlat;
+  const currentIndex = navigationFlat.findIndex((l) => l.id === selectedLessonId);
+  const currentLesson = flat.find((l) => l.id === selectedLessonId) || null;
+  const prevLesson = currentIndex > 0 ? navigationFlat[currentIndex - 1] : null;
+  const nextLesson = currentIndex >= 0 && currentIndex < navigationFlat.length - 1 ? navigationFlat[currentIndex + 1] : null;
+
+  useEffect(() => {
+    if (selectedDateFilter !== 'all' && !visibleLessonIds.has(selectedLessonId || '')) {
+      setSelectedLessonId(visibleFlat[0]?.id || null);
+    }
+  }, [selectedDateFilter, visibleFlat, visibleLessonIds, selectedLessonId]);
 
   const totalLessons = flat.length;
   const completedLessons = flat.filter((l) => l.progress_status === "completed").length;
@@ -454,14 +476,14 @@ export default function ApostilaReaderPage() {
   const searchResults = useMemo(() => {
     if (!searchQuery.trim()) return [];
     const q = searchQuery.toLowerCase();
-    return flat
+    return visibleFlat
       .filter((l) =>
         l.title.toLowerCase().includes(q) ||
         l.chapterTitle.toLowerCase().includes(q) ||
         l.moduleTitle.toLowerCase().includes(q),
       )
       .slice(0, 20);
-  }, [searchQuery, flat]);
+  }, [searchQuery, visibleFlat]);
 
   if (loadingTree) {
     return (
@@ -539,16 +561,20 @@ export default function ApostilaReaderPage() {
           focusMode && "md:w-0 md:opacity-0 md:pointer-events-none border-none"
         )}
       >
-        <SidebarInner
-          apostilaTitle={apostilaTitle}
-          tree={tree}
-          selectedLessonId={selectedLessonId}
-          onSelect={(lid) => setSelectedLessonId(lid)}
-          progressPct={progressPct}
-          completedLessons={completedLessons}
-          totalLessons={totalLessons}
-          onBack={() => navigate(`/apostila/${id}`)}
-        />
+          <SidebarInner
+            apostilaTitle={apostilaTitle}
+            tree={tree}
+            selectedLessonId={selectedLessonId}
+            onSelect={(lid) => setSelectedLessonId(lid)}
+            progressPct={progressPct}
+            completedLessons={completedLessons}
+            totalLessons={totalLessons}
+            dateFilter={selectedDateFilter}
+            dateOptions={dateOptions}
+            visibleLessonIds={visibleLessonIds}
+            onDateFilterChange={setSelectedDateFilter}
+            onBack={() => navigate(`/apostila/${id}`)}
+          />
       </aside>
 
       {/* Sidebar TOC — mobile drawer */}
@@ -573,6 +599,10 @@ export default function ApostilaReaderPage() {
               progressPct={progressPct}
               completedLessons={completedLessons}
               totalLessons={totalLessons}
+              dateFilter={selectedDateFilter}
+              dateOptions={dateOptions}
+              visibleLessonIds={visibleLessonIds}
+              onDateFilterChange={setSelectedDateFilter}
               onBack={() => navigate(`/apostila/${id}`)}
             />
           </div>
@@ -612,6 +642,21 @@ export default function ApostilaReaderPage() {
               {currentLesson?.title || "Selecione uma lição"}
             </div>
           </div>
+          {dateOptions.length > 0 && (
+            <label className="hidden items-center gap-1 rounded-md border border-border/60 px-2 text-[10px] text-muted-foreground sm:flex">
+              <CalendarDays className="h-3.5 w-3.5" />
+              <span className="sr-only">Filtrar aulas por data</span>
+              <select
+                aria-label="Filtrar aulas por data"
+                className="max-w-[9rem] bg-transparent py-1 text-[10px] text-foreground outline-none"
+                value={selectedDateFilter}
+                onChange={(event) => setSelectedDateFilter(event.target.value)}
+              >
+                <option value="all">Todas as aulas</option>
+                {dateOptions.map((date) => <option key={date} value={date}>{date === 'pending' ? 'Data pendente' : formatApostilaDate(date)}</option>)}
+              </select>
+            </label>
+          )}
           <button
             className="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-accent"
             onClick={() => setSearchOpen((v) => !v)}
@@ -932,6 +977,10 @@ function SidebarInner({
   completedLessons,
   totalLessons,
   onBack,
+  dateFilter,
+  dateOptions,
+  visibleLessonIds,
+  onDateFilterChange,
 }: {
   apostilaTitle: string;
   tree: Tree;
@@ -941,6 +990,10 @@ function SidebarInner({
   completedLessons: number;
   totalLessons: number;
   onBack: () => void;
+  dateFilter: string;
+  dateOptions: string[];
+  visibleLessonIds: Set<string>;
+  onDateFilterChange: (value: string) => void;
 }) {
   return (
     <>
@@ -963,17 +1016,41 @@ function SidebarInner({
           </div>
           <Progress value={progressPct} className="h-1.5" />
         </div>
+        {dateOptions.length > 0 && (
+          <label className="mt-3 flex items-center gap-2 rounded-md border border-border/60 bg-muted/20 px-2 py-1.5 text-[10px] text-muted-foreground">
+            <CalendarDays className="h-3.5 w-3.5 shrink-0" />
+            <span className="sr-only">Filtrar aulas por data</span>
+            <select
+              aria-label="Filtrar aulas por data na sidebar"
+              className="min-w-0 flex-1 bg-transparent text-xs text-foreground outline-none"
+              value={dateFilter}
+              onChange={(event) => onDateFilterChange(event.target.value)}
+            >
+              <option value="all">Todas as aulas</option>
+              {dateOptions.map((date) => <option key={date} value={date}>{date === 'pending' ? 'Data pendente' : formatApostilaDate(date)}</option>)}
+            </select>
+          </label>
+        )}
       </div>
       <ScrollArea className="flex-1">
         <div className="px-2 py-3">
-          {tree.modules.map((m) => (
-            <ModuleBlock
-              key={m.id}
-              module={m}
-              selectedLessonId={selectedLessonId}
-              onSelect={onSelect}
-            />
-          ))}
+          {tree.modules.map((m) => {
+            const filteredModule = {
+              ...m,
+              chapters: m.chapters
+                .map((chapter) => ({ ...chapter, lessons: chapter.lessons.filter((lesson) => visibleLessonIds.has(lesson.id)) }))
+                .filter((chapter) => chapter.lessons.length > 0),
+            };
+            if (filteredModule.chapters.length === 0) return null;
+            return (
+              <ModuleBlock
+                key={m.id}
+                module={filteredModule}
+                selectedLessonId={selectedLessonId}
+                onSelect={onSelect}
+              />
+            );
+          })}
         </div>
       </ScrollArea>
     </>

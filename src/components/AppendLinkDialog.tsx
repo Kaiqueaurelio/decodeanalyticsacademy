@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Loader2, Link2, CheckCircle2, XCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { separateApostilaByDate } from '@/lib/apostila-pages';
 
 interface AppendLinkDialogProps {
   apostilaId: string;
@@ -117,9 +118,26 @@ export function AppendLinkDialog({ apostilaId, apostilaTitle, currentContent, tr
       toast.error('Erro ao salvar: ' + updErr.message);
     } else {
       const okCount = localResults.filter(r => r.status === 'ok').length;
+      let separationSuffix = '';
+      try {
+        const separation = await separateApostilaByDate(apostilaId);
+        if (separation.status === 'succeeded') {
+          separationSuffix = ` · ${separation.section_count || 0} aulas separadas por data`;
+          toast.success('Conteúdo importado e separado por data. O original foi preservado no histórico.');
+        } else if (separation.status === 'blocked') {
+          separationSuffix = ' · separação pendente de revisão';
+          toast.warning('Conteúdo importado, mas não foram encontradas duas seções datadas. Revise no Diagnóstico.');
+        } else {
+          toast.warning('Conteúdo importado, mas a separação automática não foi concluída.');
+        }
+      } catch (separationError: any) {
+        console.warn('[AppendLink] separação automática indisponível:', separationError);
+        toast.warning('Conteúdo importado. A separação automática depende da migração administrativa no banco.');
+      }
       toast.success(
         `${okCount}/${list.length} link(s) anexado(s)` +
-        (totalNewExercises > 0 ? ` · +${totalNewExercises} exercícios` : '')
+        (totalNewExercises > 0 ? ` · +${totalNewExercises} exercícios` : '') +
+        separationSuffix
       );
       onDone?.();
     }
@@ -146,7 +164,7 @@ export function AppendLinkDialog({ apostilaId, apostilaTitle, currentContent, tr
         </DialogHeader>
         <div className="space-y-3">
           <p className="text-xs text-muted-foreground">
-            Cole um ou mais links (um por linha). O conteúdo extraído será adicionado <strong>como continuação</strong> da apostila atual — nada é apagado. Exercícios encontrados são somados aos existentes.
+            Cole um ou mais links (um por linha). O conteúdo extraído será adicionado à apostila atual e, após o salvamento, o sistema tentará separar automaticamente as seções datadas em páginas. O conteúdo original fica preservado no histórico. Exercícios encontrados são somados aos existentes.
           </p>
           <div>
             <Label className="text-xs">URLs (uma por linha)</Label>
@@ -205,7 +223,7 @@ export function AppendLinkDialog({ apostilaId, apostilaTitle, currentContent, tr
               disabled={running || !urls.trim()}
             >
               {running ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Link2 className="h-3.5 w-3.5" />}
-              {running ? 'Anexando...' : 'Anexar à apostila'}
+              {running ? 'Importando e separando...' : 'Importar e separar por data'}
             </Button>
           </div>
         </div>

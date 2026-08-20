@@ -163,3 +163,79 @@ A URL do painel de migrações foi aberta em modo somente leitura. Após o carre
 ### Atualização do estado Vercel após os commits documentais
 
 Após os pushes `46bd578b` e `4c6a29d0`, a integração Git da Vercel detectou ambos os SHAs e criou os deployments `dpl_HDXkbZmba3wSSDY18K8QeWxMPECo` e `dpl_1oGavUgnS3p9dVwF2JVYJWpHiS5Y`. Os dois retornaram `state: BLOCKED` e `target: production`. A publicação do código no GitHub está confirmada; a promoção em produção continua bloqueada pela configuração/conta da Vercel, não por falha dos gates locais.
+
+
+## Verificação ao vivo das apostilas agrupadas
+
+Em 20/08/2026, o host Lovable restaurou uma sessão existente no navegador. A landing page exibiu o botão “Acessar apostilas”; ao acioná-lo, a URL permaneceu na landing page e a página apenas reposicionou o viewport para o bloco de recursos. Portanto, essa interação pública não abriu a lista interna de apostilas e não é evidência suficiente para confirmar ou negar a separação dos registros.
+
+
+## Evidência do dashboard autenticado
+
+A rota [dashboard autenticado](https://decodeanalyticsacademy.lovable.app/dashboard) restaurou a sessão administrativa no navegador e exibiu `Auth: Authorized`, `Access Level: 4` e a seção “Minhas Disciplinas”. O dashboard informou `52 apostilas disponíveis` e agrupou a grade por disciplina/semestre; a rota interna registrada no código é `/apostila/:id`, enquanto `/apostilas` redireciona para `/dashboard#apostilas`. Essa página confirma que a sessão e a lista agregada carregam, mas o conteúdo extraído ficou truncado antes de permitir comparar todas as páginas da apostila específica.
+
+
+Na verificação interativa, o dashboard autenticado exibiu o menu lateral completo. O item visualmente correspondente a “Exercícios” abriu corretamente `/exercicios`; portanto, a sessão e a navegação protegida estão ativas. A área de apostilas deve ser acessada pelo item específico `/dashboard#apostilas` ou pelo botão “MINHAS DISCIPLINAS”, não pelo índice visual usado nessa tentativa.
+
+
+A rota `/dashboard#apostilas` carregou com `AUTH: AUTHORIZED`, preservou o usuário administrador e destacou o item “APOSTILAS” no menu lateral. A listagem de 52 apostilas continua acessível no dashboard; a verificação de mistura ainda depende de abrir a apostila específica e comparar suas páginas/registros.
+
+
+No DOM do dashboard, a apostila `Introdução às Ferramentas de Análise de Dados e Gestão de Projetos Operacionais` aparece no card “Continue de onde parou”. O controle “Retomar leitura” é um `<button>` interno sem `href`; por isso, a navegação precisa ser acionada pelo evento React do próprio botão, e não por um link direto visível no HTML.
+
+
+## Evidência adicional — retomada da apostila
+
+Ao acionar o botão `Retomar leitura` do card de `Introdução às Ferramentas de Análise de Dados e Gestão de Projetos Operacionais` na versão pública Lovable, o navegador foi levado para `https://decodeanalyticsacademy.lovable.app/`, a landing page pública, em vez de `/apostila/:id` ou `/reader/:id`. Isso demonstra um problema separado de navegação do card de retomada; não constitui, por si só, prova de que páginas estejam misturadas. As rotas protegidas previstas no código local são `/apostila/:id` e `/reader/:id`.
+
+
+## Verificação de agrupamento — dashboard público autenticado
+
+Em 20/08/2026, o dashboard Lovable restaurou a sessão administrativa e carregou a área de disciplinas. A inspeção do DOM encontrou o botão de retomada e a pasta `Gestao de Projetos I1 Caderno` com a ação `Explorar Disciplina`. Também foram listadas outras pastas e apostilas, mas a busca textual visual não localizou a string sem acento porque o texto renderizado pode estar normalizado de forma diferente. A verificação continua em modo somente leitura.
+
+
+### Evidência de pasta de Gestão de Projetos
+
+A inspeção direcionada do DOM encontrou exatamente um botão de exploração para `Gestao de Projetos I`, exibido como `1 Caderno`. Não foram encontrados dois cards de exploração para essa mesma pasta no dashboard carregado. O card `Continue de onde parou` é outro componente e exibe `Introdução às Ferramentas de Análise de Dados e Gestão de Projetos Operacionais`; por isso, ele não deve ser usado como prova de duplicação da pasta de Gestão de Projetos.
+
+
+### Pasta aberta — Gestão de Projetos I
+
+A pasta única abriu em `/materia/Gestao%20de%20Projetos%20I` e exibiu `Gestao De Projetos I`, `6º Semestre`, `1 módulos` e um único módulo `Materiais de Estudo`. Não há dois cadernos ou duas pastas duplicadas visíveis nessa tela. Isso confirma a separação no nível de disciplina; a conferência final deve verificar as páginas internas e a apostila específica de Gestão de Projetos Operacionais.
+
+
+### Leitor aberto — Gestão de Projetos I
+
+O módulo abriu no registro `773fa9ba-6714-4968-87fc-6989515f7c01`, em `/apostila/:id`. O leitor exibiu `Gestao de Projetos I`, `34 seções`, `2 exercícios`, `1 capítulo` e um único conteúdo principal com as seções de Fundamentos de Gerenciamento de Projetos. Não apareceu, nessa leitura, um segundo capítulo, página ou título de outra aula/dia misturado ao conteúdo.
+
+
+## Resultado decisivo — apostila agrupada ainda inconsistente
+
+Consulta somente leitura autenticada ao Supabase, realizada em 20/08/2026, encontrou a apostila `b132f212-5ede-4522-92d3-b0ead2cd8ce2`, intitulada `Introdução às Ferramentas de Análise de Dados e Gestão de Projetos Operacionais`, categorizada como `Pesquisa Operacional`, com três páginas:
+
+| Posição | ID | Título | Datas detectadas | Tamanho do conteúdo |
+|---:|---|---|---|---:|
+| 1 | `812c2375-dc09-460e-a964-1bba36d586ba` | Aula - 19/08/2026 (Pesquisa Operacional & Modelagem) | 19/08/2026 | 7.886 caracteres |
+| 2 | `ad3c4196-1a07-46ff-a415-3a5503fb7dac` | Aula - 01/01/2024 | 01/01/2024 | 52.798 caracteres |
+| 3 | `206fac6f-845d-4b91-bd30-e6cb0497a3f1` | Fragmento de Aula (Data Pendente) | nenhuma | 100 caracteres |
+
+Isso confirma que a separação **não está totalmente corrigida**. A página de 01/01/2024 e o fragmento sem data continuam no mesmo registro da aula de 19/08/2026. A apostila `Gestao de Projetos I` é outro registro, com uma única página, e não deve ser confundida com a apostila operacional afetada.
+
+
+### Confirmação do conteúdo misturado
+
+A consulta adicional mostrou que o registro principal `b132f212-5ede-4522-92d3-b0ead2cd8ce2` tem apenas 100 caracteres e nenhuma data; o conteúdo efetivo está nas páginas. A página 1 corresponde à aula de 19/08/2026 de Pesquisa Operacional e Modelagem. A página 2, criada em 20/08/2026, tem 52.798 caracteres, está titulada como 01/01/2024 e contém referências a Excel, Power BI, Pesquisa Operacional, Gestão de Projetos, modelagem e Projeto E-commerce. A página 3 é um fragmento de 100 caracteres sem data. A evidência confirma uma inconsistência de agrupamento/conteúdo ainda não resolvida.
+
+## Ferramentas de separação por data — implementação adicional
+
+Nesta rodada foram adicionadas ferramentas administrativas para reduzir a recorrência de aulas agrupadas incorretamente. A migração `20260820180000_apostila_date_separation_tools.sql` cria a RPC `separate_apostila_pages_by_date`, protegida por `has_role(..., 'admin')`, com operação transacional, snapshot prévio em `apostila_versions`, detecção de seções ancoradas por data, comportamento idempotente por conteúdo, registro em `apostila_operation_logs` e bloqueio seguro quando não existem pelo menos duas seções datadas. O conteúdo original não é apagado sem uma seção reconhecível; o procedimento retorna os IDs criados/reutilizados e as datas detectadas.
+
+O Workbench agora mostra alerta quando a validação cronológica encontra inconsistências, oferece “Solicitar separação” e “Re-separar aulas por data”, e reconhece o parâmetro `?separate=1` vindo do painel para executar uma única solicitação após o carregamento da apostila. O diálogo de importação por link salva o conteúdo extraído antes de tentar a separação automática, mantendo o material importado caso a RPC esteja bloqueada ou a migração ainda não esteja aplicada.
+
+O leitor de apostilas recebeu filtro por data, com opção de todas as aulas, cada data identificada e “Data pendente”. A filtragem atua somente na navegação de páginas livres e não altera o progresso global. O painel de diagnóstico passou a permitir exportação CSV do histórico `apostila_date_separation`, com escape de campos, BOM UTF-8, separador compatível com planilhas brasileiras e limite de 5.000 registros.
+
+A cobertura automatizada foi ampliada para **89 testes aprovados**, incluindo extração/formatação de datas, retorno sucedido da RPC, bloqueio seguro por falta de seções datadas e encaminhamento correto do usuário/operação. TypeScript, build Vite/PWA e `git diff --check` também foram executados com sucesso; os avisos de chunks grandes do Vite permanecem informativos e não impediram o build.
+
+A migração ainda precisa ser aplicada no projeto Supabase de produção antes que a RPC e o CSV histórico funcionem no ambiente publicado. A UI identifica a ausência da migração e informa o administrador sem apagar conteúdo nem tratar a apostila como íntegra.
+
+---

@@ -9,6 +9,8 @@ import {
   Search,
   ShieldAlert,
   TerminalSquare,
+  Download,
+  Scissors,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -167,6 +169,53 @@ export function ApostilaValidationDashboard() {
       .includes(query)
   ), [operations, query]);
 
+  const exportSeparationHistory = async () => {
+    const { data, error } = await (supabase.from('apostila_operation_logs' as any) as any)
+      .select('id, operation_id, apostila_id, page_id, operation_type, phase, status, affected_record_ids, error_code, error_message, metadata, created_at')
+      .eq('operation_type', 'apostila_date_separation')
+      .order('created_at', { ascending: false })
+      .limit(5000);
+
+    if (error) {
+      toast.error(/schema cache|does not exist|not found/i.test(error.message || '')
+        ? 'O histórico depende da migração de diagnóstico no Supabase.'
+        : 'Não foi possível exportar o histórico de separação.');
+      return;
+    }
+
+    const rows = (data || []) as OperationLog[];
+    const escapeCsv = (value: unknown) => `"${String(value ?? '').replace(/"/g, '""')}"`;
+    const header = ['id', 'operation_id', 'apostila_id', 'page_id', 'operation_type', 'phase', 'status', 'affected_record_ids', 'error_code', 'error_message', 'metadata', 'created_at'];
+    const csv = '\ufeff' + [
+      header,
+      ...rows.map((row) => [
+        row.id,
+        row.operation_id,
+        row.apostila_id,
+        row.page_id,
+        row.operation_type,
+        row.phase,
+        row.status,
+        (row.affected_record_ids || []).join('|'),
+        row.error_code,
+        row.error_message,
+        JSON.stringify(row.metadata || {}),
+        row.created_at,
+      ]),
+    ].map((line) => line.map(escapeCsv).join(';')).join('\r\n');
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `historico-separacao-apostilas-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    toast.success(`${rows.length} registros exportados em CSV.`);
+  };
+
   const acknowledgeAlert = async (alert: ValidationAlert) => {
     const { error } = await supabase
       .from('apostila_validation_alerts' as any)
@@ -194,10 +243,16 @@ export function ApostilaValidationDashboard() {
                 Validação cronológica por data, evidências de correção, alertas preventivos e operações do Workbench.
               </CardDescription>
             </div>
-            <Button variant="outline" size="sm" onClick={() => void loadDashboard()} disabled={loading}>
-              <RefreshCw className={loading ? 'mr-2 h-4 w-4 animate-spin' : 'mr-2 h-4 w-4'} />
-              Atualizar
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" size="sm" onClick={() => void exportSeparationHistory()} disabled={dataUnavailable}>
+                <Download className="mr-2 h-4 w-4" />
+                Exportar CSV
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => void loadDashboard()} disabled={loading}>
+                <RefreshCw className={loading ? 'mr-2 h-4 w-4 animate-spin' : 'mr-2 h-4 w-4'} />
+                Atualizar
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -257,6 +312,10 @@ export function ApostilaValidationDashboard() {
                       <span>{formatDate(alert.created_at)}</span>
                     </div>
                     <div className="mt-3 flex justify-end gap-2">
+                      <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs" onClick={() => { window.location.href = `/admin/apostilas/${alert.apostila_id}?separate=1${alert.page_id ? `&page=${alert.page_id}` : ''}`; }}>
+                        <Scissors className="h-3.5 w-3.5" />
+                        Solicitar separação
+                      </Button>
                       {alert.page_id && (
                         <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => { window.location.href = `/admin/apostilas/${alert.apostila_id}?page=${alert.page_id}`; }}>
                           Corrigir no Workbench

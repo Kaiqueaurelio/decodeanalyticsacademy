@@ -19,6 +19,7 @@ import { SortableMaterialsList, type LinkedMaterialItem } from '@/components/adm
 import { SmartPasteDialog } from '@/components/admin/SmartPasteDialog';
 import { FinalReviewDialog } from '@/components/admin/FinalReviewDialog';
 import { ManualLinkMaterialsDialog } from '@/components/ManualLinkMaterialsDialog';
+import { AppendLinkDialog } from '@/components/AppendLinkDialog';
 import { QuickAddSectionDialog } from '@/components/admin/QuickAddSectionDialog';
 import { autoLinkApostila } from '@/lib/auto-link-materials';
 import { ApostilaContentRenderer } from '@/components/ApostilaContentRenderer';
@@ -27,14 +28,14 @@ import { ensureApostilaExists } from '@/lib/create-placeholder-apostila';
 import { Badge } from '@/components/ui/badge';
 import { getSubjectColor } from '@/lib/subject-colors';
 import { parseApostilaContent } from '@/lib/apostila-parser';
-import { createApostilaPage, type ApostilaPage, upsertApostilaPage, validateApostilaChronology } from '@/lib/apostila-pages';
+import { createApostilaPage, type ApostilaPage, upsertApostilaPage, validateApostilaChronology, separateApostilaByDate } from '@/lib/apostila-pages';
 import { recordApostilaOperation, runApostilaChronologyValidation } from '@/lib/apostila-diagnostics';
 import { NewApostilaPageButton } from '@/components/NewApostilaPageButton';
 
 import {
   ArrowLeft, Search, Save, Eye, PenTool, Wand2, Loader2, Menu, FileText,
   ListChecks, PanelRightClose, ExternalLink, GraduationCap, ImageIcon, PanelRightOpen, X, Maximize2, Minimize2,
-  FilePlus2, Plus
+  FilePlus2, Plus, AlertTriangle, Link2
 } from 'lucide-react';
 import { invokeFunction } from '@/lib/invoke-function';
 import { toast } from 'sonner';
@@ -59,7 +60,7 @@ interface WorkbenchProps {
 
 export default function AdminApostilaWorkbench({ overrideId, onBack }: WorkbenchProps = {}) {
   const { id: routeId } = useParams<{ id: string }>();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const id = overrideId || routeId;
   const selectedPageId = searchParams.get('page');
   const navigate = useNavigate();
@@ -132,6 +133,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
   const [addSectionOpen, setAddSectionOpen] = useState(false);
   const [suggestedSectionTitle, setSuggestedSectionTitle] = useState('');
   const [pages, setPages] = useState<ApostilaPage[]>([]);
+  const [separatingByDate, setSeparatingByDate] = useState(false);
 
   useEffect(() => {
     if (searchParams.get('expanded') === '1') setEditorExpanded(true);
@@ -142,8 +144,11 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
   const loadRequestRef = useRef(0);
   const saveInFlightRef = useRef<Promise<void> | null>(null);
   const createPersistedPageRef = useRef<() => Promise<void>>(() => Promise.resolve());
+  const separationRequestRef = useRef<string | null>(null);
 
   // Filter logic for sidebar
+  const chronologyReport = useMemo(() => validateApostilaChronology({ title, content, pages }), [title, content, pages]);
+
   const filteredApostilas = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return apostilas;
@@ -740,6 +745,84 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     toast.success(mode === 'append' ? 'Conteúdo adicionado.' : 'Conteúdo substituído.');
   };
 
+  const handleSeparateByDate = async () => {
+    if (!id || !user || separatingByDate) return;
+    if (saveInFlightRef.current) await saveInFlightRef.current;
+    if (dirtyRef.current) {
+      await doSave(true);
+      if (dirtyRef.current) {
+        toast.error('Salve a edição atual antes de solicitar a separação.');
+        return;
+      }
+    }
+
+    const operationId = typeof crypto !== 'undefined' && 'randomUUID' in crypto
+      ? crypto.randomUUID()
+      : `date-separation-${Date.now()}`;
+    setSeparatingByDate(true);
+    void recordApostilaOperation({
+      operationId,
+      apostilaId: id,
+      operationType: 'apostila_date_separation',
+      phase: 'request',
+      status: 'started',
+      metadata: { issueCodes: chronologyReport.issues.map((issue) => issue.code), detectedDates: chronologyReport.dates },
+    });
+
+    try {
+      const result = await separateApostilaByDate(id, user.id);
+      if (result.status === 'succeeded') {
+        await loadApostila(id);
+        void recordApostilaOperation({
+          operationId,
+          apostilaId: id,
+          operationType: 'apostila_date_separation',
+          phase: 'request',
+          status: 'succeeded',
+          affectedRecordIds: [...(result.created_page_ids || []), id],
+          metadata: result,
+        });
+        toast.success(`Separação concluída: ${result.section_count || 0} aulas organizadas por data.`);
+      } else {
+        void recordApostilaOperation({
+          operationId,
+          apostilaId: id,
+          operationType: 'apostila_date_separation',
+          phase: 'request',
+          status: 'blocked',
+          errorCode: result.code || 'separation_blocked',
+          errorMessage: result.message || 'A separação precisa de revisão manual.',
+          metadata: result,
+        });
+        toast.warning(result.message || 'A separação automática precisa de revisão manual.');
+      }
+    } catch (error: any) {
+      void recordApostilaOperation({
+        operationId,
+        apostilaId: id,
+        operationType: 'apostila_date_separation',
+        phase: 'request',
+        status: 'failed',
+        errorCode: error?.code || 'separation_failed',
+        errorMessage: error?.message || 'Falha ao separar aulas por data.',
+        metadata: { issueCodes: chronologyReport.issues.map((issue) => issue.code) },
+      });
+      toast.error('Não foi possível separar as aulas. O conteúdo original foi preservado.');
+    } finally {
+      setSeparatingByDate(false);
+    }
+  };
+
+  useEffect(() => {
+    if (searchParams.get('separate') !== '1' || !id || loading || !user || separationRequestRef.current === id) return;
+
+    separationRequestRef.current = id;
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete('separate');
+    setSearchParams(nextParams, { replace: true });
+    void handleSeparateByDate();
+  }, [id, loading, searchParams, setSearchParams, user, separatingByDate]);
+
   const handleGenerateCover = async () => {
     if (!id) return;
     if (dirtyRef.current) await doSave();
@@ -858,12 +941,23 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         </div>
         <div className="flex-1 overflow-hidden relative">
           <TabsContent value="materials" className="absolute inset-0 m-0 flex flex-col">
-            <div className="p-4 border-b border-border/40 bg-muted/20">
-              <MaterialsDropZone 
-                apostilaId={id as string} 
-                baseSortOrder={linkedMaterials.length} 
-                onUploaded={reloadMaterials} 
+            <div className="p-4 border-b border-border/40 bg-muted/20 space-y-2">
+              <MaterialsDropZone
+                apostilaId={id as string}
+                baseSortOrder={linkedMaterials.length}
+                onUploaded={reloadMaterials}
               />
+              <AppendLinkDialog
+                apostilaId={id as string}
+                apostilaTitle={title}
+                currentContent={content}
+                trigger={<Button size="sm" variant="outline" className="w-full gap-1.5"><Link2 className="h-3.5 w-3.5" /> Importar link e separar por data</Button>}
+                onDone={() => { void loadApostila(id as string); }}
+              />
+              <Button size="sm" variant="secondary" className="w-full gap-1.5" onClick={() => void handleSeparateByDate()} disabled={separatingByDate}>
+                {separatingByDate ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Wand2 className="h-3.5 w-3.5" />}
+                {separatingByDate ? 'Separando aulas...' : 'Re-separar aulas por data'}
+              </Button>
             </div>
             <ScrollArea className="flex-1">
               <div className="p-4">
@@ -1044,6 +1138,18 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
 
   return (
     <div className="flex flex-col h-screen bg-background overflow-hidden relative">
+      {chronologyReport.issues.length > 0 && (
+        <div role="alert" className="flex flex-wrap items-center justify-between gap-3 border-b border-amber-500/30 bg-amber-500/10 px-4 py-2 text-xs text-amber-100">
+          <div className="flex min-w-0 items-center gap-2">
+            <AlertTriangle className="h-4 w-4 shrink-0 text-amber-400" />
+            <span><strong>Apostila com trechos potencialmente misturados.</strong> {chronologyReport.issues[0].message} A publicação permanece protegida até a revisão.</span>
+          </div>
+          <Button size="sm" variant="outline" className="h-7 shrink-0 border-amber-400/40 text-xs" onClick={() => void handleSeparateByDate()} disabled={separatingByDate}>
+            {separatingByDate ? 'Solicitando...' : 'Solicitar separação'}
+          </Button>
+        </div>
+      )}
+
       <ApostilaHealthBar
         title={title}
         published={published}

@@ -33,6 +33,18 @@ export interface ChronologyValidationReport {
   dates: string[];
 }
 
+export interface ApostilaSeparationResult {
+  status: 'succeeded' | 'blocked' | 'error';
+  code?: string;
+  apostila_id?: string;
+  section_count?: number;
+  detected_dates?: string[];
+  created_page_ids?: string[];
+  reused_page_ids?: string[];
+  remaining_content_length?: number | null;
+  message?: string;
+}
+
 const DATE_PATTERN = /\b([0-3]\d)[/.-]([01]\d)[/.-]((?:19|20)\d{2})\b/g;
 
 function toIsoDate(day: string, month: string, year: string): string | null {
@@ -55,6 +67,16 @@ export function extractChronologyDates(text: string | null | undefined): string[
     if (isoDate) dates.add(isoDate);
   }
   return [...dates].sort();
+}
+
+export function extractApostilaPageDate(page: Pick<ApostilaPage, 'title' | 'content'>): string | null {
+  return extractChronologyDates(`${page.title || ''}\n${page.content || ''}`)[0] || null;
+}
+
+export function formatApostilaDate(date: string | null | undefined): string {
+  if (!date) return 'Data pendente';
+  const parsed = new Date(`${date}T00:00:00Z`);
+  return Number.isNaN(parsed.getTime()) ? date : parsed.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
 }
 
 export function validateApostilaChronology(input: {
@@ -177,4 +199,13 @@ export async function createApostilaPage(apostilaId: string, userId: string) {
     .single();
   if (error) throw error;
   return data as ApostilaPage;
+}
+
+export async function separateApostilaByDate(apostilaId: string, userId?: string | null) {
+  const { data, error } = await (supabase.rpc as any)('separate_apostila_pages_by_date', {
+    _apostila_id: apostilaId,
+    _user_id: userId ?? null,
+  });
+  if (error) throw error;
+  return (data || { status: 'error', code: 'empty_response' }) as ApostilaSeparationResult;
 }

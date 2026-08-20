@@ -2,7 +2,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { supabase } from '@/integrations/supabase/client';
 import {
   createApostilaPage,
+  extractApostilaPageDate,
   extractChronologyDates,
+  formatApostilaDate,
+  separateApostilaByDate,
   upsertApostilaPage,
   validateApostilaChronology,
   type ApostilaPage,
@@ -11,10 +14,12 @@ import {
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
     from: vi.fn(),
+    rpc: vi.fn(),
   },
 }));
 
 const fromMock = vi.mocked(supabase.from);
+const rpcMock = vi.mocked(supabase.rpc);
 
 function page(overrides: Partial<ApostilaPage> = {}): ApostilaPage {
   return {
@@ -33,6 +38,14 @@ describe('invariantes de cronologia das apostilas', () => {
   it('normaliza datas válidas, remove duplicatas e ignora datas impossíveis', () => {
     expect(extractChronologyDates('18/08/2026, 18-08-2026, 31/02/2026, 19.08.2026'))
       .toEqual(['2026-08-18', '2026-08-19']);
+  });
+
+  it('extrai e formata a data da própria página para o filtro do leitor', () => {
+    expect(extractApostilaPageDate({ title: 'Aula — 19/08/2026', content: 'Conteúdo da aula.' }))
+      .toBe('2026-08-19');
+    expect(formatApostilaDate('2026-08-19')).toBe('19/08/2026');
+    expect(extractApostilaPageDate({ title: 'Data pendente', content: 'Sem data registrada.' }))
+      .toBeNull();
   });
 
   it('marca como erro o conteúdo principal que mistura mais de uma data', () => {
@@ -105,6 +118,51 @@ describe('invariantes de cronologia das apostilas', () => {
     expect(updated).toHaveLength(2);
     expect(updated.find((item) => item.id === 'page-18')?.content).toContain('18/08/2026');
     expect(updated.find((item) => item.id === 'page-19')?.content).toContain('corrigido');
+  });
+});
+
+describe('separação server-side por data', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('encaminha o ID da apostila e preserva o retorno sucedido da RPC', async () => {
+    rpcMock.mockResolvedValue({
+      data: {
+        status: 'succeeded',
+        apostila_id: 'book-1',
+        section_count: 2,
+        detected_dates: ['2026-08-18', '2026-08-19'],
+        created_page_ids: ['page-18', 'page-19'],
+      },
+      error: null,
+    } as any);
+
+    await expect(separateApostilaByDate('book-1')).resolves.toMatchObject({
+      status: 'succeeded',
+      section_count: 2,
+      detected_dates: ['2026-08-18', '2026-08-19'],
+    });
+    expect(rpcMock).toHaveBeenCalledWith('separate_apostila_pages_by_date', {
+      _apostila_id: 'book-1',
+      _user_id: null,
+    });
+  });
+
+  it('mantém a operação bloqueada quando não há duas seções datadas', async () => {
+    rpcMock.mockResolvedValue({
+      data: { status: 'blocked', code: 'separation_requires_two_date_sections' },
+      error: null,
+    } as any);
+
+    await expect(separateApostilaByDate('book-1', 'admin-1')).resolves.toMatchObject({
+      status: 'blocked',
+      code: 'separation_requires_two_date_sections',
+    });
+    expect(rpcMock).toHaveBeenCalledWith('separate_apostila_pages_by_date', {
+      _apostila_id: 'book-1',
+      _user_id: 'admin-1',
+    });
   });
 });
 
