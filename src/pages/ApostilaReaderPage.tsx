@@ -685,21 +685,25 @@ export default function ApostilaReaderPage() {
             <div className="truncate font-display text-base font-semibold flex items-center gap-3">
               <span className="truncate">{currentLesson?.title || "Selecione uma lição"}</span>
               
-              {availableDates.length > 1 && (
+              {availableDates.length > 0 && (
                 <div className="hidden sm:block ml-2 w-32 shrink-0">
                   <Select value={selectedDate} onValueChange={setSelectedDate}>
-                    <SelectTrigger className="h-7 text-[10px] bg-card/50 border-primary/20">
-                      <SelectValue placeholder="Filtrar data" />
+                    <SelectTrigger className="h-7 text-[10px] bg-card/50 border-roxo/30 hover:border-roxo/50 transition-colors">
+                      <div className="flex items-center gap-1.5">
+                        <Calendar className="w-3 h-3 text-roxo" />
+                        <SelectValue placeholder="Filtrar data" />
+                      </div>
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todas as aulas</SelectItem>
+                    <SelectContent className="bg-[#0A0A15] border-white/10">
+                      <SelectItem value="all" className="text-xs">Todas as aulas</SelectItem>
                       {availableDates.map(date => (
-                        <SelectItem key={date} value={date}>{date}</SelectItem>
+                        <SelectItem key={date} value={date} className="text-xs">{date}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
               )}
+
 
             </div>
 

@@ -38,6 +38,19 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: "6.7.0",
+    date: "20/08/2026",
+    title: "Sistema Avançado de Integridade Cronológica",
+    major: true,
+    changes: [
+      { kind: "feature", text: "Implementada prévia híbrida (lista/conteúdo) antes de separar aulas por data" },
+      { kind: "feature", text: "Automação de separação inteligente ao importar links (Smart Paste)" },
+      { kind: "improvement", text: "Filtro temporal persistente no cabeçalho do leitor de apostilas" },
+      { kind: "improvement", text: "Banners dinâmicos de status (Em Manutenção/Crítico) para alunos" }
+    ]
+  },
+
+  {
     version: "6.6.8",
     date: "20/08/2026",
     title: "Diagnóstico Acadêmico & Estabilidade do Workbench",
