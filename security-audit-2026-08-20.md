@@ -139,3 +139,17 @@ A suíte passou com **13 arquivos e 86 testes aprovados**. O TypeScript terminou
 As alterações desta rodada ainda precisam ser incluídas no commit e enviadas ao repositório remoto. As migrações `20260820060000`, `20260820100000`, `20260820140000` e `20260820160000` continuam dependentes de aplicação no projeto Supabase conectado. A variável `SPECIAL_USER_PASSWORD` continua necessária no ambiente da função `ra-auth`. A produção Vercel segue condicionada ao bloqueio de configuração de conta já observado; portanto, nenhum resultado local ou de GitHub deve ser apresentado como prova de que os domínios públicos já servem o novo bundle.
 
 Data da atualização: 20/08/2026.
+
+
+## Verificação externa após a publicação no GitHub
+
+A branch `main` foi publicada no GitHub no merge commit `02a0e4f6`. A integração Git da Vercel reconheceu esse SHA e criou o deployment `dpl_AjHQ3ABADG2xLK52ouBJHK8vjgET`, mas o estado retornado foi **BLOCKED**, com alvo `production`. A URL do inspector é [Vercel deployment inspector](https://vercel.com/decode-analytics-s-projects/decodeanalyticsacademy/AjHQ3ABADG2xLK52ouBJHK8vjgET), e o alias de deployment é `decodeanalyticsacademy-po4lt2w7p-decode-analytics-s-projects.vercel.app`.
+
+A consulta direta ao alias respondeu HTTP 200, porém o conteúdo foi a página padrão da Vercel com título **“Deployment is building”**, não o bundle da Decode Analytics Academy. Isso confirma que o código já chegou ao GitHub e que a integração detectou o commit, mas não confirma publicação funcional em produção; o bloqueio de conta/configuração permanece a etapa impedida.
+
+Fonte externa consultada em 20/08/2026: [lista de deployments do projeto Vercel](https://vercel.com/decode-analytics-s-projects/decodeanalyticsacademy) e [alias do deployment consultado](https://decodeanalyticsacademy-po4lt2w7p-decode-analytics-s-projects.vercel.app/).
+
+
+## Verificação dos endereços públicos
+
+Em 20/08/2026, os dois endereços oficiais foram consultados sem autenticação: [Lovable](https://decodeanalyticsacademy.lovable.app/) e [Vercel](https://decodeanalyticsacademy.vercel.app/). Ambos responderam com sucesso e exibiram o mesmo conteúdo textual de landing page, incluindo o título “Estude com Ciência da Computação”, a referência a 48 disciplinas, exercícios práticos e acesso por computador e celular. A igualdade textual confirma que não há divergência básica entre os dois hosts nessa página pública. Essa verificação não substitui o teste autenticado das rotas internas nem prova que o deployment Vercel mais recente esteja ativo, pois o alias de deployment recém-criado ainda retornou a página intermediária “Deployment is building”.
