@@ -268,6 +268,7 @@ export default function ApostilaReaderPage() {
 
       setTree(t);
       const flat = flatten(t);
+      
       // Retomar de onde parou: primeira in_progress ou primeira sem progresso
       const requestedLesson = searchParams.get("lesson");
       const resume =
@@ -275,7 +276,12 @@ export default function ApostilaReaderPage() {
         flat.find((l) => l.progress_status === "in_progress") ||
         flat.find((l) => !l.progress_status) ||
         flat[0];
-      if (resume) setSelectedLessonId(resume.id);
+      if (resume) {
+        setSelectedLessonId(resume.id);
+        // Se a lição retomada tiver data, seleciona ela no filtro
+        if (resume.date) setSelectedDate(resume.date);
+      }
+
       setLoadingTree(false);
     })();
     return () => {
@@ -640,13 +646,34 @@ export default function ApostilaReaderPage() {
             <Menu className="h-5 w-5" />
           </button>
           <div className="min-w-0 flex-1">
-            <div className="truncate text-[11px] uppercase tracking-wider text-muted-foreground">
+            <div className="truncate text-[11px] uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+              <span>{currentLesson?.moduleTitle} · {currentLesson?.chapterTitle}</span>
+              {currentLesson?.date && (
+                <Badge variant="outline" className="h-3.5 text-[8px] py-0 border-primary/30 text-primary">
+                  {currentLesson.date}
+                </Badge>
+              )}
+            </div>
+            <div className="truncate font-display text-base font-semibold flex items-center gap-3">
+              <span className="truncate">{currentLesson?.title || "Selecione uma lição"}</span>
+              
+              {allDates.length > 1 && (
+                <div className="hidden sm:block ml-2 w-32 shrink-0">
+                  <Select value={selectedDate} onValueChange={setSelectedDate}>
+                    <SelectTrigger className="h-7 text-[10px] bg-card/50 border-primary/20">
+                      <SelectValue placeholder="Filtrar data" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todas as aulas</SelectItem>
+                      {allDates.map(date => (
+                        <SelectItem key={date} value={date}>{date}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </div>
 
-              {currentLesson?.moduleTitle} · {currentLesson?.chapterTitle}
-            </div>
-            <div className="truncate font-display text-base font-semibold">
-              {currentLesson?.title || "Selecione uma lição"}
-            </div>
           </div>
           <button
             className="inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-accent"
