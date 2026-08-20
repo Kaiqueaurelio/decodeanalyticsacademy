@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, ExternalLink, X, Megaphone, Info, ZoomIn } from 'lucide-react';
 import { AppImage } from '@/components/ui/app-image';
 import { AdImageLightbox } from '@/components/AdImageLightbox';
+import { getSafeNavigationUrl, openSafeExternalUrl } from '@/lib/safe-navigation';
 
 /**
  * Painel de publicidade FIXO na lateral direita (desktop xl+).
@@ -66,7 +67,7 @@ export function AdSidebar({ className = '' }: { className?: string }) {
   const handleClick = () => {
     try {
       recordAdClick(current.id);
-      if (current.link_url) window.open(current.link_url, '_blank', 'noopener,noreferrer');
+      openSafeExternalUrl(current.link_url);
     } catch {
       /* ignore */
     }
@@ -108,7 +109,8 @@ export function AdSidebar({ className = '' }: { className?: string }) {
     );
   }
 
-  const hasLink = Boolean(current.link_url);
+  const safeLink = getSafeNavigationUrl(current.link_url);
+  const hasLink = Boolean(safeLink);
 
   const sidebar = (
     <AnimatePresence>

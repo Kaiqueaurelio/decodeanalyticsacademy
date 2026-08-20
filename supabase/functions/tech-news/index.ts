@@ -2,6 +2,7 @@
 // Isolado — não altera nenhuma função/rota existente.
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
 import { createClient } from 'npm:@supabase/supabase-js@2';
+import { isSafePublicUrl } from '../_shared/ssrf.ts';
 
 const DEFAULT_FEEDS: { url: string; source: string }[] = [
   { url: 'https://feeds.feedburner.com/canaltechbr', source: 'Canaltech' },
@@ -23,7 +24,11 @@ async function loadFeeds(): Promise<{ url: string; source: string }[]> {
       .select('url, source, enabled, sort_order')
       .eq('enabled', true)
       .order('sort_order', { ascending: true });
-    if (data && data.length > 0) return data.map((r: any) => ({ url: r.url, source: r.source }));
+    if (data && data.length > 0) {
+      return data
+        .map((r: any) => ({ url: typeof r.url === 'string' ? r.url : '', source: typeof r.source === 'string' ? r.source : 'Fonte' }))
+        .filter((feed) => isSafePublicUrl(feed.url));
+    }
     return DEFAULT_FEEDS;
   } catch {
     return DEFAULT_FEEDS;
@@ -73,10 +78,10 @@ function extractImage(block: string): string | null {
     pickAttr(block, 'media:content', 'url') ||
     pickAttr(block, 'media:thumbnail', 'url') ||
     pickAttr(block, 'enclosure', 'url');
-  if (media) return media;
+  if (media && isSafePublicUrl(media)) return media;
   const html = pick(block, 'content:encoded') || pick(block, 'description');
   const img = html.match(/<img[^>]+src=["']([^"']+)["']/i);
-  return img ? img[1] : null;
+  return img && isSafePublicUrl(img[1]) ? img[1] : null;
 }
 
 const CATEGORIES: { name: string; kws: RegExp }[] = [
@@ -98,17 +103,57 @@ function categorize(title: string, summary: string, rawCat: string): string {
   return 'Geral';
 }
 
-async function fetchFeed(url: string, source: string): Promise<NewsItem[]> {
-  try {
-    const ac = new AbortController();
-    const t = setTimeout(() => ac.abort(), 8000);
-    const res = await fetch(url, {
-      signal: ac.signal,
+const MAX_FEED_BYTES = 1_500_000;
+const MAX_REDIRECTS = 3;
+
+async function readFeedText(response: Response): Promise<string> {
+  const contentLength = Number(response.headers.get('content-length') || 0);
+  if (contentLength > MAX_FEED_BYTES) throw new Error('Feed muito grande');
+  if (!response.body) return '';
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let total = 0;
+  let xml = '';
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    total += value.byteLength;
+    if (total > MAX_FEED_BYTES) {
+      await reader.cancel();
+      throw new Error('Feed muito grande');
+    }
+    xml += decoder.decode(value, { stream: true });
+  }
+  return xml + decoder.decode();
+}
+
+async function fetchPublicFeed(rawUrl: string, signal: AbortSignal): Promise<Response> {
+  if (!isSafePublicUrl(rawUrl)) throw new Error('Feed bloqueado');
+  let currentUrl = rawUrl;
+  for (let attempt = 0; attempt <= MAX_REDIRECTS; attempt += 1) {
+    const response = await fetch(currentUrl, {
+      signal,
+      redirect: 'manual',
       headers: { 'User-Agent': 'Mozilla/5.0 DecodeNewsBot/1.0', Accept: 'application/rss+xml, application/xml, text/xml, */*' },
     });
-    clearTimeout(t);
+    if (![301, 302, 303, 307, 308].includes(response.status)) return response;
+    const location = response.headers.get('location');
+    if (!location) throw new Error('Redirecionamento sem destino');
+    const nextUrl = new URL(location, currentUrl).toString();
+    if (!isSafePublicUrl(nextUrl)) throw new Error('Redirecionamento bloqueado');
+    currentUrl = nextUrl;
+  }
+  throw new Error('Muitos redirecionamentos');
+}
+
+async function fetchFeed(url: string, source: string): Promise<NewsItem[]> {
+  if (!isSafePublicUrl(url)) return [];
+  const ac = new AbortController();
+  const t = setTimeout(() => ac.abort(), 8000);
+  try {
+    const res = await fetchPublicFeed(url, ac.signal);
     if (!res.ok) return [];
-    const xml = await res.text();
+    const xml = await readFeedText(res);
     const items: NewsItem[] = [];
     const isAtom = /<feed[\s>]/i.test(xml);
     const blocks = xml.match(isAtom ? /<entry[\s>][\s\S]*?<\/entry>/gi : /<item[\s>][\s\S]*?<\/item>/gi) || [];
@@ -120,7 +165,7 @@ async function fetchFeed(url: string, source: string): Promise<NewsItem[]> {
       const pubRaw = pick(block, 'pubDate') || pick(block, 'published') || pick(block, 'updated') || pick(block, 'dc:date');
       const publishedAt = pubRaw ? new Date(pubRaw).toISOString() : new Date().toISOString();
       const rawCat = stripHtml(pick(block, 'category'));
-      if (!title || !link) continue;
+      if (!title || !link || !isSafePublicUrl(link)) continue;
       items.push({
         id: link,
         title,
@@ -135,6 +180,8 @@ async function fetchFeed(url: string, source: string): Promise<NewsItem[]> {
     return items;
   } catch {
     return [];
+  } finally {
+    clearTimeout(t);
   }
 }
 
@@ -157,9 +204,10 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=300' },
     });
   } catch (e) {
-    return new Response(JSON.stringify({ items: [], errors: ['fatal'], message: String(e) }), {
-      status: 200,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    console.error('tech-news failed', e);
+    return new Response(JSON.stringify({ items: [], errors: ['fatal'] }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
     });
   }
 });

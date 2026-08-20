@@ -3,8 +3,8 @@ import { getCorsHeaders } from "../_shared/cors.ts";
 
 const RA_RE = /^[A-Z0-9]{6,13}$/;
 const GENERIC_FAIL = "RA ou senha incorretos.";
-const SPECIAL_USER = "Juliana";
-const SPECIAL_PASS = "Ju@2026";
+const SPECIAL_USER = Deno.env.get("SPECIAL_USER_NAME")?.trim() || "Juliana";
+const SPECIAL_PASS = Deno.env.get("SPECIAL_USER_PASSWORD") || "";
 
 const json = (body: unknown, status = 200, headers = {}) =>
   new Response(JSON.stringify(body), {
@@ -65,7 +65,7 @@ Deno.serve(async (req) => {
   }
 
   // Check for the special user Juliana
-  if ((rawRa === SPECIAL_USER || ra === SPECIAL_USER.toUpperCase()) && mode === "signin") {
+  if (SPECIAL_PASS && (rawRa === SPECIAL_USER || ra === SPECIAL_USER.toUpperCase()) && mode === "signin") {
     if (password === SPECIAL_PASS) {
       const julianaEmail = "juliana@decode.local";
       
@@ -169,8 +169,9 @@ Deno.serve(async (req) => {
     }
 
     if (mode === "reset") {
+      const safeRedirectTo = getAllowedRedirect(redirectTo);
       const { error } = await admin.auth.resetPasswordForEmail(resolvedEmail, {
-        redirectTo: redirectTo && /^https?:\/\//.test(redirectTo) ? redirectTo : undefined,
+        redirectTo: safeRedirectTo || undefined,
       });
       return json({ ok: true }, 200, corsHeaders);
     }
@@ -269,6 +270,24 @@ Deno.serve(async (req) => {
     return json({ error: "Erro inesperado. Tente novamente." }, 500, corsHeaders);
   }
 });
+
+function getAllowedRedirect(raw: string): string | null {
+  if (!raw) return null;
+  try {
+    const url = new URL(raw);
+    const allowedHosts = new Set([
+      "decodeanalyticsacademy.lovable.app",
+      "decodeanalyticsacademy.vercel.app",
+      "localhost",
+      "127.0.0.1",
+    ]);
+    if (!allowedHosts.has(url.hostname)) return null;
+    if (url.protocol !== "https:" && !["localhost", "127.0.0.1"].includes(url.hostname)) return null;
+    return url.toString();
+  } catch {
+    return null;
+  }
+}
 
 async function recordLoginAttempt(admin: any, ra: string, ip: string, success: boolean) {
   try {

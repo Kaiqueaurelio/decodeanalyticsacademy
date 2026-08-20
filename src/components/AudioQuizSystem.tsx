@@ -30,9 +30,7 @@ interface Question {
   points: number;
   options: any[];
   match_options?: any[];
-  correct_answer?: any;
   image_url?: string;
-  explanation?: string;
 }
 
 interface Quiz {

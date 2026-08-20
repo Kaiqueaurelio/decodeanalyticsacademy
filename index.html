@@ -5,10 +5,10 @@
     <script>
       // DECODE ANALYTICS - HARD KILL-SWITCH DE CACHE & SERVICE WORKERS
       (function() {
-        var FORCE_VERSION = '2026.08.18.v5-final';
+        var FORCE_VERSION = '__DECODE_BUILD_VERSION__';
         if (localStorage.getItem('decode_hard_version') !== FORCE_VERSION) {
           console.warn('[HardKillSwitch] Versão desatualizada detectada. Limpando caches e service workers...');
-          localStorage.clear();
+          // A invalidação de assets não deve apagar sessão, preferências ou progresso local.
           localStorage.setItem('decode_hard_version', FORCE_VERSION);
           
           if ('navigator' in window && 'serviceWorker' in navigator) {

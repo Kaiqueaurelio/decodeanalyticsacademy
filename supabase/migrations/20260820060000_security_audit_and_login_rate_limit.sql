@@ -138,8 +138,10 @@ GRANT EXECUTE ON FUNCTION public.exercise_answer_access_context(uuid) TO authent
 
 -- Rebuild both answer-returning RPCs so permission checks happen before any
 -- sensitive field is read or returned, and every access is auditable.
--- The previous migration already defined this signature as jsonb; keep that
--- return type so CREATE OR REPLACE remains valid in PostgreSQL.
+-- The previous migration used the legacy json return type, so drop the
+-- signature before recreating it with the stable jsonb contract consumed by
+-- the current frontend.
+DROP FUNCTION IF EXISTS public.check_exercise_answer(uuid, text);
 CREATE OR REPLACE FUNCTION public.check_exercise_answer(
   _exercise_id uuid,
   _selected_answer text
@@ -174,10 +176,10 @@ BEGIN
     RAISE EXCEPTION '%', COALESCE(v_ctx.denial_reason, 'Access denied');
   END IF;
 
-  SELECT e.correct_answer, e.explanation
+  SELECT ea.correct_answer, ea.explanation
   INTO v_correct_answer, v_explanation
-  FROM public.exercises e
-  WHERE e.id = _exercise_id;
+  FROM public.exercise_answers ea
+  WHERE ea.exercise_id = _exercise_id;
 
   IF NOT FOUND OR v_correct_answer IS NULL THEN
     RAISE EXCEPTION 'Exercise answer not found';
@@ -249,10 +251,10 @@ BEGIN
   ) INTO v_answered;
 
   IF COALESCE(v_ctx.is_admin, false) OR v_answered OR v_type = 'essay' THEN
-    SELECT e.explanation, e.reference_answer
+    SELECT ea.explanation, ea.reference_answer
     INTO v_explanation, v_reference_answer
-    FROM public.exercises e
-    WHERE e.id = _exercise_id;
+    FROM public.exercise_answers ea
+    WHERE ea.exercise_id = _exercise_id;
     v_returned_fields := ARRAY['explanation', 'reference_answer'];
   END IF;
 

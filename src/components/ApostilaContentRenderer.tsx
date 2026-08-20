@@ -735,7 +735,7 @@ function AudioQuizBlock({ aulaId, quizId }: { aulaId: string; quizId: string }) 
     queryFn: async () => {
       const { data: quiz, error: quizError } = await supabase
         .from('quizzes')
-        .select('*')
+        .select('id, title, min_score_percent')
         .eq('id', quizId)
         .single();
       

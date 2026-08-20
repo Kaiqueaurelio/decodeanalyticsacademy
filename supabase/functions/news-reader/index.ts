@@ -47,6 +47,53 @@ interface ReaderResult {
 const cache = new Map<string, { at: number; data: ReaderResult }>();
 const CACHE_MS = 60 * 60 * 1000;
 
+const MAX_HTML_BYTES = 2_000_000;
+const MAX_REDIRECTS = 3;
+
+async function readTextWithLimit(response: Response): Promise<string> {
+  if (response.headers.get('content-length') && Number(response.headers.get('content-length')) > MAX_HTML_BYTES) {
+    throw new Error('Resposta muito grande');
+  }
+  if (!response.body) return '';
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let total = 0;
+  let text = '';
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    total += value.byteLength;
+    if (total > MAX_HTML_BYTES) {
+      await reader.cancel();
+      throw new Error('Resposta muito grande');
+    }
+    text += decoder.decode(value, { stream: true });
+  }
+  return text + decoder.decode();
+}
+
+async function fetchPublicHtml(rawUrl: string, signal: AbortSignal): Promise<Response> {
+  let currentUrl = rawUrl;
+  for (let attempt = 0; attempt <= MAX_REDIRECTS; attempt += 1) {
+    const response = await fetch(currentUrl, {
+      signal,
+      redirect: 'manual',
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; DecodeNewsBot/1.0) AppleWebKit/537.36',
+        Accept: 'text/html,application/xhtml+xml',
+        'Accept-Language': 'pt-BR,pt;q=0.9,en;q=0.6',
+      },
+    });
+    if (![301, 302, 303, 307, 308].includes(response.status)) return response;
+    const location = response.headers.get('location');
+    if (!location) throw new Error('Redirecionamento sem destino');
+    const nextUrl = new URL(location, currentUrl).toString();
+    if (!isSafePublicUrl(nextUrl)) throw new Error('Redirecionamento bloqueado');
+    currentUrl = nextUrl;
+  }
+  throw new Error('Muitos redirecionamentos');
+}
+
 function decodeEntities(s: string): string {
   return s
     .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1')
@@ -129,12 +176,12 @@ function cleanContent(html: string): string {
 function absolutize(html: string, base: string): string {
   try {
     const baseUrl = new URL(base);
-    return html.replace(/(src|href)=["']([^"']+)["']/gi, (m, attr, url) => {
+    return html.replace(/(src|href)=["']([^"']+)["']/gi, (_match, attr, rawUrl) => {
       try {
-        if (/^(https?:|data:|mailto:)/i.test(url)) return m;
-        return `${attr}="${new URL(url, baseUrl).toString()}"`;
+        const resolved = new URL(rawUrl, baseUrl).toString();
+        return isSafePublicUrl(resolved) ? `${attr}="${resolved}"` : '';
       } catch {
-        return m;
+        return '';
       }
     });
   } catch {
@@ -154,18 +201,10 @@ async function readArticle(url: string): Promise<ReaderResult> {
   try {
     const ac = new AbortController();
     const t = setTimeout(() => ac.abort(), 10000);
-    const res = await fetch(url, {
-      signal: ac.signal,
-      redirect: 'follow',
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; DecodeNewsBot/1.0) AppleWebKit/537.36',
-        Accept: 'text/html,application/xhtml+xml',
-        'Accept-Language': 'pt-BR,pt;q=0.9,en;q=0.6',
-      },
-    });
+    const res = await fetchPublicHtml(url, ac.signal);
     clearTimeout(t);
     if (!res.ok) return { ...empty, error: `HTTP ${res.status}` };
-    const html = await res.text();
+    const html = await readTextWithLimit(res);
 
     const title =
       metaContent(html, 'og:title') || metaContent(html, 'twitter:title') ||
@@ -229,11 +268,12 @@ Deno.serve(async (req) => {
     }
     const result = await readArticle(url);
     return new Response(JSON.stringify(result), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=1800' },
+      headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 'private, no-store' },
     });
   } catch (e) {
-    return new Response(JSON.stringify({ ok: false, error: String(e) }), {
-      status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    console.error('news-reader failed', e);
+    return new Response(JSON.stringify({ ok: false, error: 'Não foi possível ler este conteúdo.' }), {
+      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
     });
   }
 });

@@ -931,7 +931,7 @@ export function AdsChatBuilder() {
           </div>
         )}
 
-        <Button variant="outline" className="mt-4 gap-2" onClick={() => window.open('https://decodeanalyticsacademydev.vercel.app', '_blank')}>
+        <Button variant="outline" className="mt-4 gap-2" onClick={() => window.open('https://decodeanalyticsacademydev.vercel.app', '_blank', 'noopener,noreferrer')}>
           <ExternalLink className="h-4 w-4" /> Abrir app publicado
         </Button>
       </aside>

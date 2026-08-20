@@ -103,19 +103,35 @@ export function ApostilaValidationDashboard() {
   const [alerts, setAlerts] = useState<ValidationAlert[]>([]);
   const [operations, setOperations] = useState<OperationLog[]>([]);
   const [loading, setLoading] = useState(true);
+  const [dataUnavailable, setDataUnavailable] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [filter, setFilter] = useState('');
 
   const loadDashboard = async () => {
     setLoading(true);
+    setLoadError(null);
     const { data, error } = await (supabase.rpc as any)('get_apostila_validation_dashboard', { _limit: 100 });
 
     if (error) {
-      toast.error('Não foi possível carregar o diagnóstico server-side. A migração ainda pode estar pendente.');
+      const message = error.message || 'Falha desconhecida ao carregar o diagnóstico.';
+      const migrationPending = /schema cache|does not exist|not found|could not find/i.test(message);
+      setDataUnavailable(true);
+      setLoadError(migrationPending
+        ? 'A migração de diagnóstico ainda não foi aplicada neste ambiente.'
+        : 'O serviço de diagnóstico está temporariamente indisponível.');
+      setSummary({ total_runs: 0, last_run_at: null, open_alerts: 0, open_errors: 0, apostilas_with_open_alerts: 0 });
+      setRuns([]);
+      setAlerts([]);
+      setOperations([]);
+      toast.error(migrationPending
+        ? 'Diagnóstico indisponível: aplique a migração de cronologia no Supabase.'
+        : 'Não foi possível carregar o diagnóstico server-side.');
       setLoading(false);
       return;
     }
 
     const payload = data || {};
+    setDataUnavailable(false);
     setSummary(payload.summary || {
       total_runs: 0,
       last_run_at: null,
@@ -185,12 +201,23 @@ export function ApostilaValidationDashboard() {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
+          {dataUnavailable && (
+            <div role="alert" className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-200">
+              <div className="flex items-start gap-2">
+                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" />
+                <div>
+                  <p className="font-semibold">Dados server-side indisponíveis</p>
+                  <p className="mt-1 text-amber-100/80">{loadError || 'O diagnóstico não pôde ser consultado.'} Os indicadores abaixo não significam que não existam alertas; aplique a migração antes de usar esta tela como evidência de integridade.</p>
+                </div>
+              </div>
+            </div>
+          )}
           <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
-            <MetricCard label="Validações" value={summary.total_runs} icon={<Activity className="h-4 w-4" />} />
-            <MetricCard label="Alertas abertos" value={summary.open_alerts} tone={summary.open_alerts ? 'warning' : 'ok'} icon={<AlertTriangle className="h-4 w-4" />} />
-            <MetricCard label="Erros críticos" value={summary.open_errors} tone={summary.open_errors ? 'error' : 'ok'} icon={<ShieldAlert className="h-4 w-4" />} />
-            <MetricCard label="Apostilas afetadas" value={summary.apostilas_with_open_alerts} tone={summary.apostilas_with_open_alerts ? 'warning' : 'ok'} icon={<BookOpen className="h-4 w-4" />} />
-            <MetricCard label="Última execução" value={formatDate(summary.last_run_at)} compact icon={<Clock3 className="h-4 w-4" />} />
+            <MetricCard label="Validações" value={dataUnavailable ? '—' : summary.total_runs} icon={<Activity className="h-4 w-4" />} />
+            <MetricCard label="Alertas abertos" value={dataUnavailable ? '—' : summary.open_alerts} tone={dataUnavailable ? 'warning' : summary.open_alerts ? 'warning' : 'ok'} icon={<AlertTriangle className="h-4 w-4" />} />
+            <MetricCard label="Erros críticos" value={dataUnavailable ? '—' : summary.open_errors} tone={dataUnavailable ? 'warning' : summary.open_errors ? 'error' : 'ok'} icon={<ShieldAlert className="h-4 w-4" />} />
+            <MetricCard label="Apostilas afetadas" value={dataUnavailable ? '—' : summary.apostilas_with_open_alerts} tone={dataUnavailable ? 'warning' : summary.apostilas_with_open_alerts ? 'warning' : 'ok'} icon={<BookOpen className="h-4 w-4" />} />
+            <MetricCard label="Última execução" value={dataUnavailable ? 'Não disponível' : formatDate(summary.last_run_at)} compact icon={<Clock3 className="h-4 w-4" />} />
           </div>
 
           <div className="relative">
@@ -243,8 +270,8 @@ export function ApostilaValidationDashboard() {
                 ))}
                 {filteredAlerts.length === 0 && (
                   <div className="flex flex-col items-center justify-center py-14 text-muted-foreground">
-                    <CheckCircle2 className="mb-2 h-10 w-10 text-emerald-500/60" />
-                    <p>Nenhum alerta aberto para os filtros atuais.</p>
+                    {dataUnavailable ? <AlertTriangle className="mb-2 h-10 w-10 text-amber-500/70" /> : <CheckCircle2 className="mb-2 h-10 w-10 text-emerald-500/60" />}
+                    <p>{dataUnavailable ? 'Alertas não consultáveis até a aplicação da migração.' : 'Nenhum alerta aberto para os filtros atuais.'}</p>
                   </div>
                 )}
               </div>
@@ -277,7 +304,7 @@ export function ApostilaValidationDashboard() {
                     <pre className="mt-2 max-h-24 overflow-auto rounded bg-black/20 p-2 text-[9px] text-muted-foreground">{JSON.stringify(run.evidence || {}, null, 2)}</pre>
                   </div>
                 ))}
-                {runs.length === 0 && <p className="py-14 text-center text-sm text-muted-foreground">Nenhuma validação registrada.</p>}
+                {runs.length === 0 && <p className="py-14 text-center text-sm text-muted-foreground">{dataUnavailable ? 'Validações não consultáveis até a aplicação da migração.' : 'Nenhuma validação registrada.'}</p>}
               </div>
             </ScrollArea>
           </CardContent>
@@ -311,7 +338,7 @@ export function ApostilaValidationDashboard() {
                   <pre className="mt-2 max-h-20 overflow-auto rounded bg-black/20 p-2 text-[9px] text-muted-foreground">{JSON.stringify(operation.metadata || {}, null, 2)}</pre>
                 </div>
               ))}
-              {filteredOperations.length === 0 && <p className="py-14 text-center text-sm text-muted-foreground">Nenhuma operação registrada para os filtros atuais.</p>}
+              {filteredOperations.length === 0 && <p className="py-14 text-center text-sm text-muted-foreground">{dataUnavailable ? 'Logs não consultáveis até a aplicação da migração.' : 'Nenhuma operação registrada para os filtros atuais.'}</p>}
             </div>
           </ScrollArea>
         </CardContent>

@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
 import { AdMediaPreview } from '@/components/AdMediaPreview';
 import { AdImageLightbox, AdZoomButton } from '@/components/AdImageLightbox';
+import { getSafeNavigationUrl, openSafeExternalUrl } from '@/lib/safe-navigation';
 
 // Rotas publicas onde o popup nunca deve aparecer (bloqueia login/landing)
 const PUBLIC_ROUTES = ['/', '/login', '/reset-password', '/termos', '/anuncie', '/patrocine'];
@@ -99,8 +100,7 @@ export function AdPopup({ trigger = 'onLoad', delay = 2000 }: AdPopupProps) {
 
   const handleClick = () => {
     if (currentAd) {
-      recordAdClick(currentAd.id);
-      if (currentAd.link_url) window.open(currentAd.link_url, '_blank');
+      if (openSafeExternalUrl(currentAd.link_url)) recordAdClick(currentAd.id);
     }
     setIsVisible(false);
   };
@@ -109,7 +109,8 @@ export function AdPopup({ trigger = 'onLoad', delay = 2000 }: AdPopupProps) {
     setIsVisible(false);
   };
 
-  const hasLink = Boolean(currentAd?.link_url);
+  const safeLink = getSafeNavigationUrl(currentAd?.link_url);
+  const hasLink = Boolean(safeLink);
   const isTextOnly = Boolean(currentAd) && !currentAd?.image_url;
 
   return (

@@ -35,7 +35,8 @@ Deno.serve(async (req) => {
     const offset = clampInt(url.searchParams.get("offset"), 0, 0, 10_000);
 
 
-    // Anúncios são visíveis para todos: logados ou não, em qualquer escopo de conteúdo.
+    // A função é pública por compatibilidade com a superfície de anúncios; o payload
+    // abaixo contém apenas campos de exibição e nunca contadores ou metadados internos.
     const admin = createClient(SUPABASE_URL, SERVICE_ROLE);
 
 
@@ -45,7 +46,7 @@ Deno.serve(async (req) => {
     let query = admin
       .from("ads")
       .select(
-        "id, title, description, image_url, link_url, ad_type, position, display_duration, view_count, click_count, start_date, end_date, target_pages",
+        "id, title, description, image_url, link_url, ad_type, position, display_duration, start_date, end_date, target_pages",
       )
       .eq("is_active", true)
       .or(`start_date.is.null,start_date.lte.${nowIso}`)

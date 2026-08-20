@@ -23,32 +23,23 @@ export function BiometricLockGate({ children }: { children: React.ReactNode }) {
     return isBiometricEnabled() && sessionStorage.getItem(STORAGE_KEY) !== 'unlocked';
   });
 
-  // Decide o lock SOMENTE depois do bootstrap do auth terminar.
-  // Isso evita o "lock fantasma" no PC quando a sessão ainda está hidratando.
+  // Decide o lock somente depois do bootstrap do auth terminar.
+  // Sessões não autenticadas nunca ficam presas no gate biométrico.
   useEffect(() => {
     if (!isSessionHydrated || status === 'loading') return;
-    
-    // DESATIVADO: A biometria está causando logouts falsos no PC após reloads.
-    // Forçamos o desbloqueio para estabilizar a plataforma.
-    setLocked(false);
-    sessionStorage.setItem(STORAGE_KEY, 'unlocked');
 
-    /*
-    if (!isBiometricEnabled()) {
+    if (!user || !isBiometricEnabled()) {
+      sessionStorage.removeItem(STORAGE_KEY);
       setLocked(false);
       return;
     }
-    if (user) {
-      sessionStorage.setItem(STORAGE_KEY, 'unlocked');
-      setLocked(false);
-    }
-    */
+
+    setLocked(sessionStorage.getItem(STORAGE_KEY) !== 'unlocked');
   }, [isSessionHydrated, status, user]);
 
-  // DESATIVADO: A trava de inatividade estava causando frustração no PC.
-  /*
+  // Bloqueia novamente a sessão biométrica após um período prolongado fora da aba.
   useEffect(() => {
-    if (!isBiometricEnabled()) return;
+    if (!isSessionHydrated || !user || !isBiometricEnabled()) return;
     let hiddenAt: number | null = null;
 
     const onVisibility = () => {
@@ -65,16 +56,14 @@ export function BiometricLockGate({ children }: { children: React.ReactNode }) {
 
     document.addEventListener('visibilitychange', onVisibility);
     return () => document.removeEventListener('visibilitychange', onVisibility);
-  }, []);
-  */
+  }, [isSessionHydrated, user]);
 
   const handleUnlock = () => {
     sessionStorage.setItem(STORAGE_KEY, 'unlocked');
     setLocked(false);
   };
 
-  // Nunca travamos o app via biometria por enquanto para estabilizar a plataforma.
-  if (false && locked && isBiometricEnabled()) {
+  if (user && locked && isBiometricEnabled()) {
     return <AppLock onUnlock={handleUnlock} />;
   }
 

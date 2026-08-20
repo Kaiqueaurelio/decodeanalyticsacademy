@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { ExternalLink } from 'lucide-react';
 import { useAds } from '@/hooks/useAds';
 import { AdMediaPreview } from '@/components/AdMediaPreview';
+import { openSafeExternalUrl } from '@/lib/safe-navigation';
 
 const HIDDEN_ROUTES = ['/', '/login', '/reset-password'];
 const APP_CONTENT_PREFIXES = [
@@ -44,8 +45,8 @@ export function PersistentAdSpot() {
   if (shouldHide || !current) return null;
 
   const openAd = () => {
+    if (!openSafeExternalUrl(current.link_url)) return;
     recordAdClick(current.id);
-    if (current.link_url) window.open(current.link_url, '_blank', 'noopener,noreferrer');
   };
 
   return (

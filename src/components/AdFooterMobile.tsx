@@ -5,6 +5,7 @@ import { X, ExternalLink } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 import { AdMediaPreview } from '@/components/AdMediaPreview';
 import { AdImageLightbox } from '@/components/AdImageLightbox';
+import { getSafeNavigationUrl, openSafeExternalUrl } from '@/lib/safe-navigation';
 
 /**
  * Barra fina de anuncio fixa no rodape (apenas mobile).
@@ -40,7 +41,8 @@ export function AdFooterMobile() {
 
   if (shouldHide || dismissed || !current) return null;
 
-  const hasLink = Boolean(current.link_url);
+  const safeLink = getSafeNavigationUrl(current.link_url);
+  const hasLink = Boolean(safeLink);
 
   return (
     <AnimatePresence>
@@ -72,7 +74,7 @@ export function AdFooterMobile() {
             type="button"
             onClick={() => {
               recordAdClick(current.id);
-              if (hasLink) window.open(current.link_url, '_blank', 'noopener,noreferrer');
+              if (hasLink) openSafeExternalUrl(current.link_url);
             }}
             disabled={!hasLink}
             className="flex-1 min-w-0 text-left disabled:cursor-default"
@@ -87,7 +89,7 @@ export function AdFooterMobile() {
           </button>
           {hasLink && (
             <a
-              href={current.link_url}
+              href={safeLink || '#'}
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => recordAdClick(current.id)}

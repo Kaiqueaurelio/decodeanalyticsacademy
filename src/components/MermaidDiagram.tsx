@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import mermaid from 'mermaid';
+import DOMPurify from 'dompurify';
 import { useSafeMode } from '@/hooks/useSafeMode';
 
 let initialized = false;
@@ -8,7 +9,9 @@ function ensureInit() {
   mermaid.initialize({
     startOnLoad: false,
     theme: 'dark',
-    securityLevel: 'loose',
+    securityLevel: 'strict',
+    flowchart: { htmlLabels: false },
+    sequence: { useMaxWidth: true, wrap: true },
     themeVariables: {
       primaryColor: '#a855f7',
       primaryTextColor: '#fafafa',
@@ -41,7 +44,12 @@ export function MermaidDiagram({ chart, className }: Props) {
       try {
         const { svg } = await mermaid.render(id, chart);
         if (cancelled || !ref.current) return;
-        ref.current.innerHTML = svg;
+        const safeSvg = DOMPurify.sanitize(svg, {
+          USE_PROFILES: { svg: true, svgFilters: true },
+          FORBID_TAGS: ['script', 'foreignObject'],
+          FORBID_ATTR: ['onload', 'onclick', 'onerror', 'onmouseover', 'onfocus'],
+        });
+        ref.current.innerHTML = safeSvg;
         setError(null);
       } catch (e) {
         if (cancelled) return;

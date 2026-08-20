@@ -5,6 +5,7 @@ import { X, ExternalLink, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { AppImage } from '@/components/ui/app-image';
 import { AdImageLightbox, AdZoomButton } from '@/components/AdImageLightbox';
+import { getSafeNavigationUrl, openSafeExternalUrl } from '@/lib/safe-navigation';
 
 interface AdBannerProps {
   position?: 'top' | 'bottom' | 'inline';
@@ -27,12 +28,13 @@ export function AdBanner({ position = 'inline', className = '' }: AdBannerProps)
 
   if (loading || ads.length === 0 || dismissed) return null;
 
-  const hasLink = Boolean(currentAd?.link_url);
+  const safeLink = getSafeNavigationUrl(currentAd?.link_url);
+  const hasLink = Boolean(safeLink);
 
   const handleClick = () => {
     if (currentAd) {
       recordAdClick(currentAd.id);
-      if (currentAd.link_url) window.open(currentAd.link_url, '_blank', 'noopener,noreferrer');
+      openSafeExternalUrl(currentAd.link_url);
     }
   };
 

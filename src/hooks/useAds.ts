@@ -14,8 +14,8 @@ export interface Ad {
   ad_type: 'banner' | 'popup' | 'inline' | 'sidebar' | 'footer' | 'sponsor';
   position: number;
   display_duration: number;
-  view_count: number;
-  click_count: number;
+  view_count?: number;
+  click_count?: number;
 }
 
 const viewedInSession = new Set<string>();
@@ -122,7 +122,7 @@ export function useAds(adType?: 'banner' | 'popup' | 'inline' | 'sidebar' | 'foo
         if (!isAbortLikeError(error)) console.warn('list-ads indisponível, usando fallback RLS:', error);
         const { data: rows, error: fbErr } = await supabase
           .from('ads')
-          .select('*')
+          .select('id,title,description,image_url,link_url,ad_type,position,display_duration,start_date,end_date,target_pages')
           .eq('is_active', true)
           .order('position', { ascending: true });
         if (fbErr) throw fbErr;

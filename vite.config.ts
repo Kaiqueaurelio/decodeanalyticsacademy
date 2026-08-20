@@ -5,7 +5,10 @@ import { componentTagger } from "lovable-tagger";
 import { VitePWA } from "vite-plugin-pwa";
 import { mcpPlugin } from "@lovable.dev/mcp-js/stacks/supabase/vite";
 
-export default defineConfig(({ mode }) => ({
+export default defineConfig(({ mode }) => {
+  const buildVersion = process.env.VERCEL_GIT_COMMIT_SHA || process.env.COMMIT_SHA || process.env.VITE_BUILD_VERSION || `local-${Date.now()}`;
+
+  return {
   server: {
     host: true,
     allowedHosts: [".manus.computer"],
@@ -17,6 +20,12 @@ export default defineConfig(({ mode }) => ({
     },
   },
   plugins: [
+    {
+      name: 'decode-build-version',
+      transformIndexHtml(html) {
+        return html.replaceAll('__DECODE_BUILD_VERSION__', buildVersion);
+      },
+    },
     react(),
     mcpPlugin(),
     mode === "development" && componentTagger(),
@@ -84,7 +93,7 @@ export default defineConfig(({ mode }) => ({
   define: {
     __APP_BUILD_TIME__: JSON.stringify(new Date().toISOString()),
     __APP_COMMIT__: JSON.stringify(
-      process.env.VERCEL_GIT_COMMIT_SHA || process.env.COMMIT_SHA || "local",
+      buildVersion,
     ),
     __APP_COMMIT_MESSAGE__: JSON.stringify(
       process.env.VERCEL_GIT_COMMIT_MESSAGE || "",
@@ -98,4 +107,5 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-}));
+  };
+});

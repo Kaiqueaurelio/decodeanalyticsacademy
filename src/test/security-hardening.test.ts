@@ -1,0 +1,145 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { getSafeNavigationUrl } from '@/lib/safe-navigation';
+
+function source(relativePath: string) {
+  return readFileSync(resolve(process.cwd(), relativePath), 'utf8');
+}
+
+describe('security hardening regression guards', () => {
+  it('keeps the one-off login maintenance endpoint closed by default', () => {
+    const code = source('supabase/functions/fix-user-login/index.ts');
+
+    expect(code).toContain("requireUser(req, corsHeaders, { requireAdmin: true })");
+    expect(code).toContain("Deno.env.get(\"ENABLE_FIX_USER_LOGIN\") !== \"true\"");
+    expect(code).toContain("status: 410");
+  });
+
+  it('keeps admin user creation behind the shared admin guard and scoped CORS', () => {
+    const code = source('supabase/functions/admin-create-user/index.ts');
+
+    expect(code).toContain("const corsHeaders = getCorsHeaders(req)");
+    expect(code).toContain("requireUser(req, corsHeaders, { requireAdmin: true })");
+    expect(code).not.toContain("getCorsHeaders(req), 'Content-Type'");
+    expect(code).toContain("Não foi possível criar a conta.");
+  });
+
+  it('keeps answer RPCs on the separated answer table and the jsonb contract', () => {
+    const sql = source('supabase/migrations/20260820060000_security_audit_and_login_rate_limit.sql');
+
+    expect(sql).toContain('DROP FUNCTION IF EXISTS public.check_exercise_answer(uuid, text);');
+    expect(sql).toContain('RETURNS jsonb');
+    expect(sql).toContain('FROM public.exercise_answers ea');
+    expect(sql).not.toContain('SELECT e.correct_answer');
+    expect(sql).not.toContain('SELECT e.explanation');
+    expect(sql).not.toContain('SELECT e.reference_answer');
+  });
+
+  it('does not expose ad audience counters in public ad payloads or fallback queries', () => {
+    const edge = source('supabase/functions/list-ads/index.ts');
+    const hook = source('src/hooks/useAds.ts');
+
+    expect(edge).not.toContain('view_count, click_count');
+    expect(hook).not.toContain(".select('*')");
+    expect(hook).toContain('id,title,description,image_url,link_url,ad_type,position,display_duration');
+  });
+
+  it('routes dynamic ad links through the shared safe-navigation helper', () => {
+    const popup = source('src/components/AdPopup.tsx');
+    const banner = source('src/components/AdBanner.tsx');
+    const sidebar = source('src/components/AdSidebar.tsx');
+    const footer = source('src/components/AdFooterMobile.tsx');
+    const persistent = source('src/components/PersistentAdSpot.tsx');
+
+    for (const code of [popup, banner, sidebar, footer, persistent]) {
+      expect(code).toContain('openSafeExternalUrl');
+      expect(code).not.toContain("window.open(currentAd.link_url, '_blank', 'noopener,noreferrer')");
+      expect(code).not.toContain("window.open(current.link_url, '_blank', 'noopener,noreferrer')");
+    }
+  });
+
+  it('rejects unsafe navigation schemes before they reach a browser sink', () => {
+    expect(getSafeNavigationUrl('javascript:alert(1)')).toBeNull();
+    expect(getSafeNavigationUrl('data:text/html,<script>alert(1)</script>')).toBeNull();
+    expect(getSafeNavigationUrl('ftp://example.com/file')).toBeNull();
+    expect(getSafeNavigationUrl('https://example.com/path')).toBe('https://example.com/path');
+  });
+
+  it('keeps Mermaid in strict mode and sanitizes generated SVG', () => {
+    const mermaid = source('src/components/MermaidDiagram.tsx');
+    expect(mermaid).toContain("securityLevel: 'strict'");
+    expect(mermaid).toContain("DOMPurify.sanitize(svg");
+    expect(mermaid).toContain("FORBID_TAGS: ['script', 'foreignObject']");
+    expect(mermaid).not.toContain("securityLevel: 'loose'");
+  });
+
+  it('does not bypass an enabled biometric lock', () => {
+    const gate = source('src/components/BiometricLockGate.tsx');
+    expect(gate).toContain('if (user && locked && isBiometricEnabled())');
+    expect(gate).not.toContain('if (false && locked');
+    expect(gate).not.toContain("sessionStorage.setItem(STORAGE_KEY, 'unlocked');\n\n    /*");
+  });
+
+  it('keeps cache invalidation aligned to the build without deleting user storage', () => {
+    const html = source('index.html');
+    const cacheBuster = source('src/lib/cacheBuster.ts');
+    const vite = source('vite.config.ts');
+
+    expect(html).not.toContain('localStorage.clear()');
+    expect(cacheBuster).toContain('const CURRENT_VERSION = __APP_COMMIT__;');
+    expect(vite).toContain('buildVersion,');
+  });
+
+  it('protects every admin external-app link opened in a new tab', () => {
+    const builder = source('src/components/AdsChatBuilder.tsx');
+    expect(builder).toContain("window.open('https://decodeanalyticsacademydev.vercel.app', '_blank', 'noopener,noreferrer')");
+  });
+
+  it('hardens the public technology news feed fetcher', () => {
+    const techNews = source('supabase/functions/tech-news/index.ts');
+    expect(techNews).toContain("import { isSafePublicUrl } from '../_shared/ssrf.ts';");
+    expect(techNews).toContain("redirect: 'manual'");
+    expect(techNews).toContain('MAX_FEED_BYTES');
+    expect(techNews).toContain('isSafePublicUrl(link)');
+    expect(techNews).not.toContain("redirect: 'follow'");
+    expect(techNews).not.toContain('message: String(e)');
+  });
+
+  it('hardens admin content extraction from remote pages', () => {
+    const extractor = source('supabase/functions/extract-content/index.ts');
+    expect(extractor).toContain('fetchSafePublicPage');
+    expect(extractor).toContain('MAX_REMOTE_BYTES');
+    expect(extractor).toContain("redirect: 'manual'");
+    expect(extractor).toContain("status: 413");
+    expect(extractor).not.toContain('return url.includes("notion.site")');
+  });
+
+  it('hardens admin RSS validation', () => {
+    const validator = source('supabase/functions/validate-rss/index.ts');
+    expect(validator).toContain("import { isSafePublicUrl } from '../_shared/ssrf.ts';");
+    expect(validator).toContain("redirect: 'manual'");
+    expect(validator).toContain('MAX_XML_BYTES');
+    expect(validator).toContain('.slice(0, 20)');
+    expect(validator).not.toContain("redirect: 'follow'");
+    expect(validator).not.toContain('error: String(e)');
+  });
+
+  it('keeps remote article fetching bounded and private', () => {
+    const reader = source('supabase/functions/news-reader/index.ts');
+    expect(reader).toContain("redirect: 'manual'");
+    expect(reader).toContain('MAX_HTML_BYTES');
+    expect(reader).toContain('MAX_REDIRECTS');
+    expect(reader).toContain("Cache-Control': 'private, no-store'");
+    expect(reader).not.toContain("redirect: 'follow'");
+    expect(reader).not.toContain("status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' }");
+  });
+
+  it('keeps audio quiz answers behind the safe question RPC', () => {
+    const sql = source('supabase/migrations/20260820160000_quiz_question_surface_hardening.sql');
+    expect(sql).toContain('REVOKE SELECT ON public.quiz_questions FROM anon, authenticated;');
+    expect(sql).toContain('CREATE FUNCTION public.get_quiz_questions(_quiz_id uuid)');
+    expect(sql).not.toContain('qq.correct_answer');
+    expect(sql).not.toContain('qq.explanation');
+    expect(sql).toContain('GRANT EXECUTE ON FUNCTION public.get_quiz_questions(uuid) TO authenticated;');
+  });
+});

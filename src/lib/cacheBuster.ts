@@ -3,7 +3,7 @@
  * Garante que o navegador nunca fique preso em versões antigas (rollbacks de cache).
  */
 
-const CURRENT_VERSION = '2026.08.18.v4';
+const CURRENT_VERSION = __APP_COMMIT__;
 
 export async function checkAndCleanOldCaches() {
   try {

@@ -3,30 +3,7 @@
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { requireUser } from '../_shared/auth-guard.ts';
-
-function isSafePublicUrl(raw: string): boolean {
-  let u: URL;
-  try { u = new URL(raw); } catch { return false; }
-  if (u.protocol !== 'http:' && u.protocol !== 'https:') return false;
-  const host = u.hostname.toLowerCase();
-  if (!host || host === 'localhost' || host.endsWith('.localhost') || host.endsWith('.internal')) return false;
-  if (host.endsWith('.local') || host.endsWith('.home.arpa') || host === 'metadata.google.internal') return false;
-  if (host.startsWith('[') || host.includes(':')) return false;
-  if (/^(0x[0-9a-f]+|\d+)$/i.test(host)) return false;
-  if (/^0\d/.test(host)) return false;
-  const m = host.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
-  if (m) {
-    const [a, b] = [parseInt(m[1], 10), parseInt(m[2], 10)];
-    if (a === 10 || a === 127 || a === 0) return false;
-    if (a === 169 && b === 254) return false;
-    if (a === 172 && b >= 16 && b <= 31) return false;
-    if (a === 192 && (b === 168 || b === 0)) return false;
-    if (a === 100 && b >= 64 && b <= 127) return false;
-    if (a === 198 && (b === 18 || b === 19)) return false;
-    if (a >= 224) return false;
-  }
-  return true;
-}
+import { isSafePublicUrl } from '../_shared/ssrf.ts';
 
 
 interface ValidateResult {
@@ -43,24 +20,62 @@ function pick(block: string, tag: string): string {
   return m ? m[1].trim() : '';
 }
 
-async function validate(url: string): Promise<ValidateResult> {
-  if (!isSafePublicUrl(url)) return { ok: false, itemCount: 0, source: null, error: 'URL inválida', statusCode: 0, responseTime: 0 };
-  try {
-    const ac = new AbortController();
-    const t = setTimeout(() => ac.abort(), 7000);
-    const startTime = Date.now();
-    const res = await fetch(url, {
-      signal: ac.signal,
-      redirect: 'follow',
+const MAX_XML_BYTES = 1_500_000;
+const MAX_REDIRECTS = 3;
+
+async function readXmlWithLimit(response: Response): Promise<string> {
+  const contentLength = Number(response.headers.get('content-length') || 0);
+  if (contentLength > MAX_XML_BYTES) throw new Error('Feed muito grande');
+  if (!response.body) return '';
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let total = 0;
+  let xml = '';
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    total += value.byteLength;
+    if (total > MAX_XML_BYTES) {
+      await reader.cancel();
+      throw new Error('Feed muito grande');
+    }
+    xml += decoder.decode(value, { stream: true });
+  }
+  return xml + decoder.decode();
+}
+
+async function fetchPublicFeed(rawUrl: string, signal: AbortSignal): Promise<Response> {
+  if (!isSafePublicUrl(rawUrl)) throw new Error('URL inválida');
+  let currentUrl = rawUrl;
+  for (let attempt = 0; attempt <= MAX_REDIRECTS; attempt += 1) {
+    const response = await fetch(currentUrl, {
+      signal,
+      redirect: 'manual',
       headers: {
         'User-Agent': 'Mozilla/5.0 DecodeNewsBot/1.0',
         Accept: 'application/rss+xml, application/atom+xml, application/xml, text/xml, */*',
       },
     });
+    if (![301, 302, 303, 307, 308].includes(response.status)) return response;
+    const location = response.headers.get('location');
+    if (!location) throw new Error('Redirecionamento sem destino');
+    const nextUrl = new URL(location, currentUrl).toString();
+    if (!isSafePublicUrl(nextUrl)) throw new Error('Redirecionamento bloqueado');
+    currentUrl = nextUrl;
+  }
+  throw new Error('Muitos redirecionamentos');
+}
+
+async function validate(url: string): Promise<ValidateResult> {
+  if (!isSafePublicUrl(url)) return { ok: false, itemCount: 0, source: null, error: 'URL inválida', statusCode: 0, responseTime: 0 };
+  const ac = new AbortController();
+  const t = setTimeout(() => ac.abort(), 7000);
+  try {
+    const startTime = Date.now();
+    const res = await fetchPublicFeed(url, ac.signal);
     const responseTime = Date.now() - startTime;
-    clearTimeout(t);
     if (!res.ok) return { ok: false, itemCount: 0, source: null, error: `HTTP ${res.status}`, statusCode: res.status, responseTime };
-    const xml = await res.text();
+    const xml = await readXmlWithLimit(res);
     if (!xml || xml.length < 40) return { ok: false, itemCount: 0, source: null, error: 'Resposta vazia', statusCode: 200, responseTime };
     if (!/<(rss|feed|channel)\b/i.test(xml)) {
       return { ok: false, itemCount: 0, source: null, error: 'Conteúdo não é RSS/Atom', statusCode: 200, responseTime };
@@ -75,7 +90,9 @@ async function validate(url: string): Promise<ValidateResult> {
   } catch (e) {
     const msg = String(e?.message || e);
     if (/aborted/i.test(msg)) return { ok: false, itemCount: 0, source: null, error: 'Timeout ao acessar o feed', responseTime: 7000 };
-    return { ok: false, itemCount: 0, source: null, error: 'Falha de rede' };
+    return { ok: false, itemCount: 0, source: null, error: /muito grande/i.test(msg) ? 'Feed muito grande' : 'Falha de rede' };
+  } finally {
+    clearTimeout(t);
   }
 }
 
@@ -96,8 +113,10 @@ Deno.serve(async (req) => {
     if (req.method === 'POST') {
       const body = await req.json().catch(() => ({}));
       url = typeof body.url === 'string' ? body.url : null;
-      urls = Array.isArray(body.urls) ? body.urls : null;
-      feedId = typeof body.feedId === 'string' ? body.feedId : null;
+      urls = Array.isArray(body.urls)
+        ? body.urls.filter((item: unknown): item is string => typeof item === 'string').slice(0, 20)
+        : null;
+      feedId = typeof body.feedId === 'string' && /^[0-9a-f-]{36}$/i.test(body.feedId) ? body.feedId : null;
     } else {
       url = new URL(req.url).searchParams.get('url');
     }
@@ -136,9 +155,10 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (e) {
-    return new Response(JSON.stringify({ ok: false, error: String(e) }), {
-      status: 200,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    console.error('validate-rss failed', e);
+    return new Response(JSON.stringify({ ok: false, error: 'Não foi possível validar o feed.' }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
     });
   }
 });

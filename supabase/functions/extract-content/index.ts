@@ -15,7 +15,51 @@ function isJsRenderedUrl(url: string): boolean {
 }
 
 function isNotionUrl(url: string): boolean {
-  return url.includes("notion.site") || url.includes("notion.so");
+  try {
+    const host = new URL(url).hostname.toLowerCase();
+    return host === 'notion.site' || host.endsWith('.notion.site') || host === 'notion.so' || host.endsWith('.notion.so');
+  } catch {
+    return false;
+  }
+}
+
+const MAX_REMOTE_BYTES = 2_000_000;
+const MAX_REDIRECTS = 3;
+
+async function readTextWithLimit(response: Response): Promise<string> {
+  const contentLength = Number(response.headers.get('content-length') || 0);
+  if (contentLength > MAX_REMOTE_BYTES) throw new Error('Resposta remota muito grande');
+  if (!response.body) return '';
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let total = 0;
+  let text = '';
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    total += value.byteLength;
+    if (total > MAX_REMOTE_BYTES) {
+      await reader.cancel();
+      throw new Error('Resposta remota muito grande');
+    }
+    text += decoder.decode(value, { stream: true });
+  }
+  return text + decoder.decode();
+}
+
+async function fetchSafePublicPage(url: string, headers: Record<string, string>, signal: AbortSignal): Promise<Response> {
+  if (!isSafePublicUrl(url)) throw new Error('URL nao permitida');
+  let currentUrl = url;
+  for (let attempt = 0; attempt <= MAX_REDIRECTS; attempt += 1) {
+    const response = await fetch(currentUrl, { headers, signal, redirect: 'manual' });
+    if (![301, 302, 303, 307, 308].includes(response.status)) return response;
+    const location = response.headers.get('location');
+    if (!location) throw new Error('Redirecionamento sem destino');
+    const nextUrl = new URL(location, currentUrl).toString();
+    if (!isSafePublicUrl(nextUrl)) throw new Error('Redirecionamento bloqueado');
+    currentUrl = nextUrl;
+  }
+  throw new Error('Muitos redirecionamentos');
 }
 
 async function fetchViaFirecrawl(url: string): Promise<{ text: string; title: string }> {
@@ -42,12 +86,12 @@ async function fetchViaFirecrawl(url: string): Promise<{ text: string; title: st
     });
 
     if (!response.ok) {
-      const errText = await response.text();
+      const errText = (await readTextWithLimit(response)).slice(0, 300);
       console.error("Firecrawl error:", response.status, errText);
       return { text: "", title: "Sem titulo" };
     }
 
-    const data = await response.json();
+    const data = JSON.parse(await readTextWithLimit(response));
     const markdown = data.data?.markdown || data.markdown || "";
     const title = data.data?.metadata?.title || data.metadata?.title || "Sem titulo";
 
@@ -70,10 +114,12 @@ async function fetchNotionContent(url: string): Promise<{ text: string; title: s
   let textContent = "";
   let pageTitle = "Sem titulo";
 
+  const ac = new AbortController();
+  const timeout = setTimeout(() => ac.abort(), 10000);
   try {
-    const response = await fetch(url, { headers });
+    const response = await fetchSafePublicPage(url, headers, ac.signal);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const html = await response.text();
+    const html = await readTextWithLimit(response);
 
     const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
     const ogTitleMatch = html.match(/<meta[^>]*property="og:title"[^>]*content="([^"]+)"/i);
@@ -121,6 +167,8 @@ async function fetchNotionContent(url: string): Promise<{ text: string; title: s
     }
   } catch (err) {
     console.error("Notion fetch error:", err);
+  } finally {
+    clearTimeout(timeout);
   }
 
   // If content is sparse, try Firecrawl
@@ -139,17 +187,18 @@ async function fetchGenericContent(url: string): Promise<{ text: string; title: 
   let textContent = "";
   let pageTitle = "Sem titulo";
 
+  const headers = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "pt-BR,pt;q=0.9,en;q=0.8",
+  };
+  const ac = new AbortController();
+  const timeout = setTimeout(() => ac.abort(), 10000);
   try {
-    const response = await fetch(url, {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-        "Accept-Language": "pt-BR,pt;q=0.9,en;q=0.8",
-      },
-    });
+    const response = await fetchSafePublicPage(url, headers, ac.signal);
 
     if (response.ok) {
-      const html = await response.text();
+      const html = await readTextWithLimit(response);
       const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
       const h1Match = html.match(/<h1[^>]*>([^<]+)<\/h1>/i);
       const ogTitleMatch = html.match(/<meta[^>]*property="og:title"[^>]*content="([^"]+)"/i);
@@ -178,6 +227,8 @@ async function fetchGenericContent(url: string): Promise<{ text: string; title: 
     }
   } catch (fetchErr) {
     console.error("Fetch error:", fetchErr);
+  } finally {
+    clearTimeout(timeout);
   }
 
   // If content is sparse (JS-rendered page), try Firecrawl as fallback
@@ -272,6 +323,10 @@ serve(async (req) => {
   if (!auth.ok) return auth.response;
 
   try {
+    const contentLength = Number(req.headers.get('content-length') || 0);
+    if (contentLength > 500_000) {
+      return new Response(JSON.stringify({ error: 'Entrada muito grande.' }), { status: 413, headers: getCorsHeaders(req) });
+    }
     const body = await req.json();
     const { url, rawText } = body;
 
