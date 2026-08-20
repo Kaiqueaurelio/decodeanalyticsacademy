@@ -27,6 +27,18 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    version: "6.6.7",
+    date: "20/08/2026",
+    title: "Estabilidade & Auditoria Avançada",
+    changes: [
+      { kind: "improvement", text: "Auth: Fluxo de desbloqueio visual e persistência de auditoria para falhas de login" },
+      { kind: "feature", text: "Auditoria: Paginação, busca avançada por metadados e filtros expandidos no admin" },
+      { kind: "feature", text: "Relatórios: Exportação de desempenho em formato CSV (estudante e admin)" },
+      { kind: "security", text: "Integridade: Sistema Anti-Mistura v2 com detecção de inconsistência de datas em apostilas" },
+      { kind: "fix", text: "Workbench: Correção de race-conditions na sincronização de novas páginas" }
+    ]
+  },
+  {
     version: "6.6.6",
     date: "20/08/2026",
     title: "Auditoria Acadêmica & Relatórios de Desempenho",

@@ -19,6 +19,34 @@ export interface StudentPerformanceReport {
   }[];
 }
 
+export function generateCsvReport(data: StudentPerformanceReport) {
+  const headers = ['Questão', 'Tipo', 'Status', 'Resposta'];
+  const rows = data.details.map(d => [
+    `"${d.question.replace(/"/g, '""')}"`,
+    d.type === 'multiple_choice' ? 'Objetiva' : 'Dissertativa',
+    d.status.toUpperCase(),
+    `"${d.userAnswer.replace(/"/g, '""')}"`
+  ]);
+  
+  const csvContent = [
+    `Relatório de Desempenho: ${data.apostilaTitle}`,
+    `Aluno: ${data.studentName} (RA: ${data.studentRa || 'N/A'})`,
+    `Score: ${data.score}%`,
+    '',
+    headers.join(','),
+    ...rows.map(r => r.join(','))
+  ].join('\n');
+  
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.setAttribute('href', url);
+  link.setAttribute('download', `desempenho-${data.studentName.replace(/\s+/g, '-').toLowerCase()}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
 export async function generateStudentPerformancePdf(data: StudentPerformanceReport) {
   try {
     const doc = new jsPDF();
@@ -110,7 +138,7 @@ export async function generateStudentPerformancePdf(data: StudentPerformanceRepo
   }
 }
 
-export async function fetchAndGenerateApostilaReport(apostilaId: string, userId: string) {
+export async function fetchAndGenerateApostilaReport(apostilaId: string, userId: string, format: 'pdf' | 'csv' = 'pdf') {
   try {
     const [
       { data: profile },
@@ -143,7 +171,7 @@ export async function fetchAndGenerateApostilaReport(apostilaId: string, userId:
     const mcCorrect = details.filter(d => d.status === 'correct').length;
     const score = mcTotal > 0 ? Math.round((mcCorrect / mcTotal) * 100) : 100;
 
-    await generateStudentPerformancePdf({
+    const reportData = {
       studentName: profile.full_name || "Estudante",
       studentRa: profile.ra,
       apostilaTitle: apostila.title,
@@ -152,7 +180,13 @@ export async function fetchAndGenerateApostilaReport(apostilaId: string, userId:
       correctCount: mcCorrect,
       score,
       details
-    });
+    };
+
+    if (format === 'csv') {
+      generateCsvReport(reportData);
+    } else {
+      await generateStudentPerformancePdf(reportData);
+    }
 
   } catch (error) {
     console.error("Erro ao preparar relatório:", error);

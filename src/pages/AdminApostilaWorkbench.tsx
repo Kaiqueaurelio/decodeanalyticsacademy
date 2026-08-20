@@ -359,6 +359,20 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     if (!id || !dirtyRef.current) return;
     setSaving(true);
 
+    // Verificação automática de integridade de data (Anti-Mistura)
+    const datePattern = /(\d{2})\/(\d{2})\/(\d{4})/;
+    const titleDate = title.match(datePattern);
+    const contentDates = content.match(new RegExp(datePattern, 'g'));
+    
+    if (titleDate && contentDates) {
+      const foreignDates = contentDates.filter(d => d !== titleDate[0]);
+      if (foreignDates.length > 0) {
+        toast.warning(`Atenção: A página é datada de ${titleDate[0]}, mas o conteúdo cita ${foreignDates.join(', ')}. Verifique se não há mistura de aulas.`, {
+          duration: 6000
+        });
+      }
+    }
+
     if (selectedPageId) {
       // Se estamos em uma página, salvamos. O selectedPageId deve ser um UUID real.
       if (selectedPageId.startsWith('placeholder')) {
@@ -396,8 +410,6 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       setPages((current) => upsertApostilaPage(current, pageToDisplay));
 
       // O RLS do leitor só libera apostila_pages quando a apostila-pai está publicada.
-      // Ao salvar conteúdo real numa página, publique a apostila sem sobrescrever o
-      // conteúdo principal ou qualquer outro campo editável.
       if (content.trim().length > 0) {
         const { error: publishError } = await supabase
           .from('apostilas')
@@ -406,7 +418,6 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
 
         if (publishError) {
           console.error('Página salva, mas não foi possível publicar a apostila-pai:', publishError);
-          toast.warning('Página salva, mas a apostila ainda está oculta para alunos. Publique-a no botão de status.');
         } else {
           setPublished(true);
           setApostilas((current) => current.map((apostila) =>
