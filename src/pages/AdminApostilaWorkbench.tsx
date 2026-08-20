@@ -357,8 +357,9 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     if (initialLoadRef.current || !id) return;
     dirtyRef.current = true;
     const t = window.setTimeout(() => {
-      doSave();
+      void persistChanges();
     }, AUTOSAVE_MS);
+
     
     // Backup local com escopo
     const backupScope = selectedPageId || 'main';
@@ -1308,6 +1309,15 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         onConfirm={handleQuickAddSection}
         suggestedTitle={suggestedSectionTitle}
       />
+
+      <ApostilaSplitPreview
+        isOpen={splitPreviewOpen}
+        onClose={() => setSplitPreviewOpen(false)}
+        onConfirm={() => handleSplitByDate(undefined, true)}
+        loading={splitting}
+        previewData={splitPreviewData}
+      />
+
 
       {/* FAB Mobile Removido para evitar sobreposição */}
 
