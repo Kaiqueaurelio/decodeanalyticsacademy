@@ -223,6 +223,7 @@ export function ApostilaHealthBar({
           <Button 
             variant="outline" 
             size="sm" 
+            type="button"
             onClick={onAddPage}
             className="h-10 gap-2 px-4 text-[11px] font-black uppercase border-emerald-500/30 text-emerald-600 hover:bg-emerald-700 hover:text-white bg-emerald-500/5 transition-all group active:scale-95 animate-pulse hover:animate-none shadow-[0_0_15px_rgba(16,185,129,0.1)] hover:shadow-[0_0_20px_rgba(16,185,129,0.3)]"
             title="Adicionar página persistida (Ctrl+Shift+P)"

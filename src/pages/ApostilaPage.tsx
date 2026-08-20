@@ -119,6 +119,50 @@ function buildStructuredContent(tree: unknown, lessons: StructuredLessonRow[]): 
   return chunks.join('\n\n');
 }
 
+type ApostilaContentBlock = {
+  id: string;
+  title: string;
+  content: string;
+  isMain: boolean;
+  position: number;
+};
+
+function organizeApostilaSections(sections: Section[]) {
+  return sections.map((section, index) => {
+    const displayTitle = cleanText(stripInlineMarkup(section.title || '')).trim();
+    const contentPreview = (section.content || '')
+      .replace(/!\[[^\]]*\]\([^)]+\)/g, ' ')
+      .replace(/[`#>*_~\-]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    const hasContent = contentPreview.length >= 10;
+
+    let hasChildren = false;
+    for (let i = index + 1; i < sections.length; i++) {
+      if ((sections[i].level || 1) <= (section.level || 1)) break;
+      if (cleanText(stripInlineMarkup(sections[i].title || '')).trim().length >= 2) {
+        hasChildren = true;
+        break;
+      }
+    }
+
+    const previousTitle = index > 0 ? cleanText(stripInlineMarkup(sections[index - 1].title || '')).trim().toLowerCase() : '';
+    const currentTitle = displayTitle.toLowerCase();
+    const isRepeated = !!currentTitle && currentTitle === previousTitle;
+    const isPlaceholder = displayTitle.length < 2 || isRepeated || (!hasContent && !hasChildren);
+    const isGroupOnly = !isPlaceholder && !hasContent && hasChildren;
+
+    return {
+      ...section,
+      displayTitle,
+      hasContent,
+      hasChildren,
+      isPlaceholder,
+      isGroupOnly,
+    };
+  });
+}
+
 interface Props {
   tab?: string;
   setTab?: (tab: any) => void;
@@ -222,28 +266,46 @@ export default function ApostilaPage({ tab, setTab }: Props) {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const combinedContent = useMemo(() => {
+  const contentBlocks = useMemo<ApostilaContentBlock[]>(() => {
     const mainContent = isPlaceholderApostilaContent(apostila?.content)
       ? structuredContent
       : (apostila?.content || '');
     const mainKey = normalizeContentForComparison(mainContent);
     const distinctPages = mergeDistinctPages(extraPages).filter((page) => {
       const pageKey = normalizeContentForComparison(page.content || '');
-      // Placeholders técnicos não são conteúdo editorial e não devem aparecer
-      // como uma seção adicional no caderno do aluno.
       if (isPlaceholderPageContent(page.content || '')) return false;
-      // Conteúdo antigo pode existir simultaneamente em apostilas.content e
-      // apostila_pages. Não renderizamos a mesma página duas vezes.
       return Boolean(pageKey) && !(pageKey.length >= 120 && mainKey.includes(pageKey));
     });
-    const pagesContent = distinctPages
-      .map((page, index) => {
-        const title = stripInlineMarkup(page.title || '') || `Página ${index + 1}`;
-        return `\n\n# ${title}\n\n${page.content.trim()}`;
-      })
-      .join('\n');
-    return [mainContent.trim(), pagesContent].filter(Boolean).join('\n');
-  }, [apostila?.content, extraPages, structuredContent]);
+
+    return [
+      ...(mainContent.trim() ? [{
+        id: 'main',
+        title: apostila?.title || 'Página principal',
+        content: mainContent.trim(),
+        isMain: true,
+        position: -1,
+      }] : []),
+      ...distinctPages.map((page, index) => ({
+        id: page.id,
+        title: stripInlineMarkup(page.title || '') || `Página ${index + 1}`,
+        content: page.content.trim(),
+        isMain: false,
+        position: page.position,
+      })),
+    ];
+  }, [apostila?.content, apostila?.title, extraPages, structuredContent]);
+
+  // Mantemos um fluxo consolidado apenas para exportação, áudio e compatibilidade
+  // com o sumário; a renderização abaixo usa contentBlocks para separar as páginas.
+  const combinedContent = useMemo(() => contentBlocks
+    .map((block) => block.isMain ? block.content : `# ${block.title}\n\n${block.content}`)
+    .filter(Boolean)
+    .join('\n\n'), [contentBlocks]);
+
+  const organizedContentBlocks = useMemo(() => contentBlocks.map((block) => ({
+    ...block,
+    sections: organizeApostilaSections(parseContent(block.content || null)),
+  })), [contentBlocks]);
 
   const sections = useMemo(() => parseContent(combinedContent || null), [combinedContent]);
 
@@ -253,41 +315,7 @@ export default function ApostilaPage({ tab, setTab }: Props) {
    * - detecta títulos sem texto que servem apenas como agrupadores
    * - esconde seções sem conteúdo e sem subtópicos
    */
-  const organizedSections = useMemo(() => {
-    return sections.map((section, index) => {
-      const displayTitle = cleanText(stripInlineMarkup(section.title || '')).trim();
-      const contentPreview = (section.content || '')
-        .replace(/!\[[^\]]*\]\([^)]+\)/g, ' ')
-        .replace(/[`#>*_~\-]/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
-      const hasContent = contentPreview.length >= 10;
-
-      let hasChildren = false;
-      for (let i = index + 1; i < sections.length; i++) {
-        if ((sections[i].level || 1) <= (section.level || 1)) break;
-        if (cleanText(stripInlineMarkup(sections[i].title || '')).trim().length >= 2) {
-          hasChildren = true;
-          break;
-        }
-      }
-
-      const previousTitle = index > 0 ? cleanText(stripInlineMarkup(sections[index - 1].title || '')).trim().toLowerCase() : '';
-      const currentTitle = displayTitle.toLowerCase();
-      const isRepeated = !!currentTitle && currentTitle === previousTitle;
-      const isPlaceholder = displayTitle.length < 2 || isRepeated || (!hasContent && !hasChildren);
-      const isGroupOnly = !isPlaceholder && !hasContent && hasChildren;
-
-      return {
-        ...section,
-        displayTitle,
-        hasContent,
-        hasChildren,
-        isPlaceholder,
-        isGroupOnly,
-      };
-    });
-  }, [sections]);
+  const organizedSections = useMemo(() => organizeApostilaSections(sections), [sections]);
 
   /**
    * Sumário organizado: só mostra itens úteis e renumera sem buracos.
@@ -309,6 +337,49 @@ export default function ApostilaPage({ tab, setTab }: Props) {
     () => Object.fromEntries(tocItems.map((item) => [item.id, item.number])),
     [tocItems]
   );
+
+  const renderContentSection = (section: ReturnType<typeof organizeApostilaSections>[number], idx: number, pageId: string) => {
+    if (section.isPlaceholder) return null;
+
+    const sectionNumber = tocNumberById[section.id] || String(idx + 1);
+    const wordCount = (section.content || '').trim().split(/\s+/).filter(Boolean).length;
+    const readMin = Math.max(1, Math.round(wordCount / 200));
+
+    return (
+      <section
+        key={`${pageId}-${section.id}-${idx}`}
+        id={section.id}
+        data-section-id={section.id}
+        className="scroll-mt-24 animate-content-show"
+        style={{ animationDelay: `${300 + idx * 80}ms` }}
+      >
+        {section.level === 1 && (
+          <header className={section.isGroupOnly ? 'mb-4' : 'mb-5'}>
+            <div className="font-mono-label text-[10px] uppercase tracking-[0.22em] text-primary/80 mb-1.5">
+              Seção {sectionNumber}{section.hasContent && wordCount > 50 && <span className="text-muted-foreground/70"> · {readMin} min de leitura</span>}
+            </div>
+            <h2 className="font-display text-[22px] sm:text-[26px] leading-[1.25] tracking-tight text-foreground mb-2.5">
+              {section.displayTitle}
+            </h2>
+            <div className={`h-[2px] rounded-full ${section.isGroupOnly ? 'w-16 bg-border/70' : 'w-10 bg-primary/80'}`} />
+          </header>
+        )}
+        {section.level === 2 && (
+          <h3 className={`font-display text-[17px] sm:text-[18px] font-semibold mt-1 ${section.isGroupOnly ? 'mb-2 text-foreground/90' : 'mb-3 text-foreground border-b border-border/40 pb-1.5'}`}>
+            {section.displayTitle}
+          </h3>
+        )}
+        {section.level === 3 && (
+          <h4 className={`font-display text-[15px] font-semibold mt-1 ${section.isGroupOnly ? 'mb-1.5 text-foreground/80' : 'mb-2 text-primary/90'}`}>
+            {section.displayTitle}
+          </h4>
+        )}
+        {section.hasContent && (
+          <ApostilaContentBoundary content={section.content} />
+        )}
+      </section>
+    );
+  };
 
   const handleExportPdf = useCallback(async () => {
     if (!apostila) return;
@@ -875,48 +946,31 @@ export default function ApostilaPage({ tab, setTab }: Props) {
                   ) : null
                 )}
 
-                {user && organizedSections.map((section, idx) => {
-                  if (section.isPlaceholder) return null;
-
-                  const sectionNumber = tocNumberById[section.id] || String(idx + 1);
-                  const wordCount = (section.content || '').trim().split(/\s+/).filter(Boolean).length;
-                  const readMin = Math.max(1, Math.round(wordCount / 200));
-
-                  return (
-                    <section
-                      key={section.id}
-                      id={section.id}
-                      data-section-id={section.id}
-                      className="scroll-mt-24 animate-content-show"
-                      style={{ animationDelay: `${300 + idx * 80}ms` }}
-                    >
-                      {section.level === 1 && (
-                        <header className={section.isGroupOnly ? 'mb-4' : 'mb-5'}>
-                          <div className="font-mono-label text-[10px] uppercase tracking-[0.22em] text-primary/80 mb-1.5">
-                            Seção {sectionNumber}{section.hasContent && wordCount > 50 && <span className="text-muted-foreground/70"> · {readMin} min de leitura</span>}
-                          </div>
-                          <h2 className="font-display text-[22px] sm:text-[26px] leading-[1.25] tracking-tight text-foreground mb-2.5">
-                            {section.displayTitle}
-                          </h2>
-                          <div className={`h-[2px] rounded-full ${section.isGroupOnly ? 'w-16 bg-border/70' : 'w-10 bg-primary/80'}`} />
-                        </header>
+                {user && organizedContentBlocks.map((block, blockIndex) => (
+                  <article
+                    key={block.id}
+                    id={`apostila-page-${block.id}`}
+                    data-apostila-page-id={block.id}
+                    className="scroll-mt-24 rounded-3xl border border-border/60 bg-card/70 p-5 sm:p-8 shadow-sm space-y-8"
+                  >
+                    <header className="flex flex-col gap-2 border-b border-border/50 pb-5">
+                      <div className="font-mono-label text-[10px] uppercase tracking-[0.22em] text-primary/80">
+                        {block.isMain ? 'Página principal' : `Página ${blockIndex} · conteúdo salvo`}
+                      </div>
+                      <h2 className="font-display text-xl sm:text-2xl tracking-tight text-foreground">
+                        {block.title}
+                      </h2>
+                      {!block.isMain && (
+                        <p className="text-xs text-muted-foreground">
+                          Esta página é independente do conteúdo principal e de outras datas desta disciplina.
+                        </p>
                       )}
-                      {section.level === 2 && (
-                        <h3 className={`font-display text-[17px] sm:text-[18px] font-semibold mt-1 ${section.isGroupOnly ? 'mb-2 text-foreground/90' : 'mb-3 text-foreground border-b border-border/40 pb-1.5'}`}>
-                          {section.displayTitle}
-                        </h3>
-                      )}
-                      {section.level === 3 && (
-                        <h4 className={`font-display text-[15px] font-semibold mt-1 ${section.isGroupOnly ? 'mb-1.5 text-foreground/80' : 'mb-2 text-primary/90'}`}>
-                          {section.displayTitle}
-                        </h4>
-                      )}
-                      {section.hasContent && (
-                        <ApostilaContentBoundary content={section.content} />
-                      )}
-                    </section>
-                  );
-                })}
+                    </header>
+                    <div className="space-y-10">
+                      {block.sections.map((section, idx) => renderContentSection(section, idx, block.id))}
+                    </div>
+                  </article>
+                ))}
               </div>
 
               {/* Banner de Anúncios */}

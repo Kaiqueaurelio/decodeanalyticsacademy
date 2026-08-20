@@ -122,3 +122,38 @@ Validação local: TypeScript, build de produção, 63 testes automatizados e `g
 Na versão local corrigida, autenticada com a sessão de teste, o botão `+ PÁGINA` criou o registro `9cad0f21-06fe-4a43-a10e-b030f1272470`, navegou para `?page=9cad0f21-06fe-4a43-a10e-b030f1272470&expanded=1` e abriu o editor com o título `Nova Página — 20/08/2026`, conteúdo vazio e 0 palavras. O toast confirmou: `Nova página criada. Você já está editando a página nova.`
 
 Após a comprovação, o registro vazio criado exclusivamente para o teste foi removido. A apostila ficou com uma única página real persistida: `Parte 2 — Continuação (19/08/2026)`, com 41.990 caracteres. A página principal permanece no campo principal da apostila.
+
+
+## Auditoria publicada — nova página
+
+A rota pública autenticada `https://decodeanalyticsacademy.lovable.app/admin/apostilas/b132f212-5ede-4522-92d3-b0ead2cd8ce2` carregou o Workbench da apostila de Pesquisa Operacional com o botão `+ PÁGINA` e o conteúdo de 19/08. Esta evidência foi comparada com a versão local corrigida; a publicação continua sendo tratada separadamente do checkout até a confirmação do SHA servido pelo deployment.
+
+
+## Reprodução no deployment publicado — causa confirmada
+
+Em `https://decodeanalyticsacademy.lovable.app/admin/apostilas/b132f212-5ede-4522-92d3-b0ead2cd8ce2`, o clique real no botão visível `+ PÁGINA` abriu o modal `Nova Seção`, com o texto `Adicione um novo título dentro do conteúdo Markdown desta apostila` e campos de seção. A URL não mudou e nenhum `?page=<novo-id>` foi criado. Isso confirma que o deployment publicado ainda serve a implementação antiga, enquanto o checkout local já contém a implementação corrigida do commit `28fc8750`.
+
+
+## Comparação dos chunks publicados
+
+A análise dos chunks JavaScript carregados confirmou: `AdminApostilaWorkbench-BIpX5f3B.js` ainda contém `Nova Seção` e `open-quick-add-section`, mas não contém o toast da implementação nova; `NewApostilaPageButton-D_-MUiDJ.js` contém `apostila_pages`, porém é um componente separado usado no dashboard e não substitui o callback antigo que o Workbench publicado ainda usa. A causa do comportamento em produção é, portanto, deployment/publicação desatualizada do Workbench, além do atalho `Ctrl+Shift+P` ainda apontar para seção interna no checkout.
+
+## Auditoria profunda do fluxo de criação — 20/08/2026
+
+A publicação Lovable ainda servia o Workbench antigo: o botão `+ PÁGINA` abria `Nova Seção`, confirmando que o deployment publicado não continha o commit persistido. No checkout corrigido, a porta 4173 estava ocupada por um servidor antigo; a validação correta foi feita na porta 4175.
+
+Foi encontrado e corrigido um erro adicional introduzido na primeira refatoração: `createPersistedPageRef.current = handleCreatePersistedPage` estava antes da declaração do handler, causando `Cannot access 'Ge' before initialization` no bundle. A atribuição foi movida para depois do handler.
+
+Na versão local recompilada e autenticada, o clique em `+ PÁGINA` criou o ID `2f1df076-a55f-4af8-8f74-a71a6872ed02`, mudou a URL para `?page=2f1df076-a55f-4af8-8f74-a71a6872ed02&expanded=1`, mostrou `Nova página criada` e abriu um editor com 0 palavras. A lista exibiu separadamente `Página principal`, `Parte 2 — Continuação (19/08/2026)` e `Nova Página — 20/08/2026`. A busca por `Programação linear` não encontrou texto na nova página, confirmando que o conteúdo dos outros dias não foi carregado nela.
+
+O primeiro teste na porta 4173 não representa o código atual: essa porta já estava ocupada pelo processo 9029 e servia o bundle antigo, enquanto o Vite corrigido subiu em 4175.
+
+
+## Auditoria profunda do fluxo de criação — validação final
+
+Na versão local recompilada em `http://localhost:4175`, o botão `+ PÁGINA` criou o registro `17b22df1-a514-491d-9994-143704b5e8a2` e navegou para `?page=17b22df1-a514-491d-9994-143704b5e8a2&expanded=1`. A nova página abriu com 0 palavras. A inspeção controlada do DOM confirmou `hasMainText=false` e `hasContinuationText=false`.
+
+A consulta autenticada dos registros temporários encontrou somente dois IDs criados durante os testes: `17b22df1-a514-491d-9994-143704b5e8a2`, vazio, e `2f1df076-a55f-4af8-8f74-a71a6872ed02`, contendo apenas `ISOLAMENTO_TESTE_2026_PAGE_NEW`. Ambos devem ser removidos após a validação. As páginas reais da apostila permanecem preservadas.
+
+
+A limpeza pós-teste foi concluída com sucesso: os registros `17b22df1-a514-491d-9994-143704b5e8a2` e `2f1df076-a55f-4af8-8f74-a71a6872ed02` foram removidos; ambos haviam sido criados exclusivamente para validar criação, navegação e isolamento. A página principal e a página real `Parte 2 — Continuação (19/08/2026)` não foram alteradas.

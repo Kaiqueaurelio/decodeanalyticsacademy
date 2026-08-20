@@ -139,6 +139,8 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
   const dirtyRef = useRef(false);
   const initialLoadRef = useRef(true);
   const loadRequestRef = useRef(0);
+  const saveInFlightRef = useRef<Promise<void> | null>(null);
+  const createPersistedPageRef = useRef<() => Promise<void>>(() => Promise.resolve());
 
   // Filter logic for sidebar
   const filteredApostilas = useMemo(() => {
@@ -204,17 +206,35 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       return;
     }
 
-    // Verificar backup local antes de carregar do banco
-    const backupKey = `apostila_backup_${apostilaId}`;
+    // Backups são isolados por escopo: a apostila principal nunca reutiliza o
+    // backup de uma página filha, e uma página filha nunca reutiliza outra.
+    const backupScope = selectedPageId || 'main';
+    const backupKey = `apostila_backup_${apostilaId}_${backupScope}`;
     const localBackupRaw = localStorage.getItem(backupKey);
-    let localBackup = null;
+    let localBackup: { title?: string; category?: string; content?: string; semester?: number | null; course?: CourseCode[]; timestamp?: string; scope?: string } | null = null;
     try {
       if (localBackupRaw) localBackup = JSON.parse(localBackupRaw);
     } catch (e) {
       console.error('Erro ao ler backup local:', e);
     }
 
-    if (localBackup && ap && new Date(localBackup.timestamp) > new Date(ap.updated_at)) {
+    const applyMainState = (source: { title?: string; category?: string; content?: string; semester?: number | null; course?: CourseCode[] }) => {
+      setTitle(source.title || '');
+      setCategory(source.category || '');
+      setContent(source.content || '');
+      setSemester(source.semester ?? null);
+      setCourse(source.course ?? []);
+    };
+
+    const mainState = {
+      title: ap.title || '',
+      category: ap.category || '',
+      content: ap.content || (ap as any).content_backup || '',
+      semester: (ap as any).semester ?? null,
+      course: ((ap as any).course as CourseCode[] | null) ?? [],
+    };
+
+    if (!selectedPageId && localBackup?.scope === 'main' && localBackup.timestamp && new Date(localBackup.timestamp) > new Date(ap.updated_at)) {
       toast.info('Recuperamos uma versão não salva localmente.', {
         description: `Última alteração local em ${new Date(localBackup.timestamp).toLocaleTimeString()}`,
         action: {
@@ -222,18 +242,9 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
           onClick: () => localStorage.removeItem(backupKey)
         }
       });
-      setTitle(localBackup.title || '');
-      setCategory(localBackup.category || '');
-      setContent(localBackup.content || '');
-      setSemester(localBackup.semester ?? null);
-      setCourse(localBackup.course ?? []);
+      applyMainState(localBackup);
     } else {
-      setTitle(ap.title || '');
-      setCategory(ap.category || '');
-      const restoredContent = ap.content || (ap as any).content_backup || '';
-      setContent(restoredContent);
-      setSemester((ap as any).semester ?? null);
-      setCourse(((ap as any).course as CourseCode[] | null) ?? []);
+      applyMainState(mainState);
     }
 
     setPublished(!!ap.published);
@@ -246,18 +257,38 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     const loadedPages = (pageRows || []) as ApostilaPage[];
     setPages(loadedPages);
     
-    // Se temos um selectedPageId, carregamos o conteúdo dele.
-    // IMPORTANTE: Se o selectedPageId for um ID de página que acabamos de criar,
-    // ele deve estar na lista carregada.
-    const selectedPage = loadedPages.find((page) => page.id === selectedPageId);
+    // Uma página filha só é selecionada quando o registro retornado pertence à
+    // apostila atual. Não apagamos o parâmetro silenciosamente: isso fazia uma
+    // criação bem-sucedida parecer que continuava na página anterior.
+    const selectedPage = loadedPages.find((page) => page.id === selectedPageId && page.apostila_id === apostilaId);
     if (selectedPage) {
+      const pageScope = selectedPage.id;
+      const pageBackupKey = `apostila_backup_${apostilaId}_${pageScope}`;
+      const pageBackupRaw = localStorage.getItem(pageBackupKey);
+      let pageBackup: { title?: string; content?: string; timestamp?: string; scope?: string } | null = null;
+      try {
+        if (pageBackupRaw) pageBackup = JSON.parse(pageBackupRaw);
+      } catch (e) {
+        console.error('Erro ao ler backup local da página:', e);
+      }
+
       setContent(selectedPage.content || '');
-      setTitle(selectedPage.title || ''); 
+      setTitle(selectedPage.title || '');
+      if (pageBackup?.scope === pageScope && pageBackup.timestamp && new Date(pageBackup.timestamp) > new Date(selectedPage.updated_at)) {
+        toast.info('Recuperamos uma edição não salva desta página.', {
+          description: `Última alteração local em ${new Date(pageBackup.timestamp).toLocaleTimeString()}`,
+          action: { label: 'Descartar', onClick: () => localStorage.removeItem(pageBackupKey) }
+        });
+        setContent(pageBackup.content || '');
+        setTitle(pageBackup.title || selectedPage.title || '');
+      }
     } else if (selectedPageId) {
-       // Se o ID da página não foi encontrado (ex: cache ou reload no placeholder), 
-       // limpamos o parâmetro para evitar confusão visual.
-       const newUrl = window.location.pathname;
-       window.history.replaceState({}, '', newUrl);
+      toast.error('A nova página ainda não foi sincronizada. Tentando carregar novamente.');
+      setLoading(false);
+      window.setTimeout(() => {
+        if (loadRequestRef.current === requestId) void loadApostila(apostilaId);
+      }, 300);
+      return;
     }
 
     if (links && links.length) {
@@ -287,33 +318,12 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
 
   useEffect(() => {
     const handleKeyAdd = () => {
-      // Tenta sugerir um número baseado no conteúdo atual
-      // Regex para encontrar headings H1 style que começam com números (ex: "# 1.1 Introdução")
-      const matches = content.match(/^#\s+(\d+(?:\.\d+)*)/gm);
-      let suggested = '';
-      if (matches && matches.length > 0) {
-        const lastHeading = matches[matches.length - 1];
-        const lastNumStr = lastHeading.replace(/^#\s+/, '');
-        const parts = lastNumStr.split('.');
-        
-        if (parts.length > 0) {
-          const lastPart = parseInt(parts[parts.length - 1]);
-          if (!isNaN(lastPart)) {
-            parts[parts.length - 1] = (lastPart + 1).toString();
-            suggested = parts.join('.');
-          }
-        }
-      } else {
-        suggested = '1.1';
-      }
-      
-      setSuggestedSectionTitle(suggested);
-      setAddSectionOpen(true);
+      void createPersistedPageRef.current();
     };
-    
+
     window.addEventListener('open-quick-add-section' as any, handleKeyAdd);
     return () => window.removeEventListener('open-quick-add-section' as any, handleKeyAdd);
-  }, [content]);
+  }, []);
 
   // Global toggle for components
   useEffect(() => {
@@ -329,9 +339,11 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       doSave();
     }, AUTOSAVE_MS);
     
-    // Backup local em caso de falha no mobile
-    const backupKey = `apostila_backup_${id}`;
+    // Backup local com escopo: nunca reutilize a edição de uma página em outra.
+    const backupScope = selectedPageId || 'main';
+    const backupKey = `apostila_backup_${id}_${backupScope}`;
     localStorage.setItem(backupKey, JSON.stringify({
+      scope: backupScope,
       title,
       category,
       content,
@@ -343,7 +355,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     return () => window.clearTimeout(t);
   }, [title, category, content, semester, course]);
 
-  const doSave = async (isManual = false) => {
+  const persistChanges = async (isManual = false) => {
     if (!id || !dirtyRef.current) return;
     setSaving(true);
 
@@ -404,6 +416,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       }
 
       dirtyRef.current = false;
+      localStorage.removeItem(`apostila_backup_${id}_${selectedPageId}`);
       setLastSavedAt(new Date(savedAt));
       return;
     }
@@ -457,14 +470,31 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       return;
     }
     
-    // Limpar backup se salvou com sucesso
-    localStorage.removeItem(`apostila_backup_${id}`);
+          // Limpar apenas o backup da apostila principal. Backups de páginas filhas
+      // são removidos no ramo específico de página após o salvamento.
+      localStorage.removeItem(`apostila_backup_${id}_main`);
+
     dirtyRef.current = false;
     if (content.trim().length > 0) setPublished(true);
     setLastSavedAt(new Date());
     setApostilas((prev) =>
       prev.map((p) => (p.id === id ? { ...p, title: title.trim() || 'Sem título', category, semester, course: course.length ? course : null, updated_at: new Date().toISOString() } : p))
     );
+  };
+
+  const doSave = async (isManual = false) => {
+    if (saveInFlightRef.current) {
+      await saveInFlightRef.current;
+      if (!dirtyRef.current) return;
+    }
+
+    const savePromise = persistChanges(isManual);
+    saveInFlightRef.current = savePromise;
+    try {
+      await savePromise;
+    } finally {
+      if (saveInFlightRef.current === savePromise) saveInFlightRef.current = null;
+    }
   };
 
   const handleRestoreVersion = (version: { title: string; content: string }) => {
@@ -687,12 +717,11 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       toast.error('Faça login novamente para criar uma página.');
       return;
     }
-    if (saving) {
-      toast.info('Aguarde o salvamento atual terminar antes de criar outra página.');
-      return;
-    }
 
     try {
+      // Aguarda qualquer autosave já iniciado antes de trocar de página.
+      if (saveInFlightRef.current) await saveInFlightRef.current;
+
       // Não deixe alterações da página atual serem perdidas ao trocar para a nova.
       if (dirtyRef.current) {
         await doSave(true);
@@ -704,8 +733,14 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
 
       const newPage = await createApostilaPage(id, user.id);
       setPages((current) => upsertApostilaPage(current, newPage));
-      toast.success('Nova página criada. Você já está editando a página nova.');
+      // Atualiza o editor antes da navegação para que a troca seja imediata,
+      // mesmo se a leitura seguinte do banco tiver alguns milissegundos de atraso.
+      dirtyRef.current = false;
+      initialLoadRef.current = true;
+      setTitle(newPage.title || 'Nova Página');
+      setContent(newPage.content || '');
       navigate(`/admin/apostilas/${id}?page=${newPage.id}&expanded=1`);
+      toast.success('Nova página criada. Você já está editando a página nova.');
     } catch (error: any) {
       console.error('Erro ao criar página da apostila:', error);
       const message = String(error?.message || '');
@@ -718,6 +753,8 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       }
     }
   };
+
+  createPersistedPageRef.current = handleCreatePersistedPage;
 
   const stats = useMemo(() => {
     const words = content.trim() ? content.trim().split(/\s+/).length : 0;
