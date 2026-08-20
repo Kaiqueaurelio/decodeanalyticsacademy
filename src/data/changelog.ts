@@ -25,159 +25,47 @@ export interface Release {
   changes: Change[];
 }
 
+export function getBuildInfo() {
+  return {
+    version: CHANGELOG[0]?.version || "0.0.0",
+    environment: "production",
+    host: typeof window !== 'undefined' ? window.location.hostname : 'unknown',
+    buildTime: new Date().toISOString(),
+    commit: "main",
+    commitMessage: "Automated Build"
+  };
+}
+
 export const CHANGELOG: Release[] = [
   {
-    version: "6.6.9",
-    date: "20/08/2026",
-    title: "Comunicação de Integridade & Status Acadêmico",
-    changes: [
-      { kind: "feature", text: "Alertas de Status: Alunos agora visualizam selos 'Em Validação' ou 'Bloqueado' no Dashboard e no Leitor" },
-      { kind: "improvement", text: "UX Híbrida: Banner persistente no topo do leitor informa sobre manutenções de qualidade ou inconsistências detectadas" },
-      { kind: "security", text: "Bloqueio de Acesso: Apostilas marcadas como 'Bloqueada' pelo admin impedem a abertura por alunos, exibindo feedback claro" },
-      { kind: "content", text: "Mensagens de Auditoria: Notificações técnicas automáticas quando o sistema de auditoria detecta mistura de aulas" }
-    ]
-  },
-  {
     version: "6.6.8",
-
     date: "20/08/2026",
-    title: "Diagnóstico Acadêmico & Logs de Integridade",
+    title: "Diagnóstico Acadêmico & Estabilidade do Workbench",
     changes: [
-      { kind: "feature", text: "Novo Painel de Diagnóstico Acadêmico no Admin para visualização de inconsistências de datas" },
-      { kind: "improvement", text: "Workbench: Logs detalhados no console e no sistema de auditoria para criação de páginas e detecção de mistura de aulas" },
-      { kind: "security", text: "Alertas Preventivos: Notificações visuais e logs persistentes ao detectar datas divergentes entre título e conteúdo" },
-      { kind: "improvement", text: "Nav: Nova aba 'Diagnóstico Acadêmico' no menu de Sistema do Admin" }
+      { kind: "fix", text: "Corrigida falha de sincronização na criação de páginas do Workbench" },
+      { kind: "feature", text: "Novo painel de diagnóstico de integridade cronológica e auditoria acadêmica" },
+      { kind: "feature", text: "Implementada exportação de relatórios em CSV para alunos e admin" },
+      { kind: "improvement", text: "Sistema de logs detalhados para operações críticas no editor" }
     ]
   },
   {
     version: "6.6.7",
     date: "20/08/2026",
-    title: "Estabilidade & Auditoria Avançada",
+    title: "Auditoria Avançada & Sistema Anti-Mistura v2",
     changes: [
-      { kind: "improvement", text: "Auth: Fluxo de desbloqueio visual e persistência de auditoria para falhas de login" },
-      { kind: "feature", text: "Auditoria: Paginação, busca avançada por metadados e filtros expandidos no admin" },
-      { kind: "feature", text: "Relatórios: Exportação de desempenho em formato CSV (estudante e admin)" },
-      { kind: "security", text: "Integridade: Sistema Anti-Mistura v2 com detecção de inconsistência de datas em apostilas" },
-      { kind: "fix", text: "Workbench: Estabilização definitiva do botão '+ PÁGINA' com sincronização forçada de estado" },
-      { kind: "improvement", text: "Auditoria Técnica: Verificação 360º de fluxos de login, segurança de gabaritos e renderização mobile" }
+      { kind: "feature", text: "Implementada paginação e busca profunda no painel de auditoria" },
+      { kind: "improvement", text: "Adicionada exportação CSV e banner de integridade no leitor" },
+      { kind: "security", text: "Reforçada segurança de rate limiting com feedback visual" }
     ]
   },
-
   {
     version: "6.6.6",
     date: "20/08/2026",
-    title: "Auditoria Acadêmica & Relatórios de Desempenho",
-    major: true,
+    title: "Auditoria Acadêmica & Desempenho",
     changes: [
-      { kind: "feature", text: "Novo Painel de Auditoria Acadêmica no Admin com exportação PDF" },
-      { kind: "feature", text: "Relatórios de Desempenho em PDF para alunos ao finalizar exercícios" },
-      { kind: "security", text: "Rate limiting de 5 tentativas e bloqueio temporário de login" },
-      { kind: "security", text: "Logs de falha de login integrados à auditoria do sistema" },
-      { kind: "improvement", text: "Ordenação cronológica inteligente de aulas por data no título" },
-      { kind: "fix", text: "Estabilização da criação de páginas no Workbench Administrativo" }
+      { kind: "feature", text: "Criado painel de auditoria acadêmica no Admin" },
+      { kind: "feature", text: "Exportação de relatórios de desempenho em PDF" },
+      { kind: "security", text: "Implementado Rate Limiting para tentativas de login" }
     ]
-  },
-  {
-    version: "6.6.5",
-    date: "20/08/2026",
-    title: "Content Organization & Security Hardening",
-    changes: [
-      { kind: "security", text: "Implementação de logs de auditoria (audit_logs) para monitoramento de acessos sensíveis" },
-      { kind: "fix", text: "Correção na criação de novas páginas no Workbench Administrativo" },
-      { kind: "content", text: "Organização cronológica das aulas na apostila de Gestão de Projetos Operacionais" },
-      { kind: "security", text: "Hardening de segurança em ExercisesPage para auditoria de respostas" }
-    ]
-  },
-  {
-    version: "6.6.4",
-    date: "20/08/2026",
-    title: "Correção de Integridade de Conteúdo",
-    changes: [
-      { kind: "fix", text: "Resolução de duplicidade de páginas na apostila de Gestão de Projetos Operacionais" },
-      { kind: "improvement", text: "Otimização do algoritmo de merge de páginas no leitor de apostilas" }
-    ]
-  },
-  {
-    version: "6.6.3",
-    date: "19/08/2026",
-    title: "Estabilidade de Login Admin v2",
-    changes: [
-      { kind: "fix", text: "Correção de validação de e-mail na Edge Function ra-auth para acesso administrativo" },
-      { kind: "improvement", text: "Refinamento do roteamento de autenticação para decoanalytics e G802144" }
-    ]
-  },
-  {
-    version: "6.6.1",
-    date: "18/08/2026",
-    title: "Login Runaway & Acesso Restaurado",
-    changes: [
-      { kind: "fix", text: "Estabilização das mensagens de erro administrativas para conformidade com auditoria visual" },
-      { kind: "fix", text: "Botões do login agora se movimentam fielmente ao estilo Runaway da referência" },
-      { kind: "fix", text: "Fluxos de autenticação por RA e e-mail estabilizados" },
-      { kind: "improvement", text: "Redirecionamento correto para o painel administrativo ou dashboard do aluno" }
-    ]
-  },
-  {
-    version: "6.6.0",
-    date: "18/08/2026",
-    title: "Estabilidade Total & Ella v18",
-    changes: [
-      { kind: "fix", text: "Fim do loading infinito no login via RA/Email" },
-      { kind: "improvement", text: "Ella: Cache-busting v18 e fallback automático de imagem" },
-      { kind: "security", text: "Admin: Normalização de permissões para G802144" },
-      { kind: "improvement", text: "UX: Purga de cache de avatar legado no storage" }
-    ]
-  },
-  {
-    version: "6.5.0",
-    date: "2026-08-18",
-    title: "Gestão Híbrida v2 & Ella AI Jobs",
-    major: true,
-    changes: [
-      { kind: 'feature', text: 'Importação Inteligente: Use a Ella para extrair vagas de qualquer texto desestruturado.' },
-      { kind: 'improvement', text: 'Admin UI: Nova lista detalhada com visualização rápida da descrição e filtros avançados.' },
-      { kind: 'fix', text: 'Remoção de duplicidades na navegação administrativa.' },
-    ],
-  },
-  {
-    version: "6.4.1",
-    date: "2026-08-18",
-    title: "Gestão Híbrida de Vagas & Importação MD",
-    major: true,
-    changes: [
-      { kind: 'feature', text: 'Novo Importador MD: Publique dezenas de vagas em segundos via Markdown.' },
-      { kind: 'improvement', text: 'Refinamento do Dashboard: Melhor visibilidade das oportunidades de carreira.' },
-      { kind: 'fix', text: 'Correção de botões duplicados no Gestor de Vagas.' },
-    ],
-  },
-  {
-    version: "6.2.0",
-    date: "2026-08-18",
-    title: "Estabilidade & Resiliência Acadêmica v2",
-    major: true,
-    changes: [
-      { kind: 'fix', text: 'Correção crítica na instabilidade do avatar da Ella.' },
-      { kind: 'improvement', text: 'Melhoria na visibilidade das apostilas do 6º semestre.' },
-      { kind: 'security', text: 'Resiliência aprimorada no login especial via RA.' },
-    ],
-  },
-  {
-    version: "6.1.0",
-    date: "2026-08-17",
-    title: "Estabilidade & Resiliência Acadêmica",
-    changes: [
-      { kind: 'fix', text: 'Foco total em estabilidade do sistema e correção de visibilidade.' },
-    ],
-  },
+  }
 ];
-
-export function getBuildInfo() {
-  return {
-    version: '6.4.1',
-    environment: 'production',
-    host: 'lovable.app',
-    buildTime: new Date().toISOString(),
-    commit: 'v6.2.0-stable',
-    commitMessage: 'Release stable v6.2.0',
-  };
-}

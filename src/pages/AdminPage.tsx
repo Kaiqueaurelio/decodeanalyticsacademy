@@ -1107,7 +1107,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
       phase: 'insert',
       status: 'succeeded',
       affectedRecordIds: [newApostila.id],
-      metadata: { title: newApostila.title, validationStatus: validation?.status || 'not_available', issueCount: validation?.issue_count || 0 },
+      metadata: { title: newApostila.title, validationStatus: validation?.status || 'not_available', alertCount: validation?.alert_count || 0 },
     });
     if (validation?.status === 'error') toast.warning('A nova apostila foi criada com alerta cronológico. Revise antes de disponibilizar aos alunos.');
     toast.success(`Apostila salva com ${importExercises.length} exercícios!`);
@@ -1137,7 +1137,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
       throw error;
     }
     const validation = await runApostilaChronologyValidation(newApostila.id, operationSource);
-    void recordApostilaOperation({ operationId, apostilaId: newApostila.id, operationType: operationSource, phase: 'insert', status: 'succeeded', affectedRecordIds: [newApostila.id], metadata: { validationStatus: validation?.status || 'not_available', issueCount: validation?.issue_count || 0 } });
+    void recordApostilaOperation({ operationId, apostilaId: newApostila.id, operationType: operationSource, phase: 'insert', status: 'succeeded', affectedRecordIds: [newApostila.id], metadata: { validationStatus: validation?.status || 'not_available', alertCount: validation?.alert_count || 0 } });
     if (validation?.status === 'error') toast.warning('A nova apostila foi criada com alerta cronológico. Revise antes de disponibilizar aos alunos.');
     toast.success('Apostila formatada salva com sucesso!');
     resetImportForm();
@@ -1238,7 +1238,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
       return;
     }
     const validation = await runApostilaChronologyValidation(newApostila.id, operationSource);
-    void recordApostilaOperation({ operationId, apostilaId: newApostila.id, operationType: operationSource, phase: 'insert', status: 'succeeded', affectedRecordIds: [newApostila.id], metadata: { validationStatus: validation?.status || 'not_available', issueCount: validation?.issue_count || 0 } });
+    void recordApostilaOperation({ operationId, apostilaId: newApostila.id, operationType: operationSource, phase: 'insert', status: 'succeeded', affectedRecordIds: [newApostila.id], metadata: { validationStatus: validation?.status || 'not_available', alertCount: validation?.alert_count || 0 } });
     if (validation?.status === 'error') toast.warning('A nova apostila foi criada com alerta cronológico. Revise antes de disponibilizar aos alunos.');
     toast.success('Apostila criada!');
     setManualTitle(''); setManualContent(''); setManualCategory(''); setShowManualForm(false); setFilterSemester('all'); loadAll();
@@ -1304,7 +1304,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
       metadata: {
         source: 'duplicate_dialog',
         validationStatus: validation?.status || 'not_available',
-        issueCount: validation?.issue_count || 0,
+        alertCount: validation?.alert_count || 0,
       },
     });
     if (validation?.status === 'error') {
@@ -1386,7 +1386,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
       metadata: {
         source: 'duplicate_dialog',
         validationStatus: validation?.status || 'not_available',
-        issueCount: validation?.issue_count || 0,
+        alertCount: validation?.alert_count || 0,
       },
     });
     if (validation?.status === 'error') {
