@@ -38,6 +38,17 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: "6.7.1",
+    date: "20/08/2026",
+    title: "Seleção Inteligente no Smart Paste",
+    changes: [
+      { kind: "feature", text: "Implementada seleção parcial de texto no Smart Paste para processamento segmentado" },
+      { kind: "improvement", text: "Desbloqueada a seleção nativa e adicionada detecção de cursor no editor de texto original" },
+      { kind: "fix", text: "Correção na persistência de modo de inserção ao alternar entre seleção e texto completo" }
+    ]
+  },
+
+  {
     version: "6.7.0",
     date: "20/08/2026",
     title: "Sistema Avançado de Integridade Cronológica",
