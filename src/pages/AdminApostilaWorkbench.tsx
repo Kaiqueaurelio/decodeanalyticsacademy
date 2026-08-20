@@ -732,15 +732,22 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       }
 
       const newPage = await createApostilaPage(id, user.id);
+      
+      // Update local state and editor immediately
       setPages((current) => upsertApostilaPage(current, newPage));
-      // Atualiza o editor antes da navegação para que a troca seja imediata,
-      // mesmo se a leitura seguinte do banco tiver alguns milissegundos de atraso.
+      
+      // Crucial: reset loadRequestRef to ignore any pending loads that might overwrite our state
+      loadRequestRef.current++; 
+      
       dirtyRef.current = false;
-      initialLoadRef.current = true;
+      initialLoadRef.current = false; // Set to false to allow editor to sync with new state
       setTitle(newPage.title || 'Nova Página');
       setContent(newPage.content || '');
-      navigate(`/admin/apostilas/${id}?page=${newPage.id}&expanded=1`);
-      toast.success('Nova página criada. Você já está editando a página nova.');
+      
+      // Navigate to the new page
+      navigate(`/admin/apostilas/${id}?page=${newPage.id}&expanded=1`, { replace: true });
+      
+      toast.success('Nova página criada e carregada no editor.');
     } catch (error: any) {
       console.error('Erro ao criar página da apostila:', error);
       const message = String(error?.message || '');
