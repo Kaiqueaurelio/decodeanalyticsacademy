@@ -274,7 +274,10 @@ export default function ApostilaPage({ tab, setTab }: Props) {
     const distinctPages = mergeDistinctPages(extraPages).filter((page) => {
       const pageKey = normalizeContentForComparison(page.content || '');
       if (isPlaceholderPageContent(page.content || '')) return false;
-      return Boolean(pageKey) && !(pageKey.length >= 120 && mainKey.includes(pageKey));
+      // Verificação rigorosa para evitar páginas que já existem no conteúdo principal
+      if (!pageKey) return false;
+      if (mainKey.includes(pageKey) || pageKey.includes(mainKey)) return false;
+      return true;
     });
 
     return [
