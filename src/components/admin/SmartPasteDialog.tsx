@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { PenTool, ClipboardPaste, FileText, Wand2, Scissors } from 'lucide-react';
+import { PenTool, ClipboardPaste, FileText, Wand2, Scissors, CheckSquare, XSquare, RotateCcw } from 'lucide-react';
 import { cleanPastedContent } from '@/lib/paste-cleaner';
 import { cn } from '@/lib/utils';
 
@@ -48,6 +48,41 @@ export function SmartPasteDialog({ open, onOpenChange, onApply }: Props) {
         setSelectedText(selection);
         setMode('selection');
       }
+    }
+  };
+
+  const selectAll = () => {
+    if (textareaRef.current) {
+      textareaRef.current.select();
+      handleTextSelection();
+    }
+  };
+
+  const clearSelection = () => {
+    setSelectedText('');
+    setMode('append');
+    if (textareaRef.current) {
+      textareaRef.current.selectionStart = textareaRef.current.selectionEnd = 0;
+    }
+  };
+
+  const invertSelection = () => {
+    if (textareaRef.current && raw) {
+      const start = textareaRef.current.selectionStart;
+      const end = textareaRef.current.selectionEnd;
+      
+      // Se nada estiver selecionado, seleciona tudo
+      if (start === end) {
+        selectAll();
+        return;
+      }
+
+      // Lógica de inversão: se temos uma seleção central [start, end],
+      // a inversão seriam os blocos [0, start] e [end, length].
+      // No entanto, HTML Textarea só suporta uma seleção contígua.
+      // Vamos interpretar "reverter" como "Resetar para o início" conforme opção 2 da pergunta.
+      setRaw(raw); // Força re-render
+      clearSelection();
     }
   };
 
@@ -149,10 +184,41 @@ export function SmartPasteDialog({ open, onOpenChange, onApply }: Props) {
 
         <div className="grid flex-1 min-h-0 grid-cols-1 gap-3 lg:grid-cols-2 overflow-y-auto pr-1 sm:overflow-visible sm:pr-0 z-0">
           <div className="flex flex-col min-h-[300px] lg:min-h-0">
-            <Label className="mb-1 text-[10px] uppercase tracking-wider text-muted-foreground flex justify-between">
-              <span>Texto original</span>
-              {selectedText && <span className="text-ciano">Seleção ativa</span>}
-            </Label>
+            <div className="mb-1 flex items-center justify-between">
+              <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                Texto original
+              </Label>
+              <div className="flex items-center gap-1">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-5 w-5 text-muted-foreground hover:text-primary" 
+                  onClick={selectAll}
+                  title="Selecionar Tudo"
+                >
+                  <CheckSquare className="h-3 w-3" />
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-5 w-5 text-muted-foreground hover:text-destructive" 
+                  onClick={clearSelection}
+                  title="Limpar Seleção"
+                >
+                  <XSquare className="h-3 w-3" />
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-5 w-5 text-muted-foreground hover:text-ciano" 
+                  onClick={invertSelection}
+                  title="Resetar Seleção"
+                >
+                  <RotateCcw className="h-3 w-3" />
+                </Button>
+                {selectedText && <span className="text-[10px] font-bold text-ciano ml-1">Seleção ativa</span>}
+              </div>
+            </div>
             <Textarea
               ref={(el) => { textareaRef.current = el; }}
               value={raw}
