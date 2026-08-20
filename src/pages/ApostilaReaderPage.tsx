@@ -211,13 +211,20 @@ export default function ApostilaReaderPage() {
           .order("position", { ascending: true })
           .order("created_at", { ascending: true }),
       ]);
+      
       if (cancelled) return;
+
+      // Anti-collision check for pages with same position
+      const sanitizedPages = (pageRows || []).map((p: any, idx: number) => ({
+        ...p,
+        position: p.position ?? idx
+      }));
       
       console.log(`[ApostilaReader] Apostila info:`, ap);
       
       setApostilaTitle((ap?.title as string) || "Apostila");
       const rpcTree = (rpcData as unknown as Tree) || { apostila_id: id, modules: [] };
-      const savedPages = (pageRows || []) as ApostilaPageRow[];
+      const savedPages = sanitizedPages as ApostilaPageRow[];
       const t = savedPages.length > 0
         ? mergePagesIntoTree(rpcTree, id, savedPages)
         : (rpcTree.modules?.length > 0 ? rpcTree : buildTreeFromPages(id, savedPages));
