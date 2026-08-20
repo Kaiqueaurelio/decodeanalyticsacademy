@@ -101,3 +101,24 @@ Observação: a tela de detalhes foi projetada para apresentar o conteúdo princ
 ## Confirmação final no Modo estudo
 
 No leitor estruturado, a página aparece separadamente na seção `PÁGINAS DA APOSTILA` como `Parte 2 — Continuação (19/08/2026)`. Ao selecioná-la, o cabeçalho muda para `Páginas da apostila · Conteúdo adicional` e o conteúdo começa em `Parte 2 - Continuação`, seguido pelo material do gerador, terceirização, programação linear e demais tópicos da aula de 19/08. A página 1 não é exibida dentro desse bloco.
+
+
+## Reprodução do erro de criação de página
+
+Na rota administrativa autenticada da apostila `b132f212-5ede-4522-92d3-b0ead2cd8ce2`, o botão `+ PÁGINA` está visível com o hint `Adicionar página persistida (Ctrl+Shift+P)`. O editor mostra o conteúdo principal e a apostila está publicada. O teste de clique será realizado após fechar o anúncio sobreposto.
+
+
+## Correção do botão Nova Página
+
+A reprodução confirmou que o botão superior `+ PÁGINA`, apesar do título `Adicionar página persistida`, chamava `setAddSectionOpen(true)`. Isso abria o diálogo `Nova Seção`, anexava Markdown ao conteúdo atual e mostrava o toast incorreto `Página criada`, sem inserir uma linha em `apostila_pages`.
+
+O fluxo foi corrigido para salvar alterações pendentes, inserir uma nova linha em `apostila_pages` via `createApostilaPage`, atualizar a lista local, navegar para `?page=<novo-id>&expanded=1` e abrir a página criada. O toast de seção também foi corrigido para dizer que uma seção foi adicionada ao conteúdo.
+
+Validação local: TypeScript, build de produção, 63 testes automatizados e `git diff --check` aprovados.
+
+
+## Teste da criação de nova página
+
+Na versão local corrigida, autenticada com a sessão de teste, o botão `+ PÁGINA` criou o registro `9cad0f21-06fe-4a43-a10e-b030f1272470`, navegou para `?page=9cad0f21-06fe-4a43-a10e-b030f1272470&expanded=1` e abriu o editor com o título `Nova Página — 20/08/2026`, conteúdo vazio e 0 palavras. O toast confirmou: `Nova página criada. Você já está editando a página nova.`
+
+Após a comprovação, o registro vazio criado exclusivamente para o teste foi removido. A apostila ficou com uma única página real persistida: `Parte 2 — Continuação (19/08/2026)`, com 41.990 caracteres. A página principal permanece no campo principal da apostila.

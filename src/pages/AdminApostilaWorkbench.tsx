@@ -27,7 +27,7 @@ import { ensureApostilaExists } from '@/lib/create-placeholder-apostila';
 import { Badge } from '@/components/ui/badge';
 import { getSubjectColor } from '@/lib/subject-colors';
 import { parseApostilaContent } from '@/lib/apostila-parser';
-import { type ApostilaPage, upsertApostilaPage } from '@/lib/apostila-pages';
+import { createApostilaPage, type ApostilaPage, upsertApostilaPage } from '@/lib/apostila-pages';
 import { NewApostilaPageButton } from '@/components/NewApostilaPageButton';
 
 import {
@@ -599,7 +599,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     }
     
     setContent(prev => prev + newContent);
-    toast.success(`✓ Página "${sectionTitle}" criada com sucesso`);
+    toast.success(`✓ Seção "${sectionTitle}" adicionada ao conteúdo`);
     
     // Rola para o final do editor após um pequeno delay para o state atualizar
     setTimeout(() => {
@@ -682,6 +682,43 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     </div>
   );
 
+  const handleCreatePersistedPage = async () => {
+    if (!id || !user) {
+      toast.error('Faça login novamente para criar uma página.');
+      return;
+    }
+    if (saving) {
+      toast.info('Aguarde o salvamento atual terminar antes de criar outra página.');
+      return;
+    }
+
+    try {
+      // Não deixe alterações da página atual serem perdidas ao trocar para a nova.
+      if (dirtyRef.current) {
+        await doSave(true);
+        if (dirtyRef.current) {
+          toast.error('Não foi possível salvar a página atual. A nova página não foi criada.');
+          return;
+        }
+      }
+
+      const newPage = await createApostilaPage(id, user.id);
+      setPages((current) => upsertApostilaPage(current, newPage));
+      toast.success('Nova página criada. Você já está editando a página nova.');
+      navigate(`/admin/apostilas/${id}?page=${newPage.id}&expanded=1`);
+    } catch (error: any) {
+      console.error('Erro ao criar página da apostila:', error);
+      const message = String(error?.message || '');
+      if (/apostila_pages|schema cache|does not exist|PGRST205/i.test(message)) {
+        toast.error('A criação de páginas não está habilitada no banco de produção.');
+      } else if (/row-level security|permission denied|42501/i.test(message)) {
+        toast.error('Seu usuário não tem permissão para criar páginas nesta apostila.');
+      } else {
+        toast.error(error?.message || 'Não foi possível criar a nova página.');
+      }
+    }
+  };
+
   const stats = useMemo(() => {
     const words = content.trim() ? content.trim().split(/\s+/).length : 0;
     return { words };
@@ -710,17 +747,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         course={course}
         onCourseChange={setCourse}
         onPasteOpen={() => setPasteOpen(true)}
-        onAddPage={() => {
-          // Tenta sugerir um número baseado no conteúdo atual
-          const matches = content.match(/#\s+(\d+\.?\d*)/g);
-          if (matches) {
-            const lastNum = parseFloat(matches[matches.length - 1].replace('# ', ''));
-            if (!isNaN(lastNum)) {
-              setSuggestedSectionTitle(`${(lastNum + 0.1).toFixed(1)} `);
-            }
-          }
-          setAddSectionOpen(true);
-        }}
+        onAddPage={handleCreatePersistedPage}
       />
       
 
