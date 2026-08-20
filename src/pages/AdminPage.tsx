@@ -1687,7 +1687,9 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
     'mcp-settings': { title: 'Integração MCP', desc: 'Status e URL do endpoint de integração acadêmica externa' },
     'jobs': { title: 'Vagas e Estágios', desc: 'Gerencie oportunidades de carreira para os alunos' },
     'academic-audit': { title: 'Auditoria Acadêmica', desc: 'Logs de acessos a gabaritos, respostas e submissões' },
+    'apostila-validation': { title: 'Diagnóstico Acadêmico', desc: 'Validação de integridade cronológica de apostilas' },
   };
+
 
 
 
