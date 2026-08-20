@@ -153,3 +153,8 @@ Fonte externa consultada em 20/08/2026: [lista de deployments do projeto Vercel]
 ## Verificação dos endereços públicos
 
 Em 20/08/2026, os dois endereços oficiais foram consultados sem autenticação: [Lovable](https://decodeanalyticsacademy.lovable.app/) e [Vercel](https://decodeanalyticsacademy.vercel.app/). Ambos responderam com sucesso e exibiram o mesmo conteúdo textual de landing page, incluindo o título “Estude com Ciência da Computação”, a referência a 48 disciplinas, exercícios práticos e acesso por computador e celular. A igualdade textual confirma que não há divergência básica entre os dois hosts nessa página pública. Essa verificação não substitui o teste autenticado das rotas internas nem prova que o deployment Vercel mais recente esteja ativo, pois o alias de deployment recém-criado ainda retornou a página intermediária “Deployment is building”.
+
+
+## Verificação do painel Supabase
+
+A URL do painel de migrações foi aberta em modo somente leitura. Após o carregamento, o Supabase redirecionou para `/dashboard/sign-in`, portanto não havia sessão autenticada disponível neste navegador para consultar ou aplicar as migrações. Nenhuma alteração foi executada no banco. O estado já observado anteriormente permanece: as migrações auditadas precisam ser confirmadas no projeto `gynguskgysompgcajunc` por uma sessão administrativa do Supabase.
