@@ -338,13 +338,10 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
   // Global toggle for components
   useEffect(() => {
     (window as any).toggleAdminSidebar = () => setSidebarOpen(prev => !prev);
-    (window as any).triggerSplitByDate = (apostilaId: string, content?: string) => {
-      if (content) {
-        void handleSplitByDate(content);
-      } else {
-        void handleSplitByDate();
-      }
+    (window as any).triggerSplitByDate = (apostilaId: string, contentOverride?: string) => {
+      void handleSplitByDate(contentOverride);
     };
+
     return () => { 
       delete (window as any).toggleAdminSidebar;
       delete (window as any).triggerSplitByDate;
@@ -358,6 +355,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     dirtyRef.current = true;
     const t = window.setTimeout(() => {
       void persistChanges();
+
     }, AUTOSAVE_MS);
 
     
@@ -1314,6 +1312,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         isOpen={splitPreviewOpen}
         onClose={() => setSplitPreviewOpen(false)}
         onConfirm={() => handleSplitByDate(undefined, true)}
+
         loading={splitting}
         previewData={splitPreviewData}
       />
