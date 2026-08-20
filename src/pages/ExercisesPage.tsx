@@ -14,7 +14,7 @@ import { Textarea } from '@/components/ui/textarea';
 import {
   ArrowLeft, ArrowRight, CheckCircle, XCircle, Trophy, RotateCcw, Timer,
   BookOpen, Wand2, ChevronLeft, ChevronRight, Eye, EyeOff, PenLine,
-  BarChart3, Clock, Target, Rocket, Award, Send, ListChecks, Filter, FileDown
+  BarChart3, Clock, Target, Rocket, Award, Send, ListChecks, Filter, FileDown, FileSpreadsheet
 } from 'lucide-react';
 import { fetchAndGenerateApostilaReport } from '@/lib/student-reports';
 import { toast } from 'sonner';
@@ -404,9 +404,13 @@ export default function ExercisesPage() {
                     className="gap-1.5">
                     <ListChecks className="h-3.5 w-3.5" /> Revisar Questões
                   </Button>
-                  <Button size="sm" variant="outline" onClick={() => user && id && fetchAndGenerateApostilaReport(id, user.id)}
+                  <Button size="sm" variant="outline" onClick={() => user && id && fetchAndGenerateApostilaReport(id, user.id, 'pdf')}
                     className="gap-1.5 text-primary border-primary/30 hover:bg-primary/5">
-                    <FileDown className="h-3.5 w-3.5" /> Baixar Relatório (PDF)
+                    <FileDown className="h-3.5 w-3.5" /> PDF
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => user && id && fetchAndGenerateApostilaReport(id, user.id, 'csv')}
+                    className="gap-1.5 text-primary border-primary/30 hover:bg-primary/5">
+                    <FileSpreadsheet className="h-3.5 w-3.5" /> CSV
                   </Button>
                   <Button size="sm" variant="outline" onClick={() => { setShowResults(false); setCurrentIndex(0); setTimedMode(false); }}
                     className="gap-1.5">
