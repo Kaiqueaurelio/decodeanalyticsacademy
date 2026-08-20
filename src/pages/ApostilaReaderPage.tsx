@@ -38,10 +38,12 @@ import { Separator } from "@/components/ui/separator";
 import { useQueryClient } from "@tanstack/react-query";
 import logoOwl from "@/assets/owl-icon.png";
 import { useSoundEffects } from '@/hooks/useSoundEffects';
+import { useAuth } from "@/hooks/useAuth";
 import { isPlaceholderPageContent, normalizeContentForComparison } from '@/lib/content-formatting';
 import { Badge } from "@/components/ui/badge";
 import { extractChronologyDates } from "@/lib/apostila-pages";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 
 
 

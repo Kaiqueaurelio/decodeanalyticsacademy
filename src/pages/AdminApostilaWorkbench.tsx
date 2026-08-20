@@ -1066,8 +1066,8 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         onCourseChange={setCourse}
         onPasteOpen={() => setPasteOpen(true)}
         onAddPage={handleCreatePersistedPage}
-
       />
+
       
 
 
