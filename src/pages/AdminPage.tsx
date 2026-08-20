@@ -232,6 +232,18 @@ function PhotoroomStudio() {
 
 type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements' | 'calendar' | 'testimonials' | 'ai' | 'ella-settings' | 'performance' | 'smoke' | 'diagnostics' | 'ads' | 'ads-chat' | 'social' | 'rss' | 'courses' | 'changelog' | 'leads' | 'ella-audit' | 'security-alerts' | 'sponsors' | 'tasks' | 'photoroom' | 'edit' | 'review' | 'enem-apostilas' | 'cc-apostilas' | 'health-dashboard' | 'cloning-dashboard' | 'mcp-settings' | 'jobs' | 'academic-audit' | 'apostila-validation';
 
+const ADMIN_TAB_IDS = new Set<Tab>([
+  'overview', 'apostilas', 'exercises', 'materials', 'users', 'announcements', 'calendar',
+  'testimonials', 'ai', 'ella-settings', 'performance', 'smoke', 'diagnostics', 'ads',
+  'ads-chat', 'social', 'rss', 'courses', 'changelog', 'leads', 'ella-audit',
+  'security-alerts', 'sponsors', 'tasks', 'photoroom', 'edit', 'review', 'enem-apostilas',
+  'cc-apostilas', 'health-dashboard', 'cloning-dashboard', 'mcp-settings', 'jobs',
+]);
+
+function isAdminTab(value: string | null | undefined): value is Tab {
+  return !!value && ADMIN_TAB_IDS.has(value as Tab);
+}
+
 const ACCEPT_MAP: Record<string, string> = {
   pdf: '.pdf', image: 'image/*', gif: '.gif,image/gif',
   video: 'video/*,.mp4,.mov,.avi,.mkv', audio: 'audio/*,.mp3,.wav,.m4a,.ogg',
@@ -717,7 +729,8 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
   const location = useLocation();
   const [internalTab, setInternalTab] = useState<Tab>(() => {
     const params = new URLSearchParams(window.location.search);
-    return (params.get('tab') as Tab) || 'overview';
+    const requestedTab = params.get('tab');
+    return isAdminTab(requestedTab) ? requestedTab : 'overview';
   });
   const tab = propTab || internalTab;
   
@@ -1692,6 +1705,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
 
 
 
+  const currentTabMeta = tabTitles[tab] ?? tabTitles.overview;
 
   return (
     <CategoriesCtx.Provider value={{ categories: dbCategories }}>
@@ -1727,8 +1741,8 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
               className="flex-1 min-w-0 text-left lg:pointer-events-none"
               aria-label="Trocar de seção"
             >
-              <h2 className="text-base font-bold text-foreground truncate">{tabTitles[tab].title}</h2>
-              <p className="text-[10px] text-muted-foreground hidden sm:block truncate">{tabTitles[tab].desc} · v4.1.0</p>
+              <h2 className="text-base font-bold text-foreground truncate">{currentTabMeta.title}</h2>
+              <p className="text-[10px] text-muted-foreground hidden sm:block truncate">{currentTabMeta.desc} · v4.1.0</p>
             </button>
 
 

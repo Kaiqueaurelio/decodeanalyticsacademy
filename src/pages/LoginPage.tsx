@@ -17,7 +17,7 @@ import { motion, AnimatePresence, useMotionValue, useSpring } from 'framer-motio
 import { motionTokens, type AsyncStatus } from '@/lib/motion';
 
 export default function LoginPage() {
-  const { signIn, signUp, user, isAdmin, roleChecked, loading: authLoading, status, isSessionHydrated } = useAuth();
+  const { signUp, user, isAdmin, roleChecked, loading: authLoading, status, isSessionHydrated } = useAuth();
   const navigate = useNavigate();
   const savedIdentifier = localStorage.getItem('decode_remember_identifier')
     || localStorage.getItem('decode_remember_email')
@@ -45,18 +45,19 @@ export default function LoginPage() {
           try {
             const body = await res.clone().json() as { error?: unknown; code?: unknown };
             if (typeof body.error === 'string') message = body.error;
-            return { data: null, message, code: typeof body.code === 'string' ? body.code : undefined };
+            return { data: null, message, code: typeof body.code === 'string' ? body.code : undefined, status: res.status };
           } catch { /* mantém mensagem padrão */ }
         }
-        return { data: null, message, code: undefined };
+        return { data: null, message, code: undefined, status: res?.status ?? 0 };
       }
-      return { data, message: null as string | null, code: undefined };
+      return { data, message: null as string | null, code: undefined, status: 200 };
     } catch (error) {
       console.error('Falha de rede no ra-auth:', error);
       return {
         data: null,
         message: 'Não foi possível conectar ao serviço de autenticação por RA. Tente novamente em instantes.',
         code: 'network_error',
+        status: 0,
       };
     }
   };
@@ -288,66 +289,41 @@ export default function LoginPage() {
       return;
     }
 
-    // Se for e-mail administrativo (decianalytics/decoanalytics) ou RA, passamos pela Edge Function ra-auth.
-    // Isso é necessário porque o usuário admin G802144/decoanalytics usa um fluxo de normalização especial.
-    if (!isEmail || isSpecial) {
-      const { data, message, code } = await callRaAuth({ mode: 'signin', ra: identifierForAuth.trim(), password });
-      if (!data?.session) {
-        setLoading(false);
-        if (code === 'email_not_confirmed') {
-          setAwaitingSession(false);
-          setUnverifiedEmail(true);
-          toast.error('Verifique seu e-mail antes de acessar.');
-          return;
-        }
-        registerLoginFailure(true);
-        if (message) toast.error(message);
-        return;
-      }
-      const { error: sessionError } = await supabase.auth.setSession({ access_token: data.session.access_token, refresh_token: data.session.refresh_token });
-      if (sessionError) {
-        setLoading(false);
-        setAwaitingSession(false);
-        toast.error('De modo algum, mesmo que eu digite a minha senha de administrador, nada está funcionando. Verifique e valide o porquê que isso tá acontecendo o mais rápido possível');
-        return;
-      }
-      try {
-        const { data: { user: currentUser } } = await supabase.auth.getUser();
-        if (currentUser) await supabase.from('compliance_logs').insert({ user_id: currentUser.id, terms_version: TERMS_VERSION, privacy_version: TERMS_VERSION });
-      } catch (err) { console.error('Falha ao logar compliance (RA/Admin):', err); }
-      setLoading(false);
-      persistSuccessfulLogin(identifierForAuth);
-      return;
-    }
-
-    let signInError: Error | null = null;
-    try {
-      ({ error: signInError } = await signIn(effectiveEmail, password));
-    } catch (error) {
-      console.error('Falha de rede no login por e-mail:', error);
+    // Todos os logins passam pela Edge Function para aplicar o mesmo rate limit,
+    // inclusive e-mails comuns; o backend resolve o e-mail sem expor credenciais.
+    const { data, message, code, status: authStatus } = await callRaAuth({ mode: 'signin', ra: identifierForAuth.trim(), password });
+    if (!data?.session) {
       setLoading(false);
       setAwaitingSession(false);
-      toast.error('Não foi possível conectar ao serviço de autenticação. Tente novamente em instantes.');
-      return;
-    }
-    if (signInError) {
-      setLoading(false);
-      if (signInError.message?.toLowerCase().includes('email not confirmed')) {
-        setAwaitingSession(false);
+      if (authStatus === 429) {
+        setIsLocked(true);
+        setShowLockModal(true);
+        toast.error(message || 'Muitas tentativas. Tente novamente mais tarde.');
+        return;
+      }
+      if (code === 'email_not_confirmed') {
         setUnverifiedEmail(true);
         setEmail(effectiveEmail);
         toast.error('Verifique seu e-mail antes de acessar.');
         return;
       }
-      registerLoginFailure(false);
-    } else {
-      try {
-        const { data: { user: currentUser } } = await supabase.auth.getUser();
-        if (currentUser) await supabase.from('compliance_logs').insert({ user_id: currentUser.id, terms_version: TERMS_VERSION, privacy_version: TERMS_VERSION });
-      } catch (err) { console.error('Falha ao logar compliance (Email):', err); }
-      setLoading(false);
-      persistSuccessfulLogin(isEmail ? id.toLowerCase() : normalizeRa(id));
+      registerLoginFailure(isEmail ? false : true);
+      if (message) toast.error(message);
+      return;
     }
+    const { error: sessionError } = await supabase.auth.setSession({ access_token: data.session.access_token, refresh_token: data.session.refresh_token });
+    if (sessionError) {
+      setLoading(false);
+      setAwaitingSession(false);
+      toast.error('Não foi possível confirmar sua sessão. Tente novamente.');
+      return;
+    }
+    try {
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (currentUser) await supabase.from('compliance_logs').insert({ user_id: currentUser.id, terms_version: TERMS_VERSION, privacy_version: TERMS_VERSION });
+    } catch (err) { console.error('Falha ao logar compliance:', err); }
+    setLoading(false);
+    persistSuccessfulLogin(identifierForAuth);
   };
 
   const handleResetPassword = async (e: React.FormEvent) => {

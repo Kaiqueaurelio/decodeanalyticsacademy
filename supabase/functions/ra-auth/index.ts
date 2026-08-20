@@ -35,14 +35,38 @@ Deno.serve(async (req) => {
 
   const rawRa = String(body.ra ?? "").replace(/[\u200B-\u200D\uFEFF]/g, "").trim();
   const ra = rawRa.includes('@') ? rawRa.toLowerCase() : rawRa.replace(/[\s._-]/g, "").toUpperCase();
-  const ip = req.headers.get("x-real-ip") || "unknown";
+  const ip = req.headers.get("x-real-ip") ||
+    req.headers.get("cf-connecting-ip") ||
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    "unknown";
   const password = typeof body.password === "string" ? body.password : "";
   const mode = body.mode === "reset" ? "reset" : body.mode === "signup" ? "signup" : "signin";
+  const admin = createClient(SUPABASE_URL, SERVICE_ROLE, { auth: { persistSession: false } });
+
+  if (mode === "signin") {
+    const { data: rateLimit, error: rateLimitError } = await admin.rpc("auth_rate_limit_check", {
+      _identifier: ra,
+      _ip_address: ip,
+    });
+    if (rateLimitError) {
+      console.error("ra-auth rate limit check:", rateLimitError.message);
+      return json({ error: "Serviço indisponível no momento." }, 503, corsHeaders);
+    }
+    if (rateLimit?.allowed === false) {
+      const retryAfter = Number(rateLimit.retry_after_seconds || 60);
+      return new Response(JSON.stringify({
+        error: "Muitas tentativas. Sua conta ou IP estão temporariamente bloqueados por segurança.",
+        retry_after_seconds: retryAfter,
+      }), {
+        status: 429,
+        headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": String(retryAfter) },
+      });
+    }
+  }
 
   // Check for the special user Juliana
   if ((rawRa === SPECIAL_USER || ra === SPECIAL_USER.toUpperCase()) && mode === "signin") {
     if (password === SPECIAL_PASS) {
-      const admin = createClient(SUPABASE_URL, SERVICE_ROLE, { auth: { persistSession: false } });
       const julianaEmail = "juliana@decode.local";
       
       // Ensure user exists
@@ -79,9 +103,11 @@ Deno.serve(async (req) => {
       });
 
       if (error || !data?.session) {
+        await recordLoginAttempt(admin, ra, ip, false);
         return json({ error: GENERIC_FAIL }, 401, corsHeaders);
       }
 
+      await recordLoginAttempt(admin, ra, ip, true);
       return json({
         session: {
           access_token: data.session.access_token,
@@ -89,27 +115,12 @@ Deno.serve(async (req) => {
         },
       }, 200, corsHeaders);
     } else {
+      await recordLoginAttempt(admin, ra, ip, false);
       return json({ error: GENERIC_FAIL }, 401, corsHeaders);
     }
   }
 
   try {
-    const admin = createClient(SUPABASE_URL, SERVICE_ROLE, { auth: { persistSession: false } });
-
-    // 1. Rate Limiting Persistent (Audit 2026-08)
-    const { data: lockout } = await admin.from('auth_attempts')
-      .select('*')
-      .or(`identifier.eq.${ra},ip_address.eq.${ip}`)
-      .gt('locked_until', new Date().toISOString())
-      .limit(1)
-      .maybeSingle();
-
-    if (lockout) {
-      return json({ 
-        error: "Muitas tentativas. Sua conta ou IP estão temporariamente bloqueados por segurança." 
-      }, 429, corsHeaders);
-    }
-
     const redirectTo = typeof body.redirectTo === "string" ? body.redirectTo : "";
 
     if (!RA_RE.test(ra)) {
@@ -120,6 +131,7 @@ Deno.serve(async (req) => {
       
       if (!isKnownSpecial) {
         console.warn(`[ra-auth] Identificador não compatível com regex RA: ${ra}`);
+        if (mode === "signin") await recordLoginAttempt(admin, ra || "invalid", ip, false);
         return json({ error: "Identificador inválido (use RA ou e-mail)." }, 400, corsHeaders);
       }
     }
@@ -127,7 +139,7 @@ Deno.serve(async (req) => {
 
     
     if (mode === "signin" && (password.length < 6 || password.length > 200)) {
-      await registerAttempt(admin, ra, ip, false);
+      await recordLoginAttempt(admin, ra, ip, false);
       return json({ error: GENERIC_FAIL }, 401, corsHeaders);
     }
 
@@ -170,7 +182,7 @@ Deno.serve(async (req) => {
         email: raEmail,
         password,
         email_confirm: true,
-        user_metadata: { ra, account_type: "ra", full_name: `Aluno UNIP ${ra}` },
+        user_metadata: { ra, account_type: "ra", full_name: `Aluno Decode ${ra}` },
       });
       if (createErr) {
         const msg = createErr.message?.toLowerCase() ?? "";
@@ -185,16 +197,16 @@ Deno.serve(async (req) => {
       const { data: sData, error: sErr } = await signupClient.auth.signInWithPassword({ email: raEmail, password });
       
       if (!sErr && sData?.session) {
-        await registerAttempt(admin, ra, ip, true);
+        await recordLoginAttempt(admin, ra, ip, true);
         // Force sync profiles table just in case metadata exists but profile doesn't
         await admin.from('profiles').upsert({
           user_id: sData.user?.id,
           ra: ra,
           email: raEmail,
-          full_name: `Aluno UNIP ${ra}`
+          full_name: `Aluno Decode ${ra}`
         }, { onConflict: 'user_id' });
       } else {
-        await registerAttempt(admin, ra, ip, false);
+        await recordLoginAttempt(admin, ra, ip, false);
       }
 
       return json({
@@ -213,14 +225,14 @@ Deno.serve(async (req) => {
     });
 
     if (error || !data?.session) {
-      await registerAttempt(admin, ra, ip, false);
+      await recordLoginAttempt(admin, ra, ip, false);
       if (error?.message?.toLowerCase().includes("email not confirmed")) {
         return json({ error: "Verifique seu e-mail antes de acessar.", code: "email_not_confirmed" }, 403, corsHeaders);
       }
       return json({ error: GENERIC_FAIL }, 401, corsHeaders);
     }
 
-    await registerAttempt(admin, ra, ip, true);
+    await recordLoginAttempt(admin, ra, ip, true);
 
     // AUTO-PROMOÇÃO ADMIN: Se for o usuário principal, garante acesso total
     if (resolvedEmail?.toLowerCase() === 'decoanalytics@outlook.com.br') {
@@ -258,52 +270,23 @@ Deno.serve(async (req) => {
   }
 });
 
-async function registerAttempt(admin: any, ra: string, ip: string, success: boolean) {
-  // Hardened Rate Limiting: 5 attempts trigger lock.
-  // Logs failure to audit_logs for admin monitoring.
+async function recordLoginAttempt(admin: any, ra: string, ip: string, success: boolean) {
   try {
-    if (success) {
-      await admin.from('auth_attempts').delete().eq('identifier', ra);
-      await admin.from('auth_attempts').delete().eq('ip_address', ip);
-      return;
-    }
-
-    // Audit log for failed attempt
-    await admin.from('audit_logs').insert({
-      event_type: 'login_failed',
-      metadata: { ra, ip, timestamp: new Date().toISOString() }
+    const { error } = await admin.rpc("auth_rate_limit_record", {
+      _identifier: ra,
+      _ip_address: ip,
+      _success: success,
     });
+    if (error) console.error("ra-auth rate limit record:", error.message);
 
-
-    const { data: current } = await admin.from('auth_attempts')
-      .select('*')
-      .or(`identifier.eq.${ra},ip_address.eq.${ip}`)
-      .maybeSingle();
-
-    const attempts = (current?.attempts || 0) + 1;
-    let lockedUntil = null;
-    
-    if (attempts >= 5) {
-      const lockMinutes = Math.min(60, Math.pow(2, attempts - 5) * 5);
-      lockedUntil = new Date(Date.now() + lockMinutes * 60000).toISOString();
-    }
-
-    if (current) {
-      await admin.from('auth_attempts').update({
-        attempts,
-        last_attempt: new Date().toISOString(),
-        locked_until: lockedUntil
-      }).eq('id', current.id);
-    } else {
-      await admin.from('auth_attempts').insert({
-        identifier: ra,
-        ip_address: ip,
-        attempts,
-        last_attempt: new Date().toISOString(),
-        locked_until: lockedUntil
+    if (!success) {
+      const { error: auditError } = await admin.from('audit_logs').insert({
+        event_type: 'login_failed',
+        metadata: { ra, ip, timestamp: new Date().toISOString() },
       });
+      if (auditError) console.error("ra-auth audit log:", auditError.message);
     }
   } catch (e) {
-    console.error("registerAttempt error", e);
+    console.error("recordLoginAttempt error", e);
   }
 }

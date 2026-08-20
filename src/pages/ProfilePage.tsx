@@ -181,7 +181,7 @@ export default function ProfilePage() {
 
         {(() => {
           const trimmed = (fullName || '').trim();
-          const isDefaultName = !trimmed || /^aluno\s+unip\b/i.test(trimmed);
+          const isDefaultName = !trimmed || /^aluno\s+(unip|decode)\b/i.test(trimmed);
           if (!isDefaultName) return null;
           return (
             <div className="mb-4 rounded-xl border border-warning/40 bg-warning/10 p-4 animate-content-show">
@@ -192,7 +192,7 @@ export default function ProfilePage() {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-foreground">Personalize seu perfil</p>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Seu nome ainda esta como <strong>"{trimmed || 'Aluno UNIP'}"</strong>. Adicione seu nome real
+                    Seu nome ainda esta como <strong>"{trimmed || 'Aluno Decode'}"</strong>. Adicione seu nome real
                     para aparecer corretamente na comunidade e no ranking.
                   </p>
                   <Button

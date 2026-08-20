@@ -63,7 +63,7 @@ Deno.serve(async (req) => {
     }
 
     const email = isEmail ? identifier.toLowerCase() : `${ra.toLowerCase()}@ra.unip.local`;
-    const name = fullName || (isEmail ? email.split('@')[0] : `Aluno UNIP ${ra}`);
+    const name = fullName || (isEmail ? email.split('@')[0] : `Aluno Decode ${ra}`);
 
     const { data: created, error: createErr } = await admin.auth.admin.createUser({
       email,

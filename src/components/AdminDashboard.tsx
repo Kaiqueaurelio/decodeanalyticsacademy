@@ -41,6 +41,7 @@ import {
 } from 'recharts';
 import { toast } from 'sonner';
 import { cn } from "@/lib/utils";
+import { downloadStudentPerformancePdf } from '@/lib/student-performance-report';
 
 
 interface Props { 
@@ -64,6 +65,18 @@ type Ranking = {
 };
 
 type SortKey = 'created_desc' | 'created_asc' | 'updated_desc' | 'updated_asc';
+
+type AnswerAccessLog = {
+  id: string;
+  user_id: string;
+  exercise_id: string;
+  apostila_id: string | null;
+  access_type: string;
+  allowed: boolean;
+  returned_fields: string[];
+  denial_reason: string | null;
+  created_at: string;
+};
 
 const PAGE_SIZE = 12;
 
@@ -95,6 +108,7 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
   const [apostilas, setApostilas] = useState<ApostilaRow[]>([]);
   const [rankings, setRankings] = useState<Ranking[]>([]);
   const [engagement, setEngagement] = useState<{ day: string; apostilas: number; exercises: number }[]>([]);
+  const [answerAccessLog, setAnswerAccessLog] = useState<AnswerAccessLog[]>([]);
 
 
   // Filtros
@@ -132,6 +146,7 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
   // Detalhe do aluno
   const [studentDetail, setStudentDetail] = useState<any | null>(null);
   const [studentLoading, setStudentLoading] = useState(false);
+  const [studentPdfLoading, setStudentPdfLoading] = useState(false);
   const [historyApostilaFilter, setHistoryApostilaFilter] = useState<string>('all');
   const [historyStatusFilter, setHistoryStatusFilter] = useState<'all' | 'correct' | 'wrong'>('all');
   const [historyPage, setHistoryPage] = useState(1);
@@ -195,6 +210,13 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
         if (i !== undefined) buckets[i].exercises++;
       });
       setEngagement(buckets.map(({ day, apostilas, exercises }) => ({ day, apostilas, exercises })));
+
+      const { data: accessData, error: accessError } = await supabase
+        .from('exercise_answer_access_log')
+        .select('id,user_id,exercise_id,apostila_id,access_type,allowed,returned_fields,denial_reason,created_at')
+        .order('created_at', { ascending: false })
+        .limit(20);
+      if (!accessError) setAnswerAccessLog((accessData || []) as AnswerAccessLog[]);
 
     } catch (err) {
       console.error(err);
@@ -577,6 +599,39 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
     setStudentLoading(false);
     if (error) { toast.error('Erro: ' + error.message); setStudentDetail(null); return; }
     setStudentDetail({ ...data, ranking: r });
+  };
+
+  const exportStudentPerformancePdf = async () => {
+    const userId = studentDetail?.ranking?.user_id;
+    if (!userId) return;
+    setStudentPdfLoading(true);
+    const { data, error } = await supabase.rpc('get_student_performance_report', { _user_id: userId });
+    setStudentPdfLoading(false);
+    if (error) {
+      const ranking = studentDetail?.ranking;
+      if (studentDetail && !studentDetail.loading) {
+        downloadStudentPerformancePdf({
+          ...studentDetail,
+          profile: studentDetail.profile || {
+            full_name: ranking?.full_name,
+            ra: ranking?.ra,
+            email: ranking?.email,
+            course: ranking?.course,
+            semester: ranking?.semester,
+          },
+        } as any, ranking);
+        toast.info('Relatório gerado com os dados já carregados no painel. Aplique a migração de segurança para habilitar o conjunto completo no backend.');
+        return;
+      }
+      toast.error('Não foi possível gerar o relatório: ' + error.message);
+      return;
+    }
+    downloadStudentPerformancePdf(data || {}, {
+      full_name: studentDetail?.ranking?.full_name,
+      ra: studentDetail?.ranking?.ra,
+      avatar_url: studentDetail?.ranking?.avatar_url,
+    });
+    toast.success('Relatório PDF gerado.');
   };
 
   const clearFilters = () => {
@@ -1270,6 +1325,44 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
         </AlertDialogContent>
       </AlertDialog>
 
+      <Card className="mt-6 border-amber-500/20 bg-amber-500/[0.03]">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <ShieldCheck className="h-4 w-4 text-amber-600" /> Auditoria de acessos a gabaritos
+          </CardTitle>
+          <CardDescription>
+            Registro dos últimos acessos a respostas corretas, explicações e respostas de referência.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {answerAccessLog.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Nenhum acesso registrado ainda ou a migração de auditoria ainda não foi aplicada.</p>
+          ) : (
+            <div className="space-y-2">
+              {answerAccessLog.map((event) => (
+                <div key={event.id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border/50 bg-background/60 p-3 text-xs">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <Badge variant={event.allowed ? 'default' : 'destructive'}>{event.allowed ? 'Permitido' : 'Negado'}</Badge>
+                      <span className="font-medium">{event.access_type}</span>
+                      <span className="text-muted-foreground">{new Date(event.created_at).toLocaleString('pt-BR')}</span>
+                    </div>
+                    <p className="mt-1 text-muted-foreground">
+                      Aluno <code>{event.user_id.slice(0, 8)}…</code> · exercício <code>{event.exercise_id.slice(0, 8)}…</code>
+                    </p>
+                  </div>
+                  <span className="max-w-[260px] text-right text-muted-foreground">
+                    {event.allowed
+                      ? `Campos: ${(event.returned_fields || []).join(', ') || 'nenhum'}`
+                      : (event.denial_reason || 'Acesso bloqueado')}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Modal de detalhe do aluno */}
       <Dialog open={!!studentDetail} onOpenChange={(o) => !o && setStudentDetail(null)}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
@@ -1280,12 +1373,23 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
                   ? <img src={studentDetail.ranking.avatar_url} alt="" className="w-full h-full object-cover" />
                   : (studentDetail?.ranking?.full_name || '?').slice(0, 2).toUpperCase()}
               </div>
-              <div>
+              <div className="min-w-0 flex-1">
                 <div>{studentDetail?.ranking?.full_name || 'Aluno'}</div>
                 {studentDetail?.ranking?.ra && (
                   <DialogDescription className="text-xs">RA {studentDetail.ranking.ra}</DialogDescription>
                 )}
               </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="shrink-0 gap-2"
+                onClick={exportStudentPerformancePdf}
+                disabled={studentPdfLoading || studentLoading || !!studentDetail?.loading}
+              >
+                {studentPdfLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileDown className="h-4 w-4" />}
+                PDF
+              </Button>
             </DialogTitle>
           </DialogHeader>
 
