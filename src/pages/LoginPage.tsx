@@ -67,6 +67,8 @@ export default function LoginPage() {
   const submitStatusResetRef = useRef<number | null>(null);
   const [loginAttempts, setLoginAttempts] = useState(0);
   const [isLocked, setIsLocked] = useState(false);
+  const [lockoutTimeLeft, setLockoutTimeLeft] = useState(0);
+
   const [shaking, setShaking] = useState(false);
   const [showLockModal, setShowLockModal] = useState(false);
   const [unverifiedEmail, setUnverifiedEmail] = useState(false);

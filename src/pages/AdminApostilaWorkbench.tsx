@@ -739,6 +739,20 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       // Crucial: reset loadRequestRef to ignore any pending loads that might overwrite our state
       loadRequestRef.current++; 
       
+      // Update sidebar list if needed
+      if (newPage.title) {
+        setApostilas(prev => [{
+          id: newPage.id,
+          title: newPage.title,
+          category: category,
+          published: false,
+          updated_at: new Date().toISOString(),
+          semester: semester,
+          course: course
+        }, ...prev]);
+      }
+
+      
       dirtyRef.current = false;
       initialLoadRef.current = false; // Set to false to allow editor to sync with new state
       setTitle(newPage.title || 'Nova Página');

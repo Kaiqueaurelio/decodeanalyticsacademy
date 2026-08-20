@@ -14,8 +14,9 @@ import { Textarea } from '@/components/ui/textarea';
 import {
   ArrowLeft, ArrowRight, CheckCircle, XCircle, Trophy, RotateCcw, Timer,
   BookOpen, Wand2, ChevronLeft, ChevronRight, Eye, EyeOff, PenLine,
-  BarChart3, Clock, Target, Rocket, Award, Send, ListChecks, Filter
+  BarChart3, Clock, Target, Rocket, Award, Send, ListChecks, Filter, FileDown
 } from 'lucide-react';
+import { fetchAndGenerateApostilaReport } from '@/lib/student-reports';
 import { toast } from 'sonner';
 import { logSecurityEvent } from '@/lib/audit-logger';
 import type { Tables } from '@/integrations/supabase/types';
@@ -398,9 +399,15 @@ export default function ExercisesPage() {
                   </p>
                 )}
 
-                <div className="flex gap-2 justify-center">
+                <div className="flex flex-wrap gap-2 justify-center">
                   <Button size="sm" variant="outline" onClick={() => { setShowResults(false); setReviewMode(true); setReviewFilter('all'); setTimedMode(false); }}
                     className="gap-1.5">
+                    <ListChecks className="h-3.5 w-3.5" /> Revisar Questões
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => user && id && fetchAndGenerateApostilaReport(id, user.id)}
+                    className="gap-1.5 text-primary border-primary/30 hover:bg-primary/5">
+                    <FileDown className="h-3.5 w-3.5" /> Baixar Relatório (PDF)
+                  </Button>
                     <ListChecks className="h-3.5 w-3.5" /> Revisão
                   </Button>
                   <Button size="sm" variant="outline" onClick={() => { setShowResults(false); setCurrentIndex(0); setTimedMode(false); }}
