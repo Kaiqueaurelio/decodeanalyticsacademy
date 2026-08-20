@@ -11,7 +11,7 @@ export type AdminTabId =
   | 'calendar' | 'testimonials' | 'ai' | 'ella-settings' | 'performance' | 'smoke' | 'diagnostics'
   | 'ads' | 'ads-chat' | 'social' | 'rss' | 'courses' | 'changelog' | 'leads'
   | 'ella-audit' | 'security-alerts' | 'sponsors' | 'tasks' | 'photoroom' | 'edit' | 'review'
-  | 'enem-apostilas' | 'cc-apostilas' | 'health-dashboard' | 'cloning-dashboard' | 'mcp-settings';
+  | 'enem-apostilas' | 'cc-apostilas' | 'health-dashboard' | 'cloning-dashboard' | 'mcp-settings' | 'academic-audit';
 
 
 export type AdminNavItem = {
@@ -96,6 +96,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
       { id: 'security-alerts', label: 'Alertas de Segurança', short: 'Segurança', icon: ShieldAlert, desc: 'Tentativas recusadas pelo servidor', countKey: 'securityAlerts', keywords: 'seguranca alerta bloqueio' },
       { id: 'performance', label: 'Performance', short: 'Perf.', icon: Activity, desc: 'Carregamento e erros de rede', keywords: 'velocidade metrica lentidao' },
       { id: 'diagnostics', label: 'Diagnóstico', short: 'Diag.', icon: AlertCircle, desc: 'Logs de runtime e falhas por rota', keywords: 'erro log debug' },
+      { id: 'academic-audit', label: 'Auditoria Acadêmica', short: 'Acad.', icon: ShieldCheck, desc: 'Logs de acessos a gabaritos e respostas', keywords: 'auditoria gabarito resposta aluno seguranca' },
       { id: 'smoke', label: 'Testes', short: 'Testes', icon: CheckCircle, desc: 'Checklist automático de estabilidade', keywords: 'teste smoke checklist' },
       { id: 'changelog', label: 'Histórico de Versões', short: 'Histórico', icon: History, desc: 'Tudo que mudou na plataforma', keywords: 'changelog versao novidades' },
       { id: 'mcp-settings', label: 'Integração MCP', short: 'MCP', icon: Link2, desc: 'Status e URL do endpoint de integração acadêmica', keywords: 'mcp api endpoint integracao external' },

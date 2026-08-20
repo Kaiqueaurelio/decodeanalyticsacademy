@@ -171,12 +171,22 @@ export default function ExercisesPage() {
     if (!essay?.text?.trim()) { toast.error('Escreva sua resposta antes de enviar.'); return; }
     setAnswers(prev => ({ ...prev, [exerciseId]: { selected: essay.text, correct: true } }));
     logSecurityEvent('essay_answer_submitted', exerciseId);
-    (supabase as any).rpc('get_exercise_reveal', { _exercise_id: exerciseId }).then(({ data }: any) => {
-      if (data) {
-        setReveals(prev => ({ ...prev, [exerciseId]: { explanation: data.explanation ?? null, reference_answer: data.reference_answer ?? null } }));
-        logSecurityEvent('essay_model_answer_revealed', exerciseId);
+    
+    // Use an immediate IIFE or separate function to fetch and log reveal
+    (async () => {
+      const { data, error } = await (supabase as any).rpc('get_exercise_reveal', { _exercise_id: exerciseId });
+      if (!error && data) {
+        setReveals(prev => ({ 
+          ...prev, 
+          [exerciseId]: { 
+            explanation: data.explanation ?? null, 
+            reference_answer: data.reference_answer ?? null 
+          } 
+        }));
+        await logSecurityEvent('essay_model_answer_revealed', exerciseId);
       }
-    });
+    })();
+    
     gamification.addXP(15);
     gamification.updateStreak();
     toast.success('Dissertativa enviada. +15 XP');
