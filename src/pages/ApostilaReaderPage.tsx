@@ -622,8 +622,35 @@ export default function ApostilaReaderPage() {
         </div>
       )}
 
+      {/* Top Banner Alert */}
+      {(hasInconsistency || apostilaStatus === 'em_manutencao') && (
+        <div className={cn(
+          "shrink-0 px-4 py-2 flex items-center justify-between text-[11px] font-bold tracking-tight z-50",
+          hasInconsistency ? "bg-red-500/20 text-red-400 border-b border-red-500/30" : "bg-ciano/10 text-ciano border-b border-ciano/20"
+        )}>
+          <div className="flex items-center gap-2">
+            <ShieldAlert className="w-3 h-3" />
+            <span>
+              {hasInconsistency 
+                ? "CRÍTICO: Este material apresenta inconsistências cronológicas e está em revisão." 
+                : "INFORMAÇÃO: Este material está sendo reorganizado pela tutoria."}
+            </span>
+          </div>
+          {isAdmin && hasInconsistency && (
+            <Button 
+              variant="link" 
+              className="h-auto p-0 text-[10px] text-red-400 underline"
+              onClick={() => navigate(`/admin/apostilas/${id}`)}
+            >
+              Corrigir agora
+            </Button>
+          )}
+        </div>
+      )}
+
       {/* Main */}
       <main className="flex-1 flex min-w-0 flex-col">
+
         {/* Top bar */}
         <div className={cn(
           "sticky top-0 z-20 flex min-h-16 items-center gap-1.5 border-b border-border/60 bg-background/95 px-2 py-2 backdrop-blur sm:gap-2 sm:px-3 md:min-h-[4.5rem] md:px-5 transition-all duration-500",
