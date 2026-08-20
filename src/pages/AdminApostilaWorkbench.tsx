@@ -836,7 +836,37 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     }, 150);
   };
 
+  const handleSplitByDate = async () => {
+    if (!id || splitting) return;
+    
+    setSplitting(true);
+    const loadingToast = toast.loading('Separando aulas por data...');
+    
+    try {
+      const result = await splitApostilaByDate(id);
+      
+      if (result.success) {
+        toast.dismiss(loadingToast);
+        toast.success(`Sucesso! ${result.pages_created} páginas criadas.`, {
+          description: `Datas encontradas: ${result.dates.join(', ')}`
+        });
+        
+        // Recarregar a apostila para mostrar as novas páginas
+        void loadApostila(id);
+      } else {
+        toast.dismiss(loadingToast);
+        toast.error('Não foi possível separar:', { description: (result as any).message });
+      }
+    } catch (err: any) {
+      toast.dismiss(loadingToast);
+      toast.error('Erro técnico ao processar separação.', { description: err.message });
+    } finally {
+      setSplitting(false);
+    }
+  };
+
   const baseSortOrder = linkedMaterials.length > 0
+
     ? Math.max(...linkedMaterials.map((m) => m.sort_order)) + 1
     : 0;
 
