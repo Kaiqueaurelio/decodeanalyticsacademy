@@ -34,7 +34,7 @@ import {
 import type { Tables } from '@/integrations/supabase/types';
 
 import { parseApostilaContent, type ApostilaSection as Section } from '@/lib/apostila-parser';
-import { mergeDistinctPages, normalizeContentForComparison, stripInlineMarkup } from '@/lib/content-formatting';
+import { isPlaceholderPageContent, mergeDistinctPages, normalizeContentForComparison, stripInlineMarkup } from '@/lib/content-formatting';
 
 /**
  * Remove sintaxe markdown residual (negrito, itálico, código, links etc.)
@@ -229,6 +229,9 @@ export default function ApostilaPage({ tab, setTab }: Props) {
     const mainKey = normalizeContentForComparison(mainContent);
     const distinctPages = mergeDistinctPages(extraPages).filter((page) => {
       const pageKey = normalizeContentForComparison(page.content || '');
+      // Placeholders técnicos não são conteúdo editorial e não devem aparecer
+      // como uma seção adicional no caderno do aluno.
+      if (isPlaceholderPageContent(page.content || '')) return false;
       // Conteúdo antigo pode existir simultaneamente em apostilas.content e
       // apostila_pages. Não renderizamos a mesma página duas vezes.
       return Boolean(pageKey) && !(pageKey.length >= 120 && mainKey.includes(pageKey));

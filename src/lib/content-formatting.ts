@@ -71,6 +71,17 @@ export function isBlankContent(value: string): boolean {
   return !normalizeContentForComparison(value);
 }
 
+/** Identifica marcadores técnicos que não devem aparecer como conteúdo editorial para o aluno. */
+export function isPlaceholderPageContent(value: string): boolean {
+  const normalized = normalizeContentForComparison(value);
+  if (!normalized) return true;
+  return [
+    'conteúdo em processamento',
+    'material em fase de estruturação',
+    'este conteúdo está sendo estruturado',
+  ].some((marker) => normalized.includes(marker));
+}
+
 export function contentHasMarkup(value: string): boolean {
   return /<[^>]+>|&(?:lt|gt|amp|quot|#\d+);/i.test(value || '');
 }

@@ -34,7 +34,7 @@ import { Separator } from "@/components/ui/separator";
 import { useQueryClient } from "@tanstack/react-query";
 import logoOwl from "@/assets/owl-icon.png";
 import { useSoundEffects } from '@/hooks/useSoundEffects';
-import { normalizeContentForComparison } from '@/lib/content-formatting';
+import { isPlaceholderPageContent, normalizeContentForComparison } from '@/lib/content-formatting';
 
 
 interface Lesson {
@@ -125,6 +125,7 @@ function mergePagesIntoTree(tree: Tree, apostilaId: string, pages: ApostilaPageR
   );
 
   const distinctPages = pages.filter((page) => {
+    if (isPlaceholderPageContent(page.content || '')) return false;
     const key = normalizeContentForComparison(page.content || '');
     if (!key || existingKeys.has(key)) return false;
     existingKeys.add(key);
