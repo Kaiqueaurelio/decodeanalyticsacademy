@@ -63,6 +63,17 @@ function normalizeHeadingText(value: string): string {
     .trim();
 }
 
+/** Fórmulas, dimensões e rótulos de apoio não são seções editoriais. */
+function shouldIncludeInToc(value: string): boolean {
+  const text = normalizeHeadingText(value);
+  if (!text || text.length < 3) return false;
+  if (/^2[⁰¹²³⁴⁵⁶⁷⁸⁹]+$/u.test(text)) return false;
+  if (/^\d+\s*bits?\s*[:=→-].*$/iu.test(text)) return false;
+  if (/^\d+(?:\s*[×x*]\s*\d+){1,4}\s*$/u.test(text)) return false;
+  if (/^[\d\s⁰¹²³⁴⁵⁶⁷⁸⁹×x+−=<>.,:;()\/%→\-]+$/u.test(text)) return false;
+  return true;
+}
+
 /**
  * Renderização inline rica: aceita formatação markdown comum e um subconjunto
  * seguro de HTML inline.
@@ -480,13 +491,21 @@ function parseBlocks(rawInput: string): Block[] {
         if (embedded) {
           const headingContent = normalizeHeadingText([embedded.before, embedded.after].filter(Boolean).join(' '));
           if (headingContent) {
-            blocks.push({ type: 'heading', level: hMatch[1].length, content: headingContent });
+            if (shouldIncludeInToc(headingContent)) {
+              blocks.push({ type: 'heading', level: hMatch[1].length, content: headingContent });
+            } else {
+              blocks.push({ type: 'paragraph', content: headingContent });
+            }
           }
           blocks.push({ type: 'audio', label: embedded.audio.label, url: embedded.audio.url });
         } else {
           const headingContent = normalizeHeadingText(hMatch[2]);
           if (headingContent) {
-            blocks.push({ type: 'heading', level: hMatch[1].length, content: headingContent });
+            if (shouldIncludeInToc(headingContent)) {
+              blocks.push({ type: 'heading', level: hMatch[1].length, content: headingContent });
+            } else {
+              blocks.push({ type: 'paragraph', content: headingContent });
+            }
           }
         }
         i++; continue;
@@ -972,14 +991,14 @@ function HeadingBlock({ level, content, id, active }: { level: number; content: 
   const activeCls = active ? 'apostila-heading-active' : '';
   if (level === 1) {
     return (
-      <h1 id={id} data-active={active || undefined} className={cn('font-display text-4xl sm:text-6xl font-black mt-16 mb-8 text-foreground tracking-tighter leading-tight scroll-mt-24', activeCls)}>
+      <h1 id={id} data-active={active || undefined} className={cn('font-display text-3xl sm:text-5xl font-black mt-12 mb-6 text-foreground tracking-tight leading-tight scroll-mt-24', activeCls)}>
         {text}
       </h1>
     );
   }
   if (level === 2) {
     return (
-      <h2 id={id} data-active={active || undefined} className={cn('font-display text-2xl sm:text-4xl font-black mt-12 mb-5 text-foreground tracking-tighter leading-tight scroll-mt-24 border-b-2 border-primary/20 pb-3', activeCls)}>
+      <h2 id={id} data-active={active || undefined} className={cn('font-display text-2xl sm:text-3xl font-black mt-10 mb-4 text-foreground tracking-tight leading-snug scroll-mt-24 border-b border-primary/20 pb-2.5', activeCls)}>
         {text}
       </h2>
 
@@ -987,13 +1006,13 @@ function HeadingBlock({ level, content, id, active }: { level: number; content: 
   }
   if (level === 3) {
     return (
-      <h3 id={id} data-active={active || undefined} className={cn('font-display text-xl sm:text-2xl font-bold mt-8 mb-3 text-foreground tracking-tight leading-snug scroll-mt-24', activeCls)}>
+      <h3 id={id} data-active={active || undefined} className={cn('font-display text-lg sm:text-xl font-bold mt-7 mb-2.5 text-foreground tracking-tight leading-snug scroll-mt-24', activeCls)}>
         {text}
       </h3>
     );
   }
   return (
-    <h4 id={id} data-active={active || undefined} className={cn('font-display text-[10px] font-black mt-6 mb-2 text-primary uppercase tracking-[0.2em] scroll-mt-24', activeCls)}>
+    <h4 id={id} data-active={active || undefined} className={cn('font-display text-sm sm:text-base font-bold mt-6 mb-2 text-primary tracking-wide leading-snug scroll-mt-24', activeCls)}>
       {text}
     </h4>
   );
@@ -1018,21 +1037,21 @@ function ApostilaTOC({ items, activeId }: { items: Array<{ id: string; level: nu
   return (
     <nav
       aria-label="Sumário da apostila"
-      className="not-prose mb-8 rounded-xl border border-border/70 bg-muted/30 backdrop-blur-sm overflow-hidden"
+      className="not-prose mb-10 rounded-2xl border border-border/70 bg-muted/30 backdrop-blur-sm overflow-hidden shadow-sm"
     >
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-muted/50 transition-colors"
+        className="w-full flex items-center justify-between px-4 py-3.5 text-left hover:bg-muted/50 transition-colors"
         aria-expanded={open}
       >
-        <span className="flex items-center gap-2 text-[13px] font-semibold text-foreground/90">
+        <span className="flex items-center gap-2 text-sm font-semibold text-foreground/90">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
             <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
             <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
           </svg>
           Nesta apostila
-          <span className="text-[11px] font-normal text-muted-foreground">· {items.length} seções</span>
+          <span className="text-xs font-normal text-muted-foreground">· {items.length} seções</span>
         </span>
         <svg
           width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
@@ -1043,7 +1062,7 @@ function ApostilaTOC({ items, activeId }: { items: Array<{ id: string; level: nu
         </svg>
       </button>
       {open && (
-        <ol className="px-3 pb-3 pt-1 space-y-0.5 max-h-[60vh] overflow-y-auto">
+        <ol className="px-3 pb-3 pt-1 space-y-0.5 max-h-[min(65vh,560px)] overflow-y-auto overflow-x-hidden">
           {items.map((it) => {
             const isActive = activeId === it.id;
             return (
@@ -1053,7 +1072,7 @@ function ApostilaTOC({ items, activeId }: { items: Array<{ id: string; level: nu
                   onClick={(e) => handleClick(e, it.id)}
                   aria-current={isActive ? 'location' : undefined}
                   className={cn(
-                    'flex items-baseline gap-2 px-2 py-1.5 rounded-md text-[13px] leading-snug hover:bg-accent/60 hover:text-foreground transition-colors',
+                    'flex items-start gap-2 px-2 py-2 rounded-md text-[13px] leading-snug hover:bg-accent/60 hover:text-foreground transition-colors',
                     it.level <= 2 && 'font-semibold text-foreground',
                     it.level === 3 && 'pl-5 text-foreground/85',
                     it.level >= 4 && 'pl-8 text-[12px] text-muted-foreground',
@@ -1064,10 +1083,10 @@ function ApostilaTOC({ items, activeId }: { items: Array<{ id: string; level: nu
                 >
                   {hasOwnNumbering(it.text) ? null : (
                     <span className={cn('font-mono text-[10px] shrink-0 tabular-nums', isActive ? 'text-primary' : 'text-primary')} aria-hidden>
-                      {it.number}
+                      {it.number}{' '}
                     </span>
                   )}
-                  <span className={cn('min-w-0', hasOwnNumbering(it.text) ? 'w-full' : 'truncate')}>
+                  <span className={cn('min-w-0 whitespace-normal break-words', hasOwnNumbering(it.text) ? 'w-full' : 'flex-1')}>
                     {it.text}
                   </span>
                 </a>
@@ -1123,7 +1142,7 @@ export function ApostilaContentRenderer({ content, activeHeadingId }: Props) {
     blocks.forEach((b, idx) => {
       if (b.type !== 'heading') return;
       const text = normalizeHeadingText(b.content);
-      if (!text) return;
+      if (!shouldIncludeInToc(text)) return;
       // Normaliza nível para profundidade do TOC: H1/H2 → 1, H3 → 2, H4+ → 3
       const depth = b.level <= 2 ? 1 : b.level === 3 ? 2 : 3;
       counters[depth - 1] += 1;
@@ -1178,7 +1197,7 @@ export function ApostilaContentRenderer({ content, activeHeadingId }: Props) {
             return (
               <p
                 key={i}
-                className="mb-6 last:mb-0 text-foreground/95 font-medium tracking-tight"
+                className="mb-5 last:mb-0 text-foreground/95 font-normal tracking-normal leading-relaxed"
                 dangerouslySetInnerHTML={renderInline(isParagraph ? b.content : '')}
               />
             );
