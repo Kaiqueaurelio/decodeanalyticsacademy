@@ -38,6 +38,15 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: "6.9.3",
+    date: "21/08/2026",
+    title: "Fim das Versões Antigas em Cache",
+    changes: [
+      { kind: "fix", text: "Removido o cache de aplicativo que fazia o site voltar para uma versão antiga sem aviso" },
+      { kind: "improvement", text: "Aparelhos que já tinham o app instalado recebem uma limpeza automática e passam a abrir sempre a versão publicada mais recente" }
+    ]
+  },
+  {
     version: "6.9.2",
     date: "21/08/2026",
     title: "Estabilidade de Atualização do Aplicativo",
