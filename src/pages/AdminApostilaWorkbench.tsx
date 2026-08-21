@@ -643,10 +643,22 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     const savePromise = persistChanges(isManual);
     saveInFlightRef.current = savePromise;
     try {
-      await savePromise;
+      return await savePromise;
     } finally {
       if (saveInFlightRef.current === savePromise) saveInFlightRef.current = null;
     }
+  };
+
+  const navigateAfterSave = async (url: string, options?: { replace?: boolean }) => {
+    const saved = await doSave(false);
+    if (saved) navigate(url, options);
+  };
+
+  const handleBack = async () => {
+    const saved = await doSave(false);
+    if (!saved) return;
+    if (onBack) onBack();
+    else navigate('/admin');
   };
 
   const handleRestoreVersion = (version: { title: string; content: string }) => {
@@ -784,7 +796,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     <div className="flex flex-col h-full bg-card border-r border-border shadow-inner">
       <div className="p-3 border-b border-border space-y-3">
         <div className="flex items-center justify-between">
-          <Button size="sm" variant="ghost" className="h-7 px-2 -ml-2 gap-1.5 text-xs font-bold text-muted-foreground hover:text-foreground" onClick={() => onBack ? onBack() : navigate('/admin')}>
+          <Button size="sm" variant="ghost" className="h-7 px-2 -ml-2 gap-1.5 text-xs font-bold text-muted-foreground hover:text-foreground" onClick={() => { void handleBack(); }}>
             <ArrowLeft className="h-3.5 w-3.5" /> Admin
           </Button>
           <Button
@@ -814,7 +826,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
             <button
               key={a.id}
               onClick={() => {
-                navigate(`/admin/apostilas/${a.id}`);
+                void navigateAfterSave(`/admin/apostilas/${a.id}`);
                 setSidebarOpen(false);
               }}
               className={cn(
@@ -1293,16 +1305,16 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
             <div className="flex flex-1 min-h-0 flex-col px-0 sm:px-16 sm:pb-32">
               {editorExpanded && (
                 <div className="flex shrink-0 items-center gap-2 overflow-x-auto border-y border-border bg-card px-3 py-2">
-                  <Button size="sm" variant={!selectedPageId ? 'secondary' : 'ghost'} className="h-8 shrink-0 text-xs" onClick={() => navigate(`/admin/apostilas/${id}`)}>
+                  <Button size="sm" variant={!selectedPageId ? 'secondary' : 'ghost'} className="h-8 shrink-0 text-xs" onClick={() => { void navigateAfterSave(`/admin/apostilas/${id}`); }}>
                     Página principal
                   </Button>
                   {pages.map((page) => (
                     <Button key={page.id} size="sm" variant={selectedPageId === page.id ? 'secondary' : 'ghost'}
-                      className="h-8 shrink-0 text-xs" onClick={() => navigate(`/admin/apostilas/${id}?page=${page.id}&expanded=1`)}>
+                      className="h-8 shrink-0 text-xs" onClick={() => { void navigateAfterSave(`/admin/apostilas/${id}?page=${page.id}&expanded=1`); }}>
                       {new Date(page.created_at).toLocaleDateString('pt-BR')} · {page.title}
                     </Button>
                   ))}
-                  {id && <NewApostilaPageButton apostilaId={id} />}
+                  {id && <NewApostilaPageButton apostilaId={id} beforeCreate={() => doSave(false)} />}
                 </div>
               )}
               <MarkdownEditor

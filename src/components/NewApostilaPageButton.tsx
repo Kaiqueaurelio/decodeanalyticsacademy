@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 interface NewApostilaPageButtonProps {
   apostilaId: string;
   compact?: boolean;
+  beforeCreate?: () => Promise<boolean>;
   className?: string;
 }
 
@@ -16,6 +17,7 @@ export function NewApostilaPageButton({
   apostilaId,
   compact = false,
   className = '',
+  beforeCreate,
 }: NewApostilaPageButtonProps) {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -31,6 +33,10 @@ export function NewApostilaPageButton({
 
     setCreating(true);
     try {
+      if (beforeCreate) {
+        const saved = await beforeCreate();
+        if (!saved) return;
+      }
       // Se a apostila for um placeholder, converta-a antes de criar a página.
       let targetApostilaId = apostilaId;
       if (apostilaId.startsWith('placeholder')) {
