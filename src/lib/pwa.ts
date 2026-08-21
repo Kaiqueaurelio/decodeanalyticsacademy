@@ -50,12 +50,16 @@ export async function registerServiceWorker() {
     const { Workbox } = await import("workbox-window");
     const wb = new Workbox("/sw.js");
 
+    let reloadingForUpdate = false;
+
     wb.addEventListener("waiting", () => {
       // Nova versão disponível — ativa imediatamente
       wb.messageSkipWaiting();
     });
 
     wb.addEventListener("controlling", () => {
+      if (reloadingForUpdate) return;
+      reloadingForUpdate = true;
       window.location.reload();
     });
 
@@ -68,6 +72,9 @@ export async function registerServiceWorker() {
     };
     checkForUpdate();
     document.addEventListener("visibilitychange", checkForUpdate);
+
+    // Verifica periodicamente sem recarregar a página quando não há atualização.
+    window.setInterval(checkForUpdate, 30 * 60 * 1000);
   } catch (err) {
     console.warn("[PWA] Service worker registration failed:", err);
   }

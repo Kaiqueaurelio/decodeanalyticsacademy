@@ -51,25 +51,26 @@ export default defineConfig(({ mode }) => {
             urlPattern: ({ request }) => request.mode === "navigate",
             handler: "NetworkFirst", // Tenta rede, volta para cache se offline
             options: {
-              // v5: força a separação do HTML publicado após a correção do leitor.
-              cacheName: "decode-html-v5",
-              expiration: { maxEntries: 5, maxAgeSeconds: 24 * 60 * 60 },
+              // v6: reduz a janela em que uma falha de rede pode restaurar uma interface antiga.
+              cacheName: "decode-html-v6",
+              networkTimeoutSeconds: 4,
+              expiration: { maxEntries: 3, maxAgeSeconds: 60 * 60 },
             }
           },
           {
             urlPattern: ({ request }) => request.destination === "script",
             handler: "NetworkFirst", // Tenta rede, volta para cache se offline
             options: {
-              // v5: evita reutilizar o bundle antigo com o sumário aberto.
-              cacheName: "decode-scripts-v5",
-              expiration: { maxEntries: 50, maxAgeSeconds: 24 * 60 * 60 },
+              cacheName: "decode-scripts-v6",
+              networkTimeoutSeconds: 4,
+              expiration: { maxEntries: 50, maxAgeSeconds: 60 * 60 },
             }
           },
           {
             urlPattern: ({ request }) => request.destination === "style",
             handler: "StaleWhileRevalidate",
             options: {
-              cacheName: "decode-css-v5",
+              cacheName: "decode-css-v6",
               expiration: {
                 maxEntries: 30,
                 maxAgeSeconds: 60 * 60,
@@ -80,7 +81,7 @@ export default defineConfig(({ mode }) => {
             urlPattern: ({ request }) => request.destination === "image",
             handler: "CacheFirst",
             options: {
-              cacheName: "decode-images-v5",
+              cacheName: "decode-images-v6",
               expiration: {
                 maxEntries: 120,
                 maxAgeSeconds: 7 * 24 * 60 * 60,
