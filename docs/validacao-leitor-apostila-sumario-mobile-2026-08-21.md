@@ -36,3 +36,29 @@ Após recarregar a mesma URL no servidor local:
 O domínio Lovable ainda mostrou o bundle publicado anterior durante a validação, com o sumário aberto. A correção está pronta no código local e será sincronizada no GitHub; depois da atualização do bundle publicado, a mesma URL passará a abrir com o sumário fechado e o conteúdo visível imediatamente.
 
 Nenhum texto, imagem, áudio ou registro do banco foi alterado.
+
+## Verificação após o push
+
+O commit `bc0ae72f` foi enviado para `origin/main` após rebase dos commits remotos. Na verificação publicada posterior:
+
+| Ambiente | Estado observado |
+|---|---|
+| Local | `aria-expanded=false`, conteúdo visível e 7.116 caracteres no artigo |
+| Vercel | Corpo da apostila renderizado abaixo do cabeçalho; a página não ficou limitada ao sumário |
+| Lovable | Ainda entregou o bundle anterior (`index-K2jvQ3cq.js`) com `aria-expanded=true` e 16 links do sumário; trata-se de publicação/cache antigo, não de ausência de conteúdo |
+
+A rota clássica local `/apostila/b132f212-5ede-4522-92d3-b0ead2cd8ce2` também renderizou o conteúdo completo, mas a rota estruturada `/reader/...` é a rota pública usada no print. A correção de código está no GitHub; a atualização final do Lovable depende de o bundle publicado ser regenerado ou de o cache/service worker desse domínio ser invalidado.
+
+## Reprodução no desktop publicada
+
+A mesma URL foi aberta em viewport de 1280×1100. O DOM confirmou:
+
+- `tocExpanded: true`;
+- 16 links do sumário;
+- 7.683 caracteres no artigo e primeiro heading `Programação linear & Métodos Gráficos`;
+- bundle ativo `index-K2jvQ3cq.js`;
+- service worker controlador `https://decodeanalyticsacademy.lovable.app/sw.js`.
+
+Conclusão: no Lovable o conteúdo existe, mas o domínio ainda entrega o bundle/service worker anterior. A configuração local foi reforçada de `decode-*-v4` para `decode-*-v5`, além de manter `registerType: autoUpdate`, `skipWaiting`, `clientsClaim` e `cleanupOutdatedCaches`, para impedir a reutilização dos caches antigos quando a nova publicação for gerada.
+
+O TypeScript, os 16 arquivos de teste com 106 testes e o build Vite/PWA passaram após essa alteração. O build gerou um novo `dist/sw.js`; os avisos restantes são apenas sobre chunks grandes.
