@@ -243,7 +243,7 @@ export function DiagnosticsPanel() {
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm flex items-center gap-2">
-                <KeyRound className="h-4 w-4 text-primary" /> Estado de autenticação
+                <KeyRound className="h-4 w-4 text-primary" /> Extension in Public
               </CardTitle>
               <CardDescription className="text-xs">Sessão atual, expiração do token e histórico do fluxo de auth.</CardDescription>
             </CardHeader>

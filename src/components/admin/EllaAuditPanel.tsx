@@ -194,7 +194,7 @@ export function EllaAuditPanel() {
           <div>
             <CardTitle className="flex items-center gap-2 text-base">
               <ShieldCheck className="h-4 w-4" strokeWidth={1.75} />
-              Auditoria da assistente
+              Public Can Execute SECURITY DEFINER Function
             </CardTitle>
             <p className="mt-1 max-w-xl text-xs text-muted-foreground">
               Toda ação solicitada à Ella é autorizada no servidor e registrada aqui — com usuário, papel,

@@ -56,7 +56,7 @@ export function SecurityAlertsPanel() {
           <div>
             <CardTitle className="flex items-center gap-2 text-base">
               <ShieldAlert className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
-              Alertas de segurança
+              Signed-In Users Can Execute SECURITY DEFINER Function
             </CardTitle>
             <p className="mt-1 max-w-xl text-xs text-muted-foreground">
               Avisos automáticos sempre que o servidor recusa uma ação: tentativa de agir como
