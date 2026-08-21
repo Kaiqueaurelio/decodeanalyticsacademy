@@ -544,7 +544,9 @@ export default function ApostilaReaderPage() {
       await exportApostilaToPDF({
         title: apostilaTitle,
         category: profile?.course || 'Academia',
-        sections: sections
+        sections: sections,
+        studentName: profile?.full_name || user?.email?.split('@')[0],
+        studentRA: profile?.ra_matriz
       });
 
       toast.success("PDF gerado com sucesso!", { id: tId });
