@@ -1009,34 +1009,37 @@ export default function ApostilaPage({ tab, setTab }: Props) {
                   ) : null
                 )}
 
-                {user && organizedContentBlocks.map((block, blockIndex) => (
-                  <article
-                    key={block.id}
-                    id={`apostila-page-${block.id}`}
-                    data-apostila-page-id={block.id}
-                    className="scroll-mt-24 rounded-3xl border border-border/60 bg-card/70 p-5 sm:p-8 shadow-sm space-y-8"
+                {user && organizedContentBlocks.length > 0 && (
+                  <div
+                    id="apostila-fluxo-continuo"
+                    data-apostila-continuous-flow="true"
+                    className="apostila-continuous-flow space-y-12"
                   >
-                    <header className="flex flex-col gap-2 border-b border-border/50 pb-5">
-                      <div className="font-mono-label text-[10px] uppercase tracking-[0.22em] text-primary/80">
-                        {block.isMain ? 'Página principal' : `Página ${blockIndex} · conteúdo salvo`}
-                        {!block.isMain && block.savedDate && (
-                          <span className="ml-2 text-muted-foreground/80">· aula de {formatApostilaDate(block.savedDate)}</span>
-                        )}
-                      </div>
-                      <h2 className="font-display text-xl sm:text-2xl tracking-tight text-foreground">
-                        {block.title}
-                      </h2>
-                      {!block.isMain && (
-                        <p className="text-xs text-muted-foreground">
-                          Esta página é independente do conteúdo principal e de outras datas desta disciplina.
-                        </p>
-                      )}
-                    </header>
-                    <div className="space-y-10">
-                      {block.sections.map((section, idx) => renderContentSection(section, idx, block.id))}
-                    </div>
-                  </article>
-                ))}
+                    {organizedContentBlocks.map((block, blockIndex) => (
+                      <section
+                        key={block.id}
+                        id={`apostila-page-${block.id}`}
+                        data-apostila-page-id={block.id}
+                        className="scroll-mt-24 space-y-8"
+                      >
+                        <header className="flex flex-col gap-2 border-b border-border/50 pb-5 first:border-t-0">
+                          <div className="font-mono-label text-[10px] uppercase tracking-[0.22em] text-primary/80">
+                            {block.isMain ? 'Conteúdo principal' : `Conteúdo salvo · página ${blockIndex}`}
+                            {!block.isMain && block.savedDate && (
+                              <span className="ml-2 text-muted-foreground/80">· aula de {formatApostilaDate(block.savedDate)}</span>
+                            )}
+                          </div>
+                          <h2 className="font-display text-xl sm:text-2xl tracking-tight text-foreground">
+                            {block.title}
+                          </h2>
+                        </header>
+                        <div className="space-y-10">
+                          {block.sections.map((section, idx) => renderContentSection(section, idx, block.id))}
+                        </div>
+                      </section>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Banner de Anúncios */}
