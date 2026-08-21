@@ -23,7 +23,9 @@ import {
   Volume2,
   VolumeX,
   ShieldAlert,
-  Calendar
+  Calendar,
+  FileText,
+  Download
 } from "lucide-react";
 
 
@@ -43,6 +45,8 @@ import { isPlaceholderPageContent, normalizeContentForComparison } from '@/lib/c
 import { Badge } from "@/components/ui/badge";
 import { extractChronologyDates, getApostilaPageSavedDate, isMissingApostilaPageSavedDateColumn } from "@/lib/apostila-pages";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { exportApostilaToPDF } from "@/lib/apostila-pdf";
+import { parseApostilaContent } from "@/lib/apostila-parser";
 
 
 
@@ -197,10 +201,12 @@ export default function ApostilaReaderPage() {
   const [loadingTree, setLoadingTree] = useState(true);
 
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
-  const { isAdmin } = useAuth();
+  const { isAdmin, user } = useAuth();
+  const { data: profile } = useUserProfile(user?.id);
 
   const [lessonContent, setLessonContent] = useState<string>("");
   const [lessonLoading, setLessonLoading] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const [tocOpen, setTocOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -507,6 +513,48 @@ export default function ApostilaReaderPage() {
     else toast.success("Nota salva");
   }
 
+  async function handleExportPDF() {
+    if (!tree || isExporting) return;
+    setIsExporting(true);
+    const tId = toast.loading("Preparando exportação em PDF...");
+    
+    try {
+      // Coletamos todo o conteúdo visível ou de todas as páginas da apostila
+      // Dependendo da data selecionada, podemos exportar apenas o dia ou tudo
+      const lessonsToExport = selectedDate === 'all' ? flat : filteredFlat;
+      
+      if (lessonsToExport.length === 0) {
+        toast.error("Nenhum conteúdo disponível para exportação.", { id: tId });
+        return;
+      }
+
+      // Concatenamos os conteúdos em Markdown para o parser
+      // Mas o exportApostilaToPDF espera seções pré-parseadas.
+      // Vamos emular a estrutura esperada.
+      const sections = lessonsToExport.map((lesson, idx) => ({
+        id: lesson.id,
+        title: lesson.title,
+        level: 1, // Título principal da lição
+        content: lesson.content_md || ''
+      }));
+
+      // Adicionamos metadados de marca d'água no futuro se o exportador suportar,
+      // por enquanto usamos a branding padrão do exportador.
+      await exportApostilaToPDF({
+        title: apostilaTitle,
+        category: profile?.course || 'Academia',
+        sections: sections
+      });
+
+      toast.success("PDF gerado com sucesso!", { id: tId });
+    } catch (error) {
+      console.error("Erro ao exportar PDF:", error);
+      toast.error("Falha ao gerar o arquivo PDF.", { id: tId });
+    } finally {
+      setIsExporting(false);
+    }
+  }
+
   // Busca dentro da apostila
   const searchResults = useMemo(() => {
     if (!searchQuery.trim()) return [];
@@ -764,6 +812,17 @@ export default function ApostilaReaderPage() {
             aria-label="Marcadores e Seções"
           >
             <BookmarkCheck className="h-4.5 w-4.5" strokeWidth={1.75} />
+          </button>
+          <button
+            className={cn(
+              "inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-accent",
+              isExporting && "animate-pulse"
+            )}
+            onClick={handleExportPDF}
+            disabled={isExporting}
+            aria-label="Exportar PDF"
+          >
+            {isExporting ? <Loader2 className="h-4.5 w-4.5 animate-spin" /> : <Download className="h-4.5 w-4.5" strokeWidth={1.75} />}
           </button>
           <Button
             size="sm"
