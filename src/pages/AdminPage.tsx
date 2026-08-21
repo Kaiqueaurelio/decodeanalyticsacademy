@@ -309,11 +309,10 @@ function MergeButton({ onMerged }: { onMerged: () => void }) {
   );
 }
 // ─── Sidebar Navigation ────────────────────────────────────────
-function AdminSidebar({ tab, setTab, stats, sidebarOpen, setSidebarOpen, profile }: {
+function AdminSidebar({ tab, setTab, stats, sidebarOpen, setSidebarOpen }: {
   tab: Tab; setTab: (t: Tab) => void;
   stats: { apostilas: number; exercises: number; materials: number; users: number };
   sidebarOpen: boolean; setSidebarOpen: (v: boolean) => void;
-  profile: any;
 }) {
   const navigate = useNavigate();
   // Contador ao vivo de alertas de segurança em aberto (visível só para admin).
