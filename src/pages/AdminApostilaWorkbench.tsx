@@ -37,7 +37,7 @@ import { NewApostilaPageButton } from '@/components/NewApostilaPageButton';
 import {
   ArrowLeft, Search, Save, Eye, PenTool, Wand2, Loader2, Menu, FileText,
   ListChecks, PanelRightClose, ExternalLink, GraduationCap, ImageIcon, PanelRightOpen, X, Maximize2, Minimize2,
-  FilePlus2, Plus, Scissors
+  FilePlus2, Plus, Scissors, Clock
 } from 'lucide-react';
 
 import { invokeFunction } from '@/lib/invoke-function';
