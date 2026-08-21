@@ -2614,6 +2614,11 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                                       }}>
                                         <Edit className="h-3.5 w-3.5 mr-2" /> Editar
                                       </DropdownMenuItem>
+                                      {!(a as any).isPlaceholder && (
+                                        <DropdownMenuItem onClick={() => setTab('apostila-history')}>
+                                          <History className="h-3.5 w-3.5 mr-2 text-primary" /> Histórico de Versões
+                                        </DropdownMenuItem>
+                                      )}
                                     </DropdownMenuContent>
                                   </DropdownMenu>
                               </div>
