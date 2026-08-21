@@ -38,6 +38,16 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: "6.7.4",
+    date: "21/08/2026",
+    title: "Visualização Acadêmica & Sincronização",
+    changes: [
+      { kind: "feature", text: "Restaurado botão de 'Visualizar' que abre a apostila em nova aba no modo aluno direto do editor" },
+      { kind: "improvement", text: "Mantida a pré-visualização em modal para ajustes rápidos de rascunho sem sair da página" },
+      { kind: "fix", text: "Estabilizada a comunicação entre o ID da apostila e o cabeçalho do Workbench" }
+    ]
+  },
+  {
     version: "6.7.3",
     date: "21/08/2026",
     title: "Verificação de Persistência & Status de Sincronização",

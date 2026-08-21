@@ -21,7 +21,8 @@ import {
   ChevronRight,
   FilePlus2,
   Scissors,
-  Loader2
+  Loader2,
+  ExternalLink
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
