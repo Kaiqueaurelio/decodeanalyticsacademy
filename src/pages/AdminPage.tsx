@@ -799,10 +799,6 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
   const [importExercises, setImportExercises] = useState<any[]>([]);
   const [extractionMethod, setExtractionMethod] = useState<string>('');
   const [cloning, setCloning] = useState(false);
-  const { isAdmin, user, user: authUser } = useAuth();
-  const { data: profile } = useUserProfile(authUser?.id);
-
-  // Detecção de apostila duplicada
   const [duplicateMatch, setDuplicateMatch] = useState<DuplicateMatch | null>(null);
   const [pendingSave, setPendingSave] = useState<null | (() => Promise<void> | void)>(null);
   // Validação estrutural (H2/H3) antes de salvar
