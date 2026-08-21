@@ -39,13 +39,6 @@ export function getBuildInfo() {
 export const CHANGELOG: Release[] = [
   {
     version: "6.8.0",
-    date: "18/08/2026",
-    title: "Academic Versioning & PDF Hub",
-    description: "Sistema completo de histórico de versões (snapshots), novo motor de PDF com marca d'água acadêmica e filtros cronológicos no Dashboard.",
-    type: "feature"
-  },
-  {
-    version: "6.8.0",
     date: "21/08/2026",
     title: "Academic Versioning & PDF Hub",
     major: true,
