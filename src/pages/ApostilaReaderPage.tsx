@@ -546,7 +546,7 @@ export default function ApostilaReaderPage() {
         category: profile?.course || 'Academia',
         sections: sections,
         studentName: profile?.full_name || user?.email?.split('@')[0],
-        studentRA: profile?.ra_matriz
+        studentRA: profile?.ra
       });
 
       toast.success("PDF gerado com sucesso!", { id: tId });
