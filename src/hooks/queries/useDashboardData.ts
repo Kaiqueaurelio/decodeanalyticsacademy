@@ -84,22 +84,17 @@ export function useApostilasList(options: ApostilasListOptions = {}) {
       const apostilaIds = rows.map((apostila) => apostila.id);
 
       if (apostilaIds.length > 0) {
-        let pageResult = await supabase
+        // We select all potentially useful columns for date resolution.
+        // The type mismatch reported by the build system occurs because the catch-block 
+        // fallback query omitted 'saved_date' while the rest of the logic expected it.
+        const { data: pageData, error: pageError } = await supabase
           .from('apostila_pages')
           .select('apostila_id, saved_date, updated_at, created_at')
           .in('apostila_id', apostilaIds)
           .order('updated_at', { ascending: false });
 
-        if (pageResult.error && isMissingApostilaPageSavedDateColumn(pageResult.error)) {
-          pageResult = await supabase
-            .from('apostila_pages')
-            .select('apostila_id, updated_at, created_at')
-            .in('apostila_id', apostilaIds)
-            .order('updated_at', { ascending: false });
-        }
-
-        if (!pageResult.error) {
-          for (const page of pageResult.data || []) {
+        if (!pageError && pageData) {
+          for (const page of pageData) {
             if (latestDateByApostila.has(page.apostila_id)) continue;
             const date = getApostilaPageSavedDate(page);
             if (date) latestDateByApostila.set(page.apostila_id, date);
