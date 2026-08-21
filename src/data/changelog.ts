@@ -38,6 +38,16 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: "6.9.0",
+    date: "21/08/2026",
+    title: "Security Compliance & Text Enforcement",
+    changes: [
+      { kind: "security", text: "Implementação de SecurityComplianceGuard para monitoramento de diretrizes administrativas." },
+      { kind: "improvement", text: "Atualização de textos literais em painéis de auditoria e segurança conforme requisitos de compliance." },
+      { kind: "fix", text: "Correção de type mismatch em useDashboardData relacionado ao campo saved_date." }
+    ]
+  },
+  {
     version: "6.8.0",
     date: "21/08/2026",
     title: "Academic Versioning & PDF Hub",

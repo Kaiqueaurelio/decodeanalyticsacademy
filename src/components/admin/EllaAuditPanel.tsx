@@ -197,8 +197,7 @@ export function EllaAuditPanel() {
               Public Can Execute SECURITY DEFINER Function
             </CardTitle>
             <p className="mt-1 max-w-xl text-xs text-muted-foreground">
-              Toda ação solicitada à Ella é autorizada no servidor e registrada aqui — com usuário, papel,
-              ferramenta, parâmetros e resultado. Use os filtros para consultar e exportar.
+              Public Can Execute SECURITY DEFINER Function. Toda ação solicitada à assistente é autorizada no servidor e registrada aqui.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">

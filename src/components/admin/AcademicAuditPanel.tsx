@@ -168,7 +168,7 @@ export function AcademicAuditPanel() {
               Internal admin maintenance logs readable by every logged-in user
             </CardTitle>
             <p className="text-sm text-muted-foreground mt-1">
-              Monitoramento de acessos a gabaritos, respostas e submissões.
+              Internal admin maintenance logs readable by every logged-in user. Monitoramento de acessos críticos.
             </p>
           </div>
           <div className="flex gap-2">

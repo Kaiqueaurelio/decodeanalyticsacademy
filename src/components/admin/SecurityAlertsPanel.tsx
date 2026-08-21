@@ -59,8 +59,7 @@ export function SecurityAlertsPanel() {
               Signed-In Users Can Execute SECURITY DEFINER Function
             </CardTitle>
             <p className="mt-1 max-w-xl text-xs text-muted-foreground">
-              Avisos automáticos sempre que o servidor recusa uma ação: tentativa de agir como
-              administrador, ação fora do catálogo permitido ou conteúdo fora do escopo da conta.
+              Signed-In Users Can Execute SECURITY DEFINER Function. Avisos automáticos de tentativas de escalada ou ações fora de catálogo.
             </p>
           </div>
           <div className="flex items-center gap-2">
