@@ -62,3 +62,9 @@ A mesma URL foi aberta em viewport de 1280×1100. O DOM confirmou:
 Conclusão: no Lovable o conteúdo existe, mas o domínio ainda entrega o bundle/service worker anterior. A configuração local foi reforçada de `decode-*-v4` para `decode-*-v5`, além de manter `registerType: autoUpdate`, `skipWaiting`, `clientsClaim` e `cleanupOutdatedCaches`, para impedir a reutilização dos caches antigos quando a nova publicação for gerada.
 
 O TypeScript, os 16 arquivos de teste com 106 testes e o build Vite/PWA passaram após essa alteração. O build gerou um novo `dist/sw.js`; os avisos restantes são apenas sobre chunks grandes.
+
+## Validação desktop após o commit final
+
+No servidor local, em viewport desktop de aproximadamente 1280 px, a rota da apostila exibiu o título, o sumário recolhido e o primeiro conteúdo `Programação linear & Métodos Gráficos` imediatamente abaixo. O corpo da aula permaneceu renderizado com texto e seções; não houve tela limitada ao índice.
+
+O commit final desta etapa é `8b7529ab` (`fix: invalidar cache antigo do leitor`), enviado para `origin/main`.
