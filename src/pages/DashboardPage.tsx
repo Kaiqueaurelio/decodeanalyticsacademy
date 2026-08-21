@@ -56,6 +56,7 @@ export default function DashboardPage() {
     if (saved) return parseInt(saved, 10);
     return null; 
   });
+  const [sortOrder, setSortOrder] = useState<'category' | 'date'>('category');
 
   // Sincroniza o semestre inicial com o perfil do aluno
   useEffect(() => {
