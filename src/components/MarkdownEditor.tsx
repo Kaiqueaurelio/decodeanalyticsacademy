@@ -63,8 +63,8 @@ interface Props {
   rows?: number;
   className?: string;
   showWordCount?: boolean;
-  /** Callback chamado ao Ctrl+S ou clique em Salvar no ribbon. */
-  onSave?: () => void;
+  /** Callback chamado ao Ctrl+S ou clique em Salvar no ribbon. Retorna false quando o backend não persistiu a edição. */
+  onSave?: () => void | Promise<boolean | void>;
   apostilaId?: string;
 }
 
@@ -243,6 +243,16 @@ export function MarkdownEditor({
    * - md vazio + tempUrl + finalUrl → troca todas as ocorrências do blob URL
    *   pela URL pública após o upload concluir.
    */
+  const handleManualSave = useCallback(async () => {
+    setStatus('unsaved');
+    try {
+      const result = await onSave?.();
+      setStatus(result === false ? 'unsaved' : 'saved');
+    } catch {
+      setStatus('unsaved');
+    }
+  }, [onSave]);
+
   const insertImage = useCallback(
     (md: string, opts?: { tempUrl?: string; finalUrl?: string }) => {
       if (!editor) return;
@@ -335,8 +345,7 @@ export function MarkdownEditor({
 
       if (key === 's') {
         e.preventDefault();
-        onSave?.();
-        setStatus('saved');
+        void handleManualSave();
       } else if (key === 'p' || key === 'eye') {
         e.preventDefault();
         setViewMode(viewMode === 'preview' ? 'edit' : 'preview');
@@ -524,7 +533,7 @@ export function MarkdownEditor({
           ><List /></button>
           <button
             type="button"
-            onClick={() => { onSave?.(); setStatus('saved'); }}
+            onClick={() => { void handleManualSave(); }}
             className="mobile-editor-action ml-auto text-primary"
             title="Salvar"
             aria-label="Salvar alterações"
@@ -539,7 +548,7 @@ export function MarkdownEditor({
             onInsertImage={insertImage} 
             onInsertMedia={insertMedia}
             apostilaId={apostilaId}
-            onSave={onSave} 
+            onSave={handleManualSave}
             saveStatus={status} 
           />
           <div className="flex items-center gap-4 px-4 py-1.5 bg-primary/5 border-t border-primary/10 overflow-x-auto scrollbar-none">

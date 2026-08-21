@@ -150,7 +150,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
   const dirtyRef = useRef(false);
   const initialLoadRef = useRef(true);
   const loadRequestRef = useRef(0);
-  const saveInFlightRef = useRef<Promise<void> | null>(null);
+  const saveInFlightRef = useRef<Promise<boolean> | null>(null);
   const createPersistedPageRef = useRef<() => Promise<void>>(() => Promise.resolve());
 
   // Filter logic for sidebar
@@ -376,8 +376,12 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     return () => window.clearTimeout(t);
   }, [title, category, content, semester, course]);
 
-  const persistChanges = async (isManual = false) => {
-    if (!id || !dirtyRef.current) return;
+  const persistChanges = async (isManual = false): Promise<boolean> => {
+    if (!id) return false;
+    if (!dirtyRef.current) {
+      if (isManual) toast.info('Nenhuma alteração pendente para salvar.');
+      return true;
+    }
     setSaving(true);
 
     const operationId = typeof crypto !== 'undefined' && 'randomUUID' in crypto
@@ -435,7 +439,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
           metadata: { selectedPageId },
         });
         setSaving(false);
-        return;
+        return false;
       }
 
       const { data: savedPage, error } = await (supabase.from('apostila_pages' as any) as any)
@@ -463,7 +467,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
           metadata: { chronologyStatus: chronology.status },
         });
         toast.error('Não foi possível salvar esta página.');
-        return;
+        return false;
       }
       
       console.log('[Workbench] Page saved successfully:', savedPage.id);
@@ -529,7 +533,8 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       dirtyRef.current = false;
       localStorage.removeItem(`apostila_backup_${id}_${selectedPageId}`);
       setLastSavedAt(new Date(savedAt));
-      return;
+      if (isManual) toast.success('Página salva com sucesso.');
+      return true;
     }
 
 
@@ -554,7 +559,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         metadata: { currentContentLength: currentApostila.content.length },
       });
       toast.error('Conteúdo preservado para evitar perda.');
-      return;
+      return false;
     }
 
     if (currentApostila && (currentApostila.content !== content || currentApostila.title !== title)) {
@@ -595,11 +600,11 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         description: 'Verifique sua conexão. Tentaremos salvar novamente em instantes.',
         action: isManual ? {
           label: 'Tentar Agora',
-          onClick: () => doSave(true)
+          onClick: () => { void doSave(true); }
         } : undefined,
         duration: 5000,
       });
-      return;
+      return false;
     }
     
           // Limpar apenas o backup da apostila principal. Backups de páginas filhas
@@ -625,12 +630,14 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     setApostilas((prev) =>
       prev.map((p) => (p.id === id ? { ...p, title: title.trim() || 'Sem título', category, semester, course: course.length ? course : null, updated_at: new Date().toISOString() } : p))
     );
+    if (isManual) toast.success('Apostila salva com sucesso.');
+    return true;
   };
 
-  const doSave = async (isManual = false) => {
+  const doSave = async (isManual = false): Promise<boolean> => {
     if (saveInFlightRef.current) {
       await saveInFlightRef.current;
-      if (!dirtyRef.current) return;
+      if (!dirtyRef.current) return true;
     }
 
     const savePromise = persistChanges(isManual);
@@ -1131,7 +1138,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         saving={saving}
         splitting={splitting}
         lastSavedAt={lastSavedAt}
-        onSave={() => doSave(true)}
+        onSave={() => { void doSave(true); }}
         onTogglePublish={togglePublish}
         onPreview={() => { setRightTab('preview'); setRightOpen(true); }}
         onOpenPanel={() => { setRightTab('materials'); setRightOpen(true); }}
@@ -1301,7 +1308,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
               <MarkdownEditor
                 value={content}
                 onChange={setContent}
-                onSave={doSave}
+                onSave={() => doSave(true)}
                 apostilaId={id}
                 placeholder="Comece a escrever ou digite '/' para comandos..."
                 className="flex-1 min-h-0 border-none shadow-none bg-transparent"
