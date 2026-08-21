@@ -1495,6 +1495,8 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
         title: a.title,
         category: a.category,
         sections: sections.map((s) => ({ id: s.id, title: s.title, level: s.level, content: s.content })),
+        studentName: profile?.full_name || user?.email?.split('@')[0],
+        studentRA: profile?.ra
       });
       toast.success('PDF gerado com sucesso', { id: t });
     } catch (e: any) {
