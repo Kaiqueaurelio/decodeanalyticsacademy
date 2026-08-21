@@ -239,7 +239,7 @@ const ADMIN_TAB_IDS = new Set<Tab>([
   'testimonials', 'ai', 'ella-settings', 'performance', 'smoke', 'diagnostics', 'ads',
   'ads-chat', 'social', 'rss', 'courses', 'changelog', 'leads', 'ella-audit',
   'security-alerts', 'sponsors', 'tasks', 'photoroom', 'edit', 'review', 'enem-apostilas',
-  'cc-apostilas', 'health-dashboard', 'cloning-dashboard', 'mcp-settings', 'jobs',
+  'cc-apostilas', 'health-dashboard', 'cloning-dashboard', 'mcp-settings', 'jobs', 'academic-audit', 'apostila-validation', 'apostila-history'
 ]);
 
 function isAdminTab(value: string | null | undefined): value is Tab {
