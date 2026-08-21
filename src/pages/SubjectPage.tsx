@@ -5,6 +5,7 @@ import { NotionSubjectDetail } from '@/components/notion/NotionSubjectDetail';
 import { PageSkeleton } from '@/components/PageSkeleton';
 import { useAuth } from '@/hooks/useAuth';
 import { guessSemesterFromCategory } from '@/lib/subject-semester-map';
+import { formatApostilaDate, getApostilaPageSavedDate, isMissingApostilaPageSavedDateColumn } from '@/lib/apostila-pages';
 
 function sortApostilasDeterministically(apostilas: any[]) {
   return [...apostilas].sort((a, b) => {
@@ -87,10 +88,37 @@ const SubjectPage = () => {
 
       console.log(`[SubjectPage] Total apostilas fetched: ${allApostilas?.length}. Matches found: ${matches.length}. Target key: ${targetKey}`);
 
+      const latestDateByApostila = new Map<string, string>();
+      const matchIds = matches.map((row) => row.id);
+      if (matchIds.length > 0) {
+        let pageResult: { data: any[] | null; error: any } = await supabase
+          .from('apostila_pages')
+          .select('apostila_id, saved_date, updated_at, created_at')
+          .in('apostila_id', matchIds)
+          .order('updated_at', { ascending: false });
+
+        if (pageResult.error && isMissingApostilaPageSavedDateColumn(pageResult.error)) {
+          pageResult = await supabase
+            .from('apostila_pages')
+            .select('apostila_id, updated_at, created_at')
+            .in('apostila_id', matchIds)
+            .order('updated_at', { ascending: false });
+        }
+
+        if (!pageResult.error) {
+          for (const page of pageResult.data || []) {
+            if (latestDateByApostila.has(page.apostila_id)) continue;
+            const date = getApostilaPageSavedDate(page);
+            if (date) latestDateByApostila.set(page.apostila_id, date);
+          }
+        }
+      }
+
       const normalizedRows = matches.map((row) => ({
         ...row,
+        saved_date: latestDateByApostila.get(row.id) ?? getApostilaPageSavedDate(row),
         semester: row.semester ?? guessSemesterFromCategory(row.category) ?? guessSemesterFromCategory(decodedCategory) ?? 1,
-      }));
+      })).sort((a, b) => String(b.saved_date || '').localeCompare(String(a.saved_date || '')) || String(a.title || '').localeCompare(String(b.title || '')));
 
       setRows(sortApostilasDeterministically(normalizedRows));
       setLoading(false);
@@ -126,6 +154,7 @@ const SubjectPage = () => {
         documents: rows.map((row) => ({
           id: row.id,
           title: row.title || 'Caderno de Estudos',
+          dateLabel: formatApostilaDate(row.saved_date),
           type: 'exam_review' as const,
           onClick: () => handleOpenApostila(row),
         })),

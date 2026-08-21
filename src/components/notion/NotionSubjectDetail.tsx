@@ -29,6 +29,7 @@ interface DocumentNode {
   title: string;
   type: 'note' | 'summary' | 'exam_review' | 'calendar';
   onClick?: () => void;
+  dateLabel?: string | null;
 }
 
 interface TopicSection {

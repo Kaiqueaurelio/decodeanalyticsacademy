@@ -7,6 +7,7 @@ interface DocumentNode {
   title: string;
   type: 'note' | 'summary' | 'exam_review' | 'calendar';
   onClick?: () => void;
+  dateLabel?: string | null;
 }
 
 interface TopicAccordionProps {
@@ -108,6 +109,9 @@ export function NotionTopicAccordion({
                 <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest flex items-center gap-1">
                   <span className="h-1 w-1 rounded-full bg-muted-foreground/40" />
                   {getLabel(doc.type)}
+                  {doc.dateLabel && doc.dateLabel !== 'Data pendente' && (
+                    <span className="ml-2 text-primary/80 normal-case tracking-normal">Aula: {doc.dateLabel}</span>
+                  )}
                 </span>
               </div>
             </button>

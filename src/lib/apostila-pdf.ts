@@ -14,6 +14,7 @@ interface ExportOpts {
   sections: Section[];
   studentName?: string;
   studentRA?: string;
+  savedDate?: string | null;
 }
 
 function slugify(s: string) {
@@ -27,7 +28,7 @@ function slugify(s: string) {
 }
 
 /** Constrói o HTML "print-ready" da apostila inteira, fora da tela. */
-function buildPrintContainer({ title, category, sections, studentName, studentRA }: ExportOpts): HTMLDivElement {
+function buildPrintContainer({ title, category, sections, studentName, studentRA, savedDate }: ExportOpts): HTMLDivElement {
   const wrap = document.createElement('div');
   wrap.style.cssText = `
     position: absolute; left: 0; top: 0;
@@ -82,6 +83,7 @@ function buildPrintContainer({ title, category, sections, studentName, studentRA
     <div style="font-size: 12px; color: #6b7280; line-height: 1.6;">
       <div>Material didático · ${sections.length} seções</div>
       <div style="margin-top: 4px;">Gerado em ${today}</div>
+      ${savedDate ? `<div style="margin-top: 4px; font-weight: 600; color: #334155;">Data da aula: ${escapeHtml(formatDateForPdf(savedDate))}</div>` : ''}
       ${studentName ? `<div style="margin-top: 8px; font-weight: 600;">Estudante: ${escapeHtml(studentName)} (${escapeHtml(studentRA || '')})</div>` : ''}
       <div style="margin-top: 18px; font-family: 'Courier New', monospace; font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: #94a3b8;">
         Desenvolvido por: Kaique Aurelio &amp; Decode Analytics
@@ -171,6 +173,11 @@ function escapeHtml(s: string): string {
 }
 
 function escapeAttr(s: string): string { return escapeHtml(s); }
+
+function formatDateForPdf(value: string): string {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  return match ? `${match[3]}/${match[2]}/${match[1]}` : value;
+}
 
 function stripMd(s: string): string {
   return (s || '').replace(/\[([^\]]+)\]\([^)]+\)/g, '$1').replace(/\*{1,3}([^*]+)\*{1,3}/g, '$1').replace(/_{1,3}([^_]+)_{1,3}/g, '$1').replace(/`([^`]+)`/g, '$1').replace(/^#{1,6}\s+/g, '').trim();

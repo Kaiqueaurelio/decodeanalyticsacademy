@@ -97,6 +97,7 @@ import JobsManager from '@/components/admin/JobsManager';
 import { AcademicAuditPanel } from '@/components/admin/AcademicAuditPanel';
 import { ApostilaValidationDashboard } from '@/components/admin/ApostilaValidationDashboard';
 import { recordApostilaOperation, runApostilaChronologyValidation } from '@/lib/apostila-diagnostics';
+import { formatApostilaDate, getApostilaPageSavedDate, isMissingApostilaPageSavedDateColumn } from '@/lib/apostila-pages';
 
 
 
@@ -105,6 +106,7 @@ const LazyNewApostilaPageButton = React.lazy(() =>
 );
 
 type Apostila = Tables<'apostilas'>;
+type AdminApostila = Apostila & { saved_date?: string | null };
 type Exercise = Tables<'exercises'>;
 type Material = Tables<'materials'>;
 
@@ -749,7 +751,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
     }
   }, [propSetTab, navigate, location.pathname]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [apostilas, setApostilas] = useState<Apostila[]>([]);
+  const [apostilas, setApostilas] = useState<AdminApostila[]>([]);
   const [exercises, setExercises] = useState<Record<string, Exercise[]>>({});
   const [dbCategories, setDbCategories] = useState<{ id: string; name: string; sort_order: number }[]>([]);
   const [allAnswers, setAllAnswers] = useState<any[]>([]);
@@ -764,6 +766,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
   const [filterSemester, setFilterSemester] = useState<string>('all');
   const [filterCourse, setFilterCourse] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<'all' | 'published' | 'draft'>('all');
+  const [filterSortKey, setFilterSortKey] = useState<'created_desc' | 'updated_desc' | 'title_asc'>('created_desc');
   const [expandedCats, setExpandedCats] = useState<Set<string>>(new Set());
 
   useEffect(() => {
@@ -957,7 +960,34 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
       supabase.from('categories').select('*').order('sort_order', { ascending: true }),
       supabase.from('profiles').select('*').order('created_at', { ascending: false }),
     ]);
-    setApostilas(ap || []);
+    const apostilaRows = (ap || []) as AdminApostila[];
+    const latestDateByApostila = new Map<string, string>();
+    const apostilaIds = apostilaRows.map((apostila) => apostila.id);
+    if (apostilaIds.length > 0) {
+      let pageResult: { data: any[] | null; error: any } = await (supabase.from('apostila_pages') as any)
+        .select('apostila_id, saved_date, updated_at, created_at')
+        .in('apostila_id', apostilaIds)
+        .order('updated_at', { ascending: false });
+
+      if (pageResult.error && isMissingApostilaPageSavedDateColumn(pageResult.error)) {
+        pageResult = await (supabase.from('apostila_pages') as any)
+          .select('apostila_id, updated_at, created_at')
+          .in('apostila_id', apostilaIds)
+          .order('updated_at', { ascending: false });
+      }
+
+      if (!pageResult.error) {
+        for (const page of pageResult.data || []) {
+          if (latestDateByApostila.has(page.apostila_id)) continue;
+          const date = getApostilaPageSavedDate(page);
+          if (date) latestDateByApostila.set(page.apostila_id, date);
+        }
+      }
+    }
+    setApostilas(apostilaRows.map((apostila) => ({
+      ...apostila,
+      saved_date: latestDateByApostila.get(apostila.id) ?? null,
+    })));
     const map: Record<string, Exercise[]> = {};
     ex?.forEach(e => { if (!map[e.apostila_id]) map[e.apostila_id] = []; map[e.apostila_id].push(e); });
     setExercises(map);
@@ -1486,7 +1516,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
     loadAll();
   };
 
-  const downloadApostilaPdf = async (a: Apostila) => {
+  const downloadApostilaPdf = async (a: AdminApostila) => {
     const t = toast.loading(`Gerando PDF de "${a.title}"…`);
     try {
       const [{ exportApostilaToPDF }, { parseApostilaContent }] = await Promise.all([
@@ -1498,8 +1528,10 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
         title: a.title,
         category: a.category,
         sections: sections.map((s) => ({ id: s.id, title: s.title, level: s.level, content: s.content })),
-        studentName: profile?.full_name || user?.email?.split('@')[0],
-        studentRA: profile?.ra
+                 studentName: profile?.full_name || user?.email?.split('@')[0],
+         studentRA: profile?.ra,
+         savedDate: a.saved_date,
+
       });
       toast.success('PDF gerado com sucesso', { id: t });
     } catch (e: any) {
@@ -1794,11 +1826,18 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
           updated_at: new Date().toISOString()
         }));
         
-      return [...list, ...placeholders] as any[];
+      list = [...list, ...placeholders] as any[];
     }
 
-    return list;
-  }, [apostilas, searchQuery, filterStatus, filterSemester, filterCourse]);
+    return [...list].sort((a, b) => {
+      if (filterSortKey === 'title_asc') {
+        return String(a.title || '').localeCompare(String(b.title || ''), 'pt-BR', { sensitivity: 'base' });
+      }
+      const aValue = filterSortKey === 'updated_desc' ? (a.saved_date || a.updated_at || a.created_at) : a.created_at;
+      const bValue = filterSortKey === 'updated_desc' ? (b.saved_date || b.updated_at || b.created_at) : b.created_at;
+      return new Date(bValue || 0).getTime() - new Date(aValue || 0).getTime();
+    });
+  }, [apostilas, searchQuery, filterStatus, filterSemester, filterCourse, filterSortKey]);
 
   const filteredMaterials = useMemo(() => {
     if (!searchQuery.trim()) return materials;
@@ -2431,8 +2470,16 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                         <SelectItem value="draft">Ocultas</SelectItem>
                       </SelectContent>
                     </Select>
-                    {(filterSemester !== 'all' || filterCourse !== 'all' || filterStatus !== 'all') && (
-                      <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => { setFilterSemester('all'); setFilterCourse('all'); setFilterStatus('all'); }}>
+                    <Select value={filterSortKey} onValueChange={(v: any) => setFilterSortKey(v)}>
+                      <SelectTrigger className="h-7 text-xs w-auto min-w-[150px]"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="created_desc">Mais recentes cadastradas</SelectItem>
+                        <SelectItem value="updated_desc">Data da aula</SelectItem>
+                        <SelectItem value="title_asc">Título A–Z</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {(filterSemester !== 'all' || filterCourse !== 'all' || filterStatus !== 'all' || filterSortKey !== 'created_desc') && (
+                      <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => { setFilterSemester('all'); setFilterCourse('all'); setFilterStatus('all'); setFilterSortKey('created_desc'); }}>
                         <X className="h-3 w-3 mr-1" /> Limpar
                       </Button>
                     )}
@@ -2516,7 +2563,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                                     <span>·</span>
                                     <span className="whitespace-nowrap">{exCount} ex.</span>
                                     <span>·</span>
-                                    <span className="whitespace-nowrap">{new Date(a.created_at).toLocaleDateString('pt-BR')}</span>
+                                    <span className="whitespace-nowrap">Salva: {formatApostilaDate(a.saved_date) !== 'Data pendente' ? formatApostilaDate(a.saved_date) : new Date(a.created_at).toLocaleDateString('pt-BR')}</span>
                                   </div>
                                 </div>
                               </div>

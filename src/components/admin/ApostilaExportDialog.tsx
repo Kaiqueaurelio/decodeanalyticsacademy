@@ -12,6 +12,7 @@ interface Apostila {
   title: string;
   category: string;
   content: string | null;
+  saved_date?: string | null;
 }
 
 interface Props {
@@ -42,7 +43,7 @@ export function ApostilaExportDialog({ apostila, open, onOpenChange }: Props) {
         id: s.id, title: s.title, level: s.level, content: s.content,
       }));
       if (kind === "pdf") {
-        await exportApostilaToPDF({ title: apostila.title, category: apostila.category, sections });
+        await exportApostilaToPDF({ title: apostila.title, category: apostila.category, sections, savedDate: apostila.saved_date });
       } else {
         await exportApostilaToDOCX({ title: apostila.title, category: apostila.category, sections });
       }

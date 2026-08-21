@@ -444,10 +444,16 @@ export default function ApostilaPage({ tab, setTab }: Props) {
     const t = toast.loading('Gerando PDF da apostila…');
     try {
       const { exportApostilaToPDF } = await import('@/lib/apostila-pdf');
+      const pageDates = extraPages
+        .map((page) => getApostilaPageSavedDate(page))
+        .filter((date): date is string => Boolean(date))
+        .sort();
+      const savedDate = pageDates[pageDates.length - 1] || getApostilaPageSavedDate(apostila);
       await exportApostilaToPDF({
         title: apostila.title,
         category: apostila.category,
         sections: sections.map((s) => ({ id: s.id, title: s.title, level: s.level, content: s.content })),
+        savedDate,
       });
       toast.success('PDF gerado com sucesso', { id: t });
     } catch (e: any) {
@@ -456,7 +462,7 @@ export default function ApostilaPage({ tab, setTab }: Props) {
     } finally {
       setExportingPdf(false);
     }
-  }, [apostila, sections]);
+  }, [apostila, extraPages, sections]);
 
   const handleExportDocx = useCallback(async () => {
     if (!apostila) return;

@@ -24,6 +24,7 @@ const ResetPasswordPage = lazy(() => import('@/pages/ResetPasswordPage'));
 const DashboardPage = lazy(() => import('@/pages/DashboardPage'));
 const ApostilaPage = lazy(() => import('@/pages/ApostilaPage'));
 const ApostilaReaderPage = lazy(() => import('@/pages/ApostilaReaderPage'));
+const ApostilaDoDiaPage = lazy(() => import('@/pages/ApostilaDoDiaPage'));
 const SubjectPage = lazy(() => import('@/pages/SubjectPage'));
 const NotebookPage = lazy(() => import('@/pages/NotebookPage'));
 const SimuladoPage = lazy(() => import('@/pages/SimuladoPage'));
@@ -117,6 +118,7 @@ const AppContent = () => {
           <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
           <Route path="/apostila/:id" element={<ProtectedRoute><ApostilaPage /></ProtectedRoute>} />
           <Route path="/reader/:id" element={<ProtectedRoute><ApostilaReaderPage /></ProtectedRoute>} />
+          <Route path="/aula-do-dia" element={<ProtectedRoute><ApostilaDoDiaPage /></ProtectedRoute>} />
           <Route path="/materia/:id" element={<ProtectedRoute><SubjectPage /></ProtectedRoute>} />
           <Route path="/caderno/:notebookId" element={<ProtectedRoute><NotebookPage /></ProtectedRoute>} />
           <Route path="/simulado/:id" element={<ProtectedRoute><SimuladoPage /></ProtectedRoute>} />

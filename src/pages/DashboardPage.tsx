@@ -124,6 +124,15 @@ export default function DashboardPage() {
         })
       : apostilasRaw.filter(a => a.published);
 
+    const sortByPreference = (items: ApostilaSummary[]) => {
+      if (sortOrder !== 'date') return items;
+      return [...items].sort((a, b) => {
+        const aTime = new Date(a.saved_date || a.updated_at || a.created_at).getTime();
+        const bTime = new Date(b.saved_date || b.updated_at || b.created_at).getTime();
+        return (Number.isFinite(bTime) ? bTime : 0) - (Number.isFinite(aTime) ? aTime : 0) || String(a.category || '').localeCompare(String(b.category || ''));
+      });
+    };
+
     // 2. Placeholder para disciplinas da grade (1º ao 8º)
     const showAcademicPlaceholders = true;
     if (selectedSemester && showAcademicPlaceholders) {
@@ -188,11 +197,11 @@ export default function DashboardPage() {
           teacher: teacherMap[subject] || 'Professor da Disciplina'
         }));
 
-      return [...list, ...placeholders] as unknown as ApostilaSummary[];
+      return sortByPreference([...list, ...placeholders] as unknown as ApostilaSummary[]);
     }
 
-    return list;
-  }, [apostilasRaw, selectedSemester, fixedApostilas]);
+    return sortByPreference(list);
+  }, [apostilasRaw, selectedSemester, fixedApostilas, sortOrder]);
   
   
 
@@ -376,31 +385,7 @@ export default function DashboardPage() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => {
-                  const today = new Date().toLocaleDateString('pt-BR');
-                  // Procura a aula que tem a data de hoje formatada (dd/mm/aaaa) ou a mais recente
-                  const todayApostila = apostilas.find(a => {
-                    const savedDate = (a as any).saved_date ? new Date((a as any).saved_date).toLocaleDateString('pt-BR') : null;
-                    const updatedAt = a.updated_at ? new Date(a.updated_at).toLocaleDateString('pt-BR') : null;
-                    return savedDate === today || updatedAt === today;
-                  });
-
-                  if (todayApostila) {
-                    navigate(`/reader/${todayApostila.id}`);
-                  } else {
-                    // Fallback para a mais recente do semestre selecionado se não houver hoje
-                    const mostRecent = [...apostilas]
-                      .filter(a => !(a as any).isPlaceholder)
-                      .sort((a, b) => new Date(b.updated_at || b.created_at).getTime() - new Date(a.updated_at || a.created_at).getTime())[0];
-                    
-                    if (mostRecent) {
-                      navigate(`/reader/${mostRecent.id}`);
-                      toast.info("Abrindo aula mais recente.");
-                    } else {
-                      toast.info("Nenhuma aula encontrada.");
-                    }
-                  }
-                }}
+                onClick={() => navigate(`/aula-do-dia${selectedSemester ? `?semester=${selectedSemester}` : ''}`)}
                 className="h-8 px-3 text-[10px] font-black uppercase tracking-widest gap-2 bg-purple-500/10 border-purple-500/20 text-purple-400 hover:bg-purple-500/20"
               >
                 <Sparkles className="h-3 w-3" />

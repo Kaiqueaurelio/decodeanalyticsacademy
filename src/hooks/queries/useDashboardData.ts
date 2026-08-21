@@ -7,6 +7,7 @@ import type { Tables } from '@/integrations/supabase/types';
 import { guessSemesterFromCategory, type CourseCode } from '@/lib/subject-semester-map';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserProfile } from '@/hooks/queries/useUserProfile';
+import { getApostilaPageSavedDate, isMissingApostilaPageSavedDateColumn } from '@/lib/apostila-pages';
 
 export type ApostilaSummary = Pick<
   Tables<'apostilas'>,
@@ -16,6 +17,7 @@ export type ApostilaSummary = Pick<
   course: CourseCode[] | null;
   cover_url: string | null;
   teacher: string | null;
+  saved_date: string | null;
 };
 
 // Colunas leves: SEM `content` nem `content_backup` (podem ter centenas de KB).
@@ -77,7 +79,35 @@ export function useApostilasList(options: ApostilasListOptions = {}) {
 
       if (error) throw error;
 
-      return ((data || []) as ApostilaSummary[]).map((apostila) => {
+      const rows = (data || []) as ApostilaSummary[];
+      const latestDateByApostila = new Map<string, string>();
+      const apostilaIds = rows.map((apostila) => apostila.id);
+
+      if (apostilaIds.length > 0) {
+        let pageResult = await supabase
+          .from('apostila_pages')
+          .select('apostila_id, saved_date, updated_at, created_at')
+          .in('apostila_id', apostilaIds)
+          .order('updated_at', { ascending: false });
+
+        if (pageResult.error && isMissingApostilaPageSavedDateColumn(pageResult.error)) {
+          pageResult = await supabase
+            .from('apostila_pages')
+            .select('apostila_id, updated_at, created_at')
+            .in('apostila_id', apostilaIds)
+            .order('updated_at', { ascending: false });
+        }
+
+        if (!pageResult.error) {
+          for (const page of pageResult.data || []) {
+            if (latestDateByApostila.has(page.apostila_id)) continue;
+            const date = getApostilaPageSavedDate(page);
+            if (date) latestDateByApostila.set(page.apostila_id, date);
+          }
+        }
+      }
+
+      return rows.map((apostila) => ({ ...apostila, saved_date: latestDateByApostila.get(apostila.id) ?? null })).map((apostila) => {
         let semester = apostila.semester ?? guessSemesterFromCategory(apostila.category) ?? null;
         
         // Correção explícita para Sistemas Operacionais e Mobile (S6)
