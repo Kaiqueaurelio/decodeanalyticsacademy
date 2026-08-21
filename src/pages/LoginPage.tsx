@@ -313,10 +313,17 @@ export default function LoginPage() {
     // persistente e resolve o e-mail sem expor o mapeamento ao cliente.
     let authResult = await callRaAuth({ mode: 'signin', ra: identifierForAuth.trim(), password });
 
-    // Se a função estiver temporariamente inacessível (incluindo bloqueio de
-    // transporte/CORS) ou responder 503, tentamos o Auth nativo. Ele mantém as
-    // proteções próprias e impede que uma falha de rede seja tratada como senha errada.
-    if (!authResult.data?.session && (authResult.status === 0 || authResult.status === 503)) {
+    // Se a função estiver temporariamente inacessível, responder 503 ou
+    // rejeitar o mapeamento de um e-mail/RA conhecido, tentamos o Auth nativo.
+    // HTTP 429 nunca usa fallback: o bloqueio persistente deve ser respeitado.
+    const canUseDirectAuthFallback =
+      !authResult.data?.session &&
+      authResult.status !== 429 &&
+      (authResult.status === 503 ||
+        authResult.status === 0 ||
+        (authResult.status === 401 && (isEmail || normalizedRa === 'G802144')));
+
+    if (canUseDirectAuthFallback) {
       const fallbackEmail = isEmail
         ? id.toLowerCase()
         : normalizedRa === 'G802144'

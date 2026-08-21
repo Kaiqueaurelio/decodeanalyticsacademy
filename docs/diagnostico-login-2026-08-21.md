@@ -11,3 +11,9 @@ A publicação remota foi apenas observada; nenhuma credencial foi enviada pelo 
 Após o push do commit `215abe074f1d1581893b8cebd6015278b9ea6d30`, a tela pública do Lovable continuou carregando a interface de login sem portal externo. O navegador não enviou credenciais nessa verificação.
 
 O projeto Vercel reconheceu o novo commit, mas o deployment `dpl_DHVCDytknp5uiaCVAocyYTcnJ1hA` ficou com estado `CANCELED`. A metadata informa `githubCommitVerification: unverified`. Portanto, a correção está no GitHub e no checkout local, mas ainda não está ativa no domínio Vercel até que o bloqueio de commits não verificados seja resolvido pela configuração da integração ou por um fluxo de publicação autorizado.
+
+## Reprodução no domínio Vercel — 21/08/2026
+
+A página `https://decodeanalyticsacademy.vercel.app/login` carregou a interface de login com `decoanalytics@outlook.com.br` preenchido e o campo de senha mascarado. A tela exibe `SUPABASE AUTH / ONLINE` e a mensagem de e-mail detectado. Não foi enviada uma tentativa nesta reprodução.
+
+A coleta anterior confirmou que esse domínio ainda entrega o bundle `index-DiN1PBWL.js` de 19/08/2026, portanto qualquer correção existente apenas no repositório ou em um deployment cancelado não pode afetar esse formulário público.

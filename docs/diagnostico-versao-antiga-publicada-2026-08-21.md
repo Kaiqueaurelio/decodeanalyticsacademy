@@ -22,3 +22,14 @@ A página pública da Vercel (`https://decodeanalyticsacademy.vercel.app/`) est�
 ## Diagnóstico
 
 Os dois domínios estão servindo artefatos antigos em relação ao código atual do repositório. O problema não é ausência dos dados do Dashboard: é publicação desatualizada e/ou service worker carregando artefatos antigos. Nenhuma alteração de banco foi feita nesta etapa.
+
+## Medição atualizada — 21/08/2026 às 22:09 GMT-3
+
+A coleta direta repetida confirmou a divergência:
+
+| Domínio | Evidência atual | Leitura |
+|---|---|---|
+| `decodeanalyticsacademy.lovable.app` | `x-deployment-id: c04091b6-b715-4702-874c-68c309ee6936`, `cache-control: no-cache, must-revalidate, max-age=0`, bundle `assets/index-K2jvQ3cq.js` | O Lovable está servindo um deployment próprio. |
+| `decodeanalyticsacademy.vercel.app` | `last-modified: Wed, 19 Aug 2026 03:12:07 GMT`, `age: 241028`, `x-vercel-cache: HIT`, bundle `assets/index-DiN1PBWL.js` | A Vercel continua entregando a produção antiga de 19/08. |
+
+A conclusão permanece: o problema é de publicação e cache de produção, não de dados do banco. O commit atual foi reconhecido pela Vercel, mas o deployment foi cancelado porque `githubCommitVerification` ficou `unverified`.
