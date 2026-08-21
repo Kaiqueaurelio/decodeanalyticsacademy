@@ -1929,6 +1929,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                     materials: materials.length,
                     users: users.length,
                   }}
+                  autoFocusSearch={sidebarOpen}
                   footerSlot={
                     <div className="space-y-1">
                       <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Acervos</p>
