@@ -112,13 +112,15 @@ export function ApostilaHealthBar({
                 Salvando...
               </span>
             ) : lastSavedAt ? (
-              <span className="flex items-center gap-1.5 text-[10px] text-emerald-500 font-bold animate-in fade-in duration-500">
-                <Check className="h-3 w-3" />
-                Salvo
-                <span className="text-muted-foreground font-normal ml-1">
-                  ({lastSavedAt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })})
+              <div className="flex flex-col items-end">
+                <span className="flex items-center gap-1.5 text-[10px] text-emerald-500 font-black animate-in fade-in duration-500">
+                  <Check className="h-3 w-3" />
+                  SALVO NO BANCO
                 </span>
-              </span>
+                <span className="text-[9px] text-muted-foreground font-medium opacity-70">
+                  Sincronizado: {lastSavedAt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                </span>
+              </div>
             ) : null}
           </div>
 
