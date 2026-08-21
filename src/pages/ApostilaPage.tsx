@@ -312,21 +312,18 @@ export default function ApostilaPage({ tab, setTab }: Props) {
     const mainContent = isPlaceholderApostilaContent(apostila?.content)
       ? structuredContent
       : (apostila?.content || '');
-    const mainKey = normalizeContentForComparison(mainContent);
+    
+    // Filtro de desduplicação e integridade cronológica
     const distinctPages = mergeDistinctPages(sortedExtraPages).filter((page) => {
-      const pageKey = normalizeContentForComparison(page.content || '');
       if (isPlaceholderPageContent(page.content || '')) return false;
-      // Verificação rigorosa para evitar páginas que já existem no conteúdo principal
-      if (!pageKey) return false;
       
-      // Bloqueio de mistura de datas: se a página tiver uma data no título, 
-      // não deve ser fundida se o conteúdo principal já contiver essa data 
-      // mas referindo-se a um contexto diferente.
-      const pageDate = page.title.match(/(\d{2})\/(\d{2})\/(\d{4})/);
-      if (pageDate && mainContent.includes(pageDate[0]) && !mainContent.includes(pageKey)) {
-        // Se a data existe no principal mas o conteúdo da página não está lá,
-        // tratamos como conteúdo distinto obrigatoriamente.
-      } else if (mainKey.includes(pageKey) || pageKey.includes(mainKey)) {
+      const pageKey = normalizeContentForComparison(page.content || '');
+      if (!pageKey) return false;
+
+      // Lógica de desduplicação contra o conteúdo principal
+      const mainKey = normalizeContentForComparison(mainContent);
+      if (mainKey.includes(pageKey) || pageKey.includes(mainKey)) {
+        // Se a página for um subconjunto ou superconjunto do conteúdo principal, a removemos para evitar eco.
         return false;
       }
       
