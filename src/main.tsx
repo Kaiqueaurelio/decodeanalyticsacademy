@@ -5,6 +5,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { installPerfMonitor } from "./lib/perf-monitor";
 import { installRuntimeLogger } from "./lib/runtime-logs";
 import { checkAndCleanOldCaches } from "./lib/cacheBuster";
+import { registerServiceWorker } from "./lib/pwa";
 
 // Remove credenciais antigas que foram salvas em base64 pelo fluxo "lembrar-me".
 // O app pode lembrar apenas o identificador; senha deve ficar com o navegador/gerenciador de senhas.
@@ -23,7 +24,6 @@ import { checkAndCleanOldCaches } from "./lib/cacheBuster";
 })();
 
 installRuntimeLogger();
-checkAndCleanOldCaches();
 installPerfMonitor();
 
 window.addEventListener("error", (event) => {
@@ -80,4 +80,8 @@ createRoot(document.getElementById("root")!).render(
     <App />
   </ErrorBoundary>,
 );
+
+// Primeiro invalida artefatos de outra versão; depois registra o worker atual.
+// Essa ordem evita que um worker antigo reassuma o controle durante a limpeza.
+void checkAndCleanOldCaches().finally(() => registerServiceWorker());
 // Trigger deploy Tue Aug 18 23:50:52 UTC 2026

@@ -38,6 +38,15 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: "6.9.2",
+    date: "21/08/2026",
+    title: "Estabilidade de Atualização do Aplicativo",
+    changes: [
+      { kind: "fix", text: "Corrigido o fluxo de atualização que podia exibir temporariamente uma versão antiga do aplicativo" },
+      { kind: "improvement", text: "O PWA agora verifica novas versões ao abrir, ao retornar para a aba e periodicamente, com recarga única e segura" }
+    ]
+  },
+  {
     version: "6.9.1",
     date: "21/08/2026",
     title: "Proteção de Ferramentas e Conteúdo Administrativo",
