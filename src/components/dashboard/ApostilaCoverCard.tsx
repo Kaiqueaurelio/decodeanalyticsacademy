@@ -200,10 +200,12 @@ export function ApostilaCoverCard({ apostila, status = 'em-progresso', progress 
             <h3 className="text-[13px] sm:text-[14px] font-bold leading-tight line-clamp-2 group-hover:text-primary transition-colors group-hover:underline decoration-primary/30 underline-offset-2">
               {apostila.title}
             </h3>
-            {apostila.updated_at && (
+            {(apostila.updated_at || (apostila as any).saved_date) && (
               <div className="flex items-center gap-1 mt-1 opacity-60 text-[8px] uppercase font-bold tracking-widest text-muted-foreground">
                 <Clock className="w-2.5 h-2.5" />
-                <span>{new Date(apostila.updated_at).toLocaleDateString('pt-BR')}</span>
+                <span>
+                  {new Date((apostila as any).saved_date || apostila.updated_at).toLocaleDateString('pt-BR')}
+                </span>
               </div>
             )}
           </div>

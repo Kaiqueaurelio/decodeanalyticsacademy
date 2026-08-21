@@ -377,16 +377,34 @@ export default function DashboardPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  const today = new Date().toISOString().split('T')[0];
-                  // Navega para a primeira apostila que tenha a data de hoje ou a mais recente
-                  const todayApostila = apostilas.find(a => (a.updated_at || a.created_at || '').startsWith(today));
-                  if (todayApostila) navigate(`/reader/${todayApostila.id}`);
-                  else toast.info("Nenhuma aula nova hoje ainda.");
+                  const today = new Date().toLocaleDateString('pt-BR');
+                  // Procura a aula que tem a data de hoje formatada (dd/mm/aaaa) ou a mais recente
+                  const todayApostila = apostilas.find(a => {
+                    const savedDate = (a as any).saved_date ? new Date((a as any).saved_date).toLocaleDateString('pt-BR') : null;
+                    const updatedAt = a.updated_at ? new Date(a.updated_at).toLocaleDateString('pt-BR') : null;
+                    return savedDate === today || updatedAt === today;
+                  });
+
+                  if (todayApostila) {
+                    navigate(`/reader/${todayApostila.id}`);
+                  } else {
+                    // Fallback para a mais recente do semestre selecionado se não houver hoje
+                    const mostRecent = [...apostilas]
+                      .filter(a => !a.isPlaceholder)
+                      .sort((a, b) => new Date(b.updated_at || b.created_at).getTime() - new Date(a.updated_at || a.created_at).getTime())[0];
+                    
+                    if (mostRecent) {
+                      navigate(`/reader/${mostRecent.id}`);
+                      toast.info("Abrindo aula mais recente.");
+                    } else {
+                      toast.info("Nenhuma aula encontrada.");
+                    }
+                  }
                 }}
                 className="h-8 px-3 text-[10px] font-black uppercase tracking-widest gap-2 bg-purple-500/10 border-purple-500/20 text-purple-400 hover:bg-purple-500/20"
               >
                 <Sparkles className="h-3 w-3" />
-                Apostila do Dia
+                Aula do Dia
               </Button>
             </div>
 
