@@ -86,7 +86,10 @@ describe('security hardening regression guards', () => {
     const vite = source('vite.config.ts');
 
     expect(html).not.toContain('localStorage.clear()');
-    expect(cacheBuster).toContain('const CURRENT_VERSION = __APP_COMMIT__;');
+    expect(cacheBuster).toContain("typeof __APP_COMMIT__ === 'string'");
+    expect(cacheBuster).toContain('isObsoleteDecodeCache');
+    expect(cacheBuster).not.toContain('.unregister()');
+    expect(cacheBuster).not.toContain('window.location.reload');
     expect(vite).toContain('buildVersion,');
   });
 

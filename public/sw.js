@@ -1,38 +1,42 @@
 /**
- * Decode Analytics Academy - SW Kill Switch
- * Este Service Worker substitui qualquer versão antiga, limpa todos os caches e se desregistra imediatamente.
+ * Decode Analytics Academy — compatibilidade para service workers antigos.
+ *
+ * O service worker de produção é gerado pelo Workbox. Este arquivo público
+ * existe como fallback de registro e nunca deve manter HTML antigo, navegar
+ * abas automaticamente ou desregistrar o worker atual em cada ativação.
  */
 
-self.addEventListener('install', (event) => {
+const CURRENT_RUNTIME_CACHE_VERSION = 6;
+const DECODE_RUNTIME_CACHE_RE = /^decode-(html|scripts|css|images)-v(\d+)$/;
+
+function isObsoleteDecodeCache(cacheName) {
+  const match = DECODE_RUNTIME_CACHE_RE.exec(cacheName);
+  if (!match) return false;
+
+  const version = Number(match[2]);
+  return Number.isInteger(version) && version < CURRENT_RUNTIME_CACHE_VERSION;
+}
+
+self.addEventListener('install', () => {
   self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          console.log('[KillSwitch] Deletando cache obsoleto:', cacheName);
-          return caches.delete(cacheName);
-        })
-      );
-    }).then(() => {
-      console.log('[KillSwitch] Todos os caches removidos. Desregistrando Service Worker...');
-      return self.registration.unregister();
-    }).then(() => {
-      return self.clients.claim();
-    }).then(() => {
-      // Força todas as abas abertas a recarregarem com a versão nova da nuvem
-      return self.clients.matchAll({ type: 'window' }).then((clients) => {
-        clients.forEach((client) => {
-          client.navigate(client.url);
-        });
-      });
-    })
+    caches.keys()
+      .then((cacheNames) => Promise.all(
+        cacheNames
+          .filter(isObsoleteDecodeCache)
+          .map((cacheName) => caches.delete(cacheName)),
+      ))
+      .then(() => self.clients.claim()),
   );
 });
 
 self.addEventListener('fetch', (event) => {
-  // Passa direto para a rede, sem interceptar
-  event.respondWith(fetch(event.request));
+  // Navegação sempre consulta a rede. Assim, um HTML publicado novamente
+  // nunca é substituído por uma cópia antiga do Cache Storage.
+  if (event.request.mode === 'navigate') {
+    event.respondWith(fetch(event.request, { cache: 'no-store' }));
+  }
 });

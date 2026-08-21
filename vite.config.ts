@@ -39,7 +39,7 @@ export default defineConfig(({ mode }) => {
         skipWaiting: true,
         clientsClaim: true,
         cleanupOutdatedCaches: true,
-        navigateFallbackDenylist: [/^\/~oauth/, /^\/api/, /^\/\.lovable\/oauth/, /^\/functions\/v1/],
+        navigateFallbackDenylist: [/^\/~oauth/, /^\/api/, /^\/.lovable\/oauth/, /^\/functions\/v1/],
         // O app usa code splitting por rota. Não precachear todos os chunks JS
         // evita baixar dezenas de megabytes no primeiro acesso; scripts e imagens
         // continuam disponíveis via as estratégias de runtime abaixo.
@@ -48,19 +48,16 @@ export default defineConfig(({ mode }) => {
         maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
         runtimeCaching: [
           {
+            // O shell HTML nunca deve voltar de Cache Storage: ele aponta para os
+            // bundles hashados da publicação atual e precisa ser sempre validado na rede.
             urlPattern: ({ request }) => request.mode === "navigate",
-            handler: "NetworkFirst", // Tenta rede, volta para cache se offline
-            options: {
-              // v6: reduz a janela em que uma falha de rede pode restaurar uma interface antiga.
-              cacheName: "decode-html-v6",
-              networkTimeoutSeconds: 4,
-              expiration: { maxEntries: 3, maxAgeSeconds: 60 * 60 },
-            }
+            handler: "NetworkOnly",
           },
           {
             urlPattern: ({ request }) => request.destination === "script",
             handler: "NetworkFirst", // Tenta rede, volta para cache se offline
             options: {
+              // v6: separa os scripts da geração anterior do leitor.
               cacheName: "decode-scripts-v6",
               networkTimeoutSeconds: 4,
               expiration: { maxEntries: 50, maxAgeSeconds: 60 * 60 },
@@ -89,7 +86,9 @@ export default defineConfig(({ mode }) => {
             },
           },
         ],
-        navigateFallback: "/index.html",
+        // O fallback precacheado de index.html foi desativado de propósito.
+        // A rota de navegação acima usa NetworkOnly para impedir HTML obsoleto.
+        navigateFallback: "",
       },
     }),
   ].filter(Boolean),

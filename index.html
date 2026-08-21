@@ -2,34 +2,10 @@
 <html lang="pt-BR" class="dark">
   <head>
     <meta charset="UTF-8" />
-    <script>
-      // DECODE ANALYTICS - HARD KILL-SWITCH DE CACHE & SERVICE WORKERS
-      (function() {
-        var FORCE_VERSION = '__DECODE_BUILD_VERSION__';
-        if (localStorage.getItem('decode_hard_version') !== FORCE_VERSION) {
-          console.warn('[HardKillSwitch] Versão desatualizada detectada. Limpando caches e service workers...');
-          // A invalidação de assets não deve apagar sessão, preferências ou progresso local.
-          localStorage.setItem('decode_hard_version', FORCE_VERSION);
-          
-          if ('navigator' in window && 'serviceWorker' in navigator) {
-            navigator.serviceWorker.getRegistrations().then(function(regs) {
-              for (var i = 0; i < regs.length; i++) {
-                regs[i].unregister();
-              }
-            });
-          }
-          if ('caches' in window) {
-            caches.keys().then(function(keys) {
-              for (var i = 0; i < keys.length; i++) {
-                caches.delete(keys[i]);
-              }
-            });
-          }
-          // Recarrega forçadamente sem cache
-          window.location.reload(true);
-        }
-      })();
-    </script>
+    <!-- O HTML é deliberadamente não-cacheável no servidor; a atualização do PWA é controlada pelo registro oficial do Workbox. -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Decode Analytics Academy | Apostilas, Exercícios e Simulados de Tecnologia</title>
     <meta name="description" content="Decode Analytics Academy | Apostilas, Exercícios e Simulados de Tecnologia. Plataforma de estudos premium 100% gratuita para Ciência da Computação e Engenharia.">

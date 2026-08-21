@@ -30,6 +30,9 @@ describe('ra-auth resilience guards', () => {
     expect(code).toContain('supabase.auth.signInWithPassword');
     expect(code).toContain("normalizedRa === 'G802144'");
     expect(code).toContain('password');
+    expect(code).toContain('const MAX_LOGIN_ATTEMPTS = 5;');
+    expect(code).toContain('registerLoginFailure(isEmail ? false : true, message);');
+    expect(code).not.toContain('if (message) toast.error(message);');
     expect(code).not.toContain("if (!authResult.data?.session) {\n      const fallbackEmail");
   });
 });
