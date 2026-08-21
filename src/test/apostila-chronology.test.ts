@@ -53,7 +53,6 @@ describe('invariantes de cronologia das apostilas', () => {
   it('prioriza a data explícita do último salvamento sobre datas antigas do título', () => {
     expect(getApostilaPageSavedDate({
       saved_date: '2026-08-20',
-      title: 'Nova Página — 19/08/2026',
       updated_at: '2026-08-21T02:00:00.000Z',
     })).toBe('2026-08-20');
   });

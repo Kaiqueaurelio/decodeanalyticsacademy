@@ -37,7 +37,7 @@ import { NewApostilaPageButton } from '@/components/NewApostilaPageButton';
 import {
   ArrowLeft, Search, Save, Eye, PenTool, Wand2, Loader2, Menu, FileText,
   ListChecks, PanelRightClose, ExternalLink, GraduationCap, ImageIcon, PanelRightOpen, X, Maximize2, Minimize2,
-  FilePlus2, Plus, Scissors
+  FilePlus2, Plus, Scissors, Clock
 } from 'lucide-react';
 
 import { invokeFunction } from '@/lib/invoke-function';
@@ -142,6 +142,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
   const [addSectionOpen, setAddSectionOpen] = useState(false);
   const [suggestedSectionTitle, setSuggestedSectionTitle] = useState('');
   const [pages, setPages] = useState<ApostilaPage[]>([]);
+  const [savedDate, setSavedDate] = useState<string>(getLocalDateIso());
 
   useEffect(() => {
     if (searchParams.get('expanded') === '1') setEditorExpanded(true);
@@ -285,6 +286,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
 
       setContent(selectedPage.content || '');
       setTitle(selectedPage.title || '');
+      setSavedDate(selectedPage.saved_date || getLocalDateIso());
       if (pageBackup?.scope === pageScope && pageBackup.timestamp && new Date(pageBackup.timestamp) > new Date(selectedPage.updated_at)) {
         toast.info('Recuperamos uma edição não salva desta página.', {
           description: `Última alteração local em ${new Date(pageBackup.timestamp).toLocaleTimeString()}`,
@@ -376,11 +378,12 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       content,
       semester,
       course,
+      saved_date: savedDate,
       timestamp: new Date().toISOString()
     }));
 
     return () => window.clearTimeout(t);
-  }, [title, category, content, semester, course]);
+  }, [title, category, content, semester, course, savedDate]);
 
   const persistChanges = async (isManual = false): Promise<boolean> => {
     if (!id) return false;
@@ -395,9 +398,9 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       : `save-${Date.now()}`;
     const operationType = selectedPageId ? 'page_update' : 'apostila_update';
     const snapshots = selectedPageId
-      ? pages.map((page) => page.id === selectedPageId ? { ...page, title, content } : page)
+      ? pages.map((page) => page.id === selectedPageId ? { ...page, title, content, saved_date: savedDate } : page)
       : pages;
-    const chronology = validateApostilaChronology({ title, content, pages: snapshots });
+    const chronology = validateApostilaChronology({ title, content, pages: snapshots, saved_date: selectedPageId ? undefined : savedDate });
 
     void recordApostilaOperation({
       operationId,
@@ -451,7 +454,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       const pageUpdate = {
         content,
         title: title.trim() || 'Nova Página',
-        saved_date: getLocalDateIso(),
+        saved_date: savedDate || getLocalDateIso(),
       };
       let { data: savedPage, error } = await (supabase.from('apostila_pages' as any) as any)
         .update(pageUpdate)
@@ -588,17 +591,32 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       });
     }
 
-    const { error } = await supabase
+    const apostilaUpdate = {
+      title: title.trim() || 'Sem título',
+      category,
+      content,
+      published: content.trim().length > 0 && chronology.status !== 'error' ? true : published,
+      semester,
+      course: course.length ? course : null,
+      saved_date: savedDate || getLocalDateIso(),
+    };
+    let { error } = await supabase
       .from('apostilas')
-      .update({
-        title: title.trim() || 'Sem título',
-        category,
-        content,
-        published: content.trim().length > 0 && chronology.status !== 'error' ? true : published,
-        semester,
-        course: course.length ? course : null,
-      })
+      .update(apostilaUpdate)
       .eq('id', id);
+    if (error && isMissingApostilaPageSavedDateColumn(error)) {
+      ({ error } = await supabase
+        .from('apostilas')
+        .update({
+          title: apostilaUpdate.title,
+          category,
+          content,
+          published: apostilaUpdate.published,
+          semester,
+          course: apostilaUpdate.course,
+        })
+        .eq('id', id));
+    }
 
     setSaving(false);
     if (error) {
@@ -1361,6 +1379,19 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
                           className="bg-transparent border-none p-0 text-[11px] font-bold focus:ring-0 min-w-[150px] text-muted-foreground hover:text-foreground transition-colors"
                         />
                       </div>
+
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-1.5 text-muted-foreground/50 text-[10px] font-black uppercase tracking-widest shrink-0">
+                          <Clock className="h-3 w-3" />
+                          <span>Data da Aula</span>
+                        </div>
+                        <input
+                          type="date"
+                          value={savedDate || ''}
+                          onChange={(e) => setSavedDate(e.target.value)}
+                          className="bg-transparent border-none p-0 text-[11px] font-bold focus:ring-0 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1379,7 +1410,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
                       {new Date(page.created_at).toLocaleDateString('pt-BR')} · {page.title}
                     </Button>
                   ))}
-                  {id && <NewApostilaPageButton apostilaId={id} beforeCreate={() => doSave(false)} />}
+                  {id && <NewApostilaPageButton apostilaId={id} beforeCreate={() => persistChanges(false)} />}
                 </div>
               )}
               <MarkdownEditor

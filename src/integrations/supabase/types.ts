@@ -816,7 +816,7 @@ export type Database = {
           created_by: string | null
           id: string
           position: number
-          saved_date: string
+          saved_date: string | null
           title: string
           updated_at: string
         }
@@ -827,7 +827,7 @@ export type Database = {
           created_by?: string | null
           id?: string
           position?: number
-          saved_date?: string
+          saved_date?: string | null
           title?: string
           updated_at?: string
         }
@@ -838,7 +838,7 @@ export type Database = {
           created_by?: string | null
           id?: string
           position?: number
-          saved_date?: string
+          saved_date?: string | null
           title?: string
           updated_at?: string
         }
@@ -1039,6 +1039,7 @@ export type Database = {
           id: string
           published: boolean
           reformatted_at: string | null
+          saved_date: string | null
           semester: number | null
           source_type: string | null
           status: Database["public"]["Enums"]["apostila_status"] | null
@@ -1060,6 +1061,7 @@ export type Database = {
           id?: string
           published?: boolean
           reformatted_at?: string | null
+          saved_date?: string | null
           semester?: number | null
           source_type?: string | null
           status?: Database["public"]["Enums"]["apostila_status"] | null
@@ -1081,6 +1083,7 @@ export type Database = {
           id?: string
           published?: boolean
           reformatted_at?: string | null
+          saved_date?: string | null
           semester?: number | null
           source_type?: string | null
           status?: Database["public"]["Enums"]["apostila_status"] | null
