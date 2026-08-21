@@ -6,7 +6,7 @@ import { AppImage } from '@/components/ui/app-image';
 import { highlightCode } from '@/lib/shiki-highlighter';
 import { cn } from '@/lib/utils';
 import { renderMathToHTML } from '@/lib/math-render';
-import { normalizeRichContent } from '@/lib/content-formatting';
+import { normalizeRichContent, normalizeSectionTitle } from '@/lib/content-formatting';
 import { ProfessionalAudioPlayer } from './ProfessionalAudioPlayer';
 import { AudioQuizSystem } from './AudioQuizSystem';
 import { useQuery } from '@tanstack/react-query';
@@ -30,6 +30,37 @@ function cleanInlineText(input: string): string {
     .replace(/`([^`]+)`/g, '$1')
     .replace(/~~([^~]+)~~/g, '$1')
     .replace(/^\s*#{1,6}\s+/gm, '');
+}
+
+const SUPERSCRIPT_DIGITS: Record<string, string> = {
+  '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴',
+  '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹',
+};
+
+function toSuperscript(value: string): string {
+  return value.split('').map((digit) => SUPERSCRIPT_DIGITS[digit] || digit).join('');
+}
+
+/** Corrige apenas fórmulas simples que perderam o sobrescrito durante a importação. */
+function normalizePlainMathExpressions(value: string): string {
+  return value
+    // Forma legada observada no material: `2 � L=2 b` representa L = 2^b.
+    .replace(/2\s*(?:�|\uFFFD)\s*L\s*=\s*2\s*b/gi, 'L = 2ᵇ')
+    .replace(/\bL\s*=\s*2\s*b\b/gi, 'L = 2ᵇ')
+    .replace(/(\b\d+\s+bits?\s*:\s*)2\s+(1|2|3|8|12)\b/gi, (_match, prefix: string, exponent: string) => `${prefix}2${toSuperscript(exponent)}`)
+    .replace(/\b2\s+(1|2|3|8|12)(?=\s*(?:=|níveis?|n[ií]veis?|$))/gi, (_match, exponent: string) => `2${toSuperscript(exponent)}`)
+    // Remove apenas o marcador de substituição de encoding; o texto ao redor permanece.
+    .replace(/\uFFFD/g, '');
+}
+
+/** Texto de heading exibido ao aluno; remove marcadores inválidos sem tocar no conteúdo salvo. */
+function normalizeHeadingText(value: string): string {
+  return normalizePlainMathExpressions(normalizeSectionTitle(cleanInlineText(value)))
+    .replace(/\uFFFD/g, '')
+    // Alguns headings legados chegaram como `8Resolução`; separar só o prefixo numérico.
+    .replace(/^(\d+)(?=[A-Za-zÀ-ÖØ-öø-ÿ])/u, '$1 ')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 /**
@@ -68,7 +99,7 @@ function renderInline(input: string): { __html: string } {
 
   // Alguns conteúdos antigos foram salvos com tags/entidades literais, por exemplo
   // `&lt;u&gt;Título&lt;/u&gt;`. Decodificamos antes do markdown e sanitizamos no final.
-  input = normalizeRichContent(input);
+  input = normalizePlainMathExpressions(normalizeRichContent(input));
 
   // Se o input já parece ser HTML sanitizado (com tags span/div/style injetadas pelo editor)
   // precisamos tomar cuidado para não escapar as tags HTML válidas que o editor usa
@@ -447,13 +478,16 @@ function parseBlocks(rawInput: string): Block[] {
         flushParagraph();
         const embedded = splitEmbeddedAudioPlayer(hMatch[2]);
         if (embedded) {
-          const headingContent = [embedded.before, embedded.after].filter(Boolean).join(' ').trim();
+          const headingContent = normalizeHeadingText([embedded.before, embedded.after].filter(Boolean).join(' '));
           if (headingContent) {
             blocks.push({ type: 'heading', level: hMatch[1].length, content: headingContent });
           }
           blocks.push({ type: 'audio', label: embedded.audio.label, url: embedded.audio.url });
         } else {
-          blocks.push({ type: 'heading', level: hMatch[1].length, content: hMatch[2] });
+          const headingContent = normalizeHeadingText(hMatch[2]);
+          if (headingContent) {
+            blocks.push({ type: 'heading', level: hMatch[1].length, content: headingContent });
+          }
         }
         i++; continue;
       }
@@ -933,7 +967,8 @@ function slugify(text: string): string {
 }
 
 function HeadingBlock({ level, content, id, active }: { level: number; content: string; id?: string; active?: boolean }) {
-  const text = cleanInlineText(content);
+  const text = normalizeHeadingText(content);
+  if (!text) return null;
   const activeCls = active ? 'apostila-heading-active' : '';
   if (level === 1) {
     return (
@@ -968,6 +1003,8 @@ function HeadingBlock({ level, content, id, active }: { level: number; content: 
 function ApostilaTOC({ items, activeId }: { items: Array<{ id: string; level: number; text: string; number: string }>; activeId?: string | null }) {
   const [open, setOpen] = useState(true);
   if (items.length < 2) return null;
+
+  const hasOwnNumbering = (text: string) => /^(?:\d+(?:\.\d+)*(?:\s|$)|2[⁰¹²³⁴⁵⁶⁷⁸⁹]+(?:\s|$))/.test(text.trim());
 
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     e.preventDefault();
@@ -1025,8 +1062,14 @@ function ApostilaTOC({ items, activeId }: { items: Array<{ id: string; level: nu
                     isActive && it.level >= 4 && 'pl-[calc(2rem-1px)]',
                   )}
                 >
-                  <span className={cn('font-mono text-[10px] shrink-0 tabular-nums', isActive ? 'text-primary' : 'text-primary')}>{it.number}</span>
-                  <span className="truncate">{it.text}</span>
+                  {hasOwnNumbering(it.text) ? null : (
+                    <span className={cn('font-mono text-[10px] shrink-0 tabular-nums', isActive ? 'text-primary' : 'text-primary')} aria-hidden>
+                      {it.number}
+                    </span>
+                  )}
+                  <span className={cn('min-w-0', hasOwnNumbering(it.text) ? 'w-full' : 'truncate')}>
+                    {it.text}
+                  </span>
                 </a>
               </li>
             );
@@ -1079,7 +1122,8 @@ export function ApostilaContentRenderer({ content, activeHeadingId }: Props) {
 
     blocks.forEach((b, idx) => {
       if (b.type !== 'heading') return;
-      const text = cleanInlineText(b.content);
+      const text = normalizeHeadingText(b.content);
+      if (!text) return;
       // Normaliza nível para profundidade do TOC: H1/H2 → 1, H3 → 2, H4+ → 3
       const depth = b.level <= 2 ? 1 : b.level === 3 ? 2 : 3;
       counters[depth - 1] += 1;
