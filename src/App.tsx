@@ -125,6 +125,7 @@ const AppContent = () => {
           <Route path="/simulado/:id" element={<ProtectedRoute><SimuladoPage /></ProtectedRoute>} />
           <Route path="/exercises/:id" element={<ProtectedRoute><ExercisesPage /></ProtectedRoute>} />
           <Route path="/exercicios" element={<ProtectedRoute><ExerciciosIndexPage /></ProtectedRoute>} />
+          <Route path="/gabaritos" element={<ProtectedRoute><GabaritosPage /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
           <Route path="/biblioteca" element={<ProtectedRoute><BibliotecaPage /></ProtectedRoute>} />
           <Route path="/livros" element={<ProtectedRoute><PlayBooksPage /></ProtectedRoute>} />
