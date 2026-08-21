@@ -128,5 +128,18 @@ export const normalizeSubjectKey = (value: string) => value
 
 export const findGabaritoSubject = (value: string) => {
   const key = normalizeSubjectKey(value);
-  return GABARITOS.find((subject) => subject.keys.some((candidate) => key === candidate || key.includes(candidate) || candidate.includes(key)));
+  if (key.length < 5) return undefined;
+
+  // 1) Match exato por nome, código ou chave declarada
+  const exact = GABARITOS.find((subject) =>
+    normalizeSubjectKey(subject.name) === key ||
+    normalizeSubjectKey(subject.code) === key ||
+    subject.keys.includes(key),
+  );
+  if (exact) return exact;
+
+  // 2) Match parcial controlado (evita falsos positivos com chaves curtas)
+  return GABARITOS.find((subject) =>
+    subject.keys.some((candidate) => candidate.length >= 8 && (key.includes(candidate) || candidate.includes(key))),
+  );
 };
