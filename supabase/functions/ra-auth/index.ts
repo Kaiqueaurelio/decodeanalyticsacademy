@@ -49,10 +49,13 @@ Deno.serve(async (req) => {
       _ip_address: ip,
     });
     if (rateLimitError) {
+      // A autenticação não pode ficar indisponível apenas porque a RPC opcional
+      // de rate limiting ainda não foi aplicada no projeto remoto. Registramos
+      // o erro para diagnóstico e seguimos com o bloqueio de credenciais no
+      // Supabase Auth; quando a RPC existir, o bloqueio persistente continua ativo.
       console.error("ra-auth rate limit check:", rateLimitError.message);
-      return json({ error: "Serviço indisponível no momento." }, 503, corsHeaders);
     }
-    if (rateLimit?.allowed === false) {
+    if (!rateLimitError && rateLimit?.allowed === false) {
       const retryAfter = Number(rateLimit.retry_after_seconds || 60);
       return new Response(JSON.stringify({
         error: "Muitas tentativas. Sua conta ou IP estão temporariamente bloqueados por segurança.",
