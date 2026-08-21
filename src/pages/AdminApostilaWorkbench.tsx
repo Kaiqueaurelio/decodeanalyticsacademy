@@ -661,6 +661,46 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     else navigate('/admin');
   };
 
+  const verifyPersistedContent = async (): Promise<boolean> => {
+    if (!id) return false;
+
+    const expectedTitle = title.trim() || (selectedPageId ? 'Nova Página' : 'Sem título');
+    const query = selectedPageId
+      ? supabase.from('apostila_pages').select('title, content').eq('id', selectedPageId).eq('apostila_id', id).maybeSingle()
+      : supabase.from('apostilas').select('title, content').eq('id', id).maybeSingle();
+    const { data, error } = await query;
+
+    if (error || !data) {
+      console.error('[Workbench] Falha ao verificar conteúdo persistido:', error);
+      toast.error('Não consegui confirmar o salvamento no banco. A página continuará aberta para você não perder o conteúdo.');
+      return false;
+    }
+
+    if (data.title !== expectedTitle || data.content !== content) {
+      console.error('[Workbench] Conteúdo persistido diferente do editor:', {
+        expectedTitle,
+        persistedTitle: data.title,
+        expectedLength: content.length,
+        persistedLength: data.content?.length ?? 0,
+      });
+      toast.error('O banco ainda não confirmou todo o conteúdo. A página continuará aberta para proteger sua edição.');
+      return false;
+    }
+
+    return true;
+  };
+
+  const saveAndOpenApostilaManagement = async () => {
+    const saved = await doSave(true);
+    if (!saved) return;
+
+    const verified = await verifyPersistedContent();
+    if (!verified) return;
+
+    toast.success('Apostila salva e confirmada. Abrindo o gerenciamento de apostilas.');
+    navigate('/admin?tab=apostilas', { replace: true });
+  };
+
   const handleRestoreVersion = (version: { title: string; content: string }) => {
     setTitle(version.title);
     setContent(version.content);
@@ -1150,7 +1190,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         saving={saving}
         splitting={splitting}
         lastSavedAt={lastSavedAt}
-        onSave={() => { void doSave(true); }}
+        onSave={() => { void saveAndOpenApostilaManagement(); }}
         onTogglePublish={togglePublish}
         onPreview={() => { setRightTab('preview'); setRightOpen(true); }}
         onOpenPanel={() => { setRightTab('materials'); setRightOpen(true); }}
@@ -1320,7 +1360,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
               <MarkdownEditor
                 value={content}
                 onChange={setContent}
-                onSave={() => doSave(true)}
+                onSave={() => saveAndOpenApostilaManagement()}
                 apostilaId={id}
                 placeholder="Comece a escrever ou digite '/' para comandos..."
                 className="flex-1 min-h-0 border-none shadow-none bg-transparent"
