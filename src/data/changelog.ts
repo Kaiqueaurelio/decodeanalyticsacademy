@@ -38,6 +38,16 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: "6.7.3",
+    date: "21/08/2026",
+    title: "Verificação de Persistência & Status de Sincronização",
+    changes: [
+      { kind: "improvement", text: "Reforçada a confirmação de salvamento no Workbench com validação server-side pós-save" },
+      { kind: "improvement", text: "Novo indicador visual 'SALVO NO BANCO' para maior clareza sobre o status da sincronização" },
+      { kind: "fix", text: "Corrigida notificação de sucesso para garantir que o usuário saiba que os dados estão seguros" }
+    ]
+  },
+  {
     version: "6.7.2",
     date: "20/08/2026",
     title: "Controles de Seleção no Smart Paste",

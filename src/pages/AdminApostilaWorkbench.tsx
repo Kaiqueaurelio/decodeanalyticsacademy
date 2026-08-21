@@ -695,9 +695,14 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     if (!saved) return;
 
     const verified = await verifyPersistedContent();
-    if (!verified) return;
+    if (!verified) {
+      toast.error('O salvamento falhou na validação final. Verifique se há erros no console.', {
+        description: 'Tente salvar novamente ou verifique sua conexão.'
+      });
+      return;
+    }
 
-    toast.success('Apostila salva e confirmada. Abrindo o gerenciamento de apostilas.');
+    toast.success('Apostila salva e confirmada no banco de dados.');
     navigate('/admin?tab=apostilas', { replace: true });
   };
 
