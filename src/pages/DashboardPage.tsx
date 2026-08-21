@@ -383,13 +383,13 @@ export default function DashboardPage() {
                   if (todayApostila) navigate(`/reader/${todayApostila.id}`);
                   else toast.info("Nenhuma aula nova hoje ainda.");
                 }}
-                className="h-8 px-3 text-[10px] font-black uppercase tracking-widest gap-2 bg- Roxa/10 border- Roxa/20 text- Roxa hover:bg- Roxa/20"
-                style={{ backgroundColor: 'rgba(168, 85, 247, 0.1)', borderColor: 'rgba(168, 85, 247, 0.2)', color: '#a855f7' }}
+                className="h-8 px-3 text-[10px] font-black uppercase tracking-widest gap-2 bg-purple-500/10 border-purple-500/20 text-purple-400 hover:bg-purple-500/20"
               >
                 <Sparkles className="h-3 w-3" />
                 Apostila do Dia
               </Button>
             </div>
+
             <div className="ml-auto flex items-center gap-3">
               <div className="hidden sm:flex flex-col items-end">
                 <span className="text-[10px] font-bold text-primary uppercase leading-none">Progresso Geral</span>
