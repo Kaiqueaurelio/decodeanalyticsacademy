@@ -1,4 +1,5 @@
 import { type AdminNavGroup } from '@/types/admin';
+import { SECURITY_COPY } from '@/lib/security-copy';
 import { 
   LayoutDashboard, 
   BookOpen, 
@@ -73,8 +74,8 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     label: 'Sistema',
     items: [
       { id: 'ella-audit', label: 'Auditoria Ella', icon: MessageSquare, desc: 'Logs de interações da IA' },
-      { id: 'academic-audit', label: 'Auditoria Acadêmica', icon: ListCheck, desc: 'Logs de estudos e gabaritos' },
-      { id: 'security-alerts', label: 'Segurança', icon: AlertTriangle, desc: 'Alertas e bloqueios', countKey: 'securityAlerts' },
+      { id: 'academic-audit', label: 'Auditoria Acadêmica', icon: ListCheck, desc: SECURITY_COPY.academicAuditDescription },
+      { id: 'security-alerts', label: 'Segurança', icon: AlertTriangle, desc: SECURITY_COPY.navigationDescription, countKey: 'securityAlerts' },
       { id: 'apostila-validation', label: 'Diagnóstico Acadêmico', icon: ShieldCheck, desc: 'Validação de integridade' },
 
       { id: 'mcp-settings', label: 'Terminal / MCP', icon: Terminal, desc: 'Configurações avançadas' },

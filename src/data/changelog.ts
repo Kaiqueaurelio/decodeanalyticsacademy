@@ -40,11 +40,13 @@ export const CHANGELOG: Release[] = [
   {
     version: "6.9.0",
     date: "21/08/2026",
-    title: "Security Compliance & Text Enforcement",
+    title: "Segurança Administrativa & Dashboard Tipado",
+    major: true,
     changes: [
-      { kind: "security", text: "Implementação de SecurityComplianceGuard para monitoramento de diretrizes administrativas." },
-      { kind: "improvement", text: "Atualização de textos literais em painéis de auditoria e segurança conforme requisitos de compliance." },
-      { kind: "fix", text: "Correção de type mismatch em useDashboardData relacionado ao campo saved_date." }
+      { kind: "security", text: "Padronizados os textos de segurança em navegação, alertas, auditoria acadêmica e renovação de sessão, removendo mensagens antigas da interface" },
+      { kind: "security", text: "Reforçada a validação de autorização: rotas administrativas aguardam a confirmação do papel e redirecionam usuários sem permissão" },
+      { kind: "fix", text: "Corrigida a sincronização de tipos do Dashboard com validação explícita das respostas JSON dos RPCs e fallback seguro de dados" },
+      { kind: "fix", text: "Ajustada a montagem de placeholders e datas das apostilas para que todas as seções do Dashboard carreguem com o contrato correto" }
     ]
   },
   {

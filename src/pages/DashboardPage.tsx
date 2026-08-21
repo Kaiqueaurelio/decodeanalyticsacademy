@@ -190,7 +190,7 @@ export default function DashboardPage() {
       const existingCategoriesKeys = new Set(list.map(a => canonicalSubjectKey(a.category)));
 
       // Gerar placeholders apenas para as disciplinas da grade que NÃO possuem nenhum conteúdo vinculado
-      const placeholders = canonicalSubjects
+      const placeholders: ApostilaSummary[] = canonicalSubjects
         .filter(subject => !existingCategoriesKeys.has(canonicalSubjectKey(subject)))
         .map((subject, idx) => ({
           id: `placeholder-${selectedSemester}-${idx}`,
@@ -205,10 +205,11 @@ export default function DashboardPage() {
           file_url: null,
           source_type: null,
           course: null,
-          teacher: teacherMap[subject] || 'Professor da Disciplina'
+          teacher: teacherMap[subject] || 'Professor da Disciplina',
+          saved_date: null,
         }));
 
-      return sortByPreference([...list, ...placeholders] as unknown as ApostilaSummary[]);
+      return sortByPreference([...list, ...placeholders]);
     }
 
     return sortByPreference(list);

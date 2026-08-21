@@ -17,6 +17,7 @@ import {
 import { toast } from 'sonner';
 import jsPDF from 'jspdf';
 import { autoLinkApostila } from '@/lib/auto-link-materials';
+import { SECURITY_COPY } from '@/lib/security-copy';
 
 type AuditLog = {
   id: string;
@@ -165,10 +166,10 @@ export function AcademicAuditPanel() {
           <div>
             <CardTitle className="flex items-center gap-2">
               <ShieldCheck className="h-5 w-5 text-primary" />
-              Internal admin maintenance logs readable by every logged-in user
+              Auditoria Acadêmica
             </CardTitle>
             <p className="text-sm text-muted-foreground mt-1">
-              Internal admin maintenance logs readable by every logged-in user. Monitoramento de acessos críticos.
+              {SECURITY_COPY.academicAuditDescription}
             </p>
           </div>
           <div className="flex gap-2">

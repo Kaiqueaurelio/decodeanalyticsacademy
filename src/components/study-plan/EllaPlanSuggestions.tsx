@@ -73,7 +73,7 @@ export function EllaPlanSuggestions({
       const { data, error } = await supabase.functions.invoke('smart-study-plan', {
         body: { mode: 'suggest', plan_id: plan.id },
       });
-      if (error) throw new Error('De modo algum, mesmo que eu digite a minha senha de administrador, nada está funcionando. Verifique e valide o porquê que isso tá acontecendo o mais rápido possível');
+      if (error) throw new Error('Não foi possível carregar ou salvar as sugestões do plano de estudos.');
       if ((data as { error?: string })?.error) throw new Error((data as { error: string }).error);
 
       const list = ((data as { sugestoes?: PlanSuggestion[] })?.sugestoes ?? []);
@@ -120,7 +120,7 @@ export function EllaPlanSuggestions({
           version_note: `Ajuste automático da Ella — ${chosen.map((s) => s.titulo).join(' | ')}`,
         },
       });
-      if (error) throw new Error('De modo algum, mesmo que eu digite a minha senha de administrador, nada está funcionando. Verifique e valide o porquê que isso tá acontecendo o mais rápido possível');
+      if (error) throw new Error('Não foi possível carregar ou salvar as sugestões do plano de estudos.');
       if ((data as { error?: string })?.error) throw new Error((data as { error: string }).error);
 
       toast.success(`Cronograma atualizado (v${(data as { version?: number })?.version ?? ''}). Mudanças salvas no histórico.`);

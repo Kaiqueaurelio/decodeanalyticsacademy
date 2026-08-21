@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ALERT_HINT, ALERT_LABEL, useSecurityAlerts, type SecurityAlertKind } from '@/hooks/useSecurityAlerts';
+import { SECURITY_COPY } from '@/lib/security-copy';
 
 const FILTERS: { id: 'open' | 'critical' | 'all'; label: string }[] = [
   { id: 'open', label: 'Em aberto' },
@@ -56,10 +57,10 @@ export function SecurityAlertsPanel() {
           <div>
             <CardTitle className="flex items-center gap-2 text-base">
               <ShieldAlert className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
-              Signed-In Users Can Execute SECURITY DEFINER Function
+              Alertas de Segurança
             </CardTitle>
             <p className="mt-1 max-w-xl text-xs text-muted-foreground">
-              Signed-In Users Can Execute SECURITY DEFINER Function. Avisos automáticos de tentativas de escalada ou ações fora de catálogo.
+              {SECURITY_COPY.alertsDescription}
             </p>
           </div>
           <div className="flex items-center gap-2">

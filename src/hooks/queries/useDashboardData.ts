@@ -3,7 +3,7 @@
 // refetch a cada navegacao e diminuir o trabalho do JS thread no abrir do app.
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import type { Tables } from '@/integrations/supabase/types';
+import type { Json, Tables } from '@/integrations/supabase/types';
 import { guessSemesterFromCategory, type CourseCode } from '@/lib/subject-semester-map';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserProfile } from '@/hooks/queries/useUserProfile';
@@ -14,7 +14,7 @@ export type ApostilaSummary = Pick<
   'id' | 'title' | 'category' | 'published' | 'source_type' | 'file_url' | 'created_at' | 'updated_at'
 > & {
   semester: number | null;
-  course: CourseCode[] | null;
+  course: string[] | null;
   cover_url: string | null;
   teacher: string | null;
   saved_date: string | null;
@@ -23,6 +23,26 @@ export type ApostilaSummary = Pick<
 // Colunas leves: SEM `content` nem `content_backup` (podem ter centenas de KB).
 const APOSTILA_LIST_COLUMNS =
   'id, title, category, published, source_type, file_url, created_at, updated_at, semester, course, cover_url, teacher';
+
+function isJsonObject(value: Json | null | undefined): value is { [key: string]: Json | undefined } {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function toFiniteNumber(value: Json | undefined): number {
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  if (typeof value === 'string' && value.trim() !== '') {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return 0;
+}
+
+function toNumberRecord(value: Json | null | undefined): Record<string, number> {
+  if (!isJsonObject(value)) return {};
+  return Object.fromEntries(
+    Object.entries(value).map(([key, raw]) => [key, toFiniteNumber(raw)]),
+  );
+}
 
 export interface ApostilasListOptions {
   /** Mantido na queryKey para atualizar a UI quando o aluno troca o semestre. O filtro final fica na tela. */
@@ -79,7 +99,7 @@ export function useApostilasList(options: ApostilasListOptions = {}) {
 
       if (error) throw error;
 
-      const rows = (data || []) as ApostilaSummary[];
+      const rows = data || [];
       const latestDateByApostila = new Map<string, string>();
       const apostilaIds = rows.map((apostila) => apostila.id);
 
@@ -102,7 +122,10 @@ export function useApostilasList(options: ApostilasListOptions = {}) {
         }
       }
 
-      return rows.map((apostila) => ({ ...apostila, saved_date: latestDateByApostila.get(apostila.id) ?? null })).map((apostila) => {
+      return rows.map((apostila) => ({
+        ...apostila,
+        saved_date: latestDateByApostila.get(apostila.id) ?? null,
+      })).map((apostila): ApostilaSummary => {
         let semester = apostila.semester ?? guessSemesterFromCategory(apostila.category) ?? null;
         
         // Correção explícita para Sistemas Operacionais e Mobile (S6)
@@ -127,7 +150,7 @@ export function useExerciseCounts() {
   return useQuery({
     queryKey: ['exercises', 'counts'],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('get_exercise_counts' as any);
+      const { data, error } = await supabase.rpc('get_exercise_counts');
       if (error) {
         const { data: rows } = await supabase.from('exercises').select('apostila_id');
         const counts: Record<string, number> = {};
@@ -136,7 +159,7 @@ export function useExerciseCounts() {
         });
         return counts;
       }
-      return (data || {}) as Record<string, number>;
+      return toNumberRecord(data);
     },
   });
 }
@@ -154,18 +177,31 @@ export function useDashboardStats(userId: string | undefined) {
     queryKey: ['dashboard', 'stats', userId],
     enabled: !!userId,
     queryFn: async (): Promise<DashboardStats> => {
-      const { data, error } = await supabase.rpc('get_dashboard_stats' as any, {
+      const { data, error } = await supabase.rpc('get_dashboard_stats', {
         _user_id: userId,
       });
       if (error) {
         return { total: 0, hits: 0, errors: 0, byApostila: {} };
       }
-      const obj = (data || {}) as any;
+      if (!isJsonObject(data)) return { total: 0, hits: 0, errors: 0, byApostila: {} };
+
+      const byApostila: DashboardStats['byApostila'] = {};
+      if (isJsonObject(data.byApostila)) {
+        Object.entries(data.byApostila).forEach(([id, raw]) => {
+          if (!isJsonObject(raw)) return;
+          byApostila[id] = {
+            title: typeof raw.title === 'string' ? raw.title : 'Apostila',
+            hits: toFiniteNumber(raw.hits),
+            errors: toFiniteNumber(raw.errors),
+          };
+        });
+      }
+
       return {
-        total: Number(obj.total || 0),
-        hits: Number(obj.hits || 0),
-        errors: Number(obj.errors || 0),
-        byApostila: (obj.byApostila || {}) as DashboardStats['byApostila'],
+        total: toFiniteNumber(data.total),
+        hits: toFiniteNumber(data.hits),
+        errors: toFiniteNumber(data.errors),
+        byApostila,
       };
     },
   });

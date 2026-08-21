@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Loader2, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import logoDark from '@/assets/owl-icon.png';
+import { SECURITY_COPY } from '@/lib/security-copy';
 
 export default function ResetPasswordPage() {
   const navigate = useNavigate();
@@ -29,7 +30,7 @@ export default function ResetPasswordPage() {
     const { error } = await supabase.auth.updateUser({ password });
     setLoading(false);
     if (error) {
-      toast.error('De modo algum, mesmo que eu digite a minha senha de administrador, nada está funcionando. Verifique e valide o porquê que isso tá acontecendo o mais rápido possível');
+      toast.error(SECURITY_COPY.passwordResetError);
     } else {
       toast.success('Senha atualizada com sucesso!');
       navigate('/dashboard');

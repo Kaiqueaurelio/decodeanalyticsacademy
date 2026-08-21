@@ -4,6 +4,7 @@ import type { Session, User } from '@supabase/supabase-js';
 import { safeRefreshSession, setCurrentSession } from '@/lib/auth-session';
 import { toast } from 'sonner';
 import { recordAuthEvent } from '@/lib/auth-log';
+import { SECURITY_COPY } from '@/lib/security-copy';
 
 const ROLE_CACHE_KEY = 'decode_role_cache';
 const LAST_SESSION_MARKER = 'decode_last_session_user';
@@ -232,8 +233,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               boot = null;
               try { localStorage.removeItem(LAST_SESSION_MARKER); } catch {}
               if (hadPreviousSession) {
-                toast.error('De modo algum, mesmo que eu digite a minha senha de administrador, nada está funcionando. Verifique e valide o porquê que isso tá acontecendo o mais rápido possível', {
-                  description: 'Por segurança, faça login novamente para continuar.',
+                toast.error(SECURITY_COPY.sessionRefreshTitle, {
+                  description: SECURITY_COPY.sessionRefreshDescription,
                 });
               }
             } finally {
@@ -314,8 +315,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const stayLoggedIn = localStorage.getItem('decode_stay_logged_in') === 'true';
         if (!stayLoggedIn) {
           try { localStorage.removeItem(LAST_SESSION_MARKER); } catch {}
-          toast.error('De modo algum, mesmo que eu digite a minha senha de administrador, nada está funcionando. Verifique e valide o porquê que isso tá acontecendo o mais rápido possível', {
-            description: 'Faça login novamente para continuar.',
+          toast.error(SECURITY_COPY.sessionRefreshTitle, {
+            description: SECURITY_COPY.sessionRefreshDescription,
           });
           await supabase.auth.signOut().catch(() => {});
         } else {

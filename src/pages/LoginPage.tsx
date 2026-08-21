@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 import logoDark from '@/assets/owl-icon.png';
 import { motion, AnimatePresence, useMotionValue, useSpring } from 'framer-motion';
 import { motionTokens, type AsyncStatus } from '@/lib/motion';
+import { SECURITY_COPY } from '@/lib/security-copy';
 
 export default function LoginPage() {
   const { signUp, user, isAdmin, roleChecked, loading: authLoading, status, isSessionHydrated } = useAuth();
@@ -37,7 +38,7 @@ export default function LoginPage() {
     try {
       const { data, error } = await supabase.functions.invoke('ra-auth', { body: payload });
       if (error) {
-        let message = 'De modo algum, mesmo que eu digite a minha senha de administrador, nada está funcionando. Verifique e valide o porquê que isso tá acontecendo o mais rápido possível';
+        let message = SECURITY_COPY.loginErrorDescription;
         console.error('ra-auth error:', error);
         const context = (error as { context?: unknown }).context;
         const res = context instanceof Response ? context : undefined;

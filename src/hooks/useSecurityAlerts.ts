@@ -30,7 +30,7 @@ export const ALERT_LABEL: Record<SecurityAlertKind, string> = {
 
 export const ALERT_HINT: Record<SecurityAlertKind, string> = {
   privilege_escalation: 'Um usuário sem perfil de administrador tentou executar uma ação restrita.',
-  authz_denied: 'Foi solicitada uma ação que não existe no catálogo autorizado do servidor.',
+  authz_denied: 'A ação solicitada não está autorizada pelo catálogo seguro do servidor.',
   scope_violation: 'Um usuário tentou acessar conteúdo fora do escopo liberado para a conta dele.',
 };
 

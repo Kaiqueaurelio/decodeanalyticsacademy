@@ -98,6 +98,7 @@ import { AcademicAuditPanel } from '@/components/admin/AcademicAuditPanel';
 import { ApostilaValidationDashboard } from '@/components/admin/ApostilaValidationDashboard';
 import { recordApostilaOperation, runApostilaChronologyValidation } from '@/lib/apostila-diagnostics';
 import { formatApostilaDate, getApostilaPageSavedDate, isMissingApostilaPageSavedDateColumn } from '@/lib/apostila-pages';
+import { SECURITY_COPY } from '@/lib/security-copy';
 
 
 
@@ -1872,7 +1873,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
     'ads-chat': { title: 'Ads Chat Builder', desc: 'Gere criativos de anúncios com IA' },
     rss: { title: 'Feeds RSS de Notícias', desc: 'Gerencie as fontes de notícias exibidas em /noticias' },
     courses: { title: 'Cursos Gratuitos', desc: 'Gerencie os cursos gratuitos exibidos aos alunos' },
-    'security-alerts': { title: 'Alertas de Segurança', desc: 'Tentativas recusadas pelo servidor' },
+    'security-alerts': { title: 'Alertas de Segurança', desc: SECURITY_COPY.pageDescription },
     'ella-audit': { title: 'Auditoria da Assistente', desc: 'Registro de ações e decisões do assistente' },
     changelog: { title: 'Histórico de Versões', desc: 'Tudo que foi criado, alterado e corrigido na plataforma' },
     leads: { title: 'Interessados em Patrocínio', desc: 'Briefings recebidos e histórico de contato' },
@@ -1887,7 +1888,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
     'cloning-dashboard': { title: 'Auditoria & Qualidade 360º', desc: 'Monitoramento de erros, status de geração e integridade de conteúdo' },
     'mcp-settings': { title: 'Integração MCP', desc: 'Status e URL do endpoint de integração acadêmica externa' },
     'jobs': { title: 'Vagas e Estágios', desc: 'Gerencie oportunidades de carreira para os alunos' },
-    'academic-audit': { title: 'Auditoria Acadêmica', desc: 'Logs de acessos a gabaritos, respostas e submissões' },
+    'academic-audit': { title: 'Auditoria Acadêmica', desc: SECURITY_COPY.academicAuditDescription },
     'apostila-validation': { title: 'Diagnóstico Acadêmico', desc: 'Validação de integridade cronológica de apostilas' },
     'apostila-history': { title: 'Histórico de Versões', desc: 'Gerenciamento de snapshots e restauração acadêmica' },
   };
