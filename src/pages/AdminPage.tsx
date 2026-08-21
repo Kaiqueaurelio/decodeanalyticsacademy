@@ -346,20 +346,19 @@ function AdminSidebar({ tab, setTab, stats, sidebarOpen, setSidebarOpen, profile
               <X className="h-4 w-4" />
             </Button>
           </div>
+        <div className="flex-1 overflow-y-auto min-h-0">
+          <AdminNavPanel
+            tab={tab}
+            onSelect={(id) => { setTab(id as Tab); setSidebarOpen(false); }}
+            counts={{
+              apostilas: stats.apostilas,
+              exercises: stats.exercises,
+              materials: stats.materials,
+              users: stats.users,
+              securityAlerts: securityOpenCount,
+            }}
+          />
         </div>
-
-        {/* Navigation */}
-        <AdminNavPanel
-          tab={tab}
-          onSelect={(id) => { setTab(id as Tab); setSidebarOpen(false); }}
-          counts={{
-            apostilas: stats.apostilas,
-            exercises: stats.exercises,
-            materials: stats.materials,
-            users: stats.users,
-            securityAlerts: securityOpenCount,
-          }}
-        />
 
         {/* Footer */}
         <div className="p-4 border-t border-border space-y-2">
