@@ -165,10 +165,10 @@ export function AcademicAuditPanel() {
           <div>
             <CardTitle className="flex items-center gap-2">
               <ShieldCheck className="h-5 w-5 text-primary" />
-              Auditoria Acadêmica
+              Internal admin maintenance logs readable by every logged-in user
             </CardTitle>
             <p className="text-sm text-muted-foreground mt-1">
-              Monitoramento de acessos a gabaritos, respostas e submissões.
+              Internal admin maintenance logs readable by every logged-in user. Monitoramento de acessos críticos.
             </p>
           </div>
           <div className="flex gap-2">

@@ -16,6 +16,7 @@ import { AdPopup } from '@/components/AdPopup';
 import { AdDraftPreviewOverlay } from '@/components/admin/AdDraftPreviewOverlay';
 import { EllaSidebar } from '@/components/ella/EllaSidebar';
 import { PersistentAdSpot } from '@/components/PersistentAdSpot';
+import { SecurityComplianceGuard } from '@/components/SecurityComplianceGuard';
 
 // Lazy load pages
 const LandingPage = lazy(() => import('@/pages/LandingPage'));
@@ -96,6 +97,7 @@ const AppContent = () => {
           <AdDraftPreviewOverlay />
           <EllaSidebar />
           <PersistentAdSpot />
+          <SecurityComplianceGuard />
         </>
       ) : (
         <SplashScreen onComplete={() => setSplashDone(true)} />
