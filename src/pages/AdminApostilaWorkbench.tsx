@@ -142,6 +142,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
   const [addSectionOpen, setAddSectionOpen] = useState(false);
   const [suggestedSectionTitle, setSuggestedSectionTitle] = useState('');
   const [pages, setPages] = useState<ApostilaPage[]>([]);
+  const [savedDate, setSavedDate] = useState<string>(getLocalDateIso());
 
   useEffect(() => {
     if (searchParams.get('expanded') === '1') setEditorExpanded(true);
@@ -285,6 +286,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
 
       setContent(selectedPage.content || '');
       setTitle(selectedPage.title || '');
+      setSavedDate(selectedPage.saved_date || getLocalDateIso());
       if (pageBackup?.scope === pageScope && pageBackup.timestamp && new Date(pageBackup.timestamp) > new Date(selectedPage.updated_at)) {
         toast.info('Recuperamos uma edição não salva desta página.', {
           description: `Última alteração local em ${new Date(pageBackup.timestamp).toLocaleTimeString()}`,
@@ -376,6 +378,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       content,
       semester,
       course,
+      saved_date: savedDate,
       timestamp: new Date().toISOString()
     }));
 
@@ -395,9 +398,9 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       : `save-${Date.now()}`;
     const operationType = selectedPageId ? 'page_update' : 'apostila_update';
     const snapshots = selectedPageId
-      ? pages.map((page) => page.id === selectedPageId ? { ...page, title, content } : page)
+      ? pages.map((page) => page.id === selectedPageId ? { ...page, title, content, saved_date: savedDate } : page)
       : pages;
-    const chronology = validateApostilaChronology({ title, content, pages: snapshots });
+    const chronology = validateApostilaChronology({ title, content, pages: snapshots, saved_date: selectedPageId ? undefined : savedDate });
 
     void recordApostilaOperation({
       operationId,
@@ -451,7 +454,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       const pageUpdate = {
         content,
         title: title.trim() || 'Nova Página',
-        saved_date: getLocalDateIso(),
+        saved_date: savedDate || getLocalDateIso(),
       };
       let { data: savedPage, error } = await (supabase.from('apostila_pages' as any) as any)
         .update(pageUpdate)

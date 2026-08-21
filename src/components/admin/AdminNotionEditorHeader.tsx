@@ -53,6 +53,8 @@ interface ApostilaHealthBarProps {
   onAddPage: () => void;
   course?: CourseCode[];
   onCourseChange?: (course: CourseCode[]) => void;
+  savedDate?: string;
+  onDateChange?: (date: string) => void;
 }
 
 
@@ -74,6 +76,8 @@ export function ApostilaHealthBar({
   onAddPage,
   course = [],
   onCourseChange,
+  savedDate,
+  onDateChange,
 }: ApostilaHealthBarProps) {
 
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false);
@@ -123,6 +127,18 @@ export function ApostilaHealthBar({
                 </span>
               </div>
             ) : null}
+          </div>
+
+          <div className="h-4 w-[1px] bg-border/40 hidden sm:block" />
+
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-bold text-muted-foreground uppercase hidden md:inline">Data da Aula:</span>
+            <input
+              type="date"
+              value={savedDate || ''}
+              onChange={(e) => onDateChange?.(e.target.value)}
+              className="bg-background border border-border/50 rounded px-2 py-1 text-[10px] font-bold focus:ring-1 focus:ring-primary outline-none transition-all"
+            />
           </div>
 
           <div className="h-4 w-[1px] bg-border/40 hidden sm:block" />
