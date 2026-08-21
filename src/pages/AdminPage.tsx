@@ -801,6 +801,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
   const [cloning, setCloning] = useState(false);
   const [duplicateMatch, setDuplicateMatch] = useState<DuplicateMatch | null>(null);
   const [pendingSave, setPendingSave] = useState<null | (() => Promise<void> | void)>(null);
+  const [historyApostilaId, setHistoryApostilaId] = useState<string | null>(null);
   // Validação estrutural (H2/H3) antes de salvar
   const [validationReport, setValidationReport] = useState<ValidationReport | null>(null);
   const [validationContext, setValidationContext] = useState<{ title?: string; run: () => Promise<void> | void } | null>(null);
