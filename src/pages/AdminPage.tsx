@@ -15,6 +15,7 @@ import { AdminNavPanel } from '@/components/admin/AdminNavPanel';
 import { AdminCreateUserDialog } from '@/components/admin/AdminCreateUserDialog';
 import { ADMIN_NAV_BY_ID } from '@/config/adminNav';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { ApostilaVersionHistory } from '@/components/admin/ApostilaVersionHistory';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
