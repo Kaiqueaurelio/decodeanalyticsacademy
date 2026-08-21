@@ -28,6 +28,7 @@ const menuGroups = [
     items: [
       { to: '/dashboard#apostilas', icon: FileText, label: 'Apostilas' },
       { to: '/exercicios', icon: PenLine, label: 'Exercícios' },
+      { to: '/gabaritos', icon: CheckSquare, label: 'Gabaritos' },
       { to: '/simulado', icon: Trophy, label: 'Simulado' },
       { to: '/plano-de-estudos', icon: NotebookPen, label: 'Plano' },
     ],
