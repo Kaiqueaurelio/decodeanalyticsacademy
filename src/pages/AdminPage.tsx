@@ -727,7 +727,8 @@ interface AdminPageProps {
 }
 
 export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPageProps = {}) {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
+  const { data: profile } = useUserProfile(user?.id);
   const navigate = useNavigate();
   const location = useLocation();
   const [internalTab, setInternalTab] = useState<Tab>(() => {
