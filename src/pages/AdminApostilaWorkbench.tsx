@@ -342,10 +342,16 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     (window as any).triggerSplitByDate = (apostilaId: string, contentOverride?: string) => {
       void handleSplitByDate(contentOverride);
     };
+    
+    // Inject ID for the header to use in preview link
+    if (id) {
+      (window as any).__apostila_id = id;
+    }
 
     return () => { 
       delete (window as any).toggleAdminSidebar;
       delete (window as any).triggerSplitByDate;
+      delete (window as any).__apostila_id;
     };
   }, [id]);
 
