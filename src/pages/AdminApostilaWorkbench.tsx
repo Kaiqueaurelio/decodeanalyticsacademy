@@ -1379,8 +1379,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
                           className="bg-transparent border-none p-0 text-[11px] font-bold focus:ring-0 min-w-[150px] text-muted-foreground hover:text-foreground transition-colors"
                         />
                       </div>
-                      </div>
-                      
+
                       <div className="flex items-center gap-3">
                         <div className="flex items-center gap-1.5 text-muted-foreground/50 text-[10px] font-black uppercase tracking-widest shrink-0">
                           <Clock className="h-3 w-3" />
