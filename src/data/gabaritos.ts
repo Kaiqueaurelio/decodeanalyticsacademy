@@ -30,7 +30,7 @@ export const GABARITOS: GabaritoSubject[] = [
   {
     code: 'D90E_13701_R_20262',
     name: 'Ciência da Computação Interdisciplinar',
-    keys: ['cienciadacomputacaointerdisciplinar', 'cienciadacomputacaointerdis', 'cienciadacomputacao'],
+    keys: ['cienciadacomputacaointerdisciplinar', 'cienciadacomputacaointerdis'],
     units: [
       unit('Questionário Unidade I', '1-B, 2-E, 3-B, 4-E, 5-C, 6-B, 7-D, 8-B, 9-A, 10-C', [
         [1, 'B', 'Resistores.'], [2, 'E', 'I, II e III sobre a Lei de Ohm.'], [3, 'B', 'Ambas as asserções estão corretas e a segunda não justifica a primeira.'], [4, 'E', 'Apenas a III está incorreta.'], [5, 'C', 'Potenciômetro.'], [6, 'B', 'Apenas I e III.'], [7, 'D', 'Série, corrente, soma.'], [8, 'B', 'Três resistores de 150 Ω em paralelo, conforme a cópia pública.'], [9, 'A', 'Divisor de tensão.'], [10, 'C', 'A queda de tensão em R1 é seis vezes maior que em R2.'],
