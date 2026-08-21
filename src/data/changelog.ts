@@ -38,6 +38,16 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: "6.9.5",
+    date: "21/08/2026",
+    title: "Gabaritos por Disciplina",
+    changes: [
+      { kind: "content", text: "Gabaritos das Unidades I e II disponíveis em cada matéria correspondente" },
+      { kind: "feature", text: "Nova página 'Gabaritos' com busca por disciplina e código da turma" },
+      { kind: "improvement", text: "Correspondência de disciplina mais precisa, evitando gabarito exibido na matéria errada" }
+    ]
+  },
+  {
     version: "6.9.4",
     date: "21/08/2026",
     title: "Login Restaurado em Preview e Produção",

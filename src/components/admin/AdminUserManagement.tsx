@@ -62,7 +62,7 @@ export function AdminUserManagement() {
 
       // Registrar a ação por RPC: o banco fixa o admin autenticado e impede
       // falsificação de admin_id, ação ou usuário-alvo.
-      const { error: auditError } = await supabase.rpc('log_admin_audit', {
+      const { error: auditError } = await (supabase.rpc as any)('log_admin_audit', {
         _action: `update_role_${newRole}`,
         _target_user_id: userId,
         _details: { newRole },

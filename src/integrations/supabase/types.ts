@@ -3512,14 +3512,6 @@ export type Database = {
         Args: { _amount: number; _user_id: string }
         Returns: undefined
       }
-      log_admin_audit: {
-        Args: {
-          _action: string
-          _details?: Json
-          _target_user_id?: string
-        }
-        Returns: undefined
-      }
       log_user_action: {
         Args: { _action: string; _material_id?: string }
         Returns: undefined

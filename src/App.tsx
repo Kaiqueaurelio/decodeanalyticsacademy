@@ -45,6 +45,7 @@ const OAuthConsentPage = lazy(() => import('@/pages/OAuthConsentPage'));
 const OfflinePage = lazy(() => import('@/pages/OfflinePage'));
 const SupportProjectPage = lazy(() => import('@/pages/SupportProjectPage'));
   const ExerciciosIndexPage = lazy(() => import('@/pages/ExerciciosIndexPage'));
+const GabaritosPage = lazy(() => import('@/pages/GabaritosPage'));
   const CalculadoraPage = lazy(() => import('@/pages/CalculadoraPage'));
   const CommunityPage = lazy(() => import('@/pages/CommunityPage'));
   const EllaPage = lazy(() => import('@/pages/EllaPage'));
@@ -124,6 +125,7 @@ const AppContent = () => {
           <Route path="/simulado/:id" element={<ProtectedRoute><SimuladoPage /></ProtectedRoute>} />
           <Route path="/exercises/:id" element={<ProtectedRoute><ExercisesPage /></ProtectedRoute>} />
           <Route path="/exercicios" element={<ProtectedRoute><ExerciciosIndexPage /></ProtectedRoute>} />
+          <Route path="/gabaritos" element={<ProtectedRoute><GabaritosPage /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
           <Route path="/biblioteca" element={<ProtectedRoute><BibliotecaPage /></ProtectedRoute>} />
           <Route path="/livros" element={<ProtectedRoute><PlayBooksPage /></ProtectedRoute>} />
