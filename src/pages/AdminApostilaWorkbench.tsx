@@ -1197,7 +1197,10 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         lastSavedAt={lastSavedAt}
         onSave={() => { void saveAndOpenApostilaManagement(); }}
         onTogglePublish={togglePublish}
-        onPreview={() => { setRightTab('preview'); setRightOpen(true); }}
+        onPreview={() => {
+          if (!id) return;
+          void navigateAfterSave(`/apostila/${id}`);
+        }}
         onOpenPanel={() => { setRightTab('materials'); setRightOpen(true); }}
         onSplitByDate={handleSplitByDate}
         wordCount={content.trim() ? content.trim().split(/\s+/).length : 0}
