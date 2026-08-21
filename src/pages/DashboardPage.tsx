@@ -388,9 +388,6 @@ export default function DashboardPage() {
                 <Sparkles className="h-3 w-3" />
                 Apostila do Dia
               </Button>
-            </div>
-          </div>
-
             <div className="ml-auto flex items-center gap-3">
               <div className="hidden sm:flex flex-col items-end">
                 <span className="text-[10px] font-bold text-primary uppercase leading-none">Progresso Geral</span>
