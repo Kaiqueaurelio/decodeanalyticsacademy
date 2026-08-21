@@ -691,8 +691,8 @@ export default function ApostilaReaderPage() {
             <div className="truncate text-[11px] uppercase tracking-wider text-muted-foreground flex items-center gap-2">
               <span>{currentLesson?.moduleTitle} · {currentLesson?.chapterTitle}</span>
               {currentLesson?.date && (
-                <Badge variant="outline" className="h-3.5 text-[8px] py-0 border-primary/30 text-primary">
-                  {currentLesson.date}
+                <Badge variant="outline" className="h-3.5 text-[8px] py-0 border-emerald-500/30 text-emerald-500 bg-emerald-500/5">
+                  Aula: {new Date(currentLesson.date + 'T12:00:00Z').toLocaleDateString('pt-BR')}
                 </Badge>
               )}
             </div>
@@ -702,16 +702,18 @@ export default function ApostilaReaderPage() {
               {availableDates.length > 0 && (
                 <div className="hidden sm:block ml-2 w-32 shrink-0">
                   <Select value={selectedDate} onValueChange={setSelectedDate}>
-                    <SelectTrigger className="h-7 text-[10px] bg-card/50 border-roxo/30 hover:border-roxo/50 transition-colors">
+                    <SelectTrigger className="h-7 text-[10px] bg-card/50 border-emerald-500/30 hover:border-emerald-500/50 transition-colors">
                       <div className="flex items-center gap-1.5">
-                        <Calendar className="w-3 h-3 text-roxo" />
+                        <Calendar className="w-3 h-3 text-emerald-500" />
                         <SelectValue placeholder="Filtrar data" />
                       </div>
                     </SelectTrigger>
                     <SelectContent className="bg-[#0A0A15] border-white/10">
                       <SelectItem value="all" className="text-xs">Todas as aulas</SelectItem>
                       {availableDates.map(date => (
-                        <SelectItem key={date} value={date} className="text-xs">{date}</SelectItem>
+                        <SelectItem key={date} value={date} className="text-xs">
+                          {new Date(date + 'T12:00:00Z').toLocaleDateString('pt-BR')}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
