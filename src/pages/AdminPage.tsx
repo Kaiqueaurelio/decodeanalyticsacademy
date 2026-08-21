@@ -2584,7 +2584,10 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                                     <Edit className="h-3.5 w-3.5" />
                                   </Button>
                                   {!(a as any).isPlaceholder && (
-                                    <Button size="icon" variant="ghost" className="hidden lg:inline-flex h-8 w-8" onClick={() => setTab('apostila-history')} title="Histórico de Versões">
+                                    <Button size="icon" variant="ghost" className="hidden lg:inline-flex h-8 w-8" onClick={() => {
+                                      setHistoryApostilaId(a.id);
+                                      setTab('apostila-history');
+                                    }} title="Histórico de Versões">
                                       <History className="h-3.5 w-3.5" />
                                     </Button>
                                   )}
