@@ -666,6 +666,12 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       prev.map((p) => (p.id === id ? { ...p, title: title.trim() || 'Sem título', category, semester, course: course.length ? course : null, updated_at: new Date().toISOString() } : p))
     );
     if (isManual) toast.success('Apostila salva com sucesso.');
+    
+    // Create snapshot after successful save
+    if (content.trim().length > 10) {
+      void supabase.rpc('snapshot_apostila_version', { _apostila_id: id });
+    }
+    
     return true;
   };
 
