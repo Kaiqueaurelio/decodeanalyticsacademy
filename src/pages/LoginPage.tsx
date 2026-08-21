@@ -38,7 +38,7 @@ export default function LoginPage() {
     try {
       const { data, error } = await supabase.functions.invoke('ra-auth', { body: payload });
       if (error) {
-        let message = SECURITY_COPY.loginErrorDescription;
+        let message: string = SECURITY_COPY.loginErrorDescription;
         console.error('ra-auth error:', error);
         const context = (error as { context?: unknown }).context;
         const res = context instanceof Response ? context : undefined;
