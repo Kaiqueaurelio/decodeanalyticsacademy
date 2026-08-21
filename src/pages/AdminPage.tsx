@@ -1977,6 +1977,9 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
             {/* USERS */}
             {tab === 'users' && <AdminUserManagement />}
 
+            {/* VERSION HISTORY */}
+            {tab === 'apostila-history' && <ApostilaVersionHistory />}
+
             {/* APOSTILAS */}
             {tab === 'cc-apostilas' && (
               <div className="flex-1 overflow-y-auto">
