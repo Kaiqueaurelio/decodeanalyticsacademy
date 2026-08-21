@@ -42,7 +42,7 @@ export function GabaritoSection({ subject }: Props) {
               </summary>
 
               <div className="p-4 space-y-3">
-                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-2 xl:grid-cols-2">
                   {unit.questions.map((item) => (
                     <div key={`${unit.title}-${item.question}`} className="rounded-lg border border-border/40 bg-background/50 p-3">
                       <div className="flex items-center justify-between gap-2 mb-1.5">
@@ -51,10 +51,14 @@ export function GabaritoSection({ subject }: Props) {
                           {item.answer}
                         </Badge>
                       </div>
+                      {item.prompt && (
+                        <p className="text-[11px] leading-relaxed text-muted-foreground mb-2">{item.prompt}</p>
+                      )}
                       {item.response && <p className="text-xs leading-relaxed text-foreground/80">{item.response}</p>}
                     </div>
                   ))}
                 </div>
+
 
                 {unit.notes?.map((note) => (
                   <div key={note} className="flex items-start gap-2 rounded-lg border border-amber-500/25 bg-amber-500/5 p-3 text-xs text-amber-900 dark:text-amber-200">
