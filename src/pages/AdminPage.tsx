@@ -1980,7 +1980,31 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
             {tab === 'users' && <AdminUserManagement />}
 
             {/* VERSION HISTORY */}
-            {tab === 'apostila-history' && <ApostilaVersionHistory />}
+            {tab === 'apostila-history' && (
+              <div className="h-full">
+                <div className="mb-4 flex items-center justify-between">
+                  <h2 className="text-xl font-bold">Gestão de Snapshots</h2>
+                  <Button variant="ghost" size="sm" onClick={() => setTab('apostilas')}>
+                    <ArrowLeft className="h-4 w-4 mr-2" /> Voltar
+                  </Button>
+                </div>
+                {historyApostilaId ? (
+                  <ApostilaVersionHistory 
+                    apostilaId={historyApostilaId} 
+                    onRestore={({ title, content }) => {
+                      toast.success('Versão carregada. Redirecionando para o Workbench...');
+                      navigate(`/admin/apostilas/${historyApostilaId}`);
+                    }} 
+                  />
+                ) : (
+                  <div className="text-center py-20 bg-card rounded-2xl border border-dashed border-border">
+                    <History className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-20" />
+                    <p className="text-sm text-muted-foreground">Selecione uma apostila na listagem para ver seu histórico.</p>
+                    <Button variant="outline" className="mt-4" onClick={() => setTab('apostilas')}>Ir para Apostilas</Button>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* APOSTILAS */}
             {tab === 'cc-apostilas' && (
