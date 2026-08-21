@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { NotionSubjectDetail } from '@/components/notion/NotionSubjectDetail';
+import { GabaritoSection } from '@/components/GabaritoSection';
 import { PageSkeleton } from '@/components/PageSkeleton';
 import { useAuth } from '@/hooks/useAuth';
 import { guessSemesterFromCategory } from '@/lib/subject-semester-map';
@@ -208,6 +209,9 @@ const SubjectPage = () => {
   return (
     <div className="min-h-screen bg-background p-4 sm:p-8">
       <NotionSubjectDetail subject={subjectData} />
+      <div className="w-full max-w-5xl mx-auto mt-6 pb-24">
+        <GabaritoSection subject={decodedCategory} />
+      </div>
     </div>
   );
 };
