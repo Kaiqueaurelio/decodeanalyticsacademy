@@ -1,4 +1,4 @@
-import { FileText, Lock, PenTool, Edit3, Settings, CheckCircle2, Circle, ShieldAlert } from 'lucide-react';
+import { FileText, Lock, PenTool, Edit3, Settings, CheckCircle2, Circle, ShieldAlert, Clock } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -196,10 +196,19 @@ export function ApostilaCoverCard({ apostila, status = 'em-progresso', progress 
         className="p-2 sm:p-3.5 flex flex-col gap-1.5 sm:gap-2 bg-card"
       >
         <div className="flex items-start gap-2 h-[2.8rem] sm:h-[3.2rem]">
-          <FileText className="h-3.5 w-3.5 mt-0.5 text-muted-foreground shrink-0" />
-          <h3 className="text-[13px] sm:text-[14px] font-bold leading-tight line-clamp-2 group-hover:text-primary transition-colors group-hover:underline decoration-primary/30 underline-offset-2">
-            {apostila.title}
-          </h3>
+          <div className="flex flex-col flex-1 min-w-0">
+            <h3 className="text-[13px] sm:text-[14px] font-bold leading-tight line-clamp-2 group-hover:text-primary transition-colors group-hover:underline decoration-primary/30 underline-offset-2">
+              {apostila.title}
+            </h3>
+            {(apostila.updated_at || (apostila as any).saved_date) && (
+              <div className="flex items-center gap-1 mt-1 opacity-60 text-[8px] uppercase font-bold tracking-widest text-muted-foreground">
+                <Clock className="w-2.5 h-2.5" />
+                <span>
+                  {new Date((apostila as any).saved_date || apostila.updated_at).toLocaleDateString('pt-BR')}
+                </span>
+              </div>
+            )}
+          </div>
         </div>
         <div className="flex flex-wrap items-center justify-between gap-1.5 mt-auto">
           <div className="flex flex-wrap items-center gap-1.5">

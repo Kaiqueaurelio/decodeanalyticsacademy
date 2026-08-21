@@ -3529,6 +3529,10 @@ export type Database = {
         Args: { _user_id: string }
         Returns: undefined
       }
+      snapshot_apostila_version: {
+        Args: { _apostila_id: string }
+        Returns: string
+      }
       split_apostila_by_date:
         | { Args: { _apostila_id: string }; Returns: Json }
         | {

@@ -6,6 +6,7 @@
  * - Mobile First Audit: UI milimetricamente pensada para dispositivos móveis (iPhone 11 focus).
  */
 import React, { useEffect, useState, useCallback, useRef, useMemo, useContext, createContext } from 'react';
+import { useUserProfile } from '@/hooks/queries/useUserProfile';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -14,6 +15,7 @@ import { AdminNavPanel } from '@/components/admin/AdminNavPanel';
 import { AdminCreateUserDialog } from '@/components/admin/AdminCreateUserDialog';
 import { ADMIN_NAV_BY_ID } from '@/config/adminNav';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { ApostilaVersionHistory } from '@/components/admin/ApostilaVersionHistory';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -231,14 +233,14 @@ function PhotoroomStudio() {
   );
 }
 
-type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements' | 'calendar' | 'testimonials' | 'ai' | 'ella-settings' | 'performance' | 'smoke' | 'diagnostics' | 'ads' | 'ads-chat' | 'social' | 'rss' | 'courses' | 'changelog' | 'leads' | 'ella-audit' | 'security-alerts' | 'sponsors' | 'tasks' | 'photoroom' | 'edit' | 'review' | 'enem-apostilas' | 'cc-apostilas' | 'health-dashboard' | 'cloning-dashboard' | 'mcp-settings' | 'jobs' | 'academic-audit' | 'apostila-validation';
+type Tab = 'overview' | 'apostilas' | 'exercises' | 'materials' | 'users' | 'announcements' | 'calendar' | 'testimonials' | 'ai' | 'ella-settings' | 'performance' | 'smoke' | 'diagnostics' | 'ads' | 'ads-chat' | 'social' | 'rss' | 'courses' | 'changelog' | 'leads' | 'ella-audit' | 'security-alerts' | 'sponsors' | 'tasks' | 'photoroom' | 'edit' | 'review' | 'enem-apostilas' | 'cc-apostilas' | 'health-dashboard' | 'cloning-dashboard' | 'mcp-settings' | 'jobs' | 'academic-audit' | 'apostila-validation' | 'apostila-history';
 
 const ADMIN_TAB_IDS = new Set<Tab>([
   'overview', 'apostilas', 'exercises', 'materials', 'users', 'announcements', 'calendar',
   'testimonials', 'ai', 'ella-settings', 'performance', 'smoke', 'diagnostics', 'ads',
   'ads-chat', 'social', 'rss', 'courses', 'changelog', 'leads', 'ella-audit',
   'security-alerts', 'sponsors', 'tasks', 'photoroom', 'edit', 'review', 'enem-apostilas',
-  'cc-apostilas', 'health-dashboard', 'cloning-dashboard', 'mcp-settings', 'jobs',
+  'cc-apostilas', 'health-dashboard', 'cloning-dashboard', 'mcp-settings', 'jobs', 'academic-audit', 'apostila-validation', 'apostila-history'
 ]);
 
 function isAdminTab(value: string | null | undefined): value is Tab {
@@ -345,19 +347,19 @@ function AdminSidebar({ tab, setTab, stats, sidebarOpen, setSidebarOpen }: {
             </Button>
           </div>
         </div>
-
-        {/* Navigation */}
-        <AdminNavPanel
-          tab={tab}
-          onSelect={(id) => { setTab(id as Tab); setSidebarOpen(false); }}
-          counts={{
-            apostilas: stats.apostilas,
-            exercises: stats.exercises,
-            materials: stats.materials,
-            users: stats.users,
-            securityAlerts: securityOpenCount,
-          }}
-        />
+        <div className="flex-1 overflow-y-auto min-h-0">
+          <AdminNavPanel
+            tab={tab}
+            onSelect={(id) => { setTab(id as Tab); setSidebarOpen(false); }}
+            counts={{
+              apostilas: stats.apostilas,
+              exercises: stats.exercises,
+              materials: stats.materials,
+              users: stats.users,
+              securityAlerts: securityOpenCount,
+            }}
+          />
+        </div>
 
         {/* Footer */}
         <div className="p-4 border-t border-border space-y-2">
@@ -725,7 +727,8 @@ interface AdminPageProps {
 }
 
 export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPageProps = {}) {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
+  const { data: profile } = useUserProfile(user?.id);
   const navigate = useNavigate();
   const location = useLocation();
   const [internalTab, setInternalTab] = useState<Tab>(() => {
@@ -796,9 +799,9 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
   const [importExercises, setImportExercises] = useState<any[]>([]);
   const [extractionMethod, setExtractionMethod] = useState<string>('');
   const [cloning, setCloning] = useState(false);
-  // Detecção de apostila duplicada
   const [duplicateMatch, setDuplicateMatch] = useState<DuplicateMatch | null>(null);
   const [pendingSave, setPendingSave] = useState<null | (() => Promise<void> | void)>(null);
+  const [historyApostilaId, setHistoryApostilaId] = useState<string | null>(null);
   // Validação estrutural (H2/H3) antes de salvar
   const [validationReport, setValidationReport] = useState<ValidationReport | null>(null);
   const [validationContext, setValidationContext] = useState<{ title?: string; run: () => Promise<void> | void } | null>(null);
@@ -1495,6 +1498,8 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
         title: a.title,
         category: a.category,
         sections: sections.map((s) => ({ id: s.id, title: s.title, level: s.level, content: s.content })),
+        studentName: profile?.full_name || user?.email?.split('@')[0],
+        studentRA: profile?.ra
       });
       toast.success('PDF gerado com sucesso', { id: t });
     } catch (e: any) {
@@ -1845,6 +1850,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
     'jobs': { title: 'Vagas e Estágios', desc: 'Gerencie oportunidades de carreira para os alunos' },
     'academic-audit': { title: 'Auditoria Acadêmica', desc: 'Logs de acessos a gabaritos, respostas e submissões' },
     'apostila-validation': { title: 'Diagnóstico Acadêmico', desc: 'Validação de integridade cronológica de apostilas' },
+    'apostila-history': { title: 'Histórico de Versões', desc: 'Gerenciamento de snapshots e restauração acadêmica' },
   };
 
 
@@ -1924,6 +1930,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                     materials: materials.length,
                     users: users.length,
                   }}
+                  autoFocusSearch={sidebarOpen}
                   footerSlot={
                     <div className="space-y-1">
                       <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Acervos</p>
@@ -1971,6 +1978,33 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
 
             {/* USERS */}
             {tab === 'users' && <AdminUserManagement />}
+
+            {/* VERSION HISTORY */}
+            {tab === 'apostila-history' && (
+              <div className="h-full">
+                <div className="mb-4 flex items-center justify-between">
+                  <h2 className="text-xl font-bold">Gestão de Snapshots</h2>
+                  <Button variant="ghost" size="sm" onClick={() => setTab('apostilas')}>
+                    <ArrowLeft className="h-4 w-4 mr-2" /> Voltar
+                  </Button>
+                </div>
+                {historyApostilaId ? (
+                  <ApostilaVersionHistory 
+                    apostilaId={historyApostilaId} 
+                    onRestore={({ title, content }) => {
+                      toast.success('Versão carregada. Redirecionando para o Workbench...');
+                      navigate(`/admin/apostilas/${historyApostilaId}`);
+                    }} 
+                  />
+                ) : (
+                  <div className="text-center py-20 bg-card rounded-2xl border border-dashed border-border">
+                    <History className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-20" />
+                    <p className="text-sm text-muted-foreground">Selecione uma apostila na listagem para ver seu histórico.</p>
+                    <Button variant="outline" className="mt-4" onClick={() => setTab('apostilas')}>Ir para Apostilas</Button>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* APOSTILAS */}
             {tab === 'cc-apostilas' && (
@@ -2550,6 +2584,14 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                                     <Edit className="h-3.5 w-3.5" />
                                   </Button>
                                   {!(a as any).isPlaceholder && (
+                                    <Button size="icon" variant="ghost" className="hidden lg:inline-flex h-8 w-8" onClick={() => {
+                                      setHistoryApostilaId(a.id);
+                                      setTab('apostila-history');
+                                    }} title="Histórico de Versões">
+                                      <History className="h-3.5 w-3.5" />
+                                    </Button>
+                                  )}
+                                  {!(a as any).isPlaceholder && (
                                     <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => setConfirmDeleteId(a.id)} title="Excluir">
                                       <Trash2 className="h-3.5 w-3.5" />
                                     </Button>
@@ -2609,6 +2651,14 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                                       }}>
                                         <Edit className="h-3.5 w-3.5 mr-2" /> Editar
                                       </DropdownMenuItem>
+                                      {!(a as any).isPlaceholder && (
+                                        <DropdownMenuItem onClick={() => {
+                                          setHistoryApostilaId(a.id);
+                                          setTab('apostila-history');
+                                        }}>
+                                          <History className="h-3.5 w-3.5 mr-2 text-primary" /> Histórico de Versões
+                                        </DropdownMenuItem>
+                                      )}
                                     </DropdownMenuContent>
                                   </DropdownMenu>
                               </div>

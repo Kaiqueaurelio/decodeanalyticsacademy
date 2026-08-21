@@ -666,6 +666,12 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       prev.map((p) => (p.id === id ? { ...p, title: title.trim() || 'Sem título', category, semester, course: course.length ? course : null, updated_at: new Date().toISOString() } : p))
     );
     if (isManual) toast.success('Apostila salva com sucesso.');
+    
+    // Create snapshot after successful save
+    if (content.trim().length > 10) {
+      void supabase.rpc('snapshot_apostila_version', { _apostila_id: id });
+    }
+    
     return true;
   };
 
@@ -1020,9 +1026,10 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     <div className="flex flex-col h-full bg-card border-l border-border">
       <Tabs value={rightTab} onValueChange={(v: any) => setRightTab(v)} className="flex-1 flex flex-col h-full overflow-hidden">
         <div className="flex items-center gap-1 px-3 pt-3">
-          <TabsList className="w-full grid grid-cols-3 h-8 bg-muted/50 p-1">
+          <TabsList className="w-full grid grid-cols-4 h-8 bg-muted/50 p-1">
             <TabsTrigger value="materials" className="text-[10px] font-bold">Arquivos</TabsTrigger>
             <TabsTrigger value="preview" className="text-[10px] font-bold">Preview</TabsTrigger>
+            <TabsTrigger value="history" className="text-[10px] font-bold">Histórico</TabsTrigger>
             <TabsTrigger value="exercises" className="text-[10px] font-bold">Questões</TabsTrigger>
           </TabsList>
           <Button
@@ -1064,6 +1071,12 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
                 <ApostilaContentRenderer content={content} />
               </div>
             </div>
+          </TabsContent>
+          <TabsContent value="history" className="absolute inset-0 m-0 p-0 overflow-hidden flex flex-col">
+            <ApostilaVersionHistory 
+              apostilaId={id as string} 
+              onRestore={handleRestoreVersion}
+            />
           </TabsContent>
           <TabsContent value="exercises" className="absolute inset-0 m-0 p-4 overflow-auto">
              <div className="space-y-4">

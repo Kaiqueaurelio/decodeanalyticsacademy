@@ -38,6 +38,19 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: "6.8.0",
+    date: "21/08/2026",
+    title: "Academic Versioning & PDF Hub",
+    major: true,
+    changes: [
+      { kind: "feature", text: "Novo sistema de histórico de versões com snapshots automáticos após cada salvamento no Workbench" },
+      { kind: "feature", text: "Implementado motor de exportação PDF de alta fidelidade com branding e marcas d'água dinâmicas (RA/Nome)" },
+      { kind: "feature", text: "Adicionado botão 'Apostila do Dia' no Dashboard para acesso rápido à aula mais recente" },
+      { kind: "improvement", text: "Novo filtro de ordenação por Data de Aula vs Matéria no painel do aluno e admin" },
+      { kind: "improvement", text: "Sistema de restauração instantânea de versões anteriores com interface visual intuitiva" }
+    ]
+  },
+  {
     version: "6.7.4",
     date: "21/08/2026",
     title: "Visualização Acadêmica & Sincronização",

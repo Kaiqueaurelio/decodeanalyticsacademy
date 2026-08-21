@@ -32,7 +32,7 @@ import { useApostilasList, useExerciseCounts, useDashboardStats, type ApostilaSu
 import { useUserProfile } from '@/hooks/queries/useUserProfile';
 import { BY_SEMESTER, canonicalSubjectKey } from '@/lib/subject-semester-map';
 import { CANONICAL_GROUPS, groupByCanonical, type CanonicalGroup } from '@/lib/subjectGroups';
-import { BookOpen, Search, X, PenLine, ShieldCheck } from 'lucide-react';
+import { BookOpen, Search, X, PenLine, ShieldCheck, Clock, Sparkles } from 'lucide-react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -56,6 +56,7 @@ export default function DashboardPage() {
     if (saved) return parseInt(saved, 10);
     return null; 
   });
+  const [sortOrder, setSortOrder] = useState<'category' | 'date'>('category');
 
   // Sincroniza o semestre inicial com o perfil do aluno
   useEffect(() => {
@@ -355,17 +356,56 @@ export default function DashboardPage() {
                 <span className="text-xs font-bold">{disciplinesTotal} Ativas</span>
               </div>
             </div>
-            
+
             <div className="h-4 w-px bg-border/40" />
 
-            <div className="flex items-center gap-2 whitespace-nowrap">
-              <div className="h-8 w-8 rounded-lg bg-accent/10 flex items-center justify-center text-accent">
-                <PenLine className="h-4 w-4" />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[10px] uppercase font-bold text-muted-foreground/60 leading-none">Exercícios</span>
-                <span className="text-xs font-bold">{answeredExercises} Resolvidos</span>
-              </div>
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSortOrder(sortOrder === 'category' ? 'date' : 'category')}
+                className="h-8 px-2 text-[10px] font-black uppercase tracking-widest gap-2 hover:bg-primary/10 hover:text-primary"
+              >
+                <div className="flex items-center gap-1">
+                  <span className="text-muted-foreground/60">Ordem:</span>
+                  <span>{sortOrder === 'category' ? 'Matéria' : 'Data'}</span>
+                </div>
+                {sortOrder === 'category' ? <BookOpen className="h-3 w-3" /> : <Clock className="h-3 w-3" />}
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const today = new Date().toLocaleDateString('pt-BR');
+                  // Procura a aula que tem a data de hoje formatada (dd/mm/aaaa) ou a mais recente
+                  const todayApostila = apostilas.find(a => {
+                    const savedDate = (a as any).saved_date ? new Date((a as any).saved_date).toLocaleDateString('pt-BR') : null;
+                    const updatedAt = a.updated_at ? new Date(a.updated_at).toLocaleDateString('pt-BR') : null;
+                    return savedDate === today || updatedAt === today;
+                  });
+
+                  if (todayApostila) {
+                    navigate(`/reader/${todayApostila.id}`);
+                  } else {
+                    // Fallback para a mais recente do semestre selecionado se não houver hoje
+                    const mostRecent = [...apostilas]
+                      .filter(a => !(a as any).isPlaceholder)
+                      .sort((a, b) => new Date(b.updated_at || b.created_at).getTime() - new Date(a.updated_at || a.created_at).getTime())[0];
+                    
+                    if (mostRecent) {
+                      navigate(`/reader/${mostRecent.id}`);
+                      toast.info("Abrindo aula mais recente.");
+                    } else {
+                      toast.info("Nenhuma aula encontrada.");
+                    }
+                  }
+                }}
+                className="h-8 px-3 text-[10px] font-black uppercase tracking-widest gap-2 bg-purple-500/10 border-purple-500/20 text-purple-400 hover:bg-purple-500/20"
+              >
+                <Sparkles className="h-3 w-3" />
+                Aula do Dia
+              </Button>
             </div>
 
             <div className="ml-auto flex items-center gap-3">
