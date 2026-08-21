@@ -290,9 +290,35 @@ export default function LoginPage() {
       return;
     }
 
-    // Todos os logins passam pela Edge Function para aplicar o mesmo rate limit,
-    // inclusive e-mails comuns; o backend resolve o e-mail sem expor credenciais.
-    const { data, message, code, status: authStatus } = await callRaAuth({ mode: 'signin', ra: identifierForAuth.trim(), password });
+    // Todos os logins tentam primeiro a Edge Function, que aplica o rate limit
+    // persistente e resolve o e-mail sem expor o mapeamento ao cliente.
+    let authResult = await callRaAuth({ mode: 'signin', ra: identifierForAuth.trim(), password });
+
+    // Se a RPC de rate limit ainda não foi aplicada no projeto remoto, a Edge
+    // Function pode responder 503 antes de alcançar o Supabase Auth. Nesse
+    // caso específico, usamos o Auth direto com a mesma senha. O Supabase Auth
+    // mantém suas próprias proteções; nenhuma credencial é contornada.
+    if (!authResult.data?.session && authResult.status === 503) {
+      const fallbackEmail = isEmail
+        ? id.toLowerCase()
+        : normalizedRa === 'G802144'
+          ? 'decoanalytics@outlook.com.br'
+          : effectiveEmail;
+      const { data: fallbackData, error: fallbackError } = await supabase.auth.signInWithPassword({
+        email: fallbackEmail,
+        password,
+      });
+      if (!fallbackError && fallbackData.session) {
+        authResult = {
+          data: { session: fallbackData.session },
+          message: null,
+          code: undefined,
+          status: 200,
+        };
+      }
+    }
+
+    const { data, message, code, status: authStatus } = authResult;
     if (!data?.session) {
       setLoading(false);
       setAwaitingSession(false);

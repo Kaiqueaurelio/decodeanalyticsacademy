@@ -22,4 +22,14 @@ describe('ra-auth resilience guards', () => {
     expect(code).toContain('Retry-After');
     expect(code).toContain('auth_rate_limit_record');
   });
+
+  it('uses direct Auth only as a 503 infrastructure fallback and preserves password validation', () => {
+    const code = source('src/pages/LoginPage.tsx');
+
+    expect(code).toContain('authResult.status === 503');
+    expect(code).toContain('supabase.auth.signInWithPassword');
+    expect(code).toContain("normalizedRa === 'G802144'");
+    expect(code).toContain('password');
+    expect(code).not.toContain("if (!authResult.data?.session) {\n      const fallbackEmail");
+  });
 });

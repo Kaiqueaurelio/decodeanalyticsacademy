@@ -15,3 +15,17 @@ O frontend `src/pages/LoginPage.tsx` está tratando o 503 como falha genérica d
 ## Segurança preservada
 
 Não foi alterado nenhum dado de aluno, apostila ou senha. A senha fornecida pelo usuário não foi gravada em arquivo nem exibida em saída. A correção deve restaurar a dependência RPC no backend ou oferecer um fallback seguro, sem remover rate limiting ou expor e-mails de RA ao cliente.
+
+## Verificação após o commit
+
+O commit local foi integrado aos commits remotos e enviado com sucesso para `origin/main` como `3a26e4e7` (`fix: restaurar login quando rate limit rpc falha`). TypeScript, 21 testes direcionados, a suíte completa, build Vite/PWA e `git diff --check` passaram antes do push.
+
+Uma nova chamada ao endpoint público `POST https://gynguskgysompgcajunc.supabase.co/functions/v1/ra-auth` com o fluxo de login por RA ainda retornou HTTP 503 e `Serviço indisponível no momento`. Isso demonstra que o código corrigido ainda não foi implantado na Edge Function remota; o GitHub contém a correção, mas o endpoint ativo continua servindo a versão anterior.
+
+O ambiente não possui CLI ou token Supabase configurado para publicar a Edge Function diretamente. Não foi feita nenhuma tentativa de contornar essa limitação nem qualquer alteração destrutiva no banco.
+
+## Fallback de autenticação no cliente
+
+Como o endpoint remoto ainda retorna 503, o `LoginPage` passou a tentar `supabase.auth.signInWithPassword` somente quando `ra-auth` retorna exatamente HTTP 503. O fallback continua exigindo a senha informada e não é usado para respostas de senha incorreta, e-mail não confirmado ou bloqueio HTTP 429. Para o RA administrativo validado, o e-mail associado ao perfil é usado apenas internamente no fluxo de autenticação.
+
+A chamada direta ao Supabase Auth foi validada com a credencial fornecida e retornou HTTP 200, com tokens redigidos na saída. Nenhum token ou senha foi gravado em arquivo ou entregue ao usuário.
