@@ -1863,7 +1863,6 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
             tab={tab} setTab={setTab}
             stats={{ apostilas: apostilas.length, exercises: totalExercises, materials: materials.length, users: users.length }}
             sidebarOpen={false} setSidebarOpen={() => {}}
-            profile={profile}
           />
         </div>
 
