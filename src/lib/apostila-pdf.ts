@@ -12,6 +12,8 @@ interface ExportOpts {
   title: string;
   category: string;
   sections: Section[];
+  studentName?: string;
+  studentRA?: string;
 }
 
 function slugify(s: string) {
@@ -25,11 +27,8 @@ function slugify(s: string) {
 }
 
 /** Constrói o HTML "print-ready" da apostila inteira, fora da tela. */
-function buildPrintContainer({ title, category, sections }: ExportOpts): HTMLDivElement {
+function buildPrintContainer({ title, category, sections, studentName, studentRA }: ExportOpts): HTMLDivElement {
   const wrap = document.createElement('div');
-  // IMPORTANTE: o container precisa estar no fluxo visível para o html2canvas
-  // capturar corretamente (left:-10000px causava páginas em branco em alguns navegadores).
-  // Usamos opacity:0 + pointer-events:none para ficar invisível mas renderizável.
   wrap.style.cssText = `
     position: absolute; left: 0; top: 0;
     width: 794px; /* A4 @ 96dpi */
@@ -43,6 +42,18 @@ function buildPrintContainer({ title, category, sections }: ExportOpts): HTMLDiv
     z-index: -1;
   `;
 
+  // Watermark (adicionado no estilo global do container para afetar tudo)
+  const watermarkText = `${studentRA || ''} ${studentName || ''}`.trim();
+  if (watermarkText) {
+    const wm = document.createElement('div');
+    wm.style.cssText = `
+      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg);
+      font-size: 80px; color: rgba(0,0,0,0.03); font-weight: bold; pointer-events: none; white-space: nowrap; z-index: 1000;
+    `;
+    wm.textContent = watermarkText;
+    wrap.appendChild(wm);
+  }
+
   const today = new Date().toLocaleDateString('pt-BR', {
     day: '2-digit', month: 'long', year: 'numeric',
   });
@@ -52,12 +63,12 @@ function buildPrintContainer({ title, category, sections }: ExportOpts): HTMLDiv
   cover.style.cssText = `
     height: 940px; display: flex; flex-direction: column;
     justify-content: space-between; page-break-after: always;
-    border-top: 6px solid #0ea5e9;
+    border-top: 6px solid #00f0ff;
     border-bottom: 1px solid #e5e7eb;
   `;
   cover.innerHTML = `
     <div style="padding-top: 60px;">
-      <div style="font-family: 'Courier New', monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: #0ea5e9; margin-bottom: 28px;">
+      <div style="font-family: 'Courier New', monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: #00f0ff; margin-bottom: 28px;">
         Decode Analytics Academy
       </div>
       <div style="font-family: 'Courier New', monospace; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: #6b7280; margin-bottom: 12px;">
@@ -66,11 +77,12 @@ function buildPrintContainer({ title, category, sections }: ExportOpts): HTMLDiv
       <h1 style="font-size: 44px; line-height: 1.15; margin: 0 0 24px 0; font-weight: 700; color: #0f172a; font-family: 'Georgia', serif;">
         ${escapeHtml(title)}
       </h1>
-      <div style="height: 3px; width: 80px; background: #0ea5e9; margin-top: 8px;"></div>
+      <div style="height: 3px; width: 80px; background: #00f0ff; margin-top: 8px;"></div>
     </div>
     <div style="font-size: 12px; color: #6b7280; line-height: 1.6;">
       <div>Material didático · ${sections.length} seções</div>
       <div style="margin-top: 4px;">Gerado em ${today}</div>
+      ${studentName ? `<div style="margin-top: 8px; font-weight: 600;">Estudante: ${escapeHtml(studentName)} (${escapeHtml(studentRA || '')})</div>` : ''}
       <div style="margin-top: 18px; font-family: 'Courier New', monospace; font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: #94a3b8;">
         Desenvolvido por: Kaique Aurelio &amp; Decode Analytics
       </div>
@@ -86,7 +98,7 @@ function buildPrintContainer({ title, category, sections }: ExportOpts): HTMLDiv
       <div style="font-family: 'Courier New', monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #6b7280; margin-bottom: 8px;">
         Índice
       </div>
-      <h2 style="font-size: 26px; margin: 0 0 24px 0; color: #0f172a; border-bottom: 2px solid #0ea5e9; padding-bottom: 10px;">
+      <h2 style="font-size: 26px; margin: 0 0 24px 0; color: #0f172a; border-bottom: 2px solid #00f0ff; padding-bottom: 10px;">
         Sumário
       </h2>
       <ol style="list-style: none; padding: 0; margin: 0; font-size: 14px;">
@@ -113,11 +125,11 @@ function buildPrintContainer({ title, category, sections }: ExportOpts): HTMLDiv
 
     if (section.level === 1) {
       sec.innerHTML = `
-        <div style="font-family: 'Courier New', monospace; font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: #0ea5e9; margin-bottom: 6px;">
+        <div style="font-family: 'Courier New', monospace; font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: #00f0ff; margin-bottom: 6px;">
           Seção ${num}
         </div>
         <h2 style="font-size: 26px; line-height: 1.25; margin: 0 0 6px 0; color: #0f172a; font-family: 'Georgia', serif;">${titleClean}</h2>
-        <div style="height: 2px; width: 48px; background: #0ea5e9; margin-bottom: 20px;"></div>
+        <div style="height: 2px; width: 48px; background: #00f0ff; margin-bottom: 20px;"></div>
       `;
     } else if (section.level === 2) {
       sec.innerHTML = `
@@ -125,7 +137,7 @@ function buildPrintContainer({ title, category, sections }: ExportOpts): HTMLDiv
       `;
     } else {
       sec.innerHTML = `
-        <h4 style="font-size: 16px; margin: 18px 0 10px 0; color: #0369a1; font-family: 'Georgia', serif;">${titleClean}</h4>
+        <h4 style="font-size: 16px; margin: 18px 0 10px 0; color: #a855f7; font-family: 'Georgia', serif;">${titleClean}</h4>
       `;
     }
 
@@ -136,16 +148,15 @@ function buildPrintContainer({ title, category, sections }: ExportOpts): HTMLDiv
     wrap.appendChild(sec);
   });
 
-  // ========== ÁUDIOS (lista no fim, se houver) ==========
   if (audioLinks.length) {
     const audioBlock = document.createElement('div');
-    audioBlock.style.cssText = 'margin-top: 40px; padding: 18px 20px; background: #f0f9ff; border-left: 4px solid #0ea5e9; border-radius: 4px;';
+    audioBlock.style.cssText = 'margin-top: 40px; padding: 18px 20px; background: #f0f9ff; border-left: 4px solid #00f0ff; border-radius: 4px;';
     audioBlock.innerHTML = `
       <div style="font-family: 'Courier New', monospace; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: #0369a1; margin-bottom: 10px;">
         Áudios explicativos
       </div>
       <ul style="margin: 0; padding-left: 18px; font-size: 13px; color: #334155;">
-        ${audioLinks.map((a) => `<li style="margin-bottom: 6px;">${escapeHtml(a.label)} — <a href="${escapeAttr(a.url)}" style="color: #0ea5e9; word-break: break-all;">${escapeHtml(a.url)}</a></li>`).join('')}
+        ${audioLinks.map((a) => `<li style="margin-bottom: 6px;">${escapeHtml(a.label)} — <a href="${escapeAttr(a.url)}" style="color: #00f0ff; word-break: break-all;">${escapeHtml(a.url)}</a></li>`).join('')}
       </ul>
     `;
     wrap.appendChild(audioBlock);
@@ -156,26 +167,13 @@ function buildPrintContainer({ title, category, sections }: ExportOpts): HTMLDiv
 }
 
 function escapeHtml(s: string): string {
-  return s
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
-function escapeAttr(s: string): string {
-  return escapeHtml(s);
-}
+function escapeAttr(s: string): string { return escapeHtml(s); }
 
 function stripMd(s: string): string {
-  return (s || '')
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-    .replace(/\*{1,3}([^*]+)\*{1,3}/g, '$1')
-    .replace(/_{1,3}([^_]+)_{1,3}/g, '$1')
-    .replace(/`([^`]+)`/g, '$1')
-    .replace(/^#{1,6}\s+/g, '')
-    .trim();
+  return (s || '').replace(/\[([^\]]+)\]\([^)]+\)/g, '$1').replace(/\*{1,3}([^*]+)\*{1,3}/g, '$1').replace(/_{1,3}([^_]+)_{1,3}/g, '$1').replace(/`([^`]+)`/g, '$1').replace(/^#{1,6}\s+/g, '').trim();
 }
 
 function isFilenameLikeAlt(alt: string): boolean {
@@ -189,12 +187,9 @@ function isFilenameLikeAlt(alt: string): boolean {
 
 const AUDIO_RE = /\.(mp3|wav|ogg|m4a|aac|webm)(\?.*)?$/i;
 
-/** Mini-renderer markdown → HTML inline para o PDF. */
 function renderMarkdownToHtml(raw: string, audioBucket: { label: string; url: string }[]): string {
   if (!raw) return '';
   const out: string[] = [];
-
-  // separa blocos de código primeiro
   const codeRe = /```(\w+)?\n?([\s\S]*?)```/g;
   let lastIdx = 0;
   let m: RegExpExecArray | null;
@@ -208,19 +203,12 @@ function renderMarkdownToHtml(raw: string, audioBucket: { label: string; url: st
 
   for (const seg of segments) {
     if (seg.code) {
-      out.push(`
-        <div style="margin: 14px 0; border: 1px solid #e5e7eb; border-radius: 6px; overflow: hidden; background: #f8fafc;">
-          <div style="padding: 6px 12px; background: #f1f5f9; font-family: 'Courier New', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: #64748b; border-bottom: 1px solid #e5e7eb;">${escapeHtml(seg.code.lang)}</div>
-          <pre style="margin: 0; padding: 12px 14px; font-family: 'Courier New', monospace; font-size: 11px; line-height: 1.55; color: #0f172a; white-space: pre-wrap; word-break: break-word;">${escapeHtml(seg.code.code)}</pre>
-        </div>
-      `);
+      out.push(`<div style="margin: 14px 0; border: 1px solid #e5e7eb; border-radius: 6px; overflow: hidden; background: #f8fafc;"><div style="padding: 6px 12px; background: #f1f5f9; font-family: 'Courier New', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: #64748b; border-bottom: 1px solid #e5e7eb;">${escapeHtml(seg.code.lang)}</div><pre style="margin: 0; padding: 12px 14px; font-family: 'Courier New', monospace; font-size: 11px; line-height: 1.55; color: #0f172a; white-space: pre-wrap; word-break: break-word;">${escapeHtml(seg.code.code)}</pre></div>`);
       continue;
     }
-
     const lines = seg.text.split('\n');
     let para: string[] = [];
     let listBuf: string[] = [];
-
     const flushPara = () => {
       const t = para.join(' ').trim();
       if (t) out.push(`<p style="margin: 0 0 12px 0; font-size: 13px; line-height: 1.75; color: #1f2937; text-align: justify;">${inlineMd(t)}</p>`);
@@ -231,81 +219,28 @@ function renderMarkdownToHtml(raw: string, audioBucket: { label: string; url: st
       out.push(`<ul style="margin: 0 0 14px 18px; padding: 0; font-size: 13px; line-height: 1.7; color: #1f2937;">${listBuf.map((li) => `<li style="margin-bottom: 6px;">${inlineMd(li)}</li>`).join('')}</ul>`);
       listBuf = [];
     };
-
     for (const line of lines) {
       const trimmed = line.trim();
       if (!trimmed) { flushPara(); flushList(); continue; }
-      if (/^\s*(?:-{3,}|\*{3,}|_{3,})\s*$/.test(trimmed)) { flushPara(); flushList(); continue; }
-
-      // imagem
       const img = trimmed.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
       if (img) {
         const url = img[2]; const label = img[1];
         flushPara(); flushList();
-        if (AUDIO_RE.test(url)) {
-          audioBucket.push({ label: label || 'Áudio explicativo', url });
-        } else {
+        if (AUDIO_RE.test(url)) audioBucket.push({ label: label || 'Áudio explicativo', url });
+        else {
           const showCap = label && !isFilenameLikeAlt(label);
-          out.push(`
-            <figure style="margin: 18px 0; text-align: center;">
-              <div style="display: inline-block; background: #ffffff; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.06);">
-                <img src="${escapeAttr(url)}" alt="${escapeAttr(label)}" crossorigin="anonymous" style="display: block; max-width: 100%; max-height: 360px; border-radius: 4px;" />
-              </div>
-              ${showCap ? `<figcaption style="font-size: 11px; color: #6b7280; font-style: italic; margin-top: 6px;">${escapeHtml(label)}</figcaption>` : ''}
-            </figure>
-          `);
+          out.push(`<figure style="margin: 18px 0; text-align: center;"><div style="display: inline-block; background: #ffffff; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.06);"><img src="${escapeAttr(url)}" alt="${escapeAttr(label)}" crossorigin="anonymous" style="display: block; max-width: 100%; max-height: 360px; border-radius: 4px;" /></div>${showCap ? `<figcaption style="font-size: 11px; color: #6b7280; font-style: italic; margin-top: 6px;">${escapeHtml(label)}</figcaption>` : ''}</figure>`);
         }
         continue;
       }
-
-      // áudio link cru
-      if (/^https?:\/\/\S+$/.test(trimmed) && AUDIO_RE.test(trimmed)) {
-        audioBucket.push({ label: 'Áudio explicativo', url: trimmed });
-        continue;
-      }
-
-      // blockquote
-      if (/^>\s+/.test(trimmed)) {
-        flushPara(); flushList();
-        const q = trimmed.replace(/^>\s+/, '');
-        out.push(`<blockquote style="margin: 14px 0; padding: 10px 16px; border-left: 4px solid #0ea5e9; background: #f0f9ff; font-style: italic; color: #334155; font-size: 13px;">${inlineMd(q)}</blockquote>`);
-        continue;
-      }
-
-      // lista
+      if (/^>\s+/.test(trimmed)) { flushPara(); flushList(); out.push(`<blockquote style="margin: 14px 0; padding: 10px 16px; border-left: 4px solid #00f0ff; background: #f0f9ff; font-style: italic; color: #334155; font-size: 13px;">${inlineMd(trimmed.replace(/^>\s+/, ''))}</blockquote>`); continue; }
       const li = trimmed.match(/^[*+\-•]\s+(.+)$/);
       if (li) { flushPara(); listBuf.push(li[1]); continue; }
-
-      // callout "Importante: ..."
-      if (/^\*?\*?(Importante|Dica|Atenção|Observação|Nota):\*?\*?\s+/i.test(trimmed)) {
-        flushPara(); flushList();
-        const [, kind, rest] = trimmed.match(/^\*?\*?(Importante|Dica|Atenção|Observação|Nota):\*?\*?\s+(.+)$/i)!;
-        out.push(`
-          <div style="margin: 14px 0; padding: 12px 14px; background: #fef9c3; border-left: 4px solid #ca8a04; border-radius: 4px; font-size: 13px; color: #422006;">
-            <strong style="display: block; font-family: 'Courier New', monospace; font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: #92400e; margin-bottom: 4px;">${escapeHtml(kind)}</strong>
-            ${inlineMd(rest)}
-          </div>
-        `);
-        continue;
-      }
-
-      // heading hash residual
-      const h = trimmed.match(/^(#{1,6})\s+(.+)$/);
-      if (h) {
-        flushPara(); flushList();
-        const lvl = h[1].length;
-        const sz = [22, 18, 16, 15, 14, 13][Math.min(lvl - 1, 5)];
-        out.push(`<h${Math.min(lvl + 2, 6)} style="font-size: ${sz}px; margin: 18px 0 8px 0; color: #0f172a;">${inlineMd(h[2])}</h${Math.min(lvl + 2, 6)}>`);
-        continue;
-      }
-
       flushList();
       para.push(line);
     }
-    flushPara();
-    flushList();
+    flushPara(); flushList();
   }
-
   return out.join('\n');
 }
 
@@ -316,101 +251,50 @@ function inlineMd(s: string): string {
     .replace(/(?<![*\w])\*([^*\n]+?)\*(?!\w)/g, '<em>$1</em>')
     .replace(/(?<![_\w])_([^_\n]+?)_(?!\w)/g, '<em>$1</em>')
     .replace(/`([^`]+)`/g, '<code style="font-family: \'Courier New\', monospace; font-size: 12px; background: #f1f5f9; padding: 1px 4px; border-radius: 3px;">$1</code>')
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" style="color: #0ea5e9;">$1</a>');
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" style="color: #00f0ff;">$1</a>');
 }
 
-/**
- * Exporta a apostila inteira como PDF A4 (multi-página).
- * Renderiza um container off-screen + html2canvas + jspdf.
- */
 export async function exportApostilaToPDF(opts: ExportOpts): Promise<void> {
   const container = buildPrintContainer(opts);
-
-  // espera imagens carregarem
   const imgs = Array.from(container.querySelectorAll('img'));
-  await Promise.all(
-    imgs.map(
-      (img) =>
-        new Promise<void>((res) => {
-          if (img.complete && img.naturalWidth > 0) return res();
-          img.onload = () => res();
-          img.onerror = () => res();
-          // timeout de segurança 5s
-          setTimeout(res, 5000);
-        })
-    )
-  );
-
-  // Espera fontes prontas (Georgia/Courier) + um frame de layout
-  if ((document as any).fonts?.ready) {
-    try { await (document as any).fonts.ready; } catch { /* ignore */ }
-  }
+  await Promise.all(imgs.map((img) => new Promise<void>((res) => {
+    if (img.complete && img.naturalWidth > 0) return res();
+    img.onload = () => res(); img.onerror = () => res();
+    setTimeout(res, 5000);
+  })));
+  if ((document as any).fonts?.ready) try { await (document as any).fonts.ready; } catch {}
   await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
 
   try {
     const canvas = await html2canvas(container, {
-      scale: 2,
-      useCORS: true,
-      allowTaint: false,
-      backgroundColor: '#ffffff',
-      logging: false,
-      windowWidth: 794,
-      width: container.offsetWidth,
-      height: container.offsetHeight,
-      scrollX: 0,
-      scrollY: -window.scrollY,
+      scale: 2, useCORS: true, allowTaint: false, backgroundColor: '#ffffff', logging: false,
+      windowWidth: 794, width: container.offsetWidth, height: container.offsetHeight,
+      scrollX: 0, scrollY: -window.scrollY,
     });
-
     const pdf = new jsPDF({ orientation: 'p', unit: 'pt', format: 'a4' });
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
-    const footerH = 28;
-    const usableH = pageHeight - footerH;
-
     const imgW = pageWidth;
     const imgH = (canvas.height * imgW) / canvas.width;
-
-    // pagina o canvas em fatias de altura usableH
+    const usableH = pageHeight - 32;
     const pxPerPage = (canvas.width / imgW) * usableH;
     let renderedHeight = 0;
     let pageIdx = 0;
-
     while (renderedHeight < canvas.height) {
       const sliceHeight = Math.min(pxPerPage, canvas.height - renderedHeight);
       const sliceCanvas = document.createElement('canvas');
-      sliceCanvas.width = canvas.width;
-      sliceCanvas.height = sliceHeight;
+      sliceCanvas.width = canvas.width; sliceCanvas.height = sliceHeight;
       const ctx = sliceCanvas.getContext('2d')!;
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, canvas.width, sliceHeight);
+      ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvas.width, sliceHeight);
       ctx.drawImage(canvas, 0, -renderedHeight);
-
       const imgData = sliceCanvas.toDataURL('image/jpeg', 0.92);
       if (pageIdx > 0) pdf.addPage();
       pdf.addImage(imgData, 'JPEG', 0, 0, imgW, (sliceHeight * imgW) / canvas.width);
-
-      // rodapé
-      pdf.setFont('helvetica', 'normal');
-      pdf.setFontSize(8);
-      pdf.setTextColor(120);
-      pdf.text(
-        'Desenvolvido por: Kaique Aurelio & Decode Analytics',
-        24,
-        pageHeight - 12
-      );
-      pdf.text(
-        `${pageIdx + 1}`,
-        pageWidth - 24,
-        pageHeight - 12,
-        { align: 'right' }
-      );
-
-      renderedHeight += sliceHeight;
-      pageIdx++;
+      pdf.setFont('helvetica', 'normal'); pdf.setFontSize(8); pdf.setTextColor(120);
+      pdf.text('Desenvolvido por: Kaique Aurelio & Decode Analytics', 24, pageHeight - 12);
+      pdf.text(`${pageIdx + 1}`, pageWidth - 24, pageHeight - 12, { align: 'right' });
+      renderedHeight += sliceHeight; pageIdx++;
     }
-
     pdf.save(`${slugify(opts.title) || 'apostila'}.pdf`);
-  } finally {
-    container.remove();
-  }
+  } finally { container.remove(); }
 }
