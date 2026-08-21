@@ -355,18 +355,41 @@ export default function DashboardPage() {
                 <span className="text-xs font-bold">{disciplinesTotal} Ativas</span>
               </div>
             </div>
-            
+
             <div className="h-4 w-px bg-border/40" />
 
-            <div className="flex items-center gap-2 whitespace-nowrap">
-              <div className="h-8 w-8 rounded-lg bg-accent/10 flex items-center justify-center text-accent">
-                <PenLine className="h-4 w-4" />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[10px] uppercase font-bold text-muted-foreground/60 leading-none">Exercícios</span>
-                <span className="text-xs font-bold">{answeredExercises} Resolvidos</span>
-              </div>
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSortOrder(sortOrder === 'category' ? 'date' : 'category')}
+                className="h-8 px-2 text-[10px] font-black uppercase tracking-widest gap-2 hover:bg-primary/10 hover:text-primary"
+              >
+                <div className="flex items-center gap-1">
+                  <span className="text-muted-foreground/60">Ordem:</span>
+                  <span>{sortOrder === 'category' ? 'Matéria' : 'Data'}</span>
+                </div>
+                {sortOrder === 'category' ? <BookOpen className="h-3 w-3" /> : <Clock className="h-3 w-3" />}
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const today = new Date().toISOString().split('T')[0];
+                  // Navega para a primeira apostila que tenha a data de hoje ou a mais recente
+                  const todayApostila = apostilas.find(a => (a.updated_at || a.created_at || '').startsWith(today));
+                  if (todayApostila) navigate(`/reader/${todayApostila.id}`);
+                  else toast.info("Nenhuma aula nova hoje ainda.");
+                }}
+                className="h-8 px-3 text-[10px] font-black uppercase tracking-widest gap-2 bg- Roxa/10 border- Roxa/20 text- Roxa hover:bg- Roxa/20"
+                style={{ backgroundColor: 'rgba(168, 85, 247, 0.1)', borderColor: 'rgba(168, 85, 247, 0.2)', color: '#a855f7' }}
+              >
+                <Sparkles className="h-3 w-3" />
+                Apostila do Dia
+              </Button>
             </div>
+          </div>
 
             <div className="ml-auto flex items-center gap-3">
               <div className="hidden sm:flex flex-col items-end">
