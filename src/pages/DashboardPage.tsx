@@ -32,7 +32,7 @@ import { useApostilasList, useExerciseCounts, useDashboardStats, type ApostilaSu
 import { useUserProfile } from '@/hooks/queries/useUserProfile';
 import { BY_SEMESTER, canonicalSubjectKey } from '@/lib/subject-semester-map';
 import { CANONICAL_GROUPS, groupByCanonical, type CanonicalGroup } from '@/lib/subjectGroups';
-import { BookOpen, Search, X, PenLine, ShieldCheck } from 'lucide-react';
+import { BookOpen, Search, X, PenLine, ShieldCheck, Clock, Sparkles } from 'lucide-react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
