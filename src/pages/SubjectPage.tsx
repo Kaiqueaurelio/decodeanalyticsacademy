@@ -88,12 +88,12 @@ const SubjectPage = () => {
 
       console.log(`[SubjectPage] Total apostilas fetched: ${allApostilas?.length}. Matches found: ${matches.length}. Target key: ${targetKey}`);
 
-      const pagesByApostila = new Map<string, Array<{ id: string; saved_date: string | null; updated_at?: string | null; created_at?: string | null; position?: number | null }>>();
+      const pagesByApostila = new Map<string, Array<{ id: string; title?: string | null; saved_date: string | null; updated_at?: string | null; created_at?: string | null; position?: number | null }>>();
       const matchIds = matches.map((row) => row.id);
       if (matchIds.length > 0) {
         let pageResult: { data: any[] | null; error: any } = await supabase
           .from('apostila_pages')
-          .select('id, apostila_id, saved_date, position, updated_at, created_at')
+          .select('id, apostila_id, title, saved_date, position, updated_at, created_at')
           .in('apostila_id', matchIds)
           .order('position', { ascending: true })
           .order('updated_at', { ascending: false });
@@ -101,7 +101,7 @@ const SubjectPage = () => {
         if (pageResult.error && isMissingApostilaPageSavedDateColumn(pageResult.error)) {
           pageResult = await supabase
             .from('apostila_pages')
-            .select('id, apostila_id, position, updated_at, created_at')
+            .select('id, apostila_id, title, position, updated_at, created_at')
             .in('apostila_id', matchIds)
             .order('position', { ascending: true })
             .order('updated_at', { ascending: false });
@@ -113,6 +113,7 @@ const SubjectPage = () => {
             const current = pagesByApostila.get(page.apostila_id) || [];
             current.push({
               id: page.id,
+              title: page.title,
               saved_date: savedDate,
               updated_at: page.updated_at,
               created_at: page.created_at,
@@ -125,21 +126,19 @@ const SubjectPage = () => {
 
       const normalizedRows = matches.flatMap((row) => {
         const pages = pagesByApostila.get(row.id) || [];
-        const dateGroups = new Map<string, typeof pages[number]>();
-        for (const page of pages) {
-          const groupKey = page.saved_date || 'undated';
-          if (!dateGroups.has(groupKey)) dateGroups.set(groupKey, page);
-        }
-
-        const displayRows = dateGroups.size > 0
-          ? [...dateGroups.values()].map((page) => ({
+        const displayRows = pages.length > 0
+          ? pages.map((page) => ({
               ...row,
               page_id: page.id,
+              page_title: page.title,
+              page_position: page.position,
               saved_date: page.saved_date,
             }))
           : [{
               ...row,
               page_id: null,
+              page_title: null,
+              page_position: null,
               saved_date: getApostilaPageSavedDate(row),
             }];
 
@@ -182,7 +181,7 @@ const SubjectPage = () => {
         title: 'Materiais de Estudo',
         documents: rows.map((row) => ({
           id: `${row.id}:${row.page_id || row.saved_date || 'root'}`,
-          title: row.title || 'Caderno de Estudos',
+          title: row.page_title?.trim() || row.title || 'Caderno de Estudos',
           dateLabel: formatApostilaDate(row.saved_date),
           type: 'exam_review' as const,
           onClick: () => row.page_id

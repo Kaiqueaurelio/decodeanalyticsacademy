@@ -87,7 +87,7 @@ export function NotionTopicAccordion({
 
       <div className={cn(
         "overflow-hidden transition-all duration-300 ease-in-out",
-        isExpanded ? "max-h-[1000px] opacity-100 mb-4" : "max-h-0 opacity-0"
+        isExpanded ? "opacity-100 mb-4" : "max-h-0 opacity-0"
       )}>
         <div className="mt-1 ml-4 pl-4 border-l border-border/20 space-y-2 py-2">
           {documents.map((doc) => (
