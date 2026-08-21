@@ -130,9 +130,20 @@ export function ApostilaHealthBar({
             <Button 
               variant="ghost" 
               size="sm" 
+              onClick={() => window.open(`/apostilas/${(window as any).__apostila_id || ''}`, '_blank')}
+              className="h-8 text-xs gap-2 rounded-lg hover:bg-accent"
+              title="Visualizar como aluno (Nova aba)"
+            >
+              <ExternalLink className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Visualizar</span>
+            </Button>
+
+            <Button 
+              variant="ghost" 
+              size="sm" 
               onClick={onPreview}
               className="h-8 text-xs gap-2 rounded-lg hover:bg-accent"
-              title="Pré-visualizar (Ctrl+P)"
+              title="Pré-visualizar rascunho (Modal)"
             >
               <Eye className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Preview</span>
@@ -288,11 +299,22 @@ export function ApostilaHealthBar({
           <Button 
             variant="ghost" 
             size="sm" 
+            onClick={() => window.open(`/apostilas/${(window as any).__apostila_id || ''}`, '_blank')}
+            className="h-8 gap-1.5 px-3 text-[10px] font-black uppercase text-blue-500 hover:bg-blue-500/10"
+            title="Ver como o aluno enxerga"
+          >
+            <ExternalLink className="h-3.5 w-3.5" />
+            Visualizar
+          </Button>
+
+          <Button 
+            variant="ghost" 
+            size="sm" 
             onClick={onPreview}
             className="h-8 gap-1.5 px-3 text-[10px] font-black uppercase text-amber-500 hover:bg-amber-500/10"
           >
             <Eye className="h-3.5 w-3.5" />
-            Pré-visualizar
+            Prévia
           </Button>
 
           <Button 
