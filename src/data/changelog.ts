@@ -38,6 +38,15 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: "6.9.1",
+    date: "21/08/2026",
+    title: "Proteção de Ferramentas e Conteúdo Administrativo",
+    changes: [
+      { kind: "security", text: "Ferramentas internas de extração de anúncios e configuração de modelos agora exigem autorização administrativa no servidor" },
+      { kind: "security", text: "Logs de manutenção ficaram restritos aos administradores e materiais acadêmicos passaram a respeitar publicação e escopo de conteúdo" }
+    ]
+  },
+  {
     version: "6.9.0",
     date: "21/08/2026",
     title: "Segurança Administrativa & Dashboard Tipado",
