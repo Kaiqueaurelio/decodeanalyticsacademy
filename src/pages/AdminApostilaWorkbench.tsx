@@ -1066,6 +1066,12 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
               </div>
             </div>
           </TabsContent>
+          <TabsContent value="history" className="absolute inset-0 m-0 p-0 overflow-hidden flex flex-col">
+            <ApostilaVersionHistory 
+              apostilaId={id as string} 
+              onRestore={handleRestoreVersion}
+            />
+          </TabsContent>
           <TabsContent value="exercises" className="absolute inset-0 m-0 p-4 overflow-auto">
              <div className="space-y-4">
                <div className="p-4 rounded-xl border border-dashed border-border/50 text-center space-y-2">
