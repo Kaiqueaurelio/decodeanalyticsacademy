@@ -8,7 +8,7 @@ export interface ApostilaPage {
   position: number;
   created_at: string;
   updated_at: string;
-  /** Data local em que o conteúdo foi salvo pela última vez. */
+  /** Data manual associada à aula/página (YYYY-MM-DD). */
   saved_date?: string | null;
 }
 
@@ -44,6 +44,7 @@ export interface ChronologyPageSnapshot {
   title: string;
   content: string;
   position: number;
+  saved_date?: string | null;
 }
 
 export type ChronologyIssueSeverity = 'warning' | 'error';
@@ -103,11 +104,13 @@ export function validateApostilaChronology(input: {
   title?: string | null;
   content?: string | null;
   pages?: ChronologyPageSnapshot[];
+  saved_date?: string | null;
 }): ChronologyValidationReport {
   const issues: ChronologyIssue[] = [];
   const mainTitleDates = extractChronologyDates(input.title);
   const mainContentDates = extractChronologyDates(input.content);
   const allDates = new Set([...mainTitleDates, ...mainContentDates]);
+  if (input.saved_date) allDates.add(input.saved_date);
 
   if (mainContentDates.length > 1) {
     issues.push({
@@ -164,7 +167,7 @@ export function validateApostilaChronology(input: {
       });
     }
 
-    const pageDate = titleDates[0] || (contentDates.length === 1 ? contentDates[0] : null);
+    const pageDate = page.saved_date || titleDates[0] || (contentDates.length === 1 ? contentDates[0] : null);
     if (pageDate && previousDate && pageDate < previousDate) {
       issues.push({
         code: 'page_dates_out_of_order',
