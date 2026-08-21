@@ -150,6 +150,39 @@ type Block =
 
 const AUDIO_RE = /\.(mp3|wav|ogg|m4a|aac|webm)(\?.*)?$/i;
 
+const AUDIO_PLAYER_TAG_RE = /<audio-player\b([^>]*)\/?\s*>/i;
+
+type ParsedAudioPlayer = { label: string; url: string };
+
+function readTagAttribute(attrs: string, name: string): string {
+  const match = attrs.match(new RegExp(`${name}\\s*=\\s*(?:"([^"]*)"|'([^']*)')`, 'i'));
+  return (match?.[1] ?? match?.[2] ?? '').trim();
+}
+
+function parseAudioPlayerTag(input: string): ParsedAudioPlayer | null {
+  const match = input.match(AUDIO_PLAYER_TAG_RE);
+  if (!match) return null;
+  const url = readTagAttribute(match[1], 'src');
+  if (!url || !/^https?:\/\//i.test(url)) return null;
+  return {
+    url,
+    label: readTagAttribute(match[1], 'title') || 'Áudio da Aula',
+  };
+}
+
+function splitEmbeddedAudioPlayer(input: string): { before: string; after: string; audio: ParsedAudioPlayer } | null {
+  const match = input.match(AUDIO_PLAYER_TAG_RE);
+  if (!match) return null;
+  const audio = parseAudioPlayerTag(match[0]);
+  if (!audio) return null;
+  const after = input.slice((match.index ?? 0) + match[0].length).trim();
+  return {
+    before: input.slice(0, match.index).trim(),
+    after: after.replace(/^(\d+)(?=[A-Za-zÀ-ÖØ-öø-ÿ])/, '$1 '),
+    audio,
+  };
+}
+
 function calloutKind(label: string): { kind: 'info' | 'tip' | 'warning'; title: string } {
   const l = label.toLowerCase();
   if (/(dica|tip)/.test(l)) return { kind: 'tip', title: 'Dica' };
@@ -376,15 +409,16 @@ function parseBlocks(rawInput: string): Block[] {
       if (t) {
         // Detecção de AudioQuiz: [quiz:QUIZ_ID] ou <audio-player ... /> na linha
         const quizMatch = t.match(/^\[quiz:([a-f\d-]+)\]$/i);
-        const playerMatch = t.match(/^<audio-player\s+src="([^"]+)"(?:\s+title="([^"]+)")?\s*\/>$/i);
+        const player = parseAudioPlayerTag(t);
+        const isOnlyPlayer = t.match(AUDIO_PLAYER_TAG_RE)?.[0] === t;
         
         if (quizMatch) {
           blocks.push({ type: 'audio-quiz', aulaId: 'inline-aula', quizId: quizMatch[1] });
-        } else if (playerMatch) {
-          blocks.push({ 
-            type: 'audio', 
-            label: playerMatch[2] || 'Áudio da Aula', 
-            url: playerMatch[1] 
+        } else if (player && isOnlyPlayer) {
+          blocks.push({
+            type: 'audio',
+            label: player.label,
+            url: player.url,
           });
         } else {
           blocks.push({ type: 'paragraph', content: t });
@@ -407,11 +441,31 @@ function parseBlocks(rawInput: string): Block[] {
         i++; continue;
       }
 
-      // heading hash residual
+      // heading hash residual; conteúdos antigos podem ter salvo o áudio dentro do título.
       const hMatch = trimmed.match(/^(#{1,6})\s+(.+)$/);
       if (hMatch) {
         flushParagraph();
-        blocks.push({ type: 'heading', level: hMatch[1].length, content: hMatch[2] });
+        const embedded = splitEmbeddedAudioPlayer(hMatch[2]);
+        if (embedded) {
+          const headingContent = [embedded.before, embedded.after].filter(Boolean).join(' ').trim();
+          if (headingContent) {
+            blocks.push({ type: 'heading', level: hMatch[1].length, content: headingContent });
+          }
+          blocks.push({ type: 'audio', label: embedded.audio.label, url: embedded.audio.url });
+        } else {
+          blocks.push({ type: 'heading', level: hMatch[1].length, content: hMatch[2] });
+        }
+        i++; continue;
+      }
+
+      // Conteúdos antigos também podem ter salvo o player no meio de um parágrafo.
+      // Separa o áudio do texto para que ambos permaneçam visíveis e interativos.
+      const embeddedAudio = splitEmbeddedAudioPlayer(trimmed);
+      if (embeddedAudio) {
+        flushParagraph();
+        if (embeddedAudio.before) blocks.push({ type: 'paragraph', content: embeddedAudio.before });
+        blocks.push({ type: 'audio', label: embeddedAudio.audio.label, url: embeddedAudio.audio.url });
+        if (embeddedAudio.after) paragraph.push(embeddedAudio.after);
         i++; continue;
       }
 

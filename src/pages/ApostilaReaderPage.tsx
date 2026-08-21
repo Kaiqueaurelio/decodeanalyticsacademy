@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import ReactMarkdown from "react-markdown";
+import { ApostilaContentBoundary } from "@/components/ApostilaContentBoundary";
 import {
   BookOpen,
   ChevronLeft,
@@ -935,7 +935,7 @@ export default function ApostilaReaderPage() {
                 </h1>
                 <article className="reader-prose mt-6">
                   {lessonContent ? (
-                    <ReactMarkdown>{lessonContent}</ReactMarkdown>
+                    <ApostilaContentBoundary content={lessonContent} />
                   ) : (
                     <div className="flex flex-col items-center justify-center py-20 text-center space-y-4 rounded-3xl border-2 border-dashed border-border/40 bg-muted/5">
                       <div className="h-16 w-16 rounded-full bg-primary/5 flex items-center justify-center">
