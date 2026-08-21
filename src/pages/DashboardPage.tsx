@@ -390,7 +390,7 @@ export default function DashboardPage() {
                   } else {
                     // Fallback para a mais recente do semestre selecionado se não houver hoje
                     const mostRecent = [...apostilas]
-                      .filter(a => !a.isPlaceholder)
+                      .filter(a => !(a as any).isPlaceholder)
                       .sort((a, b) => new Date(b.updated_at || b.created_at).getTime() - new Date(a.updated_at || a.created_at).getTime())[0];
                     
                     if (mostRecent) {
