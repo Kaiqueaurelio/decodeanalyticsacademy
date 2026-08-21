@@ -42,6 +42,20 @@ export default function LoginPage() {
         console.error('ra-auth error:', error);
         const context = (error as { context?: unknown }).context;
         const res = context instanceof Response ? context : undefined;
+        const errorName = error instanceof Error ? error.name : '';
+        const contextMessage = context instanceof Error ? context.message : '';
+        const isTransportError = !res && (
+          errorName === 'FunctionsFetchError'
+          || /failed to fetch|networkerror|load failed/i.test(contextMessage)
+        );
+        if (isTransportError) {
+          return {
+            data: null,
+            message: 'Não foi possível conectar ao serviço de autenticação. Verifique sua conexão e tente novamente.',
+            code: 'network_error',
+            status: 0,
+          };
+        }
         if (res) {
           try {
             const body = await res.clone().json() as { error?: unknown; code?: unknown };
@@ -299,11 +313,10 @@ export default function LoginPage() {
     // persistente e resolve o e-mail sem expor o mapeamento ao cliente.
     let authResult = await callRaAuth({ mode: 'signin', ra: identifierForAuth.trim(), password });
 
-    // Se a RPC de rate limit ainda não foi aplicada no projeto remoto, a Edge
-    // Function pode responder 503 antes de alcançar o Supabase Auth. Nesse
-    // caso específico, usamos o Auth direto com a mesma senha. O Supabase Auth
-    // mantém suas próprias proteções; nenhuma credencial é contornada.
-    if (!authResult.data?.session && authResult.status === 503) {
+    // Se a função estiver temporariamente inacessível (incluindo bloqueio de
+    // transporte/CORS) ou responder 503, tentamos o Auth nativo. Ele mantém as
+    // proteções próprias e impede que uma falha de rede seja tratada como senha errada.
+    if (!authResult.data?.session && (authResult.status === 0 || authResult.status === 503)) {
       const fallbackEmail = isEmail
         ? id.toLowerCase()
         : normalizedRa === 'G802144'
@@ -319,6 +332,20 @@ export default function LoginPage() {
           message: null,
           code: undefined,
           status: 200,
+        };
+      } else if (fallbackError && /failed to fetch|network|load failed/i.test(fallbackError.message)) {
+        authResult = {
+          data: null,
+          message: 'Não foi possível conectar ao serviço de autenticação. Verifique sua conexão e tente novamente.',
+          code: 'network_error',
+          status: 0,
+        };
+      } else if (fallbackError) {
+        authResult = {
+          data: null,
+          message: SECURITY_COPY.loginErrorDescription,
+          code: 'invalid_credentials',
+          status: 401,
         };
       }
     }
@@ -337,6 +364,11 @@ export default function LoginPage() {
         setUnverifiedEmail(true);
         setEmail(effectiveEmail);
         toast.error('Verifique seu e-mail antes de acessar.');
+        return;
+      }
+      if (code === 'network_error' || authStatus === 0) {
+        showTransientError();
+        toast.error(message || 'Não foi possível conectar ao serviço de autenticação. Tente novamente.');
         return;
       }
       registerLoginFailure(isEmail ? false : true, message);

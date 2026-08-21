@@ -38,6 +38,16 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: "6.9.4",
+    date: "21/08/2026",
+    title: "Login Restaurado em Preview e Produção",
+    changes: [
+      { kind: "fix", text: "Liberadas com segurança as origens oficiais de preview para o serviço de autenticação por RA e e-mail" },
+      { kind: "fix", text: "Falhas de conexão deixaram de consumir tentativas de login ou aparecer como senha incorreta" },
+      { kind: "improvement", text: "Adicionado fallback pelo serviço nativo de autenticação quando a função de RA estiver temporariamente inacessível" }
+    ]
+  },
+  {
     version: "6.9.3",
     date: "21/08/2026",
     title: "Fim das Versões Antigas em Cache",
