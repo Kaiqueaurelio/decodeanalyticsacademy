@@ -27,7 +27,7 @@ import { ensureApostilaExists } from '@/lib/create-placeholder-apostila';
 import { Badge } from '@/components/ui/badge';
 import { getSubjectColor } from '@/lib/subject-colors';
 import { parseApostilaContent } from '@/lib/apostila-parser';
-import { createApostilaPage, type ApostilaPage, upsertApostilaPage, validateApostilaChronology, splitApostilaByDate, extractChronologyDates } from '@/lib/apostila-pages';
+import { createApostilaPage, type ApostilaPage, upsertApostilaPage, validateApostilaChronology, splitApostilaByDate, extractChronologyDates, getLocalDateIso, isMissingApostilaPageSavedDateColumn } from '@/lib/apostila-pages';
 import { recordApostilaOperation, runApostilaChronologyValidation } from '@/lib/apostila-diagnostics';
 import { ApostilaSplitPreview } from '@/components/admin/ApostilaSplitPreview';
 
@@ -442,15 +442,25 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         return false;
       }
 
-      const { data: savedPage, error } = await (supabase.from('apostila_pages' as any) as any)
-        .update({
-          content,
-          title: title.trim() || 'Nova Página'
-        })
+      const pageUpdate = {
+        content,
+        title: title.trim() || 'Nova Página',
+        saved_date: getLocalDateIso(),
+      };
+      let { data: savedPage, error } = await (supabase.from('apostila_pages' as any) as any)
+        .update(pageUpdate)
         .eq('id', selectedPageId)
         .eq('apostila_id', id)
         .select('*')
         .single();
+      if (error && isMissingApostilaPageSavedDateColumn(error)) {
+        ({ data: savedPage, error } = await (supabase.from('apostila_pages' as any) as any)
+          .update({ content: pageUpdate.content, title: pageUpdate.title })
+          .eq('id', selectedPageId)
+          .eq('apostila_id', id)
+          .select('*')
+          .single());
+      }
       
       setSaving(false);
       if (error) {
@@ -480,6 +490,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         position: pages.length,
         created_at: savedAt,
         updated_at: savedAt,
+        saved_date: getLocalDateIso(),
       };
       setPages((current) => upsertApostilaPage(current, pageToDisplay));
 

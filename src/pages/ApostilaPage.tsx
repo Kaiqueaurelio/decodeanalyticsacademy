@@ -35,6 +35,7 @@ import type { Tables } from '@/integrations/supabase/types';
 
 import { parseApostilaContent, type ApostilaSection as Section } from '@/lib/apostila-parser';
 import { isPlaceholderPageContent, mergeDistinctPages, normalizeContentForComparison, stripInlineMarkup } from '@/lib/content-formatting';
+import { formatApostilaDate, getApostilaPageSavedDate, isMissingApostilaPageSavedDateColumn } from '@/lib/apostila-pages';
 
 /**
  * Remove sintaxe markdown residual (negrito, itálico, código, links etc.)
@@ -125,6 +126,7 @@ type ApostilaContentBlock = {
   content: string;
   isMain: boolean;
   position: number;
+  savedDate?: string | null;
 };
 
 function organizeApostilaSections(sections: Section[]) {
@@ -177,7 +179,7 @@ export default function ApostilaPage({ tab, setTab }: Props) {
   const isMobile = useIsMobile();
   const { isAdmin, user } = useAuth();
   const [apostila, setApostila] = useState<Tables<'apostilas'> | null>(null);
-  const [extraPages, setExtraPages] = useState<Array<{ id: string; title: string; content: string; position: number }>>([]);
+  const [extraPages, setExtraPages] = useState<Array<{ id: string; title: string; content: string; position: number; saved_date?: string | null; updated_at?: string | null; created_at?: string | null }>>([]);
   const [structuredContent, setStructuredContent] = useState('');
   const [exerciseCount, setExerciseCount] = useState(0);
   const [focusMode, setFocusMode] = useState(false);
@@ -205,7 +207,7 @@ export default function ApostilaPage({ tab, setTab }: Props) {
           supabase.from('apostilas').select('*').eq('id', id).single(),
           supabase.from('exercises').select('id').eq('apostila_id', id),
           (supabase.from('apostila_pages' as any) as any)
-            .select('id, title, content, position')
+            .select('id, title, content, position, saved_date, updated_at, created_at')
             .eq('apostila_id', id)
             .order('position', { ascending: true })
             .order('created_at', { ascending: true }),
@@ -213,8 +215,24 @@ export default function ApostilaPage({ tab, setTab }: Props) {
         ]);
         if (cancelled) return;
 
+        let pageRowsData = pagesResult.data;
+        let pageRowsError = pagesResult.error;
+        if (pageRowsError && isMissingApostilaPageSavedDateColumn(pageRowsError)) {
+          const fallbackPages = await (supabase.from('apostila_pages' as any) as any)
+            .select('id, title, content, position, updated_at, created_at')
+            .eq('apostila_id', id)
+            .order('position', { ascending: true })
+            .order('created_at', { ascending: true });
+          pageRowsData = fallbackPages.data;
+          pageRowsError = fallbackPages.error;
+        }
+        if (pageRowsError) throw pageRowsError;
+
         const ap = apostilaResult.data;
-        const pageRows = (pagesResult.data || []) as Array<{ id: string; title: string; content: string; position: number }>;
+        const pageRows = (pageRowsData || []).map((page: any) => ({
+          ...page,
+          saved_date: getApostilaPageSavedDate(page),
+        })) as Array<{ id: string; title: string; content: string; position: number; saved_date?: string | null; updated_at?: string | null; created_at?: string | null }>;
         setApostila(ap);
         setExtraPages(pageRows);
         setExerciseCount(exercisesResult.data?.length || 0);
@@ -329,6 +347,7 @@ export default function ApostilaPage({ tab, setTab }: Props) {
         content: page.content.trim(),
         isMain: false,
         position: page.position,
+        savedDate: getApostilaPageSavedDate(page),
       })),
     ];
   }, [apostila?.content, apostila?.title, extraPages, structuredContent]);
@@ -994,6 +1013,9 @@ export default function ApostilaPage({ tab, setTab }: Props) {
                     <header className="flex flex-col gap-2 border-b border-border/50 pb-5">
                       <div className="font-mono-label text-[10px] uppercase tracking-[0.22em] text-primary/80">
                         {block.isMain ? 'Página principal' : `Página ${blockIndex} · conteúdo salvo`}
+                        {!block.isMain && block.savedDate && (
+                          <span className="ml-2 text-muted-foreground/80">· aula de {formatApostilaDate(block.savedDate)}</span>
+                        )}
                       </div>
                       <h2 className="font-display text-xl sm:text-2xl tracking-tight text-foreground">
                         {block.title}

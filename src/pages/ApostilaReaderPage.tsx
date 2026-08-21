@@ -41,7 +41,7 @@ import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useAuth } from "@/hooks/useAuth";
 import { isPlaceholderPageContent, normalizeContentForComparison } from '@/lib/content-formatting';
 import { Badge } from "@/components/ui/badge";
-import { extractChronologyDates } from "@/lib/apostila-pages";
+import { extractChronologyDates, getApostilaPageSavedDate, isMissingApostilaPageSavedDateColumn } from "@/lib/apostila-pages";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 
@@ -60,6 +60,7 @@ interface Lesson {
   bookmarked: boolean;
   // Conteúdo local usado quando a página vem de apostila_pages, sem lição estruturada.
   content_md?: string;
+  saved_date?: string | null;
 }
 interface Chapter {
   id: string;
@@ -89,6 +90,9 @@ type ApostilaPageRow = {
   title: string;
   content: string;
   position: number;
+  updated_at?: string | null;
+  created_at?: string | null;
+  saved_date?: string | null;
 };
 
 function buildPagesModule(apostilaId: string, pages: ApostilaPageRow[]): ModuleT | null {
@@ -116,6 +120,7 @@ function buildPagesModule(apostilaId: string, pages: ApostilaPageRow[]): ModuleT
         progress_status: null,
         bookmarked: false,
         content_md: page.content || '',
+        saved_date: getApostilaPageSavedDate(page),
       })),
     }],
   };
@@ -170,7 +175,7 @@ function flatten(tree: Tree): FlatLesson[] {
   for (const m of tree.modules) {
     for (const c of m.chapters) {
       for (const l of c.lessons) {
-        const dateMatch = extractChronologyDates(l.title)[0] || extractChronologyDates(l.content_md)[0] || null;
+        const dateMatch = l.saved_date || extractChronologyDates(l.title)[0] || extractChronologyDates(l.content_md)[0] || null;
         out.push({ ...l, moduleTitle: m.title, chapterTitle: c.title, date: dateMatch });
 
       }
@@ -223,24 +228,33 @@ export default function ApostilaReaderPage() {
     let cancelled = false;
     (async () => {
       setLoadingTree(true);
-      const [{ data: ap }, { data: rpcData }, { data: pageRows }, { data: auditLogs }] = await Promise.all([
+      const [{ data: ap }, { data: rpcData }, { data: auditLogs }] = await Promise.all([
         supabase.from("apostilas").select("title, semester, published, status").eq("id", id).maybeSingle(),
         supabase.rpc("get_apostila_reader_tree", { _apostila_id: id }),
-        (supabase.from("apostila_pages" as any) as any)
-          .select("id, title, content, position")
-          .eq("apostila_id", id)
-          .order("position", { ascending: true })
-          .order("created_at", { ascending: true }),
         supabase.from("audit_logs").select("id").eq("resource_id", id).eq("event_type", "apostila_date_inconsistency").limit(1)
       ]);
 
-      
+      let { data: pageRows, error: pagesError } = await (supabase.from("apostila_pages" as any) as any)
+        .select("id, title, content, position, saved_date, updated_at, created_at")
+        .eq("apostila_id", id)
+        .order("position", { ascending: true })
+        .order("created_at", { ascending: true });
+      if (pagesError && isMissingApostilaPageSavedDateColumn(pagesError)) {
+        ({ data: pageRows, error: pagesError } = await (supabase.from("apostila_pages" as any) as any)
+          .select("id, title, content, position, updated_at, created_at")
+          .eq("apostila_id", id)
+          .order("position", { ascending: true })
+          .order("created_at", { ascending: true }));
+      }
+      if (pagesError) throw pagesError;
+
       if (cancelled) return;
 
       // Anti-collision check for pages with same position
       const sanitizedPages = (pageRows || []).map((p: any, idx: number) => ({
         ...p,
-        position: p.position ?? idx
+        position: p.position ?? idx,
+        saved_date: getApostilaPageSavedDate(p),
       }));
       
       console.log(`[ApostilaReader] Apostila info:`, ap);

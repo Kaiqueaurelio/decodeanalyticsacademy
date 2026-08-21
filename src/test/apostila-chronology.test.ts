@@ -5,6 +5,8 @@ import {
   extractApostilaPageDate,
   extractChronologyDates,
   formatApostilaDate,
+  getApostilaPageSavedDate,
+  getLocalDateIso,
   separateApostilaByDate,
   upsertApostilaPage,
   validateApostilaChronology,
@@ -46,6 +48,19 @@ describe('invariantes de cronologia das apostilas', () => {
     expect(formatApostilaDate('2026-08-19')).toBe('19/08/2026');
     expect(extractApostilaPageDate({ title: 'Data pendente', content: 'Sem data registrada.' }))
       .toBeNull();
+  });
+
+  it('prioriza a data explícita do último salvamento sobre datas antigas do título', () => {
+    expect(getApostilaPageSavedDate({
+      saved_date: '2026-08-20',
+      title: 'Nova Página — 19/08/2026',
+      updated_at: '2026-08-21T02:00:00.000Z',
+    })).toBe('2026-08-20');
+  });
+
+  it('usa a data local do timestamp como fallback para páginas antigas', () => {
+    const savedAt = new Date(2026, 7, 20, 10, 30, 0);
+    expect(getApostilaPageSavedDate({ updated_at: savedAt.toISOString() })).toBe(getLocalDateIso(savedAt));
   });
 
   it('marca como erro o conteúdo principal que mistura mais de uma data', () => {

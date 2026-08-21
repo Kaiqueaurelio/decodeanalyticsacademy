@@ -8,6 +8,35 @@ export interface ApostilaPage {
   position: number;
   created_at: string;
   updated_at: string;
+  /** Data local em que o conteúdo foi salvo pela última vez. */
+  saved_date?: string | null;
+}
+
+export function getLocalDateIso(value = new Date()): string {
+  const year = value.getFullYear();
+  const month = String(value.getMonth() + 1).padStart(2, '0');
+  const day = String(value.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+/** Retorna a data local do último salvamento, com fallback para a criação da página. */
+export function getApostilaPageSavedDate(input: {
+  saved_date?: string | null;
+  updated_at?: string | null;
+  created_at?: string | null;
+}): string | null {
+  if (input.saved_date && /^\d{4}-\d{2}-\d{2}$/.test(input.saved_date)) return input.saved_date;
+  const raw = input.updated_at || input.created_at;
+  if (!raw) return null;
+  const date = new Date(raw);
+  if (Number.isNaN(date.getTime())) return null;
+  return getLocalDateIso(date);
+}
+
+export function isMissingApostilaPageSavedDateColumn(error: unknown): boolean {
+  const candidate = error as { code?: string; message?: string; details?: string } | null;
+  const text = `${candidate?.code || ''} ${candidate?.message || ''} ${candidate?.details || ''}`.toLowerCase();
+  return candidate?.code === '42703' || candidate?.code === 'PGRST204' || text.includes('saved_date');
 }
 
 export interface ChronologyPageSnapshot {
@@ -176,20 +205,29 @@ export async function createApostilaPage(apostilaId: string, userId: string) {
   if (readError) throw readError;
 
   const position = existing?.[0]?.position ?? -1;
-  const date = new Intl.DateTimeFormat('pt-BR').format(new Date());
+  const savedDate = getLocalDateIso();
+  const titleDate = new Intl.DateTimeFormat('pt-BR').format(new Date());
+  const pageInsert = {
+    apostila_id: apostilaId,
+    title: `Nova Página — ${titleDate}`,
+    content: '',
+    position: position + 1,
+    created_by: userId,
+    saved_date: savedDate,
+  };
 
-  const { data, error } = await (supabase.from('apostila_pages' as any) as any)
-    .insert({
-      apostila_id: apostilaId,
-      title: `Nova Página — ${date}`,
-      content: '',
-      position: position + 1,
-      created_by: userId,
-    })
+  let { data, error } = await (supabase.from('apostila_pages' as any) as any)
+    .insert(pageInsert)
     .select('*')
     .single();
+  if (error && isMissingApostilaPageSavedDateColumn(error)) {
+    ({ data, error } = await (supabase.from('apostila_pages' as any) as any)
+      .insert({ ...pageInsert, saved_date: undefined })
+      .select('*')
+      .single());
+  }
   if (error) throw error;
-  return data as ApostilaPage;
+  return { ...(data as ApostilaPage), saved_date: (data as ApostilaPage).saved_date || savedDate };
 }
 
 export interface ApostilaSeparationResult {
