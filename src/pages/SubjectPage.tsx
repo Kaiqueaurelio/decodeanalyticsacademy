@@ -88,37 +88,66 @@ const SubjectPage = () => {
 
       console.log(`[SubjectPage] Total apostilas fetched: ${allApostilas?.length}. Matches found: ${matches.length}. Target key: ${targetKey}`);
 
-      const latestDateByApostila = new Map<string, string>();
+      const pagesByApostila = new Map<string, Array<{ id: string; saved_date: string | null; updated_at?: string | null; created_at?: string | null; position?: number | null }>>();
       const matchIds = matches.map((row) => row.id);
       if (matchIds.length > 0) {
         let pageResult: { data: any[] | null; error: any } = await supabase
           .from('apostila_pages')
-          .select('apostila_id, saved_date, updated_at, created_at')
+          .select('id, apostila_id, saved_date, position, updated_at, created_at')
           .in('apostila_id', matchIds)
+          .order('position', { ascending: true })
           .order('updated_at', { ascending: false });
 
         if (pageResult.error && isMissingApostilaPageSavedDateColumn(pageResult.error)) {
           pageResult = await supabase
             .from('apostila_pages')
-            .select('apostila_id, updated_at, created_at')
+            .select('id, apostila_id, position, updated_at, created_at')
             .in('apostila_id', matchIds)
+            .order('position', { ascending: true })
             .order('updated_at', { ascending: false });
         }
 
         if (!pageResult.error) {
           for (const page of pageResult.data || []) {
-            if (latestDateByApostila.has(page.apostila_id)) continue;
-            const date = getApostilaPageSavedDate(page);
-            if (date) latestDateByApostila.set(page.apostila_id, date);
+            const savedDate = getApostilaPageSavedDate(page);
+            const current = pagesByApostila.get(page.apostila_id) || [];
+            current.push({
+              id: page.id,
+              saved_date: savedDate,
+              updated_at: page.updated_at,
+              created_at: page.created_at,
+              position: page.position,
+            });
+            pagesByApostila.set(page.apostila_id, current);
           }
         }
       }
 
-      const normalizedRows = matches.map((row) => ({
-        ...row,
-        saved_date: latestDateByApostila.get(row.id) ?? getApostilaPageSavedDate(row),
-        semester: row.semester ?? guessSemesterFromCategory(row.category) ?? guessSemesterFromCategory(decodedCategory) ?? 1,
-      })).sort((a, b) => String(b.saved_date || '').localeCompare(String(a.saved_date || '')) || String(a.title || '').localeCompare(String(b.title || '')));
+      const normalizedRows = matches.flatMap((row) => {
+        const pages = pagesByApostila.get(row.id) || [];
+        const dateGroups = new Map<string, typeof pages[number]>();
+        for (const page of pages) {
+          const groupKey = page.saved_date || 'undated';
+          if (!dateGroups.has(groupKey)) dateGroups.set(groupKey, page);
+        }
+
+        const displayRows = dateGroups.size > 0
+          ? [...dateGroups.values()].map((page) => ({
+              ...row,
+              page_id: page.id,
+              saved_date: page.saved_date,
+            }))
+          : [{
+              ...row,
+              page_id: null,
+              saved_date: getApostilaPageSavedDate(row),
+            }];
+
+        return displayRows.map((displayRow) => ({
+          ...displayRow,
+          semester: row.semester ?? guessSemesterFromCategory(row.category) ?? guessSemesterFromCategory(decodedCategory) ?? 1,
+        }));
+      }).sort((a, b) => String(b.saved_date || '').localeCompare(String(a.saved_date || '')) || String(a.title || '').localeCompare(String(b.title || '')));
 
       setRows(sortApostilasDeterministically(normalizedRows));
       setLoading(false);
@@ -152,11 +181,13 @@ const SubjectPage = () => {
         id: 'main-content',
         title: 'Materiais de Estudo',
         documents: rows.map((row) => ({
-          id: row.id,
+          id: `${row.id}:${row.page_id || row.saved_date || 'root'}`,
           title: row.title || 'Caderno de Estudos',
           dateLabel: formatApostilaDate(row.saved_date),
           type: 'exam_review' as const,
-          onClick: () => handleOpenApostila(row),
+          onClick: () => row.page_id
+            ? navigate(`/reader/${row.id}?lesson=page:${row.page_id}`)
+            : handleOpenApostila(row),
         })),
       },
     ],

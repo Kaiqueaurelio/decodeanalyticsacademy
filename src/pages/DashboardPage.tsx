@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { DashboardSkeleton } from "@/components/dashboard/DashboardSkeleton";
 
 import { toast } from 'sonner';
@@ -47,6 +47,8 @@ const EMPTY_FIXED_APOSTILAS: Record<string, string> = {};
 export default function DashboardPage() {
   const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const dashboardSearch = searchParams.get('search') || '';
   const prefersReducedMotion = useReducedMotion();
   const gamification = useGamification();
   const examFocus = useExamFocus();
@@ -96,7 +98,16 @@ export default function DashboardPage() {
   const stats = statsData || { total: 0, hits: 0, errors: 0, byApostila: {} };
   const loading = loadingApostilas || loadingStats || loadingFixedApostilas;
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState(dashboardSearch);
+
+  useEffect(() => {
+    setQuery(dashboardSearch);
+    if (dashboardSearch) {
+      requestAnimationFrame(() => {
+        document.getElementById('minhas-disciplinas')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+  }, [dashboardSearch]);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => localStorage.getItem('decode_sidebar_collapsed') === 'true');
 
   useEffect(() => {

@@ -97,7 +97,7 @@ export default function ApostilaDoDiaPage() {
       if (!cancelled) {
         setAvailableDates(dates.slice(0, 8));
         if (match) {
-          navigate(`/reader/${match.apostila_id}?lesson=${encodeURIComponent(match.id)}`, { replace: true });
+          navigate(`/reader/${match.apostila_id}?lesson=${encodeURIComponent(`page:${match.id}`)}`, { replace: true });
           return;
         }
         setNotFound(true);

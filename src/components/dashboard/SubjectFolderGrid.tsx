@@ -2,6 +2,7 @@ import { useMemo, useEffect, useState, useRef } from 'react';
 import { ChevronRight, PenTool, Plus, LayoutGrid, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { getSubjectColor } from '@/lib/subject-colors';
+import { formatApostilaDate } from '@/lib/apostila-pages';
 import type { ApostilaSummary } from '@/hooks/queries/useDashboardData';
 import { ApostilaCoverCard } from './ApostilaCoverCard';
 import { useAuth } from '@/hooks/useAuth';
@@ -124,7 +125,7 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
 
   return (
     <div className="space-y-12">
-      {groups.slice(0, visibleGroups).map(([category, items]) => {
+      {(query.trim() ? groups : groups.slice(0, visibleGroups)).map(([category, items]) => {
         const color = getSubjectColor(category);
         const semester = items.find((a) => a.semester)?.semester;
         const mainCover = coverFor(items[0]);
@@ -258,7 +259,14 @@ export function SubjectFolderGrid({ apostilas, exerciseCounts, stats, query = ''
                   >
                     <div className="flex items-center gap-2 mb-2">
                       <div className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: color }} />
-                      <span className="text-[9px] font-bold text-muted-foreground uppercase truncate">{a.title}</span>
+                      <div className="min-w-0 flex-1">
+                        <span className="block text-[9px] font-bold text-muted-foreground uppercase truncate">{a.title}</span>
+                        {a.saved_date && (
+                          <span className="mt-0.5 block text-[8px] font-semibold text-primary/70 uppercase tracking-wide">
+                            Aula: {formatApostilaDate(a.saved_date)}
+                          </span>
+                        )}
+                      </div>
                     </div>
                     <div className="mt-auto flex items-center justify-between">
                       <span className="text-[8px] font-black text-primary/60 uppercase">Ler Material</span>

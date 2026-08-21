@@ -27,10 +27,22 @@ export function DashboardTopbar({ hideSearchOnMobile = false }: { hideSearchOnMo
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!query.trim()) return;
-    const lower = query.toLowerCase();
-    const hit = apostilas.find((a: any) => a.title?.toLowerCase().includes(lower) || a.category?.toLowerCase().includes(lower));
-    if (hit) navigate(`/apostila/${hit.id}`);
+    const term = query.trim();
+    if (!term) return;
+    const normalize = (value: string | null | undefined) =>
+      (value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    const lower = normalize(term);
+    const titleHit = apostilas.find((a: any) => normalize(a.title).includes(lower));
+    if (titleHit) {
+      navigate(`/apostila/${titleHit.id}`);
+      return;
+    }
+    const categoryHit = apostilas.find((a: any) => normalize(a.category).includes(lower));
+    if (categoryHit) {
+      navigate(`/materia/${encodeURIComponent(categoryHit.category)}`);
+      return;
+    }
+    navigate(`/dashboard?search=${encodeURIComponent(term)}`);
   };
 
   const initials = (profile?.full_name || user?.email || 'A').slice(0, 2).toUpperCase();
