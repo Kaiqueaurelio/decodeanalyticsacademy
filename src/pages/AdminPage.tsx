@@ -6,6 +6,7 @@
  * - Mobile First Audit: UI milimetricamente pensada para dispositivos móveis (iPhone 11 focus).
  */
 import React, { useEffect, useState, useCallback, useRef, useMemo, useContext, createContext } from 'react';
+import { useUserProfile } from '@/hooks/queries/useUserProfile';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
