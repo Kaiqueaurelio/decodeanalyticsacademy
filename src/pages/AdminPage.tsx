@@ -1848,6 +1848,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
     'jobs': { title: 'Vagas e Estágios', desc: 'Gerencie oportunidades de carreira para os alunos' },
     'academic-audit': { title: 'Auditoria Acadêmica', desc: 'Logs de acessos a gabaritos, respostas e submissões' },
     'apostila-validation': { title: 'Diagnóstico Acadêmico', desc: 'Validação de integridade cronológica de apostilas' },
+    'apostila-history': { title: 'Histórico de Versões', desc: 'Gerenciamento de snapshots e restauração acadêmica' },
   };
 
 
