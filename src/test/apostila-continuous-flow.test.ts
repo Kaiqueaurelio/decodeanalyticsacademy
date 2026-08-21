@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const source = readFileSync(resolve(process.cwd(), 'src/pages/ApostilaPage.tsx'), 'utf8');
+const rendererSource = readFileSync(resolve(process.cwd(), 'src/components/ApostilaContentRenderer.tsx'), 'utf8');
 
 describe('fluxo contínuo da apostila', () => {
   it('renderiza as páginas salvas dentro de um único contêiner de leitura', () => {
@@ -18,5 +19,9 @@ describe('fluxo contínuo da apostila', () => {
   it('mantém a identificação de data no fluxo contínuo', () => {
     expect(source).toContain('formatApostilaDate(block.savedDate)');
     expect(source).toContain('Conteúdo salvo · página');
+  });
+
+  it('mantém o sumário fechado inicialmente para mostrar o conteúdo no primeiro viewport', () => {
+    expect(rendererSource).toContain('const [open, setOpen] = useState(false);');
   });
 });

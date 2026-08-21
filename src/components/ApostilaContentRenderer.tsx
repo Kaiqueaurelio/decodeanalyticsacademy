@@ -1020,7 +1020,8 @@ function HeadingBlock({ level, content, id, active }: { level: number; content: 
 
 /** Sumário clicável com hierarquia (nível 1-2 / 3 / 4+). Colapsável + destaque ativo. */
 function ApostilaTOC({ items, activeId }: { items: Array<{ id: string; level: number; text: string; number: string }>; activeId?: string | null }) {
-  const [open, setOpen] = useState(true);
+  // O conteúdo deve ser a primeira coisa visível no celular; o sumário continua disponível ao toque.
+  const [open, setOpen] = useState(false);
   if (items.length < 2) return null;
 
   const hasOwnNumbering = (text: string) => /^(?:\d+(?:\.\d+)*(?:\s|$)|2[⁰¹²³⁴⁵⁶⁷⁸⁹]+(?:\s|$))/.test(text.trim());
