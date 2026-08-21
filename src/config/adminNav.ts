@@ -53,7 +53,8 @@ export type AdminTabId =
   | 'mcp-settings'
   | 'jobs'
   | 'academic-audit'
-  | 'apostila-validation';
+  | 'apostila-validation'
+  | 'apostila-history';
 
 
 export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
