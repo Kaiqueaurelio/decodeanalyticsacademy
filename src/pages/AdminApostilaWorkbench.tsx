@@ -383,7 +383,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     }));
 
     return () => window.clearTimeout(t);
-  }, [title, category, content, semester, course]);
+  }, [title, category, content, semester, course, savedDate]);
 
   const persistChanges = async (isManual = false): Promise<boolean> => {
     if (!id) return false;
@@ -591,17 +591,32 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       });
     }
 
-    const { error } = await supabase
+    const apostilaUpdate = {
+      title: title.trim() || 'Sem título',
+      category,
+      content,
+      published: content.trim().length > 0 && chronology.status !== 'error' ? true : published,
+      semester,
+      course: course.length ? course : null,
+      saved_date: savedDate || getLocalDateIso(),
+    };
+    let { error } = await supabase
       .from('apostilas')
-      .update({
-        title: title.trim() || 'Sem título',
-        category,
-        content,
-        published: content.trim().length > 0 && chronology.status !== 'error' ? true : published,
-        semester,
-        course: course.length ? course : null,
-      })
+      .update(apostilaUpdate)
       .eq('id', id);
+    if (error && isMissingApostilaPageSavedDateColumn(error)) {
+      ({ error } = await supabase
+        .from('apostilas')
+        .update({
+          title: apostilaUpdate.title,
+          category,
+          content,
+          published: apostilaUpdate.published,
+          semester,
+          course: apostilaUpdate.course,
+        })
+        .eq('id', id));
+    }
 
     setSaving(false);
     if (error) {
