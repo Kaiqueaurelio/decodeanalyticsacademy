@@ -93,9 +93,8 @@ export function useAds(adType?: 'banner' | 'popup' | 'inline' | 'sidebar' | 'foo
     try {
       setLoading(true);
 
-      // Passa por edge function que valida content_scope no servidor.
-      // A função devolve [] para usuários sem escopo `full` (ou não autenticados),
-      // então nem chega a expor payload de anúncio no cliente.
+      // Passa pela Edge Function, que exige sessão, valida bloqueio/content_scope
+      // e devolve somente campos de exibição. O cliente não contorna 401/403 com RLS.
       const qs = new URLSearchParams();
       if (adType) qs.set('ad_type', adType);
       if (targetPage) qs.set('target_page', targetPage);
@@ -115,10 +114,17 @@ export function useAds(adType?: 'banner' | 'popup' | 'inline' | 'sidebar' | 'foo
       const error = !res.ok ? new Error(payload?.error || `HTTP ${res.status}`) : null;
       const data = res.ok ? payload : null;
 
-      // Fallback: quando a edge função não estiver disponível, cai para a query direta
-      // (RLS já impede escopo enem_only de enxergar anúncios).
       let list: any[] = [];
       if (error) {
+        // Nunca faça fallback direto para anúncios sem sessão ou quando o servidor
+        // recusou autorização; isso reabriria a superfície que a Edge Function fecha.
+        if (res.status === 401 || res.status === 403 || !token) {
+          setAds([]);
+          return;
+        }
+
+        // Mantém fallback somente para falhas transitórias de infraestrutura em
+        // usuários autenticados, sob as políticas RLS existentes.
         if (!isAbortLikeError(error)) console.warn('list-ads indisponível, usando fallback RLS:', error);
         const { data: rows, error: fbErr } = await supabase
           .from('ads')

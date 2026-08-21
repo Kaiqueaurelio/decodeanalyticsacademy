@@ -1,74 +1,83 @@
-import { getCorsHeaders } from "../_shared/cors.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { getCorsHeaders } from "../_shared/cors.ts";
+import { requireUser } from "../_shared/auth-guard.ts";
 
+type JsonRecord = Record<string, unknown>;
+
+function jsonResponse(
+  body: JsonRecord,
+  status: number,
+  corsHeaders: Record<string, string>,
+): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: getCorsHeaders(req) });
-
-  const authHeader = req.headers.get("Authorization");
-  if (!authHeader) {
-    return new Response(JSON.stringify({ error: "No authorization header" }), {
-      status: 401,
-      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
+  const corsHeaders = getCorsHeaders(req);
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method !== "POST") {
+    return jsonResponse({ error: "Method not allowed" }, 405, {
+      ...corsHeaders,
+      Allow: "POST, OPTIONS",
     });
   }
 
-  const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-  const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-  const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
+  const auth = await requireUser(req, corsHeaders);
+  if (!auth.ok) return auth.response;
+
+  let body: JsonRecord;
+  try {
+    const parsed: unknown = await req.json();
+    body = parsed && typeof parsed === "object" && !Array.isArray(parsed)
+      ? parsed as JsonRecord
+      : {};
+  } catch {
+    return jsonResponse({ error: "Invalid request" }, 400, corsHeaders);
+  }
+
+  if (body.confirmation !== "EXCLUIR") {
+    return jsonResponse({ error: "Confirmation required" }, 400, corsHeaders);
+  }
+
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!supabaseUrl || !serviceRoleKey) {
+    console.error("Account deletion is not configured");
+    return jsonResponse({ error: "Account deletion unavailable" }, 503, corsHeaders);
+  }
+
+  const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
   });
 
-  // 1. Get user from token to verify identity
-  const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(
-    authHeader.replace("Bearer ", "")
-  );
-
-  if (userError || !user) {
-    return new Response(JSON.stringify({ error: "Invalid token" }), {
-      status: 401,
-      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
-    });
-  }
-
-  console.log(`Starting complete deletion for user: ${user.id}`);
-
   try {
-    // 2. Call the database function that handles cascading deletions
     const { error: rpcError } = await supabaseAdmin.rpc("delete_user_completely", {
-      _target_user_id: user.id,
+      _target_user_id: auth.userId,
     });
+    if (rpcError) throw new Error("Account data deletion failed");
 
-    if (rpcError) {
-      console.error(`RPC Error: ${rpcError.message}`);
-      throw rpcError;
+    const { error: auditError } = await supabaseAdmin.from("audit_logs").insert({
+      user_id: auth.userId,
+      event_type: "delete_account",
+      resource_id: auth.userId,
+      metadata: { initiated_via: "self_service" },
+    });
+    if (auditError) {
+      console.error("Account deletion audit failed", auditError.code ?? "unknown");
     }
 
-    // 2.5 Log the audit event for compliance
-    await supabaseAdmin.from('activity_logs').insert({
-      user_id: user.id,
-      action: 'logout', // Usando logout como proxy se 'delete_account' não estiver no enum
-      ip_address: req.headers.get("x-forwarded-for") || null
-    });
+    const { error: deleteAuthError } = await supabaseAdmin.auth.admin.deleteUser(auth.userId);
+    if (deleteAuthError) throw new Error("Account deletion failed");
 
-    // 3. Delete the user from Auth (this is the final step)
-    const { error: deleteAuthError } = await supabaseAdmin.auth.admin.deleteUser(user.id);
-    if (deleteAuthError) {
-      console.error(`Auth Delete Error: ${deleteAuthError.message}`);
-      throw deleteAuthError;
-    }
-
-    return new Response(JSON.stringify({ success: true }), {
-      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
-    });
-  } catch (err: any) {
-    console.error(`Deletion failed: ${err.message}`);
-    return new Response(JSON.stringify({ error: err.message }), {
-      status: 500,
-      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
-    });
+    return jsonResponse({ success: true }, 200, corsHeaders);
+  } catch (error) {
+    console.error(
+      "Account deletion failed",
+      error instanceof Error ? error.name : "UnknownError",
+    );
+    return jsonResponse({ error: "Não foi possível excluir a conta. Tente novamente." }, 500, corsHeaders);
   }
 });

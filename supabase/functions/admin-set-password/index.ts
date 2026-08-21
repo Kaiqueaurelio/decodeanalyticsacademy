@@ -1,94 +1,87 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { getCorsHeaders } from "../_shared/cors.ts";
-// Edge Function: admin-set-password
-// Allows an admin to directly change another user's password using the service role.
-// Verifies that the caller is authenticated AND has the `admin` role via has_role().
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
+import { requireUser } from "../_shared/auth-guard.ts";
 
+type JsonRecord = Record<string, unknown>;
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function jsonResponse(body: JsonRecord, status: number, corsHeaders: Record<string, string>) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}
 
 Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') return new Response(null, { headers: getCorsHeaders(req) });
+  const corsHeaders = getCorsHeaders(req);
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method !== "POST") {
+    return jsonResponse({ error: "Method not allowed" }, 405, {
+      ...corsHeaders,
+      Allow: "POST, OPTIONS",
+    });
+  }
+
+  const auth = await requireUser(req, corsHeaders, { requireAdmin: true });
+  if (!auth.ok) return auth.response;
+
+  let body: JsonRecord;
+  try {
+    const parsed: unknown = await req.json();
+    body = parsed && typeof parsed === "object" && !Array.isArray(parsed)
+      ? parsed as JsonRecord
+      : {};
+  } catch {
+    return jsonResponse({ error: "Invalid request" }, 400, corsHeaders);
+  }
+
+  const targetUserId = typeof body.target_user_id === "string" ? body.target_user_id.trim() : "";
+  const newPassword = typeof body.new_password === "string" ? body.new_password : "";
+  if (!UUID_RE.test(targetUserId) || newPassword.length < 8 || newPassword.length > 72) {
+    return jsonResponse({ error: "Dados de senha inválidos" }, 400, corsHeaders);
+  }
+
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!supabaseUrl || !serviceRoleKey) {
+    console.error("Admin password update is not configured");
+    return jsonResponse({ error: "Operação indisponível" }, 503, corsHeaders);
+  }
+
+  const admin = createClient(supabaseUrl, serviceRoleKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
 
   try {
-    const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
-    const SERVICE_ROLE = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
-
-    const authHeader = req.headers.get('Authorization') || '';
-    if (!authHeader.startsWith('Bearer ')) {
-      return new Response(JSON.stringify({ error: 'Missing Authorization header' }), {
-        status: 401, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
-      });
-    }
-
-    // Identify caller using their JWT
-    const userClient = createClient(SUPABASE_URL, ANON_KEY, {
-      global: { headers: { Authorization: authHeader } },
-    });
-    const { data: userData, error: userErr } = await userClient.auth.getUser();
-    if (userErr || !userData?.user) {
-      return new Response(JSON.stringify({ error: 'Invalid session' }), {
-        status: 401, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
-      });
-    }
-    const callerId = userData.user.id;
-
-    // Parse + validate input
-    let body: any;
-    try { body = await req.json(); } catch {
-      return new Response(JSON.stringify({ error: 'Invalid JSON' }), {
-        status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
-      });
-    }
-    const targetUserId: string | undefined = body?.target_user_id;
-    const newPassword: string | undefined = body?.new_password;
-    if (!targetUserId || typeof targetUserId !== 'string') {
-      return new Response(JSON.stringify({ error: 'target_user_id is required' }), {
-        status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
-      });
-    }
-    if (!newPassword || typeof newPassword !== 'string' || newPassword.length < 6 || newPassword.length > 72) {
-      return new Response(JSON.stringify({ error: 'A senha deve ter entre 6 e 72 caracteres' }), {
-        status: 400, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
-      });
-    }
-
-    // Check admin role using service-role client (bypasses RLS)
-    const admin = createClient(SUPABASE_URL, SERVICE_ROLE);
-    const { data: isAdmin, error: roleErr } = await admin.rpc('has_role', {
-      _user_id: callerId, _role: 'admin',
-    });
-    if (roleErr || !isAdmin) {
-      return new Response(JSON.stringify({ error: 'Permission denied: admin only' }), {
-        status: 403, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
-      });
-    }
-
-    // Update password via Admin API
-    const { error: updErr } = await admin.auth.admin.updateUserById(targetUserId, {
+    const { error: updateError } = await admin.auth.admin.updateUserById(targetUserId, {
       password: newPassword,
     });
-    if (updErr) {
-      return new Response(JSON.stringify({ error: updErr.message }), {
-        status: 500, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
-      });
+    if (updateError) throw new Error("Password update failed");
+
+    const { error: profileError } = await admin
+      .from("profiles")
+      .update({ login_attempts: 0, is_blocked: false, locked_at: null })
+      .eq("user_id", targetUserId);
+    if (profileError) {
+      console.error("Admin password profile reset failed", profileError.code ?? "unknown");
     }
 
-    // Reset login-attempts counter / unblock if applicable.
-    // The current schema uses login_attempts, not failed_login_attempts.
-    try {
-      await admin.from('profiles').update({
-        login_attempts: 0,
-        is_blocked: false,
-        locked_at: null,
-      } as any).eq('user_id', targetUserId);
-    } catch { /* non-fatal */ }
+    const { error: auditError } = await admin.from("audit_logs").insert({
+      user_id: auth.userId,
+      event_type: "admin_password_reset",
+      resource_id: targetUserId,
+      metadata: { target_user_id: targetUserId },
+    });
+    if (auditError) {
+      console.error("Admin password audit failed", auditError.code ?? "unknown");
+    }
 
-    return new Response(JSON.stringify({ ok: true }), {
-      status: 200, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
-    });
-  } catch (e) {
-    return new Response(JSON.stringify({ error: (e as Error).message }), {
-      status: 500, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
-    });
+    return jsonResponse({ ok: true }, 200, corsHeaders);
+  } catch (error) {
+    console.error(
+      "Admin password update failed",
+      error instanceof Error ? error.name : "UnknownError",
+    );
+    return jsonResponse({ error: "Não foi possível atualizar a senha." }, 500, corsHeaders);
   }
 });

@@ -145,4 +145,39 @@ describe('security hardening regression guards', () => {
     expect(sql).not.toContain('qq.explanation');
     expect(sql).toContain('GRANT EXECUTE ON FUNCTION public.get_quiz_questions(uuid) TO authenticated;');
   });
+
+  it('keeps privileged functions on the shared guard and safe HTTP methods', () => {
+    const deleteAccount = source('supabase/functions/delete-account/index.ts');
+    const setPassword = source('supabase/functions/admin-set-password/index.ts');
+    const exportData = source('supabase/functions/export-user-data/index.ts');
+
+    for (const code of [deleteAccount, setPassword, exportData]) {
+      expect(code).toContain('requireUser(req, corsHeaders');
+      expect(code).toContain('req.method !== "POST"');
+      expect(code).not.toContain('error: err.message');
+      expect(code).not.toContain('error: (e as Error).message');
+    }
+    expect(setPassword).toContain('requireAdmin: true');
+    expect(deleteAccount).toContain('body.confirmation !== "EXCLUIR"');
+    const auditMigration = source('supabase/migrations/20260821230000_security_audit_rpc_hardening.sql');
+    expect(auditMigration).toContain('SECURITY DEFINER');
+    expect(auditMigration).toContain('VALUES (\n    auth.uid()');
+    expect(auditMigration).toContain('REVOKE INSERT ON public.admin_audit_logs FROM authenticated;');
+    expect(exportData).toContain('TABLE_COLUMNS');
+    expect(exportData).toContain('Cache-Control": "private, no-store"');
+    expect(exportData).not.toContain('.select("*")');
+  });
+
+  it('does not re-open unauthenticated ad access through the client fallback', () => {
+    const cors = source('supabase/functions/_shared/cors.ts');
+    const edge = source('supabase/functions/list-ads/index.ts');
+    const hook = source('src/hooks/useAds.ts');
+
+    expect(cors).not.toContain("origin.endsWith('.lovable.app')");
+    expect(edge).toContain('requireUser(req, corsHeaders)');
+    expect(edge).toContain('select("is_blocked,content_scope")');
+    expect(hook).toContain('res.status === 401 || res.status === 403 || !token');
+    expect(hook).toContain('Mantém fallback somente para falhas transitórias');
+    expect(source('src/components/admin/AdminUserManagement.tsx')).toContain("supabase.rpc('log_admin_audit'");
+  });
 });
