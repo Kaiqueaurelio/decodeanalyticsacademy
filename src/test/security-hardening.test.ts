@@ -178,6 +178,8 @@ describe('security hardening regression guards', () => {
     expect(edge).toContain('select("is_blocked,content_scope")');
     expect(hook).toContain('res.status === 401 || res.status === 403 || !token');
     expect(hook).toContain('Mantém fallback somente para falhas transitórias');
-    expect(source('src/components/admin/AdminUserManagement.tsx')).toContain("supabase.rpc('log_admin_audit'");
+    const auditComponent = source('src/components/admin/AdminUserManagement.tsx');
+    expect(auditComponent).toContain('supabase.rpc');
+    expect(auditComponent).toMatch(/supabase\.rpc[\s\S]{0,40}['"]log_admin_audit['"]/);
   });
 });

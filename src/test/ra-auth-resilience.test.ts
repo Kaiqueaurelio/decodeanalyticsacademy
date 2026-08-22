@@ -38,4 +38,12 @@ describe('ra-auth resilience guards', () => {
     expect(code).not.toContain('if (message) toast.error(message);');
     expect(code).not.toContain("if (!authResult.data?.session) {\n      const fallbackEmail");
   });
+
+  it('opens the student dashboard by default and never restores a persisted admin route', () => {
+    const code = source('src/pages/LoginPage.tsx');
+
+    expect(code).toContain("navigate(validLastRoute ? lastRoute : '/dashboard', { replace: true });");
+    expect(code).toContain("!lastRoute.startsWith('/admin')");
+    expect(code).not.toContain("validLastRoute ? lastRoute : isAdmin ? '/admin' : '/dashboard'");
+  });
 });

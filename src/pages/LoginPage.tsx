@@ -18,7 +18,7 @@ import { motionTokens, type AsyncStatus } from '@/lib/motion';
 import { SECURITY_COPY } from '@/lib/security-copy';
 
 export default function LoginPage() {
-  const { signUp, user, isAdmin, roleChecked, loading: authLoading, status, isSessionHydrated } = useAuth();
+  const { signUp, user, roleChecked, loading: authLoading, status, isSessionHydrated } = useAuth();
   const navigate = useNavigate();
   const savedIdentifier = localStorage.getItem('decode_remember_identifier')
     || localStorage.getItem('decode_remember_email')
@@ -139,8 +139,13 @@ export default function LoginPage() {
         return;
       }
       const lastRoute = localStorage.getItem('decode_last_route');
-      const validLastRoute = lastRoute && lastRoute !== '/' && lastRoute !== '/login';
-      navigate(validLastRoute ? lastRoute : isAdmin ? '/admin' : '/dashboard', { replace: true });
+      const validLastRoute = lastRoute
+        && lastRoute.startsWith('/')
+        && !lastRoute.startsWith('//')
+        && lastRoute !== '/'
+        && lastRoute !== '/login'
+        && !lastRoute.startsWith('/admin');
+      navigate(validLastRoute ? lastRoute : '/dashboard', { replace: true });
     };
 
     if (submitStatus !== 'success') {
@@ -150,7 +155,7 @@ export default function LoginPage() {
 
     const timeout = window.setTimeout(completeNavigation, motionTokens.duration.success);
     return () => window.clearTimeout(timeout);
-  }, [authSettling, status, user, roleChecked, isAdmin, navigate, submitStatus]);
+  }, [authSettling, status, user, roleChecked, navigate, submitStatus]);
 
   useEffect(() => {
     if (!awaitingSession || authSettling) return;
