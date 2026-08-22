@@ -570,7 +570,7 @@ export default function LoginPage() {
                     <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#d7ff4f]">Área segura</p>
                     <h2 className="mt-1 text-2xl font-bold tracking-tight text-white">{isReset ? 'Recuperar acesso' : isForgotRa ? 'Encontrar meu RA' : isSignUp ? 'Criar conta' : isLocked ? 'Conta bloqueada' : 'Sign in'}</h2>
                     <p className="mt-1 text-sm leading-relaxed text-white/45">
-                      {isReset ? 'Informe seu RA ou e-mail para receber as instruções.' : isForgotRa ? 'Consulte o portal acadêmico ou fale com o suporte.' : isSignUp ? 'Crie seu acesso para começar a estudar.' : isLocked ? 'Redefina sua senha para desbloquear o acesso.' : 'Bem-vindo(a) de volta. Seus estudos continuam aqui.'}
+                      {isReset ? 'Informe seu RA ou e-mail para receber as instruções.' : isForgotRa ? 'Fale com o suporte da plataforma para recuperar seu RA.' : isSignUp ? 'Crie seu acesso para começar a estudar.' : isLocked ? 'Redefina sua senha para desbloquear o acesso.' : 'Bem-vindo(a) de volta. Seus estudos continuam aqui.'}
                     </p>
                   </div>
                 </div>

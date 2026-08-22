@@ -46,4 +46,11 @@ describe('ra-auth resilience guards', () => {
     expect(code).toContain("!lastRoute.startsWith('/admin')");
     expect(code).not.toContain("validLastRoute ? lastRoute : isAdmin ? '/admin' : '/dashboard'");
   });
+
+  it('keeps the independent-platform recovery copy free of external portal guidance', () => {
+    const code = source('src/pages/LoginPage.tsx');
+
+    expect(code).toContain('Fale com o suporte da plataforma para recuperar seu RA.');
+    expect(code).not.toContain('Consulte o portal acadêmico');
+  });
 });

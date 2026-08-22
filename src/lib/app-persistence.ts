@@ -3,7 +3,11 @@ import type { Location } from 'react-router-dom';
 export const ROUTE_KEY = 'decode_last_route';
 const SCROLL_KEY = 'decode_scroll_positions';
 const PAGE_STATE_PREFIX = 'decode_page_state:';
-const EXCLUDED_PATHS = new Set(['/', '/login', '/reset-password']);
+const EXCLUDED_PATHS = new Set(['/','/login','/reset-password']);
+
+export function isAdministrativePath(pathname: string) {
+  return pathname === '/admin' || pathname.startsWith('/admin/');
+}
 
 type ScrollPosition = {
   x: number;
@@ -35,7 +39,7 @@ function getNormalizedRoute(route: string) {
 }
 
 export function isPersistablePath(pathname: string) {
-  return !EXCLUDED_PATHS.has(pathname);
+  return !EXCLUDED_PATHS.has(pathname) && !isAdministrativePath(pathname);
 }
 
 export function getLocationRoute(location: Pick<Location, 'pathname' | 'search' | 'hash'>) {
@@ -52,7 +56,8 @@ export function saveLastRoute(route: string) {
     if (!isPersistablePath(url.pathname)) return;
     localStorage.setItem(ROUTE_KEY, `${url.pathname}${url.search}${url.hash}`);
   } catch {
-    if (normalizedRoute && !EXCLUDED_PATHS.has(normalizedRoute)) {
+    const fallbackPathname = normalizedRoute.split(/[?#]/)[0];
+    if (normalizedRoute && isPersistablePath(fallbackPathname)) {
       localStorage.setItem(ROUTE_KEY, normalizedRoute);
     }
   }
@@ -76,6 +81,17 @@ export function bootstrapSavedRoute() {
 
   const lastRoute = getLastRoute();
   if (!lastRoute || lastRoute === '/' || lastRoute === '/login') return;
+
+  try {
+    const url = new URL(lastRoute, window.location.origin);
+    if (!isPersistablePath(url.pathname)) {
+      clearLastRoute();
+      return;
+    }
+  } catch {
+    clearLastRoute();
+    return;
+  }
 
   window.history.replaceState(window.history.state, '', lastRoute);
 }
