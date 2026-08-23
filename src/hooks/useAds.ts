@@ -86,42 +86,62 @@ export function useAds(adType?: 'banner' | 'popup' | 'inline' | 'sidebar' | 'foo
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Anúncios são recurso interno: sem sessão não há chamada (evita 401 no /login).
-    if (!user) {
-      setAds([]);
-      setLoading(false);
-      return;
-    }
+    // Anúncios são facultativos. Se não houver sessão, a Edge Function agora devolve [].
+    // Mantemos a verificação local para reduzir requests desnecessários, mas permitimos 
+    // a chamada se quisermos logs de telemetria mesmo sem sessão (ex: debug de landing).
     loadAds();
   }, [user?.id, adType, targetPage]);
+
 
 
   const loadAds = async () => {
     try {
       setLoading(true);
 
-      // Passa pela Edge Function, que exige sessão, valida bloqueio/content_scope
-      // e devolve somente campos de exibição. O cliente não contorna 401/403 com RLS.
       const qs = new URLSearchParams();
       if (adType) qs.set('ad_type', adType);
       if (targetPage) qs.set('target_page', targetPage);
 
       const { data: sess } = await supabase.auth.getSession();
       const token = sess?.session?.access_token;
+      const isExpired = sess?.session?.expires_at ? new Date(sess.session.expires_at * 1000) < new Date() : false;
+
+      // Telemetria básica de estado de rede/sessão
+      if (!token || isExpired) {
+        console.debug('[Ads] Chamada sem token válido ou sessão expirada.', { hasToken: !!token, isExpired });
+      }
 
       const fnUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/list-ads${qs.toString() ? `?${qs}` : ''}`;
       const res = await fetch(fnUrl, {
         method: 'GET',
         headers: {
           apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          ...(token && !isExpired ? { Authorization: `Bearer ${token}` } : {}),
         },
       });
+
       const payload = await res.json().catch(() => ({}));
+      
+      // REGISTRO DE TELEMETRIA EM CASO DE ERRO
+      if (!res.ok) {
+        await supabase.from('system_telemetry').insert({
+          event_type: 'ads_fetch_error',
+          payload: {
+            status: res.status,
+            error: payload.error || 'Unknown',
+            target_page: targetPage,
+            has_token: !!token,
+            session_expired: isExpired
+          },
+          user_id: user?.id || null
+        });
+      }
+
       const error = !res.ok ? new Error(payload?.error || `HTTP ${res.status}`) : null;
       const data = res.ok ? payload : null;
 
       let list: any[] = [];
+
       if (error) {
         // Nunca faça fallback direto para anúncios sem sessão ou quando o servidor
         // recusou autorização; isso reabriria a superfície que a Edge Function fecha.
