@@ -38,6 +38,16 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: "6.9.8",
+    date: "23/08/2026",
+    title: "Hub de Hackathons & Eventos Ativos",
+    changes: [
+      { kind: "feature", text: "Integrado feed de Hackathons reais (Academia LED, HACKTUDO, Fnesp) na aba de Eventos" },
+      { kind: "improvement", text: "Atualizado o banco de dados com eventos válidos para o segundo semestre de 2026" },
+      { kind: "content", text: "Cadastrados 5 novos hackatons com foco em IA, Educação e Cidadania" }
+    ]
+  },
+  {
     version: "6.9.7",
     date: "23/08/2026",
     title: "Central de Eventos & Acadêmico",
