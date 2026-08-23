@@ -205,8 +205,15 @@ export default function LoginPage() {
       const lockDuration = 300; // 5 minutos
       setLockoutTimeLeft(lockDuration);
       
-      // Persistir falha no log de auditoria via Edge Function
+      // Persistir falha no log de auditoria e telemetria
       void callRaAuth({ mode: 'log_failure', ra: identifier, reason: 'max_attempts_reached' });
+      void (supabase as any).from('system_telemetry').insert({
+        event_type: 'login_lockout',
+        payload: { identifier: identifier.substring(0, 3) + '...', reason: 'max_attempts_reached' },
+        user_id: null
+      });
+
+
       
       toast.error('Muitas tentativas inválidas. Conta bloqueada temporariamente.');
       

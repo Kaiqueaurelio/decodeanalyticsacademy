@@ -38,6 +38,19 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: "7.3.0",
+    date: "23/08/2026",
+    title: "Estabilidade de Anúncios, Telemetria & Dual-Theme",
+    major: true,
+    changes: [
+      { kind: "fix", text: "Corrigido erro 401 na Edge Function de anúncios quando o usuário não está logado" },
+      { kind: "feature", text: "Implementado sistema de Telemetria Técnica e logs de rede detalhados" },
+      { kind: "feature", text: "Lançado seletor de Estilo Visual (Industrial vs Minimalista) no Dashboard" },
+      { kind: "improvement", text: "Padronização de tipografia Mono em metadados e remoção de redundâncias visuais" }
+    ]
+  },
+  {
+
     version: "7.2.0",
     date: "23/08/2026",
     title: "Otimização Visual Industrial & De-AI",

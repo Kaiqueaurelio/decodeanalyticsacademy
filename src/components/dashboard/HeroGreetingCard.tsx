@@ -44,7 +44,7 @@ export function HeroGreetingCard({ name, overallProgress, totalApostilas, totalA
   return (
     <div className="relative overflow-hidden rounded-xl border border-white/5 bg-[#050508] p-6 sm:p-8 cyber-grid">
       {/* Background patterns and glows */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 pointer-events-none" />
+      <div className="absolute inset-0 bg-[#0A0A0F] pointer-events-none opacity-50" />
       <div className="absolute top-0 left-0 w-full h-px bg-primary/20" />
       
       <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-8">
@@ -56,7 +56,7 @@ export function HeroGreetingCard({ name, overallProgress, totalApostilas, totalA
           
           <div className="space-y-1">
             <h1 className="font-display text-3xl sm:text-4xl font-black tracking-tight text-foreground">
-              {greeting}, <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">{firstName}!</span>
+              {greeting}, <span className="text-primary tracking-tight">{firstName}!</span>
             </h1>
             <p className="text-muted-foreground text-sm sm:text-base max-w-md leading-relaxed">
               {motivation}
@@ -127,12 +127,12 @@ export function HeroGreetingCard({ name, overallProgress, totalApostilas, totalA
         )}
 
         <div className="flex flex-row md:flex-col gap-4">
-          <Card className="flex flex-col items-center justify-center p-4 bg-gradient-to-br from-primary/20 to-primary/5 border-primary/30 min-w-[120px]">
+          <Card className="flex flex-col items-center justify-center p-4 bg-muted/20 border-primary/20 min-w-[120px] rounded-lg shadow-none">
             <Trophy className="h-6 w-6 text-primary mb-2" />
             <span className="text-2xl font-black text-foreground">{overallProgress}%</span>
             <span className="text-[10px] font-bold text-muted-foreground uppercase">Concluído</span>
           </Card>
-          <Card className="flex flex-col items-center justify-center p-4 bg-gradient-to-br from-accent/20 to-accent/5 border-accent/30 min-w-[120px]">
+          <Card className="flex flex-col items-center justify-center p-4 bg-muted/20 border-accent/20 min-w-[120px] rounded-lg shadow-none">
             <PenLine className="h-6 w-6 text-accent mb-2" />
             <span className="text-2xl font-black text-foreground">{totalAnswered}</span>
             <span className="text-[10px] font-bold text-muted-foreground uppercase">Exercícios</span>

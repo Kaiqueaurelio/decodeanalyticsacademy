@@ -36,10 +36,10 @@ export function FeaturedJobsWidget() {
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="group relative overflow-hidden rounded-[2rem] border border-primary/20 bg-gradient-to-br from-primary/10 via-background to-accent/5 p-5 shadow-lg transition-all hover:shadow-primary/5"
+        className="group relative overflow-hidden rounded-xl border border-border bg-card p-5 shadow-none transition-all hover:border-primary/30"
       >
         <div className="flex items-start gap-4">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/20 ring-1 ring-primary/30">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-muted border border-border">
             {topJob.company_logo_url ? (
               <img src={topJob.company_logo_url} alt={topJob.company_name} className="h-8 w-8 object-contain" />
             ) : (
@@ -89,7 +89,7 @@ export function FeaturedJobsWidget() {
           {jobs.slice(1).map((job) => (
             <Card 
               key={job.id} 
-              className="group border-border/40 bg-card/40 backdrop-blur-sm transition-all hover:border-primary/30 hover:bg-card/60 cursor-pointer rounded-2xl"
+              className="group border-border bg-card transition-all hover:border-primary/30 cursor-pointer rounded-xl shadow-none"
               onClick={() => navigate('/vagas')}
             >
               <CardContent className="p-4 flex items-center gap-3">

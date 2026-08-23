@@ -37,7 +37,7 @@ export function StudyHeatmap({ data = [] }: HeatmapProps) {
   };
 
   return (
-    <Card className="p-4 border-border/50 bg-card/30 backdrop-blur-sm">
+    <Card className="p-4 border-border bg-card shadow-none">
       <div className="flex items-center justify-between mb-4">
         <div className="flex flex-col gap-1">
           <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Frequência de Estudos</h3>
