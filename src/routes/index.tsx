@@ -1,2 +1,2 @@
 import React from 'react';
-export default function RouteIndex() { return ( <body>Preciso que você coloque animação no botão de login. Tipo, quando a pessoa for fazer o login e não tiver colocado seus dados, de que ele não deixe lugar, que o botão fique se movendo, sabe? Como se não deixasse a pessoa clicar no botão sem colocar os dados</body> ); }
+export default function RouteIndex() { return ( <body>Baseado no seu conhecimento, o que que você acha que a gente pode fazer pra melhorar a tela de login?</body> ); }
