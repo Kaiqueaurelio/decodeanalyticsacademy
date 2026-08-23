@@ -16,6 +16,7 @@ import logoDark from '@/assets/owl-icon.png';
 import { motion, AnimatePresence, useMotionValue, useSpring } from 'framer-motion';
 import { motionTokens, type AsyncStatus } from '@/lib/motion';
 import { SECURITY_COPY } from '@/lib/security-copy';
+import { GlitchText } from '@/components/login/GlitchText';
 
 export default function LoginPage() {
   const { signUp, user, roleChecked, loading: authLoading, status, isSessionHydrated } = useAuth();
@@ -550,8 +551,14 @@ export default function LoginPage() {
                 <img src={logoDark} alt="Logo Decode Analytics Academy" className="h-11 w-11 object-contain" />
               </div>
               <div>
-                <p className="mb-2 font-mono text-xs uppercase tracking-[0.28em] text-white/45">Decode Analytics Academy</p>
-                <h1 className="text-5xl font-black leading-[0.98] tracking-[-0.05em] text-white xl:text-7xl">Run your<br /><span className="text-[#d7ff4f] [text-shadow:0_0_26px_rgba(215,255,79,0.25)]">learning.</span></h1>
+                <GlitchText text="Decode Analytics Academy" className="mb-2 block text-xs uppercase tracking-[0.28em] text-white/45" />
+                <h1 className="text-5xl font-black leading-[0.98] tracking-[-0.05em] text-white xl:text-7xl">
+                  Run your<br />
+                  <span className="text-[#d7ff4f] [text-shadow:0_0_26px_rgba(215,255,79,0.25)] relative">
+                    learning.
+                    <span className="absolute -bottom-1 left-0 h-[2px] w-full bg-[#d7ff4f]/30 animate-pulse" />
+                  </span>
+                </h1>
               </div>
             </div>
             <p className="mt-8 max-w-xl text-lg leading-relaxed text-white/55">Acesse suas apostilas, exercícios, simulados e o acompanhamento de desempenho em um ambiente feito para estudantes de tecnologia.</p>
