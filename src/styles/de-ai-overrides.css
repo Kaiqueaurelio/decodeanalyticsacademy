@@ -1,25 +1,21 @@
 /* =============================================================
-   De-AI overrides — tone down clichê "AI SaaS 2024" aesthetic.
-   Loaded LAST so it wins the cascade. Non-destructive: opt-out
-   via .ai-hero / .keep-glow / .keep-gradient markers.
+   De-AI overrides — Tech/Industrial Cyberpunk Otimization.
+   Lançado na v7.2.0 para remover o look de "App de IA".
    ============================================================= */
 
-/* 1. Kill decorative pulse on non-critical elements
-      (keeps .animate-pulse where semantic: skeletons, loaders). */
+/* 1. Kill decorative pulse on non-critical elements */
 [class*="animate-pulse"]:not(.skeleton):not([data-loading]):not(.loader):not(.keep-pulse) {
   animation: none !important;
 }
 
-/* 2. Reduce gigantic glow shadows in generic surfaces.
-      Hero CTAs and buttons can opt-in via .keep-glow. */
+/* 2. Remove gigantic glow shadows, replace with sharp borders */
 :not(.keep-glow) > [class*="shadow-[0_0_"],
 :not(.keep-glow)[class*="shadow-[0_0_"] {
-  box-shadow: 0 1px 2px 0 hsl(var(--foreground) / 0.04),
-              0 1px 3px 0 hsl(var(--foreground) / 0.06) !important;
+  box-shadow: none !important;
+  border: 1px solid hsl(var(--primary) / 0.3) !important;
 }
 
-/* 3. Neutralize gradient text on internal headings (h2/h3/h4).
-      Landing hero H1 keeps it. */
+/* 3. Neutralize gradient text on internal headings */
 main h2 [class*="bg-clip-text"],
 main h3 [class*="bg-clip-text"],
 main h4 [class*="bg-clip-text"],
@@ -32,45 +28,59 @@ nav [class*="bg-clip-text"]:not(.keep-gradient) {
   color: hsl(var(--foreground)) !important;
 }
 
-/* 4. Rounded-3xl on generic cards → xl (12px). Hero cards opt-in. */
-main .rounded-3xl:not(.keep-radius),
-aside .rounded-3xl:not(.keep-radius) {
-  border-radius: 0.75rem !important;
+/* 4. Tighter Radius for Industrial Look */
+.rounded-3xl, .rounded-[2rem] {
+  border-radius: 1rem !important;
 }
 
-/* 5. Backdrop-blur on generic surfaces → subtle. Overlays keep it. */
+/* 5. Reduce backdrop-blur that gives "AI SaaS" look */
 main [class*="backdrop-blur-xl"]:not([role="dialog"]):not(.keep-blur),
 main [class*="backdrop-blur-2xl"]:not([role="dialog"]):not(.keep-blur),
 main [class*="backdrop-blur-3xl"]:not([role="dialog"]):not(.keep-blur) {
-  backdrop-filter: blur(4px) !important;
-  -webkit-backdrop-filter: blur(4px) !important;
+  backdrop-filter: blur(2px) !important;
+  -webkit-backdrop-filter: blur(2px) !important;
 }
 
-/* 6. Kill decorative floating blob backgrounds inside internal pages. */
-main [class*="blur-3xl"]:not(.keep-blob) {
+/* 6. Remove floating orbs/blobs */
+[class*="blur-[120px]"], [class*="blur-[80px]"], [class*="blur-3xl"] {
   display: none !important;
 }
 
-/* 7. Tighten hover-scale that pops every card. */
-main .hover\:scale-105:hover {
-  transform: none !important;
+/* 7. Industrial Cyber Grid Background */
+.cyber-grid {
+  background-image: 
+    linear-gradient(to right, hsl(var(--primary) / 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, hsl(var(--primary) / 0.05) 1px, transparent 1px);
+  background-size: 30px 30px;
 }
 
-/* 8. Remove animated conic-gradient rings. */
-[class*="animate-spin"][class*="conic"],
-[style*="conic-gradient"][class*="animate-"] {
-  animation: none !important;
+/* 8. Sharp Neon Borders for Cards */
+.card, .widget-card, [class*="bg-card"] {
+  border: 1px solid hsl(var(--border)) !important;
+  box-shadow: none !important;
 }
 
-/* 9. Focus-visible: keep it, but no glow shadow. */
-:focus-visible {
-  box-shadow: 0 0 0 2px hsl(var(--ring)) !important;
+.card:hover, .widget-card:hover {
+  border-color: hsl(var(--primary) / 0.5) !important;
 }
 
-/* Reduced motion respect */
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.001ms !important;
-    transition-duration: 0.001ms !important;
-  }
+/* 9. Mono labels for meta information */
+.text-xs, .text-[10px], .text-[8px] {
+  font-family: 'DM Mono', monospace !important;
+  letter-spacing: 0.02em;
 }
+
+/* 10. Scanline overlay effect */
+.scanline-effect::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    rgba(18, 16, 16, 0) 50%,
+    rgba(0, 0, 0, 0.05) 50%
+  );
+  background-size: 100% 4px;
+  pointer-events: none;
+  z-index: 10;
+}
+

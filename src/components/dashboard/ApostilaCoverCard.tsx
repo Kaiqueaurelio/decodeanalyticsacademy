@@ -97,10 +97,10 @@ export function ApostilaCoverCard({ apostila, status = 'em-progresso', progress 
     <div
       onClick={handleClick}
       data-testid="apostila-cover-card"
-      className={`group flex flex-col rounded-xl overflow-hidden border border-border/60 bg-card transition-all duration-300 shadow-sm active:scale-[0.98] cursor-pointer ${
+      className={`group flex flex-col rounded-lg overflow-hidden border border-border bg-card transition-all duration-300 active:scale-[0.99] cursor-pointer ${
         isPlaceholder 
-          ? 'opacity-80 grayscale-[0.3] hover:border-border' 
-          : 'hover:border-primary/50 hover:-translate-y-1 hover:scale-[1.02] hover:shadow-[0_8px_30px_rgba(168,85,247,0.12)]'
+          ? 'opacity-70 grayscale-[0.5]' 
+          : 'hover:border-primary/50 hover:-translate-y-0.5'
       }`}
     >
       {/* Cover editorial (a própria capa já traz título/tipografia) */}
@@ -140,12 +140,8 @@ export function ApostilaCoverCard({ apostila, status = 'em-progresso', progress 
             </div>
           </div>
         )}
-        <div className="absolute inset-x-0 bottom-0 h-1.5">
-          <div
-            className="h-full w-full"
-            style={{ background: `linear-gradient(90deg, ${color}, ${color}55)` }}
-          />
-        </div>
+        <div className="absolute inset-x-0 bottom-0 h-1 bg-border" />
+
         {isAdmin && (
           <div className="absolute top-2 right-2 z-20 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-[10px] group-hover:translate-x-0">
             <NewApostilaPageButton

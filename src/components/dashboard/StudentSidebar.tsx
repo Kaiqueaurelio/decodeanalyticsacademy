@@ -64,19 +64,18 @@ export function SidebarContent({ onNavigate, collapsed = false }: { onNavigate?:
   return (
     <div className="flex flex-col h-full bg-[#050508] text-white border-r border-white/5 relative overflow-hidden font-mono">
       {/* Background Cyber Effects */}
-      <div className="absolute inset-0 cyber-grid opacity-20 pointer-events-none" />
-      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-cyan-500 to-transparent opacity-50" />
+      <div className="absolute inset-0 cyber-grid opacity-10 pointer-events-none" />
+      <div className="absolute top-0 left-0 w-full h-px bg-cyan-500/30" />
       
       {/* Header */}
-      <div className="p-4 relative z-10 border-b border-white/5 bg-black/20 backdrop-blur-sm transition-[padding] duration-300">
+      <div className="p-4 relative z-10 border-b border-white/5 bg-black/40 backdrop-blur-sm transition-[padding] duration-300">
         <div className={`flex items-center gap-3 ${collapsed ? 'justify-center' : ''}`}>
-          <div className="w-10 h-10 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center relative group overflow-hidden">
-            <div className="absolute inset-0 bg-cyan-400/5 animate-pulse" />
-            <img src={logoOwl} alt="Logo" className="w-7 h-7 relative z-10 brightness-110" />
+          <div className="w-10 h-10 rounded bg-cyan-500/5 border border-cyan-500/20 flex items-center justify-center relative group overflow-hidden">
+            <img src={logoOwl} alt="Logo" className="w-6 h-6 relative z-10 brightness-110" />
           </div>
           <div className={collapsed ? 'hidden' : 'flex flex-col'}>
-            <span className="text-sm font-black tracking-tighter text-white">DECODE ACADEMY</span>
-            <span className="text-[8px] text-cyan-500/60 tracking-[0.2em] uppercase">Auth: Authorized</span>
+            <span className="text-xs font-black tracking-tighter text-white">DECODE ACADEMY</span>
+            <span className="text-[7px] text-cyan-500/50 tracking-[0.2em] uppercase font-mono">STATUS: AUTHORIZED</span>
           </div>
         </div>
       </div>

@@ -77,7 +77,7 @@ export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps)
       if (!isAdmin) {
         return [{ 
           role: "assistant", 
-          content: "Olá! Eu sou a **Ella**, sua tutora de estudos. Estou aqui para te ajudar a entender qualquer conteúdo, resolver exercícios ou criar planos de estudos personalizados. Como posso te ajudar hoje?" 
+          content: "Sistema operacional. Sou a **Ella**, sua interface de suporte acadêmico. Como posso auxiliar nos seus estudos hoje?" 
         }];
       }
       return [];
