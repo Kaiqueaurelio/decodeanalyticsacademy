@@ -223,14 +223,14 @@ export default function PerformancePage() {
 
         {/* KPIs */}
         <Reveal>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 mb-6">
             {kpiCards.map((k) => (
-              <Card key={k.label} className="p-3 flex flex-col items-center text-center">
-                <div className={`h-9 w-9 rounded-lg ${k.bg} ${k.color} flex items-center justify-center mb-1.5`}>
+              <Card key={k.label} className="p-3 flex flex-col items-center text-center border-primary/10 bg-card/50 backdrop-blur-sm hover:border-primary/30 transition-all group">
+                <div className={`h-9 w-9 rounded-lg ${k.bg} ${k.color} flex items-center justify-center mb-1.5 group-hover:scale-110 transition-transform`}>
                   <k.icon className="h-4 w-4" />
                 </div>
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">{k.label}</p>
-                <p className={`text-xl font-bold ${k.color} tabular-nums`}>
+                <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-bold">{k.label}</p>
+                <p className={`text-xl font-black ${k.color} tabular-nums tracking-tight`}>
                   <AnimatedCounter end={k.value} suffix={k.suffix || ''} />
                 </p>
               </Card>
