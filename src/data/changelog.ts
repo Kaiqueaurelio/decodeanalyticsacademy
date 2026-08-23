@@ -38,6 +38,27 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: "7.1.0",
+    date: "23/08/2026",
+    title: "Performance Hub & Clonagem IA",
+    changes: [
+      { kind: "feature", text: "Lançado Hub de Performance Avançado com 8 KPIs em tempo real e insights de área" },
+      { kind: "feature", text: "Implementado sistema de Clonagem Inteligente por Link no painel administrativo" },
+      { kind: "improvement", text: "Unificado Dashboard com widgets de gamificação e atalhos rápidos de performance" },
+      { kind: "fix", text: "Corrigida instabilidade de CORS e tratamento de erros de rede no login" }
+    ]
+  },
+  {
+    version: "7.0.2",
+    date: "23/08/2026",
+    title: "Estabilidade de Acesso & CORS",
+    changes: [
+      { kind: "fix", text: "Corrigida falha 'Failed to fetch' no login liberando origens de preview e domínios próprios" },
+      { kind: "improvement", text: "Refinado tratamento de erros de rede no login para evitar bloqueio indevido por tentativas falhas" },
+      { kind: "security", text: "Atualizada política de CORS para suportar múltiplos ambientes de desenvolvimento com segurança" }
+    ]
+  },
+  {
     version: "7.0.1",
     date: "23/08/2026",
     title: "Branding & Identidade High-Tech",
