@@ -1,0 +1,1 @@
+arrume os erros do app por gentileza
