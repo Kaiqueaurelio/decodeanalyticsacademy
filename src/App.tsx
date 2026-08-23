@@ -110,6 +110,7 @@ const AppContent = () => {
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/esqueci-senha" element={<ForgotPasswordPage />} />
           <Route path="/anuncie" element={<AnunciePage />} />
           <Route path="/termos" element={<TermsPage />} />
           <Route path="/transparencia" element={<TransparencyPage />} />
