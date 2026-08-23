@@ -28,6 +28,8 @@ export function ApostilaCloningDashboard() {
   const [history, setHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [cloneUrl, setCloneUrl] = useState('');
+  const [isCloning, setIsCloning] = useState(false);
 
   useEffect(() => {
     fetchData();
