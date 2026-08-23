@@ -406,8 +406,7 @@ export default function LoginPage() {
         return;
       }
       if (code === 'network_error' || authStatus === 0) {
-        showTransientError();
-        toast.error(message || 'Não foi possível conectar ao serviço de autenticação. Tente novamente.');
+        registerNetworkFailure(message || 'Não foi possível conectar ao serviço de autenticação. Tente novamente.');
         return;
       }
       registerLoginFailure(isEmail ? false : true, message);
