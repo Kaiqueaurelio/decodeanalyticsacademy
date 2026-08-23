@@ -128,7 +128,7 @@ export function DeploymentStatusPanel() {
           <CardHeader>
             <CardTitle className="text-lg font-bold flex items-center gap-2">
               <Server className="h-5 w-5 text-primary" />
-              Pipeline de Estabilidade (Deploy v4.36.5) - resolva
+              Pipeline de Estabilidade (Deploy v6.9.6)
             </CardTitle>
             <CardDescription>Status das fases de endurecimento e otimização do sistema.</CardDescription>
           </CardHeader>

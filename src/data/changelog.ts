@@ -38,6 +38,16 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: "6.9.6",
+    date: "22/08/2026",
+    title: "Conformidade e Localização de Segurança",
+    changes: [
+      { kind: "improvement", text: "Localizados os rótulos técnicos dos painéis de auditoria para termos acadêmicos amigáveis" },
+      { kind: "fix", text: "Removidos placeholders de depuração do pipeline de estabilidade no painel administrativo" },
+      { kind: "security", text: "Padronizada a exibição de conformidade para auditoria Ella AI e logs de manutenção" }
+    ]
+  },
+  {
     version: "6.9.5",
     date: "21/08/2026",
     title: "Gabaritos por Disciplina",

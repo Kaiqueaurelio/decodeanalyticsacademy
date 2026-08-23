@@ -194,10 +194,10 @@ export function EllaAuditPanel() {
           <div>
             <CardTitle className="flex items-center gap-2 text-base">
               <ShieldCheck className="h-4 w-4" strokeWidth={1.75} />
-              Public Can Execute SECURITY DEFINER Function
+              Auditoria de Inteligência Acadêmica
             </CardTitle>
             <p className="mt-1 max-w-xl text-xs text-muted-foreground">
-              Public Can Execute SECURITY DEFINER Function. Toda ação solicitada à assistente é autorizada no servidor e registrada aqui.
+              Monitoramento em tempo real da Ella AI. Toda ação solicitada à assistente é autorizada no servidor e registrada aqui.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
