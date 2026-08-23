@@ -17,86 +17,84 @@
 }
 
 .style-industrial {
+  /* 1. Kill decorative pulse on non-critical elements */
+  [class*="animate-pulse"]:not(.skeleton):not([data-loading]):not(.loader):not(.keep-pulse) {
+    animation: none !important;
+  }
 
+  /* 2. Remove gigantic glow shadows, replace with sharp borders */
+  :not(.keep-glow) > [class*="shadow-[0_0_"],
+  :not(.keep-glow)[class*="shadow-[0_0_"] {
+    box-shadow: none !important;
+    border: 1px solid hsl(var(--primary) / 0.3) !important;
+  }
 
-/* 1. Kill decorative pulse on non-critical elements */
-[class*="animate-pulse"]:not(.skeleton):not([data-loading]):not(.loader):not(.keep-pulse) {
-  animation: none !important;
+  /* 3. Neutralize gradient text on internal headings */
+  main h2 [class*="bg-clip-text"],
+  main h3 [class*="bg-clip-text"],
+  main h4 [class*="bg-clip-text"],
+  aside [class*="bg-clip-text"]:not(.keep-gradient),
+  nav [class*="bg-clip-text"]:not(.keep-gradient) {
+    background: none !important;
+    -webkit-background-clip: initial !important;
+    background-clip: initial !important;
+    -webkit-text-fill-color: currentColor !important;
+    color: hsl(var(--foreground)) !important;
+  }
+
+  /* 4. Tighter Radius for Industrial Look */
+  .rounded-3xl, .rounded-[2rem] {
+    border-radius: 1rem !important;
+  }
+
+  /* 5. Reduce backdrop-blur that gives "AI SaaS" look */
+  main [class*="backdrop-blur-xl"]:not([role="dialog"]):not(.keep-blur),
+  main [class*="backdrop-blur-2xl"]:not([role="dialog"]):not(.keep-blur),
+  main [class*="backdrop-blur-3xl"]:not([role="dialog"]):not(.keep-blur) {
+    backdrop-filter: blur(2px) !important;
+    -webkit-backdrop-filter: blur(2px) !important;
+  }
+
+  /* 6. Remove floating orbs/blobs */
+  [class*="blur-[120px]"], [class*="blur-[80px]"], [class*="blur-3xl"] {
+    display: none !important;
+  }
+
+  /* 7. Industrial Cyber Grid Background */
+  .cyber-grid {
+    background-image: 
+      linear-gradient(to right, hsl(var(--primary) / 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(var(--primary) / 0.05) 1px, transparent 1px);
+    background-size: 30px 30px;
+  }
+
+  /* 8. Sharp Neon Borders for Cards */
+  .card, .widget-card, [class*="bg-card"] {
+    border: 1px solid hsl(var(--border)) !important;
+    box-shadow: none !important;
+  }
+
+  .card:hover, .widget-card:hover {
+    border-color: hsl(var(--primary) / 0.5) !important;
+  }
+
+  /* 9. Mono labels for meta information */
+  .text-xs, .text-[10px], .text-[8px] {
+    font-family: 'DM Mono', monospace !important;
+    letter-spacing: 0.02em;
+  }
+
+  /* 10. Scanline overlay effect */
+  .scanline-effect::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      rgba(18, 16, 16, 0) 50%,
+      rgba(0, 0, 0, 0.05) 50%
+    );
+    background-size: 100% 4px;
+    pointer-events: none;
+    z-index: 10;
+  }
 }
-
-/* 2. Remove gigantic glow shadows, replace with sharp borders */
-:not(.keep-glow) > [class*="shadow-[0_0_"],
-:not(.keep-glow)[class*="shadow-[0_0_"] {
-  box-shadow: none !important;
-  border: 1px solid hsl(var(--primary) / 0.3) !important;
-}
-
-/* 3. Neutralize gradient text on internal headings */
-main h2 [class*="bg-clip-text"],
-main h3 [class*="bg-clip-text"],
-main h4 [class*="bg-clip-text"],
-aside [class*="bg-clip-text"]:not(.keep-gradient),
-nav [class*="bg-clip-text"]:not(.keep-gradient) {
-  background: none !important;
-  -webkit-background-clip: initial !important;
-  background-clip: initial !important;
-  -webkit-text-fill-color: currentColor !important;
-  color: hsl(var(--foreground)) !important;
-}
-
-/* 4. Tighter Radius for Industrial Look */
-.rounded-3xl, .rounded-[2rem] {
-  border-radius: 1rem !important;
-}
-
-/* 5. Reduce backdrop-blur that gives "AI SaaS" look */
-main [class*="backdrop-blur-xl"]:not([role="dialog"]):not(.keep-blur),
-main [class*="backdrop-blur-2xl"]:not([role="dialog"]):not(.keep-blur),
-main [class*="backdrop-blur-3xl"]:not([role="dialog"]):not(.keep-blur) {
-  backdrop-filter: blur(2px) !important;
-  -webkit-backdrop-filter: blur(2px) !important;
-}
-
-/* 6. Remove floating orbs/blobs */
-[class*="blur-[120px]"], [class*="blur-[80px]"], [class*="blur-3xl"] {
-  display: none !important;
-}
-
-/* 7. Industrial Cyber Grid Background */
-.cyber-grid {
-  background-image: 
-    linear-gradient(to right, hsl(var(--primary) / 0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, hsl(var(--primary) / 0.05) 1px, transparent 1px);
-  background-size: 30px 30px;
-}
-
-/* 8. Sharp Neon Borders for Cards */
-.card, .widget-card, [class*="bg-card"] {
-  border: 1px solid hsl(var(--border)) !important;
-  box-shadow: none !important;
-}
-
-.card:hover, .widget-card:hover {
-  border-color: hsl(var(--primary) / 0.5) !important;
-}
-
-/* 9. Mono labels for meta information */
-.text-xs, .text-[10px], .text-[8px] {
-  font-family: 'DM Mono', monospace !important;
-  letter-spacing: 0.02em;
-}
-
-/* 10. Scanline overlay effect */
-.scanline-effect::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    rgba(18, 16, 16, 0) 50%,
-    rgba(0, 0, 0, 0.05) 50%
-  );
-  background-size: 100% 4px;
-  pointer-events: none;
-  z-index: 10;
-}
-
