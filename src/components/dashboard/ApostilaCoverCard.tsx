@@ -132,7 +132,7 @@ export function ApostilaCoverCard({ apostila, status = 'em-progresso', progress 
         />
         {isPlaceholder && (
           <div className="absolute inset-0 flex items-center justify-center bg-background/20 backdrop-blur-[1px]">
-            <div className="bg-background/90 p-2.5 rounded-xl border border-primary/30 shadow-2xl flex flex-col items-center gap-1.5 animate-in fade-in zoom-in duration-300">
+            <div className="bg-background/90 p-2.5 rounded-xl border border-primary/30 shadow-none flex flex-col items-center gap-1.5 animate-in fade-in zoom-in duration-300">
               <Lock className="h-5 w-5 text-primary" />
               <span className="text-[9px] font-black uppercase tracking-tighter text-primary bg-primary/10 px-1.5 py-0.5 rounded-md">
                 {availabilityDate}
@@ -147,7 +147,7 @@ export function ApostilaCoverCard({ apostila, status = 'em-progresso', progress 
             <NewApostilaPageButton
               apostilaId={apostila.id}
               compact
-              className="z-30 !h-10 !w-10 rounded-full !border-emerald-500/50 !bg-emerald-500 text-white shadow-[0_0_20px_rgba(16,185,129,0.5)] hover:scale-110 hover:!bg-emerald-500 active:scale-95"
+              className="z-30 !h-10 !w-10 rounded-full !border-emerald-500/50 !bg-emerald-500 text-white shadow-none hover:scale-110 hover:!bg-emerald-500 active:scale-95"
             />
             <button
               onClick={async (e) => {
@@ -159,7 +159,7 @@ export function ApostilaCoverCard({ apostila, status = 'em-progresso', progress 
                   toast.error('Erro ao abrir apostila: ' + (err?.message || 'Tente novamente.'));
                 }
               }}
-              className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary shadow-[0_0_20px_rgba(168,85,247,0.4)] border border-primary/50 text-white hover:scale-110 active:scale-95 transition-all"
+              className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary border border-primary/50 text-white hover:scale-110 active:scale-95 transition-all shadow-none"
               title="Editar Conteúdo (Somente Administrador)"
             >
               <PenTool className="h-4.5 w-4.5" />
@@ -174,7 +174,7 @@ export function ApostilaCoverCard({ apostila, status = 'em-progresso', progress 
                   toast.error('Erro ao abrir configurações: ' + (err?.message || 'Tente novamente.'));
                 }
               }}
-              className="flex h-9 w-9 items-center justify-center rounded-xl bg-black/60 backdrop-blur-md border border-white/20 text-white hover:bg-accent hover:border-accent hover:scale-110 active:scale-95 transition-all shadow-xl"
+              className="flex h-9 w-9 items-center justify-center rounded-xl bg-black/60 backdrop-blur-md border border-white/20 text-white hover:bg-accent hover:border-accent hover:scale-110 active:scale-95 transition-all shadow-none"
               title="Configurações do Material (Somente Administrador)"
             >
               <Settings className="h-4.5 w-4.5" />
@@ -220,7 +220,7 @@ export function ApostilaCoverCard({ apostila, status = 'em-progresso', progress 
               {status === 'concluida' ? (
                 <CheckCircle2 className="h-2.5 w-2.5 mr-1" />
               ) : status === 'em-progresso' ? (
-                <span className="flex h-1.5 w-1.5 rounded-full bg-primary mr-1.5 animate-pulse" />
+                <span className="flex h-1.5 w-1.5 rounded-full bg-primary mr-1.5" />
               ) : (
                 <Circle className="h-2.5 w-2.5 mr-1" />
               )}
@@ -230,7 +230,7 @@ export function ApostilaCoverCard({ apostila, status = 'em-progresso', progress 
               {semester}
             </span>
             {statusApostila === 'em_manutencao' && (
-              <Badge variant="outline" className="h-5 text-[8px] border-amber-500/30 bg-amber-500/10 text-amber-500 font-black animate-pulse">
+              <Badge variant="outline" className="h-5 text-[8px] border-amber-500/30 bg-amber-500/10 text-amber-500 font-black">
                 EM VALIDAÇÃO
               </Badge>
             )}
