@@ -574,7 +574,12 @@ export default function LoginPage() {
           <motion.section initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }} className="w-full">
             <div className="overflow-hidden rounded-[26px] border border-white/12 bg-[#121815]/95 shadow-[0_24px_100px_rgba(0,0,0,0.45),0_0_70px_rgba(215,255,79,0.06)] backdrop-blur-xl">
               <div className="flex items-center justify-between border-b border-white/10 px-5 py-4 sm:px-7">
-                <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.22em] text-white/40"><Code2 className="h-3.5 w-3.5 text-[#d7ff4f]" aria-hidden="true" /> DECODE_LOGIN</div>
+                <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.22em] text-[#d7ff4f]">
+                  <div className="relative inline-block">
+                    <span className="animate-pulse">DECODE_AUTH</span>
+                    <span className="absolute -right-2 top-0 text-[6px] opacity-50">v7.0</span>
+                  </div>
+                </div>
                 <div className="flex gap-1.5" aria-hidden="true"><span className="h-2 w-2 rounded-full bg-white/15" /><span className="h-2 w-2 rounded-full bg-white/15" /><span className="h-2 w-2 rounded-full bg-[#d7ff4f]/80" /></div>
               </div>
 
@@ -642,7 +647,12 @@ export default function LoginPage() {
             </div>
 
             <div className="mt-4 grid grid-cols-3 gap-2 font-mono text-[8px] uppercase tracking-[0.12em] text-white/30"><div className="rounded-lg border border-white/10 bg-white/[0.025] p-2"><span className="text-[#d7ff4f]/70">01</span> identifier</div><div className="rounded-lg border border-white/10 bg-white/[0.025] p-2"><span className="text-[#d7ff4f]/70">02</span> auth-flow</div><div className="rounded-lg border border-white/10 bg-white/[0.025] p-2"><span className="text-[#d7ff4f]/70">03</span> session</div></div>
-            <p className="mt-4 text-center font-mono text-[9px] uppercase tracking-[0.18em] text-white/25">TAB · ENTER · RA / E-MAIL · SECURE ACCESS</p>
+            <div className="mt-8 flex flex-col items-center gap-2">
+              <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-white/25">TAB · ENTER · RA / E-MAIL · SECURE ACCESS</p>
+              <p className="font-mono text-[8px] uppercase tracking-[0.2em] text-[#d7ff4f]/40">
+                Desenvolvido por: Kaique Aurelio & Decode Analytics
+              </p>
+            </div>
           </motion.section>
         </div>
       </main>
