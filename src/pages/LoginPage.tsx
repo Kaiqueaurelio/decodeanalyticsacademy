@@ -251,7 +251,18 @@ export default function LoginPage() {
     }
 
     const id = normalizeIdentifier(identifier);
-    if (!id) { showTransientError(); toast.error('Informe seu RA ou e-mail.'); return; }
+    if (!id) { 
+      showTransientError(); 
+      toast.error('Informe seu RA ou e-mail.'); 
+      return; 
+    }
+    
+    if (!password) {
+      showTransientError();
+      toast.error('Informe sua senha.');
+      return;
+    }
+
     const isEmail = looksLikeEmail(id);
     const isSpecial = isSpecialIdentifier(id);
 
@@ -610,7 +621,7 @@ export default function LoginPage() {
                           <div className="pointer-events-none absolute inset-x-8 top-1/2 h-px -translate-y-1/2 bg-gradient-to-r from-transparent via-[#d7ff4f]/20 to-transparent" />
                           <div aria-hidden="true" className="pointer-events-none absolute left-1/2 top-1/2 h-12 w-[7.5rem] -translate-x-1/2 -translate-y-1/2 rounded-full border border-dashed border-[#d7ff4f]/25" />
                           <motion.div style={{ x: runawaySpringX, y: runawaySpringY }} className="flex w-full justify-center">
-                                                      <AsyncButton ref={runawayButtonRef} type="submit" onPointerEnter={handleRunawayPointerEnter} status={loginButtonStatus} idleLabel={isLocked ? <><Lock className="mr-1 h-4 w-4" /> Bloqueada</> : isSignUp ? 'Criar conta' : 'Log in'} loadingLabel={isSignUp ? 'Criando…' : 'Entrando…'} successLabel={isSignUp ? 'Conta criada' : 'Sucesso'} errorLabel="Tentar novamente" className="relative z-10 min-h-12 w-[7.5rem] min-w-0 shrink-0 rounded-full border border-[#d7ff4f]/70 bg-[#d7ff4f] px-4 font-semibold text-[#10150f] shadow-[0_0_25px_rgba(215,255,79,0.16)] hover:bg-[#e5ff8b] hover:shadow-[0_0_35px_rgba(215,255,79,0.28)]" aria-label="Entrar no Decode Analytics Academy" />
+                                                      <AsyncButton ref={runawayButtonRef} type="submit" disabled={authSettling || loading} onPointerEnter={handleRunawayPointerEnter} status={loginButtonStatus} idleLabel={isLocked ? <><Lock className="mr-1 h-4 w-4" /> Bloqueada</> : isSignUp ? 'Criar conta' : 'Log in'} loadingLabel={isSignUp ? 'Criando…' : 'Entrando…'} successLabel={isSignUp ? 'Conta criada' : 'Sucesso'} errorLabel="Tentar novamente" className="relative z-10 min-h-12 w-[7.5rem] min-w-0 shrink-0 rounded-full border border-[#d7ff4f]/70 bg-[#d7ff4f] px-4 font-semibold text-[#10150f] shadow-[0_0_25px_rgba(215,255,79,0.16)] hover:bg-[#e5ff8b] hover:shadow-[0_0_35px_rgba(215,255,79,0.28)] disabled:opacity-50 disabled:cursor-not-allowed" aria-label="Entrar no Decode Analytics Academy" />
 
                           </motion.div>
                         </div>
