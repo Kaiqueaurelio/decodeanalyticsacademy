@@ -38,6 +38,15 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: "6.9.9",
+    date: "23/08/2026",
+    title: "Auditoria de Erros Acadêmicos",
+    changes: [
+      { kind: "improvement", text: "Implementada auditoria de integridade para detecção de inconsistências no fluxo do aluno" },
+      { kind: "security", text: "Reforçado o Compliance Guard para monitoramento de rotas administrativas" }
+    ]
+  },
+  {
     version: "6.9.8",
     date: "23/08/2026",
     title: "Hub de Hackathons & Eventos Ativos",
