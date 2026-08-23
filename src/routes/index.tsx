@@ -1,2 +1,2 @@
 import React from 'react';
-export default function RouteIndex() { return ( <body>Configure um dashboard de desempenho para que eu acompanhe o progresso dos alunos em exercícios e acertos por apostila.</body> ); }
+export default function RouteIndex() { return ( <body>Preciso que você coloque animação no botão de login. Tipo, quando a pessoa for fazer o login e não tiver colocado seus dados, de que ele não deixe lugar, que o botão fique se movendo, sabe? Como se não deixasse a pessoa clicar no botão sem colocar os dados</body> ); }
