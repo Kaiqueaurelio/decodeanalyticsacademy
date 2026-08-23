@@ -38,6 +38,18 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: "7.2.0",
+    date: "23/08/2026",
+    title: "Otimização Visual Industrial & De-AI",
+    major: true,
+    changes: [
+      { kind: "improvement", text: "Removida estética 'App de IA' em favor de uma identidade Tech/Industrial Cyberpunk" },
+      { kind: "improvement", text: "Substituídas sombras suaves e gradientes genéricos por bordas neon e cyber-grids" },
+      { kind: "improvement", text: "Refinada tipografia de metadados para DM Mono e enxugamento de descrições textuais" },
+      { kind: "improvement", text: "Otimização de performance visual em dispositivos móveis reduzindo efeitos de desfoque excessivos" }
+    ]
+  },
+  {
     version: "7.1.0",
     date: "23/08/2026",
     title: "Performance Hub & Clonagem IA",
