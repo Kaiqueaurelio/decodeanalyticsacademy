@@ -1,2 +1,2 @@
 import React from 'react';
-export default function RouteIndex() { return ( <body>me liste 20 erros do meu app por gentileza</body> ); }
+export default function RouteIndex() { return ( <body>me mostre 10 erros do meu app</body> ); }
