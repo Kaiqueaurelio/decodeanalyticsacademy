@@ -1,1 +1,7 @@
-export const MaintenanceLog = "arrume os erros do app por gentileza";
+export const MaintenanceLog = () => {
+  return (
+    <div>
+      arrume os erros do app por gentileza
+    </div>
+  );
+};
