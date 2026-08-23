@@ -57,8 +57,7 @@ const GabaritosPage = lazy(() => import('@/pages/GabaritosPage'));
   const ReviewPage = lazy(() => import('@/pages/ReviewPage'));
   const SchedulePage = lazy(() => import('@/pages/SchedulePage'));
   const TiraDuvidaPage = lazy(() => import('@/pages/TiraDuvidaPage'));
-const AdminBibliotecaPage = lazy(() => import('@/pages/AdminBibliotecaPage'));
-const IndexPage = lazy(() => import('@/routes/index'));
+  const AdminBibliotecaPage = lazy(() => import('@/pages/AdminBibliotecaPage'));
 
 
 const queryClient = new QueryClient({
@@ -106,8 +105,7 @@ const AppContent = () => {
       <Suspense fallback={<PageSkeleton />}>
         <Routes>
           {/* Public Routes */}
-          <Route path="/legacy-index" element={<LandingPage />} />
-          <Route path="/" element={<IndexPage />} />
+          <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/anuncie" element={<AnunciePage />} />
