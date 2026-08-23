@@ -21,6 +21,7 @@ import { PersistentAdSpot } from '@/components/PersistentAdSpot';
 const LandingPage = lazy(() => import('@/pages/LandingPage'));
 const LoginPage = lazy(() => import('@/pages/LoginPage'));
 const ResetPasswordPage = lazy(() => import('@/pages/ResetPasswordPage'));
+const ForgotPasswordPage = lazy(() => import('@/pages/ForgotPasswordPage'));
 const DashboardPage = lazy(() => import('@/pages/DashboardPage'));
 const ApostilaPage = lazy(() => import('@/pages/ApostilaPage'));
 const ApostilaReaderPage = lazy(() => import('@/pages/ApostilaReaderPage'));
@@ -109,6 +110,7 @@ const AppContent = () => {
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/esqueci-senha" element={<ForgotPasswordPage />} />
           <Route path="/anuncie" element={<AnunciePage />} />
           <Route path="/termos" element={<TermsPage />} />
           <Route path="/transparencia" element={<TransparencyPage />} />
