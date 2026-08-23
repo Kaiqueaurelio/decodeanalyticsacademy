@@ -24,10 +24,10 @@ export function HeroGreetingCard({ name, overallProgress, totalApostilas, totalA
   }, [hour]);
 
   const motivation = useMemo(() => {
-    if (overallProgress > 80) return "Você está quase lá. Continue consolidando o que já aprendeu.";
-    if (overallProgress > 50) return "Seu ritmo está consistente. Use o próximo bloco para fechar uma lacuna.";
-    if (totalAnswered > 0) return "Cada exercício resolvido aproxima você do seu objetivo.";
-    return "Comece com um exercício curto e transforme o estudo em ritmo.";
+    if (overallProgress > 80) return "Fase final. Mantenha a consistência operacional.";
+    if (overallProgress > 50) return "Ritmo estável. Execute o próximo bloco de estudos.";
+    if (totalAnswered > 0) return "Dados processados. Continue a progressão.";
+    return "Inicie a primeira carga de estudos do dia.";
   }, [overallProgress, totalAnswered]);
 
   const dailyFocus = overallProgress === 0
@@ -42,10 +42,10 @@ export function HeroGreetingCard({ name, overallProgress, totalApostilas, totalA
       : 'Revisar seus erros';
 
   return (
-    <div className="relative overflow-hidden rounded-[2rem] border border-primary/20 bg-gradient-to-br from-card via-card to-primary/5 p-6 shadow-2xl shadow-primary/5 sm:p-8">
+    <div className="relative overflow-hidden rounded-xl border border-white/5 bg-[#050508] p-6 sm:p-8 cyber-grid">
       {/* Background patterns and glows */}
-      <div className="absolute top-0 right-0 -mr-20 -mt-20 h-64 w-64 rounded-full bg-primary/10 blur-[80px]" />
-      <div className="absolute bottom-0 left-0 -ml-20 -mb-20 h-64 w-64 rounded-full bg-accent/10 blur-[80px]" />
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 pointer-events-none" />
+      <div className="absolute top-0 left-0 w-full h-px bg-primary/20" />
       
       <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-8">
         <div className="space-y-4 max-w-xl">
