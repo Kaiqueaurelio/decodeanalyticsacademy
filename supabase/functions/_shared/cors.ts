@@ -51,7 +51,7 @@ export function getCorsHeaders(req: Request): Record<string, string> {
     'Vary': 'Origin',
   };
 
-  if (origin && ALLOWED_ORIGINS.has(origin)) {
+  if (origin && isAllowedOrigin(origin)) {
     headers['Access-Control-Allow-Origin'] = origin;
   }
 
