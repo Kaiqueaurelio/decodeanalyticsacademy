@@ -16,6 +16,7 @@ import logoDark from '@/assets/owl-icon.png';
 import { motion, AnimatePresence, useMotionValue, useSpring } from 'framer-motion';
 import { motionTokens, type AsyncStatus } from '@/lib/motion';
 import { SECURITY_COPY } from '@/lib/security-copy';
+import { GlitchText } from '@/components/login/GlitchText';
 
 export default function LoginPage() {
   const { signUp, user, roleChecked, loading: authLoading, status, isSessionHydrated } = useAuth();
@@ -531,7 +532,7 @@ export default function LoginPage() {
             <button type="button" onClick={() => navigate('/')} className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-3 text-white/70 transition hover:border-[#d7ff4f]/50 hover:text-[#d7ff4f]">
               <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" /> Voltar
             </button>
-            <span className="hidden sm:inline">DECODE / AUTH</span>
+            <span className="hidden sm:inline">DECODE ANALYTICS ACADEMY / AUTH</span>
           </div>
           <span className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-[#d7ff4f] shadow-[0_0_10px_#d7ff4f]" /> SUPABASE AUTH / ONLINE</span>
         </header>
@@ -539,15 +540,25 @@ export default function LoginPage() {
         <div className="grid flex-1 items-center gap-8 py-8 lg:grid-cols-[minmax(0,1fr)_minmax(380px,470px)] lg:gap-16 lg:py-12">
           <section className="hidden max-w-2xl lg:block">
             <div className="mb-8 flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.25em] text-[#d7ff4f]">
-              <Terminal className="h-4 w-4" aria-hidden="true" /> COMPONENT / 01
+              <div className="relative inline-block">
+                <span className="animate-pulse text-[#d7ff4f]">DECODE</span>
+                <span className="absolute -right-2 top-0 text-[8px] text-[#00f0ff]/50">GLITCH</span>
+              </div>
+              / PLATFORM_AUTH
             </div>
             <div className="flex items-start gap-5">
               <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-[#d7ff4f]/30 bg-[#d7ff4f]/10 shadow-[0_0_35px_rgba(215,255,79,0.12)]">
                 <img src={logoDark} alt="Logo Decode Analytics Academy" className="h-11 w-11 object-contain" />
               </div>
               <div>
-                <p className="mb-2 font-mono text-xs uppercase tracking-[0.28em] text-white/45">Decode Analytics Academy</p>
-                <h1 className="text-5xl font-black leading-[0.98] tracking-[-0.05em] text-white xl:text-7xl">Run your<br /><span className="text-[#d7ff4f] [text-shadow:0_0_26px_rgba(215,255,79,0.25)]">learning.</span></h1>
+                <GlitchText text="Decode Analytics Academy" className="mb-2 block text-xs uppercase tracking-[0.28em] text-white/45" />
+                <h1 className="text-5xl font-black leading-[0.98] tracking-[-0.05em] text-white xl:text-7xl">
+                  Run your<br />
+                  <span className="text-[#d7ff4f] [text-shadow:0_0_26px_rgba(215,255,79,0.25)] relative">
+                    learning.
+                    <span className="absolute -bottom-1 left-0 h-[2px] w-full bg-[#d7ff4f]/30 animate-pulse" />
+                  </span>
+                </h1>
               </div>
             </div>
             <p className="mt-8 max-w-xl text-lg leading-relaxed text-white/55">Acesse suas apostilas, exercícios, simulados e o acompanhamento de desempenho em um ambiente feito para estudantes de tecnologia.</p>
@@ -570,7 +581,12 @@ export default function LoginPage() {
           <motion.section initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }} className="w-full">
             <div className="overflow-hidden rounded-[26px] border border-white/12 bg-[#121815]/95 shadow-[0_24px_100px_rgba(0,0,0,0.45),0_0_70px_rgba(215,255,79,0.06)] backdrop-blur-xl">
               <div className="flex items-center justify-between border-b border-white/10 px-5 py-4 sm:px-7">
-                <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.22em] text-white/40"><Code2 className="h-3.5 w-3.5 text-[#d7ff4f]" aria-hidden="true" /> DECODE_LOGIN</div>
+                <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.22em] text-[#d7ff4f]">
+                  <div className="relative inline-block">
+                    <span className="animate-pulse">DECODE_AUTH</span>
+                    <span className="absolute -right-2 top-0 text-[6px] opacity-50">v7.0</span>
+                  </div>
+                </div>
                 <div className="flex gap-1.5" aria-hidden="true"><span className="h-2 w-2 rounded-full bg-white/15" /><span className="h-2 w-2 rounded-full bg-white/15" /><span className="h-2 w-2 rounded-full bg-[#d7ff4f]/80" /></div>
               </div>
 
@@ -638,7 +654,12 @@ export default function LoginPage() {
             </div>
 
             <div className="mt-4 grid grid-cols-3 gap-2 font-mono text-[8px] uppercase tracking-[0.12em] text-white/30"><div className="rounded-lg border border-white/10 bg-white/[0.025] p-2"><span className="text-[#d7ff4f]/70">01</span> identifier</div><div className="rounded-lg border border-white/10 bg-white/[0.025] p-2"><span className="text-[#d7ff4f]/70">02</span> auth-flow</div><div className="rounded-lg border border-white/10 bg-white/[0.025] p-2"><span className="text-[#d7ff4f]/70">03</span> session</div></div>
-            <p className="mt-4 text-center font-mono text-[9px] uppercase tracking-[0.18em] text-white/25">TAB · ENTER · RA / E-MAIL · SECURE ACCESS</p>
+            <div className="mt-8 flex flex-col items-center gap-2">
+              <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-white/25">TAB · ENTER · RA / E-MAIL · SECURE ACCESS</p>
+              <p className="font-mono text-[8px] uppercase tracking-[0.2em] text-[#d7ff4f]/40">
+                Desenvolvido por: Kaique Aurelio & Decode Analytics
+              </p>
+            </div>
           </motion.section>
         </div>
       </main>

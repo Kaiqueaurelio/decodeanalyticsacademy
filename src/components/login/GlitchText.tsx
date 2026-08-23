@@ -1,14 +1,23 @@
-import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface GlitchTextProps {
   text: string;
   className?: string;
   delay?: number;
+  intervalSpeed?: number;
+  glitchOnlyOnHover?: boolean;
 }
 
-export const GlitchText: React.FC<GlitchTextProps> = ({ text, className = "", delay = 0 }) => {
+export const GlitchText: React.FC<GlitchTextProps> = ({ 
+  text, 
+  className = "", 
+  delay = 0,
+  intervalSpeed = 40,
+  glitchOnlyOnHover = false
+}) => {
   const [displayText, setDisplayText] = useState('');
+  const [isGlitching, setIsGlitching] = useState(false);
   const chars = "!<>-_\\/[]{}—=+*^?#________";
 
   useEffect(() => {
@@ -33,22 +42,63 @@ export const GlitchText: React.FC<GlitchTextProps> = ({ text, className = "", de
           frame++;
           return result;
         });
-      }, 40);
+      }, intervalSpeed);
     }, finalDelay);
 
     return () => {
       clearTimeout(timeout);
     };
-  }, [text, delay]);
+  }, [text, delay, intervalSpeed]);
+
+  // Periodic random glitch
+  useEffect(() => {
+    if (glitchOnlyOnHover) return;
+
+    const interval = setInterval(() => {
+      if (Math.random() > 0.9) {
+        setIsGlitching(true);
+        setTimeout(() => setIsGlitching(false), 200 + Math.random() * 300);
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [glitchOnlyOnHover]);
 
   return (
     <motion.span 
-      className={`inline-block font-mono ${className}`}
+      className={`inline-block font-mono relative ${className}`}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3, delay }}
+      onMouseEnter={() => glitchOnlyOnHover && setIsGlitching(true)}
+      onMouseLeave={() => glitchOnlyOnHover && setIsGlitching(false)}
     >
-      {displayText}
+      <span className="relative z-10">{displayText}</span>
+      
+      <AnimatePresence>
+        {isGlitching && (
+          <>
+            <motion.span
+              initial={{ opacity: 0, x: 0 }}
+              animate={{ opacity: 0.5, x: [-2, 2, -1, 3, 0] }}
+              exit={{ opacity: 0 }}
+              className="absolute top-0 left-0 z-0 text-cyan-500 w-full"
+              aria-hidden="true"
+            >
+              {text}
+            </motion.span>
+            <motion.span
+              initial={{ opacity: 0, x: 0 }}
+              animate={{ opacity: 0.5, x: [2, -2, 1, -3, 0] }}
+              exit={{ opacity: 0 }}
+              className="absolute top-0 left-0 z-0 text-purple-500 w-full"
+              aria-hidden="true"
+            >
+              {text}
+            </motion.span>
+          </>
+        )}
+      </AnimatePresence>
     </motion.span>
   );
 };

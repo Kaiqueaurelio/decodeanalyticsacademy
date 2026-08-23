@@ -38,6 +38,15 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: "7.0.1",
+    date: "23/08/2026",
+    title: "Branding & Identidade High-Tech",
+    changes: [
+      { kind: "improvement", text: "Restaurada a identidade 'Decode Analytics Academy' com efeitos de glitch e branding persistente" },
+      { kind: "improvement", text: "Integrado rodapé obrigatório de autoria no terminal de login" }
+    ]
+  },
+  {
     version: "6.9.9",
     date: "23/08/2026",
     title: "Auditoria de Erros Acadêmicos",
