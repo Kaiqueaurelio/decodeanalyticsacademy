@@ -121,6 +121,34 @@ export function ApostilaCloningDashboard() {
 
   return (
     <div className="space-y-6 p-1">
+      {/* Quick Actions: Clone by URL */}
+      <Card className="border-primary/30 bg-primary/5 backdrop-blur-sm">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Wand2 className="h-5 w-5 text-primary" />
+            Clonagem Inteligente por Link
+          </CardTitle>
+          <CardDescription>Insira o link de uma apostila externa ou material para clonar via IA</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleCloneSubmit} className="flex gap-3">
+            <div className="relative flex-1">
+              <Input 
+                placeholder="https://exemplo.com/material-de-estudo" 
+                className="bg-background/50 border-primary/20 focus-visible:ring-primary/30"
+                value={cloneUrl}
+                onChange={(e) => setCloneUrl(e.target.value)}
+                disabled={isCloning}
+              />
+            </div>
+            <Button type="submit" disabled={isCloning || !cloneUrl.trim()} className="gap-2 shadow-[0_0_15px_rgba(215,255,79,0.15)]">
+              {isCloning ? <Loader2 className="h-4 w-4 animate-spin" /> : <Copy className="h-4 w-4" />}
+              {isCloning ? 'Clonando...' : 'Clonar Material'}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold flex items-center gap-2">
