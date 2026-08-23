@@ -73,6 +73,33 @@ export function ApostilaCloningDashboard() {
     }
   }
 
+  const handleCloneSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!cloneUrl.trim()) return;
+    
+    setIsCloning(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('ra-auth', {
+        body: { 
+          mode: 'clone_apostila', 
+          sourceUrl: cloneUrl.trim(),
+          targetSemester: 1 // Default
+        }
+      });
+      
+      if (error) throw error;
+      
+      toast.success("Solicitação de clonagem enviada com sucesso!");
+      setCloneUrl('');
+      fetchData();
+    } catch (err: any) {
+      console.error("Erro na clonagem:", err);
+      toast.error(err.message || "Erro ao solicitar clonagem");
+    } finally {
+      setIsCloning(false);
+    }
+  };
+
   const filteredJobs = jobs.filter(job => 
     (job.source?.title || '').toLowerCase().includes(search.toLowerCase()) ||
     (job.target?.title || '').toLowerCase().includes(search.toLowerCase())
