@@ -57,7 +57,8 @@ const GabaritosPage = lazy(() => import('@/pages/GabaritosPage'));
   const ReviewPage = lazy(() => import('@/pages/ReviewPage'));
   const SchedulePage = lazy(() => import('@/pages/SchedulePage'));
   const TiraDuvidaPage = lazy(() => import('@/pages/TiraDuvidaPage'));
-  const AdminBibliotecaPage = lazy(() => import('@/pages/AdminBibliotecaPage'));
+const AdminBibliotecaPage = lazy(() => import('@/pages/AdminBibliotecaPage'));
+const IndexPage = lazy(() => import('@/routes/index'));
 
 
 const queryClient = new QueryClient({
