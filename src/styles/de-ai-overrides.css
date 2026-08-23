@@ -1,7 +1,23 @@
 /* =============================================================
    De-AI overrides — Tech/Industrial Cyberpunk Otimization.
    Lançado na v7.2.0 para remover o look de "App de IA".
+   Atualizado na v7.3.0 com suporte ao modo Minimalista.
    ============================================================= */
+
+/* Apenas aplica efeitos Cyberpunk se a classe .style-industrial estiver presente */
+.style-minimalist * {
+  box-shadow: none !important;
+  text-shadow: none !important;
+  background-image: none !important;
+}
+
+.style-minimalist .cyber-grid, 
+.style-minimalist .scanline-effect::after {
+  display: none !important;
+}
+
+.style-industrial {
+
 
 /* 1. Kill decorative pulse on non-critical elements */
 [class*="animate-pulse"]:not(.skeleton):not([data-loading]):not(.loader):not(.keep-pulse) {
