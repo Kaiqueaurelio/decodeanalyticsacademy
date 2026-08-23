@@ -105,7 +105,8 @@ const AppContent = () => {
       <Suspense fallback={<PageSkeleton />}>
         <Routes>
           {/* Public Routes */}
-          <Route path="/" element={<LandingPage />} />
+          <Route path="/legacy-index" element={<LandingPage />} />
+          <Route path="/" element={lazy(() => import('@/routes/index'))} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/anuncie" element={<AnunciePage />} />
