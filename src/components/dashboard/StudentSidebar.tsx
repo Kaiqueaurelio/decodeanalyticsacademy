@@ -173,7 +173,7 @@ export function SidebarContent({ onNavigate, collapsed = false }: { onNavigate?:
       {/* Footer Profile */}
       <div className="p-4 border-t border-white/5 bg-black/40 relative z-10">
         <div className={`flex items-center gap-3 p-2 rounded-lg bg-white/5 border border-white/5 ${collapsed ? 'justify-center' : ''}`}>
-          <div className="w-8 h-8 rounded bg-gradient-to-br from-cyan-500 to-purple-600 flex items-center justify-center text-[10px] font-black text-white shadow-[0_0_10px_rgba(0,240,255,0.2)]">
+          <div className="w-8 h-8 rounded bg-cyan-950 border border-cyan-500/40 flex items-center justify-center text-[10px] font-black text-cyan-400">
             {profile?.full_name?.substring(0, 2).toUpperCase() || 'AD'}
           </div>
           <div className={collapsed ? 'hidden' : 'flex-1 min-w-0'}>
