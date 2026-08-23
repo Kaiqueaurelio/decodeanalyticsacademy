@@ -226,15 +226,30 @@ export default function LoginPage() {
       const fallbackMessage = usedPseudoEmail
         ? `RA não encontrado ou senha incorreta. Tentativa ${newAttempts} de ${MAX_LOGIN_ATTEMPTS}.`
         : `RA/e-mail ou senha incorretos. Tentativa ${newAttempts} de ${MAX_LOGIN_ATTEMPTS}.`;
+      
+      // Se a falha for credencial inválida ou 401, mostramos a mensagem de tentativa.
+      // Se for outro erro, apenas mostramos a mensagem sem sugerir erro de senha.
       const safeServerMessage = serverMessage && serverMessage !== SECURITY_COPY.loginErrorDescription
         ? serverMessage
         : fallbackMessage;
+        
       toast.error(safeServerMessage, {
         icon: <AlertTriangle className="h-4 w-4 text-[#d7ff4f]" />,
         duration: 5000,
       });
     }
+  };
 
+  const registerNetworkFailure = (message: string) => {
+    setSubmitStatus('error');
+    showTransientError();
+    setAwaitingSession(false);
+    triggerShake();
+    
+    toast.error(message, {
+      icon: <AlertTriangle className="h-4 w-4 text-[#d7ff4f]" />,
+      duration: 6000,
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
