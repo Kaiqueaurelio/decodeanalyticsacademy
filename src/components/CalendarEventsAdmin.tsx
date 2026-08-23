@@ -39,6 +39,8 @@ const EVENT_TYPES = [
   { value: 'trabalho', label: 'Trabalho', color: 'bg-warning/15 text-warning border-warning/30' },
   { value: 'atividade', label: 'Atividade', color: 'bg-primary/15 text-primary border-primary/30' },
   { value: 'seminario', label: 'Seminário', color: 'bg-accent/15 text-accent-foreground border-accent/30' },
+  { value: 'palestra', label: 'Palestra', color: 'bg-blue-500/15 text-blue-400 border-blue-500/30' },
+  { value: 'hackaton', label: 'Hackaton', color: 'bg-purple-500/15 text-purple-400 border-purple-500/30' },
   { value: 'entrega', label: 'Entrega', color: 'bg-purple-500/15 text-purple-400 border-purple-500/30' },
   { value: 'aula', label: 'Aula', color: 'bg-muted-foreground/15 text-muted-foreground border-border' },
 ];

@@ -38,6 +38,7 @@ const menuGroups = [
     items: [
       { to: '/vagas', icon: BriefcaseBusiness, label: 'Vagas & Estágios' },
       { to: '/noticias', icon: Newspaper, label: 'News Tech' },
+      { to: '/eventos', icon: CalendarRange, label: 'Eventos' },
     ],
   },
 ];

@@ -38,6 +38,16 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: "6.9.7",
+    date: "23/08/2026",
+    title: "Central de Eventos & Acadêmico",
+    changes: [
+      { kind: "feature", text: "Lançada a nova aba de 'Eventos' para publicação de palestras e hackatons" },
+      { kind: "improvement", text: "Integrada a gestão de eventos ao calendário oficial da Decode Academy" },
+      { kind: "fix", text: "Corrigida a visibilidade de tipos de eventos customizados no painel administrativo" }
+    ]
+  },
+  {
     version: "6.9.6",
     date: "22/08/2026",
     title: "Conformidade e Localização de Segurança",
