@@ -1,2 +1,2 @@
 import React from 'react';
-export default function RouteIndex() { return ( <body>me liste 10 erros do meu app por gentileza</body> ); }
+export default function RouteIndex() { return ( <body>Implemente uma página de login com email e senha e rotas protegidas para admin e alunos.</body> ); }
