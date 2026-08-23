@@ -107,7 +107,7 @@ const AppContent = () => {
         <Routes>
           {/* Public Routes */}
           <Route path="/legacy-index" element={<LandingPage />} />
-          <Route path="/" element={lazy(() => import('@/routes/index'))} />
+          <Route path="/" element={<IndexPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/anuncie" element={<AnunciePage />} />
