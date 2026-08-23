@@ -124,7 +124,7 @@ export function useAds(adType?: 'banner' | 'popup' | 'inline' | 'sidebar' | 'foo
       
       // REGISTRO DE TELEMETRIA EM CASO DE ERRO
       if (!res.ok) {
-        await supabase.from('system_telemetry').insert({
+        await (supabase as any).from('system_telemetry').insert({
           event_type: 'ads_fetch_error',
           payload: {
             status: res.status,
@@ -136,6 +136,7 @@ export function useAds(adType?: 'banner' | 'popup' | 'inline' | 'sidebar' | 'foo
           user_id: user?.id || null
         });
       }
+
 
       const error = !res.ok ? new Error(payload?.error || `HTTP ${res.status}`) : null;
       const data = res.ok ? payload : null;
