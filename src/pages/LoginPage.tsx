@@ -531,7 +531,7 @@ export default function LoginPage() {
             <button type="button" onClick={() => navigate('/')} className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-3 text-white/70 transition hover:border-[#d7ff4f]/50 hover:text-[#d7ff4f]">
               <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" /> Voltar
             </button>
-            <span className="hidden sm:inline">DECODE / AUTH</span>
+            <span className="hidden sm:inline">DECODE ANALYTICS ACADEMY / AUTH</span>
           </div>
           <span className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-[#d7ff4f] shadow-[0_0_10px_#d7ff4f]" /> SUPABASE AUTH / ONLINE</span>
         </header>
@@ -539,7 +539,11 @@ export default function LoginPage() {
         <div className="grid flex-1 items-center gap-8 py-8 lg:grid-cols-[minmax(0,1fr)_minmax(380px,470px)] lg:gap-16 lg:py-12">
           <section className="hidden max-w-2xl lg:block">
             <div className="mb-8 flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.25em] text-[#d7ff4f]">
-              <Terminal className="h-4 w-4" aria-hidden="true" /> COMPONENT / 01
+              <div className="relative inline-block">
+                <span className="animate-pulse text-[#d7ff4f]">DECODE</span>
+                <span className="absolute -right-2 top-0 text-[8px] text-[#00f0ff]/50">GLITCH</span>
+              </div>
+              / PLATFORM_AUTH
             </div>
             <div className="flex items-start gap-5">
               <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-[#d7ff4f]/30 bg-[#d7ff4f]/10 shadow-[0_0_35px_rgba(215,255,79,0.12)]">
