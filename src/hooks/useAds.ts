@@ -86,8 +86,15 @@ export function useAds(adType?: 'banner' | 'popup' | 'inline' | 'sidebar' | 'foo
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Anúncios são recurso interno: sem sessão não há chamada (evita 401 no /login).
+    if (!user) {
+      setAds([]);
+      setLoading(false);
+      return;
+    }
     loadAds();
-  }, [adType, targetPage]);
+  }, [user?.id, adType, targetPage]);
+
 
   const loadAds = async () => {
     try {
