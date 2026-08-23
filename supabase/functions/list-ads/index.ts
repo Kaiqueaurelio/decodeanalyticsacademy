@@ -38,8 +38,17 @@ Deno.serve(async (req) => {
     });
   }
 
-  const auth = await requireUser(req, corsHeaders);
-  if (!auth.ok) return auth.response;
+  // Anúncios são facultativos: se não houver token, retornamos [] em vez de 401.
+  // Se houver token mas ele for inválido, o requireUser retornará 401 normalmente.
+  const authHeader = req.headers.get("Authorization") || req.headers.get("authorization");
+  let userId: string | null = null;
+  
+  if (authHeader) {
+    const auth = await requireUser(req, corsHeaders);
+    if (!auth.ok) return auth.response;
+    userId = auth.userId;
+  }
+
 
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !SERVICE_ROLE) {
     console.error("list-ads is not configured");
@@ -47,19 +56,22 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const userClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      global: { headers: { Authorization: req.headers.get("Authorization") ?? "" } },
-      auth: { autoRefreshToken: false, persistSession: false },
-    });
-    const { data: profile, error: profileError } = await userClient
-      .from("profiles")
-      .select("is_blocked,content_scope")
-      .eq("user_id", auth.userId)
-      .maybeSingle();
+    if (userId) {
+      const userClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        global: { headers: { Authorization: req.headers.get("Authorization") ?? "" } },
+        auth: { autoRefreshToken: false, persistSession: false },
+      });
+      const { data: profile, error: profileError } = await userClient
+        .from("profiles")
+        .select("is_blocked,content_scope")
+        .eq("user_id", userId)
+        .maybeSingle();
 
-    if (profileError || profile?.is_blocked || profile?.content_scope === "enem_only") {
-      return json({ ads: [] }, 200, corsHeaders);
+      if (profileError || profile?.is_blocked || profile?.content_scope === "enem_only") {
+        return json({ ads: [] }, 200, corsHeaders);
+      }
     }
+
 
     const url = new URL(req.url);
     const adTypeRaw = url.searchParams.get("ad_type");
