@@ -207,11 +207,12 @@ export default function LoginPage() {
       
       // Persistir falha no log de auditoria e telemetria
       void callRaAuth({ mode: 'log_failure', ra: identifier, reason: 'max_attempts_reached' });
-      void supabase.from('system_telemetry').insert({
+      void (supabase as any).from('system_telemetry').insert({
         event_type: 'login_lockout',
         payload: { identifier: identifier.substring(0, 3) + '...', reason: 'max_attempts_reached' },
         user_id: null
       });
+
 
       
       toast.error('Muitas tentativas inválidas. Conta bloqueada temporariamente.');
