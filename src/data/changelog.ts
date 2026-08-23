@@ -38,6 +38,16 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: "7.0.2",
+    date: "23/08/2026",
+    title: "Estabilidade de Acesso & CORS",
+    changes: [
+      { kind: "fix", text: "Corrigida falha 'Failed to fetch' no login liberando origens de preview e domínios próprios" },
+      { kind: "improvement", text: "Refinado tratamento de erros de rede no login para evitar bloqueio indevido por tentativas falhas" },
+      { kind: "security", text: "Atualizada política de CORS para suportar múltiplos ambientes de desenvolvimento com segurança" }
+    ]
+  },
+  {
     version: "7.0.1",
     date: "23/08/2026",
     title: "Branding & Identidade High-Tech",
