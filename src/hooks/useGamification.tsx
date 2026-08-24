@@ -7,7 +7,9 @@ type Badge = { id: string; name: string; description: string | null; icon: strin
 type UserBadge = { id: string; badge_id: string; earned_at: string };
 type Streak = { current_streak: number; longest_streak: number; last_study_date: string | null };
 type XP = { xp_points: number; level: number };
-type StudyGoal = { id: string; title: string; description: string; progress: number; total: number; type: 'chapter' | 'exercise' | 'streak'; completed: boolean };
+type StudyGoal = { id: string; title: string; description: string; progress: number; total: number; type: 'chapter' | 'exercise' | 'streak' | 'custom'; completed: boolean; metric: string };
+type Milestone = { id: string; title: string; description: string | null; category: string; achieved_at: string | null; requirement_type: string; requirement_value: number; reward_type: string | null };
+
 
 export function useGamification() {
   const { user } = useAuth();
@@ -16,7 +18,9 @@ export function useGamification() {
   const [goals, setGoals] = useState<StudyGoal[]>([]);
   const [badges, setBadges] = useState<Badge[]>([]);
   const [userBadges, setUserBadges] = useState<UserBadge[]>([]);
+  const [milestones, setMilestones] = useState<Milestone[]>([]);
   const [loading, setLoading] = useState(true);
+
 
 
   const calcLevel = (points: number) => Math.max(1, Math.floor(points / 100) + 1);
@@ -25,24 +29,43 @@ export function useGamification() {
   const loadAll = useCallback(async () => {
     if (!user) return;
     setLoading(true);
-    const [xpRes, streakRes, badgesRes, ubRes] = await Promise.all([
+    const [xpRes, streakRes, badgesRes, ubRes, goalsRes, milestonesRes] = await Promise.all([
       supabase.from('user_xp').select('*').eq('user_id', user.id).maybeSingle(),
       supabase.from('study_streaks').select('*').eq('user_id', user.id).maybeSingle(),
       supabase.from('badges').select('*'),
       supabase.from('user_badges').select('*').eq('user_id', user.id),
+      supabase.from('study_goals').select('*').eq('user_id', user.id).eq('status', 'active'),
+      supabase.from('study_milestones').select('*').eq('user_id', user.id),
     ]);
+
     if (xpRes.data) setXp({ xp_points: xpRes.data.xp_points, level: xpRes.data.level });
     if (streakRes.data) setStreak({ current_streak: streakRes.data.current_streak, longest_streak: streakRes.data.longest_streak, last_study_date: streakRes.data.last_study_date });
     
-    // Mocking goals for now based on stats or providing defaults
-    // In a real scenario, these could come from a 'user_goals' table
-    const mockGoals: StudyGoal[] = [
-      { id: 'goal-1', title: 'Mestre de Exercícios', description: 'Complete 50 exercícios no total', progress: Math.min(32, 50), total: 50, type: 'exercise', completed: false },
-      { id: 'goal-2', title: 'Explorador Acadêmico', description: 'Leia 5 capítulos de apostilas', progress: 5, total: 5, type: 'chapter', completed: true },
-      { id: 'goal-3', title: 'Foco Total', description: 'Mantenha um streak de 7 dias', progress: Math.min(streakRes.data?.current_streak || 0, 7), total: 7, type: 'streak', completed: (streakRes.data?.current_streak || 0) >= 7 },
-      { id: 'goal-4', title: 'Elite do Conhecimento', description: 'Alcance o Nível 10', progress: Math.min(xpRes.data?.level || 1, 10), total: 10, type: 'chapter', completed: (xpRes.data?.level || 1) >= 10 },
-    ];
-    setGoals(mockGoals);
+    if (goalsRes.data && goalsRes.data.length > 0) {
+      setGoals(goalsRes.data.map(g => ({
+        id: g.id,
+        title: g.metadata?.title || (g.type === 'daily' ? 'Meta Diária' : 'Meta Personalizada'),
+        description: g.metadata?.description || `Meta de ${g.target_value} ${g.metric}`,
+        progress: g.current_value,
+        total: g.target_value,
+        type: g.metric as any,
+        completed: g.status === 'completed',
+        metric: g.metric
+      })));
+    } else {
+      const mockGoals: StudyGoal[] = [
+        { id: 'goal-1', title: 'Mestre de Exercícios', description: 'Complete 50 exercícios no total', progress: Math.min(32, 50), total: 50, type: 'exercise', completed: false, metric: 'exercises' },
+        { id: 'goal-2', title: 'Explorador Acadêmico', description: 'Leia 5 capítulos de apostilas', progress: 5, total: 5, type: 'chapter', completed: true, metric: 'chapters' },
+        { id: 'goal-3', title: 'Foco Total', description: 'Mantenha um streak de 7 dias', progress: Math.min(streakRes.data?.current_streak || 0, 7), total: 7, type: 'streak', completed: (streakRes.data?.current_streak || 0) >= 7, metric: 'days' },
+        { id: 'goal-4', title: 'Elite do Conhecimento', description: 'Alcance o Nível 10', progress: Math.min(xpRes.data?.level || 1, 10), total: 10, type: 'chapter', completed: (xpRes.data?.level || 1) >= 10, metric: 'level' },
+      ];
+      setGoals(mockGoals);
+    }
+
+    if (milestonesRes.data) {
+      setMilestones(milestonesRes.data as Milestone[]);
+    }
+
 
     if (badgesRes.data) setBadges(badgesRes.data as Badge[]);
     if (ubRes.data) setUserBadges(ubRes.data as UserBadge[]);
@@ -107,11 +130,32 @@ export function useGamification() {
     }
   }, [user, badges, userBadges, addXP]);
 
+  const updateGoal = useCallback(async (goalId: string, increment: number) => {
+    if (!user) return;
+    const goal = goals.find(g => g.id === goalId);
+    if (!goal) return;
+
+    const { data, error } = await supabase
+      .from('study_goals')
+      .update({ current_value: goal.progress + increment })
+      .eq('id', goalId)
+      .select()
+      .single();
+
+    if (!error && data) {
+      setGoals(prev => prev.map(g => g.id === goalId ? { ...g, progress: data.current_value } : g));
+      if (data.current_value >= data.target_value && data.status !== 'completed') {
+        await supabase.from('study_goals').update({ status: 'completed' }).eq('id', goalId);
+        toast.success(`🎯 Meta Concluída: ${goal.title}!`);
+      }
+    }
+  }, [user, goals]);
+
   const earnedBadgeIds = userBadges.map(ub => ub.badge_id);
 
   return {
-    xp, streak, goals, badges, userBadges, earnedBadgeIds, loading,
-    addXP, updateStreak, checkAndAwardBadge, loadAll,
+    xp, streak, goals, badges, userBadges, milestones, earnedBadgeIds, loading,
+    addXP, updateStreak, checkAndAwardBadge, updateGoal, loadAll,
     xpForNextLevel, calcLevel
   };
 }
