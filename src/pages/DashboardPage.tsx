@@ -501,6 +501,11 @@ export default function DashboardPage() {
                   </div>
                 </Card>
               </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <PomodoroWidget collapsed={false} />
+                <StudyGoalsWidget />
+              </div>
             </div>
           </Reveal>
 
@@ -549,6 +554,7 @@ export default function DashboardPage() {
                     </header>
                     <ExamCalendarWidget />
                   </div>
+                  <FeaturedJobsWidget />
                 </div>
               </Reveal>
               

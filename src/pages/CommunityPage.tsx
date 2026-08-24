@@ -75,10 +75,35 @@ export default function CommunityPage() {
   // Load channels
   useEffect(() => {
     supabase.from('community_channels' as any).select('*').order('sort_order')
-      .then(({ data }) => {
+      .then(async ({ data }) => {
         const list = (data as any[]) || [];
-        setChannels(list);
-        if (list.length && !activeChannel) setActiveChannel(list[0]);
+        
+        // Fetch academic subjects as channels if they don't exist
+        const { data: subjects } = await supabase.from('apostilas').select('category').not('category', 'is', null);
+        const uniqueSubjects = [...new Set(subjects?.map(s => s.category) || [])];
+        
+        const academicChannels = uniqueSubjects.map((sub, idx) => ({
+          id: `subject-${sub}`,
+          name: sub,
+          slug: sub?.toLowerCase().replace(/\s+/g, '-'),
+          description: `Canal de discussão para a disciplina ${sub}`,
+          icon: '📚',
+          is_general: false,
+          sort_order: 100 + idx
+        }));
+
+        const combined = [...list, ...academicChannels];
+        setChannels(combined);
+        
+        const searchParams = new URLSearchParams(window.location.search);
+        const subjectParam = searchParams.get('subject');
+        if (subjectParam) {
+          const target = combined.find(c => c.name === subjectParam);
+          if (target) setActiveChannel(target);
+          else if (combined.length) setActiveChannel(combined[0]);
+        } else if (combined.length && !activeChannel) {
+          setActiveChannel(combined[0]);
+        }
       });
   }, []);
 
