@@ -71,8 +71,6 @@ const queryClient = new QueryClient({
   },
 });
 
-// O componente ProtectedRoute agora é importado de @/components/ProtectedRoute
-
 function useAdminCopyPatch() {
   const { user } = useAuth();
   React.useEffect(() => {
@@ -93,7 +91,6 @@ const AppContent = () => {
 
   React.useEffect(() => {
     if (splashDone) {
-      // Pequeno delay para garantir que o SplashScreen sumiu e o DOM está limpo
       const timer = setTimeout(() => setShowContent(true), 50);
       return () => clearTimeout(timer);
     }
@@ -114,81 +111,79 @@ const AppContent = () => {
             <AdDraftPreviewOverlay />
             <EllaSidebar />
             <PersistentAdSpot />
+            <Suspense fallback={<PageSkeleton />}>
+              <Routes>
+                {/* Public Routes */}
+                <Route path="/" element={<LandingPage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/reset-password" element={<ResetPasswordPage />} />
+                <Route path="/esqueci-senha" element={<ForgotPasswordPage />} />
+                <Route path="/anuncie" element={<AnunciePage />} />
+                <Route path="/termos" element={<TermsPage />} />
+                <Route path="/transparencia" element={<TransparencyPage />} />
+                <Route path="/oauth/callback" element={<OAuthConsentPage />} />
+                <Route path="/offline" element={<OfflinePage />} />
+                <Route path="/apoio" element={<SupportProjectPage />} />
+
+                {/* App Routes (Protected) */}
+                <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+                <Route path="/apostila/:id" element={<ProtectedRoute><ApostilaPage /></ProtectedRoute>} />
+                <Route path="/reader/:id" element={<ProtectedRoute><ApostilaReaderPage /></ProtectedRoute>} />
+                <Route path="/aula-do-dia" element={<ProtectedRoute><ApostilaDoDiaPage /></ProtectedRoute>} />
+                <Route path="/materia/:id" element={<ProtectedRoute><SubjectPage /></ProtectedRoute>} />
+                <Route path="/caderno/:notebookId" element={<ProtectedRoute><NotebookPage /></ProtectedRoute>} />
+                <Route path="/simulado/:id" element={<ProtectedRoute><SimuladoPage /></ProtectedRoute>} />
+                <Route path="/exercises/:id" element={<ProtectedRoute><ExercisesPage /></ProtectedRoute>} />
+                <Route path="/exercicios" element={<ProtectedRoute><ExerciciosIndexPage /></ProtectedRoute>} />
+                <Route path="/gabaritos" element={<ProtectedRoute><GabaritosPage /></ProtectedRoute>} />
+                <Route path="/eventos" element={<ProtectedRoute><EventsPage /></ProtectedRoute>} />
+                <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+                <Route path="/biblioteca" element={<ProtectedRoute><BibliotecaPage /></ProtectedRoute>} />
+                <Route path="/livros" element={<ProtectedRoute><PlayBooksPage /></ProtectedRoute>} />
+                <Route path="/cursos" element={<ProtectedRoute><CoursesPage /></ProtectedRoute>} />
+                <Route path="/vagas" element={<JobsPage />} />
+                <Route path="/materiais" element={<ProtectedRoute><MaterialsPage /></ProtectedRoute>} />
+                <Route path="/video/:id" element={<ProtectedRoute><VideoPlayerPage /></ProtectedRoute>} />
+                <Route path="/calculadora" element={<ProtectedRoute><CalculadoraPage /></ProtectedRoute>} />
+                <Route path="/comunidade" element={<ProtectedRoute><CommunityPage /></ProtectedRoute>} />
+                <Route path="/ella" element={<ProtectedRoute><EllaPage /></ProtectedRoute>} />
+                <Route path="/flashcards" element={<ProtectedRoute><FlashcardsPage /></ProtectedRoute>} />
+                <Route path="/noticias" element={<ProtectedRoute><NewsPage /></ProtectedRoute>} />
+                <Route path="/performance" element={<ProtectedRoute><PerformancePage /></ProtectedRoute>} />
+                <Route path="/plano-de-estudos" element={<ProtectedRoute><PlanoEstudosPage /></ProtectedRoute>} />
+                <Route path="/revisao-prova/:eventId" element={<ProtectedRoute><PreExamReviewPage /></ProtectedRoute>} />
+                <Route path="/review" element={<ProtectedRoute><ReviewPage /></ProtectedRoute>} />
+                <Route path="/horarios" element={<ProtectedRoute><SchedulePage /></ProtectedRoute>} />
+                <Route path="/tira-duvida" element={<ProtectedRoute><TiraDuvidaPage /></ProtectedRoute>} />
+                <Route path="/tira-duvidas" element={<Navigate to="/tira-duvida" replace />} />
+
+                <Route path="/simulado" element={<ProtectedRoute><SimuladoPage /></ProtectedRoute>} />
+                <Route path="/apoie" element={<Navigate to="/apoio" replace />} />
+                <Route path="/apostilas" element={<Navigate to="/dashboard#apostilas" replace />} />
+                <Route path="/community" element={<Navigate to="/comunidade" replace />} />
+                <Route path="/jobs" element={<Navigate to="/vagas" replace />} />
+                <Route path="/desempenho" element={<Navigate to="/performance" replace />} />
+                <Route path="/materials" element={<Navigate to="/materiais" replace />} />
+                <Route path="/messages" element={<Navigate to="/comunidade" replace />} />
+                <Route path="/patrocine" element={<Navigate to="/anuncie" replace />} />
+                <Route path="/perfil" element={<Navigate to="/profile" replace />} />
+                <Route path="/terms" element={<Navigate to="/termos" replace />} />
+                <Route path="/transparency" element={<Navigate to="/transparencia" replace />} />
+                
+                {/* Admin Routes (Protected) */}
+                <Route path="/admin" element={<ProtectedRoute adminOnly><AdminPage /></ProtectedRoute>} />
+                <Route path="/admin/apostilas/:id" element={<ProtectedRoute adminOnly><AdminApostilaWorkbench /></ProtectedRoute>} />
+                <Route path="/admin/biblioteca" element={<ProtectedRoute adminOnly><AdminBibliotecaPage /></ProtectedRoute>} />
+                <Route path="/admin/financeiro" element={<Navigate to="/admin?tab=overview" replace />} />
+                <Route path="/admin/relatorios" element={<Navigate to="/admin?tab=overview" replace />} />
+
+                {/* Fallback */}
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </Suspense>
           </>
         )}
       </div>
-      
-      <Suspense fallback={<PageSkeleton />}>
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/reset-password" element={<ResetPasswordPage />} />
-          <Route path="/esqueci-senha" element={<ForgotPasswordPage />} />
-          <Route path="/anuncie" element={<AnunciePage />} />
-          <Route path="/termos" element={<TermsPage />} />
-          <Route path="/transparencia" element={<TransparencyPage />} />
-          <Route path="/oauth/callback" element={<OAuthConsentPage />} />
-          <Route path="/offline" element={<OfflinePage />} />
-          <Route path="/apoio" element={<SupportProjectPage />} />
-
-          {/* App Routes (Protected) */}
-          <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-          <Route path="/apostila/:id" element={<ProtectedRoute><ApostilaPage /></ProtectedRoute>} />
-          <Route path="/reader/:id" element={<ProtectedRoute><ApostilaReaderPage /></ProtectedRoute>} />
-          <Route path="/aula-do-dia" element={<ProtectedRoute><ApostilaDoDiaPage /></ProtectedRoute>} />
-          <Route path="/materia/:id" element={<ProtectedRoute><SubjectPage /></ProtectedRoute>} />
-          <Route path="/caderno/:notebookId" element={<ProtectedRoute><NotebookPage /></ProtectedRoute>} />
-          <Route path="/simulado/:id" element={<ProtectedRoute><SimuladoPage /></ProtectedRoute>} />
-          <Route path="/exercises/:id" element={<ProtectedRoute><ExercisesPage /></ProtectedRoute>} />
-          <Route path="/exercicios" element={<ProtectedRoute><ExerciciosIndexPage /></ProtectedRoute>} />
-          <Route path="/gabaritos" element={<ProtectedRoute><GabaritosPage /></ProtectedRoute>} />
-          <Route path="/eventos" element={<ProtectedRoute><EventsPage /></ProtectedRoute>} />
-          <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-          <Route path="/biblioteca" element={<ProtectedRoute><BibliotecaPage /></ProtectedRoute>} />
-          <Route path="/livros" element={<ProtectedRoute><PlayBooksPage /></ProtectedRoute>} />
-          <Route path="/cursos" element={<ProtectedRoute><CoursesPage /></ProtectedRoute>} />
-          <Route path="/vagas" element={<JobsPage />} />
-          <Route path="/materiais" element={<ProtectedRoute><MaterialsPage /></ProtectedRoute>} />
-          <Route path="/video/:id" element={<ProtectedRoute><VideoPlayerPage /></ProtectedRoute>} />
-          <Route path="/calculadora" element={<ProtectedRoute><CalculadoraPage /></ProtectedRoute>} />
-          <Route path="/comunidade" element={<ProtectedRoute><CommunityPage /></ProtectedRoute>} />
-          <Route path="/ella" element={<ProtectedRoute><EllaPage /></ProtectedRoute>} />
-          <Route path="/flashcards" element={<ProtectedRoute><FlashcardsPage /></ProtectedRoute>} />
-          <Route path="/noticias" element={<ProtectedRoute><NewsPage /></ProtectedRoute>} />
-          <Route path="/performance" element={<ProtectedRoute><PerformancePage /></ProtectedRoute>} />
-          <Route path="/plano-de-estudos" element={<ProtectedRoute><PlanoEstudosPage /></ProtectedRoute>} />
-          <Route path="/revisao-prova/:eventId" element={<ProtectedRoute><PreExamReviewPage /></ProtectedRoute>} />
-          <Route path="/review" element={<ProtectedRoute><ReviewPage /></ProtectedRoute>} />
-          <Route path="/horarios" element={<ProtectedRoute><SchedulePage /></ProtectedRoute>} />
-          <Route path="/tira-duvida" element={<ProtectedRoute><TiraDuvidaPage /></ProtectedRoute>} />
-          <Route path="/tira-duvidas" element={<Navigate to="/tira-duvida" replace />} />
-
-          <Route path="/simulado" element={<ProtectedRoute><SimuladoPage /></ProtectedRoute>} />
-          <Route path="/apoie" element={<Navigate to="/apoio" replace />} />
-          <Route path="/apostilas" element={<Navigate to="/dashboard#apostilas" replace />} />
-          <Route path="/community" element={<Navigate to="/comunidade" replace />} />
-          <Route path="/jobs" element={<Navigate to="/vagas" replace />} />
-          <Route path="/desempenho" element={<Navigate to="/performance" replace />} />
-          <Route path="/materials" element={<Navigate to="/materiais" replace />} />
-          <Route path="/messages" element={<Navigate to="/comunidade" replace />} />
-          <Route path="/patrocine" element={<Navigate to="/anuncie" replace />} />
-          <Route path="/perfil" element={<Navigate to="/profile" replace />} />
-          <Route path="/terms" element={<Navigate to="/termos" replace />} />
-          <Route path="/transparency" element={<Navigate to="/transparencia" replace />} />
-          
-          {/* Admin Routes (Protected) */}
-          <Route path="/admin" element={<ProtectedRoute adminOnly><AdminPage /></ProtectedRoute>} />
-          <Route path="/admin/apostilas/:id" element={<ProtectedRoute adminOnly><AdminApostilaWorkbench /></ProtectedRoute>} />
-          <Route path="/admin/biblioteca" element={<ProtectedRoute adminOnly><AdminBibliotecaPage /></ProtectedRoute>} />
-          <Route path="/admin/financeiro" element={<Navigate to="/admin?tab=overview" replace />} />
-          <Route path="/admin/relatorios" element={<Navigate to="/admin?tab=overview" replace />} />
-
-          {/* Fallback */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </Suspense>
-    </div>
     </>
   );
 };
