@@ -31,14 +31,14 @@ export function useGamification() {
   const loadAll = useCallback(async () => {
     if (!user) return;
     setLoading(true);
-    const [xpRes, streakRes, badgesRes, ubRes, goalsRes, milestonesRes] = await Promise.all([
+    const [xpRes, streakRes, badgesRes, ubRes, goalsRes, milestonesRes, historyRes] = await Promise.all([
       supabase.from('user_xp').select('*').eq('user_id', user.id).maybeSingle(),
       supabase.from('study_streaks').select('*').eq('user_id', user.id).maybeSingle(),
       supabase.from('badges').select('*'),
       supabase.from('user_badges').select('*').eq('user_id', user.id),
       (supabase.from('study_goals' as any).select('*') as any).eq('user_id', user.id).eq('status', 'active'),
       (supabase.from('study_milestones' as any).select('*') as any).eq('user_id', user.id),
-
+      supabase.from('study_history' as any).select('*').eq('user_id', user.id).order('date', { ascending: false }).limit(30),
     ]);
 
     if (xpRes.data) setXp({ xp_points: xpRes.data.xp_points, level: xpRes.data.level });
