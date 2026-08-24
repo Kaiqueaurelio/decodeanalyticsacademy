@@ -2,6 +2,8 @@ import React from 'react';
 import { Target, Trophy, Award, CheckCircle2, Circle, ChevronRight } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { motion } from 'framer-motion';
+import { StudyGoalsConfig } from './StudyGoalsConfig';
+
 
 interface StudyGoal {
   id: string;
@@ -9,7 +11,7 @@ interface StudyGoal {
   description: string;
   progress: number;
   total: number;
-  type: 'chapter' | 'exercise' | 'streak';
+  type: 'chapter' | 'exercise' | 'streak' | 'custom';
   completed: boolean;
 }
 
@@ -30,7 +32,9 @@ export function StudyGoalsWidget({ goals }: StudyGoalsWidgetProps) {
             <p className="text-[10px] text-muted-foreground font-mono">OBJECTIVES_LOG :: ACTIVE</p>
           </div>
         </div>
+        <StudyGoalsConfig />
       </div>
+
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {goals.map((goal) => (
