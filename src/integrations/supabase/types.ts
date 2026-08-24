@@ -814,6 +814,7 @@ export type Database = {
           content: string
           created_at: string
           created_by: string | null
+          embedding: string | null
           id: string
           position: number
           saved_date: string | null
@@ -825,6 +826,7 @@ export type Database = {
           content?: string
           created_at?: string
           created_by?: string | null
+          embedding?: string | null
           id?: string
           position?: number
           saved_date?: string | null
@@ -836,6 +838,7 @@ export type Database = {
           content?: string
           created_at?: string
           created_by?: string | null
+          embedding?: string | null
           id?: string
           position?: number
           saved_date?: string | null
@@ -2819,6 +2822,33 @@ export type Database = {
         }
         Relationships: []
       }
+      security_audit_logs: {
+        Row: {
+          action: string
+          created_at: string | null
+          details: Json | null
+          id: string
+          severity: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          severity?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          severity?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       security_notifications: {
         Row: {
           acknowledged: boolean
@@ -3775,6 +3805,21 @@ export type Database = {
           id: string
           similarity: number
           title: string
+        }[]
+      }
+      match_semantic_content: {
+        Args: {
+          match_count: number
+          match_threshold: number
+          query_embedding: string
+        }
+        Returns: {
+          apostila_id: string
+          content: string
+          id: string
+          similarity: number
+          title: string
+          type: string
         }[]
       }
       maximize_user_gamification: {
