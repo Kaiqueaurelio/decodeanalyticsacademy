@@ -359,12 +359,19 @@ export default function DashboardPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex-1 space-y-4">
               <ContinueWhereLeftCard />
-              <Reveal from="bottom" delay={5}>
-                <div className="space-y-6">
-                  <StudyGoalsWidget goals={gamification.goals} />
+              <Reveal from="bottom" delay={0.5}>
+                <div className="space-y-8">
+                  <StudyGoalsWidget goals={gamification.goals as any} />
+                  
+                  <div className="grid grid-cols-1 gap-8">
+                    <ProgressCharts />
+                    <AchievementsGrid />
+                  </div>
+
                   <FeaturedJobsWidget />
                 </div>
               </Reveal>
+
 
             </div>
             <div className="flex shrink-0">

@@ -22,8 +22,10 @@ export interface Release {
   date: string;
   title: string;
   major?: boolean;
+  description?: string;
   changes: Change[];
 }
+
 
 export function getBuildInfo() {
   return {
