@@ -88,21 +88,35 @@ function useAdminCopyPatch() {
 
 const AppContent = () => {
   const [splashDone, setSplashDone] = React.useState(false);
+  const [showContent, setShowContent] = React.useState(false);
   useAdminCopyPatch();
+
+  React.useEffect(() => {
+    if (splashDone) {
+      // Pequeno delay para garantir que o SplashScreen sumiu e o DOM está limpo
+      const timer = setTimeout(() => setShowContent(true), 50);
+      return () => clearTimeout(timer);
+    }
+  }, [splashDone]);
 
   return (
     <>
-      {splashDone ? (
-        <>
-          <RANamePrompt />
-          <AdPopup />
-          <AdDraftPreviewOverlay />
-          <EllaSidebar />
-          <PersistentAdSpot />
-        </>
-      ) : (
-        <SplashScreen onComplete={() => setSplashDone(true)} />
-      )}
+      {!splashDone && <SplashScreen onComplete={() => setSplashDone(true)} />}
+      
+      <div 
+        className={`transition-opacity duration-700 ${showContent ? 'opacity-100' : 'opacity-0'}`}
+        aria-hidden={!splashDone}
+      >
+        {splashDone && (
+          <>
+            <RANamePrompt />
+            <AdPopup />
+            <AdDraftPreviewOverlay />
+            <EllaSidebar />
+            <PersistentAdSpot />
+          </>
+        )}
+      </div>
       
       <Suspense fallback={<PageSkeleton />}>
         <Routes>
@@ -173,7 +187,7 @@ const AppContent = () => {
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </Suspense>
+      </div>
     </>
   );
 };
