@@ -214,6 +214,8 @@ export default function ApostilaReaderPage() {
   const [noteOpen, setNoteOpen] = useState(false);
   const [noteText, setNoteText] = useState("");
   const [noteSaving, setNoteSaving] = useState(false);
+  const [activeSelection, setActiveSelection] = useState<{ text: string; position: any } | null>(null);
+  const [showNoteEditor, setShowNoteEditor] = useState(false);
   const [marksOpen, setMarksOpen] = useState(false);
   const [focusMode, setFocusMode] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
@@ -483,35 +485,48 @@ export default function ApostilaReaderPage() {
     })));
   }
 
+  const handleSelection = () => {
+    const selection = window.getSelection();
+    if (selection && selection.toString().trim().length > 0) {
+      const range = selection.getRangeAt(0);
+      const rect = range.getBoundingClientRect();
+      setActiveSelection({
+        text: selection.toString().trim(),
+        position: { top: rect.top + window.scrollY, left: rect.left + window.scrollX }
+      });
+      setShowNoteEditor(true);
+    }
+  };
+
   async function saveNote() {
     if (!selectedLessonId) return;
     const { data: userData } = await supabase.auth.getUser();
     const userId = userData?.user?.id;
     if (!userId) return;
     setNoteSaving(true);
-    if (selectedLessonId.startsWith('page:')) {
-      try {
-        localStorage.setItem(`apostila_page_note_${userId}_${selectedLessonId.slice(5)}`, noteText);
-        setNoteSaving(false);
-        toast.success("Nota salva neste dispositivo");
-      } catch {
-        setNoteSaving(false);
-        toast.error("Não foi possível salvar a nota nesta página");
-      }
-      return;
-    }
-    const { error } = await supabase.from("apostila_lesson_notes").upsert(
-      {
-        user_id: userId,
-        lesson_id: selectedLessonId,
-        body: noteText,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: "user_id,lesson_id" },
-    );
+
+    const payload = {
+      user_id: userId,
+      apostila_id: id,
+      chapter_id: selectedLessonId.startsWith('page:') ? null : selectedLessonId,
+      content: noteText,
+      context_text: activeSelection?.text || null,
+      position_data: activeSelection?.position || null,
+    };
+
+    const { error } = await supabase.from("student_notes").insert(payload);
+    
     setNoteSaving(false);
-    if (error) toast.error("Não foi possível salvar a nota");
-    else toast.success("Nota salva");
+    if (error) {
+      console.error("Erro ao salvar nota:", error);
+      toast.error("Não foi possível salvar a nota");
+    } else {
+      toast.success("Nota fixada com sucesso!");
+      setNoteText("");
+      setShowNoteEditor(false);
+      setActiveSelection(null);
+      // Recarregar notas se necessário
+    }
   }
 
   async function handleExportPDF() {
