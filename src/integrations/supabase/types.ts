@@ -3031,6 +3031,39 @@ export type Database = {
         }
         Relationships: []
       }
+      study_history: {
+        Row: {
+          chapters_completed: number | null
+          created_at: string | null
+          date: string
+          exercises_completed: number | null
+          id: string
+          time_spent_minutes: number | null
+          user_id: string
+          xp_gained: number | null
+        }
+        Insert: {
+          chapters_completed?: number | null
+          created_at?: string | null
+          date?: string
+          exercises_completed?: number | null
+          id?: string
+          time_spent_minutes?: number | null
+          user_id: string
+          xp_gained?: number | null
+        }
+        Update: {
+          chapters_completed?: number | null
+          created_at?: string | null
+          date?: string
+          exercises_completed?: number | null
+          id?: string
+          time_spent_minutes?: number | null
+          user_id?: string
+          xp_gained?: number | null
+        }
+        Relationships: []
+      }
       study_milestones: {
         Row: {
           achieved_at: string | null
@@ -3618,6 +3651,16 @@ export type Database = {
       }
       increment_xp: {
         Args: { _amount: number; _user_id: string }
+        Returns: undefined
+      }
+      log_study_activity: {
+        Args: {
+          _chapters?: number
+          _exercises?: number
+          _minutes?: number
+          _user_id: string
+          _xp?: number
+        }
         Returns: undefined
       }
       log_user_action: {
