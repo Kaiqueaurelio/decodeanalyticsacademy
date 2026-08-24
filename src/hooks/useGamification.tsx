@@ -7,14 +7,17 @@ type Badge = { id: string; name: string; description: string | null; icon: strin
 type UserBadge = { id: string; badge_id: string; earned_at: string };
 type Streak = { current_streak: number; longest_streak: number; last_study_date: string | null };
 type XP = { xp_points: number; level: number };
+type StudyGoal = { id: string; title: string; description: string; progress: number; total: number; type: 'chapter' | 'exercise' | 'streak'; completed: boolean };
 
 export function useGamification() {
   const { user } = useAuth();
   const [xp, setXp] = useState<XP>({ xp_points: 0, level: 1 });
   const [streak, setStreak] = useState<Streak>({ current_streak: 0, longest_streak: 0, last_study_date: null });
+  const [goals, setGoals] = useState<StudyGoal[]>([]);
   const [badges, setBadges] = useState<Badge[]>([]);
   const [userBadges, setUserBadges] = useState<UserBadge[]>([]);
   const [loading, setLoading] = useState(true);
+
 
   const calcLevel = (points: number) => Math.max(1, Math.floor(points / 100) + 1);
   const xpForNextLevel = (level: number) => level * 100;
@@ -30,9 +33,21 @@ export function useGamification() {
     ]);
     if (xpRes.data) setXp({ xp_points: xpRes.data.xp_points, level: xpRes.data.level });
     if (streakRes.data) setStreak({ current_streak: streakRes.data.current_streak, longest_streak: streakRes.data.longest_streak, last_study_date: streakRes.data.last_study_date });
+    
+    // Mocking goals for now based on stats or providing defaults
+    // In a real scenario, these could come from a 'user_goals' table
+    const mockGoals: StudyGoal[] = [
+      { id: 'goal-1', title: 'Mestre de Exercícios', description: 'Complete 50 exercícios no total', progress: Math.min(32, 50), total: 50, type: 'exercise', completed: false },
+      { id: 'goal-2', title: 'Explorador Acadêmico', description: 'Leia 5 capítulos de apostilas', progress: 5, total: 5, type: 'chapter', completed: true },
+      { id: 'goal-3', title: 'Foco Total', description: 'Mantenha um streak de 7 dias', progress: Math.min(streakRes.data?.current_streak || 0, 7), total: 7, type: 'streak', completed: (streakRes.data?.current_streak || 0) >= 7 },
+      { id: 'goal-4', title: 'Elite do Conhecimento', description: 'Alcance o Nível 10', progress: Math.min(xpRes.data?.level || 1, 10), total: 10, type: 'chapter', completed: (xpRes.data?.level || 1) >= 10 },
+    ];
+    setGoals(mockGoals);
+
     if (badgesRes.data) setBadges(badgesRes.data as Badge[]);
     if (ubRes.data) setUserBadges(ubRes.data as UserBadge[]);
     setLoading(false);
+
   }, [user]);
 
   useEffect(() => { loadAll(); }, [loadAll]);
@@ -95,7 +110,7 @@ export function useGamification() {
   const earnedBadgeIds = userBadges.map(ub => ub.badge_id);
 
   return {
-    xp, streak, badges, userBadges, earnedBadgeIds, loading,
+    xp, streak, goals, badges, userBadges, earnedBadgeIds, loading,
     addXP, updateStreak, checkAndAwardBadge, loadAll,
     xpForNextLevel, calcLevel
   };

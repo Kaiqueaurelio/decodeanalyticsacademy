@@ -38,6 +38,17 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: "7.4.0",
+    date: "24/08/2026",
+    title: "Gamificação Avançada: Metas & Milestones",
+    major: true,
+    changes: [
+      { kind: "feature", text: "Implementado StudyGoalsWidget com metas de exercícios, capítulos e streaks" },
+      { kind: "improvement", text: "Integrado sistema de Milestones na dashboard com estética Cyberpunk Pro" },
+      { kind: "improvement", text: "Refinada a barra de progresso e feedbacks visuais de conquistas" }
+    ]
+  },
+  {
     version: "7.3.0",
     date: "23/08/2026",
     title: "Estabilidade de Anúncios, Telemetria & Dual-Theme",
@@ -49,6 +60,7 @@ export const CHANGELOG: Release[] = [
       { kind: "improvement", text: "Padronização de tipografia Mono em metadados e remoção de redundâncias visuais" }
     ]
   },
+
   {
 
     version: "7.2.0",
