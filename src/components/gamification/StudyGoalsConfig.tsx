@@ -1,5 +1,5 @@
 import React from 'react';
-import { Settings, Target, Clock, Filter, Save } from 'lucide-react';
+import { Settings, Target, Clock, Filter, Save, BookOpen, GraduationCap } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -20,18 +20,34 @@ import {
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { toast } from 'sonner';
+import { useGamification } from '@/hooks/useGamification';
 
 export function StudyGoalsConfig() {
+  const { addGoal } = useGamification();
   const [target, setTarget] = React.useState(5);
   const [frequency, setFrequency] = React.useState('daily');
   const [metric, setMetric] = React.useState('chapters');
+  const [category, setCategory] = React.useState('all');
+  const [open, setOpen] = React.useState(false);
 
-  const handleSave = () => {
-    toast.success('Configurações de estudo salvas com sucesso!');
+  const handleSave = async () => {
+    const title = metric === 'chapters' ? 'Mestre de Capítulos' : metric === 'exercises' ? 'Sniper de Exercícios' : 'Hora do Foco';
+    const description = `Meta de ${target} ${metric === 'chapters' ? 'capítulos' : metric === 'exercises' ? 'exercícios' : 'horas'} (${frequency})`;
+    
+    await addGoal({
+      title,
+      description,
+      total: target,
+      metric,
+      frequency,
+      category,
+      type: metric as any
+    });
+    setOpen(false);
   };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="bg-background/50 border-primary/20 hover:bg-primary/10 group">
           <Settings className="h-3 w-3 mr-2 group-hover:rotate-90 transition-transform" />
@@ -73,6 +89,35 @@ export function StudyGoalsConfig() {
               <SelectContent className="bg-[#050508] border-primary/20">
                 <SelectItem value="daily">Diária</SelectItem>
                 <SelectItem value="weekly">Semanal</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+  
+          <div className="grid gap-2">
+            <Label htmlFor="category" className="text-[10px] font-bold uppercase text-muted-foreground">Escopo (Área)</Label>
+            <Select value={category} onValueChange={setCategory}>
+              <SelectTrigger className="bg-card/50 border-primary/10">
+                <SelectValue placeholder="Selecione o escopo" />
+              </SelectTrigger>
+              <SelectContent className="bg-[#050508] border-primary/20">
+                <SelectItem value="all">
+                  <div className="flex items-center gap-2">
+                    <Target className="h-3 w-3" />
+                    <span>Geral (Tudo)</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="enem">
+                  <div className="flex items-center gap-2">
+                    <BookOpen className="h-3 w-3" />
+                    <span>ENEM / Vestibular</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="faculdade">
+                  <div className="flex items-center gap-2">
+                    <GraduationCap className="h-3 w-3" />
+                    <span>Faculdade (TI/Gestão)</span>
+                  </div>
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>

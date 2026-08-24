@@ -18,27 +18,36 @@ import {
   Bar,
   Cell
 } from 'recharts';
-import { TrendingUp, BarChart3, Activity, Award } from 'lucide-react';
+import { TrendingUp, BarChart3, Activity, Award, Calendar } from 'lucide-react';
 import { Card } from '@/components/ui/card';
-
-const temporalData = [
-  { date: '20/08', score: 65, completed: 2 },
-  { date: '21/08', score: 72, completed: 3 },
-  { date: '22/08', score: 68, completed: 1 },
-  { date: '23/08', score: 85, completed: 5 },
-  { date: '24/08', score: 90, completed: 4 },
-];
-
-const subjectData = [
-  { subject: 'TI', A: 120, B: 110, fullMark: 150 },
-  { subject: 'Gestão', A: 98, B: 130, fullMark: 150 },
-  { subject: 'Dados', A: 86, B: 130, fullMark: 150 },
-  { subject: 'Redes', A: 99, B: 100, fullMark: 150 },
-  { subject: 'Matemática', A: 85, B: 90, fullMark: 150 },
-  { subject: 'Soft Skills', A: 65, B: 85, fullMark: 150 },
-];
+import { useGamification } from '@/hooks/useGamification';
 
 export function ProgressCharts() {
+  const { history } = useGamification();
+
+  const temporalData = history.length > 0 
+    ? [...history].reverse().map(h => ({
+        date: new Date(h.date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
+        score: h.xp_gained,
+        completed: h.chapters_completed + h.exercises_completed
+      }))
+    : [
+        { date: '20/08', score: 65, completed: 2 },
+        { date: '21/08', score: 72, completed: 3 },
+        { date: '22/08', score: 68, completed: 1 },
+        { date: '23/08', score: 85, completed: 5 },
+        { date: '24/08', score: 90, completed: 4 },
+      ];
+
+  const subjectData = [
+    { subject: 'TI', A: 120, B: 110, fullMark: 150 },
+    { subject: 'Gestão', A: 98, B: 130, fullMark: 150 },
+    { subject: 'Dados', A: 86, B: 130, fullMark: 150 },
+    { subject: 'Redes', A: 99, B: 100, fullMark: 150 },
+    { subject: 'Matemática', A: 85, B: 90, fullMark: 150 },
+    { subject: 'Soft Skills', A: 65, B: 85, fullMark: 150 },
+  ];
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
       {/* Temporal Progress Chart */}
