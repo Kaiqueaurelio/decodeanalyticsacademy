@@ -50,7 +50,7 @@ export function StudyGoalsWidget({ goals }: StudyGoalsWidgetProps) {
           >
             {/* Cyber background effects for Cyberpunk Pro style */}
             <div className="absolute top-0 right-0 p-3 opacity-5 pointer-events-none">
-              {goal.type === 'chapter' ? <Trophy className="h-12 w-12" /> : <Award className="h-12 w-12" />}
+              {goal.type === 'chapter' ? <Trophy className="h-12 w-12" /> : goal.type === 'exercise' ? <Target className="h-12 w-12" /> : <Award className="h-12 w-12" />}
             </div>
 
             <div className="flex items-start gap-3">
