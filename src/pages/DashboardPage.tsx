@@ -457,7 +457,7 @@ export default function DashboardPage() {
           </Reveal>
 
           <Reveal from="bottom" delay={20}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
               <GamificationWidget />
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <Card className="border-primary/20 bg-card/50 backdrop-blur-sm p-5 flex flex-col justify-center relative overflow-hidden group">
@@ -501,11 +501,11 @@ export default function DashboardPage() {
                   </div>
                 </Card>
               </div>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <PomodoroWidget collapsed={false} />
-                <StudyGoalsWidget />
-              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-5">
+              <PomodoroWidget collapsed={false} />
+              <StudyGoalsWidget />
             </div>
           </Reveal>
 
