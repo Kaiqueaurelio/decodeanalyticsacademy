@@ -401,7 +401,7 @@ export default function DashboardPage() {
                           </div>
                           <div className="mt-4 flex items-center gap-4">
                             <Button 
-                              onClick={() => navigate('/admin')}
+                              onClick={() => navigate('/ella')}
                               className="bg-orange-500/10 border border-orange-500/20 text-orange-500 hover:bg-orange-500/20 text-[10px] font-bold uppercase h-8 px-3 rounded-full"
                             >
                               Dificuldades

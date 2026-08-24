@@ -25,28 +25,23 @@ import { useGamification } from '@/hooks/useGamification';
 export function ProgressCharts() {
   const { history } = useGamification();
 
-  const temporalData = history.length > 0 
-    ? [...history].reverse().map(h => ({
-        date: new Date(h.date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
-        score: h.xp_gained,
-        completed: h.chapters_completed + h.exercises_completed
-      }))
-    : [
-        { date: '20/08', score: 65, completed: 2 },
-        { date: '21/08', score: 72, completed: 3 },
-        { date: '22/08', score: 68, completed: 1 },
-        { date: '23/08', score: 85, completed: 5 },
-        { date: '24/08', score: 90, completed: 4 },
-      ];
+  const temporalData = [...history].reverse().map(h => ({
+    date: new Date(h.date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
+    score: h.xp_gained,
+    completed: h.chapters_completed + h.exercises_completed
+  }));
 
-  const subjectData = [
-    { subject: 'TI', A: 120, B: 110, fullMark: 150 },
-    { subject: 'Gestão', A: 98, B: 130, fullMark: 150 },
-    { subject: 'Dados', A: 86, B: 130, fullMark: 150 },
-    { subject: 'Redes', A: 99, B: 100, fullMark: 150 },
-    { subject: 'Matemática', A: 85, B: 90, fullMark: 150 },
-    { subject: 'Soft Skills', A: 65, B: 85, fullMark: 150 },
-  ];
+  const subjectData = [...history].slice(0, 6).reverse().map(h => ({
+    subject: new Date(h.date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
+    A: h.chapters_completed + h.exercises_completed,
+    fullMark: 10,
+  }));
+
+  const emptyState = (label: string) => (
+    <div className="h-full w-full flex items-center justify-center text-center px-4">
+      <p className="text-[11px] font-mono uppercase tracking-widest text-muted-foreground">{label}</p>
+    </div>
+  );
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -67,6 +62,7 @@ export function ProgressCharts() {
         </div>
 
         <div className="h-[250px] w-full">
+          {temporalData.length === 0 ? emptyState('Sem atividade registrada ainda') : (
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={temporalData}>
               <defs>
@@ -106,6 +102,7 @@ export function ProgressCharts() {
               />
             </AreaChart>
           </ResponsiveContainer>
+          )}
         </div>
       </Card>
 
@@ -126,6 +123,7 @@ export function ProgressCharts() {
         </div>
 
         <div className="h-[250px] w-full">
+          {subjectData.length === 0 ? emptyState('Complete capítulos e exercícios para gerar seu radar') : (
           <ResponsiveContainer width="100%" height="100%">
             <RadarChart cx="50%" cy="50%" outerRadius="80%" data={subjectData}>
               <PolarGrid stroke="#ffffff10" />
@@ -135,12 +133,11 @@ export function ProgressCharts() {
               />
               <PolarRadiusAxis 
                 angle={30} 
-                domain={[0, 150]} 
                 tick={false}
                 axisLine={false}
               />
               <Radar
-                name="Performance"
+                name="Atividades"
                 dataKey="A"
                 stroke="#00f0ff"
                 fill="#00f0ff"
@@ -157,6 +154,7 @@ export function ProgressCharts() {
               />
             </RadarChart>
           </ResponsiveContainer>
+          )}
         </div>
       </Card>
     </div>

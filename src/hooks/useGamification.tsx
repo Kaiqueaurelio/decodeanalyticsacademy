@@ -56,13 +56,7 @@ export function useGamification() {
         metric: g.metric
       })));
     } else {
-      const mockGoals: StudyGoal[] = [
-        { id: 'goal-1', title: 'Mestre de Exercícios', description: 'Complete 50 exercícios no total', progress: Math.min(32, 50), total: 50, type: 'exercise', completed: false, metric: 'exercises' },
-        { id: 'goal-2', title: 'Explorador Acadêmico', description: 'Leia 5 capítulos de apostilas', progress: 5, total: 5, type: 'chapter', completed: true, metric: 'chapters' },
-        { id: 'goal-3', title: 'Foco Total', description: 'Mantenha um streak de 7 dias', progress: Math.min(streakRes.data?.current_streak || 0, 7), total: 7, type: 'streak', completed: (streakRes.data?.current_streak || 0) >= 7, metric: 'days' },
-        { id: 'goal-4', title: 'Elite do Conhecimento', description: 'Alcance o Nível 10', progress: Math.min(xpRes.data?.level || 1, 10), total: 10, type: 'chapter', completed: (xpRes.data?.level || 1) >= 10, metric: 'level' },
-      ];
-      setGoals(mockGoals);
+      setGoals([]);
     }
 
     if (milestonesRes.data) {
