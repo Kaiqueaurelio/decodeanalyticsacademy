@@ -2989,6 +2989,90 @@ export type Database = {
         }
         Relationships: []
       }
+      study_goals: {
+        Row: {
+          created_at: string | null
+          current_value: number | null
+          end_date: string | null
+          id: string
+          metadata: Json | null
+          metric: string
+          start_date: string | null
+          status: string | null
+          target_value: number
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          current_value?: number | null
+          end_date?: string | null
+          id?: string
+          metadata?: Json | null
+          metric: string
+          start_date?: string | null
+          status?: string | null
+          target_value: number
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          current_value?: number | null
+          end_date?: string | null
+          id?: string
+          metadata?: Json | null
+          metric?: string
+          start_date?: string | null
+          status?: string | null
+          target_value?: number
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      study_milestones: {
+        Row: {
+          achieved_at: string | null
+          category: string
+          created_at: string | null
+          description: string | null
+          id: string
+          requirement_type: string
+          requirement_value: number
+          reward_data: Json | null
+          reward_type: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          achieved_at?: string | null
+          category: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          requirement_type: string
+          requirement_value: number
+          reward_data?: Json | null
+          reward_type?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          achieved_at?: string | null
+          category?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          requirement_type?: string
+          requirement_value?: number
+          reward_data?: Json | null
+          reward_type?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       study_plans: {
         Row: {
           apostila_id: string
