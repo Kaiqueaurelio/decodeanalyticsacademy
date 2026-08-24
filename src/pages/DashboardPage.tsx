@@ -24,6 +24,10 @@ import { Reveal } from '@/components/Reveal';
 import { GamificationWidget } from '@/components/gamification/GamificationWidget';
 import { OverallProgressCard } from '@/components/OverallProgressCard';
 import { StudyGoalsWidget } from '@/components/gamification/StudyGoalsWidget';
+import { ProgressCharts } from '@/components/gamification/ProgressCharts';
+import { AchievementsGrid } from '@/components/gamification/AchievementsGrid';
+import { StudyGoalsConfig } from '@/components/gamification/StudyGoalsConfig';
+
 
 import { ExamCalendarWidget } from '@/components/ExamCalendarWidget';
 import { OnboardingTour } from '@/components/OnboardingTour';
