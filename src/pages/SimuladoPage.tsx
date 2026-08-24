@@ -117,9 +117,10 @@ export default function SimuladoPage() {
         .single();
 
       if (simErr) throw simErr;
+      const newSimData = newSim as any;
 
       const answerRows = questionsData.map((q, idx) => ({
-        simulado_id: newSim.id,
+        simulado_id: newSimData.id,
         user_id: user.id,
         question_index: idx,
         question: q.question,
