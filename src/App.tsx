@@ -187,8 +187,8 @@ const AppContent = () => {
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </div>
-    </>
+      </Suspense>
+    </div>
   );
 };
 
