@@ -30,12 +30,24 @@ export function StudyGoalsConfig() {
   const [category, setCategory] = React.useState('all');
   const [open, setOpen] = React.useState(false);
 
-  const handleSave = () => {
-    toast.success('Configurações de estudo salvas com sucesso!');
+  const handleSave = async () => {
+    const title = metric === 'chapters' ? 'Mestre de Capítulos' : metric === 'exercises' ? 'Sniper de Exercícios' : 'Hora do Foco';
+    const description = `Meta de ${target} ${metric === 'chapters' ? 'capítulos' : metric === 'exercises' ? 'exercícios' : 'horas'} (${frequency})`;
+    
+    await addGoal({
+      title,
+      description,
+      total: target,
+      metric,
+      frequency,
+      category,
+      type: metric as any
+    });
+    setOpen(false);
   };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="bg-background/50 border-primary/20 hover:bg-primary/10 group">
           <Settings className="h-3 w-3 mr-2 group-hover:rotate-90 transition-transform" />
