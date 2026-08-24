@@ -94,8 +94,7 @@ export function useGamification() {
 
     if (!error) {
       setXp({ xp_points: newPoints, level: newLevel });
-      const rpcCall = supabase.rpc as unknown as (name: string, args: any) => Promise<any>;
-      await rpcCall('log_study_activity', {
+      await supabase.rpc('log_study_activity', {
         _user_id: user.id,
         _xp: clampedPoints
       });
@@ -126,8 +125,7 @@ export function useGamification() {
     if (newCurrent > 1) toast.success(`🔥 Streak de ${newCurrent} dias!`);
     
     // Log history
-    const rpcCall = supabase.rpc as unknown as (name: string, args: any) => Promise<any>;
-    await rpcCall('log_study_activity', {
+    await supabase.rpc('log_study_activity', {
       _user_id: user.id,
       _minutes: 5 // Default study activity
     });
@@ -168,8 +166,7 @@ export function useGamification() {
       }
       
       // Log activity to history
-      const rpcCall = supabase.rpc as unknown as (name: string, args: any) => Promise<any>;
-      await rpcCall('log_study_activity', {
+      await supabase.rpc('log_study_activity', {
         _user_id: user.id,
         _chapters: goal.metric === 'chapters' ? increment : 0,
         _exercises: goal.metric === 'exercises' ? increment : 0
