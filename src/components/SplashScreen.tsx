@@ -6,7 +6,7 @@ interface SplashScreenProps {
   duration?: number;
 }
 
-export const SplashScreen = memo(({ onComplete, duration = 2500 }: SplashScreenProps) => {
+export const SplashScreen = memo(React.forwardRef<HTMLDivElement, SplashScreenProps>(({ onComplete, duration = 2500 }, ref) => {
   const [opacity, setOpacity] = useState(1);
 
   useEffect(() => {
@@ -28,6 +28,7 @@ export const SplashScreen = memo(({ onComplete, duration = 2500 }: SplashScreenP
 
   return (
     <div
+      ref={ref}
       style={{
         position: 'fixed',
         inset: 0,
@@ -131,5 +132,5 @@ export const SplashScreen = memo(({ onComplete, duration = 2500 }: SplashScreenP
       `}</style>
     </div>
   );
-});
+}));
 SplashScreen.displayName = "SplashScreen";
