@@ -43,12 +43,13 @@ export const CHANGELOG: Release[] = [
     title: "Gamificação & Analytics 360º",
     description: "Lançamento do sistema completo de gamificação com metas persistentes no banco de dados, gráficos de radar/competências, histórico de evolução temporal e hub de conquistas Cyberpunk.",
     changes: [
-      "Persistência de metas e milestones no banco de dados (public.study_goals, public.study_milestones)",
-      "Novo componente ProgressCharts com Radar de competências e Área de evolução temporal",
-      "Novo grid de Conquistas e Recompensas com desbloqueio visual",
-      "Integração do hook useGamification com persistência server-side",
-      "Refinamento estético Industrial/Cyberpunk em widgets de gamificação"
+      { kind: 'feature', text: "Persistência de metas e milestones no banco de dados (public.study_goals, public.study_milestones)" },
+      { kind: 'feature', text: "Novo componente ProgressCharts com Radar de competências e Área de evolução temporal" },
+      { kind: 'feature', text: "Novo grid de Conquistas e Recompensas com desbloqueio visual" },
+      { kind: 'improvement', text: "Integração do hook useGamification com persistência server-side" },
+      { kind: 'improvement', text: "Refinamento estético Industrial/Cyberpunk em widgets de gamificação" }
     ],
+
     author: "Kaique Aurelio & Decode Analytics"
   },
   {
