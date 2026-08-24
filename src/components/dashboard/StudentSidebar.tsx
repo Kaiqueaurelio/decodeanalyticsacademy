@@ -20,7 +20,7 @@ const menuGroups = [
     label: 'Principal',
     items: [
       { to: '/dashboard', icon: Home, label: 'Início' },
-      { to: '/dashboard#minhas-disciplinas', icon: BookOpen, label: 'Minhas Disciplinas' },
+      { to: '/dashboard#minhas-disciplinas', icon: BookOpen, label: 'Disciplinas' },
       { to: '/dashboard#atividades', icon: ClipboardList, label: 'Atividades' },
     ],
   },
