@@ -1603,4 +1603,51 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
   );
 }
 
+export function DoubtHeatmapWidget() {
+  const [heatmap, setHeatmap] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    supabase.rpc('get_apostila_difficulty_heatmap')
+      .then(({ data }: any) => {
+        if (data) setHeatmap(data);
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) return <div className="h-48 animate-pulse bg-muted/20 rounded-2xl" />;
+
+  return (
+    <Card className="rounded-[2rem] border-white/5 bg-card/40 backdrop-blur-md overflow-hidden">
+      <CardHeader>
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-xl bg-orange-500/10">
+            <Activity className="h-5 w-5 text-orange-500" />
+          </div>
+          <div>
+            <CardTitle className="text-sm font-bold uppercase tracking-widest">Mapa de Calor de Dúvidas</CardTitle>
+            <CardDescription className="text-[10px]">Apostilas com maior volume de anotações e interações</CardDescription>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          {heatmap.map((item, idx) => (
+            <div key={item.apostila_id} className="space-y-1.5">
+              <div className="flex items-center justify-between text-[11px]">
+                <span className="font-bold truncate max-w-[200px]">{item.title}</span>
+                <span className="font-mono text-orange-500">{item.query_count} pts</span>
+              </div>
+              <Progress value={Math.min(100, (item.query_count / (heatmap[0]?.query_count || 1)) * 100)} className="h-1 bg-white/5" />
+            </div>
+          ))}
+          {heatmap.length === 0 && (
+            <p className="text-center py-6 text-xs text-muted-foreground italic">Nenhum dado de interação coletado ainda.</p>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 
