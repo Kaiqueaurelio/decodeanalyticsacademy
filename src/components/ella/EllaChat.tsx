@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
-import { Send, Loader2, MessageCircle, CheckCircle2, AlertCircle, ClipboardList, Volume2 } from "lucide-react";
+import { Send, Loader2, MessageCircle, CheckCircle2, AlertCircle, ClipboardList, Volume2, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { VoiceMicButton } from "./VoiceMicButton";
 import { SpeakButton } from "../SpeakButton";
+import { useApostilasList } from "@/hooks/queries/useDashboardData";
 
 type Msg = { role: "user" | "assistant"; content: string; actions?: any[] };
 
@@ -28,6 +29,7 @@ export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps)
   const { user, isAdmin } = useAuth();
   const [avatarUrl, setAvatarUrl] = useState(() => getEllaAvatarUrl());
   const [contentScope, setContentScope] = useState<string>("full");
+  const { data: apostilas = [] } = useApostilasList();
 
   useEffect(() => {
     const refreshAvatar = () => setAvatarUrl(getEllaAvatarUrl());
@@ -134,7 +136,7 @@ export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps)
       "ella-chat",
       {
         messages: history.map((m) => ({ role: m.role, content: m.content })),
-        context: `Notion Gallery (v3.63.0), Notification Filter (v3.63.1), Cover Redundancy (v3.63.1). ${contextHint || ""}`,
+        context: `Notion Gallery (v3.63.0), Notification Filter (v3.63.1), Cover Redundancy (v3.63.1). Ella Real-Time Feedback Active. Context: ${contextHint || ""}`,
         stream: true,
       },
       {
@@ -204,6 +206,11 @@ export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps)
     "Transforme a sua última resposta em um plano de estudos completo: cronograma em tabela, pontos-chave, 5 a 8 exercícios de dificuldade crescente e gabarito comentado explicando cada resposta.";
 
   const askStudyPlan = () => { if (!loading) send(STUDY_PLAN_PROMPT); };
+
+  const generateFlashcards = async () => {
+    if (loading) return;
+    send("Gere 5 flashcards de revisão (Pergunta | Resposta) baseados na nossa última explicação ou no contexto da aula atual.");
+  };
 
   const clearChat = () => {
     setMessages([]);
@@ -293,7 +300,19 @@ export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps)
                           className="h-9 gap-2 text-xs rounded-full font-bold"
                         >
                           <ClipboardList className="h-3.5 w-3.5" strokeWidth={1.75} />
-                          Virar plano de estudos
+                           Virar plano de estudos
+                        </Button>
+                      )}
+                      {i === messages.length - 1 && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={generateFlashcards}
+                          className="h-9 gap-2 text-xs rounded-full font-bold border-cyan-500/30 text-cyan-400"
+                        >
+                          <TrendingUp className="h-3.5 w-3.5" strokeWidth={1.75} />
+                          Gerar Flashcards
                         </Button>
                       )}
                     </div>
