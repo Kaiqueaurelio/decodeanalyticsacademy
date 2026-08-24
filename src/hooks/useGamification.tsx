@@ -34,8 +34,9 @@ export function useGamification() {
       supabase.from('study_streaks').select('*').eq('user_id', user.id).maybeSingle(),
       supabase.from('badges').select('*'),
       supabase.from('user_badges').select('*').eq('user_id', user.id),
-      supabase.from('study_goals').select('*').eq('user_id', user.id).eq('status', 'active'),
-      supabase.from('study_milestones').select('*').eq('user_id', user.id),
+      (supabase.from('study_goals' as any).select('*') as any).eq('user_id', user.id).eq('status', 'active'),
+      (supabase.from('study_milestones' as any).select('*') as any).eq('user_id', user.id),
+
     ]);
 
     if (xpRes.data) setXp({ xp_points: xpRes.data.xp_points, level: xpRes.data.level });
@@ -135,21 +136,22 @@ export function useGamification() {
     const goal = goals.find(g => g.id === goalId);
     if (!goal) return;
 
-    const { data, error } = await supabase
-      .from('study_goals')
-      .update({ current_value: goal.progress + increment })
+    const { data, error } = await (supabase
+      .from('study_goals' as any)
+      .update({ current_value: goal.progress + increment } as any)
       .eq('id', goalId)
       .select()
-      .single();
+      .single() as any);
 
     if (!error && data) {
       setGoals(prev => prev.map(g => g.id === goalId ? { ...g, progress: data.current_value } : g));
       if (data.current_value >= data.target_value && data.status !== 'completed') {
-        await supabase.from('study_goals').update({ status: 'completed' }).eq('id', goalId);
+        await (supabase.from('study_goals' as any).update({ status: 'completed' } as any).eq('id', goalId) as any);
         toast.success(`🎯 Meta Concluída: ${goal.title}!`);
       }
     }
   }, [user, goals]);
+
 
   const earnedBadgeIds = userBadges.map(ub => ub.badge_id);
 
