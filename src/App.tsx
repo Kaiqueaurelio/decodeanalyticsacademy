@@ -189,6 +189,7 @@ const AppContent = () => {
         </Routes>
       </Suspense>
     </div>
+    </>
   );
 };
 
