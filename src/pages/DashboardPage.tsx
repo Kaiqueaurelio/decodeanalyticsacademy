@@ -487,7 +487,7 @@ export default function DashboardPage() {
                   <div className="relative z-10">
                     <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-1">Ella AI Insights</h3>
                     <div className="flex items-baseline gap-2">
-                      <span className="text-4xl font-black text-orange-500">{completedLessons}</span>
+                      <span className="text-4xl font-black text-orange-500">{apostilasIniciadas}</span>
                       <span className="text-xs font-medium text-muted-foreground">aulas dominadas</span>
                     </div>
                     <div className="mt-4 flex items-center gap-4">
