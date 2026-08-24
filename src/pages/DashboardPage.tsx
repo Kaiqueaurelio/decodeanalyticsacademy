@@ -459,33 +459,48 @@ export default function DashboardPage() {
           <Reveal from="bottom" delay={20}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <GamificationWidget />
-              <Card className="border-primary/20 bg-card/50 backdrop-blur-sm p-5 flex flex-col justify-center relative overflow-hidden group">
-                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                  <TrendingUp className="h-24 w-24 text-primary" />
-                </div>
-                <div className="relative z-10">
-                  <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-1">Status de Performance</h3>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-4xl font-black text-primary">{overallAccuracy}%</span>
-                    <span className="text-xs font-medium text-muted-foreground">de acerto global</span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <Card className="border-primary/20 bg-card/50 backdrop-blur-sm p-5 flex flex-col justify-center relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <TrendingUp className="h-24 w-24 text-primary" />
                   </div>
-                  <div className="mt-4 flex items-center gap-4">
-                    <Button 
-                      onClick={() => navigate('/performance')}
-                      className="bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 text-xs font-bold uppercase tracking-tighter h-9 px-4 rounded-full"
-                    >
-                      Ver Insights Detalhados
-                    </Button>
-                    <div className="flex -space-x-2">
-                      {[1, 2, 3].map(i => (
-                        <div key={i} className="h-6 w-6 rounded-full border-2 border-background bg-muted flex items-center justify-center">
-                          <Trophy className="h-3 w-3 text-yellow-500" />
-                        </div>
-                      ))}
+                  <div className="relative z-10">
+                    <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-1">Status de Performance</h3>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-4xl font-black text-primary">{overallAccuracy}%</span>
+                      <span className="text-xs font-medium text-muted-foreground">de acerto global</span>
+                    </div>
+                    <div className="mt-4 flex items-center gap-4">
+                      <Button 
+                        onClick={() => navigate('/performance')}
+                        className="bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 text-xs font-bold uppercase tracking-tighter h-9 px-4 rounded-full"
+                      >
+                        Ver Insights Detalhados
+                      </Button>
                     </div>
                   </div>
-                </div>
-              </Card>
+                </Card>
+                <Card className="border-orange-500/20 bg-card/50 backdrop-blur-sm p-5 flex flex-col justify-center relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <Flame className="h-24 w-24 text-orange-500" />
+                  </div>
+                  <div className="relative z-10">
+                    <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-1">Ella AI Insights</h3>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-4xl font-black text-orange-500">{completedLessons}</span>
+                      <span className="text-xs font-medium text-muted-foreground">aulas dominadas</span>
+                    </div>
+                    <div className="mt-4 flex items-center gap-4">
+                      <Button 
+                        onClick={() => navigate('/admin')}
+                        className="bg-orange-500/10 border border-orange-500/20 text-orange-500 hover:bg-orange-500/20 text-xs font-bold uppercase tracking-tighter h-9 px-4 rounded-full"
+                      >
+                        Dificuldades (Admin)
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              </div>
             </div>
           </Reveal>
 
