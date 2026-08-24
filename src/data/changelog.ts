@@ -42,6 +42,19 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: "7.7.0",
+    date: "2026-08-24",
+    title: "Auditoria Full Stack 360º & Refatoração Estrutural",
+    description: "Implementação massiva de correções técnicas resultantes da auditoria sênior, focando em compatibilidade de Refs, estabilidade de banco de dados (RLS) e fluidez visual.",
+    changes: [
+      { kind: 'security', text: "Endurecimento de RLS nas tabelas de estudo com validação WITH CHECK (auth.uid())" },
+      { kind: 'fix', text: "Refatoração de componentes UI (Toaster, Sonner, SplashScreen) para suporte a forwardRef, eliminando avisos no console" },
+      { kind: 'improvement', text: "Sincronização de transição do SplashScreen para reduzir Layout Shift e melhorar o LCP" },
+      { kind: 'fix', text: "Ajuste de responsividade na Landing Page para evitar sobreposição de elementos no cabeçalho mobile" }
+    ],
+    author: "Kaique Aurelio & Decode Analytics"
+  },
+  {
     version: "7.6.0",
     date: "2026-08-24",
     title: "Estabilização de Gamificação & Auditoria de Infra",

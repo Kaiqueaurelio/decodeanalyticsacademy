@@ -376,7 +376,7 @@ export default function LandingPage() {
           type="button"
           onClick={handleManualPlay}
           aria-label="Reproduzir vídeo de fundo"
-          className="fixed bottom-5 right-4 z-40 flex h-11 w-11 items-center justify-center rounded-full border border-primary/40 bg-background/80 text-primary backdrop-blur-sm transition-colors hover:bg-primary/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="fixed bottom-20 right-4 z-40 flex h-11 w-11 items-center justify-center rounded-full border border-primary/40 bg-background/80 text-primary backdrop-blur-sm transition-colors hover:bg-primary/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:bottom-5"
         >
           <Play className="h-5 w-5" fill="currentColor" />
         </button>
@@ -407,7 +407,7 @@ export default function LandingPage() {
                   {...{ fetchpriority: 'high' } as any}
                   className="h-9 w-9 object-contain drop-shadow-[0_0_12px_rgba(0,240,255,0.5)]"
                 />
-                <span className="text-sm font-semibold uppercase tracking-[0.18em] text-[#00f0ff]">Decode Analytics Academy</span>
+                <span className="hidden text-[10px] font-semibold uppercase tracking-[0.18em] text-[#00f0ff] xs:block sm:text-sm">Decode Analytics Academy</span>
               </a>
               <nav aria-label="Navegação principal" className="hidden items-center gap-7 md:flex">
                 <a href="#recursos" className="text-sm text-white/80 transition-colors hover:text-white">Recursos</a>
