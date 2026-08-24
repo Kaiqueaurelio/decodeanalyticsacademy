@@ -38,7 +38,7 @@ import { useApostilasList, useExerciseCounts, useDashboardStats, type ApostilaSu
 import { useUserProfile } from '@/hooks/queries/useUserProfile';
 import { BY_SEMESTER, canonicalSubjectKey } from '@/lib/subject-semester-map';
 import { CANONICAL_GROUPS, groupByCanonical, type CanonicalGroup } from '@/lib/subjectGroups';
-import { BookOpen, Search, X, PenLine, ShieldCheck, Clock, Sparkles, TrendingUp, Trophy } from 'lucide-react';
+import { BookOpen, Search, X, PenLine, ShieldCheck, Clock, Sparkles, TrendingUp, Trophy, Activity, Flame } from 'lucide-react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
