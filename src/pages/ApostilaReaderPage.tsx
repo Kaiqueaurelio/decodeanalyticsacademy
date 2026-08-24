@@ -216,6 +216,7 @@ export default function ApostilaReaderPage() {
   const [noteSaving, setNoteSaving] = useState(false);
   const [activeSelection, setActiveSelection] = useState<{ text: string; position: any } | null>(null);
   const [showNoteEditor, setShowNoteEditor] = useState(false);
+  const [notes, setNotes] = useState<any[]>([]);
   const [marksOpen, setMarksOpen] = useState(false);
   const [focusMode, setFocusMode] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
@@ -405,6 +406,17 @@ export default function ApostilaReaderPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedLessonId]);
 
+  useEffect(() => {
+    if (!selectedLessonId || !user) return;
+    supabase.from("student_notes" as any)
+      .select("*")
+      .eq("apostila_id", id)
+      .eq("user_id", user.id)
+      .then(({ data }) => {
+        if (data) setNotes(data);
+      });
+  }, [selectedLessonId, user, id]);
+
   // Atalhos ← →
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -505,7 +517,7 @@ export default function ApostilaReaderPage() {
     if (!userId) return;
     setNoteSaving(true);
 
-    const payload = {
+    const payload: any = {
       user_id: userId,
       apostila_id: id,
       chapter_id: selectedLessonId.startsWith('page:') ? null : selectedLessonId,
@@ -514,7 +526,7 @@ export default function ApostilaReaderPage() {
       position_data: activeSelection?.position || null,
     };
 
-    const { error } = await supabase.from("student_notes").insert(payload);
+    const { error } = await supabase.from("student_notes" as any).insert([payload]);
     
     setNoteSaving(false);
     if (error) {
@@ -525,7 +537,6 @@ export default function ApostilaReaderPage() {
       setNoteText("");
       setShowNoteEditor(false);
       setActiveSelection(null);
-      // Recarregar notas se necessário
     }
   }
 
@@ -948,9 +959,30 @@ export default function ApostilaReaderPage() {
                 <h1 className="font-display text-3xl md:text-4xl font-semibold leading-tight tracking-tight">
                   {currentLesson?.title}
                 </h1>
-                <article className="reader-prose mt-6">
+                <article className="reader-prose mt-6 relative selection:bg-cyan-500/30" onMouseUp={handleSelection}>
                   {lessonContent ? (
-                    <ApostilaContentBoundary content={lessonContent} />
+                    <div className="relative">
+                      <ApostilaContentBoundary content={lessonContent} />
+                      
+                      {/* Render markers for existing notes */}
+                      {notes.map((note) => (
+                        <div 
+                          key={note.id}
+                          className="absolute w-2 h-2 rounded-full bg-cyan-500 shadow-[0_0_8px_#00f0ff] cursor-pointer hover:scale-125 transition-transform"
+                          style={{ 
+                            top: note.position_data?.top ? `${note.position_data.top}px` : '0',
+                            left: note.position_data?.left ? `${note.position_data.left}px` : '0' 
+                          }}
+                          title={note.content}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toast(note.content, {
+                              description: `Citando: "${note.context_text?.substring(0, 50)}..."`
+                            });
+                          }}
+                        />
+                      ))}
+                    </div>
                   ) : (
                     <div className="flex flex-col items-center justify-center py-20 text-center space-y-4 rounded-3xl border-2 border-dashed border-border/40 bg-muted/5">
                       <div className="h-16 w-16 rounded-full bg-primary/5 flex items-center justify-center">
