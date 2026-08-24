@@ -11,7 +11,7 @@ interface StudyGoal {
   description: string;
   progress: number;
   total: number;
-  type: 'chapter' | 'exercise' | 'streak' | 'custom';
+  type: 'chapter' | 'exercise' | 'streak' | 'custom' | 'hours';
   completed: boolean;
 }
 
