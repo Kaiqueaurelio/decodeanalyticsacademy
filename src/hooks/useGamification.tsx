@@ -94,6 +94,10 @@ export function useGamification() {
 
     if (!error) {
       setXp({ xp_points: newPoints, level: newLevel });
+      await supabase.rpc('log_study_activity', {
+        _user_id: user.id,
+        _xp: clampedPoints
+      });
       if (leveledUp) toast.success(`🎉 Nível ${newLevel}! +${clampedPoints} XP`);
       else toast.success(`+${clampedPoints} XP`);
     }
@@ -154,6 +158,13 @@ export function useGamification() {
         await (supabase.from('study_goals' as any).update({ status: 'completed' } as any).eq('id', goalId) as any);
         toast.success(`🎯 Meta Concluída: ${goal.title}!`);
       }
+      
+      // Log activity to history
+      await supabase.rpc('log_study_activity', {
+        _user_id: user.id,
+        _chapters: goal.metric === 'chapters' ? increment : 0,
+        _exercises: goal.metric === 'exercises' ? increment : 0
+      });
     }
   }, [user, goals]);
 
