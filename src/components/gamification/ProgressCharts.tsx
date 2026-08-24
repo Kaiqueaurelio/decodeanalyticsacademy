@@ -62,6 +62,7 @@ export function ProgressCharts() {
         </div>
 
         <div className="h-[250px] w-full">
+          {temporalData.length === 0 ? emptyState('Sem atividade registrada ainda') : (
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={temporalData}>
               <defs>
