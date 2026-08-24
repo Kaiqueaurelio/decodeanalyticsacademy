@@ -23,6 +23,8 @@ import { Watermark } from '@/components/Watermark';
 import { Reveal } from '@/components/Reveal';
 import { GamificationWidget } from '@/components/gamification/GamificationWidget';
 import { OverallProgressCard } from '@/components/OverallProgressCard';
+import { StudyGoalsWidget } from '@/components/gamification/StudyGoalsWidget';
+
 import { ExamCalendarWidget } from '@/components/ExamCalendarWidget';
 import { OnboardingTour } from '@/components/OnboardingTour';
 import { TermsFooterLink } from '@/components/TermsFooterLink';
@@ -358,8 +360,12 @@ export default function DashboardPage() {
             <div className="flex-1 space-y-4">
               <ContinueWhereLeftCard />
               <Reveal from="bottom" delay={5}>
-                <FeaturedJobsWidget />
+                <div className="space-y-6">
+                  <StudyGoalsWidget goals={gamification.goals} />
+                  <FeaturedJobsWidget />
+                </div>
               </Reveal>
+
             </div>
             <div className="flex shrink-0">
 
