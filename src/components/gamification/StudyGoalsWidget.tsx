@@ -9,7 +9,7 @@ interface StudyGoal {
   description: string;
   progress: number;
   total: number;
-  type: 'chapter' | 'exercise' | 'streak';
+  type: 'chapter' | 'exercise' | 'streak' | 'custom';
   completed: boolean;
 }
 
