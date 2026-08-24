@@ -123,6 +123,7 @@ export function ProgressCharts() {
         </div>
 
         <div className="h-[250px] w-full">
+          {subjectData.length === 0 ? emptyState('Complete capítulos e exercícios para gerar seu radar') : (
           <ResponsiveContainer width="100%" height="100%">
             <RadarChart cx="50%" cy="50%" outerRadius="80%" data={subjectData}>
               <PolarGrid stroke="#ffffff10" />
@@ -132,12 +133,11 @@ export function ProgressCharts() {
               />
               <PolarRadiusAxis 
                 angle={30} 
-                domain={[0, 150]} 
                 tick={false}
                 axisLine={false}
               />
               <Radar
-                name="Performance"
+                name="Atividades"
                 dataKey="A"
                 stroke="#00f0ff"
                 fill="#00f0ff"
@@ -154,6 +154,7 @@ export function ProgressCharts() {
               />
             </RadarChart>
           </ResponsiveContainer>
+          )}
         </div>
       </Card>
     </div>
