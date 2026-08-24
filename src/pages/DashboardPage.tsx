@@ -27,6 +27,7 @@ import { StudyGoalsWidget } from '@/components/gamification/StudyGoalsWidget';
 import { ProgressCharts } from '@/components/gamification/ProgressCharts';
 import { AchievementsGrid } from '@/components/gamification/AchievementsGrid';
 import { StudyGoalsConfig } from '@/components/gamification/StudyGoalsConfig';
+import { PomodoroWidget } from '@/components/gamification/PomodoroWidget';
 
 
 import { ExamCalendarWidget } from '@/components/ExamCalendarWidget';
