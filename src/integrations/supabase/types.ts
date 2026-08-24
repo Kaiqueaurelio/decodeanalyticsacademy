@@ -3653,16 +3653,28 @@ export type Database = {
         Args: { _amount: number; _user_id: string }
         Returns: undefined
       }
-      log_study_activity: {
-        Args: {
-          _chapters?: number
-          _exercises?: number
-          _minutes?: number
-          _user_id: string
-          _xp?: number
-        }
-        Returns: undefined
-      }
+      log_study_activity:
+        | {
+            Args: {
+              _chapters?: number
+              _exercises?: number
+              _minutes?: number
+              _user_id: string
+              _xp?: number
+            }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              _chapters?: number
+              _exercises?: number
+              _minutes?: number
+              _user_id: string
+              _xp?: number
+              _xp_gained?: number
+            }
+            Returns: undefined
+          }
       log_user_action: {
         Args: { _action: string; _material_id?: string }
         Returns: undefined
