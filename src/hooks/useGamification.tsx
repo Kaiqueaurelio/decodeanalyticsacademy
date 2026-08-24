@@ -7,8 +7,9 @@ type Badge = { id: string; name: string; description: string | null; icon: strin
 type UserBadge = { id: string; badge_id: string; earned_at: string };
 type Streak = { current_streak: number; longest_streak: number; last_study_date: string | null };
 type XP = { xp_points: number; level: number };
-type StudyGoal = { id: string; title: string; description: string; progress: number; total: number; type: 'chapter' | 'exercise' | 'streak' | 'custom'; completed: boolean; metric: string };
-type Milestone = { id: string; title: string; description: string | null; category: string; achieved_at: string | null; requirement_type: string; requirement_value: number; reward_type: string | null };
+type StudyGoal = { id: string; title: string; description: string; progress: number; total: number; type: 'chapter' | 'exercise' | 'streak' | 'custom'; completed: boolean; metric: string; frequency?: string; category?: string };
+type Milestone = { id: string; title: string; description: string | null; category: string; achieved_at: string | null; requirement_type: string; requirement_value: number; reward_type: string | null; icon?: string };
+type StudyHistory = { date: string; xp_gained: number; chapters_completed: number; exercises_completed: number; time_spent_minutes: number };
 
 
 export function useGamification() {
@@ -19,6 +20,7 @@ export function useGamification() {
   const [badges, setBadges] = useState<Badge[]>([]);
   const [userBadges, setUserBadges] = useState<UserBadge[]>([]);
   const [milestones, setMilestones] = useState<Milestone[]>([]);
+  const [history, setHistory] = useState<StudyHistory[]>([]);
   const [loading, setLoading] = useState(true);
 
 
@@ -67,6 +69,9 @@ export function useGamification() {
       setMilestones(milestonesRes.data as Milestone[]);
     }
 
+    if (historyRes.data) {
+      setHistory(historyRes.data as StudyHistory[]);
+    }
 
     if (badgesRes.data) setBadges(badgesRes.data as Badge[]);
     if (ubRes.data) setUserBadges(ubRes.data as UserBadge[]);
@@ -152,12 +157,40 @@ export function useGamification() {
     }
   }, [user, goals]);
 
+  const addGoal = useCallback(async (newGoal: Partial<StudyGoal>) => {
+    if (!user) return;
+    const { data, error } = await (supabase
+      .from('study_goals' as any)
+      .insert([{
+        user_id: user.id,
+        type: newGoal.type || 'custom',
+        metric: newGoal.metric,
+        target_value: newGoal.total,
+        current_value: 0,
+        status: 'active',
+        metadata: { 
+          title: newGoal.title, 
+          description: newGoal.description,
+          frequency: newGoal.frequency,
+          category: newGoal.category
+        }
+      }] as any)
+      .select()
+      .single() as any);
+
+    if (!error && data) {
+      loadAll();
+      toast.success('Meta de estudo criada com sucesso!');
+    } else {
+      toast.error('Erro ao criar meta.');
+    }
+  }, [user, loadAll]);
 
   const earnedBadgeIds = userBadges.map(ub => ub.badge_id);
 
   return {
-    xp, streak, goals, badges, userBadges, milestones, earnedBadgeIds, loading,
-    addXP, updateStreak, checkAndAwardBadge, updateGoal, loadAll,
+    xp, streak, goals, badges, userBadges, milestones, history, earnedBadgeIds, loading,
+    addXP, updateStreak, checkAndAwardBadge, updateGoal, addGoal, loadAll,
     xpForNextLevel, calcLevel
   };
 }
