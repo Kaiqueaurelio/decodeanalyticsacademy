@@ -321,6 +321,7 @@ function AdminSidebar({ tab, setTab, stats, sidebarOpen, setSidebarOpen }: {
   const navigate = useNavigate();
   // Contador ao vivo de alertas de segurança em aberto (visível só para admin).
   const { openCount: securityOpenCount } = useSecurityAlerts({ enabled: true });
+  const [showDoubtHeatmap, setShowDoubtHeatmap] = useState(false);
 
   return (
     <>
