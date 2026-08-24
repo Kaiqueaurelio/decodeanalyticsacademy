@@ -23,8 +23,10 @@ export interface Release {
   title: string;
   major?: boolean;
   description?: string;
+  author?: string;
   changes: Change[];
 }
+
 
 
 export function getBuildInfo() {
