@@ -101,37 +101,36 @@ export default function SimuladoPage() {
     if (!user) return;
     setGenerating(true);
     try {
-      // Logic for adaptive simulado creation
-      const questions = await generateSimulado(user.id, { limit: 20 });
+      const questionsData = await generateSimulado(user.id, { limit: 20 });
       
-      // Weekly simulados creation via Supabase
       const { data: newSim, error: simErr } = await supabase
-        .from('weekly_simulados')
-        .insert({
+        .from('weekly_simulados' as any)
+        .insert([{
           user_id: user.id,
           status: 'in_progress',
-          total_questions: questions.length,
+          total_questions: questionsData.length,
           correct_count: 0,
-          score: 0
-        })
+          score: 0,
+          week_start: new Date().toISOString()
+        }])
         .select()
         .single();
 
       if (simErr) throw simErr;
 
-      // Insert questions
-      const answerRows = questions.map((q, idx) => ({
+      const answerRows = questionsData.map((q, idx) => ({
         simulado_id: newSim.id,
+        user_id: user.id,
         question_index: idx,
         question: q.question,
         options: q.options,
         correct_answer: q.correct_answer,
-        explanation: q.explanation,
+        explanation: q.explanation || '',
         subject: q.apostilas.category || 'Geral'
       }));
 
       const { error: ansErr } = await supabase
-        .from('weekly_simulado_answers')
+        .from('weekly_simulado_answers' as any)
         .insert(answerRows);
 
       if (ansErr) throw ansErr;
