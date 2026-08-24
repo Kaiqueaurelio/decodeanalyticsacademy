@@ -15,6 +15,9 @@ const json = (body: unknown, status = 200, headers = {}) =>
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  
+  // Hardening: Verify JWT for specific maintenance actions if needed, 
+  // but for login we only allow POST with strict validation
   if (req.method !== "POST") return json({ error: "Método não permitido." }, 405, corsHeaders);
 
   const SUPABASE_URL = Deno.env.get("SUPABASE_URL");

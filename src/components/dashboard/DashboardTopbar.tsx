@@ -2,6 +2,7 @@ import { Search, ChevronDown, Menu, ShieldCheck, PenTool, Users, Layout } from '
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
+import { supabase } from '@/integrations/supabase/client';
 import { Terminal, Maximize2 } from 'lucide-react';
 
 import { NotificationBell } from '@/components/NotificationBell';
@@ -27,23 +28,49 @@ export function DashboardTopbar({ hideSearchOnMobile = false }: { hideSearchOnMo
   const { isOpen: navOpen, setOpen: setNavOpen } = useSidebar();
   const { data: apostilas = [] } = useApostilasList();
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     const term = query.trim();
     if (!term) return;
+
     const normalize = (value: string | null | undefined) =>
       (value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    
     const lower = normalize(term);
+    
+    // 1. Busca exata em títulos (melhor UX para navegação direta)
     const titleHit = apostilas.find((a: any) => normalize(a.title).includes(lower));
     if (titleHit) {
       navigate(`/apostila/${titleHit.id}`);
       return;
     }
+
+    // 2. Busca em categorias
     const categoryHit = apostilas.find((a: any) => normalize(a.category).includes(lower));
     if (categoryHit) {
       navigate(`/materia/${encodeURIComponent(categoryHit.category)}`);
       return;
     }
+
+    // 3. Busca Semântica (RAG) via Edge Function
+    try {
+      const { data, error } = await supabase.functions.invoke('semantic-search', {
+        body: { query: term }
+      });
+
+      if (!error && data?.results?.length > 0) {
+        const topResult = data.results[0];
+        // Se a similaridade for alta o suficiente, navegamos direto
+        if (topResult.similarity > 0.7) {
+          navigate(`/apostila/${topResult.apostila_id}`);
+          return;
+        }
+      }
+    } catch (err) {
+      console.error('Erro na busca semântica:', err);
+    }
+
+    // 4. Fallback para busca textual no dashboard
     navigate(`/dashboard?search=${encodeURIComponent(term)}`);
   };
 

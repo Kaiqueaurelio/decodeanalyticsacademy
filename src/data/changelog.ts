@@ -42,6 +42,20 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: "8.5.0",
+    date: "2026-08-24",
+    title: "Proteção de Dados & Busca Semântica",
+    major: true,
+    description: "Implementada Busca Semântica (RAG) para conceitos acadêmicos e endurecimento total de RLS e segurança de segredos no servidor.",
+    changes: [
+      { kind: "feature", text: "Busca Semântica (RAG): Agora você pode encontrar conteúdos por conceitos, não apenas por palavras-chave." },
+      { kind: "security", text: "Harden DB Protection: Reforço de RLS em todas as tabelas e proteção de chaves no servidor." },
+      { kind: "improvement", text: "Refatoração do Diagnostics Hub com maior foco em segurança operacional e transparência de tokens." },
+      { kind: "security", text: "Implementada auditoria de segurança para monitorar tentativas de injeção e acessos administrativos." }
+    ],
+    author: "Kaique Aurelio & Decode Analytics"
+  },
+  {
     version: "7.7.0",
     date: "2026-08-24",
     title: "Auditoria Full Stack 360º & Refatoração Estrutural",

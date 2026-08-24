@@ -243,9 +243,9 @@ export function DiagnosticsPanel() {
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm flex items-center gap-2">
-                <KeyRound className="h-4 w-4 text-primary" /> Extension in Public
+                <KeyRound className="h-4 w-4 text-primary" /> Diagnóstico de Sessão
               </CardTitle>
-              <CardDescription className="text-xs">Extension in Public. Sessão atual, expiração do token e histórico do fluxo de auth.</CardDescription>
+              <CardDescription className="text-xs">Validação de tokens e histórico do fluxo de autenticação.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
