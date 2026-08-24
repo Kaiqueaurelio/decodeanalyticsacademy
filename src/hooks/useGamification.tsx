@@ -124,6 +124,13 @@ export function useGamification() {
     setStreak({ current_streak: newCurrent, longest_streak: newLongest, last_study_date: today });
 
     if (newCurrent > 1) toast.success(`🔥 Streak de ${newCurrent} dias!`);
+    
+    // Log history
+    const rpcCall = supabase.rpc as unknown as (name: string, args: any) => Promise<any>;
+    await rpcCall('log_study_activity', {
+      _user_id: user.id,
+      _minutes: 5 // Default study activity
+    });
   }, [user, streak]);
 
   const checkAndAwardBadge = useCallback(async (criteria: string) => {
