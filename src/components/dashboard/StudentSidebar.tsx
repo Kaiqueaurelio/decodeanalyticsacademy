@@ -13,6 +13,7 @@ import { useUserProfile } from '@/hooks/queries/useUserProfile';
 import logoOwl from '@/assets/owl-icon.png';
 import { Button } from '@/components/ui/button';
 import { GlitchText } from '@/components/login/GlitchText';
+import { PomodoroWidget } from '@/components/gamification/PomodoroWidget';
 
 const menuGroups = [
   {
@@ -169,6 +170,9 @@ export function SidebarContent({ onNavigate, collapsed = false }: { onNavigate?:
           </div>
         )}
       </nav>
+
+      {/* Pomodoro Timer */}
+      <PomodoroWidget collapsed={collapsed} />
 
       {/* Footer Profile */}
       <div className="p-4 border-t border-white/5 bg-black/40 relative z-10">
