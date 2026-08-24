@@ -3668,6 +3668,7 @@ export type Database = {
         Returns: Json
       }
       award_badge: { Args: { _criteria: string }; Returns: Json }
+      can_view_apostila: { Args: { _apostila_id: string }; Returns: boolean }
       check_exercise_answer: {
         Args: { _exercise_id: string; _selected_answer: string }
         Returns: Json
