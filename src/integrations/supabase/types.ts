@@ -1834,6 +1834,36 @@ export type Database = {
           },
         ]
       }
+      forum_posts: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          is_public: boolean | null
+          subject_id: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          is_public?: boolean | null
+          subject_id?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          is_public?: boolean | null
+          subject_id?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       free_courses: {
         Row: {
           area: string
@@ -2989,6 +3019,57 @@ export type Database = {
         }
         Relationships: []
       }
+      student_notes: {
+        Row: {
+          apostila_id: string | null
+          chapter_id: string | null
+          content: string
+          context_text: string | null
+          created_at: string | null
+          id: string
+          position_data: Json | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          apostila_id?: string | null
+          chapter_id?: string | null
+          content: string
+          context_text?: string | null
+          created_at?: string | null
+          id?: string
+          position_data?: Json | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          apostila_id?: string | null
+          chapter_id?: string | null
+          content?: string
+          context_text?: string | null
+          created_at?: string | null
+          id?: string
+          position_data?: Json | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_notes_apostila_id_fkey"
+            columns: ["apostila_id"]
+            isOneToOne: false
+            referencedRelation: "apostilas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_notes_chapter_id_fkey"
+            columns: ["chapter_id"]
+            isOneToOne: false
+            referencedRelation: "apostila_chapters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       study_goals: {
         Row: {
           created_at: string | null
@@ -3608,6 +3689,14 @@ export type Database = {
       force_complete_semesters_upto_five: {
         Args: { _user_id: string }
         Returns: undefined
+      }
+      get_apostila_difficulty_heatmap: {
+        Args: never
+        Returns: {
+          apostila_id: string
+          query_count: number
+          title: string
+        }[]
       }
       get_apostila_reader_tree: {
         Args: { _apostila_id: string }
