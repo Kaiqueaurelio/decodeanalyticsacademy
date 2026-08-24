@@ -42,6 +42,19 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: "7.6.0",
+    date: "2026-08-24",
+    title: "Estabilização de Gamificação & Auditoria de Infra",
+    description: "Correção crítica de falhas de tempo de execução no sistema de gamificação e provisionamento de infraestrutura de persistência para histórico e metas de estudo.",
+    changes: [
+      { kind: 'fix', text: "Corrigido erro 'Cannot read properties of undefined (reading rest)' no hook useGamification" },
+      { kind: 'security', text: "Provisionadas tabelas public.study_history, public.study_goals e public.study_milestones com RLS restrito" },
+      { kind: 'fix', text: "Implementada função RPC log_study_activity ausente no banco de dados para rastreamento de progresso" },
+      { kind: 'improvement', text: "Refatoração de chamadas RPC no hook de gamificação para maior estabilidade e tipagem robusta" }
+    ],
+    author: "Kaique Aurelio & Decode Analytics"
+  },
+  {
     version: "7.5.0",
     date: "2026-08-24",
     title: "Gamificação & Analytics 360º",
@@ -53,7 +66,6 @@ export const CHANGELOG: Release[] = [
       { kind: 'improvement', text: "Integração do hook useGamification com persistência server-side" },
       { kind: 'improvement', text: "Refinamento estético Industrial/Cyberpunk em widgets de gamificação" }
     ],
-
     author: "Kaique Aurelio & Decode Analytics"
   },
   {
