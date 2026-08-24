@@ -102,6 +102,7 @@ export function ProgressCharts() {
               />
             </AreaChart>
           </ResponsiveContainer>
+          )}
         </div>
       </Card>
 
