@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { generateSimulado } from '@/lib/adaptive-simulado';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -97,14 +98,48 @@ export default function SimuladoPage() {
   useEffect(() => { loadLatest(); /* eslint-disable-next-line */ }, [user]);
 
   const startNew = async () => {
+    if (!user) return;
     setGenerating(true);
     try {
-      const { data, error } = await supabase.functions.invoke('generate-weekly-simulado', { body: { force: true } });
-      if (error) throw error;
-      if ((data as any)?.error) throw new Error((data as any).error);
+      const questionsData = await generateSimulado(user.id, { limit: 20 });
+      
+      const { data: newSim, error: simErr } = await supabase
+        .from('weekly_simulados' as any)
+        .insert([{
+          user_id: user.id,
+          status: 'in_progress',
+          total_questions: questionsData.length,
+          correct_count: 0,
+          score: 0,
+          week_start: new Date().toISOString()
+        }])
+        .select()
+        .single();
+
+      if (simErr) throw simErr;
+      const newSimData = newSim as any;
+
+      const answerRows = questionsData.map((q, idx) => ({
+        simulado_id: newSimData.id,
+        user_id: user.id,
+        question_index: idx,
+        question: q.question,
+        options: q.options,
+        correct_answer: q.correct_answer,
+        explanation: q.explanation || '',
+        subject: q.apostilas.category || 'Geral'
+      }));
+
+      const { error: ansErr } = await supabase
+        .from('weekly_simulado_answers' as any)
+        .insert(answerRows);
+
+      if (ansErr) throw ansErr;
+
       toast.success('Simulado pronto! Boa sorte.');
       await loadLatest();
     } catch (e: any) {
+      console.error(e);
       toast.error(e?.message || 'Falha ao gerar simulado');
     } finally {
       setGenerating(false);

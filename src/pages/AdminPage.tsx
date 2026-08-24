@@ -8,7 +8,7 @@
 import React, { useEffect, useState, useCallback, useRef, useMemo, useContext, createContext } from 'react';
 import { useUserProfile } from '@/hooks/queries/useUserProfile';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { AdminNavPanel } from '@/components/admin/AdminNavPanel';
@@ -33,7 +33,7 @@ import {
   LayoutDashboard, CheckCircle, TrendingUp, Upload, BarChart3, Clock,
   Link as LinkIcon, Loader2, AlertCircle, Edit, Download, File, Image, Video, Music, FileSpreadsheet, Presentation,
   Users, ShieldBan, ShieldCheck, ShieldAlert, Search, Menu, X, Activity, GraduationCap, FolderOpen, Settings, RefreshCw,
-  Sun, Moon, FileUp, PenTool, Wand2, Megaphone, Combine, Calendar as CalIcon, MessageSquare, MessageSquareQuote, Link2, FileDown, MoreHorizontal, Paperclip, Rss, Info, ExternalLink, ChevronRight, History, Store,
+  Sun, Moon, FileUp, PenTool, Wand2, Megaphone, Combine, Calendar as CalIcon, MessageSquare, MessageSquareQuote, Link2, FileDown, MoreHorizontal, Paperclip, Rss, Info, ExternalLink, ChevronRight, History, Store, Flame,
   Sparkles, Check, CheckSquare, Briefcase,
   BookPlus
 } from 'lucide-react';
@@ -81,7 +81,7 @@ import { findDuplicateApostila, type DuplicateMatch } from '@/lib/duplicate-dete
 import { ImportPreviewPanel } from '@/components/ImportPreviewPanel';
 import { AdminAdsManager } from '@/components/AdminAdsManager';
 import { AdsChatBuilder } from '@/components/AdsChatBuilder';
-import { AdminDashboard } from '@/components/AdminDashboard';
+import { AdminDashboard, DoubtHeatmapWidget } from '@/components/AdminDashboard';
 import { RssFeedsManagerEnhanced } from '@/components/admin/RssFeedsManagerEnhanced';
 import { FreeCoursesManager } from '@/components/admin/FreeCoursesManager';
 import { AdminSponsorsManager } from '@/components/admin/AdminSponsorsManager';
@@ -321,6 +321,7 @@ function AdminSidebar({ tab, setTab, stats, sidebarOpen, setSidebarOpen }: {
   const navigate = useNavigate();
   // Contador ao vivo de alertas de segurança em aberto (visível só para admin).
   const { openCount: securityOpenCount } = useSecurityAlerts({ enabled: true });
+  const [showDoubtHeatmap, setShowDoubtHeatmap] = useState(false);
 
   return (
     <>
