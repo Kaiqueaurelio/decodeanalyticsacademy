@@ -39,16 +39,15 @@ export function ProgressCharts() {
         { date: '24/08', score: 90, completed: 4 },
       ];
 
-const subjectData = [
-  { subject: 'TI', A: 120, B: 110, fullMark: 150 },
-  { subject: 'Gestão', A: 98, B: 130, fullMark: 150 },
-  { subject: 'Dados', A: 86, B: 130, fullMark: 150 },
-  { subject: 'Redes', A: 99, B: 100, fullMark: 150 },
-  { subject: 'Matemática', A: 85, B: 90, fullMark: 150 },
-  { subject: 'Soft Skills', A: 65, B: 85, fullMark: 150 },
-];
+  const subjectData = [
+    { subject: 'TI', A: 120, B: 110, fullMark: 150 },
+    { subject: 'Gestão', A: 98, B: 130, fullMark: 150 },
+    { subject: 'Dados', A: 86, B: 130, fullMark: 150 },
+    { subject: 'Redes', A: 99, B: 100, fullMark: 150 },
+    { subject: 'Matemática', A: 85, B: 90, fullMark: 150 },
+    { subject: 'Soft Skills', A: 65, B: 85, fullMark: 150 },
+  ];
 
-export function ProgressCharts() {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
       {/* Temporal Progress Chart */}
