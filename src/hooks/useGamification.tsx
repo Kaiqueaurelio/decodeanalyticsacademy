@@ -70,7 +70,7 @@ export function useGamification() {
     }
 
     if (historyRes.data) {
-      setHistory(historyRes.data as StudyHistory[]);
+      setHistory(historyRes.data as unknown as StudyHistory[]);
     }
 
     if (badgesRes.data) setBadges(badgesRes.data as Badge[]);
