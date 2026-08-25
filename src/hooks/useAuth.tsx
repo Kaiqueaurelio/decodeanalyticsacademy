@@ -38,7 +38,7 @@ function readRoleCache(): RoleCache | null {
     if (parsed && typeof parsed.userId === 'string' && typeof parsed.isAdmin === 'boolean') {
       return parsed;
     }
-  } catch {}
+  } catch { /* best-effort local persistence */ }
   return null;
 }
 
@@ -49,7 +49,7 @@ function writeRoleCache(userId: string | null, isAdmin: boolean) {
       return;
     }
     localStorage.setItem(ROLE_CACHE_KEY, JSON.stringify({ userId, isAdmin }));
-  } catch {}
+  } catch { /* best-effort local persistence */ }
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -133,7 +133,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // CORREÇÃO: Removido o removeItem do session_cache que causava logout no PC
     // try {
     //   localStorage.removeItem('decode_session_cache');
-    // } catch {}
+    // } catch { /* best-effort local persistence */ }
 
     const applySession = (nextSession: Session | null, source: 'bootstrap' | 'listener' | 'storage_sync', authEvent?: string) => {
       if (!mountedRef.current) return;
@@ -232,7 +232,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 message: err instanceof Error ? err.message : 'unknown',
               });
               boot = null;
-              try { localStorage.removeItem(LAST_SESSION_MARKER); } catch {}
+              try { localStorage.removeItem(LAST_SESSION_MARKER); } catch { /* best-effort local persistence */ }
               if (hadPreviousSession) {
                 toast.error(SECURITY_COPY.sessionRefreshTitle, {
                   description: SECURITY_COPY.sessionRefreshDescription,
@@ -245,7 +245,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
 
         if (boot?.user) {
-          try { localStorage.setItem(LAST_SESSION_MARKER, boot.user.id); } catch {}
+          try { localStorage.setItem(LAST_SESSION_MARKER, boot.user.id); } catch { /* best-effort local persistence */ }
           if (hadPreviousSession) {
             // Sessão restaurada silenciosamente após fechar/reabrir o navegador.
             setTimeout(() => {
@@ -281,7 +281,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       supabase.auth.getSession().then(({ data }) => {
         if (!mountedRef.current) return;
         applySession(data.session ?? null, 'storage_sync', 'TOKEN_REFRESHED');
-      }).catch(() => {});
+      }).catch(() => { /* best-effort session cleanup */ });
     };
     window.addEventListener('storage', onStorage);
 
@@ -315,11 +315,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Fallback: sessão não pôde ser renovada — força signOut limpo e avisa.
         const stayLoggedIn = localStorage.getItem('decode_stay_logged_in') === 'true';
         if (!stayLoggedIn) {
-          try { localStorage.removeItem(LAST_SESSION_MARKER); } catch {}
+          try { localStorage.removeItem(LAST_SESSION_MARKER); } catch { /* best-effort local persistence */ }
           toast.error(SECURITY_COPY.sessionRefreshTitle, {
             description: SECURITY_COPY.sessionRefreshDescription,
           });
-          await supabase.auth.signOut().catch(() => {});
+          await supabase.auth.signOut().catch(() => { /* best-effort session cleanup */ });
         } else {
           // Se o usuário optou por permanecer logado, tentamos apenas logar o erro
           // mas evitamos deslogar agressivamente se houver chance de recuperação posterior
@@ -351,7 +351,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     logAuthFlow('sign_in_attempt', { email });
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (!error && data?.user) {
-      try { localStorage.setItem(LAST_SESSION_MARKER, data.user.id); } catch {}
+      try { localStorage.setItem(LAST_SESSION_MARKER, data.user.id); } catch { /* best-effort local persistence */ }
     }
     logAuthFlow(error ? 'sign_in_error' : 'sign_in_success', {
       email,
@@ -373,7 +373,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = async () => {
     logAuthFlow('explicit_sign_out_start');
     writeRoleCache(null, false);
-    try { localStorage.removeItem(LAST_SESSION_MARKER); } catch {}
+    try { localStorage.removeItem(LAST_SESSION_MARKER); } catch { /* best-effort local persistence */ }
     lastRoleUserIdRef.current = null;
     await supabase.auth.signOut();
     logAuthFlow('explicit_sign_out_done');

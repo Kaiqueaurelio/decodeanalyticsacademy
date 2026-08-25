@@ -49,3 +49,13 @@ O domínio principal `decodeanalyticsacademy.vercel.app` continua servindo o dep
 ## Verificação visual do novo deployment
 
 A landing do deployment `decodeanalyticsacademy-oqxa348t5-decode-analytics-s-projects.vercel.app` carregou após o splash inicial, apresentou navegação, hero, CTA e seções de recursos, e não exibiu tela branca. O console do navegador não registrou erros ou promessas não tratadas durante o carregamento observado.
+
+## Rodada de pendências
+
+O conector Supabase foi habilitado, mas o projeto referenciado pelo app (`gynguskgysompgcajunc`) não está entre os projetos acessíveis pela integração. As operações `get_project` e `list_migrations` retornaram erro de permissão. O endpoint REST público respondeu HTTP 200, porém sem registros de apostilas para acesso anônimo; portanto, não foi possível confirmar nem aplicar migrações no banco real sem autorização do projeto correto. As migrações permanecem versionadas no repositório para execução assim que o projeto for associado à conta autorizada.
+
+A proteção de deployment do projeto Vercel está desativada; o bloqueio de produção não é causado por password protection, SSO ou trusted IPs. O deployment de produção bloqueado aponta para o diagnóstico de configuração de colaboração da Vercel, enquanto o deployment corrigido permanece `READY` como alias de branch. Não foi feito deploy manual fora do vínculo Git, para não criar uma segunda fonte de verdade do app.
+
+Foi executado `npm audit fix` sem `--force`, atualizando somente o lockfile com correções compatíveis: Vite 5.4.19 para 5.4.21, além de minimatch, brace-expansion, js-yaml e flatted. O número caiu de 13 para 9 vulnerabilidades: 5 altas e 4 moderadas. As restantes exigem mudanças potencialmente incompatíveis, incluindo `epubjs@0.4.2`, `pptxgenjs@1.1.5` ou `vite@8.2.2`, por isso não foram aplicadas automaticamente.
+
+Após essa rodada, o lint direcionado de autenticação e renderer ficou sem erros, restando três warnings não bloqueantes de dependência do React Hook e Fast Refresh. A suíte completa continua com 20 arquivos e 124 testes aprovados; o type-check e o build também continuam aprovados.
