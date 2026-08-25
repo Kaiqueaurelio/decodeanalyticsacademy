@@ -83,12 +83,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const [adminRes, profileRes] = await Promise.all([
         supabase.from('user_roles').select('role').eq('user_id', userId).eq('role', 'admin').maybeSingle(),
-        supabase.from('profiles').select('is_blocked, email, account_type').eq('user_id', userId).maybeSingle(),
+        supabase.from('profiles').select('is_blocked, email').eq('user_id', userId).maybeSingle(),
       ]);
-      // Note: is_admin is handled via user_roles or metadata, not a column in profiles
-
-
-
+      // O acesso administrativo é definido exclusivamente por user_roles.
+      // account_type é um dado de perfil e não pode autorizar privilégios.
       if ((adminRes.error || profileRes.error) && attempt < 1) {
         return await new Promise<boolean>((resolve) => {
           setTimeout(() => resolve(checkRoles(userId, attempt + 1)), 500);
@@ -97,7 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (!mountedRef.current) return false;
 
-      const adminValue = Boolean(adminRes.data) || (profileRes.data as { account_type?: string } | null)?.account_type === 'admin';
+      const adminValue = Boolean(adminRes.data);
 
       const blockedValue = Boolean((profileRes.data as { is_blocked?: boolean } | null)?.is_blocked);
 
@@ -169,9 +167,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         if (lastRoleUserIdRef.current !== nextUser.id || authEvent === 'SIGNED_IN') {
           lastRoleUserIdRef.current = nextUser.id;
+          setRoleChecked(false);
           queueMicrotask(() => {
             void checkRoles(nextUser.id);
           });
+        } else {
+          setRoleChecked(true);
         }
       } else {
         lastRoleUserIdRef.current = null;

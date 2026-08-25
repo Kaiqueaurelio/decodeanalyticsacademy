@@ -168,6 +168,42 @@ describe('security hardening regression guards', () => {
     expect(exportData).not.toContain('.select("*")');
   });
 
+  it('does not treat profile account_type as an administrative role', () => {
+    const auth = source('src/hooks/useAuth.tsx');
+    const sql = source('supabase/migrations/20260825050000_profile_admin_fields_hardening.sql');
+
+    expect(auth).toContain(".from('user_roles').select('role')");
+    expect(auth).toContain('const adminValue = Boolean(adminRes.data);');
+    expect(auth).not.toContain("account_type === 'admin'");
+    expect(sql).toContain('prevent_profile_admin_field_escalation');
+    expect(sql).toContain("NEW.account_type IS DISTINCT FROM OLD.account_type");
+    expect(sql).toContain("NEW.content_scope IS DISTINCT FROM OLD.content_scope");
+    expect(sql).toContain("NEW.is_blocked IS DISTINCT FROM OLD.is_blocked");
+    expect(sql).toContain("auth.role() <> 'service_role'");
+    expect(sql).toContain("public.has_role(auth.uid(), 'admin'::app_role)");
+  });
+
+  it('keeps semantic search scoped to the authenticated user', () => {
+    const edge = source('supabase/functions/semantic-search/index.ts');
+    const sql = source('supabase/migrations/20260825043000_semantic_search_scope_hardening.sql');
+
+    expect(edge).toContain('requireUser(req, getCorsHeaders(req))');
+    expect(edge).toContain('SUPABASE_ANON_KEY');
+    expect(edge).toContain('global: { headers: { Authorization: authorization || "" } }');
+    expect(edge).not.toContain('SUPABASE_SERVICE_ROLE_KEY');
+    expect(edge).not.toContain('createClient(SUPABASE_URL, SERVICE_ROLE)');
+    expect(edge).toContain('between 2 and 1000 characters');
+    expect(edge).not.toContain('error: e.message');
+
+    expect(sql).toContain('v_user_id uuid := auth.uid()');
+    expect(sql).toContain("v_scope := public.get_content_scope(v_user_id)");
+    expect(sql).toContain("v_is_admin := public.has_role(v_user_id, 'admin'::app_role)");
+    expect(sql).toContain("a.category NOT IN ('ENEM', 'Simulados ENEM')");
+    expect(sql).toContain("a.category IN ('ENEM', 'Simulados ENEM')");
+    expect(sql).toContain('a.published = true');
+    expect(sql).toContain('REVOKE EXECUTE ON FUNCTION public.match_semantic_content(vector, float, int) FROM PUBLIC, anon;');
+  });
+
   it('does not re-open unauthenticated ad access through the client fallback', () => {
     const cors = source('supabase/functions/_shared/cors.ts');
     const edge = source('supabase/functions/list-ads/index.ts');

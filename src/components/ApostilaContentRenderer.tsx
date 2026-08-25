@@ -12,6 +12,16 @@ import { AudioQuizSystem } from './AudioQuizSystem';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
+const MATH_TOKEN_PREFIX = '__DECODE_MATH_';
+const HTML_TABLE_TOKEN_PREFIX = '__DECODE_HTML_TABLE_';
+
+function stripControlCharacters(value: string): string {
+  return Array.from(value).filter((char) => {
+    const code = char.charCodeAt(0);
+    return code >= 0x20 && code !== 0x7f;
+  }).join('');
+}
+
 /**
  * Limpa marcadores markdown inline (negrito, itálico, código inline, links etc.)
  * mantendo o texto puro. NÃO toca em blocos especiais (já extraídos antes).
@@ -70,7 +80,7 @@ function shouldIncludeInToc(value: string): boolean {
   if (/^2[⁰¹²³⁴⁵⁶⁷⁸⁹]+$/u.test(text)) return false;
   if (/^\d+\s*bits?\s*[:=→-].*$/iu.test(text)) return false;
   if (/^\d+(?:\s*[×x*]\s*\d+){1,4}\s*$/u.test(text)) return false;
-  if (/^[\d\s⁰¹²³⁴⁵⁶⁷⁸⁹×x+−=<>.,:;()\/%→\-]+$/u.test(text)) return false;
+  if ([...text].every((char) => char === '/' || /^[\d\s⁰¹²³⁴⁵⁶⁷⁸⁹×x+−=<>.,:;()%→-]$/u.test(char))) return false;
   return true;
 }
 
@@ -79,9 +89,7 @@ function shouldIncludeInToc(value: string): boolean {
  * seguro de HTML inline.
  */
 export function safeUrl(raw: string): string {
-  const url = String(raw || '')
-    .trim()
-    .replace(/[\u0000-\u001f\u007f]/g, '')
+  const url = stripControlCharacters(String(raw || '').trim())
     .replace(/&#(\d+);?/g, (_m, d) => String.fromCharCode(Number(d)));
   if (/^\s*(javascript|data|vbscript|file)\s*:/i.test(url)) return '#';
   if (/^(https?:|mailto:|tel:|\/|#|\.)/i.test(url)) return url;
@@ -100,7 +108,7 @@ function sanitizeHtml(html: string): string {
       'code', 'pre', 'blockquote', 'img', 'hr'
     ],
     ALLOWED_ATTR: ['style', 'class', 'href', 'target', 'rel', 'src', 'alt', 'width', 'height', 'align', 'data-float', 'data-mx', 'data-my', 'data-align', 'border', 'cellpadding', 'cellspacing'],
-    ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto|tel):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
+    ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto|tel):|[^a-z]|[a-z+.-]+(?:[^a-z+.-:]|$))/i,
     FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover', 'onfocus', 'onblur', 'formaction'],
   });
 }
@@ -121,15 +129,15 @@ function renderInline(input: string): { __html: string } {
   let safe = input
     .replace(/\$\$([\s\S]+?)\$\$/g, (_m, tex) => {
       mathPlaceholders.push(renderMathToHTML(String(tex).trim(), true));
-      return `\u0000MATH${mathPlaceholders.length - 1}\u0000`;
+      return `${MATH_TOKEN_PREFIX}${mathPlaceholders.length - 1}__`;
     })
     .replace(/\\\[([\s\S]+?)\\\]/g, (_m, tex) => {
       mathPlaceholders.push(renderMathToHTML(String(tex).trim(), true));
-      return `\u0000MATH${mathPlaceholders.length - 1}\u0000`;
+      return `${MATH_TOKEN_PREFIX}${mathPlaceholders.length - 1}__`;
     })
     .replace(/\\\(([\s\S]+?)\\\)/g, (_m, tex) => {
       mathPlaceholders.push(renderMathToHTML(String(tex).trim(), false));
-      return `\u0000MATH${mathPlaceholders.length - 1}\u0000`;
+      return `${MATH_TOKEN_PREFIX}${mathPlaceholders.length - 1}__`;
     })
     .replace(/(^|[^\\$])\$([^\n$]+?)\$(?!\d)/g, (full, pre, tex) => {
       const t = String(tex).trim();
@@ -144,7 +152,7 @@ function renderInline(input: string): { __html: string } {
         || /^[a-zA-Z]\(.*\)$/.test(t);
       if (!looksMath) return full;
       mathPlaceholders.push(renderMathToHTML(t, false));
-      return `${pre}\u0000MATH${mathPlaceholders.length - 1}\u0000`;
+      return `${pre}${MATH_TOKEN_PREFIX}${mathPlaceholders.length - 1}__`;
     });
 
   // 1. Markdown inline → HTML
@@ -163,7 +171,7 @@ function renderInline(input: string): { __html: string } {
   safe = sanitizeHtml(safe);
 
   // 3. Restaura blocos KaTeX (HTML pronto) por último — sem escape/purify (confiável)
-  safe = safe.replace(/\u0000MATH(\d+)\u0000/g, (_m, i) => mathPlaceholders[Number(i)] || '');
+  safe = safe.replace(/__DECODE_MATH_(\d+)__/g, (_m, i) => mathPlaceholders[Number(i)] || '');
 
   return { __html: safe };
 }
@@ -432,7 +440,7 @@ function parseBlocks(rawInput: string): Block[] {
   if (!rawInput) return blocks;
   const raw = wrapInferredCodeBlocks(normalizeMarkdownEscapes(rawInput));
   const htmlTables: string[] = [];
-  const tableToken = (index: number) => `\u0000HTML_TABLE_${index}\u0000`;
+  const tableToken = (index: number) => `${HTML_TABLE_TOKEN_PREFIX}${index}__`;
   const extractHtmlTables = (text: string) => text.replace(
     /<table\b[\s\S]*?<\/table\s*>/gi,
     (table) => `\n${tableToken(htmlTables.push(table) - 1)}\n`,
@@ -491,7 +499,7 @@ function parseBlocks(rawInput: string): Block[] {
       // linha vazia
       if (!trimmed) { flushParagraph(); i++; continue; }
 
-      const htmlTableMatch = trimmed.match(/^\u0000HTML_TABLE_(\d+)\u0000$/);
+      const htmlTableMatch = trimmed.match(/^__DECODE_HTML_TABLE_(\d+)__$/);
       if (htmlTableMatch) {
         flushParagraph();
         const html = htmlTables[Number(htmlTableMatch[1])];
@@ -757,7 +765,7 @@ function isFilenameLikeAlt(alt: string): boolean {
   if (!t) return true;
   if (/\.(png|jpe?g|gif|webp|svg|bmp|avif)$/i.test(t)) return true;
   if (/^(IMG[_\-\s]?\d|Screenshot|Captura|Gemini[_ ]Generated|ChatGPT Image|image[_\-\s]?\d|photo[_\-\s]?\d|untitled)/i.test(t)) return true;
-  if (/^[a-z0-9_\-]{10,}$/i.test(t)) return true;
+  if (/^[a-z0-9_-]{10,}$/i.test(t)) return true;
   return false;
 }
 
@@ -894,7 +902,7 @@ function AudioQuizBlock({ aulaId, quizId }: { aulaId: string; quizId: string }) 
         audioUrl: '', // Será extraído do bloco de áudio anterior se necessário ou deixado vazio para pular
         questaoId: quizId
       }}
-      quiz={quizData as any}
+      quiz={quizData}
     />
   );
 }

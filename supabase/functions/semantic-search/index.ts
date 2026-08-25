@@ -6,7 +6,7 @@ import { requireUser } from "../_shared/auth-guard.ts";
 const GEMINI_API_KEY = Deno.env.get("GOOGLE_AI_API_KEY");
 const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -18,12 +18,14 @@ serve(async (req) => {
 
   try {
     const { query } = await req.json();
-    if (!query) {
-      return new Response(JSON.stringify({ error: "Query is required" }), {
+    if (typeof query !== "string" || query.trim().length < 2 || query.trim().length > 1000) {
+      return new Response(JSON.stringify({ error: "Query must contain between 2 and 1000 characters" }), {
         status: 400,
         headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
+    const normalizedQuery = query.trim();
+    const authorization = req.headers.get("Authorization") || req.headers.get("authorization");
 
     // 1. Generate embedding for the query
     let embedding: number[] | null = null;
@@ -35,7 +37,7 @@ serve(async (req) => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            content: { parts: [{ text: query }] },
+            content: { parts: [{ text: normalizedQuery }] },
           }),
         }
       );
@@ -53,7 +55,7 @@ serve(async (req) => {
         },
         body: JSON.stringify({
           model: "google/text-embedding-004",
-          input: query,
+          input: normalizedQuery,
         }),
       });
       const data = await resp.json();
@@ -64,8 +66,11 @@ serve(async (req) => {
       throw new Error("Failed to generate embedding");
     }
 
-    // 2. Search database using the embedding
-    const supabase = createClient(SUPABASE_URL, SERVICE_ROLE);
+    // 2. Search database using the caller JWT. The RPC reads auth.uid()
+    // and applies the same content scope used by the rest of the app.
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      global: { headers: { Authorization: authorization || "" } },
+    });
     const { data: results, error } = await supabase.rpc("match_semantic_content", {
       query_embedding: embedding,
       match_threshold: 0.5,
@@ -79,7 +84,7 @@ serve(async (req) => {
     });
   } catch (e) {
     console.error("Semantic search error:", e);
-    return new Response(JSON.stringify({ error: e.message }), {
+    return new Response(JSON.stringify({ error: "Semantic search is temporarily unavailable" }), {
       status: 500,
       headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
