@@ -80,6 +80,11 @@ createRoot(document.getElementById("root")!).render(
     <App />
   </ErrorBoundary>,
 );
+try {
+  sessionStorage.removeItem("decode_cache_recovery_attempted");
+} catch {
+  // Alguns modos privados bloqueiam o sessionStorage; o app continua normalmente.
+}
 
 // Primeiro invalida artefatos de outra versão; depois registra o worker atual.
 // Essa ordem evita que um worker antigo reassuma o controle durante a limpeza.
