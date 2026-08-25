@@ -9,7 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { lazy, Suspense } from "react";
 
 const EllaChat = lazy(() => import("./EllaChat").then((module) => ({ default: module.EllaChat })));
-import { getEllaAvatarUrl } from "@/lib/ellaAvatar";
+import { DEFAULT_ELLA_AVATAR, getEllaAvatarUrl } from "@/lib/ellaAvatar";
 import { cn } from "@/lib/utils";
 
 const HIDDEN_ROUTES = ["/", "/login", "/reset-password", "/termos"];
@@ -92,7 +92,7 @@ export function EllaSidebar() {
                 onLoadingStatusChange={(status) => {
                   if (status === 'error') {
                     console.warn("Avatar load error, forcing fallback");
-                    setAvatarUrl("/ella-avatar.png");
+                    setAvatarUrl(DEFAULT_ELLA_AVATAR);
                   }
                 }}
               />
