@@ -1,7 +1,39 @@
-import { getCorsHeaders } from "../_shared/cors.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
+const ALLOWED_ORIGINS = new Set([
+  "https://decodeanalyticsacademy.lovable.app",
+  "https://decodeanalyticsacademy.vercel.app",
+  "https://id-preview--4dd1aec2-9175-4ae9-9401-8637f1ffe1a2.lovable.app",
+  "https://decodeanalyticsacademy.com.br",
+  "https://www.decodeanalyticsacademy.com.br",
+  "http://localhost:8080",
+  "http://localhost:5173",
+  "http://127.0.0.1:8080",
+]);
+const ALLOWED_SUFFIXES = [".lovable.app", ".lovableproject.com", ".lovableproject-dev.com"];
+
+function getCorsHeaders(req: Request): Record<string, string> {
+  const origin = req.headers.get("origin");
+  const headers: Record<string, string> = {
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Max-Age": "86400",
+    "Vary": "Origin",
+  };
+
+  if (origin && (ALLOWED_ORIGINS.has(origin) || (() => {
+    try {
+      return ALLOWED_SUFFIXES.some((suffix) => new URL(origin).hostname.endsWith(suffix));
+    } catch {
+      return false;
+    }
+  })())) {
+    headers["Access-Control-Allow-Origin"] = origin;
+  }
+
+  return headers;
+}
 
 const QUESTIONS_PER_SIMULADO = 20;
 
@@ -91,7 +123,7 @@ serve(async (req) => {
 
     let poolQuery = admin
       .from("exercises")
-      .select("id, question, options, correct_answer, explanation, apostila_id, type, apostilas!inner(id, title, category, published)")
+      .select("id, question, options, apostila_id, type, exercise_answers(correct_answer, explanation), apostilas!inner(id, title, category, published)")
       .eq("type", "multiple_choice")
       .eq("apostilas.published", true);
 
@@ -104,10 +136,22 @@ serve(async (req) => {
       );
     }
 
-    const { data: pool } = await poolQuery.limit(500);
+    const { data: rawPool } = await poolQuery.limit(500);
+    const pool = (rawPool ?? [])
+      .map((ex: any) => {
+        const answer = Array.isArray(ex.exercise_answers)
+          ? ex.exercise_answers[0]
+          : ex.exercise_answers;
+        return {
+          ...ex,
+          correct_answer: answer?.correct_answer ?? null,
+          explanation: answer?.explanation ?? null,
+        };
+      })
+      .filter((ex: any) => typeof ex.correct_answer === "string" && ex.correct_answer.trim().length > 0);
 
-    if (!pool || pool.length === 0) {
-      return new Response(JSON.stringify({ error: "Ainda não há exercícios suficientes no banco para montar um simulado." }), {
+    if (pool.length === 0) {
+      return new Response(JSON.stringify({ error: "Ainda não há exercícios com gabarito disponível para montar um simulado." }), {
         status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }

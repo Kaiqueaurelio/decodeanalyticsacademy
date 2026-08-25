@@ -4193,6 +4193,16 @@ export type Database = {
           xp: number
         }[]
       }
+      log_study_activity: {
+        Args: {
+          _chapters?: number
+          _exercises?: number
+          _minutes?: number
+          _user_id: string
+          _xp?: number
+        }
+        Returns: undefined
+      }
       get_public_jobs: {
         Args: never
         Returns: {

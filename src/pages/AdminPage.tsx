@@ -109,6 +109,11 @@ const LazyNewApostilaPageButton = React.lazy(() =>
 type Apostila = Tables<'apostilas'>;
 type AdminApostila = Apostila & { saved_date?: string | null };
 type Exercise = Tables<'exercises'>;
+type AdminExercise = Exercise & {
+  correct_answer: string | null;
+  explanation: string | null;
+  reference_answer: string | null;
+};
 type Material = Tables<'materials'>;
 
 const SEMESTER_MAP: Record<number, string> = {
@@ -754,7 +759,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
   }, [propSetTab, navigate, location.pathname]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [apostilas, setApostilas] = useState<AdminApostila[]>([]);
-  const [exercises, setExercises] = useState<Record<string, Exercise[]>>({});
+  const [exercises, setExercises] = useState<Record<string, AdminExercise[]>>({});
   const [dbCategories, setDbCategories] = useState<{ id: string; name: string; sort_order: number }[]>([]);
   const [allAnswers, setAllAnswers] = useState<any[]>([]);
   const [materials, setMaterials] = useState<Material[]>([]);
@@ -990,8 +995,12 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
       ...apostila,
       saved_date: latestDateByApostila.get(apostila.id) ?? null,
     })));
-    const map: Record<string, Exercise[]> = {};
-    ex?.forEach(e => { if (!map[e.apostila_id]) map[e.apostila_id] = []; map[e.apostila_id].push(e); });
+    const map: Record<string, AdminExercise[]> = {};
+    ex?.forEach(e => {
+      const exercise = e as AdminExercise;
+      if (!map[exercise.apostila_id]) map[exercise.apostila_id] = [];
+      map[exercise.apostila_id].push(exercise);
+    });
     setExercises(map);
     setAllAnswers(ans || []);
     setMaterials(mats || []);
@@ -1054,7 +1063,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
         const { error: uploadErr } = await supabase.storage.from('materials').upload(path, file, { contentType: file.type || undefined, upsert: false });
         if (uploadErr) throw uploadErr;
         const { data: urlData } = supabase.storage.from('materials').getPublicUrl(path);
-        await supabase.from('materials').insert({ title, type: detectedType as any, file_url: urlData.publicUrl, file_path: path, created_by: user.id });
+        await supabase.from('materials').insert({ title, type: detectedType as any, file_url: urlData.publicUrl, file_path: path, created_by: user.id, created_at: new Date().toISOString() });
         success++;
       } catch (err: any) { toast.error(`Erro em "${file.name}": ${err.message}`); }
     }
@@ -3500,7 +3509,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                                   const { error } = await supabase.from('materials').insert({
                                     title: matTitle.trim(), description: matDesc || null, type: matType as any,
                                     file_url: urlData.publicUrl, file_path: path, created_by: user.id,
-                                    category_id: catMatch?.id || null,
+                                    category_id: catMatch?.id || null, created_at: new Date().toISOString(),
                                   });
                                   if (error) throw error;
                                   toast.success('Material adicionado!');
@@ -3550,6 +3559,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                               const { error } = await supabase.from('materials').insert({
                                 title: matTitle.trim(), description: matDesc || null, type: 'link' as any,
                                 file_url: matUrl.trim(), created_by: user.id,
+                                created_at: new Date().toISOString(),
                               });
                               if (error) throw error;
                               toast.success('Link adicionado!');

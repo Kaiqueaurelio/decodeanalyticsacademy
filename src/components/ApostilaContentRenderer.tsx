@@ -15,6 +15,10 @@ import { supabase } from '@/integrations/supabase/client';
 const MATH_TOKEN_PREFIX = '__DECODE_MATH_';
 const HTML_TABLE_TOKEN_PREFIX = '__DECODE_HTML_TABLE_';
 
+function toArray(value: unknown): any[] {
+  return Array.isArray(value) ? value : [];
+}
+
 function stripControlCharacters(value: string): string {
   return Array.from(value).filter((char) => {
     const code = char.charCodeAt(0);
@@ -886,7 +890,14 @@ function AudioQuizBlock({ aulaId, quizId }: { aulaId: string; quizId: string }) 
 
       if (qError) throw qError;
 
-      return { ...quiz, questions };
+      return {
+        ...quiz,
+        questions: (questions ?? []).map((question) => ({
+          ...question,
+          options: toArray(question.options),
+          match_options: toArray(question.match_options),
+        })),
+      };
     },
     enabled: !!quizId
   });

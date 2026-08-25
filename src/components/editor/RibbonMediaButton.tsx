@@ -62,6 +62,7 @@ export function RibbonMediaButton({ onMediaInserted, apostilaId }: Props) {
           title: file.name,
           file_url: url,
           type: matType as any,
+          created_at: new Date().toISOString(),
         })
         .select()
         .single();
