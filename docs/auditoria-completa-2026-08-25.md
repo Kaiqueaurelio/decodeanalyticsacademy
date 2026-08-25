@@ -59,3 +59,7 @@ A proteção de deployment do projeto Vercel está desativada; o bloqueio de pro
 Foi executado `npm audit fix` sem `--force`, atualizando somente o lockfile com correções compatíveis: Vite 5.4.19 para 5.4.21, além de minimatch, brace-expansion, js-yaml e flatted. O número caiu de 13 para 9 vulnerabilidades: 5 altas e 4 moderadas. As restantes exigem mudanças potencialmente incompatíveis, incluindo `epubjs@0.4.2`, `pptxgenjs@1.1.5` ou `vite@8.2.2`, por isso não foram aplicadas automaticamente.
 
 Após essa rodada, o lint direcionado de autenticação e renderer ficou sem erros, restando três warnings não bloqueantes de dependência do React Hook e Fast Refresh. A suíte completa continua com 20 arquivos e 124 testes aprovados; o type-check e o build também continuam aprovados.
+
+## Preview final desta rodada
+
+O último commit `2cc2bb09` (`chore: apply safe dependency updates`) gerou o preview Vercel `https://decodeanalyticsacademy-f1wfsgxxm-decode-analytics-s-projects.vercel.app`, que terminou em estado `READY`. O build publicado nesse preview foi validado após as atualizações do lockfile e das rotinas de autenticação. O domínio principal continua sujeito ao deployment de produção bloqueado por configuração de colaboração da Vercel.
