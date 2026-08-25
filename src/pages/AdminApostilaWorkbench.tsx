@@ -223,19 +223,22 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     const backupScope = selectedPageId || 'main';
     const backupKey = `apostila_backup_${apostilaId}_${backupScope}`;
     const localBackupRaw = localStorage.getItem(backupKey);
-    let localBackup: { title?: string; category?: string; content?: string; semester?: number | null; course?: CourseCode[]; timestamp?: string; scope?: string } | null = null;
+    let localBackup: { title?: string; category?: string; content?: string; semester?: number | null; course?: CourseCode[]; saved_date?: string | null; timestamp?: string; scope?: string } | null = null;
     try {
       if (localBackupRaw) localBackup = JSON.parse(localBackupRaw);
     } catch (e) {
       console.error('Erro ao ler backup local:', e);
     }
 
-    const applyMainState = (source: { title?: string; category?: string; content?: string; semester?: number | null; course?: CourseCode[] }) => {
+    const applyMainState = (source: { title?: string; category?: string; content?: string; semester?: number | null; course?: CourseCode[]; saved_date?: string | null; updated_at?: string | null; created_at?: string | null }) => {
       setTitle(source.title || '');
       setCategory(source.category || '');
       setContent(source.content || '');
       setSemester(source.semester ?? null);
       setCourse(source.course ?? []);
+      // A data precisa ser carregada junto com a apostila; antes ela ficava
+      // apenas no estado inicial e o campo do topo aparentava não salvar.
+      setSavedDate(source.saved_date || getApostilaPageSavedDate(source) || getLocalDateIso());
     };
 
     const mainState = {
@@ -244,6 +247,9 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       content: ap.content || (ap as any).content_backup || '',
       semester: (ap as any).semester ?? null,
       course: ((ap as any).course as CourseCode[] | null) ?? [],
+      saved_date: (ap as any).saved_date ?? null,
+      updated_at: ap.updated_at,
+      created_at: ap.created_at,
     };
 
     if (!selectedPageId && localBackup?.scope === 'main' && localBackup.timestamp && new Date(localBackup.timestamp) > new Date(ap.updated_at)) {
@@ -277,7 +283,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       const pageScope = selectedPage.id;
       const pageBackupKey = `apostila_backup_${apostilaId}_${pageScope}`;
       const pageBackupRaw = localStorage.getItem(pageBackupKey);
-      let pageBackup: { title?: string; content?: string; timestamp?: string; scope?: string } | null = null;
+      let pageBackup: { title?: string; content?: string; saved_date?: string | null; timestamp?: string; scope?: string } | null = null;
       try {
         if (pageBackupRaw) pageBackup = JSON.parse(pageBackupRaw);
       } catch (e) {
@@ -286,7 +292,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
 
       setContent(selectedPage.content || '');
       setTitle(selectedPage.title || '');
-      setSavedDate(selectedPage.saved_date || getLocalDateIso());
+      setSavedDate(getApostilaPageSavedDate(selectedPage) || getLocalDateIso());
       if (pageBackup?.scope === pageScope && pageBackup.timestamp && new Date(pageBackup.timestamp) > new Date(selectedPage.updated_at)) {
         toast.info('Recuperamos uma edição não salva desta página.', {
           description: `Última alteração local em ${new Date(pageBackup.timestamp).toLocaleTimeString()}`,
@@ -294,6 +300,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         });
         setContent(pageBackup.content || '');
         setTitle(pageBackup.title || selectedPage.title || '');
+        setSavedDate(pageBackup.saved_date || getApostilaPageSavedDate(selectedPage) || getLocalDateIso());
       }
     } else if (selectedPageId) {
       toast.error('A nova página ainda não foi sincronizada. Tentando carregar novamente.');
