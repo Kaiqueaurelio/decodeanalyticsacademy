@@ -1,4 +1,4 @@
-import { ReactNode, useState } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { StudentSidebar } from './StudentSidebar';
 import { DashboardTopbar } from './DashboardTopbar';
 
@@ -11,7 +11,14 @@ interface StudentAppShellProps {
  * Mantém sidebar, topbar, fundo e espaçamento iguais em todas as abas.
  */
 export function StudentAppShell({ children }: StudentAppShellProps) {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.localStorage.getItem('decode_sidebar_collapsed') === 'true';
+  });
+
+  useEffect(() => {
+    window.localStorage.setItem('decode_sidebar_collapsed', String(sidebarCollapsed));
+  }, [sidebarCollapsed]);
 
   return (
     <div className="min-h-dvh bg-background text-foreground">
