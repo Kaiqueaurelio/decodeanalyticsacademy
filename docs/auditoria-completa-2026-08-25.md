@@ -39,3 +39,13 @@ A suíte focada passou com **21 testes**, a suíte completa passou com **20 arqu
 ## Limitações da auditoria autenticada
 
 O teste efetivo das telas de aluno e administrador não foi executado com uma senha recebida por mensagem. O acesso autenticado deve ser feito por login direto no navegador ou por uma conta temporária de teste. A análise estática cobriu os guards, as rotas, as queries e os pontos de autorização, e os endpoints públicos foram testados sem sessão.
+
+## Publicação das correções
+
+As alterações foram commitadas e enviadas ao `main` no commit `489b1fd0` (`security: harden app audit findings`). O novo deployment Vercel `dpl_8t74dHeK5tLk2GsHfSzRYa5FdNNL` ficou `READY` no alias `decodeanalyticsacademy-oqxa348t5-decode-analytics-s-projects.vercel.app`. A verificação do bundle confirmou `HTML_TABLE` e `dangerouslySetInnerHTML` no chunk publicado, compatíveis com o renderer corrigido.
+
+O domínio principal `decodeanalyticsacademy.vercel.app` continua servindo o deployment antigo (`index-Dc2uOsr8.js`), enquanto o alias de branch aponta para o novo build (`index-msEr4oV3.js`). Portanto, a aplicação corrigida já está compilada e acessível no alias novo, mas o apontamento de produção/domínio principal ainda precisa ser atualizado no Vercel para que todos os alunos recebam a versão corrigida.
+
+## Verificação visual do novo deployment
+
+A landing do deployment `decodeanalyticsacademy-oqxa348t5-decode-analytics-s-projects.vercel.app` carregou após o splash inicial, apresentou navegação, hero, CTA e seções de recursos, e não exibiu tela branca. O console do navegador não registrou erros ou promessas não tratadas durante o carregamento observado.
