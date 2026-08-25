@@ -16,6 +16,7 @@ import { AdPopup } from '@/components/AdPopup';
 import { AdDraftPreviewOverlay } from '@/components/admin/AdDraftPreviewOverlay';
 import { EllaSidebar } from '@/components/ella/EllaSidebar';
 import { PersistentAdSpot } from '@/components/PersistentAdSpot';
+import { StudentAppShell } from '@/components/dashboard/StudentAppShell';
 
 // Lazy load pages
 const LandingPage = lazy(() => import('@/pages/LandingPage'));
@@ -127,37 +128,37 @@ const AppContent = () => {
 
                 {/* App Routes (Protected) */}
                 <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-                <Route path="/apostila/:id" element={<ProtectedRoute><ApostilaPage /></ProtectedRoute>} />
-                <Route path="/reader/:id" element={<ProtectedRoute><ApostilaReaderPage /></ProtectedRoute>} />
-                <Route path="/aula-do-dia" element={<ProtectedRoute><ApostilaDoDiaPage /></ProtectedRoute>} />
-                <Route path="/materia/:id" element={<ProtectedRoute><SubjectPage /></ProtectedRoute>} />
-                <Route path="/caderno/:notebookId" element={<ProtectedRoute><NotebookPage /></ProtectedRoute>} />
-                <Route path="/simulado/:id" element={<ProtectedRoute><SimuladoPage /></ProtectedRoute>} />
-                <Route path="/exercises/:id" element={<ProtectedRoute><ExercisesPage /></ProtectedRoute>} />
-                <Route path="/exercicios" element={<ProtectedRoute><ExerciciosIndexPage /></ProtectedRoute>} />
-                <Route path="/gabaritos" element={<ProtectedRoute><GabaritosPage /></ProtectedRoute>} />
-                <Route path="/eventos" element={<ProtectedRoute><EventsPage /></ProtectedRoute>} />
-                <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-                <Route path="/biblioteca" element={<ProtectedRoute><BibliotecaPage /></ProtectedRoute>} />
-                <Route path="/livros" element={<ProtectedRoute><PlayBooksPage /></ProtectedRoute>} />
-                <Route path="/cursos" element={<ProtectedRoute><CoursesPage /></ProtectedRoute>} />
+                <Route path="/apostila/:id" element={<ProtectedRoute><StudentAppShell><ApostilaPage /></StudentAppShell></ProtectedRoute>} />
+                <Route path="/reader/:id" element={<ProtectedRoute><StudentAppShell><ApostilaReaderPage /></StudentAppShell></ProtectedRoute>} />
+                <Route path="/aula-do-dia" element={<ProtectedRoute><StudentAppShell><ApostilaDoDiaPage /></StudentAppShell></ProtectedRoute>} />
+                <Route path="/materia/:id" element={<ProtectedRoute><StudentAppShell><SubjectPage /></StudentAppShell></ProtectedRoute>} />
+                <Route path="/caderno/:notebookId" element={<ProtectedRoute><StudentAppShell><NotebookPage /></StudentAppShell></ProtectedRoute>} />
+                <Route path="/simulado/:id" element={<ProtectedRoute><StudentAppShell><SimuladoPage /></StudentAppShell></ProtectedRoute>} />
+                <Route path="/exercises/:id" element={<ProtectedRoute><StudentAppShell><ExercisesPage /></StudentAppShell></ProtectedRoute>} />
+                <Route path="/exercicios" element={<ProtectedRoute><StudentAppShell><ExerciciosIndexPage /></StudentAppShell></ProtectedRoute>} />
+                <Route path="/gabaritos" element={<ProtectedRoute><StudentAppShell><GabaritosPage /></StudentAppShell></ProtectedRoute>} />
+                <Route path="/eventos" element={<ProtectedRoute><StudentAppShell><EventsPage /></StudentAppShell></ProtectedRoute>} />
+                <Route path="/profile" element={<ProtectedRoute><StudentAppShell><ProfilePage /></StudentAppShell></ProtectedRoute>} />
+                <Route path="/biblioteca" element={<ProtectedRoute><StudentAppShell><BibliotecaPage /></StudentAppShell></ProtectedRoute>} />
+                <Route path="/livros" element={<ProtectedRoute><StudentAppShell><PlayBooksPage /></StudentAppShell></ProtectedRoute>} />
+                <Route path="/cursos" element={<ProtectedRoute><StudentAppShell><CoursesPage /></StudentAppShell></ProtectedRoute>} />
                 <Route path="/vagas" element={<JobsPage />} />
-                <Route path="/materiais" element={<ProtectedRoute><MaterialsPage /></ProtectedRoute>} />
-                <Route path="/video/:id" element={<ProtectedRoute><VideoPlayerPage /></ProtectedRoute>} />
-                <Route path="/calculadora" element={<ProtectedRoute><CalculadoraPage /></ProtectedRoute>} />
-                <Route path="/comunidade" element={<ProtectedRoute><CommunityPage /></ProtectedRoute>} />
-                <Route path="/ella" element={<ProtectedRoute><EllaPage /></ProtectedRoute>} />
-                <Route path="/flashcards" element={<ProtectedRoute><FlashcardsPage /></ProtectedRoute>} />
-                <Route path="/noticias" element={<ProtectedRoute><NewsPage /></ProtectedRoute>} />
-                <Route path="/performance" element={<ProtectedRoute><PerformancePage /></ProtectedRoute>} />
-                <Route path="/plano-de-estudos" element={<ProtectedRoute><PlanoEstudosPage /></ProtectedRoute>} />
-                <Route path="/revisao-prova/:eventId" element={<ProtectedRoute><PreExamReviewPage /></ProtectedRoute>} />
-                <Route path="/review" element={<ProtectedRoute><ReviewPage /></ProtectedRoute>} />
-                <Route path="/horarios" element={<ProtectedRoute><SchedulePage /></ProtectedRoute>} />
-                <Route path="/tira-duvida" element={<ProtectedRoute><TiraDuvidaPage /></ProtectedRoute>} />
+                <Route path="/materiais" element={<ProtectedRoute><StudentAppShell><MaterialsPage /></StudentAppShell></ProtectedRoute>} />
+                <Route path="/video/:id" element={<ProtectedRoute><StudentAppShell><VideoPlayerPage /></StudentAppShell></ProtectedRoute>} />
+                <Route path="/calculadora" element={<ProtectedRoute><StudentAppShell><CalculadoraPage /></StudentAppShell></ProtectedRoute>} />
+                <Route path="/comunidade" element={<ProtectedRoute><StudentAppShell><CommunityPage /></StudentAppShell></ProtectedRoute>} />
+                <Route path="/ella" element={<ProtectedRoute><StudentAppShell><EllaPage /></StudentAppShell></ProtectedRoute>} />
+                <Route path="/flashcards" element={<ProtectedRoute><StudentAppShell><FlashcardsPage /></StudentAppShell></ProtectedRoute>} />
+                <Route path="/noticias" element={<ProtectedRoute><StudentAppShell><NewsPage /></StudentAppShell></ProtectedRoute>} />
+                <Route path="/performance" element={<ProtectedRoute><StudentAppShell><PerformancePage /></StudentAppShell></ProtectedRoute>} />
+                <Route path="/plano-de-estudos" element={<ProtectedRoute><StudentAppShell><PlanoEstudosPage /></StudentAppShell></ProtectedRoute>} />
+                <Route path="/revisao-prova/:eventId" element={<ProtectedRoute><StudentAppShell><PreExamReviewPage /></StudentAppShell></ProtectedRoute>} />
+                <Route path="/review" element={<ProtectedRoute><StudentAppShell><ReviewPage /></StudentAppShell></ProtectedRoute>} />
+                <Route path="/horarios" element={<ProtectedRoute><StudentAppShell><SchedulePage /></StudentAppShell></ProtectedRoute>} />
+                <Route path="/tira-duvida" element={<ProtectedRoute><StudentAppShell><TiraDuvidaPage /></StudentAppShell></ProtectedRoute>} />
                 <Route path="/tira-duvidas" element={<Navigate to="/tira-duvida" replace />} />
 
-                <Route path="/simulado" element={<ProtectedRoute><SimuladoPage /></ProtectedRoute>} />
+                <Route path="/simulado" element={<ProtectedRoute><StudentAppShell><SimuladoPage /></StudentAppShell></ProtectedRoute>} />
                 <Route path="/apoie" element={<Navigate to="/apoio" replace />} />
                 <Route path="/apostilas" element={<Navigate to="/dashboard#apostilas" replace />} />
                 <Route path="/community" element={<Navigate to="/comunidade" replace />} />
