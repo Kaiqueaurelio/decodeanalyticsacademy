@@ -33,5 +33,6 @@ REVOKE EXECUTE ON FUNCTION public.update_ad_counters() FROM authenticated;
 REVOKE EXECUTE ON FUNCTION public.update_updated_at_column() FROM authenticated;
 
 ALTER FUNCTION public.get_leaderboard() SET search_path = public;
+ALTER FUNCTION public.parse_apostila_date(text, text, text) SET search_path = public;
 ALTER FUNCTION public.update_updated_at_column() SET search_path = public;
 ALTER FUNCTION public.update_ad_stats() SET search_path = public;
