@@ -6,7 +6,7 @@ import { AppImage } from '@/components/ui/app-image';
 import { highlightCode } from '@/lib/shiki-highlighter';
 import { cn } from '@/lib/utils';
 import { renderMathToHTML } from '@/lib/math-render';
-import { normalizeRichContent, normalizeSectionTitle } from '@/lib/content-formatting';
+import { normalizeMarkdownEscapes, normalizeRichContent, normalizeSectionTitle } from '@/lib/content-formatting';
 import { ProfessionalAudioPlayer } from './ProfessionalAudioPlayer';
 import { AudioQuizSystem } from './AudioQuizSystem';
 import { useQuery } from '@tanstack/react-query';
@@ -175,6 +175,7 @@ type Block =
   | { type: 'quote'; content: string }
   | { type: 'callout'; kind: 'info' | 'tip' | 'warning'; title: string; content: string }
   | { type: 'table'; header: string[]; rows: string[][] }
+  | { type: 'html-table'; html: string }
   | { type: 'code'; lang: string; code: string }
   | {
       type: 'image';
@@ -417,11 +418,25 @@ function processUnfenced(raw: string): string {
   return out.join('\n');
 }
 
+function normalizeHtmlTableMarkup(fragment: string): string {
+  const trimmed = fragment.trim();
+  if (/^<table\b/i.test(trimmed)) return trimmed;
+  if (/^<(?:thead|tbody)\b/i.test(trimmed)) return `<table>${trimmed}</table>`;
+  if (/^<tr\b/i.test(trimmed)) return `<table><tbody>${trimmed}</tbody></table>`;
+  return `<table><tbody><tr>${trimmed}</tr></tbody></table>`;
+}
+
 /** Quebra o conteúdo de uma seção em blocos tipados. */
 function parseBlocks(rawInput: string): Block[] {
   const blocks: Block[] = [];
   if (!rawInput) return blocks;
-  const raw = wrapInferredCodeBlocks(rawInput);
+  const raw = wrapInferredCodeBlocks(normalizeMarkdownEscapes(rawInput));
+  const htmlTables: string[] = [];
+  const tableToken = (index: number) => `\u0000HTML_TABLE_${index}\u0000`;
+  const extractHtmlTables = (text: string) => text.replace(
+    /<table\b[\s\S]*?<\/table\s*>/gi,
+    (table) => `\n${tableToken(htmlTables.push(table) - 1)}\n`,
+  );
 
   // 1) Extrai blocos de código triplos
   const codeRe = /```(\w+)?\n?([\s\S]*?)```/g;
@@ -442,7 +457,7 @@ function parseBlocks(rawInput: string): Block[] {
       continue;
     }
 
-    const lines = seg.text.split('\n');
+    const lines = extractHtmlTables(seg.text).split('\n');
     let i = 0;
     let paragraph: string[] = [];
 
@@ -475,6 +490,15 @@ function parseBlocks(rawInput: string): Block[] {
 
       // linha vazia
       if (!trimmed) { flushParagraph(); i++; continue; }
+
+      const htmlTableMatch = trimmed.match(/^\u0000HTML_TABLE_(\d+)\u0000$/);
+      if (htmlTableMatch) {
+        flushParagraph();
+        const html = htmlTables[Number(htmlTableMatch[1])];
+        if (html) blocks.push({ type: 'html-table', html: normalizeHtmlTableMarkup(html) });
+        i++;
+        continue;
+      }
 
       // divisor horizontal
       if (/^\s*(?:-{3,}|\*{3,}|_{3,})\s*$/.test(trimmed)) {
@@ -937,6 +961,15 @@ function ListBlock({ items, ordered }: { items: string[]; ordered: boolean }) {
   );
 }
 
+function HtmlTableBlock({ html }: { html: string }) {
+  return (
+    <div
+      className="my-10 overflow-x-auto rounded-2xl border border-border/40 bg-card/40 shadow-xl backdrop-blur-sm"
+      dangerouslySetInnerHTML={{ __html: sanitizeHtml(normalizeHtmlTableMarkup(html)) }}
+    />
+  );
+}
+
 function TableBlock({ header, rows }: { header: string[]; rows: string[][] }) {
   return (
     <div className="my-10 overflow-x-auto rounded-2xl border border-border/40 bg-card/40 shadow-xl backdrop-blur-sm">
@@ -1185,6 +1218,7 @@ export function ApostilaContentRenderer({ content, activeHeadingId }: Props) {
           case 'quote': return <QuoteBlock key={i} content={b.content} />;
           case 'list': return <ListBlock key={i} items={b.items} ordered={b.ordered} />;
           case 'table': return <TableBlock key={i} header={b.header} rows={b.rows} />;
+          case 'html-table': return <HtmlTableBlock key={i} html={b.html} />;
           case 'heading': return <HeadingBlock key={i} level={b.level} content={b.content} id={headingIds[i]} active={!!activeHeadingId && headingIds[i] === activeHeadingId} />;
           case 'divider':
             return (
@@ -1196,7 +1230,7 @@ export function ApostilaContentRenderer({ content, activeHeadingId }: Props) {
           default: {
             const isParagraph = b.type === 'paragraph';
             return (
-              <p
+              <div
                 key={i}
                 className="mb-5 last:mb-0 text-foreground/95 font-normal tracking-normal leading-relaxed"
                 dangerouslySetInnerHTML={renderInline(isParagraph ? b.content : '')}

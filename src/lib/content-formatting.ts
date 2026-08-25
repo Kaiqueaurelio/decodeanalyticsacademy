@@ -23,9 +23,24 @@ export function normalizeRichContent(value: string): string {
   return decodeHtmlEntities(value || '').replace(/\r\n/g, '\n');
 }
 
+/**
+ * Normaliza escapes de Markdown gerados por importadores/IA.
+ *
+ * Alguns conteúdos legados chegam como `1\\. Título`; isso é um marcador
+ * numerado válido, mas o parser não o reconhece enquanto a barra existir.
+ * A regra é restrita ao início de uma linha para não alterar código ou texto
+ * comum no meio de um parágrafo.
+ */
+export function normalizeMarkdownEscapes(value: string): string {
+  return normalizeRichContent(value || '').replace(
+    /^(\s*\d+(?:\.\d+)*)(\\)([.)])(\s+)/gm,
+    '$1$3$4',
+  );
+}
+
 /** Remove tags/markdown residuais dos títulos, preservando o texto legível. */
 export function stripInlineMarkup(value: string): string {
-  return normalizeRichContent(value || '')
+  return normalizeMarkdownEscapes(value || '')
     .replace(/<[^>]*>/g, '')
     .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
     .replace(/[*_~=`]+/g, '')

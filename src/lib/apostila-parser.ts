@@ -1,3 +1,5 @@
+import { normalizeMarkdownEscapes } from './content-formatting';
+
 export interface ApostilaSection {
   id: string;
   title: string;
@@ -78,7 +80,7 @@ function redistributeOrphanImages(sections: ApostilaSection[]): ApostilaSection[
 export function parseApostilaContent(raw: string | null): ApostilaSection[] {
   if (!raw) return [{ id: 'intro', title: 'Introdução', level: 1, content: '' }];
 
-  const lines = raw
+  const lines = normalizeMarkdownEscapes(raw)
     .replace(/\r\n/g, '\n')
     .split('\n')
     .filter((line) => !/^\s*(?:-{3,}|\*{3,}|_{3,})\s*$/.test(line));
