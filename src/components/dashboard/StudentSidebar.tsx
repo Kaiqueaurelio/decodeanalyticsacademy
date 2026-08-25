@@ -1,18 +1,26 @@
-import { useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import {
-  Home, BookOpen, ClipboardList, PenLine, FileText, GraduationCap, Library, 
-  Layers, RotateCcw, Trophy, NotebookPen, BriefcaseBusiness, Newspaper, 
-  Calculator, CalendarRange, Activity, HelpCircle, MessagesSquare, User, 
-  Heart, LogOut, LayoutDashboard, CheckSquare, ShieldCheck, ChevronsLeft,
-  Search, Terminal, Cpu, ChevronsRight
+  Home,
+  BookOpen,
+  ClipboardList,
+  PenLine,
+  FileText,
+  Trophy,
+  NotebookPen,
+  BriefcaseBusiness,
+  Newspaper,
+  CalendarRange,
+  CheckSquare,
+  ShieldCheck,
+  ChevronsLeft,
+  ChevronsRight,
+  Search,
+  LogOut,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserProfile } from '@/hooks/queries/useUserProfile';
 import logoOwl from '@/assets/owl-icon.png';
-import { Button } from '@/components/ui/button';
-import { GlitchText } from '@/components/login/GlitchText';
 import { PomodoroWidget } from '@/components/gamification/PomodoroWidget';
 
 const menuGroups = [
@@ -31,25 +39,63 @@ const menuGroups = [
       { to: '/exercicios', icon: PenLine, label: 'Exercícios' },
       { to: '/gabaritos', icon: CheckSquare, label: 'Gabaritos' },
       { to: '/simulado', icon: Trophy, label: 'Simulado' },
-      { to: '/plano-de-estudos', icon: NotebookPen, label: 'Plano' },
+      { to: '/plano-de-estudos', icon: NotebookPen, label: 'Plano de estudos' },
     ],
   },
   {
     label: 'Networking',
     items: [
-      { to: '/vagas', icon: BriefcaseBusiness, label: 'Vagas & Estágios' },
+      { to: '/vagas', icon: BriefcaseBusiness, label: 'Vagas e estágios' },
       { to: '/noticias', icon: Newspaper, label: 'News Tech' },
       { to: '/eventos', icon: CalendarRange, label: 'Eventos' },
     ],
   },
 ];
 
-export function SidebarContent({ onNavigate, collapsed = false }: { onNavigate?: () => void; collapsed?: boolean }) {
+type SidebarContentProps = {
+  onNavigate?: () => void;
+  collapsed?: boolean;
+  onToggle?: () => void;
+};
+
+function SidebarIconButton({
+  label,
+  children,
+  onClick,
+  active = false,
+  collapsed,
+}: {
+  label: string;
+  children: React.ReactNode;
+  onClick: () => void;
+  active?: boolean;
+  collapsed: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      aria-current={active ? 'page' : undefined}
+      className={`group relative flex min-h-10 w-full items-center gap-3 rounded-xl border px-3 text-left transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/70 ${
+        collapsed ? 'justify-center px-0' : ''
+      } ${
+        active
+          ? 'border-cyan-300/20 bg-cyan-300/[0.11] text-cyan-100 shadow-[inset_3px_0_0_#67e8f9]'
+          : 'border-transparent text-slate-400 hover:border-white/[0.07] hover:bg-white/[0.06] hover:text-slate-100'
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+export function SidebarContent({ onNavigate, collapsed = false, onToggle }: SidebarContentProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const { isAdmin, signOut, user } = useAuth();
   const { data: profile } = useUserProfile(user?.id);
-  const prefersReducedMotion = useReducedMotion();
+  const [search, setSearch] = useState('');
 
   const isActive = (to: string) => {
     const [path, hash] = to.split('#');
@@ -62,133 +108,139 @@ export function SidebarContent({ onNavigate, collapsed = false }: { onNavigate?:
     onNavigate?.();
   };
 
-  return (
-    <div className="flex flex-col h-full bg-[#050508] text-white border-r border-white/5 relative overflow-hidden font-mono">
-      {/* Background Cyber Effects */}
-      <div className="absolute inset-0 cyber-grid opacity-10 pointer-events-none" />
-      <div className="absolute top-0 left-0 w-full h-px bg-cyan-500/30" />
-      
-      {/* Header */}
-      <div className="p-4 relative z-10 border-b border-white/5 bg-black/40 backdrop-blur-sm transition-[padding] duration-300">
-        <div className={`flex items-center gap-3 ${collapsed ? 'justify-center' : ''}`}>
-          <div className="w-10 h-10 rounded bg-cyan-500/5 border border-cyan-500/20 flex items-center justify-center relative group overflow-hidden">
-            <img src={logoOwl} alt="Logo" className="w-6 h-6 relative z-10 brightness-110" />
-          </div>
-          <div className={collapsed ? 'hidden' : 'flex flex-col'}>
-            <span className="text-xs font-black tracking-tighter text-white">DECODE ACADEMY</span>
-            <span className="text-[7px] text-cyan-500/50 tracking-[0.2em] uppercase font-mono">STATUS: AUTHORIZED</span>
-          </div>
-        </div>
-      </div>
+  const visibleGroups = useMemo(() => {
+    const term = search.trim().toLocaleLowerCase('pt-BR');
+    if (!term) return menuGroups;
 
-      {/* Search Protocol */}
+    return menuGroups
+      .map((group) => ({
+        ...group,
+        items: group.items.filter((item) => item.label.toLocaleLowerCase('pt-BR').includes(term)),
+      }))
+      .filter((group) => group.items.length > 0);
+  }, [search]);
+
+  const initials = profile?.full_name?.trim()
+    ? profile.full_name.trim().split(/\s+/).slice(0, 2).map((part) => part[0]).join('').toUpperCase()
+    : 'DA';
+
+  return (
+    <div className="relative flex h-full min-h-0 flex-col overflow-hidden border-r border-white/[0.08] bg-[#08111f] text-slate-100">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_0%,rgba(34,211,238,0.10),transparent_30%),linear-gradient(180deg,rgba(15,23,42,0.96),rgba(3,7,18,1))]" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-300/70 to-transparent" />
+
+      <header className={`relative z-10 border-b border-white/[0.08] ${collapsed ? 'px-3 py-4' : 'px-4 py-4'}`}>
+        <div className={collapsed ? 'flex flex-col items-center gap-3' : 'flex items-center gap-3'}>
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-cyan-200/20 bg-cyan-300/[0.08] shadow-[0_8px_24px_rgba(34,211,238,0.08)]">
+            <img src={logoOwl} alt="Decode Analytics Academy" className="h-7 w-7 object-contain brightness-110" />
+          </div>
+
+          {!collapsed && (
+            <div className="min-w-0">
+              <p className="truncate text-[13px] font-semibold tracking-[0.04em] text-white">Decode Academy</p>
+              <p className="mt-0.5 text-[10px] font-medium uppercase tracking-[0.18em] text-cyan-300/60">Área do aluno</p>
+            </div>
+          )}
+
+          {onToggle && (
+            <button
+              type="button"
+              onClick={onToggle}
+              aria-label={collapsed ? 'Expandir menu de navegação' : 'Recolher menu de navegação'}
+              aria-pressed={collapsed}
+              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/[0.09] bg-white/[0.04] text-slate-400 transition-colors hover:border-cyan-300/30 hover:bg-cyan-300/[0.10] hover:text-cyan-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/70 ${collapsed ? '' : 'ml-auto'}`}
+            >
+              {collapsed ? <ChevronsRight className="h-4 w-4" /> : <ChevronsLeft className="h-4 w-4" />}
+            </button>
+          )}
+        </div>
+      </header>
+
       {!collapsed && (
-        <div className="px-4 py-4 relative z-10">
-          <div className="relative group">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-cyan-500/40" />
+        <div className="relative z-10 px-3 pb-2 pt-3">
+          <label className="sr-only" htmlFor="student-sidebar-search">Buscar no menu</label>
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
             <input
-              type="text"
-              placeholder="[BUSCAR DISCIPLINA]"
-              className="w-full bg-black/40 border border-white/5 rounded-md py-2 pl-9 pr-3 text-[10px] text-cyan-100 placeholder:text-cyan-500/20 focus:border-cyan-500/40 focus:ring-1 focus:ring-cyan-500/10 transition-all uppercase tracking-widest"
+              id="student-sidebar-search"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              type="search"
+              placeholder="Buscar no menu"
+              className="h-10 w-full rounded-xl border border-white/[0.08] bg-white/[0.045] pl-9 pr-3 text-sm text-slate-100 outline-none transition-colors placeholder:text-slate-500 focus:border-cyan-300/40 focus:bg-white/[0.07] focus:ring-2 focus:ring-cyan-300/10"
             />
           </div>
         </div>
       )}
 
-      {/* Menu */}
-      <nav className="flex-1 overflow-y-auto px-2 py-2 space-y-6 relative z-10 scrollbar-none">
-        {menuGroups.map((group) => (
-          <div key={group.label} className="space-y-1">
-            <AnimatePresence initial={false}>
+      <nav aria-label="Navegação principal" className="relative z-10 min-h-0 flex-1 overflow-y-auto px-3 py-4 [scrollbar-width:thin] [scrollbar-color:rgba(148,163,184,.25)_transparent]">
+        {visibleGroups.length > 0 ? (
+          visibleGroups.map((group) => (
+            <section key={group.label} className="mb-6 last:mb-0">
               {!collapsed && (
-                <motion.div
-                  initial={prefersReducedMotion ? false : { opacity: 0, height: 0 }}
-                  animate={prefersReducedMotion ? undefined : { opacity: 1, height: 'auto' }}
-                  exit={prefersReducedMotion ? undefined : { opacity: 0, height: 0 }}
-                  transition={prefersReducedMotion ? undefined : { duration: 0.18 }}
-                  className="px-3 flex items-center gap-2 mb-2 overflow-hidden"
-                >
-                  <span className="text-[9px] font-bold text-cyan-500/40 uppercase tracking-[0.3em]">{group.label}</span>
-                  <div className="h-px flex-1 bg-gradient-to-r from-cyan-500/20 to-transparent" />
-                </motion.div>
+                <div className="mb-2 flex items-center gap-2 px-2">
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">{group.label}</span>
+                  <span className="h-px flex-1 bg-gradient-to-r from-white/[0.10] to-transparent" />
+                </div>
               )}
-            </AnimatePresence>
-            {group.items.map((item) => {
-              const active = isActive(item.to);
-              return (
-                <motion.button
-                  key={item.to}
-                  type="button"
-                  onClick={() => handleNav(item.to)}
-                  title={collapsed ? item.label : undefined}
-                  aria-current={active ? 'page' : undefined}
-                  whileHover={prefersReducedMotion ? undefined : { x: 2 }}
-                  whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
-                  transition={prefersReducedMotion ? undefined : { duration: 0.15 }}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-md transition-[color,background-color,transform,box-shadow] duration-200 group relative overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/50 ${collapsed ? 'justify-center' : ''} ${
-                    active ? 'cyber-button-active text-cyan-400' : 'text-gray-500 hover:text-cyan-300 hover:bg-white/5'
-                  }`}
-                >
-                  <item.icon className={`w-4 h-4 shrink-0 transition-transform group-hover:scale-110 ${active ? 'text-cyan-400' : 'text-gray-600'}`} />
-                  <span className={collapsed ? 'sr-only' : 'text-[11px] font-bold uppercase tracking-wider'}>{item.label}</span>
-                  {active && (
-                    <motion.div 
-                      layoutId="active-indicator"
-                      className="absolute right-2 w-1 h-1 bg-cyan-400 rounded-full shadow-[0_0_8px_#00f0ff]" 
-                    />
-                  )}
-                </motion.button>
-              );
-            })}
-          </div>
-        ))}
+
+              <div className="space-y-1">
+                {group.items.map((item) => {
+                  const active = isActive(item.to);
+                  const Icon = item.icon;
+                  return (
+                    <SidebarIconButton
+                      key={item.to}
+                      label={item.label}
+                      collapsed={collapsed}
+                      active={active}
+                      onClick={() => handleNav(item.to)}
+                    >
+                      <Icon className={`h-[18px] w-[18px] shrink-0 ${active ? 'text-cyan-200' : 'text-slate-500 group-hover:text-slate-200'}`} />
+                      <span className={collapsed ? 'sr-only' : 'truncate text-sm font-medium'}>{item.label}</span>
+                      {active && <span aria-hidden="true" className="ml-auto h-1.5 w-1.5 rounded-full bg-cyan-200 shadow-[0_0_10px_rgba(103,232,249,.9)]" />}
+                    </SidebarIconButton>
+                  );
+                })}
+              </div>
+            </section>
+          ))
+        ) : (
+          <p className="px-2 py-8 text-center text-xs text-slate-500">Nenhum item encontrado.</p>
+        )}
 
         {isAdmin && (
-          <div className="pt-4 space-y-1">
-            <AnimatePresence initial={false}>
-              {!collapsed && (
-                <motion.div
-                  initial={prefersReducedMotion ? false : { opacity: 0, height: 0 }}
-                  animate={prefersReducedMotion ? undefined : { opacity: 1, height: 'auto' }}
-                  exit={prefersReducedMotion ? undefined : { opacity: 0, height: 0 }}
-                  transition={prefersReducedMotion ? undefined : { duration: 0.18 }}
-                  className="px-3 flex items-center gap-2 mb-2 overflow-hidden"
-                >
-                  <span className="text-[9px] font-bold text-purple-500/40 uppercase tracking-[0.3em]">System Admin</span>
-                  <div className="h-px flex-1 bg-gradient-to-r from-purple-500/20 to-transparent" />
-                </motion.div>
-              )}
-            </AnimatePresence>
-            <button
-              onClick={() => handleNav('/admin')}
-              title={collapsed ? 'Terminal Root' : undefined}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-purple-400 hover:bg-purple-500/5 transition-[color,background-color,transform,box-shadow] duration-200 group border border-purple-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/50 motion-safe:hover:-translate-y-px motion-safe:active:scale-[0.98] ${collapsed ? 'justify-center' : ''}`}
-            >
-              <ShieldCheck className="w-4 h-4 shrink-0" />
-              <span className={collapsed ? 'sr-only' : 'text-[11px] font-bold uppercase tracking-wider text-purple-300'}>Terminal Root</span>
-            </button>
-          </div>
+          <section className="mt-6 border-t border-white/[0.08] pt-4">
+            {!collapsed && <p className="mb-2 px-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-violet-300/60">Administração</p>}
+            <SidebarIconButton label="Painel administrativo" collapsed={collapsed} onClick={() => handleNav('/admin')}>
+              <ShieldCheck className="h-[18px] w-[18px] shrink-0 text-violet-300" />
+              <span className={collapsed ? 'sr-only' : 'truncate text-sm font-medium text-violet-100'}>Painel administrativo</span>
+            </SidebarIconButton>
+          </section>
         )}
       </nav>
 
-      {/* Pomodoro Timer */}
-      <PomodoroWidget collapsed={collapsed} />
+      <div className="relative z-10 border-t border-white/[0.08] bg-slate-950/30">
+        <PomodoroWidget collapsed={collapsed} />
 
-      {/* Footer Profile */}
-      <div className="p-4 border-t border-white/5 bg-black/40 relative z-10">
-        <div className={`flex items-center gap-3 p-2 rounded-lg bg-white/5 border border-white/5 ${collapsed ? 'justify-center' : ''}`}>
-          <div className="w-8 h-8 rounded bg-cyan-950 border border-cyan-500/40 flex items-center justify-center text-[10px] font-black text-cyan-400">
-            {profile?.full_name?.substring(0, 2).toUpperCase() || 'AD'}
+        <div className={`border-t border-white/[0.06] p-3 ${collapsed ? 'flex justify-center' : ''}`}>
+          <div className={`flex min-w-0 items-center gap-3 rounded-xl border border-white/[0.08] bg-white/[0.045] p-2 ${collapsed ? 'justify-center' : ''}`}>
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-cyan-200/20 bg-cyan-300/[0.10] text-xs font-bold text-cyan-100">{initials}</div>
+            {!collapsed && (
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-xs font-semibold text-white">{profile?.full_name || user?.email || 'Aluno'}</p>
+                <p className="mt-0.5 text-[10px] uppercase tracking-[0.12em] text-slate-500">Aluno conectado</p>
+              </div>
+            )}
+            <button
+              type="button"
+              onClick={() => signOut()}
+              aria-label="Sair da conta"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-red-400/10 hover:text-red-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300/60"
+            >
+              <LogOut className="h-4 w-4" />
+            </button>
           </div>
-          <div className={collapsed ? 'hidden' : 'flex-1 min-w-0'}>
-            <p className="text-[10px] font-bold text-white truncate uppercase tracking-tighter">
-              {profile?.full_name || user?.email}
-            </p>
-            <p className="text-[8px] text-cyan-500/60 font-mono uppercase tracking-[0.1em]">Access Level: 4</p>
-          </div>
-          <button onClick={() => signOut()} title="Sair" aria-label="Sair" className="p-1.5 text-gray-500 hover:text-red-400 transition-colors">
-            <LogOut className="w-3.5 h-3.5" />
-          </button>
         </div>
       </div>
     </div>
@@ -200,21 +252,9 @@ export function StudentSidebar({ collapsed, onToggle }: { collapsed: boolean; on
     <aside
       aria-label="Navegação principal"
       data-sidebar-collapsed={collapsed}
-      className={`fixed inset-y-0 left-0 z-30 hidden lg:flex overflow-visible transition-[width] duration-300 ease-in-out ${collapsed ? 'w-[72px]' : 'w-72'}`}
+      className={`fixed inset-y-0 left-0 z-30 hidden overflow-visible transition-[width] duration-300 ease-out lg:flex ${collapsed ? 'w-[84px]' : 'w-[264px]'}`}
     >
-      <SidebarContent collapsed={collapsed} />
-      <Button
-        type="button"
-        variant="outline"
-        size="icon"
-        onClick={onToggle}
-        aria-label={collapsed ? 'Expandir menu de navegação' : 'Recolher menu de navegação'}
-        aria-pressed={collapsed}
-        title={collapsed ? 'Expandir menu' : 'Recolher menu'}
-        className="absolute -right-3 top-20 z-40 hidden h-8 w-8 rounded-full border-primary/40 bg-background/95 shadow-lg shadow-primary/10 transition-[transform,box-shadow,background-color] duration-200 motion-safe:hover:scale-105 motion-safe:hover:shadow-primary/20 motion-safe:active:scale-95 focus-visible:ring-2 focus-visible:ring-primary/50 lg:inline-flex"
-      >
-        {collapsed ? <ChevronsRight className="h-4 w-4" /> : <ChevronsLeft className="h-4 w-4" />}
-      </Button>
+      <SidebarContent collapsed={collapsed} onToggle={onToggle} />
     </aside>
   );
 }
