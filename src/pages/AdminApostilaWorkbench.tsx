@@ -1408,8 +1408,19 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
                         <input
                           type="date"
                           value={savedDate || ''}
-                          onChange={(e) => setSavedDate(e.target.value)}
-                          className="bg-transparent border-none p-0 text-[11px] font-bold focus:ring-0 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                          aria-label="Data da aula"
+                          title="Escolha a data da aula"
+                          onChange={(e) => {
+                            setSavedDate(e.target.value);
+                            // A data é uma edição independente do título e do conteúdo.
+                            // Marcamos explicitamente como pendente para que ela seja salva
+                            // mesmo quando o aluno altera somente este campo.
+                            dirtyRef.current = true;
+                          }}
+                          onBlur={() => {
+                            if (dirtyRef.current) void doSave(true);
+                          }}
+                          className="h-9 w-[150px] rounded-lg border border-border/70 bg-background/70 px-3 text-sm font-semibold tabular-nums text-foreground outline-none transition-colors hover:border-primary/50 focus:border-primary focus:ring-2 focus:ring-primary/20 cursor-pointer"
                         />
                       </div>
                     </div>
