@@ -645,11 +645,27 @@ async function runToolBody(name: string, args: any, admin: ReturnType<typeof cre
         }
         const limit = Math.min(args.limit ?? 10, 25);
         const col = "title";
-        const q = await admin.from(table).select("id, " + col).ilike(col, `%${args.query}%`).limit(limit);
+        let query = admin.from(table).select("id, " + col).ilike(col, `%${args.query}%`).limit(limit);
+        // Service-role queries bypass RLS, so reapply the same visibility rules explicitly.
+        if (table === "apostilas" && !ctx.isAdmin) {
+          query = query.eq("published", true);
+          if (ctx.contentScope === "enem_only") {
+            query = query.in("category", ["ENEM", "Simulados ENEM"]);
+          }
+        }
+        const q = await query;
         return { ok: !q.error, results: q.data ?? [], error: q.error?.message };
       }
       case "get_apostila": {
-        const q = await admin.from("apostilas").select("id, title, category, semester, published, cover_url, content").eq("id", args.id).maybeSingle();
+        let query = admin.from("apostilas").select("id, title, category, semester, published, cover_url, content").eq("id", args.id);
+        // Do not let a service-role lookup expose unpublished or out-of-scope material.
+        if (!ctx.isAdmin) {
+          query = query.eq("published", true);
+          if (ctx.contentScope === "enem_only") {
+            query = query.in("category", ["ENEM", "Simulados ENEM"]);
+          }
+        }
+        const q = await query.maybeSingle();
         if (q.error) return { ok: false, error: q.error.message };
         // truncate content
         if (q.data?.content) q.data.content = String(q.data.content).slice(0, 1500);
