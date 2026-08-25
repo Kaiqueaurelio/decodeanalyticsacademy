@@ -21,13 +21,8 @@ import { AdBanner } from '@/components/AdBanner';
 import { AdSidebar } from '@/components/AdSidebar';
 import { Watermark } from '@/components/Watermark';
 import { Reveal } from '@/components/Reveal';
-import { GamificationWidget } from '@/components/gamification/GamificationWidget';
 import { OverallProgressCard } from '@/components/OverallProgressCard';
-import { StudyGoalsWidget } from '@/components/gamification/StudyGoalsWidget';
-import { ProgressCharts } from '@/components/gamification/ProgressCharts';
-import { AchievementsGrid } from '@/components/gamification/AchievementsGrid';
 import { StudyGoalsConfig } from '@/components/gamification/StudyGoalsConfig';
-import { PomodoroWidget } from '@/components/gamification/PomodoroWidget';
 
 
 import { ExamCalendarWidget } from '@/components/ExamCalendarWidget';
@@ -39,9 +34,8 @@ import { useApostilasList, useExerciseCounts, useDashboardStats, type ApostilaSu
 import { useUserProfile } from '@/hooks/queries/useUserProfile';
 import { BY_SEMESTER, canonicalSubjectKey } from '@/lib/subject-semester-map';
 import { CANONICAL_GROUPS, groupByCanonical, type CanonicalGroup } from '@/lib/subjectGroups';
-import { BookOpen, Search, X, PenLine, ShieldCheck, Clock, Sparkles, TrendingUp, Trophy, Activity, Flame } from 'lucide-react';
+import { BookOpen, Search, X, ShieldCheck, Clock, Sparkles } from 'lucide-react';
 import { motion, useReducedMotion } from 'framer-motion';
-import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { NewUpdatePopup } from '@/components/NewUpdatePopup';
@@ -304,7 +298,7 @@ export default function DashboardPage() {
     };
   }) : [];
   
-  const disciplinesTotal = Math.max(new Set(apostilas.map((a) => a.category || 'Geral')).size, 10);
+  const disciplinesTotal = new Set(apostilas.map((a) => a.category || 'Geral')).size;
   const apostilasIniciadas = Object.keys(stats.byApostila).length;
   const overallAccuracy = answeredExercises > 0 ? Math.round((stats.hits / answeredExercises) * 100) : 0;
 
@@ -344,14 +338,14 @@ export default function DashboardPage() {
         onToggle={() => setSidebarCollapsed((current) => !current)}
       />
 
-      <div className={`flex min-h-screen flex-col transition-[padding] duration-300 ease-out ${sidebarCollapsed ? 'lg:pl-[72px]' : 'lg:pl-72'}`}>
+      <div className={`flex min-h-screen flex-col transition-[padding] duration-300 ease-out ${sidebarCollapsed ? 'lg:pl-[84px]' : 'lg:pl-[264px]'}`}>
         <DashboardTopbar hideSearchOnMobile={true} />
 
         <motion.main
           initial={prefersReducedMotion ? false : { opacity: 0, y: 10 }}
           animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
           transition={prefersReducedMotion ? undefined : { duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-          className="flex-1 px-3 sm:px-6 lg:px-8 py-6 space-y-8 max-w-[1600px] w-full mx-auto animate-content-show pt-12 pb-24"
+          className="mx-auto w-full max-w-[1440px] flex-1 animate-content-show space-y-6 px-4 py-6 pb-20 sm:px-6 lg:px-8 lg:py-8"
         >
           {isAdmin && (
             <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-accent/10 px-3 py-1 border border-accent/20">
@@ -361,75 +355,9 @@ export default function DashboardPage() {
             </div>
           )}
 
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex-1 space-y-4">
-              <ContinueWhereLeftCard />
-              <Reveal from="bottom" delay={0.5}>
-                <div className="space-y-8">
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <GamificationWidget />
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                      <Card className="border-primary/20 bg-card/50 backdrop-blur-sm p-5 flex flex-col justify-center relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                          <TrendingUp className="h-24 w-24 text-primary" />
-                        </div>
-                        <div className="relative z-10">
-                          <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-1">Status de Performance</h3>
-                          <div className="flex items-baseline gap-2">
-                            <span className="text-4xl font-black text-primary">{overallAccuracy}%</span>
-                            <span className="text-xs font-medium text-muted-foreground">global</span>
-                          </div>
-                          <div className="mt-4 flex items-center gap-4">
-                            <Button 
-                              onClick={() => navigate('/performance')}
-                              className="bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 text-[10px] font-bold uppercase h-8 px-3 rounded-full"
-                            >
-                              Ver Detalhes
-                            </Button>
-                          </div>
-                        </div>
-                      </Card>
-                      <Card className="border-orange-500/20 bg-card/50 backdrop-blur-sm p-5 flex flex-col justify-center relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                          <Flame className="h-24 w-24 text-orange-500" />
-                        </div>
-                        <div className="relative z-10">
-                          <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-1">Ella Insights</h3>
-                          <div className="flex items-baseline gap-2">
-                            <span className="text-4xl font-black text-orange-500">{apostilasIniciadas}</span>
-                            <span className="text-xs font-medium text-muted-foreground">aulas</span>
-                          </div>
-                          <div className="mt-4 flex items-center gap-4">
-                            <Button 
-                              onClick={() => navigate('/ella')}
-                              className="bg-orange-500/10 border border-orange-500/20 text-orange-500 hover:bg-orange-500/20 text-[10px] font-bold uppercase h-8 px-3 rounded-full"
-                            >
-                              Dificuldades
-                            </Button>
-                          </div>
-                        </div>
-                      </Card>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                    <PomodoroWidget collapsed={false} />
-                    <StudyGoalsWidget goals={gamification.goals as any} />
-                  </div>
-                  
-                  <div className="grid grid-cols-1 gap-8">
-                    <ProgressCharts />
-                    <AchievementsGrid />
-                  </div>
-
-                  <FeaturedJobsWidget />
-                </div>
-              </Reveal>
-
-
-            </div>
-            <div className="flex shrink-0">
-
+          <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_auto]">
+            <ContinueWhereLeftCard />
+            <div className="flex justify-end">
               <McpSyncButton />
             </div>
           </div>
