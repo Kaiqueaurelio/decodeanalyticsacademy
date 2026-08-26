@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,44 @@ export default function ResetPasswordPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [recoveryReady, setRecoveryReady] = useState(false);
+  const [recoveryError, setRecoveryError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+
+    const readRecoveryState = async () => {
+      const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+      const query = new URLSearchParams(window.location.search);
+      const authError = hash.get('error_description') || query.get('error_description');
+      if (authError) {
+        if (active) setRecoveryError(decodeURIComponent(authError.replace(/\\+/g, ' ')));
+        return;
+      }
+
+      const { data, error } = await supabase.auth.getSession();
+      if (!active) return;
+      if (error || !data.session) {
+        setRecoveryError('Este link de recuperação expirou ou já foi utilizado. Solicite um novo link.');
+        return;
+      }
+      setRecoveryReady(true);
+    };
+
+    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!active) return;
+      if (event === 'PASSWORD_RECOVERY' && session) {
+        setRecoveryError(null);
+        setRecoveryReady(true);
+      }
+    });
+
+    void readRecoveryState();
+    return () => {
+      active = false;
+      listener.subscription.unsubscribe();
+    };
+  }, []);
 
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,6 +62,10 @@ export default function ResetPasswordPage() {
     }
     if (password.length < 6) {
       toast.error('A senha deve ter pelo menos 6 caracteres');
+      return;
+    }
+    if (!recoveryReady) {
+      toast.error('O link de recuperação não está mais válido. Solicite um novo link.');
       return;
     }
     setLoading(true);
@@ -59,6 +101,14 @@ export default function ResetPasswordPage() {
               </div>
             </div>
 
+            {recoveryError ? (
+              <div className="space-y-4 rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
+                <p>{recoveryError}</p>
+                <Button type="button" variant="outline" className="w-full" onClick={() => navigate('/login')}>
+                  Solicitar novo link
+                </Button>
+              </div>
+            ) : (
             <form onSubmit={handleReset} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="password">Nova Senha</Label>
@@ -99,6 +149,7 @@ export default function ResetPasswordPage() {
                 Atualizar Senha
               </Button>
             </form>
+            )}
           </div>
           <p className="text-center text-xs text-muted-foreground">
             Decode Analytics Academy — por Kaique Aurelio
