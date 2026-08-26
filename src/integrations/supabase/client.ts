@@ -2,8 +2,19 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+const LEGACY_SUPABASE_URL = 'https://gynguskgysompgcajunc.supabase.co';
+const ACTIVE_SUPABASE_URL = 'https://wxkkpjpqyrygglbuogsd.supabase.co';
+const ACTIVE_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_Zh6H3y8GJ2J_wkRVXxyTng_eylbCAVM';
+
+// Migração de runtime: alguns deploys antigos da Vercel ainda possuem a URL
+// legada nas variáveis de ambiente. Mantemos a ponte até a configuração da Vercel
+// ser atualizada para o projeto ativo, sem interromper login, apostilas ou Ella.
+const configuredUrl = import.meta.env.VITE_SUPABASE_URL;
+const isLegacyDeployment = configuredUrl === LEGACY_SUPABASE_URL;
+const SUPABASE_URL = isLegacyDeployment ? ACTIVE_SUPABASE_URL : configuredUrl;
+const SUPABASE_PUBLISHABLE_KEY = isLegacyDeployment
+  ? ACTIVE_SUPABASE_PUBLISHABLE_KEY
+  : import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
 if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
   throw new Error(
