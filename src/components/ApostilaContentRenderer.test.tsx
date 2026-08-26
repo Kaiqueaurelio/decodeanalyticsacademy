@@ -32,7 +32,7 @@ describe('ApostilaContentRenderer', () => {
       <ApostilaContentRenderer content={'1. Android — Plataforma\n2. Android Runtime\n3. Aplicativos Android'} />,
     );
 
-    const items = Array.from(container.querySelectorAll('ol li')).map((item) => item.textContent);
+    const items = Array.from(container.querySelectorAll('ol li > span:last-child')).map((item) => item.textContent);
     expect(items).toEqual(['Android — Plataforma', 'Android Runtime', 'Aplicativos Android']);
   });
 });
