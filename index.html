@@ -178,47 +178,6 @@
   <meta name="twitter:description" content="Decode Analytics Academy | Apostilas, Exercícios e Simulados de Tecnologia. Plataforma de estudos premium 100% gratuita para Ciência da Computação e Engenharia.">
 </head>
   <body>
-    <script>
-      // Bootstrap de recuperação: elimina um app-shell antigo antes do React montar.
-      // A marca em sessionStorage evita qualquer loop de recarga.
-      (function () {
-        var resetKey = 'decode_bootstrap_reset_v1';
-        if (!('serviceWorker' in navigator)) return;
-        Promise.resolve(navigator.serviceWorker.getRegistrations()).then(function (registrations) {
-          var appRegistrations = registrations.filter(function (registration) {
-            var worker = registration.active || registration.waiting || registration.installing;
-            if (!worker) return false;
-            try {
-              var url = new URL(worker.scriptURL);
-              return url.origin === window.location.origin &&
-                (url.pathname === '/sw.js' || url.pathname === '/service-worker.js');
-            } catch (_) {
-              return false;
-            }
-          });
-          if (!appRegistrations.length) {
-            sessionStorage.removeItem(resetKey);
-            return null;
-          }
-          return Promise.all(appRegistrations.map(function (registration) {
-            return registration.unregister().catch(function () { return false; });
-          })).then(function () {
-            if (!('caches' in window)) return;
-            return caches.keys().then(function (keys) {
-              return Promise.all(keys.filter(function (key) {
-                return /^decode-(html|scripts|css|images)-v\d+$/.test(key);
-              }).map(function (key) { return caches.delete(key); }));
-            });
-          }).then(function () {
-            if (sessionStorage.getItem(resetKey) === '1') return;
-            sessionStorage.setItem(resetKey, '1');
-            window.location.reload();
-          });
-        }).catch(function () {
-          // A indisponibilidade do Cache Storage não bloqueia a inicialização.
-        });
-      })();
-    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
