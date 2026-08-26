@@ -200,6 +200,8 @@ export default function ApostilaReaderPage() {
   const [tree, setTree] = useState<Tree | null>(null);
   const [selectedDate, setSelectedDate] = useState<string>("all");
   const [loadingTree, setLoadingTree] = useState(true);
+  const [readerError, setReaderError] = useState<string | null>(null);
+  const [reloadAttempt, setReloadAttempt] = useState(0);
 
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
   const { isAdmin, user } = useAuth();
@@ -238,11 +240,16 @@ export default function ApostilaReaderPage() {
     let cancelled = false;
     (async () => {
       setLoadingTree(true);
-      const [{ data: ap }, { data: rpcData }, { data: auditLogs }] = await Promise.all([
-        supabase.from("apostilas").select("title, semester, published, status").eq("id", id).maybeSingle(),
+      setReaderError(null);
+      try {
+      const [{ data: ap, error: apostilaError }, { data: rpcData, error: rpcError }, { data: auditLogs }] = await Promise.all([
+        supabase.from("apostilas").select("title, semester, published, status, content").eq("id", id).maybeSingle(),
         supabase.rpc("get_apostila_reader_tree", { _apostila_id: id }),
         supabase.from("audit_logs").select("id").eq("resource_id", id).eq("event_type", "apostila_date_inconsistency").limit(1)
       ]);
+
+      if (apostilaError) throw apostilaError;
+      if (rpcError) console.warn('[ApostilaReader] Estrutura indisponível; usando conteúdo salvo.', rpcError);
 
       let { data: pageRows, error: pagesError } = await (supabase.from("apostila_pages" as any) as any)
         .select("id, title, content, position, saved_date, updated_at, created_at")
@@ -281,8 +288,17 @@ export default function ApostilaReaderPage() {
       }
 
 
-      const rpcTree = (rpcData as unknown as Tree) || { apostila_id: id, modules: [] };
+      const rpcTree = (!rpcError && rpcData as unknown as Tree) || { apostila_id: id, modules: [] };
+      const mainContent = typeof ap?.content === 'string' ? ap.content.trim() : '';
       const savedPages = sanitizedPages as ApostilaPageRow[];
+      if (rpcTree.modules?.length === 0 && savedPages.length === 0 && mainContent) {
+        savedPages.push({
+          id: `main-${id}`,
+          title: (ap?.title as string) || 'Conteúdo',
+          content: mainContent,
+          position: 0,
+        });
+      }
       const t = savedPages.length > 0
         ? mergePagesIntoTree(rpcTree, id, savedPages)
         : (rpcTree.modules?.length > 0 ? rpcTree : buildTreeFromPages(id, savedPages));
@@ -307,12 +323,19 @@ export default function ApostilaReaderPage() {
         if (resume.date) setSelectedDate(resume.date);
       }
 
-      setLoadingTree(false);
+      } catch (error) {
+        if (cancelled) return;
+        console.error('[ApostilaReader] Falha ao carregar:', error);
+        setTree(null);
+        setReaderError('Não foi possível carregar o material agora. Tente novamente ou abra o leitor clássico.');
+      } finally {
+        if (!cancelled) setLoadingTree(false);
+      }
     })();
     return () => {
       cancelled = true;
     };
-  }, [id, searchParams]);
+  }, [id, searchParams, reloadAttempt, isAdmin]);
 
   const flat = useMemo(() => (tree ? flatten(tree) : []), [tree]);
   
@@ -348,6 +371,7 @@ export default function ApostilaReaderPage() {
     let cancelled = false;
     (async () => {
       setLessonLoading(true);
+      try {
 
       // Páginas criadas pelo editor ficam em apostila_pages e usam IDs sintéticos
       // no fallback do leitor; não devem ser consultadas em apostila_lessons.
@@ -358,7 +382,6 @@ export default function ApostilaReaderPage() {
         if (pageUserId) {
           setNoteText(localStorage.getItem(`apostila_page_note_${pageUserId}_${selectedLessonId.slice(5)}`) || '');
         }
-        setLessonLoading(false);
         contentRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
         return;
       }
@@ -369,7 +392,7 @@ export default function ApostilaReaderPage() {
         .eq("id", selectedLessonId)
         .maybeSingle();
       if (cancelled) return;
-      setLessonContent((lesson?.content_md as string) || "");
+      setLessonContent((lesson?.content_md as string) || currentLesson?.content_md || "");
       // Nota do aluno
       const { data: userData } = await supabase.auth.getUser();
       const userId = userData?.user?.id;
@@ -397,8 +420,16 @@ export default function ApostilaReaderPage() {
           progress_status: l.progress_status === "completed" ? "completed" : "in_progress",
         })));
       }
-      setLessonLoading(false);
       contentRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+      } catch (error) {
+        if (!cancelled) {
+          console.error('[ApostilaReader] Falha ao carregar a lição:', error);
+          setLessonContent(currentLesson?.content_md || '');
+          toast.error('A conexão falhou, mas exibimos a versão salva quando disponível.');
+        }
+      } finally {
+        if (!cancelled) setLessonLoading(false);
+      }
     })();
     return () => {
       cancelled = true;
@@ -609,13 +640,19 @@ export default function ApostilaReaderPage() {
     return (
       <div className="mx-auto max-w-2xl px-6 py-16 text-center">
         <BookOpen className="mx-auto h-12 w-12 text-primary/40 mb-6" strokeWidth={1.5} />
-        <h1 className="font-display text-3xl font-bold tracking-tight text-foreground">Material em fase de estruturação</h1>
+        <h1 className="font-display text-3xl font-bold tracking-tight text-foreground">
+          {readerError ? 'Não foi possível carregar o material' : 'Material em fase de estruturação'}
+        </h1>
         <p className="mt-4 text-muted-foreground leading-relaxed">
-          Esta apostila ainda não foi organizada em módulos e lições. Peça a um administrador
-          para executar a estruturação, ou continue pelo leitor clássico.
+          {readerError || 'Esta apostila ainda não foi organizada em módulos e lições. Continue pelo leitor clássico para acessar o conteúdo disponível.'}
         </p>
         <div className="mt-10 flex flex-col sm:flex-row justify-center gap-3">
-          <Button variant="default" size="lg" className="hover-lift" onClick={() => navigate(`/apostila/${id}`)}>
+          {readerError && (
+            <Button variant="default" size="lg" onClick={() => setReloadAttempt((attempt) => attempt + 1)}>
+              Tentar novamente
+            </Button>
+          )}
+          <Button variant={readerError ? "outline" : "default"} size="lg" className="hover-lift" onClick={() => navigate(`/apostila/${id}`)}>
             Ir para o leitor clássico
           </Button>
           <Button variant="outline" size="lg" className="hover-lift" onClick={() => navigate(-1)}>
