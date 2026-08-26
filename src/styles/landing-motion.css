@@ -285,6 +285,18 @@ body:has(#identifier) main > header::before {
   background-repeat: no-repeat;
 }
 
+body:has(#identifier) main > header::after {
+  content: "TETHER — HTML CSS JS";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  color: rgba(232, 255, 253, 0.62);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  pointer-events: none;
+}
+
 body:has(#identifier) main > header span:last-child {
   text-transform: lowercase;
   letter-spacing: 0.12em;
@@ -323,7 +335,7 @@ body:has(#identifier) section.hidden.lg\:block .mt-12 {
 }
 
 body:has(#identifier) section.hidden.lg\:block h1 {
-  font-size: clamp(2.35rem, 8vw, 4.7rem) !important;
+  font-size: 0 !important;
   line-height: 0.92 !important;
   letter-spacing: 0 !important;
   text-align: center;
@@ -331,8 +343,26 @@ body:has(#identifier) section.hidden.lg\:block h1 {
 }
 
 body:has(#identifier) section.hidden.lg\:block h1 span {
-  color: #18f7f0 !important;
-  text-shadow: 0 0 26px rgba(24, 247, 240, 0.36) !important;
+  display: none !important;
+}
+
+body:has(#identifier) section.hidden.lg\:block h1::before,
+body:has(#identifier) section.hidden.lg\:block h1::after {
+  display: block;
+  font-size: clamp(2.35rem, 8vw, 4.7rem);
+  line-height: 0.92;
+  letter-spacing: 0;
+}
+
+body:has(#identifier) section.hidden.lg\:block h1::before {
+  content: "Runaway";
+  color: #f4fffd;
+}
+
+body:has(#identifier) section.hidden.lg\:block h1::after {
+  content: "Login";
+  color: #18f7f0;
+  text-shadow: 0 0 26px rgba(24, 247, 240, 0.36);
 }
 
 body:has(#identifier) section.w-full {
@@ -378,7 +408,12 @@ body:has(#identifier) [class*="shadow-[0_0_25px"] {
     gap: 0.65rem;
   }
 
-  body:has(#identifier) section.hidden.lg\:block h1 {
-    font-size: clamp(2.6rem, 14vw, 4.1rem) !important;
+  body:has(#identifier) main > header::after {
+    display: none;
+  }
+
+  body:has(#identifier) section.hidden.lg\:block h1::before,
+  body:has(#identifier) section.hidden.lg\:block h1::after {
+    font-size: clamp(2.6rem, 14vw, 4.1rem);
   }
 }
