@@ -42,6 +42,18 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: "8.5.1",
+    date: "2026-08-26",
+    title: "Inicialização e Leitura Resilientes",
+    description: "Correção emergencial do falso alerta de atualização e do carregamento incompleto das apostilas.",
+    changes: [
+      { kind: "fix", text: "Removido o bloqueio automático que confundia inicialização lenta com navegador desatualizado." },
+      { kind: "fix", text: "Leitor de apostilas agora preserva listas numeradas e encerra corretamente estados de carregamento." },
+      { kind: "improvement", text: "Limpeza de cache restrita aos artefatos do app, preservando notificações e outros dados." }
+    ],
+    author: "Kaique Aurelio & Decode Analytics"
+  },
+  {
     version: "8.5.0",
     date: "2026-08-24",
     title: "Proteção de Dados & Busca Semântica",

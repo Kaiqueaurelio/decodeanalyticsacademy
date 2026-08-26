@@ -17,8 +17,11 @@ async function unregisterAppServiceWorkers() {
             registration.waiting?.scriptURL ||
             registration.installing?.scriptURL ||
             '';
-          // Preserva workers de push/mensagens (arquivo separado).
-          return !url.includes('sw-push');
+          try {
+            return new URL(url).pathname === '/sw.js';
+          } catch {
+            return false;
+          }
         })
         .map((registration) => registration.unregister().catch(() => false)),
     );
@@ -27,7 +30,7 @@ async function unregisterAppServiceWorkers() {
       const keys = await caches.keys();
       await Promise.all(
         keys
-          .filter((key) => /^decode-|precache-v\d+-|(^|-)runtime-/.test(key))
+          .filter((key) => /^decode-(html|scripts|css|images)-v\d+$/.test(key))
           .map((key) => caches.delete(key).catch(() => false)),
       );
     }

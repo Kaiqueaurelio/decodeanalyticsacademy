@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, type ComponentProps } from 'react';
 import { Check, Copy, Volume2, Info, Lightbulb, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import DOMPurify from 'dompurify';
@@ -869,6 +869,7 @@ function AudioBlock({ label, url }: { label: string; url: string }) {
 }
 
 function AudioQuizBlock({ aulaId, quizId }: { aulaId: string; quizId: string }) {
+  type AudioQuiz = ComponentProps<typeof AudioQuizSystem>['quiz'];
   const { data: quizData, isLoading } = useQuery({
     queryKey: ['quiz', quizId],
     queryFn: async () => {
@@ -886,7 +887,14 @@ function AudioQuizBlock({ aulaId, quizId }: { aulaId: string; quizId: string }) 
 
       if (qError) throw qError;
 
-      return { ...quiz, questions };
+      const normalizedQuestions = Array.isArray(questions)
+        ? questions.filter((question) => question && typeof question === 'object' && !Array.isArray(question))
+        : [];
+
+      return {
+        ...quiz,
+        questions: normalizedQuestions as unknown as AudioQuiz['questions'],
+      } satisfies AudioQuiz;
     },
     enabled: !!quizId
   });
