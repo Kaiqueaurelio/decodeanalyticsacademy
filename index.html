@@ -84,7 +84,7 @@
     <script>
       (function () {
         var RECOVERY_KEY = 'decode_cache_recovery_attempted';
-        var RECOVERY_TIMEOUT = 12000;
+        var RECOVERY_TIMEOUT = 30000;
         var recoveryAttempted = false;
         try { recoveryAttempted = sessionStorage.getItem(RECOVERY_KEY) === 'true'; } catch (e) {}
 
