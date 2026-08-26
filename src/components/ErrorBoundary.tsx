@@ -95,7 +95,6 @@ async function clearRuntimeCaches() {
 function reloadWithFreshUrl() {
   const url = new URL(window.location.href);
   url.searchParams.set('__decode_refresh', String(Date.now()));
-  // Forçamos o recarregamento total contornando o cache do navegador
   window.location.assign(url.toString());
 }
 
@@ -144,17 +143,11 @@ class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       const isCacheError = this.state.isCacheError;
-      
-      // Silently handle chunk/cache errors by reloading without showing the UI
-      if (isCacheError && this.state.isRecovering) {
-        return null;
-      }
-
       const title = isCacheError ? 'Atualizando o app' : 'Algo deu errado';
       const description = isCacheError
-        ? 'Estamos preparando a nova versão para você. O app irá recarregar em instantes.'
-        : 'O app encontrou um erro inesperado. O log foi registrado e nossa equipe será notificada.';
-      const buttonLabel = this.state.isRecovering ? 'Atualizando...' : 'Tentar novamente';
+        ? 'Limpamos os arquivos antigos do navegador. Se a tela não recarregar sozinha, toque no botão abaixo.'
+        : 'O app encontrou um erro inesperado. O log foi registrado para diagnóstico.';
+      const buttonLabel = this.state.isRecovering ? 'Recarregar agora' : 'Tentar novamente';
 
       return (
         <main className="min-h-dvh bg-[#050508] text-foreground flex items-center justify-center p-6 selection:bg-primary/20">
@@ -170,8 +163,7 @@ class ErrorBoundary extends Component<Props, State> {
               <button
                 type="button"
                 onClick={this.handleReload}
-                disabled={this.state.isRecovering}
-                className="inline-flex h-12 items-center justify-center rounded-2xl bg-primary px-8 text-sm font-bold text-primary-foreground transition-all hover:bg-primary/90 hover:scale-[1.02] active:scale-95 disabled:cursor-not-allowed disabled:opacity-70 shadow-lg shadow-primary/20"
+                className="inline-flex h-12 items-center justify-center rounded-2xl bg-primary px-8 text-sm font-bold text-primary-foreground transition-all hover:bg-primary/90 hover:scale-[1.02] active:scale-95 shadow-lg shadow-primary/20"
               >
                 {buttonLabel}
               </button>
