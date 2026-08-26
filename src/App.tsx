@@ -90,6 +90,11 @@ const AppContent = () => {
   const [showContent, setShowContent] = React.useState(false);
   useAdminCopyPatch();
 
+  // Mantém a identidade da callback para não reiniciar o timer do splash a cada render.
+  const handleSplashComplete = React.useCallback(() => {
+    setSplashDone(true);
+  }, []);
+
   React.useEffect(() => {
     if (splashDone) {
       const timer = setTimeout(() => setShowContent(true), 50);
@@ -99,7 +104,7 @@ const AppContent = () => {
 
   return (
     <>
-      {!splashDone && <SplashScreen onComplete={() => setSplashDone(true)} />}
+      {!splashDone && <SplashScreen onComplete={handleSplashComplete} />}
       
       <div 
         className={`transition-opacity duration-700 ${showContent ? 'opacity-100' : 'opacity-0'}`}
