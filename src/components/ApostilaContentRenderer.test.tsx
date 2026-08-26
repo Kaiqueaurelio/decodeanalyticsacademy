@@ -26,4 +26,13 @@ describe('ApostilaContentRenderer', () => {
     expect(container.textContent).toContain('Android — Plataforma');
     expect(container.textContent).not.toContain('1\\. Android');
   });
+
+  it('preserva todos os itens de uma lista numerada curta', () => {
+    const { container } = render(
+      <ApostilaContentRenderer content={'1. Android — Plataforma\n2. Android Runtime\n3. Aplicativos Android'} />,
+    );
+
+    const items = Array.from(container.querySelectorAll('ol li')).map((item) => item.textContent);
+    expect(items).toEqual(['Android — Plataforma', 'Android Runtime', 'Aplicativos Android']);
+  });
 });

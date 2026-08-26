@@ -17,10 +17,11 @@ function isNumberedHeadingCandidate(number: string, title: string) {
   if (cleanTitle.length > 90 || words.length > 12) return false;
   if (/[.!?;:]$/.test(cleanTitle)) return false;
 
-  // Top-level numbered lines are often questions or ordered-list items.
-  // Only split them into sections when they look like compact topic titles.
+  // Top-level numbered lines are ordered-list items in Markdown. Treating a
+  // short item such as `1. Android` as a section can discard it later as an
+  // empty heading and makes the apostila appear truncated.
   if (!number.includes('.')) {
-    return words.length <= 6 && /^[A-ZÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇ0-9]/.test(cleanTitle);
+    return false;
   }
 
   // Sub-numbered outlines such as 2.1 or 3.1.2 are usually structure.
