@@ -236,83 +236,91 @@ export default function ApostilaReaderPage() {
   useEffect(() => {
     if (!id) return;
     let cancelled = false;
-    (async () => {
-      setLoadingTree(true);
-      const [{ data: ap }, { data: rpcData }, { data: auditLogs }] = await Promise.all([
-        supabase.from("apostilas").select("title, semester, published, status").eq("id", id).maybeSingle(),
-        supabase.rpc("get_apostila_reader_tree", { _apostila_id: id }),
-        supabase.from("audit_logs").select("id").eq("resource_id", id).eq("event_type", "apostila_date_inconsistency").limit(1)
-      ]);
 
-      let { data: pageRows, error: pagesError } = await (supabase.from("apostila_pages" as any) as any)
-        .select("id, title, content, position, saved_date, updated_at, created_at")
-        .eq("apostila_id", id)
-        .order("position", { ascending: true })
-        .order("created_at", { ascending: true });
-      if (pagesError && isMissingApostilaPageSavedDateColumn(pagesError)) {
-        ({ data: pageRows, error: pagesError } = await (supabase.from("apostila_pages" as any) as any)
-          .select("id, title, content, position, updated_at, created_at")
+    const loadReader = async () => {
+      setLoadingTree(true);
+      try {
+        const [apostilaResult, treeResult, auditResult] = await Promise.all([
+          supabase.from("apostilas").select("title, semester, published, status, content").eq("id", id).maybeSingle(),
+          supabase.rpc("get_apostila_reader_tree", { _apostila_id: id }),
+          supabase.from("audit_logs").select("id").eq("resource_id", id).eq("event_type", "apostila_date_inconsistency").limit(1),
+        ]);
+
+        if (apostilaResult.error) throw apostilaResult.error;
+        if (cancelled) return;
+
+        let { data: pageRows, error: pagesError } = await (supabase.from("apostila_pages" as any) as any)
+          .select("id, title, content, position, saved_date, updated_at, created_at")
           .eq("apostila_id", id)
           .order("position", { ascending: true })
-          .order("created_at", { ascending: true }));
-      }
-      if (pagesError) throw pagesError;
+          .order("created_at", { ascending: true });
+        if (pagesError && isMissingApostilaPageSavedDateColumn(pagesError)) {
+          ({ data: pageRows, error: pagesError } = await (supabase.from("apostila_pages" as any) as any)
+            .select("id, title, content, position, updated_at, created_at")
+            .eq("apostila_id", id)
+            .order("position", { ascending: true })
+            .order("created_at", { ascending: true }));
+        }
+        if (pagesError) throw pagesError;
 
-      if (cancelled) return;
+        const ap = apostilaResult.data;
+        const sanitizedPages = (pageRows || []).map((p: any, idx: number) => ({
+          ...p,
+          position: p.position ?? idx,
+          saved_date: getApostilaPageSavedDate(p),
+        })) as ApostilaPageRow[];
 
-      // Anti-collision check for pages with same position
-      const sanitizedPages = (pageRows || []).map((p: any, idx: number) => ({
-        ...p,
-        position: p.position ?? idx,
-        saved_date: getApostilaPageSavedDate(p),
-      }));
-      
-      console.log(`[ApostilaReader] Apostila info:`, ap);
-      
-      setApostilaTitle((ap?.title as string) || "Apostila");
-      setApostilaStatus((ap as any)?.status || (ap?.published ? 'liberada' : 'bloqueada'));
-      setHasInconsistency((auditLogs?.length || 0) > 0);
-      
-      if (ap?.status === 'em_manutencao' && !isAdmin) {
-        toast.info("Material em revisão", {
-          description: "Este conteúdo está sendo re-organizado para melhor leitura.",
-          duration: 5000
+        setApostilaTitle((ap?.title as string) || "Apostila");
+        setApostilaStatus((ap as any)?.status || (ap?.published ? 'liberada' : 'bloqueada'));
+        setHasInconsistency((auditResult.data?.length || 0) > 0);
+
+        if (ap?.status === 'em_manutencao' && !isAdmin) {
+          toast.info("Material em revisão", {
+            description: "Este conteúdo está sendo re-organizado para melhor leitura.",
+            duration: 5000,
+          });
+        }
+
+        // Se o RPC estruturado falhar, as páginas salvas continuam disponíveis.
+        const rpcTree = treeResult.error
+          ? { apostila_id: id, modules: [] }
+          : ((treeResult.data as unknown as Tree) || { apostila_id: id, modules: [] });
+        const t = sanitizedPages.length > 0
+          ? mergePagesIntoTree(rpcTree, id, sanitizedPages)
+          : (rpcTree.modules?.length > 0 ? rpcTree : buildTreeFromPages(id, sanitizedPages));
+
+        if (rpcTree.modules?.length === 0 && sanitizedPages.length === 0 && !ap?.content?.trim()) {
+          console.warn(`[ApostilaReader] Nenhum conteúdo estruturado ou página salva encontrada para ${id}.`);
+        }
+
+        setTree(t);
+        const flat = flatten(t);
+        const requestedLesson = searchParams.get("lesson");
+        const resume = flat.find((l) => l.id === requestedLesson)
+          || flat.find((l) => l.progress_status === "in_progress")
+          || flat.find((l) => !l.progress_status)
+          || flat[0];
+        if (resume) {
+          setSelectedLessonId(resume.id);
+          if (resume.date) setSelectedDate(resume.date);
+        }
+      } catch (error) {
+        if (cancelled) return;
+        console.error('[ApostilaReader] Erro ao carregar conteúdo:', error);
+        setTree((current) => current || { apostila_id: id, modules: [] });
+        toast.error('Não foi possível carregar a estrutura completa. Tente novamente.', {
+          description: 'O leitor continuará exibindo qualquer conteúdo já disponível.',
         });
+      } finally {
+        if (!cancelled) setLoadingTree(false);
       }
+    };
 
-
-      const rpcTree = (rpcData as unknown as Tree) || { apostila_id: id, modules: [] };
-      const savedPages = sanitizedPages as ApostilaPageRow[];
-      const t = savedPages.length > 0
-        ? mergePagesIntoTree(rpcTree, id, savedPages)
-        : (rpcTree.modules?.length > 0 ? rpcTree : buildTreeFromPages(id, savedPages));
-
-      if (rpcTree.modules?.length === 0 && savedPages.length === 0) {
-        console.warn(`[ApostilaReader] No structured lessons or saved pages found for ${id}.`);
-      }
-
-      setTree(t);
-      const flat = flatten(t);
-      
-      // Retomar de onde parou: primeira in_progress ou primeira sem progresso
-      const requestedLesson = searchParams.get("lesson");
-      const resume =
-        flat.find((l) => l.id === requestedLesson) ||
-        flat.find((l) => l.progress_status === "in_progress") ||
-        flat.find((l) => !l.progress_status) ||
-        flat[0];
-      if (resume) {
-        setSelectedLessonId(resume.id);
-        // Se a lição retomada tiver data, seleciona ela no filtro
-        if (resume.date) setSelectedDate(resume.date);
-      }
-
-      setLoadingTree(false);
-    })();
+    void loadReader();
     return () => {
       cancelled = true;
     };
-  }, [id, searchParams]);
+  }, [id, searchParams, isAdmin]);
 
   const flat = useMemo(() => (tree ? flatten(tree) : []), [tree]);
   
@@ -343,37 +351,39 @@ export default function ApostilaReaderPage() {
   useEffect(() => {
     if (!selectedLessonId) {
       setLessonContent("");
+      setLessonLoading(false);
       return;
     }
     let cancelled = false;
-    (async () => {
+
+    const loadLesson = async () => {
       setLessonLoading(true);
-
-      // Páginas criadas pelo editor ficam em apostila_pages e usam IDs sintéticos
-      // no fallback do leitor; não devem ser consultadas em apostila_lessons.
-      if (selectedLessonId.startsWith('page:')) {
-        setLessonContent(currentLesson?.content_md || '');
-        const { data: pageUserData } = await supabase.auth.getUser();
-        const pageUserId = pageUserData?.user?.id;
-        if (pageUserId) {
-          setNoteText(localStorage.getItem(`apostila_page_note_${pageUserId}_${selectedLessonId.slice(5)}`) || '');
+      try {
+        // Páginas criadas pelo editor usam IDs sintéticos e já têm o conteúdo na árvore.
+        if (selectedLessonId.startsWith('page:')) {
+          if (!cancelled) setLessonContent(currentLesson?.content_md || '');
+          const { data: pageUserData } = await supabase.auth.getUser();
+          const pageUserId = pageUserData?.user?.id;
+          if (pageUserId && !cancelled) {
+            setNoteText(localStorage.getItem(`apostila_page_note_${pageUserId}_${selectedLessonId.slice(5)}`) || '');
+          }
+          return;
         }
-        setLessonLoading(false);
-        contentRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
-        return;
-      }
 
-      const { data: lesson } = await supabase
-        .from("apostila_lessons")
-        .select("content_md")
-        .eq("id", selectedLessonId)
-        .maybeSingle();
-      if (cancelled) return;
-      setLessonContent((lesson?.content_md as string) || "");
-      // Nota do aluno
-      const { data: userData } = await supabase.auth.getUser();
-      const userId = userData?.user?.id;
-      if (userId) {
+        const { data: lesson, error: lessonError } = await supabase
+          .from("apostila_lessons")
+          .select("content_md")
+          .eq("id", selectedLessonId)
+          .maybeSingle();
+        if (cancelled) return;
+        if (lessonError) throw lessonError;
+
+        // Se a consulta individual retornar vazio, mantém o conteúdo recebido na árvore.
+        setLessonContent((lesson?.content_md as string) || currentLesson?.content_md || "");
+        const { data: userData } = await supabase.auth.getUser();
+        const userId = userData?.user?.id;
+        if (!userId || cancelled) return;
+
         const { data: note } = await supabase
           .from("apostila_lesson_notes")
           .select("body")
@@ -381,25 +391,36 @@ export default function ApostilaReaderPage() {
           .eq("lesson_id", selectedLessonId)
           .maybeSingle();
         if (!cancelled) setNoteText((note?.body as string) || "");
-        // Marca como em progresso (upsert)
+
         await supabase.from("apostila_lesson_progress").upsert(
           {
             user_id: userId,
             lesson_id: selectedLessonId,
-            status:
-              currentLesson?.progress_status === "completed" ? "completed" : "in_progress",
+            status: currentLesson?.progress_status === "completed" ? "completed" : "in_progress",
             updated_at: new Date().toISOString(),
           },
           { onConflict: "user_id,lesson_id" },
         );
-        setTree((t) => updateLessonInTree(t, selectedLessonId, (l) => ({
-          ...l,
-          progress_status: l.progress_status === "completed" ? "completed" : "in_progress",
-        })));
+        if (!cancelled) {
+          setTree((t) => updateLessonInTree(t, selectedLessonId, (l) => ({
+            ...l,
+            progress_status: l.progress_status === "completed" ? "completed" : "in_progress",
+          })));
+        }
+      } catch (error) {
+        if (cancelled) return;
+        console.error('[ApostilaReader] Erro ao carregar lição:', error);
+        setLessonContent(currentLesson?.content_md || '');
+        toast.error('Não foi possível carregar esta lição. O conteúdo disponível foi preservado.');
+      } finally {
+        if (!cancelled) {
+          setLessonLoading(false);
+          contentRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+        }
       }
-      setLessonLoading(false);
-      contentRef.current?.scrollTo({ top: 0, behavior: "smooth" });
-    })();
+    };
+
+    void loadLesson();
     return () => {
       cancelled = true;
     };
