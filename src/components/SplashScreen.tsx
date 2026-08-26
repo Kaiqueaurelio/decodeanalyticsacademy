@@ -1,4 +1,4 @@
-import React, { useEffect, useState, memo } from 'react';
+import React, { useEffect, useRef, useState, memo } from 'react';
 import logoDecode from '@/assets/owl-icon.png';
 
 interface SplashScreenProps {
@@ -8,6 +8,11 @@ interface SplashScreenProps {
 
 export const SplashScreen = memo(React.forwardRef<HTMLDivElement, SplashScreenProps>(({ onComplete, duration = 2500 }, ref) => {
   const [opacity, setOpacity] = useState(1);
+  const onCompleteRef = useRef(onComplete);
+
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
 
   useEffect(() => {
     // Inicia o fade out 500ms antes de completar
@@ -17,14 +22,14 @@ export const SplashScreen = memo(React.forwardRef<HTMLDivElement, SplashScreenPr
 
     // Completa após o fade out
     const completeTimer = setTimeout(() => {
-      onComplete();
+      onCompleteRef.current();
     }, duration);
 
     return () => {
       clearTimeout(fadeTimer);
       clearTimeout(completeTimer);
     };
-  }, [duration, onComplete]);
+  }, [duration]);
 
   return (
     <div
