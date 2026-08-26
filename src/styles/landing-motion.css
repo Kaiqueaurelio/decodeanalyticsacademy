@@ -81,7 +81,6 @@
   }
 }
 
-
 @keyframes decode-hero-marquee {
   from { transform: translateX(0); }
   to { transform: translateX(-50%); }
@@ -95,7 +94,6 @@
 @media (prefers-reduced-motion: reduce) {
   .hero-marquee { animation: none; }
 }
-
 
 /* Decode hero polish */
 .hero-video-vignette {
@@ -123,8 +121,6 @@
   mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
 }
 
-/* Começa levemente visível: o navegador já contabiliza o texto do hero como
-   pintado (LCP) no primeiro frame, sem esperar o fim da animação. */
 @keyframes decode-hero-content-in {
   from { opacity: 0.35; transform: translate3d(0, 14px, 0); }
   to { opacity: 1; transform: translate3d(0, 0, 0); }
@@ -135,7 +131,6 @@
   .hero-stat-card { transition: none; }
   .hero-stat-card:hover { transform: none; }
 }
-
 
 .hero-background-video {
   animation: decode-video-fade-in 900ms ease-out both;
@@ -184,12 +179,10 @@
   .hero-scroll-cue span { animation: none; }
 }
 
-/* Video de fundo global da landing */
 .landing-bg-video {
   animation: decode-video-fade-in 900ms ease-out both;
 }
 
-/* Scrim sobre o vídeo — mantém contraste do texto sem apagar a imagem */
 .landing-bg-scrim {
   background: linear-gradient(
     180deg,
@@ -212,12 +205,11 @@
     );
   }
 }
+
 @media (prefers-reduced-motion: reduce) {
   .landing-bg-video { animation: none; }
 }
 
-
-/* Perf: pula pintura/layout de seções fora da viewport na landing. */
 .landing-shell > section,
 .landing-shell > div[style*="min-height"] {
   content-visibility: auto;
@@ -286,7 +278,7 @@ body:has(#identifier) main > header::before {
 }
 
 body:has(#identifier) main > header::after {
-  content: "TETHER — HTML CSS JS";
+  content: "TETHER - HTML CSS JS";
   position: absolute;
   left: 50%;
   top: 50%;
@@ -391,10 +383,6 @@ body:has(#identifier) #resetEmail:focus {
 
 body:has(#identifier) [class*="shadow-[0_0_14px_#d7ff4f]"] {
   box-shadow: 0 0 18px rgba(24, 247, 240, 0.7) !important;
-}
-
-body:has(#identifier) [class*="shadow-[0_0_25px"] {
-  box-shadow: 0 0 26px rgba(24, 247, 240, 0.2) !important;
 }
 
 @media (max-width: 640px) {
