@@ -23,12 +23,19 @@ export default function ForgotPasswordPage() {
 
     setLoading(true);
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
-        redirectTo: `${window.location.origin}/reset-password`,
+      const { data, error } = await supabase.functions.invoke('ra-auth', {
+        body: {
+          mode: 'reset',
+          ra: email.trim().toLowerCase(),
+          redirectTo: `${window.location.origin}/reset-password`,
+        },
       });
 
-      if (error) {
-        toast.error(error.message || 'Erro ao enviar e-mail de recuperação.');
+      if (error || data?.code === 'email_rate_limit_exceeded') {
+        const message = data?.error || error?.message || 'Não foi possível enviar o link agora.';
+        toast.error(message.includes('rate limit') || message.includes('limite')
+          ? 'Limite de envio atingido. Aguarde alguns minutos antes de solicitar outro link.'
+          : message);
       } else {
         setSuccess(true);
         toast.success('Link de recuperação enviado com sucesso!');
