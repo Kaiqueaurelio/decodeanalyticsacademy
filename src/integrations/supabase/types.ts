@@ -40,7 +40,7 @@ export type Database = {
       }
       activity_logs: {
         Row: {
-          action: string
+          action: Database["public"]["Enums"]["activity_action"]
           created_at: string
           id: string
           ip_address: string | null
@@ -48,27 +48,34 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          action: string
-          created_at: string
+          action: Database["public"]["Enums"]["activity_action"]
+          created_at?: string
           id?: string
           ip_address?: string | null
           material_id?: string | null
           user_id: string
         }
         Update: {
-          action?: string
+          action?: Database["public"]["Enums"]["activity_action"]
           created_at?: string
           id?: string
           ip_address?: string | null
           material_id?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "activity_logs_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "materials"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       ad_clicks: {
         Row: {
           ad_id: string
-          clicked_at: string | null
           created_at: string
           id: string
           session_id: string | null
@@ -76,7 +83,6 @@ export type Database = {
         }
         Insert: {
           ad_id: string
-          clicked_at?: string | null
           created_at?: string
           id?: string
           session_id?: string | null
@@ -84,7 +90,6 @@ export type Database = {
         }
         Update: {
           ad_id?: string
-          clicked_at?: string | null
           created_at?: string
           id?: string
           session_id?: string | null
@@ -107,7 +112,6 @@ export type Database = {
           id: string
           session_id: string | null
           user_id: string | null
-          viewed_at: string | null
         }
         Insert: {
           ad_id: string
@@ -115,7 +119,6 @@ export type Database = {
           id?: string
           session_id?: string | null
           user_id?: string | null
-          viewed_at?: string | null
         }
         Update: {
           ad_id?: string
@@ -123,7 +126,6 @@ export type Database = {
           id?: string
           session_id?: string | null
           user_id?: string | null
-          viewed_at?: string | null
         }
         Relationships: [
           {
@@ -165,63 +167,60 @@ export type Database = {
       ads: {
         Row: {
           ad_type: string
-          click_count: number | null
-          created_at: string | null
-          created_by: string
+          click_count: number
+          created_at: string
+          created_by: string | null
           description: string | null
-          display_duration: number | null
+          display_duration: number
           end_date: string | null
           id: string
-          image_path: string | null
           image_url: string | null
-          is_active: boolean | null
+          is_active: boolean
           link_url: string | null
-          position: number | null
+          position: number
           start_date: string | null
-          target_audience: string | null
+          target_pages: string[]
           title: string
-          updated_at: string | null
-          view_count: number | null
+          updated_at: string
+          view_count: number
         }
         Insert: {
-          ad_type: string
-          click_count?: number | null
-          created_at?: string | null
-          created_by: string
+          ad_type?: string
+          click_count?: number
+          created_at?: string
+          created_by?: string | null
           description?: string | null
-          display_duration?: number | null
+          display_duration?: number
           end_date?: string | null
           id?: string
-          image_path?: string | null
           image_url?: string | null
-          is_active?: boolean | null
+          is_active?: boolean
           link_url?: string | null
-          position?: number | null
+          position?: number
           start_date?: string | null
-          target_audience?: string | null
+          target_pages?: string[]
           title: string
-          updated_at?: string | null
-          view_count?: number | null
+          updated_at?: string
+          view_count?: number
         }
         Update: {
           ad_type?: string
-          click_count?: number | null
-          created_at?: string | null
-          created_by?: string
+          click_count?: number
+          created_at?: string
+          created_by?: string | null
           description?: string | null
-          display_duration?: number | null
+          display_duration?: number
           end_date?: string | null
           id?: string
-          image_path?: string | null
           image_url?: string | null
-          is_active?: boolean | null
+          is_active?: boolean
           link_url?: string | null
-          position?: number | null
+          position?: number
           start_date?: string | null
-          target_audience?: string | null
+          target_pages?: string[]
           title?: string
-          updated_at?: string | null
-          view_count?: number | null
+          updated_at?: string
+          view_count?: number
         }
         Relationships: []
       }
@@ -412,28 +411,28 @@ export type Database = {
         Row: {
           apostila_id: string
           content: string
-          created_at: string | null
+          created_at: string
           id: string
-          likes_count: number | null
-          updated_at: string | null
+          likes_count: number
+          updated_at: string
           user_id: string
         }
         Insert: {
           apostila_id: string
           content: string
-          created_at?: string | null
+          created_at?: string
           id?: string
-          likes_count?: number | null
-          updated_at?: string | null
+          likes_count?: number
+          updated_at?: string
           user_id: string
         }
         Update: {
           apostila_id?: string
           content?: string
-          created_at?: string | null
+          created_at?: string
           id?: string
-          likes_count?: number | null
-          updated_at?: string | null
+          likes_count?: number
+          updated_at?: string
           user_id?: string
         }
         Relationships: [
@@ -703,19 +702,19 @@ export type Database = {
       apostila_likes: {
         Row: {
           apostila_id: string
-          created_at: string | null
+          created_at: string
           id: string
           user_id: string
         }
         Insert: {
           apostila_id: string
-          created_at?: string | null
+          created_at?: string
           id?: string
           user_id: string
         }
         Update: {
           apostila_id?: string
-          created_at?: string | null
+          created_at?: string
           id?: string
           user_id?: string
         }
@@ -809,62 +808,6 @@ export type Database = {
           },
         ]
       }
-      apostila_operation_logs: {
-        Row: {
-          affected_record_ids: string[]
-          apostila_id: string | null
-          created_at: string
-          error_code: string | null
-          error_message: string | null
-          id: string
-          metadata: Json
-          operation_id: string
-          operation_type: string
-          page_id: string | null
-          phase: string
-          status: string
-          user_id: string | null
-        }
-        Insert: {
-          affected_record_ids?: string[]
-          apostila_id?: string | null
-          created_at?: string
-          error_code?: string | null
-          error_message?: string | null
-          id?: string
-          metadata?: Json
-          operation_id: string
-          operation_type: string
-          page_id?: string | null
-          phase: string
-          status: string
-          user_id?: string | null
-        }
-        Update: {
-          affected_record_ids?: string[]
-          apostila_id?: string | null
-          created_at?: string
-          error_code?: string | null
-          error_message?: string | null
-          id?: string
-          metadata?: Json
-          operation_id?: string
-          operation_type?: string
-          page_id?: string | null
-          phase?: string
-          status?: string
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "apostila_operation_logs_apostila_id_fkey"
-            columns: ["apostila_id"]
-            isOneToOne: false
-            referencedRelation: "apostilas"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       apostila_pages: {
         Row: {
           apostila_id: string
@@ -874,7 +817,7 @@ export type Database = {
           embedding: string | null
           id: string
           position: number
-          saved_date: string
+          saved_date: string | null
           title: string
           updated_at: string
         }
@@ -886,7 +829,7 @@ export type Database = {
           embedding?: string | null
           id?: string
           position?: number
-          saved_date?: string
+          saved_date?: string | null
           title?: string
           updated_at?: string
         }
@@ -898,7 +841,7 @@ export type Database = {
           embedding?: string | null
           id?: string
           position?: number
-          saved_date?: string
+          saved_date?: string | null
           title?: string
           updated_at?: string
         }
@@ -915,30 +858,30 @@ export type Database = {
       apostila_shares: {
         Row: {
           apostila_id: string
-          created_at: string | null
+          created_at: string
           created_by: string
           expires_at: string | null
           id: string
           share_token: string
-          view_count: number | null
+          view_count: number
         }
         Insert: {
           apostila_id: string
-          created_at?: string | null
+          created_at?: string
           created_by: string
           expires_at?: string | null
           id?: string
           share_token: string
-          view_count?: number | null
+          view_count?: number
         }
         Update: {
           apostila_id?: string
-          created_at?: string | null
+          created_at?: string
           created_by?: string
           expires_at?: string | null
           id?: string
           share_token?: string
-          view_count?: number | null
+          view_count?: number
         }
         Relationships: [
           {
@@ -976,149 +919,6 @@ export type Database = {
           summary_md?: string | null
         }
         Relationships: []
-      }
-      apostila_validation_alerts: {
-        Row: {
-          acknowledged_at: string | null
-          acknowledged_by: string | null
-          apostila_id: string
-          created_at: string
-          id: string
-          issue_id: string
-          severity: string
-          status: string
-        }
-        Insert: {
-          acknowledged_at?: string | null
-          acknowledged_by?: string | null
-          apostila_id: string
-          created_at?: string
-          id?: string
-          issue_id: string
-          severity: string
-          status?: string
-        }
-        Update: {
-          acknowledged_at?: string | null
-          acknowledged_by?: string | null
-          apostila_id?: string
-          created_at?: string
-          id?: string
-          issue_id?: string
-          severity?: string
-          status?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "apostila_validation_alerts_apostila_id_fkey"
-            columns: ["apostila_id"]
-            isOneToOne: false
-            referencedRelation: "apostilas"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "apostila_validation_alerts_issue_id_fkey"
-            columns: ["issue_id"]
-            isOneToOne: false
-            referencedRelation: "apostila_validation_issues"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      apostila_validation_issues: {
-        Row: {
-          apostila_id: string
-          code: string
-          created_at: string
-          id: string
-          message: string
-          metadata: Json
-          page_id: string | null
-          resolved_at: string | null
-          run_id: string
-          severity: string
-        }
-        Insert: {
-          apostila_id: string
-          code: string
-          created_at?: string
-          id?: string
-          message: string
-          metadata?: Json
-          page_id?: string | null
-          resolved_at?: string | null
-          run_id: string
-          severity: string
-        }
-        Update: {
-          apostila_id?: string
-          code?: string
-          created_at?: string
-          id?: string
-          message?: string
-          metadata?: Json
-          page_id?: string | null
-          resolved_at?: string | null
-          run_id?: string
-          severity?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "apostila_validation_issues_apostila_id_fkey"
-            columns: ["apostila_id"]
-            isOneToOne: false
-            referencedRelation: "apostilas"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "apostila_validation_issues_run_id_fkey"
-            columns: ["run_id"]
-            isOneToOne: false
-            referencedRelation: "apostila_validation_runs"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      apostila_validation_runs: {
-        Row: {
-          apostila_id: string
-          created_at: string
-          created_by: string | null
-          evidence: Json
-          id: string
-          issue_count: number
-          status: string
-          trigger_source: string
-        }
-        Insert: {
-          apostila_id: string
-          created_at?: string
-          created_by?: string | null
-          evidence?: Json
-          id?: string
-          issue_count?: number
-          status?: string
-          trigger_source?: string
-        }
-        Update: {
-          apostila_id?: string
-          created_at?: string
-          created_by?: string | null
-          evidence?: Json
-          id?: string
-          issue_count?: number
-          status?: string
-          trigger_source?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "apostila_validation_runs_apostila_id_fkey"
-            columns: ["apostila_id"]
-            isOneToOne: false
-            referencedRelation: "apostilas"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       apostila_version_history: {
         Row: {
@@ -1199,27 +999,24 @@ export type Database = {
       apostila_views: {
         Row: {
           apostila_id: string
-          created_at: string
           id: string
           session_id: string | null
           user_id: string | null
-          viewed_at: string | null
+          viewed_at: string
         }
         Insert: {
           apostila_id: string
-          created_at?: string
           id?: string
           session_id?: string | null
           user_id?: string | null
-          viewed_at?: string | null
+          viewed_at?: string
         }
         Update: {
           apostila_id?: string
-          created_at?: string
           id?: string
           session_id?: string | null
           user_id?: string | null
-          viewed_at?: string | null
+          viewed_at?: string
         }
         Relationships: [
           {
@@ -1236,7 +1033,6 @@ export type Database = {
           category: string
           content: string | null
           content_backup: string | null
-          content_scope: string[] | null
           course: string[] | null
           cover_url: string | null
           created_at: string
@@ -1259,7 +1055,6 @@ export type Database = {
           category?: string
           content?: string | null
           content_backup?: string | null
-          content_scope?: string[] | null
           course?: string[] | null
           cover_url?: string | null
           created_at?: string
@@ -1282,7 +1077,6 @@ export type Database = {
           category?: string
           content?: string | null
           content_backup?: string | null
-          content_scope?: string[] | null
           course?: string[] | null
           cover_url?: string | null
           created_at?: string
@@ -1350,35 +1144,29 @@ export type Database = {
       }
       auth_attempts: {
         Row: {
-          attempt_key: string
           attempts: number | null
           created_at: string | null
           id: string
           identifier: string | null
           ip_address: string | null
-          key_type: string
           last_attempt: string | null
           locked_until: string | null
         }
         Insert: {
-          attempt_key: string
           attempts?: number | null
           created_at?: string | null
           id?: string
           identifier?: string | null
           ip_address?: string | null
-          key_type: string
           last_attempt?: string | null
           locked_until?: string | null
         }
         Update: {
-          attempt_key?: string
           attempts?: number | null
           created_at?: string | null
           id?: string
           identifier?: string | null
           ip_address?: string | null
-          key_type?: string
           last_attempt?: string | null
           locked_until?: string | null
         }
@@ -1550,12 +1338,12 @@ export type Database = {
           sort_order: number
         }
         Insert: {
-          created_at: string
+          created_at?: string
           icon?: string | null
           id?: string
           name: string
           slug: string
-          sort_order: number
+          sort_order?: number
         }
         Update: {
           created_at?: string
@@ -1791,7 +1579,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          downloaded_at: string
+          downloaded_at?: string
           id?: string
           material_id: string
           user_id: string
@@ -1802,7 +1590,15 @@ export type Database = {
           material_id?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "downloads_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "materials"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       ella_audit_log: {
         Row: {
@@ -1897,126 +1693,52 @@ export type Database = {
         }
         Relationships: []
       }
-      exercise_answer_access_log: {
-        Row: {
-          access_type: string
-          allowed: boolean
-          apostila_id: string | null
-          created_at: string
-          denial_reason: string | null
-          exercise_id: string
-          id: string
-          metadata: Json
-          returned_fields: string[]
-          user_id: string
-        }
-        Insert: {
-          access_type: string
-          allowed: boolean
-          apostila_id?: string | null
-          created_at?: string
-          denial_reason?: string | null
-          exercise_id: string
-          id?: string
-          metadata?: Json
-          returned_fields?: string[]
-          user_id: string
-        }
-        Update: {
-          access_type?: string
-          allowed?: boolean
-          apostila_id?: string | null
-          created_at?: string
-          denial_reason?: string | null
-          exercise_id?: string
-          id?: string
-          metadata?: Json
-          returned_fields?: string[]
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "exercise_answer_access_log_apostila_id_fkey"
-            columns: ["apostila_id"]
-            isOneToOne: false
-            referencedRelation: "apostilas"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "exercise_answer_access_log_exercise_id_fkey"
-            columns: ["exercise_id"]
-            isOneToOne: false
-            referencedRelation: "exercises"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      exercise_answers: {
-        Row: {
-          correct_answer: string | null
-          created_at: string
-          exercise_id: string
-          explanation: string | null
-          reference_answer: string | null
-        }
-        Insert: {
-          correct_answer?: string | null
-          created_at?: string
-          exercise_id: string
-          explanation?: string | null
-          reference_answer?: string | null
-        }
-        Update: {
-          correct_answer?: string | null
-          created_at?: string
-          exercise_id?: string
-          explanation?: string | null
-          reference_answer?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "exercise_answers_exercise_id_fkey"
-            columns: ["exercise_id"]
-            isOneToOne: true
-            referencedRelation: "exercises"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       exercises: {
         Row: {
           allow_image_upload: boolean
           apostila_id: string
+          correct_answer: string
           created_at: string
+          expected_answer: Json
+          explanation: string | null
           id: string
           min_chars: number
           options: Json
           question: string
           question_type: string
+          reference_answer: string | null
           sort_order: number
           type: string
         }
         Insert: {
           allow_image_upload?: boolean
           apostila_id: string
+          correct_answer: string
           created_at?: string
+          expected_answer?: Json
+          explanation?: string | null
           id?: string
           min_chars?: number
           options?: Json
           question: string
           question_type?: string
+          reference_answer?: string | null
           sort_order?: number
           type?: string
         }
         Update: {
           allow_image_upload?: boolean
           apostila_id?: string
+          correct_answer?: string
           created_at?: string
+          expected_answer?: Json
+          explanation?: string | null
           id?: string
           min_chars?: number
           options?: Json
           question?: string
           question_type?: string
+          reference_answer?: string | null
           sort_order?: number
           type?: string
         }
@@ -2336,18 +2058,18 @@ export type Database = {
           file_url: string | null
           id: string
           title: string
-          type: string
+          type: Database["public"]["Enums"]["material_type"]
         }
         Insert: {
           category_id?: string | null
-          created_at: string
+          created_at?: string
           created_by?: string | null
           description?: string | null
           file_path?: string | null
           file_url?: string | null
           id?: string
           title: string
-          type: string
+          type?: Database["public"]["Enums"]["material_type"]
         }
         Update: {
           category_id?: string | null
@@ -2358,9 +2080,17 @@ export type Database = {
           file_url?: string | null
           id?: string
           title?: string
-          type?: string
+          type?: Database["public"]["Enums"]["material_type"]
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "materials_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       mention_notifications: {
         Row: {
@@ -2392,121 +2122,6 @@ export type Database = {
           read?: boolean
           recipient_id?: string
           snippet?: string
-        }
-        Relationships: []
-      }
-      notebook_page_contents: {
-        Row: {
-          content: Json
-          created_at: string
-          id: string
-          page_id: string
-          position: number | null
-          type: string
-          updated_at: string
-        }
-        Insert: {
-          content: Json
-          created_at?: string
-          id?: string
-          page_id: string
-          position?: number | null
-          type: string
-          updated_at?: string
-        }
-        Update: {
-          content?: Json
-          created_at?: string
-          id?: string
-          page_id?: string
-          position?: number | null
-          type?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "notebook_page_contents_page_id_fkey"
-            columns: ["page_id"]
-            isOneToOne: false
-            referencedRelation: "notebook_pages"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      notebook_pages: {
-        Row: {
-          created_at: string
-          description: string | null
-          id: string
-          notebook_id: string
-          position: number | null
-          title: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          notebook_id: string
-          position?: number | null
-          title: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          notebook_id?: string
-          position?: number | null
-          title?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "notebook_pages_notebook_id_fkey"
-            columns: ["notebook_id"]
-            isOneToOne: false
-            referencedRelation: "notebooks"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      notebooks: {
-        Row: {
-          cover_url: string | null
-          created_at: string
-          id: string
-          progress: number | null
-          semester: string | null
-          status: string | null
-          subject_id: string
-          title: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          cover_url?: string | null
-          created_at?: string
-          id?: string
-          progress?: number | null
-          semester?: string | null
-          status?: string | null
-          subject_id: string
-          title: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          cover_url?: string | null
-          created_at?: string
-          id?: string
-          progress?: number | null
-          semester?: string | null
-          status?: string | null
-          subject_id?: string
-          title?: string
-          updated_at?: string
-          user_id?: string
         }
         Relationships: []
       }
@@ -2843,7 +2458,6 @@ export type Database = {
           content_scope: string
           course: string | null
           created_at: string
-          display_name: string | null
           email: string
           full_name: string
           id: string
@@ -2853,7 +2467,6 @@ export type Database = {
           must_change_password: boolean
           ra: string | null
           semester: number | null
-          updated_at: string
           user_id: string
         }
         Insert: {
@@ -2862,7 +2475,6 @@ export type Database = {
           content_scope?: string
           course?: string | null
           created_at?: string
-          display_name?: string | null
           email?: string
           full_name?: string
           id?: string
@@ -2872,7 +2484,6 @@ export type Database = {
           must_change_password?: boolean
           ra?: string | null
           semester?: number | null
-          updated_at?: string
           user_id: string
         }
         Update: {
@@ -2881,7 +2492,6 @@ export type Database = {
           content_scope?: string
           course?: string | null
           created_at?: string
-          display_name?: string | null
           email?: string
           full_name?: string
           id?: string
@@ -2891,7 +2501,6 @@ export type Database = {
           must_change_password?: boolean
           ra?: string | null
           semester?: number | null
-          updated_at?: string
           user_id?: string
         }
         Relationships: []
@@ -3108,30 +2717,42 @@ export type Database = {
       }
       respostas_foto: {
         Row: {
+          correct: string | null
           created_at: string
+          detected_answer: string | null
           exercise_id: string | null
+          expected_answer_snapshot: string | null
           feedback_ia: string | null
           id: string
           imagem_url: string
           nota: number | null
+          score: number | null
           user_id: string
         }
         Insert: {
+          correct?: string | null
           created_at?: string
+          detected_answer?: string | null
           exercise_id?: string | null
+          expected_answer_snapshot?: string | null
           feedback_ia?: string | null
           id?: string
           imagem_url: string
           nota?: number | null
+          score?: number | null
           user_id: string
         }
         Update: {
+          correct?: string | null
           created_at?: string
+          detected_answer?: string | null
           exercise_id?: string | null
+          expected_answer_snapshot?: string | null
           feedback_ia?: string | null
           id?: string
           imagem_url?: string
           nota?: number | null
+          score?: number | null
           user_id?: string
         }
         Relationships: [
@@ -3174,47 +2795,6 @@ export type Database = {
         }
         Relationships: []
       }
-      rss_validation_history: {
-        Row: {
-          error_reason: string | null
-          feed_id: string
-          id: string
-          is_valid: boolean
-          item_count: number | null
-          response_time_ms: number | null
-          status_code: number | null
-          validated_at: string
-        }
-        Insert: {
-          error_reason?: string | null
-          feed_id: string
-          id?: string
-          is_valid: boolean
-          item_count?: number | null
-          response_time_ms?: number | null
-          status_code?: number | null
-          validated_at?: string
-        }
-        Update: {
-          error_reason?: string | null
-          feed_id?: string
-          id?: string
-          is_valid?: boolean
-          item_count?: number | null
-          response_time_ms?: number | null
-          status_code?: number | null
-          validated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "rss_validation_history_feed_id_fkey"
-            columns: ["feed_id"]
-            isOneToOne: false
-            referencedRelation: "rss_feeds"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       security_alerts: {
         Row: {
           alert_type: string
@@ -3226,10 +2806,10 @@ export type Database = {
         }
         Insert: {
           alert_type: string
-          created_at: string
+          created_at?: string
           description?: string | null
           id?: string
-          resolved: boolean
+          resolved?: boolean
           user_id: string
         }
         Update: {
@@ -3503,7 +3083,22 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "student_notes_apostila_id_fkey"
+            columns: ["apostila_id"]
+            isOneToOne: false
+            referencedRelation: "apostilas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_notes_chapter_id_fkey"
+            columns: ["chapter_id"]
+            isOneToOne: false
+            referencedRelation: "apostila_chapters"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       study_goals: {
         Row: {
@@ -3561,7 +3156,7 @@ export type Database = {
         Insert: {
           chapters_completed?: number | null
           created_at?: string | null
-          date: string
+          date?: string
           exercises_completed?: number | null
           id?: string
           time_spent_minutes?: number | null
@@ -3866,30 +3461,6 @@ export type Database = {
         }
         Relationships: []
       }
-      user_streaks: {
-        Row: {
-          current_streak: number | null
-          last_activity_date: string | null
-          longest_streak: number | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          current_streak?: number | null
-          last_activity_date?: string | null
-          longest_streak?: number | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          current_streak?: number | null
-          last_activity_date?: string | null
-          longest_streak?: number | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       user_xp: {
         Row: {
           created_at: string
@@ -4067,15 +3638,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      admin_create_exercise: { Args: { _payload: Json }; Returns: string }
-      admin_delete_exercise: {
-        Args: { _exercise_id: string }
-        Returns: boolean
-      }
-      admin_delete_exercises_for_apostila: {
-        Args: { _apostila_id: string }
-        Returns: number
-      }
       admin_list_exercises: {
         Args: never
         Returns: {
@@ -4083,27 +3645,26 @@ export type Database = {
           apostila_id: string
           correct_answer: string
           created_at: string
-          explanation: string
+          expected_answer: Json
+          explanation: string | null
           id: string
           min_chars: number
           options: Json
           question: string
           question_type: string
-          reference_answer: string
+          reference_answer: string | null
           sort_order: number
           type: string
         }[]
+        SetofOptions: {
+          from: "*"
+          to: "exercises"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       answer_simulado_question: {
         Args: { _answer_id: string; _selected_answer: string }
-        Returns: Json
-      }
-      auth_rate_limit_check: {
-        Args: { _identifier: string; _ip_address: string }
-        Returns: Json
-      }
-      auth_rate_limit_record: {
-        Args: { _identifier: string; _ip_address: string; _success: boolean }
         Returns: Json
       }
       award_badge: { Args: { _criteria: string }; Returns: Json }
@@ -4156,27 +3717,20 @@ export type Database = {
         }
         Returns: Json
       }
-      exercise_answer_access_context: {
-        Args: { _exercise_id: string }
-        Returns: {
-          allowed: boolean
-          apostila_id: string
-          category: string
-          denial_reason: string
-          is_admin: boolean
-          published: boolean
-        }[]
-      }
       force_complete_semesters_upto_five: {
         Args: { _user_id: string }
         Returns: undefined
       }
+      get_apostila_difficulty_heatmap: {
+        Args: never
+        Returns: {
+          apostila_id: string
+          query_count: number
+          title: string
+        }[]
+      }
       get_apostila_reader_tree: {
         Args: { _apostila_id: string }
-        Returns: Json
-      }
-      get_apostila_validation_dashboard: {
-        Args: { _limit?: number }
         Returns: Json
       }
       get_content_scope: { Args: { _user_id: string }; Returns: string }
@@ -4184,31 +3738,6 @@ export type Database = {
       get_email_for_ra: { Args: { _ra: string }; Returns: string }
       get_exercise_counts: { Args: never; Returns: Json }
       get_exercise_reveal: { Args: { _exercise_id: string }; Returns: Json }
-      get_leaderboard: {
-        Args: never
-        Returns: {
-          current_streak: number
-          full_name: string
-          user_id: string
-          xp: number
-        }[]
-      }
-      get_public_jobs: {
-        Args: never
-        Returns: {
-          company_logo_url: string
-          company_name: string
-          description: string
-          id: string
-          is_active: boolean
-          location: string
-          published_at: string
-          requirements: string
-          salary_range: string
-          title: string
-          type: Database["public"]["Enums"]["job_type"]
-        }[]
-      }
       get_public_leaderboard: {
         Args: { _limit?: number }
         Returns: {
@@ -4218,26 +3747,8 @@ export type Database = {
           xp_points: number
         }[]
       }
-      get_quiz_questions: {
-        Args: { _quiz_id: string }
-        Returns: {
-          description: string
-          id: string
-          image_url: string
-          is_required: boolean
-          match_options: Json
-          options: Json
-          points: number
-          position: number
-          question: string
-          type: string
-        }[]
-      }
+      get_quiz_questions: { Args: { _quiz_id: string }; Returns: Json }
       get_student_detail: { Args: { _user_id: string }; Returns: Json }
-      get_student_performance_report: {
-        Args: { _user_id: string }
-        Returns: Json
-      }
       get_student_rankings: {
         Args: { _limit?: number }
         Returns: {
@@ -4262,10 +3773,28 @@ export type Database = {
         Args: { _amount: number; _user_id: string }
         Returns: undefined
       }
-      log_admin_audit: {
-        Args: { _action: string; _details?: Json; _target_user_id?: string }
-        Returns: undefined
-      }
+      log_study_activity:
+        | {
+            Args: {
+              _chapters?: number
+              _exercises?: number
+              _minutes?: number
+              _user_id: string
+              _xp?: number
+            }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              _chapters?: number
+              _exercises?: number
+              _minutes?: number
+              _user_id: string
+              _xp?: number
+              _xp_gained?: number
+            }
+            Returns: undefined
+          }
       log_user_action: {
         Args: { _action: string; _material_id?: string }
         Returns: undefined
@@ -4298,56 +3827,20 @@ export type Database = {
         Args: { _user_id: string }
         Returns: undefined
       }
-      parse_apostila_date: {
-        Args: { _day: string; _month: string; _year: string }
-        Returns: string
-      }
-      record_apostila_operation: {
-        Args: {
-          _affected_record_ids?: string[]
-          _apostila_id?: string
-          _error_code?: string
-          _error_message?: string
-          _metadata?: Json
-          _operation_id?: string
-          _operation_type?: string
-          _page_id?: string
-          _phase?: string
-          _status?: string
-        }
-        Returns: string
-      }
-      record_exercise_answer_access: {
-        Args: {
-          _access_type: string
-          _allowed: boolean
-          _denial_reason?: string
-          _exercise_id: string
-          _metadata?: Json
-          _returned_fields?: string[]
-        }
-        Returns: string
-      }
-      run_apostila_chronology_validation: {
-        Args: { _apostila_id: string; _trigger_source?: string }
-        Returns: Json
-      }
-      run_apostila_chronology_validation_internal: {
-        Args: {
-          _apostila_id: string
-          _created_by?: string
-          _trigger_source?: string
-        }
-        Returns: Json
-      }
-      separate_apostila_pages_by_date: {
-        Args: { _apostila_id: string; _user_id?: string }
-        Returns: Json
-      }
       snapshot_apostila_version: {
         Args: { _apostila_id: string }
         Returns: string
       }
+      split_apostila_by_date:
+        | { Args: { _apostila_id: string }; Returns: Json }
+        | {
+            Args: {
+              _apostila_id: string
+              _content_override?: string
+              _dry_run?: boolean
+            }
+            Returns: Json
+          }
       submit_quiz: {
         Args: { _answers: Json; _quiz_id: string; _time_spent?: number }
         Returns: Json
@@ -4355,9 +3848,28 @@ export type Database = {
       update_materials_order: { Args: { payload: Json }; Returns: undefined }
     }
     Enums: {
+      activity_action:
+        | "view"
+        | "download"
+        | "screenshot"
+        | "login"
+        | "logout"
+        | "unauthorized_access"
       apostila_status: "liberada" | "bloqueada" | "em_manutencao"
       app_role: "admin" | "user"
       job_type: "job" | "internship" | "freelance"
+      material_type:
+        | "pdf"
+        | "image"
+        | "video"
+        | "audio"
+        | "powerpoint"
+        | "link"
+        | "exam"
+        | "word"
+        | "excel"
+        | "gif"
+        | "other"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -4485,9 +3997,30 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      activity_action: [
+        "view",
+        "download",
+        "screenshot",
+        "login",
+        "logout",
+        "unauthorized_access",
+      ],
       apostila_status: ["liberada", "bloqueada", "em_manutencao"],
       app_role: ["admin", "user"],
       job_type: ["job", "internship", "freelance"],
+      material_type: [
+        "pdf",
+        "image",
+        "video",
+        "audio",
+        "powerpoint",
+        "link",
+        "exam",
+        "word",
+        "excel",
+        "gif",
+        "other",
+      ],
     },
   },
 } as const
