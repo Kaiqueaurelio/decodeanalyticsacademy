@@ -453,18 +453,25 @@ export default function LoginPage() {
       setShowLockModal(false);
     };
 
-    if (!isEmail) {
-      const { data, message } = await callRaAuth({ mode: 'reset', ra: normalizeRa(id), redirectTo: `${window.location.origin}/reset-password` });
-      setLoading(false);
-      if (!data) { showTransientError(); toast.error(message ?? 'Não consegui enviar a recuperação agora. Tente novamente.'); return; }
-      finish();
-      return;
-    }
-
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(id.toLowerCase(), { redirectTo: `${window.location.origin}/reset-password` });
+      // Centraliza RA e e-mail na Edge Function para evitar chamadas duplicadas
+      // ao endpoint de recuperação do Auth e aplicar o mesmo rate limit.
+      const { data, message, status, code } = await callRaAuth({
+        mode: 'reset',
+        ra: isEmail ? id.toLowerCase() : normalizeRa(id),
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
       setLoading(false);
-      if (error) { showTransientError(); toast.error('Não foi possível enviar o e-mail agora. Tente novamente em instantes.'); return; }
+      if (status === 429 || code === 'email_rate_limit_exceeded') {
+        showTransientError();
+        toast.error(message ?? 'O limite de e-mails foi atingido. Aguarde alguns minutos antes de tentar novamente.');
+        return;
+      }
+      if (!data) {
+        showTransientError();
+        toast.error(message ?? 'Não consegui enviar a recuperação agora. Tente novamente.');
+        return;
+      }
       finish();
     } catch {
       setLoading(false);

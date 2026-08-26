@@ -179,6 +179,18 @@ Deno.serve(async (req) => {
       const { error } = await admin.auth.resetPasswordForEmail(resolvedEmail, {
         redirectTo: safeRedirectTo || undefined,
       });
+      if (error) {
+        const errorText = error.message?.toLowerCase() ?? '';
+        if (errorText.includes('rate limit') || errorText.includes('too many')) {
+          return json({
+            error: 'O limite de envio de e-mails foi atingido. Aguarde alguns minutos antes de tentar novamente.',
+            code: 'email_rate_limit_exceeded',
+            retry_after_seconds: 60,
+          }, 429, { ...corsHeaders, 'Retry-After': '60' });
+        }
+        console.error('ra-auth reset:', error.message);
+        return json({ error: 'Não foi possível enviar o link de recuperação agora.' }, 503, corsHeaders);
+      }
       return json({ ok: true }, 200, corsHeaders);
     }
 
