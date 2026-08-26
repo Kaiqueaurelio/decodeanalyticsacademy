@@ -9,17 +9,17 @@ const ACTIVE_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_Zh6H3y8GJ2J_wkRVXxyTng_e
 // Migração de runtime: alguns deploys antigos da Vercel ainda possuem a URL
 // legada nas variáveis de ambiente. Mantemos a ponte até a configuração da Vercel
 // ser atualizada para o projeto ativo, sem interromper login, apostilas ou Ella.
-const configuredUrl = import.meta.env.VITE_SUPABASE_URL;
+// Lovable pode publicar o bundle sem injetar as variáveis Vite. Nesse caso,
+// usamos o endpoint ativo versionado no código em vez de derrubar o app na carga.
+const configuredUrl = import.meta.env.VITE_SUPABASE_URL || ACTIVE_SUPABASE_URL;
 const isLegacyDeployment = configuredUrl === LEGACY_SUPABASE_URL;
 const SUPABASE_URL = isLegacyDeployment ? ACTIVE_SUPABASE_URL : configuredUrl;
 const SUPABASE_PUBLISHABLE_KEY = isLegacyDeployment
   ? ACTIVE_SUPABASE_PUBLISHABLE_KEY
-  : import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+  : (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || ACTIVE_SUPABASE_PUBLISHABLE_KEY);
 
 if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
-  throw new Error(
-    'Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY.',
-  );
+  throw new Error('Supabase client could not be initialized.');
 }
 
 // Import the supabase client like this:
