@@ -1,11 +1,14 @@
 /**
  * Detecta falhas de carregamento de chunks/módulos (geralmente causadas por
  * um deploy novo invalidando os hashes dos arquivos que a aba ainda referencia)
- * e força um reload único da página para baixar a versão atual.
+ * e força uma única recarga da página para baixar a versão atual.
  *
- * Usa sessionStorage para evitar loop de reloads (só recarrega 1x por sessão).
+ * O guard não apaga caches de outros aplicativos nem remove sessões do Supabase.
+ * A marca fica válida até um carregamento estável, evitando loops quando o
+ * deployment ainda não está disponível ou quando a rede está instável.
  */
 const RELOAD_KEY = '__chunk_reload_attempted__';
+const APP_CACHE_RE = /^decode-(html|scripts|css|images)-v\d+$/;
 
 const isChunkLoadError = (msg: string | undefined): boolean => {
   if (!msg) return false;
@@ -20,16 +23,19 @@ const isChunkLoadError = (msg: string | undefined): boolean => {
 
 const tryReload = () => {
   try {
-    if (sessionStorage.getItem(RELOAD_KEY)) return; // já tentou uma vez
+    if (sessionStorage.getItem(RELOAD_KEY)) return;
     sessionStorage.setItem(RELOAD_KEY, '1');
   } catch {
-    /* sessionStorage indisponível — segue mesmo assim */
+    /* sessionStorage indisponível — tenta seguir sem persistência. */
   }
-  // Limpa caches do Service Worker (PWA) antes de recarregar
+
+  // Limpa somente caches antigos criados pelo próprio app.
   const reload = () => window.location.reload();
   if ('caches' in window) {
     caches.keys()
-      .then((keys) => Promise.all(keys.map((k) => caches.delete(k))))
+      .then((keys) => Promise.all(
+        keys.filter((key) => APP_CACHE_RE.test(key)).map((key) => caches.delete(key)),
+      ))
       .then(reload, reload);
   } else {
     reload();
@@ -37,10 +43,15 @@ const tryReload = () => {
 };
 
 export function installChunkReloadGuard() {
-  // Limpa o flag se a página carregou normalmente por mais de 5s
+  // Um carregamento estável por 30s libera a marca para uma falha futura.
   window.setTimeout(() => {
-    try { sessionStorage.removeItem(RELOAD_KEY); } catch { /* noop */ }
-  }, 5000);
+    try {
+      const root = document.getElementById('root');
+      if (root?.children.length) sessionStorage.removeItem(RELOAD_KEY);
+    } catch {
+      /* noop */
+    }
+  }, 30_000);
 
   window.addEventListener('error', (e) => {
     if (isChunkLoadError(e.message)) tryReload();
