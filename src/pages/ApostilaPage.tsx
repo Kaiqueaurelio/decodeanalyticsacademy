@@ -28,13 +28,13 @@ import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import {
   ArrowLeft, BookOpen, PenLine, Eye, List, X, MoreHorizontal,
-  ChevronUp, StickyNote, Layers, Wand2, MessageSquare, Share2, CheckCircle2, Copy, Volume2,
+  ChevronDown, ChevronUp, StickyNote, Layers, Wand2, MessageSquare, Share2, CheckCircle2, Copy, Volume2,
   FileDown, Loader2, Brain, ArrowRight, Settings, PenTool, AlertTriangle, Sparkles
 } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 
 import { parseApostilaContent, type ApostilaSection as Section } from '@/lib/apostila-parser';
-import { isPlaceholderPageContent, mergeDistinctPages, normalizeContentForComparison, stripInlineMarkup } from '@/lib/content-formatting';
+import { isPlaceholderPageContent, isSubstantialDuplicateContent, mergeDistinctPages, stripInlineMarkup } from '@/lib/content-formatting';
 import { formatApostilaDate, getApostilaPageSavedDate, isMissingApostilaPageSavedDateColumn } from '@/lib/apostila-pages';
 
 /**
@@ -185,6 +185,7 @@ export default function ApostilaPage({ tab, setTab }: Props) {
   const [focusMode, setFocusMode] = useState(false);
   const [activeSection, setActiveSection] = useState<string>('');
   const [showTocMobile, setShowTocMobile] = useState(false);
+  const [visualTocOpen, setVisualTocOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -309,25 +310,21 @@ export default function ApostilaPage({ tab, setTab }: Props) {
       return 0;
     });
 
-    const mainContent = isPlaceholderApostilaContent(apostila?.content)
-      ? structuredContent
+    const validPages = mergeDistinctPages(sortedExtraPages).filter(
+      (page) => !isPlaceholderPageContent(page.content || ''),
+    );
+    const hasPlaceholderMain = isPlaceholderApostilaContent(apostila?.content);
+    // Páginas do editor são a fonte autoritativa quando o campo principal está
+    // vazio. O conteúdo estruturado continua como fallback apenas quando não há
+    // nenhuma página salva, evitando que um resumo curto esconda a página real.
+    const mainContent = hasPlaceholderMain
+      ? (validPages.length > 0 ? '' : structuredContent)
       : (apostila?.content || '');
-    
-    // Filtro de desduplicação e integridade cronológica
-    const distinctPages = mergeDistinctPages(sortedExtraPages).filter((page) => {
-      if (isPlaceholderPageContent(page.content || '')) return false;
-      
-      const pageKey = normalizeContentForComparison(page.content || '');
-      if (!pageKey) return false;
 
-      // Lógica de desduplicação contra o conteúdo principal
-      const mainKey = normalizeContentForComparison(mainContent);
-      if (mainKey.includes(pageKey) || pageKey.includes(mainKey)) {
-        // Se a página for um subconjunto ou superconjunto do conteúdo principal, a removemos para evitar eco.
-        return false;
-      }
-      
-      return true;
+    // Filtro de desduplicação e integridade cronológica
+    const distinctPages = validPages.filter((page) => {
+      if (isPlaceholderPageContent(page.content || '')) return false;
+      return !isSubstantialDuplicateContent(mainContent, page.content || '');
     });
 
     return [
@@ -874,13 +871,21 @@ export default function ApostilaPage({ tab, setTab }: Props) {
               {/* Sumário visual clicável */}
               {tocItems.length > 1 && (
                 <div className="mb-8 rounded-xl border border-border/60 bg-card/40 backdrop-blur-sm overflow-hidden animate-fade-in" style={{ animationDelay: '320ms' }}>
-                  <div className="flex items-center gap-2 px-4 py-3 border-b border-border/50 bg-muted/30">
+                  <button
+                    type="button"
+                    onClick={() => setVisualTocOpen((open) => !open)}
+                    aria-expanded={visualTocOpen}
+                    aria-controls="apostila-visual-toc"
+                    className={`flex w-full items-center gap-2 px-4 py-3 bg-muted/30 text-left transition-colors hover:bg-muted/50 ${visualTocOpen ? 'border-b border-border/50' : ''}`}
+                  >
                     <List className="h-3.5 w-3.5 text-primary" />
-                    <span className="font-mono-label text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                    <span className="flex-1 font-mono-label text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
                       Sumário · {tocItems.filter((t) => t.level === 1).length} {tocItems.filter((t) => t.level === 1).length === 1 ? 'capítulo' : 'capítulos'}
                     </span>
-                  </div>
-                  <ol className="py-1">
+                    <span className="text-[10px] text-muted-foreground">{visualTocOpen ? 'Recolher' : 'Abrir'}</span>
+                    <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${visualTocOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                  {visualTocOpen ? <ol id="apostila-visual-toc" className="py-1">
                     {tocItems.map((s) => {
                       const isMain = s.level === 1;
                       const isSub = s.level === 2;
@@ -918,7 +923,7 @@ export default function ApostilaPage({ tab, setTab }: Props) {
                         </li>
                       );
                     })}
-                  </ol>
+                  </ol> : null}
                 </div>
               )}
 

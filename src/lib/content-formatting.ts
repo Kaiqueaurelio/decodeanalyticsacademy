@@ -64,6 +64,24 @@ export function isEffectivelySameContent(first: string, second: string): boolean
   return Boolean(left && right && left === right);
 }
 
+/**
+ * Detecta cópias exatas ou quase exatas sem confundir um resumo curto com a
+ * apostila completa. A antiga comparação por simples `includes` escondia uma
+ * página inteira quando ela continha apenas um pequeno trecho já estruturado.
+ */
+export function isSubstantialDuplicateContent(first: string, second: string): boolean {
+  const left = normalizeContentForComparison(first);
+  const right = normalizeContentForComparison(second);
+  if (!left || !right) return false;
+  if (left === right) return true;
+
+  const shorter = left.length <= right.length ? left : right;
+  const longer = left.length > right.length ? left : right;
+  const coverage = shorter.length / longer.length;
+
+  return coverage >= 0.9 && longer.includes(shorter);
+}
+
 export function mergeDistinctPages<T extends { content?: string; id: string }>(pages: T[]): T[] {
   const seen = new Set<string>();
   return pages.filter((page) => {

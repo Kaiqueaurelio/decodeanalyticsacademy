@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 import { getSafeNavigationUrl } from '@/lib/safe-navigation';
 
 function source(relativePath: string) {
-  return readFileSync(resolve(process.cwd(), relativePath), 'utf8');
+  return readFileSync(resolve(process.cwd(), relativePath), 'utf8').replace(/\r\n/g, '\n');
 }
 
 describe('security hardening regression guards', () => {

@@ -23,5 +23,11 @@ describe('fluxo contínuo da apostila', () => {
 
   it('mantém o sumário fechado inicialmente para mostrar o conteúdo no primeiro viewport', () => {
     expect(rendererSource).toContain('const [open, setOpen] = useState(false);');
+    expect(source).toContain('const [visualTocOpen, setVisualTocOpen] = useState(false);');
+    expect(source).toContain('{visualTocOpen ? <ol id="apostila-visual-toc" className="py-1">');
+  });
+
+  it('usa as páginas salvas como fonte principal quando o campo principal está vazio', () => {
+    expect(source).toContain("validPages.length > 0 ? '' : structuredContent");
   });
 });

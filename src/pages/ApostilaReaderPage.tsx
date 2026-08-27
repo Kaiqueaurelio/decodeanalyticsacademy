@@ -42,7 +42,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import logoOwl from "@/assets/owl-icon.png";
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useAuth } from "@/hooks/useAuth";
-import { isPlaceholderPageContent, normalizeContentForComparison } from '@/lib/content-formatting';
+import { isPlaceholderPageContent, isSubstantialDuplicateContent, normalizeContentForComparison } from '@/lib/content-formatting';
 import { Badge } from "@/components/ui/badge";
 import { extractChronologyDates, getApostilaPageSavedDate, isMissingApostilaPageSavedDateColumn } from "@/lib/apostila-pages";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -155,7 +155,7 @@ function mergePagesIntoTree(tree: Tree, apostilaId: string, pages: ApostilaPageR
     // Verificação adicional: evita que a página seja uma subseção ou repetição do que já está na árvore
     // (Pode ocorrer se o RPC retornar partes do conteúdo que o editor também salvou)
     for (const existing of existingKeys) {
-      if (existing.includes(key) || key.includes(existing)) return false;
+      if (isSubstantialDuplicateContent(existing, key)) return false;
     }
     
     existingKeys.add(key);
@@ -312,9 +312,11 @@ export default function ApostilaReaderPage() {
       
       // Retomar de onde parou: primeira in_progress ou primeira sem progresso
       const requestedLesson = searchParams.get("lesson");
+      const firstCompletePage = flat.find((lesson) => lesson.id.startsWith('page:'));
       const resume =
         flat.find((l) => l.id === requestedLesson) ||
         flat.find((l) => l.progress_status === "in_progress") ||
+        firstCompletePage ||
         flat.find((l) => !l.progress_status) ||
         flat[0];
       if (resume) {
