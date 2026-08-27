@@ -36,39 +36,37 @@ export default function LoginPage() {
 
   const looksLikeEmail = isEmailIdentifier;
   const callRaAuth = async (payload: Record<string, unknown>) => {
+    const functionsUrl = `${import.meta.env.VITE_SUPABASE_URL || 'https://wxkkpjpqyrygglbuogsd.supabase.co'}/functions/v1/ra-auth`;
+    const publishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_Zh6H3y8GJ2J_wkRVXxyTng_eylbCAVM';
+
     try {
-      const { data, error } = await supabase.functions.invoke('ra-auth', { body: payload });
-      if (error) {
-        let message: string = SECURITY_COPY.loginErrorDescription;
-        console.error('ra-auth error:', error);
-        const context = (error as { context?: unknown }).context;
-        const res = context instanceof Response ? context : undefined;
-        const errorName = error instanceof Error ? error.name : '';
-        const contextMessage = context instanceof Error ? context.message : '';
-        const isTransportError = !res && (
-          errorName === 'FunctionsFetchError'
-          || /failed to fetch|networkerror|load failed/i.test(contextMessage)
-        );
-        if (isTransportError) {
-          return {
-            data: null,
-            message: 'Não foi possível conectar ao serviço de autenticação. Verifique sua conexão e tente novamente.',
-            code: 'network_error',
-            status: 0,
-          };
-        }
-        if (res) {
-          try {
-            const body = await res.clone().json() as { error?: unknown; code?: unknown };
-            if (typeof body.error === 'string') message = body.error;
-            return { data: null, message, code: typeof body.code === 'string' ? body.code : undefined, status: res.status };
-          } catch { /* mantém mensagem padrão */ }
-        }
-        return { data: null, message, code: undefined, status: res?.status ?? 0 };
+      // 401 e 429 são respostas normais da tela de login. Fazer a requisição
+      // diretamente evita que o SDK as registre como erro de runtime da página.
+      const response = await fetch(functionsUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          apikey: publishableKey,
+        },
+        body: JSON.stringify(payload),
+      });
+      const body = await response.json().catch(() => ({})) as {
+        error?: unknown;
+        code?: unknown;
+        [key: string]: unknown;
+      };
+
+      if (!response.ok) {
+        return {
+          data: null,
+          message: typeof body.error === 'string' ? body.error : SECURITY_COPY.loginErrorDescription,
+          code: typeof body.code === 'string' ? body.code : undefined,
+          status: response.status,
+        };
       }
-      return { data, message: null as string | null, code: undefined, status: 200 };
-    } catch (error) {
-      console.error('Falha de rede no ra-auth:', error);
+
+      return { data: body, message: null as string | null, code: undefined, status: response.status };
+    } catch {
       return {
         data: null,
         message: 'Não foi possível conectar ao serviço de autenticação por RA. Tente novamente em instantes.',
