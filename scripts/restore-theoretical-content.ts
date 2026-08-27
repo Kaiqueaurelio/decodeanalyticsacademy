@@ -1,7 +1,8 @@
 import { supabase } from "../src/integrations/supabase/client";
 
 async function restoreTheoreticalStrict() {
-  const apostilaId = "d3a7a3cb-d89a-418a-a084-971e9fa4e896";
+  // ID atual confirmado no Supabase após a migração.
+  const apostilaId = "832561dd-ce84-4db6-b729-9740aed7749a";
   const content = `# Teoria da Computação — Texto Estruturado
 
 ## 1. Introdução
