@@ -34,7 +34,7 @@ import {
   Link as LinkIcon, Loader2, AlertCircle, Edit, Download, File, Image, Video, Music, FileSpreadsheet, Presentation,
   Users, ShieldBan, ShieldCheck, ShieldAlert, Search, Menu, X, Activity, GraduationCap, FolderOpen, Settings, RefreshCw,
   Sun, Moon, FileUp, PenTool, Wand2, Megaphone, Combine, Calendar as CalIcon, MessageSquare, MessageSquareQuote, Link2, FileDown, MoreHorizontal, Paperclip, Rss, Info, ExternalLink, ChevronRight, History, Store, Flame,
-  Sparkles, Check, CheckSquare, Briefcase,
+  Sparkles, Check, CheckSquare, Briefcase, ChevronsLeft, ChevronsRight,
   BookPlus
 } from 'lucide-react';
 
@@ -313,10 +313,11 @@ function MergeButton({ onMerged }: { onMerged: () => void }) {
   );
 }
 // ─── Sidebar Navigation ────────────────────────────────────────
-function AdminSidebar({ tab, setTab, stats, sidebarOpen, setSidebarOpen }: {
+function AdminSidebar({ tab, setTab, stats, sidebarOpen, setSidebarOpen, collapsed, onToggleCollapsed }: {
   tab: Tab; setTab: (t: Tab) => void;
   stats: { apostilas: number; exercises: number; materials: number; users: number };
   sidebarOpen: boolean; setSidebarOpen: (v: boolean) => void;
+  collapsed: boolean; onToggleCollapsed: () => void;
 }) {
   const navigate = useNavigate();
   // Contador ao vivo de alertas de segurança em aberto (visível só para admin).
@@ -329,11 +330,11 @@ function AdminSidebar({ tab, setTab, stats, sidebarOpen, setSidebarOpen }: {
       {sidebarOpen && (
         <div className="fixed inset-0 bg-foreground/20 backdrop-blur-sm z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
-      <aside className={`fixed top-0 left-0 z-50 h-full w-[min(260px,85vw)] bg-card border-r border-border flex flex-col transition-transform duration-300 lg:translate-x-0 lg:static lg:z-auto ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <aside className={`fixed top-0 left-0 z-50 h-full w-[min(260px,85vw)] bg-card border-r border-border flex flex-col transition-[width,transform] duration-300 lg:translate-x-0 lg:static lg:z-auto ${collapsed ? 'lg:w-[76px]' : 'lg:w-[260px]'} ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         {/* Header */}
-        <div className="p-5 border-b border-border">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+        <div className={`border-b border-border ${collapsed ? 'lg:p-3' : 'p-5'}`}>
+          <div className={`flex items-center justify-between ${collapsed ? 'lg:flex-col lg:gap-3' : ''}`}>
+            <div className={`flex items-center gap-3 ${collapsed ? 'lg:justify-center' : ''}`}>
               <button 
                 onClick={() => navigate('/dashboard')}
                 className="rounded-xl bg-primary p-2.5 hover:ring-2 hover:ring-primary/50 transition-all active:scale-95"
@@ -341,13 +342,23 @@ function AdminSidebar({ tab, setTab, stats, sidebarOpen, setSidebarOpen }: {
               >
                 <LayoutDashboard className="h-5 w-5 text-primary-foreground" />
               </button>
-              <div>
+              <div className={collapsed ? 'lg:hidden' : ''}>
                 <h1 className="text-sm font-bold text-foreground">Painel Admin</h1>
                 <p className="text-[10px] text-muted-foreground truncate max-w-[120px]">Decode Analytics Academy</p>
               </div>
             </div>
             <Button size="icon" variant="ghost" className="lg:hidden h-8 w-8" onClick={() => setSidebarOpen(false)}>
               <X className="h-4 w-4" />
+            </Button>
+            <Button
+              size="icon"
+              variant="ghost"
+              className="hidden lg:inline-flex h-8 w-8"
+              onClick={onToggleCollapsed}
+              aria-label={collapsed ? 'Expandir menu administrativo' : 'Recolher menu administrativo'}
+              title={collapsed ? 'Expandir menu' : 'Recolher menu'}
+            >
+              {collapsed ? <ChevronsRight className="h-4 w-4" /> : <ChevronsLeft className="h-4 w-4" />}
             </Button>
           </div>
         </div>
@@ -362,11 +373,12 @@ function AdminSidebar({ tab, setTab, stats, sidebarOpen, setSidebarOpen }: {
               users: stats.users,
               securityAlerts: securityOpenCount,
             }}
+            collapsed={collapsed}
           />
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-border space-y-2">
+        <div className={`p-4 border-t border-border space-y-2 ${collapsed ? 'lg:hidden' : ''}`}>
           <ThemeToggleButton />
           <Button variant="outline" size="sm" className="w-full text-xs gap-2" onClick={() => navigate('/dashboard')}>
             <ArrowLeft className="h-3.5 w-3.5" /> Voltar à Área do Aluno
@@ -753,6 +765,9 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
     }
   }, [propSetTab, navigate, location.pathname]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [adminSidebarCollapsed, setAdminSidebarCollapsed] = useState(() =>
+    typeof window !== 'undefined' && window.localStorage.getItem('admin_sidebar_collapsed') === 'true'
+  );
   const [apostilas, setApostilas] = useState<AdminApostila[]>([]);
   const [exercises, setExercises] = useState<Record<string, Exercise[]>>({});
   const [dbCategories, setDbCategories] = useState<{ id: string; name: string; sort_order: number }[]>([]);
@@ -769,14 +784,20 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
   const [filterCourse, setFilterCourse] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<'all' | 'published' | 'draft'>('all');
   const [filterSortKey, setFilterSortKey] = useState<'created_desc' | 'updated_desc' | 'title_asc'>('created_desc');
-  const [expandedCats, setExpandedCats] = useState<Set<string>>(new Set());
+  // Os grupos começam abertos para que todas as apostilas estejam visíveis
+  // assim que o administrador entrar. Cada disciplina ainda pode ser recolhida.
+  const [collapsedCats, setCollapsedCats] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     localStorage.setItem('adminSelectedSemester', filterSemester);
   }, [filterSemester]);
 
+  useEffect(() => {
+    window.localStorage.setItem('admin_sidebar_collapsed', String(adminSidebarCollapsed));
+  }, [adminSidebarCollapsed]);
+
   const toggleCat = useCallback((cat: string) => {
-    setExpandedCats(prev => {
+    setCollapsedCats(prev => {
       const next = new Set(prev);
       if (next.has(cat)) next.delete(cat); else next.add(cat);
       return next;
@@ -1907,6 +1928,8 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
             tab={tab} setTab={setTab}
             stats={{ apostilas: apostilas.length, exercises: totalExercises, materials: materials.length, users: users.length }}
             sidebarOpen={false} setSidebarOpen={() => {}}
+            collapsed={adminSidebarCollapsed}
+            onToggleCollapsed={() => setAdminSidebarCollapsed(value => !value)}
           />
         </div>
 
@@ -2503,7 +2526,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                     return (
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                         {sortedGroups.map(([cat, items]) => {
-                          const open = searching || expandedCats.has(cat);
+                          const open = searching || !collapsedCats.has(cat);
                           const publishedCount = items.filter(x => x.published).length;
                           const totalEx = items.reduce((s, x) => s + (exercises[x.id]?.length || 0), 0);
                           return (

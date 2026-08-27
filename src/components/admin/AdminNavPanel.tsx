@@ -16,6 +16,7 @@ interface AdminNavPanelProps {
   /** Conteúdo extra exibido ao final da lista (ex.: atalho para a biblioteca). */
   footerSlot?: React.ReactNode;
   autoFocusSearch?: boolean;
+  collapsed?: boolean;
 }
 
 /**
@@ -23,14 +24,14 @@ interface AdminNavPanelProps {
  * Usada tanto na sidebar (desktop) quanto no menu deslizante (celular),
  * garantindo a mesma organização nos dois formatos.
  */
-export function AdminNavPanel({ tab, onSelect, counts, footerSlot, autoFocusSearch }: AdminNavPanelProps) {
+export function AdminNavPanel({ tab, onSelect, counts, footerSlot, autoFocusSearch, collapsed = false }: AdminNavPanelProps) {
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const groups = useMemo(() => filterAdminNav(query), [query]);
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="px-3 pt-3 pb-2">
+      {!collapsed && <div className="px-3 pt-3 pb-2">
         <div className="relative">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -53,10 +54,10 @@ export function AdminNavPanel({ tab, onSelect, counts, footerSlot, autoFocusSear
             </Button>
           )}
         </div>
-      </div>
+      </div>}
 
       <ScrollArea className="min-h-0 flex-1">
-        <nav className="space-y-4 px-3 pb-4" aria-label="Seções do painel administrativo">
+        <nav className={`space-y-4 pb-4 ${collapsed ? 'px-2 pt-3' : 'px-3'}`} aria-label="Seções do painel administrativo">
           {groups.length === 0 && (
             <p className="px-2 py-6 text-center text-xs text-muted-foreground">
               Nenhuma seção encontrada.
@@ -64,7 +65,7 @@ export function AdminNavPanel({ tab, onSelect, counts, footerSlot, autoFocusSear
           )}
           {groups.map(group => (
             <div key={group.id} className="space-y-1">
-              <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+              <p className={collapsed ? 'sr-only' : 'px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground'}>
                 {group.label}
               </p>
               {group.items.map(item => {
@@ -76,7 +77,9 @@ export function AdminNavPanel({ tab, onSelect, counts, footerSlot, autoFocusSear
                     type="button"
                     onClick={() => onSelect(item.id)}
                     aria-current={active ? 'page' : undefined}
-                    className={`group relative flex w-full items-center gap-4 rounded-xl px-4 py-3 text-left transition-all duration-200 ${
+                    title={collapsed ? item.label : undefined}
+                    aria-label={collapsed ? item.label : undefined}
+                    className={`group relative flex w-full items-center rounded-xl py-3 text-left transition-all duration-200 ${collapsed ? 'justify-center px-2' : 'gap-4 px-4'} ${
                       active
                         ? 'bg-gradient-to-r from-primary/15 to-accent/5 text-primary ring-1 ring-primary/20 shadow-sm'
                         : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
@@ -89,18 +92,18 @@ export function AdminNavPanel({ tab, onSelect, counts, footerSlot, autoFocusSear
                     }`}>
                       <item.icon className={`h-4.5 w-4.5 shrink-0 ${active ? 'text-primary-foreground' : 'text-muted-foreground group-hover:text-foreground'}`} />
                     </div>
-                    <span className="min-w-0 flex-1 py-0.5">
+                    {!collapsed && <span className="min-w-0 flex-1 py-0.5">
                       <span className={`block truncate text-sm font-bold tracking-tight ${active ? 'text-primary' : 'text-foreground/90'}`}>
                         {item.label}
                       </span>
                       <span className="block truncate text-[10px] font-medium text-muted-foreground/80 mt-0.5">
                         {item.desc}
                       </span>
-                    </span>
+                    </span>}
                     {active && (
                       <div className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 rounded-r-full bg-primary" />
                     )}
-                    {count !== undefined && count > 0 && (
+                    {!collapsed && count !== undefined && count > 0 && (
                       <span className={`shrink-0 rounded-full px-2 py-0.5 text-[9px] font-black tracking-tighter ${
                         active ? 'bg-primary/20 text-primary ring-1 ring-primary/30' : 'bg-muted text-muted-foreground'
                       }`}>
@@ -114,14 +117,18 @@ export function AdminNavPanel({ tab, onSelect, counts, footerSlot, autoFocusSear
           ))}
           <div className="pt-2 pb-1 space-y-4">
             <div className="space-y-1">
-              <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Acervos</p>
+              <p className={collapsed ? 'sr-only' : 'px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground'}>Acervos</p>
               <button
                 onClick={() => navigate('/admin/biblioteca')}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors bg-primary/5 text-primary hover:bg-primary/10 border border-primary/20"
+                title={collapsed ? 'Biblioteca de Livros' : undefined}
+                aria-label={collapsed ? 'Biblioteca de Livros' : undefined}
+                className={`w-full flex items-center rounded-lg py-2.5 text-sm font-medium transition-colors bg-primary/5 text-primary hover:bg-primary/10 border border-primary/20 ${collapsed ? 'justify-center px-2' : 'gap-3 px-3'}`}
               >
                 <BookOpen className="h-4 w-4 shrink-0 text-primary" />
-                <span className="flex-1 text-left">Biblioteca de Livros</span>
-                <Badge variant="secondary" className="text-[9px] h-4 px-1.5">PDF/EPUB</Badge>
+                {!collapsed && <>
+                  <span className="flex-1 text-left">Biblioteca de Livros</span>
+                  <Badge variant="secondary" className="text-[9px] h-4 px-1.5">PDF/EPUB</Badge>
+                </>}
               </button>
             </div>
             
@@ -129,23 +136,25 @@ export function AdminNavPanel({ tab, onSelect, counts, footerSlot, autoFocusSear
               <button
                 type="button"
                 onClick={() => navigate('/dashboard')}
-                className="flex w-full items-center gap-4 rounded-xl px-4 py-3 text-left text-muted-foreground transition-all duration-200 hover:bg-muted/60 hover:text-foreground"
+                title={collapsed ? 'Voltar para a Área do Aluno' : undefined}
+                aria-label={collapsed ? 'Voltar para a Área do Aluno' : undefined}
+                className={`flex w-full items-center rounded-xl py-3 text-left text-muted-foreground transition-all duration-200 hover:bg-muted/60 hover:text-foreground ${collapsed ? 'justify-center px-2' : 'gap-4 px-4'}`}
               >
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border bg-background border-border">
                   <Home className="h-4.5 w-4.5" />
                 </div>
-                <span className="min-w-0 flex-1 py-0.5">
+                {!collapsed && <span className="min-w-0 flex-1 py-0.5">
                   <span className="block truncate text-sm font-bold tracking-tight">
                     Sair do Painel
                   </span>
                   <span className="block truncate text-[10px] font-medium text-muted-foreground/80 mt-0.5">
                     Voltar para a Área do Aluno
                   </span>
-                </span>
+                </span>}
               </button>
             </div>
           </div>
-          {footerSlot}
+          {!collapsed && footerSlot}
         </nav>
       </ScrollArea>
     </div>
