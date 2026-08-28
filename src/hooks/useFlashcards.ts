@@ -36,12 +36,13 @@ const isDue = (card: Flashcard) => (
 
 export const useFlashcards = () => {
   const { user } = useAuth();
+  const userId = user?.id;
   const [cards, setCards] = useState<Flashcard[]>([]);
   const [allCards, setAllCards] = useState<Flashcard[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchCards = useCallback(async () => {
-    if (!user) {
+    if (!userId) {
       setCards([]);
       setAllCards([]);
       setLoading(false);
@@ -55,7 +56,7 @@ export const useFlashcards = () => {
       const { data, error } = await supabase
         .from('flashcards')
         .select('id, front, back, next_review, apostila_id, created_at')
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .order('created_at', { ascending: true })
         .abortSignal(requestController.signal);
 
@@ -75,10 +76,10 @@ export const useFlashcards = () => {
       window.clearTimeout(requestTimeout);
       setLoading(false);
     }
-  }, [user]);
+  }, [userId]);
 
   const rateCard = async (cardId: string, difficulty: 'easy' | 'medium' | 'hard') => {
-    if (!user) return false;
+    if (!userId) return false;
 
     const daysToAdd = difficulty === 'easy' ? 7 : difficulty === 'medium' ? 3 : 1;
     const difficultyValue = difficulty === 'easy' ? 2 : difficulty === 'medium' ? 1 : 0;
@@ -96,7 +97,7 @@ export const useFlashcards = () => {
           difficulty: difficultyValue,
         })
         .eq('id', cardId)
-        .eq('user_id', user.id);
+        .eq('user_id', userId);
 
       if (error) throw error;
       setCards((previous) => previous.filter((card) => card.id !== cardId));
@@ -113,7 +114,7 @@ export const useFlashcards = () => {
   };
 
   const updateCard = async (cardId: string, question: string, answer: string) => {
-    if (!user) return false;
+    if (!userId) return false;
     const nextQuestion = question.trim();
     const nextAnswer = answer.trim();
     if (!nextQuestion || !nextAnswer) {
@@ -126,7 +127,7 @@ export const useFlashcards = () => {
         .from('flashcards')
         .update({ front: nextQuestion, back: nextAnswer })
         .eq('id', cardId)
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .select('id')
         .single();
 
