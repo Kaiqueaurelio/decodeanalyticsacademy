@@ -1,4 +1,3 @@
-import React from 'react';
 import { 
   Save, 
   Eye, 
@@ -55,6 +54,8 @@ interface ApostilaHealthBarProps {
   onCourseChange?: (course: CourseCode[]) => void;
   savedDate?: string;
   onDateChange?: (date: string) => void;
+  sidebarCollapsed?: boolean;
+  onToggleSidebar?: () => void;
 }
 
 
@@ -78,10 +79,9 @@ export function ApostilaHealthBar({
   onCourseChange,
   savedDate,
   onDateChange,
+  sidebarCollapsed = false,
+  onToggleSidebar,
 }: ApostilaHealthBarProps) {
-
-  const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false);
-
   return (
     <div className="flex flex-col border-b border-border/60 bg-muted/30 backdrop-blur-sm sticky top-0 z-50">
       {/* Top Bar: Notion Style Breadcrumbs & Auto-save Status */}
@@ -91,12 +91,11 @@ export function ApostilaHealthBar({
             variant="ghost" 
             size="icon" 
             className="h-8 w-8 text-muted-foreground mr-1"
-            onClick={() => {
-              if (typeof (window as any).toggleAdminSidebar === 'function') {
-                (window as any).toggleAdminSidebar();
-              }
-              setSidebarCollapsed(!sidebarCollapsed);
-            }}
+            onClick={onToggleSidebar}
+            title={sidebarCollapsed ? 'Abrir lista de apostilas' : 'Recolher lista de apostilas'}
+            aria-label={sidebarCollapsed ? 'Abrir lista de apostilas' : 'Recolher lista de apostilas'}
+            aria-expanded={!sidebarCollapsed}
+            aria-controls="workbench-apostila-sidebar"
           >
             {sidebarCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
           </Button>

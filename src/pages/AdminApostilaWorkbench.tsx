@@ -55,6 +55,7 @@ interface ApostilaLite {
 }
 
 const AUTOSAVE_MS = 1000;
+const WORKBENCH_SIDEBAR_STORAGE_KEY = 'admin_workbench_sidebar_collapsed_v1';
 
 interface WorkbenchProps {
   overrideId?: string;
@@ -136,7 +137,14 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
   const [reviewOpen, setReviewOpen] = useState(false);
   const [rightTab, setRightTab] = useState<'materials' | 'preview' | 'exercises'>('materials');
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    try {
+      return window.localStorage.getItem(WORKBENCH_SIDEBAR_STORAGE_KEY) === 'true';
+    } catch {
+      return false;
+    }
+  });
   const [rightOpen, setRightOpen] = useState(false);
   const [editorExpanded, setEditorExpanded] = useState(false);
   const [addSectionOpen, setAddSectionOpen] = useState(false);
@@ -345,9 +353,39 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     return () => window.removeEventListener('open-quick-add-section' as any, handleKeyAdd);
   }, []);
 
-  // Global toggle for components
+  const toggleSidebar = () => {
+    const isDesktop = typeof window === 'undefined'
+      || typeof window.matchMedia !== 'function'
+      || window.matchMedia('(min-width: 1024px)').matches;
+
+    if (isDesktop) {
+      setSidebarCollapsed((current) => !current);
+      setSidebarOpen(false);
+      return;
+    }
+
+    setSidebarOpen((current) => !current);
+  };
+
+  const collapseSidebar = () => {
+    setSidebarOpen(false);
+    setSidebarCollapsed(true);
+  };
+
+  const expandSidebar = () => {
+    setSidebarCollapsed(false);
+    setSidebarOpen(true);
+  };
+
   useEffect(() => {
-    (window as any).toggleAdminSidebar = () => setSidebarOpen(prev => !prev);
+    try {
+      window.localStorage.setItem(WORKBENCH_SIDEBAR_STORAGE_KEY, String(sidebarCollapsed));
+    } catch {
+      // O editor continua funcional quando o navegador bloqueia armazenamento local.
+    }
+  }, [sidebarCollapsed]);
+
+  useEffect(() => {
     (window as any).triggerSplitByDate = (apostilaId: string, contentOverride?: string) => {
       void handleSplitByDate(contentOverride);
     };
@@ -358,7 +396,6 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     }
 
     return () => { 
-      delete (window as any).toggleAdminSidebar;
       delete (window as any).triggerSplitByDate;
       delete (window as any).__apostila_id;
     };
@@ -896,7 +933,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
             variant="ghost"
             size="icon"
             className="h-7 w-7"
-            onClick={() => { setSidebarOpen(false); setSidebarCollapsed(true); }}
+            onClick={collapseSidebar}
             title="Recolher lista de apostilas"
             aria-label="Recolher lista de apostilas"
           >
@@ -1265,6 +1302,8 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         onCourseChange={setCourse}
         onPasteOpen={() => setPasteOpen(true)}
         onAddPage={handleCreatePersistedPage}
+        sidebarCollapsed={sidebarCollapsed}
+        onToggleSidebar={toggleSidebar}
       />
 
       
@@ -1276,7 +1315,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
 
 
         {/* Sidebar Desktop/Mobile */}
-        <div className={cn(
+        <div id="workbench-apostila-sidebar" className={cn(
           "fixed inset-y-0 left-0 z-50 w-64 overflow-hidden transform transition-all duration-300 ease-in-out bg-background lg:relative shrink-0",
           sidebarOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full",
           sidebarCollapsed ? "lg:w-0 lg:-translate-x-full" : "lg:translate-x-0"
@@ -1306,9 +1345,10 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
               "absolute left-3 top-3 z-50 h-9 w-9 bg-background/95 shadow-sm",
               !sidebarCollapsed && "hidden lg:hidden",
             )}
-            onClick={() => { setSidebarCollapsed(false); setSidebarOpen(true); }}
+            onClick={expandSidebar}
             title="Abrir lista de apostilas"
             aria-label="Abrir lista de apostilas"
+            aria-controls="workbench-apostila-sidebar"
           >
             <Menu className="h-4 w-4" />
           </Button>
