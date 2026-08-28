@@ -49,23 +49,30 @@ export const useFlashcards = () => {
     }
 
     setLoading(true);
+    const requestController = new AbortController();
+    const requestTimeout = window.setTimeout(() => requestController.abort(), 12_000);
     try {
       const { data, error } = await supabase
         .from('flashcards')
         .select('id, front, back, next_review, apostila_id, created_at')
         .eq('user_id', user.id)
-        .order('created_at', { ascending: true });
+        .order('created_at', { ascending: true })
+        .abortSignal(requestController.signal);
 
       if (error) throw error;
       const mapped = (data || []).map((row) => mapRow(row as FlashcardRow));
       setAllCards(mapped);
       setCards(mapped.filter(isDue));
     } catch (error) {
-      console.error('Erro ao buscar flashcards:', error);
-      toast.error('Não foi possível carregar seus flashcards.');
+      const wasAborted = requestController.signal.aborted;
+      if (!wasAborted) console.error('Erro ao buscar flashcards:', error);
+      toast.error(wasAborted
+        ? 'A busca de flashcards demorou demais. Tente novamente.'
+        : 'Não foi possível carregar seus flashcards.');
       setCards([]);
       setAllCards([]);
     } finally {
+      window.clearTimeout(requestTimeout);
       setLoading(false);
     }
   }, [user]);
