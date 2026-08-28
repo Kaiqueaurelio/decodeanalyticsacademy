@@ -43,7 +43,7 @@
   }
 
   /* 4. Tighter Radius for Industrial Look */
-  .rounded-3xl, .rounded-[2rem] {
+  .rounded-3xl, [class~="rounded-[2rem]"] {
     border-radius: 1rem !important;
   }
 
@@ -79,7 +79,7 @@
   }
 
   /* 9. Mono labels for meta information */
-  .text-xs, .text-[10px], .text-[8px] {
+  .text-xs, [class~="text-[10px]"], [class~="text-[8px]"] {
     font-family: 'DM Mono', monospace !important;
     letter-spacing: 0.02em;
   }

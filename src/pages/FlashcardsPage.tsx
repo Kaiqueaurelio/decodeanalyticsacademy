@@ -119,7 +119,7 @@ export default function FlashcardsPage() {
 
   return (
     <div className="min-h-full bg-background">
-      <main className="mx-auto w-full max-w-5xl px-3 py-5 sm:px-6 sm:py-8">
+      <div className="mx-auto w-full max-w-5xl px-3 py-5 sm:px-6 sm:py-8">
         <header className="mb-6 flex flex-col gap-4 rounded-2xl border border-border/60 bg-card/70 p-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex min-w-0 items-center gap-3">
             <Button variant="ghost" size="icon" onClick={() => navigate(-1)} aria-label="Voltar">
@@ -218,7 +218,9 @@ export default function FlashcardsPage() {
               <h2 id="flashcard-library-title" className="flex items-center gap-2 font-bold">
                 <Library className="h-4 w-4 text-primary" /> Minha biblioteca
               </h2>
-              <p className="text-xs text-muted-foreground">{allCards.length} cartão{allCards.length === 1 ? '' : 'ões'} salvo{allCards.length === 1 ? '' : 's'}</p>
+              <p className="text-xs text-muted-foreground">
+                {allCards.length} {allCards.length === 1 ? 'cartão salvo' : 'cartões salvos'}
+              </p>
             </div>
             <Button
               size="sm"
@@ -259,7 +261,7 @@ export default function FlashcardsPage() {
             </div>
           )}
         </section>
-      </main>
+      </div>
 
       <Dialog open={Boolean(editingCard)} onOpenChange={(open) => { if (!open) closeEditor(); }}>
         <DialogContent className="w-[calc(100vw-24px)] max-w-xl rounded-2xl">
