@@ -3,64 +3,64 @@ import { useLocation } from 'react-router-dom';
 import { useAuth } from './useAuth';
 import { useIsMobile } from './use-mobile';
 
-/**
- * Hook para injetar o widget do Buy Me a Coffee de forma estratégica.
- * Agora com filtros de visibilidade: apenas logado, desktop e rotas específicas.
- */
+const BMC_SCRIPT_SELECTOR = 'script[data-name="BMC-Widget"]';
+const BMC_STYLE_ID = 'decode-bmc-responsive-style';
+const ALLOWED_ROUTES = [
+  '/dashboard', '/apoio', '/profile', '/biblioteca', '/exercicios', '/cursos',
+  '/livros', '/calculadora', '/noticias', '/performance', '/horarios', '/reader', '/apostila',
+];
+
+function removeBMCWidget() {
+  document.querySelectorAll('#bmc-wbtn, .bmc-wbtn-container, iframe[title*="Buy Me a Coffee" i]')
+    .forEach((element) => element.remove());
+  document.querySelector(BMC_SCRIPT_SELECTOR)?.remove();
+  document.getElementById(BMC_STYLE_ID)?.remove();
+}
+
+/** Exibe o widget apenas onde ele não disputa espaço com a navegação móvel. */
 export function useBMCWidget() {
   const { user } = useAuth();
   const location = useLocation();
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    // 1. Condições de exibição
-    const isLoginPage = location.pathname === '/login';
-    const isLandingPage = location.pathname === '/';
-    const isResetPassword = location.pathname === '/reset-password';
-    
-    // Lista de rotas permitidas (Dashboard, Suporte, Perfil, Biblioteca)
-    const allowedRoutes = ['/dashboard', '/apoie', '/profile', '/biblioteca', '/exercicios', '/cursos', '/livros', '/calculadora', '/noticias', '/performance', '/horarios', '/reader', '/apostila'];
-    const isAllowedRoute = allowedRoutes.some(route => location.pathname === route || location.pathname.startsWith(route + '/'));
+    const isAllowedRoute = ALLOWED_ROUTES.some((route) => (
+      location.pathname === route || location.pathname.startsWith(`${route}/`)
+    ));
+    const shouldShow = Boolean(user && isAllowedRoute && !isMobile);
 
-    // O widget deve carregar apenas se:
-    // - Usuário logado
-    // - Rota permitida (não landing/login)
-    const shouldShow = user; // Simplificado para garantir visibilidade em todas as rotas logadas
-
-    // Se não deve mostrar, garante que o widget seja removido
     if (!shouldShow) {
-      const widget = document.getElementById('bmc-wbtn');
-      const container = document.querySelector('.bmc-wbtn-container');
-      const script = document.querySelector('script[data-name="BMC-Widget"]');
-      if (widget) widget.remove();
-      if (container) container.remove();
-      if (script) script.remove();
+      removeBMCWidget();
       return;
     }
 
-    // 2. Evita duplicidade
-    if (document.querySelector('script[data-name="BMC-Widget"]')) return;
+    if (document.querySelector(BMC_SCRIPT_SELECTOR)) return removeBMCWidget;
 
-    // 3. Injeção do Script
+    const style = document.createElement('style');
+    style.id = BMC_STYLE_ID;
+    style.textContent = `
+      .bmc-wbtn-container { z-index: 45 !important; max-width: calc(100vw - 32px) !important; }
+      #bmc-wbtn { max-width: calc(100vw - 32px) !important; }
+      @media (max-width: 767px) {
+        .bmc-wbtn-container, #bmc-wbtn { display: none !important; }
+      }
+    `;
+    document.head.appendChild(style);
+
     const script = document.createElement('script');
     script.src = 'https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js';
     script.setAttribute('data-name', 'BMC-Widget');
     script.setAttribute('data-cfasync', 'false');
     script.setAttribute('data-id', 'decodeanalyticsacademy');
-    script.setAttribute('data-description', 'Support me on Buy me a coffee!');
-    script.setAttribute('data-message', 'Seja Um Apoiador');
-    script.setAttribute('data-color', '#5F7FFF'); 
+    script.setAttribute('data-description', 'Apoie a Decode Analytics Academy');
+    script.setAttribute('data-message', 'Seja um apoiador');
+    script.setAttribute('data-color', '#5F7FFF');
     script.setAttribute('data-position', 'Right');
     script.setAttribute('data-x_margin', '18');
-    script.setAttribute('data-y_margin', '18');
+    script.setAttribute('data-y_margin', '92');
     script.async = true;
-
     document.body.appendChild(script);
 
-    return () => {
-
-      // Opcional: remover ao mudar de rota se sair das permitidas
-      // Mas o useEffect já roda ao mudar location.pathname se o incluirmos nas deps
-    };
+    return removeBMCWidget;
   }, [user, location.pathname, isMobile]);
 }

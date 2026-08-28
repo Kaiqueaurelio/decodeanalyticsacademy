@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
-import { supabase as supabaseTyped } from '@/integrations/supabase/client';
-const supabase = supabaseTyped as any;
+import { useCallback, useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { toast } from 'sonner';
 
@@ -8,87 +7,142 @@ export type Flashcard = {
   id: string;
   question: string;
   answer: string;
-  next_review: string;
+  next_review: string | null;
+  apostila_id: string | null;
+  created_at: string;
 };
 
 type FlashcardRow = {
   id: string;
-  front: string | null;
-  back: string | null;
+  front: string;
+  back: string;
   next_review: string | null;
+  apostila_id: string | null;
+  created_at: string;
 };
 
 const mapRow = (row: FlashcardRow): Flashcard => ({
   id: row.id,
-  question: row.front ?? '',
-  answer: row.back ?? '',
-  next_review: row.next_review ?? new Date().toISOString(),
+  question: row.front,
+  answer: row.back,
+  next_review: row.next_review,
+  apostila_id: row.apostila_id,
+  created_at: row.created_at,
 });
+
+const isDue = (card: Flashcard) => (
+  !card.next_review || new Date(card.next_review).getTime() <= Date.now()
+);
 
 export const useFlashcards = () => {
   const { user } = useAuth();
   const [cards, setCards] = useState<Flashcard[]>([]);
+  const [allCards, setAllCards] = useState<Flashcard[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchDueCards = async () => {
+  const fetchCards = useCallback(async () => {
     if (!user) {
       setCards([]);
+      setAllCards([]);
       setLoading(false);
       return;
     }
+
     setLoading(true);
     try {
       const { data, error } = await supabase
         .from('flashcards')
-        .select('id, front, back, next_review')
+        .select('id, front, back, next_review, apostila_id, created_at')
         .eq('user_id', user.id)
-        .lte('next_review', new Date().toISOString())
         .order('created_at', { ascending: true });
 
       if (error) throw error;
-      setCards((data || []).map((row: FlashcardRow) => mapRow(row)));
+      const mapped = (data || []).map((row) => mapRow(row as FlashcardRow));
+      setAllCards(mapped);
+      setCards(mapped.filter(isDue));
     } catch (error) {
       console.error('Erro ao buscar flashcards:', error);
       toast.error('Não foi possível carregar seus flashcards.');
       setCards([]);
+      setAllCards([]);
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
   const rateCard = async (cardId: string, difficulty: 'easy' | 'medium' | 'hard') => {
-    // Lógica simplificada de repetição espaçada (SM-2 adaptado)
-    let daysToAdd = 1;
-    if (difficulty === 'medium') daysToAdd = 3;
-    if (difficulty === 'easy') daysToAdd = 7;
+    if (!user) return false;
 
+    const daysToAdd = difficulty === 'easy' ? 7 : difficulty === 'medium' ? 3 : 1;
+    const difficultyValue = difficulty === 'easy' ? 2 : difficulty === 'medium' ? 1 : 0;
     const nextReview = new Date();
     nextReview.setDate(nextReview.getDate() + daysToAdd);
+    const nextReviewIso = nextReview.toISOString();
 
     try {
       const { error } = await supabase
         .from('flashcards')
         .update({
-          next_review: nextReview.toISOString(),
+          next_review: nextReviewIso,
           last_reviewed: new Date().toISOString(),
           interval_days: daysToAdd,
-          difficulty,
+          difficulty: difficultyValue,
         })
-        .eq('id', cardId);
+        .eq('id', cardId)
+        .eq('user_id', user.id);
 
       if (error) throw error;
-      setCards((prev) => prev.filter((c) => c.id !== cardId));
+      setCards((previous) => previous.filter((card) => card.id !== cardId));
+      setAllCards((previous) => previous.map((card) => (
+        card.id === cardId ? { ...card, next_review: nextReviewIso } : card
+      )));
       toast.success('Card revisado!');
+      return true;
     } catch (error) {
       console.error('Erro ao atualizar card:', error);
       toast.error('Erro ao atualizar card');
+      return false;
     }
   };
 
+  const updateCard = async (cardId: string, question: string, answer: string) => {
+    if (!user) return false;
+    const nextQuestion = question.trim();
+    const nextAnswer = answer.trim();
+    if (!nextQuestion || !nextAnswer) {
+      toast.error('Preencha a pergunta e a resposta.');
+      return false;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('flashcards')
+        .update({ front: nextQuestion, back: nextAnswer })
+        .eq('id', cardId)
+        .eq('user_id', user.id)
+        .select('id')
+        .single();
+
+      if (error) throw error;
+      if (!data) throw new Error('Flashcard não encontrado para este usuário.');
+
+      const applyUpdate = (items: Flashcard[]) => items.map((card) => (
+        card.id === cardId ? { ...card, question: nextQuestion, answer: nextAnswer } : card
+      ));
+      setCards(applyUpdate);
+      setAllCards(applyUpdate);
+      toast.success('Flashcard atualizado.');
+      return true;
+    } catch (error) {
+      console.error('Erro ao editar flashcard:', error);
+      toast.error('Não foi possível salvar o flashcard.');
+      return false;
+    }
+  };
 
   useEffect(() => {
-    fetchDueCards();
-  }, [user]);
+    void fetchCards();
+  }, [fetchCards]);
 
-  return { cards, loading, rateCard, refresh: fetchDueCards };
+  return { cards, allCards, loading, rateCard, updateCard, refresh: fetchCards };
 };

@@ -95,7 +95,7 @@ export default function SupportProjectPage() {
             
             <div className="flex flex-col items-center gap-6 w-full">
               <div className="hover:scale-105 transition-transform duration-300 flex justify-center">
-                <BuyMeCoffeeButton variant="accent" size="large" showText={false} />
+                <BuyMeCoffeeButton variant="accent" size="large" text="Seja um apoiador" />
               </div>
 
               <div className="flex items-center gap-2 text-slate-500 w-full">

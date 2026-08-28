@@ -17,6 +17,7 @@ import { AdDraftPreviewOverlay } from '@/components/admin/AdDraftPreviewOverlay'
 import { EllaSidebar } from '@/components/ella/EllaSidebar';
 import { PersistentAdSpot } from '@/components/PersistentAdSpot';
 import { StudentAppShell } from '@/components/dashboard/StudentAppShell';
+import { useBMCWidget } from '@/hooks/useBMCWidget';
 
 // Lazy load pages
 const LandingPage = lazy(() => import('@/pages/LandingPage'));
@@ -89,6 +90,7 @@ const AppContent = () => {
   const [splashDone, setSplashDone] = React.useState(false);
   const [showContent, setShowContent] = React.useState(false);
   useAdminCopyPatch();
+  useBMCWidget();
 
   // Mantém a identidade da callback para não reiniciar o timer do splash a cada render.
   const handleSplashComplete = React.useCallback(() => {

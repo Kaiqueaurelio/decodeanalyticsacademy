@@ -440,12 +440,17 @@ export default function DashboardPage() {
             </div>
           </Reveal>
 
-          <div className="flex flex-col gap-4 sm:flex-row">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <div className="min-w-0 flex-1">
               <AdBanner position="inline" />
             </div>
-            <div className="flex shrink-0 items-center justify-center rounded-2xl border border-primary/10 bg-primary/5 p-2 sm:w-16">
-              <BuyMeCoffeeButton variant="minimal" size="small" showText={false} />
+            <div className="flex shrink-0 items-center justify-center sm:justify-end">
+              <BuyMeCoffeeButton
+                variant="minimal"
+                size="small"
+                text="Apoiar o projeto"
+                className="w-full sm:w-auto"
+              />
             </div>
           </div>
 

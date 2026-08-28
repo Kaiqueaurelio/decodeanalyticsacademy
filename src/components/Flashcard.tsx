@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,54 +13,69 @@ interface FlashcardProps {
 export const Flashcard = ({ question, answer, onRate }: FlashcardProps) => {
   const [isFlipped, setIsFlipped] = useState(false);
 
+  const toggleCard = () => setIsFlipped((current) => !current);
+
   return (
-    <div className="w-full max-w-md mx-auto h-[350px] perspective-1000">
+    <div className="mx-auto h-[330px] w-full max-w-md perspective-1000 sm:h-[360px]">
       <motion.div
-        className="relative w-full h-full transition-all duration-500 preserve-3d cursor-pointer"
+        className="relative h-full w-full cursor-pointer rounded-2xl transition-all duration-500 preserve-3d focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-4 focus-visible:ring-offset-background"
         animate={{ rotateY: isFlipped ? 180 : 0 }}
-        onClick={() => setIsFlipped(!isFlipped)}
+        onClick={toggleCard}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            toggleCard();
+          }
+        }}
+        role="button"
+        tabIndex={0}
+        aria-label={isFlipped ? 'Mostrar a pergunta do flashcard' : 'Mostrar a resposta do flashcard'}
+        aria-pressed={isFlipped}
       >
         {/* Frente do Cartão */}
-        <Card className="absolute inset-0 w-full h-full backface-hidden flex flex-col items-center justify-center p-8 text-center bg-card shadow-xl border-2 border-primary/10">
+        <Card className="absolute inset-0 flex h-full w-full backface-hidden flex-col items-center justify-center border-2 border-primary/10 bg-card p-5 text-center shadow-xl sm:p-8">
           <div className="absolute top-4 left-4 text-primary/40">
             <Brain size={24} />
           </div>
           <span className="text-sm font-medium text-muted-foreground mb-4 uppercase tracking-wider">Pergunta</span>
-          <h3 className="text-xl font-semibold text-foreground leading-relaxed">{question}</h3>
-          <p className="mt-8 text-xs text-muted-foreground animate-pulse italic">Clique para ver a resposta</p>
+          <h3 className="max-h-[190px] overflow-y-auto break-words whitespace-pre-wrap text-lg font-semibold leading-relaxed text-foreground sm:text-xl">{question}</h3>
+          <p className="mt-6 text-xs italic text-muted-foreground sm:mt-8">Toque para ver a resposta</p>
         </Card>
 
         {/* Verso do Cartão */}
-        <Card className="absolute inset-0 w-full h-full backface-hidden flex flex-col items-center justify-center p-8 text-center bg-primary/5 shadow-xl border-2 border-primary rotate-y-180">
+        <Card className="absolute inset-0 flex h-full w-full backface-hidden flex-col items-center justify-center border-2 border-primary bg-primary/5 p-5 text-center shadow-xl rotate-y-180 sm:p-8">
           <span className="text-sm font-medium text-primary mb-4 uppercase tracking-wider">Resposta</span>
           <div className="flex-1 flex items-center">
-            <p className="text-lg text-foreground font-medium leading-relaxed">{answer}</p>
+            <p className="max-h-[185px] overflow-y-auto break-words whitespace-pre-wrap text-base font-medium leading-relaxed text-foreground sm:text-lg">{answer}</p>
           </div>
           
-          <div className="mt-6 flex gap-2 w-full">
+          <div className="mt-5 grid w-full grid-cols-3 gap-1.5 sm:mt-6 sm:gap-2">
             <Button 
+              type="button"
               variant="outline" 
               size="sm" 
-              className="flex-1 bg-red-50 hover:bg-red-100 border-red-200 text-red-700"
+              className="min-w-0 gap-1 border-destructive/35 bg-destructive/5 px-2 text-destructive hover:bg-destructive/10"
               onClick={(e) => { e.stopPropagation(); onRate('hard'); }}
             >
-              <X className="mr-1 h-4 w-4" /> Difícil
+              <X className="h-4 w-4 shrink-0" /> <span className="truncate">Difícil</span>
             </Button>
             <Button 
+              type="button"
               variant="outline" 
               size="sm" 
-              className="flex-1 bg-yellow-50 hover:bg-yellow-100 border-yellow-200 text-yellow-700"
+              className="min-w-0 gap-1 border-amber-500/35 bg-amber-500/5 px-2 text-amber-500 hover:bg-amber-500/10"
               onClick={(e) => { e.stopPropagation(); onRate('medium'); }}
             >
-              <RotateCcw className="mr-1 h-4 w-4" /> Médio
+              <RotateCcw className="h-4 w-4 shrink-0" /> <span className="truncate">Médio</span>
             </Button>
             <Button 
+              type="button"
               variant="outline" 
               size="sm" 
-              className="flex-1 bg-green-50 hover:bg-green-100 border-green-200 text-green-700"
+              className="min-w-0 gap-1 border-emerald-500/35 bg-emerald-500/5 px-2 text-emerald-500 hover:bg-emerald-500/10"
               onClick={(e) => { e.stopPropagation(); onRate('easy'); }}
             >
-              <Check className="mr-1 h-4 w-4" /> Fácil
+              <Check className="h-4 w-4 shrink-0" /> <span className="truncate">Fácil</span>
             </Button>
           </div>
         </Card>
