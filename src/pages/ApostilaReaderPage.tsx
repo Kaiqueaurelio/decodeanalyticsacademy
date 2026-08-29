@@ -139,6 +139,22 @@ function buildTreeFromPages(apostilaId: string, pages: ApostilaPageRow[]): Tree 
   };
 }
 
+function shouldRestoreRootContent(mainContent: string, savedPages: ApostilaPageRow[]): boolean {
+  const normalizedMain = normalizeContentForComparison(mainContent);
+  if (!normalizedMain || isPlaceholderPageContent(mainContent)) return false;
+
+  const pageContentChars = savedPages.reduce((total, page) => total + (page.content || '').trim().length, 0);
+  const hasUsablePage = savedPages.some((page) => !isPlaceholderPageContent(page.content || '') && (page.content || '').trim().length > 300);
+  const rootIsAlreadyRepresented = savedPages.some((page) => {
+    const normalizedPage = normalizeContentForComparison(page.content || '');
+    return normalizedPage === normalizedMain || normalizedPage.includes(normalizedMain);
+  });
+
+  // Algumas migrações deixaram apenas páginas-placeholder/trechos mínimos, embora
+  // o conteúdo completo ainda esteja no campo apostilas.content.
+  return !rootIsAlreadyRepresented && (!hasUsablePage || pageContentChars < mainContent.length * 0.25);
+}
+
 function mergePagesIntoTree(tree: Tree, apostilaId: string, pages: ApostilaPageRow[]): Tree {
   const existingKeys = new Set(
     tree.modules.flatMap((module) => module.chapters.flatMap((chapter) => chapter.lessons))
@@ -291,17 +307,18 @@ export default function ApostilaReaderPage() {
       const rpcTree = (!rpcError && rpcData as unknown as Tree) || { apostila_id: id, modules: [] };
       const mainContent = typeof ap?.content === 'string' ? ap.content.trim() : '';
       const savedPages = sanitizedPages as ApostilaPageRow[];
-      if (rpcTree.modules?.length === 0 && savedPages.length === 0 && mainContent) {
-        savedPages.push({
+      const contentPages = [...savedPages];
+      if (shouldRestoreRootContent(mainContent, savedPages)) {
+        contentPages.unshift({
           id: `main-${id}`,
-          title: (ap?.title as string) || 'Conteúdo',
+          title: (ap?.title as string) || 'Conteúdo completo',
           content: mainContent,
-          position: 0,
+          position: -1,
         });
       }
-      const t = savedPages.length > 0
-        ? mergePagesIntoTree(rpcTree, id, savedPages)
-        : (rpcTree.modules?.length > 0 ? rpcTree : buildTreeFromPages(id, savedPages));
+      const t = contentPages.length > 0
+        ? mergePagesIntoTree(rpcTree, id, contentPages)
+        : (rpcTree.modules?.length > 0 ? rpcTree : buildTreeFromPages(id, contentPages));
 
       if (rpcTree.modules?.length === 0 && savedPages.length === 0) {
         console.warn(`[ApostilaReader] No structured lessons or saved pages found for ${id}.`);
