@@ -135,8 +135,9 @@ const AppContent = () => {
 
                 {/* App Routes (Protected) */}
                 <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-                <Route path="/apostila/:id" element={<ProtectedRoute><StudentAppShell><ApostilaPage /></StudentAppShell></ProtectedRoute>} />
-                <Route path="/reader/:id" element={<ProtectedRoute><StudentAppShell><ApostilaReaderPage /></StudentAppShell></ProtectedRoute>} />
+                {/* Leitores em tela cheia: possuem chrome próprio (header/sidebar), não usar StudentAppShell */}
+                <Route path="/apostila/:id" element={<ProtectedRoute><ApostilaPage /></ProtectedRoute>} />
+                <Route path="/reader/:id" element={<ProtectedRoute><ApostilaReaderPage /></ProtectedRoute>} />
                 <Route path="/aula-do-dia" element={<ProtectedRoute><StudentAppShell><ApostilaDoDiaPage /></StudentAppShell></ProtectedRoute>} />
                 <Route path="/materia/:id" element={<ProtectedRoute><StudentAppShell><SubjectPage /></StudentAppShell></ProtectedRoute>} />
                 <Route path="/caderno/:notebookId" element={<ProtectedRoute><StudentAppShell><NotebookPage /></StudentAppShell></ProtectedRoute>} />
