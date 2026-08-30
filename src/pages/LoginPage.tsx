@@ -36,8 +36,9 @@ export default function LoginPage() {
 
   const looksLikeEmail = isEmailIdentifier;
   const callRaAuth = async (payload: Record<string, unknown>) => {
-    const functionsUrl = `${import.meta.env.VITE_SUPABASE_URL || 'https://wxkkpjpqyrygglbuogsd.supabase.co'}/functions/v1/ra-auth`;
-    const publishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_Zh6H3y8GJ2J_wkRVXxyTng_eylbCAVM';
+    // Usa exatamente o mesmo backend do client oficial (evita apontar para um projeto vazio).
+    const functionsUrl = `${SUPABASE_URL}/functions/v1/ra-auth`;
+    const publishableKey = SUPABASE_PUBLISHABLE_KEY;
 
     try {
       // 401 e 429 são respostas normais da tela de login. Fazer a requisição
