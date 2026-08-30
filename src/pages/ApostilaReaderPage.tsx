@@ -139,15 +139,26 @@ function buildTreeFromPages(apostilaId: string, pages: ApostilaPageRow[]): Tree 
   };
 }
 
-function shouldRestoreRootContent(mainContent: string, savedPages: ApostilaPageRow[]): boolean {
+function shouldRestoreRootContent(
+  mainContent: string,
+  savedPages: ApostilaPageRow[],
+  treeLessonContents: string[] = [],
+): boolean {
   const normalizedMain = normalizeContentForComparison(mainContent);
   if (!normalizedMain || isPlaceholderPageContent(mainContent)) return false;
 
-  const pageContentChars = savedPages.reduce((total, page) => total + (page.content || '').trim().length, 0);
-  const hasUsablePage = savedPages.some((page) => !isPlaceholderPageContent(page.content || '') && (page.content || '').trim().length > 300);
-  const rootIsAlreadyRepresented = savedPages.some((page) => {
-    const normalizedPage = normalizeContentForComparison(page.content || '');
-    return normalizedPage === normalizedMain || normalizedPage.includes(normalizedMain);
+  const existingContents = [
+    ...savedPages.map((page) => page.content || ''),
+    ...treeLessonContents,
+  ];
+
+  const pageContentChars = existingContents.reduce((total, content) => total + content.trim().length, 0);
+  const hasUsablePage = existingContents.some(
+    (content) => !isPlaceholderPageContent(content) && content.trim().length > 300,
+  );
+  const rootIsAlreadyRepresented = existingContents.some((content) => {
+    const normalized = normalizeContentForComparison(content);
+    return normalized === normalizedMain || normalized.includes(normalizedMain);
   });
 
   // Algumas migrações deixaram apenas páginas-placeholder/trechos mínimos, embora
