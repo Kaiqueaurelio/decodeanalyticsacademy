@@ -167,14 +167,37 @@ function shouldRestoreRootContent(
 }
 
 function mergePagesIntoTree(tree: Tree, apostilaId: string, pages: ApostilaPageRow[]): Tree {
+  const usablePages = pages.filter((page) => !isPlaceholderPageContent(page.content || ''));
+  const prunedTree: Tree = {
+    ...tree,
+    modules: tree.modules
+      .map((module) => ({
+        ...module,
+        chapters: module.chapters
+          .map((chapter) => ({
+            ...chapter,
+            lessons: chapter.lessons.filter((lesson) => {
+              const lessonContent = lesson.content_md || '';
+              const lessonLength = normalizeContentForComparison(lessonContent).length;
+              return !usablePages.some((page) => {
+                const pageLength = normalizeContentForComparison(page.content || '').length;
+                return pageLength > lessonLength
+                  && isSubstantialDuplicateContent(lessonContent, page.content || '');
+              });
+            }),
+          }))
+          .filter((chapter) => chapter.lessons.length > 0),
+      }))
+      .filter((module) => module.chapters.length > 0),
+  };
+
   const existingKeys = new Set(
-    tree.modules.flatMap((module) => module.chapters.flatMap((chapter) => chapter.lessons))
+    prunedTree.modules.flatMap((module) => module.chapters.flatMap((chapter) => chapter.lessons))
       .map((lesson) => normalizeContentForComparison(lesson.content_md || ''))
       .filter(Boolean),
   );
 
-  const distinctPages = pages.filter((page) => {
-    if (isPlaceholderPageContent(page.content || '')) return false;
+  const distinctPages = usablePages.filter((page) => {
     const key = normalizeContentForComparison(page.content || '');
     if (!key) return false;
     if (existingKeys.has(key)) return false;
@@ -189,24 +212,28 @@ function mergePagesIntoTree(tree: Tree, apostilaId: string, pages: ApostilaPageR
     return true;
   });
   const pagesModule = buildPagesModule(apostilaId, distinctPages);
-  if (!pagesModule) return tree;
+  if (!pagesModule) return prunedTree;
 
   // O RPC pode retornar módulos estruturados e também existir conteúdo criado
   // pelo editor em apostila_pages. Só anexamos páginas que ainda não estão na árvore.
-  const alreadyIncluded = tree.modules.some((module) => module.id === pagesModule.id);
-  if (alreadyIncluded) return tree;
+  const alreadyIncluded = prunedTree.modules.some((module) => module.id === pagesModule.id);
+  if (alreadyIncluded) return prunedTree;
 
   return {
-    ...tree,
-    modules: [...tree.modules, pagesModule],
+    ...prunedTree,
+    modules: [...prunedTree.modules, pagesModule],
   };
 }
 
 function flatten(tree: Tree): FlatLesson[] {
   const out: FlatLesson[] = [];
+  const seenContent = new Set<string>();
   for (const m of tree.modules) {
     for (const c of m.chapters) {
       for (const l of c.lessons) {
+        const contentKey = normalizeContentForComparison(l.content_md || '');
+        if (contentKey && seenContent.has(contentKey)) continue;
+        if (contentKey) seenContent.add(contentKey);
         const dateMatch = l.saved_date || extractChronologyDates(l.title)[0] || extractChronologyDates(l.content_md)[0] || null;
         out.push({ ...l, moduleTitle: m.title, chapterTitle: c.title, date: dateMatch });
 

@@ -4075,7 +4075,7 @@ function AdminPasswordResetMenu({ user }: { user: { user_id: string; email: stri
   };
 
   const handleSetPassword = async () => {
-    if (pwd.length < 6) { toast.error('A senha deve ter no mínimo 6 caracteres'); return; }
+    if (pwd.length < 8) { toast.error('A senha deve ter no mínimo 8 caracteres'); return; }
     if (pwd !== confirmPwd) { toast.error('As senhas não coincidem'); return; }
     setSaving(true);
     try {
@@ -4151,7 +4151,7 @@ function AdminPasswordResetMenu({ user }: { user: { user_id: string; email: stri
                   type={showPwd ? 'text' : 'password'}
                   value={pwd}
                   onChange={(e) => setPwd(e.target.value)}
-                  placeholder="Mínimo 6 caracteres"
+                  placeholder="Mínimo 8 caracteres"
                   autoComplete="new-password"
                 />
                 <Button

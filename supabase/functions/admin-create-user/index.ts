@@ -37,14 +37,18 @@ Deno.serve(async (req) => {
     }
 
     const identifier = String(body?.identifier ?? '').trim();
+    const contactEmail = String(body?.email ?? '').trim().toLowerCase();
     const password = String(body?.password ?? '');
     const fullName = String(body?.full_name ?? '').trim();
     const contentScope = body?.content_scope === 'enem_only' ? 'enem_only' : 'full';
     const makeAdmin = body?.make_admin === true;
 
     if (!identifier) return json({ error: 'Informe o RA ou o e-mail do aluno.' }, 400);
-    if (password.length < 6 || password.length > 72) {
-      return json({ error: 'A senha deve ter entre 6 e 72 caracteres.' }, 400);
+    if (password.length < 8 || password.length > 72) {
+      return json({ error: 'A senha deve ter entre 8 e 72 caracteres.' }, 400);
+    }
+    if (contactEmail && !EMAIL_RE.test(contactEmail)) {
+      return json({ error: 'E-mail de contato inválido.' }, 400);
     }
 
     const isEmail = identifier.includes('@');
@@ -65,7 +69,12 @@ Deno.serve(async (req) => {
       email_confirm: true,
       user_metadata: isEmail
         ? { full_name: name, account_type: 'email' }
-        : { ra, account_type: 'ra', full_name: name },
+        : {
+            ra,
+            account_type: 'ra',
+            full_name: name,
+            ...(contactEmail ? { contact_email: contactEmail } : {}),
+          },
     });
 
     if (createErr) {
@@ -83,8 +92,11 @@ Deno.serve(async (req) => {
         user_id: newUserId,
         email,
         full_name: name,
+        ra: isEmail ? null : ra,
+        account_type: isEmail ? 'email' : 'ra',
         content_scope: contentScope,
         is_blocked: false,
+        must_change_password: true,
       } as any, { onConflict: 'user_id' });
       if (profileErr) console.warn('admin-create-user profile upsert failed', { code: profileErr.code });
 

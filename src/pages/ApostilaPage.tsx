@@ -34,7 +34,7 @@ import {
 import type { Tables } from '@/integrations/supabase/types';
 
 import { parseApostilaContent, type ApostilaSection as Section } from '@/lib/apostila-parser';
-import { isPlaceholderPageContent, isSubstantialDuplicateContent, mergeDistinctPages, stripInlineMarkup } from '@/lib/content-formatting';
+import { isPlaceholderPageContent, isSubstantialDuplicateContent, mergeDistinctPages, normalizeContentForComparison, stripInlineMarkup } from '@/lib/content-formatting';
 import { formatApostilaDate, getApostilaPageSavedDate, isMissingApostilaPageSavedDateColumn } from '@/lib/apostila-pages';
 
 /**
@@ -317,9 +317,19 @@ export default function ApostilaPage({ tab, setTab }: Props) {
     // Páginas do editor são a fonte autoritativa quando o campo principal está
     // vazio. O conteúdo estruturado continua como fallback apenas quando não há
     // nenhuma página salva, evitando que um resumo curto esconda a página real.
-    const mainContent = hasPlaceholderMain
+    const mainCandidate = hasPlaceholderMain
       ? (validPages.length > 0 ? '' : structuredContent)
       : (apostila?.content || '');
+
+    // Quando uma página contém a versão principal inteira e ainda acrescenta
+    // material, preservamos a página mais completa e não mostramos o texto-base
+    // outra vez antes dela.
+    const mainLength = normalizeContentForComparison(mainCandidate).length;
+    const mainIsCoveredByPage = Boolean(mainCandidate.trim()) && validPages.some((page) => {
+      const pageLength = normalizeContentForComparison(page.content || '').length;
+      return pageLength > mainLength && isSubstantialDuplicateContent(mainCandidate, page.content || '');
+    });
+    const mainContent = mainIsCoveredByPage ? '' : mainCandidate;
 
     // Filtro de desduplicação e integridade cronológica
     const distinctPages = validPages.filter((page) => {

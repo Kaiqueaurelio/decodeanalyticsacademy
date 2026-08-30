@@ -4,24 +4,33 @@ const SIDEBAR_STATE_KEY = 'decode-academy-sidebar-open';
 
 export function useSidebar() {
   const [isOpen, setIsOpen] = useState(() => {
-    const saved = localStorage.getItem(SIDEBAR_STATE_KEY);
-    return saved === 'true';
+    try {
+      return typeof window !== 'undefined'
+        && window.localStorage?.getItem(SIDEBAR_STATE_KEY) === 'true';
+    } catch {
+      return false;
+    }
   });
 
   const toggle = () => setIsOpen((prev) => !prev);
   const setOpen = (open: boolean) => setIsOpen(open);
 
   useEffect(() => {
-    localStorage.setItem(SIDEBAR_STATE_KEY, String(isOpen));
+    try {
+      window.localStorage?.setItem(SIDEBAR_STATE_KEY, String(isOpen));
+    } catch {
+      // The sidebar remains usable even when browser storage is unavailable.
+    }
     
     // Dispatch a custom event so other components using this hook can sync
     window.dispatchEvent(new CustomEvent('sidebar-state-change', { detail: isOpen }));
   }, [isOpen]);
 
   useEffect(() => {
-    const handleSync = (e: any) => {
-      if (e.detail !== isOpen) {
-        setIsOpen(e.detail);
+    const handleSync = (event: Event) => {
+      const next = (event as CustomEvent<boolean>).detail;
+      if (typeof next === 'boolean' && next !== isOpen) {
+        setIsOpen(next);
       }
     };
 

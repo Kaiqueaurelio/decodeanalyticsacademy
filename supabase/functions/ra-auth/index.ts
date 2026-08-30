@@ -5,6 +5,11 @@ const RA_RE = /^[A-Z0-9]{6,13}$/;
 const GENERIC_FAIL = "RA ou senha incorretos.";
 const SPECIAL_USER = Deno.env.get("SPECIAL_USER_NAME")?.trim() || "Juliana";
 const SPECIAL_PASS = Deno.env.get("SPECIAL_USER_PASSWORD") || "";
+const LEGACY_SUPABASE_URL = Deno.env.get("LEGACY_SUPABASE_URL")?.trim()
+  || "https://gynguskgysompgcajunc.supabase.co";
+const LEGACY_APP_URL = Deno.env.get("LEGACY_APP_URL")?.trim()
+  || "https://decodeanalyticsacademy.lovable.app";
+let legacyAnonKeyCache = Deno.env.get("LEGACY_SUPABASE_ANON_KEY")?.trim() || "";
 
 const json = (body: unknown, status = 200, headers = {}) =>
   new Response(JSON.stringify(body), {
@@ -238,10 +243,22 @@ Deno.serve(async (req) => {
 
 
     const authClient = createClient(SUPABASE_URL, ANON_KEY, { auth: { persistSession: false } });
-    const { data, error } = await authClient.auth.signInWithPassword({
+    let { data, error } = await authClient.auth.signInWithPassword({
       email: resolvedEmail,
       password,
     });
+
+    // Migração sob demanda: a mudança do Lovable Cloud para este Supabase
+    // transferiu conteúdo, mas não as contas do Auth. Se a conta ainda não
+    // existe aqui, validamos as mesmas credenciais no projeto anterior e a
+    // recriamos localmente com a própria senha informada pelo usuário.
+    if (error || !data?.session) {
+      const migrated = await migrateLegacyAccount(admin, authClient, ra, password);
+      if (migrated?.session) {
+        data = migrated;
+        error = null;
+      }
+    }
 
     if (error || !data?.session) {
       await recordLoginAttempt(admin, ra, ip, false);
@@ -305,6 +322,191 @@ function getAllowedRedirect(raw: string): string | null {
   } catch {
     return null;
   }
+}
+
+type LegacyProfile = {
+  ra?: string | null;
+  full_name?: string | null;
+  account_type?: string | null;
+  content_scope?: string | null;
+  is_blocked?: boolean | null;
+};
+
+async function migrateLegacyAccount(
+  admin: any,
+  authClient: any,
+  identifier: string,
+  password: string,
+) {
+  try {
+    const legacyAnonKey = await getLegacyAnonKey();
+    if (!legacyAnonKey) return null;
+    const legacyAuthResponse = await fetch(`${LEGACY_SUPABASE_URL}/functions/v1/ra-auth`, {
+      method: "POST",
+      headers: {
+        apikey: legacyAnonKey,
+        Authorization: `Bearer ${legacyAnonKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ mode: "signin", ra: identifier, password }),
+    });
+    if (!legacyAuthResponse.ok) return null;
+
+    const legacyAuth = await legacyAuthResponse.json();
+    const legacyAccessToken = legacyAuth?.session?.access_token;
+    if (typeof legacyAccessToken !== "string" || !legacyAccessToken) return null;
+
+    const legacyUserResponse = await fetch(`${LEGACY_SUPABASE_URL}/auth/v1/user`, {
+      headers: {
+        apikey: legacyAnonKey,
+        Authorization: `Bearer ${legacyAccessToken}`,
+      },
+    });
+    if (!legacyUserResponse.ok) return null;
+    const legacyUser = await legacyUserResponse.json();
+    if (!legacyUser?.id) return null;
+
+    const profileUrl = new URL(`${LEGACY_SUPABASE_URL}/rest/v1/profiles`);
+    profileUrl.searchParams.set("select", "ra,full_name,account_type,content_scope,is_blocked");
+    profileUrl.searchParams.set("user_id", `eq.${legacyUser.id}`);
+    profileUrl.searchParams.set("limit", "1");
+    const legacyProfileResponse = await fetch(profileUrl, {
+      headers: {
+        apikey: legacyAnonKey,
+        Authorization: `Bearer ${legacyAccessToken}`,
+      },
+    });
+    if (!legacyProfileResponse.ok) return null;
+    const legacyProfiles = await legacyProfileResponse.json() as LegacyProfile[];
+    const legacyProfile = legacyProfiles[0];
+    if (legacyProfile?.is_blocked) return null;
+
+    const migratedRa = typeof legacyProfile?.ra === "string"
+      ? legacyProfile.ra.replace(/[\s._-]/g, "").toUpperCase()
+      : (!identifier.includes("@") ? identifier : null);
+    const activeEmail = migratedRa
+      ? `${migratedRa.toLowerCase()}@ra.unip.local`
+      : String(legacyUser.email || identifier).trim().toLowerCase();
+    if (!activeEmail.includes("@")) return null;
+
+    const fullName = String(
+      legacyProfile?.full_name
+        || legacyUser.user_metadata?.full_name
+        || (migratedRa ? `Aluno Decode ${migratedRa}` : activeEmail.split("@")[0]),
+    ).trim();
+    const contentScope = ["full", "enem_only", "no_enem"].includes(String(legacyProfile?.content_scope))
+      ? String(legacyProfile?.content_scope)
+      : "full";
+
+    const { data: created, error: createError } = await admin.auth.admin.createUser({
+      email: activeEmail,
+      password,
+      email_confirm: true,
+      user_metadata: {
+        full_name: fullName,
+        account_type: migratedRa ? "ra" : "email",
+        ...(migratedRa ? { ra: migratedRa } : {}),
+        ...(
+          migratedRa && typeof legacyUser.email === "string" && !legacyUser.email.endsWith("@ra.unip.local")
+            ? { contact_email: legacyUser.email }
+            : {}
+        ),
+        migrated_from_legacy: true,
+      },
+    });
+
+    if (createError || !created?.user?.id) {
+      // Uma tentativa concorrente pode ter concluído a migração primeiro.
+      const retry = await authClient.auth.signInWithPassword({ email: activeEmail, password });
+      return retry.data?.session ? retry.data : null;
+    }
+
+    const newUserId = created.user.id;
+    const { error: profileError } = await admin.from("profiles").upsert({
+      user_id: newUserId,
+      email: activeEmail,
+      full_name: fullName,
+      ra: migratedRa,
+      account_type: migratedRa ? "ra" : "email",
+      content_scope: contentScope,
+      is_blocked: false,
+      login_attempts: 0,
+      locked_at: null,
+      must_change_password: false,
+    }, { onConflict: "user_id" });
+
+    if (profileError) {
+      console.error("ra-auth legacy profile migration failed", profileError.code ?? "unknown");
+      await admin.auth.admin.deleteUser(newUserId);
+      return null;
+    }
+
+    const { error: roleError } = await admin.from("user_roles").upsert({
+      user_id: newUserId,
+      role: "user",
+    }, { onConflict: "user_id,role" });
+    if (roleError) {
+      console.error("ra-auth legacy role migration failed", roleError.code ?? "unknown");
+    }
+
+    await admin.from("audit_logs").insert({
+      user_id: newUserId,
+      event_type: "legacy_user_migrated",
+      resource_id: legacyUser.id,
+      metadata: { account_type: migratedRa ? "ra" : "email" },
+    });
+
+    const migratedLogin = await authClient.auth.signInWithPassword({
+      email: activeEmail,
+      password,
+    });
+    return migratedLogin.data?.session ? migratedLogin.data : null;
+  } catch (migrationError) {
+    console.error(
+      "ra-auth legacy migration unavailable",
+      migrationError instanceof Error ? migrationError.name : "UnknownError",
+    );
+    return null;
+  }
+}
+
+async function getLegacyAnonKey(): Promise<string | null> {
+  if (legacyAnonKeyCache) return legacyAnonKeyCache;
+
+  try {
+    const indexResponse = await fetch(LEGACY_APP_URL);
+    if (!indexResponse.ok) return null;
+    const html = await indexResponse.text();
+    const scriptPaths = [...html.matchAll(/(?:src|href)=["']([^"']+\.(?:js|mjs))(?:\?[^"']*)?["']/gi)]
+      .map((match) => match[1]);
+
+    for (const scriptPath of scriptPaths) {
+      const scriptUrl = new URL(scriptPath, LEGACY_APP_URL);
+      const scriptResponse = await fetch(scriptUrl);
+      if (!scriptResponse.ok) continue;
+      const source = await scriptResponse.text();
+      const candidates = source.match(/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/g) || [];
+      for (const candidate of candidates) {
+        try {
+          const encodedPayload = candidate.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+          const paddedPayload = encodedPayload.padEnd(Math.ceil(encodedPayload.length / 4) * 4, '=');
+          const payload = JSON.parse(atob(paddedPayload));
+          if (payload?.ref === 'gynguskgysompgcajunc' && payload?.role === 'anon') {
+            legacyAnonKeyCache = candidate;
+            return candidate;
+          }
+        } catch {
+          // Ignora outros JWTs eventualmente presentes no bundle.
+        }
+      }
+    }
+  } catch (error) {
+    console.error(
+      "ra-auth legacy key discovery unavailable",
+      error instanceof Error ? error.name : "UnknownError",
+    );
+  }
+  return null;
 }
 
 async function recordLoginAttempt(admin: any, ra: string, ip: string, success: boolean) {

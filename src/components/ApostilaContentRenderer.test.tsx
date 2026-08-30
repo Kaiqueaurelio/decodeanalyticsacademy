@@ -27,6 +27,18 @@ describe('ApostilaContentRenderer', () => {
     expect(container.textContent).not.toContain('1\\. Android');
   });
 
+  it('normaliza títulos, listas e separadores escapados do conteúdo legado', () => {
+    const { container } = render(
+      <ApostilaContentRenderer content={'\\# Teoria da Computação\n\n\\## Máquinas de estado\n\n\\- Autômatos finitos\n\n\\---'} />,
+    );
+
+    expect(container.querySelector('h1')?.textContent).toContain('Teoria da Computação');
+    expect(container.querySelector('h2')?.textContent).toContain('Máquinas de estado');
+    expect(container.textContent).toContain('Autômatos finitos');
+    expect(container.textContent).not.toContain('\\#');
+    expect(container.textContent).not.toContain('\\-');
+  });
+
   it('preserva todos os itens de uma lista numerada curta', () => {
     const { container } = render(
       <ApostilaContentRenderer content={'1. Android — Plataforma\n2. Android Runtime\n3. Aplicativos Android'} />,

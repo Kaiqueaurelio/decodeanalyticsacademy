@@ -43,7 +43,7 @@ export function AdminCreateUserDialog({ onCreated }: Props) {
 
   const handleCreate = async () => {
     if (!identifier.trim()) { toast.error('Informe o RA ou e-mail do aluno.'); return; }
-    if (password.length < 6) { toast.error('A senha precisa ter ao menos 6 caracteres.'); return; }
+    if (password.length < 8) { toast.error('A senha precisa ter ao menos 8 caracteres.'); return; }
 
     setSaving(true);
     const { data, error } = await supabase.functions.invoke('admin-create-user', {

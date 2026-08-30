@@ -14,8 +14,20 @@ type ScrollPosition = {
   y: number;
 };
 
-function canUseStorage() {
-  return typeof window !== 'undefined';
+function getLocalStorage(): Storage | null {
+  try {
+    return typeof window !== 'undefined' ? window.localStorage ?? null : null;
+  } catch {
+    return null;
+  }
+}
+
+function getSessionStorage(): Storage | null {
+  try {
+    return typeof window !== 'undefined' ? window.sessionStorage ?? null : null;
+  } catch {
+    return null;
+  }
 }
 
 function readJson<T>(storage: Storage, key: string, fallback: T): T {
@@ -28,7 +40,7 @@ function readJson<T>(storage: Storage, key: string, fallback: T): T {
 }
 
 function getNormalizedRoute(route: string) {
-  if (!canUseStorage()) return route;
+  if (typeof window === 'undefined') return route;
 
   try {
     const url = new URL(route, window.location.origin);
@@ -47,34 +59,49 @@ export function getLocationRoute(location: Pick<Location, 'pathname' | 'search' 
 }
 
 export function saveLastRoute(route: string) {
-  if (!canUseStorage()) return;
+  const storage = getLocalStorage();
+  if (!storage) return;
 
   const normalizedRoute = getNormalizedRoute(route);
 
   try {
     const url = new URL(normalizedRoute, window.location.origin);
     if (!isPersistablePath(url.pathname)) return;
-    localStorage.setItem(ROUTE_KEY, `${url.pathname}${url.search}${url.hash}`);
+    storage.setItem(ROUTE_KEY, `${url.pathname}${url.search}${url.hash}`);
   } catch {
     const fallbackPathname = normalizedRoute.split(/[?#]/)[0];
     if (normalizedRoute && isPersistablePath(fallbackPathname)) {
-      localStorage.setItem(ROUTE_KEY, normalizedRoute);
+      try {
+        storage.setItem(ROUTE_KEY, normalizedRoute);
+      } catch {
+        // Persistence is optional when browser storage is blocked.
+      }
     }
   }
 }
 
 export function getLastRoute(): string | null {
-  if (!canUseStorage()) return null;
-  return localStorage.getItem(ROUTE_KEY);
+  const storage = getLocalStorage();
+  if (!storage) return null;
+  try {
+    return storage.getItem(ROUTE_KEY);
+  } catch {
+    return null;
+  }
 }
 
 export function clearLastRoute() {
-  if (!canUseStorage()) return;
-  localStorage.removeItem(ROUTE_KEY);
+  const storage = getLocalStorage();
+  if (!storage) return;
+  try {
+    storage.removeItem(ROUTE_KEY);
+  } catch {
+    // Best-effort cleanup only.
+  }
 }
 
 export function bootstrapSavedRoute() {
-  if (!canUseStorage()) return;
+  if (typeof window === 'undefined') return;
 
   const currentPath = window.location.pathname;
   if (currentPath !== '/' && currentPath !== '/login') return;
@@ -97,17 +124,23 @@ export function bootstrapSavedRoute() {
 }
 
 export function saveScrollPosition(route: string, position: ScrollPosition) {
-  if (!canUseStorage()) return;
+  const storage = getSessionStorage();
+  if (!storage) return;
 
-  const scrollMap = readJson<Record<string, ScrollPosition>>(sessionStorage, SCROLL_KEY, {});
+  const scrollMap = readJson<Record<string, ScrollPosition>>(storage, SCROLL_KEY, {});
   scrollMap[route] = position;
-  sessionStorage.setItem(SCROLL_KEY, JSON.stringify(scrollMap));
+  try {
+    storage.setItem(SCROLL_KEY, JSON.stringify(scrollMap));
+  } catch {
+    // Scroll restoration remains optional.
+  }
 }
 
 export function getScrollPosition(route: string): ScrollPosition | null {
-  if (!canUseStorage()) return null;
+  const storage = getSessionStorage();
+  if (!storage) return null;
 
-  const scrollMap = readJson<Record<string, ScrollPosition>>(sessionStorage, SCROLL_KEY, {});
+  const scrollMap = readJson<Record<string, ScrollPosition>>(storage, SCROLL_KEY, {});
   return scrollMap[route] ?? null;
 }
 
@@ -121,11 +154,17 @@ type PersistedField = {
 };
 
 export function savePageState(route: string, state: PersistedField[]) {
-  if (!canUseStorage()) return;
-  sessionStorage.setItem(getPageStateStorageKey(route), JSON.stringify(state));
+  const storage = getSessionStorage();
+  if (!storage) return;
+  try {
+    storage.setItem(getPageStateStorageKey(route), JSON.stringify(state));
+  } catch {
+    // Page state persistence is optional.
+  }
 }
 
 export function getPageState(route: string): PersistedField[] {
-  if (!canUseStorage()) return [];
-  return readJson<PersistedField[]>(sessionStorage, getPageStateStorageKey(route), []);
+  const storage = getSessionStorage();
+  if (!storage) return [];
+  return readJson<PersistedField[]>(storage, getPageStateStorageKey(route), []);
 }

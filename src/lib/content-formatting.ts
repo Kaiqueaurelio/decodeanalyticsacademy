@@ -32,10 +32,11 @@ export function normalizeRichContent(value: string): string {
  * comum no meio de um parágrafo.
  */
 export function normalizeMarkdownEscapes(value: string): string {
-  return normalizeRichContent(value || '').replace(
-    /^(\s*\d+(?:\.\d+)*)(\\)([.)])(\s+)/gm,
-    '$1$3$4',
-  );
+  return normalizeRichContent(value || '')
+    .replace(/^(\s*\d+(?:\.\d+)*)(\\)([.)])(\s+)/gm, '$1$3$4')
+    .replace(/^(\s*)\\(#{1,6}\s+)/gm, '$1$2')
+    .replace(/^(\s*)\\([-+*]\s+)/gm, '$1$2')
+    .replace(/^(\s*)\\((?:---+|___+|\*\*\*+)\s*)$/gm, '$1$2');
 }
 
 /** Remove tags/markdown residuais dos títulos, preservando o texto legível. */
@@ -52,7 +53,9 @@ export function stripInlineMarkup(value: string): string {
 /** Chave para identificar conteúdo repetido entre o campo principal e páginas estruturadas. */
 export function normalizeContentForComparison(value: string): string {
   return stripInlineMarkup(value)
-    .replace(/[>#-]+/g, ' ')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-zA-Z0-9]+/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()
     .toLocaleLowerCase();
@@ -79,17 +82,57 @@ export function isSubstantialDuplicateContent(first: string, second: string): bo
   const longer = left.length > right.length ? left : right;
   const coverage = shorter.length / longer.length;
 
-  return coverage >= 0.9 && longer.includes(shorter);
+  if (coverage >= 0.9 && longer.includes(shorter)) return true;
+
+  // Conteúdos longos importados pelo editor podem voltar com parágrafos
+  // reordenados, títulos extras ou outra pontuação. Nesses casos, comparar só
+  // por `includes` faz o leitor renderizar a apostila principal e a cópia da
+  // página logo abaixo. Shingles preservam a ordem local e reconhecem a cópia
+  // sem tratar um resumo curto como se fosse a apostila completa.
+  if (shorter.length < 800) return false;
+  if (longer.includes(shorter)) return true;
+
+  const makeShingles = (content: string, size = 8, stride = 1) => {
+    const words = content.split(' ').filter(Boolean);
+    const shingles = new Set<string>();
+    for (let index = 0; index <= words.length - size; index += stride) {
+      shingles.add(words.slice(index, index + size).join(' '));
+    }
+    return shingles;
+  };
+
+  const shorterWordCount = shorter.split(' ').length;
+  const shortStride = Math.max(1, Math.ceil(shorterWordCount / 2500));
+  const shortShingles = makeShingles(shorter, 8, shortStride);
+  const longShingles = makeShingles(longer);
+  if (shortShingles.size === 0 || longShingles.size === 0) return false;
+
+  let matchingShingles = 0;
+  shortShingles.forEach((shingle) => {
+    if (longShingles.has(shingle)) matchingShingles += 1;
+  });
+
+  return matchingShingles / shortShingles.size >= 0.78;
 }
 
 export function mergeDistinctPages<T extends { content?: string; id: string }>(pages: T[]): T[] {
-  const seen = new Set<string>();
-  return pages.filter((page) => {
-    const key = normalizeContentForComparison(page.content || '');
-    if (!key || seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
+  return pages.reduce<T[]>((distinct, page) => {
+    const content = page.content || '';
+    const key = normalizeContentForComparison(content);
+    if (!key) return distinct;
+
+    const duplicateIndex = distinct.findIndex((saved) =>
+      isSubstantialDuplicateContent(saved.content || '', content),
+    );
+    if (duplicateIndex === -1) {
+      distinct.push(page);
+      return distinct;
+    }
+
+    const savedLength = normalizeContentForComparison(distinct[duplicateIndex].content || '').length;
+    if (key.length > savedLength) distinct[duplicateIndex] = page;
+    return distinct;
+  }, []);
 }
 
 export function getPageDisplayTitle(value: string, fallback = 'Nova Página'): string {

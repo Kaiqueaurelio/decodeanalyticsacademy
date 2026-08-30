@@ -60,7 +60,12 @@ Deno.serve(async (req) => {
 
     const { error: profileError } = await admin
       .from("profiles")
-      .update({ login_attempts: 0, is_blocked: false, locked_at: null })
+      .update({
+        login_attempts: 0,
+        is_blocked: false,
+        locked_at: null,
+        must_change_password: true,
+      })
       .eq("user_id", targetUserId);
     if (profileError) {
       console.error("Admin password profile reset failed", profileError.code ?? "unknown");
