@@ -42,6 +42,14 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: "8.5.2",
+    date: "2026-08-30",
+    title: "Correção crítica de acesso",
+    changes: [
+      { kind: 'fix', text: 'Login restaurado: o app voltou a apontar para o backend oficial com os dados de alunos, em vez do projeto vazio criado na migração.' },
+    ],
+  },
+  {
     version: "8.5.1",
     date: "2026-08-26",
     title: "Inicialização e Leitura Resilientes",
