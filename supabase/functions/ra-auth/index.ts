@@ -449,11 +449,27 @@ async function migrateLegacyAccount(
       console.error("ra-auth legacy role migration failed", roleError.code ?? "unknown");
     }
 
+    // Restaura, sob a identidade nova, somente os registros que a sessão do
+    // próprio usuário conseguia ler no projeto antigo. Falhas isoladas não
+    // impedem o login: tabelas incompatíveis são registradas e podem ser
+    // tratadas posteriormente sem deixar o aluno fora do aplicativo.
+    const personalData = await migrateLegacyUserData(
+      admin,
+      legacyAnonKey,
+      legacyAccessToken,
+      legacyUser.id,
+      newUserId,
+    );
+
     await admin.from("audit_logs").insert({
       user_id: newUserId,
       event_type: "legacy_user_migrated",
       resource_id: legacyUser.id,
-      metadata: { account_type: migratedRa ? "ra" : "email" },
+      metadata: {
+        account_type: migratedRa ? "ra" : "email",
+        personal_rows_migrated: personalData.migrated,
+        personal_tables_failed: personalData.failed,
+      },
     });
 
     const migratedLogin = await authClient.auth.signInWithPassword({
@@ -468,6 +484,89 @@ async function migrateLegacyAccount(
     );
     return null;
   }
+}
+
+const LEGACY_USER_TABLES = [
+  ["annotations", "user_id"],
+  ["answers", "user_id"],
+  ["apostila_chats", "user_id"],
+  ["apostila_completions", "user_id"],
+  ["apostila_favorites", "user_id"],
+  ["apostila_lesson_bookmarks", "user_id"],
+  ["apostila_lesson_notes", "user_id"],
+  ["apostila_lesson_progress", "user_id"],
+  ["apostila_likes", "user_id"],
+  ["apostila_summaries", "user_id"],
+  ["apostila_views", "user_id"],
+  ["calendar_events", "user_id"],
+  ["comments", "user_id"],
+  ["community_posts", "user_id"],
+  ["flashcards", "user_id"],
+  ["material_favorites", "user_id"],
+  ["playbooks_bookmarks", "user_id"],
+  ["playbooks_highlights", "user_id"],
+  ["playbooks_notes", "user_id"],
+  ["reading_progress", "user_id"],
+  ["study_goals", "user_id"],
+  ["study_history", "user_id"],
+  ["study_milestones", "user_id"],
+  ["study_plans", "user_id"],
+  ["study_streaks", "user_id"],
+  ["tira_duvidas", "user_id"],
+  ["user_badges", "user_id"],
+  ["user_xp", "user_id"],
+] as const;
+
+async function migrateLegacyUserData(
+  admin: any,
+  legacyAnonKey: string,
+  legacyAccessToken: string,
+  legacyUserId: string,
+  newUserId: string,
+) {
+  let migrated = 0;
+  const failed: string[] = [];
+
+  for (const [table, ownerColumn] of LEGACY_USER_TABLES) {
+    try {
+      const url = new URL(`${LEGACY_SUPABASE_URL}/rest/v1/${table}`);
+      url.searchParams.set("select", "*");
+      url.searchParams.set(ownerColumn, `eq.${legacyUserId}`);
+      const response = await fetch(url, {
+        headers: {
+          apikey: legacyAnonKey,
+          Authorization: `Bearer ${legacyAccessToken}`,
+        },
+      });
+      if (!response.ok) {
+        failed.push(table);
+        continue;
+      }
+
+      const rows = await response.json();
+      if (!Array.isArray(rows) || rows.length === 0) continue;
+      const remapped = rows.map((row) => ({ ...row, [ownerColumn]: newUserId }));
+      const { error } = await admin.from(table).upsert(remapped, {
+        onConflict: "id",
+        ignoreDuplicates: true,
+      });
+      if (error) {
+        console.error("ra-auth legacy user data migration failed", table, error.code ?? "unknown");
+        failed.push(table);
+        continue;
+      }
+      migrated += remapped.length;
+    } catch (error) {
+      console.error(
+        "ra-auth legacy user data migration unavailable",
+        table,
+        error instanceof Error ? error.name : "UnknownError",
+      );
+      failed.push(table);
+    }
+  }
+
+  return { migrated, failed };
 }
 
 async function getLegacyAnonKey(): Promise<string | null> {
