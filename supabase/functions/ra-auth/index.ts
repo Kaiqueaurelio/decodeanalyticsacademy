@@ -527,7 +527,7 @@ async function migrateLegacyUserData(
   let migrated = 0;
   const failed: string[] = [];
 
-  for (const [table, ownerColumn] of LEGACY_USER_TABLES) {
+  const migrateTable = async ([table, ownerColumn]: typeof LEGACY_USER_TABLES[number]) => {
     try {
       const url = new URL(`${LEGACY_SUPABASE_URL}/rest/v1/${table}`);
       url.searchParams.set("select", "*");
@@ -539,12 +539,13 @@ async function migrateLegacyUserData(
         },
       });
       if (!response.ok) {
-        failed.push(table);
-        continue;
+        return { table, migrated: 0, failed: true };
       }
 
       const rows = await response.json();
-      if (!Array.isArray(rows) || rows.length === 0) continue;
+      if (!Array.isArray(rows) || rows.length === 0) {
+        return { table, migrated: 0, failed: false };
+      }
       const remapped = rows.map((row) => ({ ...row, [ownerColumn]: newUserId }));
       const { error } = await admin.from(table).upsert(remapped, {
         onConflict: "id",
@@ -552,17 +553,28 @@ async function migrateLegacyUserData(
       });
       if (error) {
         console.error("ra-auth legacy user data migration failed", table, error.code ?? "unknown");
-        failed.push(table);
-        continue;
+        return { table, migrated: 0, failed: true };
       }
-      migrated += remapped.length;
+      return { table, migrated: remapped.length, failed: false };
     } catch (error) {
       console.error(
         "ra-auth legacy user data migration unavailable",
         table,
         error instanceof Error ? error.name : "UnknownError",
       );
-      failed.push(table);
+      return { table, migrated: 0, failed: true };
+    }
+  };
+
+  // Quatro consultas simultâneas reduzem bastante o tempo do primeiro login
+  // sem disparar todas as tabelas de uma vez contra os dois projetos.
+  const concurrency = 4;
+  for (let index = 0; index < LEGACY_USER_TABLES.length; index += concurrency) {
+    const batch = LEGACY_USER_TABLES.slice(index, index + concurrency);
+    const results = await Promise.all(batch.map(migrateTable));
+    for (const result of results) {
+      migrated += result.migrated;
+      if (result.failed) failed.push(result.table);
     }
   }
 

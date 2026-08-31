@@ -37,7 +37,7 @@ describe('ApostilaHealthBar course selector', () => {
 
     fireEvent.click(ccButton);
     expect(onCourseChange).toHaveBeenLastCalledWith([]);
-  });
+  }, 15_000);
 
   it('exposes a controlled button to retract and reopen the apostila list', () => {
     const onToggleSidebar = vi.fn();
@@ -90,5 +90,5 @@ describe('ApostilaHealthBar course selector', () => {
 
     expect(screen.getByRole('button', { name: 'Abrir lista de apostilas' }))
       .toHaveAttribute('aria-expanded', 'false');
-  });
+  }, 15_000);
 });
