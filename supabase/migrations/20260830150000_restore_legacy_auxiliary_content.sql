@@ -52,12 +52,12 @@ on conflict (url) do update set
 -- administrator with the same RA in the new project rather than retaining an
 -- invalid legacy auth UUID.
 with admin_profile as (
-  select id from public.profiles where upper(ra) = 'G802144' limit 1
+  select user_id from public.profiles where upper(ra) = 'G802144' limit 1
 )
 insert into public.flashcards
   (id, user_id, apostila_id, front, back, difficulty, next_review, created_at,
    ease_factor, interval_days, repetitions, last_reviewed)
-select v.id, p.id, null, v.front, v.back, v.difficulty, v.next_review,
+select v.id, p.user_id, null, v.front, v.back, v.difficulty, v.next_review,
        v.created_at, v.ease_factor, v.interval_days, v.repetitions, v.last_reviewed
 from admin_profile p
 cross join (values
