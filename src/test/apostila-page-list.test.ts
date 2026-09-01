@@ -2,6 +2,7 @@ import {
   formatApostilaDate,
   getApostilaPageSavedDate,
   isMissingApostilaPageSavedDateColumn,
+  resolveApostilaDateFilter,
   upsertApostilaPage,
   type ApostilaPage,
 } from '../lib/apostila-pages';
@@ -30,6 +31,13 @@ describe('upsertApostilaPage', () => {
 });
 
 describe('apostila page dates', () => {
+  it('mostra todas as datas por padrão e só filtra quando a URL solicita', () => {
+    expect(resolveApostilaDateFilter(null)).toBe('all');
+    expect(resolveApostilaDateFilter('')).toBe('all');
+    expect(resolveApostilaDateFilter('31/08/2026')).toBe('all');
+    expect(resolveApostilaDateFilter('2026-08-31')).toBe('2026-08-31');
+  });
+
   it('prefers the explicit saved_date over timestamps', () => {
     expect(getApostilaPageSavedDate({
       saved_date: '2026-08-20',

@@ -100,6 +100,11 @@ export function formatApostilaDate(isoDate: string | null | undefined): string {
   return match ? `${match[3]}/${match[2]}/${match[1]}` : isoDate;
 }
 
+/** O leitor só filtra por data quando a URL pede isso explicitamente. */
+export function resolveApostilaDateFilter(requestedDate: string | null | undefined): string {
+  return requestedDate && /^\d{4}-\d{2}-\d{2}$/.test(requestedDate) ? requestedDate : 'all';
+}
+
 export function validateApostilaChronology(input: {
   title?: string | null;
   content?: string | null;

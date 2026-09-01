@@ -44,7 +44,7 @@ import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useAuth } from "@/hooks/useAuth";
 import { isPlaceholderPageContent, isSubstantialDuplicateContent, normalizeContentForComparison } from '@/lib/content-formatting';
 import { Badge } from "@/components/ui/badge";
-import { extractChronologyDates, getApostilaPageSavedDate, isMissingApostilaPageSavedDateColumn } from "@/lib/apostila-pages";
+import { extractChronologyDates, getApostilaPageSavedDate, isMissingApostilaPageSavedDateColumn, resolveApostilaDateFilter } from "@/lib/apostila-pages";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { exportApostilaToPDF } from "@/lib/apostila-pdf";
 import { parseApostilaContent } from "@/lib/apostila-parser";
@@ -376,9 +376,10 @@ export default function ApostilaReaderPage() {
         flat[0];
       if (resume) {
         setSelectedLessonId(resume.id);
-        // Se a lição retomada tiver data, seleciona ela no filtro
-        if (resume.date) setSelectedDate(resume.date);
       }
+      // Abrir uma apostila nunca deve ocultar silenciosamente páginas de outras
+      // datas. O filtro só é aplicado quando a URL contém ?date=AAAA-MM-DD.
+      setSelectedDate(resolveApostilaDateFilter(searchParams.get('date')));
 
       } catch (error) {
         if (cancelled) return;
