@@ -166,7 +166,7 @@ function shouldRestoreRootContent(
   return !rootIsAlreadyRepresented && (!hasUsablePage || pageContentChars < mainContent.length * 0.25);
 }
 
-function mergePagesIntoTree(tree: Tree, apostilaId: string, pages: ApostilaPageRow[]): Tree {
+export function mergePagesIntoTree(tree: Tree, apostilaId: string, pages: ApostilaPageRow[]): Tree {
   const usablePages = pages.filter((page) => !isPlaceholderPageContent(page.content || ''));
   const prunedTree: Tree = {
     ...tree,

@@ -42,6 +42,15 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: "8.5.3",
+    date: "2026-09-01",
+    title: "Aula do dia unificada",
+    changes: [
+      { kind: 'fix', text: 'Quando uma aula é reeditada e salva de novo, o leitor passa a exibir sempre a versão mais completa em vez de esconder o conteúdo novo.' },
+      { kind: 'content', text: 'Aula 2 - Controle de fluxo (31/08/2026) de Sistemas Operacionais Abertos e Mobile unificada em uma única página, sem duplicatas nem página em branco.' },
+    ],
+  },
+  {
     version: "8.5.2",
     date: "2026-08-30",
     title: "Correção crítica de acesso",
