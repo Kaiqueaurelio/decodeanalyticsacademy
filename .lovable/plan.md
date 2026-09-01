@@ -24,9 +24,11 @@ O mesmo arquivo já possui a lógica correta em `mergeDistinctPages` (`src/lib/c
    - Aplicar a mesma regra na poda de aulas estruturadas, para que uma aula curta do RPC não prevaleça sobre a página salva completa.
    - Ignorar páginas totalmente vazias no menu (a "Nova Página" em branco).
 
-2. **Limpeza de dados desta apostila**
-   - Remover a página vazia "Nova Página — 31/08/2026".
-   - Consolidar as duas versões da "Aula 2 - Controle de fluxo": manter a de 100.945 caracteres e remover a de 54.586 (superada), reordenando as posições.
+2. **Unificar a aula de hoje em uma única página**
+   - Juntar o conteúdo das duas versões em uma só página: base na versão completa de 100.945 caracteres, acrescentando ao final qualquer trecho exclusivo da versão de 54.586 (nada de conteúdo perdido).
+   - Manter apenas essa página única, com o título "Aula 2 - Controle de fluxo — 31/08/2026" e a data 31/08/2026.
+   - Remover a versão antiga duplicada e a página vazia "Nova Página — 31/08/2026", reordenando as posições restantes.
+   - Fazer backup do conteúdo original das páginas antes de apagar.
 
 3. **Regressão**
    - Teste cobrindo: duas páginas duplicadas com tamanhos diferentes → o leitor mostra apenas a maior; página vazia não vira item de menu.
