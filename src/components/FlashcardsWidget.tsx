@@ -5,7 +5,22 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus, RotateCcw, Check, X, Layers, Wand2, Brain } from 'lucide-react';
+import {
+  Brain,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  Layers,
+  Library,
+  Loader2,
+  Pencil,
+  Plus,
+  RotateCcw,
+  Save,
+  Wand2,
+  X,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { sm2, formatNextReview, type SRSQuality } from '@/lib/srs';
 import { useNavigate } from 'react-router-dom';
@@ -20,35 +35,156 @@ type Flashcard = {
   ease_factor: number; interval_days: number; repetitions: number;
 };
 
+type FormMode = 'create' | 'edit' | null;
+
 export function FlashcardsWidget({ apostilaId }: Props) {
   const { user } = useAuth();
+  const userId = user?.id;
   const navigate = useNavigate();
   const [cards, setCards] = useState<Flashcard[]>([]);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
-  const [showForm, setShowForm] = useState(false);
+  const [formMode, setFormMode] = useState<FormMode>(null);
   const [front, setFront] = useState('');
   const [back, setBack] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
-    if (!user) return;
-    const q = supabase.from('flashcards').select('*').eq('user_id', user.id).order('next_review');
-    if (apostilaId) q.eq('apostila_id', apostilaId);
-    q.then(({ data }) => setCards((data || []) as Flashcard[]));
-  }, [user, apostilaId]);
+    if (!userId) {
+      setCards([]);
+      return;
+    }
+
+    let cancelled = false;
+    const loadCards = async () => {
+      let query = supabase
+        .from('flashcards')
+        .select('id, front, back, difficulty, next_review, ease_factor, interval_days, repetitions')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: true });
+      if (apostilaId) query = query.eq('apostila_id', apostilaId);
+
+      const { data, error } = await query;
+      if (cancelled) return;
+      if (error) {
+        console.error('Erro ao carregar flashcards da apostila:', error);
+        toast.error('Não foi possível carregar os flashcards desta apostila.');
+        return;
+      }
+      setCards((data || []) as Flashcard[]);
+    };
+
+    void loadCards();
+    return () => { cancelled = true; };
+  }, [userId, apostilaId]);
+
+  useEffect(() => {
+    if (cards.length === 0) {
+      setCurrentIdx(0);
+      setFlipped(false);
+      return;
+    }
+    if (currentIdx >= cards.length) setCurrentIdx(cards.length - 1);
+  }, [cards.length, currentIdx]);
 
   const dueCount = cards.filter(c => !c.next_review || new Date(c.next_review).getTime() <= Date.now()).length;
 
-  const addCard = async () => {
-    if (!user || !front.trim() || !back.trim()) return;
-    const { data, error } = await supabase.from('flashcards').insert({
-      user_id: user.id, front: front.trim(), back: back.trim(),
-      apostila_id: apostilaId || null,
-    }).select().single();
-    if (error) { toast.error('Erro ao criar flashcard'); return; }
-    setCards(prev => [...prev, data as Flashcard]);
-    setFront(''); setBack(''); setShowForm(false);
-    toast.success('Flashcard criado!');
+  const resetForm = () => {
+    setFormMode(null);
+    setFront('');
+    setBack('');
+  };
+
+  const openCreateForm = () => {
+    setFront('');
+    setBack('');
+    setFormMode('create');
+  };
+
+  const openEditForm = () => {
+    const current = cards[currentIdx];
+    if (!current) return;
+    setFront(current.front);
+    setBack(current.back);
+    setFormMode('edit');
+  };
+
+  const saveCard = async () => {
+    if (!userId) return;
+    const nextFront = front.trim();
+    const nextBack = back.trim();
+    if (!nextFront || !nextBack) {
+      toast.error('Preencha a pergunta e a resposta.');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      if (formMode === 'edit') {
+        const current = cards[currentIdx];
+        if (!current) return;
+        const { data, error } = await supabase
+          .from('flashcards')
+          .update({ front: nextFront, back: nextBack })
+          .eq('id', current.id)
+          .eq('user_id', userId)
+          .select('id')
+          .single();
+        if (error) throw error;
+        if (!data) throw new Error('Flashcard não encontrado para este aluno.');
+        setCards((previous) => previous.map((card) => (
+          card.id === current.id ? { ...card, front: nextFront, back: nextBack } : card
+        )));
+        toast.success('Flashcard atualizado.');
+      } else {
+        const { data, error } = await supabase
+          .from('flashcards')
+          .insert({
+            user_id: userId,
+            front: nextFront,
+            back: nextBack,
+            apostila_id: apostilaId || null,
+          })
+          .select('id, front, back, difficulty, next_review, ease_factor, interval_days, repetitions')
+          .single();
+        if (error) throw error;
+        setCards((previous) => [...previous, data as Flashcard]);
+        setCurrentIdx(cards.length);
+        toast.success('Flashcard criado!');
+      }
+      setFlipped(false);
+      resetForm();
+    } catch (error) {
+      console.error('Erro ao salvar flashcard:', error);
+      toast.error(formMode === 'edit' ? 'Não foi possível atualizar o flashcard.' : 'Não foi possível criar o flashcard.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const moveCard = (direction: -1 | 1) => {
+    if (cards.length < 2) return;
+    setFlipped(false);
+    setCurrentIdx((previous) => (previous + direction + cards.length) % cards.length);
+  };
+
+  const exportCards = async () => {
+    if (cards.length === 0) return;
+    setExporting(true);
+    try {
+      const { exportFlashcardsToPdf } = await import('@/lib/flashcard-pdf');
+      await exportFlashcardsToPdf(
+        cards.map((card) => ({ question: card.front, answer: card.back })),
+        { title: 'Flashcards desta apostila' },
+      );
+      toast.success('PDF gerado com a formatação dos cartões.');
+    } catch (error) {
+      console.error('Erro ao exportar flashcards:', error);
+      toast.error('Não foi possível gerar o PDF.');
+    } finally {
+      setExporting(false);
+    }
   };
 
   const handleAnswer = async (quality: SRSQuality) => {
@@ -62,17 +198,30 @@ export function FlashcardsWidget({ apostilaId }: Props) {
       },
       quality,
     );
-    await supabase.from('flashcards').update({
+    const { error } = await supabase.from('flashcards').update({
       ease_factor: result.ease_factor,
       interval_days: result.interval_days,
       repetitions: result.repetitions,
       next_review: result.next_review,
       last_reviewed: new Date().toISOString(),
       difficulty: quality < 3 ? 0 : quality === 3 ? 1 : 2,
-    }).eq('id', card.id);
+    }).eq('id', card.id).eq('user_id', userId || '');
+    if (error) {
+      console.error('Erro ao revisar flashcard:', error);
+      toast.error('Não foi possível salvar esta revisão.');
+      return;
+    }
+    setCards((previous) => previous.map((item) => item.id === card.id ? {
+      ...item,
+      ease_factor: result.ease_factor,
+      interval_days: result.interval_days,
+      repetitions: result.repetitions,
+      next_review: result.next_review,
+      difficulty: quality < 3 ? 0 : quality === 3 ? 1 : 2,
+    } : item));
     toast.success(`Próx. revisão em ${formatNextReview(result.next_review)}`);
     setFlipped(false);
-    setCurrentIdx(prev => (prev + 1) % Math.max(1, cards.length));
+    moveCard(1);
   };
 
   const current = cards[currentIdx];
@@ -90,37 +239,49 @@ export function FlashcardsWidget({ apostilaId }: Props) {
             </span>
           )}
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-0.5 sm:gap-1">
           {dueCount > 0 && (
-            <Button size="icon" variant="ghost" className="h-7 w-7" title="Revisar todos" onClick={() => navigate('/review')}>
+            <Button size="icon" variant="ghost" className="h-9 w-9" title="Revisar todos" aria-label="Revisar todos os flashcards" onClick={() => navigate('/review')}>
               <Brain className="h-3.5 w-3.5 text-primary" />
             </Button>
           )}
-          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setShowForm(!showForm)}>
+          <Button size="icon" variant="ghost" className="h-9 w-9" title="Abrir biblioteca" aria-label="Abrir biblioteca de flashcards" onClick={() => navigate('/flashcards')}>
+            <Library className="h-3.5 w-3.5" />
+          </Button>
+          <Button size="icon" variant="ghost" className="h-9 w-9" title="Baixar PDF" aria-label="Baixar flashcards em PDF" disabled={exporting || cards.length === 0} onClick={() => void exportCards()}>
+            {exporting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+          </Button>
+          <Button size="icon" variant="ghost" className="h-9 w-9" title="Criar flashcard" aria-label="Criar novo flashcard" onClick={openCreateForm}>
             <Plus className="h-3.5 w-3.5" />
           </Button>
         </div>
       </div>
 
-      {showForm && (
+      {formMode && (
         <div className="space-y-2 mb-3 animate-fade-in">
-          <Input placeholder="Frente (pergunta)" value={front} onChange={e => setFront(e.target.value)} className="text-xs h-8" />
-          <Textarea placeholder="Verso (resposta)" value={back} onChange={e => setBack(e.target.value)} className="text-xs min-h-[60px]" />
-          <div className="flex gap-2">
-            <Button size="sm" onClick={addCard} className="text-xs h-7 gradient-primary text-primary-foreground">Criar</Button>
-            <Button size="sm" variant="ghost" onClick={() => setShowForm(false)} className="text-xs h-7">Cancelar</Button>
+          <p className="text-xs font-semibold">{formMode === 'edit' ? 'Editar flashcard' : 'Novo flashcard'}</p>
+          <Input aria-label="Pergunta do flashcard" placeholder="Frente (pergunta)" value={front} onChange={e => setFront(e.target.value)} className="h-10 text-sm" maxLength={2000} />
+          <Textarea aria-label="Resposta do flashcard" placeholder="Verso (resposta)" value={back} onChange={e => setBack(e.target.value)} className="min-h-[88px] text-sm" maxLength={5000} />
+          <div className="grid grid-cols-2 gap-2">
+            <Button size="sm" onClick={() => void saveCard()} disabled={saving || !front.trim() || !back.trim()} className="h-10 gap-1.5 text-xs gradient-primary text-primary-foreground">
+              {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+              {formMode === 'edit' ? 'Salvar' : 'Criar'}
+            </Button>
+            <Button size="sm" variant="outline" onClick={resetForm} disabled={saving} className="h-10 text-xs">Cancelar</Button>
           </div>
         </div>
       )}
 
-      {current && !showForm ? (
+      {current && !formMode ? (
         <div className="space-y-2">
           <button
+            type="button"
             onClick={() => setFlipped(!flipped)}
-            className="w-full min-h-[80px] p-3 rounded-lg border border-border/50 bg-accent/30 text-center smooth-all hover:shadow-sm"
+            className="min-h-[112px] w-full rounded-lg border border-border/50 bg-accent/30 p-3 text-center smooth-all hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            aria-label={flipped ? 'Mostrar pergunta' : 'Mostrar resposta'}
           >
             <p className="text-[10px] text-muted-foreground mb-1">{flipped ? 'Resposta' : 'Pergunta'}</p>
-            <p className="text-sm font-medium">{flipped ? current.back : current.front}</p>
+            <p className="max-h-40 overflow-y-auto break-words whitespace-pre-wrap text-sm font-medium">{flipped ? current.back : current.front}</p>
           </button>
           {flipped && (
             <div className="grid grid-cols-4 gap-1 animate-fade-in">
@@ -138,9 +299,22 @@ export function FlashcardsWidget({ apostilaId }: Props) {
               </Button>
             </div>
           )}
-          <p className="text-[10px] text-center text-muted-foreground">{currentIdx + 1}/{cards.length} • Toque para virar</p>
+          <div className="grid grid-cols-[44px_1fr_44px] items-center gap-2">
+            <Button type="button" size="icon" variant="outline" className="h-11 w-11" disabled={cards.length < 2} aria-label="Flashcard anterior" onClick={() => moveCard(-1)}>
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <div className="text-center">
+              <p className="text-[10px] text-muted-foreground">{currentIdx + 1}/{cards.length} • Toque para virar</p>
+              <Button type="button" size="sm" variant="ghost" className="mt-1 h-8 gap-1.5 text-xs" onClick={openEditForm}>
+                <Pencil className="h-3.5 w-3.5" /> Editar este cartão
+              </Button>
+            </div>
+            <Button type="button" size="icon" variant="outline" className="h-11 w-11" disabled={cards.length < 2} aria-label="Próximo flashcard" onClick={() => moveCard(1)}>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
-      ) : cards.length === 0 && !showForm ? (
+      ) : cards.length === 0 && !formMode ? (
         <p className="text-xs text-muted-foreground text-center py-3">Nenhum flashcard ainda. Crie o primeiro!</p>
       ) : null}
     </Card>

@@ -14,7 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { ArrowLeft, Brain, Download, Library, Loader2, Pencil, Save, Trophy } from 'lucide-react';
+import { ArrowLeft, Brain, ChevronLeft, ChevronRight, Download, Library, Loader2, Pencil, Save, Trophy } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 
@@ -70,6 +70,11 @@ export default function FlashcardsPage() {
       return;
     }
     if (currentIndex >= totalCards - 1) setCurrentIndex(0);
+  };
+
+  const moveReviewCard = (direction: -1 | 1) => {
+    if (totalCards < 2) return;
+    setCurrentIndex((previous) => (previous + direction + totalCards) % totalCards);
   };
 
   const openEditor = (card: FlashcardItem) => {
@@ -207,6 +212,39 @@ export default function FlashcardsPage() {
                   answer={currentCard.answer}
                   onRate={handleRate}
                 />
+                <div className="mx-auto mt-4 grid w-full max-w-md grid-cols-[44px_1fr_44px] items-center gap-2">
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="outline"
+                    className="h-11 w-11"
+                    disabled={totalCards < 2}
+                    aria-label="Flashcard anterior"
+                    onClick={() => moveReviewCard(-1)}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-11 min-w-0 gap-1.5"
+                    onClick={() => openEditor(currentCard)}
+                  >
+                    <Pencil className="h-3.5 w-3.5 shrink-0" />
+                    <span className="truncate">Editar este cartão</span>
+                  </Button>
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="outline"
+                    className="h-11 w-11"
+                    disabled={totalCards < 2}
+                    aria-label="Próximo flashcard"
+                    onClick={() => moveReviewCard(1)}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
               </motion.div>
             ) : null}
           </AnimatePresence>
