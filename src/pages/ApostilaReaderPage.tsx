@@ -191,26 +191,32 @@ function mergePagesIntoTree(tree: Tree, apostilaId: string, pages: ApostilaPageR
       .filter((module) => module.chapters.length > 0),
   };
 
-  const existingKeys = new Set(
-    prunedTree.modules.flatMap((module) => module.chapters.flatMap((chapter) => chapter.lessons))
-      .map((lesson) => normalizeContentForComparison(lesson.content_md || ''))
-      .filter(Boolean),
-  );
+  const existingKeys = prunedTree.modules
+    .flatMap((module) => module.chapters.flatMap((chapter) => chapter.lessons))
+    .map((lesson) => normalizeContentForComparison(lesson.content_md || ''))
+    .filter(Boolean);
 
-  const distinctPages = usablePages.filter((page) => {
+  // Quando duas páginas guardam versões diferentes da mesma aula (ex.: uma
+  // reedição ampliada salva depois), sempre prevalece a versão mais completa.
+  const distinctPages = usablePages.reduce<ApostilaPageRow[]>((acc, page) => {
     const key = normalizeContentForComparison(page.content || '');
-    if (!key) return false;
-    if (existingKeys.has(key)) return false;
-    
-    // Verificação adicional: evita que a página seja uma subseção ou repetição do que já está na árvore
-    // (Pode ocorrer se o RPC retornar partes do conteúdo que o editor também salvou)
-    for (const existing of existingKeys) {
-      if (isSubstantialDuplicateContent(existing, key)) return false;
+    if (!key) return acc;
+    if (existingKeys.some((existing) => existing === key || isSubstantialDuplicateContent(existing, key))) {
+      return acc;
     }
-    
-    existingKeys.add(key);
-    return true;
-  });
+
+    const duplicateIndex = acc.findIndex((saved) =>
+      isSubstantialDuplicateContent(saved.content || '', page.content || ''),
+    );
+    if (duplicateIndex === -1) {
+      acc.push(page);
+      return acc;
+    }
+
+    const savedLength = normalizeContentForComparison(acc[duplicateIndex].content || '').length;
+    if (key.length > savedLength) acc[duplicateIndex] = page;
+    return acc;
+  }, []);
   const pagesModule = buildPagesModule(apostilaId, distinctPages);
   if (!pagesModule) return prunedTree;
 
@@ -224,6 +230,7 @@ function mergePagesIntoTree(tree: Tree, apostilaId: string, pages: ApostilaPageR
     modules: [...prunedTree.modules, pagesModule],
   };
 }
+
 
 function flatten(tree: Tree): FlatLesson[] {
   const out: FlatLesson[] = [];
