@@ -91,4 +91,32 @@ describe('ApostilaHealthBar course selector', () => {
     expect(screen.getByRole('button', { name: 'Abrir lista de apostilas' }))
       .toHaveAttribute('aria-expanded', 'false');
   }, 15_000);
+
+  it('blocks repeated page creation while the first request is running', () => {
+    const onAddPage = vi.fn();
+    render(
+      <ApostilaHealthBar
+        title="Sistemas Operacionais Abertos e Mobile"
+        published
+        saving={false}
+        lastSavedAt={null}
+        onSave={vi.fn()}
+        onTogglePublish={vi.fn()}
+        onPreview={vi.fn()}
+        onOpenPanel={vi.fn()}
+        wordCount={0}
+        exerciseCount={0}
+        materialCount={0}
+        onPasteOpen={vi.fn()}
+        onAddPage={onAddPage}
+        creatingPage
+      />,
+    );
+
+    const button = screen.getByRole('button', { name: 'CRIANDO...' });
+    expect(button).toBeDisabled();
+    expect(button).toHaveAttribute('aria-busy', 'true');
+    fireEvent.click(button);
+    expect(onAddPage).not.toHaveBeenCalled();
+  }, 15_000);
 });

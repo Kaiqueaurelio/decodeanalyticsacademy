@@ -123,6 +123,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
 
   // UI
   const [saving, setSaving] = useState(false);
+  const [creatingPage, setCreatingPage] = useState(false);
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
   const [pasteOpen, setPasteOpen] = useState(false);
   const [manualLinkOpen, setManualLinkOpen] = useState(false);
@@ -160,6 +161,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
   const initialLoadRef = useRef(true);
   const loadRequestRef = useRef(0);
   const saveInFlightRef = useRef<Promise<boolean> | null>(null);
+  const creatingPageRef = useRef(false);
   const createPersistedPageRef = useRef<() => Promise<void>>(() => Promise.resolve());
 
   // Filter logic for sidebar
@@ -1135,6 +1137,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
   );
 
   const handleCreatePersistedPage = async () => {
+    if (creatingPageRef.current) return;
     if (!id || !user) {
       toast.error('Faça login novamente para criar uma página.');
       return;
@@ -1143,7 +1146,9 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     const operationId = typeof crypto !== 'undefined' && 'randomUUID' in crypto
       ? crypto.randomUUID()
       : `page-create-${Date.now()}`;
-    void recordApostilaOperation({
+    creatingPageRef.current = true;
+    setCreatingPage(true);
+    await recordApostilaOperation({
       operationId,
       apostilaId: id,
       operationType: 'page_create',
@@ -1182,30 +1187,10 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       // Update local state immediately
       setPages((current) => upsertApostilaPage(current, newPage));
       
-      // Crucial: reset loadRequestRef to ignore any pending loads that might overwrite our state
-      loadRequestRef.current++; 
-      
-      // Forces re-render of the editor by resetting the loading state
-      setLoading(true);
-      
       // Pre-set content to avoid flicker or old content showing
       setTitle(newPage.title || 'Nova Página');
       setContent('');
       dirtyRef.current = false;
-      
-      // Update sidebar list if needed
-      if (newPage.title) {
-        setApostilas(prev => [{
-          id: newPage.id,
-          title: newPage.title,
-          category: category,
-          published: false,
-          updated_at: new Date().toISOString(),
-          semester: semester,
-          course: course
-        }, ...prev]);
-      }
-
       
       initialLoadRef.current = false;
       
@@ -1213,10 +1198,8 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       const nextUrl = `/admin/apostilas/${id}?page=${newPage.id}&expanded=1`;
       navigate(nextUrl, { replace: true });
       
-      // End loading after navigation
-      setTimeout(() => setLoading(false), 100);
       const validation = await runApostilaChronologyValidation(id, 'page_create');
-      void recordApostilaOperation({
+      await recordApostilaOperation({
         operationId,
         apostilaId: id,
         pageId: newPage.id,
@@ -1245,7 +1228,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         errorMessage: error?.message || 'Erro desconhecido',
       });
       const message = String(error?.message || '');
-      void recordApostilaOperation({
+      await recordApostilaOperation({
         operationId,
         apostilaId: id,
         pageId: selectedPageId,
@@ -1263,6 +1246,9 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       } else {
         toast.error(error?.message || 'Não foi possível criar a nova página.');
       }
+    } finally {
+      creatingPageRef.current = false;
+      setCreatingPage(false);
     }
   };
 
@@ -1302,6 +1288,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         onCourseChange={setCourse}
         onPasteOpen={() => setPasteOpen(true)}
         onAddPage={handleCreatePersistedPage}
+        creatingPage={creatingPage}
         sidebarCollapsed={sidebarCollapsed}
         onToggleSidebar={toggleSidebar}
       />

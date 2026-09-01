@@ -50,6 +50,7 @@ interface ApostilaHealthBarProps {
   materialCount: number;
   onPasteOpen: () => void;
   onAddPage: () => void;
+  creatingPage?: boolean;
   course?: CourseCode[];
   onCourseChange?: (course: CourseCode[]) => void;
   savedDate?: string;
@@ -75,6 +76,7 @@ export function ApostilaHealthBar({
   materialCount,
   onPasteOpen,
   onAddPage,
+  creatingPage = false,
   course = [],
   onCourseChange,
   savedDate,
@@ -270,11 +272,13 @@ export function ApostilaHealthBar({
             size="sm" 
             type="button"
             onClick={onAddPage}
+            disabled={creatingPage}
+            aria-busy={creatingPage}
             className="h-10 gap-2 px-4 text-[11px] font-black uppercase border-emerald-500/30 text-emerald-600 hover:bg-emerald-700 hover:text-white bg-emerald-500/5 transition-all group active:scale-95 animate-pulse hover:animate-none shadow-[0_0_15px_rgba(16,185,129,0.1)] hover:shadow-[0_0_20px_rgba(16,185,129,0.3)]"
             title="Adicionar página persistida (Ctrl+Shift+P)"
           >
-            <FilePlus2 className="h-4 w-4" />
-            + PÁGINA
+            {creatingPage ? <Loader2 className="h-4 w-4 animate-spin" /> : <FilePlus2 className="h-4 w-4" />}
+            {creatingPage ? 'CRIANDO...' : '+ PÁGINA'}
           </Button>
 
           <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" title="Reordenar Seções">
