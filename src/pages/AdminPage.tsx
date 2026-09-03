@@ -335,11 +335,11 @@ function AdminSidebar({ tab, setTab, stats, sidebarOpen, setSidebarOpen, collaps
       {sidebarOpen && (
         <div className="fixed inset-0 bg-foreground/20 backdrop-blur-sm z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
-      <aside className={`fixed top-0 left-0 z-50 h-full w-[min(260px,85vw)] bg-card border-r border-border flex flex-col transition-[width,transform] duration-300 lg:translate-x-0 lg:static lg:z-auto ${collapsed ? 'lg:w-[76px]' : 'lg:w-[260px]'} ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <aside className={`fixed top-0 left-0 z-50 h-full w-[min(260px,85vw)] bg-card border-r border-border flex flex-col transition-[width,transform] duration-300 lg:translate-x-0 lg:static lg:z-auto ${isCollapsed ? 'lg:w-[76px]' : 'lg:w-[260px]'} ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         {/* Header */}
-        <div className={`border-b border-border ${collapsed ? 'lg:p-3' : 'p-5'}`}>
-          <div className={`flex items-center justify-between ${collapsed ? 'lg:flex-col lg:gap-3' : ''}`}>
-            <div className={`flex items-center gap-3 ${collapsed ? 'lg:justify-center' : ''}`}>
+        <div className={`border-b border-border ${isCollapsed ? 'lg:p-3' : 'p-5'}`}>
+          <div className={`flex items-center justify-between ${isCollapsed ? 'lg:flex-col lg:gap-3' : ''}`}>
+            <div className={`flex items-center gap-3 ${isCollapsed ? 'lg:justify-center' : ''}`}>
               <button 
                 onClick={() => navigate('/dashboard')}
                 className="rounded-xl bg-primary p-2.5 hover:ring-2 hover:ring-primary/50 transition-all active:scale-95"
@@ -347,7 +347,7 @@ function AdminSidebar({ tab, setTab, stats, sidebarOpen, setSidebarOpen, collaps
               >
                 <LayoutDashboard className="h-5 w-5 text-primary-foreground" />
               </button>
-              <div className={collapsed ? 'lg:hidden' : ''}>
+              <div className={isCollapsed ? 'lg:hidden' : ''}>
                 <h1 className="text-sm font-bold text-foreground">Painel Admin</h1>
                 <p className="text-[10px] text-muted-foreground truncate max-w-[120px]">Decode Analytics Academy</p>
               </div>
@@ -378,12 +378,12 @@ function AdminSidebar({ tab, setTab, stats, sidebarOpen, setSidebarOpen, collaps
               users: stats.users,
               securityAlerts: securityOpenCount,
             }}
-            collapsed={collapsed}
+            collapsed={isCollapsed}
           />
         </div>
 
         {/* Footer */}
-        <div className={`p-4 border-t border-border space-y-2 ${collapsed ? 'lg:hidden' : ''}`}>
+        <div className={`p-4 border-t border-border space-y-2 ${isCollapsed ? 'lg:hidden' : ''}`}>
           <ThemeToggleButton />
           <Button variant="outline" size="sm" className="w-full text-xs gap-2" onClick={() => navigate('/dashboard')}>
             <ArrowLeft className="h-3.5 w-3.5" /> Voltar à Área do Aluno
