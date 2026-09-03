@@ -136,12 +136,20 @@ export function validateApostilaStructure(content: string): ValidationReport {
   }
 
   const words = countWords(content);
-  if (words < 300) {
+  // Só é erro quando o conteúdo é praticamente vazio (risco real de salvar em branco).
+  if (words < 40) {
     issues.push({
       severity: 'error',
+      code: 'empty-content',
+      message: `Conteúdo praticamente vazio (${words} palavras).`,
+      hint: 'Cole ou escreva o conteúdo da aula antes de salvar.',
+    });
+  } else if (words < 300) {
+    issues.push({
+      severity: 'warning',
       code: 'too-short',
-      message: `Conteúdo muito curto (${words} palavras).`,
-      hint: 'Apostilas do padrão têm cerca de 1.500 palavras.',
+      message: `Conteúdo curto (${words} palavras).`,
+      hint: 'Apostilas completas costumam ter cerca de 1.500 palavras.',
     });
   }
 
