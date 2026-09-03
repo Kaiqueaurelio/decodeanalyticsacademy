@@ -75,6 +75,7 @@ import { EllaAuditPanel } from '@/components/admin/EllaAuditPanel';
 import { SecurityAlertsPanel } from '@/components/admin/SecurityAlertsPanel';
 import { BY_SEMESTER, canonicalSubjectKey, guessSemesterFromCategory } from '@/lib/subject-semester-map';
 import { useSecurityAlerts } from '@/hooks/useSecurityAlerts';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { SponsorLeadsPanel } from '@/components/admin/SponsorLeadsPanel';
 import { DuplicateApostilaDialog } from '@/components/DuplicateApostilaDialog';
 import { findDuplicateApostila, type DuplicateMatch } from '@/lib/duplicate-detector';
