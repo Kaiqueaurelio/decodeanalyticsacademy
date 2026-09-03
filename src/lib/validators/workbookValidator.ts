@@ -116,7 +116,7 @@ export function validateApostilaStructure(content: string): ValidationReport {
   headings.forEach(h => {
     if (lastLevel > 0 && h.level > lastLevel + 1) {
       issues.push({
-        severity: 'error',
+        severity: 'warning',
         code: 'heading-jump',
         message: `Salto de hierarquia: H${lastLevel} seguido de H${h.level}.`,
         blockIndex: h.index,
