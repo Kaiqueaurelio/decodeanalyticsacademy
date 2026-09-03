@@ -92,3 +92,27 @@
   border-top: 1px solid hsl(var(--border));
   margin: 2.4em 0;
 }
+
+@media (max-width: 640px) {
+  .reader-prose {
+    font-size: 16px;
+    line-height: 1.65;
+    overflow-wrap: anywhere;
+  }
+
+  .reader-prose h1 { font-size: 1.55rem; }
+  .reader-prose h2 { font-size: 1.3rem; }
+  .reader-prose h3 { font-size: 1.1rem; }
+  .reader-prose h4 { font-size: 0.95rem; }
+  .reader-prose h1,
+  .reader-prose h2,
+  .reader-prose h3,
+  .reader-prose h4 {
+    margin-top: 1.5em;
+    overflow-wrap: anywhere;
+  }
+
+  .reader-prose blockquote {
+    padding: 0.8em 0.9em;
+  }
+}
