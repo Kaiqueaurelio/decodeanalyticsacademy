@@ -1,5 +1,5 @@
 # Roadmap
 
-- [ ] Corrigir erro de "padronização" que bloqueia salvar apostilas
-- [ ] Corrigir ícones estranhos no menu admin quando minimizado (mobile)
-- [ ] Validar no banco: apostila de hoje salva, criação de páginas, apostilas ocultas com conteúdo, conteúdos apagados
+- [x] Corrigir erro de "padronização" que bloqueava salvar apostilas
+- [x] Corrigir ícones do menu admin quando minimizado (modo recolhido agora só no desktop)
+- [x] Validação de conteúdo no banco (apostila de hoje, páginas, status oculto)
