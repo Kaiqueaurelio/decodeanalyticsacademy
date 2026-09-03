@@ -42,6 +42,17 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: "8.5.4",
+    date: "2026-09-02",
+    title: "Padronização não bloqueia mais o salvamento",
+    changes: [
+      { kind: "fix", text: "Validação editorial (H2/H3 e tamanho) virou aviso: só bloqueia se o conteúdo estiver praticamente vazio" },
+      { kind: "fix", text: "Menu administrativo recolhido não deforma mais os ícones no celular" },
+      { kind: "content", text: "Apostila de Gestão de Projetos Operacionais liberada (estava em manutenção mesmo com a aula de 02/09 salva)" },
+      { kind: "content", text: "Apostila duplicada e vazia de Pesquisa Operacional removida da vitrine do aluno" },
+    ],
+  },
+  {
     version: "8.5.3",
     date: "2026-09-01",
     title: "Aula do dia unificada",
