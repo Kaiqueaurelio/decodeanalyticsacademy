@@ -8,6 +8,7 @@ import {
   getApostilaPageSavedDate,
   getLocalDateIso,
   separateApostilaByDate,
+  sortApostilaPagesChronologically,
   upsertApostilaPage,
   validateApostilaChronology,
   type ApostilaPage,
@@ -90,18 +91,19 @@ describe('invariantes de cronologia das apostilas', () => {
     ]));
   });
 
-  it('impede silenciosamente a reintrodução de ordem cronológica invertida', () => {
+  it('normaliza automaticamente a ordem cronológica sem bloquear a edição', () => {
+    const unorderedPages = [
+      page({ id: 'page-19', title: 'Aula — 19/08/2026', content: '19/08/2026', position: 0 }),
+      page({ id: 'page-18', title: 'Aula — 18/08/2026', content: '18/08/2026', position: 1 }),
+    ];
     const report = validateApostilaChronology({
-      pages: [
-        page({ id: 'page-19', title: 'Aula — 19/08/2026', content: '19/08/2026', position: 0 }),
-        page({ id: 'page-18', title: 'Aula — 18/08/2026', content: '18/08/2026', position: 1 }),
-      ],
+      pages: unorderedPages,
     });
 
-    expect(report.status).toBe('error');
-    expect(report.issues).toEqual(expect.arrayContaining([
-      expect.objectContaining({ code: 'page_dates_out_of_order', pageId: 'page-18' }),
-    ]));
+    expect(sortApostilaPagesChronologically(unorderedPages).map((item) => item.id))
+      .toEqual(['page-18', 'page-19']);
+    expect(report.status).toBe('ok');
+    expect(report.issues).toHaveLength(0);
   });
 
   it('aceita páginas de encontros consecutivos quando cada página tem uma única data', () => {
@@ -132,6 +134,22 @@ describe('invariantes de cronologia das apostilas', () => {
     expect(updated).toHaveLength(2);
     expect(updated.find((item) => item.id === 'page-18')?.content).toContain('18/08/2026');
     expect(updated.find((item) => item.id === 'page-19')?.content).toContain('corrigido');
+  });
+
+  it('insere uma nova aula na posição visual correspondente à data', () => {
+    const pages = [
+      page({ id: 'page-01', position: 0, saved_date: '2026-08-01' }),
+      page({ id: 'page-30', position: 1, saved_date: '2026-08-30' }),
+    ];
+    const updated = upsertApostilaPage(pages, page({
+      id: 'page-20',
+      position: 2,
+      title: 'Nova Página — 20/08/2026',
+      content: '',
+      saved_date: '2026-08-20',
+    }));
+
+    expect(updated.map((item) => item.id)).toEqual(['page-01', 'page-20', 'page-30']);
   });
 });
 

@@ -42,9 +42,11 @@ export function isMissingApostilaPageSavedDateColumn(error: unknown): boolean {
 export interface ChronologyPageSnapshot {
   id: string;
   title: string;
-  content: string;
+  content?: string | null;
   position: number;
   saved_date?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
 }
 
 export type ChronologyIssueSeverity = 'warning' | 'error';
@@ -100,6 +102,29 @@ export function formatApostilaDate(isoDate: string | null | undefined): string {
   return match ? `${match[3]}/${match[2]}/${match[1]}` : isoDate;
 }
 
+function getChronologySortDate(page: ChronologyPageSnapshot): string | null {
+  if (page.saved_date && /^\d{4}-\d{2}-\d{2}$/.test(page.saved_date)) return page.saved_date;
+  const editorialDate = extractApostilaPageDate(page);
+  if (editorialDate) return editorialDate;
+  return getApostilaPageSavedDate(page);
+}
+
+/**
+ * Mantém a ordem exibida consistente com a data da aula. A posição antiga é
+ * usada apenas como desempate, pois importações legadas podem ter posições
+ * válidas que não acompanham mais as datas depois da criação de novas páginas.
+ */
+export function sortApostilaPagesChronologically<T extends ChronologyPageSnapshot>(pages: T[]): T[] {
+  return [...pages].sort((first, second) => {
+    const firstDate = getChronologySortDate(first);
+    const secondDate = getChronologySortDate(second);
+    if (firstDate && secondDate && firstDate !== secondDate) return firstDate.localeCompare(secondDate);
+    if (firstDate && !secondDate) return -1;
+    if (!firstDate && secondDate) return 1;
+    return first.position - second.position || first.id.localeCompare(second.id);
+  });
+}
+
 /** O leitor só filtra por data quando a URL pede isso explicitamente. */
 export function resolveApostilaDateFilter(requestedDate: string | null | undefined): string {
   return requestedDate && /^\d{4}-\d{2}-\d{2}$/.test(requestedDate) ? requestedDate : 'all';
@@ -136,7 +161,7 @@ export function validateApostilaChronology(input: {
   }
 
   let previousDate: string | null = null;
-  const orderedPages = [...(input.pages || [])].sort((a, b) => a.position - b.position || a.id.localeCompare(b.id));
+  const orderedPages = sortApostilaPagesChronologically(input.pages || []);
 
   for (const page of orderedPages) {
     const titleDates = extractChronologyDates(page.title);
@@ -201,7 +226,7 @@ export function upsertApostilaPage(pages: ApostilaPage[], savedPage: ApostilaPag
   const next = exists
     ? pages.map((page) => page.id === savedPage.id ? savedPage : page)
     : [...pages, savedPage];
-  return next.sort((a, b) => a.position - b.position);
+  return sortApostilaPagesChronologically(next);
 }
 
 export async function createApostilaPage(apostilaId: string, userId: string) {

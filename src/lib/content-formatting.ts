@@ -136,7 +136,12 @@ export function mergeDistinctPages<T extends { content?: string; id: string }>(p
 }
 
 export function getPageDisplayTitle(value: string, fallback = 'Nova Página'): string {
-  return stripInlineMarkup(value) || fallback;
+  const clean = stripInlineMarkup(value)
+    .replace(/\b([\p{L}\p{N}]+)(?:\s+\1\b)+/giu, '$1')
+    .replace(/\b(\d{2}\/\d{2}\/\d{4})(?:\s+\1\b)+/g, '$1')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return clean || fallback;
 }
 
 export function getPageHeading(title: string, position: number): string {

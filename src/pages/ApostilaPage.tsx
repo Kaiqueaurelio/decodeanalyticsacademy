@@ -35,7 +35,7 @@ import type { Tables } from '@/integrations/supabase/types';
 
 import { parseApostilaContent, type ApostilaSection as Section } from '@/lib/apostila-parser';
 import { isPlaceholderPageContent, isSubstantialDuplicateContent, mergeDistinctPages, normalizeContentForComparison, stripInlineMarkup } from '@/lib/content-formatting';
-import { formatApostilaDate, getApostilaPageSavedDate, isMissingApostilaPageSavedDateColumn } from '@/lib/apostila-pages';
+import { formatApostilaDate, getApostilaPageSavedDate, isMissingApostilaPageSavedDateColumn, sortApostilaPagesChronologically } from '@/lib/apostila-pages';
 
 /**
  * Remove sintaxe markdown residual (negrito, itálico, código, links etc.)
@@ -230,10 +230,10 @@ export default function ApostilaPage({ tab, setTab }: Props) {
         if (pageRowsError) throw pageRowsError;
 
         const ap = apostilaResult.data;
-        const pageRows = (pageRowsData || []).map((page: any) => ({
+        const pageRows = sortApostilaPagesChronologically((pageRowsData || []).map((page: any) => ({
           ...page,
           saved_date: getApostilaPageSavedDate(page),
-        })) as Array<{ id: string; title: string; content: string; position: number; saved_date?: string | null; updated_at?: string | null; created_at?: string | null }>;
+        })) as Array<{ id: string; title: string; content: string; position: number; saved_date?: string | null; updated_at?: string | null; created_at?: string | null }>);
         setApostila(ap);
         setExtraPages(pageRows);
         setExerciseCount(exercisesResult.data?.length || 0);

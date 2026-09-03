@@ -6,6 +6,7 @@ import {
   upsertApostilaPage,
   type ApostilaPage,
 } from '../lib/apostila-pages';
+import { getPageDisplayTitle } from '../lib/content-formatting';
 
 const page = (id: string, position: number, title: string): ApostilaPage => ({
   id,
@@ -57,5 +58,12 @@ describe('apostila page dates', () => {
   it('recognizes schema errors that require the timestamp fallback', () => {
     expect(isMissingApostilaPageSavedDateColumn({ code: '42703', message: 'column saved_date does not exist' })).toBe(true);
     expect(isMissingApostilaPageSavedDateColumn({ code: '23505', message: 'duplicate key' })).toBe(false);
+  });
+});
+
+describe('títulos exibidos nas páginas', () => {
+  it('remove palavras e datas repetidas sem renomear o conteúdo salvo', () => {
+    expect(getPageDisplayTitle('problemas de de distribuição 02/09/2026 02/09/2026'))
+      .toBe('problemas de distribuição 02/09/2026');
   });
 });

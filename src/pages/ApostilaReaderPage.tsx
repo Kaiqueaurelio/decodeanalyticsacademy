@@ -42,9 +42,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import logoOwl from "@/assets/owl-icon.png";
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useAuth } from "@/hooks/useAuth";
-import { isPlaceholderPageContent, isSubstantialDuplicateContent, normalizeContentForComparison } from '@/lib/content-formatting';
+import { getPageDisplayTitle, isPlaceholderPageContent, isSubstantialDuplicateContent, normalizeContentForComparison } from '@/lib/content-formatting';
 import { Badge } from "@/components/ui/badge";
-import { extractChronologyDates, getApostilaPageSavedDate, isMissingApostilaPageSavedDateColumn, resolveApostilaDateFilter } from "@/lib/apostila-pages";
+import { extractChronologyDates, getApostilaPageSavedDate, isMissingApostilaPageSavedDateColumn, resolveApostilaDateFilter, sortApostilaPagesChronologically } from "@/lib/apostila-pages";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { exportApostilaToPDF } from "@/lib/apostila-pdf";
 import { parseApostilaContent } from "@/lib/apostila-parser";
@@ -117,7 +117,7 @@ function buildPagesModule(apostilaId: string, pages: ApostilaPageRow[]): ModuleT
       estimated_minutes: null,
       lessons: pages.map((page, index) => ({
         id: `page:${page.id}`,
-        title: page.title || `Página ${index + 1}`,
+        title: getPageDisplayTitle(page.title, `Página ${index + 1}`),
         order_index: page.position ?? index,
         estimated_minutes: null,
         difficulty: null,
@@ -324,16 +324,21 @@ export default function ApostilaReaderPage() {
           .order("position", { ascending: true })
           .order("created_at", { ascending: true }));
       }
-      if (pagesError) throw pagesError;
+      if (pagesError) {
+        // As páginas são uma fonte complementar. Uma oscilação nessa consulta
+        // não pode apagar a árvore/RPC nem o conteúdo principal da apostila.
+        console.warn('[ApostilaReader] Páginas indisponíveis; mantendo as demais fontes.', pagesError);
+        pageRows = [];
+      }
 
       if (cancelled) return;
 
       // Anti-collision check for pages with same position
-      const sanitizedPages = (pageRows || []).map((p: any, idx: number) => ({
+      const sanitizedPages = sortApostilaPagesChronologically((pageRows || []).map((p: any, idx: number) => ({
         ...p,
         position: p.position ?? idx,
         saved_date: getApostilaPageSavedDate(p),
-      }));
+      })));
       
       console.log(`[ApostilaReader] Apostila info:`, ap);
       
@@ -1058,9 +1063,15 @@ export default function ApostilaReaderPage() {
                     {currentLesson?.estimated_minutes || 12} min
                   </span>
                 </div>
-                <h1 className="font-display text-3xl md:text-4xl font-semibold leading-tight tracking-tight">
+                <h1 className="break-words font-display text-2xl font-semibold leading-tight tracking-tight sm:text-3xl md:text-4xl">
                   {currentLesson?.title}
                 </h1>
+                {currentLesson?.date && (
+                  <div className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-muted/30 px-3 py-1 text-xs font-medium text-muted-foreground">
+                    <Calendar className="h-3.5 w-3.5" />
+                    Aula de {new Date(`${currentLesson.date}T12:00:00`).toLocaleDateString('pt-BR')}
+                  </div>
+                )}
                 <article className="reader-prose mt-6 relative selection:bg-cyan-500/30" onMouseUp={handleSelection}>
                   {lessonContent ? (
                     <div className="relative">

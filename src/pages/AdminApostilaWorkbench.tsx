@@ -27,7 +27,7 @@ import { ensureApostilaExists } from '@/lib/create-placeholder-apostila';
 import { Badge } from '@/components/ui/badge';
 import { getSubjectColor } from '@/lib/subject-colors';
 import { parseApostilaContent } from '@/lib/apostila-parser';
-import { createApostilaPage, type ApostilaPage, upsertApostilaPage, validateApostilaChronology, splitApostilaByDate, extractChronologyDates, getApostilaPageSavedDate, getLocalDateIso, isMissingApostilaPageSavedDateColumn } from '@/lib/apostila-pages';
+import { createApostilaPage, type ApostilaPage, upsertApostilaPage, validateApostilaChronology, splitApostilaByDate, extractChronologyDates, getApostilaPageSavedDate, getLocalDateIso, isMissingApostilaPageSavedDateColumn, sortApostilaPagesChronologically } from '@/lib/apostila-pages';
 import { recordApostilaOperation, runApostilaChronologyValidation } from '@/lib/apostila-diagnostics';
 import { ApostilaSplitPreview } from '@/components/admin/ApostilaSplitPreview';
 
@@ -283,7 +283,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       .select('*').eq('apostila_id', apostilaId).order('position');
     if (!isCurrentRequest()) return;
     const loadedPages = (pageRows || []) as ApostilaPage[];
-    setPages(loadedPages);
+    setPages(sortApostilaPagesChronologically(loadedPages));
     
     // Uma página filha só é selecionada quando o registro retornado pertence à
     // apostila atual. Não apagamos o parâmetro silenciosamente: isso fazia uma
@@ -471,10 +471,13 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       chronology,
     });
 
-    if (chronology.issues.length > 0) {
+    const visibleChronologyIssues = chronology.issues.filter((issue) => (
+      issue.code !== 'page_dates_out_of_order' && issue.code !== 'page_content_dates_out_of_order'
+    ));
+    if (visibleChronologyIssues.length > 0) {
       console.warn('[Workbench] Inconsistência cronológica detectada:', chronology);
       toast.warning(
-        chronology.issues[0].message + ' A operação será registrada para revisão administrativa.',
+        visibleChronologyIssues[0].message + ' A operação será registrada para revisão administrativa.',
         { duration: 6000 },
       );
     }
@@ -550,7 +553,12 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       setPages((current) => upsertApostilaPage(current, pageToDisplay));
 
       if (content.trim().length > 0) {
-        const shouldPublish = chronology.status !== 'error';
+        const hasBlockingChronologyIssue = chronology.issues.some((issue) => (
+          issue.severity === 'error'
+          && issue.code !== 'page_dates_out_of_order'
+          && issue.code !== 'page_content_dates_out_of_order'
+        ));
+        const shouldPublish = !hasBlockingChronologyIssue;
         const { error: publishError } = await supabase
           .from('apostilas')
           .update({ published: shouldPublish, updated_at: savedAt })
@@ -1214,7 +1222,12 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
           alertCount: validation?.alert_count || 0,
         },
       });
-      if (validation?.status === 'error') {
+      const hasBlockingServerIssue = validation?.issues?.some((issue) => (
+        issue.severity === 'error'
+        && issue.code !== 'page_dates_out_of_order'
+        && issue.code !== 'page_content_dates_out_of_order'
+      ));
+      if (hasBlockingServerIssue) {
         toast.warning('A página foi criada, mas o diagnóstico encontrou uma inconsistência cronológica.');
       }
       
