@@ -94,20 +94,20 @@ export function validateApostilaStructure(content: string): ValidationReport {
     if (!hasH3) h2WithoutH3.push(cur.text);
   }
 
-  // 1) Quantidade de H2
+  // 1) Quantidade de H2 — recomendação editorial, nunca bloqueia o salvamento.
   if (h2.length === 0) {
     issues.push({
-      severity: 'error',
+      severity: 'warning',
       code: 'no-h2',
       message: 'Nenhuma seção principal (H2) encontrada.',
       hint: 'Use "## Título da seção" para criar as seções principais.',
     });
   } else if (h2.length < EXPECTED_H2) {
     issues.push({
-      severity: 'error',
+      severity: 'warning',
       code: 'h2-too-few',
-      message: `Encontradas ${h2.length} seções H2 (esperado ${EXPECTED_H2}).`,
-      hint: `Faltam ${EXPECTED_H2 - h2.length} seção(ões). Adicione com "## Nome da seção".`,
+      message: `Encontradas ${h2.length} seções H2 (recomendado ${EXPECTED_H2}).`,
+      hint: `Sugestão: adicionar mais ${EXPECTED_H2 - h2.length} seção(ões) com "## Nome da seção".`,
     });
   }
 
@@ -116,7 +116,7 @@ export function validateApostilaStructure(content: string): ValidationReport {
   headings.forEach(h => {
     if (lastLevel > 0 && h.level > lastLevel + 1) {
       issues.push({
-        severity: 'error',
+        severity: 'warning',
         code: 'heading-jump',
         message: `Salto de hierarquia: H${lastLevel} seguido de H${h.level}.`,
         blockIndex: h.index,
@@ -136,12 +136,20 @@ export function validateApostilaStructure(content: string): ValidationReport {
   }
 
   const words = countWords(content);
-  if (words < 300) {
+  // Só é erro quando o conteúdo é praticamente vazio (risco real de salvar em branco).
+  if (words < 40) {
     issues.push({
       severity: 'error',
+      code: 'empty-content',
+      message: `Conteúdo praticamente vazio (${words} palavras).`,
+      hint: 'Cole ou escreva o conteúdo da aula antes de salvar.',
+    });
+  } else if (words < 300) {
+    issues.push({
+      severity: 'warning',
       code: 'too-short',
-      message: `Conteúdo muito curto (${words} palavras).`,
-      hint: 'Apostilas do padrão têm cerca de 1.500 palavras.',
+      message: `Conteúdo curto (${words} palavras).`,
+      hint: 'Apostilas completas costumam ter cerca de 1.500 palavras.',
     });
   }
 
