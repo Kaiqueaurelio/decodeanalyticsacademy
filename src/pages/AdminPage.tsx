@@ -323,6 +323,10 @@ function AdminSidebar({ tab, setTab, stats, sidebarOpen, setSidebarOpen, collaps
   // Contador ao vivo de alertas de segurança em aberto (visível só para admin).
   const { openCount: securityOpenCount } = useSecurityAlerts({ enabled: true });
   const [showDoubtHeatmap, setShowDoubtHeatmap] = useState(false);
+  // O modo recolhido só existe no desktop (classes lg:). No celular a gaveta é
+  // sempre larga — passar `collapsed` ali deixava os ícones desalinhados.
+  const isMobileViewport = useIsMobile();
+  const isCollapsed = collapsed && !isMobileViewport;
 
   return (
     <>
