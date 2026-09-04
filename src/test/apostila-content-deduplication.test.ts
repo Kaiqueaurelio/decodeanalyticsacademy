@@ -1,4 +1,14 @@
-import { isSubstantialDuplicateContent, mergeDistinctPages } from '@/lib/content-formatting';
+import { isPlaceholderPageContent, isSubstantialDuplicateContent, mergeDistinctPages } from '@/lib/content-formatting';
+
+describe('páginas provisórias', () => {
+  it.each(['Conteúdo em processamento.', '**Material em fase de estruturação**', 'Este conteúdo está sendo estruturado'])('reconhece o aviso isolado: %s', (content) => {
+    expect(isPlaceholderPageContent(content)).toBe(true);
+  });
+
+  it('preserva conteúdo real junto de um aviso antigo', () => {
+    expect(isPlaceholderPageContent('Conteúdo em processamento.\n\n## Aula\nUma variável armazena um valor que pode mudar durante a execução.')).toBe(false);
+  });
+});
 
 describe('desduplicação segura do conteúdo das apostilas', () => {
   it('remove cópias exatas mesmo com pequenas diferenças de markdown', () => {

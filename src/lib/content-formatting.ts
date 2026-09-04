@@ -160,7 +160,7 @@ export function isPlaceholderPageContent(value: string): boolean {
     'conteúdo em processamento',
     'material em fase de estruturação',
     'este conteúdo está sendo estruturado',
-  ].some((marker) => normalized.includes(marker));
+  ].some((marker) => normalized === normalizeContentForComparison(marker));
 }
 
 export function contentHasMarkup(value: string): boolean {
