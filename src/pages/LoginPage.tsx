@@ -17,6 +17,7 @@ import { motion, AnimatePresence, useMotionValue, useSpring } from 'framer-motio
 import { motionTokens, type AsyncStatus } from '@/lib/motion';
 import { SECURITY_COPY } from '@/lib/security-copy';
 import { GlitchText } from '@/components/login/GlitchText';
+import { AuthRequestTimeout, fetchAuthResponse } from '@/lib/auth-request';
 
 export default function LoginPage() {
   const { signUp, user, roleChecked, loading: authLoading, status, isSessionHydrated } = useAuth();
@@ -43,7 +44,7 @@ export default function LoginPage() {
     try {
       // 401 e 429 são respostas normais da tela de login. Fazer a requisição
       // diretamente evita que o SDK as registre como erro de runtime da página.
-      const response = await fetch(functionsUrl, {
+      const { response, body } = await fetchAuthResponse(functionsUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -51,11 +52,6 @@ export default function LoginPage() {
         },
         body: JSON.stringify(payload),
       });
-      const body = await response.json().catch(() => ({})) as {
-        error?: unknown;
-        code?: unknown;
-        [key: string]: unknown;
-      };
 
       if (!response.ok) {
         return {
@@ -67,7 +63,11 @@ export default function LoginPage() {
       }
 
       return { data: body, message: null as string | null, code: undefined, status: response.status };
-    } catch {
+    } catch (error) {
+      if (error instanceof AuthRequestTimeout) {
+        // An uncertain response must not trigger another credential attempt.
+        return { data: null, message: error.message, code: 'network_error', status: 408 };
+      }
       return {
         data: null,
         message: 'Não foi possível conectar ao serviço de autenticação por RA. Tente novamente em instantes.',
