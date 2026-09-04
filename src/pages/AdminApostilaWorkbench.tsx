@@ -558,10 +558,15 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
           && issue.code !== 'page_dates_out_of_order'
           && issue.code !== 'page_content_dates_out_of_order'
         ));
-        const shouldPublish = !hasBlockingChronologyIssue;
+        const shouldPublish = published || !hasBlockingChronologyIssue;
         const { error: publishError } = await supabase
           .from('apostilas')
-          .update({ published: shouldPublish, updated_at: savedAt })
+          .update({
+            // Um alerta editorial não pode retirar do aluno uma apostila já
+            // publicada, nem sobrescrever sua visibilidade com estado local antigo.
+            ...(!hasBlockingChronologyIssue ? { published: true } : {}),
+            updated_at: savedAt,
+          })
           .eq('id', id);
 
         if (publishError) {
@@ -583,8 +588,8 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
           setApostilas((current) => current.map((apostila) =>
             apostila.id === id ? { ...apostila, published: shouldPublish, updated_at: savedAt } : apostila
           ));
-          if (!shouldPublish) {
-            toast.error('A página foi salva como rascunho porque a cronologia apresenta inconsistências.');
+          if (hasBlockingChronologyIssue) {
+            toast.warning('Página salva. Revise as datas; a visibilidade da apostila foi preservada.');
           }
         }
       }
