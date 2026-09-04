@@ -2572,7 +2572,10 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                     const courseList = (a.course || []) as string[];
                     const isGradePlaceholder = Boolean((a as any).isPlaceholder) || a.id.startsWith('placeholder');
                     const displayTitle = a.title.replace(/^\[GRADE\]\s*/i, '');
-                    const isEmptyApostila = !isGradePlaceholder && (a.content || '').trim().length < 200;
+                    const isEmptyApostila = !isGradePlaceholder
+                      && (a.content || '').trim().length < 200
+                      && (apostilaPageCounts[a.id] || 0) === 0;
+
                     return (
                       <Card key={a.id} className="hover-lift card-alternate">
 
