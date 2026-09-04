@@ -774,6 +774,8 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
     typeof window !== 'undefined' && window.localStorage.getItem('admin_sidebar_collapsed') === 'true'
   );
   const [apostilas, setApostilas] = useState<AdminApostila[]>([]);
+  const [apostilaPageCounts, setApostilaPageCounts] = useState<Record<string, number>>({});
+
   const [exercises, setExercises] = useState<Record<string, Exercise[]>>({});
   const [dbCategories, setDbCategories] = useState<{ id: string; name: string; sort_order: number }[]>([]);
   const [allAnswers, setAllAnswers] = useState<any[]>([]);
