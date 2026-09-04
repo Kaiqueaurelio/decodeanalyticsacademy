@@ -188,6 +188,44 @@ export function ApostilaHealthDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      <Card className="border-amber-500/30">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <AlertTriangle className="h-4 w-4 text-amber-500" />
+            Apostilas sem conteúdo ({emptyApostilas.length})
+          </CardTitle>
+          <CardDescription>
+            Matérias criadas no banco mas sem texto salvo — abra no Workbench para preencher.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {emptyApostilas.length === 0 ? (
+            <p className="text-xs text-muted-foreground">Nenhuma apostila vazia. Tudo com conteúdo.</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              {emptyApostilas.map((a) => (
+                <a
+                  key={a.id}
+                  href={`/admin/apostilas/${a.id}`}
+                  className="flex items-center justify-between gap-2 p-3 rounded-lg border border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10 transition-colors"
+                >
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold truncate">{a.title}</p>
+                    <p className="text-[10px] text-muted-foreground truncate">
+                      {a.semester ? `${a.semester}º Semestre • ` : ''}{a.category}
+                    </p>
+                  </div>
+                  <Badge variant="outline" className="text-[10px] shrink-0 border-amber-500/50 text-amber-500">
+                    Abrir
+                  </Badge>
+                </a>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
+
   );
 }
