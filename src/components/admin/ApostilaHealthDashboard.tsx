@@ -32,6 +32,7 @@ const STATUS_CONFIG = {
 export function ApostilaHealthDashboard() {
   const [apostilas, setApostilas] = useState<any[]>([]);
   const [logs, setLogs] = useState<any[]>([]);
+  const [emptyApostilas, setEmptyApostilas] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [semesterFilter, setSemesterFilter] = useState('all');
 
@@ -56,10 +57,43 @@ export function ApostilaHealthDashboard() {
 
       setApostilas(aData || []);
       setLogs(lData || []);
+      await detectEmpty(aData || []);
     } finally {
       setLoading(false);
     }
   }
+
+  // Apostila "vazia" = sem páginas com texto e sem conteúdo no campo principal.
+  async function detectEmpty(rows: any[]) {
+    const ids = rows.map((r) => r.id);
+    if (ids.length === 0) { setEmptyApostilas([]); return; }
+
+    const { data: pages } = await (supabase.from('apostila_pages') as any)
+      .select('apostila_id, content')
+      .in('apostila_id', ids);
+
+    const filledByPages = new Set<string>();
+    for (const page of pages || []) {
+      if ((page.content || '').trim().length >= 200) filledByPages.add(page.apostila_id);
+    }
+
+    const candidates = ids.filter((id) => !filledByPages.has(id));
+    if (candidates.length === 0) { setEmptyApostilas([]); return; }
+
+    const { data: contents } = await supabase
+      .from('apostilas')
+      .select('id, content')
+      .in('id', candidates);
+
+    const stillEmpty = new Set(
+      (contents || [])
+        .filter((c: any) => (c.content || '').trim().length < 200)
+        .map((c: any) => c.id)
+    );
+
+    setEmptyApostilas(rows.filter((r) => stillEmpty.has(r.id)));
+  }
+
 
   return (
     <div className="space-y-6">
@@ -154,6 +188,44 @@ export function ApostilaHealthDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      <Card className="border-amber-500/30">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <AlertTriangle className="h-4 w-4 text-amber-500" />
+            Apostilas sem conteúdo ({emptyApostilas.length})
+          </CardTitle>
+          <CardDescription>
+            Matérias criadas no banco mas sem texto salvo — abra no Workbench para preencher.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {emptyApostilas.length === 0 ? (
+            <p className="text-xs text-muted-foreground">Nenhuma apostila vazia. Tudo com conteúdo.</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              {emptyApostilas.map((a) => (
+                <a
+                  key={a.id}
+                  href={`/admin/apostilas/${a.id}`}
+                  className="flex items-center justify-between gap-2 p-3 rounded-lg border border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10 transition-colors"
+                >
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold truncate">{a.title}</p>
+                    <p className="text-[10px] text-muted-foreground truncate">
+                      {a.semester ? `${a.semester}º Semestre • ` : ''}{a.category}
+                    </p>
+                  </div>
+                  <Badge variant="outline" className="text-[10px] shrink-0 border-amber-500/50 text-amber-500">
+                    Abrir
+                  </Badge>
+                </a>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
+
   );
 }

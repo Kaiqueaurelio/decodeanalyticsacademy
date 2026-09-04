@@ -42,6 +42,17 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: "8.5.5",
+    date: "2026-09-04",
+    title: "Matérias da grade não parecem mais apostilas ocultas",
+    changes: [
+      { kind: "fix", text: "Cartões vindos da grade UNIP agora mostram 'Criar' em vez de 'Oculta', sem prefixo [GRADE] e sem data de salvamento falsa" },
+      { kind: "improvement", text: "Novo selo 'Vazia' para apostilas reais sem conteúdo salvo" },
+      { kind: "improvement", text: "Painel de Saúde lista as apostilas sem conteúdo com atalho direto para o Workbench" },
+    ],
+  },
+  {
+
     version: "8.5.4",
     date: "2026-09-02",
     title: "Padronização não bloqueia mais o salvamento",

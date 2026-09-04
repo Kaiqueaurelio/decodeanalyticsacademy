@@ -774,6 +774,8 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
     typeof window !== 'undefined' && window.localStorage.getItem('admin_sidebar_collapsed') === 'true'
   );
   const [apostilas, setApostilas] = useState<AdminApostila[]>([]);
+  const [apostilaPageCounts, setApostilaPageCounts] = useState<Record<string, number>>({});
+
   const [exercises, setExercises] = useState<Record<string, Exercise[]>>({});
   const [dbCategories, setDbCategories] = useState<{ id: string; name: string; sort_order: number }[]>([]);
   const [allAnswers, setAllAnswers] = useState<any[]>([]);
@@ -990,6 +992,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
     ]);
     const apostilaRows = (ap || []) as AdminApostila[];
     const latestDateByApostila = new Map<string, string>();
+    const pageCountByApostila = new Map<string, number>();
     const apostilaIds = apostilaRows.map((apostila) => apostila.id);
     if (apostilaIds.length > 0) {
       let pageResult: { data: any[] | null; error: any } = await (supabase.from('apostila_pages') as any)
@@ -1006,16 +1009,19 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
 
       if (!pageResult.error) {
         for (const page of pageResult.data || []) {
+          pageCountByApostila.set(page.apostila_id, (pageCountByApostila.get(page.apostila_id) || 0) + 1);
           if (latestDateByApostila.has(page.apostila_id)) continue;
           const date = getApostilaPageSavedDate(page);
           if (date) latestDateByApostila.set(page.apostila_id, date);
         }
       }
     }
+    setApostilaPageCounts(Object.fromEntries(pageCountByApostila));
     setApostilas(apostilaRows.map((apostila) => ({
       ...apostila,
       saved_date: latestDateByApostila.get(apostila.id) ?? null,
     })));
+
     const map: Record<string, Exercise[]> = {};
     ex?.forEach(e => { if (!map[e.apostila_id]) map[e.apostila_id] = []; map[e.apostila_id].push(e); });
     setExercises(map);
@@ -2564,19 +2570,30 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                     const exCount = exercises[a.id]?.length || 0;
                     const semBadge = a.semester ? `${a.semester}º sem` : null;
                     const courseList = (a.course || []) as string[];
+                    const isGradePlaceholder = Boolean((a as any).isPlaceholder) || a.id.startsWith('placeholder');
+                    const displayTitle = a.title.replace(/^\[GRADE\]\s*/i, '');
+                    const isEmptyApostila = !isGradePlaceholder
+                      && (a.content || '').trim().length < 200
+                      && (apostilaPageCounts[a.id] || 0) === 0;
+
                     return (
                       <Card key={a.id} className="hover-lift card-alternate">
 
                           <CardContent className="p-3 sm:p-5">
                             <div className="flex flex-col lg:flex-row lg:items-center gap-3 min-w-0">
                               <div className="flex items-start lg:items-center gap-3 min-w-0 flex-1">
-                                <span className={`h-3 w-3 rounded-full shrink-0 mt-1.5 lg:mt-0 ${a.published ? 'bg-[hsl(var(--success))]' : 'bg-muted-foreground'}`} />
+                                <span className={`h-3 w-3 rounded-full shrink-0 mt-1.5 lg:mt-0 ${isGradePlaceholder ? 'bg-primary/40' : a.published ? 'bg-[hsl(var(--success))]' : 'bg-muted-foreground'}`} />
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-start gap-2 flex-wrap">
-                                    <h4 className="font-medium text-sm break-words leading-snug min-w-0 flex-1">{a.title}</h4>
-                                    <Badge variant={a.published ? 'default' : 'secondary'} className="text-[10px] shrink-0">
-                                      {a.published ? 'Publicada' : 'Oculta'}
+                                    <h4 className="font-medium text-sm break-words leading-snug min-w-0 flex-1">{displayTitle}</h4>
+                                    <Badge variant={isGradePlaceholder ? 'outline' : a.published ? 'default' : 'secondary'} className="text-[10px] shrink-0">
+                                      {isGradePlaceholder ? 'Criar' : a.published ? 'Publicada' : 'Oculta'}
                                     </Badge>
+                                    {isEmptyApostila && (
+                                      <Badge variant="outline" className="text-[10px] shrink-0 border-amber-500/50 text-amber-500">
+                                        Vazia
+                                      </Badge>
+                                    )}
                                     {semBadge && (
                                       <Badge variant="outline" className="text-[10px] shrink-0 border-primary/40 text-primary">
                                         {semBadge}
@@ -2590,13 +2607,23 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
                                   </div>
                                   <div className="flex items-center gap-1.5 mt-1 text-[11px] text-muted-foreground flex-wrap">
                                     <span className="truncate max-w-[140px]">{a.category}</span>
-                                    <span>·</span>
-                                    <span className="whitespace-nowrap">{exCount} ex.</span>
-                                    <span>·</span>
-                                    <span className="whitespace-nowrap">Salva: {formatApostilaDate(a.saved_date) !== 'Data pendente' ? formatApostilaDate(a.saved_date) : new Date(a.created_at).toLocaleDateString('pt-BR')}</span>
+                                    {isGradePlaceholder ? (
+                                      <>
+                                        <span>·</span>
+                                        <span className="whitespace-nowrap">Matéria da grade — ainda sem apostila</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <span>·</span>
+                                        <span className="whitespace-nowrap">{exCount} ex.</span>
+                                        <span>·</span>
+                                        <span className="whitespace-nowrap">Salva: {formatApostilaDate(a.saved_date) !== 'Data pendente' ? formatApostilaDate(a.saved_date) : new Date(a.created_at).toLocaleDateString('pt-BR')}</span>
+                                      </>
+                                    )}
                                   </div>
                                 </div>
                               </div>
+
                               <div className="flex w-full lg:w-auto items-center gap-1 shrink-0 justify-end pl-6 lg:pl-0">
                                 {/* Secondary actions — desktop only */}
                                 <div className="hidden lg:flex items-center gap-1">
