@@ -990,6 +990,7 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
     ]);
     const apostilaRows = (ap || []) as AdminApostila[];
     const latestDateByApostila = new Map<string, string>();
+    const pageCountByApostila = new Map<string, number>();
     const apostilaIds = apostilaRows.map((apostila) => apostila.id);
     if (apostilaIds.length > 0) {
       let pageResult: { data: any[] | null; error: any } = await (supabase.from('apostila_pages') as any)
@@ -1006,16 +1007,19 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
 
       if (!pageResult.error) {
         for (const page of pageResult.data || []) {
+          pageCountByApostila.set(page.apostila_id, (pageCountByApostila.get(page.apostila_id) || 0) + 1);
           if (latestDateByApostila.has(page.apostila_id)) continue;
           const date = getApostilaPageSavedDate(page);
           if (date) latestDateByApostila.set(page.apostila_id, date);
         }
       }
     }
+    setApostilaPageCounts(Object.fromEntries(pageCountByApostila));
     setApostilas(apostilaRows.map((apostila) => ({
       ...apostila,
       saved_date: latestDateByApostila.get(apostila.id) ?? null,
     })));
+
     const map: Record<string, Exercise[]> = {};
     ex?.forEach(e => { if (!map[e.apostila_id]) map[e.apostila_id] = []; map[e.apostila_id].push(e); });
     setExercises(map);
