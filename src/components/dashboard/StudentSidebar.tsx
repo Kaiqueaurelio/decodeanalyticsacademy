@@ -77,8 +77,8 @@ function SidebarIconButton({
       onClick={onClick}
       aria-label={label}
       aria-current={active ? 'page' : undefined}
-      className={`group relative flex min-h-10 w-full items-center gap-3 rounded-xl border px-3 text-left transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/70 ${
-        collapsed ? 'justify-center px-0' : ''
+      className={`group relative flex min-h-10 items-center gap-3 rounded-xl border px-3 text-left transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/70 ${
+        collapsed ? 'mx-auto w-11 justify-center px-0' : 'w-full'
       } ${
         active
           ? 'border-cyan-300/20 bg-cyan-300/[0.11] text-cyan-100 shadow-[inset_3px_0_0_#67e8f9]'
@@ -198,7 +198,12 @@ export function SidebarContent({ onNavigate, collapsed = false, onToggle }: Side
                     >
                       <Icon className={`h-[18px] w-[18px] shrink-0 ${active ? 'text-cyan-200' : 'text-slate-500 group-hover:text-slate-200'}`} />
                       <span className={collapsed ? 'sr-only' : 'truncate text-sm font-medium'}>{item.label}</span>
-                      {active && <span aria-hidden="true" className="ml-auto h-1.5 w-1.5 rounded-full bg-cyan-200 shadow-[0_0_10px_rgba(103,232,249,.9)]" />}
+                      {active && (
+                        <span
+                          aria-hidden="true"
+                          className={`${collapsed ? 'absolute right-1.5 top-1.5' : 'ml-auto'} h-1.5 w-1.5 rounded-full bg-cyan-200 shadow-[0_0_10px_rgba(103,232,249,.9)]`}
+                        />
+                      )}
                     </SidebarIconButton>
                   );
                 })}
@@ -224,7 +229,7 @@ export function SidebarContent({ onNavigate, collapsed = false, onToggle }: Side
         <PomodoroWidget collapsed={collapsed} />
 
         <div className={`border-t border-white/[0.06] p-3 ${collapsed ? 'flex justify-center' : ''}`}>
-          <div className={`flex min-w-0 items-center gap-3 rounded-xl border border-white/[0.08] bg-white/[0.045] p-2 ${collapsed ? 'justify-center' : ''}`}>
+          <div className={`flex min-w-0 items-center gap-3 rounded-xl border border-white/[0.08] bg-white/[0.045] p-2 ${collapsed ? 'flex-col justify-center' : ''}`}>
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-cyan-200/20 bg-cyan-300/[0.10] text-xs font-bold text-cyan-100">{initials}</div>
             {!collapsed && (
               <div className="min-w-0 flex-1">

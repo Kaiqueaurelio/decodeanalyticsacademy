@@ -48,6 +48,7 @@ import { extractChronologyDates, getApostilaPageSavedDate, isMissingApostilaPage
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { exportApostilaToPDF } from "@/lib/apostila-pdf";
 import { parseApostilaContent } from "@/lib/apostila-parser";
+import "@/styles/reader.css";
 
 
 
