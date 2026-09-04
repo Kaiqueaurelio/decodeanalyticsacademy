@@ -32,6 +32,7 @@ const STATUS_CONFIG = {
 export function ApostilaHealthDashboard() {
   const [apostilas, setApostilas] = useState<any[]>([]);
   const [logs, setLogs] = useState<any[]>([]);
+  const [emptyApostilas, setEmptyApostilas] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [semesterFilter, setSemesterFilter] = useState('all');
 
@@ -56,10 +57,43 @@ export function ApostilaHealthDashboard() {
 
       setApostilas(aData || []);
       setLogs(lData || []);
+      await detectEmpty(aData || []);
     } finally {
       setLoading(false);
     }
   }
+
+  // Apostila "vazia" = sem páginas com texto e sem conteúdo no campo principal.
+  async function detectEmpty(rows: any[]) {
+    const ids = rows.map((r) => r.id);
+    if (ids.length === 0) { setEmptyApostilas([]); return; }
+
+    const { data: pages } = await (supabase.from('apostila_pages') as any)
+      .select('apostila_id, content')
+      .in('apostila_id', ids);
+
+    const filledByPages = new Set<string>();
+    for (const page of pages || []) {
+      if ((page.content || '').trim().length >= 200) filledByPages.add(page.apostila_id);
+    }
+
+    const candidates = ids.filter((id) => !filledByPages.has(id));
+    if (candidates.length === 0) { setEmptyApostilas([]); return; }
+
+    const { data: contents } = await supabase
+      .from('apostilas')
+      .select('id, content')
+      .in('id', candidates);
+
+    const stillEmpty = new Set(
+      (contents || [])
+        .filter((c: any) => (c.content || '').trim().length < 200)
+        .map((c: any) => c.id)
+    );
+
+    setEmptyApostilas(rows.filter((r) => stillEmpty.has(r.id)));
+  }
+
 
   return (
     <div className="space-y-6">
