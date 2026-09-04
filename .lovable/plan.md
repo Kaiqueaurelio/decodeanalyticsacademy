@@ -1,36 +1,39 @@
-# Correção: aulas somem no leitor e página nova não aparece
+# Matérias "ocultas" e materiais AVA vazios
 
-## O que foi verificado no banco
+## O que a verificação no banco mostrou
 
-- Nenhuma apostila com conteúdo está marcada como oculta. A única não publicada ("Pesquisa Operacional") está realmente vazia (0 caracteres na apostila e na sua única página).
-- O sumiço não vem da visibilidade e sim do **filtro anti-duplicidade do leitor**. Exemplo comprovado em *Sistemas Operacionais Abertos e Mobile*:
-  - Página "Aula 2 - Controle de fluxo — 31/08/2026" (100.945 caracteres)
-  - Página "Apostila Única — Shell Script Bash Detalhada — 31/08/2026" (88.491 caracteres)
-  - Elas não são cópias literais (nenhuma contém a outra), mas compartilham 86,5% dos trechos de 8 palavras. A regra atual considera duplicata a partir de 78% e **descarta silenciosamente a página menor**. Por isso ela existe no banco, aparece na lista da disciplina, mas não abre/aparece no leitor.
-- Páginas novas criadas hoje/ontem ("Nova Página — 02/09/2026") estão gravadas com conteúdo vazio. O leitor trata conteúdo vazio como placeholder e remove a aula da árvore, então a página recém-criada não aparece até ter texto — e, se o texto for parecido com outra aula, cai na regra acima e some de novo.
-- O salvamento em si funciona: a atualização grava em `apostila_pages` e atualiza a lista local.
+1. **As matérias marcadas como "OCULTA" nas suas telas não existem no banco.** São cartões gerados pela própria tela do admin a partir da grade UNIP (título com prefixo `[GRADE]`). Eles nascem com `published: false` e `created_at` = data de hoje, e a lista de apostilas do admin desenha esses cartões exatamente como uma apostila real: badge "Oculta", "0 ex." e "Salva: 03/09/2026". Ou seja, é um erro de exibição — nada foi ocultado nem apagado.
+   - Na outra tela (painel de matérias) o mesmo item aparece corretamente como "Criar", sem o prefixo `[GRADE]`.
+2. **Só existe uma apostila realmente não publicada no banco:** "Pesquisa Operacional", com 0 caracteres (a versão com conteúdo, "Pesquisa Operacional e Teoria das Restrições", segue publicada).
+3. **Matérias que aparecem vazias estão mesmo vazias no banco**, e não há backup para restaurar:
+   - "Aspectos Teóricos da Computação": conteúdo 0, uma página com 113 caracteres, sem versões, sem materiais.
+   - "Metodos de Pesquisa": conteúdo 0, página com 51 caracteres.
+   - Só existe 1 snapshot de versão em todo o banco (Sistemas Operacionais Abertos e Mobile) — nenhum snapshot cobre essas duas.
+   - Os 59 materiais (áudio, PDF, vídeo, imagem) têm arquivo válido; nenhum material está sem URL.
+   - Uma matéria que parecia vazia na verdade tem conteúdo nas páginas: "Introdução às Ferramentas de Análise de Dados e Gestão de Projetos Operacionais" (83.530 caracteres em páginas, campo principal com 100).
 
-## O que será feito
+## O que será corrigido
 
-1. **Nunca descartar uma página real** (`src/pages/ApostilaReaderPage.tsx`)
-   - Substituir a poda por uma marcação: páginas muito parecidas continuam visíveis, apenas ordenadas com a versão mais completa primeiro e com um selo discreto "versão alternativa".
-   - Manter a remoção apenas para cópias idênticas (mesmo texto normalizado), que é o caso real de duplicata.
-   - Mesmo tratamento no `flatten`, que hoje também elimina aulas com conteúdo igual sem avisar.
+### 1. Cartões da grade não mais parecerem apostilas ocultas
+Na lista de apostilas do admin (`src/pages/AdminPage.tsx`), quando o item for placeholder da grade:
+- badge "Criar" (contorno) no lugar de "Oculta";
+- remover o prefixo `[GRADE]` do título;
+- esconder "0 ex." e a data "Salva:" falsa, trocando por "Matéria da grade — ainda sem apostila";
+- ponto de status neutro em vez do cinza de "oculta".
 
-2. **Endurecer o critério de duplicata** (`src/lib/content-formatting.ts`)
-   - Só considerar duplicata quando um texto contém o outro com cobertura ≥ 0,98, ou quando a semelhança por trechos for ≥ 0,95 **e** a diferença de tamanho for menor que 5%. Isso impede que uma aula com 88 mil caracteres seja engolida por outra de 100 mil.
+### 2. Sinalizar apostila realmente vazia
+Para apostilas reais sem conteúdo (campo principal e páginas somando menos de ~200 caracteres), mostrar badge "Vazia" na listagem, para você distinguir "oculta" de "sem conteúdo".
 
-3. **Página nova sempre visível** (`src/pages/ApostilaReaderPage.tsx`, `src/lib/apostila-pages.ts`)
-   - Páginas sem conteúdo passam a aparecer na árvore como aula vazia ("Sem conteúdo ainda"), em vez de sumirem, para o admin confirmar que a criação funcionou.
-   - Após salvar no workbench, recarregar a lista de páginas do banco (não só o estado local), garantindo posição e data corretas.
+### 3. Painel de saúde
+Em `src/components/admin/ApostilaHealthDashboard.tsx`, incluir a seção "Apostilas sem conteúdo" listando as matérias reais vazias (hoje: Pesquisa Operacional, Aspectos Teóricos da Computação, Metodos de Pesquisa) com atalho para abrir no Workbench.
 
-4. **Diagnóstico para o admin** (`src/components/admin/ApostilaHealthDashboard.tsx`)
-   - Listar páginas vazias e páginas quase idênticas, com atalho para abrir e resolver, em vez de escondê-las.
+### 4. Limpeza de dados
+- Publicar/ocultar continua manual; nada será apagado.
+- Nenhuma restauração automática é possível para "Aspectos Teóricos da Computação" e "Metodos de Pesquisa" — não existe backup no banco. Se você tiver o texto original (Word, AVA, PDF), reenvio e eu recoloco.
 
-5. **Testes e changelog**
-   - Novo caso em `src/test/apostila-reader-merge.test.ts` com o par real de 100.945/88.491 caracteres, garantindo que as duas aulas continuem na árvore.
-   - Entrada nova no topo de `src/data/changelog.ts`.
+### 5. Registro
+Entrada nova no topo de `src/data/changelog.ts` e atualização do `roadmap.md`.
 
-## Observação
-
-As duas "Nova Página — 02/09/2026" existentes estão em branco no banco; após a correção elas aparecerão listadas como vazias para você preencher ou excluir.
+## Detalhes técnicos
+- Placeholders são criados em `AdminPage.tsx` (~linha 1830) e `AdminDashboard.tsx` (~linha 300) com `isPlaceholder: true`; o render da lista em `AdminPage.tsx` (~linhas 2564-2600) ignora essa flag — é onde entra a correção.
+- Consultas usadas: `apostilas`, `apostila_pages`, `apostila_version_history`, `apostila_materials`, `materials`.
