@@ -941,7 +941,7 @@ function CalloutBlock({ kind, title, content }: { kind: 'info' | 'tip' | 'warnin
 function QuoteBlock({ content }: { content: string }) {
   return (
     <blockquote
-      className="my-10 pl-8 pr-4 py-2 border-l-4 border-primary/30 italic text-foreground/80 text-[17px] leading-loose font-medium bg-primary/5 rounded-r-2xl"
+      className="my-7 sm:my-10 pl-4 sm:pl-8 pr-3 sm:pr-4 py-2 border-l-4 border-primary/30 italic text-foreground/80 text-[15.5px] sm:text-[17px] leading-relaxed sm:leading-loose font-medium bg-primary/5 rounded-r-2xl break-words"
       dangerouslySetInnerHTML={renderInline(content)}
     />
 
@@ -953,8 +953,8 @@ function ListBlock({ items, ordered }: { items: string[]; ordered: boolean }) {
     return (
       <ol className="my-6 ml-2 space-y-3 list-none counter-reset-decode">
         {items.map((it, idx) => (
-          <li key={idx} className="pl-12 relative text-[16px] leading-relaxed text-foreground/90 group py-1">
-            <span className="absolute left-0 top-[0.1em] w-8 h-8 rounded-xl bg-accent/10 border border-border/40 text-muted-foreground font-display font-black text-[12px] flex items-center justify-center group-hover:bg-primary/10 group-hover:text-primary transition-all duration-300 shadow-sm">
+          <li key={idx} className="pl-9 sm:pl-12 relative text-[15px] sm:text-[16px] leading-relaxed text-foreground/90 group py-1 break-words">
+            <span className="absolute left-0 top-[0.2em] w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-accent/10 border border-border/40 text-muted-foreground font-display font-black text-[11px] sm:text-[12px] flex items-center justify-center group-hover:bg-primary/10 group-hover:text-primary transition-all duration-300 shadow-sm">
               {idx + 1}
 
             </span>
@@ -967,7 +967,7 @@ function ListBlock({ items, ordered }: { items: string[]; ordered: boolean }) {
   return (
     <ul className="my-6 ml-2 space-y-3">
       {items.map((it, idx) => (
-        <li key={idx} className="pl-10 relative text-[16px] leading-relaxed text-foreground/90 group py-1">
+        <li key={idx} className="pl-7 sm:pl-10 relative text-[15px] sm:text-[16px] leading-relaxed text-foreground/90 group py-1 break-words">
           <span className="absolute left-1 top-[0.6em] w-2.5 h-2.5 rounded-full border-2 border-primary/30 group-hover:bg-primary group-hover:border-primary transition-all duration-300 shadow-sm" />
           <span dangerouslySetInnerHTML={renderInline(it)} className="font-medium" />
 
@@ -1040,7 +1040,7 @@ function HeadingBlock({ level, content, id, active }: { level: number; content: 
   const activeCls = active ? 'apostila-heading-active' : '';
   if (level === 1) {
     return (
-      <h1 id={id} data-active={active || undefined} className={cn('font-display text-3xl sm:text-5xl font-black mt-12 mb-6 text-foreground tracking-tight leading-tight scroll-mt-24', activeCls)}>
+      <h1 id={id} data-active={active || undefined} className={cn('font-display text-2xl sm:text-4xl lg:text-5xl font-black mt-9 sm:mt-12 mb-4 sm:mb-6 text-foreground tracking-tight leading-tight scroll-mt-24 break-words [overflow-wrap:anywhere]', activeCls)}>
         {text}
       </h1>
     );
@@ -1211,7 +1211,7 @@ export function ApostilaContentRenderer({ content, activeHeadingId }: Props) {
   }, [blocks]);
 
   return (
-    <article className="apostila-prose max-w-[72ch] mx-auto w-full min-w-0 px-1 sm:px-0 text-[16px] sm:text-[17.5px] leading-[1.8] tracking-normal text-foreground/95">
+    <article className="apostila-prose max-w-[72ch] mx-auto w-full min-w-0 overflow-x-hidden px-1 sm:px-0 text-[15.5px] sm:text-[17.5px] leading-[1.72] sm:leading-[1.8] tracking-normal text-foreground/95 break-words">
       <ApostilaTOC items={tocItems} activeId={activeHeadingId} />
       {blocks.map((b, i) => {
         switch (b.type) {
