@@ -548,7 +548,10 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         position: pages.length,
         created_at: savedAt,
         updated_at: savedAt,
-        saved_date: getLocalDateIso(),
+        // Keep the date selected by the editor when an older database does not
+        // return the saved row. Using today's date here reordered the sidebar
+        // until the next reload and made a correctly saved page look missing.
+        saved_date: pageUpdate.saved_date,
       };
       setPages((current) => upsertApostilaPage(current, pageToDisplay));
 
