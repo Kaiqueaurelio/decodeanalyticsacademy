@@ -1834,19 +1834,9 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
       return true;
     });
 
-    // Dados antigos podem conter a mesma apostila importada mais de uma vez.
-    // Na listagem mostramos somente a versão mais completa; as cópias não
-    // somem do banco de forma destrutiva e continuam recuperáveis.
-    const uniqueApostilas = new Map<string, Apostila>();
-    for (const apostila of list) {
-      const title = apostila.title.trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-      const key = `${title}::${canonicalSubjectKey(apostila.category)}`;
-      const current = uniqueApostilas.get(key);
-      const contentLength = (apostila.content || '').trim().length;
-      const currentLength = (current?.content || '').trim().length;
-      if (!current || contentLength > currentLength) uniqueApostilas.set(key, apostila);
-    }
-    list = [...uniqueApostilas.values()];
+    // Não desduplicar por título/categoria na administração. Registros com o
+    // mesmo nome podem ser páginas independentes e todos devem permanecer
+    // visíveis para edição, filtragem e recuperação.
 
     // 2. Placeholder para o Admin (quando filtrado por semestre)
     const activeSemNum = filterSemester !== 'all' && filterSemester !== 'none' ? parseInt(filterSemester, 10) : null;

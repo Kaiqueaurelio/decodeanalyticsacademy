@@ -271,13 +271,9 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
       return true;
     });
 
-    const unique = new Map<string, ApostilaRow>();
-    for (const apostila of list) {
-      const key = `${subjectKey(apostila.title)}::${canonicalSubjectKey(apostila.category)}`;
-      const current = unique.get(key);
-      if (!current || (apostila.content || '').length > (current.content || '').length) unique.set(key, apostila);
-    }
-    list = [...unique.values()];
+    // A área administrativa precisa exibir cada registro real. Apostilas com o
+    // mesmo título podem representar páginas/aulas diferentes do mesmo caderno;
+    // agrupá-las pelo título fazia páginas recém-criadas desaparecerem da lista.
 
     const searchParams = new URLSearchParams(window.location.search);
     const activeTab = searchParams.get('tab');
