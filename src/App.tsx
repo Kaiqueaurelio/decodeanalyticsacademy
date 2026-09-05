@@ -62,6 +62,7 @@ const EventsPage = lazy(() => import('@/pages/EventsPage'));
   const SchedulePage = lazy(() => import('@/pages/SchedulePage'));
   const TiraDuvidaPage = lazy(() => import('@/pages/TiraDuvidaPage'));
   const AdminBibliotecaPage = lazy(() => import('@/pages/AdminBibliotecaPage'));
+  const AdminContentCenterPage = lazy(() => import('@/pages/AdminContentCenterPage'));
 
 
 const queryClient = new QueryClient({
