@@ -183,6 +183,7 @@ const AppContent = () => {
                 <Route path="/admin" element={<ProtectedRoute adminOnly><AdminPage /></ProtectedRoute>} />
                 <Route path="/admin/apostilas/:id" element={<ProtectedRoute adminOnly><AdminApostilaWorkbench /></ProtectedRoute>} />
                 <Route path="/admin/biblioteca" element={<ProtectedRoute adminOnly><AdminBibliotecaPage /></ProtectedRoute>} />
+                <Route path="/admin/conteudo" element={<ProtectedRoute adminOnly><AdminContentCenterPage /></ProtectedRoute>} />
                 <Route path="/admin/financeiro" element={<Navigate to="/admin?tab=overview" replace />} />
                 <Route path="/admin/relatorios" element={<Navigate to="/admin?tab=overview" replace />} />
 
