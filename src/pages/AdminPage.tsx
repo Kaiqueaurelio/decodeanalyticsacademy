@@ -688,6 +688,23 @@ function OverviewTab({ apostilas, exercises, allAnswers, materials, users, setTa
                 <Plus className="h-4 w-4 text-primary shrink-0" />
               </motion.button>
 
+              <motion.button
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.9 }}
+                onClick={() => navigate('/admin/conteudo')}
+                className="group w-full text-left rounded-xl border-2 border-accent/30 bg-accent/5 hover:border-accent/60 transition-all p-4 flex items-center gap-4"
+              >
+                <div className="rounded-xl bg-accent/15 p-3 shrink-0 group-hover:scale-110 transition-transform">
+                  <FileText className="h-6 w-6 text-accent-foreground" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-foreground">Central de Conteúdo</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Páginas salvas por apostila, alunos, editar / ocultar / excluir</p>
+                </div>
+                <Plus className="h-4 w-4 text-muted-foreground shrink-0" />
+              </motion.button>
+
               <div className="grid grid-cols-2 gap-3">
                 {[
                   { label: 'Importar URL', icon: LinkIcon, action: () => setTab('apostilas') },
