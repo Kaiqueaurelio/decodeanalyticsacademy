@@ -179,7 +179,11 @@ export function MarkdownEditor({
         heading: { levels: [1, 2, 3] },
         paragraph: { HTMLAttributes: { class: 'leading-relaxed text-[15px] mb-4 text-foreground/90' } },
         codeBlock: { HTMLAttributes: { class: 'rounded-xl bg-[#22272e] p-4 font-mono text-[13px] overflow-x-auto border border-border/40 text-emerald-400 leading-relaxed my-6' } },
-
+        // Estas extensões são configuradas separadamente logo abaixo. O
+        // StarterKit v3 também as inclui por padrão e registrá-las duas vezes
+        // deixa comandos de colagem/formatação imprevisíveis.
+        link: false,
+        underline: false,
       }),
       Underline,
       TextStyle,
