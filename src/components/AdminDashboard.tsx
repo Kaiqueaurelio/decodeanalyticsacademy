@@ -1114,22 +1114,24 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
                   </div>
                 </section>
               ) : (
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 2xl:grid-cols-3">
                   {folders.map((folder) => {
                     const published = folder.items.filter((item) => item.published).length;
                     return <div key={folder.name} className="group relative flex min-h-28 items-center gap-3 rounded-xl border border-border/70 bg-card/50 p-4 text-left transition hover:border-primary/50 hover:bg-primary/5 focus-within:ring-2 focus-within:ring-primary">
                       <button 
                         type="button" 
                         onClick={() => setOpenCategory(folder.name)} 
-                        className="flex-1 flex items-center gap-3 text-left focus:outline-none"
+                        className="flex min-w-0 flex-1 items-center gap-3 text-left focus:outline-none"
                       >
                         <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary"><FolderOpen className="h-5 w-5" /></span>
                         <span className="min-w-0 flex-1">
-                          <span className="flex items-center gap-2">
-                            <span className="truncate text-sm font-semibold">{folder.name}</span>
-                            <Badge variant="secondary" className="text-[9px]">{folder.items.length} {folder.items.length === 1 ? 'apostila' : 'apostilas'}</Badge>
+                          <span className="block truncate text-sm font-semibold" title={folder.name}>{folder.name}</span>
+                          <span className="mt-1 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-muted-foreground">
+                            <span>{published} publicada{published === 1 ? '' : 's'}{folder.semester ? ` · ${folder.semester}º semestre` : ''}</span>
+                            <Badge variant="secondary" className="h-5 shrink-0 whitespace-nowrap px-1.5 text-[8px] leading-none">
+                              {folder.items.length} {folder.items.length === 1 ? 'apostila' : 'apostilas'}
+                            </Badge>
                           </span>
-                          <span className="mt-1 block text-[11px] text-muted-foreground">{published} publicada{published === 1 ? '' : 's'}{folder.semester ? ` · ${folder.semester}º semestre` : ''}</span>
                         </span>
                       </button>
                       
