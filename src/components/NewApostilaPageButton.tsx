@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { createApostilaPage } from '@/lib/apostila-pages';
+import { ensureApostilaExists } from '@/lib/create-placeholder-apostila';
 import { toast } from 'sonner';
 
 interface NewApostilaPageButtonProps {
@@ -40,7 +41,6 @@ export function NewApostilaPageButton({
       // Se a apostila for um placeholder, converta-a antes de criar a página.
       let targetApostilaId = apostilaId;
       if (apostilaId.startsWith('placeholder')) {
-        const { ensureApostilaExists } = await import('@/lib/create-placeholder-apostila');
         targetApostilaId = await ensureApostilaExists({ id: apostilaId, title: '' });
       }
 
