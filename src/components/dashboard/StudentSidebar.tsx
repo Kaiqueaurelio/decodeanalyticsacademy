@@ -234,7 +234,9 @@ export function SidebarContent({ onNavigate, collapsed = false, onToggle }: Side
             {!collapsed && (
               <div className="min-w-0 flex-1">
                 <p className="truncate text-xs font-semibold text-white">{profile?.full_name || user?.email || 'Aluno'}</p>
-                <p className="mt-0.5 text-[10px] uppercase tracking-[0.12em] text-slate-500">Aluno conectado</p>
+                <p className={`mt-0.5 text-[10px] uppercase tracking-[0.12em] ${isAdmin ? 'font-semibold text-primary' : 'text-slate-500'}`}>
+                  {isAdmin ? 'Administrador conectado' : 'Aluno conectado'}
+                </p>
               </div>
             )}
             <button

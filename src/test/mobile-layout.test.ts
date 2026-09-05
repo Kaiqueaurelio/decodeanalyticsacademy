@@ -94,6 +94,14 @@ describe('navegação mobile', () => {
   });
 });
 
+describe('identidade da sessão no menu lateral', () => {
+  const sidebar = read('src/components/dashboard/StudentSidebar.tsx');
+
+  it('distingue visualmente administrador de aluno', () => {
+    expect(sidebar).toContain("isAdmin ? 'Administrador conectado' : 'Aluno conectado'");
+  });
+});
+
 describe('páginas de estudo no mobile', () => {
   it.each([
     ['src/pages/ExerciciosIndexPage.tsx'],
