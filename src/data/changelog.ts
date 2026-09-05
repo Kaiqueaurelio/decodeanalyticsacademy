@@ -42,6 +42,18 @@ export function getBuildInfo() {
 
 export const CHANGELOG: Release[] = [
   {
+    version: "8.6.0",
+    date: "2026-09-05",
+    title: "Central de Conteúdo",
+    description: "Nova tela do admin para ver páginas salvas por apostila, alunos e corrigir páginas em branco.",
+    changes: [
+      { kind: 'feature', text: 'Central de Conteúdo em /admin/conteudo: apostilas com e sem conteúdo, páginas salvas com data e tamanho.' },
+      { kind: 'feature', text: 'Editor rápido para preencher páginas em branco antes de aparecerem para o aluno.' },
+      { kind: 'feature', text: 'Ações de editar, ocultar/mostrar e excluir apostilas e páginas sem abrir o banco.' },
+      { kind: 'improvement', text: 'Lista de alunos com RA, semestre, escopo e status de bloqueio.' },
+    ],
+  },
+  {
     version: "8.5.5",
     date: "2026-09-04",
     title: "Matérias da grade não parecem mais apostilas ocultas",
