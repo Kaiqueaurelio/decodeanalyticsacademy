@@ -21,9 +21,13 @@ describe('visibilidade das apostilas no painel administrativo', () => {
 
   it('preserva dados carregados quando uma sincronização falha', () => {
     const admin = source('src/pages/AdminPage.tsx');
+    const dashboard = source('src/components/AdminDashboard.tsx');
 
     expect(admin).toContain("const ap = apResult.error ? null : apResult.data");
     expect(admin).toContain("if (!apResult.error) {");
     expect(admin).toContain('Os dados já carregados foram preservados.');
+    expect(dashboard).toContain('a.error ? previous.apostilas');
+    expect(dashboard).toContain('if (!list.error) setApostilas');
+    expect(dashboard).toContain('Os dados anteriores foram preservados.');
   });
 });

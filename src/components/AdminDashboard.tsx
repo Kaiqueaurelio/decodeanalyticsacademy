@@ -176,22 +176,31 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
         supabase.from('answers').select('created_at').gte('created_at', since.toISOString()).limit(5000),
         supabase.from('fixed_apostilas').select('semester, subject_key, apostila_id'),
       ]);
+
+      const failed = [a, e, u, c, l, ad, list, rank, views, answers, fixedData]
+        .filter((result) => result.error);
+      if (failed.length > 0) {
+        console.error('[AdminDashboard] falha parcial ao sincronizar:', failed.map((result) => result.error));
+        toast.error('Parte do painel não pôde ser atualizada. Os dados já carregados foram mantidos.');
+      }
       
       const fixedMap: Record<string, string> = {};
-      (fixedData.data || []).forEach((f: any) => {
-        fixedMap[`${f.semester}-${f.subject_key}`] = f.apostila_id;
-      });
-      setFixedApostilas(fixedMap);
-      setStats({
-        apostilas: a.count || 0,
-        exercises: e.count || 0,
-        users: u.count || 0,
-        comments: c.count || 0,
-        likes: l.count || 0,
-        ads: ad.count || 0,
-      });
-      setApostilas(list.data || []);
-      setRankings(rank.data || []);
+      if (!fixedData.error) {
+        (fixedData.data || []).forEach((f: any) => {
+          fixedMap[`${f.semester}-${f.subject_key}`] = f.apostila_id;
+        });
+        setFixedApostilas(fixedMap);
+      }
+      setStats((previous) => ({
+        apostilas: a.error ? previous.apostilas : (a.count || 0),
+        exercises: e.error ? previous.exercises : (e.count || 0),
+        users: u.error ? previous.users : (u.count || 0),
+        comments: c.error ? previous.comments : (c.count || 0),
+        likes: l.error ? previous.likes : (l.count || 0),
+        ads: ad.error ? previous.ads : (ad.count || 0),
+      }));
+      if (!list.error) setApostilas(list.data || []);
+      if (!rank.error) setRankings(rank.data || []);
 
       // Engajamento real dos últimos 7 dias
       const DAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
@@ -209,7 +218,9 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
         const i = idx.get(new Date(r.created_at).toDateString());
         if (i !== undefined) buckets[i].exercises++;
       });
-      setEngagement(buckets.map(({ day, apostilas, exercises }) => ({ day, apostilas, exercises })));
+      if (!views.error && !answers.error) {
+        setEngagement(buckets.map(({ day, apostilas, exercises }) => ({ day, apostilas, exercises })));
+      }
 
       const { data: accessData, error: accessError } = await supabase
         .from('exercise_answer_access_log')
@@ -220,6 +231,7 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
 
     } catch (err) {
       console.error(err);
+      toast.error('Não foi possível atualizar o painel. Os dados anteriores foram preservados.');
     } finally {
       setLoading(false);
     }
