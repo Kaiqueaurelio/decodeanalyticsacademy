@@ -706,6 +706,14 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
     return { drafts, staleDrafts, withoutCategory, score };
   }, [apostilas]);
 
+  const mostRecentlyEdited = useMemo(() => {
+    return [...apostilas].sort((left, right) => {
+      const rightDate = new Date(right.updated_at || right.created_at).getTime();
+      const leftDate = new Date(left.updated_at || left.created_at).getTime();
+      return rightDate - leftDate;
+    })[0] ?? null;
+  }, [apostilas]);
+
 
   if (loading) {
     return (
@@ -753,28 +761,67 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
         </div>
       </div>
 
-      {/* Atalhos das tarefas mais frequentes: um toque, sem percorrer menus. */}
-      <div className="grid grid-cols-2 gap-2 px-2 sm:grid-cols-4" aria-label="Ações rápidas da administração">
-        <Button
-          className="h-12 justify-start gap-2 rounded-xl font-bold"
-          onClick={() => {
-            setQuickCreateCategory(null);
-            setQuickCreateSemester(null);
-            setShowQuickCreate(true);
-          }}
-        >
-          <Plus className="h-4 w-4" /> Nova apostila
-        </Button>
-        <Button variant="outline" className="h-12 justify-start gap-2 rounded-xl" onClick={() => onNavigate('apostilas')}>
-          <BookOpen className="h-4 w-4 text-primary" /> Buscar e editar
-        </Button>
-        <Button variant="outline" className="h-12 justify-start gap-2 rounded-xl" onClick={() => onNavigate('users')}>
-          <Users className="h-4 w-4 text-primary" /> Alunos
-        </Button>
-        <Button variant="outline" className="h-12 justify-start gap-2 rounded-xl" onClick={() => onNavigate('ads')}>
-          <Megaphone className="h-4 w-4 text-primary" /> Anúncios
-        </Button>
-      </div>
+      {/* Fluxos principais: linguagem clara, poucos ícones e acesso em um clique. */}
+      <section className="space-y-3 px-2" aria-label="Ações rápidas da administração">
+        <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h2 className="text-base font-bold">O que você precisa fazer?</h2>
+            <p className="text-xs text-muted-foreground">Comece uma tarefa daqui, sem procurar a função em vários menus.</p>
+          </div>
+          <span className="text-[10px] font-semibold uppercase tracking-widest text-primary">Acesso em um clique</span>
+        </div>
+
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3">
+          <button
+            type="button"
+            className="min-h-24 rounded-xl border border-primary/40 bg-primary px-4 py-3 text-left text-primary-foreground shadow-lg shadow-primary/10 transition hover:-translate-y-0.5 hover:shadow-primary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            onClick={() => {
+              setQuickCreateCategory(null);
+              setQuickCreateSemester(null);
+              setShowQuickCreate(true);
+            }}
+          >
+            <span className="block text-sm font-black">Criar uma apostila</span>
+            <span className="mt-1 block text-xs leading-relaxed opacity-85">Informe matéria, semestre e título no mesmo formulário.</span>
+          </button>
+
+          <button
+            type="button"
+            disabled={!mostRecentlyEdited}
+            className="min-h-24 rounded-xl border border-border/80 bg-card/60 px-4 py-3 text-left transition hover:border-primary/50 hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50"
+            onClick={() => mostRecentlyEdited && handleEdit(mostRecentlyEdited)}
+          >
+            <span className="block text-sm font-bold">Continuar última edição</span>
+            <span className="mt-1 block truncate text-xs text-muted-foreground" title={mostRecentlyEdited?.title}>
+              {mostRecentlyEdited?.title || 'Nenhuma apostila disponível'}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            className="min-h-24 rounded-xl border border-border/80 bg-card/60 px-4 py-3 text-left transition hover:border-primary/50 hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            onClick={() => onNavigate('apostilas')}
+          >
+            <span className="block text-sm font-bold">Localizar e editar conteúdo</span>
+            <span className="mt-1 block text-xs leading-relaxed text-muted-foreground">Pesquise, filtre, publique, oculte ou organize as apostilas.</span>
+          </button>
+
+          <button type="button" className="min-h-20 rounded-xl border border-border/70 bg-card/30 px-4 py-3 text-left transition hover:border-primary/40 hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" onClick={() => onNavigate('users')}>
+            <span className="block text-sm font-bold">Gerenciar alunos</span>
+            <span className="mt-1 block text-xs text-muted-foreground">Cadastrar, localizar e ajustar acessos.</span>
+          </button>
+
+          <button type="button" className="min-h-20 rounded-xl border border-border/70 bg-card/30 px-4 py-3 text-left transition hover:border-primary/40 hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" onClick={() => onNavigate('ads')}>
+            <span className="block text-sm font-bold">Gerenciar anúncios</span>
+            <span className="mt-1 block text-xs text-muted-foreground">Criar, revisar e acompanhar campanhas.</span>
+          </button>
+
+          <button type="button" className="min-h-20 rounded-xl border border-border/70 bg-card/30 px-4 py-3 text-left transition hover:border-primary/40 hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" onClick={() => onNavigate('exercises')}>
+            <span className="block text-sm font-bold">Gerenciar exercícios</span>
+            <span className="mt-1 block text-xs text-muted-foreground">Revisar questões e atividades cadastradas.</span>
+          </button>
+        </div>
+      </section>
 
       {/* Grid de Métricas Principais - Mais Limpo e Profissional */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 px-2">
