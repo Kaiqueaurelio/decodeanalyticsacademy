@@ -753,6 +753,29 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
         </div>
       </div>
 
+      {/* Atalhos das tarefas mais frequentes: um toque, sem percorrer menus. */}
+      <div className="grid grid-cols-2 gap-2 px-2 sm:grid-cols-4" aria-label="Ações rápidas da administração">
+        <Button
+          className="h-12 justify-start gap-2 rounded-xl font-bold"
+          onClick={() => {
+            setQuickCreateCategory(null);
+            setQuickCreateSemester(null);
+            setShowQuickCreate(true);
+          }}
+        >
+          <Plus className="h-4 w-4" /> Nova apostila
+        </Button>
+        <Button variant="outline" className="h-12 justify-start gap-2 rounded-xl" onClick={() => onNavigate('apostilas')}>
+          <BookOpen className="h-4 w-4 text-primary" /> Buscar e editar
+        </Button>
+        <Button variant="outline" className="h-12 justify-start gap-2 rounded-xl" onClick={() => onNavigate('users')}>
+          <Users className="h-4 w-4 text-primary" /> Alunos
+        </Button>
+        <Button variant="outline" className="h-12 justify-start gap-2 rounded-xl" onClick={() => onNavigate('ads')}>
+          <Megaphone className="h-4 w-4 text-primary" /> Anúncios
+        </Button>
+      </div>
+
       {/* Grid de Métricas Principais - Mais Limpo e Profissional */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 px-2">
         {cards.map((card) => (
