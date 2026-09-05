@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { supabase as supabaseTyped } from '@/integrations/supabase/client';
+import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL, supabase as supabaseTyped } from '@/integrations/supabase/client';
+import { getCurrentSession } from '@/lib/auth-session';
 const supabase = supabaseTyped as any;
 import { useAuth } from './useAuth';
 import { toPromoMediaUrl } from '@/lib/promo-media';
@@ -102,20 +103,20 @@ export function useAds(adType?: 'banner' | 'popup' | 'inline' | 'sidebar' | 'foo
       if (adType) qs.set('ad_type', adType);
       if (targetPage) qs.set('target_page', targetPage);
 
-      const { data: sess } = await supabase.auth.getSession();
-      const token = sess?.session?.access_token;
-      const isExpired = sess?.session?.expires_at ? new Date(sess.session.expires_at * 1000) < new Date() : false;
+      const session = getCurrentSession();
+      const token = session?.access_token;
+      const isExpired = session?.expires_at ? session.expires_at * 1000 <= Date.now() : false;
 
       // Telemetria básica de estado de rede/sessão
       if (!token || isExpired) {
         console.debug('[Ads] Chamada sem token válido ou sessão expirada.', { hasToken: !!token, isExpired });
       }
 
-      const fnUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/list-ads${qs.toString() ? `?${qs}` : ''}`;
+      const fnUrl = `${SUPABASE_URL}/functions/v1/list-ads${qs.toString() ? `?${qs}` : ''}`;
       const res = await fetch(fnUrl, {
         method: 'GET',
         headers: {
-          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          apikey: SUPABASE_PUBLISHABLE_KEY,
           ...(token && !isExpired ? { Authorization: `Bearer ${token}` } : {}),
         },
       });
