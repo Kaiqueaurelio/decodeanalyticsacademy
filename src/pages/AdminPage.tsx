@@ -999,14 +999,28 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
 
   const loadAll = async () => {
     setRefreshing(true);
-    const [{ data: ap }, { data: ex }, { data: ans }, { data: mats }, { data: cats }, { data: profs }] = await Promise.all([
-      supabase.from('apostilas').select('*').order('created_at', { ascending: false }),
-      (supabase as any).rpc('admin_list_exercises'),
-      supabase.from('answers').select('*'),
-      supabase.from('materials').select('*').order('created_at', { ascending: false }),
-      supabase.from('categories').select('*').order('sort_order', { ascending: true }),
-      supabase.from('profiles').select('*').order('created_at', { ascending: false }),
-    ]);
+    try {
+      const [apResult, exResult, ansResult, matsResult, catsResult, profsResult] = await Promise.all([
+        supabase.from('apostilas').select('*').order('created_at', { ascending: false }),
+        (supabase as any).rpc('admin_list_exercises'),
+        supabase.from('answers').select('*'),
+        supabase.from('materials').select('*').order('created_at', { ascending: false }),
+        supabase.from('categories').select('*').order('sort_order', { ascending: true }),
+        supabase.from('profiles').select('*').order('created_at', { ascending: false }),
+      ]);
+      const failed = [apResult, exResult, ansResult, matsResult, catsResult, profsResult]
+        .filter((result) => result.error);
+      if (failed.length > 0) {
+        console.error('[AdminPage] falha ao sincronizar dados:', failed.map((result) => result.error));
+        toast.error('Alguns dados não puderam ser atualizados. Mantivemos as informações já carregadas; tente sincronizar novamente.');
+      }
+
+      const ap = apResult.error ? null : apResult.data;
+      const ex = exResult.error ? null : exResult.data;
+      const ans = ansResult.error ? null : ansResult.data;
+      const mats = matsResult.error ? null : matsResult.data;
+      const cats = catsResult.error ? null : catsResult.data;
+      const profs = profsResult.error ? null : profsResult.data;
     const apostilaRows = (ap || []) as AdminApostila[];
     const latestDateByApostila = new Map<string, string>();
     const pageCountByApostila = new Map<string, number>();
@@ -1033,20 +1047,29 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
         }
       }
     }
-    setApostilaPageCounts(Object.fromEntries(pageCountByApostila));
-    setApostilas(apostilaRows.map((apostila) => ({
-      ...apostila,
-      saved_date: latestDateByApostila.get(apostila.id) ?? null,
-    })));
+      if (!apResult.error) {
+        setApostilaPageCounts(Object.fromEntries(pageCountByApostila));
+        setApostilas(apostilaRows.map((apostila) => ({
+          ...apostila,
+          saved_date: latestDateByApostila.get(apostila.id) ?? null,
+        })));
+      }
 
-    const map: Record<string, Exercise[]> = {};
-    ex?.forEach(e => { if (!map[e.apostila_id]) map[e.apostila_id] = []; map[e.apostila_id].push(e); });
-    setExercises(map);
-    setAllAnswers(ans || []);
-    setMaterials(mats || []);
-    setUsers((profs || []).map(p => ({ id: p.id, user_id: p.user_id, full_name: p.full_name, email: p.email, is_blocked: (p as any).is_blocked ?? false, created_at: p.created_at, content_scope: (p as any).content_scope ?? 'full', account_type: (p as any).account_type } as any)));
-    setDbCategories((cats || []).map(c => ({ id: c.id, name: c.name, sort_order: c.sort_order })));
-    setRefreshing(false);
+      if (!exResult.error) {
+        const map: Record<string, Exercise[]> = {};
+        ex?.forEach((e: Exercise) => { if (!map[e.apostila_id]) map[e.apostila_id] = []; map[e.apostila_id].push(e); });
+        setExercises(map);
+      }
+      if (!ansResult.error) setAllAnswers(ans || []);
+      if (!matsResult.error) setMaterials(mats || []);
+      if (!profsResult.error) setUsers((profs || []).map(p => ({ id: p.id, user_id: p.user_id, full_name: p.full_name, email: p.email, is_blocked: (p as any).is_blocked ?? false, created_at: p.created_at, content_scope: (p as any).content_scope ?? 'full', account_type: (p as any).account_type } as any)));
+      if (!catsResult.error) setDbCategories((cats || []).map(c => ({ id: c.id, name: c.name, sort_order: c.sort_order })));
+    } catch (error) {
+      console.error('[AdminPage] erro inesperado ao sincronizar dados:', error);
+      toast.error('Não foi possível sincronizar o painel. Os dados já carregados foram preservados.');
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   type AdminExercisePayload = {

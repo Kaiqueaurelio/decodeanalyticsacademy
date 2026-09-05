@@ -18,4 +18,12 @@ describe('visibilidade das apostilas no painel administrativo', () => {
     expect(admin).not.toContain('const uniqueApostilas = new Map<string, Apostila>()');
     expect(admin).toContain('Não desduplicar por título/categoria na administração');
   });
+
+  it('preserva dados carregados quando uma sincronização falha', () => {
+    const admin = source('src/pages/AdminPage.tsx');
+
+    expect(admin).toContain("const ap = apResult.error ? null : apResult.data");
+    expect(admin).toContain("if (!apResult.error) {");
+    expect(admin).toContain('Os dados já carregados foram preservados.');
+  });
 });
