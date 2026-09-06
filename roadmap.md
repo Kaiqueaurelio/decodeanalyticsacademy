@@ -1,6 +1,6 @@
 # Roadmap
 
-- [ ] Diagnosticar e corrigir timeout no login dos alunos em produção
+- [x] Diagnosticar e corrigir timeout no login dos alunos em produção
 - [ ] Validar login real por e-mail e por RA no app publicado
 - [ ] Publicar a Central de Conteúdo e confirmar acesso no app público
 - [x] Criar Central de Conteúdo com alunos, apostilas e páginas
