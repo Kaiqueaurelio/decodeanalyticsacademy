@@ -339,6 +339,16 @@ async function migrateLegacyAccount(
   password: string,
 ) {
   try {
+    // Nunca encaminhar a migração para o próprio projeto. Depois da troca de
+    // backend, LEGACY_SUPABASE_URL chegou a apontar para SUPABASE_URL e cada
+    // credencial inválida criava uma nova chamada a ra-auth até o timeout.
+    const activeUrl = Deno.env.get("SUPABASE_URL")?.replace(/\/$/, "");
+    const legacyUrl = LEGACY_SUPABASE_URL.replace(/\/$/, "");
+    if (!activeUrl || legacyUrl === activeUrl) {
+      console.warn("ra-auth: legacy migration skipped (same backend)");
+      return null;
+    }
+
     const legacyAnonKey = await getLegacyAnonKey();
     if (!legacyAnonKey) return null;
     const legacyAuthResponse = await fetch(`${LEGACY_SUPABASE_URL}/functions/v1/ra-auth`, {

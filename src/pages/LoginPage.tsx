@@ -358,6 +358,7 @@ export default function LoginPage() {
       !authResult.data?.session &&
       authResult.status !== 429 &&
       (authResult.status === 503 ||
+        authResult.status === 408 ||
         authResult.status === 0 ||
         (authResult.status === 401 && (isEmail || normalizedRa === 'G802144')));
 
