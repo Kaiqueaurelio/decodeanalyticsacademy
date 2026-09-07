@@ -370,8 +370,9 @@ export default function LoginPage() {
     // persistente e resolve o e-mail sem expor o mapeamento ao cliente.
     let authResult = await callRaAuth({ mode: 'signin', ra: identifierForAuth.trim(), password });
 
-    // Se a função estiver temporariamente inacessível, responder 503 ou
-    // rejeitar o mapeamento de um e-mail/RA conhecido, tentamos o Auth nativo.
+    // Se a função estiver temporariamente inacessível ou rejeitar um RA que já
+    // existe no Auth, tentamos o mesmo login diretamente no projeto ativo.
+    // A senha continua sendo validada pelo Supabase; HTTP 429 nunca faz fallback.
     // HTTP 429 nunca usa fallback: o bloqueio persistente deve ser respeitado.
     const canUseDirectAuthFallback =
       !authResult.data?.session &&
@@ -379,7 +380,7 @@ export default function LoginPage() {
       (authResult.status === 503 ||
         authResult.status === 408 ||
         authResult.status === 0 ||
-        (authResult.status === 401 && (isEmail || normalizedRa === 'G802144')));
+        (authResult.status === 401 && (isEmail || isValidRa(normalizedRa) || normalizedRa === 'G802144')));
 
     if (canUseDirectAuthFallback) {
       const fallbackEmail = isEmail

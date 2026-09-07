@@ -28,7 +28,7 @@ describe('ra-auth resilience guards', () => {
 
     expect(code).toContain('authResult.status === 503');
     expect(code).toContain('authResult.status === 0');
-    expect(code).toContain("authResult.status === 401 && (isEmail || normalizedRa === 'G802144')");
+    expect(code).toContain("authResult.status === 401 && (isEmail || isValidRa(normalizedRa) || normalizedRa === 'G802144')");
     expect(code).toContain('authResult.status !== 429');
     expect(code).toContain('supabase.auth.signInWithPassword');
     expect(code).toContain("normalizedRa === 'G802144'");
