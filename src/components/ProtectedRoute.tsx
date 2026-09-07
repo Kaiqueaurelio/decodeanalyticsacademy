@@ -4,6 +4,7 @@ import { useUserProfile } from '@/hooks/queries/useUserProfile';
 import { ShieldBan } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { GlitchLoader } from '@/components/GlitchLoader';
+import { buildLoginRedirect } from '@/lib/auth-navigation';
 
 export function ProtectedRoute({ children, adminOnly = false, blockForEnem = false }: { children: React.ReactNode; adminOnly?: boolean; blockForEnem?: boolean }) {
   const { user, session, status, isSessionHydrated, isAdmin, isBlocked, loading, roleChecked, signOut } = useAuth();
@@ -22,8 +23,7 @@ export function ProtectedRoute({ children, adminOnly = false, blockForEnem = fal
     const intended = typeof window !== 'undefined'
       ? `${window.location.pathname}${window.location.search}${window.location.hash}`
       : '/dashboard';
-    const next = intended && intended !== '/login' ? `?next=${encodeURIComponent(intended)}` : '';
-    return <Navigate to={`/login${next}`} replace />;
+    return <Navigate to={buildLoginRedirect(intended)} replace />;
   }
 
   if (!user || !session) {

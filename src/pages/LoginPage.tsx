@@ -18,6 +18,7 @@ import { motionTokens, type AsyncStatus } from '@/lib/motion';
 import { SECURITY_COPY } from '@/lib/security-copy';
 import { GlitchText } from '@/components/login/GlitchText';
 import { AuthRequestTimeout, fetchAuthResponse } from '@/lib/auth-request';
+import { normalizePostLoginDestination } from '@/lib/auth-navigation';
 
 export default function LoginPage() {
   const { signUp, user, roleChecked, loading: authLoading, status, isSessionHydrated } = useAuth();
@@ -133,9 +134,9 @@ export default function LoginPage() {
     const completeNavigation = () => {
       const params = new URLSearchParams(window.location.search);
       const nextParam = params.get('next');
-      const isSafeNext = nextParam && nextParam.startsWith('/') && !nextParam.startsWith('//');
-      if (isSafeNext) {
-        navigate(nextParam, { replace: true });
+      const safeNext = normalizePostLoginDestination(nextParam);
+      if (safeNext) {
+        navigate(safeNext, { replace: true });
         return;
       }
       const lastRoute = localStorage.getItem('decode_last_route');
