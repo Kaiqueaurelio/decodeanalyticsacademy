@@ -129,6 +129,24 @@ export default function LoginPage() {
   }, []);
 
   useEffect(() => {
+    if (status === 'authenticated') return;
+
+    const params = new URLSearchParams(window.location.search);
+    const rawNext = params.get('next');
+    if (!rawNext) return;
+
+    const safeNext = normalizePostLoginDestination(rawNext);
+    const canonicalLoginUrl = safeNext
+      ? `/login?next=${encodeURIComponent(safeNext)}`
+      : '/login';
+    const currentUrl = `${window.location.pathname}${window.location.search}`;
+
+    if (currentUrl !== canonicalLoginUrl) {
+      navigate(canonicalLoginUrl, { replace: true });
+    }
+  }, [navigate, status]);
+
+  useEffect(() => {
     if (authSettling || status !== 'authenticated' || !user || !roleChecked) return;
 
     const completeNavigation = () => {

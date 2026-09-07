@@ -10,6 +10,8 @@ describe('navegação após autenticação', () => {
   it('remove camadas duplicadas de login e recupera o destino real', () => {
     expect(normalizePostLoginDestination('/login?next=%2Flogin%3Fnext%3D%252Fadmin%253Ftab%253Dads'))
       .toBe('/admin?tab=ads');
+    expect(buildLoginRedirect('/login?next=%2Flogin%3Fnext%3D%252Fadmin%253Ftab%253Dads'))
+      .toBe('/login?next=%2Fadmin%3Ftab%3Dads');
   });
 
   it('não permite login recursivo nem redirecionamento externo', () => {
