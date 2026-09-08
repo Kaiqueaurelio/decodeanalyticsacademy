@@ -820,6 +820,21 @@ export function AdminDashboard({ onNavigate, isAdmin: isAdminProp, filterSemeste
             <span className="block text-sm font-bold">Gerenciar exercícios</span>
             <span className="mt-1 block text-xs text-muted-foreground">Revisar questões e atividades cadastradas.</span>
           </button>
+
+          <button type="button" className="min-h-20 rounded-xl border border-border/70 bg-card/30 px-4 py-3 text-left transition hover:border-primary/40 hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" onClick={() => onNavigate('materials')}>
+            <span className="block text-sm font-bold">Adicionar arquivo ou mídia</span>
+            <span className="mt-1 block text-xs text-muted-foreground">Enviar PDF, vídeo, áudio ou documento.</span>
+          </button>
+
+          <button type="button" className="min-h-20 rounded-xl border border-border/70 bg-card/30 px-4 py-3 text-left transition hover:border-primary/40 hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" onClick={() => onNavigate('announcements')}>
+            <span className="block text-sm font-bold">Publicar um aviso</span>
+            <span className="mt-1 block text-xs text-muted-foreground">Comunique uma novidade aos alunos.</span>
+          </button>
+
+          <button type="button" className="min-h-20 rounded-xl border border-border/70 bg-card/30 px-4 py-3 text-left transition hover:border-primary/40 hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" onClick={() => onNavigate('calendar')}>
+            <span className="block text-sm font-bold">Agendar prova ou evento</span>
+            <span className="mt-1 block text-xs text-muted-foreground">Cadastrar uma data no calendário acadêmico.</span>
+          </button>
         </div>
       </section>
 
