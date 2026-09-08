@@ -42,7 +42,10 @@ const TYPE_ICONS: Record<string, any> = {
 export function ApostilaMaterialsManager({ apostilaId, apostilaTitle, open: openProp, onOpenChange, hideTrigger }: Props) {
   const [internalOpen, setInternalOpen] = useState(false);
   const open = openProp ?? internalOpen;
-  const setOpen = (v: boolean) => { onOpenChange ? onOpenChange(v) : setInternalOpen(v); };
+  const setOpen = (v: boolean) => {
+    if (onOpenChange) onOpenChange(v);
+    else setInternalOpen(v);
+  };
   const [linked, setLinked] = useState<LinkedMaterial[]>([]);
   const [allMaterials, setAllMaterials] = useState<{ id: string; title: string; type: string; file_url: string | null; description: string | null }[]>([]);
   const [search, setSearch] = useState('');

@@ -3524,7 +3524,13 @@ export default function AdminPage({ tab: propTab, setTab: propSetTab }: AdminPag
 
                     <div
                       onDragOver={onDragOver} onDragLeave={onDragLeave}
-                      onDrop={e => { e.preventDefault(); setDragActive(false); const files = Array.from(e.dataTransfer.files); files.length === 1 ? handleFileDrop(files[0]) : handleMultiUpload(files); }}
+                      onDrop={e => {
+                        e.preventDefault();
+                        setDragActive(false);
+                        const files = Array.from(e.dataTransfer.files);
+                        if (files.length === 1) handleFileDrop(files[0]);
+                        else handleMultiUpload(files);
+                      }}
                       onClick={() => !matFile && fileInputRef.current?.click()}
                       className={`relative flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-10 cursor-pointer transition-all duration-300 ${
                         dragActive ? 'border-primary bg-primary/10 scale-[1.01] shadow-lg' : matFile ? 'border-primary/40 bg-primary/5 cursor-default' : 'border-border/60 hover:border-primary/50 hover:bg-muted/30'

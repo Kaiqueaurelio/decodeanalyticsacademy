@@ -23,7 +23,10 @@ type RowResult = { url: string; title: string; status: 'ok' | 'error'; error?: s
 export function AppendLinkDialog({ apostilaId, apostilaTitle, currentContent, trigger, onDone, open: openProp, onOpenChange }: AppendLinkDialogProps) {
   const [internalOpen, setInternalOpen] = useState(false);
   const open = openProp ?? internalOpen;
-  const setOpen = (v: boolean) => { onOpenChange ? onOpenChange(v) : setInternalOpen(v); };
+  const setOpen = (v: boolean) => {
+    if (onOpenChange) onOpenChange(v);
+    else setInternalOpen(v);
+  };
   const [urls, setUrls] = useState('');
   const [running, setRunning] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
