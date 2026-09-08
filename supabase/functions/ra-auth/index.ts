@@ -159,8 +159,14 @@ Deno.serve(async (req) => {
     let resolvedEmail: string | null = null;
     
     // Prioridade 1: Busca por RA exato no perfil
-    const { data: profileByRa } = await admin.from('profiles').select('email').eq('ra', ra).maybeSingle();
-    if (profileByRa?.email) {
+    const { data: profileByRa } = await admin.from('profiles').select('user_id, email').eq('ra', ra).maybeSingle();
+    if (profileByRa?.user_id) {
+      // O e-mail salvo no perfil pode ser apenas o contato do aluno e pode até
+      // coincidir com outra conta criada por e-mail. Para login por RA, use
+      // sempre o e-mail real da identidade Auth vinculada ao user_id do perfil.
+      const { data: authUser } = await admin.auth.admin.getUserById(profileByRa.user_id);
+      resolvedEmail = authUser?.user?.email || profileByRa.email || null;
+    } else if (profileByRa?.email) {
       resolvedEmail = profileByRa.email;
     } else {
       // Prioridade 2: Se 'ra' já for um e-mail válido, usa ele diretamente

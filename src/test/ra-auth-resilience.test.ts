@@ -6,6 +6,13 @@ function source(relativePath: string) {
 }
 
 describe('ra-auth resilience guards', () => {
+  it('resolves RA login through the linked Auth identity instead of a contact email', () => {
+    const code = source('supabase/functions/ra-auth/index.ts');
+    expect(code).toContain("select('user_id, email').eq('ra', ra)");
+    expect(code).toContain('admin.auth.admin.getUserById(profileByRa.user_id)');
+    expect(code).toContain('authUser?.user?.email || profileByRa.email || null');
+  });
+
   it('does not turn an unavailable rate-limit RPC into a global login outage', () => {
     const code = source('supabase/functions/ra-auth/index.ts');
 
