@@ -101,7 +101,9 @@ type ApostilaPageRow = {
   saved_date?: string | null;
 };
 
-function buildPagesModule(apostilaId: string, pages: ApostilaPageRow[]): ModuleT | null {
+type ApostilaPageProgress = Record<string, "in_progress" | "completed">;
+
+function buildPagesModule(apostilaId: string, pages: ApostilaPageRow[], pageProgress: ApostilaPageProgress = {}): ModuleT | null {
   if (pages.length === 0) return null;
 
   return {
@@ -123,7 +125,7 @@ function buildPagesModule(apostilaId: string, pages: ApostilaPageRow[]): ModuleT
         estimated_minutes: null,
         difficulty: null,
         content_status: 'ready',
-        progress_status: null,
+        progress_status: pageProgress[page.id] || null,
         bookmarked: false,
         content_md: page.content || '',
         saved_date: getApostilaPageSavedDate(page),
@@ -132,8 +134,8 @@ function buildPagesModule(apostilaId: string, pages: ApostilaPageRow[]): ModuleT
   };
 }
 
-function buildTreeFromPages(apostilaId: string, pages: ApostilaPageRow[]): Tree {
-  const pagesModule = buildPagesModule(apostilaId, pages);
+function buildTreeFromPages(apostilaId: string, pages: ApostilaPageRow[], pageProgress: ApostilaPageProgress = {}): Tree {
+  const pagesModule = buildPagesModule(apostilaId, pages, pageProgress);
   return {
     apostila_id: apostilaId,
     modules: pagesModule ? [pagesModule] : [],
@@ -167,7 +169,7 @@ function shouldRestoreRootContent(
   return !rootIsAlreadyRepresented && (!hasUsablePage || pageContentChars < mainContent.length * 0.25);
 }
 
-export function mergePagesIntoTree(tree: Tree, apostilaId: string, pages: ApostilaPageRow[]): Tree {
+export function mergePagesIntoTree(tree: Tree, apostilaId: string, pages: ApostilaPageRow[], pageProgress: ApostilaPageProgress = {}): Tree {
   const usablePages = pages.filter((page) => !isPlaceholderPageContent(page.content || ''));
   const prunedTree: Tree = {
     ...tree,
@@ -218,7 +220,7 @@ export function mergePagesIntoTree(tree: Tree, apostilaId: string, pages: Aposti
     if (key.length > savedLength) acc[duplicateIndex] = page;
     return acc;
   }, []);
-  const pagesModule = buildPagesModule(apostilaId, distinctPages);
+  const pagesModule = buildPagesModule(apostilaId, distinctPages, pageProgress);
   if (!pagesModule) return prunedTree;
 
   // O RPC pode retornar módulos estruturados e também existir conteúdo criado
@@ -367,9 +369,25 @@ export default function ApostilaReaderPage() {
           position: -1,
         });
       }
+      let pageProgress: ApostilaPageProgress = {};
+      const { data: authData } = await supabase.auth.getUser();
+      if (authData?.user?.id) {
+        const { data: progressRows, error: pageProgressError } = await (supabase.from("apostila_page_progress" as any) as any)
+          .select("page_key, status")
+          .eq("user_id", authData.user.id)
+          .eq("apostila_id", id);
+        if (pageProgressError) {
+          console.warn('[ApostilaReader] Progresso das páginas indisponível.', pageProgressError);
+        } else {
+          pageProgress = Object.fromEntries(
+            (progressRows || []).map((row: { page_key: string; status: "in_progress" | "completed" }) => [row.page_key, row.status]),
+          );
+        }
+      }
+
       const t = contentPages.length > 0
-        ? mergePagesIntoTree(rpcTree, id, contentPages)
-        : (rpcTree.modules?.length > 0 ? rpcTree : buildTreeFromPages(id, contentPages));
+        ? mergePagesIntoTree(rpcTree, id, contentPages, pageProgress)
+        : (rpcTree.modules?.length > 0 ? rpcTree : buildTreeFromPages(id, contentPages, pageProgress));
 
       if (rpcTree.modules?.length === 0 && savedPages.length === 0) {
         console.warn(`[ApostilaReader] No structured lessons or saved pages found for ${id}.`);
@@ -452,6 +470,23 @@ export default function ApostilaReaderPage() {
         const pageUserId = pageUserData?.user?.id;
         if (pageUserId) {
           setNoteText(localStorage.getItem(`apostila_page_note_${pageUserId}_${selectedLessonId.slice(5)}`) || '');
+          const pageStatus = currentLesson?.progress_status === "completed" ? "completed" : "in_progress";
+          const { error: pageProgressError } = await (supabase.from("apostila_page_progress" as any) as any).upsert(
+            {
+              user_id: pageUserId,
+              apostila_id: id,
+              page_key: selectedLessonId.slice(5),
+              status: pageStatus,
+              completed_at: pageStatus === "completed" ? new Date().toISOString() : null,
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: "user_id,apostila_id,page_key" },
+          );
+          if (pageProgressError) console.error('[ApostilaReader] Falha ao registrar abertura da página:', pageProgressError);
+          setTree((t) => updateLessonInTree(t, selectedLessonId, (lesson) => ({
+            ...lesson,
+            progress_status: lesson.progress_status === "completed" ? "completed" : "in_progress",
+          })));
         }
         contentRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
         return;
@@ -537,10 +572,28 @@ export default function ApostilaReaderPage() {
     if (!userId) return;
     const nextStatus = currentLesson.progress_status === "completed" ? "in_progress" : "completed";
     if (selectedLessonId.startsWith('page:')) {
+      const { error } = await (supabase.from("apostila_page_progress" as any) as any).upsert(
+        {
+          user_id: userId,
+          apostila_id: id,
+          page_key: selectedLessonId.slice(5),
+          status: nextStatus,
+          completed_at: nextStatus === "completed" ? new Date().toISOString() : null,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "user_id,apostila_id,page_key" },
+      );
+      if (error) {
+        console.error('[ApostilaReader] Falha ao salvar conclusão da página:', error);
+        toast.error('Não foi possível salvar a conclusão. Tente novamente.');
+        return;
+      }
       setTree((t) => updateLessonInTree(t, selectedLessonId, (l) => ({
         ...l,
         progress_status: nextStatus as "completed" | "in_progress",
       })));
+      queryClient.invalidateQueries({ queryKey: ['dashboard', 'stats', userId] });
+      queryClient.invalidateQueries({ queryKey: ['apostilas', 'list'] });
       toast.success(nextStatus === "completed" ? "Página concluída" : "Página marcada como em progresso");
       return;
     }
