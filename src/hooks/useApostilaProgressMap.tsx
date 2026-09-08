@@ -65,23 +65,39 @@ export function useApostilaProgressMap() {
           totals[apostilaId] = (totals[apostilaId] || 0) + 1;
         }
 
+        const completedPageKeys = new Set(
+          ((pageProgressRes.data as any[]) || [])
+            .filter((row) => row?.status === 'completed' || row?.status === 'concluida')
+            .map((row) => `${row.apostila_id}:${row.page_key}`),
+        );
+        const localPageProgress = new Map<string, Record<string, string>>();
+        const completed: Record<string, number> = {};
+
         for (const row of (pagesRes.data as any[]) || []) {
           if (!row?.apostila_id || !row?.id) continue;
           totals[row.apostila_id] = (totals[row.apostila_id] || 0) + 1;
+          if (!localPageProgress.has(row.apostila_id)) {
+            try {
+              localPageProgress.set(
+                row.apostila_id,
+                JSON.parse(localStorage.getItem(`apostila_page_progress_${user.id}_${row.apostila_id}`) || '{}'),
+              );
+            } catch {
+              localPageProgress.set(row.apostila_id, {});
+            }
+          }
+          const completedInDatabase = completedPageKeys.has(`${row.apostila_id}:${row.id}`);
+          const completedOnDevice = localPageProgress.get(row.apostila_id)?.[row.id] === 'completed';
+          if (completedInDatabase || completedOnDevice) {
+            completed[row.apostila_id] = (completed[row.apostila_id] || 0) + 1;
+          }
         }
 
-        const completed: Record<string, number> = {};
         for (const row of (progressRes.data as any[]) || []) {
           if (row?.status !== 'completed' && row?.status !== 'concluida') continue;
           const apostilaId = lessonToApostila.get(row.lesson_id);
           if (!apostilaId) continue;
           completed[apostilaId] = (completed[apostilaId] || 0) + 1;
-        }
-
-        for (const row of (pageProgressRes.data as any[]) || []) {
-          if (row?.status !== 'completed' && row?.status !== 'concluida') continue;
-          if (!row?.apostila_id) continue;
-          completed[row.apostila_id] = (completed[row.apostila_id] || 0) + 1;
         }
 
         const next: ApostilaProgressMap = {};

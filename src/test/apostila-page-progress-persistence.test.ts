@@ -12,11 +12,13 @@ describe('apostila page progress persistence', () => {
     expect(reader).toContain('from("apostila_page_progress" as any)');
     expect(reader).toContain('page_key: selectedLessonId.slice(5)');
     expect(reader).toContain('pageProgress[page.id] || null');
+    expect(reader).toContain('getLocalPageProgress(authData.user.id, id)');
+    expect(reader).toContain('saveLocalPageProgress(userId, id, selectedLessonId.slice(5), nextStatus)');
   });
 
   it('keeps page progress private to its student', () => {
     expect(migration).toContain('ENABLE ROW LEVEL SECURITY');
-    expect(migration).toContain('auth.uid() = user_id');
+    expect(migration).toContain('(select auth.uid()) = user_id');
     expect(migration).toContain('UNIQUE (user_id, apostila_id, page_key)');
   });
 });

@@ -14,5 +14,6 @@ describe('dashboard reading progress', () => {
   it('includes pages created in the editor in the reading total', () => {
     expect(progressHook).toContain("from('apostila_pages' as any)");
     expect(progressHook).toContain("from('apostila_page_progress' as any)");
+    expect(progressHook).toContain('completedInDatabase || completedOnDevice');
   });
 });

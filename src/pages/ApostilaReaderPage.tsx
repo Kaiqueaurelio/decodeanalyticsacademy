@@ -103,6 +103,20 @@ type ApostilaPageRow = {
 
 type ApostilaPageProgress = Record<string, "in_progress" | "completed">;
 
+function getLocalPageProgress(userId: string, apostilaId: string): ApostilaPageProgress {
+  try {
+    return JSON.parse(localStorage.getItem(`apostila_page_progress_${userId}_${apostilaId}`) || '{}');
+  } catch {
+    return {};
+  }
+}
+
+function saveLocalPageProgress(userId: string, apostilaId: string, pageKey: string, status: "in_progress" | "completed") {
+  const progress = getLocalPageProgress(userId, apostilaId);
+  progress[pageKey] = status;
+  localStorage.setItem(`apostila_page_progress_${userId}_${apostilaId}`, JSON.stringify(progress));
+}
+
 function buildPagesModule(apostilaId: string, pages: ApostilaPageRow[], pageProgress: ApostilaPageProgress = {}): ModuleT | null {
   if (pages.length === 0) return null;
 
@@ -372,6 +386,7 @@ export default function ApostilaReaderPage() {
       let pageProgress: ApostilaPageProgress = {};
       const { data: authData } = await supabase.auth.getUser();
       if (authData?.user?.id) {
+        pageProgress = getLocalPageProgress(authData.user.id, id);
         const { data: progressRows, error: pageProgressError } = await (supabase.from("apostila_page_progress" as any) as any)
           .select("page_key, status")
           .eq("user_id", authData.user.id)
@@ -379,9 +394,12 @@ export default function ApostilaReaderPage() {
         if (pageProgressError) {
           console.warn('[ApostilaReader] Progresso das páginas indisponível.', pageProgressError);
         } else {
-          pageProgress = Object.fromEntries(
-            (progressRows || []).map((row: { page_key: string; status: "in_progress" | "completed" }) => [row.page_key, row.status]),
-          );
+          pageProgress = {
+            ...pageProgress,
+            ...Object.fromEntries(
+              (progressRows || []).map((row: { page_key: string; status: "in_progress" | "completed" }) => [row.page_key, row.status]),
+            ),
+          };
         }
       }
 
@@ -482,7 +500,8 @@ export default function ApostilaReaderPage() {
             },
             { onConflict: "user_id,apostila_id,page_key" },
           );
-          if (pageProgressError) console.error('[ApostilaReader] Falha ao registrar abertura da página:', pageProgressError);
+          if (pageProgressError) console.warn('[ApostilaReader] Progresso salvo localmente.', pageProgressError);
+          saveLocalPageProgress(pageUserId, id, selectedLessonId.slice(5), pageStatus);
           setTree((t) => updateLessonInTree(t, selectedLessonId, (lesson) => ({
             ...lesson,
             progress_status: lesson.progress_status === "completed" ? "completed" : "in_progress",
@@ -583,18 +602,17 @@ export default function ApostilaReaderPage() {
         },
         { onConflict: "user_id,apostila_id,page_key" },
       );
-      if (error) {
-        console.error('[ApostilaReader] Falha ao salvar conclusão da página:', error);
-        toast.error('Não foi possível salvar a conclusão. Tente novamente.');
-        return;
-      }
+      saveLocalPageProgress(userId, id, selectedLessonId.slice(5), nextStatus);
+      if (error) console.warn('[ApostilaReader] Conclusão salva neste dispositivo.', error);
       setTree((t) => updateLessonInTree(t, selectedLessonId, (l) => ({
         ...l,
         progress_status: nextStatus as "completed" | "in_progress",
       })));
       queryClient.invalidateQueries({ queryKey: ['dashboard', 'stats', userId] });
       queryClient.invalidateQueries({ queryKey: ['apostilas', 'list'] });
-      toast.success(nextStatus === "completed" ? "Página concluída" : "Página marcada como em progresso");
+      toast.success(nextStatus === "completed" ? "Página concluída" : "Página marcada como em progresso", {
+        description: error ? 'O estado foi salvo neste dispositivo.' : undefined,
+      });
       return;
     }
     await supabase.from("apostila_lesson_progress").upsert(
