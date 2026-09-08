@@ -350,9 +350,12 @@ export function MarkdownEditor({
       if (key === 's') {
         e.preventDefault();
         void handleManualSave();
-      } else if (key === 'p' || key === 'eye') {
+      } else if (key === 'p' && e.shiftKey) {
         e.preventDefault();
-        setViewMode(viewMode === 'preview' ? 'edit' : 'preview');
+        window.dispatchEvent(new CustomEvent('open-quick-add-section'));
+      } else if (key === 'p') {
+        e.preventDefault();
+        setViewMode((current) => current === 'preview' ? 'edit' : 'preview');
       } else if (key === 'k') {
         e.preventDefault();
         const previous = editor.getAttributes('link').href as string | undefined;
@@ -373,10 +376,6 @@ export function MarkdownEditor({
         e.preventDefault();
         // Inserir template ENEM
         editor.chain().focus().insertContent('### Questão ENEM\n\n**Texto Base:** ...\n\n**Pergunta:** ...\n\n- [ ] A) ...\n- [ ] B) ...\n- [ ] C) ...\n- [ ] D) ...\n- [ ] E) ...').run();
-      } else if (mod && e.shiftKey && key === 'p') {
-        e.preventDefault();
-        // Dispara o evento customizado que o Workbench está ouvindo
-        window.dispatchEvent(new CustomEvent('open-quick-add-section'));
       } else if (e.altKey && (key === '1' || key === '2' || key === '3')) {
         e.preventDefault();
         editor.chain().focus().toggleHeading({ level: parseInt(key) as 1 | 2 | 3 }).run();
@@ -395,7 +394,7 @@ export function MarkdownEditor({
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [editor, onSave]);
+  }, [editor, handleManualSave]);
 
   if (!editor) {
     return (
@@ -462,7 +461,7 @@ export function MarkdownEditor({
                <div className="flex flex-col h-full bg-card">
                   <div className="p-4 border-b border-border font-bold text-xs uppercase tracking-widest">Propriedades</div>
                   <ScrollArea className="flex-1 p-4">
-                    <EditorInspectorBody editor={editor} stats={stats} sel={useEditorSelection(editor)} />
+                    <MobileInspector editor={editor} stats={stats} />
                   </ScrollArea>
                </div>
             </SheetContent>
