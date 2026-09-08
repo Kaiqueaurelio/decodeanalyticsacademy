@@ -33,7 +33,7 @@ export function useApostilaProgressMap() {
     (async () => {
       setLoading(true);
       try {
-        const [lessonsRes, progressRes] = await Promise.all([
+        const [lessonsRes, progressRes, pagesRes, pageProgressRes] = await Promise.all([
           supabase
             .from('apostila_lessons')
             .select('id, apostila_chapters(apostila_modules(apostila_id))')
@@ -41,6 +41,13 @@ export function useApostilaProgressMap() {
           supabase
             .from('apostila_lesson_progress')
             .select('lesson_id, status')
+            .eq('user_id', user.id)
+            .limit(5000),
+          (supabase.from('apostila_pages' as any) as any)
+            .select('id, apostila_id')
+            .limit(5000),
+          (supabase.from('apostila_page_progress' as any) as any)
+            .select('apostila_id, page_key, status')
             .eq('user_id', user.id)
             .limit(5000),
         ]);
@@ -58,12 +65,23 @@ export function useApostilaProgressMap() {
           totals[apostilaId] = (totals[apostilaId] || 0) + 1;
         }
 
+        for (const row of (pagesRes.data as any[]) || []) {
+          if (!row?.apostila_id || !row?.id) continue;
+          totals[row.apostila_id] = (totals[row.apostila_id] || 0) + 1;
+        }
+
         const completed: Record<string, number> = {};
         for (const row of (progressRes.data as any[]) || []) {
           if (row?.status !== 'completed' && row?.status !== 'concluida') continue;
           const apostilaId = lessonToApostila.get(row.lesson_id);
           if (!apostilaId) continue;
           completed[apostilaId] = (completed[apostilaId] || 0) + 1;
+        }
+
+        for (const row of (pageProgressRes.data as any[]) || []) {
+          if (row?.status !== 'completed' && row?.status !== 'concluida') continue;
+          if (!row?.apostila_id) continue;
+          completed[row.apostila_id] = (completed[row.apostila_id] || 0) + 1;
         }
 
         const next: ApostilaProgressMap = {};

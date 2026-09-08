@@ -32,6 +32,7 @@ import { ContinueWhereLeftCard } from '@/components/ContinueWhereLeftCard';
 import { StudyHeatmap } from '@/components/gamification/StudyHeatmap';
 import { useApostilasList, useExerciseCounts, useDashboardStats, type ApostilaSummary } from '@/hooks/queries/useDashboardData';
 import { useUserProfile } from '@/hooks/queries/useUserProfile';
+import { useApostilaProgressMap } from '@/hooks/useApostilaProgressMap';
 import { BY_SEMESTER, canonicalSubjectKey } from '@/lib/subject-semester-map';
 import { CANONICAL_GROUPS, groupByCanonical, type CanonicalGroup } from '@/lib/subjectGroups';
 import { BookOpen, Search, X, ShieldCheck, Clock, Sparkles } from 'lucide-react';
@@ -55,6 +56,7 @@ export default function DashboardPage() {
   const gamification = useGamification();
   const examFocus = useExamFocus();
   const { data: profile } = useUserProfile(user?.id);
+  const { progressMap: readingProgress } = useApostilaProgressMap();
   const [selectedSemester, setSelectedSemester] = useState<number | null>(() => {
     const saved = localStorage.getItem('selectedSemestre');
     if (saved) return parseInt(saved, 10);
@@ -299,7 +301,8 @@ export default function DashboardPage() {
   }) : [];
   
   const disciplinesTotal = new Set(apostilas.map((a) => a.category || 'Geral')).size;
-  const apostilasIniciadas = Object.keys(stats.byApostila).length;
+  const apostilasIniciadas = Object.values(readingProgress).filter((item) => item.status !== 'nao-iniciada').length;
+  const apostilasConcluidas = Object.values(readingProgress).filter((item) => item.status === 'concluida').length;
   const overallAccuracy = answeredExercises > 0 ? Math.round((stats.hits / answeredExercises) * 100) : 0;
 
   const groupedApostilas = useMemo(() => groupByCanonical(apostilas), [apostilas]);
@@ -528,9 +531,9 @@ export default function DashboardPage() {
           <Reveal from="bottom" delay={50}>
             <ProgressSummaryRow
               disciplinas={{ ativas: new Set(apostilas.map((a) => a.category || 'Geral')).size, total: disciplinesTotal }}
-              atividades={{ concluidas: apostilasIniciadas, total: apostilas.length }}
+              atividades={{ concluidas: apostilasConcluidas, total: apostilas.length }}
               exercicios={{ resolvidos: answeredExercises, total: totalExercises }}
-              apostilas={{ lidas: apostilasIniciadas, total: apostilas.length }}
+              apostilas={{ lidas: apostilasConcluidas, total: apostilas.length }}
             />
           </Reveal>
 
