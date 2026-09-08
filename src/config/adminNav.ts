@@ -4,19 +4,15 @@ import {
   LayoutDashboard, 
   BookOpen, 
   Users, 
-  MessageSquare, 
   ShieldCheck, 
-  Terminal, 
-  FileText,
   AlertTriangle,
   History,
   Briefcase,
-  Rss,
   Play,
-  Share2,
-  Database,
-  BarChart3,
-  ListCheck
+  ListCheck,
+  Paperclip,
+  Megaphone,
+  CalendarDays,
 } from 'lucide-react';
 
 export type AdminTabId = 
@@ -61,35 +57,32 @@ export type AdminTabId =
 export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
   {
     id: 'main',
-    label: 'Principal',
+    label: 'Começar',
     items: [
-      { id: 'overview', label: 'Dashboard', icon: LayoutDashboard, desc: 'Visão geral do sistema' },
-      { id: 'cc-apostilas', label: 'Centro de Criação', icon: BookOpen, desc: 'Gerenciar apostilas e conteúdos' },
-      { id: 'users', label: 'Usuários', icon: Users, desc: 'Gestão de alunos e acessos', countKey: 'users' },
-      { id: 'jobs', label: 'Vagas e Estágios', icon: Briefcase, desc: 'Gestão de oportunidades' },
+      { id: 'overview', label: 'Central de Comando', icon: LayoutDashboard, desc: 'Tudo importante em um só lugar' },
     ]
   },
   {
-    id: 'system',
-    label: 'Sistema',
+    id: 'daily',
+    label: 'Trabalho diário',
     items: [
-      { id: 'ella-audit', label: 'Auditoria Ella', icon: MessageSquare, desc: 'Logs de interações da IA' },
-      { id: 'academic-audit', label: 'Auditoria Acadêmica', icon: ListCheck, desc: SECURITY_COPY.academicAuditDescription },
-      { id: 'security-alerts', label: 'Segurança', icon: AlertTriangle, desc: SECURITY_COPY.navigationDescription, countKey: 'securityAlerts' },
-      { id: 'apostila-validation', label: 'Diagnóstico Acadêmico', icon: ShieldCheck, desc: 'Validação de integridade' },
-
-      { id: 'mcp-settings', label: 'Terminal / MCP', icon: Terminal, desc: 'Configurações avançadas' },
-      { id: 'changelog', label: 'Histórico', icon: History, desc: 'Versões do aplicativo' },
+      { id: 'cc-apostilas', label: 'Conteúdos e Apostilas', icon: BookOpen, desc: 'Criar, editar e publicar', countKey: 'apostilas' },
+      { id: 'materials', label: 'Arquivos e Materiais', icon: Paperclip, desc: 'PDFs, vídeos, áudios e anexos', countKey: 'materials' },
+      { id: 'users', label: 'Alunos e Acessos', icon: Users, desc: 'Cadastrar e ajustar contas', countKey: 'users' },
+      { id: 'announcements', label: 'Avisos aos Alunos', icon: Megaphone, desc: 'Publicar comunicados' },
+      { id: 'calendar', label: 'Calendário', icon: CalendarDays, desc: 'Provas, trabalhos e eventos' },
+      { id: 'ads', label: 'Anúncios', icon: Play, desc: 'Publicidade exibida no aplicativo' },
+      { id: 'jobs', label: 'Vagas e Estágios', icon: Briefcase, desc: 'Oportunidades para os alunos' },
     ]
   },
   {
-    id: 'marketing',
-    label: 'Marketing & Conteúdo',
+    id: 'control',
+    label: 'Controle e qualidade',
     items: [
-      { id: 'leads', label: 'Leads', icon: Share2, desc: 'Interessados e parcerias' },
-      { id: 'sponsors', label: 'Patrocinadores', icon: ShieldCheck, desc: 'Gestão de marcas' },
-      { id: 'ads', label: 'Anúncios', icon: Play, desc: 'Publicidade interna' },
-      { id: 'rss', label: 'Fontes RSS', icon: Rss, desc: 'Agregador de notícias' },
+      { id: 'academic-audit', label: 'Qualidade Acadêmica', icon: ListCheck, desc: SECURITY_COPY.academicAuditDescription },
+      { id: 'apostila-validation', label: 'Verificar Apostilas', icon: ShieldCheck, desc: 'Encontrar conteúdo vazio ou inconsistente' },
+      { id: 'security-alerts', label: 'Segurança e Alertas', icon: AlertTriangle, desc: SECURITY_COPY.navigationDescription, countKey: 'securityAlerts' },
+      { id: 'changelog', label: 'Histórico de Alterações', icon: History, desc: 'Versões e mudanças do aplicativo' },
     ]
   }
 ];
