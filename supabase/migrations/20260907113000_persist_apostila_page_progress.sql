@@ -18,8 +18,8 @@ ALTER TABLE public.apostila_page_progress ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Users manage own apostila page progress" ON public.apostila_page_progress;
 CREATE POLICY "Users manage own apostila page progress"
   ON public.apostila_page_progress FOR ALL TO authenticated
-  USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id);
+  USING ((select auth.uid()) = user_id)
+  WITH CHECK ((select auth.uid()) = user_id);
 
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.apostila_page_progress TO authenticated;
 GRANT ALL ON public.apostila_page_progress TO service_role;
