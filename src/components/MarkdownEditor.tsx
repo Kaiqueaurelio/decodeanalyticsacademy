@@ -215,11 +215,6 @@ export function MarkdownEditor({
       externalRef.current = md;
       setStatus('unsaved');
       onChange(md);
-      window.clearTimeout((window as unknown as { __apsTimer?: number }).__apsTimer);
-      (window as unknown as { __apsTimer?: number }).__apsTimer = window.setTimeout(
-        () => setStatus('saved'),
-        800,
-      );
     },
   });
 
@@ -249,8 +244,9 @@ export function MarkdownEditor({
    */
   const handleManualSave = useCallback(async () => {
     setStatus('unsaved');
+    if (!onSave) return;
     try {
-      const result = await onSave?.();
+      const result = await onSave();
       setStatus(result === false ? 'unsaved' : 'saved');
     } catch {
       setStatus('unsaved');

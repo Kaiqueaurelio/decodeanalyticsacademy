@@ -802,18 +802,19 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
 
   const saveAndOpenApostilaManagement = async () => {
     const saved = await doSave(true);
-    if (!saved) return;
+    if (!saved) return false;
 
     const verified = await verifyPersistedContent();
     if (!verified) {
       toast.error('O salvamento falhou na validação final. Verifique se há erros no console.', {
         description: 'Tente salvar novamente ou verifique sua conexão.'
       });
-      return;
+      return false;
     }
 
     toast.success('Apostila salva e confirmada no banco de dados.');
     navigate('/admin?tab=apostilas', { replace: true });
+    return true;
   };
 
   const handleRestoreVersion = (version: { title: string; content: string }) => {
