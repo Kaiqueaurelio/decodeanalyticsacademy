@@ -26,7 +26,9 @@ export default defineConfig(({ mode }) => {
       },
     },
     react(),
-    mcpPlugin(),
+    // The MCP bundler treats Windows drive paths as npm packages (npm:C:\\...).
+    // Preserve the checked-in function locally; Linux deployments generate it.
+    process.platform !== "win32" && mcpPlugin(),
     mode === "development" && componentTagger(),
     // Service worker de app-shell desativado de propósito: instalações antigas
     // serviam HTML/JS em cache e exibiam versões antigas do app. O arquivo
