@@ -570,9 +570,12 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
             ...(!hasBlockingChronologyIssue ? { published: true } : {}),
             updated_at: savedAt,
           })
-          .eq('id', id);
+          .eq('id', id)
+          .select('id')
+          .single();
 
         if (publishError) {
+          toast.warning('Página salva, mas não foi possível confirmar sua visibilidade para os alunos. Verifique a publicação do caderno.');
           console.error('[Workbench] Failed to update parent apostila visibility:', publishError);
           void recordApostilaOperation({
             operationId,
@@ -665,7 +668,9 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     let { error } = await supabase
       .from('apostilas')
       .update(apostilaUpdate)
-      .eq('id', id);
+      .eq('id', id)
+      .select('id')
+      .single();
     if (error && isMissingApostilaPageSavedDateColumn(error)) {
       ({ error } = await supabase
         .from('apostilas')
@@ -677,7 +682,9 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
           semester,
           course: apostilaUpdate.course,
         })
-        .eq('id', id));
+        .eq('id', id)
+        .select('id')
+        .single());
     }
 
     setSaving(false);
@@ -867,8 +874,11 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       }
     }
 
-    setPublished(next);
-    const { error } = await supabase.from('apostilas').update({ published: next }).eq('id', id);
+    const { error } = await supabase.from('apostilas')
+      .update({ published: next, status: next ? 'liberada' : 'bloqueada' })
+      .eq('id', id)
+      .select('id')
+      .single();
     if (error) {
       setPublished(!next);
       void recordApostilaOperation({
@@ -883,6 +893,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       });
       toast.error('Falha ao alterar status');
     } else {
+      setPublished(next);
       void recordApostilaOperation({
         operationId,
         apostilaId: id,
