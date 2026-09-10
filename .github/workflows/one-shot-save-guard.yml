@@ -1,0 +1,99 @@
+name: One-shot save guard repair
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/one-shot-save-guard.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch save guard
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('src/pages/AdminApostilaWorkbench.tsx')
+          s = p.read_text()
+          old = """    const { data: currentApostila } = await supabase
+      .from('apostilas')
+      .select('title, content')
+      .eq('id', id)
+      .single();
+
+    if (currentApostila?.content?.trim() && !content.trim()) {"""
+          new = """    const { data: currentApostila, error: currentApostilaError } = await supabase
+      .from('apostilas')
+      .select('title, content')
+      .eq('id', id)
+      .single();
+
+    // Never interpret a failed pre-save read as an empty record. That could
+    // turn a transient RLS/network error into an accidental content wipe.
+    if (currentApostilaError) {
+      setSaving(false);
+      console.error('[Workbench] Falha ao ler a versão atual antes do salvamento:', currentApostilaError);
+      void recordApostilaOperation({
+        operationId,
+        apostilaId: id,
+        operationType,
+        phase: 'save',
+        status: 'failed',
+        errorCode: currentApostilaError.code || 'pre_save_read_failed',
+        errorMessage: currentApostilaError.message,
+        metadata: { chronologyStatus: chronology.status },
+      });
+      toast.error('Não foi possível confirmar a versão atual da apostila. A edição não foi sobrescrita.');
+      return false;
+    }
+
+    if (currentApostila?.content?.trim() && !content.trim()) {"""
+          if old not in s:
+            raise SystemExit('save guard pattern not found')
+          s = s.replace(old, new, 1)
+          old2 = """    if (currentApostila && (currentApostila.content !== content || currentApostila.title !== title)) {
+      await supabase.from('apostila_versions').insert({
+        apostila_id: id,
+        title: currentApostila.title,
+        content: currentApostila.content,
+        created_by: user?.id
+      });
+    }"""
+          new2 = """    if (currentApostila && (currentApostila.content !== content || currentApostila.title !== title)) {
+      const { error: versionError } = await supabase.from('apostila_versions').insert({
+        apostila_id: id,
+        title: currentApostila.title,
+        content: currentApostila.content,
+        created_by: user?.id
+      });
+      if (versionError) {
+        // Version history is auxiliary; preserve the user's primary save while
+        // making the failure observable instead of silently swallowing it.
+        console.warn('[Workbench] Não foi possível criar snapshot auxiliar:', versionError);
+      }
+    }"""
+          if old2 not in s:
+            raise SystemExit('version pattern not found')
+          s = s.replace(old2, new2, 1)
+          p.write_text(s)
+          PY
+      - name: Validate
+        run: |
+          npm ci
+          npm exec -- tsc --noEmit
+          npm test
+          npm exec -- vite build -- --minify false
+      - name: Commit repair
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/pages/AdminApostilaWorkbench.tsx
+          git commit -m "fix: guard apostila save against failed pre-read" || exit 0
+          git push origin HEAD:main
