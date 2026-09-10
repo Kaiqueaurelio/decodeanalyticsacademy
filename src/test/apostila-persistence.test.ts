@@ -9,6 +9,27 @@ vi.mock('@/integrations/supabase/client', () => ({
 }));
 
 describe('revision-safe apostila persistence', () => {
+  const pageDraft = { pageId: 'p1', apostilaId: 'a1', expectedRevision: 2, title: 'Aula', content: 'Texto completo', savedDate: '2026-09-10' };
+
+  it.each([null, [], [{ id: 'p1' }], [{ id: 'p1', apostila_id: 'a1', title: 'Aula', content: 'Texto parcial' }]])('rejeita confirmação incompleta: %j', async (data) => {
+    rpcMock.mockResolvedValueOnce({ data, error: null });
+    const { saveApostilaPageWithRevision } = await import('@/lib/apostila-persistence');
+    const result = await saveApostilaPageWithRevision(pageDraft);
+    expect(result.error).toMatchObject({ code: 'SAVE_NOT_CONFIRMED' });
+  });
+
+  it('aceita somente a página e o texto realmente devolvidos pelo banco', async () => {
+    const row = { id: 'p1', apostila_id: 'a1', title: 'Aula', content: 'Texto completo' };
+    rpcMock.mockResolvedValueOnce({ data: [row], error: null });
+    const { saveApostilaPageWithRevision } = await import('@/lib/apostila-persistence');
+    expect((await saveApostilaPageWithRevision(pageDraft)).error).toBeNull();
+  });
+
+  it('preserva conflitos de revisão sem repetir a gravação', async () => {
+    rpcMock.mockResolvedValueOnce({ data: null, error: { code: '40001' } });
+    const { saveApostilaPageWithRevision } = await import('@/lib/apostila-persistence');
+    expect((await saveApostilaPageWithRevision(pageDraft)).error).toEqual({ code: '40001' });
+  });
   it('calls the main apostila persistence RPC with the expected revision', async () => {
     rpcMock.mockResolvedValueOnce({ data: { id: 'book-1', content_revision: 8 }, error: null });
     const { saveApostilaWithRevision } = await import('@/lib/apostila-persistence');

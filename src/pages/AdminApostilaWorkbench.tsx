@@ -696,7 +696,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     };
     const { data: savedApostilaRows, error } = await saveApostilaWithRevision({
       apostilaId: id,
-      expectedRevision: Number(currentApostila.content_revision ?? contentRevision),
+      expectedRevision: contentRevision,
       title: apostilaUpdate.title,
       category: apostilaUpdate.category,
       content: apostilaUpdate.content,
@@ -711,8 +711,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     if (error) {
       console.error('Erro ao salvar:', error);
       if (error.code === '40001') {
-        toast.error('Esta apostila foi alterada por outra sessão. Recarregue antes de salvar novamente.');
-        void loadApostila(id);
+        toast.error('Esta apostila foi alterada por outra sessão. Sua edição foi preservada; copie o texto antes de recarregar para comparar as versões.');
       }
       void recordApostilaOperation({
         operationId,
@@ -725,7 +724,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         metadata: { chronologyStatus: chronology.status },
       });
       toast.error('Falha na sincronização. Edição mantida localmente.', {
-        description: 'Verifique sua conexão. Tentaremos salvar novamente em instantes.',
+        description: 'Sua edição continua aberta. Verifique a conexão e tente salvar novamente.',
         action: isManual ? {
           label: 'Tentar Agora',
           onClick: () => { void doSave(true); }
