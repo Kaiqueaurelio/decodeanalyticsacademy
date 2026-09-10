@@ -4,6 +4,13 @@ import { readFileSync } from 'node:fs';
 const source = readFileSync('src/pages/AdminApostilaWorkbench.tsx', 'utf8');
 
 describe('confirmação de salvamento e publicação', () => {
+  it('não trata uma falha de leitura como apostila vazia nem abre o editor incompleto', () => {
+    expect(source).toContain('[apRes.error, linksRes.error, countRes.error, pageResult.error]');
+    expect(source.indexOf('if (loadErrors.length > 0)')).toBeLessThan(source.indexOf('applyMainState(mainState)'));
+    expect(source).toContain('if (loadError) return (');
+    expect(source).toContain('Tentar novamente</Button>');
+    expect(source).not.toContain('const loadedPages = (pageRows || [])');
+  });
   it('não mostra Salvo por temporizador e propaga falhas ao editor', () => {
     const editor = readFileSync('src/components/MarkdownEditor.tsx', 'utf8');
     expect(editor).not.toContain('__apsTimer');

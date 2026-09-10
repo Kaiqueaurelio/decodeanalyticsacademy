@@ -77,6 +77,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
 
   // Estado da apostila atual
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('');
   const [content, setContent] = useState('');
@@ -185,7 +186,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         .limit(200);
       if (error) {
         console.error('[Workbench] Falha ao carregar lista de apostilas:', error);
-        toast.error('Não foi possível carregar a lista de apostilas.');
+        toast.error('Não foi possível carregar a lista de apostilas. Tente novamente.');
         return;
       }
       setApostilas((data as ApostilaLite[]) || []);
@@ -198,11 +199,13 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     const isCurrentRequest = () => loadRequestRef.current === requestId;
 
     setLoading(true);
+    setLoadError(null);
     initialLoadRef.current = true;
     const results = await Promise.allSettled([
       supabase.from('apostilas').select('*').eq('id', apostilaId).maybeSingle(),
       supabase.from('apostila_materials').select('id, sort_order, material_id').eq('apostila_id', apostilaId).order('sort_order'),
       supabase.from('exercises').select('id', { count: 'exact', head: true }).eq('apostila_id', apostilaId),
+      supabase.from('apostila_pages').select('*').eq('apostila_id', apostilaId).order('position'),
     ]);
 
     const apRes = results[0].status === 'fulfilled' ? results[0].value : { data: null, error: new Error('Network error') };
@@ -211,10 +214,13 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
 
     if (!isCurrentRequest()) return;
 
-    const loadErrors = [apRes.error, linksRes.error, countRes.error].filter(Boolean);
+    const pageResult = results[3].status === 'fulfilled'
+      ? results[3].value
+      : { data: null, error: new Error('Network error') };
+    const loadErrors = [apRes.error, linksRes.error, countRes.error, pageResult.error].filter(Boolean);
     if (loadErrors.length > 0) {
       console.error('[Workbench] Falha ao carregar dados da apostila:', loadErrors);
-      toast.error('Não foi possível carregar todos os dados desta apostila.');
+      setLoadError('Não foi possível carregar a apostila e suas páginas. Isso não significa que o conteúdo foi apagado. Verifique sua conexão e tente novamente.');
       setLoading(false);
       return;
     }
@@ -297,16 +303,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     setContentRevision(Number((ap as any).content_revision ?? 0));
     setExerciseCount(count || 0);
 
-    const { data: pageRows, error: pagesError } = await (supabase.from('apostila_pages' as any) as any)
-      .select('*').eq('apostila_id', apostilaId).order('position');
-    if (!isCurrentRequest()) return;
-    if (pagesError) {
-      console.error('[Workbench] Falha ao carregar páginas:', pagesError);
-      toast.error('Não foi possível carregar as páginas desta apostila.');
-      setLoading(false);
-      return;
-    }
-    const loadedPages = (pageRows || []) as ApostilaPage[];
+    const loadedPages = (pageResult.data || []) as ApostilaPage[];
     setPages(sortApostilaPagesChronologically(loadedPages));
     
     // Uma página filha só é selecionada quando o registro retornado pertence à
@@ -1335,6 +1332,19 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
   if (loading) return (
     <div className="h-screen flex items-center justify-center bg-background">
       <Loader2 className="h-8 w-8 animate-spin text-primary" />
+    </div>
+  );
+
+  if (loadError) return (
+    <div className="min-h-screen flex items-center justify-center bg-background p-6">
+      <div role="alert" className="w-full max-w-lg space-y-4 rounded-xl border p-6">
+        <h1 className="text-xl font-semibold">Falha ao carregar o conteúdo</h1>
+        <p className="text-muted-foreground">{loadError}</p>
+        <div className="flex flex-wrap gap-3">
+          <Button onClick={() => { if (id) void loadApostila(id); }}>Tentar novamente</Button>
+          <Button variant="outline" onClick={() => { if (onBack) onBack(); else navigate('/admin'); }}>Voltar ao painel</Button>
+        </div>
+      </div>
     </div>
   );
 
