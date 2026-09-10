@@ -1,0 +1,96 @@
+name: Integrate persistence RPCs
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Patch Workbench persistence
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('src/pages/AdminApostilaWorkbench.tsx')
+          s = p.read_text()
+
+          if "saveApostilaWithRevision" in s:
+              print('Persistence RPC integration already present; nothing to do.')
+              raise SystemExit(0)
+
+          s = s.replace(
+              "import { createApostilaPage, type ApostilaPage, upsertApostilaPage, validateApostilaChronology, splitApostilaByDate, extractChronologyDates, getApostilaPageSavedDate, getLocalDateIso, isMissingApostilaPageSavedDateColumn, sortApostilaPagesChronologically } from '@/lib/apostila-pages';",
+              "import { createApostilaPage, type ApostilaPage, upsertApostilaPage, validateApostilaChronology, splitApostilaByDate, extractChronologyDates, getApostilaPageSavedDate, getLocalDateIso, isMissingApostilaPageSavedDateColumn, sortApostilaPagesChronologically } from '@/lib/apostila-pages';\nimport { saveApostilaWithRevision, saveApostilaPageWithRevision } from '@/lib/apostila-persistence';"
+          )
+
+          s = s.replace(
+              "const [savedDate, setSavedDate] = useState<string>(getLocalDateIso());",
+              "const [savedDate, setSavedDate] = useState<string>(getLocalDateIso());\n  const [contentRevision, setContentRevision] = useState(0);"
+          )
+
+          s = s.replace(
+              "setCoverUrl(((ap as any).cover_url as string | null) ?? null);",
+              "setCoverUrl(((ap as any).cover_url as string | null) ?? null);\n    setContentRevision(Number((ap as any).content_revision ?? 0));"
+          )
+
+          s = s.replace(
+              "setSavedDate(getApostilaPageSavedDate(selectedPage) || getLocalDateIso());",
+              "setSavedDate(getApostilaPageSavedDate(selectedPage) || getLocalDateIso());\n      setContentRevision(Number((selectedPage as any).content_revision ?? 0));"
+          )
+
+          old_page = """      const pageUpdate = {\n        content,\n        title: title.trim() || 'Nova Página',\n        saved_date: savedDate || getLocalDateIso(),\n      };\n      let { data: savedPage, error } = await (supabase.from('apostila_pages' as any) as any)\n        .update(pageUpdate)\n        .eq('id', selectedPageId)\n        .eq('apostila_id', id)\n        .select('*')\n        .single();\n      if (error && isMissingApostilaPageSavedDateColumn(error)) {\n        ({ data: savedPage, error } = await (supabase.from('apostila_pages' as any) as any)\n          .update({ content: pageUpdate.content, title: pageUpdate.title })\n          .eq('id', selectedPageId)\n          .eq('apostila_id', id)\n          .select('*')\n          .single());\n      }"""
+          new_page = """      const pageUpdate = {\n        content,\n        title: title.trim() || 'Nova Página',\n        saved_date: savedDate || getLocalDateIso(),\n      };\n      const { data: savedPageRows, error } = await saveApostilaPageWithRevision({\n        pageId: selectedPageId,\n        apostilaId: id,\n        expectedRevision: contentRevision,\n        title: pageUpdate.title,\n        content: pageUpdate.content,\n        savedDate: pageUpdate.saved_date,\n      });\n      const savedPage = Array.isArray(savedPageRows) ? savedPageRows[0] : savedPageRows;"""
+          if old_page not in s:
+              raise SystemExit('Expected page save block not found')
+          s = s.replace(old_page, new_page, 1)
+
+          s = s.replace(
+              "      console.log('[Workbench] Page saved successfully:', savedPage.id);",
+              "      console.log('[Workbench] Page saved successfully:', savedPage.id);\n      setContentRevision(Number((savedPage as any).content_revision ?? contentRevision + 1));"
+          )
+
+          old_main = """    const { data: currentApostila } = await supabase\n      .from('apostilas')\n      .select('title, content')\n      .eq('id', id)\n      .single();"""
+          new_main = """    const { data: currentApostila, error: currentApostilaError } = await supabase\n      .from('apostilas')\n      .select('title, content, content_revision')\n      .eq('id', id)\n      .single();\n\n    if (currentApostilaError || !currentApostila) {\n      console.error('[Workbench] Falha ao ler a revisão atual antes do salvamento:', currentApostilaError);\n      setSaving(false);\n      toast.error('Não foi possível confirmar a versão atual da apostila. A edição foi mantida localmente.');\n      return false;\n    }"""
+          if old_main not in s:
+              raise SystemExit('Expected main pre-save read block not found')
+          s = s.replace(old_main, new_main, 1)
+
+          old_update = """    let { error } = await supabase\n      .from('apostilas')\n      .update(apostilaUpdate)\n      .eq('id', id)\n      .select('id')\n      .single();\n    if (error && isMissingApostilaPageSavedDateColumn(error)) {\n      ({ error } = await supabase\n        .from('apostilas')\n        .update({\n          title: apostilaUpdate.title,\n          category,\n          content,\n          published: apostilaUpdate.published,\n          semester,\n          course: apostilaUpdate.course,\n        })\n        .eq('id', id)\n        .select('id')\n        .single());\n    }"""
+          new_update = """    const { data: savedApostilaRows, error } = await saveApostilaWithRevision({\n      apostilaId: id,\n      expectedRevision: Number(currentApostila.content_revision ?? contentRevision),\n      title: apostilaUpdate.title,\n      category: apostilaUpdate.category,\n      content: apostilaUpdate.content,\n      published: apostilaUpdate.published,\n      semester: apostilaUpdate.semester,\n      course: apostilaUpdate.course,\n      savedDate: apostilaUpdate.saved_date,\n    });\n    const savedApostila = Array.isArray(savedApostilaRows) ? savedApostilaRows[0] : savedApostilaRows;"""
+          if old_update not in s:
+              raise SystemExit('Expected main update block not found')
+          s = s.replace(old_update, new_update, 1)
+
+          s = s.replace(
+              "    if (error) {\n      console.error('Erro ao salvar:', error);",
+              "    if (error) {\n      console.error('Erro ao salvar:', error);\n      if (error.code === '40001') {\n        toast.error('Esta apostila foi alterada por outra sessão. Recarregue antes de salvar novamente.');\n        void loadApostila(id);\n      }"
+          , 1)
+
+          s = s.replace(
+              "    if (content.trim().length > 0 && chronology.status !== 'error') setPublished(true);",
+              "    setContentRevision(Number((savedApostila as any)?.content_revision ?? contentRevision + 1));\n    if (content.trim().length > 0 && chronology.status !== 'error') setPublished(true);"
+          )
+
+          s = s.replace(
+              "    const { data: mats } = await supabase.from('materials').select('id, title, type').in('id', ids);\n    const map = new Map",
+              "    const { data: mats, error: matsError } = await supabase.from('materials').select('id, title, type').in('id', ids);\n    if (matsError) {\n      console.error('[Workbench] Falha ao carregar detalhes dos materiais:', matsError);\n      toast.error('Não foi possível carregar os detalhes dos materiais.');\n      return;\n    }\n    const map = new Map"
+          , 1)
+
+          p.write_text(s)
+          print('Workbench persistence RPC integration applied.')
+
+      - name: Commit patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/pages/AdminApostilaWorkbench.tsx
+          git diff --cached --quiet && exit 0
+          git commit -m "fix: integrate revision-safe apostila saves"
+          git push
