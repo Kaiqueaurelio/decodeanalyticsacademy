@@ -176,11 +176,16 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
   // === Carregar lista lateral ===
   useEffect(() => {
     (async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('apostilas')
         .select('id, title, category, published, updated_at, semester, course')
         .order('updated_at', { ascending: false })
         .limit(200);
+      if (error) {
+        console.error('[Workbench] Falha ao carregar lista de apostilas:', error);
+        toast.error('Não foi possível carregar a lista de apostilas.');
+        return;
+      }
       setApostilas((data as ApostilaLite[]) || []);
     })();
   }, []);
@@ -199,10 +204,18 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     ]);
 
     const apRes = results[0].status === 'fulfilled' ? results[0].value : { data: null, error: new Error('Network error') };
-    const linksRes = results[1].status === 'fulfilled' ? results[1].value : { data: [], error: null };
-    const countRes = results[2].status === 'fulfilled' ? results[2].value : { count: 0 };
+    const linksRes = results[1].status === 'fulfilled' ? results[1].value : { data: null, error: new Error('Falha ao carregar materiais da apostila.') } as any;
+    const countRes = results[2].status === 'fulfilled' ? results[2].value : { count: 0, error: new Error('Falha ao carregar exercícios da apostila.') } as any;
 
     if (!isCurrentRequest()) return;
+
+    const loadErrors = [apRes.error, linksRes.error, countRes.error].filter(Boolean);
+    if (loadErrors.length > 0) {
+      console.error('[Workbench] Falha ao carregar dados da apostila:', loadErrors);
+      toast.error('Não foi possível carregar todos os dados desta apostila.');
+      setLoading(false);
+      return;
+    }
 
     const ap = apRes.data;
     const links = linksRes.data;
@@ -281,9 +294,15 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     setCoverUrl(((ap as any).cover_url as string | null) ?? null);
     setExerciseCount(count || 0);
 
-    const { data: pageRows } = await (supabase.from('apostila_pages' as any) as any)
+    const { data: pageRows, error: pagesError } = await (supabase.from('apostila_pages' as any) as any)
       .select('*').eq('apostila_id', apostilaId).order('position');
     if (!isCurrentRequest()) return;
+    if (pagesError) {
+      console.error('[Workbench] Falha ao carregar páginas:', pagesError);
+      toast.error('Não foi possível carregar as páginas desta apostila.');
+      setLoading(false);
+      return;
+    }
     const loadedPages = (pageRows || []) as ApostilaPage[];
     setPages(sortApostilaPagesChronologically(loadedPages));
     
@@ -919,9 +938,14 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
 
   const reloadMaterials = async () => {
     if (!id) return;
-    const { data: links } = await supabase
+    const { data: links, error: linksError } = await supabase
       .from('apostila_materials').select('id, sort_order, material_id')
       .eq('apostila_id', id).order('sort_order');
+    if (linksError) {
+      console.error('[Workbench] Falha ao recarregar materiais:', linksError);
+      toast.error('Não foi possível atualizar os materiais.');
+      return;
+    }
     if (!links?.length) { setLinkedMaterials([]); return; }
     const ids = links.map((l: any) => l.material_id);
     const { data: mats } = await supabase.from('materials').select('id, title, type').in('id', ids);
@@ -1509,7 +1533,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
                       {new Date(page.created_at).toLocaleDateString('pt-BR')} · {page.title}
                     </Button>
                   ))}
-                  {id && <NewApostilaPageButton apostilaId={id} beforeCreate={() => persistChanges(false)} />}
+                  {id && <NewApostilaPageButton apostilaId={id} beforeCreate={() => doSave(false)} />}
                 </div>
               )}
               <MarkdownEditor
