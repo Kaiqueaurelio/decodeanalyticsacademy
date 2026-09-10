@@ -12,10 +12,16 @@ describe('confirmação de salvamento e publicação', () => {
     expect(action.match(/return false;/g)).toHaveLength(2);
     expect(action).toContain('return true;');
   });
-  it('exige todas as confirmações de atualização antes de confirmar o salvamento principal, inclusive no banco legado', () => {
-    const save = source.slice(source.indexOf('let { error } = await supabase', source.indexOf('const apostilaUpdate =')), source.indexOf('// Limpar apenas o backup'));
-    expect(save.match(/\.select\('id'\)\s*\.single\(\)/g)).toHaveLength(3);
-    expect(save).toContain('return false;');
+
+  it('usa persistência com revisão e bloqueia salvamento quando a leitura prévia falha', () => {
+    const saveStart = source.indexOf('const persistChanges');
+    const saveEnd = source.indexOf('// Limpar apenas o backup', saveStart);
+    const save = source.slice(saveStart, saveEnd);
+    expect(save).toContain('saveApostilaWithRevision');
+    expect(save).toContain('expectedRevision');
+    expect(save).toContain('currentApostilaError');
+    expect(save).toContain('A edição foi mantida localmente');
+    expect(save).not.toContain('.update(apostilaUpdate)');
   });
 
   it('confirma a atualização do caderno pai e comunica falhas de visibilidade', () => {
