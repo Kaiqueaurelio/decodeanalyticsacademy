@@ -12,9 +12,9 @@ describe('confirmação de salvamento e publicação', () => {
     expect(action.match(/return false;/g)).toHaveLength(2);
     expect(action).toContain('return true;');
   });
-  it('exige uma linha atualizada antes de confirmar o salvamento principal, inclusive no banco legado', () => {
+  it('exige todas as confirmações de atualização antes de confirmar o salvamento principal, inclusive no banco legado', () => {
     const save = source.slice(source.indexOf('let { error } = await supabase', source.indexOf('const apostilaUpdate =')), source.indexOf('// Limpar apenas o backup'));
-    expect(save.match(/\.select\('id'\)\s*\.single\(\)/g)).toHaveLength(2);
+    expect(save.match(/\.select\('id'\)\s*\.single\(\)/g)).toHaveLength(3);
     expect(save).toContain('return false;');
   });
 
