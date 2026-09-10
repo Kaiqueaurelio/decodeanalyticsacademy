@@ -28,6 +28,7 @@ import { Badge } from '@/components/ui/badge';
 import { getSubjectColor } from '@/lib/subject-colors';
 import { parseApostilaContent } from '@/lib/apostila-parser';
 import { createApostilaPage, type ApostilaPage, upsertApostilaPage, validateApostilaChronology, splitApostilaByDate, extractChronologyDates, getApostilaPageSavedDate, getLocalDateIso, isMissingApostilaPageSavedDateColumn, sortApostilaPagesChronologically } from '@/lib/apostila-pages';
+import { saveApostilaWithRevision, saveApostilaPageWithRevision } from '@/lib/apostila-persistence';
 import { recordApostilaOperation, runApostilaChronologyValidation } from '@/lib/apostila-diagnostics';
 import { ApostilaSplitPreview } from '@/components/admin/ApostilaSplitPreview';
 
@@ -152,6 +153,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
   const [suggestedSectionTitle, setSuggestedSectionTitle] = useState('');
   const [pages, setPages] = useState<ApostilaPage[]>([]);
   const [savedDate, setSavedDate] = useState<string>(getLocalDateIso());
+  const [contentRevision, setContentRevision] = useState(0);
 
   useEffect(() => {
     if (searchParams.get('expanded') === '1') setEditorExpanded(true);
@@ -292,6 +294,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
 
     setPublished(!!ap.published);
     setCoverUrl(((ap as any).cover_url as string | null) ?? null);
+    setContentRevision(Number((ap as any).content_revision ?? 0));
     setExerciseCount(count || 0);
 
     const { data: pageRows, error: pagesError } = await (supabase.from('apostila_pages' as any) as any)
@@ -324,6 +327,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       setContent(selectedPage.content || '');
       setTitle(selectedPage.title || '');
       setSavedDate(getApostilaPageSavedDate(selectedPage) || getLocalDateIso());
+      setContentRevision(Number((selectedPage as any).content_revision ?? 0));
       if (pageBackup?.scope === pageScope && pageBackup.timestamp && new Date(pageBackup.timestamp) > new Date(selectedPage.updated_at)) {
         toast.info('Recuperamos uma edição não salva desta página.', {
           description: `Última alteração local em ${new Date(pageBackup.timestamp).toLocaleTimeString()}`,
@@ -528,20 +532,15 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         title: title.trim() || 'Nova Página',
         saved_date: savedDate || getLocalDateIso(),
       };
-      let { data: savedPage, error } = await (supabase.from('apostila_pages' as any) as any)
-        .update(pageUpdate)
-        .eq('id', selectedPageId)
-        .eq('apostila_id', id)
-        .select('*')
-        .single();
-      if (error && isMissingApostilaPageSavedDateColumn(error)) {
-        ({ data: savedPage, error } = await (supabase.from('apostila_pages' as any) as any)
-          .update({ content: pageUpdate.content, title: pageUpdate.title })
-          .eq('id', selectedPageId)
-          .eq('apostila_id', id)
-          .select('*')
-          .single());
-      }
+      const { data: savedPageRows, error } = await saveApostilaPageWithRevision({
+        pageId: selectedPageId,
+        apostilaId: id,
+        expectedRevision: contentRevision,
+        title: pageUpdate.title,
+        content: pageUpdate.content,
+        savedDate: pageUpdate.saved_date,
+      });
+      const savedPage = Array.isArray(savedPageRows) ? savedPageRows[0] : savedPageRows;
       
       setSaving(false);
       if (error) {
@@ -562,6 +561,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       }
       
       console.log('[Workbench] Page saved successfully:', savedPage.id);
+      setContentRevision(Number((savedPage as any).content_revision ?? contentRevision + 1));
       const savedAt = new Date().toISOString();
       const pageToDisplay = (savedPage as ApostilaPage | null) ?? {
         id: selectedPageId,
@@ -648,11 +648,18 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     }
 
 
-    const { data: currentApostila } = await supabase
+    const { data: currentApostila, error: currentApostilaError } = await supabase
       .from('apostilas')
-      .select('title, content')
+      .select('title, content, content_revision')
       .eq('id', id)
       .single();
+
+    if (currentApostilaError || !currentApostila) {
+      console.error('[Workbench] Falha ao ler a revisão atual antes do salvamento:', currentApostilaError);
+      setSaving(false);
+      toast.error('Não foi possível confirmar a versão atual da apostila. A edição foi mantida localmente.');
+      return false;
+    }
 
     if (currentApostila?.content?.trim() && !content.trim()) {
       setContent(currentApostila.content);
@@ -690,31 +697,26 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       course: course.length ? course : null,
       saved_date: savedDate || getLocalDateIso(),
     };
-    let { error } = await supabase
-      .from('apostilas')
-      .update(apostilaUpdate)
-      .eq('id', id)
-      .select('id')
-      .single();
-    if (error && isMissingApostilaPageSavedDateColumn(error)) {
-      ({ error } = await supabase
-        .from('apostilas')
-        .update({
-          title: apostilaUpdate.title,
-          category,
-          content,
-          published: apostilaUpdate.published,
-          semester,
-          course: apostilaUpdate.course,
-        })
-        .eq('id', id)
-        .select('id')
-        .single());
-    }
+    const { data: savedApostilaRows, error } = await saveApostilaWithRevision({
+      apostilaId: id,
+      expectedRevision: Number(currentApostila.content_revision ?? contentRevision),
+      title: apostilaUpdate.title,
+      category: apostilaUpdate.category,
+      content: apostilaUpdate.content,
+      published: apostilaUpdate.published,
+      semester: apostilaUpdate.semester,
+      course: apostilaUpdate.course,
+      savedDate: apostilaUpdate.saved_date,
+    });
+    const savedApostila = Array.isArray(savedApostilaRows) ? savedApostilaRows[0] : savedApostilaRows;
 
     setSaving(false);
     if (error) {
       console.error('Erro ao salvar:', error);
+      if (error.code === '40001') {
+        toast.error('Esta apostila foi alterada por outra sessão. Recarregue antes de salvar novamente.');
+        void loadApostila(id);
+      }
       void recordApostilaOperation({
         operationId,
         apostilaId: id,
@@ -756,6 +758,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       dirtyRef.current = false;
       localStorage.removeItem(`apostila_backup_${id}_main`);
     }
+    setContentRevision(Number((savedApostila as any)?.content_revision ?? contentRevision + 1));
     if (content.trim().length > 0 && chronology.status !== 'error') setPublished(true);
     setLastSavedAt(new Date());
     setApostilas((prev) =>
@@ -948,7 +951,12 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     }
     if (!links?.length) { setLinkedMaterials([]); return; }
     const ids = links.map((l: any) => l.material_id);
-    const { data: mats } = await supabase.from('materials').select('id, title, type').in('id', ids);
+    const { data: mats, error: matsError } = await supabase.from('materials').select('id, title, type').in('id', ids);
+    if (matsError) {
+      console.error('[Workbench] Falha ao carregar detalhes dos materiais:', matsError);
+      toast.error('Não foi possível carregar os detalhes dos materiais.');
+      return;
+    }
     const map = new Map((mats || []).map((m) => [m.id, m]));
     setLinkedMaterials(
       (links as any[])
