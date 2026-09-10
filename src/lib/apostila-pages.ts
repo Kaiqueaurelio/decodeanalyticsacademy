@@ -83,10 +83,11 @@ export function validateApostilaChronology(input: { title?: string | null; conte
 }
 export function upsertApostilaPage(pages: ApostilaPage[], savedPage: ApostilaPage) { const exists = pages.some((p) => p.id === savedPage.id); return sortApostilaPagesChronologically(exists ? pages.map((p) => p.id === savedPage.id ? savedPage : p) : [...pages, savedPage]); }
 
-/** Criação atômica no banco; a posição é calculada sob lock transacional. */
-export async function createApostilaPage(apostilaId: string, _userId?: string) {
+/** Criação atômica no banco; usa o contrato que valida o usuário da sessão quando disponível. */
+export async function createApostilaPage(apostilaId: string, userId?: string) {
   if (!apostilaId) throw new Error('ID da apostila não informado.');
-  const { data, error } = await (supabase.rpc as any)('create_apostila_page', { _apostila_id: apostilaId });
+  const params = userId ? { _apostila_id: apostilaId, _user_id: userId } : { _apostila_id: apostilaId };
+  const { data, error } = await (supabase.rpc as any)('create_apostila_page', params);
   if (error) throw error;
   if (!data) throw new Error('O banco não retornou a nova página.');
   return data as ApostilaPage;
