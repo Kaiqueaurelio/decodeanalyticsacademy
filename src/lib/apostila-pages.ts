@@ -115,4 +115,12 @@ function buildDateSplitPreview(content: string): ApostilaSplitPreviewPage[] { co
 export async function splitApostilaByDate(apostilaId: string, options: { dryRun?: boolean; contentOverride?: string } = {}) { if (options.dryRun) { const pages = buildDateSplitPreview(options.contentOverride || ''); return { success: pages.length > 0, pages_created: 0, dates: pages.map((p) => p.date).filter(Boolean) as string[], preview: pages }; } const result = await separateApostilaByDate(apostilaId); return { success: result.status === 'succeeded', pages_created: result.created_page_ids?.length || 0, dates: result.detected_dates || [], preview: [] }; }
 export function extractApostilaDatesFromContent(content: string): string[] { return extractChronologyDates(content); }
 export function getChronologyValidationSummary(input: Parameters<typeof validateApostilaChronology>[0]) { return validateApostilaChronology(input); }
-export async function runApostilaChronologyValidation(_apostilaId: string, _mode: string = 'save') { return null; }
+export async function runApostilaChronologyValidation(apostilaId: string, mode: string = 'save') {
+  if (!apostilaId) throw new Error('ID da apostila não informado.');
+  const { data, error } = await (supabase.rpc as any)('run_apostila_chronology_validation', {
+    _apostila_id: apostilaId,
+    _trigger_source: mode,
+  });
+  if (error) throw error;
+  return data;
+}
