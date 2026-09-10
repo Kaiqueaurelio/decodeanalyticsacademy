@@ -2,12 +2,12 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const FALLBACK_SUPABASE_URL = 'https://gynguskgysompgcajunc.supabase.co';
+const FALLBACK_SUPABASE_URL = 'https://wxkkpjpqyrygglbuogsd.supabase.co';
 const FALLBACK_SUPABASE_PUBLISHABLE_KEY =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd5bmd1c2tneXNvbXBnY2FqdW5jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2MTIxODAsImV4cCI6MjA5MTE4ODE4MH0.LidDO7DzGz4MHV0-azsjSNRLVUvZicxfLpmt4WStCoM';
+  'sb_publishable_Zh6H3y8GJ2J_wkRVXxyTng_eylbCAVM';
 
-// Se o bundle for publicado sem as variáveis Vite, usamos o endpoint versionado
-// em vez de derrubar o app na carga.
+// Se o bundle for publicado sem as variáveis Vite, usamos o projeto de produção
+// atual para evitar que o cliente caia silenciosamente em um projeto legado.
 export const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || FALLBACK_SUPABASE_URL;
 export const SUPABASE_PUBLISHABLE_KEY =
   import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || FALLBACK_SUPABASE_PUBLISHABLE_KEY;
