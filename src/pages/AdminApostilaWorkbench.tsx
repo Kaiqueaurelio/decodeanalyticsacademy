@@ -54,7 +54,7 @@ interface ApostilaLite {
   course: CourseCode[] | null;
 }
 
-const AUTOSAVE_MS = 1000;
+const AUTOSAVE_MS = 1500;
 const WORKBENCH_SIDEBAR_STORAGE_KEY = 'admin_workbench_sidebar_collapsed_v1';
 
 interface WorkbenchProps {
@@ -158,6 +158,8 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
   }, [searchParams]);
 
   const dirtyRef = useRef(false);
+  // Monotonic draft revision: an older response must never mark a newer edit as saved.
+  const draftVersionRef = useRef(0);
   const initialLoadRef = useRef(true);
   const loadRequestRef = useRef(0);
   const saveInFlightRef = useRef<Promise<boolean> | null>(null);
@@ -407,10 +409,11 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
   // === Autosave & Diagnostics ===
   useEffect(() => {
     if (initialLoadRef.current || !id) return;
+    draftVersionRef.current += 1;
     dirtyRef.current = true;
     const t = window.setTimeout(() => {
-      void persistChanges();
-
+      // All saves, including autosave, must use the single-flight queue below.
+      void doSave();
     }, AUTOSAVE_MS);
 
     
@@ -429,7 +432,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
     }));
 
     return () => window.clearTimeout(t);
-  }, [title, category, content, semester, course, savedDate]);
+  }, [id, selectedPageId, title, category, content, semester, course, savedDate]);
 
   const persistChanges = async (isManual = false): Promise<boolean> => {
     if (!id) return false;
@@ -438,6 +441,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       return true;
     }
     setSaving(true);
+    const saveDraftVersion = draftVersionRef.current;
 
     const operationId = typeof crypto !== 'undefined' && 'randomUUID' in crypto
       ? crypto.randomUUID()
@@ -615,8 +619,10 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
         },
       });
 
-      dirtyRef.current = false;
-      localStorage.removeItem(`apostila_backup_${id}_${selectedPageId}`);
+      if (draftVersionRef.current === saveDraftVersion) {
+        dirtyRef.current = false;
+        localStorage.removeItem(`apostila_backup_${id}_${selectedPageId}`);
+      }
       setLastSavedAt(new Date(savedAt));
       if (isManual) toast.success('Página salva com sucesso.');
       return true;
@@ -711,9 +717,8 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       return false;
     }
     
-          // Limpar apenas o backup da apostila principal. Backups de páginas filhas
-      // são removidos no ramo específico de página após o salvamento.
-      localStorage.removeItem(`apostila_backup_${id}_main`);
+          // Only acknowledge the exact draft sent to the server. If the editor changed
+    // while this request was in flight, keep the newer draft dirty and backed up.
 
     void recordApostilaOperation({
       operationId,
@@ -728,7 +733,10 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       },
     });
 
-    dirtyRef.current = false;
+    if (draftVersionRef.current === saveDraftVersion) {
+      dirtyRef.current = false;
+      localStorage.removeItem(`apostila_backup_${id}_main`);
+    }
     if (content.trim().length > 0 && chronology.status !== 'error') setPublished(true);
     setLastSavedAt(new Date());
     setApostilas((prev) =>
