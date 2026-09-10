@@ -201,37 +201,25 @@ describe('separação server-side por data', () => {
 describe('criação persistente de página', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    fromMock.mockImplementation((table: string) => {
-      if (table !== 'apostila_pages') throw new Error(`tabela inesperada: ${table}`);
-      return {
-        select: () => ({
-          eq: () => ({
-            order: () => ({
-              limit: async () => ({ data: [{ position: 4 }], error: null }),
-            }),
-          }),
-        }),
-        insert: (payload: Record<string, unknown> | Record<string, unknown>[]) => {
-          const row = Array.isArray(payload) ? payload[0] : payload;
-          return {
-            select: () => ({
-              single: async () => ({
-                data: {
-                ...row,
-                id: 'page-created',
-                created_at: '2026-08-20T10:00:00.000Z',
-                updated_at: '2026-08-20T10:00:00.000Z',
-                },
-                error: null,
-              }),
-            }),
-          };
-        },
-      } as any;
-    });
   });
 
-  it('usa a próxima posição e retorna o registro criado pelo banco', async () => {
+  it('usa o contrato RPC e retorna o registro criado pelo banco', async () => {
+    rpcMock.mockResolvedValue({
+      data: {
+        ...page({
+          id: 'page-created',
+          apostila_id: 'book-1',
+          position: 5,
+          title: 'Nova Página — 20/08/2026',
+          content: '',
+          created_at: '2026-08-20T10:00:00.000Z',
+          updated_at: '2026-08-20T10:00:00.000Z',
+          saved_date: '2026-08-20',
+        }),
+      },
+      error: null,
+    } as any);
+
     const created = await createApostilaPage('book-1', 'admin-1');
 
     expect(created.id).toBe('page-created');
@@ -239,18 +227,14 @@ describe('criação persistente de página', () => {
     expect(created.position).toBe(5);
     expect(created.content).toBe('');
     expect(created.title).toMatch(/^Nova Página — \d{2}\/\d{2}\/\d{4}$/);
+    expect(rpcMock).toHaveBeenCalledWith('create_apostila_page', { _apostila_id: 'book-1' });
   });
 
-  it('não transforma uma falha de leitura da posição em uma criação silenciosa', async () => {
-    fromMock.mockImplementation(() => ({
-      select: () => ({
-        eq: () => ({
-          order: () => ({
-            limit: async () => ({ data: null, error: { message: 'position read failed' } }),
-          }),
-        }),
-      }),
-    } as any));
+  it('propaga falha da RPC sem criação silenciosa', async () => {
+    rpcMock.mockResolvedValue({
+      data: null,
+      error: { message: 'position read failed', code: 'P0001' },
+    } as any);
 
     await expect(createApostilaPage('book-1', 'admin-1')).rejects.toThrow('position read failed');
   });
