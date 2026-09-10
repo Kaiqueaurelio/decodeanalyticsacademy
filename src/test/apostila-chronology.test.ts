@@ -96,9 +96,7 @@ describe('invariantes de cronologia das apostilas', () => {
       page({ id: 'page-19', title: 'Aula — 19/08/2026', content: '19/08/2026', position: 0 }),
       page({ id: 'page-18', title: 'Aula — 18/08/2026', content: '18/08/2026', position: 1 }),
     ];
-    const report = validateApostilaChronology({
-      pages: unorderedPages,
-    });
+    const report = validateApostilaChronology({ pages: unorderedPages });
 
     expect(sortApostilaPagesChronologically(unorderedPages).map((item) => item.id))
       .toEqual(['page-18', 'page-19']);
@@ -205,18 +203,16 @@ describe('criação persistente de página', () => {
 
   it('usa o contrato RPC e retorna o registro criado pelo banco', async () => {
     rpcMock.mockResolvedValue({
-      data: {
-        ...page({
-          id: 'page-created',
-          apostila_id: 'book-1',
-          position: 5,
-          title: 'Nova Página — 20/08/2026',
-          content: '',
-          created_at: '2026-08-20T10:00:00.000Z',
-          updated_at: '2026-08-20T10:00:00.000Z',
-          saved_date: '2026-08-20',
-        }),
-      },
+      data: page({
+        id: 'page-created',
+        apostila_id: 'book-1',
+        position: 5,
+        title: 'Nova Página — 20/08/2026',
+        content: '',
+        created_at: '2026-08-20T10:00:00.000Z',
+        updated_at: '2026-08-20T10:00:00.000Z',
+        saved_date: '2026-08-20',
+      }),
       error: null,
     } as any);
 
@@ -227,7 +223,10 @@ describe('criação persistente de página', () => {
     expect(created.position).toBe(5);
     expect(created.content).toBe('');
     expect(created.title).toMatch(/^Nova Página — \d{2}\/\d{2}\/\d{4}$/);
-    expect(rpcMock).toHaveBeenCalledWith('create_apostila_page', { _apostila_id: 'book-1' });
+    expect(rpcMock).toHaveBeenCalledWith('create_apostila_page', {
+      _apostila_id: 'book-1',
+      _user_id: 'admin-1',
+    });
   });
 
   it('propaga falha da RPC sem criação silenciosa', async () => {
