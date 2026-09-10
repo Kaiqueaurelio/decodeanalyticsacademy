@@ -1,9 +1,11 @@
 /**
  * Buffer em memória (+ sessionStorage) de eventos do fluxo de auth.
  * Alimentado por `logAuthFlow` no `useAuth`, lido pelo DiagnosticsPanel.
+ * Dados sensíveis nunca são persistidos no log local.
  */
 const KEY = 'decode:auth-log:v1';
 const MAX = 80;
+const SENSITIVE_KEYS = new Set(['password', 'passwd', 'token', 'access_token', 'refresh_token', 'authorization', 'cookie', 'email']);
 
 export type AuthLogEntry = {
   ts: number;
@@ -22,6 +24,16 @@ function read(): AuthLogEntry[] {
   }
 }
 
+function sanitize(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(sanitize);
+  if (!value || typeof value !== 'object') return value;
+  const source = value as Record<string, unknown>;
+  return Object.fromEntries(Object.entries(source).map(([key, item]) => [
+    key,
+    SENSITIVE_KEYS.has(key.toLowerCase()) ? '[redacted]' : sanitize(item),
+  ]));
+}
+
 function write(items: AuthLogEntry[]) {
   try {
     sessionStorage.setItem(KEY, JSON.stringify(items.slice(-MAX)));
@@ -31,7 +43,8 @@ function write(items: AuthLogEntry[]) {
 
 export function recordAuthEvent(event: string, data?: Record<string, unknown>) {
   const all = read();
-  all.push({ ts: Date.now(), event, data });
+  const safeData = data ? sanitize(data) as Record<string, unknown> : undefined;
+  all.push({ ts: Date.now(), event, data: safeData });
   write(all);
 }
 
