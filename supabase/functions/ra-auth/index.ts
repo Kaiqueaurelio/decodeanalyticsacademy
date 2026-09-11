@@ -3,6 +3,7 @@ import { getCorsHeaders } from "../_shared/cors.ts";
 
 const RA_RE = /^[A-Z0-9]{6,13}$/;
 const GENERIC_FAIL = "RA ou senha incorretos.";
+const ACTIVE_PROJECT_PUBLIC_KEY = "sb_publishable_Zh6H3y8GJ2J_wkRVXxyTng_eylbCAVM";
 
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
@@ -11,8 +12,8 @@ Deno.serve(async (req) => {
 
   const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
   const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
-  if (!SUPABASE_URL || !SERVICE_ROLE || !ANON_KEY) {
+  const ANON_KEY = ACTIVE_PROJECT_PUBLIC_KEY;
+  if (!SUPABASE_URL || !SERVICE_ROLE) {
     console.error("ra-auth: env ausente");
     return json({ error: "Serviço indisponível no momento." }, 500, corsHeaders);
   }
@@ -57,9 +58,6 @@ Deno.serve(async (req) => {
     let resolvedUserId: string | null = null;
 
     if (identifier.includes("@")) {
-      // Primeiro procura o e-mail de contato do perfil. Isso é importante porque
-      // alguns alunos possuem e-mail pessoal no perfil, mas usam um e-mail
-      // técnico @ra.unip.local como identidade do Supabase Auth.
       const { data: byEmail, error: profileError } = await admin
         .from("profiles")
         .select("user_id,email,ra")
@@ -140,9 +138,6 @@ Deno.serve(async (req) => {
       }, 200, corsHeaders);
     }
 
-    // O backend ativo é a única fonte de autenticação. Não fazemos mais
-    // migração/fallback silencioso para um projeto antigo durante o login,
-    // evitando timeouts e respostas inconsistentes após a migração.
     const authClient = createClient(SUPABASE_URL, ANON_KEY, { auth: { persistSession: false } });
     const { data, error } = await authClient.auth.signInWithPassword({
       email: resolvedEmail,
