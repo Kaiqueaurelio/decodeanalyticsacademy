@@ -1,23 +1,31 @@
 /**
  * Decode Analytics Academy - CORS Configuration
- * v6.9.5
+ * v6.9.6
  *
- * Keep this list explicit. A wildcard for every Lovable subdomain would let an
- * unrelated hosted page make credentialed requests to privileged functions.
+ * Keep this list explicit. A wildcard for every hosted domain would let an
+ * unrelated page make credentialed requests to privileged functions.
  */
 const ALLOWED_ORIGINS = new Set([
+  // Lovable
   'https://decodeanalyticsacademy.lovable.app',
-  'https://decodeanalyticsacademy.vercel.app',
   'https://id-preview--4dd1aec2-9175-4ae9-9401-8637f1ffe1a2.lovable.app',
+
+  // Vercel stable project domains
+  'https://decodeanalyticsacademy-decode-analytics-s-projects.vercel.app',
+  'https://decodeanalyticsacademy-git-main-decode-analytics-s-projects.vercel.app',
+
+  // Custom production domain
   'https://decodeanalyticsacademy.com.br',
   'https://www.decodeanalyticsacademy.com.br',
+
+  // Local development
   'http://localhost:8080',
   'http://localhost:5173',
   'http://127.0.0.1:8080',
 ]);
 
 /**
- * Verifica se a origem termina com um sufixo permitido (preview da plataforma).
+ * Verifica se a origem termina com um sufixo permitido (previews da plataforma).
  */
 const ALLOWED_SUFFIXES = [
   '.lovable.app',
@@ -28,7 +36,7 @@ const ALLOWED_SUFFIXES = [
 export function isAllowedOrigin(origin: string | null): boolean {
   if (!origin) return false;
   if (ALLOWED_ORIGINS.has(origin)) return true;
-  
+
   try {
     const url = new URL(origin);
     const hostname = url.hostname;
