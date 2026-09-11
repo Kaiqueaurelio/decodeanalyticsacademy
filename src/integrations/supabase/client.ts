@@ -2,15 +2,27 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const FALLBACK_SUPABASE_URL = 'https://wxkkpjpqyrygglbuogsd.supabase.co';
-const FALLBACK_SUPABASE_PUBLISHABLE_KEY =
+// Production backend of Decode Analytics Academy.
+// IMPORTANT: the published Lovable app must use this same database as the
+// migrated production data. Lovable Cloud environment variables are ignored
+// when they point to a different Supabase project, preventing split-brain data.
+const PRODUCTION_SUPABASE_URL = 'https://wxkkpjpqyrygglbuogsd.supabase.co';
+const PRODUCTION_SUPABASE_PUBLISHABLE_KEY =
   'sb_publishable_Zh6H3y8GJ2J_wkRVXxyTng_eylbCAVM';
 
-// Se o bundle for publicado sem as variáveis Vite, usamos o projeto de produção
-// atual para evitar que o cliente caia silenciosamente em um projeto legado.
-export const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || FALLBACK_SUPABASE_URL;
-export const SUPABASE_PUBLISHABLE_KEY =
-  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || FALLBACK_SUPABASE_PUBLISHABLE_KEY;
+const configuredUrl = import.meta.env.VITE_SUPABASE_URL;
+const configuredKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+export const SUPABASE_URL = configuredUrl === PRODUCTION_SUPABASE_URL
+  ? configuredUrl
+  : PRODUCTION_SUPABASE_URL;
+
+export const SUPABASE_PUBLISHABLE_KEY = configuredUrl === PRODUCTION_SUPABASE_URL
+  && configuredKey
+  ? configuredKey
+  : PRODUCTION_SUPABASE_PUBLISHABLE_KEY;
+
+export const SUPABASE_PROJECT_ID = 'wxkkpjpqyrygglbuogsd';
 
 if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
   throw new Error('Supabase client could not be initialized.');
