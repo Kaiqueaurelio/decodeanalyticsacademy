@@ -34,7 +34,7 @@ describe('mandatory profile completion', () => {
   it('refreshes a stale Auth session and retries the email update once', () => {
     expect(source).toContain('if (authEmailError && isSessionError(authEmailError))');
     expect(source).toContain('({ data: authUpdate, error: authEmailError } = await supabase.auth.updateUser({ email: recoveryEmail }))');
-    expect(source).toContain('temporarily indisponível');
+    expect(source).toContain('O perfil foi salvo, mas o vínculo do e-mail está temporariamente indisponível. Tente novamente.');
   });
 
   it('keeps the saved profile and distinguishes duplicate email failures', () => {
