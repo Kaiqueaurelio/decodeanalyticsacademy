@@ -12,13 +12,14 @@ vi.mock('@/integrations/supabase/client', () => ({
 describe('revision-safe apostila persistence', () => {
   const pageDraft = { pageId: 'p1', apostilaId: 'a1', expectedRevision: 2, title: 'Aula', content: 'Texto completo', savedDate: '2026-09-10' };
 
-  const emptyRead = () => ({
-    select: vi.fn(() => ({
-      eq: vi.fn(() => ({
-        maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
-      })),
-    })),
-  });
+  const emptyRead = () => {
+    const query: any = {
+      select: vi.fn(() => query),
+      eq: vi.fn(() => query),
+      maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+    };
+    return query;
+  };
 
   it.each([null, [], [{ id: 'p1' }], [{ id: 'p1', apostila_id: 'a1', title: 'Aula', content: 'Texto parcial' }]])('rejeita confirmação incompleta: %j', async (data) => {
     rpcMock.mockResolvedValueOnce({ data, error: null });
