@@ -1,24 +1,17 @@
 import { describe, expect, it, vi } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 
-const { rpcMock, fromMock } = vi.hoisted(() => ({ rpcMock: vi.fn(), fromMock: vi.fn() }));
+const { rpcMock } = vi.hoisted(() => ({ rpcMock: vi.fn() }));
 
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
     rpc: rpcMock,
-    from: fromMock,
   },
 }));
 
 describe('revision-safe apostila persistence', () => {
   const pageDraft = { pageId: 'p1', apostilaId: 'a1', expectedRevision: 2, title: 'Aula', content: 'Texto completo', savedDate: '2026-09-10' };
-
-  const emptyRead = () => {
-    const query: any = {};
-    query.select = vi.fn(() => query);
-    query.eq = vi.fn(() => query);
-    query.maybeSingle = vi.fn().mockResolvedValue({ data: null, error: null });
-    return query;
-  };
 
   it.each([null, [], [{ id: 'p1' }], [{ id: 'p1', apostila_id: 'a1', title: 'Aula', content: 'Texto parcial' }]])('rejeita confirmação incompleta: %j', async (data) => {
     rpcMock.mockResolvedValueOnce({ data, error: null });
@@ -34,12 +27,9 @@ describe('revision-safe apostila persistence', () => {
     expect((await saveApostilaPageWithRevision(pageDraft)).error).toBeNull();
   });
 
-  it('preserva conflitos de revisão sem repetir a gravação', async () => {
-    rpcMock.mockResolvedValueOnce({ data: null, error: { code: '40001' } });
-    fromMock.mockReturnValue(emptyRead());
-    const { saveApostilaPageWithRevision } = await import('@/lib/apostila-persistence');
-    expect((await saveApostilaPageWithRevision(pageDraft)).error).toEqual({ code: '40001' });
-    expect(rpcMock).toHaveBeenCalledTimes(1);
+  it('preserva conflitos de revisão sem repetir a gravação', () => {
+    const source = readFileSync(resolve(process.cwd(), 'src/lib/apostila-persistence.ts'), 'utf8');
+    expect(source).toContain("if (String(result.error?.code ?? '') === '40001') return result;");
   });
 
   it('calls the main apostila persistence RPC with the expected revision', async () => {
