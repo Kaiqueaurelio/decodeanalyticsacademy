@@ -6,7 +6,19 @@ export function normalizeIdentifier(value: string): string {
 }
 
 /**
+ * Normaliza especificamente um e-mail.
+ *
+ * Regra deliberadamente limitada: somente trim + lowercase.
+ * Pontos, sublinhados, hífens e + do local-part são dados válidos
+ * e nunca devem ser removidos ou reinterpretados.
+ */
+export function normalizeEmail(value: string): string {
+  return (value || "").trim().toLowerCase();
+}
+
+/**
  * Normaliza especificamente um RA removendo hífens, pontos e espaços.
+ * Nunca reutilizar esta função para e-mails.
  */
 export function normalizeRa(value: string): string {
   return normalizeIdentifier(value).replace(/[\s._-]/g, "").toUpperCase();
