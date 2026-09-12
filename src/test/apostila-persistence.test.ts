@@ -13,11 +13,10 @@ describe('revision-safe apostila persistence', () => {
   const pageDraft = { pageId: 'p1', apostilaId: 'a1', expectedRevision: 2, title: 'Aula', content: 'Texto completo', savedDate: '2026-09-10' };
 
   const emptyRead = () => {
-    const query: any = {
-      select: vi.fn(() => query),
-      eq: vi.fn(() => query),
-      maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
-    };
+    const query: any = {};
+    query.select = vi.fn(() => query);
+    query.eq = vi.fn(() => query);
+    query.maybeSingle = vi.fn().mockResolvedValue({ data: null, error: null });
     return query;
   };
 
@@ -37,7 +36,7 @@ describe('revision-safe apostila persistence', () => {
 
   it('preserva conflitos de revisão sem repetir a gravação', async () => {
     rpcMock.mockResolvedValueOnce({ data: null, error: { code: '40001' } });
-    fromMock.mockImplementationOnce(emptyRead);
+    fromMock.mockReturnValue(emptyRead());
     const { saveApostilaPageWithRevision } = await import('@/lib/apostila-persistence');
     expect((await saveApostilaPageWithRevision(pageDraft)).error).toEqual({ code: '40001' });
     expect(rpcMock).toHaveBeenCalledTimes(1);
