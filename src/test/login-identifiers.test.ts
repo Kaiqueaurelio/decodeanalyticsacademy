@@ -34,9 +34,33 @@ describe('login identifiers', () => {
     }
   });
 
+  it('preserves every e-mail punctuation character through the typing sequence', () => {
+    const typingSequence = [
+      'v',
+      'vi',
+      'viv',
+      'vivi',
+      'vivi.',
+      'vivi.viick',
+      'vivi.viick@',
+      'vivi.viick@gmail',
+      'vivi.viick@gmail.',
+      'vivi.viick@gmail.com',
+      'vivi+teste@gmail.com',
+      'nome.sobrenome@gmail.com',
+      'nome_sobrenome@gmail.com',
+    ];
+
+    for (const input of typingSequence) {
+      expect(isEmailIdentifier(input)).toBe(true);
+      expect(normalizeEmail(input)).toBe(input.toLowerCase());
+    }
+  });
+
   it('preserves dots and other valid local-part characters while typing', () => {
     const partialInputs = [
       'vivi.',
+      'vivi.viick',
       'vivi+teste',
       'nome.sobrenome',
       'nome_sobrenome',
