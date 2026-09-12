@@ -6,6 +6,7 @@ import {
   isValidEmail,
   isValidRa,
   normalizeEmail,
+  normalizeIdentifier,
   normalizeRa,
 } from '@/lib/login-identifiers';
 
@@ -34,7 +35,7 @@ describe('login identifiers', () => {
     }
   });
 
-  it('preserves every e-mail punctuation character through the typing sequence', () => {
+  it('preserves every character through the email typing sequence', () => {
     const typingSequence = [
       'v',
       'vi',
@@ -52,9 +53,15 @@ describe('login identifiers', () => {
     ];
 
     for (const input of typingSequence) {
-      expect(isEmailIdentifier(input)).toBe(true);
-      expect(normalizeEmail(input)).toBe(input.toLowerCase());
+      // LoginPage stores the identifier through normalizeIdentifier() while typing.
+      // It must never route partial input through normalizeRa(), which would remove punctuation.
+      expect(normalizeIdentifier(input)).toBe(input);
     }
+
+    expect(isEmailIdentifier('vivi.viick@gmail.com')).toBe(true);
+    expect(isEmailIdentifier('vivi+teste@gmail.com')).toBe(true);
+    expect(isEmailIdentifier('nome.sobrenome@gmail.com')).toBe(true);
+    expect(isEmailIdentifier('nome_sobrenome@gmail.com')).toBe(true);
   });
 
   it('preserves dots and other valid local-part characters while typing', () => {
