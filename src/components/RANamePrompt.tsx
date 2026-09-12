@@ -22,6 +22,7 @@ import {
 import { toast } from "sonner";
 import { UserCircle2 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
+import { normalizeEmail } from "@/lib/login-identifiers";
 
 const COURSES = [
   { value: "CC", label: "Ciência da Computação (CC)" },
@@ -156,8 +157,8 @@ export function RANamePrompt() {
     }
 
     setSaving(true);
-    const recoveryEmail = contactEmail.trim().toLowerCase();
-    const currentAuthEmail = (user.email || "").trim().toLowerCase();
+    const recoveryEmail = normalizeEmail(contactEmail);
+    const currentAuthEmail = normalizeEmail(user.email || "");
     const updates: Record<string, unknown> = {
       full_name: normalizedName,
     };
@@ -239,8 +240,8 @@ export function RANamePrompt() {
         return;
       }
 
-      const confirmedEmail = (authUpdate.user?.email || "").trim().toLowerCase();
-      const pendingEmail = ((authUpdate.user as any)?.new_email || "").trim().toLowerCase();
+      const confirmedEmail = normalizeEmail(authUpdate.user?.email || "");
+      const pendingEmail = normalizeEmail((authUpdate.user as any)?.new_email || "");
       const confirmed = Boolean(authUpdate.user?.email_confirmed_at) && confirmedEmail === recoveryEmail;
       const alreadyLinked = confirmedEmail === recoveryEmail && !confirmedEmail.endsWith("@ra.unip.local");
 
@@ -281,7 +282,7 @@ export function RANamePrompt() {
       });
     }
     const { data, error } = await supabase.auth.getUser();
-    const confirmedEmail = data.user?.email || "";
+    const confirmedEmail = normalizeEmail(data.user?.email || "");
     const verified = !error && !confirmedEmail.endsWith("@ra.unip.local") && Boolean(data.user?.email_confirmed_at);
     setSaving(false);
     if (error || !verified) {
@@ -319,7 +320,7 @@ export function RANamePrompt() {
             <div className="rounded-lg border border-primary/40 bg-primary/10 p-3 text-sm">
               <p className="font-semibold">Confirme seu e-mail para continuar</p>
               <p className="mt-1 text-xs text-muted-foreground">
-                Enviamos um link para <strong>{contactEmail.trim().toLowerCase()}</strong>. Verifique também a caixa de spam.
+                Enviamos um link para <strong>{normalizeEmail(contactEmail)}</strong>. Verifique também a caixa de spam.
               </p>
             </div>
           )}
