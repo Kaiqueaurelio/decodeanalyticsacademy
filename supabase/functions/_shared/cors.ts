@@ -11,6 +11,7 @@ const ALLOWED_ORIGINS = new Set([
   'https://id-preview--4dd1aec2-9175-4ae9-9401-8637f1ffe1a2.lovable.app',
 
   // Vercel stable project domains
+  'https://decodeanalyticsacademy.vercel.app',
   'https://decodeanalyticsacademy-decode-analytics-s-projects.vercel.app',
   'https://decodeanalyticsacademy-git-main-decode-analytics-s-projects.vercel.app',
 
