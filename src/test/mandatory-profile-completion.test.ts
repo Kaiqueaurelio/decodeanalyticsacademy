@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { normalizeEmail } from '@/lib/login-identifiers';
 
 const source = readFileSync(resolve(process.cwd(), 'src/components/RANamePrompt.tsx'), 'utf8');
 
@@ -14,10 +15,20 @@ describe('mandatory profile completion', () => {
 
   it('requires a valid full name and a recovery email for RA accounts', () => {
     expect(source).toContain('normalizedName.split(" ").length >= 2');
+    expect(source).toContain('const recoveryEmail = normalizeEmail(contactEmail);');
     expect(source).toContain('supabase.auth.updateUser({ email: recoveryEmail })');
     expect(source).toContain('authStillUsesSyntheticEmail');
     expect(source).toContain('Já confirmei meu e-mail');
     expect(source).toContain('supabase.auth.refreshSession()');
+  });
+
+  it('preserves dotted and plus-addressed recovery emails in the exact Auth payload', () => {
+    expect(normalizeEmail('Vivi.Viick@Gmail.com')).toBe('vivi.viick@gmail.com');
+    expect(normalizeEmail('vivi+teste@gmail.com')).toBe('vivi+teste@gmail.com');
+    expect(source).toContain('const recoveryEmail = normalizeEmail(contactEmail);');
+    expect(source).not.toContain('normalizeRa(contactEmail)');
+    expect(source).not.toContain('contactEmail.replace(/[._-]/g');
+    expect(source).not.toContain('contactEmail.replace(/\\./g');
   });
 
   it('refreshes a stale Auth session and retries the email update once', () => {
