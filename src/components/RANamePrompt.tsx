@@ -31,6 +31,51 @@ const COURSES = [
 
 const SEMESTERS = Array.from({ length: 12 }, (_, i) => i + 1);
 
+function getAuthErrorCode(error: unknown) {
+  const value = error as { code?: unknown; status?: unknown; message?: unknown } | null;
+  return String(value?.code ?? value?.status ?? "").toLowerCase();
+}
+
+function getAuthErrorMessage(error: unknown) {
+  const value = error as { message?: unknown } | null;
+  return String(value?.message ?? "");
+}
+
+function isSessionError(error: unknown) {
+  const code = getAuthErrorCode(error);
+  const message = getAuthErrorMessage(error).toLowerCase();
+  return code.includes("session")
+    || code.includes("token")
+    || code === "401"
+    || message.includes("jwt")
+    || message.includes("session")
+    || message.includes("token")
+    || message.includes("not authenticated");
+}
+
+function isEmailAlreadyRegisteredError(error: unknown) {
+  const message = getAuthErrorMessage(error).toLowerCase();
+  const code = getAuthErrorCode(error);
+  return code.includes("email_exists")
+    || code.includes("user_already_exists")
+    || message.includes("email already registered")
+    || message.includes("already registered")
+    || message.includes("already exists")
+    || message.includes("user already registered")
+    || message.includes("email address is already registered");
+}
+
+function isTransientAuthError(error: unknown) {
+  const code = getAuthErrorCode(error);
+  const message = getAuthErrorMessage(error).toLowerCase();
+  return ["429", "500", "502", "503", "504", "fetch_error", "network_error"].some((value) => code.includes(value))
+    || message.includes("network")
+    || message.includes("fetch")
+    || message.includes("timeout")
+    || message.includes("temporarily unavailable")
+    || message.includes("connection reset");
+}
+
 export function RANamePrompt() {
   const { user, loading } = useAuth();
   const queryClient = useQueryClient();
@@ -70,13 +115,9 @@ export function RANamePrompt() {
         name.length < 3;
         
       const savedEmail = ((data as any).email || "").trim();
-      
-      // Para usuários RA, o e-mail @ra.unip.local é considerado "ausente" (precisamos do real)
       const authStillUsesSyntheticEmail = (user.email || "").endsWith("@ra.unip.local");
       const missingContactEmail = !savedEmail || savedEmail.endsWith("@ra.unip.local") || authStillUsesSyntheticEmail;
 
-      // O prompt agora é para TODOS os alunos sem nome, não apenas RA.
-      // RA apenas tem a verificação de e-mail extra.
       if (looksDefaultName || (isRA && missingContactEmail)) {
         if (!looksDefaultName) setFullName(name);
         if (savedEmail && !savedEmail.endsWith("@ra.unip.local")) setContactEmail(savedEmail);
@@ -116,6 +157,7 @@ export function RANamePrompt() {
 
     setSaving(true);
     const recoveryEmail = contactEmail.trim().toLowerCase();
+    const currentAuthEmail = (user.email || "").trim().toLowerCase();
     const updates: Record<string, unknown> = {
       full_name: normalizedName,
     };
@@ -128,33 +170,101 @@ export function RANamePrompt() {
       .eq("user_id", user.id);
 
     if (error) {
+      console.error("RANamePrompt: profile update failed", {
+        code: error.code,
+        status: (error as any).status,
+        message: error.message,
+      });
       setSaving(false);
       toast.error("Não foi possível salvar. Tente novamente.");
       return;
     }
 
-    if (isRAAccount && (user.email || "").endsWith("@ra.unip.local")) {
-      const { data: authUpdate, error: authEmailError } = await supabase.auth.updateUser({ email: recoveryEmail });
+    if (isRAAccount) {
+      // If Auth already has this exact address, the profile was simply catching up.
+      // Do not issue a redundant Auth mutation or report a false failure.
+      if (currentAuthEmail === recoveryEmail) {
+        const { data: currentUserData, error: currentUserError } = await supabase.auth.getUser();
+        const confirmed = !currentUserError
+          && !((currentUserData.user?.email || "").endsWith("@ra.unip.local"))
+          && Boolean(currentUserData.user?.email_confirmed_at);
+        if (confirmed) {
+          toast.success("E-mail de recuperação já está vinculado e verificado.");
+          await queryClient.invalidateQueries({ queryKey: ["profile", "lite", user.id] });
+          setSaving(false);
+          setOpen(false);
+          return;
+        }
+      }
+
+      // Refresh once before changing Auth data. This also repairs an expired access
+      // token without changing the RA/password login flow.
+      const { error: refreshError } = await supabase.auth.refreshSession();
+      if (refreshError) {
+        console.error("RANamePrompt: recovery email session refresh failed", {
+          code: refreshError.code,
+          status: (refreshError as any).status,
+          message: refreshError.message,
+        });
+      }
+
+      let { data: authUpdate, error: authEmailError } = await supabase.auth.updateUser({ email: recoveryEmail });
+
+      // A stale session can make the first Auth mutation fail even though the
+      // profile write succeeded. Refresh and retry once, never silently twice.
+      if (authEmailError && isSessionError(authEmailError)) {
+        const { error: retryRefreshError } = await supabase.auth.refreshSession();
+        if (!retryRefreshError) {
+          ({ data: authUpdate, error: authEmailError } = await supabase.auth.updateUser({ email: recoveryEmail }));
+        }
+      }
+
       if (authEmailError) {
+        console.error("RANamePrompt: recovery email update failed", {
+          code: getAuthErrorCode(authEmailError),
+          status: (authEmailError as any).status,
+          message: getAuthErrorMessage(authEmailError),
+          transient: isTransientAuthError(authEmailError),
+          duplicate: isEmailAlreadyRegisteredError(authEmailError),
+        });
         setSaving(false);
-        toast.error("O perfil foi salvo, mas não foi possível vincular o e-mail de recuperação. Tente novamente.");
+
+        if (isEmailAlreadyRegisteredError(authEmailError)) {
+          toast.error("Este e-mail já está vinculado a outra conta.");
+        } else if (isTransientAuthError(authEmailError)) {
+          toast.error("O perfil foi salvo, mas o vínculo do e-mail está temporariamente indisponível. Tente novamente.");
+        } else {
+          toast.error("O perfil foi salvo, mas não foi possível concluir o vínculo do e-mail. Tente novamente.");
+        }
         return;
       }
-      const confirmedEmail = authUpdate.user?.email || "";
-      if (!confirmedEmail.endsWith("@ra.unip.local") && authUpdate.user?.email_confirmed_at) {
-        toast.success("E-mail verificado e perfil atualizado. Bons estudos!");
-        await queryClient.invalidateQueries({ queryKey: ["profile", "lite", user.id] });
-        setSaving(false);
+
+      const confirmedEmail = (authUpdate.user?.email || "").trim().toLowerCase();
+      const pendingEmail = ((authUpdate.user as any)?.new_email || "").trim().toLowerCase();
+      const confirmed = Boolean(authUpdate.user?.email_confirmed_at) && confirmedEmail === recoveryEmail;
+      const alreadyLinked = confirmedEmail === recoveryEmail && !confirmedEmail.endsWith("@ra.unip.local");
+
+      await queryClient.invalidateQueries({ queryKey: ["profile", "lite", user.id] });
+      setSaving(false);
+
+      if (confirmed || alreadyLinked) {
+        toast.success("E-mail de recuperação já está vinculado e verificado.");
         setOpen(false);
         return;
       }
+
       setVerificationSent(true);
-      setSaving(false);
-      toast.success("Enviamos um link de confirmação. Abra seu e-mail e confirme para continuar.");
+      toast.success("Enviamos um link de confirmação para seu e-mail.");
+      if (pendingEmail && pendingEmail !== recoveryEmail) {
+        console.error("RANamePrompt: Auth returned a different pending email", {
+          requested: recoveryEmail,
+          pending: pendingEmail,
+        });
+      }
       return;
-    } else {
-      toast.success("Perfil atualizado. Bons estudos!");
     }
+
+    toast.success("Perfil atualizado. Bons estudos!");
     await queryClient.invalidateQueries({ queryKey: ["profile", "lite", user.id] });
     setSaving(false);
     setOpen(false);
@@ -162,10 +272,17 @@ export function RANamePrompt() {
 
   const checkEmailVerification = async () => {
     setSaving(true);
-    await supabase.auth.refreshSession();
+    const { error: refreshError } = await supabase.auth.refreshSession();
+    if (refreshError) {
+      console.error("RANamePrompt: verification refresh failed", {
+        code: refreshError.code,
+        status: (refreshError as any).status,
+        message: refreshError.message,
+      });
+    }
     const { data, error } = await supabase.auth.getUser();
     const confirmedEmail = data.user?.email || "";
-    const verified = !confirmedEmail.endsWith("@ra.unip.local") && Boolean(data.user?.email_confirmed_at);
+    const verified = !error && !confirmedEmail.endsWith("@ra.unip.local") && Boolean(data.user?.email_confirmed_at);
     setSaving(false);
     if (error || !verified) {
       toast.error("O e-mail ainda não foi confirmado. Clique no link recebido e tente novamente.");
