@@ -34,6 +34,27 @@ describe('login identifiers', () => {
     }
   });
 
+  it('preserves dots and other valid local-part characters while typing', () => {
+    const partialInputs = [
+      'vivi.',
+      'vivi+teste',
+      'nome.sobrenome',
+      'nome_sobrenome',
+      'nome-sobrenome',
+    ];
+
+    for (const input of partialInputs) {
+      expect(isEmailIdentifier(input)).toBe(true);
+      expect(normalizeEmail(input)).toBe(input.toLowerCase());
+    }
+  });
+
+  it('does not classify formatted RA input as an e-mail candidate', () => {
+    expect(isEmailIdentifier('G-802.144')).toBe(false);
+    expect(isEmailIdentifier('G802.144')).toBe(false);
+    expect(normalizeRa('G-802.144')).toBe('G802144');
+  });
+
   it('preserves dots in the local-part exactly', () => {
     expect(normalizeEmail('Vivi.Viick@Gmail.com')).toBe('vivi.viick@gmail.com');
     expect(normalizeEmail('joao.silva@hotmail.com')).toBe('joao.silva@hotmail.com');
@@ -44,6 +65,12 @@ describe('login identifiers', () => {
     expect(isEmailIdentifier('Aluno@Example.com')).toBe(true);
     expect(isValidEmail('Aluno@Example.com')).toBe(true);
     expect(isEmailIdentifier('g802144@ra.unip.local')).toBe(false);
+  });
+
+  it('requires a complete address for final e-mail validation', () => {
+    expect(isValidEmail('vivi.')).toBe(false);
+    expect(isValidEmail('vivi.viick@gmail.com')).toBe(true);
+    expect(isValidEmail('vivi+teste@gmail.com')).toBe(true);
   });
 
   it('accepts the supported RA format and rejects malformed values', () => {
