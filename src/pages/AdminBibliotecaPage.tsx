@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { AppHeader } from '@/components/AppHeader';
 import { Card } from '@/components/ui/card';
@@ -18,8 +18,7 @@ import { detectFileType } from '@/modules/library/types';
 
 type UploadPhase = 'idle' | 'cover' | 'book' | 'saving' | 'done' | 'error';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
-const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
+const SUPABASE_ANON = SUPABASE_PUBLISHABLE_KEY;
 
 /** Upload via XHR to expose real progress events (supabase-js does not surface them). */
 function uploadWithProgress(opts: {

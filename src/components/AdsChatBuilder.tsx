@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from '@/integrations/supabase/client';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   BellRing,
@@ -402,14 +403,14 @@ export function AdsChatBuilder() {
     try {
       const { getCurrentAccessToken } = await import('@/lib/auth-session');
       const accessToken = getCurrentAccessToken();
-      const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/gemini-direct`;
+      const url = `${SUPABASE_URL}/functions/v1/gemini-direct`;
       const recent = messagesRef.current.slice(-10).map((m) => ({ role: m.role === 'bot' ? 'assistant' : 'user', content: m.text }));
       const resp = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${accessToken ?? ''}`,
-          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          apikey: SUPABASE_PUBLISHABLE_KEY,
         },
         body: JSON.stringify({
           systemPrompt: [

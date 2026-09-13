@@ -26,7 +26,9 @@ export default defineConfig(({ mode }) => {
       },
     },
     react(),
-    mcpPlugin(),
+    // The MCP bundler cannot emit portable Deno imports from Windows paths.
+    // Linux CI and Lovable generate the checked-in edge function.
+    process.platform !== 'win32' && mcpPlugin(),
     mode === "development" && componentTagger(),
     // Service worker de app-shell desativado de propósito: instalações antigas
     // serviam HTML/JS em cache e exibiam versões antigas do app. O arquivo

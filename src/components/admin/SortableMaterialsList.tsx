@@ -4,7 +4,7 @@
  * Persiste a nova ordem no Supabase ao soltar.
  */
 import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import {
   GripVertical, Trash2, FileText, Image as ImageIcon, Video, Music, Presentation,
@@ -43,11 +43,11 @@ export function SortableMaterialsList({ items, onReorder, onRemove }: Props) {
       // Usamos fetch direto porque o rpc gerado pelo supabase-js pode não ter
       // regenerado os tipos ainda, causando erro de TS.
       const { data: session } = await supabase.auth.getSession();
-      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/rpc/update_materials_order`, {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/update_materials_order`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          'apikey': SUPABASE_PUBLISHABLE_KEY,
           'Authorization': `Bearer ${session.session?.access_token}`,
         },
         body: JSON.stringify({
