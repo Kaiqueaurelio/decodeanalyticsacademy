@@ -16,7 +16,7 @@ const ThemeContext = createContext<ThemeContextType>({
   visualStyle: 'industrial',
   toggleTheme: () => {}, 
   toggleVisualStyle: () => {} 
-}); 
+});
 
 function readPreference(key: string): string | null {
   try {
