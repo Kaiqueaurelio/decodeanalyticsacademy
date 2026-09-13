@@ -4,6 +4,7 @@ import { getCorsHeaders } from "../_shared/cors.ts";
 const RA_RE = /^[A-Z0-9]{6,13}$/;
 const GENERIC_FAIL = "RA ou senha incorretos.";
 const ACTIVE_PROJECT_PUBLIC_KEY = "sb_publishable_Zh6H3y8GJ2J_wkRVXxyTng_eylbCAVM";
+const ACTIVE_PROJECT_URL = "https://wxkkpjpqyrygglbuogsd.supabase.co";
 
 Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
@@ -16,6 +17,10 @@ Deno.serve(async (req) => {
   if (!SUPABASE_URL || !SERVICE_ROLE) {
     console.error("ra-auth: env ausente");
     return json({ error: "Serviço indisponível no momento." }, 500, corsHeaders);
+  }
+  if (SUPABASE_URL !== ACTIVE_PROJECT_URL) {
+    console.error("ra-auth: runtime Supabase inesperado");
+    return json({ error: "Serviço de autenticação indisponível." }, 503, corsHeaders);
   }
 
   let body: Record<string, unknown>;
@@ -63,12 +68,22 @@ Deno.serve(async (req) => {
         .select("user_id,email,ra")
         .ilike("email", identifier)
         .maybeSingle();
-      if (profileError) console.error("ra-auth profile email lookup:", profileError.message);
+      if (profileError) {
+        console.error("ra-auth profile email lookup:", profileError.message);
+        return json({ error: "Não foi possível consultar sua conta agora. Tente novamente." }, 503, corsHeaders);
+      }
       if (byEmail?.user_id) {
         resolvedUserId = byEmail.user_id;
         const { data: authUser, error: authUserError } = await admin.auth.admin.getUserById(byEmail.user_id);
-        if (authUserError) console.error("ra-auth auth user lookup:", authUserError.message);
+        if (authUserError) {
+          console.error("ra-auth auth user lookup:", authUserError.message);
+          return json({ error: "Não foi possível confirmar sua conta agora. Tente novamente." }, 503, corsHeaders);
+        }
         resolvedEmail = authUser?.user?.email || null;
+        if (!resolvedEmail) {
+          console.error("ra-auth auth user lookup returned no email", { user_id: resolvedUserId });
+          return json({ error: "Não foi possível confirmar sua conta agora. Tente novamente." }, 503, corsHeaders);
+        }
       }
       if (!resolvedEmail) resolvedEmail = identifier;
     } else {
@@ -80,14 +95,23 @@ Deno.serve(async (req) => {
         .select("user_id,email,ra")
         .eq("ra", identifier)
         .maybeSingle();
-      if (profileError) console.error("ra-auth profile RA lookup:", profileError.message);
+      if (profileError) {
+        console.error("ra-auth profile RA lookup:", profileError.message);
+        return json({ error: "Não foi possível consultar sua conta agora. Tente novamente." }, 503, corsHeaders);
+      }
       if (profile?.user_id) {
         resolvedUserId = profile.user_id;
         const { data: authUser, error: authUserError } = await admin.auth.admin.getUserById(profile.user_id);
-        if (authUserError) console.error("ra-auth auth user lookup:", authUserError.message);
+        if (authUserError) {
+          console.error("ra-auth auth user lookup:", authUserError.message);
+          return json({ error: "Não foi possível confirmar sua conta agora. Tente novamente." }, 503, corsHeaders);
+        }
         resolvedEmail = authUser?.user?.email || null;
+        if (!resolvedEmail) {
+          console.error("ra-auth auth user lookup returned no email", { user_id: resolvedUserId });
+          return json({ error: "Não foi possível confirmar sua conta agora. Tente novamente." }, 503, corsHeaders);
+        }
       }
-      if (!resolvedEmail && profile?.email?.includes("@")) resolvedEmail = profile.email;
       if (!resolvedEmail) resolvedEmail = `${identifier.toLowerCase()}@ra.unip.local`;
     }
 
@@ -128,13 +152,18 @@ Deno.serve(async (req) => {
       }, { onConflict: "user_id" });
 
       const client = createClient(SUPABASE_URL, ANON_KEY, { auth: { persistSession: false } });
-      const { data: sessionData } = await client.auth.signInWithPassword({ email, password });
-      if (sessionData?.session) await recordLoginAttempt(admin, identifier, ip, true);
+      const { data: sessionData, error: signInError } = await client.auth.signInWithPassword({ email, password });
+      if (signInError || !sessionData?.session) {
+        console.error("ra-auth signup signin:", signInError?.message || "session missing");
+        return json({ created: true, session: null }, 500, corsHeaders);
+      }
+      await recordLoginAttempt(admin, identifier, ip, true);
       return json({
         created: true,
-        session: sessionData?.session
-          ? { access_token: sessionData.session.access_token, refresh_token: sessionData.session.refresh_token }
-          : null,
+        session: {
+          access_token: sessionData.session.access_token,
+          refresh_token: sessionData.session.refresh_token,
+        },
       }, 200, corsHeaders);
     }
 
