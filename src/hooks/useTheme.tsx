@@ -18,16 +18,36 @@ const ThemeContext = createContext<ThemeContextType>({
   toggleVisualStyle: () => {} 
 });
 
+function readPreference(key: string): string | null {
+  try {
+    return typeof window !== 'undefined' && window.localStorage
+      ? window.localStorage.getItem(key)
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+function writePreference(key: string, value: string) {
+  try {
+    window.localStorage?.setItem(key, value);
+  } catch {
+    // Storage can be disabled by privacy settings. The in-memory theme still works.
+  }
+}
+
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>(() => {
-    const stored = localStorage.getItem('decode-theme');
+    const stored = readPreference('decode-theme');
     if (stored === 'dark' || stored === 'light') return stored;
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    return typeof window !== 'undefined' && window.matchMedia?.('(prefers-color-scheme: dark)').matches
+      ? 'dark'
+      : 'light';
   });
 
   const [visualStyle, setVisualStyle] = useState<VisualStyle>(() => {
-    const stored = localStorage.getItem('decode-visual-style');
+    const stored = readPreference('decode-visual-style');
     if (stored === 'industrial' || stored === 'minimalist') return stored;
     return 'industrial';
   });
@@ -41,8 +61,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     root.setAttribute('data-theme', theme);
     root.setAttribute('data-style', visualStyle);
     
-    localStorage.setItem('decode-theme', theme);
-    localStorage.setItem('decode-visual-style', visualStyle);
+    writePreference('decode-theme', theme);
+    writePreference('decode-visual-style', visualStyle);
   }, [theme, visualStyle]);
 
   const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');

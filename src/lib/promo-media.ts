@@ -3,7 +3,9 @@
 // (especialmente caminhos contendo "/ads/") para passar pelo edge function
 // `promo-media`, que tem um path neutro e não dispara filtros de bloqueio.
 
-const SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL as string | undefined)?.replace(/\/$/, '') || '';
+import { SUPABASE_URL as ACTIVE_SUPABASE_URL } from '@/integrations/supabase/client';
+
+const SUPABASE_URL = ACTIVE_SUPABASE_URL.replace(/\/$/, '');
 
 export function toPromoMediaUrl(rawUrl?: string | null): string | null {
   const value = rawUrl?.trim();

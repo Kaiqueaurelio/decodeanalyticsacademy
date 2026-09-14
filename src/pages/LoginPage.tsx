@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from '@/integrations/supabase/client';
 import { buildRaEmail, isEmailIdentifier, isSpecialIdentifier, isValidEmail, isValidRa, normalizeIdentifier, normalizeRa } from '@/lib/login-identifiers';
 import { Button } from '@/components/ui/button';
 import { AsyncButton } from '@/components/ui/async-button';
@@ -17,6 +17,8 @@ import { motion, AnimatePresence, useMotionValue, useSpring } from 'framer-motio
 import { motionTokens, type AsyncStatus } from '@/lib/motion';
 import { SECURITY_COPY } from '@/lib/security-copy';
 import { GlitchText } from '@/components/login/GlitchText';
+import { AuthRequestTimeout, fetchAuthResponse } from '@/lib/auth-request';
+import { normalizePostLoginDestination } from '@/lib/auth-navigation';
 
 export default function LoginPage() {
   const { signUp, user, roleChecked, loading: authLoading, status, isSessionHydrated } = useAuth();
@@ -36,39 +38,37 @@ export default function LoginPage() {
 
   const looksLikeEmail = isEmailIdentifier;
   const callRaAuth = async (payload: Record<string, unknown>) => {
+    // Usa exatamente o mesmo backend do client oficial (evita apontar para um projeto vazio).
+    const functionsUrl = `${SUPABASE_URL}/functions/v1/ra-auth`;
+    const publishableKey = SUPABASE_PUBLISHABLE_KEY;
+
     try {
-      const { data, error } = await supabase.functions.invoke('ra-auth', { body: payload });
-      if (error) {
-        let message: string = SECURITY_COPY.loginErrorDescription;
-        console.error('ra-auth error:', error);
-        const context = (error as { context?: unknown }).context;
-        const res = context instanceof Response ? context : undefined;
-        const errorName = error instanceof Error ? error.name : '';
-        const contextMessage = context instanceof Error ? context.message : '';
-        const isTransportError = !res && (
-          errorName === 'FunctionsFetchError'
-          || /failed to fetch|networkerror|load failed/i.test(contextMessage)
-        );
-        if (isTransportError) {
-          return {
-            data: null,
-            message: 'Não foi possível conectar ao serviço de autenticação. Verifique sua conexão e tente novamente.',
-            code: 'network_error',
-            status: 0,
-          };
-        }
-        if (res) {
-          try {
-            const body = await res.clone().json() as { error?: unknown; code?: unknown };
-            if (typeof body.error === 'string') message = body.error;
-            return { data: null, message, code: typeof body.code === 'string' ? body.code : undefined, status: res.status };
-          } catch { /* mantém mensagem padrão */ }
-        }
-        return { data: null, message, code: undefined, status: res?.status ?? 0 };
+      // 401 e 429 são respostas normais da tela de login. Fazer a requisição
+      // diretamente evita que o SDK as registre como erro de runtime da página.
+      const { response, body } = await fetchAuthResponse(functionsUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          apikey: publishableKey,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        return {
+          data: null,
+          message: typeof body.error === 'string' ? body.error : SECURITY_COPY.loginErrorDescription,
+          code: typeof body.code === 'string' ? body.code : undefined,
+          status: response.status,
+        };
       }
-      return { data, message: null as string | null, code: undefined, status: 200 };
+
+      return { data: body, message: null as string | null, code: undefined, status: response.status };
     } catch (error) {
-      console.error('Falha de rede no ra-auth:', error);
+      if (error instanceof AuthRequestTimeout) {
+        // An uncertain response must not trigger another credential attempt.
+        return { data: null, message: error.message, code: 'network_error', status: 408 };
+      }
       return {
         data: null,
         message: 'Não foi possível conectar ao serviço de autenticação por RA. Tente novamente em instantes.',
@@ -129,14 +129,32 @@ export default function LoginPage() {
   }, []);
 
   useEffect(() => {
+    if (status === 'authenticated') return;
+
+    const params = new URLSearchParams(window.location.search);
+    const rawNext = params.get('next');
+    if (!rawNext) return;
+
+    const safeNext = normalizePostLoginDestination(rawNext);
+    const canonicalLoginUrl = safeNext
+      ? `/login?next=${encodeURIComponent(safeNext)}`
+      : '/login';
+    const currentUrl = `${window.location.pathname}${window.location.search}`;
+
+    if (currentUrl !== canonicalLoginUrl) {
+      navigate(canonicalLoginUrl, { replace: true });
+    }
+  }, [navigate, status]);
+
+  useEffect(() => {
     if (authSettling || status !== 'authenticated' || !user || !roleChecked) return;
 
     const completeNavigation = () => {
       const params = new URLSearchParams(window.location.search);
       const nextParam = params.get('next');
-      const isSafeNext = nextParam && nextParam.startsWith('/') && !nextParam.startsWith('//');
-      if (isSafeNext) {
-        navigate(nextParam, { replace: true });
+      const safeNext = normalizePostLoginDestination(nextParam);
+      if (safeNext) {
+        navigate(safeNext, { replace: true });
         return;
       }
       const lastRoute = localStorage.getItem('decode_last_route');
@@ -352,15 +370,17 @@ export default function LoginPage() {
     // persistente e resolve o e-mail sem expor o mapeamento ao cliente.
     let authResult = await callRaAuth({ mode: 'signin', ra: identifierForAuth.trim(), password });
 
-    // Se a função estiver temporariamente inacessível, responder 503 ou
-    // rejeitar o mapeamento de um e-mail/RA conhecido, tentamos o Auth nativo.
+    // Se a função estiver temporariamente inacessível ou rejeitar um RA que já
+    // existe no Auth, tentamos o mesmo login diretamente no projeto ativo.
+    // A senha continua sendo validada pelo Supabase; HTTP 429 nunca faz fallback.
     // HTTP 429 nunca usa fallback: o bloqueio persistente deve ser respeitado.
     const canUseDirectAuthFallback =
       !authResult.data?.session &&
       authResult.status !== 429 &&
       (authResult.status === 503 ||
+        authResult.status === 408 ||
         authResult.status === 0 ||
-        (authResult.status === 401 && (isEmail || normalizedRa === 'G802144')));
+        (authResult.status === 401 && (isEmail || isValidRa(normalizedRa) || normalizedRa === 'G802144')));
 
     if (canUseDirectAuthFallback) {
       const fallbackEmail = isEmail
@@ -453,18 +473,25 @@ export default function LoginPage() {
       setShowLockModal(false);
     };
 
-    if (!isEmail) {
-      const { data, message } = await callRaAuth({ mode: 'reset', ra: normalizeRa(id), redirectTo: `${window.location.origin}/reset-password` });
-      setLoading(false);
-      if (!data) { showTransientError(); toast.error(message ?? 'Não consegui enviar a recuperação agora. Tente novamente.'); return; }
-      finish();
-      return;
-    }
-
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(id.toLowerCase(), { redirectTo: `${window.location.origin}/reset-password` });
+      // Centraliza RA e e-mail na Edge Function para evitar chamadas duplicadas
+      // ao endpoint de recuperação do Auth e aplicar o mesmo rate limit.
+      const { data, message, status, code } = await callRaAuth({
+        mode: 'reset',
+        ra: isEmail ? id.toLowerCase() : normalizeRa(id),
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
       setLoading(false);
-      if (error) { showTransientError(); toast.error('Não foi possível enviar o e-mail agora. Tente novamente em instantes.'); return; }
+      if (status === 429 || code === 'email_rate_limit_exceeded') {
+        showTransientError();
+        toast.error(message ?? 'O limite de e-mails foi atingido. Aguarde alguns minutos antes de tentar novamente.');
+        return;
+      }
+      if (!data) {
+        showTransientError();
+        toast.error(message ?? 'Não consegui enviar a recuperação agora. Tente novamente.');
+        return;
+      }
       finish();
     } catch {
       setLoading(false);
@@ -646,7 +673,7 @@ export default function LoginPage() {
                 ) : (
                   <>
                     <form onSubmit={handleSubmit} className="space-y-5">
-                      <div className="space-y-2"><div className="flex items-center justify-between"><Label htmlFor="identifier" className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/45">RA ou e-mail</Label>{!isSignUp && <button type="button" onClick={() => setIsForgotRa(true)} className="min-h-9 text-[10px] font-medium text-[#d7ff4f] transition hover:text-white">Esqueci meu RA</button>}</div><div className="relative"><Mail className={`pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 ${usingEmail ? 'text-[#d7ff4f]' : 'text-white/35'}`} aria-hidden="true" /><Input id="identifier" name="identifier" type="text" inputMode="email" autoComplete="username" required value={identifier} onChange={(e) => { const v = e.target.value; setIdentifier(looksLikeEmail(v) ? normalizeIdentifier(v) : normalizeRa(v).replace(/[^A-Z0-9]/g, '')); setUnverifiedEmail(false); }} placeholder="G802144 ou seu@email.com" maxLength={120} className="min-h-12 border-white/10 bg-black/20 pl-11 text-white placeholder:text-white/25 focus-visible:border-[#d7ff4f] focus-visible:ring-[#d7ff4f]/25" /></div><p className="text-[10px] text-white/35">{usingEmail ? 'E-mail detectado. Login com verificação por e-mail.' : identifier.length > 0 ? 'RA detectado. Login direto.' : 'Digite seu RA ou seu e-mail cadastrado.'}</p></div>
+                      <div className="space-y-2"><div className="flex items-center justify-between"><Label htmlFor="identifier" className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/45">RA ou e-mail</Label>{!isSignUp && <button type="button" onClick={() => setIsForgotRa(true)} className="min-h-9 text-[10px] font-medium text-[#d7ff4f] transition hover:text-white">Esqueci meu RA</button>}</div><div className="relative"><Mail className={`pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 ${usingEmail ? 'text-[#d7ff4f]' : 'text-white/35'}`} aria-hidden="true" /><Input id="identifier" name="identifier" type="text" inputMode="email" autoComplete="username" required value={identifier} onChange={(e) => { setIdentifier(normalizeIdentifier(e.target.value)); setUnverifiedEmail(false); }} placeholder="G802144 ou seu@email.com" maxLength={120} className="min-h-12 border-white/10 bg-black/20 pl-11 text-white placeholder:text-white/25 focus-visible:border-[#d7ff4f] focus-visible:ring-[#d7ff4f]/25" /></div><p className="text-[10px] text-white/35">{usingEmail ? 'E-mail detectado. Login com verificação por e-mail.' : identifier.length > 0 ? 'RA detectado. Login direto.' : 'Digite seu RA ou seu e-mail cadastrado.'}</p></div>
                       <div className="space-y-2"><Label htmlFor="password" className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/45">Senha</Label><div className={`relative ${shaking ? 'animate-shake' : ''}`}><KeyRound className="pointer-events-none absolute left-3.5 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-white/35" aria-hidden="true" /><PasswordInput ref={passwordRef} id="password" name="password" autoComplete="current-password" required value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" className={`min-h-12 border-white/10 bg-black/20 pl-11 pr-12 text-white placeholder:text-white/25 focus-visible:border-[#d7ff4f] focus-visible:ring-[#d7ff4f]/25 ${loginAttempts > 0 ? 'border-red-400/70 focus-visible:ring-red-400/25' : ''}`} toggleClassName="text-white/35 hover:text-[#d7ff4f]" /></div><AnimatePresence>{loginAttempts > 0 && !isLocked && <motion.p key="login-attempts" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="flex items-center gap-1 text-[11px] text-red-300"><AlertTriangle className="h-3 w-3" aria-hidden="true" /> Tentativa {loginAttempts} de {MAX_LOGIN_ATTEMPTS}</motion.p>}</AnimatePresence></div>
 
                       <div className="flex items-start gap-2 rounded-xl border border-white/10 bg-white/[0.025] p-3"><Checkbox id="terms" checked={agreedToTerms} onCheckedChange={(v) => { const accepted = !!v; setAgreedToTerms(accepted); if (accepted) localStorage.setItem(`decode_terms_accepted_${TERMS_VERSION}`, 'true'); else localStorage.removeItem(`decode_terms_accepted_${TERMS_VERSION}`); }} className="mt-0.5 border-white/25 data-[state=checked]:border-[#d7ff4f] data-[state=checked]:bg-[#d7ff4f] data-[state=checked]:text-[#10150f]" /><Label htmlFor="terms" className="cursor-pointer select-none text-[11px] leading-relaxed text-white/45">Eu li e concordo com os <button type="button" onClick={() => navigate('/terms')} className="text-[#d7ff4f] hover:underline">Termos de Uso</button> e a <button type="button" onClick={() => navigate('/transparency')} className="text-[#d7ff4f] hover:underline">Política de Privacidade</button>.</Label></div>

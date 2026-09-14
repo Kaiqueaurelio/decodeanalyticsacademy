@@ -2,6 +2,7 @@ import * as React from 'react';
 import { ImageOff } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toPromoMediaUrl } from '@/lib/promo-media';
+import { SUPABASE_URL } from '@/integrations/supabase/client';
 
 type AppImageProps = Omit<React.ImgHTMLAttributes<HTMLImageElement>, 'src'> & {
   src?: string | null;
@@ -21,7 +22,7 @@ function normalizeImageSrc(src?: string | null) {
 }
 
 function buildSupabasePublicUrl(bucket: string, path: string) {
-  const baseUrl = import.meta.env.VITE_SUPABASE_URL?.trim();
+  const baseUrl = SUPABASE_URL;
   if (!baseUrl) return null;
   const cleanBase = baseUrl.replace(/\/$/, '');
   const cleanPath = path.replace(/^\/+/, '');

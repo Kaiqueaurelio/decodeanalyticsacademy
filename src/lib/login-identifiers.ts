@@ -6,7 +6,19 @@ export function normalizeIdentifier(value: string): string {
 }
 
 /**
+ * Normaliza especificamente um e-mail.
+ *
+ * Regra deliberadamente limitada: somente trim + lowercase.
+ * Pontos, sublinhados, hífens e + do local-part são dados válidos
+ * e nunca devem ser removidos ou reinterpretados.
+ */
+export function normalizeEmail(value: string): string {
+  return (value || "").trim().toLowerCase();
+}
+
+/**
  * Normaliza especificamente um RA removendo hífens, pontos e espaços.
+ * Nunca reutilizar esta função para e-mails.
  */
 export function normalizeRa(value: string): string {
   return normalizeIdentifier(value).replace(/[\s._-]/g, "").toUpperCase();
@@ -21,17 +33,42 @@ export function buildRaEmail(ra: string): string {
 }
 
 /**
- * Verifica se o identificador é um e-mail.
+ * Detecta um identificador que deve ser tratado como entrada de e-mail
+ * enquanto o usuário ainda está digitando.
+ *
+ * O LoginPage historicamente aplicava normalizeRa() enquanto o texto ainda
+ * não continha "@". Isso removia o ponto de um e-mail parcial, por exemplo
+ * "vivi." antes de o usuário conseguir digitar "@gmail.com".
+ *
+ * Um RA formatado válido continua sendo reconhecido como RA e mantém a
+ * normalização existente. Já caracteres típicos do local-part de e-mail
+ * são preservados durante a digitação.
  */
 export function isEmailIdentifier(value: string): boolean {
   const normalized = normalizeIdentifier(value);
-  return normalized.includes('@') && !normalized.toLowerCase().endsWith('@ra.unip.local');
+  const lower = normalized.toLowerCase();
+
+  if (lower.includes('@')) {
+    return !lower.endsWith('@ra.unip.local');
+  }
+
+  // Não tratar a formatação tradicional de RA (ex.: G-802.144) como e-mail.
+  const looksLikeFormattedRa = /^[a-z]+(?:[-.]?\d+)+$/i.test(normalized);
+  if (looksLikeFormattedRa) return false;
+
+  // Durante a digitação, preserve caracteres válidos do local-part do e-mail.
+  return /[._+\-]/.test(normalized);
 }
 
 /**
- * Alias para isEmailIdentifier para manter compatibilidade com testes e outros componentes.
+ * Validação de e-mail completa. Ao contrário de isEmailIdentifier(),
+ * exige que o endereço esteja completo antes do envio.
  */
-export const isValidEmail = isEmailIdentifier;
+export function isValidEmail(value: string): boolean {
+  const normalized = normalizeEmail(value);
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized)
+    && !normalized.endsWith('@ra.unip.local');
+}
 
 /**
  * Verifica se o identificador é um RA (Registro Acadêmico).

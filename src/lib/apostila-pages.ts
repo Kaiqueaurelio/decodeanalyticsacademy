@@ -100,6 +100,24 @@ export function formatApostilaDate(isoDate: string | null | undefined): string {
   return match ? `${match[3]}/${match[2]}/${match[1]}` : isoDate;
 }
 
+/**
+ * Keeps the editorial sequence deterministic when pages have a saved date,
+ * while retaining the existing position as the fallback for undated pages.
+ */
+export function sortApostilaPagesChronologically<T extends ChronologyPageSnapshot>(pages: T[]): T[] {
+  const dateFor = (page: T) =>
+    page.saved_date || extractApostilaPageDate(page) || getApostilaPageSavedDate(page);
+
+  return [...pages].sort((a, b) => {
+    const aDate = dateFor(a);
+    const bDate = dateFor(b);
+    if (aDate && bDate && aDate !== bDate) return aDate.localeCompare(bDate);
+    if (aDate && !bDate) return -1;
+    if (!aDate && bDate) return 1;
+    return a.position - b.position || a.id.localeCompare(b.id);
+  });
+}
+
 export function validateApostilaChronology(input: {
   title?: string | null;
   content?: string | null;

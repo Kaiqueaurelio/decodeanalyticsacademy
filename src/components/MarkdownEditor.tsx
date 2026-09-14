@@ -179,7 +179,11 @@ export function MarkdownEditor({
         heading: { levels: [1, 2, 3] },
         paragraph: { HTMLAttributes: { class: 'leading-relaxed text-[15px] mb-4 text-foreground/90' } },
         codeBlock: { HTMLAttributes: { class: 'rounded-xl bg-[#22272e] p-4 font-mono text-[13px] overflow-x-auto border border-border/40 text-emerald-400 leading-relaxed my-6' } },
-
+        // Estas extensões são configuradas separadamente logo abaixo. O
+        // StarterKit v3 também as inclui por padrão e registrá-las duas vezes
+        // deixa comandos de colagem/formatação imprevisíveis.
+        link: false,
+        underline: false,
       }),
       Underline,
       TextStyle,
@@ -211,11 +215,6 @@ export function MarkdownEditor({
       externalRef.current = md;
       setStatus('unsaved');
       onChange(md);
-      window.clearTimeout((window as unknown as { __apsTimer?: number }).__apsTimer);
-      (window as unknown as { __apsTimer?: number }).__apsTimer = window.setTimeout(
-        () => setStatus('saved'),
-        800,
-      );
     },
   });
 
@@ -245,8 +244,9 @@ export function MarkdownEditor({
    */
   const handleManualSave = useCallback(async () => {
     setStatus('unsaved');
+    if (!onSave) return;
     try {
-      const result = await onSave?.();
+      const result = await onSave();
       setStatus(result === false ? 'unsaved' : 'saved');
     } catch {
       setStatus('unsaved');
@@ -346,9 +346,12 @@ export function MarkdownEditor({
       if (key === 's') {
         e.preventDefault();
         void handleManualSave();
-      } else if (key === 'p' || key === 'eye') {
+      } else if (key === 'p' && e.shiftKey) {
         e.preventDefault();
-        setViewMode(viewMode === 'preview' ? 'edit' : 'preview');
+        window.dispatchEvent(new CustomEvent('open-quick-add-section'));
+      } else if (key === 'p') {
+        e.preventDefault();
+        setViewMode((current) => current === 'preview' ? 'edit' : 'preview');
       } else if (key === 'k') {
         e.preventDefault();
         const previous = editor.getAttributes('link').href as string | undefined;
@@ -369,10 +372,6 @@ export function MarkdownEditor({
         e.preventDefault();
         // Inserir template ENEM
         editor.chain().focus().insertContent('### Questão ENEM\n\n**Texto Base:** ...\n\n**Pergunta:** ...\n\n- [ ] A) ...\n- [ ] B) ...\n- [ ] C) ...\n- [ ] D) ...\n- [ ] E) ...').run();
-      } else if (mod && e.shiftKey && key === 'p') {
-        e.preventDefault();
-        // Dispara o evento customizado que o Workbench está ouvindo
-        window.dispatchEvent(new CustomEvent('open-quick-add-section'));
       } else if (e.altKey && (key === '1' || key === '2' || key === '3')) {
         e.preventDefault();
         editor.chain().focus().toggleHeading({ level: parseInt(key) as 1 | 2 | 3 }).run();
@@ -391,7 +390,7 @@ export function MarkdownEditor({
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [editor, onSave]);
+  }, [editor, handleManualSave]);
 
   if (!editor) {
     return (
@@ -458,7 +457,7 @@ export function MarkdownEditor({
                <div className="flex flex-col h-full bg-card">
                   <div className="p-4 border-b border-border font-bold text-xs uppercase tracking-widest">Propriedades</div>
                   <ScrollArea className="flex-1 p-4">
-                    <EditorInspectorBody editor={editor} stats={stats} sel={useEditorSelection(editor)} />
+                    <MobileInspector editor={editor} stats={stats} />
                   </ScrollArea>
                </div>
             </SheetContent>

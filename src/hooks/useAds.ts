@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase as supabaseTyped } from '@/integrations/supabase/client';
+import { supabase as supabaseTyped, SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from '@/integrations/supabase/client';
 const supabase = supabaseTyped as any;
 import { useAuth } from './useAuth';
 import { toPromoMediaUrl } from '@/lib/promo-media';
@@ -111,11 +111,11 @@ export function useAds(adType?: 'banner' | 'popup' | 'inline' | 'sidebar' | 'foo
         console.debug('[Ads] Chamada sem token válido ou sessão expirada.', { hasToken: !!token, isExpired });
       }
 
-      const fnUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/list-ads${qs.toString() ? `?${qs}` : ''}`;
+      const fnUrl = `${SUPABASE_URL}/functions/v1/list-ads${qs.toString() ? `?${qs}` : ''}`;
       const res = await fetch(fnUrl, {
         method: 'GET',
         headers: {
-          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          apikey: SUPABASE_PUBLISHABLE_KEY,
           ...(token && !isExpired ? { Authorization: `Bearer ${token}` } : {}),
         },
       });
