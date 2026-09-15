@@ -3,6 +3,7 @@ import { resolve } from 'node:path';
 
 const source = readFileSync(resolve(process.cwd(), 'src/pages/ApostilaPage.tsx'), 'utf8');
 const rendererSource = readFileSync(resolve(process.cwd(), 'src/components/ApostilaContentRenderer.tsx'), 'utf8');
+const readerSource = readFileSync(resolve(process.cwd(), 'src/pages/ApostilaReaderPage.tsx'), 'utf8');
 
 describe('fluxo contínuo da apostila', () => {
   it('renderiza as páginas salvas dentro de um único contêiner de leitura', () => {
@@ -23,5 +24,13 @@ describe('fluxo contínuo da apostila', () => {
 
   it('mantém o sumário fechado inicialmente para mostrar o conteúdo no primeiro viewport', () => {
     expect(rendererSource).toContain('const [open, setOpen] = useState(false);');
+  });
+
+  it('mantém páginas salvas visíveis mesmo quando repetem conteúdo da apostila ou de outra lição', () => {
+    expect(source).toContain('const visiblePages = sortedExtraPages.filter((page) => !isPlaceholderPageContent(page.content || \'\'));');
+    expect(source).not.toContain('mergeDistinctPages(sortedExtraPages)');
+    expect(readerSource).toContain('const visiblePages = pages.filter((page) => !isPlaceholderPageContent(page.content || \'\'));');
+    expect(readerSource).not.toContain('existingKeys.has(key)');
+    expect(readerSource).not.toContain('existing.includes(key)');
   });
 });

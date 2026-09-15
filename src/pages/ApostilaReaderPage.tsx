@@ -42,7 +42,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import logoOwl from "@/assets/owl-icon.png";
 import { useSoundEffects } from '@/hooks/useSoundEffects';
 import { useAuth } from "@/hooks/useAuth";
-import { isPlaceholderPageContent, normalizeContentForComparison } from '@/lib/content-formatting';
+import { isPlaceholderPageContent } from '@/lib/content-formatting';
 import { Badge } from "@/components/ui/badge";
 import { extractChronologyDates, getApostilaPageSavedDate, isMissingApostilaPageSavedDateColumn } from "@/lib/apostila-pages";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -140,28 +140,10 @@ function buildTreeFromPages(apostilaId: string, pages: ApostilaPageRow[]): Tree 
 }
 
 function mergePagesIntoTree(tree: Tree, apostilaId: string, pages: ApostilaPageRow[]): Tree {
-  const existingKeys = new Set(
-    tree.modules.flatMap((module) => module.chapters.flatMap((chapter) => chapter.lessons))
-      .map((lesson) => normalizeContentForComparison(lesson.content_md || ''))
-      .filter(Boolean),
-  );
-
-  const distinctPages = pages.filter((page) => {
-    if (isPlaceholderPageContent(page.content || '')) return false;
-    const key = normalizeContentForComparison(page.content || '');
-    if (!key) return false;
-    if (existingKeys.has(key)) return false;
-    
-    // Verificação adicional: evita que a página seja uma subseção ou repetição do que já está na árvore
-    // (Pode ocorrer se o RPC retornar partes do conteúdo que o editor também salvou)
-    for (const existing of existingKeys) {
-      if (existing.includes(key) || key.includes(existing)) return false;
-    }
-    
-    existingKeys.add(key);
-    return true;
-  });
-  const pagesModule = buildPagesModule(apostilaId, distinctPages);
+  // Uma página criada no editor tem identidade própria. Conteúdo repetido ou
+  // contido em uma lição estruturada não pode ocultá-la do aluno.
+  const visiblePages = pages.filter((page) => !isPlaceholderPageContent(page.content || ''));
+  const pagesModule = buildPagesModule(apostilaId, visiblePages);
   if (!pagesModule) return tree;
 
   // O RPC pode retornar módulos estruturados e também existir conteúdo criado

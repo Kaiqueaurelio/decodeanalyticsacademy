@@ -34,7 +34,7 @@ import {
 import type { Tables } from '@/integrations/supabase/types';
 
 import { parseApostilaContent, type ApostilaSection as Section } from '@/lib/apostila-parser';
-import { isPlaceholderPageContent, mergeDistinctPages, normalizeContentForComparison, stripInlineMarkup } from '@/lib/content-formatting';
+import { isPlaceholderPageContent, stripInlineMarkup } from '@/lib/content-formatting';
 import { formatApostilaDate, getApostilaPageSavedDate, isMissingApostilaPageSavedDateColumn } from '@/lib/apostila-pages';
 
 /**
@@ -313,22 +313,12 @@ export default function ApostilaPage({ tab, setTab }: Props) {
       ? structuredContent
       : (apostila?.content || '');
     
-    // Filtro de desduplicação e integridade cronológica
-    const distinctPages = mergeDistinctPages(sortedExtraPages).filter((page) => {
-      if (isPlaceholderPageContent(page.content || '')) return false;
-      
-      const pageKey = normalizeContentForComparison(page.content || '');
-      if (!pageKey) return false;
-
-      // Lógica de desduplicação contra o conteúdo principal
-      const mainKey = normalizeContentForComparison(mainContent);
-      if (mainKey.includes(pageKey) || pageKey.includes(mainKey)) {
-        // Se a página for um subconjunto ou superconjunto do conteúdo principal, a removemos para evitar eco.
-        return false;
-      }
-      
-      return true;
-    });
+    // Cada registro persistido é uma página editorial própria. Não deduplicamos
+    // pelo texto: aulas podem compartilhar introduções, exercícios ou trechos
+    // do conteúdo principal, mas ainda devem aparecer ao aluno como páginas
+    // distintas. Páginas vazias/técnicas continuam fora do leitor até receberem
+    // material real.
+    const visiblePages = sortedExtraPages.filter((page) => !isPlaceholderPageContent(page.content || ''));
 
     return [
       ...(mainContent.trim() ? [{
@@ -338,7 +328,7 @@ export default function ApostilaPage({ tab, setTab }: Props) {
         isMain: true,
         position: -1,
       }] : []),
-      ...distinctPages.map((page, index) => ({
+      ...visiblePages.map((page, index) => ({
         id: page.id,
         title: stripInlineMarkup(page.title || '') || `Página ${index + 1}`,
         content: page.content.trim(),
