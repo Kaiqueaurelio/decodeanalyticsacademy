@@ -43,4 +43,20 @@ describe('confirmação de salvamento e publicação', () => {
     expect(toggle).toMatch(/\.select\('id'\)\s*\.single\(\)/);
     expect(toggle.indexOf('setPublished(next)')).toBeGreaterThan(toggle.indexOf('if (error)'));
   });
+
+  it('cria a página somente após salvar a edição atual e inicia a revisão da página criada', () => {
+    const createStart = source.indexOf('const handleCreatePersistedPage');
+    const create = source.slice(createStart, source.indexOf('createPersistedPageRef.current = handleCreatePersistedPage', createStart));
+    expect(create).toContain('await doSave(true)');
+    expect(create).toContain('await createApostilaPage(id, user.id)');
+    expect(create).toContain('setPages((current) => upsertApostilaPage(current, newPage))');
+    expect(create).toContain('setContentRevision(Number((newPage as any).content_revision ?? 0))');
+    expect(create.indexOf("status: 'succeeded'")).toBeGreaterThan(create.indexOf('await createApostilaPage(id, user.id)'));
+  });
+
+  it('mantém a nova página no editor quando a recarga ainda não a encontrou', () => {
+    const load = source.slice(source.indexOf('const loadApostila'), source.indexOf('useEffect(() => { if (id) loadApostila(id); }, [id, selectedPageId])'));
+    expect(load).toContain('A nova página ainda não foi sincronizada. Tentando carregar novamente.');
+    expect(load).toContain('void loadApostila(apostilaId)');
+  });
 });

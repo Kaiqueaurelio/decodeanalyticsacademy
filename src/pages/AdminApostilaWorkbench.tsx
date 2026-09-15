@@ -1254,6 +1254,10 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       // Pre-set content to avoid flicker or old content showing
       setTitle(newPage.title || 'Nova Página');
       setContent('');
+      // A página recém criada possui uma revisão própria. Usar a revisão da
+      // apostila pai aqui fazia o primeiro salvamento da página falhar por
+      // conflito e parecer que ela havia desaparecido após o recarregamento.
+      setContentRevision(Number((newPage as any).content_revision ?? 0));
       dirtyRef.current = false;
       
       initialLoadRef.current = false;

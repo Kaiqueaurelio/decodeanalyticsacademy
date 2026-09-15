@@ -217,38 +217,19 @@ export function upsertApostilaPage(pages: ApostilaPage[], savedPage: ApostilaPag
   return next.sort((a, b) => a.position - b.position);
 }
 
-export async function createApostilaPage(apostilaId: string, userId: string) {
-  const { data: existing, error: readError } = await (supabase.from('apostila_pages' as any) as any)
-    .select('position')
-    .eq('apostila_id', apostilaId)
-    .order('position', { ascending: false })
-    .limit(1);
-  if (readError) throw readError;
-
-  const position = existing?.[0]?.position ?? -1;
-  const savedDate = getLocalDateIso();
-  const titleDate = new Intl.DateTimeFormat('pt-BR').format(new Date());
-  const pageInsert = {
-    apostila_id: apostilaId,
-    title: `Nova Página — ${titleDate}`,
-    content: '',
-    position: position + 1,
-    created_by: userId,
-    saved_date: savedDate,
-  };
-
-  let { data, error } = await (supabase.from('apostila_pages' as any) as any)
-    .insert(pageInsert)
-    .select('*')
-    .single();
-  if (error && isMissingApostilaPageSavedDateColumn(error)) {
-    ({ data, error } = await (supabase.from('apostila_pages' as any) as any)
-      .insert({ ...pageInsert, saved_date: undefined })
-      .select('*')
-      .single());
-  }
+/**
+ * Creates a page through the database contract so the next position and the
+ * authenticated administrator are decided atomically by Postgres.
+ */
+export async function createApostilaPage(apostilaId: string, userId?: string) {
+  if (!apostilaId) throw new Error('ID da apostila não informado.');
+  const params = userId
+    ? { _apostila_id: apostilaId, _user_id: userId }
+    : { _apostila_id: apostilaId };
+  const { data, error } = await (supabase.rpc as any)('create_apostila_page', params);
   if (error) throw error;
-  return { ...(data as ApostilaPage), saved_date: (data as ApostilaPage).saved_date || savedDate };
+  if (!data) throw new Error('O banco não retornou a nova página.');
+  return data as ApostilaPage;
 }
 
 export interface ApostilaSeparationResult {
