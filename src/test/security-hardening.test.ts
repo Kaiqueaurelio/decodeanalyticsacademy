@@ -173,7 +173,8 @@ describe('security hardening regression guards', () => {
     const sql = source('supabase/migrations/20260825050000_profile_admin_fields_hardening.sql');
 
     expect(auth).toContain(".from('user_roles').select('role')");
-    expect(auth).toContain('const adminValue = Boolean(adminRes.data);');
+    expect(auth).toContain("supabase.rpc('has_role', { _user_id: userId, _role: 'admin' } as any)");
+    expect(auth).toContain('const adminValue = adminRoleRes.data === true || Boolean(adminRes.data);');
     expect(auth).not.toContain("account_type === 'admin'");
     expect(sql).toContain('prevent_profile_admin_field_escalation');
     expect(sql).toContain("NEW.account_type IS DISTINCT FROM OLD.account_type");

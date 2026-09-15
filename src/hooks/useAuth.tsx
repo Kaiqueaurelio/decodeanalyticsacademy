@@ -81,13 +81,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const checkRoles = async (userId: string, attempt = 0): Promise<boolean> => {
     try {
-      const [adminRes, profileRes] = await Promise.all([
+      const [adminRes, adminRoleRes, profileRes] = await Promise.all([
         supabase.from('user_roles').select('role').eq('user_id', userId).eq('role', 'admin').maybeSingle(),
+        // has_role é a fonte de verdade no banco e não depende da política de
+        // leitura da tabela user_roles. Mantemos a consulta direta como
+        // compatibilidade, mas não deixamos uma falha dela rebaixar um admin.
+        supabase.rpc('has_role', { _user_id: userId, _role: 'admin' } as any),
         supabase.from('profiles').select('is_blocked, email').eq('user_id', userId).maybeSingle(),
       ]);
       // O acesso administrativo é definido exclusivamente por user_roles.
       // account_type é um dado de perfil e não pode autorizar privilégios.
-      if ((adminRes.error || profileRes.error) && attempt < 1) {
+      if ((adminRes.error || adminRoleRes.error || profileRes.error) && attempt < 1) {
         return await new Promise<boolean>((resolve) => {
           setTimeout(() => resolve(checkRoles(userId, attempt + 1)), 500);
         });
@@ -95,7 +99,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (!mountedRef.current) return false;
 
-      const adminValue = Boolean(adminRes.data);
+      const adminValue = adminRoleRes.data === true || Boolean(adminRes.data);
 
       const blockedValue = Boolean((profileRes.data as { is_blocked?: boolean } | null)?.is_blocked);
 
