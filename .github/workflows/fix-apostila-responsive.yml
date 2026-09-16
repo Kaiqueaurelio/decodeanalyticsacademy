@@ -1,0 +1,178 @@
+name: Fix apostila responsiveness
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: github.actor == 'Kaiqueaurelio'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Apply responsive apostila layout
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+
+          const pagePath = 'src/pages/ApostilaPage.tsx';
+          let page = fs.readFileSync(pagePath, 'utf8');
+
+          page = page.replace(
+            '<div className={`min-h-screen bg-background relative overflow-x-hidden ${focusMode ? \'focus-mode\' : \'\'}`}>',
+            '<div className={`apostila-page-shell min-h-screen bg-background relative overflow-x-hidden ${focusMode ? \'focus-mode\' : \'\'}`}>'
+          );
+
+          page = page.replace(
+            '<div className="flex items-center justify-between">\n            <Button variant="ghost"',
+            '<div className="flex flex-wrap items-center justify-between gap-2">\n            <Button variant="ghost"'
+          );
+
+          page = page.replace(
+            '<div className="flex items-center gap-2">\n              {isMobile && sections.length > 1 && (',
+            '<div className="apostila-action-bar flex flex-wrap items-center justify-end gap-1.5 sm:gap-2 min-w-0">\n              {isMobile && sections.length > 1 && ('
+          );
+
+          page = page.replace(
+            '<div className="flex items-center gap-1 sm:gap-2">\n                  <Sheet',
+            '<div className="flex flex-wrap items-center gap-1 sm:gap-2">\n                  <Sheet'
+          );
+
+          page = page.replace(
+            '<div className={`grid gap-8 ${',
+            '<div className={`apostila-layout-grid grid gap-8 ${'
+          );
+
+          fs.writeFileSync(pagePath, page);
+
+          const cssPath = 'src/styles/apostila-responsive.css';
+          const css = `
+/* Responsive contract for the apostila page. Keep the reader usable from small phones to wide desktop. */
+.apostila-page-shell {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: clip;
+}
+
+.apostila-page-shell main,
+.apostila-page-shell article,
+.apostila-page-shell aside,
+.apostila-page-shell section {
+  min-width: 0;
+}
+
+.apostila-page-shell .apostila-action-bar {
+  flex: 1 1 auto;
+}
+
+.apostila-page-shell .apostila-layout-grid {
+  grid-template-columns: minmax(0, 1fr) 240px;
+}
+
+@media (min-width: 1280px) {
+  .apostila-page-shell .apostila-layout-grid {
+    grid-template-columns: 210px minmax(0, 1fr) 260px;
+  }
+}
+
+@media (max-width: 1279px) {
+  .apostila-page-shell .apostila-layout-grid > aside:first-child {
+    display: none;
+  }
+}
+
+@media (max-width: 1023px) {
+  .apostila-page-shell .apostila-layout-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .apostila-page-shell .apostila-layout-grid > aside:last-child {
+    order: 2;
+  }
+
+  .apostila-page-shell #conteudo-principal {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 767px) {
+  .apostila-page-shell main > .w-full.max-w-7xl {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  .apostila-page-shell .apostila-action-bar {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .apostila-page-shell .apostila-action-bar > * {
+    max-width: 100%;
+  }
+
+  .apostila-page-shell h1 {
+    overflow-wrap: anywhere;
+    word-break: normal;
+  }
+
+  .apostila-page-shell .apostila-continuous-flow {
+    overflow-wrap: anywhere;
+  }
+
+  .apostila-page-shell .apostila-prose,
+  .apostila-page-shell pre,
+  .apostila-page-shell code,
+  .apostila-page-shell table {
+    max-width: 100%;
+  }
+
+  .apostila-page-shell pre,
+  .apostila-page-shell .shiki-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@media (max-width: 480px) {
+  .apostila-page-shell .apostila-action-bar button {
+    min-height: 2.25rem;
+  }
+
+  .apostila-page-shell .apostila-action-bar .hidden.sm\\:inline {
+    display: none;
+  }
+
+  .apostila-page-shell #conteudo-principal > section > header {
+    padding: 0.75rem;
+  }
+}
+`;
+          fs.writeFileSync(cssPath, css.trimStart());
+
+          const mainPath = 'src/main.tsx';
+          let main = fs.readFileSync(mainPath, 'utf8');
+          if (!main.includes('import "./styles/apostila-responsive.css";')) {
+            main = main.replace('import "./index.css";','import "./index.css";\nimport "./styles/apostila-responsive.css";');
+            fs.writeFileSync(mainPath, main);
+          }
+          NODE
+
+      - name: Validate
+        run: |
+          npm ci
+          npm exec -- tsc --noEmit
+          npm run build
+
+      - name: Commit and remove one-shot workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/pages/ApostilaPage.tsx src/main.tsx src/styles/apostila-responsive.css .github/workflows/fix-apostila-responsive.yml
+          git commit -m "fix: make apostila reader responsive across breakpoints"
+          git rm .github/workflows/fix-apostila-responsive.yml
+          git commit -m "chore: remove one-shot responsive fix workflow"
+          git push
