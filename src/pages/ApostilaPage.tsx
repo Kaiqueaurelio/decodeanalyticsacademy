@@ -577,7 +577,7 @@ export default function ApostilaPage({ tab, setTab }: Props) {
   );
 
   return (
-    <div className={`min-h-screen bg-background relative overflow-x-hidden ${focusMode ? 'focus-mode' : ''}`}>
+    <div className={`apostila-page-shell min-h-screen bg-background relative overflow-x-hidden ${focusMode ? 'focus-mode' : ''}`}>
       {!focusMode && <Watermark />}
       {!focusMode && <AppHeader />}
       {!focusMode && <AdSidebar />}
@@ -608,7 +608,7 @@ export default function ApostilaPage({ tab, setTab }: Props) {
 
         {/* Navigation bar */}
         <div className={`w-full max-w-7xl mx-auto px-3 sm:px-4 ${focusMode ? 'py-2' : 'py-4'} animate-content-show`}>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')} className="text-xs gap-1.5 hover-lift">
               <ArrowLeft className="h-3.5 w-3.5" /> Voltar ao Dashboard
             </Button>
@@ -621,7 +621,7 @@ export default function ApostilaPage({ tab, setTab }: Props) {
             >
               <BookOpen className="h-3.5 w-3.5" /> Modo estudo
             </Button>
-            <div className="flex items-center gap-2">
+            <div className="apostila-action-bar flex flex-wrap items-center justify-end gap-1.5 sm:gap-2 min-w-0">
               {isMobile && sections.length > 1 && (
                 <Button
                   variant="outline"
@@ -662,7 +662,7 @@ export default function ApostilaPage({ tab, setTab }: Props) {
               </Button>
 
               {isAdmin && (
-                <div className="flex items-center gap-1 sm:gap-2">
+                <div className="flex flex-wrap items-center gap-1 sm:gap-2">
                   <Sheet open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
                     <SheetTrigger asChild>
                       <Button
@@ -825,7 +825,7 @@ export default function ApostilaPage({ tab, setTab }: Props) {
 
         {/* 3-column layout */}
         <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 pb-16">
-          <div className={`grid gap-8 ${
+          <div className={`apostila-layout-grid grid gap-8 ${
             focusMode
               ? 'grid-cols-1 max-w-3xl mx-auto'
               : isMobile

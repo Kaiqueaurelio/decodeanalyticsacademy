@@ -1,6 +1,7 @@
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
+import "./styles/apostila-responsive.css";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { installPerfMonitor } from "./lib/perf-monitor";
 import { installRuntimeLogger } from "./lib/runtime-logs";
