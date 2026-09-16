@@ -21,11 +21,12 @@ const STORAGE_KEY = "ella.chat.v1";
 
 interface EllaChatProps {
   contextHint?: string;
+  initialPrompt?: string;
   compact?: boolean;
   onAfterAction?: () => void;
 }
 
-export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps) {
+export function EllaChat({ contextHint, initialPrompt, compact, onAfterAction }: EllaChatProps) {
   const { user, isAdmin } = useAuth();
   const [avatarUrl, setAvatarUrl] = useState(() => getEllaAvatarUrl());
   const [contentScope, setContentScope] = useState<string>("full");
@@ -94,6 +95,7 @@ export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps)
   const navigate = useNavigate();
   const taRef = useRef<HTMLTextAreaElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const initialPromptSentRef = useRef<string | null>(null);
 
   useEffect(() => {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(messages.slice(-40))); } catch {}
@@ -184,6 +186,12 @@ export function EllaChat({ contextHint, compact, onAfterAction }: EllaChatProps)
     setLoading(false);
     setTimeout(() => taRef.current?.focus(), 50);
   }, [input, loading, messages, contextHint, navigate, onAfterAction]);
+
+  useEffect(() => {
+    if (!initialPrompt || !user || initialPromptSentRef.current === initialPrompt) return;
+    initialPromptSentRef.current = initialPrompt;
+    void send(initialPrompt);
+  }, [initialPrompt, user, send]);
 
   useEffect(() => { taRef.current?.focus(); }, []);
 

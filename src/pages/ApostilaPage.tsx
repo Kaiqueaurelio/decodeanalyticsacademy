@@ -13,6 +13,7 @@ import { ApostilaMaterials } from '@/components/ApostilaMaterials';
 import { ApostilaAudios } from '@/components/ApostilaAudios';
 import { ApostilaMaterialsManager } from '@/components/ApostilaMaterialsManager';
 import { ApostilaChat } from '@/components/ApostilaChat';
+import { EllaChat } from '@/components/ella/EllaChat';
 import { ApostilaContentBoundary } from '@/components/ApostilaContentBoundary';
 import { AskHelpFab } from '@/components/AskHelpFab';
 import { SpeakButton } from '@/components/SpeakButton';
@@ -192,6 +193,8 @@ export default function ApostilaPage({ tab, setTab }: Props) {
   const contentRef = useRef<HTMLDivElement>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [chatOpen, setChatOpen] = useState(false);
+  const [ellaOpen, setEllaOpen] = useState(false);
+  const [ellaPrompt, setEllaPrompt] = useState('');
   const [exportingPdf, setExportingPdf] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
@@ -975,7 +978,7 @@ export default function ApostilaPage({ tab, setTab }: Props) {
                 
                 {/* Área de pendências visível apenas para administradores. Alunos nunca veem o botão "Resolver Pendências". */}
                 {isAdmin && (
-                  (!organizedSections.length || organizedSections.every(s => s.isPlaceholder)) ? (
+                  contentBlocks.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20 px-4 text-center space-y-4 rounded-3xl border-2 border-dashed border-border/40 bg-muted/5 animate-content-show">
                       <div className="h-20 w-20 rounded-full bg-primary/5 flex items-center justify-center">
                         <BookOpen className="h-10 w-10 text-primary/40" />
@@ -1008,13 +1011,10 @@ export default function ApostilaPage({ tab, setTab }: Props) {
                             size="lg" 
                             className="gap-2 gradient-primary shadow-lg shadow-primary/20 hover-lift min-w-[200px]"
                             onClick={() => {
+                              const prompt = 'Preciso que você resolva as pendências desta apostila "' + apostila.title + '". Ela está vazia ou incompleta. Estruture o conteúdo, adicione glossário e exercícios de fixação agora.';
                               toast.info("Ella Ribeiro está iniciando a correção deste material...");
-                              setChatOpen(true);
-                              setTimeout(() => {
-                                window.dispatchEvent(new CustomEvent('ella:prompt', { 
-                                  detail: `Preciso que você resolva as pendências desta apostila "${apostila.title}". Ela está vazia ou incompleta. Estruture o conteúdo, adicione glossário e exercícios de fixação agora.` 
-                                }));
-                              }, 500);
+                              setEllaPrompt(prompt);
+                              setEllaOpen(true);
                             }}
                           >
                             <Sparkles className="h-4 w-4" /> Resolver Pendências
@@ -1131,6 +1131,18 @@ export default function ApostilaPage({ tab, setTab }: Props) {
 
         {/* FAB: Pedir ajuda — Chat IA / Foto / Comunidade */}
         <AskHelpFab onOpenChat={() => setChatOpen(true)} />
+
+        {/* Ella Sheet — usado pelo fluxo administrativo de resolução de pendências */}
+        <Sheet open={ellaOpen} onOpenChange={setEllaOpen}>
+          <SheetContent side="right" className="w-full sm:max-w-lg lg:max-w-xl p-0 flex flex-col gap-0 border-l border-primary/20">
+            <div className="flex-1 overflow-hidden">
+              <EllaChat
+                initialPrompt={ellaPrompt}
+                contextHint={'Apostila em manutenção: ' + apostila.title + ' (ID: ' + id + '). O administrador acionou Resolver Pendências.'}
+              />
+            </div>
+          </SheetContent>
+        </Sheet>
 
         {/* Chat Sheet */}
         <Sheet open={chatOpen} onOpenChange={setChatOpen}>
