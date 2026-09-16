@@ -974,7 +974,7 @@ export default function ApostilaPage({ tab, setTab }: Props) {
                 />
                 
                 {/* Área de pendências visível apenas para administradores. Alunos nunca veem o botão "Resolver Pendências". */}
-                {user && (
+                {isAdmin && (
                   (!organizedSections.length || organizedSections.every(s => s.isPlaceholder)) ? (
                     <div className="flex flex-col items-center justify-center py-20 px-4 text-center space-y-4 rounded-3xl border-2 border-dashed border-border/40 bg-muted/5 animate-content-show">
                       <div className="h-20 w-20 rounded-full bg-primary/5 flex items-center justify-center">
