@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { dedupeByMaterialName } from '@/lib/material-dedupe';
 import {
   Play, Pause, SkipBack, SkipForward, Volume2, VolumeX,
-  Loader2, AlertCircle, Music, Headphones, Gauge, PlayCircle,
+  Loader2, AlertCircle, Music, Headphones, Gauge, PlayCircle, ExternalLink,
 } from 'lucide-react';
 
 interface AudioMaterial {
@@ -210,6 +210,13 @@ function AudioCard({ audio, apostilaTitle }: { audio: AudioMaterial; apostilaTit
         >
           <PlayCircle size={14} />
           <span className="hidden sm:inline text-[10px] uppercase font-bold">Player</span>
+        </Button>
+
+        <Button variant="ghost" size="sm" asChild className="gap-1.5 text-muted-foreground hover:text-primary">
+          <a href={audio.file_url} target="_blank" rel="noopener noreferrer" aria-label={`Abrir ${audio.title} em nova aba`}>
+            <ExternalLink size={14} />
+            <span className="hidden sm:inline text-[10px] uppercase font-bold">Abrir áudio</span>
+          </a>
         </Button>
 
         <button
