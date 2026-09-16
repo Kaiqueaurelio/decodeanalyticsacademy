@@ -4,12 +4,11 @@ import { resolve } from 'node:path';
 
 const source = readFileSync(resolve(process.cwd(), 'src/components/RANamePrompt.tsx'), 'utf8');
 
-describe('mandatory profile completion', () => {
-  it('does not allow students to dismiss incomplete identity data', () => {
-    expect(source).not.toContain('Lembrar depois');
-    expect(source).not.toContain('ra_name_prompt_dismissed');
-    expect(source).toContain('onEscapeKeyDown={(event) => event.preventDefault()}');
-    expect(source).toContain('onPointerDownOutside={(event) => event.preventDefault()}');
+describe('optional profile completion', () => {
+  it('does not block students with incomplete identity data', () => {
+    expect(source).toContain('onOpenChange={setOpen}');
+    expect(source).toContain('Agora não');
+    expect(source).not.toContain('setOpen(true);');
   });
 
   it('requires a valid full name and a verified recovery email for RA accounts', () => {

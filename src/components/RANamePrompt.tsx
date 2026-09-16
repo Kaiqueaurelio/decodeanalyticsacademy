@@ -83,7 +83,9 @@ export function RANamePrompt() {
         if ((data as any).course) setCourse((data as any).course);
         if ((data as any).semester)
           setSemester(String((data as any).semester));
-        setOpen(true);
+        // Dados de perfil incompletos não podem bloquear o acesso ao conteúdo.
+        // O painel e o perfil ainda podem abrir este formulário pelo gatilho
+        // data-ra-prompt-trigger quando o usuário decidir completar os dados.
       }
     })();
 
@@ -179,12 +181,8 @@ export function RANamePrompt() {
   return (
     <>
       <button data-ra-prompt-trigger className="hidden" onClick={() => setOpen(true)} aria-hidden="true" />
-      <Dialog open={open} onOpenChange={() => undefined}>
-      <DialogContent
-        className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-md"
-        onEscapeKeyDown={(event) => event.preventDefault()}
-        onPointerDownOutside={(event) => event.preventDefault()}
-      >
+      <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-md">
         <DialogHeader>
           <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
             <UserCircle2 className="h-6 w-6 text-primary" />
@@ -272,6 +270,9 @@ export function RANamePrompt() {
         </div>
 
         <DialogFooter className="flex-col-reverse gap-2 sm:flex-row">
+          <Button variant="outline" onClick={() => setOpen(false)} disabled={saving} className="w-full">
+            Agora não
+          </Button>
           <Button
             onClick={verificationSent ? checkEmailVerification : handleSave}
             disabled={verificationSent ? saving : !canSave}
