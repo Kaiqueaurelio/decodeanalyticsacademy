@@ -27,23 +27,15 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
   },
 });
 
-// Algumas telas públicas carregam uma apostila publicada sem uma sessão autenticada.
-// O RPC `get_apostila_reader_tree` exige auth.uid() por segurança, então uma falha
-// de autenticação nesse RPC não pode impedir o carregamento do conteúdo principal.
-// Mantemos o erro para todos os demais RPCs e apenas transformamos esse caso em
-// uma resposta vazia para permitir que a tela use `apostilas.content`/`apostila_pages`.
+// A árvore estruturada é complementar ao conteúdo principal da apostila.
+// Se esse RPC falhar (por autenticação, RLS ou estrutura incompleta), a tela
+// ainda precisa conseguir exibir `apostilas.content` e `apostila_pages`.
+// O tratamento fica restrito a este RPC; os demais RPCs continuam propagando erros.
 const originalRpc = supabase.rpc.bind(supabase);
 (supabase as typeof supabase & { rpc: typeof supabase.rpc }).rpc = ((fn: string, args?: unknown, options?: unknown) => {
-  const result = originalRpc(fn as never, args as never, options as never) as Promise<{ data: unknown; error: { message?: string; code?: string } | null }>;
+  const result = originalRpc(fn as never, args as never, options as never) as Promise<{ data: unknown; error: unknown | null }>;
   if (fn !== 'get_apostila_reader_tree') return result as never;
-  return result.then((response) => {
-    const message = response.error?.message?.toLowerCase() || '';
-    const isAuthOnlyFailure = response.error && (
-      response.error.code === 'P0001' ||
-      message.includes('not authenticated') ||
-      message.includes('not authorized') ||
-      message.includes('jwt')
-    );
-    return isAuthOnlyFailure ? { data: null, error: null } : response;
-  }) as never;
+  return result.then((response) => (
+    response.error ? { data: null, error: null } : response
+  )) as never;
 }) as typeof supabase.rpc;
