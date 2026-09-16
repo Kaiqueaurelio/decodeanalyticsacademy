@@ -8,6 +8,7 @@ import { SECURITY_COPY } from '@/lib/security-copy';
 
 const ROLE_CACHE_KEY = 'decode_role_cache';
 const LAST_SESSION_MARKER = 'decode_last_session_user';
+const ROLE_CHECK_TIMEOUT_MS = 8_000;
 
 type RoleCache = { userId: string; isAdmin: boolean };
 export type AuthStatus = 'loading' | 'hydrating' | 'authenticated' | 'unauthenticated';
@@ -81,13 +82,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const checkRoles = async (userId: string, attempt = 0): Promise<boolean> => {
     try {
-      const [adminRes, adminRoleRes, profileRes] = await Promise.all([
+      const [adminRes, adminRoleRes, profileRes] = await Promise.race([
+        Promise.all([
         supabase.from('user_roles').select('role').eq('user_id', userId).eq('role', 'admin').maybeSingle(),
         // has_role é a fonte de verdade no banco e não depende da política de
         // leitura da tabela user_roles. Mantemos a consulta direta como
         // compatibilidade, mas não deixamos uma falha dela rebaixar um admin.
         supabase.rpc('has_role', { _user_id: userId, _role: 'admin' } as any),
         supabase.from('profiles').select('is_blocked, email').eq('user_id', userId).maybeSingle(),
+        ]),
+        new Promise<never>((_, reject) => {
+          window.setTimeout(() => reject(new Error('role_check_timeout')), ROLE_CHECK_TIMEOUT_MS);
+        }),
       ]);
       // O acesso administrativo é definido exclusivamente por user_roles.
       // account_type é um dado de perfil e não pode autorizar privilégios.
