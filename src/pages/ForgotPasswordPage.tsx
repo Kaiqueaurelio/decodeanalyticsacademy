@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { motion } from 'framer-motion';
+import { normalizeEmail } from '@/lib/login-identifiers';
 
 export default function ForgotPasswordPage() {
   const navigate = useNavigate();
@@ -16,7 +17,8 @@ export default function ForgotPasswordPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !email.includes('@')) {
+    const normalizedEmail = normalizeEmail(email);
+    if (!normalizedEmail || !normalizedEmail.includes('@')) {
       toast.error('Informe um e-mail válido.');
       return;
     }
@@ -26,7 +28,7 @@ export default function ForgotPasswordPage() {
       const { data, error } = await supabase.functions.invoke('ra-auth', {
         body: {
           mode: 'reset',
-          ra: email.trim().toLowerCase(),
+          ra: normalizedEmail,
           redirectTo: `${window.location.origin}/reset-password`,
         },
       });

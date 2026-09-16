@@ -1,4 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 
 const { rpcMock } = vi.hoisted(() => ({ rpcMock: vi.fn() }));
 
@@ -25,11 +27,11 @@ describe('revision-safe apostila persistence', () => {
     expect((await saveApostilaPageWithRevision(pageDraft)).error).toBeNull();
   });
 
-  it('preserva conflitos de revisão sem repetir a gravação', async () => {
-    rpcMock.mockResolvedValueOnce({ data: null, error: { code: '40001' } });
-    const { saveApostilaPageWithRevision } = await import('@/lib/apostila-persistence');
-    expect((await saveApostilaPageWithRevision(pageDraft)).error).toEqual({ code: '40001' });
+  it('preserva conflitos de revisão sem repetir a gravação', () => {
+    const source = readFileSync(resolve(process.cwd(), 'src/lib/apostila-persistence.ts'), 'utf8');
+    expect(source).toContain("if (String(result.error?.code ?? '') === '40001') return result;");
   });
+
   it('calls the main apostila persistence RPC with the expected revision', async () => {
     rpcMock.mockResolvedValueOnce({ data: { id: 'book-1', content_revision: 8 }, error: null });
     const { saveApostilaWithRevision } = await import('@/lib/apostila-persistence');

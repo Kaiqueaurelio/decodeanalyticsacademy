@@ -12,7 +12,7 @@ export function parsePlaceholderId(id: string): { semester: number; index: numbe
   return { semester, index, title: subjects && subjects[index] !== undefined ? subjects[index] : null };
 }
 
-/** Resolve a grade placeholder without creating duplicate apostilas under concurrent clicks. */
+/** Resolve a grade placeholder through the authenticated admin RPC. */
 export async function ensureApostilaExists(item: PlaceholderApostilaItem): Promise<string> {
   if (item.id && !item.id.startsWith('placeholder') && !(item as any).isPlaceholder) return item.id;
   let rawTitle = item.title || '';
@@ -24,37 +24,23 @@ export async function ensureApostilaExists(item: PlaceholderApostilaItem): Promi
   const cleanTitle = rawTitle.replace(/^\[GRADE\]\s*/i, '').replace(/^Caderno de\s*/i, '').trim();
   if (!cleanTitle) throw new Error('Título da apostila inválido para criação.');
 
-  const category = item.category || cleanTitle;
-  const course = item.course ?? [];
-  const teacher = item.teacher ?? null;
-  let query = supabase.from('apostilas').select('id').eq('title', cleanTitle);
-  if (semester !== null) query = query.eq('semester', semester);
-  const { data: existing, error: lookupError } = await query.maybeSingle();
-  if (lookupError) throw lookupError;
-  if (existing?.id) return existing.id;
+  const { data, error } = await (supabase.rpc as any)('create_apostila', {
+    _title: cleanTitle,
+    _category: item.category || cleanTitle,
+    _semester: semester,
+    _content: '',
+    _course: item.course ?? null,
+    _source_type: 'grade',
+  });
+  if (!error && data?.id) return data.id;
 
-  const { data, error } = await supabase.from('apostilas').insert({
-    title: cleanTitle,
-    category,
-    semester,
-    course,
-    teacher,
-    published: true,
-    status: 'liberada',
-    source_type: 'grade',
-    content: '',
-    updated_at: new Date().toISOString(),
-  }).select('id').single();
-  if (error) {
-    // Another tab/request may have won the race. Re-read the canonical row before failing.
-    if (error.code === '23505') {
-      let retry = supabase.from('apostilas').select('id').eq('title', cleanTitle);
-      if (semester !== null) retry = retry.eq('semester', semester);
-      const { data: winner, error: retryError } = await retry.maybeSingle();
-      if (!retryError && winner?.id) return winner.id;
-    }
-    console.error('Erro ao criar apostila a partir do placeholder:', error);
-    throw error;
-  }
-  return data.id;
+  // A criação é idempotente do ponto de vista da grade: se outra aba ganhou a corrida,
+  // reutilize o registro canônico em vez de criar um segundo caderno.
+  let retry = supabase.from('apostilas').select('id').eq('title', cleanTitle);
+  if (semester !== null) retry = retry.eq('semester', semester);
+  const { data: existing, error: retryError } = await retry.maybeSingle();
+  if (!retryError && existing?.id) return existing.id;
+
+  console.error('Erro ao criar apostila a partir do placeholder:', error || retryError);
+  throw error || retryError || new Error('Não foi possível criar a apostila.');
 }

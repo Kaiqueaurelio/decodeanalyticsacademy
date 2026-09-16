@@ -38,3 +38,8 @@ jobs:
 
       - name: Build production bundle
         run: npm exec -- vite build -- --minify false
+
+      - name: Verify generated MCP matches production source
+        run: |
+          npm exec -- vitest run src/test/mcp-backend-invariant.test.ts
+          git diff --exit-code -- supabase/functions/mcp/index.ts

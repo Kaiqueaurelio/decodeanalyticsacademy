@@ -8,8 +8,9 @@ import listMyFlashcards from "./tools/list-my-flashcards";
 import createFlashcard from "./tools/create-flashcard";
 import myProgress from "./tools/my-progress";
 
-// Direct Supabase issuer built from the project ref (import-safe).
-const projectRef = import.meta.env.VITE_SUPABASE_PROJECT_ID ?? "project-ref-unset";
+// Keep the MCP issuer pinned to the same production project as the frontend.
+// Build-time environment values must not redirect OAuth to a legacy project.
+const projectRef = "wxkkpjpqyrygglbuogsd";
 
 export default defineMcp({
   name: "decode-analytics-mcp",

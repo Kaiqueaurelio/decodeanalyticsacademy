@@ -17,15 +17,17 @@ interface SemesterFilterProps {
   className?: string;
 }
 
-const SEMESTERS = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
+// A grade curricular do app possui 8 semestres. 9º e 10º eram opções fictícias
+// e podiam induzir o filtro a retornar uma tela vazia.
+const SEMESTERS = [8, 7, 6, 5, 4, 3, 2, 1];
 
 export function SemesterFilter({ selectedSemester, onSelect, className }: SemesterFilterProps) {
   return (
     <div className={cn("flex items-center gap-2", className)}>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             size="sm"
             className={cn(
               "h-8 gap-2 rounded-full border-primary/20 bg-primary/5 px-3 text-[11px] font-medium transition-all hover:bg-primary/10 hover:border-primary/40 focus:ring-primary/30",
@@ -47,7 +49,7 @@ export function SemesterFilter({ selectedSemester, onSelect, className }: Semest
             Filtrar por Semestre
           </div>
           <DropdownMenuSeparator className="bg-border/40" />
-          
+
           <DropdownMenuItem
             onClick={() => onSelect(null)}
             className="flex items-center justify-between rounded-lg px-2.5 py-2 text-xs focus:bg-primary/10 focus:text-primary cursor-pointer group"
@@ -62,7 +64,7 @@ export function SemesterFilter({ selectedSemester, onSelect, className }: Semest
           {SEMESTERS.map((sem) => {
             const color = getSubjectColor(`Semestre ${sem}`);
             const isSelected = selectedSemester === sem;
-            
+
             return (
               <DropdownMenuItem
                 key={sem}
@@ -70,7 +72,7 @@ export function SemesterFilter({ selectedSemester, onSelect, className }: Semest
                 className="flex items-center justify-between rounded-lg px-2 py-1.5 text-xs focus:bg-primary/10 focus:text-primary cursor-pointer mt-0.5"
               >
                 <div className="flex items-center gap-2">
-                  <div 
+                  <div
                     className="flex h-6 items-center rounded-md px-2 text-[10px] font-bold text-white shadow-sm"
                     style={{ backgroundColor: color }}
                   >
@@ -83,11 +85,11 @@ export function SemesterFilter({ selectedSemester, onSelect, className }: Semest
           })}
         </DropdownMenuContent>
       </DropdownMenu>
-      
+
       {!selectedSemester && (
-        <Button 
-          variant="ghost" 
-          size="sm" 
+        <Button
+          variant="ghost"
+          size="sm"
           className="h-8 gap-1.5 rounded-full px-3 text-[11px] text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
         >
           <span className="text-lg font-light leading-none">+</span>

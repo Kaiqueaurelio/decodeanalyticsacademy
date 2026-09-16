@@ -257,7 +257,7 @@ var my_progress_default = defineTool8({
 });
 
 // src/lib/mcp/index.ts
-var projectRef = "gynguskgysompgcajunc";
+var projectRef = "wxkkpjpqyrygglbuogsd";
 var mcp_default = defineMcp({
   name: "decode-analytics-mcp",
   title: "Decode Analytics Academy",
