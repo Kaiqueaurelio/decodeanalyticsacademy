@@ -74,7 +74,7 @@ jobs:
             );
           }
           if (!ella.includes('initialPromptSentRef.current === initialPrompt')) {
-            const marker = `  useEffect(() => {\n    taRef.current?.focus();\n  }, []);`;
+            const marker = `  useEffect(() => { taRef.current?.focus(); }, []);`;
             const effect = `  useEffect(() => {\n    if (!initialPrompt || !user || initialPromptSentRef.current === initialPrompt) return;\n    initialPromptSentRef.current = initialPrompt;\n    void send(initialPrompt);\n  }, [initialPrompt, user, send]);\n\n`;
             if (!ella.includes(marker)) throw new Error('Não foi possível localizar o ponto seguro para o prompt inicial da Ella.');
             ella = ella.replace(marker, effect + marker);
