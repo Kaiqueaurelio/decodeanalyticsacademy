@@ -240,7 +240,7 @@ export default function DashboardPage() {
         // await (supabase.rpc as any)('complete_semesters_six_to_eight', { _user_id: user.id });
         
         // Maximizar para administrador
-        if (profile?.is_admin) {
+        if (isAdmin) {
           // Maximizar para administrador (XP real: 9900/Lv99/365d)
           const callAdminRpc = supabase.rpc as unknown as (
             functionName: string,
@@ -276,7 +276,7 @@ export default function DashboardPage() {
         }
       });
     }
-  }, [user, profile?.is_admin, profile?.full_name]);
+  }, [user, isAdmin, profile?.full_name]);
 
   const handleOnboardingComplete = () => {
     localStorage.setItem('decode_onboarding_done', 'true');
