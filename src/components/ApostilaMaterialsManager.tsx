@@ -52,8 +52,10 @@ export function ApostilaMaterialsManager({ apostilaId, apostilaTitle, open: open
   const [loading, setLoading] = useState(false);
   const [autoLinking, setAutoLinking] = useState(false);
   const [manualOpen, setManualOpen] = useState(false);
-  const [uploadingAudio, setUploadingAudio] = useState(false);
+  const [uploadingType, setUploadingType] = useState<'audio' | 'image' | 'document' | null>(null);
   const audioInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const documentInputRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth();
 
   const load = async () => {
@@ -129,11 +131,11 @@ export function ApostilaMaterialsManager({ apostilaId, apostilaTitle, open: open
     load();
   };
 
-  const handleAudioUpload = async (file: File) => {
+  const handleUpload = async (file: File, requestedType: 'audio' | 'image' | 'document') => {
     if (!user) { toast.error('Sessão expirada'); return; }
     if (file.size > 100 * 1024 * 1024) { toast.error('Arquivo acima de 100MB.'); return; }
 
-    setUploadingAudio(true);
+    setUploadingType(requestedType);
     const tId = toast.loading(`Subindo ${file.name}...`);
     try {
       const title = file.name.replace(/\.[^.]+$/, '');
@@ -143,15 +145,24 @@ export function ApostilaMaterialsManager({ apostilaId, apostilaTitle, open: open
         return;
       }
 
-      const ext = file.name.split('.').pop() || 'mp3';
-      const path = `audios/${apostilaId}/${Date.now()}.${ext}`;
+      const ext = file.name.split('.').pop()?.toLowerCase() || 'bin';
+      const type = requestedType === 'audio'
+        ? 'audio'
+        : requestedType === 'image'
+          ? 'image'
+          : ext === 'pdf'
+            ? 'pdf'
+            : ext === 'docx'
+              ? 'word'
+              : 'other';
+      const path = `materials/${apostilaId}/${crypto.randomUUID()}.${ext}`;
 
       const { error: upErr } = await supabase.storage
         .from('materials').upload(path, file, { contentType: file.type, upsert: false });
       if (upErr) throw upErr;
 
       const { data: mat, error: insErr } = await supabase.from('materials').insert({
-        title, type: 'audio', file_path: path, created_by: user.id,
+        title, type, file_path: path, created_by: user.id,
       } as any).select().single();
       if (insErr) throw insErr;
 
@@ -166,8 +177,10 @@ export function ApostilaMaterialsManager({ apostilaId, apostilaTitle, open: open
     } catch (err: any) {
       toast.error(err?.message || 'Erro ao subir arquivo', { id: tId });
     } finally {
-      setUploadingAudio(false);
+      setUploadingType(null);
       if (audioInputRef.current) audioInputRef.current.value = '';
+      if (imageInputRef.current) imageInputRef.current.value = '';
+      if (documentInputRef.current) documentInputRef.current.value = '';
     }
   };
 
@@ -188,15 +201,15 @@ export function ApostilaMaterialsManager({ apostilaId, apostilaTitle, open: open
             </DialogTitle>
           </DialogHeader>
 
-          <div className="grid grid-cols-2 gap-3 mb-4">
+          <div className="grid grid-cols-3 gap-3 mb-4">
             <button
               type="button"
               onClick={() => audioInputRef.current?.click()}
-              disabled={uploadingAudio}
+              disabled={uploadingType !== null}
               className="flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border border-primary/20 bg-primary/5 hover:bg-primary/10 transition-all group disabled:opacity-50"
             >
               <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center transition-transform group-hover:scale-110">
-                {uploadingAudio ? <Loader2 className="h-5 w-5 animate-spin text-primary" /> : <Headphones className="h-5 w-5 text-primary" />}
+                {uploadingType === 'audio' ? <Loader2 className="h-5 w-5 animate-spin text-primary" /> : <Headphones className="h-5 w-5 text-primary" />}
               </div>
               <div className="text-center">
                 <p className="text-[11px] font-bold text-foreground">Gravação</p>
@@ -206,16 +219,23 @@ export function ApostilaMaterialsManager({ apostilaId, apostilaTitle, open: open
 
             <button
               type="button"
-              onClick={() => {
-                const input = document.createElement('input');
-                input.type = 'file';
-                input.accept = 'application/pdf,application/epub+zip,application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-                input.onchange = async (e) => {
-                  const file = (e.target as HTMLInputElement).files?.[0];
-                  if (file) handleAudioUpload(file);
-                };
-                input.click();
-              }}
+              onClick={() => imageInputRef.current?.click()}
+              disabled={uploadingType !== null}
+              className="flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border border-primary/20 bg-primary/5 hover:bg-primary/10 transition-all group disabled:opacity-50"
+            >
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center transition-transform group-hover:scale-110">
+                {uploadingType === 'image' ? <Loader2 className="h-5 w-5 animate-spin text-primary" /> : <Image className="h-5 w-5 text-primary" />}
+              </div>
+              <div className="text-center">
+                <p className="text-[11px] font-bold text-foreground">Imagem</p>
+                <p className="text-[9px] text-muted-foreground">Adicionar imagem</p>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => documentInputRef.current?.click()}
+              disabled={uploadingType !== null}
               className="flex flex-col items-center justify-center gap-2 p-4 rounded-2xl border border-accent/20 bg-accent/5 hover:bg-accent/10 transition-all group"
             >
               <div className="h-10 w-10 rounded-full bg-accent/10 flex items-center justify-center transition-transform group-hover:scale-110">
@@ -232,7 +252,21 @@ export function ApostilaMaterialsManager({ apostilaId, apostilaTitle, open: open
             type="file"
             accept="audio/*,.mp3,.wav,.m4a,.ogg"
             className="hidden"
-            onChange={(e) => { const f = e.target.files?.[0]; if (f) handleAudioUpload(f); }}
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) handleUpload(f, 'audio'); }}
+          />
+          <input
+            ref={imageInputRef}
+            type="file"
+            accept="image/*,.png,.jpg,.jpeg,.webp,.gif"
+            className="hidden"
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) handleUpload(f, 'image'); }}
+          />
+          <input
+            ref={documentInputRef}
+            type="file"
+            accept="application/pdf,application/epub+zip,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            className="hidden"
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) handleUpload(f, 'document'); }}
           />
 
           <div className="grid grid-cols-2 gap-2 mb-2">

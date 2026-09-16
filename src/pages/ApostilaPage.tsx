@@ -11,6 +11,7 @@ import { CommentsWidget } from '@/components/CommentsWidget';
 
 import { ApostilaMaterials } from '@/components/ApostilaMaterials';
 import { ApostilaAudios } from '@/components/ApostilaAudios';
+import { ApostilaMaterialsManager } from '@/components/ApostilaMaterialsManager';
 import { ApostilaChat } from '@/components/ApostilaChat';
 import { ApostilaContentBoundary } from '@/components/ApostilaContentBoundary';
 import { AskHelpFab } from '@/components/AskHelpFab';
@@ -686,6 +687,12 @@ export default function ApostilaPage({ tab, setTab }: Props) {
                       </div>
                     </SheetContent>
                   </Sheet>
+                  {apostila && (
+                    <ApostilaMaterialsManager
+                      apostilaId={apostila.id}
+                      apostilaTitle={apostila.title}
+                    />
+                  )}
                   <Button
                     variant="outline"
                     size="sm"
