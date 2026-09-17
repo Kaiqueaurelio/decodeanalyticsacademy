@@ -140,7 +140,7 @@ export default function ExercisesPage() {
   // questão. A última questão permanece na tela para o resumo aparecer.
   const advanceAfterAnswer = useCallback(() => {
     if (currentIndex >= exercises.length - 1) return;
-    window.setTimeout(() => navigateQuestion('next'), 1200);
+    window.setTimeout(() => navigateQuestion('next'), 3500);
   }, [currentIndex, exercises.length, navigateQuestion]);
 
   const handleAnswer = async (exerciseId: string, selected: string) => {
@@ -730,7 +730,7 @@ export default function ExercisesPage() {
                         <div className="mt-4 p-4 rounded-xl bg-accent/10 border border-accent/20 animate-fade-in">
                           <p className="font-semibold text-xs text-accent mb-1.5 flex items-center gap-1">
                             <Wand2 className="h-3 w-3" />
-                            {type === 'essay' ? 'Resposta Modelo' : 'Explicação'}
+                            {type === 'essay' ? 'Resposta Modelo' : answered.correct ? 'Por que você acertou' : 'Por que você errou'}
                           </p>
                           <p className="text-muted-foreground text-xs leading-relaxed whitespace-pre-line">{reveals[currentExercise.id]?.explanation || reveals[currentExercise.id]?.reference_answer}</p>
                         </div>
