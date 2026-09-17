@@ -162,7 +162,7 @@ export function ApostilaMaterialsManager({ apostilaId, apostilaTitle, open: open
       if (upErr) throw upErr;
 
       const { data: mat, error: insErr } = await supabase.from('materials').insert({
-        title, type, file_path: path, created_by: user.id,
+        title, type, file_path: path, created_by: user.id, created_at: new Date().toISOString(),
       } as any).select().single();
       if (insErr) throw insErr;
 

@@ -87,6 +87,7 @@ function isPlaceholderApostilaContent(content?: string | null): boolean {
     'conteúdo em processamento',
     'material em fase de estruturação',
     'este conteúdo está sendo estruturado',
+    'conteúdo segmentado automaticamente por data',
   ].some((marker) => normalized.includes(marker));
 }
 
@@ -231,7 +232,23 @@ export default function ApostilaPage({ tab, setTab }: Props) {
           pageRowsData = fallbackPages.data;
           pageRowsError = fallbackPages.error;
         }
-        if (pageRowsError) throw pageRowsError;
+        // Uma falha em páginas extras não pode tornar a apostila inteira
+        // indisponível. Mantemos o conteúdo principal/estruturado visível e
+        // registramos a falha para diagnóstico.
+        if (pageRowsError) {
+          console.warn('[ApostilaPage] Não foi possível carregar páginas adicionais:', pageRowsError);
+          pageRowsData = [];
+        }
+
+        if (apostilaResult.error || !apostilaResult.data) {
+          throw apostilaResult.error || new Error('Apostila não encontrada.');
+        }
+        if (exercisesResult.error) {
+          console.warn('[ApostilaPage] Não foi possível carregar exercícios:', exercisesResult.error);
+        }
+        if (treeResult.error) {
+          console.warn('[ApostilaPage] Não foi possível carregar estrutura da apostila:', treeResult.error);
+        }
 
         const ap = apostilaResult.data;
         const pageRows = sortApostilaPagesChronologically((pageRowsData || []).map((page: any) => ({
@@ -240,7 +257,7 @@ export default function ApostilaPage({ tab, setTab }: Props) {
         })) as Array<{ id: string; title: string; content: string; position: number; saved_date?: string | null; updated_at?: string | null; created_at?: string | null }>);
         setApostila(ap);
         setExtraPages(pageRows);
-        setExerciseCount(exercisesResult.data?.length || 0);
+        setExerciseCount(exercisesResult.error ? 0 : (exercisesResult.data?.length || 0));
 
         const hasPlaceholder = isPlaceholderApostilaContent(ap?.content);
         if (hasPlaceholder && treeResult.data) {
