@@ -136,6 +136,13 @@ export default function ExercisesPage() {
     }, 150);
   };
 
+  // Depois de mostrar o feedback, avança automaticamente para a próxima
+  // questão. A última questão permanece na tela para o resumo aparecer.
+  const advanceAfterAnswer = useCallback(() => {
+    if (currentIndex >= exercises.length - 1) return;
+    window.setTimeout(() => navigateQuestion('next'), 1200);
+  }, [currentIndex, exercises.length, navigateQuestion]);
+
   const handleAnswer = async (exerciseId: string, selected: string) => {
     if (!user || answers[exerciseId]) return;
 
@@ -162,9 +169,7 @@ export default function ExercisesPage() {
       toast.error('Incorreto +3 XP', { duration: 2000 });
     }
 
-    if (timedMode && currentIndex < exercises.length - 1) {
-      setTimeout(() => navigateQuestion('next'), 1000);
-    }
+    advanceAfterAnswer();
   };
 
   const handleEssaySubmit = (exerciseId: string) => {
@@ -191,6 +196,7 @@ export default function ExercisesPage() {
     gamification.addXP(15);
     gamification.updateStreak();
     toast.success('Dissertativa enviada. +15 XP');
+    advanceAfterAnswer();
   };
 
   const toggleModelAnswer = (exerciseId: string) => {
