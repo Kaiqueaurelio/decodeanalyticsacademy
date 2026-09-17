@@ -93,9 +93,11 @@ describe('security hardening regression guards', () => {
     expect(vite).toContain('buildVersion,');
   });
 
-  it('protects every admin external-app link opened in a new tab', () => {
+  it('keeps Ella navigation inside the application instead of opening uncontrolled external tabs', () => {
     const builder = source('src/components/AdsChatBuilder.tsx');
-    expect(builder).toContain("window.open('https://decodeanalyticsacademydev.vercel.app', '_blank', 'noopener,noreferrer')");
+    expect(builder).toContain('const PAGE_TARGETS');
+    expect(builder).toContain("path: '/admin'");
+    expect(builder).not.toContain('window.open(');
   });
 
   it('hardens the public technology news feed fetcher', () => {
