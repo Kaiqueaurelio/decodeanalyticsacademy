@@ -6,11 +6,11 @@ const FALLBACK_SUPABASE_URL = 'https://wxkkpjpqyrygglbuogsd.supabase.co';
 const FALLBACK_SUPABASE_PUBLISHABLE_KEY =
   'sb_publishable_Zh6H3y8GJ2J_wkRVXxyTng_eylbCAVM';
 
-// Se o bundle for publicado sem as variáveis Vite, usamos o projeto de produção
-// atual para evitar que o cliente caia silenciosamente em um projeto legado.
-export const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || FALLBACK_SUPABASE_URL;
-export const SUPABASE_PUBLISHABLE_KEY =
-  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || FALLBACK_SUPABASE_PUBLISHABLE_KEY;
+// O runtime deste projeto deve apontar exclusivamente para o Supabase de produção
+// atual. Ignoramos valores Vite legados para evitar que um bundle publicado caia
+// silenciosamente no projeto antigo durante a migração.
+export const SUPABASE_URL = FALLBACK_SUPABASE_URL;
+export const SUPABASE_PUBLISHABLE_KEY = FALLBACK_SUPABASE_PUBLISHABLE_KEY;
 
 if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
   throw new Error('Supabase client could not be initialized.');
@@ -19,7 +19,32 @@ if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
+// Uma falha de rede de uma consulta auxiliar não deve rejeitar um Promise.all
+// inteiro. O Supabase transforma esta resposta 503 em `error`, permitindo que
+// a tela degrade o recurso opcional sem perder o conteúdo principal.
+const nativeFetch = globalThis.fetch.bind(globalThis);
+const resilientFetch: typeof fetch = async (input, init) => {
+  try {
+    return await nativeFetch(input, init);
+  } catch (error) {
+    console.warn('[Supabase] Falha de rede:', error);
+    return new Response(
+      JSON.stringify({
+        message: 'Falha de rede ao consultar o Supabase.',
+        details: error instanceof Error ? error.message : 'Network request failed',
+      }),
+      {
+        status: 503,
+        headers: { 'Content-Type': 'application/json' },
+      },
+    );
+  }
+};
+
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+  global: {
+    fetch: resilientFetch,
+  },
   auth: {
     storage: typeof window !== 'undefined' ? window.localStorage : undefined,
     persistSession: true,
@@ -28,7 +53,7 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
 });
 
 // A árvore estruturada é complementar ao conteúdo principal da apostila.
-// Se esse RPC falhar (por autenticação, RLS ou estrutura incompleta), a tela
+// Se esse RPC falhar (por autenticação, RLS, rede ou estrutura incompleta), a tela
 // ainda precisa conseguir exibir `apostilas.content` e `apostila_pages`.
 // O tratamento fica restrito a este RPC; os demais RPCs continuam propagando erros.
 const originalRpc = supabase.rpc.bind(supabase);
