@@ -19,15 +19,44 @@ if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
-// Uma falha de rede de uma consulta auxiliar não deve rejeitar um Promise.all
-// inteiro. O Supabase transforma esta resposta 503 em `error`, permitindo que
-// a tela degrade o recurso opcional sem perder o conteúdo principal.
+// Consultas auxiliares da página de apostila não podem derrubar o carregamento
+// do conteúdo principal. Se exercises/apostila_pages falharem por RLS, rede ou
+// alguma diferença de schema, retornamos uma lista vazia e deixamos a apostila
+// principal continuar sendo exibida. Consultas de outras tabelas continuam
+// propagando seus erros normalmente.
 const nativeFetch = globalThis.fetch.bind(globalThis);
+const isOptionalApostilaEndpoint = (url: string) =>
+  url.includes('/rest/v1/exercises') || url.includes('/rest/v1/apostila_pages');
+
 const resilientFetch: typeof fetch = async (input, init) => {
+  const requestUrl = typeof input === 'string'
+    ? input
+    : input instanceof Request
+      ? input.url
+      : input.toString();
+
   try {
-    return await nativeFetch(input, init);
+    const response = await nativeFetch(input, init);
+    if (!response.ok && isOptionalApostilaEndpoint(requestUrl)) {
+      console.warn(
+        '[Supabase] Consulta auxiliar de apostila indisponível; continuando sem recurso opcional:',
+        requestUrl,
+        response.status,
+      );
+      return new Response('[]', {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+    return response;
   } catch (error) {
     console.warn('[Supabase] Falha de rede:', error);
+    if (isOptionalApostilaEndpoint(requestUrl)) {
+      return new Response('[]', {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
     return new Response(
       JSON.stringify({
         message: 'Falha de rede ao consultar o Supabase.',
