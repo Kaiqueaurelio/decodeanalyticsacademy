@@ -16,9 +16,6 @@ if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
   throw new Error('Supabase client could not be initialized.');
 }
 
-// Import the supabase client like this:
-// import { supabase } from "@/integrations/supabase/client";
-
 // Consultas auxiliares da página de apostila não podem derrubar o carregamento
 // do conteúdo principal. Se exercises/apostila_pages falharem por RLS, rede ou
 // alguma diferença de schema, retornamos uma lista vazia e deixamos a apostila
@@ -27,6 +24,9 @@ if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
 const nativeFetch = globalThis.fetch.bind(globalThis);
 const isOptionalApostilaEndpoint = (url: string) =>
   url.includes('/rest/v1/exercises') || url.includes('/rest/v1/apostila_pages');
+const isTransientSupabaseResponse = (response: Response) =>
+  response.status === 502 || response.status === 503 || response.status === 504;
+const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const resilientFetch: typeof fetch = async (input, init) => {
   const requestUrl = typeof input === 'string'
@@ -35,8 +35,27 @@ const resilientFetch: typeof fetch = async (input, init) => {
       ? input.url
       : input.toString();
 
-  try {
-    const response = await nativeFetch(input, init);
+  let response: Response | null = null;
+  let lastError: unknown = null;
+
+  // PGRST002 ocorre enquanto o PostgREST recompõe o schema cache. Repetir a
+  // requisição evita que uma oscilação de poucos segundos vire erro de tela.
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    try {
+      // Requests podem conter um body stream (RPC em POST); cada tentativa
+      // precisa de um clone para não reutilizar um stream já consumido.
+      const retryInput = input instanceof Request ? input.clone() : input;
+      response = await nativeFetch(retryInput, init);
+      if (!isTransientSupabaseResponse(response) || attempt === 3) break;
+      await wait(350 * (2 ** attempt));
+    } catch (error) {
+      lastError = error;
+      if (attempt === 3) break;
+      await wait(350 * (2 ** attempt));
+    }
+  }
+
+  if (response) {
     if (!response.ok && isOptionalApostilaEndpoint(requestUrl)) {
       console.warn(
         '[Supabase] Consulta auxiliar de apostila indisponível; continuando sem recurso opcional:',
@@ -49,25 +68,25 @@ const resilientFetch: typeof fetch = async (input, init) => {
       });
     }
     return response;
-  } catch (error) {
-    console.warn('[Supabase] Falha de rede:', error);
-    if (isOptionalApostilaEndpoint(requestUrl)) {
-      return new Response('[]', {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-    return new Response(
-      JSON.stringify({
-        message: 'Falha de rede ao consultar o Supabase.',
-        details: error instanceof Error ? error.message : 'Network request failed',
-      }),
-      {
-        status: 503,
-        headers: { 'Content-Type': 'application/json' },
-      },
-    );
   }
+
+  console.warn('[Supabase] Falha de rede:', lastError);
+  if (isOptionalApostilaEndpoint(requestUrl)) {
+    return new Response('[]', {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+  return new Response(
+    JSON.stringify({
+      message: 'Falha de rede ao consultar o Supabase.',
+      details: lastError instanceof Error ? lastError.message : 'Network request failed',
+    }),
+    {
+      status: 503,
+      headers: { 'Content-Type': 'application/json' },
+    },
+  );
 };
 
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
