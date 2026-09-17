@@ -1090,6 +1090,19 @@ export default function ApostilaPage({ tab, setTab }: Props) {
 
               {/* Linked Materials */}
               <div id="materiais-vinculados" className="scroll-mt-24">
+                {isAdmin && apostila && (
+                  <div className="mb-6 flex flex-col gap-3 rounded-2xl border border-primary/25 bg-primary/5 p-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">Administrar materiais desta apostila</p>
+                      <p className="text-xs text-muted-foreground">Adicione áudio, imagem, vídeo ou documento sem sair desta página.</p>
+                    </div>
+                    <ApostilaMaterialsManager
+                      apostilaId={apostila.id}
+                      apostilaTitle={apostila.title}
+                      triggerLabel="Adicionar mídia"
+                    />
+                  </div>
+                )}
                 <ApostilaMaterials apostilaId={id!} excludeAudio />
               </div>
 

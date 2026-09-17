@@ -19,6 +19,7 @@ interface Props {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   hideTrigger?: boolean;
+  triggerLabel?: string;
 }
 
 interface LinkedMaterial {
@@ -39,7 +40,7 @@ const TYPE_ICONS: Record<string, any> = {
   link: LinkIcon, gif: Image, other: File, exam: FileText,
 };
 
-export function ApostilaMaterialsManager({ apostilaId, apostilaTitle, open: openProp, onOpenChange, hideTrigger }: Props) {
+export function ApostilaMaterialsManager({ apostilaId, apostilaTitle, open: openProp, onOpenChange, hideTrigger, triggerLabel = 'Materiais' }: Props) {
   const [internalOpen, setInternalOpen] = useState(false);
   const open = openProp ?? internalOpen;
   const setOpen = (v: boolean) => {
@@ -188,7 +189,7 @@ export function ApostilaMaterialsManager({ apostilaId, apostilaTitle, open: open
     <>
       {!hideTrigger && (
         <Button size="sm" variant="outline" className="text-xs gap-1.5" onClick={() => setOpen(true)}>
-          <Paperclip className="h-3 w-3" /> Materiais ({linked.length})
+          <Paperclip className="h-3 w-3" /> {triggerLabel} ({linked.length})
         </Button>
       )}
 
