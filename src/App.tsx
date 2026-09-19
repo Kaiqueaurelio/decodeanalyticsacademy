@@ -11,7 +11,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { PageSkeleton } from '@/components/PageSkeleton';
 import { SplashScreen } from '@/components/SplashScreen';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
-import { RANamePrompt } from '@/components/RANamePrompt';
 import { AdPopup } from '@/components/AdPopup';
 import { AdDraftPreviewOverlay } from '@/components/admin/AdDraftPreviewOverlay';
 import { EllaSidebar } from '@/components/ella/EllaSidebar';
@@ -115,7 +114,6 @@ const AppContent = () => {
       >
         {splashDone && (
           <>
-            <RANamePrompt />
             <AdPopup />
             <AdDraftPreviewOverlay />
             <EllaSidebar />
