@@ -36,6 +36,7 @@ describe('optional profile completion', () => {
   });
 
   it('contains no remaining mandatory-profile UI or trigger anywhere in application source', () => {
+    // Scan application code, excluding test fixtures that intentionally name the forbidden markers.
     const forbidden = [
       'RANamePrompt',
       'data-ra-prompt-trigger',
