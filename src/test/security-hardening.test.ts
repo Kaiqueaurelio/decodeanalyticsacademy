@@ -52,6 +52,14 @@ describe('security hardening regression guards', () => {
     expect(hook).toContain('id,title,description,image_url,link_url,ad_type,position,display_duration');
   });
 
+  it('keeps student notes private and owner-scoped', () => {
+    const migration = source('supabase/migrations/20260920160400_restore_student_notes_rls.sql');
+    expect(migration).toContain('CREATE POLICY "Users can view own student notes"');
+    expect(migration).toContain('USING (auth.uid() = user_id)');
+    expect(migration).toContain('WITH CHECK (auth.uid() = user_id)');
+    expect(migration).toContain('REVOKE ALL ON public.student_notes FROM anon;');
+  });
+
   it('routes dynamic ad links through the shared safe-navigation helper', () => {
     const popup = source('src/components/AdPopup.tsx');
     const banner = source('src/components/AdBanner.tsx');
