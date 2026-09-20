@@ -74,6 +74,10 @@ function scoreJob(job: Job, profile: CareerProfile) {
   if (profile.experience_level === 'Sem experiência' && /est[aá]gio|trainee|sem experi[eê]ncia|j[uú]nior/i.test(text)) score += 30;
   if (profile.experience_level === 'Estágio' && /est[aá]gio/i.test(text)) score += 25;
   if (profile.remote_ok && /remoto|remote/i.test(text)) score += 15;
+  profile.preferred_modalities.forEach((modality) => {
+    const modalityPattern = modality === 'Híbrido' ? /h[ií]brido|hybrid/i : new RegExp(modality.toLowerCase().replace('presencial', 'presencial'));
+    if (modalityPattern.test(text)) score += 10;
+  });
   if (profile.preferred_periods.includes('Manhã') && /manh[ãa]|08h|09h|10h|11h/i.test(text)) score += 15;
   if (profile.city && profile.city.trim() && text.includes(profile.city.toLowerCase())) score += 10;
   return Math.min(100, score);
@@ -99,7 +103,12 @@ export default function CareerHubPage() {
       ]);
       if (!active) return;
       if (profileResult.data) setProfile({ ...emptyProfile, ...profileResult.data });
-      if (!profileResult.error) setJobs((jobsResult.data || []) as Job[]);
+      if (jobsResult.error) {
+        console.error('[CareerHubPage] Erro ao carregar vagas:', jobsResult.error);
+        toast.error('Não foi possível carregar as vagas recomendadas.');
+      } else {
+        setJobs((jobsResult.data || []) as Job[]);
+      }
       if (!applicationsResult.error) setApplications((applicationsResult.data || []) as Application[]);
       setLoading(false);
     })();
