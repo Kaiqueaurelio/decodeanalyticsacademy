@@ -23,7 +23,7 @@ import {
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { pbCache } from '../storage';
-import { addBookmark, addHighlight, deleteBookmark, deleteHighlight, fetchBookmarks, fetchHighlights, fetchNotes, addNote, saveProgress } from '../api';
+import { addBookmark, addHighlight, deleteBookmark, deleteHighlight, fetchBookmarks, fetchHighlights, fetchNotes, addNote, saveProgress, createBookSignedUrl } from '../api';
 import type { PBBook, PBBookmark, PBHighlight, PBNote, HighlightColor } from '../types';
 import { HIGHLIGHT_COLORS } from '../types';
 
@@ -49,6 +49,32 @@ interface Props {
 export function PlayBooksReader({ book, initialPage = 1, initialLocation, onBack }: Props) {
   const { user } = useAuth();
   const userId = user?.id || '';
+  const [resolvedFileUrl, setResolvedFileUrl] = useState<string | null>(null);
+  const [fileAccessError, setFileAccessError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    setResolvedFileUrl(null);
+    setFileAccessError(null);
+
+    const resolve = async () => {
+      if (book.id.startsWith('local:') || book.fileUrl.startsWith('blob:') || book.fileUrl.startsWith('data:')) {
+        if (active) setResolvedFileUrl(book.fileUrl);
+        return;
+      }
+
+      try {
+        const signedUrl = await createBookSignedUrl(book.fileUrl);
+        if (active) setResolvedFileUrl(signedUrl);
+      } catch {
+        if (active) setFileAccessError('Não foi possível liberar o acesso a este livro.');
+      }
+    };
+
+    void resolve();
+    return () => { active = false; };
+  }, [book.id, book.fileUrl]);
+
 
   const prefs = pbCache.getPrefs() as any;
   const [theme, setTheme] = useState<Theme>(prefs.theme || 'light');
@@ -173,9 +199,20 @@ export function PlayBooksReader({ book, initialPage = 1, initialLocation, onBack
       </header>
 
       <div className="flex-1 relative overflow-hidden">
-        {book.format === 'pdf' ? (
+        {fileAccessError ? (
+          <div className="h-full flex items-center justify-center p-6 text-center">
+            <div>
+              <p className="text-sm font-medium">{fileAccessError}</p>
+              <Button variant="outline" size="sm" className="mt-3" onClick={onBack}>Voltar à biblioteca</Button>
+            </div>
+          </div>
+        ) : !resolvedFileUrl ? (
+          <div className="h-full flex items-center justify-center text-muted-foreground">
+            <Loader2 className="h-6 w-6 animate-spin" />
+          </div>
+        ) : book.format === 'pdf' ? (
           <PdfEngine
-            book={book}
+            book={{ ...book, fileUrl: resolvedFileUrl }}
             theme={theme}
             mode={mode}
             margin={margin}
