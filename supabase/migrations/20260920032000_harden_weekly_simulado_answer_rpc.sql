@@ -6,8 +6,7 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 DECLARE
-  v_row public.weekly_simulado_answers%ROWTYPE;
-  v_status text;
+  v_row record;
   v_is_correct boolean;
   v_selected text := upper(trim(coalesce(_selected_answer, '')));
 BEGIN
@@ -16,7 +15,7 @@ BEGIN
   END IF;
 
   SELECT a.*, s.status
-    INTO v_row, v_status
+    INTO v_row
   FROM public.weekly_simulado_answers a
   JOIN public.weekly_simulados s ON s.id = a.simulado_id
   WHERE a.id = _answer_id
@@ -26,7 +25,7 @@ BEGIN
     RAISE EXCEPTION 'Permission denied';
   END IF;
 
-  IF v_status <> 'in_progress' THEN
+  IF v_row.status <> 'in_progress' THEN
     RAISE EXCEPTION 'Simulado finalizado';
   END IF;
 
