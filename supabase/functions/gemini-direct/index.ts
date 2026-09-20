@@ -182,7 +182,7 @@ Deno.serve(async (req) => {
   } catch (e) {
     console.error("gemini-direct error", e);
     return new Response(
-      JSON.stringify({ error: e instanceof Error ? e.message : "Erro inesperado" }),
+      JSON.stringify({ error: "Não foi possível processar a solicitação de IA." }),
       { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } },
     );
   }
