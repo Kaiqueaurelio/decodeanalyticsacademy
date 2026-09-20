@@ -52,24 +52,23 @@ window.addEventListener("unhandledrejection", (event) => {
     origWarn(...args);
   };
 
-  const TRUSTED_ORIGIN_RES = [
-    /lovable(project)?\.app$/i,
-    /lovableproject\.com$/i,
-    /gpteng\.co$/i,
-    /^https?:\/\/localhost(:\d+)?$/i,
-    new RegExp(`^${window.location.origin}$`, "i"),
-  ];
+  const TRUSTED_ORIGINS = new Set([
+    "https://decodeanalyticsacademy.lovable.app",
+    "https://decodeanalyticsacademy.vercel.app",
+    "https://id-preview--4dd1aec2-9175-4ae9-9401-8637f1ffe1a2.lovable.app",
+    "https://decodeanalyticsacademy.com.br",
+    "https://www.decodeanalyticsacademy.com.br",
+    "http://localhost:8080",
+    "http://localhost:5173",
+    "http://127.0.0.1:8080",
+    window.location.origin,
+  ]);
   window.addEventListener(
     "message",
     (e) => {
-      try {
-        const origin = e.origin || "";
-        if (!origin) return;
-        if (!TRUSTED_ORIGIN_RES.some((re) => re.test(origin))) {
-          e.stopImmediatePropagation();
-        }
-      } catch {
-        // ignore
+      const origin = e.origin || "";
+      if (!origin || !TRUSTED_ORIGINS.has(origin)) {
+        e.stopImmediatePropagation();
       }
     },
     true,
