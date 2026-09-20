@@ -11,6 +11,7 @@ import { ProfessionalAudioPlayer } from './ProfessionalAudioPlayer';
 import { AudioQuizSystem } from './AudioQuizSystem';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { resolveMaterialContentUrls } from '@/lib/storage-access';
 
 const MATH_TOKEN_PREFIX = '__DECODE_MATH_';
 const HTML_TABLE_TOKEN_PREFIX = '__DECODE_HTML_TABLE_';
@@ -1173,16 +1174,31 @@ interface Props {
  * ritmo de leitura confortável (~68ch, line-height 1.75).
  */
 export function ApostilaContentRenderer({ content, activeHeadingId }: Props) {
+  const [resolvedContent, setResolvedContent] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    setResolvedContent(null);
+
+    void resolveMaterialContentUrls(content)
+      .catch(() => content)
+      .then((nextContent) => {
+        if (active) setResolvedContent(nextContent);
+      });
+
+    return () => { active = false; };
+  }, [content]);
+
   const blocks = useMemo(() => {
+    const sourceContent = resolvedContent ?? '';
     try {
-      return parseBlocks(content);
+      return parseBlocks(sourceContent);
     } catch (err) {
       console.error('[ApostilaContentRenderer] parse error, falling back to plain text:', err);
-      // Fallback: renderiza o conteúdo como parágrafos simples para evitar tela preta
-      const paragraphs = (content || '').split(/\n{2,}/).map((p) => p.trim()).filter(Boolean);
+      const paragraphs = (sourceContent || '').split(/\n{2,}/).map((p) => p.trim()).filter(Boolean);
       return paragraphs.map((content) => ({ type: 'paragraph' as const, content }));
     }
-  }, [content]);
+  }, [resolvedContent]);
 
   // Identifica o índice do primeiro parágrafo "real" (para aplicar drop-cap)
   const firstParagraphIdx = useMemo(
@@ -1221,6 +1237,14 @@ export function ApostilaContentRenderer({ content, activeHeadingId }: Props) {
     });
     return { tocItems: items, headingIds: ids };
   }, [blocks]);
+
+  if (resolvedContent === null) {
+    return (
+      <article className="apostila-prose max-w-[72ch] mx-auto w-full min-w-0 px-1 sm:px-0">
+        <div className="h-32 rounded-xl bg-muted/30 animate-pulse" aria-label="Carregando conteúdo" />
+      </article>
+    );
+  }
 
   return (
     <article className="apostila-prose max-w-[72ch] mx-auto w-full min-w-0 overflow-x-hidden px-1 sm:px-0 text-[15.5px] sm:text-[17.5px] leading-[1.72] sm:leading-[1.8] tracking-normal text-foreground/95 break-words">
