@@ -154,12 +154,17 @@ function cleanUrl(value: string) {
 }
 
 function extractAfter(value: string, words: string[]) {
-  const safeWords = words.filter((word) => typeof word === 'string' && word.length > 0 && word.length <= 64).slice(0, 16);
-  if (safeWords.length === 0) return '';
-  const escaped = safeWords.map((word) => word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
-  if (escaped.length > 512) return '';
-  const match = value.match(new RegExp(`(?:${escaped})\\s*(?:e|eh|:|-)?\\s*[\"']?([^\"'\\n]{4,220})`, 'i'));
-  return match?.[1]?.trim().replace(/[.!?]+$/, '') || '';
+  const lowerValue = value.toLowerCase();
+  for (const word of words.slice(0, 16)) {
+    const normalizedWord = word.trim().toLowerCase();
+    if (!normalizedWord || normalizedWord.length > 64) continue;
+    const start = lowerValue.indexOf(normalizedWord);
+    if (start < 0) continue;
+    const tail = value.slice(start + normalizedWord.length);
+    const match = tail.match(/^\s*(?:e|eh|:|-)??\s*[\"']?([^\"'\n]{4,220})/i);
+    if (match?.[1]) return match[1].trim().replace(/[.!?]+$/, '');
+  }
+  return '';
 }
 
 function parseDateText(value: string) {
