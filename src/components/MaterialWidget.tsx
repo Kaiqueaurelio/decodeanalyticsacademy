@@ -47,7 +47,7 @@ export function MaterialWidget() {
         .limit(5);
 
       const resolved = await Promise.all((data || []).map(async (material) => {
-        if (!material.file_path || material.type === 'link' || !material.file_url) return material;
+        if (material.type === 'link' || !material.file_url) return material;
         try {
           return {
             ...material,
