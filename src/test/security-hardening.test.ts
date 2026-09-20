@@ -15,6 +15,14 @@ describe('security hardening regression guards', () => {
     expect(code).toContain("status: 410");
   });
 
+  it('routes admin role changes through the guarded role-management RPC', () => {
+    const code = source('src/components/admin/AdminUserManagement.tsx');
+    expect(code).toContain("supabase.rpc");
+    expect(code).toMatch(/supabase\.rpc[\s\S]{0,80}['"]admin_update_user_role['"]/);
+    expect(code).not.toContain(".from('user_roles').delete()");
+    expect(code).not.toContain(".from('user_roles').insert");
+  });
+
   it('keeps admin user creation behind the shared admin guard and scoped CORS', () => {
     const code = source('supabase/functions/admin-create-user/index.ts');
 
