@@ -620,7 +620,7 @@ async function registerDenial(admin: ReturnType<typeof createClient>, ctx: Authz
 }
 
 // ---------- Tool executor (server-side, com service role) ----------
-type ConfirmedAction = { token?: unknown } | null;
+type ConfirmedAction = { token?: unknown; tool?: unknown; args?: unknown } | null;
 
 class ConfirmationRequiredError extends Error {
   payload: { tool: string; args: Record<string, unknown>; confirmation_token: string };
@@ -1281,6 +1281,17 @@ Proibido: mencionar "IA", "modelo de linguagem", "Lovable", "Gemini" ou qualquer
     let totalToolCalls = 0;
     let writeToolCalls = 0;
 
+    // Uma confirmação aprovada pelo usuário é executada diretamente com os
+    // argumentos assinados. Não pedimos ao modelo para reconstruir a ação.
+    if (confirmedAction?.token && typeof confirmedAction.tool === "string" && confirmedAction.args && typeof confirmedAction.args === "object") {
+      const confirmedResult = await executeTool(String(confirmedAction.tool), confirmedAction.args, adminClient, authzCtx, confirmedAction);
+      executedTools.push({ name: String(confirmedAction.tool), args: sanitizeParams(confirmedAction.args), result: confirmedResult });
+      return new Response(JSON.stringify({
+        reply: confirmedResult.ok ? "Ação confirmada e executada com sucesso." : (confirmedResult.error ?? "A ação não foi executada."),
+        actions: executedTools,
+      }), { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } });
+    }
+
     // ---------- Modo não-streaming (compatibilidade) ----------
     if (!wantsStream) {
       for (let step = 0; step < MAX_STEPS; step++) {
@@ -1389,6 +1400,13 @@ Proibido: mencionar "IA", "modelo de linguagem", "Lovable", "Gemini" ou qualquer
         };
 
         try {
+          if (confirmedAction?.token && typeof confirmedAction.tool === "string" && confirmedAction.args && typeof confirmedAction.args === "object") {
+            const confirmedResult = await executeTool(String(confirmedAction.tool), confirmedAction.args, adminClient, authzCtx, confirmedAction);
+            executedTools.push({ name: String(confirmedAction.tool), args: sanitizeParams(confirmedAction.args), result: confirmedResult });
+            emit({ type: "done", actions: executedTools });
+            controller.close();
+            return;
+          }
           for (let step = 0; step < MAX_STEPS; step++) {
             const r = await requestModel(true);
             if ("errorStatus" in r) {
