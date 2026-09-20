@@ -1,3 +1,5 @@
+const secureRandom = () => { const values = new Uint32Array(1); crypto.getRandomValues(values); return values[0] / 0x100000000; };
+
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -266,14 +268,14 @@ export default function ExercisesPage() {
         <div className="fixed inset-0 pointer-events-none z-50">
           {[...Array(50)].map((_, i) => (
             <div key={i} className="absolute animate-confetti" style={{
-              left: `${Math.random() * 100}%`,
+              left: `${secureRandom() * 100}%`,
               top: '-10px',
-              animationDelay: `${Math.random() * 2}s`,
-              animationDuration: `${2 + Math.random() * 3}s`,
-              backgroundColor: ['hsl(var(--primary))', 'hsl(var(--success))', 'hsl(var(--warning))', 'hsl(var(--accent))'][Math.floor(Math.random() * 4)],
-              width: `${6 + Math.random() * 6}px`,
-              height: `${6 + Math.random() * 6}px`,
-              borderRadius: Math.random() > 0.5 ? '50%' : '2px',
+              animationDelay: `${secureRandom() * 2}s`,
+              animationDuration: `${2 + secureRandom() * 3}s`,
+              backgroundColor: ['hsl(var(--primary))', 'hsl(var(--success))', 'hsl(var(--warning))', 'hsl(var(--accent))'][Math.floor(secureRandom() * 4)],
+              width: `${6 + secureRandom() * 6}px`,
+              height: `${6 + secureRandom() * 6}px`,
+              borderRadius: secureRandom() > 0.5 ? '50%' : '2px',
             }} />
           ))}
         </div>
