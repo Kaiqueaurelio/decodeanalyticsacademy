@@ -206,7 +206,9 @@ const AUDIO_PLAYER_TAG_RE = /<audio-player\b([^>]*)\/?\s*>/i;
 type ParsedAudioPlayer = { label: string; url: string };
 
 function readTagAttribute(attrs: string, name: string): string {
-  const match = attrs.match(new RegExp(`${name}\\s*=\\s*(?:"([^"]*)"|'([^']*)')`, 'i'));
+  const safeName = name.replace(/[^A-Za-z0-9_-]/g, '').slice(0, 64);
+  if (!safeName) return '';
+  const match = attrs.match(new RegExp(`${safeName}\\s*=\\s*(?:"([^"]*)"|'([^']*)')`, 'i'));
   return (match?.[1] ?? match?.[2] ?? '').trim();
 }
 
@@ -560,7 +562,9 @@ function parseBlocks(rawInput: string): Block[] {
       if (htmlImgMatch) {
         const attrsStr = htmlImgMatch[1];
         const get = (name: string) => {
-          const m = attrsStr.match(new RegExp(`\\b${name}\\s*=\\s*"([^"]*)"`, 'i'));
+          const safeName = name.replace(/[^A-Za-z0-9_-]/g, '').slice(0, 64);
+          if (!safeName) return '';
+          const m = attrsStr.match(new RegExp(`\\b${safeName}\\s*=\\s*"([^"]*)"`, 'i'));
           return m ? m[1] : '';
         };
         const url = get('src');
