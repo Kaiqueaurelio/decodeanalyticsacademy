@@ -96,7 +96,7 @@ export async function invokeFunction<T = unknown>(
         });
       }
       // eslint-disable-next-line no-console
-      console.error(`[invokeFunction] ${name} failed`, err);
+      console.error('[invokeFunction] function failed', { name, error: err });
       return { data: null, error: err };
     }
 
@@ -116,7 +116,7 @@ export async function invokeFunction<T = unknown>(
       });
     }
     // eslint-disable-next-line no-console
-    console.error(`[invokeFunction] ${name} network error`, e);
+    console.error('[invokeFunction] network error', { name, error: e });
     return { data: null, error: err };
   }
 }
