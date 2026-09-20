@@ -245,6 +245,37 @@ describe('security hardening regression guards', () => {
     expect(edge).toContain("return json({ error: 'Não foi possível concluir o cadastro do usuário.' }, 500);");
   });
 
+  it('blocks anonymous role introspection at the database boundary', () => {
+    const sql = source('supabase/migrations/20260920040000_lockdown_has_role_execution.sql');
+    expect(sql).toContain("auth.role() <> 'service_role'::text and auth.uid() is null");
+    expect(sql).toContain('revoke all on function public.has_role(uuid, public.app_role) from public, anon;');
+    expect(sql).toContain('grant execute on function public.has_role(uuid, public.app_role) to authenticated, service_role;');
+  });
+
+  it('hides weekly simulado answer keys from direct client reads', () => {
+    const sql = source('supabase/migrations/20260920041000_lockdown_weekly_simulado_answer_columns.sql');
+    expect(sql).toContain('revoke select on table public.weekly_simulado_answers from anon, authenticated;');
+    expect(sql).toContain('question,');
+    expect(sql).not.toContain('correct_answer,');
+    expect(sql).not.toContain('explanation,');
+  });
+
+  it('keeps response photos private in storage', () => {
+    const sql = source('supabase/migrations/20260920042000_make_response_photos_private.sql');
+    expect(sql).toContain("set public = false");
+    expect(sql).toContain('where id = \'respostas-foto\';');
+    expect(sql).toContain('drop policy if exists "Public read access for respostas-foto"');
+  });
+
+  it('bounds and validates admin ad image uploads', () => {
+    const edge = source('supabase/functions/admin-upload-ad-image/index.ts');
+    expect(edge).toContain('MAX_IMAGE_BYTES = 5 * 1024 * 1024');
+    expect(edge).toContain('ALLOWED_IMAGE_TYPES');
+    expect(edge).toContain('isSafeFileName');
+    expect(edge).toContain('FILE_SIGNATURES');
+    expect(edge).toContain('Permission denied: admin only');
+  });
+
   it('keeps weekly simulado grading and lifecycle server-side', () => {
     const page = source('src/pages/SimuladoPage.tsx');
     const generation = source('supabase/functions/generate-weekly-simulado/index.ts');
@@ -261,7 +292,7 @@ describe('security hardening regression guards', () => {
     expect(lifecycle).toContain('REVOKE INSERT, UPDATE, DELETE ON public.weekly_simulado_answers FROM authenticated;');
     expect(lifecycle).toContain('CREATE OR REPLACE FUNCTION public.finish_weekly_simulado');
     expect(reveal).toContain('CREATE OR REPLACE FUNCTION public.get_simulado_answer_reveals');
-    expect(answer).toContain("IF v_row.status <> 'in_progress' THEN");
+    expect(answer).toContain("IF v_status <> 'in_progress' THEN");
     expect(answer).toContain("REVOKE ALL ON FUNCTION public.answer_simulado_question(uuid, text) FROM PUBLIC, anon;");
   });
 
