@@ -148,9 +148,9 @@ Deno.serve(async (req) => {
 
 
     
-    if (mode === "signin" && (password.length < 6 || password.length > 200)) {
-      await recordLoginAttempt(admin, ra, ip, false);
-      return json({ error: GENERIC_FAIL }, 401, corsHeaders);
+    if ((mode === "signin" || mode === "signup") && (password.length < 8 || password.length > 200)) {
+      if (mode === "signin") await recordLoginAttempt(admin, ra, ip, false);
+      return json({ error: mode === "signup" ? "A senha deve ter entre 8 e 200 caracteres." : GENERIC_FAIL }, mode === "signup" ? 400 : 401, corsHeaders);
     }
 
     // Resolve o e-mail do RA sem devolvê-lo ao cliente.
