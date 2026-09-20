@@ -9,6 +9,7 @@ import {
   Presentation, FileSpreadsheet, ChevronRight, FolderOpen
 } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
+import { createSignedStorageUrl } from '@/lib/storage-access';
 
 type Material = Tables<'materials'>;
 
@@ -36,8 +37,35 @@ export function MaterialWidget() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.from('materials').select('*').order('created_at', { ascending: false }).limit(5)
-      .then(({ data }) => { setMaterials(data || []); setLoading(false); });
+    let active = true;
+
+    const load = async () => {
+      const { data } = await supabase
+        .from('materials')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      const resolved = await Promise.all((data || []).map(async (material) => {
+        if (!material.file_path || material.type === 'link' || !material.file_url) return material;
+        try {
+          return {
+            ...material,
+            file_url: await createSignedStorageUrl(material.file_url, 'materials'),
+          };
+        } catch {
+          return material;
+        }
+      }));
+
+      if (active) {
+        setMaterials(resolved);
+        setLoading(false);
+      }
+    };
+
+    void load();
+    return () => { active = false; };
   }, []);
 
   if (loading) {
