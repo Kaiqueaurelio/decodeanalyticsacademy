@@ -268,6 +268,9 @@ describe('security hardening regression guards', () => {
     expect(quizOrdering).toContain('_submitted_ids text[];');
     expect(quizOrdering).toContain('jsonb_array_length(_ans) = jsonb_array_length');
     expect(quizOrdering).toContain('IF _expected_ids = _submitted_ids THEN');
+    const adminRoleGuard = source('supabase/migrations/20260920160130_guard_last_admin.sql');
+    expect(adminRoleGuard).toContain('v_admin_count integer');
+    expect(adminRoleGuard).toContain('cannot remove the last administrator');
   });
 
   it('keeps gamification mutations behind server-side RPCs', () => {
