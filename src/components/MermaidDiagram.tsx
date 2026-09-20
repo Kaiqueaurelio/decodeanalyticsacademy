@@ -39,7 +39,9 @@ export function MermaidDiagram({ chart, className }: Props) {
     if (safeMode) return; // Não inicializa mermaid em modo seguro
     ensureInit();
     let cancelled = false;
-    const id = `mmd-${Math.random().toString(36).slice(2, 10)}`;
+    const idBytes = new Uint8Array(4);
+    crypto.getRandomValues(idBytes);
+    const id = `mmd-${Array.from(idBytes, (byte) => byte.toString(16).padStart(2, '0')).join('')}`;
     (async () => {
       try {
         const { svg } = await mermaid.render(id, chart);
