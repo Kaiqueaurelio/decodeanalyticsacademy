@@ -36,6 +36,7 @@ const BibliotecaPage = lazy(() => import('@/pages/BibliotecaPage'));
 const PlayBooksPage = lazy(() => import('@/pages/PlayBooksPage'));
 const CoursesPage = lazy(() => import('@/pages/CoursesPage'));
 const JobsPage = lazy(() => import('@/pages/JobsPage'));
+const EmployabilityPage = lazy(() => import('@/pages/EmployabilityPage'));
 const MaterialsPage = lazy(() => import('@/pages/MaterialsPage'));
 const VideoPlayerPage = lazy(() => import('@/pages/VideoPlayerPage'));
 const AdminPage = lazy(() => import('@/pages/AdminPage'));
@@ -149,6 +150,7 @@ const AppContent = () => {
                 <Route path="/livros" element={<ProtectedRoute><StudentAppShell><PlayBooksPage /></StudentAppShell></ProtectedRoute>} />
                 <Route path="/cursos" element={<ProtectedRoute><StudentAppShell><CoursesPage /></StudentAppShell></ProtectedRoute>} />
                 <Route path="/vagas" element={<JobsPage />} />
+                <Route path="/empregabilidade" element={<ProtectedRoute><StudentAppShell><EmployabilityPage /></StudentAppShell></ProtectedRoute>} />
                 <Route path="/materiais" element={<ProtectedRoute><StudentAppShell><MaterialsPage /></StudentAppShell></ProtectedRoute>} />
                 <Route path="/video/:id" element={<ProtectedRoute><StudentAppShell><VideoPlayerPage /></StudentAppShell></ProtectedRoute>} />
                 <Route path="/calculadora" element={<ProtectedRoute><StudentAppShell><CalculadoraPage /></StudentAppShell></ProtectedRoute>} />

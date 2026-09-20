@@ -46,6 +46,7 @@ const menuGroups = [
     label: 'Networking',
     items: [
       { to: '/vagas', icon: BriefcaseBusiness, label: 'Vagas e estágios' },
+      { to: '/empregabilidade', icon: BriefcaseBusiness, label: 'Inteligência da Empregabilidade' },
       { to: '/noticias', icon: Newspaper, label: 'News Tech' },
       { to: '/eventos', icon: CalendarRange, label: 'Eventos' },
     ],
