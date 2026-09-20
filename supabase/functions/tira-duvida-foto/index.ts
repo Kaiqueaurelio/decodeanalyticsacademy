@@ -305,7 +305,7 @@ Deno.serve(async (req) => {
     }), { headers: { ...getCorsHeaders(req), "Content-Type": "application/json", "X-AI-Provider": provider } });
   } catch (e) {
     console.error("fatal", e);
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown" }), {
+    return new Response(JSON.stringify({ error: "Não foi possível processar a dúvida com a imagem." }), {
       status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
