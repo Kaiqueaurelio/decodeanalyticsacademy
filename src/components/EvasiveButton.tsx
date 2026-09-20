@@ -1,3 +1,5 @@
+const secureRandom = () => { const values = new Uint32Array(1); crypto.getRandomValues(values); return values[0] / 0x100000000; };
+
 import { useState, useRef, useCallback } from 'react';
 import { motion, useMotionValue, useSpring } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -34,8 +36,8 @@ export function EvasiveButton({ email, children, disabled, className, onClick }:
     const rect = container.getBoundingClientRect();
     const maxX = Math.min(rect.width * 0.6, 120);
     const maxY = Math.min(rect.height * 0.4, 60);
-    const newX = (Math.random() - 0.5) * maxX * 2;
-    const newY = (Math.random() - 0.5) * maxY * 2;
+    const newX = (secureRandom() - 0.5) * maxX * 2;
+    const newY = (secureRandom() - 0.5) * maxY * 2;
     x.set(newX);
     y.set(newY);
     setEvadeCount(c => c + 1);
