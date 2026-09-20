@@ -164,7 +164,9 @@ serve(async (req) => {
     const scored = pool.map((ex: any) => {
       const ap = ex.apostilas;
       const cat = (ap?.category || "Geral").toString();
-      let score = Math.random(); // base aleatória pra variar
+      const randomBytes = new Uint32Array(1);
+      crypto.getRandomValues(randomBytes);
+      let score = randomBytes[0] / 0x100000000; // base aleatória pra variar
       if (priorityCats.has(cat.toLowerCase())) score += 5; // matéria de prova próxima
       if (recentApostilaIds.has(ap?.id)) score += 2; // apostila recente
       return { ...ex, _category: cat, _score: score };
