@@ -64,12 +64,17 @@ function stripHtml(s: string): string {
 }
 
 function pick(block: string, tag: string): string {
-  const m = block.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)</${tag}>`, 'i'));
+  const safeTag = tag.replace(/[^A-Za-z0-9:_-]/g, '').slice(0, 64);
+  if (!safeTag) return '';
+  const m = block.match(new RegExp(`<${safeTag}[^>]*>([\\s\\S]*?)</${safeTag}>`, 'i'));
   return m ? decodeEntities(m[1]).trim() : '';
 }
 
 function pickAttr(block: string, tag: string, attr: string): string {
-  const m = block.match(new RegExp(`<${tag}[^>]*\\s${attr}=["']([^"']+)["']`, 'i'));
+  const safeTag = tag.replace(/[^A-Za-z0-9:_-]/g, '').slice(0, 64);
+  const safeAttr = attr.replace(/[^A-Za-z0-9:_-]/g, '').slice(0, 64);
+  if (!safeTag || !safeAttr) return '';
+  const m = block.match(new RegExp(`<${safeTag}[^>]*\\s${safeAttr}=["']([^"']+)["']`, 'i'));
   return m ? m[1] : '';
 }
 
