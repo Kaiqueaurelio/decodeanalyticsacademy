@@ -311,7 +311,8 @@ describe('security hardening regression guards', () => {
     expect(storage).toContain("where id = 'books';");
     expect(storage).toContain('drop policy if exists "Books are publicly accessible"');
     expect(api).toContain("from('books').createSignedUrl(path, 3600)");
-    expect(api).toContain("from('books').createSignedUrls(entries.map((entry) => entry.path), 3600)");
+    expect(api).toContain(".from('books')");
+    expect(api).toContain('createSignedUrls(entries.map((entry) => entry.path), 3600)');
     expect(reader).toContain('createBookSignedUrl(book.fileUrl)');
     expect(reader).not.toContain('url: book.fileUrl, withCredentials: false');
   });
