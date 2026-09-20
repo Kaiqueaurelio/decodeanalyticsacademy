@@ -2,6 +2,7 @@ import * as React from 'react';
 import { ImageOff } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toPromoMediaUrl } from '@/lib/promo-media';
+import { createSignedStorageUrl, isStoragePublicUrl } from '@/lib/storage-access';
 
 type AppImageProps = Omit<React.ImgHTMLAttributes<HTMLImageElement>, 'src'> & {
   src?: string | null;
@@ -123,12 +124,35 @@ export const AppImage = React.forwardRef<HTMLImageElement, AppImageProps>(functi
   const [retryKey, setRetryKey] = React.useState(0);
   const [candidateIndex, setCandidateIndex] = React.useState(0);
   const [blobFallbackUrl, setBlobFallbackUrl] = React.useState<string | null>(null);
+  const [resolvedStorageUrl, setResolvedStorageUrl] = React.useState<string | null>(null);
   const retryCountRef = React.useRef(0);
   const retryTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const blobFallbackAttemptedRef = React.useRef(false);
   const blobUrlRef = React.useRef<string | null>(null);
 
-  const candidateSrcs = React.useMemo(() => buildImageCandidates(src), [src]);
+  React.useEffect(() => {
+    let active = true;
+    const normalized = normalizeImageSrc(src);
+    if (!normalized || !isStoragePublicUrl(normalized, 'materials')) {
+      setResolvedStorageUrl(normalized);
+      return () => { active = false; };
+    }
+
+    void createSignedStorageUrl(normalized, 'materials')
+      .then((signed) => {
+        if (active) setResolvedStorageUrl(signed);
+      })
+      .catch(() => {
+        if (active) setResolvedStorageUrl(null);
+      });
+
+    return () => { active = false; };
+  }, [src]);
+
+  const candidateSource = isStoragePublicUrl(normalizeImageSrc(src), 'materials')
+    ? resolvedStorageUrl
+    : normalizeImageSrc(src);
+  const candidateSrcs = React.useMemo(() => buildImageCandidates(candidateSource), [candidateSource]);
   const activeCandidate = blobFallbackUrl ?? candidateSrcs[candidateIndex] ?? null;
 
   // Reseta estado a cada mudanca real de src
@@ -137,6 +161,7 @@ export const AppImage = React.forwardRef<HTMLImageElement, AppImageProps>(functi
     setRetryKey(0);
     setCandidateIndex(0);
     setBlobFallbackUrl(null);
+    setResolvedStorageUrl(null);
     retryCountRef.current = 0;
     blobFallbackAttemptedRef.current = false;
     return () => {
