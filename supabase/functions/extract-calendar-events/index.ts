@@ -199,7 +199,7 @@ Hoje é ${today}. Retorne datas no formato YYYY-MM-DD. Se houver hora, inclua em
     });
   } catch (e) {
     console.error("extract-calendar-events", e);
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown" }), {
+    return new Response(JSON.stringify({ error: "Não foi possível processar os eventos do calendário." }), {
       status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
