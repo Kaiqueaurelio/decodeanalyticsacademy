@@ -50,7 +50,7 @@ export function ApostilaExportDialog({ apostila, open, onOpenChange }: Props) {
       toast.success(`${kind.toUpperCase()} gerado com sucesso`, { id: tId });
       onOpenChange(false);
     } catch (e: any) {
-      console.error(`Export ${kind} error`, e);
+      console.error('Export error', { kind, error: e });
       toast.error(e?.message || `Falha ao gerar ${kind.toUpperCase()}`, { id: tId });
     } finally {
       setBusy(null);
