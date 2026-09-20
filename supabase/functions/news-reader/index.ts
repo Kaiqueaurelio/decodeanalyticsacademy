@@ -112,6 +112,8 @@ function stripTags(s: string): string {
 }
 
 function metaContent(html: string, name: string): string | null {
+  const safeName = name.replace(/[^A-Za-z0-9:_-]/g, '').slice(0, 64);
+  if (!safeName) return null;
   const patterns = [
     new RegExp(`<meta[^>]+property=["']${name}["'][^>]+content=["']([^"']+)["']`, 'i'),
     new RegExp(`<meta[^>]+name=["']${name}["'][^>]+content=["']([^"']+)["']`, 'i'),
