@@ -238,7 +238,7 @@ ${apostilaContent}
   } catch (e) {
     console.error("apostila-chat error", e);
     return new Response(
-      JSON.stringify({ error: e instanceof Error ? e.message : "Erro inesperado" }),
+      JSON.stringify({ error: "Erro inesperado ao processar a conversa." }),
       { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } },
     );
   }
