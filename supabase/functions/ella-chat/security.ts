@@ -146,7 +146,7 @@ export async function verifyConfirmationToken(
   userId: string,
   tool: string,
   args: unknown,
-): Promise<{ valid: boolean; reason?: string }> {
+): Promise<{ valid: boolean; reason?: string; nonce?: string; exp?: number }> {
   if (typeof token !== "string" || token.length > 4096) return { valid: false, reason: "Token de confirmação ausente ou inválido." };
   const [encoded, signature] = token.split(".");
   if (!encoded || !signature) return { valid: false, reason: "Token de confirmação inválido." };
@@ -168,7 +168,7 @@ export async function verifyConfirmationToken(
     }
     const argsHash = await sha256Hex(JSON.stringify(args ?? {}));
     if (argsHash !== payload.argsHash) return { valid: false, reason: "Os parâmetros da ação foram alterados após a confirmação." };
-    return { valid: true };
+    return { valid: true, nonce: payload.nonce, exp: payload.exp };
   } catch {
     return { valid: false, reason: "Token de confirmação inválido." };
   }
