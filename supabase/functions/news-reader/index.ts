@@ -115,10 +115,10 @@ function metaContent(html: string, name: string): string | null {
   const safeName = name.replace(/[^A-Za-z0-9:_-]/g, '').slice(0, 64);
   if (!safeName) return null;
   const patterns = [
-    new RegExp(`<meta[^>]+property=["']${name}["'][^>]+content=["']([^"']+)["']`, 'i'),
-    new RegExp(`<meta[^>]+name=["']${name}["'][^>]+content=["']([^"']+)["']`, 'i'),
-    new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+property=["']${name}["']`, 'i'),
-    new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+name=["']${name}["']`, 'i'),
+    new RegExp(`<meta[^>]+property=["']${safeName}["'][^>]+content=["']([^"']+)["']`, 'i'),
+    new RegExp(`<meta[^>]+name=["']${safeName}["'][^>]+content=["']([^"']+)["']`, 'i'),
+    new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+property=["']${safeName}["']`, 'i'),
+    new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+name=["']${safeName}["']`, 'i'),
   ];
   for (const p of patterns) {
     const m = html.match(p);
