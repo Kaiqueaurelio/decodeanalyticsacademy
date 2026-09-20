@@ -3,14 +3,13 @@ import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
 const FALLBACK_SUPABASE_URL = 'https://wxkkpjpqyrygglbuogsd.supabase.co';
-const FALLBACK_SUPABASE_PUBLISHABLE_KEY =
-  'sb_publishable_Zh6H3y8GJ2J_wkRVXxyTng_eylbCAVM';
+const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY?.trim() || '';
 
 // O runtime deste projeto deve apontar exclusivamente para o Supabase de produção
 // atual. Ignoramos valores Vite legados para evitar que um bundle publicado caia
 // silenciosamente no projeto antigo durante a migração.
 export const SUPABASE_URL = FALLBACK_SUPABASE_URL;
-export const SUPABASE_PUBLISHABLE_KEY = FALLBACK_SUPABASE_PUBLISHABLE_KEY;
+export { SUPABASE_PUBLISHABLE_KEY };
 
 if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
   throw new Error('Supabase client could not be initialized.');
