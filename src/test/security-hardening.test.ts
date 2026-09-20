@@ -146,6 +146,11 @@ describe('security hardening regression guards', () => {
     expect(reader).not.toContain("status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' }");
   });
 
+  it('blocks direct quiz-question table reads that expose answer keys', () => {
+    const sql = source('supabase/migrations/20260920045000_lockdown_quiz_question_reads.sql');
+    expect(sql).toContain('REVOKE SELECT ON public.quiz_questions FROM anon, authenticated;');
+  });
+
   it('keeps audio quiz answers behind the safe question RPC', () => {
     const sql = source('supabase/migrations/20260820160000_quiz_question_surface_hardening.sql');
     expect(sql).toContain('REVOKE SELECT ON public.quiz_questions FROM anon, authenticated;');
