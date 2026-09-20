@@ -59,6 +59,7 @@ serve(async (req) => {
 
     const body = await req.json().catch(() => ({}));
     const force = body?.force === true;
+    const restart = body?.restart === true;
     const { data: roleRows } = await admin.from("user_roles").select("role").eq("user_id", userId).eq("role", "admin").limit(1);
     const isAdmin = Array.isArray(roleRows) && roleRows.length > 0;
     if (force && !isAdmin) {
@@ -86,14 +87,27 @@ serve(async (req) => {
         .limit(1)
         .maybeSingle();
       if (weeklyExisting) {
-        return new Response(JSON.stringify({ simulado_id: weeklyExisting.id, status: weeklyExisting.status, resumed: weeklyExisting.status === "in_progress" }), {
-          headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
-        });
+        if (restart && weeklyExisting.status === "finished") {
+          const { error: deleteError } = await admin
+            .from("weekly_simulados")
+            .delete()
+            .eq("id", weeklyExisting.id)
+            .eq("user_id", userId);
+          if (deleteError) {
+            console.error("restart simulado cleanup", deleteError.code);
+            return new Response(JSON.stringify({ error: "Não foi possível reiniciar o simulado." }), {
+              status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
+            });
+          }
+        } else {
+          return new Response(JSON.stringify({ simulado_id: weeklyExisting.id, status: weeklyExisting.status, resumed: weeklyExisting.status === "in_progress" }), {
+            headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
+          });
+        }
       }
     }
 
     // 2) Provas próximas → matérias prioritárias
-    const today = new Date();
     const horizon = new Date(today);
     horizon.setDate(today.getDate() + 14);
     const { data: events } = await admin
@@ -254,7 +268,7 @@ serve(async (req) => {
     }), { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } });
   } catch (e) {
     console.error("generate-weekly-simulado error:", e);
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : String(e) }), {
+    return new Response(JSON.stringify({ error: "Não foi possível gerar o simulado." }), {
       status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
