@@ -73,6 +73,13 @@ describe('security hardening regression guards', () => {
     expect(getSafeNavigationUrl('https://example.com/path')).toBe('https://example.com/path');
   });
 
+  it('rejects unsafe URL schemes when exporting PDF links', () => {
+    const pdf = source('src/lib/apostila-pdf.ts');
+    expect(pdf).toContain('function safePdfUrl');
+    expect(pdf).toContain("if (/^(javascript|data|vbscript|file):/i.test(url)) return '#';");
+    expect(pdf).toContain('safePdfUrl(href)');
+  });
+
   it('keeps Mermaid in strict mode and sanitizes generated SVG', () => {
     const mermaid = source('src/components/MermaidDiagram.tsx');
     expect(mermaid).toContain("securityLevel: 'strict'");
