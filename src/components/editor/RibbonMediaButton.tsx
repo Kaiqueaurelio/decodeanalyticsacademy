@@ -63,6 +63,7 @@ export function RibbonMediaButton({ onMediaInserted, apostilaId }: Props) {
         .insert({
           title: file.name,
           file_url: url,
+          file_path: path,
           type: matType as any,
         })
         .select()
