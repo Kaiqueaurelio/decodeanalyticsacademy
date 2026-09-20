@@ -502,7 +502,7 @@ export default function AdminApostilaWorkbench({ overrideId, onBack }: Workbench
       },
     });
 
-    console.log(`[Workbench] Persisting ${operationType}`, {
+    console.log('[Workbench] Persisting operation', { operationType,
       operationId,
       apostilaId: id,
       pageId: selectedPageId || null,
