@@ -263,7 +263,7 @@ serve(async (req) => {
     });
   } catch (e) {
     console.error("pre-exam-review error:", e);
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : String(e) }), {
+    return new Response(JSON.stringify({ error: "Não foi possível carregar a revisão pré-prova." }), {
       status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
