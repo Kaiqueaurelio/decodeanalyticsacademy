@@ -500,7 +500,7 @@ export function classifyDenial(name: unknown, ctx: AuthzCtx, reason?: string): S
     kind = "scope_violation";
     severity = "medium";
   } else if (!known) {
-    severity = "warn";
+    severity = "low";
   }
 
   return {
