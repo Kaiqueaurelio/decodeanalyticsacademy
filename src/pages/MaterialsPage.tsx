@@ -6,6 +6,7 @@ import { AppHeader } from '@/components/AppHeader';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AppImage } from '@/components/ui/app-image';
+import { createSignedStorageUrl } from '@/lib/storage-access';
 import { Badge } from '@/components/ui/badge';
 import {
   ArrowLeft, FileText, Image, Video, Music, File, Download, ExternalLink,
@@ -526,12 +527,16 @@ export default function MaterialsPage() {
     // Generate signed URLs for files stored in the private bucket
     const materialsWithSignedUrls = await Promise.all(
       data.map(async (m) => {
-        if (m.file_path && m.type !== 'link') {
-          const { data: signedData } = await supabase.storage
-            .from('materials')
-            .createSignedUrl(m.file_path, 3600); // 1 hour
-          if (signedData?.signedUrl) {
-            return { ...m, file_url: signedData.signedUrl };
+        if (m.type !== 'link' && m.file_url) {
+          try {
+            const signedUrl = m.file_path
+              ? (await supabase.storage.from('materials').createSignedUrl(m.file_path, 3600)).data?.signedUrl
+              : await createSignedStorageUrl(m.file_url, 'materials');
+            if (signedUrl) {
+              return { ...m, file_url: signedUrl };
+            }
+          } catch {
+            // Mantém os dados do material; o componente exibirá o estado de indisponibilidade.
           }
         }
         return m;
