@@ -285,7 +285,7 @@ REGRAS OBRIGATORIAS:
   } catch (e) {
     console.error("generate-exercises error:", e);
     return new Response(
-      JSON.stringify({ error: e instanceof Error ? e.message : "Erro desconhecido" }),
+      JSON.stringify({ error: "Não foi possível gerar os exercícios." }),
       { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
     );
   }
