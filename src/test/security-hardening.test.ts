@@ -136,6 +136,13 @@ describe('security hardening regression guards', () => {
     expect(validator).not.toContain('error: String(e)');
   });
 
+  it('does not return internal extraction errors to the client', () => {
+    const edge = source('supabase/functions/extract-content/index.ts');
+    expect(edge).toContain('extract-content failed');
+    expect(edge).toContain('Não foi possível extrair o conteúdo informado.');
+    expect(edge).not.toContain('error: error instanceof Error ? error.message');
+  });
+
   it('keeps remote article fetching bounded and private', () => {
     const reader = source('supabase/functions/news-reader/index.ts');
     expect(reader).toContain("redirect: 'manual'");
