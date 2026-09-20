@@ -1,3 +1,5 @@
+const secureRandom = () => { const values = new Uint32Array(1); crypto.getRandomValues(values); return values[0] / 0x100000000; };
+
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -39,7 +41,7 @@ export async function generateSimulado(userId: string, options: {
 
   // 3. Adaptive Scoring Logic
   const scoredExercises = exercises.map(ex => {
-    let score = Math.random();
+    let score = secureRandom();
     
     // Weight exercises previously failed
     if (wrongExerciseIds.includes(ex.id)) {
