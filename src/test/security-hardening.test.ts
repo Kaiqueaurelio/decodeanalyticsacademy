@@ -136,6 +136,16 @@ describe('security hardening regression guards', () => {
     expect(validator).not.toContain('error: String(e)');
   });
 
+  it('bounds and validates promo-media uploads', () => {
+    const edge = source('supabase/functions/promo-media/index.ts');
+    expect(edge).toContain('MAX_IMAGE_BYTES = 5 * 1024 * 1024');
+    expect(edge).toContain('ALLOWED_IMAGE_TYPES');
+    expect(edge).toContain('isSafeFileName');
+    expect(edge).toContain('FILE_SIGNATURES');
+    expect(edge).toContain('Não foi possível enviar a imagem.');
+    expect(edge).not.toContain('error: uploadError.message');
+  });
+
   it('does not return internal extraction errors to the client', () => {
     const edge = source('supabase/functions/extract-content/index.ts');
     expect(edge).toContain('extract-content failed');
