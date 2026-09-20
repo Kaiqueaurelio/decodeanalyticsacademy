@@ -315,7 +315,7 @@ export default function JobsManager() {
 
                                 <Button 
                                   className="w-full gap-2 rounded-xl h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-neon-blue transition-all active:scale-95"
-                                  onClick={() => window.open(job.application_link, '_blank')}
+                                  onClick={() => window.open(job.application_link, '_blank', 'noopener,noreferrer')}
                                 >
                                   Candidatar-se Agora <ExternalLink className="h-4 w-4" />
                                 </Button>
