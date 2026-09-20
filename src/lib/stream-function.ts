@@ -10,6 +10,8 @@ export interface StreamHandlers {
   onTool?: (name: string) => void;
   /** Chamado no fim, com as ações executadas. */
   onDone?: (actions: any[]) => void;
+  /** Chamado quando uma ação administrativa exige confirmação explícita. */
+  onConfirmationRequired?: (payload: { tool: string; args: Record<string, unknown>; confirmation_token: string }) => void;
 }
 
 export interface StreamResult {
@@ -56,6 +58,7 @@ export async function streamFunction(
         return { error: parsed?.error || text.slice(0, 200) || `HTTP ${res.status}` };
       }
       // Resposta JSON (modo não-streaming)
+      if (parsed?.confirmation_required) handlers.onConfirmationRequired?.(parsed.confirmation_required);
       if (parsed?.reply) handlers.onDelta?.(String(parsed.reply));
       handlers.onDone?.(parsed?.actions ?? []);
       return { error: null };
@@ -87,6 +90,7 @@ export async function streamFunction(
 
         if (evt.type === "delta" && typeof evt.text === "string") handlers.onDelta?.(evt.text);
         else if (evt.type === "tool" && evt.name) handlers.onTool?.(String(evt.name));
+        else if (evt.type === "confirmation_required") handlers.onConfirmationRequired?.(evt.confirmation_required ?? evt.payload);
         else if (evt.type === "done") { doneCalled = true; handlers.onDone?.(evt.actions ?? []); }
         else if (evt.type === "error") errorMsg = String(evt.error ?? "Erro no assistente.");
       }
