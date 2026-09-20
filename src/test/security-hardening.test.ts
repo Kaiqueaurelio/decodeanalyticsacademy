@@ -251,6 +251,7 @@ describe('security hardening regression guards', () => {
     const lifecycle = source('supabase/migrations/20260920030000_harden_weekly_simulado_lifecycle.sql');
     const reveal = source('supabase/migrations/20260920031000_harden_weekly_simulado_reveal.sql');
     const answer = source('supabase/migrations/20260920032000_harden_weekly_simulado_answer_rpc.sql');
+    const quizOrdering = source('supabase/migrations/20260920160030_harden_submit_quiz_ordering.sql');
 
     expect(page).toContain("supabase.functions.invoke('generate-weekly-simulado'");
     expect(page).toContain("supabase.rpc('finish_weekly_simulado'");
@@ -263,6 +264,10 @@ describe('security hardening regression guards', () => {
     expect(reveal).toContain('CREATE OR REPLACE FUNCTION public.get_simulado_answer_reveals');
     expect(answer).toContain("IF v_row.status <> 'in_progress' THEN");
     expect(answer).toContain("REVOKE ALL ON FUNCTION public.answer_simulado_question(uuid, text) FROM PUBLIC, anon;");
+    expect(quizOrdering).toContain('_expected_ids text[];');
+    expect(quizOrdering).toContain('_submitted_ids text[];');
+    expect(quizOrdering).toContain('jsonb_array_length(_ans) = jsonb_array_length');
+    expect(quizOrdering).toContain('IF _expected_ids = _submitted_ids THEN');
   });
 
   it('keeps gamification mutations behind server-side RPCs', () => {
