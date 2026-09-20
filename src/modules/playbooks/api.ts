@@ -39,6 +39,60 @@ export async function fetchBook(id: string): Promise<PBBook | null> {
   };
 }
 
+export function getBookStoragePath(url: string | null | undefined): string | null {
+  if (!url) return null;
+  try {
+    const parsed = new URL(url);
+    const publicMarker = '/storage/v1/object/public/books/';
+    const signedMarker = '/storage/v1/object/sign/books/';
+    const marker = parsed.pathname.includes(publicMarker) ? publicMarker
+      : parsed.pathname.includes(signedMarker) ? signedMarker
+      : null;
+    if (!marker) return null;
+    const index = parsed.pathname.indexOf(marker);
+    if (index < 0) return null;
+    return decodeURIComponent(parsed.pathname.slice(index + marker.length)).replace(/^\/+/, '');
+  } catch {
+    return null;
+  }
+}
+
+export async function createBookSignedUrl(fileUrl: string): Promise<string> {
+  if (!fileUrl || fileUrl.startsWith('blob:') || fileUrl.startsWith('data:')) return fileUrl;
+  const path = getBookStoragePath(fileUrl);
+  if (!path) return fileUrl;
+
+  const { data, error } = await supabase.storage.from('books').createSignedUrl(path, 3600);
+  if (error || !data?.signedUrl) {
+    throw new Error('Não foi possível liberar o acesso ao livro.');
+  }
+  return data.signedUrl;
+}
+
+export async function signBookCovers(books: PBBook[]): Promise<PBBook[]> {
+  const entries = books
+    .map((book) => ({ book, path: getBookStoragePath(book.cover) }))
+    .filter((entry): entry is { book: PBBook; path: string } => Boolean(entry.path));
+
+  if (entries.length === 0) return books;
+
+  const { data } = await supabase.storage
+    .from('books')
+    .createSignedUrls(entries.map((entry) => entry.path), 3600);
+
+  const signedByPath = new Map(
+    (data ?? [])
+      .filter((item): item is { path: string; signedUrl: string } => Boolean(item?.path && item?.signedUrl))
+      .map((item) => [item.path, item.signedUrl]),
+  );
+
+  return books.map((book) => {
+    const path = getBookStoragePath(book.cover);
+    const signed = path ? signedByPath.get(path) : null;
+    return signed ? { ...book, cover: signed } : book;
+  });
+}
+
 // ── Reading progress ────────────────────────────────────────────────────────
 export async function fetchAllProgress(userId: string) {
   const { data } = await supabase.from('reading_progress').select('*').eq('user_id', userId);
