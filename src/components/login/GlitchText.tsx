@@ -19,6 +19,11 @@ export const GlitchText: React.FC<GlitchTextProps> = ({
   const [displayText, setDisplayText] = useState('');
   const [isGlitching, setIsGlitching] = useState(false);
   const chars = "!<>-_\\/[]{}—=+*^?#________";
+  const randomUnit = () => {
+    const values = new Uint32Array(1);
+    crypto.getRandomValues(values);
+    return values[0] / 0x100000000;
+  };
 
   useEffect(() => {
     let frame = 0;
@@ -36,7 +41,7 @@ export const GlitchText: React.FC<GlitchTextProps> = ({
           let result = text.substring(0, progress);
           
           if (progress < text.length) {
-            result += chars[Math.floor(Math.random() * chars.length)];
+            result += chars[Math.floor(randomUnit() * chars.length)];
           }
           
           frame++;
@@ -55,9 +60,9 @@ export const GlitchText: React.FC<GlitchTextProps> = ({
     if (glitchOnlyOnHover) return;
 
     const interval = setInterval(() => {
-      if (Math.random() > 0.9) {
+      if (randomUnit() > 0.9) {
         setIsGlitching(true);
-        setTimeout(() => setIsGlitching(false), 200 + Math.random() * 300);
+        setTimeout(() => setIsGlitching(false), 200 + randomUnit() * 300);
       }
     }, 3000);
 
