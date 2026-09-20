@@ -224,7 +224,7 @@ serve(async (req) => {
         }));
         if (lessonRows.length) {
           const { error: lErr } = await admin.from("apostila_lessons").insert(lessonRows);
-          if (lErr) throw new Error(`Falha inserindo lições: ${lErr.message}`);
+          if (lErr) throw new Error("Falha inserindo lições");
           lessonCount += lessonRows.length;
         }
       }
