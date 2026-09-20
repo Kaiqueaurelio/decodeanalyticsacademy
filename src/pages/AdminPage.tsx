@@ -4136,7 +4136,9 @@ function AdminPasswordResetMenu({ user }: { user: { user_id: string; email: stri
   const isRA = (user.email || '').endsWith('@ra.unip.local');
 
   const generateSuggested = () => {
-    const chars = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789!@#
+    const chars = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789!@#$%^&*';
+    const values = crypto.getRandomValues(new Uint32Array(12));
+    const p = Array.from(values, (value) => chars[value % chars.length]).join('');
     setPwd(p);
     setConfirmPwd(p);
     setShowPwd(true);
