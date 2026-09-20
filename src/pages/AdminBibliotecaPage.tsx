@@ -14,6 +14,7 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import type { Book } from '@/modules/library/types';
+import { createBookSignedUrl } from '@/modules/playbooks/api';
 import { detectFileType } from '@/modules/library/types';
 
 type UploadPhase = 'idle' | 'cover' | 'book' | 'saving' | 'done' | 'error';
@@ -120,7 +121,16 @@ export default function AdminBibliotecaPage() {
 
   const load = async () => {
     const { data } = await supabase.from('books').select('*').order('created_at', { ascending: false });
-    setBooks((data || []) as Book[]);
+    const rows = (data || []) as Book[];
+    const withSignedCovers = await Promise.all(rows.map(async (book) => {
+      if (!book.cover_url) return book;
+      try {
+        return { ...book, cover_url: await createBookSignedUrl(book.cover_url) };
+      } catch {
+        return book;
+      }
+    }));
+    setBooks(withSignedCovers);
   };
 
   const upload = async () => {
