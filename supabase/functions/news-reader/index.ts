@@ -112,17 +112,20 @@ function stripTags(s: string): string {
 }
 
 function metaContent(html: string, name: string): string | null {
-  const safeName = name.replace(/[^A-Za-z0-9:_-]/g, '').slice(0, 64);
-  if (!safeName) return null;
-  const patterns = [
-    new RegExp(`<meta[^>]+property=["']${safeName}["'][^>]+content=["']([^"']+)["']`, 'i'),
-    new RegExp(`<meta[^>]+name=["']${safeName}["'][^>]+content=["']([^"']+)["']`, 'i'),
-    new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+property=["']${safeName}["']`, 'i'),
-    new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+name=["']${safeName}["']`, 'i'),
-  ];
-  for (const p of patterns) {
-    const m = html.match(p);
-    if (m) return decodeEntities(m[1]);
+  const wanted = name.trim().toLowerCase();
+  if (!wanted || wanted.length > 64) return null;
+  const metaTags = html.match(/<meta\b[^>]*>/gi) ?? [];
+  for (const tag of metaTags) {
+    const attrs = new Map<string, string>();
+    const attrRe = /([A-Za-z_:][A-Za-z0-9:._-]*)\s*=\s*(?:"([^"]*)"|'([^']*)')/gi;
+    let match: RegExpExecArray | null;
+    while ((match = attrRe.exec(tag)) !== null) {
+      attrs.set(match[1].toLowerCase(), match[2] ?? match[3] ?? '');
+    }
+    if ((attrs.get('property') ?? '').toLowerCase() === wanted || (attrs.get('name') ?? '').toLowerCase() === wanted) {
+      const content = attrs.get('content');
+      if (content) return decodeEntities(content);
+    }
   }
   return null;
 }
