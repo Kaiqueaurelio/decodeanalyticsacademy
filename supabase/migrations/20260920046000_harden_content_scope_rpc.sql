@@ -7,7 +7,7 @@ STABLE SECURITY DEFINER
 SET search_path = public
 AS $$
 BEGIN
-  IF auth.uid() IS NULL THEN
+  IF auth.role() <> 'service_role'::text AND auth.uid() IS NULL THEN
     RAISE EXCEPTION 'Authentication required' USING ERRCODE = '42501';
   END IF;
 
@@ -15,7 +15,8 @@ BEGIN
     RAISE EXCEPTION 'user_id is required' USING ERRCODE = '22023';
   END IF;
 
-  IF _user_id <> auth.uid()
+  IF auth.role() <> 'service_role'::text
+     AND _user_id <> auth.uid()
      AND NOT public.has_role(auth.uid(), 'admin'::public.app_role) THEN
     RAISE EXCEPTION 'not authorized' USING ERRCODE = '42501';
   END IF;
