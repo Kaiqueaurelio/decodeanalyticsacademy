@@ -324,7 +324,6 @@ Deno.test("SSRF: block private and non-HTTPS destinations", () => {
   assertFalse(validateExternalHttpsUrl("https://10.0.0.1/internal").valid);
   assert(validateExternalHttpsUrl("https://example.com/feed.xml").valid);
 });
-});
 
 Deno.test("prompt injection: nenhuma frase no chat pode fabricar confirmação", () => {
   for (const payload of INJECTION_PAYLOADS) {
