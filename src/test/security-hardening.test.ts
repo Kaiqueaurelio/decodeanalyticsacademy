@@ -52,6 +52,13 @@ describe('security hardening regression guards', () => {
     expect(hook).toContain('id,title,description,image_url,link_url,ad_type,position,display_duration');
   });
 
+  it('serializes last-admin role mutations', () => {
+    const migration = source('supabase/migrations/20260920160500_serialize_admin_role_mutations.sql');
+    expect(migration).toContain("pg_advisory_xact_lock(hashtextextended('decode_admin_role_guard', 0))");
+    expect(migration).toContain('cannot remove the last administrator');
+    expect(migration).toContain('cannot delete the last administrator');
+  });
+
   it('keeps student notes private and owner-scoped', () => {
     const migration = source('supabase/migrations/20260920160400_restore_student_notes_rls.sql');
     expect(migration).toContain('CREATE POLICY "Users can view own student notes"');
