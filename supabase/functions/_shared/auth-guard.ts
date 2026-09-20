@@ -48,7 +48,17 @@ export async function requireUser(
     const userId = userData.user.id;
 
     if (opts.requireAdmin) {
-      const admin = createClient(SUPABASE_URL, SERVICE_ROLE || SUPABASE_ANON_KEY);
+      if (!SERVICE_ROLE) {
+        return {
+          ok: false,
+          response: new Response(
+            JSON.stringify({ error: "Admin authorization is not configured" }),
+            { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+          ),
+        };
+      }
+
+      const admin = createClient(SUPABASE_URL, SERVICE_ROLE);
       const { data: isAdmin, error: roleErr } = await admin.rpc("has_role", {
         _user_id: userId,
         _role: "admin",
