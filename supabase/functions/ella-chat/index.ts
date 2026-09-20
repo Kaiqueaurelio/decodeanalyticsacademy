@@ -15,6 +15,9 @@ import {
   SECURITY_GUARD,
   shouldNotifyAdmin,
   type AuthzCtx,
+  createConfirmationToken,
+  isHighImpactTool,
+  verifyConfirmationToken,
 } from "./security.ts";
 
 
@@ -614,7 +617,24 @@ async function registerDenial(admin: ReturnType<typeof createClient>, ctx: Authz
 }
 
 // ---------- Tool executor (server-side, com service role) ----------
-async function executeTool(name: string, args: any, admin: ReturnType<typeof createClient>, ctx: AuthzCtx) {
+type ConfirmedAction = { token?: unknown } | null;
+
+class ConfirmationRequiredError extends Error {
+  payload: { tool: string; args: Record<string, unknown>; confirmation_token: string };
+  constructor(payload: { tool: string; args: Record<string, unknown>; confirmation_token: string }) {
+    super("Confirmação explícita necessária.");
+    this.name = "ConfirmationRequiredError";
+    this.payload = payload;
+  }
+}
+
+async function executeTool(
+  name: string,
+  args: any,
+  admin: ReturnType<typeof createClient>,
+  ctx: AuthzCtx,
+  confirmedAction: ConfirmedAction = null,
+) {
   // Gate obrigatório: nada é executado sem autorização do backend.
   const decision = authorizeTool(name, ctx);
   if (!decision.allowed) {
@@ -625,6 +645,31 @@ async function executeTool(name: string, args: any, admin: ReturnType<typeof cre
     }
     console.warn(`[ella-chat] tool negada: ${name} (req ${ctx.requestId})`);
     return { ok: false, error: decision.reason };
+  }
+
+  // A confirmação antiga via confirm=true não é uma barreira de segurança.
+  // Para qualquer tool administrativa, o servidor exige um token assinado e
+  // vinculado ao usuário + ferramenta + argumentos exatos. O modelo nunca recebe
+  // esse token; somente o cliente após uma confirmação explícita.
+  if (isHighImpactTool(name)) {
+    const token = confirmedAction?.token;
+    if (!token) {
+      const confirmation_token = await createConfirmationToken(ctx.userId, name, args);
+      return {
+        ok: false,
+        pending_confirmation: true,
+        confirmation_token,
+        tool: name,
+        args: sanitizeParams(args),
+        summary: "Ação de alto impacto aguardando confirmação explícita do administrador.",
+      };
+    }
+    const verified = await verifyConfirmationToken(token, ctx.userId, name, args);
+    if (!verified.valid) {
+      await auditTool(admin, ctx, { tool: name, args, allowed: false, reason: verified.reason });
+      await notifySecurity(admin, ctx, { tool: name, args, reason: verified.reason });
+      return { ok: false, error: verified.reason ?? "Confirmação inválida." };
+    }
   }
 
   const result = await runToolBody(name, args, admin, ctx);
@@ -1064,6 +1109,9 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const incoming: { role: string; content: string }[] = Array.isArray(body.messages) ? body.messages : [];
     const routeCtx: string = body.context ?? "";
+    const confirmedAction: ConfirmedAction = body.confirmed_action && typeof body.confirmed_action === "object"
+      ? { token: (body.confirmed_action as any).token }
+      : null;
 
     let systemContent = SYSTEM_PROMPT;
     if (!isAdmin) {
@@ -1185,9 +1233,20 @@ Proibido: mencionar "IA", "modelo de linguagem", "Lovable", "Gemini" ou qualquer
             headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
           });
         }
-        await runToolCalls(toolCalls);
+        try {
+          await runToolCalls(toolCalls);
+        } catch (e) {
+          if (e instanceof ConfirmationRequiredError) {
+            return new Response(JSON.stringify({
+              reply: "Esta ação exige confirmação explícita do administrador antes de ser executada.",
+              confirmation_required: e.payload,
+              actions: executedTools,
+            }), { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } });
+          }
+          throw e;
+        }
       }
-      return new Response(JSON.stringify({ reply: "Limite de passos atingido. Tente reformular.", actions: executedTools }), {
+      return new Response(JSON.stringify({ reply: "Limite de passos atingido. Tente reformular.", actions: executedTools }),
         headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
@@ -1198,17 +1257,48 @@ Proibido: mencionar "IA", "modelo de linguagem", "Lovable", "Gemini" ou qualquer
         try { parsed = JSON.parse(tc.function?.arguments || "{}"); } catch { parsed = {}; }
         return { tc, parsed };
       });
-      const results = await Promise.all(
-        parsedCalls.map(({ tc, parsed }: any) => executeTool(tc.function.name, parsed, adminClient, authzCtx)),
-      );
-      for (let i = 0; i < parsedCalls.length; i++) {
-        const { tc, parsed } = parsedCalls[i];
-        executedTools.push({ name: tc.function.name, args: parsed, result: results[i] });
+
+      // Preflight: uma cadeia contendo uma ação de alto impacto sem confirmação
+      // não pode executar nenhuma outra tool no mesmo lote.
+      const highImpactCalls = parsedCalls.filter(({ tc }: any) => isHighImpactTool(tc.function?.name));
+      if (highImpactCalls.length > 1) {
+        throw new ConfirmationRequiredError({
+          tool: highImpactCalls[0].tc.function.name,
+          args: sanitizeParams(highImpactCalls[0].parsed),
+          confirmation_token: await createConfirmationToken(
+            authzCtx.userId,
+            highImpactCalls[0].tc.function.name,
+            highImpactCalls[0].parsed,
+          ),
+        });
+      }
+
+      if (highImpactCalls.length === 1 && !confirmedAction?.token) {
+        const call = highImpactCalls[0];
+        throw new ConfirmationRequiredError({
+          tool: call.tc.function.name,
+          args: sanitizeParams(call.parsed),
+          confirmation_token: await createConfirmationToken(authzCtx.userId, call.tc.function.name, call.parsed),
+        });
+      }
+
+      const results: any[] = [];
+      for (const { tc, parsed } of parsedCalls) {
+        const result = await executeTool(tc.function.name, parsed, adminClient, authzCtx, confirmedAction);
+        if (result?.pending_confirmation) {
+          throw new ConfirmationRequiredError({
+            tool: tc.function.name,
+            args: sanitizeParams(parsed),
+            confirmation_token: result.confirmation_token,
+          });
+        }
+        results.push(result);
+        executedTools.push({ name: tc.function.name, args: parsed, result });
         messages.push({
           role: "tool",
           tool_call_id: tc.id,
           name: tc.function.name,
-          content: JSON.stringify(results[i]).slice(0, 2500),
+          content: JSON.stringify(result).slice(0, 2500),
         });
       }
     }
@@ -1276,7 +1366,15 @@ Proibido: mencionar "IA", "modelo de linguagem", "Lovable", "Gemini" ou qualquer
             for (const tc of toolCalls as any[]) {
               emit({ type: "tool", name: tc.function?.name });
             }
-            await runToolCalls(toolCalls as any[]);
+            try {
+              await runToolCalls(toolCalls as any[]);
+            } catch (e) {
+              if (e instanceof ConfirmationRequiredError) {
+                emit({ type: "confirmation_required", ...e.payload });
+                break;
+              }
+              throw e;
+            }
 
             if (step === MAX_STEPS - 1) {
               emit({ type: "done", actions: executedTools });
