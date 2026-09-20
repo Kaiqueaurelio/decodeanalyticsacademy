@@ -670,6 +670,22 @@ async function executeTool(
       await notifySecurity(admin, ctx, { tool: name, args, reason: verified.reason });
       return { ok: false, error: verified.reason ?? "Confirmação inválida." };
     }
+
+    // Token de alto impacto é de uso único. O nonce assinado é registrado no
+    // banco antes da ação; replay do mesmo token é recusado pelo índice UNIQUE.
+    const claim = await admin.from("ella_action_confirmations").insert({
+      nonce: verified.nonce,
+      user_id: ctx.userId,
+      tool_name: name,
+      expires_at: new Date(Number(verified.exp) * 1000).toISOString(),
+    });
+    if (claim.error) {
+      const replay = claim.error.code === "23505";
+      const reason = replay ? "Token de confirmação já utilizado." : "Não foi possível registrar a confirmação com segurança.";
+      await auditTool(admin, ctx, { tool: name, args, allowed: false, reason });
+      await notifySecurity(admin, ctx, { tool: name, args, reason });
+      return { ok: false, error: reason };
+    }
   }
 
   const result = await runToolBody(name, args, admin, ctx);
