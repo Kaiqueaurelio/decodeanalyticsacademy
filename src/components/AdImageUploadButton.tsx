@@ -97,7 +97,10 @@ export function AdImageUploadButton({
 
     setUploading(true);
     const ext = (file.name.split('.').pop() || kind).toLowerCase().replace(/[^a-z0-9]/g, '');
-    const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext || kind}`;
+    const randomBytes = new Uint8Array(8);
+    crypto.getRandomValues(randomBytes);
+    const randomId = Array.from(randomBytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+    const fileName = `${Date.now()}-${randomId}.${ext || kind}`;
 
     try {
       const base64Data = await fileToBase64(file);
