@@ -1,7 +1,28 @@
-import { getCorsHeaders } from "../_shared/cors.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 
+const ALLOWED_ORIGINS = new Set([
+  "https://decodeanalyticsacademy.lovable.app",
+  "https://decodeanalyticsacademy.vercel.app",
+  "https://id-preview--4dd1aec2-9175-4ae9-9401-8637f1ffe1a2.lovable.app",
+  "https://decodeanalyticsacademy.com.br",
+  "https://www.decodeanalyticsacademy.com.br",
+  "http://localhost:8080",
+  "http://localhost:5173",
+  "http://127.0.0.1:8080",
+]);
+
+function getCorsHeaders(req: Request): Record<string, string> {
+  const origin = req.headers.get("origin");
+  const headers: Record<string, string> = {
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Max-Age": "86400",
+    "Vary": "Origin",
+  };
+  if (origin && ALLOWED_ORIGINS.has(origin)) headers["Access-Control-Allow-Origin"] = origin;
+  return headers;
+}
 
 const QUESTIONS_PER_SIMULADO = 20;
 
@@ -37,20 +58,35 @@ serve(async (req) => {
     const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     const body = await req.json().catch(() => ({}));
-    const force = !!body?.force;
+    const force = body?.force === true;
+    const { data: roleRows } = await admin.from("user_roles").select("role").eq("user_id", userId).eq("role", "admin").limit(1);
+    const isAdmin = Array.isArray(roleRows) && roleRows.length > 0;
+    if (force && !isAdmin) {
+      return new Response(JSON.stringify({ error: "Apenas administradores podem forçar a geração." }), {
+        status: 403, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
+      });
+    }
 
-    // 1) Simulado em andamento?
+    // 1) Simulado da semana: uma única instância por usuário.
+    const today = new Date();
+    const dow = today.getDay();
+    const weekStart = (() => {
+      const d = new Date(today);
+      d.setDate(d.getDate() - dow);
+      return d.toISOString().slice(0, 10);
+    })();
+
     if (!force) {
-      const { data: inProgress } = await admin
+      const { data: weeklyExisting } = await admin
         .from("weekly_simulados")
         .select("id, status, total_questions, started_at")
         .eq("user_id", userId)
-        .eq("status", "in_progress")
+        .eq("week_start", weekStart)
         .order("started_at", { ascending: false })
         .limit(1)
         .maybeSingle();
-      if (inProgress) {
-        return new Response(JSON.stringify({ simulado_id: inProgress.id, resumed: true }), {
+      if (weeklyExisting) {
+        return new Response(JSON.stringify({ simulado_id: weeklyExisting.id, status: weeklyExisting.status, resumed: weeklyExisting.status === "in_progress" }), {
           headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
@@ -91,7 +127,7 @@ serve(async (req) => {
 
     let poolQuery = admin
       .from("exercises")
-      .select("id, question, options, correct_answer, explanation, apostila_id, type, apostilas!inner(id, title, category, published)")
+      .select("id, question, options, apostila_id, type, exercise_answers(correct_answer, explanation), apostilas!inner(id, title, category, published)")
       .eq("type", "multiple_choice")
       .eq("apostilas.published", true);
 
@@ -104,10 +140,22 @@ serve(async (req) => {
       );
     }
 
-    const { data: pool } = await poolQuery.limit(500);
+    const { data: rawPool } = await poolQuery.limit(500);
+    const pool = (rawPool ?? [])
+      .map((ex: any) => {
+        const answer = Array.isArray(ex.exercise_answers)
+          ? ex.exercise_answers[0]
+          : ex.exercise_answers;
+        return {
+          ...ex,
+          correct_answer: answer?.correct_answer ?? null,
+          explanation: answer?.explanation ?? null,
+        };
+      })
+      .filter((ex: any) => typeof ex.correct_answer === "string" && ex.correct_answer.trim().length > 0);
 
-    if (!pool || pool.length === 0) {
-      return new Response(JSON.stringify({ error: "Ainda não há exercícios suficientes no banco para montar um simulado." }), {
+    if (pool.length === 0) {
+      return new Response(JSON.stringify({ error: "Ainda não há exercícios com gabarito disponível para montar um simulado." }), {
         status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
@@ -156,13 +204,6 @@ serve(async (req) => {
     }
 
     // 8) Cria o simulado
-    const weekStart = (() => {
-      const d = new Date(today);
-      const dow = d.getDay(); // 0=dom
-      d.setDate(d.getDate() - dow); // domingo da semana
-      return d.toISOString().slice(0, 10);
-    })();
-
     const { data: simulado, error: simErr } = await admin
       .from("weekly_simulados")
       .insert({
