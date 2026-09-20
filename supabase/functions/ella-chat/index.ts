@@ -1386,7 +1386,7 @@ Proibido: mencionar "IA", "modelo de linguagem", "Lovable", "Gemini" ou qualquer
           role: "tool",
           tool_call_id: tc.id,
           name: tc.function.name,
-          content: JSON.stringify(result).slice(0, 2500),
+          content: wrapUntrustedContent(`tool:${tc.function.name}`, JSON.stringify(result), 2500),
         });
       }
     }
