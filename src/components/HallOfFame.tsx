@@ -23,7 +23,9 @@ export const HallOfFame = () => {
       try {
         // Use o RPC seguro: a relação PostgREST profiles -> user_xp não é
         // garantida em todos os ambientes e expunha uma consulta 400.
-        const { data, error } = await supabase.rpc('get_public_leaderboard', { _limit: 5 });
+        // O Hall deve representar todos os alunos existentes, não somente os
+        // cinco primeiros. O RPC mantém um teto seguro de 50 resultados.
+        const { data, error } = await supabase.rpc('get_public_leaderboard', { _limit: 50 });
 
         if (error) throw error;
 
@@ -36,8 +38,7 @@ export const HallOfFame = () => {
             // neutro evita novas consultas amplas em tabelas protegidas.
             avatar_url: null,
             current_streak: 0,
-          }))
-          .filter((u) => u.xp_points > 0);
+          }));
 
         setRanking(formattedData);
       } catch (err) {
@@ -68,7 +69,7 @@ export const HallOfFame = () => {
             <Trophy className="w-4 h-4" />
             Hall da Fama
           </div>
-          <span className="text-[10px] text-muted-foreground font-sans lowercase">top global</span>
+          <span className="text-[10px] text-muted-foreground font-sans lowercase">{ranking.length} alunos</span>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-2 p-4 pt-0">
