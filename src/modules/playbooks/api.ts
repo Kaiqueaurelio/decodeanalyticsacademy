@@ -21,7 +21,7 @@ export async function fetchBooks(): Promise<PBBook[]> {
     description: b.description,
   }));
   pbCache.setBooks(books);
-  return books;
+  return signBookCovers(books);
 }
 
 export async function fetchBook(id: string): Promise<PBBook | null> {
