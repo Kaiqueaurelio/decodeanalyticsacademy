@@ -154,9 +154,10 @@ function cleanUrl(value: string) {
 }
 
 function extractAfter(value: string, words: string[]) {
-  const escaped = words.map((word) => word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
-  const match = value.match(new RegExp(`(?:${escaped})\\s*(?:e|eh|:|-)?\\s*[\"']?([^\"'\n]{4,220})`, 'i'));
-  return match?.[1]?.trim().replace(/[.!?]+$/, '') || '';
+  const safeWords = words.filter((word) => typeof word === 'string' && word.length > 0 && word.length <= 64).slice(0, 16);
+  if (safeWords.length === 0) return '';
+  const escaped = safeWords.map((word) => word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+  if (escaped.length > 512) return '';
 }
 
 function parseDateText(value: string) {
