@@ -115,7 +115,7 @@ export function DeploymentStatusPanel() {
                     metric.status === 'healthy' ? 'bg-emerald-500' : 
                     metric.status === 'warning' ? 'bg-amber-500' : 'bg-destructive'
                   }`} 
-                  style={{ width: `${Math.random() * 40 + 60}%` }}
+                  style={{ width: `${secureRandom() * 40 + 60}%` }}
                 />
               </div>
             </CardContent>
