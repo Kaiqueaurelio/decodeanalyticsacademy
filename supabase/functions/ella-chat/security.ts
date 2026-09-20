@@ -223,11 +223,11 @@ export function validateExternalHttpsUrl(value: unknown): { valid: boolean; url?
       host === "metadata.google" ||
       host === "0.0.0.0" ||
       host === "::1" ||
-      /^127\\./.test(host) ||
-      /^10\\./.test(host) ||
-      /^192\\.168\\./.test(host) ||
-      /^169\\.254\\./.test(host) ||
-      /^(172\\.1[6-9]|172\\.2[0-9]|172\\.3[0-1])\\./.test(host)
+      /^127\./.test(host) ||
+      /^10\./.test(host) ||
+      /^192\.168\./.test(host) ||
+      /^169\.254\./.test(host) ||
+      /^(172\.1[6-9]|172\.2[0-9]|172\.3[0-1])\./.test(host)
     ) {
       return { valid: false, reason: "Destino privado ou de metadata bloqueado." };
     }
