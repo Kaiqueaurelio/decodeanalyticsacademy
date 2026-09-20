@@ -366,7 +366,9 @@ function PdfEngine(props: {
   const scrollPageRefs = useRef<Map<number, HTMLDivElement>>(new Map());
   const programmatic = useRef(false);
 
-  const fileOption = useMemo(() => ({ url: book.fileUrl, withCredentials: false }), [book.fileUrl]);
+  const fileOption = useMemo(() => (
+    resolvedFileUrl ? { url: resolvedFileUrl, withCredentials: false } : undefined
+  ), [resolvedFileUrl]);
 
   useEffect(() => {
     const update = () => {
