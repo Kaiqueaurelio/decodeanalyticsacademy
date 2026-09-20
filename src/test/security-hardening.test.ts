@@ -227,7 +227,7 @@ describe('security hardening regression guards', () => {
     expect(hook).toContain('Mantém fallback somente para falhas transitórias');
     const auditComponent = source('src/components/admin/AdminUserManagement.tsx');
     expect(auditComponent).toContain('supabase.rpc');
-    expect(auditComponent).toMatch(/supabase\.rpc[\s\S]{0,40}['"]log_admin_audit['"]/);
+    expect(auditComponent).toMatch(/supabase\.rpc[\s\S]{0,80}['"]admin_update_user_role['"]/);
   });
   it('never authorizes an admin route from mutable local role cache', () => {
     const auth = source('src/hooks/useAuth.tsx');
