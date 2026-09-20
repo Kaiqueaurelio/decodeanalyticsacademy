@@ -322,6 +322,10 @@ Deno.test("SSRF: block private and non-HTTPS destinations", () => {
   assertFalse(validateExternalHttpsUrl("https://localhost/admin").valid);
   assertFalse(validateExternalHttpsUrl("https://169.254.169.254/latest/meta-data").valid);
   assertFalse(validateExternalHttpsUrl("https://10.0.0.1/internal").valid);
+  assertFalse(validateExternalHttpsUrl("https://127.0.0.1/internal").valid);
+  assertFalse(validateExternalHttpsUrl("https://192.168.1.10/internal").valid);
+  assertFalse(validateExternalHttpsUrl("https://172.16.0.1/internal").valid);
+  assertFalse(validateExternalHttpsUrl("https://172.31.255.255/internal").valid);
   assert(validateExternalHttpsUrl("https://example.com/feed.xml").valid);
 });
 
