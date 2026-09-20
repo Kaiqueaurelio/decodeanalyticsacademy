@@ -12,7 +12,7 @@ returns table(
 language sql stable security invoker set search_path = public
 as $$
   select j.id, j.title, j.company_name, j.company_logo_url, j.description,
-    j.requirements, j.location, j.type, j.salary_range, j.salary_range, j.is_active, j.published_at,
+    j.requirements, j.location, j.type, j.salary_range, j.is_active, j.published_at,
     j.application_email, j.application_method, j.application_instructions,
     j.openings_count, j.candidates_count
   from public.jobs j
