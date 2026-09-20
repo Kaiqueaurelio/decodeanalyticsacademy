@@ -5,6 +5,21 @@ const RA_RE = /^[A-Z0-9]{6,13}$/;
 const GENERIC_FAIL = "RA ou senha incorretos.";
 const SPECIAL_USER = Deno.env.get("SPECIAL_USER_NAME")?.trim() || "Juliana";
 const SPECIAL_PASS = Deno.env.get("SPECIAL_USER_PASSWORD") || "";
+
+async function constantTimeEqual(left: string, right: string): Promise<boolean> {
+  const encoder = new TextEncoder();
+  const [leftHash, rightHash] = await Promise.all([
+    crypto.subtle.digest("SHA-256", encoder.encode(left)),
+    crypto.subtle.digest("SHA-256", encoder.encode(right)),
+  ]);
+  const leftBytes = new Uint8Array(leftHash);
+  const rightBytes = new Uint8Array(rightHash);
+  let diff = leftBytes.length ^ rightBytes.length;
+  for (let i = 0; i < Math.max(leftBytes.length, rightBytes.length); i += 1) {
+    diff |= (leftBytes[i] ?? 0) ^ (rightBytes[i] ?? 0);
+  }
+  return diff === 0;
+}
 const LEGACY_SUPABASE_URL = Deno.env.get("LEGACY_SUPABASE_URL")?.trim()
   || "https://gynguskgysompgcajunc.supabase.co";
 const LEGACY_APP_URL = Deno.env.get("LEGACY_APP_URL")?.trim()
@@ -76,7 +91,7 @@ Deno.serve(async (req) => {
 
   // Check for the special user Juliana
   if (SPECIAL_PASS && (rawRa === SPECIAL_USER || ra === SPECIAL_USER.toUpperCase()) && mode === "signin") {
-    if (password === SPECIAL_PASS) {
+    if (await constantTimeEqual(password, SPECIAL_PASS)) {
       const julianaEmail = "juliana@decode.local";
       
       // Ensure user exists
