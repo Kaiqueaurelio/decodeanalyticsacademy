@@ -16,7 +16,9 @@ interface Props {
 
 const randomPassword = () => {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
-  return Array.from({ length: 10 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+  const values = new Uint32Array(10);
+  crypto.getRandomValues(values);
+  return Array.from(values, (value) => chars[value % chars.length]).join('');
 };
 
 /**
