@@ -36,8 +36,14 @@ Deno.serve(async (req) => {
   }
 
   const admin = createClient(SUPABASE_URL, SERVICE_ROLE, { auth: { persistSession: false } });
-  const email = "decoanalytics@outlook.com.br";
-  const ra = "G802144";
+  const email = Deno.env.get("FIX_USER_LOGIN_EMAIL")?.trim() || "";
+  const ra = Deno.env.get("FIX_USER_LOGIN_RA")?.trim() || "";
+  if (!email || !ra) {
+    return new Response(JSON.stringify({ error: "Dados de manutenção não configurados." }), {
+      status: 503,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
   const userId = "1ea75282-cc92-49a2-92a2-4c54344a6d43";
   const results: Array<{ action: string; success: boolean; error?: { code?: string; message: string } | null }> = [];
 
