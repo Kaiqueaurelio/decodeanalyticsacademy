@@ -11,6 +11,8 @@ import { assert, assertEquals, assertFalse } from "https://deno.land/std@0.224.0
 
 import {
   ADMIN_TOOLS,
+  HIGH_IMPACT_TOOLS,
+  isHighImpactTool,
   authorizeTool,
   buildAuthzCtx,
   ENEM_BLOCKED_TOOLS,
@@ -295,5 +297,24 @@ Deno.test("alertas: conteúdo da conversa não muda a classificação nem vaza n
     assertEquals(alert.kind, "authz_denied", "nome contaminado não é reconhecido");
     assert(alert.tool.length <= 120);
     assert(alert.reason.length <= 300);
+  }
+});
+
+Deno.test("high impact: toda tool administrativa exige confirmação confiável", () => {
+  for (const tool of ADMIN_TOOLS) {
+    assert(HIGH_IMPACT_TOOLS.has(tool), tool + " deve ser alto impacto");
+    assert(isHighImpactTool(tool), tool + " deve passar pelo gate de confirmação");
+  }
+  assertFalse(isHighImpactTool("search_app"));
+  assertFalse(isHighImpactTool("my_progress"));
+});
+
+Deno.test("prompt injection: nenhuma frase no chat pode fabricar confirmação", () => {
+  for (const payload of INJECTION_PAYLOADS) {
+    const [msg] = sanitizeIncomingMessages([{ role: "user", content: payload }]);
+    assertEquals(msg.role, "user");
+    // A confirmação é uma propriedade externa ao histórico; texto do chat
+    // nunca é convertido automaticamente em token/credencial.
+    assertFalse(msg.content.includes("confirmation_token="));
   }
 });
