@@ -99,24 +99,27 @@ export function useGamification() {
 
   const updateStreak = useCallback(async () => {
     if (!user) return;
-    const today = new Date().toISOString().split('T')[0];
-    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+    const { data: updatedStreak, error } = await supabase.rpc('record_study_streak', {
+      _user_id: user.id,
+    });
 
-    if (streak.last_study_date === today) return; // Already studied today
-
-    let newCurrent = 1;
-    if (streak.last_study_date === yesterday) {
-      newCurrent = streak.current_streak + 1;
+    if (error || !updatedStreak) {
+      toast.error('Não foi possível atualizar seu streak agora. Tente novamente.');
+      return;
     }
-    const newLongest = Math.max(streak.longest_streak, newCurrent);
 
-    await supabase.from('study_streaks').upsert({
-      user_id: user.id, current_streak: newCurrent, longest_streak: newLongest, last_study_date: today
-    }, { onConflict: 'user_id' });
+    const row = Array.isArray(updatedStreak) ? updatedStreak[0] : updatedStreak;
+    const newCurrent = Number(row?.current_streak ?? 0);
+    const newLongest = Number(row?.longest_streak ?? 0);
+    const newLastDate = typeof row?.last_study_date === 'string' ? row.last_study_date : null;
 
-    setStreak({ current_streak: newCurrent, longest_streak: newLongest, last_study_date: today });
+    setStreak({
+      current_streak: newCurrent,
+      longest_streak: newLongest,
+      last_study_date: newLastDate,
+    });
 
-    if (newCurrent > 1) toast.success(`🔥 Streak de ${newCurrent} dias!`);
+    if (newCurrent > streak.current_streak) toast.success(`🔥 Streak de ${newCurrent} dias!`);
     
     // Log history
     await supabase.rpc('log_study_activity', {
@@ -132,10 +135,12 @@ export function useGamification() {
     const alreadyHas = userBadges.some(ub => ub.badge_id === badge.id);
     if (alreadyHas) return;
 
-    const { error } = await supabase.from('user_badges').insert({ user_id: user.id, badge_id: badge.id });
-    if (!error) {
-      setUserBadges(prev => [...prev, { id: '', badge_id: badge.id, earned_at: new Date().toISOString() }]);
-      await addXP(badge.xp_reward);
+    const { data: awardResult, error } = await supabase.rpc('award_badge', {
+      _criteria: criteria,
+    });
+    if (!error && awardResult?.awarded) {
+      setUserBadges(prev => [...prev, { id: awardResult.badge_id || '', badge_id: badge.id, earned_at: new Date().toISOString() }]);
+      await loadAll();
       toast.success(`🏆 Conquista: ${badge.icon} ${badge.name}!`);
     }
   }, [user, badges, userBadges, addXP]);
