@@ -273,7 +273,7 @@ Deno.test("alertas: ferramenta desconhecida vira alerta de ação não registrad
   for (const name of ["execute_sql", "drop_table", "DELETE_APOSTILA", "", undefined]) {
     const alert = classifyDenial(name, studentCtx, "Ferramenta não registrada (negado por padrão).");
     assertEquals(alert.kind, "authz_denied");
-    assertEquals(alert.severity, "warn");
+    assertEquals(alert.severity, "low");
   }
   assertEquals(classifyDenial(undefined, studentCtx).tool, "(desconhecida)");
 });
@@ -284,7 +284,7 @@ Deno.test("alertas: recurso fora do escopo vira violação de escopo", () => {
     assert(shouldNotifyAdmin(decision));
     const alert = classifyDenial(tool, enemCtx, decision.reason);
     assertEquals(alert.kind, "scope_violation");
-    assertEquals(alert.severity, "warn");
+    assertEquals(alert.severity, "low");
   }
 });
 
