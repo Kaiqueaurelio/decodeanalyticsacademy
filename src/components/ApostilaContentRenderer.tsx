@@ -1174,11 +1174,11 @@ interface Props {
  * ritmo de leitura confortável (~68ch, line-height 1.75).
  */
 export function ApostilaContentRenderer({ content, activeHeadingId }: Props) {
-  const [resolvedContent, setResolvedContent] = useState<string | null>(null);
+  const [resolvedContent, setResolvedContent] = useState<string | null>(content);
 
   useEffect(() => {
     let active = true;
-    setResolvedContent(null);
+    setResolvedContent(content);
 
     void resolveMaterialContentUrls(content)
       .catch(() => content)
