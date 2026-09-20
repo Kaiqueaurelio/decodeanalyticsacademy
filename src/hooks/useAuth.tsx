@@ -165,15 +165,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsSessionHydrated(true);
 
       if (nextUser) {
-        const cachedRole = readRoleCache();
-        if (cachedRole?.userId === nextUser.id) {
-          setIsAdmin(cachedRole.isAdmin);
-          setRoleChecked(true);
-        } else {
-          setIsAdmin(false);
-          setIsBlocked(false);
-          setRoleChecked(false);
-        }
+        // Nunca usamos o cache local como autorização. LocalStorage é controlável
+        // pelo cliente e uma role antiga não pode liberar uma rota administrativa.
+        // A fonte de verdade é o checkRoles() no servidor.
+        setIsAdmin(false);
+        setIsBlocked(false);
+        setRoleChecked(false);
 
         if (lastRoleUserIdRef.current !== nextUser.id || authEvent === 'SIGNED_IN') {
           lastRoleUserIdRef.current = nextUser.id;
