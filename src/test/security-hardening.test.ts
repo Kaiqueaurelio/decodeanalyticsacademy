@@ -146,6 +146,24 @@ describe('security hardening regression guards', () => {
     expect(reader).not.toContain("status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' }");
   });
 
+  it('routes material files through signed storage access', () => {
+    const storage = source('supabase/migrations/20260920047000_make_materials_private.sql');
+    const helper = source('src/lib/storage-access.ts');
+    const image = source('src/components/ui/app-image.tsx');
+    const widget = source('src/components/MaterialWidget.tsx');
+    const mediaUpload = source('src/components/editor/RibbonMediaButton.tsx');
+
+    expect(storage).toContain("UPDATE storage.buckets");
+    expect(storage).toContain("WHERE id = 'materials';");
+    expect(storage).toContain('SET public = false');
+    expect(helper).toContain("createSignedUrl(path, expiresIn)");
+    expect(helper).toContain('/storage/v1/object/public/');
+    expect(image).toContain("createSignedStorageUrl(normalized, 'materials')");
+    expect(image).not.toContain("const PUBLIC_IMAGE_BUCKETS = ['materials'");
+    expect(widget).toContain("createSignedStorageUrl(material.file_url, 'materials')");
+    expect(mediaUpload).toContain('file_path: path');
+  });
+
   it('restricts content-scope lookups to the current user or an admin', () => {
     const sql = source('supabase/migrations/20260920046000_harden_content_scope_rpc.sql');
     expect(sql).toContain("IF auth.uid() IS NULL THEN");
