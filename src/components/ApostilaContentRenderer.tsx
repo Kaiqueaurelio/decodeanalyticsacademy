@@ -566,10 +566,14 @@ function parseBlocks(rawInput: string): Block[] {
       if (htmlImgMatch) {
         const attrsStr = htmlImgMatch[1];
         const get = (name: string) => {
-          const safeName = name.replace(/[^A-Za-z0-9_-]/g, '').slice(0, 64);
-          if (!safeName) return '';
-          const m = attrsStr.match(new RegExp(`\\b${safeName}\\s*=\\s*"([^"]*)"`, 'i'));
-          return m ? m[1] : '';
+          const wanted = name.trim().toLowerCase();
+          if (!wanted || wanted.length > 64) return '';
+          const attributeRe = /([A-Za-z0-9_-]+)\s*=\s*"([^"]*)"/gi;
+          let match: RegExpExecArray | null;
+          while ((match = attributeRe.exec(attrsStr)) !== null) {
+            if (match[1].toLowerCase() === wanted) return match[2];
+          }
+          return '';
         };
         const url = get('src');
         if (url) {
