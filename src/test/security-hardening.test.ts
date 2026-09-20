@@ -166,7 +166,7 @@ describe('security hardening regression guards', () => {
 
   it('restricts content-scope lookups to the current user or an admin', () => {
     const sql = source('supabase/migrations/20260920046000_harden_content_scope_rpc.sql');
-    expect(sql).toContain("IF auth.uid() IS NULL THEN");
+    expect(sql).toContain("IF auth.role() <> 'service_role'::text AND auth.uid() IS NULL THEN");
     expect(sql).toContain("_user_id <> auth.uid()");
     expect(sql).toContain("NOT public.has_role(auth.uid(), 'admin'::public.app_role)");
     expect(sql).toContain('REVOKE EXECUTE ON FUNCTION public.get_content_scope(uuid) FROM anon;');
