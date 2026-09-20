@@ -16,10 +16,10 @@ interface ValidateResult {
 }
 
 function pick(block: string, tag: string): string {
-  const safeTag = tag.replace(/[^A-Za-z0-9:_-]/g, '').slice(0, 64);
-  if (!safeTag) return '';
-  const m = block.match(new RegExp(`<${safeTag}[^>]*>([\\s\\S]*?)</${safeTag}>`, 'i'));
-  return m ? m[1].trim() : '';
+  const wanted = tag.trim().toLowerCase();
+  if (!wanted || wanted.length > 64) return '';
+  const m = /<([A-Za-z0-9:_-]+)[^>]*>([\s\S]*?)<\/\1>/i.exec(block);
+  return m && m[1].toLowerCase() === wanted ? m[2].trim() : '';
 }
 
 const MAX_XML_BYTES = 1_500_000;
