@@ -20,7 +20,7 @@
     "test:security": "vitest run src/test/security"
   },
   "dependencies": {
-    "@babel/core": "^7.26.0",
+    "@babel/core": "^7.29.6",
     "@capacitor-community/privacy-screen": "^6.1.0",
     "@capacitor/android": "^8.3.1",
     "@capacitor/cli": "^8.3.1",
