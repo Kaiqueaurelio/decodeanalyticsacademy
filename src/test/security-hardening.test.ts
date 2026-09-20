@@ -299,8 +299,21 @@ describe('security hardening regression guards', () => {
     expect(lifecycle).toContain('REVOKE INSERT, UPDATE, DELETE ON public.weekly_simulado_answers FROM authenticated;');
     expect(lifecycle).toContain('CREATE OR REPLACE FUNCTION public.finish_weekly_simulado');
     expect(reveal).toContain('CREATE OR REPLACE FUNCTION public.get_simulado_answer_reveals');
-    expect(answer).toContain("IF v_status <> 'in_progress' THEN");
+    expect(answer).toContain("IF v_row.status <> 'in_progress' THEN");
     expect(answer).toContain("REVOKE ALL ON FUNCTION public.answer_simulado_question(uuid, text) FROM PUBLIC, anon;");
+  });
+
+  it('keeps book files private and resolved only through signed URLs', () => {
+    const storage = source('supabase/migrations/20260920043000_make_books_private.sql');
+    const api = source('src/modules/playbooks/api.ts');
+    const reader = source('src/modules/playbooks/components/PlayBooksReader.tsx');
+    expect(storage).toContain("set public = false");
+    expect(storage).toContain("where id = 'books';");
+    expect(storage).toContain('drop policy if exists "Books are publicly accessible"');
+    expect(api).toContain("from('books').createSignedUrl(path, 3600)");
+    expect(api).toContain("from('books').createSignedUrls(entries.map((entry) => entry.path), 3600)");
+    expect(reader).toContain('createBookSignedUrl(book.fileUrl)');
+    expect(reader).not.toContain('url: book.fileUrl, withCredentials: false');
   });
 
   it('keeps gamification mutations behind server-side RPCs', () => {
