@@ -73,6 +73,13 @@ describe('security hardening regression guards', () => {
     expect(mermaid).not.toContain("securityLevel: 'loose'");
   });
 
+  it('fails closed when admin authorization lacks the service role', () => {
+    const guard = source('supabase/functions/_shared/auth-guard.ts');
+    expect(guard).toContain('if (!SERVICE_ROLE)');
+    expect(guard).not.toContain('SERVICE_ROLE || SUPABASE_ANON_KEY');
+    expect(guard).toContain('Admin authorization is not configured');
+  });
+
   it('does not bypass an enabled biometric lock', () => {
     const gate = source('src/components/BiometricLockGate.tsx');
     expect(gate).toContain('if (user && locked && isBiometricEnabled())');
