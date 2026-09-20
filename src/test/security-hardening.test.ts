@@ -261,7 +261,7 @@ describe('security hardening regression guards', () => {
     expect(lifecycle).toContain('REVOKE INSERT, UPDATE, DELETE ON public.weekly_simulado_answers FROM authenticated;');
     expect(lifecycle).toContain('CREATE OR REPLACE FUNCTION public.finish_weekly_simulado');
     expect(reveal).toContain('CREATE OR REPLACE FUNCTION public.get_simulado_answer_reveals');
-    expect(answer).toContain("IF v_status <> 'in_progress' THEN");
+    expect(answer).toContain("IF v_row.status <> 'in_progress' THEN");
     expect(answer).toContain("REVOKE ALL ON FUNCTION public.answer_simulado_question(uuid, text) FROM PUBLIC, anon;");
   });
 
