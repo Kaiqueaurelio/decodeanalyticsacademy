@@ -866,7 +866,7 @@ async function runToolBody(name: string, args: any, admin: ReturnType<typeof cre
         const validatedFeed = validateExternalHttpsUrl(args.url);
         if (!validatedFeed.valid) return { ok: false, error: validatedFeed.reason ?? "URL de feed inválida." };
         const q = await admin.from("rss_feeds").insert({
-          url: feedUrl.toString(),
+          url: validatedFeed.url!,
           name: args.name ?? args.url,
           category: args.category ?? "tech",
           is_active: true,
