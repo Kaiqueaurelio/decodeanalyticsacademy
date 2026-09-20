@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils';
 import { BriefcaseBusiness, Building2, CheckCircle2, ExternalLink, Filter, Globe2, Loader2, MapPin, Search, Sparkles, WalletCards } from 'lucide-react';
 
 type JobType = 'job' | 'internship' | 'freelance';
+type TimeFilter = 'all' | 'morning' | 'afternoon' | 'night';
 type Job = {
   id: string;
   title: string;
@@ -37,6 +38,26 @@ const JOB_TYPE_LABELS: Record<JobType, string> = {
   freelance: 'Freelance',
 };
 
+function getJobTimePeriods(job: Job): TimeFilter[] {
+  const text = `${job.title} ${job.description} ${job.requirements || ''}`.toLowerCase();
+  const periods = new Set<TimeFilter>();
+  if (/manh[ãa]|matutino|matutina|pela manhã|per[ií]odo da manh[ãa]/i.test(text)) periods.add('morning');
+  if (/tarde|vespertino|vespertina|per[ií]odo da tarde/i.test(text)) periods.add('afternoon');
+  if (/noite|noturno|noturna|per[ií]odo noturno/i.test(text)) periods.add('night');
+
+  const rangeRegex = /(\d{1,2})(?::|h)?(\d{2})?\s*(?:às|a|-|até)\s*(\d{1,2})(?::|h)?(\d{2})?/gi;
+  for (const match of text.matchAll(rangeRegex)) {
+    const start = Number(match[1]);
+    const end = Number(match[3]);
+    if (Number.isNaN(start) || Number.isNaN(end)) continue;
+    if (start < 12 || (start >= 12 && end > start && end <= 18 && start < 15)) periods.add('morning');
+    if ((start >= 12 && start < 18) || (end > 12 && end <= 18)) periods.add('afternoon');
+    if (start >= 18 || end >= 18) periods.add('night');
+  }
+
+  return [...periods];
+}
+
 function isValidApplicationUrl(value: string | null | undefined): boolean {
   if (!value) return false;
   try {
@@ -54,6 +75,7 @@ export default function JobsPage() {
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState<'all' | JobType>('all');
+  const [timeFilter, setTimeFilter] = useState<TimeFilter>('all');
   const [selected, setSelected] = useState<Job | null>(null);
 
   useEffect(() => {
@@ -91,9 +113,11 @@ export default function JobsPage() {
     const normalizedQuery = query.trim().toLowerCase();
     return jobs.filter((job) => {
       const searchable = `${job.title} ${job.company_name} ${job.description} ${job.requirements || ''} ${job.location || ''}`.toLowerCase();
-      return (!normalizedQuery || searchable.includes(normalizedQuery)) && (typeFilter === 'all' || job.type === typeFilter);
+      const matchesType = typeFilter === 'all' || job.type === typeFilter;
+      const matchesTime = timeFilter === 'all' || getJobTimePeriods(job).includes(timeFilter);
+      return (!normalizedQuery || searchable.includes(normalizedQuery)) && matchesType && matchesTime;
     });
-  }, [jobs, query, typeFilter]);
+  }, [jobs, query, typeFilter, timeFilter]);
 
   const requireLogin = (action: 'details' | 'application') => {
     toast.info(action === 'details' ? 'Entre para ver os detalhes completos' : 'Entre para se candidatar', {
@@ -153,9 +177,10 @@ export default function JobsPage() {
         <div className="mb-6 grid gap-3 sm:grid-cols-3">{stats.map((stat) => <Card key={stat.label} className="rounded-xl border-border/70 bg-card/70 p-4"><div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary"><stat.icon className="h-4 w-4" /></div><div><div className="text-xl font-bold leading-none">{stat.value}</div><div className="mt-1 text-xs text-muted-foreground">{stat.label}</div></div></div></Card>)}</div>
         <section className="mb-6 rounded-2xl border border-border/80 bg-card/70 p-4 shadow-sm sm:p-5">
           <div className="mb-3 flex items-center gap-2 text-sm font-semibold"><Filter className="h-4 w-4 text-primary" /> Encontrar uma vaga</div>
-          <div className="grid gap-3 md:grid-cols-[1fr_200px]">
+          <div className="grid gap-3 md:grid-cols-[1fr_200px_200px]">
             <div className="relative"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar cargo, empresa, local ou requisito" className="pl-9" /></div>
             <select value={typeFilter} onChange={(event) => setTypeFilter(event.target.value as 'all' | JobType)} className="h-10 rounded-md border border-input bg-background px-3 text-sm"><option value="all">Todos os tipos</option>{Object.entries(JOB_TYPE_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
+            <select value={timeFilter} onChange={(event) => setTimeFilter(event.target.value as TimeFilter)} className="h-10 rounded-md border border-input bg-background px-3 text-sm"><option value="all">Qualquer horário</option><option value="morning">🌅 Manhã</option><option value="afternoon">☀️ Tarde</option><option value="night">🌙 Noite</option></select>
           </div>
         </section>
         {loading ? <div className="flex items-center justify-center gap-2 py-16 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Carregando oportunidades...</div> : filteredJobs.length === 0 ? <div className="rounded-2xl border border-dashed border-border p-14 text-center"><BriefcaseBusiness className="mx-auto mb-3 h-10 w-10 text-primary/40" /><p className="text-sm font-medium">Nenhuma vaga encontrada</p><p className="mt-1 text-xs text-muted-foreground">Tente mudar a busca ou volte mais tarde para conferir novas oportunidades.</p></div> : <section className="grid gap-4 lg:grid-cols-2">{filteredJobs.map((job) => <article key={job.id} className="rounded-2xl border border-border bg-card/80 p-4 shadow-sm transition-colors hover:border-primary/35 sm:p-5"><div className="flex gap-3 sm:gap-4"><div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary sm:h-12 sm:w-12">{job.company_logo_url ? <img src={job.company_logo_url} alt={job.company_name} className="h-10 w-10 rounded-lg object-contain sm:h-11 sm:w-11" /> : <BriefcaseBusiness className="h-5 w-5" />}</div><div className="min-w-0 flex-1 space-y-3"><div className="flex flex-wrap items-center gap-1.5"><Badge variant="outline" className="h-5 rounded-full px-2 text-[10px]">{JOB_TYPE_LABELS[job.type]}</Badge>{job.type === 'internship' && <Badge variant="secondary" className="h-5 rounded-full px-2 text-[10px]">Entrada para estudantes</Badge>}</div><div><h2 className="text-base font-bold leading-snug sm:text-lg">{job.title}</h2><p className="mt-1 text-xs font-medium text-primary">{job.company_name}</p></div><div className="grid grid-cols-1 gap-2 text-xs text-muted-foreground sm:grid-cols-2"><span className="inline-flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5 text-primary" /> {job.location || 'Remoto'}</span><span className="inline-flex items-center gap-1.5"><WalletCards className="h-3.5 w-3.5 text-primary" /> {job.salary_range || 'Salário a combinar'}</span></div><p className="line-clamp-3 text-xs leading-5 text-muted-foreground sm:text-sm">{job.description}</p><div className="flex flex-wrap items-center gap-2 pt-1"><Button size="sm" className="h-8 gap-1.5 text-xs" onClick={() => openApplication(job)}><ExternalLink className="h-3.5 w-3.5" /> Candidatar-se</Button><Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => openDetails(job)}>Saiba mais</Button></div></div></div></article>)}</section>}
