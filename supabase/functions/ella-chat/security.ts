@@ -195,6 +195,9 @@ export function detectPromptInjection(value: unknown): boolean {
   const patterns = [
     /ignore (all|any|the|previous|prior) instructions?/i,
     /ignore .*instructions?/i,
+    /ignore .*instru(?:ções|coes)/i,
+    /ignor(?:e|ar) .*instru(?:ções|coes)/i,
+    /desconsidere .*instru(?:ções|coes)/i,
     /disregard .*instructions?/i,
     /system prompt|developer message|hidden prompt|reveal.*prompt/i,
     /pretend (to be|you are)|act as .*system|jailbreak/i,
