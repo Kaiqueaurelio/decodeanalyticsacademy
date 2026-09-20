@@ -16,23 +16,13 @@ const ALLOWED_ORIGINS = new Set([
   'http://127.0.0.1:8080',
 ]);
 
-/**
- * Verifica se a origem termina com um sufixo permitido (preview da plataforma).
- */
-const ALLOWED_SUFFIXES = [
-  '.lovable.app',
-  '.lovableproject.com',
-  '.lovableproject-dev.com',
-];
-
 export function isAllowedOrigin(origin: string | null): boolean {
   if (!origin) return false;
   if (ALLOWED_ORIGINS.has(origin)) return true;
   
   try {
-    const url = new URL(origin);
-    const hostname = url.hostname;
-    return ALLOWED_SUFFIXES.some(suffix => hostname.endsWith(suffix));
+    new URL(origin);
+    return false;
   } catch {
     return false;
   }
