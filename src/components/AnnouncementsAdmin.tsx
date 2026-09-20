@@ -140,7 +140,10 @@ export function AnnouncementsAdmin() {
 
     setUploading(true);
     const ext = file.name.split('.').pop() || 'jpg';
-    const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const randomBytes = new Uint8Array(8);
+    crypto.getRandomValues(randomBytes);
+    const randomId = Array.from(randomBytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+    const fileName = `${Date.now()}-${randomId}.${ext}`;
 
     try {
       const { error } = await supabase.storage
