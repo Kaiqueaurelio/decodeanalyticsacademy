@@ -3773,6 +3773,18 @@ export type Database = {
         Args: { _amount: number; _user_id: string }
         Returns: undefined
       }
+      record_study_streak: {
+        Args: { _user_id: string }
+        Returns: {
+          created_at: string
+          current_streak: number
+          id: string
+          last_study_date: string | null
+          longest_streak: number
+          updated_at: string
+          user_id: string
+        }
+      }
       log_study_activity:
         | {
             Args: {
