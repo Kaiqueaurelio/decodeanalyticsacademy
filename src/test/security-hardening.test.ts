@@ -146,6 +146,14 @@ describe('security hardening regression guards', () => {
     expect(reader).not.toContain("status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' }");
   });
 
+  it('restricts content-scope lookups to the current user or an admin', () => {
+    const sql = source('supabase/migrations/20260920046000_harden_content_scope_rpc.sql');
+    expect(sql).toContain("IF auth.uid() IS NULL THEN");
+    expect(sql).toContain("_user_id <> auth.uid()");
+    expect(sql).toContain("NOT public.has_role(auth.uid(), 'admin'::public.app_role)");
+    expect(sql).toContain('REVOKE EXECUTE ON FUNCTION public.get_content_scope(uuid) FROM anon;');
+  });
+
   it('blocks direct quiz-question table reads that expose answer keys', () => {
     const sql = source('supabase/migrations/20260920045000_lockdown_quiz_question_reads.sql');
     expect(sql).toContain('REVOKE SELECT ON public.quiz_questions FROM anon, authenticated;');
