@@ -156,7 +156,7 @@ Gere ${n} questões inéditas no formato ENEM, cobrindo tópicos variados do con
       .select("id");
     if (insErr) {
       return new Response(
-        JSON.stringify({ error: "Insert failed", details: insErr.message }),
+        JSON.stringify({ error: "Não foi possível salvar os exercícios gerados." }),
         { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } },
       );
     }
