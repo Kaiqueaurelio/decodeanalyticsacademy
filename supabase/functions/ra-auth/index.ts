@@ -51,22 +51,21 @@ Deno.serve(async (req) => {
   const mode = body.mode === "reset" ? "reset" : body.mode === "signup" ? "signup" : "signin";
   const admin = createClient(SUPABASE_URL, SERVICE_ROLE, { auth: { persistSession: false } });
 
-  if (mode === "signin") {
+  if (mode === "signin" || mode === "signup" || mode === "reset") {
     const { data: rateLimit, error: rateLimitError } = await admin.rpc("auth_rate_limit_check", {
       _identifier: ra,
       _ip_address: ip,
     });
     if (rateLimitError) {
-      // A autenticação não pode ficar indisponível apenas porque a RPC opcional
-      // de rate limiting ainda não foi aplicada no projeto remoto. Registramos
-      // o erro para diagnóstico e seguimos com o bloqueio de credenciais no
-      // Supabase Auth; quando a RPC existir, o bloqueio persistente continua ativo.
       console.error("ra-auth rate limit check:", rateLimitError.message);
+      if (mode === "signup") {
+        return json({ error: "Não foi possível validar a solicitação agora." }, 503, corsHeaders);
+      }
     }
     if (!rateLimitError && rateLimit?.allowed === false) {
       const retryAfter = Number(rateLimit.retry_after_seconds || 60);
       return new Response(JSON.stringify({
-        error: "Muitas tentativas. Sua conta ou IP estão temporariamente bloqueados por segurança.",
+        error: "Muitas tentativas. Aguarde antes de tentar novamente.",
         retry_after_seconds: retryAfter,
       }), {
         status: 429,
@@ -205,8 +204,29 @@ Deno.serve(async (req) => {
       return json({ ok: true }, 200, corsHeaders);
     }
 
-    // Cadastro por RA: conta criada já confirmada
+    // Cadastro por RA: somente RAs previamente provisionados podem criar identidade.
     if (mode === "signup") {
+      const { data: provisioned, error: provisionError } = await admin
+        .from("profiles")
+        .select("user_id, email, is_blocked")
+        .eq("ra", ra)
+        .maybeSingle();
+
+      if (provisionError) {
+        console.error("ra-auth signup provision check:", provisionError.message);
+        return json({ error: "Não foi possível validar o RA agora." }, 503, corsHeaders);
+      }
+      if (!provisioned || provisioned.is_blocked) {
+        await recordLoginAttempt(admin, ra, ip, false);
+        return json({ error: "RA não autorizado para cadastro." }, 403, corsHeaders);
+      }
+      if (provisioned.user_id) {
+        const { data: existingAuth } = await admin.auth.admin.getUserById(provisioned.user_id);
+        if (existingAuth?.user) {
+          return json({ error: "Este RA já está cadastrado. Faça login.", code: "already_registered" }, 409, corsHeaders);
+        }
+      }
+
       const raEmail = `${ra.toLowerCase()}@ra.unip.local`;
       const { error: createErr } = await admin.auth.admin.createUser({
         email: raEmail,
