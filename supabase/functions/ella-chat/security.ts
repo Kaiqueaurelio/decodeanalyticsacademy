@@ -73,6 +73,107 @@ export function authorizeTool(name: string, ctx: AuthzCtx): AuthzDecision {
   return { allowed: true };
 }
 
+/** Ferramentas com efeito relevante: nunca são executadas apenas por decisão do modelo. */
+export const HIGH_IMPACT_TOOLS = new Set<string>([
+  ...ADMIN_TOOLS,
+]);
+
+export function isHighImpactTool(name: string): boolean {
+  return typeof name === "string" && HIGH_IMPACT_TOOLS.has(name);
+}
+
+function base64Url(bytes: Uint8Array): string {
+  let binary = "";
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary).replace(/\\+/g, "-").replace(/\\//g, "_").replace(/=+$/g, "");
+}
+
+function fromBase64Url(value: string): Uint8Array {
+  const padded = value.replace(/-/g, "+").replace(/_/g, "/") + "=".repeat((4 - (value.length % 4)) % 4);
+  const binary = atob(padded);
+  return Uint8Array.from(binary, (char) => char.charCodeAt(0));
+}
+
+async function sha256Hex(value: string): Promise<string> {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+function confirmationSecret(): string {
+  const secret = Deno.env.get("ELLA_CONFIRMATION_SECRET") || Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!secret) throw new Error("ELLA_CONFIRMATION_SECRET não configurado.");
+  return secret;
+}
+
+async function signConfirmation(payload: string): Promise<string> {
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(confirmationSecret()),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  return base64Url(new Uint8Array(await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(payload))));
+}
+
+export type ConfirmationPayload = {
+  v: 1;
+  uid: string;
+  tool: string;
+  argsHash: string;
+  exp: number;
+  nonce: string;
+};
+
+/** Cria um token que o cliente recebe, mas o modelo nunca recebe. */
+export async function createConfirmationToken(userId: string, tool: string, args: unknown, ttlSeconds = 120): Promise<string> {
+  const payload: ConfirmationPayload = {
+    v: 1,
+    uid: userId,
+    tool,
+    argsHash: await sha256Hex(JSON.stringify(args ?? {})),
+    exp: Math.floor(Date.now() / 1000) + Math.min(Math.max(ttlSeconds, 30), 300),
+    nonce: crypto.randomUUID(),
+  };
+  const encoded = base64Url(new TextEncoder().encode(JSON.stringify(payload)));
+  const signature = await signConfirmation(encoded);
+  return encoded + "." + signature;
+}
+
+/** Valida assinatura, usuário, ferramenta, argumentos exatos e expiração. */
+export async function verifyConfirmationToken(
+  token: unknown,
+  userId: string,
+  tool: string,
+  args: unknown,
+): Promise<{ valid: boolean; reason?: string }> {
+  if (typeof token !== "string" || token.length > 4096) return { valid: false, reason: "Token de confirmação ausente ou inválido." };
+  const [encoded, signature] = token.split(".");
+  if (!encoded || !signature) return { valid: false, reason: "Token de confirmação inválido." };
+  try {
+    const expected = await signConfirmation(encoded);
+    if (expected.length !== signature.length) return { valid: false, reason: "Assinatura de confirmação inválida." };
+    const a = new TextEncoder().encode(expected);
+    const b = new TextEncoder().encode(signature);
+    let diff = 0;
+    for (let i = 0; i < a.length; i++) diff |= a[i] ^ b[i];
+    if (diff !== 0) return { valid: false, reason: "Assinatura de confirmação inválida." };
+
+    const payload = JSON.parse(new TextDecoder().decode(fromBase64Url(encoded))) as ConfirmationPayload;
+    if (payload.v !== 1 || payload.uid !== userId || payload.tool !== tool) {
+      return { valid: false, reason: "Token não corresponde ao usuário ou à ação." };
+    }
+    if (!Number.isFinite(payload.exp) || payload.exp < Math.floor(Date.now() / 1000)) {
+      return { valid: false, reason: "Token de confirmação expirado." };
+    }
+    const argsHash = await sha256Hex(JSON.stringify(args ?? {}));
+    if (argsHash !== payload.argsHash) return { valid: false, reason: "Os parâmetros da ação foram alterados após a confirmação." };
+    return { valid: true };
+  } catch {
+    return { valid: false, reason: "Token de confirmação inválido." };
+  }
+}
+
 /** Parâmetros nunca são gravados em bruto: strings longas são cortadas. */
 export function sanitizeParams(args: any) {
   try {
@@ -335,6 +436,8 @@ export function classifyDenial(name: unknown, ctx: AuthzCtx, reason?: string): S
   } else if (known && typeof name === "string" && ENEM_BLOCKED_TOOLS.has(name) && ctx.contentScope !== "full") {
     kind = "scope_violation";
     severity = "medium";
+  } else if (!known) {
+    severity = "warn";
   }
 
   return {
