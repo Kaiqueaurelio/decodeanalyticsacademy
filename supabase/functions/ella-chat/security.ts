@@ -174,6 +174,69 @@ export async function verifyConfirmationToken(
   }
 }
 
+/**
+ * Conteúdo externo nunca deve ser promovido a instrução. Delimitamos o dado
+ * para reduzir confusão de contexto e deixar explícito para o modelo que ele
+ * pode conter texto adversarial.
+ */
+export function wrapUntrustedContent(label: string, content: unknown, maxChars = 6000): string {
+  const safeLabel = String(label).replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 80);
+  const value = String(content ?? "").slice(0, maxChars);
+  return `<UNTRUSTED_DATA source="${safeLabel}">\n${value}\n</UNTRUSTED_DATA>`;
+}
+
+/** Sinal de telemetria para tentativas comuns de prompt injection. Não autoriza nem bloqueia sozinho. */
+export function detectPromptInjection(value: unknown): boolean {
+  const text = String(value ?? "")
+    .normalize("NFKC")
+    .replace(/[\\u200B-\\u200F\\u202A-\\u202E\\u2060\\u2066-\\u2069]/g, "")
+    .toLowerCase();
+  if (!text) return false;
+  const patterns = [
+    /ignore (all|any|the|previous|prior) instructions?/i,
+    /ignore .*instructions?/i,
+    /disregard .*instructions?/i,
+    /system prompt|developer message|hidden prompt|reveal.*prompt/i,
+    /pretend (to be|you are)|act as .*system|jailbreak/i,
+    /call (the )?tool|use (the )?function|execute .*tool/i,
+    /reveal (the )?(api|service|secret|token|key|password)/i,
+    /bypass (security|authorization|permission|confirmation)/i,
+  ];
+  return patterns.some((pattern) => pattern.test(text));
+}
+
+/** Validação básica contra SSRF e URLs controladas por conteúdo não confiável. */
+export function validateExternalHttpsUrl(value: unknown): { valid: boolean; url?: string; reason?: string } {
+  if (typeof value !== "string" || value.length > 2048) {
+    return { valid: false, reason: "URL inválida ou longa demais." };
+  }
+  try {
+    const url = new URL(value);
+    const host = url.hostname.toLowerCase();
+    if (url.protocol !== "https:" || url.username || url.password) {
+      return { valid: false, reason: "Somente HTTPS sem credenciais é permitido." };
+    }
+    if (
+      host === "localhost" ||
+      host === "localhost.localdomain" ||
+      host === "metadata.google.internal" ||
+      host === "metadata.google" ||
+      host === "0.0.0.0" ||
+      host === "::1" ||
+      /^127\\./.test(host) ||
+      /^10\\./.test(host) ||
+      /^192\\.168\\./.test(host) ||
+      /^169\\.254\\./.test(host) ||
+      /^(172\\.1[6-9]|172\\.2[0-9]|172\\.3[0-1])\\./.test(host)
+    ) {
+      return { valid: false, reason: "Destino privado ou de metadata bloqueado." };
+    }
+    return { valid: true, url: url.toString() };
+  } catch {
+    return { valid: false, reason: "URL inválida." };
+  }
+}
+
 /** Parâmetros nunca são gravados em bruto: strings longas são cortadas. */
 export function sanitizeParams(args: any) {
   try {
