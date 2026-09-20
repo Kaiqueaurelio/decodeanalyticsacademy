@@ -16,7 +16,9 @@ interface ValidateResult {
 }
 
 function pick(block: string, tag: string): string {
-  const m = block.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)</${tag}>`, 'i'));
+  const safeTag = tag.replace(/[^A-Za-z0-9:_-]/g, '').slice(0, 64);
+  if (!safeTag) return '';
+  const m = block.match(new RegExp(`<${safeTag}[^>]*>([\\s\\S]*?)</${safeTag}>`, 'i'));
   return m ? m[1].trim() : '';
 }
 
