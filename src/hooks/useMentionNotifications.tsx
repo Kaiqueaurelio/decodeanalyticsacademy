@@ -1,3 +1,5 @@
+const secureRandom = () => { const values = new Uint32Array(1); crypto.getRandomValues(values); return values[0] / 0x100000000; };
+
 import { useEffect, useState, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -50,7 +52,7 @@ export function useMentionNotifications() {
   useEffect(() => {
     if (!user) return;
     const channel = supabase
-      .channel(`mentions:${user.id}:${Math.random().toString(36).slice(2)}`)
+      .channel(`mentions:${user.id}:${secureRandom().toString(36).slice(2)}`)
       .on(
         'postgres_changes',
         {
