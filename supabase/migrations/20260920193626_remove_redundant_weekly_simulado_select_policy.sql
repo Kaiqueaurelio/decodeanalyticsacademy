@@ -1,0 +1,1 @@
+drop policy if exists "Admins view all simulados" on public.weekly_simulados;
