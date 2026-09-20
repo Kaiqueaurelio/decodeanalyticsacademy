@@ -158,6 +158,8 @@ function extractAfter(value: string, words: string[]) {
   if (safeWords.length === 0) return '';
   const escaped = safeWords.map((word) => word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
   if (escaped.length > 512) return '';
+  const match = value.match(new RegExp(`(?:${escaped})\\s*(?:e|eh|:|-)?\\s*[\"']?([^\"'\\n]{4,220})`, 'i'));
+  return match?.[1]?.trim().replace(/[.!?]+$/, '') || '';
 }
 
 function parseDateText(value: string) {
