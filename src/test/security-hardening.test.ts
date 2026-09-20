@@ -221,4 +221,28 @@ describe('security hardening regression guards', () => {
     expect(auditComponent).toContain('supabase.rpc');
     expect(auditComponent).toMatch(/supabase\.rpc[\s\S]{0,40}['"]log_admin_audit['"]/);
   });
+  it('never authorizes an admin route from mutable local role cache', () => {
+    const auth = source('src/hooks/useAuth.tsx');
+    expect(auth).toContain('Nunca usamos o cache local como autorização');
+    expect(auth).toContain('setIsAdmin(false);');
+    expect(auth).toContain('setRoleChecked(false);');
+    expect(auth).toContain('void checkRoles(nextUser.id);');
+  });
+
+  it('does not bypass RA rate limiting or email confirmation through a 401 fallback', () => {
+    const login = source('src/pages/LoginPage.tsx');
+    expect(login).toContain('authResult.status === 503');
+    expect(login).toContain('authResult.status === 408');
+    expect(login).toContain('authResult.status === 0');
+    expect(login).not.toContain('authResult.status === 401');
+    expect(login).toContain("code === 'email_not_confirmed'");
+  });
+
+  it('fails closed when admin user creation cannot persist profile or role', () => {
+    const edge = source('supabase/functions/admin-create-user/index.ts');
+    expect(edge).toContain('cleanup after profile failure failed');
+    expect(edge).toContain('cleanup after role failure failed');
+    expect(edge).toContain("return json({ error: 'Não foi possível concluir o cadastro do usuário.' }, 500);");
+  });
+
 });
