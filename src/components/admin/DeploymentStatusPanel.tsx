@@ -24,6 +24,12 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+const secureRandom = () => {
+  const values = new Uint32Array(1);
+  crypto.getRandomValues(values);
+  return values[0] / 0x100000000;
+};
+
 interface Metric {
   label: string;
   value: string | number;
