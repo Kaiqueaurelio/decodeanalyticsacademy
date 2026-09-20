@@ -311,29 +311,8 @@ Deno.serve(async (req) => {
 
     await recordLoginAttempt(admin, ra, ip, true);
 
-    // AUTO-PROMOÇÃO ADMIN: Se for o usuário principal, garante acesso total
-    if (resolvedEmail?.toLowerCase() === 'decoanalytics@outlook.com.br') {
-      try {
-        const userId = data.user.id;
-        
-        // 1. Garante Role Admin
-        await admin.from('user_roles').upsert({ 
-          user_id: userId, 
-          role: 'admin' 
-        }, { onConflict: 'user_id,role' });
-
-        // 2. Garante Account Type Admin
-        await admin.from('profiles').upsert({
-          user_id: userId,
-          email: resolvedEmail,
-          account_type: 'admin'
-        }, { onConflict: 'user_id' });
-        
-        console.log(`[ra-auth] Admin auto-promoted: ${resolvedEmail}`);
-      } catch (adminErr) {
-        console.error("[ra-auth] Failed to auto-promote admin:", adminErr);
-      }
-    }
+    // A autorização administrativa é definida exclusivamente por user_roles.
+    // Não existe autoelevação baseada em e-mail/identificador de login.
 
     return json({
       session: {
