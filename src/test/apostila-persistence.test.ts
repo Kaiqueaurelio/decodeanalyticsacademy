@@ -1,15 +1,24 @@
 import { describe, expect, it, vi } from 'vitest';
 
-const { rpcMock } = vi.hoisted(() => ({ rpcMock: vi.fn() }));
+const { rpcMock, fromMock, maybeSingleMock } = vi.hoisted(() => ({
+  rpcMock: vi.fn(),
+  fromMock: vi.fn(),
+  maybeSingleMock: vi.fn(),
+}));
 
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
     rpc: rpcMock,
+    from: fromMock,
   },
 }));
 
 describe('revision-safe apostila persistence', () => {
   const pageDraft = { pageId: 'p1', apostilaId: 'a1', expectedRevision: 2, title: 'Aula', content: 'Texto completo', savedDate: '2026-09-10' };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
 
   it.each([null, [], [{ id: 'p1' }], [{ id: 'p1', apostila_id: 'a1', title: 'Aula', content: 'Texto parcial' }]])('rejeita confirmação incompleta: %j', async (data) => {
     rpcMock.mockResolvedValueOnce({ data, error: null });
@@ -29,6 +38,28 @@ describe('revision-safe apostila persistence', () => {
     rpcMock.mockResolvedValueOnce({ data: null, error: { code: '40001' } });
     const { saveApostilaPageWithRevision } = await import('@/lib/apostila-persistence');
     expect((await saveApostilaPageWithRevision(pageDraft)).error).toEqual({ code: '40001' });
+  });
+
+  it('confirma o conteúdo salvo após timeout, sem sobrescrever uma revisão nova', async () => {
+    const query: any = {
+      select: vi.fn(),
+      eq: vi.fn(),
+      maybeSingle: maybeSingleMock,
+    };
+    query.select.mockReturnValue(query);
+    query.eq.mockReturnValue(query);
+    fromMock.mockReturnValue(query);
+    rpcMock.mockResolvedValueOnce({ data: null, error: { message: 'upstream request timeout' } });
+    maybeSingleMock.mockResolvedValueOnce({
+      data: { id: 'p1', apostila_id: 'a1', title: 'Aula', content: 'Texto completo' },
+      error: null,
+    });
+
+    const { saveApostilaPageWithRevision } = await import('@/lib/apostila-persistence');
+    const result = await saveApostilaPageWithRevision(pageDraft);
+
+    expect(result.error).toBeNull();
+    expect(rpcMock).toHaveBeenCalledTimes(1);
   });
   it('calls the main apostila persistence RPC with the expected revision', async () => {
     rpcMock.mockResolvedValueOnce({ data: { id: 'book-1', content_revision: 8 }, error: null });
