@@ -206,10 +206,14 @@ const AUDIO_PLAYER_TAG_RE = /<audio-player\b([^>]*)\/?\s*>/i;
 type ParsedAudioPlayer = { label: string; url: string };
 
 function readTagAttribute(attrs: string, name: string): string {
-  const safeName = name.replace(/[^A-Za-z0-9_-]/g, '').slice(0, 64);
-  if (!safeName) return '';
-  const match = attrs.match(new RegExp(`${safeName}\\s*=\\s*(?:"([^"]*)"|'([^']*)')`, 'i'));
-  return (match?.[1] ?? match?.[2] ?? '').trim();
+  const wanted = name.trim().toLowerCase();
+  if (!wanted || wanted.length > 64) return '';
+  const attributeRe = /([A-Za-z0-9_-]+)\s*=\s*(?:"([^"]*)"|'([^']*)')/gi;
+  let match: RegExpExecArray | null;
+  while ((match = attributeRe.exec(attrs)) !== null) {
+    if (match[1].toLowerCase() === wanted) return (match[2] ?? match[3] ?? '').trim();
+  }
+  return '';
 }
 
 function parseAudioPlayerTag(input: string): ParsedAudioPlayer | null {
