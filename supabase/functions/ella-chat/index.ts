@@ -1312,7 +1312,7 @@ Proibido: mencionar "IA", "modelo de linguagem", "Lovable", "Gemini" ou qualquer
           throw e;
         }
       }
-      return new Response(JSON.stringify({ reply: "Limite de passos atingido. Tente reformular.", actions: executedTools }),
+      return new Response(JSON.stringify({ reply: "Limite de passos atingido. Tente reformular.", actions: executedTools }), {
         headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
