@@ -119,8 +119,14 @@ const SUGGESTIONS = [
   'Abra a pagina de desempenho',
 ];
 
+function secureRandomString(length = 16) {
+  const bytes = new Uint8Array(length);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
 function uid() {
-  return Math.random().toString(36).slice(2) + Date.now().toString(36);
+  return secureRandomString(16) + Date.now().toString(36);
 }
 
 function normalizeText(value: string) {
