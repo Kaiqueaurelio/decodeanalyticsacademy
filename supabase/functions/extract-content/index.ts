@@ -542,10 +542,10 @@ Retorne APENAS chamando a funcao return_apostila.`;
     }), { headers: { ...getCorsHeaders(req), "Content-Type": "application/json", "X-AI-Provider": providerUsed } });
 
   } catch (error) {
-    console.error("Error:", error);
-    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : "Erro desconhecido" }), {
+    console.error("extract-content failed", error);
+    return new Response(JSON.stringify({ error: "Não foi possível extrair o conteúdo informado." }), {
       status: 500,
-      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json", "Cache-Control": "no-store" },
     });
   }
 });
