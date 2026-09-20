@@ -245,4 +245,17 @@ describe('security hardening regression guards', () => {
     expect(edge).toContain("return json({ error: 'Não foi possível concluir o cadastro do usuário.' }, 500);");
   });
 
+  it('keeps gamification mutations behind server-side RPCs', () => {
+    const hook = source('src/hooks/useGamification.tsx');
+    const migration = source('supabase/migrations/20260920017000_harden_gamification_mutations.sql');
+    expect(hook).toContain("supabase.rpc('record_study_streak'");
+    expect(hook).toContain("supabase.rpc('award_badge'");
+    expect(hook).not.toContain("from('study_streaks').upsert");
+    expect(hook).not.toContain("from('user_badges').insert");
+    expect(migration).toContain('revoke insert, update, delete on table public.user_xp from authenticated;');
+    expect(migration).toContain('revoke insert, update, delete on table public.user_badges from authenticated;');
+    expect(migration).toContain('revoke insert, update, delete on table public.study_streaks from authenticated;');
+    expect(migration).toContain("America/Sao_Paulo");
+  });
+
 });
