@@ -245,6 +245,26 @@ describe('security hardening regression guards', () => {
     expect(edge).toContain("return json({ error: 'Não foi possível concluir o cadastro do usuário.' }, 500);");
   });
 
+  it('keeps weekly simulado grading and lifecycle server-side', () => {
+    const page = source('src/pages/SimuladoPage.tsx');
+    const generation = source('supabase/functions/generate-weekly-simulado/index.ts');
+    const lifecycle = source('supabase/migrations/20260920030000_harden_weekly_simulado_lifecycle.sql');
+    const reveal = source('supabase/migrations/20260920031000_harden_weekly_simulado_reveal.sql');
+    const answer = source('supabase/migrations/20260920032000_harden_weekly_simulado_answer_rpc.sql');
+
+    expect(page).toContain("supabase.functions.invoke('generate-weekly-simulado'");
+    expect(page).toContain("supabase.rpc('finish_weekly_simulado'");
+    expect(page).not.toContain(".from('weekly_simulado_answers' as any)\n        .insert");
+    expect(page).not.toContain(".from('weekly_simulados').update");
+    expect(generation).toContain('const restart = body?.restart === true;');
+    expect(generation).toContain('weeklyExisting.status === "finished"');
+    expect(lifecycle).toContain('REVOKE INSERT, UPDATE, DELETE ON public.weekly_simulado_answers FROM authenticated;');
+    expect(lifecycle).toContain('CREATE OR REPLACE FUNCTION public.finish_weekly_simulado');
+    expect(reveal).toContain('CREATE OR REPLACE FUNCTION public.get_simulado_answer_reveals');
+    expect(answer).toContain("IF v_status <> 'in_progress' THEN");
+    expect(answer).toContain("REVOKE ALL ON FUNCTION public.answer_simulado_question(uuid, text) FROM PUBLIC, anon;");
+  });
+
   it('keeps gamification mutations behind server-side RPCs', () => {
     const hook = source('src/hooks/useGamification.tsx');
     const migration = source('supabase/migrations/20260920017000_harden_gamification_mutations.sql');
