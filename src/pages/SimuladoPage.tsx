@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { generateSimulado } from '@/lib/adaptive-simulado';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -72,12 +71,10 @@ export default function SimuladoPage() {
       .eq('simulado_id', sim.id)
       .order('question_index', { ascending: true });
 
-    const { data: revealed } = await supabase
-      .from('weekly_simulado_answers')
-      .select('id, correct_answer, explanation')
-      .eq('simulado_id', sim.id)
-      .not('selected_answer', 'is', null);
-    
+    const { data: revealed } = await supabase.rpc('get_simulado_answer_reveals' as never, {
+      _simulado_id: sim.id,
+    } as never);
+
     const revealMap = new Map((revealed ?? []).map((r: any) => [r.id, r]));
 
     const list = (ans ?? []).map((a: any) => ({
@@ -101,41 +98,10 @@ export default function SimuladoPage() {
     if (!user) return;
     setGenerating(true);
     try {
-      const questionsData = await generateSimulado(user.id, { limit: 20 });
-      
-      const { data: newSim, error: simErr } = await supabase
-        .from('weekly_simulados' as any)
-        .insert([{
-          user_id: user.id,
-          status: 'in_progress',
-          total_questions: questionsData.length,
-          correct_count: 0,
-          score: 0,
-          week_start: new Date().toISOString()
-        }])
-        .select()
-        .single();
-
-      if (simErr) throw simErr;
-      const newSimData = newSim as any;
-
-      const answerRows = questionsData.map((q, idx) => ({
-        simulado_id: newSimData.id,
-        user_id: user.id,
-        question_index: idx,
-        question: q.question,
-        options: q.options,
-        correct_answer: q.correct_answer,
-        explanation: q.explanation || '',
-        subject: q.apostilas.category || 'Geral'
-      }));
-
-      const { error: ansErr } = await supabase
-        .from('weekly_simulado_answers' as any)
-        .insert(answerRows);
-
-      if (ansErr) throw ansErr;
-
+      const { error } = await supabase.functions.invoke('generate-weekly-simulado', {
+        body: { restart: true },
+      });
+      if (error) throw error;
       toast.success('Simulado pronto! Boa sorte.');
       await loadLatest();
     } catch (e: any) {
@@ -177,30 +143,16 @@ export default function SimuladoPage() {
       setShowFeedback(false);
       return;
     }
-    // Finaliza
+    // Finaliza no servidor: o gabarito e o diagnóstico nunca são confiados ao cliente.
     if (!simulado) return;
-    const correct = questions.filter((q) => q.is_correct).length;
-    const score = Math.round((correct / questions.length) * 10000) / 100;
-
-    // diagnóstico por disciplina
-    const diag: Record<string, { total: number; correct: number; accuracy: number }> = {};
-    for (const q of questions) {
-      const s = q.subject || 'Geral';
-      if (!diag[s]) diag[s] = { total: 0, correct: 0, accuracy: 0 };
-      diag[s].total += 1;
-      if (q.is_correct) diag[s].correct += 1;
+    const { error } = await supabase.rpc('finish_weekly_simulado' as never, {
+      _simulado_id: simulado.id,
+    } as never);
+    if (error) {
+      toast.error(error.message || 'Não foi possível finalizar o simulado');
+      return;
     }
-    Object.keys(diag).forEach((k) => {
-      diag[k].accuracy = Math.round((diag[k].correct / diag[k].total) * 10000) / 100;
-    });
 
-    await supabase.from('weekly_simulados').update({
-      status: 'finished',
-      correct_count: correct,
-      score,
-      diagnosis: diag,
-      finished_at: new Date().toISOString(),
-    }).eq('id', simulado.id);
     toast.success('Simulado concluído!');
     await loadLatest();
   };
