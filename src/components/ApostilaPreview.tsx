@@ -1,7 +1,5 @@
 interface ApostilaPreviewProps {
   content: string;
-  apostilaTitle: string;
-  apostilaId: string;
   isLoggedIn: boolean;
 }
 
