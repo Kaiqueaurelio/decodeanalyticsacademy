@@ -384,11 +384,6 @@ export default function ApostilaPage({ tab, setTab }: Props) {
     .filter(Boolean)
     .join('\n\n'), [contentBlocks]);
 
-  const organizedContentBlocks = useMemo(() => contentBlocks.map((block) => ({
-    ...block,
-    sections: organizeApostilaSections(parseContent(block.content || null)),
-  })), [contentBlocks]);
-
   const sections = useMemo(() => parseContent(combinedContent || null), [combinedContent]);
 
   /**
@@ -420,48 +415,6 @@ export default function ApostilaPage({ tab, setTab }: Props) {
     [tocItems]
   );
 
-  const renderContentSection = (section: ReturnType<typeof organizeApostilaSections>[number], idx: number, pageId: string) => {
-    if (section.isPlaceholder) return null;
-
-    const sectionNumber = tocNumberById[section.id] || String(idx + 1);
-    const wordCount = (section.content || '').trim().split(/\s+/).filter(Boolean).length;
-    const readMin = Math.max(1, Math.round(wordCount / 200));
-
-    return (
-      <section
-        key={`${pageId}-${section.id}-${idx}`}
-        id={section.id}
-        data-section-id={section.id}
-        className="scroll-mt-24 animate-content-show"
-        style={{ animationDelay: `${300 + idx * 80}ms` }}
-      >
-        {section.level === 1 && (
-          <header className={section.isGroupOnly ? 'mb-4' : 'mb-5'}>
-            <div className="font-mono-label text-[10px] uppercase tracking-[0.22em] text-primary/80 mb-1.5">
-              Seção {sectionNumber}{section.hasContent && wordCount > 50 && <span className="text-muted-foreground/70"> · {readMin} min de leitura</span>}
-            </div>
-            <h2 className="font-display text-[22px] sm:text-[26px] leading-[1.25] tracking-tight text-foreground mb-2.5">
-              {section.displayTitle}
-            </h2>
-            <div className={`h-[2px] rounded-full ${section.isGroupOnly ? 'w-16 bg-border/70' : 'w-10 bg-primary/80'}`} />
-          </header>
-        )}
-        {section.level === 2 && (
-          <h3 className={`font-display text-[17px] sm:text-[18px] font-semibold mt-1 ${section.isGroupOnly ? 'mb-2 text-foreground/90' : 'mb-3 text-foreground border-b border-border/40 pb-1.5'}`}>
-            {section.displayTitle}
-          </h3>
-        )}
-        {section.level === 3 && (
-          <h4 className={`font-display text-[15px] font-semibold mt-1 ${section.isGroupOnly ? 'mb-1.5 text-foreground/80' : 'mb-2 text-primary/90'}`}>
-            {section.displayTitle}
-          </h4>
-        )}
-        {section.hasContent && (
-          <ApostilaContentBoundary content={section.content} />
-        )}
-      </section>
-    );
-  };
 
   const handleExportPdf = useCallback(async () => {
     if (!apostila) return;
@@ -1045,13 +998,13 @@ export default function ApostilaPage({ tab, setTab }: Props) {
                   ) : null
                 )}
 
-                {user && organizedContentBlocks.length > 0 && (
+                {user && contentBlocks.length > 0 && (
                   <div
                     id="apostila-fluxo-continuo"
                     data-apostila-continuous-flow="true"
                     className="apostila-continuous-flow space-y-12"
                   >
-                    {organizedContentBlocks.map((block, blockIndex) => (
+                    {contentBlocks.map((block, blockIndex) => (
                       <section
                         key={block.id}
                         id={`apostila-page-${block.id}`}
@@ -1069,9 +1022,7 @@ export default function ApostilaPage({ tab, setTab }: Props) {
                             {block.title}
                           </h2>
                         </header>
-                        <div className="space-y-10">
-                          {block.sections.map((section, idx) => renderContentSection(section, idx, block.id))}
-                        </div>
+                        <ApostilaContentBoundary content={block.content} />
                       </section>
                     ))}
                   </div>
