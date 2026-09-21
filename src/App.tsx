@@ -104,8 +104,7 @@ const AppContent = () => {
       {!splashDone && <SplashScreen onComplete={handleSplashComplete} />}
       
       <div className="opacity-100" aria-hidden={false}>
-        {
-          <>
+        <>
             <AdPopup />
             <AdDraftPreviewOverlay />
             <EllaSidebar />
@@ -183,7 +182,7 @@ const AppContent = () => {
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </Suspense>
-          </>
+        </>
       </div>
     </>
   );
