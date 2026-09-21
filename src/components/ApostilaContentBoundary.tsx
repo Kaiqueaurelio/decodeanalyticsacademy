@@ -3,9 +3,14 @@ import { AlertTriangle } from 'lucide-react';
 
 // Lazy import — se o chunk falhar, o ErrorBoundary captura
 const LazyRenderer = lazy(() =>
-  import('@/components/ApostilaContentRenderer').then((m) => ({
-    default: m.ApostilaContentRenderer,
-  }))
+  import('@/components/ApostilaContentRenderer')
+    .then((m) => ({
+      default: m.ApostilaContentRenderer,
+    }))
+    .catch((error) => {
+      console.error('[ApostilaContentBoundary] Falha ao carregar o renderer da apostila.', error);
+      throw error;
+    })
 );
 
 interface Props {
@@ -26,6 +31,8 @@ function SimpleFallback({ content }: { content: string }) {
     .split(/\n{2,}/)
     .map((p) => p.trim())
     .filter(Boolean);
+  const tableCellCount = (content.match(/<(?:td|th)\b/gi) || []).length;
+  const hasTableMarkup = /<(?:table|thead|tbody|tr|th|td)\b/i.test(content);
 
   return (
     <article className="apostila-prose max-w-[68ch] mx-auto w-full min-w-0 px-1 sm:px-0 text-[15.5px] sm:text-[16px] leading-[1.7] text-foreground/95">
@@ -36,6 +43,17 @@ function SimpleFallback({ content }: { content: string }) {
           mas o conteúdo está disponível abaixo.
         </span>
       </div>
+      {hasTableMarkup && (
+        <div
+          className="mb-6 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-foreground/80"
+          role="status"
+          data-apostila-table-fallback="true"
+        >
+          A apostila contém uma tabela ({tableCellCount} célula{tableCellCount === 1 ? '' : 's'}),
+          mas o renderizador de tabelas não foi carregado. O conteúdo textual foi preservado
+          para diagnóstico.
+        </div>
+      )}
       {paragraphs.map((p, i) => (
         <p key={i} className="mb-6 last:mb-0 text-foreground/85 whitespace-pre-wrap">
           {p}
@@ -53,7 +71,13 @@ class ApostilaErrorBoundary extends Component<Props & { children: ReactNode }, S
   }
 
   componentDidCatch(error: Error) {
-    console.error('[ApostilaContentBoundary] render failed:', error);
+    const tableCellCount = (this.props.content.match(/<(?:td|th)\b/gi) || []).length;
+    console.error('[ApostilaContentBoundary] render failed:', {
+      error,
+      contentLength: this.props.content.length,
+      tableCellCount,
+      hasTableMarkup: /<(?:table|thead|tbody|tr|th|td)\b/i.test(this.props.content),
+    });
   }
 
   render() {
