@@ -65,17 +65,17 @@ describe('ApostilaContentRenderer', () => {
   it.each([
     {
       apostila: 'Fundamentos de Processamento de Imagens Digitais',
-      content: '# Fundamentos de Processamento de Imagens Digitais\\n\\n## 12.3 Comparação direta\\n\\n<table><tbody><tr><th>Conceito</th><th>O que determina</th></tr><tr><td>Amostragem</td><td>Quantidade e posição dos pontos coletados</td></tr></tbody></table>',
+      content: '# Fundamentos de Processamento de Imagens Digitais\n\n## 12.3 Comparação direta\n\n<table><tbody><tr><th>Conceito</th><th>O que determina</th></tr><tr><td>Amostragem</td><td>Quantidade e posição dos pontos coletados</td></tr></tbody></table>',
       cells: ['Conceito', 'O que determina', 'Amostragem', 'Quantidade e posição dos pontos coletados'],
     },
     {
       apostila: 'NP2 Teoria dos Grafos: Conceitos, Representações e Algoritmos Clássicos',
-      content: '# Teoria dos Grafos\\n\\n- Representações de grafos\\n\\n### 4.8 Matriz x lista de adjacência\\n\\n| Representação | Característica | Melhor uso |\\n| --- | --- | --- |\\n| Matriz de adjacência | Usa matriz n x n | Grafos densos |\\n| Lista de adjacência | Armazena apenas vizinhos | Grafos esparsos |',
-      cells: ['Representação', 'Característica', 'Melhor uso', 'Matriz de adjacência', 'Grafo densos'],
+      content: '# Teoria dos Grafos\n\n- Representações de grafos\n\n### 4.8 Matriz x lista de adjacência\n\n| Representação | Característica | Melhor uso |\n| --- | --- | --- |\n| Matriz de adjacência | Usa matriz n x n | Grafos densos |\n| Lista de adjacência | Armazena apenas vizinhos | Grafos esparsos |',
+      cells: ['Representação', 'Característica', 'Melhor uso', 'Matriz de adjacência', 'Grafos densos'],
     },
     {
       apostila: 'Sistemas Operacionais: Da Estrutura ao Monitoramento de Performance',
-      content: '# Sistemas Operacionais\\n\\n- Linha de comando\\n\\n### 2.4 Comparação entre CLI e GUI\\n\\n| Critério | CLI | GUI |\\n| --- | --- | --- |\\n| Forma de uso | Comandos digitados | Elementos visuais |\\n| Automação | Excelente | Limitada |',
+      content: '# Sistemas Operacionais\n\n- Linha de comando\n\n### 2.4 Comparação entre CLI e GUI\n\n| Critério | CLI | GUI |\n| --- | --- | --- |\n| Forma de uso | Comandos digitados | Elementos visuais |\n| Automação | Excelente | Limitada |',
       cells: ['Critério', 'CLI', 'GUI', 'Forma de uso', 'Comandos digitados', 'Automação', 'Excelente', 'Limitada'],
     },
   ])('regressão: renderiza tabela de apostila real clonada por link — %s', ({ content, cells }) => {
@@ -120,7 +120,7 @@ describe('ApostilaContentRenderer', () => {
 
   it('normaliza marcadores de lista numerada escapados vindos do conteúdo legado', () => {
     const { container } = render(
-      <ApostilaContentRenderer content={'1\\. Android — Plataforma\n\\n- Tecnologia para dispositivos mobile'} />,
+      <ApostilaContentRenderer content={'1\\. Android — Plataforma\n\n- Tecnologia para dispositivos mobile'} />,
     );
 
     expect(container.textContent).toContain('Android — Plataforma');
