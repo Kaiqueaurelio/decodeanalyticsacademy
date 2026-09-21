@@ -438,7 +438,7 @@ function normalizeHtmlTableMarkup(fragment: string): string {
   if (/^<(?:thead|tbody)\b/i.test(trimmed)) return `<table>${trimmed}</table>`;
   if (/^<tr\b/i.test(trimmed)) return `<table><tbody>${trimmed}</tbody></table>`;
   if (/^<(?:th|td)\b/i.test(trimmed)) return `<table><tbody><tr>${trimmed}</tr></tbody></table>`;
-  return `<table><tbody><tr>${trimmed}</tbody></table>`;
+  return `<table><tbody><tr>${trimmed}</tr></tbody></table>`;
 }
 
 function countHtmlTableCells(markup: string): number {
