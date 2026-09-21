@@ -142,3 +142,14 @@ describe('topbar desktop com sidebar expandida', () => {
     expect(topbar).toContain('ml-auto flex shrink-0 items-center');
   });
 });
+
+
+describe('topbar intermediário com sidebar expandida', () => {
+  const topbar = read('src/components/dashboard/DashboardTopbar.tsx');
+
+  it('compacta a identidade do usuário antes da faixa larga', () => {
+    expect(topbar).toContain('flex shrink-0 items-center gap-1.5 sm:gap-2.5');
+    expect(topbar).toContain('hidden min-[1400px]:block leading-tight text-left');
+    expect(topbar).toContain('hidden min-[1400px]:block h-3.5 w-3.5');
+  });
+});
