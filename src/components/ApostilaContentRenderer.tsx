@@ -438,7 +438,15 @@ function normalizeHtmlTableMarkup(fragment: string): string {
   if (/^<(?:thead|tbody)\b/i.test(trimmed)) return `<table>${trimmed}</table>`;
   if (/^<tr\b/i.test(trimmed)) return `<table><tbody>${trimmed}</tbody></table>`;
   if (/^<(?:th|td)\b/i.test(trimmed)) return `<table><tbody><tr>${trimmed}</tr></tbody></table>`;
-  return `<table><tbody><tr>${trimmed}</tr></tbody></table>`;
+  return `<table><tbody><tr>${trimmed}</tbody></table>`;
+}
+
+function countHtmlTableCells(markup: string): number {
+  return (markup.match(/<(?:td|th)\b/gi) || []).length;
+}
+
+function hasHtmlTableMarkup(markup: string): boolean {
+  return /<(?:table|thead|tbody|tr|th|td)\b/i.test(markup);
 }
 
 function extractHtmlTableFragments(text: string, token: (index: number) => string, htmlTables: string[]): string {
@@ -1025,6 +1033,8 @@ function HtmlTableBlock({ html }: { html: string }) {
   return (
     <div
       className="my-10 overflow-x-auto rounded-2xl border border-border/40 bg-card/40 shadow-xl backdrop-blur-sm"
+      data-apostila-table-source="html"
+      data-apostila-table-cells={String(countHtmlTableCells(safeHtml))}
       dangerouslySetInnerHTML={{ __html: safeHtml }}
     />
   );
@@ -1032,7 +1042,11 @@ function HtmlTableBlock({ html }: { html: string }) {
 
 function TableBlock({ header, rows }: { header: string[]; rows: string[][] }) {
   return (
-    <div className="my-10 overflow-x-auto rounded-2xl border border-border/40 bg-card/40 shadow-xl backdrop-blur-sm">
+    <div
+      className="my-10 overflow-x-auto rounded-2xl border border-border/40 bg-card/40 shadow-xl backdrop-blur-sm"
+      data-apostila-table-source="markdown"
+      data-apostila-table-cells={String(header.length + rows.reduce((total, row) => total + row.length, 0))}
+    >
       <table className="w-full text-[15px] border-collapse">
 
         <thead>
@@ -1221,6 +1235,47 @@ export function ApostilaContentRenderer({ content, activeHeadingId }: Props) {
     () => blocks.findIndex((b) => b.type === 'paragraph' && b.content.trim().length > 80),
     [blocks]
   );
+
+  // Diagnóstico compartilhado do fluxo de renderização: as duas páginas de leitura
+  // passam por este renderer. Se o conteúdo clonado trouxer <td>/<th> e a tabela
+  // desaparecer, deixamos evidência objetiva no console em vez de falhar em silêncio.
+  useEffect(() => {
+    if (!hasHtmlTableMarkup(content)) return;
+
+    const sourceCellCount = countHtmlTableCells(content);
+    const htmlTableBlocks = blocks.filter((block) => block.type === 'html-table');
+    const markdownTableBlocks = blocks.filter((block) => block.type === 'table');
+    const parsedHtmlCellCount = htmlTableBlocks.reduce(
+      (total, block) => total + countHtmlTableCells(block.type === 'html-table' ? block.html : ''),
+      0,
+    );
+
+    if (htmlTableBlocks.length === 0 && markdownTableBlocks.length === 0) {
+      console.warn('[ApostilaContentRenderer] Conteúdo contém markup de tabela, mas nenhum bloco de tabela foi criado.', {
+        contentLength: content.length,
+        sourceCellCount,
+        preview: content.slice(0, 240),
+      });
+      return;
+    }
+
+    if (sourceCellCount > 0 && parsedHtmlCellCount === 0 && htmlTableBlocks.length > 0) {
+      console.warn('[ApostilaContentRenderer] Bloco de tabela criado sem células após a normalização.', {
+        contentLength: content.length,
+        sourceCellCount,
+        htmlTableBlocks: htmlTableBlocks.length,
+        parsedHtmlCellCount,
+      });
+      return;
+    }
+
+    console.debug('[ApostilaContentRenderer] Tabela detectada e preparada para renderização.', {
+      sourceCellCount,
+      parsedHtmlCellCount,
+      htmlTableBlocks: htmlTableBlocks.length,
+      markdownTableBlocks: markdownTableBlocks.length,
+    });
+  }, [content, blocks]);
 
   /**
    * Constrói o sumário a partir dos headings, atribuindo ids únicos
