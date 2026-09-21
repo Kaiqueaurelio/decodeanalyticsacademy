@@ -200,18 +200,18 @@ export function DashboardTopbar({ hideSearchOnMobile = false }: { hideSearchOnMo
 
           <button
             onClick={() => navigate('/profile')}
-            className="hidden sm:flex items-center gap-2.5 pl-1 pr-3 py-1 rounded-2xl bg-card/60 border border-border hover:border-primary/50 transition-all"
+            className="flex shrink-0 items-center gap-1.5 sm:gap-2.5 pl-1 pr-1.5 sm:pr-3 py-1 rounded-2xl bg-card/60 border border-border hover:border-primary/50 transition-all"
           >
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-primary-foreground font-bold text-xs">
               {initials}
             </div>
-            <div className="leading-tight text-left">
+            <div className="hidden min-[1400px]:block leading-tight text-left">
               <div className="text-xs font-bold truncate max-w-[120px]">
                 {profile?.full_name || 'Aluno'}
               </div>
               <div className={`text-[10px] ${isAdmin ? 'text-accent font-semibold' : 'text-muted-foreground'}`}>{roleLabel}</div>
             </div>
-            <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+            <ChevronDown className="hidden min-[1400px]:block h-3.5 w-3.5 text-muted-foreground" />
           </button>
           <Button
             variant="ghost"
