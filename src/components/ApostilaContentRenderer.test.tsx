@@ -62,6 +62,24 @@ describe('ApostilaContentRenderer', () => {
     expect(container.textContent).toContain('Material complementar.');
   });
 
+  it('registra diagnóstico quando markup de TD não forma um bloco de tabela', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+    render(
+      <ApostilaContentRenderer
+        content={'# Conteúdo clonado\n\nTexto antes.\n\n<td>célula órfã</td>\n\nTexto depois.'}
+      />,
+    );
+
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('markup de tabela'),
+      expect.objectContaining({
+        sourceCellCount: 1,
+      }),
+    );
+    warn.mockRestore();
+  });
+
   it('mostra um fallback legível quando uma tabela não possui células válidas', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     const { container } = render(<ApostilaContentRenderer content={'<table><tbody></tbody></table>'} />);
