@@ -20,18 +20,12 @@ export function ApostilaPreview({
   const navigate = useNavigate();
   const [showBlocker, setShowBlocker] = useState(!isLoggedIn);
 
-  // Preview em TEXTO PURO (sem HTML) — evita XSS em visitantes deslogados
-  // caso o conteúdo salvo contenha markup malicioso.
-  const textPreview = content
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .substring(0, 500);
-  const hasMoreContent = content.length > 500;
-
-  // Quando o aluno está logado, o conteúdo formatado é renderizado pelas
-  // seções abaixo (ApostilaContentBoundary). Esse preview só serve para o
-  // estado deslogado (paywall com blur).
+  // O conteúdo editorial deve aparecer completo. O limite anterior de 500
+  // caracteres fazia uma apostila recém-criada parecer truncada para visitantes,
+  // mesmo quando todo o conteúdo já estava salvo no Supabase.
+  //
+  // Usuários autenticados continuam recebendo a renderização editorial completa
+  // abaixo em ApostilaPage; este componente fica apenas como fallback público.
   if (isLoggedIn) {
     return null;
   }
