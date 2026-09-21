@@ -19,22 +19,46 @@ describe('ApostilaContentRenderer', () => {
   });
 
   it.each([
-    ['uma linha HTML clonada', '<tr><td>Processo</td><td>Em execução</td></tr>', 'Processo', 'Em execução'],
-    ['células HTML clonadas', '<th>Estado</th><td>Pronto</td>', 'Estado', 'Pronto'],
-    ['um tbody HTML clonado', '<tbody><tr><td>Memória</td><td>Alocada</td></tr></tbody>', 'Memória', 'Alocada'],
-  ])('reconstrói tabela a partir de %s', (_label, tableFragment, firstCell, secondCell) => {
+    {
+      label: 'HTML completo clonado',
+      table: '<table><thead><tr><th>Processo</th><th>Estado</th></tr></thead><tbody><tr><td>Chrome</td><td>Em execução</td></tr></tbody></table>',
+      cells: ['Processo', 'Estado', 'Chrome', 'Em execução'],
+    },
+    {
+      label: 'fragmento de linha clonado',
+      table: '<tr><td>Processo</td><td>Em execução</td></tr>',
+      cells: ['Processo', 'Em execução'],
+    },
+    {
+      label: 'fragmento de células clonado',
+      table: '<th>Estado</th><td>Pronto</td>',
+      cells: ['Estado', 'Pronto'],
+    },
+    {
+      label: 'fragmento tbody clonado',
+      table: '<tbody><tr><td>Memória</td><td>Alocada</td></tr></tbody>',
+      cells: ['Memória', 'Alocada'],
+    },
+    {
+      label: 'tabela Markdown clonado por conteúdo web',
+      table: '| Recurso | Estado |\n| --- | --- |\n| CPU | Ativa |',
+      cells: ['Recurso', 'Estado', 'CPU', 'Ativa'],
+    },
+  ])('renderiza completamente conteúdo clonado por link: %s', ({ table, cells }) => {
     const { container } = render(
       <ApostilaContentRenderer
-        content={`# Sistemas Operacionais\n\n- Escalonamento\n\n${tableFragment}\n\nMaterial complementar.`}
+        content={`# Sistemas Operacionais\n\n- Escalonamento\n\n${table}\n\nMaterial complementar.`}
       />,
     );
 
-    const table = container.querySelector('table');
     expect(container.querySelector('h1')?.textContent).toContain('Sistemas Operacionais');
     expect(container.querySelector('ul li')?.textContent).toContain('Escalonamento');
-    expect(table).not.toBeNull();
-    expect(table?.textContent).toContain(firstCell);
-    expect(table?.textContent).toContain(secondCell);
+    const tableElement = container.querySelector('table');
+    expect(tableElement).not.toBeNull();
+    for (const cell of cells) {
+      expect(tableElement?.textContent).toContain(cell);
+    }
+    expect(tableElement?.querySelectorAll('td, th').length).toBeGreaterThan(0);
     expect(container.textContent).toContain('Material complementar.');
   });
 
