@@ -1,5 +1,4 @@
 import { createRoot } from "react-dom/client";
-import App from "./App.tsx";
 import "./index.css";
 import "./styles/apostila-responsive.css";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -75,11 +74,83 @@ window.addEventListener("unhandledrejection", (event) => {
   );
 })();
 
-createRoot(document.getElementById("root")!).render(
-  <ErrorBoundary>
-    <App />
-  </ErrorBoundary>,
-);
+const rootElement = document.getElementById("root");
+
+if (!rootElement) {
+  throw new Error("Decode Analytics Academy: elemento #root não encontrado.");
+}
+
+const root = createRoot(rootElement);
+
+const renderBootError = (error: unknown) => {
+  const message = error instanceof Error ? error.message : String(error);
+  root.render(
+    <main style={{
+      minHeight: "100dvh",
+      display: "grid",
+      placeItems: "center",
+      padding: "24px",
+      background: "#050508",
+      color: "#f5f5f5",
+      fontFamily: "system-ui, sans-serif",
+      textAlign: "center",
+    }}>
+      <section style={{ maxWidth: "560px" }}>
+        <h1 style={{ fontSize: "24px", marginBottom: "12px" }}>Decode Analytics Academy</h1>
+        <p style={{ opacity: 0.75, lineHeight: 1.6 }}>
+          O aplicativo encontrou um erro ao iniciar. Recarregue a página para tentar novamente.
+        </p>
+        <button
+          type="button"
+          onClick={() => window.location.reload()}
+          style={{
+            marginTop: "20px",
+            border: 0,
+            borderRadius: "12px",
+            padding: "12px 20px",
+            background: "#e8ff47",
+            color: "#050508",
+            fontWeight: 700,
+            cursor: "pointer",
+          }}
+        >
+          Recarregar
+        </button>
+        <pre style={{
+          marginTop: "20px",
+          textAlign: "left",
+          whiteSpace: "pre-wrap",
+          fontSize: "12px",
+          opacity: 0.55,
+        }}>{message}</pre>
+      </section>
+    </main>,
+  );
+};
+
+let bootFinished = false;
+const bootTimeout = window.setTimeout(() => {
+  if (!bootFinished) {
+    renderBootError(new Error("Tempo limite de inicialização excedido."));
+  }
+}, 10000);
+
+import("./App.tsx")
+  .then(({ default: App }) => {
+    bootFinished = true;
+    window.clearTimeout(bootTimeout);
+    root.render(
+      <ErrorBoundary>
+        <App />
+      </ErrorBoundary>,
+    );
+  })
+  .catch((error) => {
+    bootFinished = true;
+    window.clearTimeout(bootTimeout);
+    console.error("Falha ao carregar o módulo principal:", error);
+    renderBootError(error);
+  });
 // Primeiro invalida artefatos de outra versão; depois registra o worker atual.
 // Essa ordem evita que um worker antigo reassuma o controle durante a limpeza.
 void checkAndCleanOldCaches().finally(() => registerServiceWorker());
