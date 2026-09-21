@@ -437,7 +437,21 @@ function normalizeHtmlTableMarkup(fragment: string): string {
   if (/^<table\b/i.test(trimmed)) return trimmed;
   if (/^<(?:thead|tbody)\b/i.test(trimmed)) return `<table>${trimmed}</table>`;
   if (/^<tr\b/i.test(trimmed)) return `<table><tbody>${trimmed}</tbody></table>`;
+  if (/^<(?:th|td)\b/i.test(trimmed)) return `<table><tbody><tr>${trimmed}</tr></tbody></table>`;
   return `<table><tbody><tr>${trimmed}</tr></tbody></table>`;
+}
+
+function extractHtmlTableFragments(text: string, token: (index: number) => string, htmlTables: string[]): string {
+  const capture = (markup: string) => `\n${token(htmlTables.push(markup) - 1)}\n`;
+
+  // Alguns importadores preservam apenas um trecho de tabela. Extraímos do
+  // maior para o menor para evitar que <td>/<tr> internos sejam processados
+  // duas vezes. Cada fragmento será envolvido por normalizeHtmlTableMarkup.
+  return text
+    .replace(/<table\b[\s\S]*?<\/table\s*>/gi, capture)
+    .replace(/<(thead|tbody)\b[\s\S]*?<\/\1\s*>/gi, capture)
+    .replace(/(?:<tr\b[\s\S]*?<\/tr\s*>)+/gi, capture)
+    .replace(/(?:<(td|th)\b[\s\S]*?<\/\1\s*>)+/gi, capture);
 }
 
 /** Quebra o conteúdo de uma seção em blocos tipados. */
@@ -447,10 +461,7 @@ function parseBlocks(rawInput: string): Block[] {
   const raw = wrapInferredCodeBlocks(normalizeMarkdownEscapes(rawInput));
   const htmlTables: string[] = [];
   const tableToken = (index: number) => `${HTML_TABLE_TOKEN_PREFIX}${index}__`;
-  const extractHtmlTables = (text: string) => text.replace(
-    /<table\b[\s\S]*?<\/table\s*>/gi,
-    (table) => `\n${tableToken(htmlTables.push(table) - 1)}\n`,
-  );
+  const extractHtmlTables = (text: string) => extractHtmlTableFragments(text, tableToken, htmlTables);
 
   // 1) Extrai blocos de código triplos
   const codeRe = /```(\w+)?\n?([\s\S]*?)```/g;
@@ -990,10 +1001,31 @@ function ListBlock({ items, ordered }: { items: string[]; ordered: boolean }) {
 }
 
 function HtmlTableBlock({ html }: { html: string }) {
+  const safeHtml = sanitizeHtml(normalizeHtmlTableMarkup(html));
+  const hasCells = /<(?:th|td)\b/i.test(safeHtml);
+
+  if (!hasCells) {
+    const fallbackText = html
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    console.warn('[ApostilaContentRenderer] Tabela sem células após sanitização; exibindo fallback seguro.', {
+      sourceLength: html.length,
+    });
+
+    return (
+      <section className="my-8 rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 text-sm text-foreground/85" role="status">
+        <p className="mb-2 font-semibold text-amber-700 dark:text-amber-300">Não foi possível formatar esta tabela.</p>
+        <p className="whitespace-pre-wrap">{fallbackText || 'O conteúdo da tabela está indisponível.'}</p>
+      </section>
+    );
+  }
+
   return (
     <div
       className="my-10 overflow-x-auto rounded-2xl border border-border/40 bg-card/40 shadow-xl backdrop-blur-sm"
-      dangerouslySetInnerHTML={{ __html: sanitizeHtml(normalizeHtmlTableMarkup(html)) }}
+      dangerouslySetInnerHTML={{ __html: safeHtml }}
     />
   );
 }
