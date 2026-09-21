@@ -1,9 +1,3 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Lock, LogIn, UserPlus, ArrowRight } from 'lucide-react';
-import { motion } from 'framer-motion';
-
 interface ApostilaPreviewProps {
   content: string;
   apostilaTitle: string;
@@ -11,109 +5,30 @@ interface ApostilaPreviewProps {
   isLoggedIn: boolean;
 }
 
+/**
+ * Fallback público da apostila.
+ *
+ * O leitor autenticado já renderiza o conteúdo editorial completo em ApostilaPage.
+ * Para visitantes, também exibimos o conteúdo completo em vez de cortar em 500
+ * caracteres e aplicar um bloqueio visual. O corte anterior fazia apostilas
+ * grandes parecerem incompletas mesmo quando estavam integralmente salvas.
+ */
 export function ApostilaPreview({
   content,
-  apostilaTitle,
-  apostilaId,
   isLoggedIn,
 }: ApostilaPreviewProps) {
-  const navigate = useNavigate();
-  const [showBlocker, setShowBlocker] = useState(!isLoggedIn);
-
-  // O conteúdo editorial deve aparecer completo. O limite anterior de 500
-  // caracteres fazia uma apostila recém-criada parecer truncada para visitantes,
-  // mesmo quando todo o conteúdo já estava salvo no Supabase.
-  //
-  // Usuários autenticados continuam recebendo a renderização editorial completa
-  // abaixo em ApostilaPage; este componente fica apenas como fallback público.
   if (isLoggedIn) {
     return null;
   }
 
   return (
-    <div className="relative">
-      {/* Conteúdo com efeito de desfoque */}
-      <motion.div
-        animate={{ opacity: showBlocker ? 0.5 : 1 }}
-        className={`${showBlocker ? 'blur-sm' : ''} transition-all`}
+    <div className="relative w-full">
+      <article
+        className="prose prose-sm sm:prose-base max-w-none whitespace-pre-wrap text-foreground/95"
+        aria-label="Conteúdo completo da apostila"
       >
-        <p className="prose prose-sm max-w-none whitespace-pre-wrap">
-          {textPreview}
-        </p>
-        {hasMoreContent && (
-          <p className="text-muted-foreground italic mt-4">
-            ... [conteúdo limitado ao preview]
-          </p>
-        )}
-      </motion.div>
-
-      {/* Bloqueador com CTA */}
-      {showBlocker && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-transparent via-background/80 to-background rounded-xl"
-        >
-          <div className="text-center space-y-6 max-w-md p-6">
-            {/* Ícone */}
-            <div className="flex justify-center">
-              <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
-                <Lock className="h-8 w-8 text-primary" />
-              </div>
-            </div>
-
-            {/* Título e Descrição */}
-            <div className="space-y-2">
-              <h3 className="text-xl font-bold">Conteúdo Exclusivo</h3>
-              <p className="text-sm text-muted-foreground">
-                Para continuar lendo <strong>{apostilaTitle}</strong> e acessar todos os áudios, vídeos e exercícios, faça login ou crie sua conta gratuita.
-              </p>
-            </div>
-
-            {/* Botões de Ação */}
-            <div className="space-y-3">
-              <Button
-                onClick={() => navigate('/login', { state: { from: `/apostila/${apostilaId}` } })}
-                className="w-full gap-2 h-11"
-              >
-                <LogIn size={18} />
-                Fazer Login
-              </Button>
-
-              <Button
-                onClick={() => navigate('/login', { state: { from: `/apostila/${apostilaId}`, signup: true } })}
-                variant="outline"
-                className="w-full gap-2 h-11"
-              >
-                <UserPlus size={18} />
-                Criar Conta Gratuita
-              </Button>
-            </div>
-
-            {/* Benefícios */}
-            <div className="pt-4 border-t border-border/50 space-y-2 text-left">
-              <p className="text-xs font-semibold text-muted-foreground uppercase">
-                Ao se cadastrar, você terá acesso a:
-              </p>
-              <ul className="text-sm space-y-1.5">
-                {[
-                  'Todas as apostilas completas',
-                  'Áudios das aulas',
-                  'Vídeos explicativos',
-                  'Exercícios e simulados',
-                  'Flashcards inteligentes',
-                  'Gamificação e ranking',
-                ].map((benefit, i) => (
-                  <li key={i} className="flex items-center gap-2">
-                    <ArrowRight size={12} className="text-primary" />
-                    {benefit}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </motion.div>
-      )}
+        {content}
+      </article>
     </div>
   );
 }
