@@ -3,7 +3,14 @@ import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
 const FALLBACK_SUPABASE_URL = 'https://wxkkpjpqyrygglbuogsd.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY?.trim() || '';
+// Publishable keys are designed to be embedded in browser bundles.  Keeping
+// this fallback prevents a missing Lovable/Vite environment variable from
+// throwing during module evaluation and leaving the application as a blank
+// screen.  It is restricted to the single active production project.
+const FALLBACK_SUPABASE_PUBLISHABLE_KEY =
+  'sb_publishable_Zh6H3y8GJ2J_wkRVXxyTng_eylbCAVM';
+const SUPABASE_PUBLISHABLE_KEY =
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY?.trim() || FALLBACK_SUPABASE_PUBLISHABLE_KEY;
 
 // O runtime deste projeto deve apontar exclusivamente para o Supabase de produção
 // atual. Ignoramos valores Vite legados para evitar que um bundle publicado caia
