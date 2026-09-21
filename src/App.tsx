@@ -90,31 +90,21 @@ function useAdminCopyPatch() {
 
 const AppContent = () => {
   const [splashDone, setSplashDone] = React.useState(false);
-  const [showContent, setShowContent] = React.useState(false);
   useAdminCopyPatch();
   useBMCWidget();
 
-  // Mantém a identidade da callback para não reiniciar o timer do splash a cada render.
+  // O conteúdo principal fica montado desde o primeiro render.
+  // O splash é apenas uma camada visual e nunca pode bloquear o boot do app.
   const handleSplashComplete = React.useCallback(() => {
     setSplashDone(true);
   }, []);
-
-  React.useEffect(() => {
-    if (splashDone) {
-      const timer = setTimeout(() => setShowContent(true), 50);
-      return () => clearTimeout(timer);
-    }
-  }, [splashDone]);
 
   return (
     <>
       {!splashDone && <SplashScreen onComplete={handleSplashComplete} />}
       
-      <div 
-        className={`transition-opacity duration-700 ${showContent ? 'opacity-100' : 'opacity-0'}`}
-        aria-hidden={!splashDone}
-      >
-        {splashDone && (
+      <div className="opacity-100" aria-hidden={false}>
+        {
           <>
             <AdPopup />
             <AdDraftPreviewOverlay />
@@ -194,7 +184,6 @@ const AppContent = () => {
               </Routes>
             </Suspense>
           </>
-        )}
       </div>
     </>
   );
