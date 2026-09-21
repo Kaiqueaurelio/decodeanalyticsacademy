@@ -9,7 +9,6 @@ import { Toaster } from '@/components/ui/toaster';
 import { Toaster as Sonner } from '@/components/ui/sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { PageSkeleton } from '@/components/PageSkeleton';
-import { SplashScreen } from '@/components/SplashScreen';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { AdPopup } from '@/components/AdPopup';
 import { AdDraftPreviewOverlay } from '@/components/admin/AdDraftPreviewOverlay';
@@ -89,22 +88,13 @@ function useAdminCopyPatch() {
 }
 
 const AppContent = () => {
-  const [splashDone, setSplashDone] = React.useState(false);
   useAdminCopyPatch();
   useBMCWidget();
 
-  // O conteúdo principal fica montado desde o primeiro render.
-  // O splash é apenas uma camada visual e nunca pode bloquear o boot do app.
-  const handleSplashComplete = React.useCallback(() => {
-    setSplashDone(true);
-  }, []);
 
   return (
     <>
-      {!splashDone && <SplashScreen onComplete={handleSplashComplete} />}
-      
       <div className="opacity-100" aria-hidden={false}>
-        <>
             <AdPopup />
             <AdDraftPreviewOverlay />
             <EllaSidebar />
@@ -182,7 +172,6 @@ const AppContent = () => {
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </Suspense>
-        </>
       </div>
     </>
   );
