@@ -988,8 +988,6 @@ export default function ApostilaPage({ tab, setTab }: Props) {
               <div id="conteudo-principal" className="space-y-10 scroll-mt-24">
                 <ApostilaPreview
                   content={combinedContent}
-                  apostilaTitle={apostila.title}
-                  apostilaId={id!}
                   isLoggedIn={!!user}
                 />
                 
