@@ -272,30 +272,14 @@ const renderBootError = (error: unknown) => {
   );
 };
 
-let bootFinished = false;
-const bootTimeout = window.setTimeout(() => {
-  if (!bootFinished) {
-    renderBootError(new Error("Tempo limite de inicialização excedido."));
-  }
-}, 10000);
+root.render(
+  <ErrorBoundary>
+    <App />
+  </ErrorBoundary>,
+);
 
-import("./App.tsx")
-  .then(({ default: App }) => {
-    bootFinished = true;
-    window.clearTimeout(bootTimeout);
-    root.render(
-      <ErrorBoundary>
-        <App />
-      </ErrorBoundary>,
-    );
-  })
-  .catch((error) => {
-    bootFinished = true;
-    window.clearTimeout(bootTimeout);
-    console.error("Falha ao carregar o módulo principal:", error);
-    renderBootError(error);
-  });
-// Primeiro invalida artefatos de outra versão; depois registra o worker atual.
-// Essa ordem evita que um worker antigo reassuma o controle durante a limpeza.
-void checkAndCleanOldCaches().finally(() => registerServiceWorker());
-// Trigger deploy Tue Aug 18 23:50:52 UTC 2026
+// A limpeza de cache/service worker nunca participa do boot crítico.
+// O app já está visível antes de qualquer operação de recuperação de PWA.
+window.setTimeout(() => {
+  void checkAndCleanOldCaches().finally(() => registerServiceWorker());
+}, 5000);
