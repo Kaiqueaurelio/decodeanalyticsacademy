@@ -87,6 +87,7 @@ function useAdminCopyPatch() {
   }, [user]);
 }
 
+// Startup emergency patch: App is rendered immediately; recovery work is deferred to main.tsx.
 const AppContent = () => {
   useAdminCopyPatch();
   useBMCWidget();
