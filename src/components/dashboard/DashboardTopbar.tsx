@@ -79,7 +79,7 @@ export function DashboardTopbar({ hideSearchOnMobile = false }: { hideSearchOnMo
 
   return (
     <header className="sticky top-0 z-30 bg-background/95 border-b border-border shadow-none">
-      <div className="flex items-center gap-2 px-3 sm:px-6 lg:px-8 h-16">
+      <div className="flex min-w-0 items-center gap-2 overflow-hidden px-3 sm:px-6 lg:px-8 h-16">
         <Sheet open={navOpen} onOpenChange={setNavOpen}>
           <SheetTrigger asChild>
             <Button
@@ -122,18 +122,18 @@ export function DashboardTopbar({ hideSearchOnMobile = false }: { hideSearchOnMo
         </Button>
 
         {isAdmin && (
-          <div className="flex items-center gap-1.5 sm:gap-2">
+          <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
             <Button
               variant="outline"
               size="sm"
               onClick={() => navigate('/admin')}
-              className="hidden min-[1150px]:flex h-9 px-3 gap-2 border-accent/40 text-accent hover:bg-accent/10 hover:border-accent font-bold text-xs rounded-xl shadow-sm shadow-accent/5"
+              className="hidden min-[1400px]:flex h-9 px-3 gap-2 border-accent/40 text-accent hover:bg-accent/10 hover:border-accent font-bold text-xs rounded-xl shadow-sm shadow-accent/5"
             >
               <ShieldCheck strokeWidth={2.5} className="h-4 w-4" />
               <span>Painel Admin</span>
             </Button>
             
-            <div className="hidden min-[1300px]:flex items-center gap-1 bg-muted/40 p-1 rounded-xl border border-border/40">
+            <div className="hidden min-[1500px]:flex items-center gap-1 bg-muted/40 p-1 rounded-xl border border-border/40">
               <Button
                 variant="ghost"
                 size="sm"
@@ -160,7 +160,7 @@ export function DashboardTopbar({ hideSearchOnMobile = false }: { hideSearchOnMo
               variant="outline"
               size="sm"
               onClick={() => navigate('/admin')}
-              className="min-[1150px]:hidden h-9 w-9 p-0 border-accent/50 text-accent hover:bg-accent/10 rounded-xl"
+              className="min-[1400px]:hidden h-9 w-9 p-0 border-accent/50 text-accent hover:bg-accent/10 rounded-xl"
               aria-label="Painel Admin"
             >
               <ShieldCheck strokeWidth={2.5} className="h-[18px] w-[18px]" />
@@ -168,7 +168,7 @@ export function DashboardTopbar({ hideSearchOnMobile = false }: { hideSearchOnMo
           </div>
         )}
 
-        <form onSubmit={submit} className={`flex-1 max-w-2xl relative ${hideSearchOnMobile ? 'hidden md:block' : ''}`}>
+        <form onSubmit={submit} className={`min-w-0 flex-1 basis-0 max-w-2xl relative ${hideSearchOnMobile ? 'hidden md:block' : ''}`}>
           <Search strokeWidth={2.5} className="absolute left-3.5 top-1/2 -translate-y-1/2 h-[16px] w-[16px] text-muted-foreground pointer-events-none" />
           <input
             type="text"
@@ -180,7 +180,7 @@ export function DashboardTopbar({ hideSearchOnMobile = false }: { hideSearchOnMo
           />
         </form>
 
-        <div className="flex items-center gap-1.5 sm:gap-2 ml-auto">
+        <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
           <Button 
             variant="ghost" 
             size="icon" 
