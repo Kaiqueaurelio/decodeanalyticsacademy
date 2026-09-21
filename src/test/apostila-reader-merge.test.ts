@@ -1,4 +1,4 @@
-import { mergePagesIntoTree } from '@/pages/ApostilaReaderPage';
+import { mergePagesIntoTree, shouldRestoreRootContent } from '@/pages/ApostilaReaderPage';
 
 const emptyTree = { apostila_id: 'apostila-1', modules: [] } as any;
 
@@ -43,5 +43,22 @@ describe('mergePagesIntoTree', () => {
     ] as any);
 
     expect(lessonsOf(tree)).toHaveLength(2);
+  });
+
+  it('mantém o conteúdo principal quando páginas parciais não cobrem a apostila inteira', () => {
+    const main = 'conteúdo completo de sistemas operacionais '.repeat(160);
+    const partialPage = 'introdução de sistemas operacionais '.repeat(60);
+
+    expect(shouldRestoreRootContent(main, [
+      { id: 'parcial', title: 'Aula 1', content: partialPage, position: 1 },
+    ] as any)).toBe(true);
+  });
+
+  it('não repete a raiz quando uma página já contém integralmente o mesmo material', () => {
+    const main = 'conteúdo completo de sistemas operacionais '.repeat(160);
+
+    expect(shouldRestoreRootContent(main, [
+      { id: 'completa', title: 'Material completo', content: `${main}\n\nExercícios de revisão`, position: 1 },
+    ] as any)).toBe(false);
   });
 });
