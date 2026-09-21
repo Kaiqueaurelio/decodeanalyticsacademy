@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
 import { supabase } from '@/integrations/supabase/client';
-import { Terminal, Maximize2 } from 'lucide-react';
 
 import { NotificationBell } from '@/components/NotificationBell';
 import { AuthStatusIndicator } from '@/components/AuthStatusIndicator';
@@ -20,7 +19,7 @@ import logoOwl from '@/assets/owl-icon.png';
 export function DashboardTopbar({ hideSearchOnMobile = false }: { hideSearchOnMobile?: boolean }) {
   const navigate = useNavigate();
   const { user, signOut, isAdmin: authIsAdmin } = useAuth();
-  const { theme, visualStyle, toggleTheme, toggleVisualStyle } = useTheme();
+  const { theme, toggleTheme } = useTheme();
   const { data: profile } = useUserProfile(user?.id);
   const isAdmin = authIsAdmin;
 
@@ -181,16 +180,6 @@ export function DashboardTopbar({ hideSearchOnMobile = false }: { hideSearchOnMo
         </form>
 
         <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={toggleVisualStyle} 
-            className="h-9 w-9 rounded-xl" 
-            title={visualStyle === 'industrial' ? 'Mudar para modo Minimalista' : 'Mudar para modo Industrial'}
-            aria-label="Alternar estilo visual"
-          >
-            {visualStyle === 'industrial' ? <Maximize2 strokeWidth={2.5} className="h-[16px] w-[16px]" /> : <Terminal strokeWidth={2.5} className="h-[16px] w-[16px]" />}
-          </Button>
           <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-9 w-9 rounded-xl" aria-label="Alternar tema">
             {theme === 'dark' ? <Sun strokeWidth={2.5} className="h-[16px] w-[16px]" /> : <Moon strokeWidth={2.5} className="h-[16px] w-[16px]" />}
           </Button>
