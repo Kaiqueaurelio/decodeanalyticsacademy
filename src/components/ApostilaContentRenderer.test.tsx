@@ -88,12 +88,35 @@ describe('ApostilaContentRenderer', () => {
     }
   });
 
-  it('registra diagnóstico quando markup de TD não forma um bloco de tabela', () => {
+  it.each([
+    { fragment: '<tr><td>A</td><td>B</td></tr>\n  <tr><td>C</td><td>D</td></tr>', rows: 2 },
+    { fragment: '<th>A</th>\n  <td>B</td>\n<th>C</th> <td>D</td>', rows: 1 },
+  ])('preserva linhas e células separadas por espaços em uma única tabela: $rows linhas', ({ fragment, rows }) => {
+    const { container } = render(<ApostilaContentRenderer content={fragment} />);
+    expect(container.querySelectorAll('table')).toHaveLength(1);
+    expect(container.querySelectorAll('tr')).toHaveLength(rows);
+    expect(Array.from(container.querySelectorAll('td, th'), cell => cell.textContent)).toEqual(['A', 'B', 'C', 'D']);
+  });
+
+  it('recupera célula órfã sem emitir um falso aviso de perda', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    try {
+      const { container } = render(<ApostilaContentRenderer content={'Texto antes.\n\n<td>célula órfã</td>\n\nTexto depois.'} />);
+      expect(container.querySelector('table td')?.textContent).toBe('célula órfã');
+      expect(container.textContent).toContain('Texto antes.');
+      expect(container.textContent).toContain('Texto depois.');
+      expect(warn).not.toHaveBeenCalled();
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it('registra diagnóstico quando markup de TD incompleto não forma um bloco de tabela', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
 
     render(
       <ApostilaContentRenderer
-        content={'# Conteúdo clonado\n\nTexto antes.\n\n<td>célula órfã</td>\n\nTexto depois.'}
+        content={'# Conteúdo clonado\n\nTexto antes.\n\n<td>célula sem fechamento\n\nTexto depois.'}
       />,
     );
 

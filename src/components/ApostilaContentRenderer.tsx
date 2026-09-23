@@ -458,8 +458,8 @@ function extractHtmlTableFragments(text: string, token: (index: number) => strin
   return text
     .replace(/<table\b[\s\S]*?<\/table\s*>/gi, capture)
     .replace(/<(thead|tbody)\b[\s\S]*?<\/\1\s*>/gi, capture)
-    .replace(/(?:<tr\b[\s\S]*?<\/tr\s*>)+/gi, capture)
-    .replace(/(?:<(td|th)\b[\s\S]*?<\/\1\s*>)+/gi, capture);
+    .replace(/<tr\b[\s\S]*?<\/tr\s*>(?:\s*<tr\b[\s\S]*?<\/tr\s*>)*/gi, capture)
+    .replace(/<(td|th)\b[\s\S]*?<\/\1\s*>(?:\s*<(td|th)\b[\s\S]*?<\/\2\s*>)*/gi, capture);
 }
 
 /** Quebra o conteúdo de uma seção em blocos tipados. */
