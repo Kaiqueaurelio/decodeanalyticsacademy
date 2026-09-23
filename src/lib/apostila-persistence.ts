@@ -35,14 +35,18 @@ export async function saveApostilaWithRevision(draft: ApostilaPersistenceDraft) 
   } as any;
   let result = await supabase.rpc('save_apostila' as any, params);
   if (isTransientSaveError(result.error)) {
-    const confirmed = await findSavedApostila(draft);
+    // Um timeout do gateway não informa se a transação foi cancelada ou apenas
+    // se a resposta chegou tarde. Antes de repetir uma gravação com revisão,
+    // esperamos a confirmação de leitura: assim uma gravação que já ocorreu
+    // não vira um falso erro de "não salvo" no editor.
+    const confirmed = await waitForSavedApostila(draft);
     if (confirmed) return confirmed;
     // Uma única repetição com a mesma revisão é segura: se a primeira chamada
     // tiver concluído após o timeout, o banco responderá conflito e faremos a
     // leitura de confirmação; se não concluiu, esta chamada salva o rascunho.
     result = await supabase.rpc('save_apostila' as any, params);
     if (isRevisionConflict(result.error)) {
-      const savedAfterRetry = await findSavedApostila(draft);
+      const savedAfterRetry = await waitForSavedApostila(draft);
       if (savedAfterRetry) return savedAfterRetry;
     }
   }
@@ -60,11 +64,11 @@ export async function saveApostilaPageWithRevision(draft: ApostilaPagePersistenc
   } as any;
   let result = await supabase.rpc('save_apostila_page' as any, params);
   if (isTransientSaveError(result.error)) {
-    const confirmed = await findSavedPage(draft);
+    const confirmed = await waitForSavedPage(draft);
     if (confirmed) return confirmed;
     result = await supabase.rpc('save_apostila_page' as any, params);
     if (isRevisionConflict(result.error)) {
-      const savedAfterRetry = await findSavedPage(draft);
+      const savedAfterRetry = await waitForSavedPage(draft);
       if (savedAfterRetry) return savedAfterRetry;
     }
   }
@@ -78,6 +82,30 @@ function isTransientSaveError(error: any) {
 
 function isRevisionConflict(error: any) {
   return error?.code === '40001';
+}
+
+const SAVE_CONFIRMATION_DELAYS_MS = [0, 250, 750] as const;
+
+function wait(ms: number) {
+  return new Promise<void>((resolve) => globalThis.setTimeout(resolve, ms));
+}
+
+async function waitForSavedApostila(draft: ApostilaPersistenceDraft) {
+  for (const delay of SAVE_CONFIRMATION_DELAYS_MS) {
+    if (delay) await wait(delay);
+    const confirmed = await findSavedApostila(draft);
+    if (confirmed) return confirmed;
+  }
+  return null;
+}
+
+async function waitForSavedPage(draft: ApostilaPagePersistenceDraft) {
+  for (const delay of SAVE_CONFIRMATION_DELAYS_MS) {
+    if (delay) await wait(delay);
+    const confirmed = await findSavedPage(draft);
+    if (confirmed) return confirmed;
+  }
+  return null;
 }
 
 async function findSavedApostila(draft: ApostilaPersistenceDraft) {

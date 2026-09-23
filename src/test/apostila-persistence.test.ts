@@ -61,6 +61,35 @@ describe('revision-safe apostila persistence', () => {
     expect(result.error).toBeNull();
     expect(rpcMock).toHaveBeenCalledTimes(1);
   });
+
+  it('aguarda a confirmação de leitura quando a resposta do gateway chega antes da transação', async () => {
+    vi.useFakeTimers();
+    const query: any = {
+      select: vi.fn(),
+      eq: vi.fn(),
+      maybeSingle: maybeSingleMock,
+    };
+    query.select.mockReturnValue(query);
+    query.eq.mockReturnValue(query);
+    fromMock.mockReturnValue(query);
+    rpcMock.mockResolvedValueOnce({ data: null, error: { message: 'upstream request timeout' } });
+    maybeSingleMock
+      .mockResolvedValueOnce({ data: null, error: null })
+      .mockResolvedValueOnce({
+        data: { id: 'p1', apostila_id: 'a1', title: 'Aula', content: 'Texto completo' },
+        error: null,
+      });
+
+    const { saveApostilaPageWithRevision } = await import('@/lib/apostila-persistence');
+    const resultPromise = saveApostilaPageWithRevision(pageDraft);
+    await vi.advanceTimersByTimeAsync(250);
+    const result = await resultPromise;
+
+    expect(result.error).toBeNull();
+    expect(rpcMock).toHaveBeenCalledTimes(1);
+    expect(maybeSingleMock).toHaveBeenCalledTimes(2);
+    vi.useRealTimers();
+  });
   it('calls the main apostila persistence RPC with the expected revision', async () => {
     rpcMock.mockResolvedValueOnce({ data: { id: 'book-1', content_revision: 8 }, error: null });
     const { saveApostilaWithRevision } = await import('@/lib/apostila-persistence');
