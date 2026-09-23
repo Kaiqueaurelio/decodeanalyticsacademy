@@ -182,6 +182,7 @@ describe('security hardening regression guards', () => {
     const deleteAccount = source('supabase/functions/delete-account/index.ts');
     const setPassword = source('supabase/functions/admin-set-password/index.ts');
     const exportData = source('supabase/functions/export-user-data/index.ts');
+    const authGuard = source('supabase/functions/_shared/auth-guard.ts');
 
     for (const code of [deleteAccount, setPassword, exportData]) {
       expect(code).toContain('requireUser(req, corsHeaders');
@@ -190,6 +191,8 @@ describe('security hardening regression guards', () => {
       expect(code).not.toContain('error: (e as Error).message');
     }
     expect(setPassword).toContain('requireAdmin: true');
+    expect(authGuard).toContain('.from("user_roles")');
+    expect(authGuard).toContain('.eq("role", "admin")');
     expect(deleteAccount).toContain('body.confirmation !== "EXCLUIR"');
     const auditMigration = source('supabase/migrations/20260821230000_security_audit_rpc_hardening.sql');
     expect(auditMigration).toContain('SECURITY DEFINER');
